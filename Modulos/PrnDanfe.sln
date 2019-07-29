@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrnDANFE", "PrnDanfe\PrnDANFE.csproj", "{AA10615E-DB40-4505-AFD0-870EFF2ACC8A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Homologacao|Any CPU = Homologacao|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AA10615E-DB40-4505-AFD0-870EFF2ACC8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA10615E-DB40-4505-AFD0-870EFF2ACC8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA10615E-DB40-4505-AFD0-870EFF2ACC8A}.Homologacao|Any CPU.ActiveCfg = Homologacao|Any CPU
+		{AA10615E-DB40-4505-AFD0-870EFF2ACC8A}.Homologacao|Any CPU.Build.0 = Homologacao|Any CPU
+		{AA10615E-DB40-4505-AFD0-870EFF2ACC8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA10615E-DB40-4505-AFD0-870EFF2ACC8A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		VisualSVNWorkingCopyRoot = .
+	EndGlobalSection
+EndGlobal

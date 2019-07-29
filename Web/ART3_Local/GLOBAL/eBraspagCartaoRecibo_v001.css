@@ -1,0 +1,111 @@
+@media all {
+	.tdTitMain
+	{
+		font-family: Arial;
+		font-size: 12pt;
+		font-weight:bold;
+		text-align: center;
+		background: #eeeeee;
+	}
+	.tdTitC
+	{
+		font-size: 10pt;
+		color: black;
+		font-style: normal;
+		font-weight:bold;
+		font-family: Arial;
+		text-decoration: none;
+		text-align: center;
+	}
+	.tdTitL
+	{
+		font-size: 10pt;
+		color: black;
+		font-style: normal;
+		font-weight:bold;
+		font-family: Arial;
+		text-decoration: none;
+		text-align: left;
+	}
+	.tdTitR
+	{
+		font-size: 10pt;
+		color: black;
+		font-style: normal;
+		font-weight:bold;
+		font-family: Arial;
+		text-decoration: none;
+		text-align: right;
+	}
+	.tdDadosC
+	{
+		font-size: 10pt;
+		color: black;
+		font-style: normal;
+		font-weight:bold;
+		font-family: Arial;
+		text-decoration: none;
+		text-align: center;
+	}
+	.tdDadosL
+	{
+		font-size: 10pt;
+		color: black;
+		font-style: normal;
+		font-weight:bold;
+		font-family: Arial;
+		text-decoration: none;
+		text-align: left;
+	}
+	.tdDadosR
+	{
+		font-size: 10pt;
+		color: black;
+		font-style: normal;
+		font-weight:bold;
+		font-family: Arial;
+		text-decoration: none;
+		text-align: right;
+	}
+}
+
+
+@media print {
+	.prnBorderAll
+	{
+		border: 2px solid black;
+	}
+	.prnBorderT
+	{
+		border-top: 2px solid black;
+	}
+	.prnBorderB
+	{
+		border-bottom: 2px solid black;
+	}
+	.prnBorderL
+	{
+		border-left: 2px solid black;
+	}
+	.prnBorderR
+	{
+		border-right: 2px solid black;
+	}
+	.prnBorderTB
+	{
+		border-top: 2px solid black;
+		border-bottom: 2px solid black;
+	}
+	.prnBorderLTB
+	{
+		border-left: 2px solid black;
+		border-top: 2px solid black;
+		border-bottom: 2px solid black;
+	}
+	.prnBorderRTB
+	{
+		border-right: 2px solid black;
+		border-top: 2px solid black;
+		border-bottom: 2px solid black;
+	}
+}

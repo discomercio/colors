@@ -1,0 +1,63 @@
+﻿html,body
+{
+	margin-top			:0;
+	margin-left			:0;
+	margin-right		:0;
+}
+#tbl_logotipo_bonshop
+{
+	position			:absolute;
+	top					:3px;
+	z-index				:1;
+}
+#telefone
+{
+//	background-color	:#8ccf68;
+	background-color	:#f9f9f9;
+	margin-left			:260px;
+	padding-right		:220px;
+	text-align			:center;
+}
+#letreiro_div
+{
+//	background-color	:#8ccf68;
+	background-color	:#f9f9f9;
+	color				:white;
+	font-family			:Tahoma;
+	font-size			:18pt;
+	font-weight			:bold;
+	letter-spacing		:2px;
+	margin-left			:260px;
+	padding-top			:2px;
+	padding-right		:60px;
+	text-align			:center;
+	vertical-align		:bottom;
+	white-space			:nowrap;
+}
+#topo_azul
+{
+//	background-color	:#064a93;
+	background-color	:#ffffff;
+	height				:23px;
+}
+#topo_verde
+{
+//	background-color	:#8ccf68;
+	background-color	:#f9f9f9;
+	border-bottom: 3px solid #daddde;
+	padding-bottom: 30px;
+	height				:78px;
+}
+#moldura_do_letreiro
+{
+	height				:36px;
+	vertical-align		:bottom;
+}
+#pagina_tbl_cabecalho
+{
+	width				:100%;
+}
+#pagina_tbl_conteudo
+{
+	width				:100%;
+}

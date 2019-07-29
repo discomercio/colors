@@ -1,0 +1,11 @@
+<OBJECT
+	id="printer"
+	classid="clsid:E0789D6A-B942-11D7-B55D-00D0B7B5E966"
+	codebase="../global/PrinterXProj.cab#version=1,0,76,120"
+	width=0
+	height=0
+	align=center
+	hspace=0
+	vspace=0
+	VIEWASTEXT
+></OBJECT>

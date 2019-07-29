@@ -1,0 +1,61 @@
+.CCARDe
+{
+	font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
+	font-size: 10pt;
+	color: #000000;
+	font-weight: bold;
+	text-align:left;
+	margin-left:1pt;
+	margin-right:1pt;
+	background: #FFFFFF;
+	border: 1px;
+	border-color:#C0C0C0;
+	border-style:solid;
+}
+.CCARDc
+{
+	font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
+	font-size: 10pt;
+	color: #000000;
+	font-weight: bold;
+	text-align:center;
+	margin-left:1pt;
+	margin-right:1pt;
+	background: #FFFFFF;
+	border: 1px;
+	border-color:#C0C0C0;
+	border-style:solid;
+}
+.CCARDd
+{
+	font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
+	font-size: 10pt;
+	color: #000000;
+	font-weight: bold;
+	text-align:right;
+	margin-left:1pt;
+	margin-right:1pt;
+	background: #FFFFFF;
+	border: 1px;
+	border-color:#C0C0C0;
+	border-style:solid;
+}
+.CARDSpanPgInfo
+{
+	font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
+	font-size: 10pt;
+	font-weight:bold;
+}
+.CARDSel
+{
+	font-family: "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
+	font-size: 10pt;
+	font-weight:bold;
+}
+.CARDSpanObs
+{
+	font-family: Arial, Helvetica, sans-serif;
+	font-size:8pt;
+	font-weight:normal;
+	color:#696969;
+}

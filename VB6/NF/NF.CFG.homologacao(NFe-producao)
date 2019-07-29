@@ -1,0 +1,5 @@
+SERVER = sqlserver.central85.com.br
+DATABASE = Homologacao
+USER = homologacao
+OPTION = lk;r}y5o
+

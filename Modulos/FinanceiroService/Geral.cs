@@ -1,0 +1,303 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+
+namespace FinanceiroService
+{
+	#region [ Geral ]
+	public static class Geral
+	{
+		#region [ Métodos ]
+
+		#region [ executaProcessamentoEnviarEmailAlertaPedidoNovoAnaliseCredito ]
+		public static bool executaProcessamentoEnviarEmailAlertaPedidoNovoAnaliseCredito(out bool blnEmailAlertaEnviado, out string strMsgInformativa, out string msg_erro)
+		{
+			#region [ Declarações ]
+			const String NOME_DESTA_ROTINA = "Geral.executaProcessamentoEnviarEmailAlertaPedidoNovoAnaliseCredito()";
+			int qtdePedidos = 0;
+			int id_emailsndsvc_mensagem;
+			string msg_erro_aux;
+			string strSql;
+			string strMsg;
+			string strSubject;
+			string strBody;
+			StringBuilder sbNumeroPedido = new StringBuilder("");
+			StringBuilder sbDetalhePedido = new StringBuilder("");
+			StringBuilder sbMsgInformativa = new StringBuilder("");
+			StringBuilder sbBody = new StringBuilder("");
+			List<string> listaPedido = new List<string>();
+			SqlCommand cmCommand;
+			SqlDataAdapter daAdapter;
+			DataTable dtbResultado = new DataTable();
+			DataRow row;
+			#endregion
+
+			blnEmailAlertaEnviado = false;
+			strMsgInformativa = "";
+			msg_erro = "";
+			try
+			{
+				#region [ Cria objetos de BD ]
+				cmCommand = BD.criaSqlCommand();
+				daAdapter = BD.criaSqlDataAdapter();
+				daAdapter.SelectCommand = cmCommand;
+				daAdapter.MissingSchemaAction = MissingSchemaAction.Add;
+				#endregion
+
+				#region [ Monta SQL ]
+				// A consulta seleciona os pedidos aprovados automaticamente pela Clearsale, pois nesse caso o sistema coloca o status da
+				// análise de crédito como "Pendente Vendas" para que o analista possa verificar se o nome do titular do cartão diverge do
+				// cliente que está realizando a compra. O email de alerta informa que há pedidos para serem tratados na fila de "Pendente Vendas".
+				strSql = "SELECT " +
+							"*" +
+						" FROM " +
+							"(" +
+							"SELECT" +
+								" pedido," +
+								" data_hora," +
+								" vendedor," +
+								" indicador," +
+								" analise_credito," +
+								" vl_total_NF," +
+								" vl_previsto_cartao," +
+								" tipo_parcelamento," +
+								" av_forma_pagto," +
+								" pu_forma_pagto, pu_valor, pu_vencto_apos," +
+								" pc_qtde_parcelas, pc_valor_parcela," +
+								" pc_maquineta_qtde_parcelas, pc_maquineta_valor_parcela," +
+								" pce_forma_pagto_entrada, pce_forma_pagto_prestacao, pce_entrada_valor, pce_prestacao_qtde, pce_prestacao_valor, pce_prestacao_periodo," +
+								" pse_forma_pagto_prim_prest, pse_forma_pagto_demais_prest, pse_prim_prest_valor, pse_prim_prest_apos, pse_demais_prest_qtde, pse_demais_prest_valor, pse_demais_prest_periodo," +
+								" (" +
+									"SELECT" +
+										" SUM(payment.valor_transacao)" +
+									" FROM t_PAGTO_GW_PAG pag INNER JOIN t_PAGTO_GW_PAG_PAYMENT payment ON (pag.id = payment.id_pagto_gw_pag)" +
+									" WHERE" +
+										" (pag.pedido = t_PEDIDO.pedido)" +
+										" AND" +
+										" (ult_GlobalStatus = '" + Global.Cte.Braspag.Pagador.GlobalStatus.CAPTURADA.GetValue() + "')" +
+								") AS vl_pago_cartao" +
+							" FROM t_PEDIDO" +
+							" WHERE" +
+								" (analise_credito = " + Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.PENDENTE_VENDAS.ToString() + ")" +
+								" AND (st_pedido_novo_analise_credito_msg_alerta = 0)" +
+								" AND (st_forma_pagto_possui_parcela_cartao = 1)" +
+								" AND (st_entrega <> '" + Global.Cte.StEntregaPedido.ST_ENTREGA_ENTREGUE + "')" +
+								" AND (st_entrega <> '" + Global.Cte.StEntregaPedido.ST_ENTREGA_CANCELADO + "')" +
+							") t" +
+						" WHERE" +
+							" (vl_pago_cartao >= vl_previsto_cartao)" +
+						" ORDER BY" +
+							" data_hora," +
+							" pedido";
+				#endregion
+
+				#region [ Executa a consulta ]
+				cmCommand.CommandText = strSql;
+				daAdapter.Fill(dtbResultado);
+				#endregion
+
+				#region [ Processa o resultado ]
+				for (int i = 0; i < dtbResultado.Rows.Count; i++)
+				{
+					row = dtbResultado.Rows[i];
+					qtdePedidos++;
+
+					if (sbNumeroPedido.Length > 0) sbNumeroPedido.Append(", ");
+					sbNumeroPedido.Append(BD.readToString(row["pedido"]));
+
+					listaPedido.Add(BD.readToString(row["pedido"]));
+
+					#region [ Prepara mensagem de alerta ]
+					strMsg = "Pedido " + BD.readToString(row["pedido"]) + " cadastrado em " + Global.formataDataDdMmYyyyHhMmComSeparador(BD.readToDateTime(row["data_hora"])) + " por " + BD.readToString(row["vendedor"]) + " (" + Global.obtemDescricaoAnaliseCredito(BD.readToShort(row["analise_credito"])) + ")";
+					sbDetalhePedido.AppendLine(strMsg);
+					#endregion
+				}
+				#endregion
+
+				#region [ Há pedidos? ]
+				if (qtdePedidos == 0)
+				{
+					if (sbMsgInformativa.Length > 0) sbMsgInformativa.Append("; ");
+					sbMsgInformativa.Append("Nenhum pedido novo aguardando tratamento da análise de crédito");
+					return true;
+				}
+				#endregion
+
+				#region [ Monta mensagem informativa desta rotina ]
+				if (sbMsgInformativa.Length > 0) sbMsgInformativa.Append("; ");
+				strMsg = qtdePedidos.ToString() +
+						(qtdePedidos == 1 ?
+							" pedido novo aguardando tratamento da análise de crédito foi informado no email de alerta: "
+							:
+							" pedidos novos aguardando tratamento da análise de crédito foram informados no email de alerta: "
+						) + sbNumeroPedido.ToString();
+				sbMsgInformativa.Append(strMsg);
+				#endregion
+
+				#region [ Monta mensagem do email de alerta ]
+				strMsg = qtdePedidos.ToString() +
+						(qtdePedidos == 1 ?
+							" pedido novo aguardando tratamento da análise de crédito"
+							:
+							" pedidos novos aguardando tratamento da análise de crédito");
+				strSubject = Global.montaIdInstanciaServicoEmailSubject() + "  " + strMsg + " [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+				strBody = "Ambiente: " + (Global.Cte.Aplicativo.IDENTIFICADOR_AMBIENTE_OWNER.Length > 0 ? Global.Cte.Aplicativo.IDENTIFICADOR_AMBIENTE_OWNER : Global.Cte.Aplicativo.ID_SISTEMA_EVENTLOG) +
+						"\r\n\r\n" +
+						qtdePedidos.ToString() +
+						(qtdePedidos == 1 ?
+							" pedido novo aguardando tratamento da análise de crédito"
+							:
+							" pedidos novos aguardando tratamento da análise de crédito") +
+						"\r\n\r\n" +
+						sbDetalhePedido.ToString();
+				#endregion
+
+				#region [ Envia mensagem de alerta ]
+				if (EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Parametros.Geral.DESTINATARIO_MSG_ALERTA_PEDIDO_NOVO_ANALISE_CREDITO, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+				{
+					#region [ Registra no pedido que já foi enviado um email de alerta para que ele não seja incluído novamente no próximo alerta ]
+					for (int i = 0; i < listaPedido.Count; i++)
+					{
+						if (listaPedido[i].Trim().Length > 0)
+						{
+							if (!PedidoDAO.updatePedidoStPedidoNovoAnaliseCreditoMsgAlertaFlagAtivo(listaPedido[i], out msg_erro_aux))
+							{
+								if (msg_erro.Length > 0) msg_erro += "\r\n";
+								msg_erro += "Falha ao tentar atualizar o campo t_PEDIDO.st_pedido_novo_analise_credito_msg_alerta = 1 no pedido " + listaPedido[i] + ": " + msg_erro_aux;
+							}
+						}
+					}
+					#endregion
+				}
+				else
+				{
+					msg_erro = "Falha ao tentar inserir email de alerta sobre pedido novo aguardando tratamento da análise de crédito na fila de mensagens!!\n" + msg_erro_aux;
+
+					strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta sobre pedido novo aguardando tratamento da análise de crédito na fila de mensagens!!\n" + msg_erro_aux;
+					Global.gravaLogAtividade(strMsg);
+
+					return false;
+				}
+				#endregion
+				
+				blnEmailAlertaEnviado = true;
+
+				return true;
+			}
+			catch (Exception ex)
+			{
+				// Retorna mensagem de erro p/ rotina chamadora
+				msg_erro = NOME_DESTA_ROTINA + "\n" + ex.ToString();
+
+				#region [ Registra detalhes em t_FINSVC_LOG (chama gravaLogAtividade() automaticamente) ]
+				FinSvcLog svcLog = new FinSvcLog();
+				svcLog.operacao = NOME_DESTA_ROTINA;
+				svcLog.descricao = ex.ToString();
+				GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
+				#endregion
+
+				return false;
+			}
+			finally
+			{
+				strMsgInformativa = sbMsgInformativa.ToString();
+			}
+		}
+		#endregion
+
+		#endregion
+	}
+	#endregion
+
+	#region [ FinSvcLog ]
+	class FinSvcLog
+	{
+		private int _id;
+		public int id
+		{
+			get { return _id; }
+			set { _id = value; }
+		}
+
+		private DateTime _data;
+		public DateTime data
+		{
+			get { return _data; }
+			set { _data = value; }
+		}
+
+		private DateTime _data_hora;
+		public DateTime data_hora
+		{
+			get { return _data_hora; }
+			set { _data_hora = value; }
+		}
+
+		private string _operacao;
+		public string operacao
+		{
+			get { return _operacao; }
+			set { _operacao = value; }
+		}
+
+		private string _tabela;
+		public string tabela
+		{
+			get { return _tabela; }
+			set { _tabela = value; }
+		}
+
+		private string _descricao;
+		public string descricao
+		{
+			get { return _descricao; }
+			set { _descricao = value; }
+		}
+
+		private string _complemento_1;
+		public string complemento_1
+		{
+			get { return _complemento_1; }
+			set { _complemento_1 = value; }
+		}
+
+		private string _complemento_2;
+		public string complemento_2
+		{
+			get { return _complemento_2; }
+			set { _complemento_2 = value; }
+		}
+
+		private string _complemento_3;
+		public string complemento_3
+		{
+			get { return _complemento_3; }
+			set { _complemento_3 = value; }
+		}
+
+		private string _complemento_4;
+		public string complemento_4
+		{
+			get { return _complemento_4; }
+			set { _complemento_4 = value; }
+		}
+
+		private string _complemento_5;
+		public string complemento_5
+		{
+			get { return _complemento_5; }
+			set { _complemento_5 = value; }
+		}
+
+		private string _complemento_6;
+		public string complemento_6
+		{
+			get { return _complemento_6; }
+			set { _complemento_6 = value; }
+		}
+	}
+	#endregion
+}

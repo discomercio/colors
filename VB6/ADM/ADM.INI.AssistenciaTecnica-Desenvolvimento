@@ -1,0 +1,4 @@
+SERVIDOR_BD = Ora9iServer
+NOME_BD = AssistenciaTecnica
+NOME_USUARIO_BD = assistencia_tecnica
+SENHA_USUARIO_BD = 0x000000003bbddf69b72d63f9278d25

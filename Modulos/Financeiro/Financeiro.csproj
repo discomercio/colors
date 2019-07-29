@@ -1,0 +1,664 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{E01E34C9-82CC-413B-9C11-01859CDA98F8}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Financeiro</RootNamespace>
+    <AssemblyName>Financeiro</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <IsWebBootstrapper>true</IsWebBootstrapper>
+    <ApplicationIcon>view-statistics.ico</ApplicationIcon>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <PublishUrl>http://localhost/Financeiro/</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Web</InstallFrom>
+    <UpdateEnabled>true</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;DESENVOLVIMENTO</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;PRODUCAO</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Homologacao|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Homologacao\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;HOMOLOGACAO</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'HomePessoal|AnyCPU' ">
+    <OutputPath>bin\HomePessoal\</OutputPath>
+    <DefineConstants>TRACE;HOME_PESSOAL</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BD.cs" />
+    <Compile Include="BDCep.cs" />
+    <Compile Include="Boleto.cs" />
+    <Compile Include="BoletoAvulsoComPedido.cs" />
+    <Compile Include="BoletoAvulsoComPedidoDAO.cs" />
+    <Compile Include="BoletoCedente.cs" />
+    <Compile Include="BoletoCedenteDAO.cs" />
+    <Compile Include="BoletoDAO.cs" />
+    <Compile Include="BoletoHtml.cs" />
+    <Compile Include="BoletoPreCadastrado.cs" />
+    <Compile Include="BoletoPreCadastradoDAO.cs" />
+    <Compile Include="CampoArquivo.cs" />
+    <Compile Include="Cep.cs" />
+    <Compile Include="CepDAO.cs" />
+    <Compile Include="Cliente.cs" />
+    <Compile Include="ClienteDAO.cs" />
+    <Compile Include="ComboDAO.cs" />
+    <Compile Include="ComumDAO.cs" />
+    <Compile Include="CriptoHex.cs" />
+    <Compile Include="DataGridViewEditavel.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="DsDataSource.cs">
+      <DependentUpon>DsDataSource.xsd</DependentUpon>
+    </Compile>
+    <Compile Include="DsDataSource.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DsDataSource.xsd</DependentUpon>
+    </Compile>
+    <Compile Include="ExcelAutomation.cs" />
+    <Compile Include="FAutorizacao.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FAutorizacao.Designer.cs">
+      <DependentUpon>FAutorizacao.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FBoletoArqRemessaRelatorio.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FBoletoArqRemessaRelatorio.designer.cs">
+      <DependentUpon>FBoletoArqRemessaRelatorio.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FBoletoArqRetorno.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FBoletoArqRetorno.designer.cs">
+      <DependentUpon>FBoletoArqRetorno.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FBoletoArqRetornoRelatorios.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FBoletoArqRetornoRelatorios.designer.cs">
+      <DependentUpon>FBoletoArqRetornoRelatorios.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FBoletoAvulsoComPedidoCadDetalhe.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FBoletoAvulsoComPedidoCadDetalhe.Designer.cs">
+      <DependentUpon>FBoletoAvulsoComPedidoCadDetalhe.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FBoletoAvulsoComPedidoSelPedido.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FBoletoAvulsoComPedidoSelPedido.Designer.cs">
+      <DependentUpon>FBoletoAvulsoComPedidoSelPedido.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FBoletoCadastra.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FBoletoCadastra.designer.cs">
+      <DependentUpon>FBoletoCadastra.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FBoletoCadastraDetalhe.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FBoletoCadastraDetalhe.Designer.cs">
+      <DependentUpon>FBoletoCadastraDetalhe.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FBoletoConsulta.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FBoletoConsulta.designer.cs">
+      <DependentUpon>FBoletoConsulta.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FBoletoHtml.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FBoletoHtml.Designer.cs">
+      <DependentUpon>FBoletoHtml.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FBoletoOcorrencias.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FBoletoOcorrencias.designer.cs">
+      <DependentUpon>FBoletoOcorrencias.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FBoletoParcelaEdita.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FBoletoParcelaEdita.Designer.cs">
+      <DependentUpon>FBoletoParcelaEdita.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FBoletoTrataOcorrenciaCepInvalido.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FBoletoTrataOcorrenciaCepInvalido.Designer.cs">
+      <DependentUpon>FBoletoTrataOcorrenciaCepInvalido.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FBoletoTrataOcorrenciaValaComum.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FBoletoTrataOcorrenciaValaComum.Designer.cs">
+      <DependentUpon>FBoletoTrataOcorrenciaValaComum.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FCepPesquisa.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FCepPesquisa.Designer.cs">
+      <DependentUpon>FCepPesquisa.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FCobrancaAdministracao.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FCobrancaAdministracao.Designer.cs">
+      <DependentUpon>FCobrancaAdministracao.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FCobrancaFluxoConsulta.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FCobrancaFluxoConsulta.Designer.cs">
+      <DependentUpon>FCobrancaFluxoConsulta.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FCobrancaMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FCobrancaMain.Designer.cs">
+      <DependentUpon>FCobrancaMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FConfiguracao.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FConfiguracao.Designer.cs">
+      <DependentUpon>FConfiguracao.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FEmailParametros.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FEmailParametros.Designer.cs">
+      <DependentUpon>FEmailParametros.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FFluxoConsulta.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FFluxoConsulta.Designer.cs">
+      <DependentUpon>FFluxoConsulta.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FFluxoCredito.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FFluxoCredito.Designer.cs">
+      <DependentUpon>FFluxoCredito.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FFluxoCreditoLote.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FFluxoCreditoLote.Designer.cs">
+      <DependentUpon>FFluxoCreditoLote.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FFluxoDebito.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FFluxoDebito.Designer.cs">
+      <DependentUpon>FFluxoDebito.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FFluxoDebitoLote.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FFluxoDebitoLote.Designer.cs">
+      <DependentUpon>FFluxoDebitoLote.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FFluxoEdita.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FFluxoEdita.Designer.cs">
+      <DependentUpon>FFluxoEdita.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FFluxoEditaLote.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FFluxoEditaLote.Designer.cs">
+      <DependentUpon>FFluxoEditaLote.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FFluxoEditaLoteSeleciona.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FFluxoEditaLoteSeleciona.Designer.cs">
+      <DependentUpon>FFluxoEditaLoteSeleciona.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FFluxoRelatorioMovimentoAnalitico.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FFluxoRelatorioMovimentoAnalitico.designer.cs">
+      <DependentUpon>FFluxoRelatorioMovimentoAnalitico.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FFluxoRelatorioCtaCorrente.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FFluxoRelatorioCtaCorrente.Designer.cs">
+      <DependentUpon>FFluxoRelatorioCtaCorrente.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FFluxoRelatorioMovimentoRateioAnalitico.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FFluxoRelatorioMovimentoRateioAnalitico.designer.cs">
+      <DependentUpon>FFluxoRelatorioMovimentoRateioAnalitico.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FFluxoRelatorioMovimentoRateioSintetico.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FFluxoRelatorioMovimentoRateioSintetico.designer.cs">
+      <DependentUpon>FFluxoRelatorioMovimentoRateioSintetico.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FFluxoRelatorioMovimentoSinteticoComparativo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FFluxoRelatorioMovimentoSinteticoComparativo.designer.cs">
+      <DependentUpon>FFluxoRelatorioMovimentoSinteticoComparativo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FFluxoRelatorioMovimentoSintetico.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FFluxoRelatorioMovimentoSintetico.designer.cs">
+      <DependentUpon>FFluxoRelatorioMovimentoSintetico.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FBoletoArqRemessa.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FBoletoArqRemessa.Designer.cs">
+      <DependentUpon>FBoletoArqRemessa.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FinException.cs" />
+    <Compile Include="FinLog.cs" />
+    <Compile Include="FLogin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FLogin.Designer.cs">
+      <DependentUpon>FLogin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FMain.Designer.cs">
+      <DependentUpon>FMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FModelo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FModelo.Designer.cs">
+      <DependentUpon>FModelo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Cripto.cs" />
+    <Compile Include="FPedido.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FPedido.Designer.cs">
+      <DependentUpon>FPedido.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FPlanilhaPagamentoMarketplaceB2W.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FPlanilhaPagamentoMarketplaceB2W.Designer.cs">
+      <DependentUpon>FPlanilhaPagamentoMarketplaceB2W.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FPlanilhasPagtoMarketplaceSeleciona.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FPlanilhasPagtoMarketplaceSeleciona.Designer.cs">
+      <DependentUpon>FPlanilhasPagtoMarketplaceSeleciona.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Global.cs" />
+    <Compile Include="FinLogDAO.cs" />
+    <Compile Include="Impressao.cs" />
+    <Compile Include="LancamentoFluxoCaixa.cs" />
+    <Compile Include="LancamentoFluxoCaixaDAO.cs" />
+    <Compile Include="Loja.cs" />
+    <Compile Include="LojaDAO.cs" />
+    <Compile Include="NFeEmitente.cs" />
+    <Compile Include="NFeEmitenteDAO.cs" />
+    <Compile Include="PainelSobre.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PainelSobre.Designer.cs">
+      <DependentUpon>PainelSobre.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pedido.cs" />
+    <Compile Include="PedidoDAO.cs" />
+    <Compile Include="PedidoHistPagto.cs" />
+    <Compile Include="PedidoHistPagtoDAO.cs" />
+    <Compile Include="PlanilhaRepasseMktplace.cs" />
+    <Compile Include="PlanilhaRepasseMktplaceDAO.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="FAutorizacao.resx">
+      <DependentUpon>FAutorizacao.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FBoletoArqRemessaRelatorio.resx">
+      <DependentUpon>FBoletoArqRemessaRelatorio.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FBoletoArqRetorno.resx">
+      <DependentUpon>FBoletoArqRetorno.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FBoletoArqRetornoRelatorios.resx">
+      <DependentUpon>FBoletoArqRetornoRelatorios.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FBoletoAvulsoComPedidoCadDetalhe.resx">
+      <DependentUpon>FBoletoAvulsoComPedidoCadDetalhe.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FBoletoAvulsoComPedidoSelPedido.resx">
+      <DependentUpon>FBoletoAvulsoComPedidoSelPedido.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FBoletoCadastra.resx">
+      <DependentUpon>FBoletoCadastra.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FBoletoCadastraDetalhe.resx">
+      <DependentUpon>FBoletoCadastraDetalhe.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FBoletoConsulta.resx">
+      <DependentUpon>FBoletoConsulta.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FBoletoHtml.resx">
+      <DependentUpon>FBoletoHtml.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FBoletoOcorrencias.resx">
+      <DependentUpon>FBoletoOcorrencias.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FBoletoParcelaEdita.resx">
+      <DependentUpon>FBoletoParcelaEdita.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FBoletoTrataOcorrenciaCepInvalido.resx">
+      <DependentUpon>FBoletoTrataOcorrenciaCepInvalido.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FBoletoTrataOcorrenciaValaComum.resx">
+      <DependentUpon>FBoletoTrataOcorrenciaValaComum.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FCepPesquisa.resx">
+      <DependentUpon>FCepPesquisa.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FCobrancaAdministracao.resx">
+      <DependentUpon>FCobrancaAdministracao.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FCobrancaFluxoConsulta.resx">
+      <DependentUpon>FCobrancaFluxoConsulta.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FCobrancaMain.resx">
+      <DependentUpon>FCobrancaMain.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FConfiguracao.resx">
+      <DependentUpon>FConfiguracao.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FEmailParametros.resx">
+      <DependentUpon>FEmailParametros.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FFluxoConsulta.resx">
+      <DependentUpon>FFluxoConsulta.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FFluxoCredito.resx">
+      <DependentUpon>FFluxoCredito.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FFluxoCreditoLote.resx">
+      <DependentUpon>FFluxoCreditoLote.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FFluxoDebito.resx">
+      <DependentUpon>FFluxoDebito.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FFluxoDebitoLote.resx">
+      <DependentUpon>FFluxoDebitoLote.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FFluxoEdita.resx">
+      <DependentUpon>FFluxoEdita.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FFluxoEditaLote.resx">
+      <DependentUpon>FFluxoEditaLote.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FFluxoEditaLoteSeleciona.resx">
+      <DependentUpon>FFluxoEditaLoteSeleciona.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FFluxoRelatorioMovimentoAnalitico.resx">
+      <DependentUpon>FFluxoRelatorioMovimentoAnalitico.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FFluxoRelatorioCtaCorrente.resx">
+      <DependentUpon>FFluxoRelatorioCtaCorrente.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FFluxoRelatorioMovimentoRateioAnalitico.resx">
+      <DependentUpon>FFluxoRelatorioMovimentoRateioAnalitico.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FFluxoRelatorioMovimentoRateioSintetico.resx">
+      <DependentUpon>FFluxoRelatorioMovimentoRateioSintetico.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FFluxoRelatorioMovimentoSinteticoComparativo.resx">
+      <DependentUpon>FFluxoRelatorioMovimentoSinteticoComparativo.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FFluxoRelatorioMovimentoSintetico.resx">
+      <DependentUpon>FFluxoRelatorioMovimentoSintetico.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FBoletoArqRemessa.resx">
+      <DependentUpon>FBoletoArqRemessa.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FLogin.resx">
+      <DependentUpon>FLogin.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FMain.resx">
+      <DependentUpon>FMain.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FModelo.resx">
+      <DependentUpon>FModelo.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FPedido.resx">
+      <DependentUpon>FPedido.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FPlanilhaPagamentoMarketplaceB2W.resx">
+      <DependentUpon>FPlanilhaPagamentoMarketplaceB2W.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FPlanilhasPagtoMarketplaceSeleciona.resx">
+      <DependentUpon>FPlanilhasPagtoMarketplaceSeleciona.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PainelSobre.resx">
+      <DependentUpon>PainelSobre.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="DsDataSource.xsc">
+      <DependentUpon>DsDataSource.xsd</DependentUpon>
+    </None>
+    <None Include="DsDataSource.xsd">
+      <SubType>Designer</SubType>
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>DsDataSource.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="DsDataSource.xss">
+      <DependentUpon>DsDataSource.xsd</DependentUpon>
+    </None>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="Serasa.cs" />
+    <Compile Include="SerasaDAO.cs" />
+    <Compile Include="Texto.cs" />
+    <Compile Include="UsuarioDAO.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="view-statistics.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="MSHTML">
+      <Guid>{3050F1C5-98B5-11CF-BB82-00AA00BDCE0B}</Guid>
+      <VersionMajor>4</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+    </COMReference>
+    <COMReference Include="VBIDE">
+      <Guid>{0002E157-0000-0000-C000-000000000046}</Guid>
+      <VersionMajor>5</VersionMajor>
+      <VersionMinor>3</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>primary</WrapperTool>
+      <Isolated>False</Isolated>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

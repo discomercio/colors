@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceiroService", "FinanceiroService\FinanceiroService.csproj", "{03D0E58A-32BF-42CE-A807-B059C94F12C2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Homologacao|Any CPU = Homologacao|Any CPU
+		Release_BackupServer|Any CPU = Release_BackupServer|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{03D0E58A-32BF-42CE-A807-B059C94F12C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03D0E58A-32BF-42CE-A807-B059C94F12C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03D0E58A-32BF-42CE-A807-B059C94F12C2}.Homologacao|Any CPU.ActiveCfg = Homologacao|Any CPU
+		{03D0E58A-32BF-42CE-A807-B059C94F12C2}.Homologacao|Any CPU.Build.0 = Homologacao|Any CPU
+		{03D0E58A-32BF-42CE-A807-B059C94F12C2}.Release_BackupServer|Any CPU.ActiveCfg = Release_BackupServer|Any CPU
+		{03D0E58A-32BF-42CE-A807-B059C94F12C2}.Release_BackupServer|Any CPU.Build.0 = Release_BackupServer|Any CPU
+		{03D0E58A-32BF-42CE-A807-B059C94F12C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03D0E58A-32BF-42CE-A807-B059C94F12C2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		VisualSVNWorkingCopyRoot = .
+	EndGlobalSection
+EndGlobal

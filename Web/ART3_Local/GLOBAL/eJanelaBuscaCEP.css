@@ -1,0 +1,86 @@
+﻿html
+{
+	overflow-y: scroll;
+	height:100%;
+	margin:0px;
+}
+
+body
+{
+	height:100%;
+	margin:0px;
+}
+
+#divAjaxRunning
+{
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 1001;
+	background-color: #808080;
+	opacity: 0.6;
+}
+
+.AjaxImgLoader
+{
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	margin-left: -128px;
+	margin-top: -128px;
+	display: block;
+}
+
+#divBaseJanelaBuscaCEP
+{
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: 1000;
+	background-color: #808080;
+	opacity: 1;
+}
+
+#divTabJanelaBuscaCEP
+{
+	position: absolute;
+	top: 6%;
+	left: 50%;
+	margin-left: -450px;
+	z-index: 1000;
+	background-color: #808080;
+	opacity: 1;
+}
+
+#tabJanelaBuscaCEP
+{
+	width: 900px;
+	background-color: #FFFFFF;
+	border: solid 4px black;
+}
+
+#divTabJanelaBuscaCEP.divFixo
+{
+	position: fixed;
+	top: 6%;
+}
+
+#divResultado
+{
+	width: 840px;
+	overflow-y: scroll;
+	overflow-x: hidden;
+}
+
+#imgFechaJanelaPesqCEP
+{
+	position:fixed;
+	top:6%;
+	left: 50%;
+	margin-left: -16px; /* -1 * image width / 2 */
+	margin-top: -32px;
+	z-index:1001;
+}

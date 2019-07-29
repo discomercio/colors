@@ -1,0 +1,2216 @@
+<%@ Language=VBScript %>
+<%OPTION EXPLICIT%>
+<% Response.Buffer=True %>
+<!-- #include file = "../global/constantes.asp" -->
+<!-- #include file = "../global/funcoes.asp"    -->
+<!-- #include file = "../global/bdd.asp" -->
+<!-- #include file = "../global/Global.asp"    -->
+
+<!-- #include file = "../global/TrataSessaoExpirada.asp"        -->
+
+<%
+'     ===========================================
+'	  O R C A M E N T O E D I T A . A S P
+'     ===========================================
+'
+'
+'	  S E R V E R   S I D E   S C R I P T I N G
+'
+'      SSSSSSS   EEEEEEEEE  RRRRRRRR   VVV   VVV  IIIII  DDDDDDDD    OOOOOOO   RRRRRRRR
+'     SSS   SSS  EEE        RRR   RRR  VVV   VVV   III   DDD   DDD  OOO   OOO  RRR   RRR
+'      SSS       EEE        RRR   RRR  VVV   VVV   III   DDD   DDD  OOO   OOO  RRR   RRR
+'       SSSS     EEEEEE     RRRRRRRR   VVV   VVV   III   DDD   DDD  OOO   OOO  RRRRRRRR
+'          SSS   EEE        RRR RRR     VVV VVV    III   DDD   DDD  OOO   OOO  RRR RRR
+'     SSS   SSS  EEE        RRR  RRR     VVVVV     III   DDD   DDD  OOO   OOO  RRR  RRR
+'      SSSSSSS   EEEEEEEEE  RRR   RRR     VVV     IIIII  DDDDDDDD    OOOOOOO   RRR   RRR
+'
+'
+'	REVISADO P/ IE10
+
+
+	On Error GoTo 0
+	Err.Clear
+
+'	EXIBIÇÃO DE BOTÕES DE PESQUISA DE CEP
+	dim blnPesquisaCEPAntiga, blnPesquisaCEPNova
+	
+	blnPesquisaCEPAntiga = False
+	blnPesquisaCEPNova = True
+
+
+	dim s, usuario, loja, orcamento_selecionado
+	usuario = Trim(Session("usuario_atual"))
+	loja = Trim(Session("loja_atual"))
+	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
+	If (loja = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
+
+	dim s_lista_operacoes_permitidas
+	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
+
+	orcamento_selecionado = ucase(Trim(request("orcamento_selecionado")))
+	if (orcamento_selecionado = "") then Response.Redirect("aviso.asp?id=" & ERR_ORCAMENTO_NAO_ESPECIFICADO)
+	s = normaliza_num_orcamento(orcamento_selecionado)
+	if s <> "" then orcamento_selecionado = s
+	
+	dim i, n, s_fabricante, s_produto, s_descricao, s_descricao_html, s_obs, s_qtde, s_preco_lista, s_desc_dado, s_vl_unitario
+	dim s_preco_NF, m_total_NF, m_total_RA
+	dim s_vl_TotalItem, m_TotalItem, m_TotalItemComRA, m_TotalDestePedido, m_TotalDestePedidoComRA, s_readonly, s_readonly_preco_venda, s_readonly_preco_NF
+	dim intIdx
+	
+'	CONECTA AO BANCO DE DADOS
+'	=========================
+	dim cn
+	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
+
+	dim s_aux, s2, s3, s4, r_loja, r_cliente
+	dim r_orcamento, v_item, alerta, msg_erro
+	dim strDisabled
+	alerta=""
+	if Not le_orcamento(orcamento_selecionado, r_orcamento, msg_erro) then 
+		alerta = msg_erro
+	else
+		if Trim(r_orcamento.loja) <> loja then Response.Redirect("aviso.asp?id=" & ERR_ORCAMENTO_INVALIDO)
+		if r_orcamento.st_orc_virou_pedido = 1 then Response.Redirect("Pedido.asp?pedido_selecionado=" & r_orcamento.pedido & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")))
+		if Not le_orcamento_item(orcamento_selecionado, v_item, msg_erro) then alerta = msg_erro
+		end if
+
+	dim blnTemRA
+	blnTemRA = False
+	if alerta = "" then
+		for i=Lbound(v_item) to Ubound(v_item)
+			if Trim("" & v_item(i).produto) <> "" then
+				if v_item(i).preco_NF <> v_item(i).preco_venda then
+					blnTemRA = True
+					exit for
+					end if
+				end if
+			next
+		end if
+
+	if alerta = "" then
+		if Not orcamento_calcula_total_NF_e_RA(orcamento_selecionado, m_total_NF, m_total_RA, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
+		end if
+
+	dim strFlagEndEntregaEditavel
+	if r_orcamento.st_orcamento=ST_ORCAMENTO_CANCELADO then 
+		strFlagEndEntregaEditavel = "N" 
+	else 
+		strFlagEndEntregaEditavel = "S"
+		end if
+		
+	dim blnFormaPagtoBloqueado
+	blnFormaPagtoBloqueado = True
+	if operacao_permitida(OP_LJA_EDITA_ORCAMENTO, s_lista_operacoes_permitidas) then 
+		if r_orcamento.st_orcamento<>ST_ORCAMENTO_CANCELADO then blnFormaPagtoBloqueado = False
+		end if
+		
+	dim blnEdicaoItemOrcamentoLiberada
+	blnEdicaoItemOrcamentoLiberada = False
+	if operacao_permitida(OP_LJA_EDITA_ITEM_DO_ORCAMENTO, s_lista_operacoes_permitidas) then
+		if (r_orcamento.st_orcamento<>ST_ORCAMENTO_CANCELADO) then blnEdicaoItemOrcamentoLiberada = True
+		end if
+
+	dim r_pedido
+	if alerta = "" then
+		if r_orcamento.st_orc_virou_pedido = 1 then
+			if Not le_pedido(r_orcamento.pedido, r_pedido, msg_erro) then alerta = msg_erro
+			end if
+		end if
+		
+	dim blnInstaladorInstalaBloqueado
+	blnInstaladorInstalaBloqueado = False
+	if r_orcamento.st_orc_virou_pedido = 1 then blnInstaladorInstalaBloqueado = True
+	
+	dim blnGarantiaIndicadorBloqueado
+	blnGarantiaIndicadorBloqueado = False
+	if r_orcamento.st_orc_virou_pedido = 1 then blnGarantiaIndicadorBloqueado = True
+%>
+
+
+
+
+<%
+'	  C L I E N T   S I D E   S C R I P T I N G
+'
+'      CCCCCCC   LLL        IIIII  EEEEEEEEE  NNN   NNN  TTTTTTTTT EEEEEEEEE
+'     CCC   CCC  LLL         III   EEE        NNNN  NNN     TTT    EEE
+'     CCC        LLL         III   EEE        NNNNN NNN     TTT    EEE
+'     CCC        LLL         III   EEEEEE     NNN NNNNN     TTT    EEEEEE
+'     CCC        LLL         III   EEE        NNN  NNNN     TTT    EEE
+'     CCC   CCC  LLL   LLL   III   EEE        NNN   NNN     TTT    EEE
+'      CCCCCCC   LLLLLLLLL  IIIII  EEEEEEEEE  NNN   NNN     TTT    EEEEEEEEE
+%>
+
+
+<%=DOCTYPE_LEGADO%>
+
+<html>
+
+
+<head>
+	<title>LOJA</title>
+	</head>
+
+
+<script src="<%=URL_FILE__JQUERY%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI_I18N%>" Language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__GLOBAL_JS%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__AJAX_JS%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JANELACEP_JS%>" language="JavaScript" type="text/javascript"></script>
+
+<script type="text/javascript">
+    $(function() {
+        var f;
+        f = fORC;
+		$("#divAjaxRunning").css('filter', 'alpha(opacity=60)'); // TRANSPARÊNCIA NO IE8
+		$(".tdGarInd").hide();
+		// Para a nova versão da forma de pagamento
+		if ($(".tdGarInd").prev("td").hasClass("MD")) {$(".tdGarInd").prev("td").removeClass("MD")};
+		// Para a versão antiga da forma de pagamento
+		if ($(".tdGarInd").prev("td").hasClass("MDB")) {$(".tdGarInd").prev("td").removeClass("MDB").addClass("MB")}
+
+		$("#EndEtg_obs option[value='<%=r_orcamento.EndEtg_cod_justificativa%>']").attr("selected", true);
+        
+        // VERIFICAR MUDANÇA NOS CAMPOS
+		f.Verifica_End_Entrega.value = f.EndEtg_endereco.value;
+		f.Verifica_num.value = f.EndEtg_endereco_numero.value;
+		f.Verifica_Cidade.value = f.EndEtg_cidade.value;
+		f.Verifica_UF.value = f.EndEtg_uf.value;
+		f.Verifica_CEP.value = f.EndEtg_cep.value;
+		f.Verifica_Justificativa.value = f.EndEtg_obs.value;
+	});
+
+	//Every resize of window
+	$(window).resize(function() {
+		sizeDivAjaxRunning();
+	});
+
+	//Every scroll of window
+	$(window).scroll(function() {
+		sizeDivAjaxRunning();
+	});
+
+	//Dynamically assign height
+	function sizeDivAjaxRunning() {
+		var newTop = $(window).scrollTop() + "px";
+		$("#divAjaxRunning").css("top", newTop);
+	}
+</script>
+
+<script language="JavaScript" type="text/javascript">
+var objAjaxCustoFinancFornecConsultaPreco;
+var fCepPopup;
+
+function fPEDConcluir(s_pedido){
+	window.status = "Aguarde ...";
+	fPED.pedido_selecionado.value=s_pedido;
+	fPED.submit();
+}
+
+function ProcessaSelecaoCEP(){};
+
+function AbrePesquisaCepEndEtg(){
+var f, strUrl;
+	try
+		{
+	//  SE JÁ HOUVER UMA JANELA DE PESQUISA DE CEP ABERTA, GARANTE QUE ELA SERÁ FECHADA 
+	//  E UMA NOVA SERÁ CRIADA (EVITA PROBLEMAS C/ O 'WINDOW.OPENER')
+		fCepPopup=window.open("", "AjaxCepPesqPopup","status=1,toolbar=0,location=0,menubar=0,directories=0,resizable=1,scrollbars=1,width=5,height=5,left=0,top=0");
+		fCepPopup.close();
+		}
+	catch (e) {
+	 // NOP
+		}
+	f=fORC;
+	ProcessaSelecaoCEP=TrataCepEnderecoEntrega;
+	strUrl="../Global/AjaxCepPesqPopup.asp";
+	if (trim(f.EndEtg_cep.value)!="") strUrl=strUrl+"?CepDefault="+trim(f.EndEtg_cep.value);
+	fCepPopup=window.open(strUrl, "AjaxCepPesqPopup", "status=1,toolbar=0,location=0,menubar=0,directories=0,resizable=1,scrollbars=1,width=980,height=650,left=0,top=0");
+	fCepPopup.focus();
+}
+
+function TrataCepEnderecoEntrega(strCep, strUF, strLocalidade, strBairro, strLogradouro, strEnderecoNumero, strEnderecoComplemento) {
+var f;
+	f=fORC;
+	f.EndEtg_cep.value=cep_formata(strCep);
+	f.EndEtg_uf.value=strUF;
+	f.EndEtg_cidade.value=strLocalidade;
+	f.EndEtg_bairro.value=strBairro;
+	f.EndEtg_endereco.value=strLogradouro;
+	f.EndEtg_endereco_numero.value=strEnderecoNumero;
+	f.EndEtg_endereco_complemento.value=strEnderecoComplemento;
+	f.EndEtg_endereco.focus();
+	window.status="Concluído";
+}
+
+function processaFormaPagtoDefault() {
+var f, i;
+	f=fORC;
+	
+//  O pedido foi cadastrado já com a nova política de custo financeiro por fornecedor?
+	if (f.c_custoFinancFornecTipoParcelamento.value=="") return;
+	if (f.FormaPagtoBloqueado.value=="<%=Cstr(True)%>") return;
+	
+	for (i=0; i<fORC.rb_forma_pagto.length; i++) {
+		if (fORC.rb_forma_pagto[i].checked) {
+			fORC.rb_forma_pagto[i].click();
+			break;
+			}
+		}
+
+	f.c_custoFinancFornecParcelamentoDescricao.value=descricaoCustoFinancFornecTipoParcelamento(f.c_custoFinancFornecTipoParcelamento.value);
+	if (f.c_custoFinancFornecTipoParcelamento.value==COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__COM_ENTRADA) {
+		f.c_custoFinancFornecParcelamentoDescricao.value += " (1+" + f.c_custoFinancFornecQtdeParcelas.value + ")";
+		}
+	else if (f.c_custoFinancFornecTipoParcelamento.value==COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__SEM_ENTRADA) {
+		f.c_custoFinancFornecParcelamentoDescricao.value += " (0+" + f.c_custoFinancFornecQtdeParcelas.value + ")";
+		}
+}
+
+function trataRespostaAjaxCustoFinancFornecSincronizaPrecos() {
+var f, strResp, i, j, xmlDoc, oNodes;
+var strFabricante,strProduto, strStatus, strPrecoLista, strMsgErro, strCodigoErro;
+var percDesc,vlLista,vlVenda,strMsgErroAlert;
+	f=fORC;
+
+//  O pedido foi cadastrado já com a nova política de custo financeiro por fornecedor?
+	if (f.c_custoFinancFornecTipoParcelamento.value=="") return;
+	if (f.FormaPagtoBloqueado.value=="<%=Cstr(True)%>") return;
+
+	strMsgErroAlert="";
+	if (objAjaxCustoFinancFornecConsultaPreco.readyState==AJAX_REQUEST_IS_COMPLETE) {
+		strResp=objAjaxCustoFinancFornecConsultaPreco.responseText;
+		if (strResp=="") {
+			alert("Falha ao consultar o preço!!");
+			window.status="Concluído";
+			$("#divAjaxRunning").hide();
+			return;
+			}
+
+		if (strResp!="") {
+			try
+				{
+				xmlDoc=objAjaxCustoFinancFornecConsultaPreco.responseXML.documentElement;
+				for (i=0; i < xmlDoc.getElementsByTagName("ItemConsulta").length; i++) {
+				//  Fabricante
+					oNodes=xmlDoc.getElementsByTagName("fabricante")[i];
+					if (oNodes.childNodes.length > 0) strFabricante=oNodes.childNodes[0].nodeValue; else strFabricante="";
+					if (strFabricante==null) strFabricante="";
+				//  Produto
+					oNodes=xmlDoc.getElementsByTagName("produto")[i];
+					if (oNodes.childNodes.length > 0) strProduto=oNodes.childNodes[0].nodeValue; else strProduto="";
+					if (strProduto==null) strProduto="";
+				//  Status
+					oNodes=xmlDoc.getElementsByTagName("status")[i];
+					if (oNodes.childNodes.length > 0) strStatus=oNodes.childNodes[0].nodeValue; else strStatus="";
+					if (strStatus==null) strStatus="";
+					if (strStatus=="OK") {
+					//  Preço
+						oNodes=xmlDoc.getElementsByTagName("precoLista")[i];
+						if (oNodes.childNodes.length > 0) strPrecoLista=oNodes.childNodes[0].nodeValue; else strPrecoLista="";
+						if (strPrecoLista==null) strPrecoLista="";
+					//  Atualiza o preço
+						if (strPrecoLista=="") {
+							alert("Falha na consulta do preço do produto " + strProduto + "!!\n" + strMsgErro);
+							}
+						else {
+							for (j=0; j<f.c_fabricante.length; j++) {
+								if ((f.c_fabricante[j].value==strFabricante)&&(f.c_produto[j].value==strProduto)) {
+								//  Percorre o laço até o final para o caso do usuário ter digitado o mesmo produto em várias linhas
+								//  (apesar de que isso não será aceito pelas consistências que serão feitas).
+									f.c_preco_lista[j].value=strPrecoLista;
+									f.c_preco_lista[j].style.color="black";
+									}
+								}
+							}
+						}
+					else {
+					//  Código do Erro
+						oNodes=xmlDoc.getElementsByTagName("codigo_erro")[i];
+						if (oNodes.childNodes.length > 0) strCodigoErro=oNodes.childNodes[0].nodeValue; else strCodigoErro="";
+						if (strCodigoErro==null) strCodigoErro="";
+					//  Mensagem de Erro
+						oNodes=xmlDoc.getElementsByTagName("msg_erro")[i];
+						if (oNodes.childNodes.length > 0) strMsgErro=oNodes.childNodes[0].nodeValue; else strMsgErro="";
+						if (strMsgErro==null) strMsgErro="";
+						for (j=0; j<f.c_fabricante.length; j++) {
+						//  Percorre o laço até o final para o caso do usuário ter digitado o mesmo produto em várias linhas
+						//	(apesar de que isso não será aceito pelas consistências que serão feitas).
+							if ((f.c_fabricante[j].value==strFabricante)&&(f.c_produto[j].value==strProduto)) {
+								f.c_preco_lista[j].style.color=COR_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__INEXISTENTE;
+								}
+							}
+						if (strMsgErroAlert!="") strMsgErroAlert+="\n\n";
+						strMsgErroAlert+="Falha ao consultar o preço do produto " + strProduto + "!!\n" + strMsgErro;
+						}
+					}
+				}
+			catch (e)
+				{
+				alert("Falha na consulta do preço!!\n"+e.message);
+				}
+			}
+			
+		if (strMsgErroAlert!="") alert(strMsgErroAlert);
+		
+		recalcula_total_todas_linhas(); 
+		recalcula_RA();
+			
+		window.status="Concluído";
+		$("#divAjaxRunning").hide();
+		}
+}
+
+function recalculaCustoFinanceiroPrecoLista() {
+var f, i, strListaProdutos, strUrl, strOpcaoFormaPagto;
+	f=fORC;
+
+//  O pedido foi cadastrado já com a nova política de custo financeiro por fornecedor?
+	if (f.c_custoFinancFornecTipoParcelamento.value=="") return;
+	if (f.FormaPagtoBloqueado.value=="<%=Cstr(True)%>") return;
+
+	objAjaxCustoFinancFornecConsultaPreco=GetXmlHttpObject();
+	if (objAjaxCustoFinancFornecConsultaPreco==null) {
+		alert("O browser NÃO possui suporte ao AJAX!!");
+		return;
+		}
+		
+	strListaProdutos="";
+	for (i=0; i<f.c_fabricante.length; i++) {
+		if ((trim(f.c_fabricante[i].value)!="")&&(trim(f.c_produto[i].value)!="")) {
+			if (strListaProdutos!="") strListaProdutos+=";";
+			strListaProdutos += f.c_fabricante[i].value + "|" + f.c_produto[i].value;
+			}
+		}
+	if (strListaProdutos=="") return;
+	
+//  Converte as opções de forma de pagamento do pedido em uma opção que possa tratada pela tabela de custo financeiro
+	strOpcaoFormaPagto="";
+	for (i=0; i<fORC.rb_forma_pagto.length; i++) {
+		if (fORC.rb_forma_pagto[i].checked) {
+			strOpcaoFormaPagto=f.rb_forma_pagto[i].value;
+			break;
+			}
+		}
+	if (strOpcaoFormaPagto=="") return;
+	
+	if (strOpcaoFormaPagto==COD_FORMA_PAGTO_A_VISTA) {
+		f.c_custoFinancFornecTipoParcelamento.value=COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__A_VISTA;
+		f.c_custoFinancFornecQtdeParcelas.value='0';
+		}
+	else if (strOpcaoFormaPagto==COD_FORMA_PAGTO_PARCELA_UNICA) {
+		f.c_custoFinancFornecTipoParcelamento.value=COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__SEM_ENTRADA;
+		f.c_custoFinancFornecQtdeParcelas.value='1';
+		}
+	else if (strOpcaoFormaPagto==COD_FORMA_PAGTO_PARCELADO_CARTAO) {
+		f.c_custoFinancFornecTipoParcelamento.value=COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__SEM_ENTRADA;
+		f.c_custoFinancFornecQtdeParcelas.value=f.c_pc_qtde.value;
+	}
+	else if (strOpcaoFormaPagto==COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA) {
+		f.c_custoFinancFornecTipoParcelamento.value=COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__SEM_ENTRADA;
+		f.c_custoFinancFornecQtdeParcelas.value=f.c_pc_maquineta_qtde.value;
+	}
+	else if (strOpcaoFormaPagto==COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA) {
+		f.c_custoFinancFornecTipoParcelamento.value=COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__COM_ENTRADA;
+		f.c_custoFinancFornecQtdeParcelas.value=f.c_pce_prestacao_qtde.value;
+		}
+	else if (strOpcaoFormaPagto==COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA) {
+		f.c_custoFinancFornecTipoParcelamento.value=COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__SEM_ENTRADA;
+		f.c_custoFinancFornecQtdeParcelas.value = (converte_numero(f.c_pse_demais_prest_qtde.value) + 1).toString();
+		}
+	else {
+		f.c_custoFinancFornecTipoParcelamento.value="";
+		f.c_custoFinancFornecQtdeParcelas.value="";
+		}
+		
+	if (trim(f.c_custoFinancFornecQtdeParcelas.value)=="") return;
+
+//  Não consulta novamente se for a mesma consulta anterior
+	if ((f.c_custoFinancFornecTipoParcelamento.value==f.c_custoFinancFornecTipoParcelamentoUltConsulta.value)&&
+		(f.c_custoFinancFornecQtdeParcelas.value==f.c_custoFinancFornecQtdeParcelasUltConsulta.value)) return;
+	
+	f.c_custoFinancFornecTipoParcelamentoUltConsulta.value=f.c_custoFinancFornecTipoParcelamento.value;
+	f.c_custoFinancFornecQtdeParcelasUltConsulta.value=f.c_custoFinancFornecQtdeParcelas.value;
+
+	f.c_custoFinancFornecParcelamentoDescricao.value=descricaoCustoFinancFornecTipoParcelamento(f.c_custoFinancFornecTipoParcelamento.value);
+	if (f.c_custoFinancFornecTipoParcelamento.value==COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__COM_ENTRADA) {
+		f.c_custoFinancFornecParcelamentoDescricao.value += " (1+" + f.c_custoFinancFornecQtdeParcelas.value + ")";
+		}
+	else if (f.c_custoFinancFornecTipoParcelamento.value==COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__SEM_ENTRADA) {
+		f.c_custoFinancFornecParcelamentoDescricao.value += " (0+" + f.c_custoFinancFornecQtdeParcelas.value + ")";
+		}
+
+	window.status="Aguarde, consultando preços ...";
+	$("#divAjaxRunning").show();
+	
+	strUrl = "../Global/AjaxCustoFinancFornecConsultaPrecoBD.asp";
+	strUrl+="?tipoParcelamento="+f.c_custoFinancFornecTipoParcelamento.value;
+	strUrl+="&qtdeParcelas="+f.c_custoFinancFornecQtdeParcelas.value;
+	strUrl+="&loja="+f.c_loja.value;
+	strUrl+="&listaProdutos="+strListaProdutos;
+//  Prevents server from using a cached file
+	strUrl=strUrl+"&sid="+Math.random()+Math.random();
+	objAjaxCustoFinancFornecConsultaPreco.onreadystatechange=trataRespostaAjaxCustoFinancFornecSincronizaPrecos;
+	objAjaxCustoFinancFornecConsultaPreco.open("GET",strUrl,true);
+	objAjaxCustoFinancFornecConsultaPreco.send(null);
+}
+
+// RETORNA O VALOR TOTAL DO PEDIDO A SER USADO P/ CALCULAR A FORMA DE PAGAMENTO
+function fp_vl_total_pedido( ) {
+var f,i,mTotVenda,mTotNF;
+	f=fORC;
+	mTotVenda=0;
+	for (i=0; i<f.c_qtde.length; i++) mTotVenda=mTotVenda+converte_numero(f.c_qtde[i].value)*converte_numero(f.c_vl_unitario[i].value);
+	mTotNF=0;
+	for (i=0; i<f.c_qtde.length; i++) mTotNF=mTotNF+converte_numero(f.c_qtde[i].value)*converte_numero(f.c_vl_NF[i].value);
+//  Retorna total de preço NF (tem valor de NF, ou seja, pedido c/ RA)?
+	if (mTotNF > 0) {
+		return mTotNF;
+		}
+//  Retorna total de preço de venda
+	else {
+		return mTotVenda;
+		}
+}
+
+// PARCELA ÚNICA
+function pu_atualiza_valor( ){
+var f,vt;
+	f=fORC;
+	if (converte_numero(trim(f.c_pu_valor.value))>0) return;
+	vt=fp_vl_total_pedido();
+	f.c_pu_valor.value=formata_moeda(vt);
+}
+
+// PARCELADO NO CARTÃO (INTERNET)
+function pc_calcula_valor_parcela( ){
+var f,n,t;
+	f=fORC;
+	if (trim(f.c_pc_qtde.value)=='') return;
+	n=converte_numero(f.c_pc_qtde.value);
+	if (n<=0) return;
+	t=fp_vl_total_pedido();
+	p=t/n;
+	f.c_pc_valor.value=formata_moeda(p);
+}
+
+// PARCELADO NO CARTÃO (MAQUINETA)
+function pc_maquineta_calcula_valor_parcela( ){
+	var f,n,t;
+	f=fORC;
+	if (trim(f.c_pc_maquineta_qtde.value)=='') return;
+	n=converte_numero(f.c_pc_maquineta_qtde.value);
+	if (n<=0) return;
+	t=fp_vl_total_pedido();
+	p=t/n;
+	f.c_pc_maquineta_valor.value=formata_moeda(p);
+}
+
+// PARCELADO COM ENTRADA
+function pce_preenche_sugestao_intervalo() {
+var f;
+	f=fORC;
+	if (converte_numero(trim(f.c_pce_prestacao_periodo.value))>0) return;
+	f.c_pce_prestacao_periodo.value='30';
+}
+
+function pce_calcula_valor_parcela( ){
+var f,n,e,t;
+	f=fORC;
+	t=fp_vl_total_pedido();
+	if (trim(f.c_pce_entrada_valor.value)=='') return;
+	e=converte_numero(f.c_pce_entrada_valor.value);
+	if (e<=0) return;
+	if (trim(f.c_pce_prestacao_qtde.value)=='') return;
+	n=converte_numero(f.c_pce_prestacao_qtde.value);
+	if (n<=0) return;
+	p=(t-e)/n;
+	f.c_pce_prestacao_valor.value=formata_moeda(p);
+}
+
+// PARCELADO SEM ENTRADA
+function pse_preenche_sugestao_intervalo() {
+var f;
+	f=fORC;
+	if (converte_numero(trim(f.c_pse_demais_prest_periodo.value))>0) return;
+	f.c_pse_demais_prest_periodo.value='30';
+}
+
+function pse_calcula_valor_parcela( ){
+var f,n,e,t;
+	f=fORC;
+	t=fp_vl_total_pedido();
+	if (trim(f.c_pse_prim_prest_valor.value)=='') return;
+	e=converte_numero(f.c_pse_prim_prest_valor.value);
+	if (e<=0) return;
+	if (trim(f.c_pse_demais_prest_qtde.value)=='') return;
+	n=converte_numero(f.c_pse_demais_prest_qtde.value);
+	if (n<=0) return;
+	p=(t-e)/n;
+	f.c_pse_demais_prest_valor.value=formata_moeda(p);
+}
+
+function pce_sugestao_forma_pagto( ) {
+var f, p, s, i, n;
+	f=fORC;
+	f.c_forma_pagto.value="";
+	p=converte_numero(f.c_pce_prestacao_periodo.value);
+	if (p<=0) return;
+	n=converte_numero(f.c_pce_prestacao_qtde.value);
+	if (n<=0) return;
+	s='0';
+	for (i=1; i<=n; i++) {
+		s=s+'/';
+		s=s+formata_inteiro(i*p);
+		}
+	f.c_forma_pagto.value=s;
+}
+
+function pse_sugestao_forma_pagto( ) {
+var f, p1, p2, s, i, n;
+	f=fORC;
+	f.c_forma_pagto.value="";
+	p1=converte_numero(f.c_pse_prim_prest_apos.value);
+	if (p1<=0) return;
+	p2=converte_numero(f.c_pse_demais_prest_periodo.value);
+	if (p2<=0) return;
+	n=converte_numero(f.c_pse_demais_prest_qtde.value);
+	if (n<=0) return;
+	s=formata_inteiro(p1);
+	for (i=1; i<=n; i++) {
+		s=s+'/';
+		s=s+formata_inteiro(i*p2);
+		}
+	f.c_forma_pagto.value=s;
+}
+
+function recalcula_RA( ) {
+var f,i,mTotVenda,mTotNF;
+	f=fORC;
+	mTotVenda=0;
+	for (i=0; i<f.c_vl_total.length; i++) mTotVenda=mTotVenda+converte_numero(f.c_vl_total[i].value);
+	mTotNF=0;
+	for (i=0; i<f.c_qtde.length; i++) mTotNF=mTotNF+converte_numero(f.c_qtde[i].value)*converte_numero(f.c_vl_NF[i].value);
+	f.c_total_NF.value = formata_moeda(mTotNF);
+	f.c_total_RA.value = formata_moeda(mTotNF-mTotVenda);
+	if (mTotNF >=mTotVenda) f.c_total_RA.style.color="green"; else f.c_total_RA.style.color="red";
+}
+
+function recalcula_total( id ) {
+var idx, m, m_lista, m_unit, d, f, i, s;
+	f=fORC;
+	idx=parseInt(id)-1;
+	if (f.c_produto[idx].value=="") return;
+	m_lista=converte_numero(f.c_preco_lista[idx].value);
+	m_unit=converte_numero(f.c_vl_unitario[idx].value);
+	if (m_lista==0) d=0; else d=100*(m_lista-m_unit)/m_lista;
+	if (d==0) s=""; else s=formata_perc_desc(d);
+	if (f.c_desc[idx].value!=s) f.c_desc[idx].value=s;
+	s=formata_moeda(parseInt(f.c_qtde[idx].value)*m_unit);
+	if (f.c_vl_total[idx].value!=s) f.c_vl_total[idx].value=s;
+	m=0;
+	for (i=0; i<f.c_vl_total.length; i++) m=m+converte_numero(f.c_vl_total[i].value);
+	s=formata_moeda(m);
+	if (f.c_total_geral.value!=s) f.c_total_geral.value=s;
+}
+
+function recalcula_total_todas_linhas() {
+var f,i,t,m_lista,m_unit,d,m,s;
+	f = fORC;
+	t=0;
+	for (i=0; i < f.c_produto.length; i++) {
+		if (trim(f.c_produto[i].value)!="") {
+			m_lista=converte_numero(f.c_preco_lista[i].value);
+			m_unit=converte_numero(f.c_vl_unitario[i].value);
+			if (m_lista==0) d=0; else d=100*(m_lista-m_unit)/m_lista;
+			if (d==0) s=""; else s=formata_perc_desc(d);
+			if (f.c_desc[i].value!=s) f.c_desc[i].value=s;
+			m=parseInt(f.c_qtde[i].value)*m_unit;
+			f.c_vl_total[i].value=formata_moeda(m);
+			t=t+m;
+			}
+		}
+	f.c_total_geral.value=formata_moeda(t);
+}
+
+function preenche_sugestao_forma_pagto( ) {
+var f, n, t, p, s;
+	f=fORC;
+	n=converte_numero(f.c_qtde_parcelas.value);
+	t=converte_numero(f.c_total_geral.value);
+	if (n > 0) {
+		p=t/n;
+		s = "Pagamento em " + n;
+		if (n==1) s = s + " parcela de "; else s = s + " parcelas de ";
+		s = s + SIMBOLO_MONETARIO + " " + formata_moeda(p);
+		f.c_forma_pagto.value=s;
+		}
+	else f.c_forma_pagto.value="";
+}
+
+function trata_edicao_RA(index) {
+	var f;
+	f = fORC;
+	if ((f.c_permite_RA_status.value != '1') && (f.c_st_violado_permite_RA_status.value == '0')) f.c_vl_NF[index].value = f.c_vl_unitario[index].value;
+}
+
+function LimparCamposEndEtg(f) {
+	f.EndEtg_endereco.value = "";
+	f.EndEtg_endereco_numero.value = "";
+	f.EndEtg_endereco_complemento.value = "";
+	f.EndEtg_bairro.value = "";
+	f.EndEtg_cidade.value = "";
+	f.EndEtg_uf.value = "";
+	f.EndEtg_cep.value = "";
+}
+
+function fORCConfirma( f ) {
+var i,s,n,ni,nip,vp,vp2,ve,idx,forma_pagto_ok,vtFP,strMsgErro;
+var blnConfirmaDifRAeValores=false;
+
+	recalcula_total_todas_linhas();
+
+	s = "" + f.c_obs1.value;
+	if (s.length > MAX_TAM_OBS1) {
+		alert('Conteúdo de "Observações " excede em ' + (s.length-MAX_TAM_OBS1) + ' caracteres o tamanho máximo de ' + MAX_TAM_OBS1 + '!!');
+		f.c_obs1.focus();
+		return;
+		}
+
+	s = "" + f.c_forma_pagto.value;
+	if (s.length > MAX_TAM_FORMA_PAGTO) {
+		alert('Conteúdo de "Forma de Pagamento" excede em ' + (s.length-MAX_TAM_FORMA_PAGTO) + ' caracteres o tamanho máximo de ' + MAX_TAM_FORMA_PAGTO + '!!');
+		f.c_forma_pagto.focus();
+		return;
+		}
+
+//  Consiste a nova versão da forma de pagamento
+	if ((f.versao_forma_pagamento.value=='2')&&(f.FormaPagtoBloqueado.value == '<%=Cstr(False)%>')) {
+		vtFP=fp_vl_total_pedido();
+		idx=-1;
+		forma_pagto_ok=false;
+	//	À Vista
+		idx++;
+		if (f.rb_forma_pagto[idx].checked) {
+			if (trim(f.op_av_forma_pagto.value)=='') {
+				alert('Indique a forma de pagamento!!');
+				f.op_av_forma_pagto.focus();
+				return;
+				}
+			forma_pagto_ok=true;
+			}
+
+	//	Parcela Única
+		idx++;
+		if (f.rb_forma_pagto[idx].checked) {
+			if (trim(f.op_pu_forma_pagto.value)=='') {
+				alert('Indique a forma de pagamento da parcela única!!');
+				f.op_pu_forma_pagto.focus();
+				return;
+				}
+			if (trim(f.c_pu_valor.value)=='') {
+				alert('Indique o valor da parcela única!!');
+				f.c_pu_valor.focus();
+				return;
+				}
+			ve=converte_numero(f.c_pu_valor.value);
+			if (ve<=0) {
+				alert('Valor da parcela única é inválido!!');
+				f.c_pu_valor.focus();
+				return;
+				}
+			if (trim(f.c_pu_vencto_apos.value)=='') {
+				alert('Indique o intervalo de vencimento da parcela única!!');
+				f.c_pu_vencto_apos.focus();
+				return;
+				}
+			nip=converte_numero(f.c_pu_vencto_apos.value);
+			if (nip<=0) {
+				alert('Intervalo de vencimento da parcela única é inválido!!');
+				f.c_pu_vencto_apos.focus();
+				return;
+				}
+			if (ve<vtFP) {
+				alert('O valor do pagamento da parcela única está abaixo do valor do pré-pedido!!');
+				f.c_pu_valor.focus();
+				return;
+				}
+			if (blnConfirmaDifRAeValores) {
+				if (ve>vtFP) {
+					if (!window.confirm('O valor do pagamento da parcela única está ' + SIMBOLO_MONETARIO + ' ' + formata_moeda(ve-vtFP) + ' acima do valor nominal do pré-pedido.\nConfirma?')) {
+						f.c_pu_valor.focus();
+						return;
+						}
+					}
+				}
+			forma_pagto_ok=true;
+			}
+
+	//	Parcelado no cartão (internet)
+		idx++;
+		if (f.rb_forma_pagto[idx].checked) {
+			if (trim(f.c_pc_qtde.value)=='') {
+				alert('Indique a quantidade de parcelas!!');
+				f.c_pc_qtde.focus();
+				return;
+				}
+			n=converte_numero(f.c_pc_qtde.value);
+			if (n < 1) {
+				alert('Quantidade de parcelas inválida!!');
+				f.c_pc_qtde.focus();
+				return;
+				}
+			if (trim(f.c_pc_valor.value)=='') {
+				alert('Indique o valor da parcela!!');
+				f.c_pc_valor.focus();
+				return;
+				}
+			vp2=converte_numero(f.c_pc_valor.value);
+			if (vp2<=0) {
+				alert('Valor de parcela inválido!!');
+				f.c_pc_valor.focus();
+				return;
+				}
+			vp=vtFP/n;
+			if ((vp-vp2)>0.5) {
+				alert('O valor da parcela diverge do valor calculado pelo sistema (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vp) + ')!!');
+				f.c_pc_valor.focus();
+				return;
+				}
+			if (blnConfirmaDifRAeValores) {
+				if ((vp2-vp)>0.5) {
+					if (!window.confirm('O valor da parcela está ' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vp2-vp) + ' acima do valor nominal.\nConfirma?')) {
+						f.c_pc_valor.focus();
+						return;
+						}
+					}
+				}
+			forma_pagto_ok=true;
+			}
+
+		//	Parcelado no cartão (maquineta)
+		idx++;
+		if (f.rb_forma_pagto[idx].checked) {
+			if (trim(f.c_pc_maquineta_qtde.value)=='') {
+				alert('Indique a quantidade de parcelas!!');
+				f.c_pc_maquineta_qtde.focus();
+				return;
+			}
+			n=converte_numero(f.c_pc_maquineta_qtde.value);
+			if (n < 1) {
+				alert('Quantidade de parcelas inválida!!');
+				f.c_pc_maquineta_qtde.focus();
+				return;
+			}
+			if (trim(f.c_pc_maquineta_valor.value)=='') {
+				alert('Indique o valor da parcela!!');
+				f.c_pc_maquineta_valor.focus();
+				return;
+			}
+			vp2=converte_numero(f.c_pc_maquineta_valor.value);
+			if (vp2<=0) {
+				alert('Valor de parcela inválido!!');
+				f.c_pc_maquineta_valor.focus();
+				return;
+			}
+			vp=vtFP/n;
+			if ((vp-vp2)>0.5) {
+				alert('O valor da parcela diverge do valor calculado pelo sistema (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vp) + ')!!');
+				f.c_pc_maquineta_valor.focus();
+				return;
+			}
+			if (blnConfirmaDifRAeValores) {
+				if ((vp2-vp)>0.5) {
+					if (!window.confirm('O valor da parcela está ' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vp2-vp) + ' acima do valor nominal.\nConfirma?')) {
+						f.c_pc_maquineta_valor.focus();
+						return;
+					}
+				}
+			}
+			forma_pagto_ok=true;
+		}
+
+	//	Parcelado com entrada
+		idx++;
+		if (f.rb_forma_pagto[idx].checked) {
+			if (trim(f.op_pce_entrada_forma_pagto.value)=='') {
+				alert('Indique a forma de pagamento da entrada!!');
+				f.op_pce_entrada_forma_pagto.focus();
+				return;
+				}
+			if (trim(f.c_pce_entrada_valor.value)=='') {
+				alert('Indique o valor da entrada!!');
+				f.c_pce_entrada_valor.focus();
+				return;
+				}
+			ve=converte_numero(f.c_pce_entrada_valor.value);
+			if (ve<=0) {
+				alert('Valor da entrada inválido!!');
+				f.c_pce_entrada_valor.focus();
+				return;
+				}
+			if (trim(f.op_pce_prestacao_forma_pagto.value)=='') {
+				alert('Indique a forma de pagamento das prestações!!');
+				f.op_pce_prestacao_forma_pagto.focus();
+				return;
+				}
+			if (trim(f.c_pce_prestacao_qtde.value)=='') {
+				alert('Indique a quantidade de prestações!!');
+				f.c_pce_prestacao_qtde.focus();
+				return;
+				}
+			n=converte_numero(f.c_pce_prestacao_qtde.value);
+			if (n<=0) {
+				alert('Quantidade de prestações inválida!!');
+				f.c_pce_prestacao_qtde.focus();
+				return;
+				}
+			if (trim(f.c_pce_prestacao_valor.value)=='') {
+				alert('Indique o valor da prestação!!');
+				f.c_pce_prestacao_valor.focus();
+				return;
+				}
+			vp2=converte_numero(f.c_pce_prestacao_valor.value);
+			if (vp2<=0) {
+				alert('Valor de prestação inválido!!');
+				f.c_pce_prestacao_valor.focus();
+				return;
+				}
+			vp=(vtFP-ve)/n;
+			if ((vp-vp2)>0.5) {
+				alert('O valor da prestação diverge do valor calculado pelo sistema (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vp) + ')!!');
+				f.c_pce_prestacao_valor.focus();
+				return;
+				}
+			if (blnConfirmaDifRAeValores) {
+				if ((vp2-vp)>0.5) {
+					if (!window.confirm('O valor da parcela está ' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vp2-vp) + ' acima do valor nominal.\nConfirma?')) {
+						f.c_pce_prestacao_valor.focus();
+						return;
+						}
+					}
+				}
+			if (trim(f.c_pce_prestacao_periodo.value)=='') {
+				alert('Indique o intervalo de vencimento entre as parcelas!!');
+				f.c_pce_prestacao_periodo.focus();
+				return;
+				}
+			ni=converte_numero(f.c_pce_prestacao_periodo.value);
+			if (ni<=0) {
+				alert('Intervalo de vencimento inválido!!');
+				f.c_pce_prestacao_periodo.focus();
+				return;
+				}
+			forma_pagto_ok=true;
+			}
+
+	//	Parcelado sem entrada
+		idx++;
+		if (f.rb_forma_pagto[idx].checked) {
+			if (trim(f.op_pse_prim_prest_forma_pagto.value)=='') {
+				alert('Indique a forma de pagamento da 1ª prestação!!');
+				f.op_pse_prim_prest_forma_pagto.focus();
+				return;
+				}
+			if (trim(f.c_pse_prim_prest_valor.value)=='') {
+				alert('Indique o valor da 1ª prestação!!');
+				f.c_pse_prim_prest_valor.focus();
+				return;
+				}
+			ve=converte_numero(f.c_pse_prim_prest_valor.value);
+			if (ve<=0) {
+				alert('Valor da 1ª prestação inválido!!');
+				f.c_pse_prim_prest_valor.focus();
+				return;
+				}
+			if (trim(f.c_pse_prim_prest_apos.value)=='') {
+				alert('Indique o intervalo de vencimento da 1ª parcela!!');
+				f.c_pse_prim_prest_apos.focus();
+				return;
+				}
+			nip=converte_numero(f.c_pse_prim_prest_apos.value);
+			if (nip<=0) {
+				alert('Intervalo de vencimento da 1ª parcela é inválido!!');
+				f.c_pse_prim_prest_apos.focus();
+				return;
+				}
+			if (trim(f.op_pse_demais_prest_forma_pagto.value)=='') {
+				alert('Indique a forma de pagamento das demais prestações!!');
+				f.op_pse_demais_prest_forma_pagto.focus();
+				return;
+				}
+			if (trim(f.c_pse_demais_prest_qtde.value)=='') {
+				alert('Indique a quantidade das demais prestações!!');
+				f.c_pse_demais_prest_qtde.focus();
+				return;
+				}
+			n=converte_numero(f.c_pse_demais_prest_qtde.value);
+			if (n<=0) {
+				alert('Quantidade de prestações inválida!!');
+				f.c_pse_demais_prest_qtde.focus();
+				return;
+				}
+			if (trim(f.c_pse_demais_prest_valor.value)=='') {
+				alert('Indique o valor das demais prestações!!');
+				f.c_pse_demais_prest_valor.focus();
+				return;
+				}
+			vp2=converte_numero(f.c_pse_demais_prest_valor.value);
+			if (vp2<=0) {
+				alert('Valor de prestação inválido!!');
+				f.c_pse_demais_prest_valor.focus();
+				return;
+				}
+			vp=(vtFP-ve)/n;
+			if ((vp-vp2)>0.5) {
+				alert('O valor da prestação diverge do valor calculado pelo sistema (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vp) + ')!!');
+				f.c_pse_demais_prest_valor.focus();
+				return;
+				}
+			if (blnConfirmaDifRAeValores) {
+				if ((vp2-vp)>0.5) {
+					if (!window.confirm('O valor da parcela está ' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vp2-vp) + ' acima do valor nominal.\nConfirma?')) {
+						f.c_pse_demais_prest_valor.focus();
+						return;
+						}
+					}
+				}
+			if (trim(f.c_pse_demais_prest_periodo.value)=='') {
+				alert('Indique o intervalo de vencimento entre as parcelas!!');
+				f.c_pse_demais_prest_periodo.focus();
+				return;
+				}
+			ni=converte_numero(f.c_pse_demais_prest_periodo.value);
+			if (ni<=0) {
+				alert('Intervalo de vencimento inválido!!');
+				f.c_pse_demais_prest_periodo.focus();
+				return;
+				}
+			forma_pagto_ok=true;
+			}
+
+		if (!forma_pagto_ok) {
+			alert('Indique a forma de pagamento!!');
+			return;
+			}
+		}
+
+	recalcula_RA();
+	if (blnConfirmaDifRAeValores) {
+		if (f.c_total_RA.value != f.c_total_RA_original.value) {
+			if (!confirm("O valor do RA é de " + SIMBOLO_MONETARIO + " " + formata_moeda(converte_numero(f.c_total_RA.value))+"\nContinua?")) return;
+			}
+		}
+
+	if (f.c_FlagEndEntregaEditavel.value == "S") {
+		blnTemEndEntrega=false;
+		if (trim(f.EndEtg_endereco.value)!="") blnTemEndEntrega=true;
+		if (trim(f.EndEtg_endereco_numero.value)!="") blnTemEndEntrega=true;
+		if (trim(f.EndEtg_endereco_complemento.value)!="") blnTemEndEntrega=true;
+		if (trim(f.EndEtg_bairro.value)!="") blnTemEndEntrega=true;
+		if (trim(f.EndEtg_cidade.value)!="") blnTemEndEntrega=true;
+		if (trim(f.EndEtg_uf.value)!="") blnTemEndEntrega=true;
+		if (trim(f.EndEtg_cep.value)!="") blnTemEndEntrega=true;
+
+		if (blnTemEndEntrega) {
+		    var blnEndEtg_obs
+		    blnEndEtg_obs = false;
+		    if ((f.EndEtg_endereco.value != f.Verifica_End_Entrega.value) || (f.EndEtg_endereco_numero.value != f.Verifica_num.value) || (f.EndEtg_cidade.value != f.Verifica_Cidade.value) || (f.EndEtg_uf.value != f.Verifica_UF.value) || (f.EndEtg_cep.value != f.Verifica_CEP.value) || (f.EndEtg_obs.value != f.Verifica_Justificativa.value)){
+		        blnEndEtg_obs = true;
+		    }
+
+			if (trim(f.EndEtg_endereco.value)=="") {
+				alert('Endereço de entrega não foi preenchido corretamente!!');
+				f.EndEtg_endereco.focus();
+				return;
+				}
+
+			if (trim(f.EndEtg_endereco_numero.value)=="") {
+				alert('O número do endereço de entrega não foi preenchido corretamente!!');
+				f.EndEtg_endereco_numero.focus();
+				return;
+				}
+
+			if (trim(f.EndEtg_bairro.value)=="") {
+				alert('Bairro do endereço de entrega não foi preenchido corretamente!!');
+				f.EndEtg_bairro.focus();
+				return;
+				}
+
+			if (trim(f.EndEtg_cidade.value)=="") {
+				alert('Cidade do endereço de entrega não foi preenchido corretamente!!');
+				f.EndEtg_cidade.focus();
+				return;
+			    }
+			if ((trim(f.EndEtg_obs.value)=="")  && blnEndEtg_obs == true) {
+			    alert('Justificativa do endereço de entrega não foi preenchido corretamente!!');
+			    f.EndEtg_obs.focus();
+			    return;
+			    }
+
+			s=trim(f.EndEtg_uf.value);
+			if ((s=="")||(!uf_ok(s))) {
+				alert('UF do endereço de entrega não foi preenchido corretamente!!');
+				f.EndEtg_uf.focus();
+				return;
+				}
+				
+			if (!cep_ok(f.EndEtg_cep.value)) {
+				alert('CEP do endereço de entrega não foi preenchido corretamente!!');
+				f.EndEtg_cep.focus();
+				return;
+				}
+			}
+		}
+
+	strMsgErro="";
+	for (i=0; i < f.c_produto.length; i++) {
+		if (trim(f.c_produto[i].value)!="") {
+			if (f.c_preco_lista[i].style.color.toLowerCase()==COR_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__INEXISTENTE.toLowerCase()) {
+				strMsgErro+="\n" + f.c_produto[i].value + " - " + f.c_descricao[i].value;
+				}
+			}
+		}
+	if (strMsgErro!="") {
+		strMsgErro="A forma de pagamento " + KEY_ASPAS + f.c_custoFinancFornecParcelamentoDescricao.value.toLowerCase() + KEY_ASPAS + " não está disponível para o(s) produto(s):"+strMsgErro;
+		alert(strMsgErro);
+		return;
+		}
+
+	f.action="OrcamentoAtualiza.asp";
+	dCONFIRMA.style.visibility="hidden";
+	window.status = "Aguarde ...";
+	f.submit();
+}
+</script>
+
+<script type="text/javascript">
+	function exibeJanelaCEP_Etg() {
+		$.mostraJanelaCEP("EndEtg_cep", "EndEtg_uf", "EndEtg_cidade", "EndEtg_bairro", "EndEtg_endereco", "EndEtg_endereco_numero", "EndEtg_endereco_complemento");
+	}
+</script>
+
+
+
+<!-- C A S C A D I N G   S T Y L E   S H E E T
+
+	 CCCCCCC    SSSSSSS    SSSSSSS
+	CCC   CCC  SSS   SSS  SSS   SSS
+	CCC        SSS        SSS
+	CCC         SSSS       SSSS
+	CCC            SSSS       SSSS
+	CCC   CCC  SSS   SSS  SSS   SSS
+	 CCCCCCC    SSSSSSS    SSSSSSS
+-->
+
+<link href="<%=URL_FILE__E_CSS%>" rel="stylesheet" type="text/css">
+<link href="<%=URL_FILE__EPRINTER_CSS%>" rel="stylesheet" type="text/css" media="print">
+<link href="<%=URL_FILE__E_JANELABUSCACEP_CSS%>" rel="stylesheet" type="text/css">
+
+<style type="text/css">
+#rb_etg_imediata, #rb_bem_uso_consumo {
+	margin: 0pt 2pt 1pt 15pt;
+	vertical-align: top;
+	}
+#rb_status {
+	margin: 0pt 2pt 1pt 15pt;
+	vertical-align: top;
+	}
+#divAjaxRunning
+{
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	z-index:1001;
+	background-color:grey;
+	opacity: .6;
+}
+.AjaxImgLoader
+{
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	margin-left: -128px; /* -1 * image width / 2 */
+	margin-top: -128px;  /* -1 * image height / 2 */
+	display: block;
+}
+</style>
+
+
+<% if alerta <> "" then %>
+<!-- ************************************************************ -->
+<!-- **********  PÁGINA PARA EXIBIR MENSAGENS DE ERRO  ********** -->
+<!-- ************************************************************ -->
+<body onload="bVOLTAR.focus();">
+<center>
+<br>
+<!--  T E L A  -->
+<p class="T">A V I S O</p>
+<div class="MtAlerta" style="width:600px;font-weight:bold;" align="center"><p style='margin:5px 2px 5px 2px;'><%=alerta%></p></div>
+<br><br>
+<p class="TracoBottom"></p>
+<table cellSpacing="0">
+<tr>
+	<td align="center"><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()"><img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
+</tr>
+</table>
+</center>
+</body>
+
+
+
+
+<% else %>
+<!-- ****************************************************** -->
+<!-- **********  PÁGINA PARA EDITAR O PRÉ-PEDIDO  ********** -->
+<!-- ****************************************************** -->
+<body id="corpoPagina" onload="processaFormaPagtoDefault();">
+<center>
+
+<!-- #include file = "../global/JanelaBuscaCEP.htm"    -->
+
+<form method="post" action="Pedido.asp" id="fPED" name="fPED">
+<%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
+<input type="hidden" name="pedido_selecionado" id="pedido_selecionado" value=''>
+</form>
+
+<form id="fORC" name="fORC" method="post">
+<%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
+<input type="hidden" name="orcamento_selecionado" id="orcamento_selecionado" value='<%=orcamento_selecionado%>'>
+<input type="hidden" name="c_permite_RA_status" id="c_permite_RA_status" value='<%=r_orcamento.permite_RA_status%>' />
+<input type="hidden" name="c_st_violado_permite_RA_status" id="c_st_violado_permite_RA_status" value='<%=r_orcamento.st_violado_permite_RA_status%>' />
+<input type="hidden" name="c_FlagEndEntregaEditavel" id="c_FlagEndEntregaEditavel" value='<%=strFlagEndEntregaEditavel%>'>
+<input type="hidden" name="FormaPagtoBloqueado" id="FormaPagtoBloqueado" value='<%=Cstr(blnFormaPagtoBloqueado)%>'>
+<input type="hidden" name="GarantiaIndicadorStatusOriginal" id="GarantiaIndicadorStatusOriginal" value='<%=r_orcamento.GarantiaIndicadorStatus%>'>
+<input type="hidden" name="blnGarantiaIndicadorBloqueado" id="blnGarantiaIndicadorBloqueado" value='<%=Cstr(blnGarantiaIndicadorBloqueado)%>'>
+
+<%if blnEdicaoItemOrcamentoLiberada then%>
+<input type="hidden" name="EdicaoItemOrcamentoLiberada" id="EdicaoItemOrcamentoLiberada" value='S'>
+<%else%>
+<input type="hidden" name="EdicaoItemOrcamentoLiberada" id="EdicaoItemOrcamentoLiberada" value='N'>
+<%end if%>
+
+<input type="hidden" name="c_loja" id="c_loja" value='<%=r_orcamento.loja%>'>
+<input type="hidden" name="c_custoFinancFornecTipoParcelamentoOriginal" id="c_custoFinancFornecTipoParcelamentoOriginal" value='<%=r_orcamento.custoFinancFornecTipoParcelamento%>'>
+<input type="hidden" name="c_custoFinancFornecQtdeParcelasOriginal" id="c_custoFinancFornecQtdeParcelasOriginal" value='<%=r_orcamento.custoFinancFornecQtdeParcelas%>'>
+<input type="hidden" name="c_custoFinancFornecTipoParcelamento" id="c_custoFinancFornecTipoParcelamento" value='<%=r_orcamento.custoFinancFornecTipoParcelamento%>'>
+<input type="hidden" name="c_custoFinancFornecQtdeParcelas" id="c_custoFinancFornecQtdeParcelas" value='<%=r_orcamento.custoFinancFornecQtdeParcelas%>'>
+<input type="hidden" name="c_custoFinancFornecTipoParcelamentoUltConsulta" id="c_custoFinancFornecTipoParcelamentoUltConsulta" value='<%=r_orcamento.custoFinancFornecTipoParcelamento%>'>
+<input type="hidden" name="c_custoFinancFornecQtdeParcelasUltConsulta" id="c_custoFinancFornecQtdeParcelasUltConsulta" value='<%=r_orcamento.custoFinancFornecQtdeParcelas%>'>
+<input type="hidden" name="c_custoFinancFornecParcelamentoDescricao" id="c_custoFinancFornecParcelamentoDescricao" value=''>
+
+<!-- AJAX EM ANDAMENTO -->
+<div id="divAjaxRunning" style="display:none;"><img src="../Imagem/ajax_loader_gray_256.gif" class="AjaxImgLoader"/></div>
+
+
+<!--  I D E N T I F I C A Ç Ã O   D O   O R Ç A M E N T O -->
+<%=MontaHeaderIdentificacaoPrePedido(orcamento_selecionado, r_orcamento, 649)%>
+<br>
+
+<!--  L O J A   -->
+<table width="649" class="Q" cellSpacing="0">
+	<tr>
+<%	s = ""
+	set r_loja = New cl_LOJA
+	if x_loja_bd(r_orcamento.loja, r_loja) then
+		with r_loja
+			if Trim(.razao_social) <> "" then
+				s = Trim(.razao_social)
+			else
+				s = Trim(.nome)
+				end if
+			end with
+		end if
+%>
+	<td class="MD" align="left"><p class="Rf">LOJA</p><p class="C"><%=s%>&nbsp;</p></td>
+	<td width="145" class="MD" align="left"><p class="Rf">ORÇAMENTISTA</p><p class="C"><%=r_orcamento.orcamentista%>&nbsp;</p></td>
+	<td width="145" align="left"><p class="Rf">VENDEDOR</p><p class="C"><%=r_orcamento.vendedor%>&nbsp;</p></td>
+	</tr>
+	</table>
+
+<br>
+
+<!--  CLIENTE   -->
+<table width="649" class="Q" cellspacing="0">
+	<tr>
+<%	s = ""
+	set r_cliente = New cl_CLIENTE
+	if x_cliente_bd(r_orcamento.id_cliente, r_cliente) then
+	%>
+	
+	<%	if r_cliente.tipo = ID_PF then s_aux="CPF" else s_aux="CNPJ"
+	s = cnpj_cpf_formata(r_cliente.cnpj_cpf) 
+%>
+		<td width="50%" class="MD" align="left"><p class="Rf"><%=s_aux%></p>
+		
+			<p class="C"><%=s%>&nbsp;</p>
+		
+		</td>
+		<%
+		with r_cliente
+		if .tipo = ID_PF then s = Trim(.rg) else s = Trim(.ie)
+	end with
+			if r_cliente.tipo = ID_PF then 
+%>
+	<td align="left"><p class="Rf">RG</p><p class="C"><%=s%>&nbsp;</p></td>
+<% else %>
+	<td align="left"><p class="Rf">IE</p><p class="C"><%=s%>&nbsp;</p></td>
+<% end if %>
+		</tr>
+		<tr>
+	<%
+		with r_cliente
+			if Trim(.nome) <> "" then
+				s = Trim(.nome)
+				end if
+			end with
+		end if
+	
+	if r_cliente.tipo = ID_PF then s_aux="NOME DO CLIENTE" else s_aux="RAZÃO SOCIAL DO CLIENTE"
+%>
+	<td class="MC" align="left" colspan="2"><p class="Rf"><%=s_aux%></p>
+	
+		<p class="C"><%=s%>&nbsp;</p>
+	
+		</td>
+		
+		
+
+	</tr>
+	</table>
+<!--  TELEFONE DO CLIENTE  -->
+<table width="649" class="QS" cellspacing="0">
+	<tr>
+<%	s = ""
+	with r_cliente
+		if Trim(.tel_res) <> "" then
+			s = telefone_formata(Trim(.tel_res))
+			s_aux=Trim(.ddd_res)
+			if s_aux<>"" then s = "(" & s_aux & ") " & s
+			end if
+		end with
+	
+	s2 = ""
+	with r_cliente
+		if Trim(.tel_com) <> "" then
+			s2 = telefone_formata(Trim(.tel_com))
+			s_aux = Trim(.ddd_com)
+			if s_aux<>"" then s2 = "(" & s_aux & ") " & s2
+			s_aux = Trim(.ramal_com)
+			if s_aux<>"" then s2 = s2 & "  (R. " & s_aux & ")"
+			end if
+		end with
+	with r_cliente
+		if Trim(.tel_cel) <> "" then
+			s3 = telefone_formata(Trim(.tel_cel))
+			s_aux = Trim(.ddd_cel)
+			if s_aux<>"" then s3 = "(" & s_aux & ") " & s3
+			end if
+		end with
+	with r_cliente
+		if Trim(.tel_com_2) <> "" then
+			s4 = telefone_formata(Trim(.tel_com_2))
+			s_aux = Trim(.ddd_com_2)
+			if s_aux<>"" then s4 = "(" & s_aux & ") " & s4
+			s_aux = Trim(.ramal_com_2)
+			if s_aux<>"" then s4 = s4 & "  (R. " & s_aux & ")"
+			end if
+		end with
+	
+%>
+
+<% if r_cliente.tipo = ID_PF then %>
+	<td class="MD" width="33%" align="left"><p class="Rf">TELEFONE RESIDENCIAL</p><p class="C"><%=s%>&nbsp;</p></td>
+	<td class="MD" width="33%" align="left"><p class="Rf">TELEFONE COMERCIAL</p><p class="C"><%=s2%>&nbsp;</p></td>
+		<td align="left"><p class="Rf">CELULAR</p><p class="C"><%=s3%>&nbsp;</p></td>
+
+<% else %>
+	<td class="MD" width="50%" align="left"><p class="Rf">TELEFONE</p><p class="C"><%=s2%>&nbsp;</p></td>
+	<td width="50%" align="left"><p class="Rf">TELEFONE</p><p class="C"><%=s4%>&nbsp;</p></td>
+
+<% end if %>
+
+	</tr>
+</table>
+
+<!--  E-MAIL DO CLIENTE  -->
+<table width="649" class="QS" cellspacing="0">
+	<tr>
+		<td align="left"><p class="Rf">E-MAIL</p><p class="C"><%=Trim(r_cliente.email)%>&nbsp;</p></td>
+	</tr>
+</table>
+
+<% if strFlagEndEntregaEditavel = "N" then %>
+<!--  ENDEREÇO DE ENTREGA  -->
+<%	with r_orcamento
+		s = formata_endereco(.EndEtg_endereco, .EndEtg_endereco_numero, .EndEtg_endereco_complemento, .EndEtg_bairro, .EndEtg_cidade, .EndEtg_uf, .EndEtg_cep)
+		end with
+%>
+<table width="649" class="QS" cellspacing="0" style="table-layout:fixed">
+	<tr>
+		<td align="left"><p class="Rf">ENDEREÇO DE ENTREGA</p><p class="C"><%=s%>&nbsp;</p></td>
+	</tr>
+     <%	if r_orcamento.EndEtg_cod_justificativa <> "" then %>	
+    <tr>
+		<td align="left" style="word-wrap:break-word"><p class="C"><%=obtem_descricao_tabela_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__ENDETG_JUSTIFICATIVA,r_orcamento.EndEtg_cod_justificativa)%>&nbsp;</p></td>
+	</tr>
+    <%end if %>
+</table>
+<% else %>
+<table width="649" class="QS" cellSpacing="0">
+	<tr>
+		<td colspan="2" class="MB" align="left"><p class="Rf">ENDEREÇO DE ENTREGA</p><input id="EndEtg_endereco" name="EndEtg_endereco" class="TA" maxlength="60" style="width:635px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fORC.EndEtg_endereco_numero.focus(); filtra_nome_identificador();" value="<%=r_orcamento.EndEtg_endereco%>"></td>
+	</tr>
+	<tr>
+		<td class="MDB" align="left"><p class="Rf">Nº</p><input id="EndEtg_endereco_numero" name="EndEtg_endereco_numero" class="TA" maxlength="20" style="width:310px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fORC.EndEtg_endereco_complemento.focus(); filtra_nome_identificador();" value="<%=r_orcamento.EndEtg_endereco_numero%>"></td>
+		<td class="MB" align="left"><p class="Rf">COMPLEMENTO</p><input id="EndEtg_endereco_complemento" name="EndEtg_endereco_complemento" class="TA" maxlength="60" style="width:310px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fORC.EndEtg_bairro.focus(); filtra_nome_identificador();" value="<%=r_orcamento.EndEtg_endereco_complemento%>"></td>
+	</tr>
+	<tr>
+		<td class="MDB" align="left"><p class="Rf">BAIRRO</p><input id="EndEtg_bairro" name="EndEtg_bairro" class="TA" maxlength="72" style="width:310px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fORC.EndEtg_cidade.focus(); filtra_nome_identificador();" value="<%=r_orcamento.EndEtg_bairro%>"></td>
+		<td class="MB" align="left"><p class="Rf">CIDADE</p><input id="EndEtg_cidade" name="EndEtg_cidade" class="TA" maxlength="60" style="width:310px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fORC.EndEtg_uf.focus(); filtra_nome_identificador();" value="<%=r_orcamento.EndEtg_cidade%>"></td>
+	</tr>
+	<tr>
+		<td width="50%" class="MD" align="left"><p class="Rf">UF</p><input id="EndEtg_uf" name="EndEtg_uf" class="TA" maxlength="2" size="3" onkeypress="if (digitou_enter(true) && tem_info(this.value) && uf_ok(this.value)) fORC.EndEtg_cep.focus();" onblur="this.value=trim(this.value); if (!uf_ok(this.value)) {alert('UF inválida!!');this.focus();} else this.value=ucase(this.value);" value="<%=r_orcamento.EndEtg_uf%>"></td>
+		<td align="left">
+			<table width="100%" cellspacing="0" cellpadding="0">
+			<tr>
+			<td width="50%" align="left"><p class="Rf">CEP</p><input id="EndEtg_cep" name="EndEtg_cep" readonly tabindex=-1 class="TA" maxlength="9" size="11" onkeypress="if (digitou_enter(true) && cep_ok(this.value)) filtra_cep();" onblur="if (!cep_ok(this.value)) {alert('CEP inválido!!');this.focus();} else this.value=cep_formata(this.value);" value='<%=cep_formata(r_orcamento.EndEtg_cep)%>'></td>
+			<td align="center">
+				<% if blnPesquisaCEPAntiga then %>
+				<button type="button" name="bPesqCepEndEtg" id="bPesqCepEndEtg" style='width:130px;font-size:10pt;' class="Botao" onclick="AbrePesquisaCepEndEtg();">Pesquisar CEP</button>
+				<% end if %>
+				<% if blnPesquisaCEPAntiga and blnPesquisaCEPNova then Response.Write "&nbsp;" %>
+				<% if blnPesquisaCEPNova then %>
+				<button type="button" name="bPesqCepEndEtg" id="bPesqCepEndEtg" style='width:130px;font-size:10pt;' class="Botao" onclick="exibeJanelaCEP_Etg();">Pesquisar CEP</button>
+				<% end if %>
+				<a name="bLimparEndEtg" id="bLimparEndEtg" href="javascript:LimparCamposEndEtg(fORC)" title="limpa o endereço de entrega">
+					<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+			</td>
+			</tr>
+			</table>
+		</td>
+	</tr>
+    <tr>
+		<td colspan="2" class="MC" align="left"><p class="Rf">JUSTIFIQUE O ENDEREÇO</p><p class="C">
+            <select id="EndEtg_obs" name="EndEtg_obs" style="margin-right:225px;">			
+			 <%=codigo_descricao_monta_itens_select_all(GRUPO_T_CODIGO_DESCRICAO__ENDETG_JUSTIFICATIVA, "")%>
+		   </select></p></td>
+	</tr>
+</table>
+<% end if %>
+<!--  R E L A Ç Ã O   D E   P R O D U T O S  -->
+<br>
+<br>
+<table class="Qx" cellspacing="0">
+	<tr bgColor="#FFFFFF">
+	<td class="MB" align="left" valign="bottom"><span class="PLTe">Fabr</span></td>
+	<td class="MB" align="left" valign="bottom"><span class="PLTe">Produto</span></td>
+	<td class="MB" align="left" valign="bottom"><span class="PLTe">Descrição</span></td>
+	<td class="MB" align="left" valign="bottom"><span class="PLTe">Observações</span></td>
+	<td class="MB" align="right" valign="bottom"><span class="PLTd">Qtde</span></td>
+	<% if (r_orcamento.permite_RA_status = 1) Or blnTemRA then %>
+	<td class="MB" align="right" valign="bottom"><span class="PLTd">Preço</span></td>
+	<% end if %>
+	<td class="MB" align="right" valign="bottom"><span class="PLTd">VL Lista</span></td>
+	<td class="MB" align="right" valign="bottom"><span class="PLTd">Desc</span></td>
+	<td class="MB" align="right" valign="bottom"><span class="PLTd">VL Venda</span></td>
+	<td class="MB" align="right" valign="bottom"><span class="PLTd">VL Total</span></td>
+	</tr>
+
+<% m_TotalDestePedido=0
+   m_TotalDestePedidoComRA=0
+   n = Lbound(v_item)-1
+   for i=1 to MAX_ITENS 
+	 s_readonly = "readonly tabindex=-1"
+	 s_readonly_preco_venda = "readonly tabindex=-1"
+	 s_readonly_preco_NF = "readonly tabindex=-1"
+	 n = n+1
+	 if n <= Ubound(v_item) then
+		with v_item(n)
+			s_fabricante=.fabricante
+			s_produto=.produto
+			s_descricao=.descricao
+			s_descricao_html=produto_formata_descricao_em_html(.descricao_html)
+			s_obs=.obs
+			s_qtde=.qtde
+			s_preco_lista=formata_moeda(.preco_lista)
+			if .desc_dado=0 then s_desc_dado="" else s_desc_dado=formata_perc_desc(.desc_dado)
+			s_vl_unitario=formata_moeda(.preco_venda)
+			s_preco_NF=formata_moeda(.preco_NF)
+			m_TotalItem=.qtde * .preco_venda
+			m_TotalItemComRA=.qtde * .preco_NF
+			s_vl_TotalItem=formata_moeda(m_TotalItem)
+			m_TotalDestePedido=m_TotalDestePedido + m_TotalItem
+			m_TotalDestePedidoComRA=m_TotalDestePedidoComRA + m_TotalItemComRA
+			if blnEdicaoItemOrcamentoLiberada And (r_orcamento.permite_RA_status = 1) then s_readonly_preco_NF = ""
+			if blnEdicaoItemOrcamentoLiberada then s_readonly_preco_venda = ""
+			if blnEdicaoItemOrcamentoLiberada then s_readonly = ""
+			end with
+	 else
+		s_fabricante=""
+		s_produto=""
+		s_descricao=""
+		s_descricao_html=""
+		s_obs=""
+		s_qtde=""
+		s_preco_lista=""
+		s_desc_dado=""
+		s_vl_unitario=""
+		s_preco_NF=""
+		s_vl_TotalItem=""
+		end if
+%>
+	<tr>
+	<td class="MDBE" align="left"><input name="c_fabricante" id="c_fabricante" class="PLLe" style="width:26px;"
+		value='<%=s_fabricante%>' readonly tabindex=-1></td>
+	<td class="MDB" align="left"><input name="c_produto" id="c_produto" class="PLLe" style="width:55px;"
+		value='<%=s_produto%>' readonly tabindex=-1></td>
+	<td class="MDB" align="left" style="width:277px;">
+		<span class="PLLe"><%=s_descricao_html%></span>
+		<input type="hidden" name="c_descricao" id="c_descricao" value='<%=s_descricao%>'>
+	</td>
+	<td class="MDB" align="left"><input name="c_obs" id="c_obs" maxlength="10" class="PLLe" style="width:80px;"
+		onkeypress="if (digitou_enter(true)) {if ((<%=Cstr(i)%>==fORC.c_obs.length)||(trim(c_produto[<%=Cstr(i)%>].value)=='')) fORC.c_obs1.focus(); else fORC.c_obs[<%=Cstr(i)%>].focus();} filtra_nome_identificador();" onblur="this.value=trim(this.value);"
+		value='<%=s_obs%>' <%=s_readonly%>></td>
+	<td class="MDB" align="right"><input name="c_qtde" id="c_qtde" class="PLLd" style="width:27px;"
+		value='<%=s_qtde%>' readonly tabindex=-1></td>
+	<% if (r_orcamento.permite_RA_status = 1) Or blnTemRA then %>
+	<td class="MDB" align="right"><input name="c_vl_NF" id="c_vl_NF" class="PLLd" style="width:62px;"
+		onkeypress="if (digitou_enter(true)) fORC.c_vl_unitario[<%=Cstr(i-1)%>].focus(); filtra_moeda_positivo();" onblur="this.value=formata_moeda(this.value); trata_edicao_RA(<%=Cstr(i-1)%>); recalcula_RA();"
+		value='<%=s_preco_NF%>' <%=s_readonly_preco_NF%>></td>
+	<% else %>
+	<input type="hidden" name='c_vl_NF' id="c_vl_NF" value='<%=s_preco_NF%>'>
+	<% end if %>
+	<td class="MDB" align="right"><input name="c_preco_lista" id="c_preco_lista" class="PLLd" style="width:62px;"
+		value='<%=s_preco_lista%>' readonly tabindex=-1></td>
+	<td class="MDB" align="right"><input name="c_desc" id="c_desc" class="PLLd" style="width:36px;"
+		value='<%=s_desc_dado%>' readonly tabindex=-1></td>
+	<td class="MDB" align="right"><input name="c_vl_unitario" id="c_vl_unitario" class="PLLd" style="width:62px;"
+		onkeypress="if (digitou_enter(true)) {if ((<%=Cstr(i)%>==fORC.c_vl_unitario.length)||(trim(fORC.c_produto[<%=Cstr(i)%>].value)=='')) fORC.c_obs1.focus(); else <% if (r_orcamento.permite_RA_status = 1) Or blnTemRA then Response.Write "fORC.c_vl_NF" else Response.Write "fORC.c_vl_unitario"%>[<%=Cstr(i)%>].focus();} filtra_moeda_positivo();" onblur="this.value=formata_moeda(this.value); trata_edicao_RA(<%=Cstr(i-1)%>); recalcula_total(<%=Cstr(i)%>); recalcula_RA();"
+		value='<%=s_vl_unitario%>' <%=s_readonly_preco_venda%>></td>
+	<input type="hidden" name="c_vl_unitario_original" id="c_vl_unitario_original" value='<%=s_vl_unitario%>' />
+	<td class="MDB" align="right"><input name="c_vl_total" id="c_vl_total" class="PLLd" style="width:70px;" 
+		value='<%=s_vl_TotalItem%>' readonly tabindex=-1></td>
+	</tr>
+<% next %>
+
+	<tr>
+	<td colspan="4" align="left">
+		<table cellspacing="0" cellpadding="0" width='100%' style="margin-top:4px;">
+			<tr>
+			<td width="60%" align="left">&nbsp;</td>
+			<% if (r_orcamento.permite_RA_status = 1) Or blnTemRA then %>
+			<td align="right">
+				<table cellspacing="0" cellpadding="0" style="margin-right:2px;">
+					<tr>
+						<td class="MTBE" align="left"><span class="PLTe">&nbsp;RA</span></td>
+						<td class="MTBD" align="right"><input name="c_total_RA" id="c_total_RA" class="PLLd" style="width:70px;color:<%if m_total_RA >=0 then Response.Write " green" else Response.Write " red"%>;" 
+							value='<%=formata_moeda(m_total_RA)%>' readonly tabindex=-1></td>
+					</tr>
+				</table>
+			</td>
+			<% else %>
+			<input type="hidden" name="c_total_RA" id="c_total_RA" value='<%=formata_moeda(m_total_RA)%>'>
+			<% end if %>
+
+			<td align="right">
+				<table cellspacing="0" cellpadding="0" style="margin-right:2px;">
+					<tr>
+						<td class="MTBE" align="left" nowrap><span class="PLTe">&nbsp;COM(%)</span></td>
+						<td class="MTBD" align="left"><input name="c_perc_RT" id="c_perc_RT" class="PLLd" style="width:30px;color:blue;" 
+							value='<%=formata_perc_RT(r_orcamento.perc_RT)%>' maxlength="5" 
+							onkeypress="if (digitou_enter(true)) fORC.c_obs1.focus(); filtra_percentual();"
+							onblur="this.value=formata_perc_RT(this.value); if ((converte_numero(this.value)>100)||(converte_numero(this.value)<0)) {alert('Percentual inválido!!');this.focus();}"
+							<%if r_orcamento.st_orcamento=ST_ORCAMENTO_CANCELADO Or _
+								 (Not operacao_permitida(OP_LJA_EDITA_ORCAMENTO, s_lista_operacoes_permitidas)) then%>
+								readonly tabindex=-1
+							<%end if%>
+							></td>
+						<input type="hidden" name="c_perc_RT_original" id="c_perc_RT_original" value='<%=formata_perc_RT(r_orcamento.perc_RT)%>' />
+					</tr>
+				</table>
+			</td>
+			</tr>
+		</table>
+	</td>
+	<% if (r_orcamento.permite_RA_status = 1) Or blnTemRA then %>
+	<td class="MD" align="left">&nbsp;</td>
+	<td class="MDB" align="right">
+		<input name="c_total_NF" id="c_total_NF" class="PLLd" style="width:70px;color:blue;" 
+				value='<%=formata_moeda(m_TotalDestePedidoComRA)%>' readonly tabindex=-1>
+	</td>
+	<td colspan="3" class="MD" align="left">&nbsp;</td>
+	<% else %>
+	<input type="hidden" name='c_total_NF' id="c_total_NF" value='<%=formata_moeda(m_TotalDestePedidoComRA)%>'>
+	<td colspan="4" class="MD" align="left">&nbsp;</td>
+	<% end if %>
+	<td class="MDB" align="right"><input name="c_total_geral" id="c_total_geral" class="PLLd" style="width:70px;color:blue;" 
+		value='<%=formata_moeda(m_TotalDestePedido)%>' readonly tabindex=-1></td>
+	</tr>
+</table>
+
+<input type="hidden" name="c_total_RA_original" id="c_total_RA_original" value='<%=formata_moeda(m_total_RA)%>'>
+
+
+<% if r_orcamento.tipo_parcelamento = 0 then %>
+<input type="hidden" name="versao_forma_pagamento" id="versao_forma_pagamento" value='1'>
+<!--  TRATA VERSÃO ANTIGA DA FORMA DE PAGAMENTO   -->
+<br>
+<table class="Q" cellSpacing="0" style="width:649px;">
+	<tr>
+		<td class="MB" colspan="5" align="left"><p class="Rf">Observações </p>
+			<textarea name="c_obs1" id="c_obs1" class="PLLe" rows="<%=Cstr(MAX_LINHAS_OBS1)%>" 
+				style="width:642px;margin-left:2pt;" onkeypress="limita_tamanho(this,MAX_TAM_OBS1);" onblur="this.value=trim(this.value);"
+				><%=r_orcamento.obs_1%></textarea>
+		</td>
+	</tr>
+	<tr>
+		<td class="MB" colspan="5" align="left"><p class="Rf">Nº Nota Fiscal</p>
+			<input name="c_obs2" id="c_obs2" class="PLLe" maxlength="10" style="width:85px;margin-left:2pt;" onkeypress="if (digitou_enter(true)) fORC.c_qtde_parcelas.focus(); filtra_nome_identificador();" onblur="this.value=trim(this.value);"
+				value='<%=r_orcamento.obs_2%>' readonly tabindex=-1>
+		</td>
+	</tr>
+	<tr>
+		<td class="MDB" align="left" width="10%" nowrap><p class="Rf">Parcelas</p>
+			<table cellSpacing="0" cellPadding="0" width="100%"><tr>
+				<td align="left"><input name="c_qtde_parcelas" id="c_qtde_parcelas" class="PLLc" maxlength="2" style="width:60px;" onkeypress="if (digitou_enter(true)) fORC.c_forma_pagto.focus(); filtra_numerico();"
+						value='<%if (r_orcamento.qtde_parcelas<>0) Or (r_orcamento.forma_pagto<>"") then Response.write Cstr(r_orcamento.qtde_parcelas)%>'
+						<%if blnFormaPagtoBloqueado then Response.Write " readonly tabindex=-1"%>
+						></td>
+			</tr></table>
+		</td>
+		<td class="MDB" align="left" valign="top" nowrap><p class="Rf">Entrega Imediata</p>
+			<input type="radio" id="rb_etg_imediata" name="rb_etg_imediata" 
+				value="<%=COD_ETG_IMEDIATA_NAO%>" <%if Cstr(r_orcamento.st_etg_imediata)=Cstr(COD_ETG_IMEDIATA_NAO) then Response.Write " checked"%>><span class="C" style="cursor:default" onclick="fORC.rb_etg_imediata[0].click();">Não</span>
+			<input type="radio" id="rb_etg_imediata" name="rb_etg_imediata" 
+				value="<%=COD_ETG_IMEDIATA_SIM%>" <%if Cstr(r_orcamento.st_etg_imediata)=Cstr(COD_ETG_IMEDIATA_SIM) then Response.Write " checked"%>><span class="C" style="cursor:default" onclick="fORC.rb_etg_imediata[1].click();">Sim</span>
+		</td>
+		<td class="MDB" align="left" valign="top" nowrap><p class="Rf">Bem de Uso/Consumo</p>
+			<input type="radio" id="rb_bem_uso_consumo" name="rb_bem_uso_consumo" 
+				value="<%=COD_ST_BEM_USO_CONSUMO_NAO%>" <%if Cstr(r_orcamento.StBemUsoConsumo)=Cstr(COD_ST_BEM_USO_CONSUMO_NAO) then Response.Write " checked"%>><span class="C" style="cursor:default" onclick="fORC.rb_bem_uso_consumo[0].click();">Não</span>
+			<input type="radio" id="rb_bem_uso_consumo" name="rb_bem_uso_consumo" 
+				value="<%=COD_ST_BEM_USO_CONSUMO_SIM%>" <%if Cstr(r_orcamento.StBemUsoConsumo)=Cstr(COD_ST_BEM_USO_CONSUMO_SIM) then Response.Write " checked"%>><span class="C" style="cursor:default" onclick="fORC.rb_bem_uso_consumo[1].click();">Sim</span>
+		</td>
+		<td class="MDB" align="left" nowrap><p class="Rf">Instalador Instala</p>
+			<% if blnInstaladorInstalaBloqueado then strDisabled=" DISABLED" else strDisabled=""%>
+			<input type="radio" id="rb_instalador_instala" name="rb_instalador_instala" 
+				<%=strDisabled%>
+				value="<%=COD_INSTALADOR_INSTALA_NAO%>" <%if Cstr(r_orcamento.InstaladorInstalaStatus)=Cstr(COD_INSTALADOR_INSTALA_NAO) then Response.Write " checked"%>><span class="C" style="cursor:default" onclick="fORC.rb_instalador_instala[0].click();">Não</span>
+			<input type="radio" id="rb_instalador_instala" name="rb_instalador_instala" 
+				<%=strDisabled%>
+				value="<%=COD_INSTALADOR_INSTALA_SIM%>" <%if Cstr(r_orcamento.InstaladorInstalaStatus)=Cstr(COD_INSTALADOR_INSTALA_SIM) then Response.Write " checked"%>><span class="C" style="cursor:default" onclick="fORC.rb_instalador_instala[1].click();">Sim</span>
+		</td>
+		<td class="MB tdGarInd" align="left" valign="top" nowrap><p class="Rf">Garantia Indicador</p>
+			<% if blnGarantiaIndicadorBloqueado then strDisabled=" disabled" else strDisabled=""%>
+			<input type="radio" id="rb_garantia_indicador" name="rb_garantia_indicador" 
+				<%=strDisabled%>
+				value="<%=COD_GARANTIA_INDICADOR_STATUS__NAO%>" <%if Cstr(r_orcamento.GarantiaIndicadorStatus)=Cstr(COD_GARANTIA_INDICADOR_STATUS__NAO) then Response.Write " checked"%>><span class="C" style="cursor:default" onclick="fORC.rb_garantia_indicador[0].click();">Não</span>
+			<input type="radio" id="rb_garantia_indicador" name="rb_garantia_indicador" 
+				<%=strDisabled%>
+				value="<%=COD_GARANTIA_INDICADOR_STATUS__SIM%>" <%if Cstr(r_orcamento.GarantiaIndicadorStatus)=Cstr(COD_GARANTIA_INDICADOR_STATUS__SIM) then Response.Write " checked"%>><span class="C" style="cursor:default" onclick="fORC.rb_garantia_indicador[1].click();">Sim</span>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="5" align="left"><p class="Rf">Forma de Pagamento</p>
+			<textarea name="c_forma_pagto" id="c_forma_pagto" class="PLLe" rows="<%=Cstr(MAX_LINHAS_FORMA_PAGTO)%>"
+				style="width:642px;margin-left:2pt;" onkeypress="limita_tamanho(this,MAX_TAM_FORMA_PAGTO);" onblur="this.value=trim(this.value);"
+				<%if blnFormaPagtoBloqueado then Response.Write " readonly tabindex=-1"%>
+				><%=r_orcamento.forma_pagto%></textarea>
+		</td>
+	</tr>
+</table>
+<% else %>
+<!--  TRATA NOVA VERSÃO DA FORMA DE PAGAMENTO   -->
+<input type="hidden" name="versao_forma_pagamento" id="versao_forma_pagamento" value='2'>
+<br>
+<table class="Q" cellSpacing="0" style="width:649px;">
+	<tr>
+		<td class="MB" colspan="5" align="left"><p class="Rf">Observações </p>
+			<textarea name="c_obs1" id="c_obs1" class="PLLe" rows="<%=Cstr(MAX_LINHAS_OBS1)%>" 
+				style="width:642px;margin-left:2pt;" onkeypress="limita_tamanho(this,MAX_TAM_OBS1);" onblur="this.value=trim(this.value);"
+				><%=r_orcamento.obs_1%></textarea>
+		</td>
+	</tr>
+	<tr>
+		<td class="MD" align="left" nowrap><p class="Rf">Nº Nota Fiscal</p>
+			<input name="c_obs2" id="c_obs2" class="PLLe" maxlength="10" style="width:85px;margin-left:2pt;" onkeypress="if (digitou_enter(true)) fORC.c_qtde_parcelas.focus(); filtra_nome_identificador();" onblur="this.value=trim(this.value);"
+				value='<%=r_orcamento.obs_2%>' readonly tabindex=-1>
+		</td>
+		<td class="MD" align="left" valign="top" nowrap><p class="Rf">Entrega Imediata</p>
+			<input type="radio" id="rb_etg_imediata" name="rb_etg_imediata" 
+				value="<%=COD_ETG_IMEDIATA_NAO%>" <%if Cstr(r_orcamento.st_etg_imediata)=Cstr(COD_ETG_IMEDIATA_NAO) then Response.Write " checked"%>><span class="C" style="cursor:default" onclick="fORC.rb_etg_imediata[0].click();">Não</span>
+			<input type="radio" id="rb_etg_imediata" name="rb_etg_imediata" 
+				value="<%=COD_ETG_IMEDIATA_SIM%>" <%if Cstr(r_orcamento.st_etg_imediata)=Cstr(COD_ETG_IMEDIATA_SIM) then Response.Write " checked"%>><span class="C" style="cursor:default" onclick="fORC.rb_etg_imediata[1].click();">Sim</span>
+		</td>
+		<td class="MD" align="left" valign="top" nowrap><p class="Rf">Bem de Uso/Consumo</p>
+			<input type="radio" id="rb_bem_uso_consumo" name="rb_bem_uso_consumo" 
+				value="<%=COD_ST_BEM_USO_CONSUMO_NAO%>" <%if Cstr(r_orcamento.StBemUsoConsumo)=Cstr(COD_ST_BEM_USO_CONSUMO_NAO) then Response.Write " checked"%>><span class="C" style="cursor:default" onclick="fORC.rb_bem_uso_consumo[0].click();">Não</span>
+			<input type="radio" id="rb_bem_uso_consumo" name="rb_bem_uso_consumo" 
+				value="<%=COD_ST_BEM_USO_CONSUMO_SIM%>" <%if Cstr(r_orcamento.StBemUsoConsumo)=Cstr(COD_ST_BEM_USO_CONSUMO_SIM) then Response.Write " checked"%>><span class="C" style="cursor:default" onclick="fORC.rb_bem_uso_consumo[1].click();">Sim</span>
+		</td>
+		<td class="MD" align="left" nowrap><p class="Rf">Instalador Instala</p>
+			<% if blnInstaladorInstalaBloqueado then strDisabled=" disabled" else strDisabled=""%>
+			<input type="radio" id="rb_instalador_instala" name="rb_instalador_instala" 
+				<%=strDisabled%>
+				value="<%=COD_INSTALADOR_INSTALA_NAO%>" <%if Cstr(r_orcamento.InstaladorInstalaStatus)=Cstr(COD_INSTALADOR_INSTALA_NAO) then Response.Write " checked"%>><span class="C" style="cursor:default" onclick="fORC.rb_instalador_instala[0].click();">Não</span>
+			<input type="radio" id="rb_instalador_instala" name="rb_instalador_instala" 
+				<%=strDisabled%>
+				value="<%=COD_INSTALADOR_INSTALA_SIM%>" <%if Cstr(r_orcamento.InstaladorInstalaStatus)=Cstr(COD_INSTALADOR_INSTALA_SIM) then Response.Write " checked"%>><span class="C" style="cursor:default" onclick="fORC.rb_instalador_instala[1].click();">Sim</span>
+		</td>
+		<td class="tdGarInd" align="left" valign="top" nowrap><p class="Rf">Garantia Indicador</p>
+			<% if blnGarantiaIndicadorBloqueado then strDisabled=" DISABLED" else strDisabled=""%>
+			<input type="radio" id="rb_garantia_indicador" name="rb_garantia_indicador" 
+				<%=strDisabled%>
+				value="<%=COD_GARANTIA_INDICADOR_STATUS__NAO%>" <%if Cstr(r_orcamento.GarantiaIndicadorStatus)=Cstr(COD_GARANTIA_INDICADOR_STATUS__NAO) then Response.Write " checked"%>><span class="C" style="cursor:default" onclick="fORC.rb_garantia_indicador[0].click();">Não</span>
+			<input type="radio" id="rb_garantia_indicador" name="rb_garantia_indicador" 
+				<%=strDisabled%>
+				value="<%=COD_GARANTIA_INDICADOR_STATUS__SIM%>" <%if Cstr(r_orcamento.GarantiaIndicadorStatus)=Cstr(COD_GARANTIA_INDICADOR_STATUS__SIM) then Response.Write " checked"%>><span class="C" style="cursor:default" onclick="fORC.rb_garantia_indicador[1].click();">Sim</span>
+		</td>
+	</tr>
+</table>
+<br>
+	<% if blnFormaPagtoBloqueado then %>
+		<table class="Q" style="width:649px;" cellspacing="0">
+		  <tr>
+			<td align="left"><p class="Rf">Forma de Pagamento</p></td>
+		  </tr>
+		  <tr>
+			<td align="left">
+			  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+				<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_A_VISTA then %>
+				<!--  À VISTA  -->
+				<tr>
+				  <td align="left">
+					<table cellspacing="0" cellpadding="0" border="0">
+					  <tr>
+						<td align="left"><span class="C">À Vista&nbsp&nbsp;(<%=x_opcao_forma_pagamento(r_orcamento.av_forma_pagto)%>)</span></td>
+					  </tr>
+					</table>
+				  </td>
+				</tr>
+				<% elseif Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELA_UNICA then %>
+				<!--  PARCELA ÚNICA  -->
+				<tr>
+				  <td align="left">
+					<table cellspacing="0" cellpadding="0" border="0">
+					  <tr>
+						<td align="left"><span class="C">Parcela Única:&nbsp;&nbsp;<%=SIMBOLO_MONETARIO%>&nbsp;<%=formata_moeda(r_orcamento.pu_valor)%>&nbsp;&nbsp;&nbsp;(<%=x_opcao_forma_pagamento(r_orcamento.pu_forma_pagto)%>)&nbsp;&nbsp;vencendo após&nbsp;<%=formata_inteiro(r_orcamento.pu_vencto_apos)%>&nbsp;dias</span></td>
+					  </tr>
+					</table>
+				  </td>
+				</tr>
+				<% elseif Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO then %>
+				<!--  PARCELADO NO CARTÃO (INTERNET)  -->
+				<tr>
+				  <td align="left">
+					<table cellspacing="0" cellpadding="0" border="0">
+					  <tr>
+						<td align="left"><span class="C">Parcelado no Cartão (internet) em&nbsp;&nbsp;<%=Cstr(r_orcamento.pc_qtde_parcelas)%>&nbsp;x&nbsp;&nbsp;<%=SIMBOLO_MONETARIO & " " & formata_moeda(r_orcamento.pc_valor_parcela)%></span></td>
+					  </tr>
+					</table>
+				  </td>
+				</tr>
+				<% elseif Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA then %>
+				<!--  PARCELADO NO CARTÃO (MAQUINETA)  -->
+				<tr>
+				  <td align="left">
+					<table cellspacing="0" cellpadding="0" border="0">
+					  <tr>
+						<td align="left"><span class="C">Parcelado no Cartão (maquineta) em&nbsp;&nbsp;<%=Cstr(r_orcamento.pc_maquineta_qtde_parcelas)%>&nbsp;x&nbsp;&nbsp;<%=SIMBOLO_MONETARIO & " " & formata_moeda(r_orcamento.pc_maquineta_valor_parcela)%></span></td>
+					  </tr>
+					</table>
+				  </td>
+				</tr>
+				<% elseif Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then %>
+				<!--  PARCELADO COM ENTRADA  -->
+				<tr>
+				  <td align="left">
+					<table cellspacing="0" cellpadding="0" border="0">
+					  <tr>
+						<td align="left"><span class="C">Entrada:&nbsp;&nbsp;<%=SIMBOLO_MONETARIO%>&nbsp;<%=formata_moeda(r_orcamento.pce_entrada_valor)%>&nbsp;&nbsp;&nbsp;(<%=x_opcao_forma_pagamento(r_orcamento.pce_forma_pagto_entrada)%>)</span></td>
+					  </tr>
+					  <tr>
+						<td align="left"><span class="C">Prestações:&nbsp;&nbsp;<%=formata_inteiro(r_orcamento.pce_prestacao_qtde)%>&nbsp;x&nbsp;<%=SIMBOLO_MONETARIO%>&nbsp;<%=formata_moeda(r_orcamento.pce_prestacao_valor)%>&nbsp;&nbsp;&nbsp;(<%=x_opcao_forma_pagamento(r_orcamento.pce_forma_pagto_prestacao)%>)&nbsp;&nbsp;vencendo a cada&nbsp;<%=formata_inteiro(r_orcamento.pce_prestacao_periodo)%>&nbsp;dias</span></td>
+					  </tr>
+					</table>
+				  </td>
+				</tr>
+				<% elseif Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then %>
+				<!--  PARCELADO SEM ENTRADA  -->
+				<tr>
+				  <td align="left">
+					<table cellspacing="0" cellpadding="0" border="0">
+					  <tr>
+						<td align="left"><span class="C">1ª Prestação:&nbsp;&nbsp;<%=SIMBOLO_MONETARIO%>&nbsp;<%=formata_moeda(r_orcamento.pse_prim_prest_valor)%>&nbsp;&nbsp;&nbsp;(<%=x_opcao_forma_pagamento(r_orcamento.pse_forma_pagto_prim_prest)%>)&nbsp;&nbsp;vencendo após&nbsp;<%=formata_inteiro(r_orcamento.pse_prim_prest_apos)%>&nbsp;dias</span></td>
+					  </tr>
+					  <tr>
+						<td align="left"><span class="C">Demais Prestações:&nbsp;&nbsp;<%=Cstr(r_orcamento.pse_demais_prest_qtde)%>&nbsp;x&nbsp;<%=SIMBOLO_MONETARIO%>&nbsp;<%=formata_moeda(r_orcamento.pse_demais_prest_valor)%>&nbsp;&nbsp;&nbsp;(<%=x_opcao_forma_pagamento(r_orcamento.pse_forma_pagto_demais_prest)%>)&nbsp;&nbsp;vencendo a cada&nbsp;<%=Cstr(r_orcamento.pse_demais_prest_periodo)%>&nbsp;dias</span></td>
+					  </tr>
+					</table>
+				  </td>
+				</tr>
+				<% end if %>
+			  </table>
+			</td>
+		  </tr>
+		  <tr>
+			<td class="MC" align="left"><p class="Rf">Informações Sobre Análise de Crédito</p>
+			  <textarea name="c_forma_pagto" id="c_forma_pagto" class="PLLe" rows="<%=Cstr(MAX_LINHAS_FORMA_PAGTO)%>"
+						style="width:642px;margin-left:2pt;"
+						readonly tabindex=-1><%=r_orcamento.forma_pagto%></textarea>
+			</td>
+		  </tr>
+		</table>
+	<% else %>
+		<table class="Q" style="width:649px;" cellspacing="0">
+		  <tr>
+			<td align="left">
+			  <p class="Rf">Forma de Pagamento</p>
+			</td>
+		  </tr>  
+		  <tr>
+			<td align="left">
+			  <table width="100%" cellspacing="0" cellpadding="4" border="0">
+				<!--  À VISTA  -->
+				<tr>
+				  <td align="left">
+					<table cellspacing="0" cellpadding="1" border="0">
+					  <tr>
+						<td align="left">
+						  <% intIdx = 0 %>
+						  <input type="radio" id="rb_forma_pagto" name="rb_forma_pagto" 
+								value="<%=COD_FORMA_PAGTO_A_VISTA%>"
+								<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_A_VISTA then Response.Write " checked"%>
+								onclick="recalculaCustoFinanceiroPrecoLista();"
+						  ><span class="C" style="cursor:default" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();">À Vista</span>
+						</td>
+						<td align="left">&nbsp;</td>
+						<td align="left">
+						  <select id="op_av_forma_pagto" name="op_av_forma_pagto" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();">
+							<%	if operacao_permitida(OP_LJA_EDITA_FORMA_PAGTO_SEM_APLICAR_RESTRICOES, s_lista_operacoes_permitidas) then
+									if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_A_VISTA then 
+										Response.Write forma_pagto_av_monta_itens_select_incluindo_default(r_orcamento.av_forma_pagto)
+									else
+										Response.Write forma_pagto_av_monta_itens_select(Null)
+										end if
+								else
+									if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_A_VISTA then 
+										Response.Write forma_pagto_liberada_av_monta_itens_select_incluindo_default(r_orcamento.av_forma_pagto, r_orcamento.orcamentista, r_cliente.tipo)
+									else
+										Response.Write forma_pagto_liberada_av_monta_itens_select(Null, r_orcamento.orcamentista, r_cliente.tipo)
+										end if
+									end if
+							%>
+						  </select>
+						</td>
+					  </tr>
+					</table>
+				  </td>
+				</tr>
+				<!--  PARCELA ÚNICA  -->
+				<tr>
+				  <td class="MC" align="left">
+					<table cellspacing="0" cellpadding="1" border="0">
+					  <tr>
+						<td colspan="3" align="left">
+						  <% intIdx = intIdx+1 %>
+						  <input type="radio" id="rb_forma_pagto" name="rb_forma_pagto" 
+								value="<%=COD_FORMA_PAGTO_PARCELA_UNICA%>"
+								<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELA_UNICA then Response.Write " checked"%>
+								onclick="pu_atualiza_valor();recalculaCustoFinanceiroPrecoLista();"
+								><span class="C" style="cursor:default" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();">Parcela Única</span>
+						</td>
+						<td align="left">&nbsp;</td>
+						<td align="left">
+						  <select id="op_pu_forma_pagto" name="op_pu_forma_pagto" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();">
+							<%	if operacao_permitida(OP_LJA_EDITA_FORMA_PAGTO_SEM_APLICAR_RESTRICOES, s_lista_operacoes_permitidas) then
+									if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELA_UNICA then
+										Response.Write forma_pagto_da_parcela_unica_monta_itens_select_incluindo_default(r_orcamento.pu_forma_pagto)
+									else
+										Response.Write forma_pagto_da_parcela_unica_monta_itens_select(Null)
+										end if
+								else
+									if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELA_UNICA then
+										Response.Write forma_pagto_liberada_da_parcela_unica_monta_itens_select_incluindo_default(r_orcamento.pu_forma_pagto, r_orcamento.orcamentista, r_cliente.tipo)
+									else
+										Response.Write forma_pagto_liberada_da_parcela_unica_monta_itens_select(Null, r_orcamento.orcamentista, r_cliente.tipo)
+										end if
+									end if
+							%>
+						  </select>
+						  <span style="width:10px;">&nbsp;</span>
+						  <span class="C" style="margin-right:0pt;"><%=SIMBOLO_MONETARIO%></span
+						  ><input name="c_pu_valor" id="c_pu_valor" class="Cd" maxlength="18" style="width:90px;" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onkeypress="if (digitou_enter(true)&&tem_info(this.value)) fORC.c_pu_vencto_apos.focus(); filtra_moeda_positivo();" onblur="this.value=formata_moeda(this.value);" 
+							<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELA_UNICA then %>
+								value="<%=formata_moeda(r_orcamento.pu_valor)%>"
+							<% else %>
+								value=""
+							<% end if %>
+						  ><span style="width:10px;">&nbsp;</span
+						  ><span class="C">vencendo após</span
+						  ><input name="c_pu_vencto_apos" id="c_pu_vencto_apos" class="Cc" maxlength="2" style="width:30px;" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onkeypress="if (digitou_enter(true)&&tem_info(this.value)) fORC.c_forma_pagto.focus(); filtra_numerico();" 
+							<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELA_UNICA then %>
+								value="<%=Cstr(r_orcamento.pu_vencto_apos)%>"
+							<% else %>
+								value=""
+							<% end if %>
+						  ><span class="C">dias</span>
+						</td>
+					  </tr>
+					</table>
+				  </td>
+				</tr>
+				<!--  PARCELADO NO CARTÃO (INTERNET)  -->
+				<% if operacao_permitida(OP_LJA_EDITA_FORMA_PAGTO_SEM_APLICAR_RESTRICOES, s_lista_operacoes_permitidas) Or _
+						(Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO) Or _
+						(Not is_restricao_ativa_forma_pagto(r_orcamento.orcamentista, ID_FORMA_PAGTO_CARTAO, r_cliente.tipo)) then %>
+				<tr>
+				<% else %>
+				<tr style="display:none;">
+				<% end if %>
+				  <td class="MC" align="left">
+					<table cellspacing="0" cellpadding="1" border="0">
+					  <tr>
+						<td align="left">
+						  <% intIdx = intIdx+1 %>
+						  <input type="radio" id="rb_forma_pagto" name="rb_forma_pagto" 
+								value="<%=COD_FORMA_PAGTO_PARCELADO_CARTAO%>"
+								<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO then Response.Write " checked"%>
+								onclick="recalculaCustoFinanceiroPrecoLista();"
+						   ><span class="C" style="cursor:default" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();">Parcelado no Cartão (internet)</span>
+						</td>
+						<td align="left">&nbsp;</td>
+						<td align="left">
+						  <input name="c_pc_qtde" id="c_pc_qtde" class="Cc" maxlength="2" style="width:30px;" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onkeypress="if (digitou_enter(true)&&tem_info(this.value)) fORC.c_pc_valor.focus(); filtra_numerico();" onblur="pc_calcula_valor_parcela();recalculaCustoFinanceiroPrecoLista();" 
+							<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO then %>
+								value="<%=Cstr(r_orcamento.pc_qtde_parcelas)%>"
+							<% else %>
+								value=""
+							<% end if %>
+						  >
+						</td>
+						<td align="left"><span class="C" style="margin-right:0pt;">&nbsp;X&nbsp;&nbsp;&nbsp;<%=SIMBOLO_MONETARIO%></span></td>
+						<td align="left">
+						  <input name="c_pc_valor" id="c_pc_valor" class="Cd" maxlength="18" style="width:90px;" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onkeypress="if (digitou_enter(true)&&tem_info(this.value)) fORC.c_forma_pagto.focus(); filtra_moeda_positivo();" onblur="this.value=formata_moeda(this.value);" 
+							<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO then %>
+								value="<%=formata_moeda(r_orcamento.pc_valor_parcela)%>"
+							<% else %>
+								value=""
+							<% end if %>
+						  >
+						</td>
+					  </tr>
+					</table>
+				  </td>
+				</tr>
+				<!--  PARCELADO NO CARTÃO (MAQUINETA)  -->
+				<% if operacao_permitida(OP_LJA_EDITA_FORMA_PAGTO_SEM_APLICAR_RESTRICOES, s_lista_operacoes_permitidas) Or _
+						(Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA) Or _
+						(Not is_restricao_ativa_forma_pagto(r_orcamento.orcamentista, ID_FORMA_PAGTO_CARTAO_MAQUINETA, r_cliente.tipo)) then %>
+				<tr>
+				<% else %>
+				<tr style="display:none;">
+				<% end if %>
+				  <td class="MC" align="left">
+					<table cellspacing="0" cellpadding="1" border="0">
+					  <tr>
+						<td align="left">
+						  <% intIdx = intIdx+1 %>
+						  <input type="radio" id="rb_forma_pagto" name="rb_forma_pagto" 
+								value="<%=COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA%>"
+								<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA then Response.Write " checked"%>
+								onclick="recalculaCustoFinanceiroPrecoLista();"
+						   ><span class="C" style="cursor:default" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();">Parcelado no Cartão (maquineta)</span>
+						</td>
+						<td align="left">&nbsp;</td>
+						<td align="left">
+						  <input name="c_pc_maquineta_qtde" id="c_pc_maquineta_qtde" class="Cc" maxlength="2" style="width:30px;" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onkeypress="if (digitou_enter(true)&&tem_info(this.value)) fORC.c_pc_maquineta_valor.focus(); filtra_numerico();" onblur="pc_maquineta_calcula_valor_parcela();recalculaCustoFinanceiroPrecoLista();" 
+							<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA then %>
+								value="<%=Cstr(r_orcamento.pc_maquineta_qtde_parcelas)%>"
+							<% else %>
+								value=""
+							<% end if %>
+						  >
+						</td>
+						<td align="left"><span class="C" style="margin-right:0pt;">&nbsp;X&nbsp;&nbsp;&nbsp;<%=SIMBOLO_MONETARIO%></span></td>
+						<td align="left">
+						  <input name="c_pc_maquineta_valor" id="c_pc_maquineta_valor" class="Cd" maxlength="18" style="width:90px;" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onkeypress="if (digitou_enter(true)&&tem_info(this.value)) fORC.c_forma_pagto.focus(); filtra_moeda_positivo();" onblur="this.value=formata_moeda(this.value);" 
+							<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA then %>
+								value="<%=formata_moeda(r_orcamento.pc_maquineta_valor_parcela)%>"
+							<% else %>
+								value=""
+							<% end if %>
+						  >
+						</td>
+					  </tr>
+					</table>
+				  </td>
+				</tr>
+				<!--  PARCELADO COM ENTRADA  -->
+				<tr>
+				  <td class="MC" align="left">
+					<table cellspacing="0" cellpadding="1" border="0">
+					  <tr>
+						<td colspan="3" align="left">
+						  <% intIdx = intIdx+1 %>
+						  <input type="radio" id="rb_forma_pagto" name="rb_forma_pagto" 
+								value="<%=COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA%>"
+								<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then Response.Write " checked"%>
+								onclick="pce_preenche_sugestao_intervalo();recalculaCustoFinanceiroPrecoLista();"
+								><span class="C" style="cursor:default" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();">Parcelado com Entrada</span>
+						</td>
+					  </tr>
+					  <tr>
+						<td style="width:60px;" align="left">&nbsp;</td>
+						<td align="right"><span class="C">Entrada&nbsp;</span></td>
+						<td align="left">
+						  <select id="op_pce_entrada_forma_pagto" name="op_pce_entrada_forma_pagto" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();">
+							<%	if operacao_permitida(OP_LJA_EDITA_FORMA_PAGTO_SEM_APLICAR_RESTRICOES, s_lista_operacoes_permitidas) then
+									if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
+										Response.Write forma_pagto_da_entrada_monta_itens_select_incluindo_default(r_orcamento.pce_forma_pagto_entrada)
+									else
+										Response.Write forma_pagto_da_entrada_monta_itens_select(Null)
+										end if
+								else
+									if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
+										Response.Write forma_pagto_liberada_da_entrada_monta_itens_select_incluindo_default(r_orcamento.pce_forma_pagto_entrada, r_orcamento.orcamentista, r_cliente.tipo)
+									else
+										Response.Write forma_pagto_liberada_da_entrada_monta_itens_select(Null, r_orcamento.orcamentista, r_cliente.tipo)
+										end if
+									end if
+							%>
+						  </select>
+						  <span style="width:10px;">&nbsp;</span>
+						  <span class="C" style="margin-right:0pt;"><%=SIMBOLO_MONETARIO%></span
+						  ><input name="c_pce_entrada_valor" id="c_pce_entrada_valor" class="Cd" maxlength="18" style="width:90px;" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onkeypress="if (digitou_enter(true)&&tem_info(this.value)) fORC.op_pce_prestacao_forma_pagto.focus(); filtra_moeda_positivo();" onblur="this.value=formata_moeda(this.value);pce_calcula_valor_parcela();" 
+							<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then %>
+								value="<%=formata_moeda(r_orcamento.pce_entrada_valor)%>"
+							<% else %>
+								value=""
+							<% end if %>
+						  >
+						</td>
+					  </tr>
+					  <tr>
+						<td style="width:60px;" align="left">&nbsp;</td>
+						<td align="right"><span class="C">Prestações&nbsp;</span></td>
+						<td align="left">
+						  <select id="op_pce_prestacao_forma_pagto" name="op_pce_prestacao_forma_pagto" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();">
+							<%	if operacao_permitida(OP_LJA_EDITA_FORMA_PAGTO_SEM_APLICAR_RESTRICOES, s_lista_operacoes_permitidas) then
+									if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
+										Response.Write forma_pagto_da_prestacao_monta_itens_select_incluindo_default(r_orcamento.pce_forma_pagto_prestacao)
+									else
+										Response.Write forma_pagto_da_prestacao_monta_itens_select(Null)
+										end if
+								else
+									if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
+										Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select_incluindo_default(r_orcamento.pce_forma_pagto_prestacao, r_orcamento.orcamentista, r_cliente.tipo)
+									else
+										Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select(Null, r_orcamento.orcamentista, r_cliente.tipo)
+										end if
+									end if
+							%>
+						  </select>
+						  <span style="width:10px;">&nbsp;</span>
+						  <input name="c_pce_prestacao_qtde" id="c_pce_prestacao_qtde" class="Cc" maxlength="2" style="width:30px;" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onblur="pce_calcula_valor_parcela();recalculaCustoFinanceiroPrecoLista();" onkeypress="if (digitou_enter(true)&&tem_info(this.value)) fORC.c_pce_prestacao_valor.focus(); filtra_numerico();" 
+							<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then %>
+								value="<%=Cstr(r_orcamento.pce_prestacao_qtde)%>"
+							<% else %>
+								value=""
+							<% end if %>
+						  ><span class="C" style="margin-right:0pt;">&nbsp;X&nbsp;&nbsp;&nbsp;<%=SIMBOLO_MONETARIO%></span
+						  ><input name="c_pce_prestacao_valor" id="c_pce_prestacao_valor" class="Cd" maxlength="18" style="width:90px;" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onkeypress="if (digitou_enter(true)&&tem_info(this.value)) fORC.c_pce_prestacao_periodo.focus(); filtra_moeda_positivo();" onblur="this.value=formata_moeda(this.value);" 
+							<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then %>
+								value="<%=formata_moeda(r_orcamento.pce_prestacao_valor)%>"
+							<% else %>
+								value=""
+							<% end if %>
+						  >
+						</td>
+					  </tr>
+					  <tr>
+						<td style="width:60px;" align="left">&nbsp;</td>
+						<td colspan="2" align="left"><span class="C">Parcelas vencendo a cada</span
+						><input name="c_pce_prestacao_periodo" id="c_pce_prestacao_periodo" class="Cc" maxlength="2" style="width:30px;" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onkeypress="if (digitou_enter(true)&&tem_info(this.value)) fORC.c_forma_pagto.focus(); filtra_numerico();" 
+							<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then %>
+								value="<%=Cstr(r_orcamento.pce_prestacao_periodo)%>"
+							<% else %>
+								value=""
+							<% end if %>
+						><span class="C">dias</span
+						><span style="width:10px;">&nbsp;</span
+						><span class="notPrint"><input name="b_pce_SugereFormaPagto" id="b_pce_SugereFormaPagto" type="button" class="Button" onclick="pce_sugestao_forma_pagto();" value="sugestão automática" title="preenche o campo 'Forma de Pagamento' com uma sugestão de texto"></span
+						></td>
+					  </tr>
+					</table>
+				  </td>
+				</tr>
+				<!--  PARCELADO SEM ENTRADA  -->
+				<tr>
+				  <td class="MC" align="left">
+					<table cellspacing="0" cellpadding="1" border="0">
+					  <tr>
+						<td colspan="3" align="left">
+						  <% intIdx = intIdx+1 %>
+						  <input type="radio" id="rb_forma_pagto" name="rb_forma_pagto" 
+								value="<%=COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA%>"
+								<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then Response.Write " checked"%>
+								onclick="pse_preenche_sugestao_intervalo();recalculaCustoFinanceiroPrecoLista();"
+								><span class="C" style="cursor:default" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();">Parcelado sem Entrada</span>
+						</td>
+					  </tr>
+					  <tr>
+						<td style="width:60px;" align="left">&nbsp;</td>
+						<td align="right"><span class="C">1ª Prestação&nbsp;</span></td>
+						<td align="left">
+						  <select id="op_pse_prim_prest_forma_pagto" name="op_pse_prim_prest_forma_pagto" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();">
+							<%	if operacao_permitida(OP_LJA_EDITA_FORMA_PAGTO_SEM_APLICAR_RESTRICOES, s_lista_operacoes_permitidas) then
+									if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
+										Response.Write forma_pagto_da_prestacao_monta_itens_select_incluindo_default(r_orcamento.pse_forma_pagto_prim_prest)
+									else
+										Response.Write forma_pagto_da_prestacao_monta_itens_select(Null)
+										end if
+								else
+									if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
+										Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select_incluindo_default(r_orcamento.pse_forma_pagto_prim_prest, r_orcamento.orcamentista, r_cliente.tipo)
+									else
+										Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select(Null, r_orcamento.orcamentista, r_cliente.tipo)
+										end if
+									end if
+							%>
+						  </select>
+						  <span style="width:10px;">&nbsp;</span>
+						  <span class="C" style="margin-right:0pt;"><%=SIMBOLO_MONETARIO%></span
+						  ><input name="c_pse_prim_prest_valor" id="c_pse_prim_prest_valor" class="Cd" maxlength="18" style="width:90px;" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onkeypress="if (digitou_enter(true)&&tem_info(this.value)) fORC.c_pse_prim_prest_apos.focus(); filtra_moeda_positivo();" onblur="this.value=formata_moeda(this.value); pse_calcula_valor_parcela();" 
+							<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then %>
+								value="<%=formata_moeda(r_orcamento.pse_prim_prest_valor)%>"
+							<% else %>
+								value=""
+							<% end if %>
+						  ><span style="width:10px;">&nbsp;</span
+						  ><span class="C">vencendo após</span
+						  ><input name="c_pse_prim_prest_apos" id="c_pse_prim_prest_apos" class="Cc" maxlength="2" style="width:30px;" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onkeypress="if (digitou_enter(true)&&tem_info(this.value)) fORC.op_pse_demais_prest_forma_pagto.focus(); filtra_numerico();" 
+							<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then %>
+								value="<%=Cstr(r_orcamento.pse_prim_prest_apos)%>"
+							<% else %>
+								value=""
+							<% end if %>
+						  ><span class="C">dias</span>
+						</td>
+					  </tr>
+					  <tr>
+						<td style="width:60px;" align="left">&nbsp;</td>
+						<td align="right"><span class="C">Demais Prestações&nbsp;</span></td>
+						<td align="left">
+						  <select id="op_pse_demais_prest_forma_pagto" name="op_pse_demais_prest_forma_pagto" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();">
+							<%	if operacao_permitida(OP_LJA_EDITA_FORMA_PAGTO_SEM_APLICAR_RESTRICOES, s_lista_operacoes_permitidas) then
+									if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
+										Response.Write forma_pagto_da_prestacao_monta_itens_select_incluindo_default(r_orcamento.pse_forma_pagto_demais_prest)
+									else
+										Response.Write forma_pagto_da_prestacao_monta_itens_select(Null)
+										end if
+								else
+									if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
+										Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select_incluindo_default(r_orcamento.pse_forma_pagto_demais_prest, r_orcamento.orcamentista, r_cliente.tipo)
+									else
+										Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select(Null, r_orcamento.orcamentista, r_cliente.tipo)
+										end if
+									end if
+							%>
+						  </select>
+						  <span style="width:10px;">&nbsp;</span>
+						  <input name="c_pse_demais_prest_qtde" id="c_pse_demais_prest_qtde" class="Cc" maxlength="2" style="width:30px;" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onblur="pse_calcula_valor_parcela();recalculaCustoFinanceiroPrecoLista();" onkeypress="if (digitou_enter(true)&&tem_info(this.value)) fORC.c_pse_demais_prest_valor.focus(); filtra_numerico();" 
+							<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then %>
+								value="<%=Cstr(r_orcamento.pse_demais_prest_qtde)%>"
+							<% else %>
+								value=""
+							<% end if %>
+						  >
+						  <span class="C" style="margin-right:0pt;">&nbsp;X&nbsp;&nbsp;&nbsp;<%=SIMBOLO_MONETARIO%></span
+						  ><input name="c_pse_demais_prest_valor" id="c_pse_demais_prest_valor" class="Cd" maxlength="18" style="width:90px;" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onkeypress="if (digitou_enter(true)&&tem_info(this.value)) fORC.c_pse_demais_prest_periodo.focus(); filtra_moeda_positivo();" onblur="this.value=formata_moeda(this.value); " 
+							<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then %>
+								value="<%=formata_moeda(r_orcamento.pse_demais_prest_valor)%>"
+							<% else %>
+								value=""
+							<% end if %>
+						  >
+						</td>
+					  </tr>
+					  <tr>
+						<td style="width:60px;" align="left">&nbsp;</td>
+						<td colspan="2" align="left"><span class="C">Parcelas vencendo a cada</span
+						><input name="c_pse_demais_prest_periodo" id="c_pse_demais_prest_periodo" class="Cc" maxlength="2" style="width:30px;" onclick="fORC.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onkeypress="if (digitou_enter(true)&&tem_info(this.value)) fORC.c_forma_pagto.focus(); filtra_numerico();" 
+							<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then %>
+								value="<%=Cstr(r_orcamento.pse_demais_prest_periodo)%>"
+							<% else %>
+								value=""
+							<% end if %>
+						><span class="C">dias</span
+						><span style="width:10px;">&nbsp;</span
+						><span class="notPrint"><input name="b_pse_SugereFormaPagto" id="b_pse_SugereFormaPagto" type="button" class="Button" onclick="pse_sugestao_forma_pagto();" value="sugestão automática" title="preenche o campo 'Forma de Pagamento' com uma sugestão de texto"></span
+						></td>
+					  </tr>
+					</table>
+				  </td>
+				</tr>
+			  </table>
+			</td>
+		  </tr>
+		  <tr>
+			<td class="MC" align="left">
+			  <p class="Rf">Informações Sobre Análise de Crédito</p>
+				<textarea name="c_forma_pagto" id="c_forma_pagto" class="PLLe" rows="<%=Cstr(MAX_LINHAS_FORMA_PAGTO)%>"
+					style="width:641px;margin-left:2pt;" onkeypress="limita_tamanho(this,MAX_TAM_FORMA_PAGTO);" onblur="this.value=trim(this.value);"
+					><%=r_orcamento.forma_pagto%></textarea>
+			</td>
+		  </tr>
+		</table>
+	<% end if %>
+<% end if %>
+
+
+<!-- ************   SEPARADOR   ************ -->
+<table width="649" cellpadding="4" cellspacing="0" style="border-bottom:1px solid black">
+<tr><td class="Rc" align="left">&nbsp;</td></tr>
+</table>
+<br>
+<input type="hidden" name="Verifica_End_Entrega" id="Verifica_End_Entrega" value=''>
+<input type="hidden" name="Verifica_num" id="Verifica_num" value=''>
+<input type="hidden" name="Verifica_Cidade" id="Verifica_Cidade" value=''>
+<input type="hidden" name="Verifica_UF" id="Verifica_UF" value=''>
+<input type="hidden" name="Verifica_CEP" id="Verifica_CEP" value=''>
+<input type="hidden" name="Verifica_Justificativa" id="Verifica_Justificativa" value=''>
+
+<!-- ************   BOTÕES   ************ -->
+<table class="notPrint" width="649" cellspacing="0">
+<tr>
+	<td align="left"><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()" title="volta para página anterior">
+	    <img src="../botao/voltar.gif" width="176" height="55" border="0"></a>
+	</td>
+	<td align="right"><div name="dCONFIRMA" id="dCONFIRMA">
+		<a name="bCONFIRMA" id="bCONFIRMA" href="javascript:fORCConfirma(fORC)" title="confirma as alterações">
+		<img src="../botao/confirmar.gif" width="176" height="55" border="0"></a></div>
+	</td>
+</tr>
+</table>
+
+</form>
+
+</center>
+</body>
+
+<% end if %>
+
+</html>
+
+
+<%
+'	FECHA CONEXAO COM O BANCO DE DADOS
+	cn.Close
+	set cn = nothing
+%>

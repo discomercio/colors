@@ -1,0 +1,218 @@
+<!-- MENSAGEM: AGUARDE, PESQUISANDO NO BANCO DE DADOS -->
+<div id="divAjaxRunning" style="display:none;"><img src="../Imagem/ajax_loader_gray_256.gif" class="AjaxImgLoader"/></div>
+
+<div id="divBaseJanelaBuscaCEP" style="display:none;">
+	<img id="imgFechaJanelaPesqCEP" src="../imagem/close_button_32.png" title="clique para fechar o painel de consulta" />
+	<br />
+	<center>
+	<div id="divTabJanelaBuscaCEP">
+	<table id="tabJanelaBuscaCEP" cellpadding="0" cellspacing="0">
+	<tr>
+		<td align="center">
+			<table width="94%" style="border-bottom:1px solid black;">
+				<tr>
+					<td align="center">
+						<span style="font-family:Arial,Helvetica,sans-serif;font-size:14pt;font-weight:bold;">Busca de CEP</span>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td align="center">
+			<!--  CAMPOS DE PESQUISA  -->
+			<table width="94%" style="vertical-align:middle;margin-top:5px;">
+				<tr>
+					<td width="20%" align="left">
+						<table align="right" style="margin-left:5px;">
+							<tr>
+								<td width="100%" class="N" align="right" style="text-align:right;" rowspan="1">Pesquisa por CEP</td>
+							</tr>
+						</table>
+					</td>
+					<td align="left">
+						<div style="height:36px;vertical-align:middle;background:lightcyan;align:center;border: 1pt solid gray;padding: 6 6 6 6;margin-left:5px;">
+						<table border="0" cellspacing="0" cellpadding="0" style="margin-top:6px; margin-left:5px;vertical-align:middle;">
+						<tr>
+							<td align="right">
+								<span class="Cd">CEP</span>
+							</td>
+							<td align="left" nowrap>
+								<input id="c_cep_pesq" name="c_cep_pesq" maxlength="9" size="11" value="" onkeypress="if (digitou_enter(true)) {bPesquisaCEP.click();} filtra_cep();" onblur="if (cep_ok(this.value)) this.value=cep_formata(this.value);">
+								&nbsp;&nbsp;<button type="button" name="bPesquisaCEP" id="bPesquisaCEP" style="width:120px; font-size:10pt;" class="Botao">&nbsp;Pesquisar&nbsp;</button>
+							</td>
+						</tr>
+						</table>
+						</div>
+					</td>
+				</tr>
+				<tr style="height:8px;">
+					<td colspan="2"></td>
+				</tr>
+				<tr>
+					<td width="20%" align="left">
+						<table align="right" style="margin-left:5px;">
+							<tr>
+								<td width="100%" class="N" align="right" style="text-align:right;">Pesquisa por Endereço</td>
+							</tr>
+						</table>
+					</td>
+					<td align="left">
+						<div style="vertical-align:middle;background:lightcyan;align:center;border: 1pt solid gray;padding: 6 6 6 6;margin-left:5px;">
+							<table border="0" cellspacing="0" cellpadding="4" style="margin-top:6px; margin-left:5px;vertical-align:middle;">
+								<tr>
+									<td align="right" nowrap>
+										<span class="Cd">UF</span>
+									</td>
+									<td align="left" nowrap>
+										<select id="c_uf_pesq" name="c_uf_pesq" style="margin-right:10px;" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) {this.options[0].selected=true;$.CepUfCarregaLocalidades();}" onkeypress="if (digitou_enter(true)) $('#c_localidade_pesq').focus();">
+											<option value = "">&nbsp;</option>
+											<option value = "AC">AC</option>
+											<option value = "AL">AL</option>
+											<option value = "AM">AM</option>
+											<option value = "AP">AP</option>
+											<option value = "BA">BA</option>
+											<option value = "CE">CE</option>
+											<option value = "DF">DF</option>
+											<option value = "ES">ES</option>
+											<option value = "GO">GO</option>
+											<option value = "MA">MA</option>
+											<option value = "MG">MG</option>
+											<option value = "MS">MS</option>
+											<option value = "MT">MT</option>
+											<option value = "PA">PA</option>
+											<option value = "PB">PB</option>
+											<option value = "PE">PE</option>
+											<option value = "PI">PI</option>
+											<option value = "PR">PR</option>
+											<option value = "RJ">RJ</option>
+											<option value = "RN">RN</option>
+											<option value = "RO">RO</option>
+											<option value = "RR">RR</option>
+											<option value = "RS">RS</option>
+											<option value = "SC">SC</option>
+											<option value = "SE">SE</option>
+											<option value = "SP">SP</option>
+											<option value = "TO">TO</option>
+										</select>
+										&nbsp;
+										<span class="Cd">Localidade</span>
+										<select id="c_localidade_pesq" name="c_localidade_pesq" style="margin-right:10px;" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" onkeypress="if (digitou_enter(true)) $('#c_endereco_pesq').focus();">
+										</select>
+									</td>
+								</tr>
+								<tr>
+									<td align="right" nowrap>
+										<span class="Cd">Endereço</span>
+									</td>
+									<td align="left" nowrap>
+										<input id="c_endereco_pesq" name="c_endereco_pesq" size="50" onkeypress="if (digitou_enter(true)) {bPesquisaEndereco.click();} filtra_nome_identificador();" onblur="this.value=trim(this.value);">
+										&nbsp;&nbsp;<button type="button" name="bPesquisaEndereco" id="bPesquisaEndereco" style="width:120px; font-size:10pt;" class="Botao" onclick="ExecutaPesquisaCEP(OPCAO_PESQUISA_POR_ENDERECO);">&nbsp;Pesquisar&nbsp;</button>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr style="height:8px;"><td></td></tr>
+	<tr>
+		<td align="center">
+			<!--  DADOS DA RESPOSTA  -->
+			<!-- FORÇA A CRIAÇÃO DE UM ARRAY DE RADIO BUTTONS MESMO QUANDO EXISTE SOMENTE 1 ITEM -->
+			<input type="hidden" id="rb_check" name="rb_check" value="">
+			<table style="margin-left:5px;">
+				<tr>
+					<td class="N" align="left">RESULTADO</td>
+				</tr>
+			</table>
+			<div id="divResultado" name="divResultado" style="border: 1pt solid gray;padding:0;margin-left:5px;">
+				<center>
+				<table id="tabResposta" border="1" cellspacing="0" cellpadding="3">
+					<thead style="background:lightyellow;">
+						<tr>
+							<th align="left" style="font-size:8pt;width:20px;">&nbsp;</th>
+							<th align="left" style="font-size:8pt;width:75px;">CEP</th>
+							<th align="center" style="font-size:8pt;width:18px;">UF</th>
+							<th align="left" style="font-size:8pt;width:110px;">Cidade</th>
+							<th align="left" style="font-size:8pt;width:150px;">Bairro</th>
+							<th align="left" style="font-size:8pt;width:240px;">Logradouro</th>
+							<th align="left" style="font-size:8pt;">Complemento</th>
+						</tr>
+					</thead>
+					<tbody id="oTBodyDados" style="overflow:auto;height:100%;">
+					</tbody>
+				</table>
+				</center>
+			</div>
+		</td>
+	</tr>
+	<tr id="rowSeparadorNumeroEComplemento">
+		<td align="center">
+			<!-- ************   SEPARADOR   ************ -->
+			<table width="94%" cellpadding="0" cellspacing="0" style="border-bottom:1px solid black; magin-top:8px; margin-left:5px;">
+				<tr>
+					<td class="Rc">&nbsp;</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr id="rowNumeroEComplemento">
+		<td align="center">
+			<!-- ************   Nº / COMPLEMENTO   ************ -->
+			<table border="0" cellspacing="0" cellpadding="0" style="margin-top:6px;">
+				<tr>
+					<td align="right">
+						<span class="Cd">Nº</span>
+					</td>
+					<td align="left" nowrap>
+						<input id="c_endereco_numero" name="c_endereco_numero" maxlength="20" size="25" value="" onkeypress="if (digitou_enter(true)) $('#c_endereco_complemento').focus(); filtra_nome_identificador();" onblur="this.value=trim(this.value);">
+					</td>
+					<td style="width:20px;" align="left">
+						&nbsp;
+					</td>
+					<td align="right">
+						<span class="Cd">Complemento</span>
+					</td>
+					<td align="left" nowrap>
+						<input id="c_endereco_complemento" name="c_endereco_complemento" maxlength="60" size="45" value="" onkeypress="if (digitou_enter(true)) $('#bConfirmar').focus(); filtra_nome_identificador();" onblur="this.value=trim(this.value);">
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr id="rowEspacadorQuandoSomenteConsulta" style="display:none;">
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td align="center">
+			<!-- ************   SEPARADOR   ************ -->
+			<table width="94%" cellpadding="0" cellspacing="0" style="border-top:1px solid black;margin-top:7px;margin-left:5px;">
+				<tr style="height:12px;"><td class="Rc"></td></tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td align="center">
+			<table cellpadding="0" cellspacing="0">
+				<tr style="margin-top:0px">
+					<td align="center">
+						<button type="button" name="bCancelar" id="bCancelar" style="width:120px; font-size:10pt;" class="Botao">&nbsp;Cancelar&nbsp;</button>
+					</td>
+					<td style="width:200px" align="center">
+						<button type="button" name="bFechar" id="bFechar" style="width:120px; font-size:10pt;display:none;" class="Botao">&nbsp;Fechar&nbsp;</button>
+					</td>
+					<td align="center">
+						<button type="button" name="bConfirmar" id="bConfirmar" style="width:120px; font-size:10pt;" class="Botao">&nbsp;Confirmar&nbsp;</button>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr style="height:10px;"><td></td></tr>
+	</table>
+	</div>
+	</center>
+</div>
