@@ -2223,6 +2223,29 @@
         dim perc_agio
 		end class
 
+    class cl_ESTOQUE_TRANSFERENCIA_ITEM
+        dim documento
+        dim id_estoque_origem
+        dim entrada_tipo
+        dim fabricante
+        dim produto
+        dim descricao_html
+        dim qtde
+        dim preco_fabricante
+        dim vl_custo2
+        dim vl_BC_ICMS_ST
+        dim vl_ICMS_ST
+        dim ncm
+        dim cst
+        dim st_ncm_cst_herdado_tabela_produto
+        dim ean
+        dim aliq_ipi
+        dim aliq_icms
+        dim vl_ipi
+        dim preco_origem
+        dim produto_xml
+        end class
+
 	class cl_ITEM_ESTOQUE
 		dim id_estoque
 		dim fabricante
@@ -2292,6 +2315,12 @@
         dim xml_imposto__pIPI
         dim xml_imposto__vIPI
         end class
+
+	class cl_ITEM_TRANSF_ENTRE_CD
+		dim fabricante
+		dim produto
+		dim qtde
+		end class
 
 	class cl_AGRUPA_KIT_POR_PRECO
 		dim id_estoque
