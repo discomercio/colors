@@ -142,7 +142,7 @@
 	Const MAX_TAMANHO_LOJA = 3
 	
 '	Percentual de deságio para RA Líquida
-	Const PERC_DESAGIO_RA_LIQUIDA = 20
+	Const PERC_DESAGIO_RA_LIQUIDA = 25
 
 '	Criptografia em SessionCtrl (tratamento da sessão expirada)
 	Const FATOR_CRIPTO_SESSION_CTRL = "1329"
