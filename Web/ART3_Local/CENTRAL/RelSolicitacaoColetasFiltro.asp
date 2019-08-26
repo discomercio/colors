@@ -76,6 +76,77 @@
 	'	NÃO HÁ NENHUM CD CADASTRADO P/ ESTE USUÁRIO!!
 		Response.Redirect("aviso.asp?id=" & ERR_NENHUM_CD_HABILITADO_PARA_USUARIO)
 		end if
+
+
+
+
+
+' _____________________________________________________________________________________________
+'
+'									F  U  N  Ç  Õ  E  S 
+' _____________________________________________________________________________________________
+function fabricante_monta_itens_select(byval id_default)
+dim x, r, strResp, ha_default, v, i
+	id_default = Trim("" & id_default)
+    v = split(id_default, ", ")
+	ha_default=False
+	set r = cn.Execute("SELECT * FROM t_FABRICANTE ORDER BY fabricante")
+	strResp = ""
+	do while Not r.eof 
+		x = Trim("" & r("fabricante"))
+        strResp = strResp & "<option "
+        for i=LBound(v) to UBound(v) 
+		    if (id_default<>"") And (v(i)=x) then
+		        strResp = strResp & "selected"
+                ha_default=True
+                exit for
+		        end if
+		   	next
+
+		strResp = strResp & " value='" & x & "'>"
+		strResp = strResp & Trim("" & r("fabricante")) & " - " & Trim("" & r("nome"))
+		strResp = strResp & "</option>" & chr(13)
+		r.MoveNext
+		loop
+		
+	fabricante_monta_itens_select = strResp
+	r.close
+	set r=nothing
+end function
+
+
+' _____________________________________________
+' ZONA_DEPOSITO_MONTA_ITENS_SELECT
+'
+function zona_deposito_monta_itens_select(byval id_default)
+dim x, r, strResp, ha_default, v, i
+	id_default = Trim("" & id_default)
+    v = split(id_default, ", ")
+	ha_default=False
+	set r = cn.Execute("SELECT * FROM t_WMS_DEPOSITO_MAP_ZONA WHERE (st_ativo <> 0) ORDER BY ordenacao")
+	strResp = ""
+	do while Not r.eof 
+		x = Trim("" & r("id"))
+        strResp = strResp & "<option "
+        for i=LBound(v) to UBound(v) 
+		    if (id_default<>"") And (v(i)=x) then
+		        strResp = strResp & "selected"
+                ha_default=True
+                exit for
+		        end if
+		   	next
+
+		strResp = strResp & " value='" & x & "'>"
+		strResp = strResp & "&nbsp;&nbsp;" & Trim("" & r("zona_codigo")) & "&nbsp;&nbsp;&nbsp;"
+		strResp = strResp & "</option>" & chr(13)
+		r.MoveNext
+		loop
+
+	zona_deposito_monta_itens_select = strResp
+	r.close
+	set r=nothing
+end function
+
 %>
 
 
@@ -135,13 +206,54 @@
 			else {
 				$(".TR_DT_ENTREGA").hide();
 			}
-		});
+        });
+
+        $("#c_fabricante_permitido").change(function () {
+            $("#spnCounterFabrPermitido").text($("#c_fabricante_permitido :selected").length);
+        });
+
+        $("#c_fabricante_proibido").change(function () {
+            $("#spnCounterFabrProibido").text($("#c_fabricante_proibido :selected").length);
+        });
+
+        $("#c_zona_permitida").change(function () {
+            $("#spnCounterZonaPermitida").text($("#c_zona_permitida :selected").length);
+        });
+
+        $("#c_zona_proibida").change(function () {
+            $("#spnCounterZonaProibida").text($("#c_zona_proibida :selected").length);
+        });
+
+        $("#spnCounterFabrPermitido").text($("#c_fabricante_permitido :selected").length);
+        $("#spnCounterFabrProibido").text($("#c_fabricante_proibido :selected").length);
+        $("#spnCounterZonaPermitida").text($("#c_zona_permitida :selected").length);
+        $("#spnCounterZonaProibida").text($("#c_zona_proibida :selected").length);
 	});
 </script>
 
 <script language="JavaScript" type="text/javascript">
 function limpaCampoTransp(f) {
 	f.c_filtro_transportadora.options[0].selected = true;
+}
+
+function limpaCampoFabrPermitido(f) {
+    $("#c_fabricante_permitido option:selected").removeAttr("selected");
+    $("#spnCounterFabrPermitido").text($("#c_fabricante_permitido :selected").length);
+}
+
+function limpaCampoFabrProibido(f) {
+    $("#c_fabricante_proibido option:selected").removeAttr("selected");
+    $("#spnCounterFabrProibido").text($("#c_fabricante_proibido :selected").length);
+}
+
+function limpaCampoZonaPermitida(f) {
+    $("#c_zona_permitida option:selected").removeAttr("selected");
+    $("#spnCounterZonaPermitida").text($("#c_zona_permitida :selected").length);
+}
+
+function limpaCampoZonaProibida(f) {
+    $("#c_zona_proibida option:selected").removeAttr("selected");
+    $("#spnCounterZonaProibida").text($("#c_zona_proibida :selected").length);
 }
 
 function fFILTROConfirma( f ) {
@@ -291,7 +403,115 @@ function fFILTROConfirma( f ) {
 		</td></tr>
 	</table>
 </td></tr>
-
+<!--  FABRICANTE  -->
+<tr>
+	<td class="ME MD PLTe" nowrap align="left" valign="bottom">&nbsp;FABRICANTE</td>
+</tr>
+<tr bgcolor="#FFFFFF" nowrap>
+	<td class="ME MB MD" align="left">
+		<table cellspacing="0" cellpadding="0" style="width:100%;margin:1px 10px 6px 10px;" border="0">
+		<tr>
+			<td align="left" style="width:48%;">
+		        <span class="PLTe">Somente pedidos</span>
+                <br />
+                <span class="PLTe"><span style="color:green;">COM</span> produtos do(s) fabricante(s)</span>
+                <br />
+                <table style="padding:0px;">
+                    <tr>
+                        <td align="left">
+                            <select id="c_fabricante_permitido" name="c_fabricante_permitido" size="6" multiple style="margin:1px 4px 6px 0px;">
+		                    <%=fabricante_monta_itens_select(get_default_valor_texto_bd(usuario, "RelSolicitacaoColetasFiltro|c_fabricante_permitido")) %>
+		                    </select>
+                        </td>
+                        <td style="text-align:left;vertical-align:top;">
+				            <a name="bLimparFabrPermitido" id="bLimparFabrPermitido" href="javascript:limpaCampoFabrPermitido(fFILTRO)" title="limpa o filtro 'Fabricantes permitidos'">
+							            <img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                            <br />
+                            (<span class="Lbl" id="spnCounterFabrPermitido"></span>)
+                        </td>
+                    </tr>
+                </table>
+			</td>
+            <td style="width:15px;"></td>
+			<td align="left" style="width:48%;">
+                <span class="PLTe">Somente pedidos</span>
+                <br />
+                <span class="PLTe"><span style="color:red;">SEM</span> produtos do(s) fabricante(s)</span>
+                <br />
+                <table style="padding:0px;">
+                    <tr>
+                        <td align="left">
+		                    <select id="c_fabricante_proibido" name="c_fabricante_proibido" size="6" multiple style="margin:1px 4px 6px 0px;">
+		                    <%=fabricante_monta_itens_select(get_default_valor_texto_bd(usuario, "RelSolicitacaoColetasFiltro|c_fabricante_proibido")) %>
+		                    </select>
+                        </td>
+                        <td style="text-align:left;vertical-align:top;">
+				            <a name="bLimparFabrProibido" id="bLimparFabrProibido" href="javascript:limpaCampoFabrProibido(fFILTRO)" title="limpa o filtro 'Fabricantes proibidos'">
+							            <img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                            <br />
+                            (<span class="Lbl" id="spnCounterFabrProibido"></span>)
+                        </td>
+                    </tr>
+                </table>
+			</td>
+		</tr>
+		</table>
+	</td>
+</tr>
+<!--  ZONA  -->
+<tr>
+	<td class="ME MD PLTe" nowrap align="left" valign="bottom">&nbsp;ZONA</td>
+</tr>
+<tr bgcolor="#FFFFFF" nowrap>
+	<td class="ME MB MD" align="left">
+		<table cellspacing="0" cellpadding="0" style="width:100%;margin:1px 10px 6px 10px;">
+		<tr>
+			<td align="left" style="width:50%;">
+		        <span class="PLTe">Somente pedidos</span>
+                <br />
+                <span class="PLTe"><span style="color:green;">COM</span> produtos da(s) zona(s)</span>
+                <br />
+                <table style="padding:0px;">
+                    <tr>
+                        <td align="left">
+                            <select id="c_zona_permitida" name="c_zona_permitida" size="6" multiple style="margin:1px 4px 6px 0px;">
+		                    <%=zona_deposito_monta_itens_select(get_default_valor_texto_bd(usuario, "RelSolicitacaoColetasFiltro|c_zona_permitida")) %>
+		                    </select>
+                        </td>
+                        <td style="text-align:left;vertical-align:top;">
+				            <a name="bLimparZonaPermitida" id="bLimparZonaPermitida" href="javascript:limpaCampoZonaPermitida(fFILTRO)" title="limpa o filtro 'Zonas permitidas'">
+							            <img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                            <br />
+                            (<span class="Lbl" id="spnCounterZonaPermitida"></span>)
+                        </td>
+                    </tr>
+                </table>
+			</td>
+			<td align="left" style="width:50%;">
+                <span class="PLTe">Somente pedidos</span>
+                <br />
+                <span class="PLTe"><span style="color:red;">SEM</span> produtos da(s) zona(s)</span>
+                <br />
+                <table style="padding:0px;">
+                    <tr>
+                        <td align="left">
+		                    <select id="c_zona_proibida" name="c_zona_proibida" size="6" multiple style="margin:1px 4px 6px 0px;">
+		                    <%=zona_deposito_monta_itens_select(get_default_valor_texto_bd(usuario, "RelSolicitacaoColetasFiltro|c_zona_proibida")) %>
+		                    </select>
+                        </td>
+                        <td style="text-align:left;vertical-align:top;">
+				            <a name="bLimparZonaProibida" id="bLimparZonaProibida" href="javascript:limpaCampoZonaProibida(fFILTRO)" title="limpa o filtro 'Zonas proibidas'">
+							            <img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                            <br />
+                            (<span class="Lbl" id="spnCounterZonaProibida"></span>)
+                        </td>
+                    </tr>
+                </table>
+			</td>
+		</tr>
+		</table>
+	</td>
+</tr>
 <!--  TRANSPORTADORA  -->
 <tr>
 	<td class="ME MD PLTe" nowrap align="left" valign="bottom">&nbsp;TRANSPORTADORA</td>
