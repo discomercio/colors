@@ -64,9 +64,11 @@
 		end if
 	
 	dim alerta
-	dim s, s_aux, s_filtro
+	dim i, s, s_aux, s_filtro
 	dim rb_loja, c_loja, c_loja_de, c_loja_ate, c_filtro_transportadora, s_filtro_nome_transportadora, c_filtro_dt_entrega, c_nfe_emitente
 	dim rb_tipo_relatorio
+    dim c_fabricante_permitido, c_fabricante_proibido, c_zona_permitida, c_zona_proibida
+    dim v_fabricante_permitido, v_fabricante_proibido, v_zona_permitida, v_zona_proibida
 
 	alerta = ""
 
@@ -77,6 +79,10 @@
 	rb_tipo_relatorio = Trim(Request.Form("rb_tipo_relatorio"))
 	c_filtro_transportadora = Trim(Request.Form("c_filtro_transportadora"))
 	c_nfe_emitente = Trim(Request.Form("c_nfe_emitente"))
+    c_fabricante_permitido = Trim(Request.Form("c_fabricante_permitido"))
+    c_fabricante_proibido = Trim(Request.Form("c_fabricante_proibido"))
+    c_zona_permitida = Trim(Request.Form("c_zona_permitida"))
+    c_zona_proibida = Trim(Request.Form("c_zona_proibida"))
 	
 	if rb_tipo_relatorio = COD_TIPO_RELATORIO_PRONTO_PARA_ROMANEIO then
 		c_filtro_dt_entrega = Trim(Request.Form("c_filtro_dt_entrega"))
@@ -146,6 +152,13 @@
 			end if
 		end if
 
+    if alerta = "" then
+		call set_default_valor_texto_bd(usuario, "RelSolicitacaoColetasFiltro|c_fabricante_permitido", c_fabricante_permitido)
+		call set_default_valor_texto_bd(usuario, "RelSolicitacaoColetasFiltro|c_fabricante_proibido", c_fabricante_proibido)
+		call set_default_valor_texto_bd(usuario, "RelSolicitacaoColetasFiltro|c_zona_permitida", c_zona_permitida)
+		call set_default_valor_texto_bd(usuario, "RelSolicitacaoColetasFiltro|c_zona_proibida", c_zona_proibida)
+        end if
+
 
 
 
@@ -199,9 +212,9 @@ Const COD_COR_AZUL = 2
 Const COD_COR_VERMELHO = 3
 dim r
 dim blnDisabled
-dim s, s_sql, cab_table, cab, n_reg, s_num_nfe, s_link_nfe, s_row, s_html_color, s_link_habilita_print, s_link_indicador
+dim s, s_sql, s_lista, cab_table, cab, n_reg, s_num_nfe, s_link_nfe, s_row, s_html_color, s_link_habilita_print, s_link_indicador
 dim s_cidade, s_uf, s_transportadora, s_data_entrega_yyyymmdd, s_data_credito_ok
-dim s_where, s_from
+dim s_where, s_where_aux, s_from
 dim i, intCodCor, intOrdenacaoCor
 dim blnRegistroOk
 dim vRel()
@@ -265,6 +278,82 @@ total_valor = 0
 		s_where = s_where & " (" & s & ")"
 		end if
 	
+'	CRITÉRIO: FABRICANTE PERMITIDO
+    if c_fabricante_permitido <> "" then
+        v_fabricante_permitido = Split(c_fabricante_permitido, ", ")
+        s_lista = ""
+        for i=LBound(v_fabricante_permitido) to UBound(v_fabricante_permitido)
+            if Trim("" & v_fabricante_permitido(i)) <> "" then
+                if s_lista <> "" then s_lista = s_lista & ", "
+                s_lista = s_lista & "'" & Trim("" & v_fabricante_permitido(i)) & "'"
+            end if
+        next
+        
+        if s_lista <> "" then
+            'DEVE-SE SELECIONAR SOMENTE OS PEDIDOS QUE CONTENHAM EXCLUSIVAMENTE PRODUTOS DOS FABRICANTES SELECIONADOS, OU SEJA, OS PEDIDOS NÃO PODEM CONTER PRODUTOS DE OUTROS FABRICANTES
+            s_where_aux = "COALESCE((SELECT Count(*) FROM t_PEDIDO_ITEM tPI WHERE (tPI.pedido=t_PEDIDO.pedido) AND (tPI.fabricante NOT IN (" & s_lista & "))), 0) = 0"
+            if s_where <> "" then s_where = s_where & " AND"
+            s_where = s_where & " (" & s_where_aux & ")"
+        end if
+    end if
+
+'	CRITÉRIO: FABRICANTE PROIBIDO
+    if c_fabricante_proibido <> "" then
+        v_fabricante_proibido = Split(c_fabricante_proibido, ", ")
+        s_lista = ""
+        for i=LBound(v_fabricante_proibido) to UBound(v_fabricante_proibido)
+            if Trim("" & v_fabricante_proibido(i)) <> "" then
+                if s_lista <> "" then s_lista = s_lista & ", "
+                s_lista = s_lista & "'" & Trim("" & v_fabricante_proibido(i)) & "'"
+            end if
+        next
+        
+        if s_lista <> "" then
+            'DEVE-SE SELECIONAR SOMENTE OS PEDIDOS QUE NÃO CONTENHAM OS PRODUTOS DOS FABRICANTES SELECIONADOS
+            s_where_aux = "COALESCE((SELECT Count(*) FROM t_PEDIDO_ITEM tPI WHERE (tPI.pedido=t_PEDIDO.pedido) AND (tPI.fabricante IN (" & s_lista & "))), 0) = 0"
+            if s_where <> "" then s_where = s_where & " AND"
+            s_where = s_where & " (" & s_where_aux & ")"
+        end if
+    end if
+
+'	CRITÉRIO: ZONA PERMITIDA
+    if c_zona_permitida <> "" then
+        v_zona_permitida = Split(c_zona_permitida, ", ")
+        s_lista = ""
+        for i=LBound(v_zona_permitida) to UBound(v_zona_permitida)
+            if Trim("" & v_zona_permitida(i)) <> "" then
+                if s_lista <> "" then s_lista = s_lista & ", "
+                s_lista = s_lista & "'" & Trim("" & v_zona_permitida(i)) & "'"
+            end if
+        next
+        
+        if s_lista <> "" then
+            'DEVE-SE SELECIONAR SOMENTE OS PEDIDOS QUE CONTENHAM EXCLUSIVAMENTE PRODUTOS ARMAZENADOS NAS ZONAS DO DEPÓSITO SELECIONADAS, OU SEJA, OS PEDIDOS NÃO PODEM CONTER PRODUTOS DE OUTRAS ZONAS
+            s_where_aux = "COALESCE((SELECT Count(*) FROM t_PEDIDO_ITEM tPI INNER JOIN t_PRODUTO tPROD ON (tPI.fabricante = tPROD.fabricante) AND (tPI.produto = tPROD.produto) WHERE (tPI.pedido=t_PEDIDO.pedido) AND (tPROD.deposito_zona_id NOT IN (" & s_lista & "))), 0) = 0"
+            if s_where <> "" then s_where = s_where & " AND"
+            s_where = s_where & " (" & s_where_aux & ")"
+        end if
+    end if
+
+'	CRITÉRIO: ZONA PROIBIDA
+    if c_zona_proibida <> "" then
+        v_zona_proibida = Split(c_zona_proibida, ", ")
+        s_lista = ""
+        for i=LBound(v_zona_proibida) to UBound(v_zona_proibida)
+            if Trim("" & v_zona_proibida(i)) <> "" then
+                if s_lista <> "" then s_lista = s_lista & ", "
+                s_lista = s_lista & "'" & Trim("" & v_zona_proibida(i)) & "'"
+            end if
+        next
+        
+        if s_lista <> "" then
+            'DEVE-SE SELECIONAR SOMENTE OS PEDIDOS QUE NÃO CONTENHAM OS PRODUTOS DAS ZONAS DO DEPÓSITO SELECIONADAS
+            s_where_aux = "COALESCE((SELECT Count(*) FROM t_PEDIDO_ITEM tPI INNER JOIN t_PRODUTO tPROD ON (tPI.fabricante = tPROD.fabricante) AND (tPI.produto = tPROD.produto) WHERE (tPI.pedido=t_PEDIDO.pedido) AND (tPROD.deposito_zona_id IN (" & s_lista & "))), 0) = 0"
+            if s_where <> "" then s_where = s_where & " AND"
+            s_where = s_where & " (" & s_where_aux & ")"
+        end if
+    end if
+
 '	CRITÉRIO: TRANSPORTADORA
 	if c_filtro_transportadora <> "" then
 		s = " (t_PEDIDO.transportadora_id = '" & c_filtro_transportadora & "')"
@@ -1099,6 +1188,17 @@ body{
 			   "<span class='N'>Tipo de Relatório:&nbsp;</span></td><td align='left' valign='top'>" & _
 			   "<span class='N'>" & s & "</span></td></tr>"
 
+    s = c_nfe_emitente
+    if s = "" then
+        s = "N.I."
+    else
+        s = obtem_apelido_empresa_NFe_emitente(s)
+        end if
+
+	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
+			   "<span class='N'>CD:&nbsp;</span></td><td align='left' valign='top'>" & _
+			   "<span class='N'>" & s & "</span></td></tr>"
+
 	select case rb_loja
 		case "TODAS": s = "todas"
 		case "UMA": s = c_loja
@@ -1117,6 +1217,70 @@ body{
 			   "<span class='N'>Lojas:&nbsp;</span></td><td align='left' valign='top'>" & _
 			   "<span class='N'>" & s & "</span></td></tr>"
 	
+    s = c_fabricante_permitido
+    if s = "" then
+        s = "todos"
+    else
+        v_fabricante_permitido = split(c_fabricante_permitido, ", ")
+        s = ""
+        for i = Lbound(v_fabricante_permitido) to Ubound(v_fabricante_permitido)
+            if s <> "" then s = s & ", "
+		    s = s & x_fabricante(v_fabricante_permitido(i))
+        next
+        end if
+
+	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
+				"<span class='N'>Fabricantes <span style='color:green;'>Permitidos</span>:&nbsp;</span></td><td align='left' valign='top'>" & _
+				"<span class='N'>" & s & "</span></td></tr>"
+
+    s = c_fabricante_proibido
+    if s = "" then
+        s = "N.I."
+    else
+        v_fabricante_proibido = split(c_fabricante_proibido, ", ")
+        s = ""
+        for i = Lbound(v_fabricante_proibido) to Ubound(v_fabricante_proibido)
+            if s <> "" then s = s & ", "
+		    s = s & x_fabricante(v_fabricante_proibido(i))
+        next
+        end if
+
+	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
+				"<span class='N'>Fabricantes <span style='color:red;'>Proibidos</span>:&nbsp;</span></td><td align='left' valign='top'>" & _
+				"<span class='N'>" & s & "</span></td></tr>"
+
+    s = c_zona_permitida
+    if s = "" then
+        s = "todas"
+    else
+        v_zona_permitida = split(c_zona_permitida, ", ")
+        s = ""
+        for i = Lbound(v_zona_permitida) to Ubound(v_zona_permitida)
+            if s <> "" then s = s & ", "
+		    s = s & wms_deposito_zona_obtem_descricao(v_zona_permitida(i))
+        next
+        end if
+
+	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
+				"<span class='N'>Zonas <span style='color:green;'>Permitidas</span>:&nbsp;</span></td><td align='left' valign='top'>" & _
+				"<span class='N'>" & s & "</span></td></tr>"
+
+    s = c_zona_proibida
+    if s = "" then
+        s = "N.I."
+    else
+        v_zona_proibida = split(c_zona_proibida, ", ")
+        s = ""
+        for i = Lbound(v_zona_proibida) to Ubound(v_zona_proibida)
+            if s <> "" then s = s & ", "
+		    s = s & wms_deposito_zona_obtem_descricao(v_zona_proibida(i))
+        next
+        end if
+
+	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
+				"<span class='N'>Zonas <span style='color:red;'>Proibidas</span>:&nbsp;</span></td><td align='left' valign='top'>" & _
+				"<span class='N'>" & s & "</span></td></tr>"
+
 	s = c_filtro_transportadora
 	if s = "" then 
 		s = "todas"
