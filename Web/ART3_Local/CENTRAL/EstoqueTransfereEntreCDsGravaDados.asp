@@ -72,12 +72,12 @@
     n = Request.Form("c_produto").Count
 
    	redim v_item1(0)
-	set v_item1(0) = New cl_ESTOQUE_TRANSFERENCIA_ITEM    
+	set v_item1(0) = New cl_ESTOQUE_TRANSFERENCIA_ITEM_SUB
     for i = 1 to n 
         if Trim(Request.Form("c_produto")(i)) <> "" then 
             if Trim(v_item1(ubound(v_item1)).produto) <> "" then
 				redim preserve v_item1(ubound(v_item1)+1)
-				set v_item1(ubound(v_item1)) = New cl_ESTOQUE_TRANSFERENCIA_ITEM
+				set v_item1(ubound(v_item1)) = New cl_ESTOQUE_TRANSFERENCIA_ITEM_SUB
 				end if
 			with v_item1(ubound(v_item1))
                 .documento = Trim(Request.Form("c_documento")(i))
@@ -95,7 +95,7 @@
         next
 
    	redim v_item2(0)
-	set v_item2(0) = New cl_ESTOQUE_TRANSFERENCIA_ITEM
+	set v_item2(0) = New cl_ESTOQUE_TRANSFERENCIA_ITEM_SUB
     
     if not estoque_produto_transf_consiste_quantidades(c_nfe_emitente_origem, _
                                                     c_nfe_emitente_destino, _
@@ -155,7 +155,7 @@
 			end if
 
         redim v_item3(0)
-	    set v_item3(0) = New cl_ESTOQUE_TRANSFERENCIA_ITEM    
+	    set v_item3(0) = New cl_ESTOQUE_TRANSFERENCIA_ITEM_SUB
     
         if Not estoque_produto_transf_consiste_quantidades(c_nfe_emitente_origem, _
                                                     c_nfe_emitente_destino, _

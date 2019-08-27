@@ -2224,6 +2224,15 @@
 		end class
 
     class cl_ESTOQUE_TRANSFERENCIA_ITEM
+        dim fabricante
+        dim produto
+        dim qtde
+        dim aliq_ipi
+        dim aliq_icms
+        dim vl_ipi
+        end class
+
+    class cl_ESTOQUE_TRANSFERENCIA_ITEM_SUB
         dim documento
         dim id_estoque_origem
         dim entrada_tipo

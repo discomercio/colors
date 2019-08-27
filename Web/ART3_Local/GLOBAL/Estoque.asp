@@ -3404,6 +3404,84 @@ dim soma
 end function
 
 ' --------------------------------------------------------------------
+'   ESTOQUE PRODUTO TRANSFERÊNCIA ENTRE CD (REAGRUPAMENTO DE ITENS)
+'   Retorno da função:
+'      False - Ocorreu falha ao tentar alterar os dados do estoque.
+'      True - Conseguiu alterar os dados do estoque.
+'   Esta função pega o vetor onde foi feita a distribuição de quantidades
+'   dos produtos e os reagrupa conforme informado na tela inicial.
+'	
+'	(melhorar esta descrição)
+'	
+function estoque_produto_transf_reagrupa_itens(ByRef v_distribuido, _
+                                                    ByRef v_reagrupado, _
+										            ByRef msg_erro)
+dim s
+dim s_cod_prod1
+dim s_cod_prod2
+dim s_fabr1
+dim s_fabr2
+dim iv
+dim v_aliq_ipi
+dim v_vl_ipi
+dim v_aliq_icms
+dim soma
+
+	estoque_produto_transf_reagrupa_itens = False
+	
+    msg_erro = ""	
+    s_cod_prod1 = ""
+    s_cod_prod2 = ""
+    s_fabr1 = ""
+    s_fabr2 = ""
+    v_aliq_ipi = 0
+    v_vl_ipi = 0
+    v_aliq_icms = 0
+    soma = 0
+
+    'REAGRUPANDO OS PRODUTOS
+    for iv = LBound(v_distribuido) to UBound(v_distribuido)
+        with v_distribuido(iv)
+            s_cod_prod1 = .produto
+            s_fabr1 = .fabricante
+            if (s_cod_prod1 <> s_cod_prod2) And (s_cod_prod2 <> "") then                
+			    if Trim("" & v_reagrupado(Ubound(v_reagrupado)).produto) <> "" then
+				    redim preserve v_reagrupado(ubound(v_reagrupado)+1)
+				    set v_reagrupado(UBound(v_reagrupado)) = New cl_ESTOQUE_TRANSFERENCIA_ITEM
+				    end if			
+				v_reagrupado(UBound(v_reagrupado)).fabricante = v_distribuido(iv-1).fabricante
+				v_reagrupado(UBound(v_reagrupado)).produto = v_distribuido(iv-1).produto
+				v_reagrupado(UBound(v_reagrupado)).qtde = soma
+                v_reagrupado(UBound(v_reagrupado)).aliq_ipi = v_aliq_ipi
+                v_reagrupado(UBound(v_reagrupado)).vl_ipi = v_vl_ipi
+                v_reagrupado(UBound(v_reagrupado)).aliq_icms = v_aliq_icms
+                soma = 0
+                end if
+            s_cod_prod2 = s_cod_prod1
+            s_fabr2 = s_fabr1
+            soma = soma + .qtde
+            v_aliq_ipi = .aliq_ipi
+            v_vl_ipi = .vl_ipi
+            v_aliq_icms = .aliq_icms
+            end with
+        next
+    'FAZENDO O REAGRUPAMENTO DO ÚLTIMO PRODUTO DA LISTA (POIS O LOOP PULA ESTE PRODUTO)
+	if Trim("" & v_reagrupado(Ubound(v_reagrupado)).produto) <> "" then
+		redim preserve v_reagrupado(ubound(v_reagrupado)+1)
+		set v_reagrupado(UBound(v_reagrupado)) = New cl_ESTOQUE_TRANSFERENCIA_ITEM
+		end if			
+	v_reagrupado(UBound(v_reagrupado)).fabricante = v_distribuido(UBound(v_distribuido)).fabricante
+	v_reagrupado(UBound(v_reagrupado)).produto = v_distribuido(UBound(v_distribuido)).produto
+	v_reagrupado(UBound(v_reagrupado)).qtde = soma
+    v_reagrupado(UBound(v_reagrupado)).aliq_ipi = v_aliq_ipi
+    v_reagrupado(UBound(v_reagrupado)).vl_ipi = v_vl_ipi
+    v_reagrupado(UBound(v_reagrupado)).aliq_icms = v_aliq_icms
+ 
+
+	estoque_produto_transf_reagrupa_itens = True
+end function
+
+' --------------------------------------------------------------------
 '   ESTOQUE PRODUTO TRANSFERÊNCIA ENTRE CD (MONTAGEM)
 '   Retorno da função:
 '      False - Ocorreu falha ao tentar alterar os dados do estoque.
@@ -3563,7 +3641,7 @@ dim s_chave
 
 			If v_item(Ubound(v_item)).produto <> "" Then
 				redim preserve v_item(ubound(v_item)+1)
-				set v_item(ubound(v_item)) = New cl_ESTOQUE_TRANSFERENCIA_ITEM
+				set v_item(ubound(v_item)) = New cl_ESTOQUE_TRANSFERENCIA_ITEM_SUB
 				End if
 			v_item(Ubound(v_item)).documento = Trim(v_documento(iv))
             v_item(Ubound(v_item)).entrada_tipo = v_entrada_tipo(iv)

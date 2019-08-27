@@ -46,6 +46,7 @@
     dim c_nfe_emitente_origem, c_nfe_emitente_destino, c_documento_transf, c_obs
 
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
+    If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	
 	c_log_edicao = Trim(Request.Form("c_log_edicao"))
     
@@ -55,8 +56,10 @@
     c_obs = Trim(Request.Form("c_obs"))
 
     dim v_item1, v_item2, v_item3
+    dim v_agrupa
     dim s_cod_prod1, s_cod_prod2
     dim id_estoque_transferencia
+    dim id_estoque_transferencia_item
 
     'Procedimento: 
     '- obter as informações da tela anterior e armazenar no vetor 1
@@ -67,12 +70,12 @@
     n = Request.Form("c_produto").Count
 
    	redim v_item1(0)
-	set v_item1(0) = New cl_ESTOQUE_TRANSFERENCIA_ITEM    
+	set v_item1(0) = New cl_ESTOQUE_TRANSFERENCIA_ITEM_SUB
     for i = 1 to n 
         if Trim(Request.Form("c_produto")(i)) <> "" then 
             if Trim(v_item1(ubound(v_item1)).produto) <> "" then
 				redim preserve v_item1(ubound(v_item1)+1)
-				set v_item1(ubound(v_item1)) = New cl_ESTOQUE_TRANSFERENCIA_ITEM
+				set v_item1(ubound(v_item1)) = New cl_ESTOQUE_TRANSFERENCIA_ITEM_SUB
 				end if
 			with v_item1(ubound(v_item1))
                 .documento = Trim(Request.Form("c_documento")(i))
@@ -86,7 +89,7 @@
         next
 
    	redim v_item2(0)
-	set v_item2(0) = New cl_ESTOQUE_TRANSFERENCIA_ITEM
+	set v_item2(0) = New cl_ESTOQUE_TRANSFERENCIA_ITEM_SUB
     
     if not estoque_produto_transf_consiste_quantidades(c_nfe_emitente_origem, _
                                                     c_nfe_emitente_destino, _
@@ -123,12 +126,26 @@
 	'	~~~~~~~~~~~~~
         
         redim v_item3(0)
-	    set v_item3(0) = New cl_ESTOQUE_TRANSFERENCIA_ITEM    
+	    set v_item3(0) = New cl_ESTOQUE_TRANSFERENCIA_ITEM_SUB
     
         if Not estoque_produto_transf_consiste_quantidades(c_nfe_emitente_origem, _
                                                     c_nfe_emitente_destino, _
                                                     v_item2, _
                                                     v_item3, _
+										            msg_erro) then
+		'	~~~~~~~~~~~~~~~~
+			cn.RollbackTrans
+		'	~~~~~~~~~~~~~~~~
+			Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_TRANSFERENCIA_CD_CONFERE)
+            end if
+
+    'REAGRUPAR
+        redim v_agrupa(0)
+	    set v_agrupa(0) = New cl_ESTOQUE_TRANSFERENCIA_ITEM
+        v_agrupa(0).produto = ""
+    
+        if Not estoque_produto_transf_reagrupa_itens(v_item2, _
+                                                    v_agrupa, _
 										            msg_erro) then
 		'	~~~~~~~~~~~~~~~~
 			cn.RollbackTrans
@@ -167,14 +184,49 @@
 				    end if				
 
             if msg_erro = "" then
+                for i=lbound(v_agrupa) to ubound(v_agrupa)
+                    with v_agrupa(i)
+			            s_sql = " INSERT INTO T_ESTOQUE_TRANSFERENCIA_ITEM " & _
+					            " (id_estoque_transferencia, fabricante, produto, qtde,  " & _
+                                " aliq_ipi, aliq_icms, vl_ipi " & _
+                                "  ) VALUES " & _
+                                " ("  & _
+	                            CStr(id_estoque_transferencia) & ", " & _   
+                                " '" & .fabricante & "', " & _
+                                " '" & .produto  & "', " & _
+                                .qtde  & ", " & _
+                                Iif(IsNull(.aliq_ipi), "NULL", bd_formata_numero(.aliq_ipi)) & ", " & _
+                                Iif(IsNull(.aliq_icms), "NULL", bd_formata_numero(.aliq_icms)) & ", " & _
+                                Iif(IsNull(.vl_ipi), "NULL", bd_formata_numero(.vl_ipi)) & " " & _
+                                " )" 
+			            cn.Execute(s_sql)
+                        end with
+			        if Err <> 0 then
+                        msg_erro= "Problema na inclusão dos itens agrupados" & vbCrLf
+				        msg_erro= msg_erro & Cstr(Err) & ": " & Err.Description
+				        end if				
+                    next
+                end if
+                
+            if msg_erro = "" then
                 for i=lbound(v_item2) to ubound(v_item2)
                     with v_item2(i)
-			            s_sql = " INSERT INTO T_ESTOQUE_TRANSFERENCIA_ITEM " & _
-					            " (id_estoque_transferencia, id_estoque_origem, entrada_tipo, documento, fabricante, produto, qtde, preco_fabricante, vl_custo2, vl_BC_ICMS_ST, vl_ICMS_ST,  " & _
+                        'OBTEM O id DA TABELA t_ESTOQUE_TRANSFERENCIA_ITEM para cada produto
+                        s_sql = " SELECT id FROM t_ESTOQUE_TRANSFERENCIA_ITEM " & _
+                              " WHERE id_estoque_transferencia = " & CStr(id_estoque_transferencia)  & _   
+                              " AND fabricante = '" & .fabricante & "' " & _
+                              " AND produto = '" & .produto & "' "
+                        if rs.State <> 0 then rs.Close
+                        rs.open s_sql, cn
+                        id_estoque_transferencia_item = rs("id")
+
+			            s_sql = " INSERT INTO T_ESTOQUE_TRANSFERENCIA_ITEM_SUB " & _
+					            " (id_estoque_transferencia, id_estoque_transferencia_item, id_estoque_origem, entrada_tipo, documento, fabricante, produto, qtde, preco_fabricante, vl_custo2, vl_BC_ICMS_ST, vl_ICMS_ST,  " & _
                                 " ncm, cst, st_ncm_cst_herdado_tabela_produto, ean, aliq_ipi, aliq_icms, vl_ipi, preco_origem, produto_xml " & _
                                 "  ) VALUES " & _
                                 " ("  & _
 	                            CStr(id_estoque_transferencia) & ", " & _   
+	                            CStr(id_estoque_transferencia_item) & ", " & _   
     				            " '" & .id_estoque_origem & "', " & _
                                 " " & .entrada_tipo & ", " & _
                                 " '" & .documento & "', " & _
@@ -202,8 +254,8 @@
 				        msg_erro= msg_erro & Cstr(Err) & ": " & Err.Description
 				        end if				
                     next
-                end if
-                
+                end if    
+
         if msg_erro <> "" then
 		 '	~~~~~~~~~~~~~~~~
 			 cn.RollbackTrans
@@ -296,8 +348,8 @@
 
 
 <%
-	'if rs.State <> 0 then rs.Close
-	'set rs = nothing
+	if rs.State <> 0 then rs.Close
+	set rs = nothing
 
 '	FECHA CONEXAO COM O BANCO DE DADOS
 	cn.Close

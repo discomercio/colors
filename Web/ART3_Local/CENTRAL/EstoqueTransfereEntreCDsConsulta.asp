@@ -79,9 +79,9 @@
 	if alerta = "" then
 
         redim v_item(0)
-	    set v_item(0) = New cl_ESTOQUE_TRANSFERENCIA_ITEM    
+	    set v_item(0) = New cl_ESTOQUE_TRANSFERENCIA_ITEM_SUB
 
-        s = "SELECT * FROM t_ESTOQUE_TRANSFERENCIA_ITEM WHERE (id_estoque_transferencia = " & c_transf_selecionada & ")"
+        s = "SELECT * FROM t_ESTOQUE_TRANSFERENCIA_ITEM_SUB WHERE (id_estoque_transferencia = " & c_transf_selecionada & ")"
 		if rs.State <> 0 then rs.Close
         rs.open s, cn
 		if rs.Eof then
@@ -90,7 +90,7 @@
 		    Do While not rs.Eof
 			    if Trim(v_item(UBound(v_item)).produto) <> "" then
 				    redim preserve v_item(ubound(v_item)+1)
-				    set v_item(ubound(v_item)) = New cl_ESTOQUE_TRANSFERENCIA_ITEM
+				    set v_item(ubound(v_item)) = New cl_ESTOQUE_TRANSFERENCIA_ITEM_SUB
 				    end if
 			    with v_item(ubound(v_item))
                     .documento = Trim(rs("documento"))

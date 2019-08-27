@@ -60,7 +60,7 @@
 	v_item(UBound(v_item)).produto = ""
 
     redim v_item_transf(0)
-	set v_item_transf(UBound(v_item_transf)) = New cl_ESTOQUE_TRANSFERENCIA_ITEM
+	set v_item_transf(UBound(v_item_transf)) = New cl_ESTOQUE_TRANSFERENCIA_ITEM_SUB
 	v_item_transf(UBound(v_item_transf)).produto = ""
 
 	n = Request.Form("c_produto").Count
