@@ -3686,8 +3686,8 @@ end function
 '      True - Conseguiu fazer a movimentação do estoque.
 '   IMPORTANTE: sempre chame esta rotina dentro de uma transação para 
 '      garantir a consistência dos registros.
-'   Esta função remove o registro de transferência entre CDs, desde
-'   que isso seja possível.
+'   Esta função marca os registros de transferência entre CDs, como
+'   excluídos, desde que isso seja possível.
 
 function transferencia_estoque_remove(byval id_usuario, byval transf_estoque, byref info_log, byref msg_erro)
 dim s
@@ -3727,9 +3727,18 @@ dim s_log_base
 '	ERRO!!
 	if msg_erro <> "" then exit function
 	
-'	TENTA ELIMINAR OS REGISTROS DOS ITENS DA TRANSFERÊNCIA
+'	TENTA MARCAR COMO EXCLUÍDOS OS ITENS DA TRANSFERÊNCIA
 
-    s = "DELETE FROM t_ESTOQUE_TRANSFERENCIA_ITEM WHERE"  & _
+    s = "UPDATE t_ESTOQUE_TRANSFERENCIA_ITEM_SUB SET st_exclusao = 1 WHERE"  & _
+		" (id_estoque_transferencia in (SELECT id FROM t_ESTOQUE_TRANSFERENCIA WHERE "& _
+		" (id = '" & transf_estoque & "'))) "
+	cn.Execute(s)
+	if Err <> 0 then
+		msg_erro = Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+
+    s = "UPDATE t_ESTOQUE_TRANSFERENCIA_ITEM SET st_exclusao = 1 WHERE"  & _
 		" (id_estoque_transferencia in (SELECT id FROM t_ESTOQUE_TRANSFERENCIA WHERE "& _
 		" (id = '" & transf_estoque & "'))) "
 	cn.Execute(s)
@@ -3740,7 +3749,7 @@ dim s_log_base
 
 '	TENTA ELIMINAR O REGISTRO DA TRANSFERÊNCIA
 
-    s = "DELETE FROM t_ESTOQUE_TRANSFERENCIA WHERE" & _
+    s = "UPDATE t_ESTOQUE_TRANSFERENCIA SET st_exclusao = 1 WHERE" & _
 		" (id = '" & transf_estoque & "') "
 	cn.Execute(s)
 	if Err <> 0 then
