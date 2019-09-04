@@ -7410,11 +7410,12 @@ Dim strSql As String
             End With
     
         strSql = "SELECT" & _
-                    " NFe_serie_NF," & _
-                    " NFe_numero_NF" & _
-                " FROM t_NFE_EMITENTE" & _
+                    " n.NFe_serie_NF," & _
+                    " n.NFe_numero_NF" & _
+                " FROM t_NFE_EMITENTE e" & _
+                " INNER JOIN t_NFE_EMITENTE_NUMERACAO n ON e.cnpj = n.cnpj" & _
                 " WHERE" & _
-                    " (id=" & usuario.emit_id & ")"
+                    " (e.id=" & usuario.emit_id & ")"
         If t.State <> adStateClosed Then t.Close
         t.Open strSql, dbc, , , adCmdText
         If Not t.EOF Then
@@ -12122,11 +12123,13 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
 '   SE HOUVE BLOQUEIO DE ESPERA, ATUALIZAR O Nº NA t_NFE_EMITENTE
 '   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     If blnEsperaNFTriangular Then
-        s = "UPDATE t_NFE_EMITENTE SET" & _
-                " NFe_numero_NF = " & strSerieNfTriangular & _
+        s = "UPDATE n SET" & _
+                " n.NFe_numero_NF = " & strSerieNfTriangular & _
+            " FROM t_NFE_EMITENTE n" & _
+            " INNER JOIN t_NFE_EMITENTE_NUMERACAO n ON e.cnpj = n.cnpj" & _
             " WHERE" & _
-                " (id = " & CStr(intIdNfeEmitente) & ")" & _
-                " AND (NFe_serie_NF = " & CStr(strSerieNf) & ")"
+                " (e.id = " & CStr(intIdNfeEmitente) & ")" & _
+                " AND (n.NFe_serie_NF = " & CStr(strSerieNf) & ")"
         Call dbc.Execute(s, lngAffectedRecords)
         If lngAffectedRecords <> 1 Then
             s = "Falha ao atualizar a numeração sequencial para o emitente atual!!" & vbCrLf & s
