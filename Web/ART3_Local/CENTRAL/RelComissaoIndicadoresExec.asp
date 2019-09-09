@@ -847,7 +847,10 @@ end if
 				s_lista_ja_marcado_perda = s_lista_ja_marcado_perda & Trim("" & r("id_registro"))
 				end if
 			end if
-		x = x & "		<td class='MDTE tdCkb" & s_class_td & "' align='center'><input type='checkbox' class='CKB_COM " & s_class & "' name='" & s_id & "' id='" & s_id & "' value='" & Trim("" & r("id_registro")) & "|" & Trim("" & r("operacao")) & "'" & s_checked & " /></td>" & chr(13)
+		x = x & "		<td class='MDTE tdCkb" & s_class_td & "' align='center'>" & _
+                            "<input type='checkbox' class='CKB_COM " & s_class & "' name='" & s_id & "' id='" & s_id & "' value='" & Trim("" & r("id_registro")) & "|" & Trim("" & r("operacao")) & "'" & s_checked & " />" & _
+                            "<input type='hidden' name='" & s_id & "_original" & "' id='" & s_id & "_original" & "' value='" & Trim("" & r("status_comissao")) & "' />" & _
+                "</td>" & chr(13)
 		
 	 '> LOJA
 		x = x & "		<td class='MTD tdLoja' align='center'><span class='Cnc' style='color:" & s_cor & ";'>" & Trim("" & r("loja")) & "</span></td>" & chr(13)

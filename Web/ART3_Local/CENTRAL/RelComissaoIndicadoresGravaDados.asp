@@ -88,7 +88,7 @@
 	c_lista_ja_marcado_devolucao = Trim(Request.Form("c_lista_ja_marcado_devolucao"))
 	c_lista_ja_marcado_perda = Trim(Request.Form("c_lista_ja_marcado_perda"))
 
-	dim i, s_name, s_id_registro, qtde_total_reg_update, qtde_venda_normal_update, qtde_devolucao_update, qtde_perda_update
+	dim i, s_name, s_name_valor_oginal, s_id_registro, qtde_total_reg_update, qtde_venda_normal_update, qtde_devolucao_update, qtde_perda_update, blnEditou, blnErroFatal
 	dim v_lista_completa_venda_normal, v_lista_completa_devolucao, v_lista_completa_perda
 	v_lista_completa_venda_normal = Split(c_lista_completa_venda_normal, ";", -1)
 	v_lista_completa_devolucao = Split(c_lista_completa_devolucao, ";", -1)
@@ -97,66 +97,78 @@
 	dim v_venda_normal, v_devolucao, v_perda
 	
 	redim v_venda_normal(0)
-	set v_venda_normal(UBound(v_venda_normal)) = New cl_TRES_COLUNAS
+	set v_venda_normal(UBound(v_venda_normal)) = New cl_QUATRO_COLUNAS
 	v_venda_normal(UBound(v_venda_normal)).c1 = ""
 	for i=LBound(v_lista_completa_venda_normal) to Ubound(v_lista_completa_venda_normal)
 		if Trim(v_lista_completa_venda_normal(i)) <> "" then
 			s_id_registro = Trim(v_lista_completa_venda_normal(i))
 			s_name = "ckb_comissao_paga_" & VENDA_NORMAL & "_" & s_id_registro
+            s_name_valor_oginal = s_name & "_original"
 			if v_venda_normal(Ubound(v_venda_normal)).c1 <> "" then
 				redim preserve v_venda_normal(Ubound(v_venda_normal)+1)
-				set v_venda_normal(UBound(v_venda_normal)) = New cl_TRES_COLUNAS
+				set v_venda_normal(UBound(v_venda_normal)) = New cl_QUATRO_COLUNAS
 				end if
 			with v_venda_normal(Ubound(v_venda_normal))
 				.c1 = s_name
 				.c2 = s_id_registro
 				.c3 = Trim(Request.Form(s_name))
+                'Recupera o valor original do status
+                .c4 = Trim(Request.Form(s_name_valor_oginal))
 				end with
 			end if
 		next
 	
 	redim v_devolucao(0)
-	set v_devolucao(UBound(v_devolucao)) = New cl_TRES_COLUNAS
+	set v_devolucao(UBound(v_devolucao)) = New cl_QUATRO_COLUNAS
 	v_devolucao(UBound(v_devolucao)).c1 = ""
 	for i=LBound(v_lista_completa_devolucao) to Ubound(v_lista_completa_devolucao)
 		if Trim(v_lista_completa_devolucao(i)) <> "" then
 			s_id_registro = Trim(v_lista_completa_devolucao(i))
 			s_name = "ckb_comissao_paga_" & DEVOLUCAO & "_" & s_id_registro
+            s_name_valor_oginal = s_name & "_original"
 			if v_devolucao(Ubound(v_devolucao)).c1 <> "" then
 				redim preserve v_devolucao(Ubound(v_devolucao)+1)
-				set v_devolucao(UBound(v_devolucao)) = New cl_TRES_COLUNAS
+				set v_devolucao(UBound(v_devolucao)) = New cl_QUATRO_COLUNAS
 				end if
 			with v_devolucao(Ubound(v_devolucao))
 				.c1 = s_name
 				.c2 = s_id_registro
 				.c3 = Trim(Request.Form(s_name))
+                'Recupera o valor original do status
+                .c4 = Trim(Request.Form(s_name_valor_oginal))
 				end with
 			end if
 		next
 	
 	redim v_perda(0)
-	set v_perda(UBound(v_perda)) = New cl_TRES_COLUNAS
+	set v_perda(UBound(v_perda)) = New cl_QUATRO_COLUNAS
 	v_perda(UBound(v_perda)).c1 = ""
 	for i=LBound(v_lista_completa_perda) to Ubound(v_lista_completa_perda)
 		if Trim(v_lista_completa_perda(i)) <> "" then
 			s_id_registro = Trim(v_lista_completa_perda(i))
 			s_name = "ckb_comissao_paga_" & PERDA & "_" & s_id_registro
+            s_name_valor_oginal = s_name & "_original"
 			if v_perda(Ubound(v_perda)).c1 <> "" then
 				redim preserve v_perda(Ubound(v_perda)+1)
-				set v_perda(UBound(v_perda)) = New cl_TRES_COLUNAS
+				set v_perda(UBound(v_perda)) = New cl_QUATRO_COLUNAS
 				end if
 			with v_perda(Ubound(v_perda))
 				.c1 = s_name
 				.c2 = s_id_registro
 				.c3 = Trim(Request.Form(s_name))
+                'Recupera o valor original do status
+                .c4 = Trim(Request.Form(s_name_valor_oginal))
 				end with
 			end if
 		next
 	
-	dim s_rel_comissao_paga, s_rel_devolucao_descontada, s_rel_perda_descontada
+	dim s_rel_comissao_paga, s_rel_comissao_nao_paga, s_rel_devolucao_descontada, s_rel_devolucao_nao_descontada, s_rel_perda_descontada, s_rel_perda_nao_descontada
 	s_rel_comissao_paga = ""
+    s_rel_comissao_nao_paga = ""
 	s_rel_devolucao_descontada = ""
+    s_rel_devolucao_nao_descontada = ""
 	s_rel_perda_descontada = ""
+    s_rel_perda_nao_descontada = ""
 	
 	dim alerta
 	alerta=""
@@ -166,6 +178,7 @@
 	dim cn, rs
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	
+    blnErroFatal = False
 	s_log = ""
 	qtde_total_reg_update = 0
 	qtde_venda_normal_update = 0
@@ -183,8 +196,10 @@
 			Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 			end if
 
+        'Tratamento para pedidos (vendas normais)
 		s_log_venda_normal = ""
 		for i=Lbound(v_venda_normal) to Ubound(v_venda_normal)
+            blnEditou = False
 			if v_venda_normal(i).c1 <> "" then
 				s_id_registro = Trim(v_venda_normal(i).c2)
 				s = "SELECT * FROM t_PEDIDO WHERE (pedido = '" & s_id_registro & "')"
@@ -194,43 +209,67 @@
 					alerta=texto_add_br(alerta)
 					alerta=alerta & "Pedido " & s_id_registro & " não foi encontrado."
 				else
+                '   VERIFICA SE USUÁRIO FEZ EDIÇÃO COM RELAÇÃO AO CONTEÚDO ORIGINAL
 				'	CHECKBOX ESTAVA MARCADO
 					if Trim(v_venda_normal(i).c3) <> "" then
 						s_novo_status = Cstr(COD_COMISSAO_PAGA)
-						s_novo_op = "S"
-						if s_rel_comissao_paga <> "" then s_rel_comissao_paga = s_rel_comissao_paga & ", "
-						s_rel_comissao_paga = s_rel_comissao_paga & Trim("" & rs("pedido"))
 				'	CHECKBOX ESTAVA DESMARCADO
 					else
 						s_novo_status = Cstr(COD_COMISSAO_NAO_PAGA)
-						s_novo_op = "N"
 						end if
+                    
+                    if Trim("" & s_novo_status) <> Trim("" & v_venda_normal(i).c4) then blnEditou = True
+
+                    if blnEditou then
+                        'Verifica se o conteúdo original foi alterado por outro usuário
+                        if CLng(v_venda_normal(i).c4) <> rs("comissao_paga") then
+					        alerta=texto_add_br(alerta)
+					        alerta=alerta & "O status da comissão do pedido " & Trim("" & rs("pedido")) & " foi alterado por outro usuário (" & Trim("" & rs("comissao_paga_usuario")) & ") durante o processamento deste relatório!!<br />Será necessário refazer a consulta para obter dados atualizados!!"
+                            blnErroFatal = True
+                            end if
+                    
+                        if Not blnErroFatal then
+				        '	CHECKBOX ESTAVA MARCADO
+					        if Trim(v_venda_normal(i).c3) <> "" then
+						        s_novo_op = "S"
+						        if s_rel_comissao_paga <> "" then s_rel_comissao_paga = s_rel_comissao_paga & ", "
+						        s_rel_comissao_paga = s_rel_comissao_paga & Trim("" & rs("pedido"))
+				        '	CHECKBOX ESTAVA DESMARCADO
+					        else
+						        s_novo_op = "N"
+                                if s_rel_comissao_nao_paga <> "" then s_rel_comissao_nao_paga = s_rel_comissao_nao_paga & ", "
+                                s_rel_comissao_nao_paga = s_rel_comissao_nao_paga & Trim("" & rs("pedido"))
+						        end if
 					
-					if rs("comissao_paga") <> CLng(s_novo_status) then
-						if s_log_venda_normal <> "" then s_log_venda_normal = s_log_venda_normal & ", "
-						s_log_venda_normal = s_log_venda_normal & s_id_registro & ": " & rs("comissao_paga") & " => " & s_novo_status
-						rs("comissao_paga")=CLng(s_novo_status)
-						rs("comissao_paga_ult_op")=s_novo_op
-						rs("comissao_paga_data")=Date
-						rs("comissao_paga_usuario")=usuario
-						qtde_total_reg_update = qtde_total_reg_update + 1
-						qtde_venda_normal_update = qtde_venda_normal_update + 1
-						rs.Update
-						if Err <> 0 then
-							alerta=texto_add_br(alerta)
-							alerta=alerta & Cstr(Err) & ": " & Err.Description
-							end if
-						end if
-					end if
+					        if rs("comissao_paga") <> CLng(s_novo_status) then
+						        if s_log_venda_normal <> "" then s_log_venda_normal = s_log_venda_normal & ", "
+						        s_log_venda_normal = s_log_venda_normal & s_id_registro & ": " & rs("comissao_paga") & " => " & s_novo_status
+						        rs("comissao_paga")=CLng(s_novo_status)
+						        rs("comissao_paga_ult_op")=s_novo_op
+						        rs("comissao_paga_data")=Date
+						        rs("comissao_paga_usuario")=usuario
+						        qtde_total_reg_update = qtde_total_reg_update + 1
+						        qtde_venda_normal_update = qtde_venda_normal_update + 1
+						        rs.Update
+						        if Err <> 0 then
+							        alerta=texto_add_br(alerta)
+							        alerta=alerta & Cstr(Err) & ": " & Err.Description
+							        end if
+						        end if 'if rs("comissao_paga") <> CLng(s_novo_status)
+                            end if 'if Not blnErroFatal
+                        end if 'if blnEditou
+					end if 'if rs.Eof
 				if rs.State <> 0 then rs.Close
-				end if
+				end if 'if v_venda_normal(i).c1 <> ""
 			
 		'	SE HOUVE ERRO, CANCELA O LAÇO
 			if alerta <> "" then exit for
 			next
 		
+        'Tratamento para devoluções
 		s_log_devolucao = ""
 		for i=Lbound(v_devolucao) to Ubound(v_devolucao)
+            blnEditou = False
 			if v_devolucao(i).c1 <> "" then
 				s_id_registro = Trim(v_devolucao(i).c2)
 				s = "SELECT * FROM t_PEDIDO_ITEM_DEVOLVIDO WHERE (id = '" & s_id_registro & "')"
@@ -240,43 +279,67 @@
 					alerta=texto_add_br(alerta)
 					alerta=alerta & "Registro de item devolvido " & s_id_registro & " não foi encontrado."
 				else
+                '   VERIFICA SE USUÁRIO FEZ EDIÇÃO COM RELAÇÃO AO CONTEÚDO ORIGINAL
 				'	CHECKBOX ESTAVA MARCADO
 					if Trim(v_devolucao(i).c3) <> "" then
 						s_novo_status = Cstr(COD_COMISSAO_DESCONTADA)
-						s_novo_op = "S"
-						if s_rel_devolucao_descontada <> "" then s_rel_devolucao_descontada = s_rel_devolucao_descontada & ", "
-						s_rel_devolucao_descontada = s_rel_devolucao_descontada & Trim("" & rs("pedido"))
 				'	CHECKBOX ESTAVA DESMARCADO
 					else
 						s_novo_status = Cstr(COD_COMISSAO_NAO_DESCONTADA)
-						s_novo_op = "N"
-						end if
+                        end if
+
+                    if Trim("" & s_novo_status) <> Trim("" & v_devolucao(i).c4) then blnEditou = True
+
+                    if blnEditou then
+                        'Verifica se o conteúdo original foi alterado por outro usuário
+                        if CLng(v_devolucao(i).c4) <> rs("comissao_descontada") then
+                            alerta=texto_add_br(alerta)
+                            alerta=alerta & "O status da devolução do pedido " & Trim("" & rs("pedido")) & " (produto: " & Trim("" & rs("produto")) & ") foi alterado por outro usuário (" & Trim("" & rs("comissao_descontada_usuario")) & ") durante o processamento deste relatório!!<br />Será necessário refazer a consulta para obter dados atualizados!!"
+                            blnErroFatal = True
+                            end if
+
+                        if Not blnErroFatal then
+				        '	CHECKBOX ESTAVA MARCADO
+					        if Trim(v_devolucao(i).c3) <> "" then
+						        s_novo_op = "S"
+						        if s_rel_devolucao_descontada <> "" then s_rel_devolucao_descontada = s_rel_devolucao_descontada & ", "
+						        s_rel_devolucao_descontada = s_rel_devolucao_descontada & Trim("" & rs("pedido"))
+				        '	CHECKBOX ESTAVA DESMARCADO
+					        else
+						        s_novo_op = "N"
+						        if s_rel_devolucao_nao_descontada <> "" then s_rel_devolucao_nao_descontada = s_rel_devolucao_nao_descontada & ", "
+                                s_rel_devolucao_nao_descontada = s_rel_devolucao_nao_descontada & Trim("" & rs("pedido"))
+                                end if
 					
-					if rs("comissao_descontada") <> CLng(s_novo_status) then
-						if s_log_devolucao <> "" then s_log_devolucao = s_log_devolucao & ", "
-						s_log_devolucao = s_log_devolucao & s_id_registro & "(" & rs("pedido") & ")" & ": " & rs("comissao_descontada") & " => " & s_novo_status
-						rs("comissao_descontada")=CLng(s_novo_status)
-						rs("comissao_descontada_ult_op")=s_novo_op
-						rs("comissao_descontada_data")=Date
-						rs("comissao_descontada_usuario")=usuario
-						qtde_total_reg_update = qtde_total_reg_update + 1
-						qtde_devolucao_update = qtde_devolucao_update + 1
-						rs.Update
-						if Err <> 0 then 
-							alerta=texto_add_br(alerta)
-							alerta=alerta & Cstr(Err) & ": " & Err.Description
-							end if
-						end if
-					end if
+					        if rs("comissao_descontada") <> CLng(s_novo_status) then
+						        if s_log_devolucao <> "" then s_log_devolucao = s_log_devolucao & ", "
+						        s_log_devolucao = s_log_devolucao & s_id_registro & "(" & rs("pedido") & ")" & ": " & rs("comissao_descontada") & " => " & s_novo_status
+						        rs("comissao_descontada")=CLng(s_novo_status)
+						        rs("comissao_descontada_ult_op")=s_novo_op
+						        rs("comissao_descontada_data")=Date
+						        rs("comissao_descontada_usuario")=usuario
+						        qtde_total_reg_update = qtde_total_reg_update + 1
+						        qtde_devolucao_update = qtde_devolucao_update + 1
+						        rs.Update
+						        if Err <> 0 then 
+							        alerta=texto_add_br(alerta)
+							        alerta=alerta & Cstr(Err) & ": " & Err.Description
+							        end if
+						        end if 'if rs("comissao_descontada") <> CLng(s_novo_status)
+                            end if 'if Not blnErroFatal
+                        end if 'if blnEditou
+					end if 'if rs.Eof
 				if rs.State <> 0 then rs.Close
-				end if
+				end if 'if v_devolucao(i).c1 <> ""
 			
 		'	SE HOUVE ERRO, CANCELA O LAÇO
 			if alerta <> "" then exit for
 			next
 		
+        'Tratamento para perdas
 		s_log_perda = ""
 		for i=Lbound(v_perda) to Ubound(v_perda)
+            blnEditou = False
 			if v_perda(i).c1 <> "" then
 				s_id_registro = Trim(v_perda(i).c2)
 				s = "SELECT * FROM t_PEDIDO_PERDA WHERE (id = '" & s_id_registro & "')"
@@ -286,36 +349,58 @@
 					alerta=texto_add_br(alerta)
 					alerta=alerta & "Registro de perda " & s_id_registro & " não foi encontrado."
 				else
+                '   VERIFICA SE USUÁRIO FEZ EDIÇÃO COM RELAÇÃO AO CONTEÚDO ORIGINAL
 				'	CHECKBOX ESTAVA MARCADO
 					if Trim(v_perda(i).c3) <> "" then
 						s_novo_status = Cstr(COD_COMISSAO_DESCONTADA)
-						s_novo_op = "S"
-						if s_rel_perda_descontada <> "" then s_rel_perda_descontada = s_rel_perda_descontada & ", "
-						s_rel_perda_descontada = s_rel_perda_descontada & Trim("" & rs("pedido"))
 				'	CHECKBOX ESTAVA DESMARCADO
 					else
 						s_novo_status = Cstr(COD_COMISSAO_NAO_DESCONTADA)
-						s_novo_op = "N"
 						end if
+
+                    if Trim("" & s_novo_status) <> Trim("" & v_perda(i).c4) then blnEditou = True
+
+                    if blnEditou then
+                        'Verifica se o conteúdo original foi alterado por outro usuário
+                        if CLng(v_perda(i).c4) <> rs("comissao_descontada") then
+					        alerta=texto_add_br(alerta)
+					        alerta=alerta & "O status do valor de perda do pedido " & Trim("" & rs("pedido")) & " foi alterado por outro usuário (" & Trim("" & rs("comissao_descontada_usuario")) & ") durante o processamento deste relatório!!<br />Será necessário refazer a consulta para obter dados atualizados!!"
+                            blnErroFatal = True
+                            end if
+
+                        if Not blnErroFatal then
+				        '	CHECKBOX ESTAVA MARCADO
+					        if Trim(v_perda(i).c3) <> "" then
+						        s_novo_op = "S"
+						        if s_rel_perda_descontada <> "" then s_rel_perda_descontada = s_rel_perda_descontada & ", "
+						        s_rel_perda_descontada = s_rel_perda_descontada & Trim("" & rs("pedido"))
+				        '	CHECKBOX ESTAVA DESMARCADO
+					        else
+						        s_novo_op = "N"
+                                if s_rel_perda_nao_descontada <> "" then s_rel_perda_nao_descontada = s_rel_perda_nao_descontada & ", "
+                                s_rel_perda_nao_descontada = s_rel_perda_nao_descontada & Trim("" & rs("pedido"))
+						        end if
 					
-					if rs("comissao_descontada") <> CLng(s_novo_status) then
-						if s_log_perda <> "" then s_log_perda = s_log_perda & ", "
-						s_log_perda = s_log_perda & s_id_registro & "(" & rs("pedido") & ")" & ": " & rs("comissao_descontada") & " => " & s_novo_status
-						rs("comissao_descontada")=CLng(s_novo_status)
-						rs("comissao_descontada_ult_op")=s_novo_op
-						rs("comissao_descontada_data")=Date
-						rs("comissao_descontada_usuario")=usuario
-						qtde_total_reg_update = qtde_total_reg_update + 1
-						qtde_perda_update = qtde_perda_update + 1
-						rs.Update
-						if Err <> 0 then 
-							alerta=texto_add_br(alerta)
-							alerta=alerta & Cstr(Err) & ": " & Err.Description
-							end if
-						end if
-					end if
+					        if rs("comissao_descontada") <> CLng(s_novo_status) then
+						        if s_log_perda <> "" then s_log_perda = s_log_perda & ", "
+						        s_log_perda = s_log_perda & s_id_registro & "(" & rs("pedido") & ")" & ": " & rs("comissao_descontada") & " => " & s_novo_status
+						        rs("comissao_descontada")=CLng(s_novo_status)
+						        rs("comissao_descontada_ult_op")=s_novo_op
+						        rs("comissao_descontada_data")=Date
+						        rs("comissao_descontada_usuario")=usuario
+						        qtde_total_reg_update = qtde_total_reg_update + 1
+						        qtde_perda_update = qtde_perda_update + 1
+						        rs.Update
+						        if Err <> 0 then 
+							        alerta=texto_add_br(alerta)
+							        alerta=alerta & Cstr(Err) & ": " & Err.Description
+							        end if
+						        end if 'if rs("comissao_descontada") <> CLng(s_novo_status)
+                            end if 'if Not blnErroFatal
+                        end if 'if blnEditou
+					end if 'if rs.Eof
 				if rs.State <> 0 then rs.Close
-				end if
+				end if 'if v_perda(i).c1 <> ""
 			
 		'	SE HOUVE ERRO, CANCELA O LAÇO
 			if alerta <> "" then exit for
@@ -388,6 +473,10 @@
 <script src="<%=URL_FILE__GLOBAL_JS%>" language="JavaScript" type="text/javascript"></script>
 
 <script language="JavaScript" type="text/javascript">
+function fAvisoVoltar(f) {
+    f.action = "RelComissaoIndicadores.asp?url_back=X";
+    f.submit();
+}
 function fRetornar(f) {
 	f.action = "RelComissaoIndicadores.asp?url_back=X";
 	dVOLTAR.style.visibility = "hidden";
@@ -417,17 +506,39 @@ function fRetornar(f) {
 <!-- ************************************************************ -->
 <body onload="bVOLTAR.focus();">
 <center>
-<br>
+<br />
 <!--  T E L A  -->
+<form id="fAviso" name="fAviso" method="post">
+<%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
+<!-- FILTROS -->
+<input type="hidden" name="ckb_st_entrega_entregue" id="ckb_st_entrega_entregue" value="<%=ckb_st_entrega_entregue%>">
+<input type="hidden" name="c_dt_entregue_inicio" id="c_dt_entregue_inicio" value="<%=c_dt_entregue_inicio%>">
+<input type="hidden" name="c_dt_entregue_termino" id="c_dt_entregue_termino" value="<%=c_dt_entregue_termino%>">
+<input type="hidden" name="c_indicador" id="c_indicador" value="<%=c_indicador%>">
+<input type="hidden" name="c_vendedor" id="c_vendedor" value="<%=c_vendedor%>">
+<input type="hidden" name="c_loja" id="c_loja" value="<%=c_loja%>">
+<input type="hidden" name="ckb_comissao_paga_sim" id="ckb_comissao_paga_sim" value="<%=ckb_comissao_paga_sim%>">
+<input type="hidden" name="ckb_comissao_paga_nao" id="ckb_comissao_paga_nao" value="<%=ckb_comissao_paga_nao%>">
+<input type="hidden" name="ckb_st_pagto_pago" id="ckb_st_pagto_pago" value="<%=ckb_st_pagto_pago%>">
+<input type="hidden" name="ckb_st_pagto_nao_pago" id="ckb_st_pagto_nao_pago" value="<%=ckb_st_pagto_nao_pago%>">
+<input type="hidden" name="ckb_st_pagto_pago_parcial" id="ckb_st_pagto_pago_parcial" value="<%=ckb_st_pagto_pago_parcial%>">
+
 <p class="T">A V I S O</p>
 <div class="MtAlerta" style="width:600px;font-weight:bold;" align="center"><p style='margin:5px 2px 5px 2px;'><%=alerta%></p></div>
 <br><br>
 <p class="TracoBottom"></p>
 <table cellspacing="0">
 <tr>
-	<td align="center"><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()"><img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
+	<td align="center">
+        <% if blnErroFatal then %>
+        <a name="bVOLTAR" id="bVOLTAR" href="javascript:fAvisoVoltar(fAviso)">
+        <% else %>
+        <a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()">
+        <% end if %>
+        <img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
 </tr>
 </table>
+</form>
 </center>
 </body>
 
@@ -480,6 +591,12 @@ function fRetornar(f) {
 			if s_aux = "" then s_aux = "(nenhum pedido)"
 		%>
 	<span style='margin:5px 2px 5px 2px;'><%=s_aux%></span>
+    <% if s_rel_comissao_nao_paga <> "" then %>
+    <br /><br />
+    <span style='margin:5px 2px 5px 2px;'>Comissão <span style='color:red;'>NÃO</span> Paga:</span>
+    <br />
+    <span style='margin:5px 2px 5px 2px;'><%=s_rel_comissao_nao_paga%></span>
+    <% end if %>
 	<br /><br />
 	<span style='margin:5px 2px 5px 2px;'>Devolução Descontada:</span>
 	<br />
@@ -487,13 +604,25 @@ function fRetornar(f) {
 			if s_aux = "" then s_aux = "(nenhum pedido)"
 		%>
 	<span style='margin:5px 2px 5px 2px;'><%=s_aux%></span>
-	<br /><br />
+	<% if s_rel_devolucao_nao_descontada <> "" then %>
+    <br /><br />
+    <span style='margin:5px 2px 5px 2px;'>Devolução <span style='color:red;'>NÃO</span> Descontada:</span>
+    <br />
+    <span style='margin:5px 2px 5px 2px;'><%=s_rel_devolucao_nao_descontada%></span>
+    <% end if %>
+    <br /><br />
 	<span style='margin:5px 2px 5px 2px;'>Perda Descontada:</span>
 	<br />
 		<% s_aux = s_rel_perda_descontada
 			if s_aux = "" then s_aux = "(nenhum pedido)"
 		%>
 	<span style='margin:5px 2px 5px 2px;'><%=s_aux%></span>
+    <% if s_rel_perda_nao_descontada <> "" then %>
+    <br /><br />
+    <span style='margin:5px 2px 5px 2px;'>Perda <span style='color:red;'>NÃO</span> Descontada:</span>
+    <br />
+    <span style='margin:5px 2px 5px 2px;'><%=s_rel_perda_nao_descontada%></span>
+    <% end if %>
 	<% end if %>
 </div>
 <br>
