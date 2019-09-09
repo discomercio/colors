@@ -637,7 +637,10 @@ dim s_lista_ja_marcado_venda_normal, s_lista_ja_marcado_devolucao, s_lista_ja_ma
 				s_lista_ja_marcado_perda = s_lista_ja_marcado_perda & Trim("" & r("id_registro"))
 				end if
 			end if
-		    x = x & "		<td class='MDTE tdCkb" & s_class_td & "' align='center'><input type='checkbox' class='CKB_COM " & s_class & "' name='" & s_id & "' id='" & s_id & "' value='" & Trim("" & r("id_registro")) & "|" & Trim("" & r("operacao")) & "'" & s_checked & " /></td>" & chr(13)
+		    x = x & "		<td class='MDTE tdCkb" & s_class_td & "' align='center'>" & _
+                                "<input type='checkbox' class='CKB_COM " & s_class & "' name='" & s_id & "' id='" & s_id & "' value='" & Trim("" & r("id_registro")) & "|" & Trim("" & r("operacao")) & "'" & s_checked & " />" & _
+                                "<input type='hidden' name='" & s_id & "_original" & "' id='" & s_id & "_original" & "' value='" & Trim("" & r("status_comissao")) & "' />" & _
+                    "</td>" & chr(13)
 		
 	            '> LOJA
 		        x = x & "		<td class='MTD tdLoja' align='center'><span class='Cnc' style='color:" & s_cor & ";'>" & Trim("" & r("loja")) & "</span></td>" & chr(13)
@@ -1129,6 +1132,7 @@ function trata_ckb_onclick(idx_bloco) {
 
 <input type="hidden" name="pedido_selecionado" id="pedido_selecionado" value="">
 <input type="hidden" name="orcamento_selecionado" id="orcamento_selecionado" value="">
+<input type="hidden" name="c_cnpj_cpf" id="c_cnpj_cpf" value="<%=c_cnpj_cpf%>" />
 
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->
 <table width="709" cellpadding="4" cellspacing="0" style="border-bottom:1px solid black">
