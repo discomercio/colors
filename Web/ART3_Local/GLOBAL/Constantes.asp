@@ -2310,6 +2310,7 @@
         dim aliq_ipi
         dim aliq_icms
         dim vl_ipi
+        dim vl_frete
 		end class
 
     class cl_ITEM_ESTOQUE_XML
@@ -2320,6 +2321,7 @@
         dim xml_prod__qCom
         dim xml_prod__vUnCom
         dim xml_prod__vProd
+        dim xml_prod__vFrete
         dim xml_imposto__pICMS
         dim xml_imposto__pIPI
         dim xml_imposto__vIPI

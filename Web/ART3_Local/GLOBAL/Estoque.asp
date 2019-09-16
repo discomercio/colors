@@ -1491,7 +1491,7 @@ dim strComplemento
 						" vl_BC_ICMS_ST, vl_ICMS_ST," & _
 						" ncm, cst," & _
 						" data_ult_movimento, sequencia, ean, produto_xml, " & _
-                        " vl_ipi, aliq_ipi, aliq_icms " & _
+                        " vl_ipi, aliq_ipi, aliq_icms, vl_frete " & _
 						") VALUES (" & _
 						"'" & id_estoque & "'" & _
 						",'" & Trim(.fabricante) & "'" & _
@@ -1510,6 +1510,7 @@ dim strComplemento
                         "," & bd_formata_numero(.vl_ipi) & _
                         "," & bd_formata_numero(.aliq_ipi) & _
                         "," & bd_formata_numero(.aliq_icms) & _
+                        "," & bd_formata_numero(.vl_frete) & _
 						")"
 				cn.Execute(s_sql)
 				if Err <> 0 then

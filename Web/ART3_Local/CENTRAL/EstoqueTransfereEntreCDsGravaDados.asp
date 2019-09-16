@@ -350,7 +350,7 @@
 
                 'response.Write " lhgx atualizaremos transferência " & cstr(iv)
 
-		        s_sql = " UPDATE T_ESTOQUE_TRANSFERENCIA_ITEM SET" & _
+		        s_sql = " UPDATE T_ESTOQUE_TRANSFERENCIA_ITEM_SUB SET" & _
                         " id_estoque_destino = '" & s_id_estoque_destino & "'" & _
                         " WHERE (id_estoque_transferencia = '" & c_transf_selecionada & "') "
 		        cn.Execute(s_sql)

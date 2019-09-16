@@ -417,7 +417,15 @@ function preencheForm()
 	        $("#c_nfe_vl_unitario_nota_" + sIdx).val(formata_moeda(vetnfe.NFe.infNFe.det.prod.vUnCom));
 	        $("#c_nfe_vl_unitario_" + sIdx).val(formata_moeda(vetnfe.NFe.infNFe.det.prod.vUnCom));
 	        $("#c_nfe_vl_total_nota_" + sIdx).text(formata_numero(vetnfe.NFe.infNFe.det.prod.vProd, 2));
-	        $("#c_nfe_vl_total_" + sIdx).val(formata_numero(vetnfe.NFe.infNFe.det.prod.vProd, 2));
+            $("#c_nfe_vl_total_" + sIdx).val(formata_numero(vetnfe.NFe.infNFe.det.prod.vProd, 2));
+            if (vetnfe.NFe.infNFe.det.prod.hasOwnProperty('vFrete')) {
+                $("#c_nfe_vl_frete_" + sIdx).val(formata_numero(vetnfe.NFe.infNFe.det.prod.vFrete, 2))
+                $("#c_nfe_vl_frete_ori_" + sIdx).val(formata_numero(vetnfe.NFe.infNFe.det.prod.vFrete, 2))
+            }
+            else {
+                $("#c_nfe_vl_frete_" + sIdx).val("0,00");
+                $("#c_nfe_vl_frete_ori_" + sIdx).val("0,00");
+            }
 	        for (var key in vetnfe.NFe.infNFe.det.imposto.ICMS) {
 	            if (vetnfe.NFe.infNFe.det.imposto.ICMS.hasOwnProperty(key)) {
 	                childProp = vetnfe.NFe.infNFe.det.imposto.ICMS[key];
@@ -481,7 +489,8 @@ function preencheForm()
 	        $("#c1_xml_prod__CFOP_" + sIdx).val($("#c_nfe_cfop_" + sIdx).val());
 	        $("#c1_xml_prod__qCom_" + sIdx).val($("#c_nfe_qtde_" + sIdx).val());
 	        $("#c1_xml_prod__vUnCom_" + sIdx).val($("#c_nfe_vl_unitario_nota_" + sIdx).val());
-	        $("#c1_xml_prod__vProd_" + sIdx).val($("#c_nfe_vl_total_" + sIdx).val());
+            $("#c1_xml_prod__vProd_" + sIdx).val($("#c_nfe_vl_total_" + sIdx).val());
+            $("#c1_xml_prod__vFrete_" + sIdx).val($("#c_nfe_vl_frete_" + sIdx).val());            
 	        $("#c1_xml_imposto__pICMS_" + sIdx).val($("#c_nfe_aliq_icms_" + sIdx).val());
 	        $("#c1_xml_imposto__vIPI_" + sIdx).val($("#c_nfe_vl_ipi_" + sIdx).val());
 	        $("#c1_xml_imposto__pIPI_" + sIdx).val($("#c_nfe_aliq_ipi_" + sIdx).val());
@@ -511,7 +520,15 @@ function preencheForm()
 	            $("#c_nfe_vl_unitario_nota_" + sIdx).val(formata_moeda(vetnfe.NFe.infNFe.det[i].prod.vUnCom));
 	            $("#c_nfe_vl_unitario_" + sIdx).val(formata_moeda(vetnfe.NFe.infNFe.det[i].prod.vUnCom));
 	            $("#c_nfe_vl_total_nota_" + sIdx).text(formata_numero(vetnfe.NFe.infNFe.det[i].prod.vProd, 2));
-	            $("#c_nfe_vl_total_" + sIdx).val(formata_numero(vetnfe.NFe.infNFe.det[i].prod.vProd, 2));
+                $("#c_nfe_vl_total_" + sIdx).val(formata_numero(vetnfe.NFe.infNFe.det[i].prod.vProd, 2));
+                if (vetnfe.NFe.infNFe.det[i].prod.hasOwnProperty('vFrete')) {
+                    $("#c_nfe_vl_frete_" + sIdx).val(formata_numero(vetnfe.NFe.infNFe.det[i].prod.vFrete, 2))
+                    $("#c_nfe_vl_frete_ori_" + sIdx).val(formata_numero(vetnfe.NFe.infNFe.det[i].prod.vFrete, 2))
+                }
+                else {
+                    $("#c_nfe_vl_frete_" + sIdx).val("0,00");
+                    $("#c_nfe_vl_frete_ori_" + sIdx).val("0,00");
+                }
 	            for (var key in vetnfe.NFe.infNFe.det[i].imposto.ICMS) {
 	                if (vetnfe.NFe.infNFe.det[i].imposto.ICMS.hasOwnProperty(key)) {
 	                    childProp = vetnfe.NFe.infNFe.det[i].imposto.ICMS[key];
@@ -609,7 +626,8 @@ function preencheForm()
 	        $("#c1_xml_prod__CFOP_" + sIdx).val($("#c_nfe_cfop_" + sIdx).val());
 	        $("#c1_xml_prod__qCom_" + sIdx).val($("#c_nfe_qtde_" + sIdx).val());
 	        $("#c1_xml_prod__vUnCom_" + sIdx).val($("#c_nfe_vl_unitario_nota_" + sIdx).val());
-	        $("#c1_xml_prod__vProd_" + sIdx).val($("#c_nfe_vl_total_" + sIdx).val());
+            $("#c1_xml_prod__vProd_" + sIdx).val($("#c_nfe_vl_total_" + sIdx).val()); -
+            $("#c1_xml_prod__vFrete_" + sIdx).val($("#c_nfe_vl_frete_" + sIdx).val());            
 	        $("#c1_xml_imposto__pICMS_" + sIdx).val($("#c_nfe_aliq_icms_" + sIdx).val());
 	        $("#c1_xml_imposto__vIPI_" + sIdx).val($("#c_nfe_vl_ipi_" + sIdx).val());
 	        $("#c1_xml_imposto__pIPI_" + sIdx).val($("#c_nfe_aliq_ipi_" + sIdx).val());
@@ -788,6 +806,7 @@ function complementaForm()
             $("#c2_xml_prod__qCom_" + sIdx).val(vetnfe.NFe.infNFe.det.prod.qCom);
             $("#c2_xml_prod__vUnCom_" + sIdx).val(vetnfe.NFe.infNFe.det.prod.vUnCom);
             $("#c2_xml_prod__vProd_" + sIdx).val(vetnfe.NFe.infNFe.det.prod.vProd);
+            $("#c2_xml_prod__vFrete_" + sIdx).val(vetnfe.NFe.infNFe.det.prod.vFrete);            
             $("#c2_xml_imposto__pICMS_" + sIdx).val($("#c_nfe_aliq_icms_" + sIdx).val());
             $("#c2_xml_imposto__vIPI_" + sIdx).val($("#c_nfe_vl_ipi_" + sIdx).val());
             $("#c2_xml_imposto__pIPI_" + sIdx).val($("#c_nfe_aliq_ipi_" + sIdx).val());
@@ -859,6 +878,7 @@ function complementaForm()
                 $("#c2_xml_prod__qCom_" + sIdx).val(vetnfe.NFe.infNFe.det[i].prod.qCom);
                 $("#c2_xml_prod__vUnCom_" + sIdx).val(vetnfe.NFe.infNFe.det[i].prod.vUnCom);
                 $("#c2_xml_prod__vProd_" + sIdx).val(vetnfe.NFe.infNFe.det[i].prod.vProd);
+                $("#c2_xml_prod__vFrete_" + sIdx).val(vetnfe.NFe.infNFe.det[i].prod.vFrete);                
                 $("#c2_xml_imposto__pICMS_" + sIdx).val($("#c_nfe_aliq_icms_" + sIdx).val());
                 $("#c2_xml_imposto__vIPI_" + sIdx).val($("#c_nfe_vl_ipi_" + sIdx).val());
                 $("#c2_xml_imposto__pIPI_" + sIdx).val($("#c_nfe_aliq_ipi_" + sIdx).val());
@@ -874,7 +894,8 @@ function recalcula_itens() {
     var v_perc_agio;
 	var v_calculo;
 	var v_ipi;
-	var v_aliq_ipi;
+    var v_aliq_ipi;
+    var v_frete;
 	var iQtdeItens = '<%=iQtdeLinhas%>';
 	var s = "";
 
@@ -896,7 +917,7 @@ function recalcula_itens() {
 
 	for (var i = 1; i <= iQtdeItens; i++) {
 		if ($("#ckb_importa_" + trim(i.toString())).is(":checked")) {
-			//calculo do valor do produto com IPI e ágio
+			//calculo do valor do produto com IPI, frete e ágio
 		    v_calculo = converte_numero(formata_moeda($("#c_nfe_vl_unitario_nota_" + trim(i.toString())).val()));
 		    s = $("#c_nfe_aliq_ipi_" + trim(i.toString())).val();
 		    v_aliq_ipi = converte_numero(s) / 100;
@@ -908,7 +929,9 @@ function recalcula_itens() {
 		        v_ipi = converte_numero($("#c_nfe_vl_ipi_" + trim(i.toString())).val());
 		    }
 		    $("#c_nfe_vl_ipi_" + trim(i.toString())).val(formata_moeda(v_ipi.toString()));
-		    v_calculo = v_calculo + v_ipi;
+            v_calculo = v_calculo + v_ipi;
+            v_frete = converte_numero($("#c_nfe_vl_frete_" + trim(i.toString())).val());
+            v_calculo = v_calculo + v_frete;
 		    v_agio = converte_numero(formata_moeda(v_calculo  * v_perc_agio));
 		    v_calculo = converte_numero(formata_moeda(v_calculo + v_agio));
 		    $("#c_nfe_vl_unitario_" + trim(i.toString())).val(formata_moeda(v_calculo.toString()));
@@ -950,7 +973,8 @@ function recalcula_total_nf() {
     {
         v_calculo = converte_numero($("#c_nfe_qtde_" + trim(i.toString())).val()) * 
                     (converte_numero(formata_numero($("#c_nfe_vl_unitario_nota_" + trim(i.toString())).val(), 2)) +
-                    converte_numero(formata_numero($("#c_nfe_vl_ipi_" + trim(i.toString())).val(), 2)));
+            converte_numero(formata_numero($("#c_nfe_vl_ipi_" + trim(i.toString())).val(), 2)) +
+            converte_numero(formata_numero($("#c_nfe_vl_frete_" + trim(i.toString())).val(), 2)));
 		v_total = v_total + v_calculo;
     }
 	$("#c_total_nf").val(formata_moeda(v_total));
@@ -1443,6 +1467,7 @@ select
 	<td class="MB TdNfeAliqIpi" align="left" style="vertical-align:bottom;"><span class="PLTe">A.IPI</span></td>
 	<td class="MB TdNfeVlIpi" align="left" style="vertical-align:bottom;"><span class="PLTe">VL IPI</span></td>
 	<td class="MB TdNfeAliqIcms" align="left" style="vertical-align:bottom;"><span class="PLTe">A.ICMS</span></td>
+    <td class="MB TdNfeVlIpi" align="left" style="vertical-align:bottom;"><span class="PLTe">VL Frete</span></td>
 	<td class="MB TdNfeVlTotal" align="left" style="vertical-align:bottom;"><span class="PLTe">VL TOTAL</span></td>
 	</tr>
 	</thead>
@@ -1464,6 +1489,7 @@ select
         <input type="hidden" name="c1_xml_prod__qCom_<%=Cstr(i)%>" id="c1_xml_prod__qCom_<%=Cstr(i)%>" value="" />
         <input type="hidden" name="c1_xml_prod__vUnCom_<%=Cstr(i)%>" id="c1_xml_prod__vUnCom_<%=Cstr(i)%>" value="" />
         <input type="hidden" name="c1_xml_prod__vProd_<%=Cstr(i)%>" id="c1_xml_prod__vProd_<%=Cstr(i)%>" value="" />
+        <input type="hidden" name="c1_xml_prod__vFrete_<%=Cstr(i)%>" id="c1_xml_prod__vFrete_<%=Cstr(i)%>" value="" />
         <input type="hidden" name="c1_xml_imposto__pICMS_<%=Cstr(i)%>" id="c1_xml_imposto__pICMS_<%=Cstr(i)%>" value="" />
         <input type="hidden" name="c1_xml_imposto__pIPI_<%=Cstr(i)%>" id="c1_xml_imposto__pIPI_<%=Cstr(i)%>" value="" />
         <input type="hidden" name="c1_xml_imposto__vIPI_<%=Cstr(i)%>" id="c1_xml_imposto__vIPI_<%=Cstr(i)%>" value="" />
@@ -1474,6 +1500,7 @@ select
         <input type="hidden" name="c2_xml_prod__qCom_<%=Cstr(i)%>" id="c2_xml_prod__qCom_<%=Cstr(i)%>" value="" />
         <input type="hidden" name="c2_xml_prod__vUnCom_<%=Cstr(i)%>" id="c2_xml_prod__vUnCom_<%=Cstr(i)%>" value="" />
         <input type="hidden" name="c2_xml_prod__vProd_<%=Cstr(i)%>" id="c2_xml_prod__vProd_<%=Cstr(i)%>" value="" />
+        <input type="hidden" name="c2_xml_prod__vFrete_<%=Cstr(i)%>" id="c2_xml_prod__vFrete_<%=Cstr(i)%>" value="" />
         <input type="hidden" name="c2_xml_imposto__pICMS_<%=Cstr(i)%>" id="c2_xml_imposto__pICMS_<%=Cstr(i)%>" value="" />
         <input type="hidden" name="c2_xml_imposto__pIPI_<%=Cstr(i)%>" id="c2_xml_imposto__pIPI_<%=Cstr(i)%>" value="" />
         <input type="hidden" name="c2_xml_imposto__vIPI_<%=Cstr(i)%>" id="c2_xml_imposto__vIPI_<%=Cstr(i)%>" value="" />
@@ -1538,6 +1565,11 @@ select
          onblur="this.value=formata_numero(this.value, 0); if (converte_numero(this.value) > 100) {alert('Alíquota de ICMS maior que 100%!');}" />
 
 	</td>
+	<td class="MDB TdNfeVlIpi" align="left">
+        <input type="hidden" name="c_nfe_vl_frete_ori_<%=Cstr(i)%>" id="c_nfe_vl_frete_ori_<%=Cstr(i)%>" />
+        <input name="c_nfe_vl_frete_<%=Cstr(i)%>" id="c_nfe_vl_frete_<%=Cstr(i)%>" class="PLLe TdNfeVlIpi TxtEditavel" 
+        onblur="this.value=formata_moeda(this.value); if (this.value != c_nfe_vl_frete_ori_<%=Cstr(i)%>.value) {recalcula_itens(<%=Cstr(i)%>); recalcula_total();}" />
+	</td>
 	<td class="MDB TdNfeVlTotal" align="left">
         <input name="c_nfe_vl_total_<%=Cstr(i)%>" id="c_nfe_vl_total_<%=Cstr(i)%>" class="PLLe TdNfeVlTotal" readonly />
 	</td>
@@ -1547,7 +1579,7 @@ select
 	<tfoot>
 	<tr>
 	
-	<td colspan="9" class="MD">&nbsp;</td>
+	<td colspan="10" class="MD">&nbsp;</td>
 
 	<td class="MDB" align="left"><p class="Cd">Total NF</p></td>
 	

@@ -55,6 +55,7 @@
         dim vl_ipi
         dim preco_origem
         dim produto_xml
+        dim vl_frete
 		end class
 
 

@@ -885,7 +885,7 @@ var blnFlagOk,idx;
 			" // TRANSFERÊNCIA DE PRODUTOS ENTRE CD'S" & chr(13) & _
 			"	iop++;" & chr(13) & _
 			"	if (f.rb_op[iop].checked) {" & chr(13) & _
-			"		s='EstoqueTransfereEntreCDs.asp';" & chr(13) & _
+			"		s='EstoqueTransfereEntreCDsFiltro.asp';" & chr(13) & _
 			"		}" & chr(13) & _
 			"" & chr(13)
 		end if

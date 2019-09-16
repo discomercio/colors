@@ -59,11 +59,13 @@
     dim c_op_upload
 
     c_op_upload = Trim(Request("c_op_upload"))
-    if c_op_upload = "M" then
-	    c_nfe_qtde_itens = Trim(Request("iQtdeItensPreenchidos"))
-    else
-        c_nfe_qtde_itens = Trim(Request("c_nfe_qtde_itens"))
-        end if
+    'if c_op_upload = "M" then
+	'    c_nfe_qtde_itens = Trim(Request("iQtdeItensPreenchidos"))
+    'else
+    '    c_nfe_qtde_itens = Trim(Request("c_nfe_qtde_itens"))
+    '    end if
+    c_nfe_qtde_itens = Trim(Request("c_nfe_qtde_itens"))
+
 	c_nfe_numero_nf = Trim(Request("c_nfe_numero_nf"))
 	c_nfe_emitente_cnpj = retorna_so_digitos(Trim(Request("c_nfe_emitente_cnpj")))
 	c_nfe_destinatario_cnpj = retorna_so_digitos(Trim(Request("c_nfe_destinatario_cnpj")))
@@ -225,6 +227,7 @@
 	dim s_prod_vl_ipi
 	dim s_prod_aliq_icms
 	dim s_prod_aliq_ipi	
+    dim s_prod_vl_frete
 	dim s_cod_produto_import
 	dim s_desc_produto_import
     dim s_linha_importa
@@ -239,6 +242,7 @@
     dim s_c1_xml_prod__qCom
     dim s_c1_xml_prod__vUnCom
     dim s_c1_xml_prod__vProd
+    dim s_c1_xml_prod__vFrete
     dim s_c1_xml_imposto__pICMS
     dim s_c1_xml_imposto__pIPI
     dim s_c1_xml_imposto__vIPI
@@ -249,6 +253,7 @@
     dim s_c2_xml_prod__qCom
     dim s_c2_xml_prod__vUnCom
     dim s_c2_xml_prod__vProd
+    dim s_c2_xml_prod__vFrete
     dim s_c2_xml_imposto__pICMS
     dim s_c2_xml_imposto__pIPI
     dim s_c2_xml_imposto__vIPI
@@ -260,149 +265,162 @@
         set v_prod_cod(ubound(v_prod_cod)) = New cl_TRES_COLUNAS
         v_prod_cod(ubound(v_prod_cod)).c1 = ""		
 		For i = 1 to iQtdeItens
-            s_ckb_importa = Trim(Request.Form("ckb_importa_" & Trim(i)))
+            s_ckb_importa = Trim(Request.Form("ckb_importa_" & Trim(i)))            
 		    s_prod_ean = Trim(Request.Form("c_ean_" & Trim(i)))
             s_prod_cod = Trim(Request.Form("c_erp_codigo_" & Trim(i)))
             s_prod_cod_nota = Trim(Request.Form("c_nfe_codigo_" & Trim(i)))
-		    s_prod_ncm = Trim(Request.Form("c_nfe_ncm_sh_" & Trim(i)))
-		    s_prod_cst = Trim(Request.Form("c_erp_cst_" & Trim(i)))
-		    s_prod_cfop = Trim(Request.Form("c_nfe_cfop_" & Trim(i)))
-		    s_prod_unid = Trim(Request.Form("c_nfe_unid_" & Trim(i)))
-		    s_prod_qtde = Trim(Request.Form("c_nfe_qtde_" & Trim(i)))
-		    s_prod_vl_unitario_nota = Trim(Request.Form("c_nfe_vl_unitario_nota_" & Trim(i)))
-		    s_prod_vl_unitario = Trim(Request.Form("c_nfe_vl_unitario_" & Trim(i)))
-		    s_prod_vl_total = Trim(Request.Form("c_nfe_vl_total_" & Trim(i)))
-		    s_prod_vl_base_icms = Trim(Request.Form("c_nfe_vl_base_icms_" & Trim(i)))
-		    s_prod_vl_icms = Trim(Request.Form("c_nfe_vl_icms_" & Trim(i)))
-		    s_prod_vl_ipi = Trim(Request.Form("c_nfe_vl_ipi_" & Trim(i)))
-		    s_prod_aliq_icms = Trim(Request.Form("c_nfe_aliq_icms_" & Trim(i)))
-		    s_prod_aliq_ipi = Trim(Request.Form("c_nfe_aliq_ipi_" & Trim(i)))
-            s_c1_xml_prod_cProd = Trim(Request.Form("c1_xml_prod_cProd_" & Trim(i)))
-            s_c1_xml_prod_cEAN = Trim(Request.Form("c1_xml_prod_cEAN_" & Trim(i)))
-            s_c1_xml_prod__NCM = Trim(Request.Form("c1_xml_prod__NCM_" & Trim(i)))
-            s_c1_xml_prod__CFOP = Trim(Request.Form("c1_xml_prod__CFOP_" & Trim(i)))
-            s_c1_xml_prod__qCom = Trim(Request.Form("c1_xml_prod__qCom_" & Trim(i)))
-            s_c1_xml_prod__vUnCom = Trim(Request.Form("c1_xml_prod__vUnCom_" & Trim(i)))
-            s_c1_xml_prod__vProd = Trim(Request.Form("c1_xml_prod__vProd_" & Trim(i)))
-            s_c1_xml_imposto__pICMS = Trim(Request.Form("c1_xml_imposto__pICMS_" & Trim(i)))
-            s_c1_xml_imposto__pIPI = Trim(Request.Form("c1_xml_imposto__pIPI_" & Trim(i)))
-            s_c1_xml_imposto__vIPI = Trim(Request.Form("c1_xml_imposto__vIPI_" & Trim(i)))
-            s_c2_xml_prod_cProd = Trim(Request.Form("c2_xml_prod_cProd_" & Trim(i)))
-            s_c2_xml_prod_cEAN = Trim(Request.Form("c2_xml_prod_cEAN_" & Trim(i)))
-            s_c2_xml_prod__NCM = Trim(Request.Form("c2_xml_prod__NCM_" & Trim(i)))
-            s_c2_xml_prod__CFOP = Trim(Request.Form("c2_xml_prod__CFOP_" & Trim(i)))
-            s_c2_xml_prod__qCom = Trim(Request.Form("c2_xml_prod__qCom_" & Trim(i)))
-            s_c2_xml_prod__vUnCom = Trim(Request.Form("c2_xml_prod__vUnCom_" & Trim(i)))
-            s_c2_xml_prod__vProd = Trim(Request.Form("c2_xml_prod__vProd_" & Trim(i)))
-            s_c2_xml_imposto__pICMS = Trim(Request.Form("c2_xml_imposto__pICMS_" & Trim(i)))
-            s_c2_xml_imposto__pIPI = Trim(Request.Form("c2_xml_imposto__pIPI_" & Trim(i)))
-            s_c2_xml_imposto__vIPI = Trim(Request.Form("c2_xml_imposto__vIPI_" & Trim(i)))
+            'se  o código do produto na nota não está preenchido, trata-se de uma linha vazia
+            'neste caso, ignorar geração do HTML
+            if (s_prod_cod_nota <> "") then
+		        s_prod_ncm = Trim(Request.Form("c_nfe_ncm_sh_" & Trim(i)))
+		        s_prod_cst = Trim(Request.Form("c_erp_cst_" & Trim(i)))
+		        s_prod_cfop = Trim(Request.Form("c_nfe_cfop_" & Trim(i)))
+		        s_prod_unid = Trim(Request.Form("c_nfe_unid_" & Trim(i)))
+		        s_prod_qtde = Trim(Request.Form("c_nfe_qtde_" & Trim(i)))
+		        s_prod_vl_unitario_nota = Trim(Request.Form("c_nfe_vl_unitario_nota_" & Trim(i)))
+		        s_prod_vl_unitario = Trim(Request.Form("c_nfe_vl_unitario_" & Trim(i)))
+		        s_prod_vl_total = Trim(Request.Form("c_nfe_vl_total_" & Trim(i)))
+		        s_prod_vl_base_icms = Trim(Request.Form("c_nfe_vl_base_icms_" & Trim(i)))
+		        s_prod_vl_icms = Trim(Request.Form("c_nfe_vl_icms_" & Trim(i)))
+		        s_prod_vl_ipi = Trim(Request.Form("c_nfe_vl_ipi_" & Trim(i)))
+		        s_prod_aliq_icms = Trim(Request.Form("c_nfe_aliq_icms_" & Trim(i)))
+		        s_prod_aliq_ipi = Trim(Request.Form("c_nfe_aliq_ipi_" & Trim(i)))
+                s_prod_vl_frete = Trim(Request.Form("c_nfe_vl_frete_" & Trim(i)))
+                s_c1_xml_prod_cProd = Trim(Request.Form("c1_xml_prod_cProd_" & Trim(i)))
+                s_c1_xml_prod_cEAN = Trim(Request.Form("c1_xml_prod_cEAN_" & Trim(i)))
+                s_c1_xml_prod__NCM = Trim(Request.Form("c1_xml_prod__NCM_" & Trim(i)))
+                s_c1_xml_prod__CFOP = Trim(Request.Form("c1_xml_prod__CFOP_" & Trim(i)))
+                s_c1_xml_prod__qCom = Trim(Request.Form("c1_xml_prod__qCom_" & Trim(i)))
+                s_c1_xml_prod__vUnCom = Trim(Request.Form("c1_xml_prod__vUnCom_" & Trim(i)))
+                s_c1_xml_prod__vProd = Trim(Request.Form("c1_xml_prod__vProd_" & Trim(i)))
+                s_c1_xml_imposto__pICMS = Trim(Request.Form("c1_xml_imposto__pICMS_" & Trim(i)))
+                s_c1_xml_imposto__pIPI = Trim(Request.Form("c1_xml_imposto__pIPI_" & Trim(i)))
+                s_c1_xml_imposto__vIPI = Trim(Request.Form("c1_xml_imposto__vIPI_" & Trim(i)))                
+                s_c1_xml_prod__vFrete = Trim(Request.Form("c1_xml_prod__vFrete_" & Trim(i)))
+                s_c2_xml_prod_cProd = Trim(Request.Form("c2_xml_prod_cProd_" & Trim(i)))
+                s_c2_xml_prod_cEAN = Trim(Request.Form("c2_xml_prod_cEAN_" & Trim(i)))
+                s_c2_xml_prod__NCM = Trim(Request.Form("c2_xml_prod__NCM_" & Trim(i)))
+                s_c2_xml_prod__CFOP = Trim(Request.Form("c2_xml_prod__CFOP_" & Trim(i)))
+                s_c2_xml_prod__qCom = Trim(Request.Form("c2_xml_prod__qCom_" & Trim(i)))
+                s_c2_xml_prod__vUnCom = Trim(Request.Form("c2_xml_prod__vUnCom_" & Trim(i)))
+                s_c2_xml_prod__vProd = Trim(Request.Form("c2_xml_prod__vProd_" & Trim(i)))
+                s_c2_xml_imposto__pICMS = Trim(Request.Form("c2_xml_imposto__pICMS_" & Trim(i)))
+                s_c2_xml_imposto__pIPI = Trim(Request.Form("c2_xml_imposto__pIPI_" & Trim(i)))
+                s_c2_xml_imposto__vIPI = Trim(Request.Form("c2_xml_imposto__vIPI_" & Trim(i)))
+                s_c2_xml_prod__vFrete = Trim(Request.Form("c2_xml_prod__vFrete_" & Trim(i)))
+                
 
 
+			    s_visibilidade = "style='display:none'" 'campos não visíveis entrarão como não importados
+			    s_cod_produto_import = "COD_NOP"
+			    s_desc_produto_import = "DESC_NOP"
+                s_linha_importa = "IMPORTA_N"
+			    if (s_ckb_importa = "IMPORTA_ON") then
+				    if (s_prod_cod <> "") then
+					    s_visibilidade = "" 'campos visíveis entrarão como importados
+					    s_cod_produto_import = ""
+					    s_desc_produto_import = ""
+					    s = "SELECT * FROM t_PRODUTO WHERE (fabricante = '" & s_fabricante_codigo & "') AND (produto = '" & s_prod_cod & "')"
+					    if rs.State <> 0 then rs.Close
+					    rs.Open s, cn
+					    if Not rs.Eof then
+						    s_cod_produto_import = Trim("" & rs("produto"))
+						    s_desc_produto_import = Trim("" & rs("descricao"))
+                            s_linha_importa = "IMPORTA_S"
+						    End If
+					    end if
+				    end if
+			    icont = icont + 1
+			    if s_cod_produto_import <> "" then
+				    tabela_confirma = tabela_confirma & "<tr id='TR_" & Cstr(icont) & "' " & s_visibilidade & ">" & vbCRLF
+				    tabela_confirma = tabela_confirma & "<td align='left'>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "	<input name='c_linha_" & Cstr(icont) & "' id='c_linha_" & Cstr(icont) & "' readonly tabindex=-1 class='PLLe' maxlength='2' style='width:30px;text-align:right;color:#808080;' " & vbCRLF
+				    tabela_confirma = tabela_confirma & "		value='" & Cstr(icont) & "' />" & vbCRLF
+				    tabela_confirma = tabela_confirma & "</td>" & vbCRLF
+                    tabela_confirma = tabela_confirma & "<td class='MDBE TdErpCodigo' align='left'>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "	<input type='hidden' name='c_nfe_nItem_" & Cstr(icont) & "' id='c_nfe_nItem_" & Cstr(icont) & "' value='" & s_linha_importa & "' />" & vbCRLF
+				    tabela_confirma = tabela_confirma & "	<input name='c_erp_codigo_" & Cstr(icont) & "' id='c_erp_codigo_" & Cstr(icont) & "' class='PLLe' style='width:70px' value='" & s_cod_produto_import & "' />" & vbCRLF
+				    tabela_confirma = tabela_confirma & "</td>" & vbCRLF
 
-			s_visibilidade = "style='display:none'" 'campos não visíveis entrarão como não importados
-			s_cod_produto_import = "COD_NOP"
-			s_desc_produto_import = "DESC_NOP"
-            s_linha_importa = "IMPORTA_N"
-			if (s_ckb_importa = "IMPORTA_ON") then
-				if (s_prod_cod <> "") then
-					s_visibilidade = "" 'campos visíveis entrarão como importados
-					s_cod_produto_import = ""
-					s_desc_produto_import = ""
-					s = "SELECT * FROM t_PRODUTO WHERE (fabricante = '" & s_fabricante_codigo & "') AND (produto = '" & s_prod_cod & "')"
-					if rs.State <> 0 then rs.Close
-					rs.Open s, cn
-					if Not rs.Eof then
-						s_cod_produto_import = Trim("" & rs("produto"))
-						s_desc_produto_import = Trim("" & rs("descricao"))
-                        s_linha_importa = "IMPORTA_S"
-						End If
-					end if
-				end if
-			icont = icont + 1
-			if s_cod_produto_import <> "" then
-				tabela_confirma = tabela_confirma & "<tr id='TR_" & Cstr(icont) & "' " & s_visibilidade & ">" & vbCRLF
-				tabela_confirma = tabela_confirma & "<td align='left'>" & vbCRLF
-				tabela_confirma = tabela_confirma & "	<input name='c_linha_" & Cstr(icont) & "' id='c_linha_" & Cstr(icont) & "' readonly tabindex=-1 class='PLLe' maxlength='2' style='width:30px;text-align:right;color:#808080;' " & vbCRLF
-				tabela_confirma = tabela_confirma & "		value='" & Cstr(icont) & "' />" & vbCRLF
-				tabela_confirma = tabela_confirma & "</td>" & vbCRLF
-                tabela_confirma = tabela_confirma & "<td class='MDBE TdErpCodigo' align='left'>" & vbCRLF
-				tabela_confirma = tabela_confirma & "	<input type='hidden' name='c_nfe_nItem_" & Cstr(icont) & "' id='c_nfe_nItem_" & Cstr(icont) & "' value='" & s_linha_importa & "' />" & vbCRLF
-				tabela_confirma = tabela_confirma & "	<input name='c_erp_codigo_" & Cstr(icont) & "' id='c_erp_codigo_" & Cstr(icont) & "' class='PLLe' style='width:70px' value='" & s_cod_produto_import & "' />" & vbCRLF
-				tabela_confirma = tabela_confirma & "</td>" & vbCRLF
+   				    tabela_confirma = tabela_confirma & "<td class='MDB TdNfeCodigo' align='left'>" & vbCRLF
+                    tabela_confirma = tabela_confirma & "   <input type='hidden' name='c_nfe_codigo_" & Cstr(icont) & "' id='c_nfe_codigo_" & Cstr(icont) & "' class='PLLe' value='" & s_prod_cod_nota & "' />" & vbCRLF
+				    tabela_confirma = tabela_confirma & "	<input name='c_ean_" & Cstr(icont) & "' id='c_ean_" & Cstr(icont) & "' class='PLLe' style='width:100px' value='" & s_prod_ean & "' />" & vbCRLF
+				    tabela_confirma = tabela_confirma & "</td>" & vbCRLF
 
-   				tabela_confirma = tabela_confirma & "<td class='MDB TdNfeCodigo' align='left'>" & vbCRLF
-                tabela_confirma = tabela_confirma & "   <input type='hidden' name='c_nfe_codigo_" & Cstr(icont) & "' id='c_nfe_codigo_" & Cstr(icont) & "' class='PLLe' value='" & s_prod_cod_nota & "' />" & vbCRLF
-				tabela_confirma = tabela_confirma & "	<input name='c_ean_" & Cstr(icont) & "' id='c_ean_" & Cstr(icont) & "' class='PLLe' style='width:100px' value='" & s_prod_ean & "' />" & vbCRLF
-				tabela_confirma = tabela_confirma & "</td>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "<td class='MDB TdNfeDescricao' align='left'>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "	<input name='c_nfe_descricao_" & Cstr(icont) & "' id='c_nfe_descricao_" & Cstr(icont) & "' class='PLLe TdNfeDescricao' style='width:240px' value='" & s_desc_produto_import & "' />" & vbCRLF
+				    tabela_confirma = tabela_confirma & "</td>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "<td class='MDB TdNfeNcm' align='left'>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "	<input name='c_nfe_ncm_sh_" & Cstr(icont) & "' id='c_nfe_ncm_sh_'" & Cstr(icont) & "' class='PLLe TdNfeNcm' value='" & s_prod_ncm & "' />" & vbCRLF
+				    tabela_confirma = tabela_confirma & "</td>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "<td class='MDB TdErpCst' align='left'>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "	<input name='c_nfe_cst_" & Cstr(icont) & "' id='c_nfe_cst_" & Cstr(icont) & "' class='PLLe TdErpCst' value='" & s_prod_cst & "' />" & vbCRLF
+				    tabela_confirma = tabela_confirma & "</td>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "<td class='MDB TdNfeCfop' align='left'>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "	<input name='c_nfe_cfop_" & Cstr(icont) & "' id='c_nfe_cfop_" & Cstr(icont) & "' class='PLLe TdNfeCfop' value='" & s_prod_cfop & "' />" & vbCRLF
+				    tabela_confirma = tabela_confirma & "</td>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "<td class='MDB TdNfeQtde' align='left'>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "	<input name='c_nfe_qtde_" & Cstr(icont) & "' id='c_nfe_qtde_" & Cstr(icont) & "' class='PLLe TdNfeQtde' value='" & s_prod_qtde & "' />" & vbCRLF
+				    tabela_confirma = tabela_confirma & "</td>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "<td class='MDB TdNfeVlUnit' align='left'>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "	<input name='c_nfe_vl_unitario_nota_" & Cstr(icont) & "' id='c_nfe_vl_unitario_nota_" & Cstr(icont) & "' class='PLLe TdNfeVlUnit' value='" & s_prod_vl_unitario_nota & "' />" & vbCRLF
+				    tabela_confirma = tabela_confirma & "<td class='MDB TdNfeVlUnit' align='left'>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "	<input name='c_nfe_vl_unitario_" & Cstr(icont) & "' id='c_nfe_vl_unitario_" & Cstr(icont) & "' class='PLLe TdNfeVlUnit' value='" & s_prod_vl_unitario & "' />" & vbCRLF
+				    tabela_confirma = tabela_confirma & "</td>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "<td class='MDB TdNfeAliqIpi' align='left'>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "	<input name='c_nfe_aliq_ipi_" & Cstr(icont) & "' id='c_nfe_aliq_ipi_" & Cstr(icont) & "' class='PLLe TdNfeAliqIpi' value='" & s_prod_aliq_ipi & "' />" & vbCRLF
+				    tabela_confirma = tabela_confirma & "</td>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "<td class='MDB TdNfeVlIpi' align='left'>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "	<input name='c_nfe_vl_ipi_" & Cstr(icont) & "' id='c_nfe_vl_ipi_" & Cstr(icont) & "' class='PLLe TdNfeVlIpi' value='" & s_prod_vl_ipi & "' />" & vbCRLF
+				    tabela_confirma = tabela_confirma & "</td>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "<td class='MDB TdNfeAliqIcms' align='left'>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "	<input name='c_nfe_aliq_icms_" & Cstr(icont) & "' id='c_nfe_aliq_icms_" & Cstr(icont) & "' class='PLLe TdNfeAliqIcms' value='" & s_prod_aliq_icms & "' />" & vbCRLF
+				    tabela_confirma = tabela_confirma & "</td>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "<td class='MDB TdNfeVlIpi' align='left'>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "	<input name='c_nfe_vl_frete_" & Cstr(icont) & "' id='c_nfe_vl_frete_" & Cstr(icont) & "' class='PLLe TdNfeVlIpi' value='" & s_prod_vl_frete & "' />" & vbCRLF
+				    tabela_confirma = tabela_confirma & "</td>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "<td class='MDB TdNfeVlTotal' align='left'>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "	<input name='c_nfe_vl_total_" & Cstr(icont) & "' id='c_nfe_vl_total_" & Cstr(icont) & "' class='PLLe TdNfeVlTotal' value='" & s_prod_vl_total & "' />" & vbCRLF
+				    tabela_confirma = tabela_confirma & "</td>" & vbCRLF
+				    tabela_confirma = tabela_confirma & "</tr>" & vbCRLF
 
-				tabela_confirma = tabela_confirma & "<td class='MDB TdNfeDescricao' align='left'>" & vbCRLF
-				tabela_confirma = tabela_confirma & "	<input name='c_nfe_descricao_" & Cstr(icont) & "' id='c_nfe_descricao_" & Cstr(icont) & "' class='PLLe TdNfeDescricao' style='width:240px' value='" & s_desc_produto_import & "' />" & vbCRLF
-				tabela_confirma = tabela_confirma & "</td>" & vbCRLF
-				tabela_confirma = tabela_confirma & "<td class='MDB TdNfeNcm' align='left'>" & vbCRLF
-				tabela_confirma = tabela_confirma & "	<input name='c_nfe_ncm_sh_" & Cstr(icont) & "' id='c_nfe_ncm_sh_'" & Cstr(icont) & "' class='PLLe TdNfeNcm' value='" & s_prod_ncm & "' />" & vbCRLF
-				tabela_confirma = tabela_confirma & "</td>" & vbCRLF
-				tabela_confirma = tabela_confirma & "<td class='MDB TdErpCst' align='left'>" & vbCRLF
-				tabela_confirma = tabela_confirma & "	<input name='c_nfe_cst_" & Cstr(icont) & "' id='c_nfe_cst_" & Cstr(icont) & "' class='PLLe TdErpCst' value='" & s_prod_cst & "' />" & vbCRLF
-				tabela_confirma = tabela_confirma & "</td>" & vbCRLF
-				tabela_confirma = tabela_confirma & "<td class='MDB TdNfeCfop' align='left'>" & vbCRLF
-				tabela_confirma = tabela_confirma & "	<input name='c_nfe_cfop_" & Cstr(icont) & "' id='c_nfe_cfop_" & Cstr(icont) & "' class='PLLe TdNfeCfop' value='" & s_prod_cfop & "' />" & vbCRLF
-				tabela_confirma = tabela_confirma & "</td>" & vbCRLF
-				tabela_confirma = tabela_confirma & "<td class='MDB TdNfeQtde' align='left'>" & vbCRLF
-				tabela_confirma = tabela_confirma & "	<input name='c_nfe_qtde_" & Cstr(icont) & "' id='c_nfe_qtde_" & Cstr(icont) & "' class='PLLe TdNfeQtde' value='" & s_prod_qtde & "' />" & vbCRLF
-				tabela_confirma = tabela_confirma & "</td>" & vbCRLF
-				tabela_confirma = tabela_confirma & "<td class='MDB TdNfeVlUnit' align='left'>" & vbCRLF
-				tabela_confirma = tabela_confirma & "	<input name='c_nfe_vl_unitario_nota_" & Cstr(icont) & "' id='c_nfe_vl_unitario_nota_" & Cstr(icont) & "' class='PLLe TdNfeVlUnit' value='" & s_prod_vl_unitario_nota & "' />" & vbCRLF
-				tabela_confirma = tabela_confirma & "<td class='MDB TdNfeVlUnit' align='left'>" & vbCRLF
-				tabela_confirma = tabela_confirma & "	<input name='c_nfe_vl_unitario_" & Cstr(icont) & "' id='c_nfe_vl_unitario_" & Cstr(icont) & "' class='PLLe TdNfeVlUnit' value='" & s_prod_vl_unitario & "' />" & vbCRLF
-				tabela_confirma = tabela_confirma & "</td>" & vbCRLF
-				tabela_confirma = tabela_confirma & "<td class='MDB TdNfeAliqIpi' align='left'>" & vbCRLF
-				tabela_confirma = tabela_confirma & "	<input name='c_nfe_aliq_ipi_" & Cstr(icont) & "' id='c_nfe_aliq_ipi_" & Cstr(icont) & "' class='PLLe TdNfeAliqIpi' value='" & s_prod_aliq_ipi & "' />" & vbCRLF
-				tabela_confirma = tabela_confirma & "</td>" & vbCRLF
-				tabela_confirma = tabela_confirma & "<td class='MDB TdNfeVlIpi' align='left'>" & vbCRLF
-				tabela_confirma = tabela_confirma & "	<input name='c_nfe_vl_ipi_" & Cstr(icont) & "' id='c_nfe_vl_ipi_" & Cstr(icont) & "' class='PLLe TdNfeVlIpi' value='" & s_prod_vl_ipi & "' />" & vbCRLF
-				tabela_confirma = tabela_confirma & "</td>" & vbCRLF
-				tabela_confirma = tabela_confirma & "<td class='MDB TdNfeAliqIcms' align='left'>" & vbCRLF
-				tabela_confirma = tabela_confirma & "	<input name='c_nfe_aliq_icms_" & Cstr(icont) & "' id='c_nfe_aliq_icms_" & Cstr(icont) & "' class='PLLe TdNfeAliqIcms' value='" & s_prod_aliq_icms & "' />" & vbCRLF
-				tabela_confirma = tabela_confirma & "</td>" & vbCRLF
-				tabela_confirma = tabela_confirma & "<td class='MDB TdNfeVlTotal' align='left'>" & vbCRLF
-				tabela_confirma = tabela_confirma & "	<input name='c_nfe_vl_total_" & Cstr(icont) & "' id='c_nfe_vl_total_" & Cstr(icont) & "' class='PLLe TdNfeVlTotal' value='" & s_prod_vl_total & "' />" & vbCRLF
-				tabela_confirma = tabela_confirma & "</td>" & vbCRLF
-				tabela_confirma = tabela_confirma & "</tr>" & vbCRLF
+                    'incluir o código do produto no vetor para testar duplicidade
+                    if Trim(v_prod_cod(ubound(v_prod_cod)).c1) <> "" then
+				        redim preserve v_prod_cod(ubound(v_prod_cod)+1)
+				        set v_prod_cod(ubound(v_prod_cod)) = New cl_TRES_COLUNAS
+				        end if                			
+                    v_prod_cod(ubound(v_prod_cod)).c1 = s_fabricante_codigo
+                    v_prod_cod(ubound(v_prod_cod)).c2 = s_prod_cod
+                    v_prod_cod(ubound(v_prod_cod)).c3 = s_linha_importa
+			    else
+				    if alerta <> "" then alerta = alerta & "<br>"
+				    alerta = alerta & "O produto de código " & s_prod_cod & " do fabricante " & s_fabricante_codigo & " não foi encontrado."
+				    end if						
 
-                'incluir o código do produto no vetor para testar duplicidade
-                if Trim(v_prod_cod(ubound(v_prod_cod)).c1) <> "" then
-				    redim preserve v_prod_cod(ubound(v_prod_cod)+1)
-				    set v_prod_cod(ubound(v_prod_cod)) = New cl_TRES_COLUNAS
-				    end if                			
-                v_prod_cod(ubound(v_prod_cod)).c1 = s_fabricante_codigo
-                v_prod_cod(ubound(v_prod_cod)).c2 = s_prod_cod
-                v_prod_cod(ubound(v_prod_cod)).c3 = s_linha_importa
-			else
-				if alerta <> "" then alerta = alerta & "<br>"
-				alerta = alerta & "O produto de código " & s_prod_cod & " do fabricante " & s_fabricante_codigo & " não foi encontrado."
-				end if						
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c1_xml_prod_cProd_" & Cstr(icont) & "' id='c1_xml_prod_cProd_" & Cstr(icont) & "' class='PLLe' value='" & s_c1_xml_prod_cProd & "' />" & vbCRLF
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c1_xml_prod_cEAN_" & Cstr(icont) & "' id='c1_xml_prod_cEAN_" & Cstr(icont) & "' class='PLLe' value='" & s_c1_xml_prod_cEAN & "' />" & vbCRLF
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c1_xml_prod__NCM_" & Cstr(icont) & "' id='c1_xml_prod__NCM_" & Cstr(icont) & "' class='PLLe' value='" & s_c1_xml_prod__NCM & "' />" & vbCRLF
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c1_xml_prod__CFOP_" & Cstr(icont) & "' id='c1_xml_prod__CFOP_" & Cstr(icont) & "' class='PLLe' value='" & s_c1_xml_prod__CFOP & "' />" & vbCRLF
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c1_xml_prod__qCom_" & Cstr(icont) & "' id='c1_xml_prod__qCom_" & Cstr(icont) & "' class='PLLe' value='" & s_c1_xml_prod__qCom & "' />" & vbCRLF
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c1_xml_prod__vUnCom_" & Cstr(icont) & "' id='c1_xml_prod__vUnCom_" & Cstr(icont) & "' class='PLLe' value='" & s_c1_xml_prod__vUnCom & "' />" & vbCRLF
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c1_xml_prod__vProd_" & Cstr(icont) & "' id='c1_xml_prod__vProd_" & Cstr(icont) & "' class='PLLe' value='" & s_c1_xml_prod__vProd & "' />" & vbCRLF
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c1_xml_prod__vFrete_" & Cstr(icont) & "' id='c1_xml_prod__vFrete_" & Cstr(icont) & "' class='PLLe' value='" & s_c1_xml_prod__vFrete & "' />" & vbCRLF
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c1_xml_imposto__pICMS_" & Cstr(icont) & "' id='c1_xml_imposto__pICMS_" & Cstr(icont) & "' class='PLLe' value='" & s_c1_xml_imposto__pICMS & "' />" & vbCRLF
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c1_xml_imposto__pIPI_" & Cstr(icont) & "' id='c1_xml_imposto__pIPI_" & Cstr(icont) & "' class='PLLe' value='" & s_c1_xml_imposto__pIPI & "' />" & vbCRLF
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c1_xml_imposto__vIPI_" & Cstr(icont) & "' id='c1_xml_imposto__vIPI_" & Cstr(icont) & "' class='PLLe' value='" & s_c1_xml_imposto__vIPI & "' />" & vbCRLF
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c2_xml_prod_cProd_" & Cstr(icont) & "' id='c2_xml_prod_cProd_" & Cstr(icont) & "' class='PLLe' value='" & s_c2_xml_prod_cProd & "' />" & vbCRLF
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c2_xml_prod_cEAN_" & Cstr(icont) & "' id='c2_xml_prod_cEAN_" & Cstr(icont) & "' class='PLLe' value='" & s_c2_xml_prod_cEAN & "' />" & vbCRLF
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c2_xml_prod__NCM_" & Cstr(icont) & "' id='c2_xml_prod__NCM_" & Cstr(icont) & "' class='PLLe' value='" & s_c2_xml_prod__NCM & "' />" & vbCRLF
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c2_xml_prod__CFOP_" & Cstr(icont) & "' id='c2_xml_prod__CFOP_" & Cstr(icont) & "' class='PLLe' value='" & s_c2_xml_prod__CFOP & "' />" & vbCRLF
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c2_xml_prod__qCom_" & Cstr(icont) & "' id='c2_xml_prod__qCom_" & Cstr(icont) & "' class='PLLe' value='" & s_c2_xml_prod__qCom & "' />" & vbCRLF
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c2_xml_prod__vUnCom_" & Cstr(icont) & "' id='c2_xml_prod__vUnCom_" & Cstr(icont) & "' class='PLLe' value='" & s_c2_xml_prod__vUnCom & "' />" & vbCRLF
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c2_xml_prod__vProd_" & Cstr(icont) & "' id='c2_xml_prod__vProd_" & Cstr(icont) & "' class='PLLe' value='" & s_c2_xml_prod__vProd & "' />" & vbCRLF
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c2_xml_prod__vFrete_" & Cstr(icont) & "' id='c2_xml_prod__vFrete_" & Cstr(icont) & "' class='PLLe' value='" & s_c2_xml_prod__vFrete & "' />" & vbCRLF
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c2_xml_imposto__pICMS_" & Cstr(icont) & "' id='c2_xml_imposto__pICMS_" & Cstr(icont) & "' class='PLLe' value='" & s_c2_xml_imposto__pICMS & "' />" & vbCRLF
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c2_xml_imposto__pIPI_" & Cstr(icont) & "' id='c2_xml_imposto__pIPI_" & Cstr(icont) & "' class='PLLe' value='" & s_c2_xml_imposto__pIPI & "' />" & vbCRLF
+                campos_ocultos = campos_ocultos & "   <input type='hidden' name='c2_xml_imposto__vIPI_" & Cstr(icont) & "' id='c2_xml_imposto__vIPI_" & Cstr(icont) & "' class='PLLe' value='" & s_c2_xml_imposto__vIPI & "' />" & vbCRLF
 
-            campos_ocultos = campos_ocultos & "   <input type='hidden' name='c1_xml_prod_cProd_" & Cstr(icont) & "' id='c1_xml_prod_cProd_" & Cstr(icont) & "' class='PLLe' value='" & s_c1_xml_prod_cProd & "' />" & vbCRLF
-            campos_ocultos = campos_ocultos & "   <input type='hidden' name='c1_xml_prod_cEAN_" & Cstr(icont) & "' id='c1_xml_prod_cEAN_" & Cstr(icont) & "' class='PLLe' value='" & s_c1_xml_prod_cEAN & "' />" & vbCRLF
-            campos_ocultos = campos_ocultos & "   <input type='hidden' name='c1_xml_prod__NCM_" & Cstr(icont) & "' id='c1_xml_prod__NCM_" & Cstr(icont) & "' class='PLLe' value='" & s_c1_xml_prod__NCM & "' />" & vbCRLF
-            campos_ocultos = campos_ocultos & "   <input type='hidden' name='c1_xml_prod__CFOP_" & Cstr(icont) & "' id='c1_xml_prod__CFOP_" & Cstr(icont) & "' class='PLLe' value='" & s_c1_xml_prod__CFOP & "' />" & vbCRLF
-            campos_ocultos = campos_ocultos & "   <input type='hidden' name='c1_xml_prod__qCom_" & Cstr(icont) & "' id='c1_xml_prod__qCom_" & Cstr(icont) & "' class='PLLe' value='" & s_c1_xml_prod__qCom & "' />" & vbCRLF
-            campos_ocultos = campos_ocultos & "   <input type='hidden' name='c1_xml_prod__vUnCom_" & Cstr(icont) & "' id='c1_xml_prod__vUnCom_" & Cstr(icont) & "' class='PLLe' value='" & s_c1_xml_prod__vUnCom & "' />" & vbCRLF
-            campos_ocultos = campos_ocultos & "   <input type='hidden' name='c1_xml_prod__vProd_" & Cstr(icont) & "' id='c1_xml_prod__vProd_" & Cstr(icont) & "' class='PLLe' value='" & s_c1_xml_prod__vProd & "' />" & vbCRLF
-            campos_ocultos = campos_ocultos & "   <input type='hidden' name='c1_xml_imposto__pICMS_" & Cstr(icont) & "' id='c1_xml_imposto__pICMS_" & Cstr(icont) & "' class='PLLe' value='" & s_c1_xml_imposto__pICMS & "' />" & vbCRLF
-            campos_ocultos = campos_ocultos & "   <input type='hidden' name='c1_xml_imposto__pIPI_" & Cstr(icont) & "' id='c1_xml_imposto__pIPI_" & Cstr(icont) & "' class='PLLe' value='" & s_c1_xml_imposto__pIPI & "' />" & vbCRLF
-            campos_ocultos = campos_ocultos & "   <input type='hidden' name='c1_xml_imposto__vIPI_" & Cstr(icont) & "' id='c1_xml_imposto__vIPI_" & Cstr(icont) & "' class='PLLe' value='" & s_c1_xml_imposto__vIPI & "' />" & vbCRLF
-            campos_ocultos = campos_ocultos & "   <input type='hidden' name='c2_xml_prod_cProd_" & Cstr(icont) & "' id='c2_xml_prod_cProd_" & Cstr(icont) & "' class='PLLe' value='" & s_c2_xml_prod_cProd & "' />" & vbCRLF
-            campos_ocultos = campos_ocultos & "   <input type='hidden' name='c2_xml_prod_cEAN_" & Cstr(icont) & "' id='c2_xml_prod_cEAN_" & Cstr(icont) & "' class='PLLe' value='" & s_c2_xml_prod_cEAN & "' />" & vbCRLF
-            campos_ocultos = campos_ocultos & "   <input type='hidden' name='c2_xml_prod__NCM_" & Cstr(icont) & "' id='c2_xml_prod__NCM_" & Cstr(icont) & "' class='PLLe' value='" & s_c2_xml_prod__NCM & "' />" & vbCRLF
-            campos_ocultos = campos_ocultos & "   <input type='hidden' name='c2_xml_prod__CFOP_" & Cstr(icont) & "' id='c2_xml_prod__CFOP_" & Cstr(icont) & "' class='PLLe' value='" & s_c2_xml_prod__CFOP & "' />" & vbCRLF
-            campos_ocultos = campos_ocultos & "   <input type='hidden' name='c2_xml_prod__qCom_" & Cstr(icont) & "' id='c2_xml_prod__qCom_" & Cstr(icont) & "' class='PLLe' value='" & s_c2_xml_prod__qCom & "' />" & vbCRLF
-            campos_ocultos = campos_ocultos & "   <input type='hidden' name='c2_xml_prod__vUnCom_" & Cstr(icont) & "' id='c2_xml_prod__vUnCom_" & Cstr(icont) & "' class='PLLe' value='" & s_c2_xml_prod__vUnCom & "' />" & vbCRLF
-            campos_ocultos = campos_ocultos & "   <input type='hidden' name='c2_xml_prod__vProd_" & Cstr(icont) & "' id='c2_xml_prod__vProd_" & Cstr(icont) & "' class='PLLe' value='" & s_c2_xml_prod__vProd & "' />" & vbCRLF
-            campos_ocultos = campos_ocultos & "   <input type='hidden' name='c2_xml_imposto__pICMS_" & Cstr(icont) & "' id='c2_xml_imposto__pICMS_" & Cstr(icont) & "' class='PLLe' value='" & s_c2_xml_imposto__pICMS & "' />" & vbCRLF
-            campos_ocultos = campos_ocultos & "   <input type='hidden' name='c2_xml_imposto__pIPI_" & Cstr(icont) & "' id='c2_xml_imposto__pIPI_" & Cstr(icont) & "' class='PLLe' value='" & s_c2_xml_imposto__pIPI & "' />" & vbCRLF
-            campos_ocultos = campos_ocultos & "   <input type='hidden' name='c2_xml_imposto__vIPI_" & Cstr(icont) & "' id='c2_xml_imposto__vIPI_" & Cstr(icont) & "' class='PLLe' value='" & s_c2_xml_imposto__vIPI & "' />" & vbCRLF
+                end if 'if (s_prod_cod_nota <> "")
 
 			Next
 		
@@ -974,6 +992,7 @@ select
 	<td class="MB TdNfeAliqIpi" align="left" style="vertical-align:bottom;"><span class="PLTe">A.IPI</span></td>
 	<td class="MB TdNfeVlIpi" align="left" style="vertical-align:bottom;"><span class="PLTe">VL IPI</span></td>
 	<td class="MB TdNfeAliqIcms" align="left" style="vertical-align:bottom;"><span class="PLTe">A.ICMS</span></td>
+	<td class="MB TdNfeVlFrete" align="left" style="vertical-align:bottom;"><span class="PLTe">VL Frete</span></td>
 	<td class="MB TdNfeVlTotal" align="left" style="vertical-align:bottom;"><span class="PLTe">VL TOTAL</span></td>
 	</tr>
     <tbody>
@@ -984,7 +1003,7 @@ select
     </tbody>
     <tfoot>
 	    <tr>	
-	    <td colspan="7" class="MD">&nbsp;</td>
+	    <td colspan="8" class="MD">&nbsp;</td>
 	    <td class="MDB" align="left"><p class="Cd">Total NF</p></td>	
 	    <td class="MDB" align="right"><input name="c_total_nf" id="c_total_nf" class="PLLd" style="width:62px;color:black;" 
 	        value="<%=c_total_nf%>"></td>	

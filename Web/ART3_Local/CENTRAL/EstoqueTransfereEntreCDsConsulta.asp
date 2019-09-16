@@ -475,6 +475,13 @@
 			</table>
 		</td>
 	</tr>
+<!--  NSU  -->
+	<tr bgcolor="#FFFFFF">
+    <td class="MDBE" align="left" nowrap><span class="PLTe">NSU</span>
+		<br><input name="c_nsu" id="c_nsu" readonly tabindex=-1 class="PLLe" style="width:270px;margin-left:2pt;color:blue;"
+            value="<%=c_transf_selecionada%>">
+    </td>
+	</tr>
 <!--  DOCUMENTO  -->
 	<tr bgcolor="#FFFFFF">
     <td class="MDBE" align="left" nowrap><span class="PLTe">Documento da Transferência</span>
