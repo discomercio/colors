@@ -5512,7 +5512,7 @@ dim r, rx, s
 	s = "SELECT " & _
 			"e.*, " & _
             "n.NFe_Numero_NF, " & _
-            "n.NFe_Serie_NF, " & _
+            "n.NFe_Serie_NF " & _
 		" FROM t_NFe_EMITENTE e" & _
 		" INNER JOIN t_NFe_EMITENTE_NUMERACAO n ON e.cnpj = n.cnpj" & _
 		" WHERE" & _
