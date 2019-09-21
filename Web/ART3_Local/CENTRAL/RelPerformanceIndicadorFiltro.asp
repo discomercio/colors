@@ -51,6 +51,39 @@
 '									F  U  N  Ç  Õ  E  S 
 ' _____________________________________________________________________________________________
 
+' ____________________________________________________________________________
+' FABRICANTE MONTA ITENS SELECT
+'
+function fabricante_monta_itens_select(byval id_default)
+dim x, r, strResp, ha_default, v, i
+	id_default = Trim("" & id_default)
+    v = split(id_default, ", ")
+	ha_default=False
+	set r = cn.Execute("SELECT * FROM t_FABRICANTE ORDER BY fabricante")
+	strResp = ""
+	do while Not r.eof 
+		x = Trim("" & r("fabricante"))
+        strResp = strResp & "<option "
+        for i=LBound(v) to UBound(v) 
+		    if (id_default<>"") And (v(i)=x) then
+		        strResp = strResp & "selected"
+                ha_default=True
+                exit for
+		        end if
+		   	next
+
+		strResp = strResp & " value='" & x & "'>"
+		strResp = strResp & Trim("" & r("fabricante")) & " - " & Trim("" & r("nome"))
+		strResp = strResp & "</option>" & chr(13)
+		r.MoveNext
+		loop
+		
+	fabricante_monta_itens_select = strResp
+	r.close
+	set r=nothing
+end function
+
+
 
 ' ____________________________________________________________________________
 ' VENDEDORES MONTA ITENS SELECT
@@ -156,9 +189,26 @@ end function
 
 
 
+<% if False then 'APENAS P/ HABILITAR O INTELLISENSE DURANTE O DESENVOLVIMENTO!! %>
+<script src="../Global/jquery.js" language="JavaScript" type="text/javascript"></script>
+<% end if %>
+
+<script src="<%=URL_FILE__JQUERY%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI_I18N%>" Language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__GLOBAL_JS%>" Language="JavaScript" Type="text/javascript"></script>
 
 <script language="JavaScript" type="text/javascript">
+
+    $(function () {
+        $("#c_fabricante").change(function () {
+            $("#spnCounterFabricante").text($("#c_fabricante :selected").length);
+        });
+
+        $("#spnCounterFabricante").text($("#c_fabricante :selected").length);
+    });
 
 function formata_ano(ano) {
 var s_ano;
@@ -178,6 +228,11 @@ var s_ano;
 		}
 
 	return s_ano * 1;
+}
+
+function limpaCampoFabricante(f) {
+    $("#c_fabricante option:selected").removeAttr("selected");
+    $("#spnCounterFabricante").text($("#c_fabricante :selected").length);
 }
 
 function fFILTROConfirma( f ) {
@@ -278,6 +333,29 @@ var i, blnFlagOk;
 		<% =indicadores_monta_itens_select(Null) %>
 		</select>
 	</td>
+	</tr>
+
+<!--  FABRICANTE  -->
+	<tr>
+		<td class="MDBE" NOWRAP align="left">
+		    <span class="PLTe">FABRICANTE(S)</span>
+            <br />
+            <table style="padding:0px;">
+                <tr>
+                    <td align="left">
+                        <select id="c_fabricante" name="c_fabricante" size="6" multiple style="min-width:220px;margin:1px 4px 6px 0px;">
+		                <%=fabricante_monta_itens_select(get_default_valor_texto_bd(usuario, "RelPerformanceIndicadorFiltro|c_fabricante")) %>
+		                </select>
+                    </td>
+                    <td style="text-align:left;vertical-align:top;">
+				        <a name="bLimparFabricante" id="bLimparFabricante" href="javascript:limpaCampoFabricante(fFILTRO)" title="limpa o filtro 'Fabricante'">
+							        <img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterFabricante"></span>)
+                    </td>
+                </tr>
+            </table>
+		</td>
 	</tr>
 
 <!--  PEDIDOS ENTREGUES ENTRE  -->
