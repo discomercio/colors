@@ -29,18 +29,18 @@ namespace FinanceiroService
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "Financeiro Service";
 				public static readonly string ID_SISTEMA_EVENTLOG = GetConfigurationValue("ServiceName");
-				public const string VERSAO_NUMERO = "1.31";
-				public const string VERSAO_DATA = "16.JUL.2019";
+				public const string VERSAO_NUMERO = "1.32";
+				public const string VERSAO_DATA = "24.SET.2019";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Serviço do Windows para execução automática de rotinas financeiras";
 				public static string IDENTIFICADOR_AMBIENTE_OWNER = "";
 				public static readonly string AMBIENTE_EXECUCAO = GetConfigurationValue("AmbienteExecucao");
 			}
-			#endregion
+            #endregion
 
-			#region[ Comentário sobre as versões ]
-			/*================================================================================================
+            #region[ Comentário sobre as versões ]
+            /*================================================================================================
 			 * v 1.00 - 10.09.2010 - por HHO
 			 *		Início.
 			 *		Este serviço do Windows realiza diversas rotinas automáticas.
@@ -251,7 +251,8 @@ namespace FinanceiroService
 			 * v 1.31 - 16.07.2019 - por HHO
 			 *		Implementação de tratamento para o novo meio de pagamento 'cartão (maquineta)'.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.32 - XX.XX.20XX - por XXX
+			 * v 1.32 - 24.09.2019 - por HHO
+             *      Ajustes para realização da limpeza automática da tabela t_CTRL_RELATORIO_USUARIO_X_PEDIDO
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.33 - XX.XX.20XX - por XXX
 			 * -----------------------------------------------------------------------------------------------
@@ -270,10 +271,10 @@ namespace FinanceiroService
 			 * v 1.40 - XX.XX.20XX - por XXX
 			 * ===============================================================================================
 			 */
-			#endregion
+            #endregion
 
-			#region [ FIN ]
-			public static class FIN
+            #region [ FIN ]
+            public static class FIN
 			{
 				#region [ ID_T_PARAMETRO ]
 				public static class ID_T_PARAMETRO
@@ -1484,7 +1485,8 @@ namespace FinanceiroService
 					public const int T_EMAILSNDSVC_LOG_ERRO__CORTE_EM_DIAS = 12 * 31;
 					public const int T_MAGENTO_API_PEDIDO_XML__INFO_UTILIZADA__CORTE_EM_DIAS = 36 * 31;
 					public const int T_MAGENTO_API_PEDIDO_XML__INFO_DESCARTADA__CORTE_EM_DIAS = 1 * 31;
-				}
+                    public const int T_CTRL_RELATORIO_USUARIO_X_PEDIDO__CORTE_EM_DIAS = 1 * 31;
+                }
 				#endregion
 			}
 			#endregion

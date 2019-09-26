@@ -900,8 +900,9 @@ namespace FinanceiroService
 				executaLimpezaTabela("t_FINSVC_LOG", "data", Global.Cte.ManutencaoLogBd.Corte.T_FINSVC_LOG__CORTE_EM_DIAS, out strMsgErroAux);
 				executaLimpezaTabela("t_EMAILSNDSVC_LOG", "dt_cadastro", Global.Cte.ManutencaoLogBd.Corte.T_EMAILSNDSVC_LOG__CORTE_EM_DIAS, out strMsgErroAux);
 				executaLimpezaTabela("t_EMAILSNDSVC_LOG_ERRO", "dt_cadastro", Global.Cte.ManutencaoLogBd.Corte.T_EMAILSNDSVC_LOG_ERRO__CORTE_EM_DIAS, out strMsgErroAux);
+                executaLimpezaTabela("t_CTRL_RELATORIO_USUARIO_X_PEDIDO", "data", Global.Cte.ManutencaoLogBd.Corte.T_CTRL_RELATORIO_USUARIO_X_PEDIDO__CORTE_EM_DIAS, out strMsgErroAux);
 
-				strSqlCondicao = "(st_usado_cadastramento_pedido_erp = 0)";
+                strSqlCondicao = "(st_usado_cadastramento_pedido_erp = 0)";
 				executaLimpezaTabelaCondicional("t_MAGENTO_API_PEDIDO_XML", "dt_cadastro", Global.Cte.ManutencaoLogBd.Corte.T_MAGENTO_API_PEDIDO_XML__INFO_DESCARTADA__CORTE_EM_DIAS, strSqlCondicao, out strMsgErroAux);
 
 				strSqlCondicao = "(st_usado_cadastramento_pedido_erp = 1)";
