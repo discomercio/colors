@@ -35,10 +35,20 @@
 	usuario = Trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
 
+    dim previous_c_dt_coleta, previous_c_dt_coleta_inicio, previous_c_dt_coleta_termino, previous_c_transportadora, previous_ckb_exibir_verificados, previous_c_nfe_emitente, previous_c_uf
+	previous_c_dt_coleta = Trim(Request.Form("c_dt_coleta"))
+	previous_c_dt_coleta_inicio = Trim(Request.Form("c_dt_coleta_inicio"))
+	previous_c_dt_coleta_termino = Trim(Request.Form("c_dt_coleta_termino"))
+	previous_c_transportadora = Trim(Request.Form("c_transportadora"))
+	previous_ckb_exibir_verificados = Trim(Request.Form("ckb_exibir_verificados"))
+	previous_c_nfe_emitente = Trim(Request.Form("c_nfe_emitente"))
+	previous_c_uf = Trim(Request.Form("c_uf"))
+
 '	CONECTA COM O BANCO DE DADOS
 	dim cn
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+    dim s
 	dim s_lista_operacoes_permitidas
 	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
 
@@ -77,6 +87,17 @@
 	'	NÃO HÁ NENHUM CD CADASTRADO P/ ESTE USUÁRIO!!
 		Response.Redirect("aviso.asp?id=" & ERR_NENHUM_CD_HABILITADO_PARA_USUARIO)
 		end if
+
+'   LIMPA EVENTUAIS LOCKS REMANESCENTES
+    s = "UPDATE t_CTRL_RELATORIO_USUARIO_X_PEDIDO SET" & _
+            " locked = 0," & _
+            " cod_motivo_lock_released = " & CTRL_RELATORIO_CodMotivoLockReleased_AcessadaTelaFiltro & "," & _
+            " dt_hr_lock_released = getdate()" & _
+        " WHERE" & _
+            " (usuario = '" & QuotedStr(usuario) & "')" & _
+            " AND (id_relatorio = " & ID_CTRL_RELATORIO_RelControleImpostos & ")" & _
+            " AND (locked = 1)"
+    cn.Execute(s)
 %>
 
 
@@ -311,7 +332,9 @@ var data;
 	<td class="MC ME MD" align="left" nowrap><span class="PLTe">DATA DE COLETA</span></td></tr>
 	<tr bgcolor="#FFFFFF"><td class="MDBE" align="left">
 		<table style="margin: 4px 8px 4px 8px;" cellspacing="0" cellpadding="0"><tr bgcolor="#FFFFFF"><td align="left">
-		<input size="12" class="Cc" maxlength="10" name="c_dt_coleta" id="c_dt_coleta" onblur="if (!isDate(this)) {alert('Data de coleta inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)&&tem_info(this.value)&&isDate(this)) bCONFIRMA.click(); filtra_data();">
+		<input size="12" class="Cc" maxlength="10" name="c_dt_coleta" id="c_dt_coleta" onblur="if (!isDate(this)) {alert('Data de coleta inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)&&tem_info(this.value)&&isDate(this)) bCONFIRMA.click(); filtra_data();"
+        <% if previous_c_dt_coleta <> "" then Response.Write " value='" & previous_c_dt_coleta & "'"%>
+        />
 			</td></tr>
 		</table>
 		</td>
@@ -323,7 +346,10 @@ var data;
 	<tr bgcolor="#FFFFFF"><td class="MDBE" align="left">
 		<table style="margin: 4px 8px 4px 8px;" cellspacing="0" cellpadding="0"><tr bgcolor="#FFFFFF"><td align="left">
 		<input size="12" class="Cc" maxlength="10" name="c_dt_coleta_inicio" id="c_dt_coleta_inicio" onblur="if (!isDate(this)) {alert('Data de início inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)&&tem_info(this.value)&&isDate(this)) fFILTRO.c_dt_coleta_termino.focus(); filtra_data();"
-			>&nbsp;<span class="C">&nbsp;até&nbsp;</span>&nbsp;<input class="Cc" size="12" maxlength="10" name="c_dt_coleta_termino" id="c_dt_coleta_termino" onblur="if (!isDate(this)) {alert('Data de término inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)&&tem_info(this.value)&&isDate(this)) bCONFIRMA.click(); filtra_data();">
+			<% if previous_c_dt_coleta_inicio <> "" then Response.Write " value='" & previous_c_dt_coleta_inicio & "'" %>
+            />&nbsp;<span class="C">&nbsp;até&nbsp;</span>&nbsp;<input class="Cc" size="12" maxlength="10" name="c_dt_coleta_termino" id="c_dt_coleta_termino" onblur="if (!isDate(this)) {alert('Data de término inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)&&tem_info(this.value)&&isDate(this)) bCONFIRMA.click(); filtra_data();"
+            <% if previous_c_dt_coleta_termino <> "" then Response.Write " value='" & previous_c_dt_coleta_termino & "'" %>
+            />
 			</td></tr>
 		</table>
 		</td>
@@ -334,7 +360,7 @@ var data;
 	<td class="ME MD" align="left" nowrap><span class="PLTe">TRANSPORTADORA</span></td></tr>
 	<tr bgcolor="#FFFFFF"><td class="MDBE" align="left">
 		<select id="c_transportadora" name="c_transportadora" style="margin:6pt 9pt 8pt 9pt;">
-		<% =transportadora_monta_itens_select("") %>
+		<% =transportadora_monta_itens_select(previous_c_transportadora) %>
 		</select>
 		</td>
 	</tr>
@@ -344,7 +370,7 @@ var data;
 	<td class="ME MD" align="left" nowrap><span class="PLTe">UF</span></td></tr>
 	<tr bgcolor="#FFFFFF"><td class="MDBE" align="left">
 		<select id="c_uf" name="c_uf" style="margin:6pt 9pt 8pt 9pt;">
-		<% =UF_monta_itens_select("") %>
+		<% =UF_monta_itens_select(previous_c_uf) %>
 		</select>
 		</td>
 	</tr>
@@ -354,7 +380,9 @@ var data;
 	<td class="ME MD" align="left" nowrap><span class="PLTe">OPÇÃO DE VERIFICAÇÃO</span></td></tr>
 	<tr bgcolor="#FFFFFF"><td class="MDBE" align="left">
 		<input type="checkbox" tabindex="-1" id="ckb_exibir_verificados" name="ckb_exibir_verificados" style="margin:6pt 2pt 8pt 9pt;"
-			value="<%=COD_CONTROLE_IMPOSTOS_STATUS__OK%>"><span class="C" style="cursor:default" 
+			value="<%=COD_CONTROLE_IMPOSTOS_STATUS__OK%>"
+            <% if previous_ckb_exibir_verificados <> "" then Response.Write " checked"%>
+            /><span class="C" style="cursor:default" 
 			onclick="fFILTRO.ckb_exibir_verificados.click();">Exibir Pedidos Já Verificados</span>
 	</td></tr>
 
@@ -373,7 +401,7 @@ var data;
 				<tr bgcolor="#FFFFFF">
 				<td align="left">
 					<select id="c_nfe_emitente" name="c_nfe_emitente" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) {this.options[0].selected=true;}" style="margin-left:5px;margin-top:4pt; margin-bottom:4pt;">
-						<%=wms_usuario_x_nfe_emitente_monta_itens_select(usuario, "")%>
+						<%=wms_usuario_x_nfe_emitente_monta_itens_select(usuario, previous_c_nfe_emitente)%>
 					</select>
 				</td>
 				</tr>
@@ -396,7 +424,7 @@ var data;
 
 <table width="649" cellspacing="0">
 <tr>
-	<td align="left"><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()" title="volta para a página anterior">
+	<td align="left"><a name="bVOLTAR" id="bVOLTAR" href="resumo.asp?<%=MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>" title="volta para a página anterior">
 		<img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
 	<td align="right"><div name="dCONFIRMA" id="dCONFIRMA"><a name="bCONFIRMA" id="bCONFIRMA" href="javascript:fFILTROConfirma(fFILTRO)" title="executa a consulta">
 		<img src="../botao/confirmar.gif" width="176" height="55" border="0"></a></div>
