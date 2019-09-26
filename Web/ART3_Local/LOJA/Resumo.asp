@@ -277,6 +277,19 @@
     rs.Open s,cn
 	if Not rs.Eof then s_sessionToken = Trim("" & rs("SessionTokenModuloLoja"))
 
+'   LIMPA EVENTUAIS LOCKS REMANESCENTES NOS RELATÓRIOS
+    s = "UPDATE tCRUP SET" & _
+            " locked = 0," & _
+            " cod_motivo_lock_released = " & CTRL_RELATORIO_CodMotivoLockReleased_AcessadaTelaInicialLoja & "," & _
+            " dt_hr_lock_released = getdate()" & _
+        " FROM t_CTRL_RELATORIO_USUARIO_X_PEDIDO tCRUP INNER JOIN t_CTRL_RELATORIO tCR ON (tCRUP.id_relatorio = tCR.id)" & _
+        " WHERE" & _
+            " (tCR.modulo = 'LOJA')" & _
+            " AND (tCRUP.usuario = '" & QuotedStr(Trim(Session("usuario_atual"))) & "')" & _
+            " AND (locked = 1)"
+    cn.Execute(s)
+
+
 
 
 
