@@ -241,6 +241,18 @@
 	'	HÁ MAIS DO QUE 1 CD, ENTÃO SERÁ EXIBIDA A LISTA P/ O USUÁRIO SELECIONAR UM CD
 		id_nfe_emitente_selecionado = 0
 		end if
+
+'   LIMPA EVENTUAIS LOCKS REMANESCENTES NOS RELATÓRIOS
+    s = "UPDATE tCRUP SET" & _
+            " locked = 0," & _
+            " cod_motivo_lock_released = " & CTRL_RELATORIO_CodMotivoLockReleased_AcessadaTelaInicialCentral & "," & _
+            " dt_hr_lock_released = getdate()" & _
+        " FROM t_CTRL_RELATORIO_USUARIO_X_PEDIDO tCRUP INNER JOIN t_CTRL_RELATORIO tCR ON (tCRUP.id_relatorio = tCR.id)" & _
+        " WHERE" & _
+            " (tCR.modulo = 'CENTRAL')" & _
+            " AND (tCRUP.usuario = '" & QuotedStr(Trim(Session("usuario_atual"))) & "')" & _
+            " AND (locked = 1)"
+    cn.Execute(s)
 %>
 
 

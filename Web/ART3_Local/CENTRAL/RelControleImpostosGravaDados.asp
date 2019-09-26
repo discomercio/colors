@@ -143,15 +143,21 @@
 					alerta=texto_add_br(alerta)
 					alerta=alerta & "NFe n° " & v_nota_verificada_num(i) & " não foi encontrada."
 				else
-					rs("controle_impostos_status")=CInt(COD_CONTROLE_IMPOSTOS_STATUS__OK)
-					rs("controle_impostos_data")=Date
-					rs("controle_impostos_data_hora")=Now
-					rs("controle_impostos_usuario")=usuario
-					rs.Update
-					if Err <> 0 then 
-						alerta=texto_add_br(alerta)
-						alerta=alerta & Cstr(Err) & ": " & Err.Description
-						end if
+                '   VERIFICA SE OUTRO USUÁRIO ALTEROU O STATUS
+                    if rs("controle_impostos_status")=CInt(COD_CONTROLE_IMPOSTOS_STATUS__OK) then
+                        alerta=texto_add_br(alerta)
+                        alerta=alerta & "Status do controle de impostos do pedido " & v_nota_verificada_pedido(i) & " foi alterado por outro usuário (" & Trim("" & rs("controle_impostos_usuario")) & " às " & formata_data_hora_sem_seg(rs("controle_impostos_data_hora")) & ")"
+                    else
+					    rs("controle_impostos_status")=CInt(COD_CONTROLE_IMPOSTOS_STATUS__OK)
+					    rs("controle_impostos_data")=Date
+					    rs("controle_impostos_data_hora")=Now
+					    rs("controle_impostos_usuario")=usuario
+					    rs.Update
+					    if Err <> 0 then 
+						    alerta=texto_add_br(alerta)
+						    alerta=alerta & Cstr(Err) & ": " & Err.Description
+						    end if
+                        end if
 						
 					s_log = ""
 					if alerta = "" then
@@ -168,9 +174,6 @@
 
 					end if
 				end if
-				
-		'	SE HOUVE ERRO, CANCELA O LAÇO
-			if alerta <> "" then exit for
 			next
 
 '		if alerta = "" then
@@ -180,6 +183,16 @@
 '				end if
 '			end if
 		
+    '   LIMPA LOCKS
+        s = "UPDATE t_CTRL_RELATORIO_USUARIO_X_PEDIDO SET" & _
+                " locked = 0," & _
+                " cod_motivo_lock_released = " & CTRL_RELATORIO_CodMotivoLockReleased_OperacaoFinalizada & "," & _
+                " dt_hr_lock_released = getdate()" & _
+            " WHERE" & _
+                " (usuario = '" & QuotedStr(usuario) & "')" & _
+                " AND (id_relatorio = " & ID_CTRL_RELATORIO_RelControleImpostos & ")" & _
+                " AND (locked = 1)"
+        cn.Execute(s)
 
 	'	FINALIZA TRANSAÇÃO
 	'	==================
@@ -195,6 +208,10 @@
 			cn.RollbackTrans
 		'	~~~~~~~~~~~~~~~~
 			end if
+
+        if alerta <> "" then
+            grava_log usuario, "", "", "", OP_LOG_NFE_CTRL_IMPOSTOS, alerta
+            end if
 		end if
 %>
 

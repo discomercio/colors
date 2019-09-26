@@ -25,7 +25,7 @@
 						" SessionTokenModuloCentral = NULL," & _
 						" DtHrSessionTokenModuloCentral = NULL" & _
 					" WHERE" & _
-						" usuario = '" & Trim(Session("usuario_atual")) & "'"
+						" usuario = '" & QuotedStr(Trim(Session("usuario_atual"))) & "'"
 			cn.Execute(strSQL)
 			
 			strSQL = "UPDATE t_SESSAO_HISTORICO SET" & _
@@ -35,6 +35,18 @@
 						" AND DtHrInicio >= " & bd_formata_data_hora(Now-1) & _
 						" AND SessionCtrlTicket = '" & Trim(Session("SessionCtrlTicket")) & "'"
 			cn.Execute(strSQL)
+
+        '   LIMPA EVENTUAIS LOCKS REMANESCENTES NOS RELATÓRIOS
+            strSQL = "UPDATE tCRUP SET" & _
+                    " locked = 0," & _
+                    " cod_motivo_lock_released = " & CTRL_RELATORIO_CodMotivoLockReleased_SessaoEncerradaCentral & "," & _
+                    " dt_hr_lock_released = getdate()" & _
+                " FROM t_CTRL_RELATORIO_USUARIO_X_PEDIDO tCRUP INNER JOIN t_CTRL_RELATORIO tCR ON (tCRUP.id_relatorio = tCR.id)" & _
+                " WHERE" & _
+                    " (tCR.modulo = 'CENTRAL')" & _
+                    " AND (tCRUP.usuario = '" & QuotedStr(Trim(Session("usuario_atual"))) & "')" & _
+                    " AND (locked = 1)"
+            cn.Execute(strSQL)
 
 			cn.Close
 			end if
