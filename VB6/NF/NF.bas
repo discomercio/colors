@@ -735,8 +735,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.09"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  02/07/2019"
+Global Const m_id_versao = "2.10"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  02/10/2019"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"
