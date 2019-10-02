@@ -2851,6 +2851,7 @@ dim rs
                 .vl_ipi                 = rs("vl_ipi")
                 .aliq_ipi				= rs("aliq_ipi")
                 .aliq_icms				= rs("aliq_icms")
+                .vl_frete               = rs("vl_frete")
 				end with
 			rs.MoveNext 
 			Loop
@@ -5511,10 +5512,13 @@ dim r, rx, s
 	set le_nfe_emitente = rx
 	
 	s = "SELECT " & _
-			"*" & _
-		" FROM t_NFe_EMITENTE" & _
+			"e.*, " & _
+            "n.NFe_Numero_NF, " & _
+            "n.NFe_Serie_NF " & _
+		" FROM t_NFe_EMITENTE e" & _
+		" INNER JOIN t_NFe_EMITENTE_NUMERACAO n ON e.cnpj = n.cnpj" & _
 		" WHERE" & _
-			" (id = " & Cstr(id) & ")"
+			" (e.id = " & Cstr(id) & ")"
 	set r = cn.Execute(s)
 	if Not r.Eof then
 		rx.id = r("id")

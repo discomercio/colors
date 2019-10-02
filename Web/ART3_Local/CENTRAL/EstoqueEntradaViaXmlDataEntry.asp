@@ -931,6 +931,7 @@ function recalcula_itens() {
 		    $("#c_nfe_vl_ipi_" + trim(i.toString())).val(formata_moeda(v_ipi.toString()));
             v_calculo = v_calculo + v_ipi;
             v_frete = converte_numero($("#c_nfe_vl_frete_" + trim(i.toString())).val());
+            v_frete = v_frete / converte_numero($("#c_nfe_qtde_" + trim(i.toString())).val());
             v_calculo = v_calculo + v_frete;
 		    v_agio = converte_numero(formata_moeda(v_calculo  * v_perc_agio));
 		    v_calculo = converte_numero(formata_moeda(v_calculo + v_agio));
@@ -1553,12 +1554,12 @@ select
 	<td class="MDB TdNfeAliqIpi" align="left">
         <input type="hidden" name="c_nfe_aliq_ipi_ori_<%=Cstr(i)%>" id="c_nfe_aliq_ipi_ori_<%=Cstr(i)%>" />
         <input name="c_nfe_aliq_ipi_<%=Cstr(i)%>" id="c_nfe_aliq_ipi_<%=Cstr(i)%>" class="PLLe TdNfeAliqIpi TxtEditavel"
-         onblur="this.value=formata_numero(this.value, 0); if (converte_numero(this.value) > 100) {alert('Alíquota de IPI maior que 100%!');}; if (this.value != c_nfe_aliq_ipi_ori_<%=Cstr(i)%>.value) {recalcula_itens(<%=Cstr(i)%>); recalcula_total_nf();}" />
+         onblur="this.value=formata_numero(this.value, 0); if (converte_numero(this.value) > 100) {alert('Alíquota de IPI maior que 100%!');}; if (this.value != c_nfe_aliq_ipi_ori_<%=Cstr(i)%>.value) {recalcula_itens(); recalcula_total_nf();}" />
 	</td>
 	<td class="MDB TdNfeVlIpi" align="left">
         <input type="hidden" name="c_nfe_vl_ipi_ori_<%=Cstr(i)%>" id="c_nfe_vl_ipi_ori_<%=Cstr(i)%>" />
         <input name="c_nfe_vl_ipi_<%=Cstr(i)%>" id="c_nfe_vl_ipi_<%=Cstr(i)%>" class="PLLe TdNfeVlIpi TxtEditavel" 
-        onblur="this.value=formata_moeda(this.value); if (this.value != c_nfe_vl_ipi_ori_<%=Cstr(i)%>.value) {recalcula_itens(<%=Cstr(i)%>); recalcula_total();}" />
+        onblur="this.value=formata_moeda(this.value); if (this.value != c_nfe_vl_ipi_ori_<%=Cstr(i)%>.value) {recalcula_itens(); recalcula_total();}" />
 	</td>
 	<td class="MDB TdNfeAliqIcms" align="left">
         <input name="c_nfe_aliq_icms_<%=Cstr(i)%>" id="c_nfe_aliq_icms_<%=Cstr(i)%>" class="PLLe TdNfeAliqIcms TxtEditavel"
@@ -1568,7 +1569,7 @@ select
 	<td class="MDB TdNfeVlIpi" align="left">
         <input type="hidden" name="c_nfe_vl_frete_ori_<%=Cstr(i)%>" id="c_nfe_vl_frete_ori_<%=Cstr(i)%>" />
         <input name="c_nfe_vl_frete_<%=Cstr(i)%>" id="c_nfe_vl_frete_<%=Cstr(i)%>" class="PLLe TdNfeVlIpi TxtEditavel" 
-        onblur="this.value=formata_moeda(this.value); if (this.value != c_nfe_vl_frete_ori_<%=Cstr(i)%>.value) {recalcula_itens(<%=Cstr(i)%>); recalcula_total();}" />
+        onblur="this.value=formata_moeda(this.value); if (this.value != c_nfe_vl_frete_ori_<%=Cstr(i)%>.value) {recalcula_itens(); recalcula_total();}" />
 	</td>
 	<td class="MDB TdNfeVlTotal" align="left">
         <input name="c_nfe_vl_total_<%=Cstr(i)%>" id="c_nfe_vl_total_<%=Cstr(i)%>" class="PLLe TdNfeVlTotal" readonly />

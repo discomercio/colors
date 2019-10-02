@@ -1512,8 +1512,8 @@ dim strComplemento
                         "," & bd_formata_numero(.aliq_icms) & _
                         "," & bd_formata_numero(.vl_frete) & _
 						")"
-				cn.Execute(s_sql)
-				if Err <> 0 then
+                cn.Execute(s_sql)
+                if Err <> 0 then
 					msg_erro=Cstr(Err) & ": " & Err.Description
 					exit function
 					end if

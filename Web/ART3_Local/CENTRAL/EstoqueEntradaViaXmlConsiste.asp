@@ -59,12 +59,13 @@
     dim c_op_upload
 
     c_op_upload = Trim(Request("c_op_upload"))
-    'if c_op_upload = "M" then
-	'    c_nfe_qtde_itens = Trim(Request("iQtdeItensPreenchidos"))
-    'else
-    '    c_nfe_qtde_itens = Trim(Request("c_nfe_qtde_itens"))
-    '    end if
-    c_nfe_qtde_itens = Trim(Request("c_nfe_qtde_itens"))
+    if c_op_upload = "M" then
+	    'c_nfe_qtde_itens = Trim(Request("iQtdeItensPreenchidos"))
+        c_nfe_qtde_itens = MAX_PRODUTOS_ENTRADA_ESTOQUE
+    else
+        c_nfe_qtde_itens = Trim(Request("c_nfe_qtde_itens"))
+        end if
+    'c_nfe_qtde_itens = Trim(Request("c_nfe_qtde_itens"))
 
 	c_nfe_numero_nf = Trim(Request("c_nfe_numero_nf"))
 	c_nfe_emitente_cnpj = retorna_so_digitos(Trim(Request("c_nfe_emitente_cnpj")))
@@ -271,7 +272,7 @@
             s_prod_cod_nota = Trim(Request.Form("c_nfe_codigo_" & Trim(i)))
             'se  o código do produto na nota não está preenchido, trata-se de uma linha vazia
             'neste caso, ignorar geração do HTML
-            if (s_prod_cod_nota <> "") then
+            if (s_prod_cod <> "") then
 		        s_prod_ncm = Trim(Request.Form("c_nfe_ncm_sh_" & Trim(i)))
 		        s_prod_cst = Trim(Request.Form("c_erp_cst_" & Trim(i)))
 		        s_prod_cfop = Trim(Request.Form("c_nfe_cfop_" & Trim(i)))
@@ -1003,12 +1004,13 @@ select
     </tbody>
     <tfoot>
 	    <tr>	
-	    <td colspan="8" class="MD">&nbsp;</td>
+	    <td colspan="7" class="MD">&nbsp;</td>
 	    <td class="MDB" align="left"><p class="Cd">Total NF</p></td>	
 	    <td class="MDB" align="right"><input name="c_total_nf" id="c_total_nf" class="PLLd" style="width:62px;color:black;" 
 	        value="<%=c_total_nf%>"></td>	
 	    <td>&nbsp;</td>
         <td>&nbsp;</td>
+	    <td>&nbsp;</td>
 	    <td>&nbsp;</td>
 	    <td class="MD">&nbsp;</td>
 	    <td class="MDB" align="right"><input name="c_nfe_vl_total_geral" id="c_nfe_vl_total_geral" class="PLLd" style="width:70px;color:black;"

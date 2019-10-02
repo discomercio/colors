@@ -194,7 +194,10 @@ function fFILTROConfirma( f ) {
 	}
 
     if (f.rb_op_desejada[1].checked) {
-        alert(f.c_nsu.value);
+        if (f.c_nsu.value == "") {
+            alert("Selecione uma transferência!!!");
+            return;
+        }
         s_ir_para = "EstoqueTransfereEntreCDsConsulta.asp?transf_selecionada=" + f.c_nsu.value;
 	}
 

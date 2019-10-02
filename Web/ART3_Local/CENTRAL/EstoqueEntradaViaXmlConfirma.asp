@@ -304,6 +304,10 @@
                     s = Trim(Request.Form("c_nfe_vl_ipi_" & Trim(i))) 
                     if s = "" then s = "0"
 			        .vl_ipi = s               
+               '   VALOR FRETE
+                    s = Trim(Request.Form("c_nfe_vl_frete_" & Trim(i))) 
+                    if s = "" then s = "0"
+			        .vl_frete = s               
 				    end with
 			    end if
             end if
@@ -357,7 +361,7 @@
 				end if
 			next
 		end if
-	
+
 	if alerta = "" then
 	'	INFORMAÇÕES PARA O LOG
 		s_log = ""
@@ -465,7 +469,7 @@
 			            s_sql = " INSERT INTO T_ESTOQUE_XML_ITEM " & _
 					         " (id_estoque_xml, xml_prod_cProd, xml_prod_cEAN, xml_prod__NCM, xml_prod__CFOP, " & _
                              " xml_prod__qCom, xml_prod__vUnCom, xml_prod__vProd, xml_prod__vFrete, xml_imposto__pICMS, " & _
-                             " xml_imposto__pIPI, xml_imposto__vIPI " & _
+                             " xml_imposto__pIPI, xml_imposto__vIPI  " & _
                              "  ) VALUES " & _
                              " ("  & _
 	                         CStr(id_estoque_xml) & ", " & _   
