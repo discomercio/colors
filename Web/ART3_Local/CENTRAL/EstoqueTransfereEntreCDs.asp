@@ -293,7 +293,7 @@
 	<td class="MB" align="left"><span class="PLTe">Produto</span></td>
 	<td class="MB" align="left"><span class="PLTd">Qtde</span></td>
 	</tr>
-<% for i=1 to MAX_PRODUTOS_ENTRADA_ESTOQUE %>
+<% for i=1 to MAX_ITENS %>
 	<tr>
 	<td class="MD" align="left">
 		<input name="c_linha" id="c_linha" readonly tabindex=-1 class="PLLe" maxlength="2" style="width:30px;text-align:right;color:#808080;" 

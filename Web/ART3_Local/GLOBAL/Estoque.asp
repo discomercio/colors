@@ -3522,6 +3522,8 @@ dim aliq_icms_aux
 dim vl_ipi_aux
 dim preco_origem_aux
 dim produto_xml_aux
+dim nfe_entrada_numero_aux
+dim nfe_entrada_serie_aux
 dim qtde_movto
 dim s_chave
 
@@ -3596,9 +3598,10 @@ dim s_chave
 			
 		'	T_ESTOQUE_ITEM: SAÍDA DE PRODUTOS
 			s = "SELECT " & _
-					"ei.*, p.descricao_html, p.ean as ean_produto" & _
+					"ei.*, p.descricao_html, p.ean as ean_produto, exml.nfe_entrada_numero, exml.nfe_entrada_serie" & _
 				" FROM t_ESTOQUE_ITEM ei" & _
                 " INNER JOIN t_PRODUTO p ON (ei.fabricante = p.fabricante AND ei.produto = p.produto)" & _
+                " LEFT JOIN (SELECT id_estoque, xml_ide__nNF AS nfe_entrada_numero, xml_ide__serie AS nfe_entrada_serie FROM t_ESTOQUE_XML WHERE xml_prioridade = 1) exml ON (ei.id_estoque = exml.id_estoque)" & _
 				" WHERE" & _
 					" (ei.id_estoque = '" & Trim(v_estoque(iv)) & "')" & _
 					" AND (ei.fabricante = '" & id_fabricante & "')" & _
@@ -3630,6 +3633,8 @@ dim s_chave
                 preco_origem_aux = rs("preco_origem")
                 produto_xml_aux = Trim(rs("produto_xml"))
                 descricao_html_aux = Trim(rs("descricao_html"))
+                nfe_entrada_numero_aux = Trim(rs("nfe_entrada_numero"))
+                nfe_entrada_serie_aux = Trim(rs("nfe_entrada_serie"))
 				End If
 			
 			If (qtde_a_sair - qtde_movimentada) > (qtde_aux - qtde_utilizada_aux) Then
@@ -3664,6 +3669,8 @@ dim s_chave
             v_item(Ubound(v_item)).vl_ipi = vl_ipi_aux
             v_item(Ubound(v_item)).preco_origem = preco_origem_aux
             v_item(Ubound(v_item)).produto_xml = produto_xml_aux
+            v_item(Ubound(v_item)).nfe_entrada_numero = nfe_entrada_numero_aux
+            v_item(Ubound(v_item)).nfe_entrada_serie = nfe_entrada_serie_aux
 		
 		'	CONTABILIZA QUANTIDADE MOVIMENTADA
 			qtde_movimentada = qtde_movimentada + qtde_movto
@@ -3730,7 +3737,7 @@ dim s_log_base
 	
 '	TENTA MARCAR COMO EXCLUÍDOS OS ITENS DA TRANSFERÊNCIA
 
-    s = "UPDATE t_ESTOQUE_TRANSFERENCIA_ITEM_SUB SET st_exclusao = 1 WHERE"  & _
+    s = "UPDATE t_ESTOQUE_TRANSFERENCIA_ITEM_SUB SET st_excluido = 1 WHERE"  & _
 		" (id_estoque_transferencia in (SELECT id FROM t_ESTOQUE_TRANSFERENCIA WHERE "& _
 		" (id = '" & transf_estoque & "'))) "
 	cn.Execute(s)
@@ -3739,7 +3746,7 @@ dim s_log_base
 		exit function
 		end if
 
-    s = "UPDATE t_ESTOQUE_TRANSFERENCIA_ITEM SET st_exclusao = 1 WHERE"  & _
+    s = "UPDATE t_ESTOQUE_TRANSFERENCIA_ITEM SET st_excluido = 1 WHERE"  & _
 		" (id_estoque_transferencia in (SELECT id FROM t_ESTOQUE_TRANSFERENCIA WHERE "& _
 		" (id = '" & transf_estoque & "'))) "
 	cn.Execute(s)
@@ -3750,7 +3757,7 @@ dim s_log_base
 
 '	TENTA ELIMINAR O REGISTRO DA TRANSFERÊNCIA
 
-    s = "UPDATE t_ESTOQUE_TRANSFERENCIA SET st_exclusao = 1 WHERE" & _
+    s = "UPDATE t_ESTOQUE_TRANSFERENCIA SET st_excluido = 1 WHERE" & _
 		" (id = '" & transf_estoque & "') "
 	cn.Execute(s)
 	if Err <> 0 then

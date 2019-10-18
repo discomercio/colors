@@ -51,6 +51,8 @@
 	dim v_item
     dim v_item_transf
 	dim cod_fabricante_aux
+    dim st_confirmada
+    dim s_st_editavel, s_st_cor, s_st_descricao, s_st_cor_descricao
 
 	c_transf_selecionada = Trim(Request("transf_selecionada"))
 
@@ -67,10 +69,22 @@
 		if rs.Eof then
 			alerta = "Registro de transferência " & c_transf_selecionada & " não localizado."
         else
-        c_nfe_emitente_origem = Trim(CStr(rs("id_nfe_emitente_origem")))
-	    c_nfe_emitente_destino = Trim(CStr(rs("id_nfe_emitente_destino")))
-	    c_documento_transf = Trim(rs("documento"))
-        c_obs = Trim(rs("obs"))            
+            c_nfe_emitente_origem = Trim(CStr(rs("id_nfe_emitente_origem")))
+	        c_nfe_emitente_destino = Trim(CStr(rs("id_nfe_emitente_destino")))
+	        c_documento_transf = Trim(rs("documento"))
+            c_obs = Trim(rs("obs"))            
+            st_confirmada = rs("st_confirmada")
+            if st_confirmada = 0 then
+                s_st_editavel = ""
+                s_st_cor = "color:blue;"
+                s_st_descricao = "PENDENTE" 
+                s_st_cor_descricao = "color:blue;"
+            else
+                s_st_editavel = "readonly tabindex=-1 "
+                s_st_cor = ""
+                s_st_descricao = "CONCLUÍDA" 
+                s_st_cor_descricao = "color:green;"
+                end if
 			end if
 
         end if
@@ -113,6 +127,8 @@
                     .vl_ipi = rs("vl_ipi")
                     .preco_origem = Trim(rs("preco_origem"))
                     .produto_xml = Trim(rs("produto_xml"))
+                    .nfe_entrada_serie = Trim(rs("nfe_entrada_serie"))
+                    .nfe_entrada_numero = Trim(rs("nfe_entrada_numero"))
                     end with
                 rs.MoveNext
 			    Loop
@@ -125,6 +141,7 @@
     dim s_ncm, s_cst, s_preco_fabricante, s_vl_custo2, s_vl_BC_ICMS_ST, s_vl_ICMS_ST, s_st_ncm_cst_herdado_tabela_produto
     dim s_aliq_ipi, s_aliq_icms, s_vl_ipi
     dim s_preco_origem, s_produto_xml, s_entrada_tipo, s_id_estoque_origem
+    dim s_nfe_entrada_numero, s_nfe_entrada_serie
 		
 %>
 
@@ -178,10 +195,10 @@
         $("#btnDivMsgCancelar").button().click(function (event) {
             event.preventDefault();
             $("#divMsgAlerta").hide();
-            $("#PROCESSA").show();
+            $("#FINALIZA").show();
         });
 
-        $("#btnDivMsgProcessar").button().click(function (event) {
+        $("#btnDivMsgFinalizar").button().click(function (event) {
             event.preventDefault();
             fESTOQ.submit();
             $(this).hide();
@@ -308,7 +325,7 @@
         else {
             if (strMsg.length > 0) {
                 $("#divMsgAlerta div").html(strMsg);
-                $("#btnDivMsgProcessar").show();
+                $("#btnDivMsgFinalizar").show();
                 $("#divMsgAlerta").show();
             }
         }
@@ -326,12 +343,12 @@
     }
 
 
-    function fESTOQProcessa(f) {
+    function fESTOQFinaliza(f) {
         var b;
         b = window.confirm('Confirma a transferência destes produtos entre CDs?');
         if (b) {
             f.action = "estoquetransfereentrecdsgravadados.asp";
-            dPROCESSA.style.visibility = "hidden";
+            dFINALIZA.style.visibility = "hidden";
             window.status = "Aguarde ...";
             f.submit();
         }
@@ -478,8 +495,15 @@
 <!--  NSU  -->
 	<tr bgcolor="#FFFFFF">
     <td class="MDBE" align="left" nowrap><span class="PLTe">NSU</span>
-		<br><input name="c_nsu" id="c_nsu" readonly tabindex=-1 class="PLLe" style="width:270px;margin-left:2pt;color:blue;"
+		<br><input name="c_nsu" id="c_nsu" readonly tabindex=-1 class="PLLe" style="width:270px;margin-left:2pt;"
             value="<%=c_transf_selecionada%>">
+    </td>
+	</tr>
+<!--  SITUAÇÃO  -->
+	<tr bgcolor="#FFFFFF">
+    <td class="MDBE" align="left" nowrap><span class="PLTe">Status</span>
+		<br><input name="c_status" id="c_status" readonly tabindex=-1 class="PLLe" style="width:270px;margin-left:2pt;<%=s_st_cor_descricao%>"
+            value="<%=s_st_descricao%>">
     </td>
 	</tr>
 <!--  DOCUMENTO  -->
@@ -517,6 +541,8 @@
     <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Aliq<br /><span style="font-size:7pt;">IPI (%)</span></span></th>
     <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Valor<br /><span style="font-size:7pt;">IPI</span></span></th>
     <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Aliq<br /><span style="font-size:7pt;">ICMS (%)</span></span></th>
+	<th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">NF Entrada<br /><span style="font-size:7pt;">N°</span></span></th>
+    <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">NF Entrada<br /><span style="font-size:7pt;">Série</span></span></th>
 	</tr>
 	</thead>
 
@@ -547,6 +573,8 @@
             s_vl_ipi = formata_moeda(.vl_ipi)
             s_preco_origem = formata_moeda(.preco_origem)
             s_produto_xml = .produto_xml
+            s_nfe_entrada_numero = .nfe_entrada_numero
+            s_nfe_entrada_serie = .nfe_entrada_serie
             end with
 %>
 	<tr>
@@ -586,22 +614,33 @@
 			value="<%=s_vl_custo2%>">
 		</td>
 	<td class="MDB" align="right">
-		<input name="c_aliq_ipi" class="PLLd" maxlength="12" style="width:62px; color:blue;"
+		<input name="c_aliq_ipi" <%=s_st_editavel%> class="PLLd" maxlength="12" style="width:62px; <%=s_st_cor%>"
 			onkeypress="if (digitou_enter(true)) $(this).hUtil('focusNext'); filtra_numerico();"
 			onblur="if (trim(this.value)!='') this.value=formata_numero(this.value, 0); if (converte_numero(this.value)<0) {alert('Valor inválido!!');this.focus();});"
 			value="<%=s_aliq_ipi%>">
 		</td>
 	<td class="MDB" align="right">
-		<input name="c_vl_ipi" class="PLLd" maxlength="12" style="width:62px; color:blue;"
+		<input name="c_vl_ipi" <%=s_st_editavel%> class="PLLd" maxlength="12" style="width:62px; <%=s_st_cor%>"
 			onkeypress="if (digitou_enter(true)) $(this).hUtil('focusNext'); filtra_moeda();"
 			onblur="if (trim(this.value)!='') this.value=formata_moeda(this.value); if (converte_numero(this.value)<0) {alert('Valor inválido!!');this.focus();});"
 			value="<%=s_vl_ipi%>">
 		</td>
 	<td class="MDB" align="right">
-		<input name="c_aliq_icms" class="PLLd" maxlength="12" style="width:62px; color:blue;"
+		<input name="c_aliq_icms" <%=s_st_editavel%> class="PLLd" maxlength="12" style="width:62px; <%=s_st_cor%>"
 			onkeypress="if (digitou_enter(true)) $(this).hUtil('focusNext'); filtra_numerico();"
 			onblur="if (trim(this.value)!='') this.value=formata_numero(this.value, 0); if (converte_numero(this.value)<0) {alert('Valor inválido!!');this.focus();});"
 			value="<%=s_aliq_icms%>">
+		</td>
+	<td class="MDB" align="left">
+		<input name="c_nfe_entrada_numero" <%=s_st_editavel%> class="PLLd" maxlength="12" style="width:62px; <%=s_st_cor%>"
+			onkeypress="if (digitou_enter(true)) $(this).hUtil('focusNext'); filtra_numerico();"
+			onblur="if (trim(this.value)!='') this.value=formata_numero(this.value, 0); if (converte_numero(this.value)<0) {alert('Valor inválido!!');this.focus();});"
+			value="<%=s_nfe_entrada_numero%>">
+	<td class="MDB" align="left">
+		<input name="c_nfe_entrada_serie" <%=s_st_editavel%> class="PLLd" maxlength="12" style="width:62px; <%=s_st_cor%>"
+			onkeypress="if (digitou_enter(true)) $(this).hUtil('focusNext'); filtra_numerico();"
+			onblur="if (trim(this.value)!='') this.value=formata_numero(this.value, 0); if (converte_numero(this.value)<0) {alert('Valor inválido!!');this.focus();});"
+			value="<%=s_nfe_entrada_serie%>">
 		</td>
 	</tr>
 <% next %>
@@ -627,7 +666,7 @@
 		<button id="btnDivMsgCancelar"> &nbsp;&nbsp; CANCELAR &nbsp;&nbsp; </button>
 	</td>
 	<td align="right">
-		<button id="btnDivMsgProcessar"> &nbsp; Processar Transferência &nbsp; </button>
+		<button id="btnDivMsgFinalizar"> &nbsp; Finalizar Transferência &nbsp; </button>
 	</td>
 </tr>
 </table>
@@ -646,6 +685,7 @@
 </table>
 <br>
 
+<%if st_confirmada = 0 then%>
 
 <table width="780" cellSpacing="0">
 <tr>
@@ -656,12 +696,24 @@
 		<a name="bREMOVE" id="bREMOVE" href="javascript:fESTOQRemove(fESTOQ)" title="remove este registro de transferência entre CDs">
 		<img src="../botao/remover.gif" width="176" height="55" border="0"></a></div>
 	</td>
-	<td align="right"><div name="dPROCESSA" id="dPROCESSA">
-	<a name="bPROCESSA" id="bPROCESSA" href="javascript:fESTOQProcessa(fESTOQ)" title="processa a transferência de mercadorias entre CDs">
-		<img src="../botao/processar.gif" width="176" height="55" border="0"></a></div>
+	<td align="right"><div name="dFINALIZA" id="dFINALIZA">
+	<a name="bFINALIZA" id="bFINALIZA" href="javascript:fESTOQFinaliza(fESTOQ)" title="finaliza a transferência de mercadorias entre CDs">
+		<img src="../botao/finalizar.gif" width="176" height="55" border="0"></a></div>
 	</td>
 </tr>
 </table>
+<%else%>
+<table width="780" cellSpacing="0">
+<tr>
+    <!--<td align="center"><a name="bVOLTAR" id="bVOLTAR" href="EstoqueTransfereEntreCDsFiltro.asp" title="volta para página de seleção">-->
+	<td align="center"><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()" title="volta para página anterior">
+		<img src="../botao/anterior.gif" width="176" height="55" border="0"></a>
+	</td>
+</tr>
+</table>
+<%end if%>
+
+
 </form>
 
 </center>

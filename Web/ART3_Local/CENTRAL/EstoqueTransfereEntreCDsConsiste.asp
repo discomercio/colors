@@ -177,6 +177,7 @@
     dim s_ncm, s_cst, s_preco_fabricante, s_vl_custo2, s_vl_BC_ICMS_ST, s_vl_ICMS_ST, s_st_ncm_cst_herdado_tabela_produto
     dim s_aliq_ipi, s_aliq_icms, s_vl_ipi
     dim s_preco_origem, s_produto_xml, s_entrada_tipo, s_id_estoque_origem
+    dim s_nfe_entrada_numero, s_nfe_entrada_serie
 
 '	VERIFICA SE HÁ DISPONIBILIDADE NO ESTOQUE DE VENDA NO CD DE ORIGEM
 	if alerta = "" then    
@@ -727,6 +728,8 @@
     <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Aliq<br /><span style="font-size:7pt;">IPI (%)</span></span></th>
     <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Valor<br /><span style="font-size:7pt;">IPI</span></span></th>
     <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Aliq<br /><span style="font-size:7pt;">ICMS (%)</span></span></th>
+    <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">NF Entrada<br /><span style="font-size:7pt;">N°</span></span></th>
+    <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">NF Entrada<br /><span style="font-size:7pt;">Série</span></span></th>
 	</tr>
 	</thead>
 
@@ -757,6 +760,8 @@
             s_vl_ipi = formata_moeda(.vl_ipi)
             s_preco_origem = formata_moeda(.preco_origem)
             s_produto_xml = .produto_xml
+            s_nfe_entrada_numero = .nfe_entrada_numero
+            s_nfe_entrada_serie = .nfe_entrada_serie
             end with
 %>
 	<tr>
@@ -813,6 +818,17 @@
 			onkeypress="if (digitou_enter(true)) $(this).hUtil('focusNext'); filtra_numerico();"
 			onblur="if (trim(this.value)!='') this.value=formata_numero(this.value, 0); if (converte_numero(this.value)<0) {alert('Valor inválido!!');this.focus();});"
 			value="<%=s_aliq_icms%>">
+		</td>
+	<td class="MDB" align="left">
+		<input name="c_nfe_entrada_numero" class="PLLd" maxlength="12" style="width:62px; color:blue;"
+			onkeypress="if (digitou_enter(true)) $(this).hUtil('focusNext'); filtra_numerico();"
+			onblur="if (trim(this.value)!='') this.value=formata_numero(this.value, 0); if (converte_numero(this.value)<0) {alert('Valor inválido!!');this.focus();});"
+			value="<%=s_nfe_entrada_numero%>">
+	<td class="MDB" align="left">
+		<input name="c_nfe_entrada_serie" class="PLLd" maxlength="12" style="width:62px; color:blue;"
+			onkeypress="if (digitou_enter(true)) $(this).hUtil('focusNext'); filtra_numerico();"
+			onblur="if (trim(this.value)!='') this.value=formata_numero(this.value, 0); if (converte_numero(this.value)<0) {alert('Valor inválido!!');this.focus();});"
+			value="<%=s_nfe_entrada_serie%>">
 		</td>
 	</tr>
 <% next %>

@@ -2253,6 +2253,8 @@
         dim vl_ipi
         dim preco_origem
         dim produto_xml
+        dim nfe_entrada_numero
+        dim nfe_entrada_serie
         end class
 
 	class cl_ITEM_ESTOQUE

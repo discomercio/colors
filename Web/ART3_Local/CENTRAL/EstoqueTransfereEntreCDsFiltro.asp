@@ -89,7 +89,7 @@ dim x, r, strResp, strSql, v, i
 
 	strSql = "select id" & _
                    " from t_ESTOQUE_TRANSFERENCIA" & _
-                   " where st_exclusao <> 1" & _
+                   " where st_excluido <> 1" & _
                    " order by id"
 
 	set r = cn.Execute(strSql)
@@ -185,7 +185,7 @@ function fFILTROConfirma( f ) {
     var s_ir_para;
 
 	if (!f.rb_op_desejada[0].checked && !f.rb_op_desejada[1].checked) {
-		alert("Selecione o tipo de relatório!!");
+		alert("Selecione o tipo de operação!!");
 		return;
 	}
 
