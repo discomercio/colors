@@ -404,9 +404,21 @@ namespace ART3WebAPI.Controllers
 													sValue = vValue[0];
 												}
 											}
-											#endregion
+                                            #endregion
 
-											sNumPedidoMktpIdentificado = sValue;
+                                            #region [ Tratamento p/ nº marketplace do Leroy Merlin (ex: 0004536570-A) ]
+                                            if (loja.Equals(Global.Cte.Loja.ArClube) && codDescr.codigo.Equals("017"))
+                                            {
+                                                if (sValue.Contains('-'))
+                                                {
+                                                    vValue = sValue.Split('-');
+                                                    sValue = vValue[0];
+                                                }
+                                            }
+                                            #endregion
+
+
+                                            sNumPedidoMktpIdentificado = sValue;
 											sOrigemMktpIdentificado = codDescr.codigo;
 											break;
 										}
