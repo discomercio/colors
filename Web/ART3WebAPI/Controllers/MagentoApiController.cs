@@ -369,7 +369,14 @@ namespace ART3WebAPI.Controllers
 
 							foreach (var codDescr in listaCodigoDescricao)
 							{
-								sParametro = (codDescr.parametro_campo_texto ?? "").Trim();
+                                if ((codDescr.parametro_2_campo_flag == 1) && ((codDescr.parametro_3_campo_texto ?? "").Trim().Length > 0))
+                                {
+                                    #region [ É necessário verificar se o identificador especificado em parametro_3_campo_texto está presente no texto do comentário ]
+                                    if (!sComment.Contains((codDescr.parametro_3_campo_texto ?? "").Trim())) continue;
+                                    #endregion
+                                }
+
+                                sParametro = (codDescr.parametro_campo_texto ?? "").Trim();
 								if (sParametro.Length == 0) continue;
 								vMktpOrderDescriptor = sParametro.Split('|');
 								for (int k = 0; k < vMktpOrderDescriptor.Length; k++)
