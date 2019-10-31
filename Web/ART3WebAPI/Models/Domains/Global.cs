@@ -36,14 +36,14 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.17";
-				public const string Data = "11.JUL.2019";
+				public const string Numero = "2.18";
+				public const string Data = "30.OUT.2019";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
-			#endregion
+            #endregion
 
-			#region [ Comentário sobre as versões ]
-			/*================================================================================================
+            #region [ Comentário sobre as versões ]
+            /*================================================================================================
 			 * v 2.00 - 08.09.2017 - por TRR
 			 *		Ajuste no relatório Farol para aceitar lista de lojas no filtro.
 			 * -----------------------------------------------------------------------------------------------
@@ -136,17 +136,19 @@ namespace ART3WebAPI.Models.Domains
 			 * v 2.17 - 11.07.2019 - por TRR
 			 *		Correção do relatório Farol Resumido (FarolV3Controller e DataFarol.GetV3()).
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.00 - XX.XX.20XX - por XXX
+			 * v 2.18 - 30.10.2019 - por HHO
+             *      Desenvolvimento de tratamento em MagentoApiController para pedidos do marketplace Leroy
+             *      Merlin.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.00 - XX.XX.20XX - por XXX
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.00 - XX.XX.20XX - por XXX
 			* ===============================================================================================
 			*/
-			#endregion
+            #endregion
 
-			#region [ Usuario ]
-			public static class Usuario
+            #region [ Usuario ]
+            public static class Usuario
 			{
 				public const string ID_USUARIO_SISTEMA = "SISTEMA";
 			}
