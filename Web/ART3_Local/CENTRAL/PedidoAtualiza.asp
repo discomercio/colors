@@ -834,8 +834,15 @@
 							rs("analise_credito_data")=Now
 							rs("analise_credito_usuario")=usuario
 							end if
+                        if s_analise_credito <> COD_AN_CREDITO_PENDENTE_VENDAS then
+                            if CStr(Trim("" & rs("analise_credito_pendente_vendas_motivo"))) <> "" then rs("analise_credito_pendente_vendas_motivo") = ""
+                            end if
                         if Trim("" & rs("analise_credito_pendente_vendas_motivo")) <> Trim(s_ac_pendente_vendas_motivo) then
-                                if s_analise_credito = COD_AN_CREDITO_PENDENTE_VENDAS then rs("analise_credito_pendente_vendas_motivo") = s_ac_pendente_vendas_motivo
+                                if s_analise_credito = COD_AN_CREDITO_PENDENTE_VENDAS then
+                                    rs("analise_credito_pendente_vendas_motivo") = s_ac_pendente_vendas_motivo
+							        rs("analise_credito_data")=Now
+							        rs("analise_credito_usuario")=usuario
+                                    end if
                                 end if
 						end if
 					end if
@@ -979,7 +986,11 @@
                                 if CStr(Trim("" & rs("analise_credito_pendente_vendas_motivo"))) <> "" then rs("analise_credito_pendente_vendas_motivo") = ""
                                 end if
                             if Cstr(Trim("" & rs("analise_credito_pendente_vendas_motivo"))) <> Cstr(s_ac_pendente_vendas_motivo) then
-                                if s_analise_credito = COD_AN_CREDITO_PENDENTE_VENDAS then rs("analise_credito_pendente_vendas_motivo") = s_ac_pendente_vendas_motivo                                    
+                                if s_analise_credito = COD_AN_CREDITO_PENDENTE_VENDAS then
+                                    rs("analise_credito_pendente_vendas_motivo") = s_ac_pendente_vendas_motivo
+								    rs("analise_credito_data")=Now
+								    rs("analise_credito_usuario")=usuario
+                                    end if
                                 end if
 							end if
 						end if
