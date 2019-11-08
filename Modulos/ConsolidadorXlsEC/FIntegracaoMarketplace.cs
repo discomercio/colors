@@ -19,6 +19,7 @@ namespace ConsolidadorXlsEC
         public const string PEDIDO_MAGENTO_STATUS_VALIDOS = "|despachado|rastreio_ic|";
         public const string ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_SKYHUB = "|B2W|Zoom|Magazine Luiza|Carrefour|";
         public const string ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_INTEGRACOMMERCE = "";
+        public const string ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_ANYMARKET = "|Leroy Merlin|";
         public const string COD_ST_PEDIDO_RECEBIDO_NAO = "0";
         public const string COD_ST_PEDIDO_RECEBIDO_SIM = "1";
         public const string COD_ST_PEDIDO_RECEBIDO_NAO_DEFINIDO = "10";
@@ -324,10 +325,12 @@ namespace ConsolidadorXlsEC
                     strOrigemPedidoAux = "|" + strOrigemPedidoAux + "|";
 
                     if ((ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_SKYHUB.ToUpper().IndexOf(strOrigemPedidoAux.ToUpper()) == -1) &&
-                        ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_INTEGRACOMMERCE.ToUpper().IndexOf(strOrigemPedidoAux.ToUpper()) == -1)
+                        (ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_INTEGRACOMMERCE.ToUpper().IndexOf(strOrigemPedidoAux.ToUpper()) == -1) &&
+                        (ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_ANYMARKET.ToUpper().IndexOf(strOrigemPedidoAux.ToUpper()) == -1))
                     {
-                        avisoErro("Não é possível selecionar pedidos que não sejam SkyHub (" + ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_SKYHUB.Trim('|').Replace("|", ", ") + ") ou IntegraCommerce "+
-                            "(" + ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_INTEGRACOMMERCE.Trim('|').Replace(" | ", ", ") + ") !!");
+                        avisoErro("Não é possível selecionar pedidos que não sejam SkyHub (" + ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_SKYHUB.Trim('|').Replace("|", ", ") + ") ou IntegraCommerce " +
+                            "(" + ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_INTEGRACOMMERCE.Trim('|').Replace(" | ", ", ") +
+                            ") ou AnyMarket (" + ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_ANYMARKET.Trim('|').Replace(" | ", ", ") + ")!");
                         row.DefaultCellStyle.BackColor = Color.LightSalmon;
                         return;
                     }
@@ -458,13 +461,20 @@ namespace ConsolidadorXlsEC
                         strComment = "";
                         #endregion
                     }
-
                     else if (ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_INTEGRACOMMERCE.ToUpper().IndexOf(strOrigemPedidoAux.ToUpper()) != -1)
                     {
                         #region [ Tratamento dos pedidos Integra Commerce ]
                         strIncrementId = row.Cells[colGrdDadosNumMagento.Name].Value.ToString();
                         strStatus = "delivered";
                         strComment = Global.formataDataDdMmYyyyComSeparador(Convert.ToDateTime(row.Cells[colGrdDadosRecebido.Name].Value));
+                        #endregion
+                    }
+                    else if (ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_ANYMARKET.ToUpper().IndexOf(strOrigemPedidoAux.ToUpper()) != -1)
+                    {
+                        #region [ Tratamento dos pedidos AnyMarket ]
+                        strIncrementId = row.Cells[colGrdDadosNumMagento.Name].Value.ToString();
+                        strStatus = "complete";
+                        strComment = "";
                         #endregion
                     }
                     else
@@ -773,7 +783,6 @@ namespace ConsolidadorXlsEC
         {
             #region [ Declarações ]
             bool blnRetorno = false;
-            string strSql;
             #endregion
 
             msg_erro = "";
