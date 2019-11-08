@@ -28,16 +28,16 @@ namespace ConsolidadorXlsEC
 			{
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "ConsolidadorXlsEC";
-				public const string VERSAO_NUMERO = "1.09";
-				public const string VERSAO_DATA = "19.FEV.2019";
+				public const string VERSAO_NUMERO = "1.10";
+				public const string VERSAO_DATA = "08.NOV.2019";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Módulo para processos do e-commerce";
 			}
-			#endregion
+            #endregion
 
-			#region[ Comentário sobre as versões ]
-			/*================================================================================================
+            #region[ Comentário sobre as versões ]
+            /*================================================================================================
 			 * v 1.00 - 18.10.2016 - por HHO
 			 *        Início.
 			 *        Este programa foi desenvolvido inicialmente para consolidar os dados de uma planilha
@@ -93,8 +93,9 @@ namespace ConsolidadorXlsEC
 			 * v 1.09B - 19.02.2019 - por HHO
 			 *		  Inclusão do Carrefour como origem de pedido aceito no painel de integração Marketplace.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.10 - XX.XX.20XX - por XXX
-			 *		  
+			 * v 1.10 - 08.11.2019 - por HHO
+             *        Inclusão do Leroy Merlin e, consequentemente, a integradora AnyMarket, como origem de
+             *        pedido aceito no painel de integração Marketplace.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.11 - XX.XX.20XX - por XXX
 			 *		  
@@ -127,10 +128,10 @@ namespace ConsolidadorXlsEC
 			 *		  
 			 * ===============================================================================================
 			 */
-			#endregion
+            #endregion
 
-			#region [ Etc ]
-			public class Etc
+            #region [ Etc ]
+            public class Etc
 			{
 				public const String SIMBOLO_MONETARIO = "R$";
 				public const byte FLAG_NAO_SETADO = 255;
