@@ -919,6 +919,9 @@ function recalcula_itens() {
 		if ($("#ckb_importa_" + trim(i.toString())).is(":checked")) {
 			//calculo do valor do produto com IPI, frete e ágio
 		    v_calculo = converte_numero(formata_moeda($("#c_nfe_vl_unitario_nota_" + trim(i.toString())).val()));
+            v_frete = converte_numero($("#c_nfe_vl_frete_" + trim(i.toString())).val());
+            v_frete = v_frete / converte_numero($("#c_nfe_qtde_" + trim(i.toString())).val());
+            v_calculo = v_calculo + v_frete;
 		    s = $("#c_nfe_aliq_ipi_" + trim(i.toString())).val();
 		    v_aliq_ipi = converte_numero(s) / 100;
 		    if (v_aliq_ipi > 0) {
@@ -930,9 +933,6 @@ function recalcula_itens() {
 		    }
 		    $("#c_nfe_vl_ipi_" + trim(i.toString())).val(formata_moeda(v_ipi.toString()));
             v_calculo = v_calculo + v_ipi;
-            v_frete = converte_numero($("#c_nfe_vl_frete_" + trim(i.toString())).val());
-            v_frete = v_frete / converte_numero($("#c_nfe_qtde_" + trim(i.toString())).val());
-            v_calculo = v_calculo + v_frete;
 		    v_agio = converte_numero(formata_moeda(v_calculo  * v_perc_agio));
 		    v_calculo = converte_numero(formata_moeda(v_calculo + v_agio));
 		    $("#c_nfe_vl_unitario_" + trim(i.toString())).val(formata_moeda(v_calculo.toString()));
