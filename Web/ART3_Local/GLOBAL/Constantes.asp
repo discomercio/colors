@@ -142,7 +142,7 @@
 	Const MAX_TAMANHO_LOJA = 3
 	
 '	Percentual de deságio para RA Líquida
-	Const PERC_DESAGIO_RA_LIQUIDA = 20
+	Const PERC_DESAGIO_RA_LIQUIDA = 25
 
 '	Criptografia em SessionCtrl (tratamento da sessão expirada)
 	Const FATOR_CRIPTO_SESSION_CTRL = "1329"
@@ -849,8 +849,23 @@
 	Const ID_PARAMETRO_Flag_Pedido_MemorizacaoCompletaEnderecos = "Flag_Pedido_MemorizacaoCompletaEnderecos"
 	Const ID_PARAMETRO_MagentoPedidoComIndicadorListaLojaErp = "MagentoPedidoComIndicadorListaLojaErp"
 	Const ID_PARAMETRO_EmailDestinatarioAlertaEdicaoCadastroClienteComPedidoCreditoOkEntregaPendente = "EmailDestinatarioAlertaEdicaoCadastroClienteComPedidoCreditoOkEntregaPendente"
+	Const ID_PARAMETRO_CtrlRelatorio_RelControleImpostos_TimeoutLockEmMinutos = "CtrlRelatorio_RelControleImpostos_TimeoutLockEmMinutos"
+    Const ID_PARAMETRO_CtrlRelatorio_RelControleImpostos_MaxQtdeResultadoPorConsulta = "CtrlRelatorio_RelControleImpostos_MaxQtdeResultadoPorConsulta"
 	
-	
+'   CONSTANTES QUE IDENTIFICAM REGISTROS ARMAZENADOS NA TABELA "t_CTRL_RELATORIO"
+    Const ID_CTRL_RELATORIO_RelControleImpostos = 1
+
+'   CONSTANTES COM O CÓDIGO DO MOTIVO DO LOCK TER SIDO LIBERADO NO CONTROLE DE RELATÓRIO
+    Const CTRL_RELATORIO_CodMotivoLockReleased_OperacaoFinalizada = 1
+    Const CTRL_RELATORIO_CodMotivoLockReleased_AcessadaTelaResultado = 100
+    Const CTRL_RELATORIO_CodMotivoLockReleased_AcessadaTelaFiltro = 200
+    Const CTRL_RELATORIO_CodMotivoLockReleased_AcessadaTelaInicialCentral = 301
+    Const CTRL_RELATORIO_CodMotivoLockReleased_AcessadaTelaInicialLoja = 302
+    Const CTRL_RELATORIO_CodMotivoLockReleased_SessaoEncerradaCentral = 901
+    Const CTRL_RELATORIO_CodMotivoLockReleased_SessaoEncerradaLoja = 902
+    Const CTRL_RELATORIO_CodMotivoLockReleased_ConflitoAcessoConcorrente = 999
+
+
   ' CONSTANTES PARA USAR COM O BANCO DE DADOS
 	Const BD_DATA_NULA = "DEC 30 1899"
 	Const BD_CURINGA_TODOS = "%"

@@ -12130,7 +12130,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     If blnEsperaNFTriangular Then
         s = "UPDATE n SET" & _
                 " n.NFe_numero_NF = " & strSerieNfTriangular & _
-            " FROM t_NFE_EMITENTE n" & _
+            " FROM t_NFE_EMITENTE e" & _
             " INNER JOIN t_NFE_EMITENTE_NUMERACAO n ON e.cnpj = n.cnpj" & _
             " WHERE" & _
                 " (e.id = " & CStr(intIdNfeEmitente) & ")" & _

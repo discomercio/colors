@@ -1668,7 +1668,7 @@ Dim t As ADODB.Recordset
     s = "SELECT" & _
             " n.NFe_serie_NF," & _
             " n.NFe_numero_NF" & _
-        " FROM t_NFE_EMITENTE n" & _
+        " FROM t_NFE_EMITENTE e" & _
         " INNER JOIN t_NFE_EMITENTE_NUMERACAO n ON e.cnpj = n.cnpj" & _
         " WHERE" & _
             " (e.id = " & CStr(id_nfe_emitente) & ")"

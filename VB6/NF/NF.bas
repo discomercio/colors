@@ -728,8 +728,8 @@ Option Explicit
 '|          |      | - Criação da tabela t_NFe_EMITENTE_NUMERACAO              |
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
-'|XX.XX.XXXX| XXXX |V X.XX                                                     |
-'|          |      |                                                           |
+'|18.11.2019| LHGX |V 2.11                                                     |
+'|          |      | - Correção de bug (Emitir NFe com Número Manual)          |
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
@@ -747,8 +747,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.10"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  04/09/2019"
+Global Const m_id_versao = "2.11"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  18/11/2019"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"

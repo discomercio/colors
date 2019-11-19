@@ -4593,6 +4593,8 @@ dim s_resp, intIdNFeEmitente
 		s_resp = DIR_TARGET_ONE_PDF_DANFE_EMITENTE__DIS_01
 	elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_03 then
 		s_resp = DIR_TARGET_ONE_PDF_DANFE_EMITENTE__DIS_03
+	elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_903 then
+		s_resp = DIR_TARGET_ONE_PDF_DANFE_EMITENTE__DIS_903
 	else
 		s_resp = ""
 		end if

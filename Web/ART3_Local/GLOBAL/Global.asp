@@ -1945,6 +1945,9 @@ dim rP
 				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
 			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_03 then
 				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
+                strArqDanfeNovo = "DIS_" & strArqDanfeNovo
+			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_903 then
+				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
 				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
 			else
 				exit function
@@ -2181,6 +2184,9 @@ dim blnLocalizouRemessa
 			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_03 then
 				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
 				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
+			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_903 then
+				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
+				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
 			else
 				exit function
 				end if
@@ -2388,6 +2394,9 @@ dim rP
 				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
 				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
 			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_03 then
+				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
+				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
+			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_903 then
 				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
 				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
 			else
@@ -3254,7 +3263,7 @@ dim lista_transportadora
 	s_cnpj = obtemCnpjNFeEmitentePeloPedido(numero_pedido)
 	if s_cnpj = "" then exit function
 
-	lista_transportadora = "|ATIVA|TRANSPRESS|ATUAL|MAEX|WALDEMAR|M.O.S|GLOBAL RIO|EXODO LOG|CITY RIO|SUÍÇA|LL MATHIAS|LEITE|PACIFICO L|GENEROSO|"
+	lista_transportadora = "|ATIVA|TRANSPRESS|ATUAL|MAEX|WALDEMAR|M.O.S|GLOBAL RIO|EXODO LOG|CITY RIO|SUÍÇA|LL MATHIAS|LEITE|PACIFICO L|GENEROSO|DOMINALOG|"
 
 	s_url = ""
 	if InStr(lista_transportadora, "|" & transportadora_id & "|") <> 0 then
