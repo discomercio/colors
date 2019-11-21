@@ -154,6 +154,7 @@
                 .xml_prod__qCom  = Trim(Request.Form("c1_xml_prod__qCom_" & trim(cstr(i))))
                 .xml_prod__vUnCom  = Trim(Request.Form("c1_xml_prod__vUnCom_" & trim(cstr(i))))
                 .xml_prod__vProd  = Trim(Request.Form("c1_xml_prod__vProd_" & trim(cstr(i))))
+                .xml_prod__vFrete  = Trim(Request.Form("c1_xml_prod__vFrete_" & trim(cstr(i))))
                 .xml_imposto__pICMS  = Trim(Request.Form("c1_xml_imposto__pICMS_" & trim(cstr(i))))
                 .xml_imposto__pIPI  = Trim(Request.Form("c1_xml_imposto__pIPI_" & trim(cstr(i))))
                 .xml_imposto__vIPI  = Trim(Request.Form("c1_xml_imposto__vIPI_" & trim(cstr(i))))
@@ -178,6 +179,7 @@
                 .xml_prod__qCom  = Trim(Request.Form("c2_xml_prod__qCom_" & trim(cstr(i))))
                 .xml_prod__vUnCom  = Trim(Request.Form("c2_xml_prod__vUnCom_" & trim(cstr(i))))
                 .xml_prod__vProd  = Trim(Request.Form("c2_xml_prod__vProd_" & trim(cstr(i))))
+                .xml_prod__vFrete  = Trim(Request.Form("c2_xml_prod__vFrete_" & trim(cstr(i))))
                 .xml_imposto__pICMS  = Trim(Request.Form("c2_xml_imposto__pICMS_" & trim(cstr(i))))
                 .xml_imposto__pIPI  = Trim(Request.Form("c2_xml_imposto__pIPI_" & trim(cstr(i))))
                 .xml_imposto__vIPI  = Trim(Request.Form("c2_xml_imposto__vIPI_" & trim(cstr(i))))
@@ -302,6 +304,10 @@
                     s = Trim(Request.Form("c_nfe_vl_ipi_" & Trim(i))) 
                     if s = "" then s = "0"
 			        .vl_ipi = s               
+               '   VALOR FRETE
+                    s = Trim(Request.Form("c_nfe_vl_frete_" & Trim(i))) 
+                    if s = "" then s = "0"
+			        .vl_frete = s               
 				    end with
 			    end if
             end if
@@ -355,7 +361,7 @@
 				end if
 			next
 		end if
-	
+
 	if alerta = "" then
 	'	INFORMAÇÕES PARA O LOG
 		s_log = ""
@@ -462,8 +468,8 @@
                     with v_item1(i)
 			            s_sql = " INSERT INTO T_ESTOQUE_XML_ITEM " & _
 					         " (id_estoque_xml, xml_prod_cProd, xml_prod_cEAN, xml_prod__NCM, xml_prod__CFOP, " & _
-                             " xml_prod__qCom, xml_prod__vUnCom, xml_prod__vProd, xml_imposto__pICMS, " & _
-                             " xml_imposto__pIPI, xml_imposto__vIPI " & _
+                             " xml_prod__qCom, xml_prod__vUnCom, xml_prod__vProd, xml_prod__vFrete, xml_imposto__pICMS, " & _
+                             " xml_imposto__pIPI, xml_imposto__vIPI  " & _
                              "  ) VALUES " & _
                              " ("  & _
 	                         CStr(id_estoque_xml) & ", " & _   
@@ -474,6 +480,7 @@
                              " '" & .xml_prod__qCom  & "', " & _
                              " '" & .xml_prod__vUnCom & "', " & _
                              " '" & .xml_prod__vProd & "', " & _
+                             " '" & .xml_prod__vFrete & "', " & _
                              " '" & .xml_imposto__pICMS & "', " & _
                              " '" & .xml_imposto__pIPI & "', " & _
                              " '" & .xml_imposto__vIPI & "' " & _
@@ -545,7 +552,7 @@
                     with v_item2(i)
 			            s_sql = " INSERT INTO T_ESTOQUE_XML_ITEM " & _
 					         " (id_estoque_xml, xml_prod_cProd, xml_prod_cEAN, xml_prod__NCM, xml_prod__CFOP, " & _
-                             " xml_prod__qCom, xml_prod__vUnCom, xml_prod__vProd, xml_imposto__pICMS, " & _
+                             " xml_prod__qCom, xml_prod__vUnCom, xml_prod__vProd, xml_prod__vFrete, xml_imposto__pICMS, " & _
                              " xml_imposto__pIPI, xml_imposto__vIPI " & _
                              "  ) VALUES " & _
                              " ("  & _
@@ -557,6 +564,7 @@
                              " '" & .xml_prod__qCom  & "', " & _
                              " '" & .xml_prod__vUnCom & "', " & _
                              " '" & .xml_prod__vProd & "', " & _
+                             " '" & .xml_prod__vFrete & "', " & _
                              " '" & .xml_imposto__pICMS & "', " & _
                              " '" & .xml_imposto__pIPI & "', " & _
                              " '" & .xml_imposto__vIPI & "' " & _

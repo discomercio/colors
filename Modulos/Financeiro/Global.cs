@@ -28,16 +28,16 @@ namespace Financeiro
             {
                 public const string NOME_OWNER = "Artven";
                 public const string NOME_SISTEMA = "Financeiro";
-                public const string VERSAO_NUMERO = "1.34";
-                public const string VERSAO_DATA = "22.JUL.2019";
+                public const string VERSAO_NUMERO = "1.36";
+                public const string VERSAO_DATA = "14.NOV.2019";
                 public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
                 public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
                 public const string M_DESCRICAO = "Módulo para execução de rotinas financeiras";
             }
-			#endregion
+            #endregion
 
-			#region[ Comentário sobre as versões ]
-			/*================================================================================================
+            #region[ Comentário sobre as versões ]
+            /*================================================================================================
 			 * v 1.00 - 14.09.2009 - por HHO
 			 *        Início.
 			 *        Este programa realiza diversas rotinas financeiras.
@@ -457,11 +457,12 @@ namespace Financeiro
 			 *		  do campo em nova coluna no resultado da consulta dos lançamentos na tela, impressão e
 			 *		  na planilha Excel.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.35 - XX.XX.20XX - por XXX
-			 *		  
+			 * v 1.35 - 11.11.2019 - por LHGX
+			 *		  Reestruturação da tabela t_NFE_EMITENTE, prevendo a existência da nova tabela
+			 *		  t_NFE_EMITENTE_NUMERACAO.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.36 - XX.XX.20XX - por XXX
-			 *		  
+			 * v 1.36 - 14.11.2019 - por LHGX
+			 *		  Correção de bug (JOIN com t_NFE_EMITENTE_NUMERACAO)
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.37 - XX.XX.20XX - por XXX
 			 *		  
@@ -479,10 +480,10 @@ namespace Financeiro
 			 *		  Implementação de recursos para cobrança de clientes em atraso.
 			 * ===============================================================================================
 			 */
-			#endregion
+            #endregion
 
-			#region [ Etc ]
-			public class Etc
+            #region [ Etc ]
+            public class Etc
             {
                 public const String SIMBOLO_MONETARIO = "R$";
                 public const byte FLAG_NAO_SETADO = 255;

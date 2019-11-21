@@ -1945,6 +1945,9 @@ dim rP
 				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
 			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_03 then
 				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
+                strArqDanfeNovo = "DIS_" & strArqDanfeNovo
+			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_903 then
+				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
 				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
 			else
 				exit function
@@ -2181,6 +2184,9 @@ dim blnLocalizouRemessa
 			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_03 then
 				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
 				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
+			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_903 then
+				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
+				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
 			else
 				exit function
 				end if
@@ -2388,6 +2394,9 @@ dim rP
 				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
 				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
 			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_03 then
+				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
+				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
+			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_903 then
 				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
 				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
 			else

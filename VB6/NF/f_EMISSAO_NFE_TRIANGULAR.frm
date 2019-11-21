@@ -7410,11 +7410,12 @@ Dim strSql As String
             End With
     
         strSql = "SELECT" & _
-                    " NFe_serie_NF," & _
-                    " NFe_numero_NF" & _
-                " FROM t_NFE_EMITENTE" & _
+                    " n.NFe_serie_NF," & _
+                    " n.NFe_numero_NF" & _
+                " FROM t_NFE_EMITENTE e" & _
+                " INNER JOIN t_NFE_EMITENTE_NUMERACAO n ON e.cnpj = n.cnpj" & _
                 " WHERE" & _
-                    " (id=" & usuario.emit_id & ")"
+                    " (e.id=" & usuario.emit_id & ")"
         If t.State <> adStateClosed Then t.Close
         t.Open strSql, dbc, , , adCmdText
         If Not t.EOF Then
@@ -11713,11 +11714,16 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     
 '   INFORMAÇÕES SOBRE PARTILHA DO ICMS
     If PARTILHA_ICMS_ATIVA Then
-        If (vl_total_ICMSUFDest > 0) Then
-            If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
-            strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "Valores totais do ICMS Interestadual: partilha da UF Destino " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFDest)
-            If (vl_total_FCPUFDest > 0) Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & " + FCP " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_FCPUFDest)
-            strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "; partilha da UF Origem " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFRemet) & "."
+        'DIFAL- suprimir texto em notas de entrada/devolução
+        If (rNFeImg.ide__tpNF <> "0") And _
+            (strNFeCodFinalidade <> "3") And _
+            (strNFeCodFinalidade <> "4") Then
+            If (vl_total_ICMSUFDest > 0) Then
+                If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
+                strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "Valores totais do ICMS Interestadual: partilha da UF Destino " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFDest)
+                If (vl_total_FCPUFDest > 0) Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & " + FCP " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_FCPUFDest)
+                strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "; partilha da UF Origem " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFRemet) & "."
+                End If
             End If
         End If
 
@@ -12122,11 +12128,13 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
 '   SE HOUVE BLOQUEIO DE ESPERA, ATUALIZAR O Nº NA t_NFE_EMITENTE
 '   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     If blnEsperaNFTriangular Then
-        s = "UPDATE t_NFE_EMITENTE SET" & _
-                " NFe_numero_NF = " & strSerieNfTriangular & _
+        s = "UPDATE n SET" & _
+                " n.NFe_numero_NF = " & strSerieNfTriangular & _
+            " FROM t_NFE_EMITENTE e" & _
+            " INNER JOIN t_NFE_EMITENTE_NUMERACAO n ON e.cnpj = n.cnpj" & _
             " WHERE" & _
-                " (id = " & CStr(intIdNfeEmitente) & ")" & _
-                " AND (NFe_serie_NF = " & CStr(strSerieNf) & ")"
+                " (e.id = " & CStr(intIdNfeEmitente) & ")" & _
+                " AND (n.NFe_serie_NF = " & CStr(strSerieNf) & ")"
         Call dbc.Execute(s, lngAffectedRecords)
         If lngAffectedRecords <> 1 Then
             s = "Falha ao atualizar a numeração sequencial para o emitente atual!!" & vbCrLf & s
@@ -15388,11 +15396,16 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     
 '   INFORMAÇÕES SOBRE PARTILHA DO ICMS
     If PARTILHA_ICMS_ATIVA Then
-        If (vl_total_ICMSUFDest > 0) Then
-            If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
-            strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "Valores totais do ICMS Interestadual: partilha da UF Destino " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFDest)
-            If (vl_total_FCPUFDest > 0) Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & " + FCP " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_FCPUFDest)
-            strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "; partilha da UF Origem " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFRemet) & "."
+        'DIFAL- suprimir texto em notas de entrada/devolução
+        If (rNFeImg.ide__tpNF <> "0") And _
+            (strNFeCodFinalidade <> "3") And _
+            (strNFeCodFinalidade <> "4") Then
+            If (vl_total_ICMSUFDest > 0) Then
+                If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
+                strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "Valores totais do ICMS Interestadual: partilha da UF Destino " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFDest)
+                If (vl_total_FCPUFDest > 0) Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & " + FCP " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_FCPUFDest)
+                strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "; partilha da UF Origem " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFRemet) & "."
+                End If
             End If
         End If
 
