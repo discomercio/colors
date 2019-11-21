@@ -1491,7 +1491,7 @@ dim strComplemento
 						" vl_BC_ICMS_ST, vl_ICMS_ST," & _
 						" ncm, cst," & _
 						" data_ult_movimento, sequencia, ean, produto_xml, " & _
-                        " vl_ipi, aliq_ipi, aliq_icms " & _
+                        " vl_ipi, aliq_ipi, aliq_icms, vl_frete " & _
 						") VALUES (" & _
 						"'" & id_estoque & "'" & _
 						",'" & Trim(.fabricante) & "'" & _
@@ -1510,9 +1510,10 @@ dim strComplemento
                         "," & bd_formata_numero(.vl_ipi) & _
                         "," & bd_formata_numero(.aliq_ipi) & _
                         "," & bd_formata_numero(.aliq_icms) & _
+                        "," & bd_formata_numero(.vl_frete) & _
 						")"
-				cn.Execute(s_sql)
-				if Err <> 0 then
+                cn.Execute(s_sql)
+                if Err <> 0 then
 					msg_erro=Cstr(Err) & ": " & Err.Description
 					exit function
 					end if
@@ -3322,6 +3323,453 @@ dim s_chave
 	estoque_produto_saida_para_kit_v2 = True
 end function
 
+' --------------------------------------------------------------------
+'   ESTOQUE PRODUTO TRANSFERÊNCIA ENTRE CD (COMPARAÇÃO DE QUANTIDADES)
+'   Retorno da função:
+'      False - Ocorreu falha ao tentar alterar os dados do estoque.
+'      True - Conseguiu alterar os dados do estoque.
+'   Esta função verifica se a quantidade permanece a mesma antes de gravar
+'   as informações.
+'	
+'	(melhorar esta descrição)
+'	
+function estoque_produto_transf_consiste_quantidades(ByVal id_nfe_emitente_origem, _
+                                                    ByVal id_nfe_emitente_destino, _
+                                                    ByRef v_1, _
+                                                    ByRef v_2, _
+										            ByRef msg_erro)
+dim s
+dim s_cod_prod1
+dim s_cod_prod2
+dim iv
+dim soma
+
+	estoque_produto_transf_consiste_quantidades = False
+	
+    msg_erro = ""	
+    s_cod_prod1 = ""
+    s_cod_prod2 = ""
+    soma = 0
+
+    'REAGRUPANDO OS PRODUTOS PARA REDIVIDIR E COMPARAR 
+    for iv = LBound(v_1) to UBound(v_1)
+        with v_1(iv)
+            s_cod_prod1 = .produto
+            if (s_cod_prod1 <> s_cod_prod2) And (s_cod_prod2 <> "") then                
+                if not estoque_produto_transf_cd_monta(id_nfe_emitente_origem, _
+                                                        v_1(iv-1).fabricante, _
+                                                        v_1(iv-1).produto, _
+                                                        soma, _
+                                                        v_2, _
+                                                        s) then
+                    msg_erro = "Problemas na conferência da transferência: " & s
+                    exit function
+                    end if
+                soma = 0
+                end if
+            s_cod_prod2 = s_cod_prod1
+            soma = soma + .qtde
+            end with
+        next
+    'FAZENDO O REAGRUPAMENTO DO ÚLTIMO PRODUTO DA LISTA (POIS O LOOP PULA ESTE PRODUTO)
+    if not estoque_produto_transf_cd_monta(id_nfe_emitente_origem, _
+                                            v_1(UBound(v_1)).fabricante, _
+                                            v_1(UBound(v_1)).produto, _
+                                            soma, _
+                                            v_2, _
+                                            s) then
+        msg_erro = "Problemas na conferência da transferência: " & s
+        exit function
+        end if
+
+    if msg_erro = "" then
+        'primeira comparação: se os vetores não tiverem o mesmo número de elementos, os estoques mudaram
+        if UBound(v_1) <> UBound(v_2) then
+            msg_erro = "Mudanças nas quantidades dos estoques, reiniciar o processo!!!"
+            exit function
+        else
+        'segunda comparação: se os conteúdos dos vetores forem diferentes, os estoques mudaram
+            for iv = LBound(v_1) to UBound(v_2)
+                if (v_1(iv).id_estoque_origem <> v_2(iv).id_estoque_origem) Or _
+                    (v_1(iv).fabricante <> v_2(iv).fabricante) Or _
+                    (v_1(iv).produto <> v_2(iv).produto) Or _
+                    (v_1(iv).qtde <> v_2(iv).qtde) then
+                    msg_erro = "Mudanças em características dos estoques, reiniciar o processo!!!"
+                    exit function
+                    end if
+                next
+            end if
+        end if	
+	
+	estoque_produto_transf_consiste_quantidades = True
+end function
+
+' --------------------------------------------------------------------
+'   ESTOQUE PRODUTO TRANSFERÊNCIA ENTRE CD (REAGRUPAMENTO DE ITENS)
+'   Retorno da função:
+'      False - Ocorreu falha ao tentar alterar os dados do estoque.
+'      True - Conseguiu alterar os dados do estoque.
+'   Esta função pega o vetor onde foi feita a distribuição de quantidades
+'   dos produtos e os reagrupa conforme informado na tela inicial.
+'	
+'	(melhorar esta descrição)
+'	
+function estoque_produto_transf_reagrupa_itens(ByRef v_distribuido, _
+                                                    ByRef v_reagrupado, _
+										            ByRef msg_erro)
+dim s
+dim s_cod_prod1
+dim s_cod_prod2
+dim s_fabr1
+dim s_fabr2
+dim iv
+dim v_aliq_ipi
+dim v_vl_ipi
+dim v_aliq_icms
+dim soma
+
+	estoque_produto_transf_reagrupa_itens = False
+	
+    msg_erro = ""	
+    s_cod_prod1 = ""
+    s_cod_prod2 = ""
+    s_fabr1 = ""
+    s_fabr2 = ""
+    v_aliq_ipi = 0
+    v_vl_ipi = 0
+    v_aliq_icms = 0
+    soma = 0
+
+    'REAGRUPANDO OS PRODUTOS
+    for iv = LBound(v_distribuido) to UBound(v_distribuido)
+        with v_distribuido(iv)
+            s_cod_prod1 = .produto
+            s_fabr1 = .fabricante
+            if (s_cod_prod1 <> s_cod_prod2) And (s_cod_prod2 <> "") then                
+			    if Trim("" & v_reagrupado(Ubound(v_reagrupado)).produto) <> "" then
+				    redim preserve v_reagrupado(ubound(v_reagrupado)+1)
+				    set v_reagrupado(UBound(v_reagrupado)) = New cl_ESTOQUE_TRANSFERENCIA_ITEM
+				    end if			
+				v_reagrupado(UBound(v_reagrupado)).fabricante = v_distribuido(iv-1).fabricante
+				v_reagrupado(UBound(v_reagrupado)).produto = v_distribuido(iv-1).produto
+				v_reagrupado(UBound(v_reagrupado)).qtde = soma
+                v_reagrupado(UBound(v_reagrupado)).aliq_ipi = v_aliq_ipi
+                v_reagrupado(UBound(v_reagrupado)).vl_ipi = v_vl_ipi
+                v_reagrupado(UBound(v_reagrupado)).aliq_icms = v_aliq_icms
+                soma = 0
+                end if
+            s_cod_prod2 = s_cod_prod1
+            s_fabr2 = s_fabr1
+            soma = soma + .qtde
+            v_aliq_ipi = .aliq_ipi
+            v_vl_ipi = .vl_ipi
+            v_aliq_icms = .aliq_icms
+            end with
+        next
+    'FAZENDO O REAGRUPAMENTO DO ÚLTIMO PRODUTO DA LISTA (POIS O LOOP PULA ESTE PRODUTO)
+	if Trim("" & v_reagrupado(Ubound(v_reagrupado)).produto) <> "" then
+		redim preserve v_reagrupado(ubound(v_reagrupado)+1)
+		set v_reagrupado(UBound(v_reagrupado)) = New cl_ESTOQUE_TRANSFERENCIA_ITEM
+		end if			
+	v_reagrupado(UBound(v_reagrupado)).fabricante = v_distribuido(UBound(v_distribuido)).fabricante
+	v_reagrupado(UBound(v_reagrupado)).produto = v_distribuido(UBound(v_distribuido)).produto
+	v_reagrupado(UBound(v_reagrupado)).qtde = soma
+    v_reagrupado(UBound(v_reagrupado)).aliq_ipi = v_aliq_ipi
+    v_reagrupado(UBound(v_reagrupado)).vl_ipi = v_vl_ipi
+    v_reagrupado(UBound(v_reagrupado)).aliq_icms = v_aliq_icms
+ 
+
+	estoque_produto_transf_reagrupa_itens = True
+end function
+
+' --------------------------------------------------------------------
+'   ESTOQUE PRODUTO TRANSFERÊNCIA ENTRE CD (MONTAGEM)
+'   Retorno da função:
+'      False - Ocorreu falha ao tentar alterar os dados do estoque.
+'      True - Conseguiu alterar os dados do estoque.
+'   Esta função simula a saída do produto do estoque que será 
+'	usado em um novo estoque, em outro CD.
+'	Para cada produto transferido, a rotina é executada.
+'	
+'	(melhorar esta descrição comparando com o arquivo "rotina_calcula_transf.vb")
+'	
+
+function estoque_produto_transf_cd_monta(ByVal id_nfe_emitente, _
+										ByVal id_fabricante, ByVal id_produto, ByVal qtde_a_sair, _
+										ByRef v_item, _
+										ByRef msg_erro)
+dim s
+dim rs
+dim qtde_disponivel
+dim qtde_movimentada
+dim v_estoque
+dim v_documento
+dim v_entrada_tipo
+dim iv
+dim descricao_html_aux
+dim qtde_aux
+dim qtde_utilizada_aux
+dim preco_fabricante_aux
+dim vl_custo2_aux
+dim vl_BC_ICMS_ST_aux
+dim vl_ICMS_ST_aux
+dim ncm_aux
+dim cst_aux
+dim st_ncm_cst_herdado_tabela_produto_aux
+dim ean_aux
+dim aliq_ipi_aux
+dim aliq_icms_aux
+dim vl_ipi_aux
+dim preco_origem_aux
+dim produto_xml_aux
+dim nfe_entrada_numero_aux
+dim nfe_entrada_serie_aux
+dim qtde_movto
+dim s_chave
+
+	estoque_produto_transf_cd_monta = False
+	msg_erro = ""
+	
+'	NENHUMA UNIDADE SERÁ RETIRADA!!
+	If (qtde_a_sair<=0) Or (Trim(id_produto)="") Then
+		estoque_produto_transf_cd_monta = True
+		Exit Function
+		End If
+
+	if Not cria_recordset_pessimista(rs, msg_erro) then exit function
+
+'	OBTÉM OS "LOTES" DO PRODUTO DISPONÍVEIS NO ESTOQUE (POLÍTICA FIFO)
+	s = "SELECT" & _
+			" t_ESTOQUE.id_estoque, t_ESTOQUE.documento, t_ESTOQUE.entrada_tipo, (qtde-qtde_utilizada) AS saldo" & _
+		" FROM t_ESTOQUE INNER JOIN t_ESTOQUE_ITEM ON (t_ESTOQUE.id_estoque=t_ESTOQUE_ITEM.id_estoque)" & _
+		" WHERE" & _
+			" (t_ESTOQUE.id_nfe_emitente = " & Trim("" & id_nfe_emitente) & ")" & _
+			" AND (t_ESTOQUE_ITEM.fabricante='" & id_fabricante & "')" & _
+			" AND (produto='" & id_produto & "')" & _
+			" AND ((qtde-qtde_utilizada) > 0)" & _
+		" ORDER BY" & _
+			" data_entrada, t_ESTOQUE.id_estoque"
+	rs.open s, cn
+
+	qtde_disponivel = 0
+	ReDim v_estoque(0)
+	ReDim v_documento(0)
+    ReDim v_entrada_tipo(0)
+	v_estoque(UBound(v_estoque)) = ""
+	v_documento(UBound(v_documento)) = ""
+    v_entrada_tipo(UBound(v_entrada_tipo)) = 0
+
+	do while Not rs.Eof
+	'	ARMAZENA AS ENTRADAS NO ESTOQUE CANDIDATAS À SAÍDA DE PRODUTOS
+		If v_estoque(UBound(v_estoque)) <> "" Then
+			ReDim Preserve v_estoque(UBound(v_estoque) + 1)
+			v_estoque(UBound(v_estoque)) = ""
+			End If
+		v_estoque(UBound(v_estoque)) = Trim("" & rs("id_estoque"))
+		If v_documento(UBound(v_documento)) <> "" Then
+			ReDim Preserve v_documento(UBound(v_documento) + 1)
+			v_documento(UBound(v_documento)) = ""
+			End If
+		v_documento(UBound(v_documento)) = Trim("" & rs("documento"))
+        If v_entrada_tipo(UBound(v_entrada_tipo)) <> "" Then
+			ReDim Preserve v_entrada_tipo(UBound(v_entrada_tipo) + 1)
+			v_entrada_tipo(UBound(v_entrada_tipo)) = ""
+			End If
+		v_entrada_tipo(UBound(v_entrada_tipo)) = rs("entrada_tipo")
+		qtde_disponivel = qtde_disponivel + CLng(rs("saldo"))
+		rs.movenext
+		loop
+
+'	NÃO HÁ PRODUTOS SUFICIENTES NO ESTOQUE!!
+	If qtde_a_sair > qtde_disponivel Then
+		msg_erro = "Produto " & id_produto & " do fabricante " & id_fabricante & ": faltam " & _
+					formata_inteiro(qtde_a_sair-qtde_disponivel) & " unidades no estoque (" & obtem_apelido_empresa_NFe_emitente(id_nfe_emitente) & ")."
+		Exit Function
+		End If
+
+'	SIMULA A SAÍDA DO ESTOQUE!!
+	qtde_movimentada = 0
+	For iv = LBound(v_estoque) To UBound(v_estoque)
+	
+		If Trim(v_estoque(iv)) <> "" Then
+		
+		'	A QUANTIDADE NECESSÁRIA JÁ FOI RETIRADA DO ESTOQUE!!
+			If qtde_movimentada >= qtde_a_sair Then Exit For
+			
+		'	T_ESTOQUE_ITEM: SAÍDA DE PRODUTOS
+			s = "SELECT " & _
+					"ei.*, p.descricao_html, p.ean as ean_produto, exml.nfe_entrada_numero, exml.nfe_entrada_serie" & _
+				" FROM t_ESTOQUE_ITEM ei" & _
+                " INNER JOIN t_PRODUTO p ON (ei.fabricante = p.fabricante AND ei.produto = p.produto)" & _
+                " LEFT JOIN (SELECT id_estoque, xml_ide__nNF AS nfe_entrada_numero, xml_ide__serie AS nfe_entrada_serie FROM t_ESTOQUE_XML WHERE xml_prioridade = 1) exml ON (ei.id_estoque = exml.id_estoque)" & _
+				" WHERE" & _
+					" (ei.id_estoque = '" & Trim(v_estoque(iv)) & "')" & _
+					" AND (ei.fabricante = '" & id_fabricante & "')" & _
+					" AND (ei.produto = '" & id_produto & "')"
+			if rs.State <> 0 then rs.Close
+			rs.open s, cn
+			if Err <> 0 then
+				msg_erro=Cstr(Err) & ": " & Err.Description
+				exit function
+				end if
+
+			if rs.Eof then
+				msg_erro = "Falha ao acessar o registro no estoque do produto " & id_produto & " do fabricante " & id_fabricante & " (id_estoque = '" & Trim(v_estoque(iv)) & "')"
+				Exit Function
+			else
+				qtde_aux = rs("qtde")
+				qtde_utilizada_aux = rs("qtde_utilizada")
+				preco_fabricante_aux = rs("preco_fabricante")
+				vl_custo2_aux = rs("vl_custo2")
+                vl_BC_ICMS_ST_aux = rs("vl_BC_ICMS_ST")
+                vl_ICMS_ST_aux = rs("vl_ICMS_ST")
+				ncm_aux = Trim(rs("ncm"))
+				cst_aux = Trim(rs("cst"))
+                st_ncm_cst_herdado_tabela_produto_aux = rs("st_ncm_cst_herdado_tabela_produto")
+				ean_aux = Trim(rs("ean"))
+                aliq_ipi_aux = rs("aliq_ipi")
+                aliq_icms_aux = rs("aliq_icms")
+                vl_ipi_aux = rs("vl_ipi")
+                preco_origem_aux = rs("preco_origem")
+                produto_xml_aux = Trim(rs("produto_xml"))
+                descricao_html_aux = Trim(rs("descricao_html"))
+                nfe_entrada_numero_aux = Trim(rs("nfe_entrada_numero"))
+                nfe_entrada_serie_aux = Trim(rs("nfe_entrada_serie"))
+				End If
+			
+			If (qtde_a_sair - qtde_movimentada) > (qtde_aux - qtde_utilizada_aux) Then
+			'	QUANTIDADE DE PRODUTOS DESTE ITEM DE ESTOQUE É INSUFICIENTE P/ ATENDER O PEDIDO
+				qtde_movto = qtde_aux - qtde_utilizada_aux
+			Else
+			'	QUANTIDADE DE PRODUTOS DESTE ITEM SOZINHO É SUFICIENTE P/ ATENDER O PEDIDO
+				qtde_movto = qtde_a_sair - qtde_movimentada
+				End If
+
+			If v_item(Ubound(v_item)).produto <> "" Then
+				redim preserve v_item(ubound(v_item)+1)
+				set v_item(ubound(v_item)) = New cl_ESTOQUE_TRANSFERENCIA_ITEM_SUB
+				End if
+			v_item(Ubound(v_item)).documento = Trim(v_documento(iv))
+            v_item(Ubound(v_item)).entrada_tipo = v_entrada_tipo(iv)
+			v_item(Ubound(v_item)).id_estoque_origem = Trim(v_estoque(iv))
+			v_item(Ubound(v_item)).fabricante = id_fabricante
+			v_item(Ubound(v_item)).produto = id_produto
+            v_item(Ubound(v_item)).descricao_html = descricao_html_aux
+			v_item(Ubound(v_item)).qtde = qtde_movto
+            v_item(Ubound(v_item)).preco_fabricante = preco_fabricante_aux
+			v_item(Ubound(v_item)).vl_custo2 = vl_custo2_aux
+            v_item(Ubound(v_item)).vl_BC_ICMS_ST = vl_BC_ICMS_ST_aux
+            v_item(Ubound(v_item)).vl_ICMS_ST = vl_ICMS_ST_aux
+			v_item(Ubound(v_item)).ncm = ncm_aux
+			v_item(Ubound(v_item)).cst = cst_aux
+			v_item(Ubound(v_item)).ean = ean_aux
+            v_item(Ubound(v_item)).st_ncm_cst_herdado_tabela_produto = st_ncm_cst_herdado_tabela_produto_aux
+            v_item(Ubound(v_item)).aliq_ipi = aliq_ipi_aux
+            v_item(Ubound(v_item)).aliq_icms = aliq_icms_aux
+            v_item(Ubound(v_item)).vl_ipi = vl_ipi_aux
+            v_item(Ubound(v_item)).preco_origem = preco_origem_aux
+            v_item(Ubound(v_item)).produto_xml = produto_xml_aux
+            v_item(Ubound(v_item)).nfe_entrada_numero = nfe_entrada_numero_aux
+            v_item(Ubound(v_item)).nfe_entrada_serie = nfe_entrada_serie_aux
+		
+		'	CONTABILIZA QUANTIDADE MOVIMENTADA
+			qtde_movimentada = qtde_movimentada + qtde_movto
+		
+		'	JÁ CONSEGUIU ALOCAR TUDO?
+			If qtde_movimentada >= qtde_a_sair Then Exit For
+			End If
+		Next
+	
+	if rs.State <> 0 then rs.Close
+	set rs=nothing
+	
+	
+	estoque_produto_transf_cd_monta = True
+end function
+
+' --------------------------------------------------------------------
+'   ESTOQUE TRANSFEÊNCIA REMOVE
+'   Retorno da função:
+'      False - Ocorreu falha ao tentar movimentar o estoque.
+'      True - Conseguiu fazer a movimentação do estoque.
+'   IMPORTANTE: sempre chame esta rotina dentro de uma transação para 
+'      garantir a consistência dos registros.
+'   Esta função marca os registros de transferência entre CDs, como
+'   excluídos, desde que isso seja possível.
+
+function transferencia_estoque_remove(byval id_usuario, byval transf_estoque, byref info_log, byref msg_erro)
+dim s
+dim rs
+dim n_item
+dim s_log_base
+
+	transferencia_estoque_remove = False
+	msg_erro = ""
+	info_log = ""
+	s_log_base = ""
+
+	transf_estoque = Trim("" & transf_estoque)
+	
+	s = "SELECT * FROM t_ESTOQUE_TRANSFERENCIA WHERE (id='" & transf_estoque & "')"
+	set rs = cn.execute(s)
+	if Err <> 0 then
+		msg_erro = Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+
+	if rs.Eof then
+		msg_erro = "Registro de transferência nº " & transf_estoque & " não está cadastrado."
+	else
+		if rs("st_confirmada") <> 0 then msg_erro = "Não é possível reverter a transferência após a confirmação!!"
+		s_log_base = "Exclusão da transferência (" & transf_estoque & ")" & _
+					" do CD " & Trim("" & CStr(rs("id_nfe_emitente_origem"))) & _
+                    " para o CD " & Trim("" & CStr(rs("id_nfe_emitente_destino"))) & _
+					 ", registrada em " & formata_data(rs("data"))
+		
+		s_log_base = s_log_base & ", documento " & Trim("" & rs("documento")) & _
+					 ", cadastrada por " & Trim("" & rs("usuario"))
+		
+		end if
+	if rs.State <> 0 then rs.Close	
+		
+'	ERRO!!
+	if msg_erro <> "" then exit function
+	
+'	TENTA MARCAR COMO EXCLUÍDOS OS ITENS DA TRANSFERÊNCIA
+
+    s = "UPDATE t_ESTOQUE_TRANSFERENCIA_ITEM_SUB SET st_excluido = 1 WHERE"  & _
+		" (id_estoque_transferencia in (SELECT id FROM t_ESTOQUE_TRANSFERENCIA WHERE "& _
+		" (id = '" & transf_estoque & "'))) "
+	cn.Execute(s)
+	if Err <> 0 then
+		msg_erro = Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+
+    s = "UPDATE t_ESTOQUE_TRANSFERENCIA_ITEM SET st_excluido = 1 WHERE"  & _
+		" (id_estoque_transferencia in (SELECT id FROM t_ESTOQUE_TRANSFERENCIA WHERE "& _
+		" (id = '" & transf_estoque & "'))) "
+	cn.Execute(s)
+	if Err <> 0 then
+		msg_erro = Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+
+'	TENTA ELIMINAR O REGISTRO DA TRANSFERÊNCIA
+
+    s = "UPDATE t_ESTOQUE_TRANSFERENCIA SET st_excluido = 1 WHERE" & _
+		" (id = '" & transf_estoque & "') "
+	cn.Execute(s)
+	if Err <> 0 then
+		msg_erro = Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+
+
+	info_log = s_log_base & ":" & info_log
+	
+	transferencia_estoque_remove = True
+end function
 
 
 ' --------------------------------------------------------------------
