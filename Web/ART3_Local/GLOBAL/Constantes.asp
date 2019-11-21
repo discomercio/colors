@@ -2306,6 +2306,7 @@
         dim xml_imposto__pICMS
         dim xml_imposto__pIPI
         dim xml_imposto__vIPI
+		dim xml_prod__vFrete
         end class
 
 	class cl_AGRUPA_KIT_POR_PRECO
