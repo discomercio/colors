@@ -497,6 +497,15 @@ var eh_cpf;
 		    }
 		}
 
+    // PARA CLIENTE PJ, É OBRIGATÓRIO O PREENCHIMENTO DO E-MAIL
+    if (!eh_cpf) {
+        if ((trim(fCAD.email_original.value) == "") && (trim(fCAD.email_xml_original.value) == "")) {
+            alert("É obrigatório que o cliente tenha um endereço de e-mail cadastrado!");
+            fCAD.email.focus();
+            return;
+        }
+    }
+
 	fORC.c_FormFieldValues.value = formToString($("#fORC"));
 
 	dORCAMENTO.style.visibility="hidden";
@@ -795,6 +804,15 @@ if (!eh_cpf) {
 		return;
 	}
 
+    // PARA CLIENTE PJ, É OBRIGATÓRIO O PREENCHIMENTO DO E-MAIL
+    if (!eh_cpf) {
+        if ((trim(fCAD.email.value) == "") && (trim(fCAD.email_xml.value) == "")) {
+            alert("É obrigatório informar um endereço de e-mail");
+            fCAD.email.focus();
+            return;
+        }
+    }
+
 /*	if (trim(f.midia.options[f.midia.selectedIndex].value)=="") {
 		alert('Indique a forma pela qual conheceu a Bonshop!!');
 		return;
@@ -1027,6 +1045,15 @@ else {
         }
     }
 }
+
+    // PARA CLIENTE PJ, É OBRIGATÓRIO O PREENCHIMENTO DO E-MAIL
+    if (!eh_cpf) {
+        if ((trim(fCAD.email.value) == "") && (trim(fCAD.email_xml.value) == "")) {
+            alert("É obrigatório informar um endereço de e-mail");
+            fCAD.email.focus();
+            return;
+        }
+    }
 
 	fCAD.c_FormFieldValues.value = formToString($("#fCAD"));
 
@@ -1377,7 +1404,8 @@ else {
 	<td width="100%" align="left"><p class="R">E-MAIL</p><p class="C">
 		<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("email")) else s=""%>
 		<input id="email" name="email" <%=s_readonly%> class="TA" value="<%=s%>" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fCAD.email_xml.focus(); filtra_email();"></p></td>
-	</tr>
+	    <input type="hidden" name="email_original" id="email_original" value="<%=s%>" />
+    </tr>
 </table>
 
 <!-- ************   E-MAIL (XML)  ************ -->
@@ -1386,6 +1414,7 @@ else {
 	<td width="100%" align="left"><p class="R">E-MAIL (XML)</p><p class="C">
 		<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("email_xml")) else s=""%>
 		<input id="email_xml" name="email_xml" <%=s_readonly%> class="TA" value="<%=s%>" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fCAD.obs_crediticias.focus(); filtra_email();"></p></td>
+        <input type="hidden" name="email_xml_original" id="email_xml_original" value="<%=s%>" />
 	</tr>
 </table>
 

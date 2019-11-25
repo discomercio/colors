@@ -130,7 +130,7 @@
 							" FROM t_NFe_EMISSAO" & _
 							" WHERE" & _
 								" (NFe_numero_NF = " & Trim(.num_NF) & ")" & _
-								" AND (id_nfe_emitente = " & rNfeEmitente.id & ")" & _
+								" AND (id_nfe_emitente IN (SELECT id FROM t_NFe_EMITENTE WHERE (cnpj IN ('" & retorna_so_digitos(rNfeEmitente.cnpj) & "'))))" & _
 								" AND (tipo_NF = '1')" & _
 								" AND (st_anulado = 0)" & _
 								" AND (codigo_retorno_NFe_T1 = 1)" & _
@@ -200,6 +200,7 @@
 					'	VERIFICA SE O PEDIDO ESTÁ CADASTRADO E REALIZA CONSISTÊNCIAS
 						s = "SELECT " & _
 								"id_nfe_emitente, " & _
+                                "(SELECT TOP 1 cnpj FROM t_NFe_EMITENTE WHERE (id = t_PEDIDO.id_nfe_emitente)) AS cnpj_nfe_emitente, " & _
 								"id_cliente, " & _
 								"st_entrega, " & _
 								"id_cliente, " & _
@@ -238,13 +239,14 @@
 								.msg_erro = texto_add_br(.msg_erro)
 								.msg_erro = .msg_erro & "Pedido " & Trim(.pedido) & " NÃO está alocado para nenhuma transportadora."
 								end if
+                            'Simples Remessa
 							if .tipo_frete = "006" then
 								if Trim("" & rs("obs_3")) = "" then
 									blnErroFatal = True
 									.msg_erro = texto_add_br(.msg_erro)
 									.msg_erro = .msg_erro & "Não existe nota fiscal de simples remessa para o pedido " & Trim(.pedido) & "."
 								end if
-							if CLng(rNfeEmitente.id) <> CLng(rs("id_nfe_emitente")) then
+							if retorna_so_digitos(rNfeEmitente.cnpj) <> retorna_so_digitos(Trim("" & rs("cnpj_nfe_emitente"))) then
 								blnErroFatal = True
 								.msg_erro = texto_add_br(.msg_erro)
 								.msg_erro = .msg_erro & "Pedido " & Trim(.pedido) & " pertence a outro CD (" & obtem_apelido_empresa_NFe_emitente(rs("id_nfe_emitente")) & ")"
@@ -279,7 +281,7 @@
                                     if UCase(c_transportadora) <> Trim("" & rs("transportadora_id")) And (.msg_alerta="") then 
                                         if .msg_alerta<>"" then 
                                             .msg_alerta = texto_add_br(.msg_alerta)
-                                            .msg_alerta = .msg_alerta & "\n(" & Trim("" & rs("transportadora_id")) & ")"
+                                            .msg_alerta = .msg_alerta & " (" & Trim("" & rs("transportadora_id")) & ")"
                                         end if
                                         .msg_alerta = texto_add_br(.msg_alerta)
                                         .msg_alerta = .msg_alerta & "Pedido " & Trim(.pedido) & " já possui frete cadastrado para outra transportadora (" & Trim("" & rs("transportadora_id")) & ")"

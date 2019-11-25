@@ -112,6 +112,7 @@
 
                 if Not rs.Eof then
                     emissor_cnpj = Trim("" & rs("emissor_cnpj"))
+                    'No caso dos CDs ES e ES-02, grava o id_nfe_emitente real do pedido, mesmo que na consulta tenha sido informado o outro CD (lembrando que a operação faz a validação pelo CNPJ do CD e não mais pelo id_nfe_emitente).
                     if .emitente_NF <> "-1" then id_nfe_emitente = Trim("" & rs("id_nfe_emitente"))
                     if .num_NF = "" then numero_NF = Trim("" & rs("numero_NF"))
                     if .serie_NF = "" then serie_NF = Trim("" & rs("serie_NF"))
