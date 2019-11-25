@@ -915,6 +915,16 @@ var eh_cpf;
         }
     }
 
+    <% if CStr(loja) <> CStr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) then %>
+    // PARA CLIENTE PJ, É OBRIGATÓRIO O PREENCHIMENTO DO E-MAIL
+    if (!eh_cpf) {
+        if ((trim(fCAD.email_original.value) == "") && (trim(fCAD.email_xml_original.value) == "")) {
+            alert("É obrigatório que o cliente tenha um endereço de e-mail cadastrado!");
+            fCAD.email.focus();
+            return;
+        }
+    }
+    <% end if %>
 	
 	fNEW.c_FormFieldValues.value = formToString($("#fNEW"));
 
@@ -1187,6 +1197,17 @@ if (!eh_cpf) {
 		f.email_xml.focus();
 		return;
 	}
+
+    <% if CStr(loja) <> CStr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) then %>
+    // PARA CLIENTE PJ, É OBRIGATÓRIO O PREENCHIMENTO DO E-MAIL
+    if (!eh_cpf) {
+        if ((trim(fCAD.email.value) == "") && (trim(fCAD.email_xml.value) == "")) {
+            alert("É obrigatório informar um endereço de e-mail");
+            fCAD.email.focus();
+            return;
+        }
+    }
+    <% end if %>
 
 /*
 	if (trim(f.midia.options[f.midia.selectedIndex].value)=="") {
@@ -1952,7 +1973,8 @@ function trataProdutorRural() {
 				end if
 			%>
 		<input id="email" name="email" class="TA" value="<%=s%>" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fCAD.email_xml.focus(); filtra_email();"></p></td>
-	</tr>
+	    <input type="hidden" name="email_original" id="email_original" value="<%=s%>" />
+    </tr>
 </table>
 
 <!-- ************   E-MAIL (XML)  ************ -->
@@ -1961,6 +1983,7 @@ function trataProdutorRural() {
 	<td width="100%" align="left"><p class="R">E-MAIL (XML)</p><p class="C">
 		<%if operacao_selecionada=OP_CONSULTA Or blnHaRegistroBsp then s=Trim("" & rs("email_xml")) else s=""%>
 		<input id="email_xml" name="email_xml" class="TA" value="<%=s%>" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fCAD.obs_crediticias.focus(); filtra_email();"></p></td>
+        <input type="hidden" name="email_xml_original" id="email_xml_original" value="<%=s%>" />
 	</tr>
 </table>
 
