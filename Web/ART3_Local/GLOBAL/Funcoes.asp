@@ -6131,7 +6131,7 @@ function isLojaVrf(byval loja)
 
 	loja  = Trim("" & loja)
 	
-	if (loja = NUMERO_LOJA_VRF) Or (loja = NUMERO_LOJA_VRF2) Or (loja = NUMERO_LOJA_VRF3) Or (loja = NUMERO_LOJA_VRF4) then
+	if (loja = NUMERO_LOJA_VRF) Or (loja = NUMERO_LOJA_VRF2) Or (loja = NUMERO_LOJA_VRF3) Or (loja = NUMERO_LOJA_VRF4) Or (loja = NUMERO_LOJA_VRF5) then
 		isLojaVrf = True
 		end if
 
