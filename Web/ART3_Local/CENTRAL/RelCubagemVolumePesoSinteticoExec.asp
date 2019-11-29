@@ -49,12 +49,13 @@
 
 	dim alerta
 	dim s, s_aux, s_filtro, v, i
-	dim c_transportadora, c_dt_entrega_marcada_para
+	dim c_transportadora, c_dt_entrega_marcada_para, c_nfe_emitente
 
 	alerta = ""
 
 	c_dt_entrega_marcada_para = Request.Form("c_dt_entrega_marcada_para")
 	c_transportadora = Trim(Request("c_transportadora"))
+	c_nfe_emitente = Trim(Request.Form("c_nfe_emitente"))
 
 	dim s_nome_transportadora
 	s_nome_transportadora = ""
@@ -90,6 +91,7 @@ dim s, s_aux, x, i, v, cab_table, cab
 dim vl_total_cubagem, vl_total_qtde_volumes, vl_total_peso, n_reg, n_reg_total
 dim com_projecao, vl_projecao, qtde_dias_mes, qtde_dias_projecao
 dim s_where, s_where_devolucao
+dim rNfeEmitente
 
 '	CRITÉRIOS COMUNS
 	s_where = ""
@@ -105,6 +107,13 @@ dim s_where, s_where_devolucao
 		s_where = s_where & " (t_PEDIDO.transportadora_id = '" & c_transportadora & "')"
 		end if
 	
+'	OWNER DO PEDIDO
+    if Trim("" & c_nfe_emitente) <> "" then
+	    set rNfeEmitente = le_nfe_emitente(c_nfe_emitente)
+	    if s_where <> "" then s_where = s_where & " AND"
+	    s_where = s_where & " (t_PEDIDO.id_nfe_emitente = " & rNfeEmitente.id & ")"
+        end if
+
 	s = s_where
 	if s <> "" then s = " AND" & s
 	s_sql = "SELECT" & _
@@ -298,6 +307,7 @@ window.status='Aguarde, executando a consulta ...';
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
 <input type="hidden" name="c_dt_entrega_marcada_para" id="c_dt_entrega_marcada_para" value="<%=c_dt_entrega_marcada_para%>">
 <input type="hidden" name="c_transportadora" id="c_transportadora" value="<%=c_transportadora%>">
+<input type="hidden" name="c_nfe_emitente" id="c_nfe_emitente" value="<%=c_nfe_emitente%>" />
 
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->
 <table width="649" cellpadding="4" cellspacing="0" style="border-bottom:1px solid black;">
@@ -329,6 +339,17 @@ window.status='Aguarde, executando a consulta ...';
 	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
 			   "<span class='N'>Transportadora:&nbsp;</span></td><td align='left' valign='top'>" & _
 			   "<span class='N'>" & s & "</span></td></tr>" & chr(13)
+
+    s = c_nfe_emitente
+    if s = "" then
+        s = "N.I."
+    else
+        s = obtem_apelido_empresa_NFe_emitente(s)
+        end if
+
+	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
+			   "<span class='N'>CD:&nbsp;</span></td><td align='left' valign='top'>" & _
+			   "<span class='N'>" & s & "</span></td></tr>"
 
 	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
 			   "<span class='N'>Emissão:&nbsp;</span></td><td align='left' valign='top' width='99%'>" & _

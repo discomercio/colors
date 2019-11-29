@@ -40,6 +40,30 @@
 	dim cn
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+'	CD
+	dim i, qtde_nfe_emitente
+	dim v_usuario_x_nfe_emitente
+	dim id_nfe_emitente_selecionado
+	v_usuario_x_nfe_emitente = obtem_lista_usuario_x_nfe_emitente(usuario)
+	
+	qtde_nfe_emitente = 0
+	for i=Lbound(v_usuario_x_nfe_emitente) to UBound(v_usuario_x_nfe_emitente)
+		if Not Isnull(v_usuario_x_nfe_emitente(i)) then
+			qtde_nfe_emitente = qtde_nfe_emitente + 1
+			id_nfe_emitente_selecionado = v_usuario_x_nfe_emitente(i)
+			end if
+		next
+	
+	if qtde_nfe_emitente > 1 then
+	'	HÁ MAIS DO QUE 1 CD, ENTÃO SERÁ EXIBIDA A LISTA P/ O USUÁRIO SELECIONAR UM CD
+		id_nfe_emitente_selecionado = 0
+		end if
+	
+	if qtde_nfe_emitente = 0 then
+	'	NÃO HÁ NENHUM CD CADASTRADO P/ ESTE USUÁRIO!!
+		Response.Redirect("aviso.asp?id=" & ERR_NENHUM_CD_HABILITADO_PARA_USUARIO)
+		end if
+
 %>
 
 
@@ -129,6 +153,9 @@ function fFILTROConfirma(f) {
 
 <form id="fFILTRO" name="fFILTRO" method="post" action="RelCubagemVolumePesoSinteticoExec.asp">
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
+<% if qtde_nfe_emitente = 1 then %>
+<input type="hidden" name="c_nfe_emitente" id="c_nfe_emitente" value="<%=Cstr(id_nfe_emitente_selecionado)%>" />
+<% end if %>
 
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->
 <table width="649" cellpadding="4" cellspacing="0" style="border-bottom:1px solid black;">
@@ -158,6 +185,33 @@ function fFILTROConfirma(f) {
 		<% =transportadora_monta_itens_select(Null) %>
 		</select>
 		</td></tr>
+
+<% if qtde_nfe_emitente > 1 then %>
+<tr>
+	<td class="MB ME MD" align="left">
+	<table class="Qx" cellspacing="0" cellpadding="0">
+	<tr bgcolor="#FFFFFF">
+		<td align="left" nowrap>
+			<span class="PLTe">CD</span>
+		</td>
+	</tr>
+	<tr bgcolor="#FFFFFF">
+		<td align="left">
+			<table style="margin: 4px 8px 4px 8px;" cellspacing="0" cellpadding="0">
+				<tr bgcolor="#FFFFFF">
+				<td align="left">
+					<select id="c_nfe_emitente" name="c_nfe_emitente" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) {this.options[0].selected=true;}" style="margin-left:5px;margin-top:4pt; margin-bottom:4pt;">
+						<%=wms_usuario_x_nfe_emitente_monta_itens_select(usuario, "")%>
+					</select>
+				</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	</table>
+	</td>
+</tr>
+<% end if %>
 
 </table>
 
