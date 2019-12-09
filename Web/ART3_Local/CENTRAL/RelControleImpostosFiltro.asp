@@ -35,14 +35,15 @@
 	usuario = Trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
 
-    dim previous_c_dt_coleta, previous_c_dt_coleta_inicio, previous_c_dt_coleta_termino, previous_c_transportadora, previous_ckb_exibir_verificados, previous_c_nfe_emitente, previous_c_uf
+    dim previous_c_dt_coleta, previous_c_dt_coleta_inicio, previous_c_dt_coleta_termino, previous_c_transportadora, previous_rb_tipo_consulta, previous_c_nfe_emitente, previous_c_uf, previous_c_numero_NF
 	previous_c_dt_coleta = Trim(Request.Form("c_dt_coleta"))
 	previous_c_dt_coleta_inicio = Trim(Request.Form("c_dt_coleta_inicio"))
 	previous_c_dt_coleta_termino = Trim(Request.Form("c_dt_coleta_termino"))
 	previous_c_transportadora = Trim(Request.Form("c_transportadora"))
-	previous_ckb_exibir_verificados = Trim(Request.Form("ckb_exibir_verificados"))
+	previous_rb_tipo_consulta = Trim(Request.Form("rb_tipo_consulta"))
 	previous_c_nfe_emitente = Trim(Request.Form("c_nfe_emitente"))
 	previous_c_uf = Trim(Request.Form("c_uf"))
+    previous_c_numero_NF = Trim(Request.Form("c_numero_NF"))
 
 '	CONECTA COM O BANCO DE DADOS
 	dim cn
@@ -156,7 +157,8 @@ var s_de;
 var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 var data;
 
-	if ((trim(f.c_dt_coleta.value)=="") && ((trim(f.c_dt_coleta_inicio.value)=="") && (trim(f.c_dt_coleta_termino.value)==""))) {
+//  OBS: AO CONSULTAR POR Nº NF, IGNORA A DATA/PERÍODO DE COLETA
+	if ((trim(f.c_numero_NF.value)=="") && (trim(f.c_dt_coleta.value)=="") && ((trim(f.c_dt_coleta_inicio.value)=="") && (trim(f.c_dt_coleta_termino.value)==""))) {
 		alert("Preencha a data de coleta ou o período de coleta!!");
 		f.c_dt_coleta.focus();
 		return;
@@ -375,15 +377,40 @@ var data;
 		</td>
 	</tr>
 
-<!--  EXIBIR VERIFICADOS  -->
+<!--  NF  -->
 	<tr bgcolor="#FFFFFF">
-	<td class="ME MD" align="left" nowrap><span class="PLTe">OPÇÃO DE VERIFICAÇÃO</span></td></tr>
+	<td class="ME MD" align="left" nowrap><span class="PLTe">Nº NF</span></td></tr>
 	<tr bgcolor="#FFFFFF"><td class="MDBE" align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_exibir_verificados" name="ckb_exibir_verificados" style="margin:6pt 2pt 8pt 9pt;"
-			value="<%=COD_CONTROLE_IMPOSTOS_STATUS__OK%>"
-            <% if previous_ckb_exibir_verificados <> "" then Response.Write " checked"%>
+		<table style="margin: 4px 8px 4px 8px;" cellspacing="0" cellpadding="0"><tr bgcolor="#FFFFFF"><td align="left">
+            <input type="text" name="c_numero_NF" id="c_numero_NF" size="12" maxlength="9" onblur="this.value=retorna_so_digitos(this.value);"
+            <% if previous_c_numero_NF <> "" then Response.Write " value='" & previous_c_numero_NF & "'" %>
+            />
+			</td></tr>
+		</table>
+		</td>
+	</tr>
+
+<!--  OPÇÕES P/ INCLUIR/EXCLUIR OS PEDIDOS JÁ VERIFICADOS  -->
+	<tr bgcolor="#FFFFFF">
+	<td class="ME MD" align="left" nowrap><span class="PLTe">TIPO DE CONSULTA</span></td></tr>
+	<tr bgcolor="#FFFFFF"><td class="MDBE" align="left">
+		<input type="radio" tabindex="-1" name="rb_tipo_consulta" id="rb_tipo_consulta_somente_nao_verificados" style="margin:6pt 2pt 0pt 9pt;"
+			value="<%=COD_CONTROLE_IMPOSTOS_STATUS__INICIAL%>"
+            <% if (previous_rb_tipo_consulta = "") Or (previous_rb_tipo_consulta = Cstr(COD_CONTROLE_IMPOSTOS_STATUS__INICIAL)) then Response.Write " checked"%>
             /><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_exibir_verificados.click();">Exibir Pedidos Já Verificados</span>
+			onclick="fFILTRO.rb_tipo_consulta[0].click();">Somente NÃO Baixados</span>
+		<br />
+        <input type="radio" tabindex="-1" name="rb_tipo_consulta" id="rb_tipo_consulta_somente_ja_verificados" style="margin:2pt 2pt 0pt 9pt;"
+			value="<%=COD_CONTROLE_IMPOSTOS_STATUS__OK%>"
+            <% if previous_rb_tipo_consulta = Cstr(COD_CONTROLE_IMPOSTOS_STATUS__OK) then Response.Write " checked"%>
+            /><span class="C" style="cursor:default" 
+			onclick="fFILTRO.rb_tipo_consulta[1].click();">Somente JÁ Baixados</span>
+		<br />
+        <input type="radio" tabindex="-1" name="rb_tipo_consulta" id="rb_tipo_consulta_todos" style="margin:2pt 2pt 8pt 9pt;"
+			value="TODOS"
+            <% if previous_rb_tipo_consulta = "TODOS" then Response.Write " checked"%>
+            /><span class="C" style="cursor:default" 
+			onclick="fFILTRO.rb_tipo_consulta[2].click();">Todos</span>
 	</td></tr>
 
 <% if qtde_nfe_emitente > 1 then %>

@@ -40,13 +40,13 @@
 	alerta=""
 
 '	OBTÉM FILTROS
-	dim c_transportadora, c_dt_coleta, c_dt_coleta_inicio, c_dt_coleta_termino, ckb_exibir_verificados, c_nfe_emitente, c_uf
+	dim c_transportadora, c_dt_coleta, c_dt_coleta_inicio, c_dt_coleta_termino, rb_tipo_consulta, c_nfe_emitente, c_uf
 
 	c_transportadora = Trim(Request.Form("c_transportadora"))
 	c_dt_coleta = Trim(Request.Form("c_dt_coleta"))
 	c_dt_coleta_inicio = Trim(Request.Form("c_dt_coleta_inicio"))
 	c_dt_coleta_termino = Trim(Request.Form("c_dt_coleta_termino"))
-	ckb_exibir_verificados = Trim(Request.Form("ckb_exibir_verificados"))
+	rb_tipo_consulta = Trim(Request.Form("rb_tipo_consulta"))
 	c_nfe_emitente = Trim(Request.Form("c_nfe_emitente"))
     c_uf = Trim(Request.Form("c_uf"))
 
@@ -301,7 +301,7 @@ function fRetornar(f) {
 <input type="hidden" name="c_dt_coleta" id="c_dt_coleta" value="<%=c_dt_coleta%>" />
 <input type="hidden" name="c_dt_coleta_inicio" id="c_dt_coleta_inicio" value="<%=c_dt_coleta_inicio%>" />
 <input type="hidden" name="c_dt_coleta_termino" id="c_dt_coleta_termino" value="<%=c_dt_coleta_termino%>" />
-<input type="hidden" name="ckb_exibir_verificados" id="ckb_exibir_verificados" value="<%=ckb_exibir_verificados%>" />
+<input type="hidden" name="rb_tipo_consulta" id="rb_tipo_consulta" value="<%=rb_tipo_consulta%>" />
 <input type="hidden" name="c_nfe_emitente" id="c_nfe_emitente" value="<%=c_nfe_emitente%>" />
 <input type="hidden" name="c_uf" id="c_uf" value="<%=c_uf%>" />
 

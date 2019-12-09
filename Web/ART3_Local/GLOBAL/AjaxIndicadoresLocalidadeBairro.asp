@@ -70,8 +70,13 @@
 				" bairro" & s_collate & " AS bairro" & _
 			" FROM t_ORCAMENTISTA_E_INDICADOR" & _
 			" WHERE" & _
-				" (cidade = '" & s_cidade & "' COLLATE Latin1_General_CI_AI)" & _
-				" AND (loja = '" & s_loja & "')" & _
+				" (cidade = '" & s_cidade & "' COLLATE Latin1_General_CI_AI)"
+    if s_loja <> "" then
+        strSql = strSql & _
+				" AND (loja = '" & s_loja & "')"
+        end if
+
+    strSql = strSql & _
 			" ORDER BY" & _
 				" bairro" & s_collate
     end if
