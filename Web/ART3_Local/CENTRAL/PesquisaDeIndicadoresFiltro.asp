@@ -497,11 +497,12 @@ var strCep;
 
 // PREENCHER LOJA ?
 
-    if (f.c_loja.value == "") {
-        alert("Preencha o campo loja!");
-        f.c_loja.focus();
-        return;
-    }
+    //if (f.c_loja.value == "") {
+    //    alert("Preencha o campo loja!");
+    //    f.c_loja.focus();
+    //    return;
+    //}
+
 // seleciona as cidades e bairros antes de enviar o formulario
     $("#c_localidade_pesq").children().prop('selected', true);
     $("#bairro_pesq").children().prop('selected', true);
@@ -978,7 +979,7 @@ if (f.rb_pesquisar_por[4].checked) {
 				  <select id="cidade_bairro" name="cidade_bairro" style="width:200px;margin-right:10px;" 
 						onkeyup="if (window.event.keyCode==KEYCODE_DELETE) {this.options[0].selected=true; CarregaBairro();}" 
 						onkeypress="if (digitou_enter(true)) bCONFIRMA.focus();" 
-						onchange="if (trim(fFILTRO.c_loja.value)=='') {alert('É necessário informar a loja para encontrar os bairros!!'); fFILTRO.c_loja.focus();} else {CarregaBairro()};fFILTRO.rb_pesquisar_por[1].click();">
+						onchange="CarregaBairro();fFILTRO.rb_pesquisar_por[1].click();">
 				  </select>
 				  </td>
 				  <td valign="bottom">
