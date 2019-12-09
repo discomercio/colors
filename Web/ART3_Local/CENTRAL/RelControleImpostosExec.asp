@@ -56,8 +56,9 @@
 	strUrlBotaoVoltar = "javascript:fRELVoltarTelaFiltro(fREL)"
 	
 	dim alerta
-	dim s, s_aux, s_filtro
-	dim c_transportadora, s_nome_transportadora, c_dt_coleta, c_dt_coleta_inicio, c_dt_coleta_termino, ckb_exibir_verificados, c_nfe_emitente, c_uf
+	dim s, s_aux, s_filtro, s_log
+	dim c_transportadora, s_nome_transportadora, c_dt_coleta, c_dt_coleta_inicio, c_dt_coleta_termino, rb_tipo_consulta, c_nfe_emitente, c_uf
+    dim c_numero_NF
 
 	alerta = ""
 
@@ -65,9 +66,10 @@
 	c_dt_coleta_inicio = Trim(Request.Form("c_dt_coleta_inicio"))
 	c_dt_coleta_termino = Trim(Request.Form("c_dt_coleta_termino"))
 	c_transportadora = Trim(Request.Form("c_transportadora"))
-	ckb_exibir_verificados = Trim(Request.Form("ckb_exibir_verificados"))
+	rb_tipo_consulta = Trim(Request.Form("rb_tipo_consulta"))
 	c_nfe_emitente = Trim(Request.Form("c_nfe_emitente"))
 	c_uf = Trim(Request.Form("c_uf"))
+    c_numero_NF = retorna_so_digitos(Trim(Request.Form("c_numero_NF")))
 
 	s_nome_transportadora = ""
 	if c_transportadora <> "" then s_nome_transportadora = x_transportadora(c_transportadora)
@@ -124,23 +126,24 @@ dim s, s_sql, cab_table, cab, s_num_nfe, s_serie_nfe, s_link_nfe, s_row, s_html_
 dim s_pedido, s_transportadora, s_data_entrega_yyyymmdd, s_data_coleta, s_cnpj_cpf
 dim s_where, s_where_data, s_from
 dim i, intOrdenacaoCor
-dim blnRegistroOk
+dim blnRegistroOk, blnExibirLinha
 dim rNfeEmitente
 dim x
 dim qtde_produto,total_fcp,total_icms_destino, valor
 dim ChaveAcesso
-dim qtdePedidosExibida, maxQtdePedidosResultado, tempoTimeoutEmMin, blnPedidoBloqueado
+dim qtdePedidosExibida, qtdePedidosPendentesExibida, maxQtdePedidosPendentesResultado, tempoTimeoutEmMin, blnPedidoBloqueado
 dim qtdeTotalPedidosATratar, intRecordsAffected
 dim vLocked, idxLocked, qtdePedidoBloqueado
 
     total_fcp = 0
     total_icms_destino = 0
     qtdePedidosExibida = 0
+    qtdePedidosPendentesExibida = 0
     qtdeTotalPedidosATratar = 0
     qtdePedidoBloqueado = 0
 
-    maxQtdePedidosResultado = converte_numero(rPQtdeMax.campo_inteiro)
-    if maxQtdePedidosResultado <= 0 then maxQtdePedidosResultado = 10
+    maxQtdePedidosPendentesResultado = converte_numero(rPQtdeMax.campo_inteiro)
+    if maxQtdePedidosPendentesResultado <= 0 then maxQtdePedidosPendentesResultado = 10
 
     tempoTimeoutEmMin = converte_numero(rPTimeout.campo_inteiro)
     if tempoTimeoutEmMin <= 0 then tempoTimeoutEmMin = 20
@@ -154,6 +157,7 @@ dim vLocked, idxLocked, qtdePedidoBloqueado
 	s_where = " AND (t_NFE_IMAGEM.ide__idDest = '2') " & _
 			" AND (t_NFE_IMAGEM.ide__tpNF = '1') " & _
 			" AND (t_NFE_EMISSAO.st_anulado = 0) " & _
+            " AND (t_NFE_IMAGEM.st_anulado = 0)" & _
 			" AND (t_NFE_EMISSAO.codigo_retorno_NFe_T1 = 1) " & _
 			" AND (st_entrega <> 'CAN') "
 
@@ -172,31 +176,50 @@ dim vLocked, idxLocked, qtdePedidoBloqueado
 		s_where = s_where & s
 		end if
 	
-'	CRITÉRIO: DATA DE COLETA
-	s_where_data = ""
-	if c_dt_coleta <> "" then
-		s = " (a_entregar_data_marcada = " & bd_formata_data(StrToDate(c_dt_coleta)) & ")"
+'   CRITÉRIO: Nº NF
+    if c_numero_NF <> "" then
+        s = " (t_NFE_EMISSAO.NFe_numero_NF = " & c_numero_NF & ")"
 		if s_where <> "" then s_where = s_where & " AND"
 		s_where = s_where & s
-		s_where_data = s
-		end if
+        end if
+
+'	CRITÉRIO: DATA DE COLETA
+'   OBS: AO CONSULTAR POR Nº NF, IGNORA A DATA/PERÍODO DE COLETA
+	s_where_data = ""
+	if c_numero_NF = "" then
+        if c_dt_coleta <> "" then
+		    s = " (a_entregar_data_marcada = " & bd_formata_data(StrToDate(c_dt_coleta)) & ")"
+		    if s_where <> "" then s_where = s_where & " AND"
+		    s_where = s_where & s
+		    s_where_data = s
+		    end if
+        end if
 
 '	CRITÉRIO: PERÍODO DE COLETA
-	if (c_dt_coleta = "") and ((c_dt_coleta_inicio <> "") and (c_dt_coleta_termino <> "")) then
-		s = " (a_entregar_data_marcada >= " & bd_formata_data(StrToDate(c_dt_coleta_inicio)) & ")"
-		s = s & " AND (a_entregar_data_marcada <= " & bd_formata_data(StrToDate(c_dt_coleta_termino)) & ")"
-		if s_where <> "" then s_where = s_where & " AND"
-		s_where = s_where & s
-		s_where_data = s
-		end if
+'   OBS: AO CONSULTAR POR Nº NF, IGNORA A DATA/PERÍODO DE COLETA
+    if c_numero_NF = "" then
+	    if (c_dt_coleta = "") and ((c_dt_coleta_inicio <> "") and (c_dt_coleta_termino <> "")) then
+		    s = " (a_entregar_data_marcada >= " & bd_formata_data(StrToDate(c_dt_coleta_inicio)) & ")"
+		    s = s & " AND (a_entregar_data_marcada <= " & bd_formata_data(StrToDate(c_dt_coleta_termino)) & ")"
+		    if s_where <> "" then s_where = s_where & " AND"
+		    s_where = s_where & s
+		    s_where_data = s
+		    end if
+        end if
+
+    if s_where_data <> "" then s_where_data = " AND " & s_where_data
 
 '	CRITÉRIO: EXIBIR VERIFICADOS
-	if ckb_exibir_verificados = "" then
-		if s_where <> "" then s_where = s_where & " AND"
-		s_where = s_where & " (t_NFE_EMISSAO.controle_impostos_status = " & COD_CONTROLE_IMPOSTOS_STATUS__INICIAL & ")"
-	else
+'   OBS: AO CONSULTAR POR Nº NF, PESQUISA TANTO NOS PENDENTES QUANTO NOS JÁ BAIXADOS
+	if (c_numero_NF <> "") Or (rb_tipo_consulta = "TODOS") then
 		if s_where <> "" then s_where = s_where & " AND"
 		s_where = s_where & " (t_NFE_EMISSAO.controle_impostos_status IN (" & COD_CONTROLE_IMPOSTOS_STATUS__INICIAL & "," & COD_CONTROLE_IMPOSTOS_STATUS__OK & "))"
+    elseif rb_tipo_consulta = Cstr(COD_CONTROLE_IMPOSTOS_STATUS__INICIAL) then
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (t_NFE_EMISSAO.controle_impostos_status = " & COD_CONTROLE_IMPOSTOS_STATUS__INICIAL & ")"
+	elseif rb_tipo_consulta = Cstr(COD_CONTROLE_IMPOSTOS_STATUS__OK) then
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (t_NFE_EMISSAO.controle_impostos_status = " & COD_CONTROLE_IMPOSTOS_STATUS__OK & ")"
 		end if
 	
 '	OWNER DO PEDIDO
@@ -210,6 +233,8 @@ dim vLocked, idxLocked, qtdePedidoBloqueado
 				" t_NFE_EMISSAO.NFe_serie_NF," & _
 				" t_NFE_EMISSAO.NFe_numero_NF," & _
 				" t_NFE_EMISSAO.controle_impostos_status," & _
+                " t_NFE_EMISSAO.controle_impostos_data_hora," & _
+                " t_NFE_EMISSAO.controle_impostos_usuario," & _
 				" t_PEDIDO.pedido," & _
 				" t_PEDIDO.a_entregar_data_marcada," & _
 				" t_PEDIDO.st_entrega," & _
@@ -224,8 +249,8 @@ dim vLocked, idxLocked, qtdePedidoBloqueado
 				" t_NFE_IMAGEM.total__vICMSUFRemet" & _
 			" FROM t_NFE_EMISSAO" & _
 				" INNER JOIN t_NFE_IMAGEM ON (t_NFE_EMISSAO.NFe_numero_NF=t_NFE_IMAGEM.NFe_numero_NF AND t_NFE_EMISSAO.NFe_serie_NF=t_NFE_IMAGEM.NFe_serie_NF AND t_NFE_EMISSAO.id_nfe_emitente=t_NFE_IMAGEM.id_nfe_emitente)" & _
-				" INNER JOIN (SELECT id_nfe_emitente, NFe_serie_NF, NFe_numero_NF, max(id) AS id FROM t_NFE_IMAGEM GROUP BY id_nfe_emitente, NFe_serie_NF, NFe_numero_NF) img_max_id ON (t_NFE_IMAGEM.id = img_max_id.id AND t_NFE_IMAGEM.id_nfe_emitente=img_max_id.id_nfe_emitente)" & _
-				" INNER JOIN (SELECT id_nfe_emitente, NFe_serie_NF, NFe_numero_NF, max(id) AS id FROM t_NFE_EMISSAO GROUP BY id_nfe_emitente, NFe_serie_NF, NFe_numero_NF) emi_max_id ON (t_NFE_EMISSAO.id = emi_max_id.id AND t_NFE_EMISSAO.id_nfe_emitente=emi_max_id.id_nfe_emitente)" & _
+				" INNER JOIN (SELECT id_nfe_emitente, NFe_serie_NF, NFe_numero_NF, max(id) AS id FROM t_NFE_IMAGEM WHERE (st_anulado = 0) GROUP BY id_nfe_emitente, NFe_serie_NF, NFe_numero_NF) img_max_id ON (t_NFE_IMAGEM.id = img_max_id.id AND t_NFE_IMAGEM.id_nfe_emitente=img_max_id.id_nfe_emitente)" & _
+				" INNER JOIN (SELECT id_nfe_emitente, NFe_serie_NF, NFe_numero_NF, max(id) AS id FROM t_NFE_EMISSAO WHERE (st_anulado = 0) GROUP BY id_nfe_emitente, NFe_serie_NF, NFe_numero_NF) emi_max_id ON (t_NFE_EMISSAO.id = emi_max_id.id AND t_NFE_EMISSAO.id_nfe_emitente=emi_max_id.id_nfe_emitente)" & _
 				" INNER JOIN t_PEDIDO ON (t_NFE_EMISSAO.pedido=t_PEDIDO.pedido AND t_NFE_EMISSAO.id_nfe_emitente=t_PEDIDO.id_nfe_emitente)" & _
 			" WHERE t_NFE_EMISSAO.pedido IS NOT NULL " & _
 			s_where
@@ -238,6 +263,8 @@ dim vLocked, idxLocked, qtdePedidoBloqueado
 				" t_NFE_EMISSAO.NFe_serie_NF," & _
 				" t_NFE_EMISSAO.NFe_numero_NF," & _
 				" t_NFE_EMISSAO.controle_impostos_status," & _
+                " t_NFE_EMISSAO.controle_impostos_data_hora," & _
+                " t_NFE_EMISSAO.controle_impostos_usuario," & _
 				" pedidos_nf_ok.pedido," & _
 				" pedidos_nf_ok.a_entregar_data_marcada," & _
 				" pedidos_nf_ok.st_entrega," & _
@@ -252,9 +279,9 @@ dim vLocked, idxLocked, qtdePedidoBloqueado
 				" t_NFE_IMAGEM.total__vICMSUFRemet" & _
 			" FROM t_NFE_EMISSAO" & _
 				" INNER JOIN t_NFE_IMAGEM ON (t_NFE_EMISSAO.NFe_numero_NF=t_NFE_IMAGEM.NFe_numero_NF AND t_NFE_EMISSAO.NFe_serie_NF=t_NFE_IMAGEM.NFe_serie_NF AND t_NFE_EMISSAO.id_nfe_emitente=t_NFE_IMAGEM.id_nfe_emitente)" & _
-				" INNER JOIN (SELECT id_nfe_emitente, NFe_serie_NF, NFe_numero_NF, max(id) AS id FROM t_NFE_IMAGEM GROUP BY id_nfe_emitente, NFe_serie_NF, NFe_numero_NF) img_max_id ON (t_NFE_IMAGEM.id = img_max_id.id AND t_NFE_IMAGEM.id_nfe_emitente=img_max_id.id_nfe_emitente)" & _
-				" INNER JOIN (SELECT id_nfe_emitente, NFe_serie_NF, NFe_numero_NF, max(id) AS id FROM t_NFE_EMISSAO GROUP BY id_nfe_emitente, NFe_serie_NF, NFe_numero_NF) emi_max_id ON (t_NFE_EMISSAO.id = emi_max_id.id AND t_NFE_EMISSAO.id_nfe_emitente=emi_max_id.id_nfe_emitente)" & _
-				" INNER JOIN (SELECT * FROM t_PEDIDO WHERE (ISNUMERIC(t_PEDIDO.obs_2) = 1) AND (LEN(t_PEDIDO.obs_2) < 10) AND " & s_where_data &") pedidos_nf_ok" & _
+				" INNER JOIN (SELECT id_nfe_emitente, NFe_serie_NF, NFe_numero_NF, max(id) AS id FROM t_NFE_IMAGEM WHERE (st_anulado = 0) GROUP BY id_nfe_emitente, NFe_serie_NF, NFe_numero_NF) img_max_id ON (t_NFE_IMAGEM.id = img_max_id.id AND t_NFE_IMAGEM.id_nfe_emitente=img_max_id.id_nfe_emitente)" & _
+				" INNER JOIN (SELECT id_nfe_emitente, NFe_serie_NF, NFe_numero_NF, max(id) AS id FROM t_NFE_EMISSAO WHERE (st_anulado = 0) GROUP BY id_nfe_emitente, NFe_serie_NF, NFe_numero_NF) emi_max_id ON (t_NFE_EMISSAO.id = emi_max_id.id AND t_NFE_EMISSAO.id_nfe_emitente=emi_max_id.id_nfe_emitente)" & _
+				" INNER JOIN (SELECT * FROM t_PEDIDO WHERE (ISNUMERIC(t_PEDIDO.obs_2) = 1) AND (LEN(t_PEDIDO.obs_2) < 10) " & s_where_data &") pedidos_nf_ok" & _
 				"		ON t_NFE_EMISSAO.NFe_numero_NF=CONVERT(INT, pedidos_nf_ok.obs_2) AND t_NFE_EMISSAO.id_nfe_emitente = pedidos_nf_ok.id_nfe_emitente" & _
 			" WHERE t_NFE_EMISSAO.pedido IS NULL " & _
 				" AND " & _
@@ -281,12 +308,15 @@ dim vLocked, idxLocked, qtdePedidoBloqueado
 		  "		<td class='MC MD' style='width:30px' align='right' valign='bottom' nowrap><span class='R'>FCP</span></td>" & chr(13) & _
 		  "		<td class='MC MD' style='width:55px' align='right' valign='bottom' nowrap><span class='R'>ICMS UF </br> Destino</span></td>" & chr(13) & _
 		  "		<td class='MC MD' style='width:30px' align='center' valign='bottom' nowrap><span class='R'>Guia </br> OK</span></td>" & chr(13) & _
+		  "		<td class='MC MD' style='width:70px' align='center' valign='bottom' nowrap><span class='R'>Usuário</span></td>" & chr(13) & _
+		  "		<td class='MC MD' style='width:60px' align='center' valign='bottom' nowrap><span class='R'>Data</br>Hora</span></td>" & chr(13) & _
 		  "	</tr>" & chr(13)
 
 	x = cab_table & cab
 
 	set r = cn.execute(s_sql)
 	do while Not r.Eof
+        blnExibirLinha = False
         blnPedidoBloqueado = False
 		
 	'	SE A NOTA NÃO FOI COMPLETAMENTE EMITIDA, PULAR
@@ -294,72 +324,12 @@ dim vLocked, idxLocked, qtdePedidoBloqueado
 		s_num_nfe = NFeFormataNumeroNF(Trim("" & r("NFe_numero_NF")))
 		s_serie_nfe = NFeFormataSerieNF(Trim("" & r("NFe_serie_NF")))
 
-		if IsNFeCompletamenteEmitida(rNfeEmitente.id, s_serie_nfe, s_num_nfe, ChaveAcesso) then
-            qtdeTotalPedidosATratar = qtdeTotalPedidosATratar + 1
+        if r("controle_impostos_status") = CInt(COD_CONTROLE_IMPOSTOS_STATUS__OK) then
+            blnExibirLinha = True
+        else
+		    if IsNFeCompletamenteEmitida(rNfeEmitente.id, s_serie_nfe, s_num_nfe, ChaveAcesso) then
+                qtdeTotalPedidosATratar = qtdeTotalPedidosATratar + 1
 
-            s = "SELECT " & _
-                    "*" & _
-                " FROM t_CTRL_RELATORIO_USUARIO_X_PEDIDO" & _
-                " WHERE" & _
-                    "(id_relatorio = " & ID_CTRL_RELATORIO_RelControleImpostos & ")" & _
-                    " AND (usuario <> '" & QuotedStr(usuario) & "')" & _
-                    " AND (pedido = '" & Trim("" & r("pedido")) & "')" & _
-                    " AND (locked = 1)" & _
-                    " AND (data_hora >= DATEADD(minute, -" & tempoTimeoutEmMin & ", getdate()))" & _
-                " ORDER BY" & _
-                    " data_hora DESC"
-			if tLock.State <> 0 then tLock.Close
-			tLock.Open s, cn
-            if Not tLock.Eof then
-                blnPedidoBloqueado = True
-                qtdePedidoBloqueado = qtdePedidoBloqueado + 1
-
-            '   COLETA DADOS P/ EXIBIR PEDIDOS BLOQUEADOS POR OUTROS USUÁRIOS
-                idxLocked = -1
-                for i=LBound(vLocked) to UBound(vLocked)
-                    if Trim("" & vLocked(i).c1) = Trim("" & tLock("usuario")) then
-                        idxLocked = i
-                        exit for
-                        end if
-                    next
-
-            '   JÁ EXISTE NO VETOR UMA POSIÇÃO P/ O USUÁRIO QUE ESTÁ CAUSANDO O BLOQUEIO?
-                if idxLocked = -1 then
-                    if vLocked(UBound(vLocked)).c1 <> "" then
-                        redim preserve vLocked(UBound(vLocked)+1)
-                        set vLocked(UBound(vLocked)) = new cl_DUAS_COLUNAS
-                        vLocked(UBound(vLocked)).c1 = ""
-                        vLocked(UBound(vLocked)).c2 = ""
-                        end if
-                    vLocked(UBound(vLocked)).c1 = Trim("" & tLock("usuario"))
-                    idxLocked = UBound(vLocked)
-                    end if
-
-                if vLocked(idxLocked).c2 <> "" then vLocked(idxLocked).c2 = vLocked(idxLocked).c2 & ", "
-                vLocked(idxLocked).c2 = vLocked(idxLocked).c2 & Trim("" & tLock("pedido"))
-                end if 'if Not tLock.Eof
-
-            if (Not blnPedidoBloqueado) And (qtdePedidosExibida < maxQtdePedidosResultado) then
-            '   CRIA O REGISTRO P/ BLOQUEAR O PEDIDO NESTE RELATÓRIO SENDO EXECUTADO POR OUTROS USUÁRIOS
-                s = "INSERT INTO t_CTRL_RELATORIO_USUARIO_X_PEDIDO (" & _
-                        "id_relatorio" & _
-                        ", usuario" & _
-                        ", pedido" & _
-                        ", locked" & _
-                    ") VALUES (" & _
-                        ID_CTRL_RELATORIO_RelControleImpostos & _
-                        ", '" & QuotedStr(usuario) & "'" & _
-                        ", '" & Trim("" & r("pedido")) & "'" & _
-                        ", 1" & _
-                    ")"
-                cn.Execute s, intRecordsAffected
-                if intRecordsAffected <> 1 then
-                    blnErroAcessoConcorrente = True
-                    s_msg_erro_acesso_concorrente = "FALHA AO TENTAR REGISTRAR BLOQUEIO DO USUÁRIO NO PEDIDO " & Trim("" & r("pedido"))
-                    exit sub
-                    end if
-
-                'DEVIDO À POSSIBILIDADE DE ACESSO CONCORRENTE, VERIFICA SE OUTRO USUÁRIO TAMBÉM INSERIU REGISTRO DE BLOQUEIO
                 s = "SELECT " & _
                         "*" & _
                     " FROM t_CTRL_RELATORIO_USUARIO_X_PEDIDO" & _
@@ -374,157 +344,252 @@ dim vLocked, idxLocked, qtdePedidoBloqueado
 			    if tLock.State <> 0 then tLock.Close
 			    tLock.Open s, cn
                 if Not tLock.Eof then
-                    'OCORREU CONFLITO DE ACESSO CONCORRENTE, POIS OUTRO USUÁRIO TAMBÉM INSERIU REGISTRO DE BLOQUEIO
-                    blnErroAcessoConcorrente = True
-                    s_msg_erro_acesso_concorrente = "FALHA DEVIDO A ACESSO CONCORRENTE: O PEDIDO " & Trim("" & tLock("pedido")) & " FOI BLOQUEADO SIMULTANEAMENTE POR '" & usuario & "' E '" & Trim("" & tLock("usuario")) & "'"
-                    'INTERROMPE GERAÇÃO DO RELATÓRIO (A PÁGINA DEVE EXIBIR A MENSAGEM DE ERRO, LIMPAR OS LOCKS E EXIBIR O BOTÃO P/ RETORNAR)
-                    exit sub
-                    end if
+                    blnPedidoBloqueado = True
+                    qtdePedidoBloqueado = qtdePedidoBloqueado + 1
 
-		        '	CONTAGEM
-                qtdePedidosExibida = qtdePedidosExibida + 1
+                '   COLETA DADOS P/ EXIBIR PEDIDOS BLOQUEADOS POR OUTROS USUÁRIOS
+                    idxLocked = -1
+                    for i=LBound(vLocked) to UBound(vLocked)
+                        if Trim("" & vLocked(i).c1) = Trim("" & tLock("usuario")) then
+                            idxLocked = i
+                            exit for
+                            end if
+                        next
 
-			    intOrdenacaoCor = 0
-			    s_html_color = "black"
+                '   JÁ EXISTE NO VETOR UMA POSIÇÃO P/ O USUÁRIO QUE ESTÁ CAUSANDO O BLOQUEIO?
+                    if idxLocked = -1 then
+                        if vLocked(UBound(vLocked)).c1 <> "" then
+                            redim preserve vLocked(UBound(vLocked)+1)
+                            set vLocked(UBound(vLocked)) = new cl_DUAS_COLUNAS
+                            vLocked(UBound(vLocked)).c1 = ""
+                            vLocked(UBound(vLocked)).c2 = ""
+                            end if
+                        vLocked(UBound(vLocked)).c1 = Trim("" & tLock("usuario"))
+                        idxLocked = UBound(vLocked)
+                        end if
+
+                    if vLocked(idxLocked).c2 <> "" then vLocked(idxLocked).c2 = vLocked(idxLocked).c2 & ", "
+                    vLocked(idxLocked).c2 = vLocked(idxLocked).c2 & Trim("" & tLock("pedido"))
+                    end if 'if Not tLock.Eof
+
+                if (Not blnPedidoBloqueado) And (qtdePedidosPendentesExibida < maxQtdePedidosPendentesResultado) then
+                '   CRIA O REGISTRO P/ BLOQUEAR O PEDIDO NESTE RELATÓRIO SENDO EXECUTADO POR OUTROS USUÁRIOS
+                    s = "INSERT INTO t_CTRL_RELATORIO_USUARIO_X_PEDIDO (" & _
+                            "id_relatorio" & _
+                            ", usuario" & _
+                            ", pedido" & _
+                            ", locked" & _
+                        ") VALUES (" & _
+                            ID_CTRL_RELATORIO_RelControleImpostos & _
+                            ", '" & QuotedStr(usuario) & "'" & _
+                            ", '" & Trim("" & r("pedido")) & "'" & _
+                            ", 1" & _
+                        ")"
+                    cn.Execute s, intRecordsAffected
+                    if intRecordsAffected <> 1 then
+                        blnErroAcessoConcorrente = True
+                        s_msg_erro_acesso_concorrente = "FALHA AO TENTAR REGISTRAR BLOQUEIO DO USUÁRIO NO PEDIDO " & Trim("" & r("pedido"))
+                        exit sub
+                        end if
+
+                    'DEVIDO À POSSIBILIDADE DE ACESSO CONCORRENTE, VERIFICA SE OUTRO USUÁRIO TAMBÉM INSERIU REGISTRO DE BLOQUEIO
+                    s = "SELECT " & _
+                            "*" & _
+                        " FROM t_CTRL_RELATORIO_USUARIO_X_PEDIDO" & _
+                        " WHERE" & _
+                            "(id_relatorio = " & ID_CTRL_RELATORIO_RelControleImpostos & ")" & _
+                            " AND (usuario <> '" & QuotedStr(usuario) & "')" & _
+                            " AND (pedido = '" & Trim("" & r("pedido")) & "')" & _
+                            " AND (locked = 1)" & _
+                            " AND (data_hora >= DATEADD(minute, -" & tempoTimeoutEmMin & ", getdate()))" & _
+                        " ORDER BY" & _
+                            " data_hora DESC"
+			        if tLock.State <> 0 then tLock.Close
+			        tLock.Open s, cn
+                    if Not tLock.Eof then
+                        'OCORREU CONFLITO DE ACESSO CONCORRENTE, POIS OUTRO USUÁRIO TAMBÉM INSERIU REGISTRO DE BLOQUEIO
+                        blnErroAcessoConcorrente = True
+                        s_msg_erro_acesso_concorrente = "FALHA DEVIDO A ACESSO CONCORRENTE: O PEDIDO " & Trim("" & tLock("pedido")) & " FOI BLOQUEADO SIMULTANEAMENTE POR '" & usuario & "' E '" & Trim("" & tLock("usuario")) & "'"
+                        'INTERROMPE GERAÇÃO DO RELATÓRIO (A PÁGINA DEVE EXIBIR A MENSAGEM DE ERRO, LIMPAR OS LOCKS E EXIBIR O BOTÃO P/ RETORNAR)
+                        exit sub
+                        end if
+
+                    '	CONTAGEM
+                    qtdePedidosPendentesExibida = qtdePedidosPendentesExibida + 1
+                    blnExibirLinha = True
+                    end if 'if (Not blnPedidoBloqueado) And (qtdePedidosPendentesExibida < maxQtdePedidosPendentesResultado)
+			    end if 'if IsNFeCompletamenteEmitida()
+            end if 'if r("controle_impostos_status") = CInt(COD_CONTROLE_IMPOSTOS_STATUS__OK)
+
+
+        'MONTA DADOS PARA EXIBIÇÃO?
+        if blnExibirLinha then
+		    '	CONTAGEM
+            qtdePedidosExibida = qtdePedidosExibida + 1
+
+			intOrdenacaoCor = 0
+			s_html_color = "black"
 			
-			    s_html_color = " style='color:" & s_html_color & ";'"
+			s_html_color = " style='color:" & s_html_color & ";'"
 			
-		    '	MONTA O HTML DA LINHA DA TABELA
-		    '	===============================
-			    s_row = "	<tr onmouseover='realca_cor_mouse_over(this);' onmouseout='realca_cor_mouse_out(this);'>" & chr(13)
+		'	MONTA O HTML DA LINHA DA TABELA
+		'	===============================
+			s_row = "	<tr onmouseover='realca_cor_mouse_over(this);' onmouseout='realca_cor_mouse_out(this);'>" & chr(13)
 
-		    '> Nº PEDIDO
-			    s_pedido = Trim("" & r("pedido"))
-			    s = s_pedido
-			    if s = "" then s = "&nbsp;"
-			    s_row = s_row & _
-					    "		<td align='center' valign='top' class='ME MC MD'>" & chr(13) & _
-					    "			<span class='C'" & s_html_color & ">&nbsp;<a href='javascript:fRELConcluir(" & chr(34) & Trim("" & r("pedido")) & chr(34) & ")' tabindex=-1 title='clique para consultar o pedido'" & s_html_color & ">" & Trim("" & r("pedido")) & "</a></span>" & chr(13) & _
-					    "			<input type='hidden' name='c_numero_pedido' value='" & s & "' />" & chr(13) & _
-					    "		</td>" & chr(13)
+		'> Nº PEDIDO
+			s_pedido = Trim("" & r("pedido"))
+			s = s_pedido
+			if s = "" then s = "&nbsp;"
+			s_row = s_row & _
+					"		<td align='center' valign='top' class='ME MC MD'>" & chr(13) & _
+					"			<span class='C'" & s_html_color & ">&nbsp;<a href='javascript:fRELConcluir(" & chr(34) & Trim("" & r("pedido")) & chr(34) & ")' tabindex=-1 title='clique para consultar o pedido'" & s_html_color & ">" & Trim("" & r("pedido")) & "</a></span>" & chr(13) & _
+					"			<input type='hidden' name='c_numero_pedido' value='" & s & "' />" & chr(13) & _
+					"		</td>" & chr(13)
 
-		    '	Nº NFe
-			    s_num_nfe = NFeFormataNumeroNF(Trim("" & r("NFe_numero_NF")))
-			    if s_num_nfe <> "" then
-				    s = "<span class='C'" & s_html_color & ">" & NFeFormataNumeroNF(s_num_nfe) & "</span>"
-				    s_link_nfe = monta_link_para_DANFE(s_pedido, MAX_PERIODO_LINK_DANFE_DISPONIVEL_NO_PEDIDO_EM_DIAS, s)
-				    s_link_habilita_nfe = s_link_nfe
-				    if s_link_nfe = "" then s_link_nfe = "<span class='C' style='color:gray;'>" & s_num_nfe & "</span>"
-			    else
-				    s_link_nfe = "&nbsp;"
-				    end if
+		'	Nº NFe
+			s_num_nfe = NFeFormataNumeroNF(Trim("" & r("NFe_numero_NF")))
+			if s_num_nfe <> "" then
+				s = "<span class='C'" & s_html_color & ">" & NFeFormataNumeroNF(s_num_nfe) & "</span>"
+				s_link_nfe = monta_link_para_DANFE(s_pedido, MAX_PERIODO_LINK_DANFE_DISPONIVEL_NO_PEDIDO_EM_DIAS, s)
+				s_link_habilita_nfe = s_link_nfe
+				if s_link_nfe = "" then s_link_nfe = "<span class='C' style='color:gray;'>" & s_num_nfe & "</span>"
+			else
+				s_link_nfe = "&nbsp;"
+				end if
 				
-			    s_row = s_row & _
-					    "		<td align='center' valign='top' class='MC MD'>" & chr(13) & _
-					    "			" & s_link_nfe & chr(13) & _
-					    "		</td>" & chr(13)
+			s_row = s_row & _
+					"		<td align='center' valign='top' class='MC MD'>" & chr(13) & _
+					"			" & s_link_nfe & chr(13) & _
+					"		</td>" & chr(13)
 
-            '	DATA DE COLETA
-			    s_data_coleta = Trim("" & r("a_entregar_data_marcada"))
-			    s = s_data_coleta
-			    if s = "" then s = "&nbsp;"
-			    s_row = s_row & _
-					    "		<td align='center' valign='top' class='MC MD'>" & chr(13) & _
-					    "			<span class='C'" & s_html_color & ">" & s & "</span>" & chr(13) & _
-					    "		</td>" & chr(13)
+        '	DATA DE COLETA
+			s_data_coleta = Trim("" & r("a_entregar_data_marcada"))
+			s = s_data_coleta
+			if s = "" then s = "&nbsp;"
+			s_row = s_row & _
+					"		<td align='center' valign='top' class='MC MD'>" & chr(13) & _
+					"			<span class='C'" & s_html_color & ">" & s & "</span>" & chr(13) & _
+					"		</td>" & chr(13)
 
-            '	CHAVE ACESSO
-			    s = ChaveAcesso
-			    if s = "" then s = "&nbsp;"
-			    s_row = s_row & _
-					    "		<td align='center' valign='top' class='MC MD'>" & chr(13) & _
-					    "			<input type='text' class='PLLd TxtClip' readonly style='width:130px' name='c_chave_acesso' onclick='this.select();' value='" & s & "' />" & chr(13) & _
-					    "		</td>" & chr(13)
+        '	CHAVE ACESSO
+			s = ChaveAcesso
+			if s = "" then s = "&nbsp;"
+			s_row = s_row & _
+					"		<td align='center' valign='top' class='MC MD'>" & chr(13) & _
+					"			<input type='text' class='PLLd TxtClip' readonly style='width:130px' name='c_chave_acesso' onclick='this.select();' value='" & s & "' />" & chr(13) & _
+					"		</td>" & chr(13)
 
-            '   CNPJ/CPF
-                s_cnpj_cpf = cnpj_formata(Trim("" & r("dest__CNPJ")))
-                if s_cnpj_cpf = "" then s_cnpj_cpf = cpf_formata(Trim("" & r("dest__CPF")))
-                if s_cnpj_cpf = "" then s_cnpj_cpf = "&nbsp;"
-			    s_row = s_row & _
-					    "		<td align='center' valign='top' class='MC MD'>" & chr(13) & _
-					    "			<input type='text' class='PLLd TxtClip' readonly style='text-align:center' name='c_cnpj_cpf' onclick='this.select();' value='" & s_cnpj_cpf & "' />" & chr(13) & _
-					    "		</td>" & chr(13)
+        '   CNPJ/CPF
+            s_cnpj_cpf = cnpj_formata(Trim("" & r("dest__CNPJ")))
+            if s_cnpj_cpf = "" then s_cnpj_cpf = cpf_formata(Trim("" & r("dest__CPF")))
+            if s_cnpj_cpf = "" then s_cnpj_cpf = "&nbsp;"
+			s_row = s_row & _
+					"		<td align='center' valign='top' class='MC MD'>" & chr(13) & _
+					"			<input type='text' class='PLLd TxtClip' readonly style='text-align:center' name='c_cnpj_cpf' onclick='this.select();' value='" & s_cnpj_cpf & "' />" & chr(13) & _
+					"		</td>" & chr(13)
 
-            '	CLIENTE
-			    s = Trim("" & r("dest__xNome"))
-			    if s = "" then s = "&nbsp;"
-			    s_row = s_row & _
-					    "		<td align='left' valign='top' class='MC MD' nowrap>" & chr(13) & _
-					    "			<input type='text' class='PLLd TxtClip' readonly style='width:130px;text-align:left' name='c_nome_cliente' onclick='this.select();' value='" & s & "' />" & chr(13) & _
-					    "		</td>" & chr(13)
-
-
-		    '	TRANSPORTADORA
-			    s = Trim("" & r("transportadora_id"))
-			    if s = "" then s = "&nbsp;"
-			    s_row = s_row & _
-					    "		<td align='left' valign='top' class='MC MD'>" & chr(13) & _
-					    "			<span class='C'" & s_html_color & ">" & s & "</span>" & chr(13) & _
-					    "			<input type='hidden' name='c_pedido_transportadora' value='" & Trim("" & r("transportadora_id")) & "' />" & chr(13) & _
-					    "		</td>" & chr(13)
-
-            '	CIDADE
-			    s = Trim("" & r("dest__xMun"))
-			    if s = "" then s = "&nbsp;"
-			    s_row = s_row & _
-					    "		<td align='left' valign='top' class='MC MD' nowrap>" & chr(13) & _
-					    "			<input type='text' class='PLLd TxtClip' readonly style='width:130px;text-align:left' name='c_cidade' onclick='this.select();' value='" & s & "' />" & chr(13) & _
-					    "		</td>" & chr(13)
+        '	CLIENTE
+			s = Trim("" & r("dest__xNome"))
+			if s = "" then s = "&nbsp;"
+			s_row = s_row & _
+					"		<td align='left' valign='top' class='MC MD' nowrap>" & chr(13) & _
+					"			<input type='text' class='PLLd TxtClip' readonly style='width:130px;text-align:left' name='c_nome_cliente' onclick='this.select();' value='" & s & "' />" & chr(13) & _
+					"		</td>" & chr(13)
 
 
-            '	UF
-			    s = Trim("" & r("dest__UF"))
-			    if s = "" then s = "&nbsp;"
-			    s_row = s_row & _
-					    "		<td align='center' valign='top' class='MC MD'>" & chr(13) & _
-					    "			<span class='C'" & s_html_color & ">" & s & "</span>" & chr(13) & _
-					    "		</td>" & chr(13)
+		'	TRANSPORTADORA
+			s = Trim("" & r("transportadora_id"))
+			if s = "" then s = "&nbsp;"
+			s_row = s_row & _
+					"		<td align='left' valign='top' class='MC MD'>" & chr(13) & _
+					"			<span class='C'" & s_html_color & ">" & s & "</span>" & chr(13) & _
+					"			<input type='hidden' name='c_pedido_transportadora' value='" & Trim("" & r("transportadora_id")) & "' />" & chr(13) & _
+					"		</td>" & chr(13)
 
-		    '	FCP
-			    valor = converte_numero(Trim("" & r("total__vFCPUFDest")))
-			    s = formata_moeda(valor)
-			    if s = "" then s = "&nbsp;"
-			    s_row = s_row & _
-					    "		<td align='right' valign='top' class='MC MD'>" & chr(13) & _
-					    "			<span class='C'" & s_html_color & ">" & s & "</span>" & chr(13) & _
-					    "		</td>" & chr(13)
+        '	CIDADE
+			s = Trim("" & r("dest__xMun"))
+			if s = "" then s = "&nbsp;"
+			s_row = s_row & _
+					"		<td align='left' valign='top' class='MC MD' nowrap>" & chr(13) & _
+					"			<input type='text' class='PLLd TxtClip' readonly style='width:130px;text-align:left' name='c_cidade' onclick='this.select();' value='" & s & "' />" & chr(13) & _
+					"		</td>" & chr(13)
 
-		    '	ICMS DESTINO
-			    valor = converte_numero(Trim("" & r("total__vICMSUFDest")))
-			    s = formata_moeda(valor)
-			    if s = "" then s = "&nbsp;"
-			    s_row = s_row & _
-					    "		<td align='right' valign='top' class='MC MD'>" & chr(13) & _
-					    "			<span class='C'" & s_html_color & ">" & s & "</span>" & chr(13) & _
-					    "		</td>" & chr(13)
 
-		    '	GUIA OK
-			    if r("controle_impostos_status") = CInt(COD_CONTROLE_IMPOSTOS_STATUS__OK) then s = "S" else s = "N"
-			    s_row = s_row & _
-				    "		<td align='center' valign='top' class='MC MD' style='padding:0px;'>" & chr(13)
-			    s_row = s_row & _
-			    "			<input type='checkbox' name='ckb_controle_impostos' id='ckb_controle_impostos' value='" & Trim("" & r("id")) & "|" & s_num_nfe & "|"  & s_pedido & "|" & s & "'"
+        '	UF
+			s = Trim("" & r("dest__UF"))
+			if s = "" then s = "&nbsp;"
+			s_row = s_row & _
+					"		<td align='center' valign='top' class='MC MD'>" & chr(13) & _
+					"			<span class='C'" & s_html_color & ">" & s & "</span>" & chr(13) & _
+					"		</td>" & chr(13)
 
-			    if s = "S" then s_row = s_row & " checked disabled"
+		'	FCP
+			valor = converte_numero(Trim("" & r("total__vFCPUFDest")))
+			s = formata_moeda(valor)
+			if s = "" then s = "&nbsp;"
+			s_row = s_row & _
+					"		<td align='right' valign='top' class='MC MD'>" & chr(13) & _
+					"			<span class='C'" & s_html_color & ">" & s & "</span>" & chr(13) & _
+					"		</td>" & chr(13)
 
-			    s_row = s_row & chr(13)
+		'	ICMS DESTINO
+			valor = converte_numero(Trim("" & r("total__vICMSUFDest")))
+			s = formata_moeda(valor)
+			if s = "" then s = "&nbsp;"
+			s_row = s_row & _
+					"		<td align='right' valign='top' class='MC MD'>" & chr(13) & _
+					"			<span class='C'" & s_html_color & ">" & s & "</span>" & chr(13) & _
+					"		</td>" & chr(13)
 
-			    s_row = s_row & _
-				    "		</td>" & chr(13)
+		'	GUIA OK
+			if r("controle_impostos_status") = CInt(COD_CONTROLE_IMPOSTOS_STATUS__OK) then s = "S" else s = "N"
+			s_row = s_row & _
+				"		<td align='center' valign='top' class='MC MD' style='padding:0px;'>" & chr(13)
+			s_row = s_row & _
+			"			<input type='checkbox' name='ckb_controle_impostos' id='ckb_controle_impostos' value='" & Trim("" & r("id")) & "|" & s_num_nfe & "|"  & s_pedido & "|" & s & "'"
 
-			    s_row = s_row & "	</tr>" & chr(13)
+			if s = "S" then s_row = s_row & " checked disabled"
 
-			    x = x & s_row
-			    if (qtdePedidosExibida mod 100) = 0 then
-				    Response.Write x
-				    x = ""
-				    end if
+			s_row = s_row & chr(13)
 
-			    total_fcp = total_fcp + CCur(converte_numero(r("total__vFCPUFDest")))
-			    total_icms_destino = total_icms_destino + CCur(converte_numero(r("total__vICMSUFDest")))
-			
-                end if 'if (Not blnPedidoBloqueado) And (qtdePedidosExibida < maxQtdePedidosResultado)
-			end if 'if IsNFeCompletamenteEmitida()
+			s_row = s_row & _
+				"		</td>" & chr(13)
+
+		'   USUÁRIO RESPONSÁVEL PELA MARCAÇÃO 'GUIA OK'
+            if r("controle_impostos_status") = CInt(COD_CONTROLE_IMPOSTOS_STATUS__OK) then
+                s = Trim("" & r("controle_impostos_usuario"))
+            else
+                s = "&nbsp;"
+                end if
+
+			s_row = s_row & _
+					"		<td align='left' valign='top' class='MC MD'>" & chr(13) & _
+					"			<span class='C'" & s_html_color & ">" & s & "</span>" & chr(13) & _
+					"		</td>" & chr(13)
+
+        '   DATA/HORA EM QUE A MARCAÇÃO 'GUIA OK' FOI REALIZADA
+            if r("controle_impostos_status") = CInt(COD_CONTROLE_IMPOSTOS_STATUS__OK) then
+                s = formata_data_hora(r("controle_impostos_data_hora"))
+            else
+                s = "&nbsp;"
+                end if
+
+			s_row = s_row & _
+					"		<td align='center' valign='top' class='MC MD'>" & chr(13) & _
+					"			<span class='Cc'" & s_html_color & ">" & s & "</span>" & chr(13) & _
+					"		</td>" & chr(13)
+
+            s_row = s_row & "	</tr>" & chr(13)
+
+			x = x & s_row
+			if (qtdePedidosExibida mod 100) = 0 then
+				Response.Write x
+				x = ""
+				end if
+
+			total_fcp = total_fcp + CCur(converte_numero(r("total__vFCPUFDest")))
+			total_icms_destino = total_icms_destino + CCur(converte_numero(r("total__vICMSUFDest")))
+            end if 'if blnExibirLinha
 		
 		r.MoveNext
 		loop
@@ -568,21 +633,25 @@ dim vLocked, idxLocked, qtdePedidoBloqueado
 	x = x & "	<tr style='background: #FFFFDD'>" & chr(13) & _
 			"       <td class='MTBE' nowrap colspan=9' align='right'><span class='C'>" & _
 			"TOTAL:   </span></td>" & chr(13) & _
-			"       <td class='MTB' nowrap colspan=1' align='right'><span class='C'>"& formata_moeda(total_fcp) & "</span></td>" & chr(13) & _
-			"       <td class='MTB' nowrap colspan=1' align='right'><span class='C'>"& formata_moeda(total_icms_destino) & "</span></td>" & chr(13) & _
-			"		<td class='MTBD' nowrap colspan=2' align='right'><span class='C'>" & _
+			"       <td class='MTB' nowrap align='right'><span class='C'>"& formata_moeda(total_fcp) & "</span></td>" & chr(13) & _
+			"       <td class='MTB' nowrap align='right'><span class='C'>"& formata_moeda(total_icms_destino) & "</span></td>" & chr(13) & _
+			"		<td class='MTBD' nowrap colspan='3' align='right'>&nbsp;</td>" & _
 			"	</tr>" & chr(13)
 
 ' MOSTRA O TOTAL DE REGISTROS
 	x = x & "	<tr style='background: #FFFFDD'>" & chr(13) & _
-			"       <td class='MDBE' nowrap colspan=12' align='right'>" & _
+			"       <td class='MDBE' nowrap colspan=14' align='right'>" & _
             "       <table cellspacing=0 cellpadding=0 style='width:100%;' border='0'>" & chr(13) & _
+            "           <tr>" & chr(13) & _
+            "               <td class='MB' style='text-align:right;'><span class='C'>TOTAL DE REGISTRO(S) PENDENTE(S) EXIBIDO:</span></td>" & chr(13) & _
+            "               <td class='MB' style='text-align:right;width:40px;'><span class='C'>" & formata_inteiro(qtdePedidosPendentesExibida) & "</span></td>" & chr(13) & _
+            "           </tr>" & chr(13) & _
             "           <tr>" & chr(13) & _
             "               <td class='MB' style='text-align:right;'><span class='C'>TOTAL DE REGISTRO(S) EXIBIDO:</span></td>" & chr(13) & _
             "               <td class='MB' style='text-align:right;width:40px;'><span class='C'>" & formata_inteiro(qtdePedidosExibida) & "</span></td>" & chr(13) & _
             "           </tr>" & chr(13) & _
             "           <tr>" & chr(13) & _
-            "               <td style='text-align:right;'><span class='C'>TOTAL DE REGISTRO(S) NO RESULTADO:</span></td>" & chr(13) & _
+            "               <td style='text-align:right;'><span class='C'>TOTAL DE REGISTRO(S) PENDENTE(S) NO RESULTADO:</span></td>" & chr(13) & _
             "               <td style='text-align:right;width:40px;'><span class='C'>" & formata_inteiro(qtdeTotalPedidosATratar) & "</span></td>" & chr(13) & _
             "           </tr>" & chr(13) & _
             "       </table>" & chr(13) & _
@@ -593,10 +662,10 @@ dim vLocked, idxLocked, qtdePedidoBloqueado
 	if qtdePedidosExibida = 0 then
 		x = cab_table & cab
 		x = x & "	<tr>" & chr(13) & _
-				"		<td class='MT ALERTA' colspan='15' align='center'><span class='ALERTA'>&nbsp;NENHUM PEDIDO ENCONTRADO&nbsp;</span></td>" & chr(13) & _
+				"		<td class='MT ALERTA' colspan='17' align='center'><span class='ALERTA'>&nbsp;NENHUM PEDIDO ENCONTRADO&nbsp;</span></td>" & chr(13) & _
 				"	</tr>" & chr(13) & _
                 "   <tr>" & chr(13) & _
-				"		<td class='MDBE ALERTA' colspan='15' align='center'><span class='ALERTA'>&nbsp;TOTAL DE REGISTRO(S) NO RESULTADO: &nbsp; " & formata_inteiro(qtdeTotalPedidosATratar) & " &nbsp;</span></td>" & chr(13) & _
+				"		<td class='MDBE ALERTA' colspan='17' align='center'><span class='ALERTA'>&nbsp;TOTAL DE REGISTRO(S) NO RESULTADO: &nbsp; " & formata_inteiro(qtdeTotalPedidosATratar) & " &nbsp;</span></td>" & chr(13) & _
 				"	</tr>" & chr(13)
 		end if
 
@@ -802,9 +871,11 @@ function fRELMarcarTodos(f) {
 <input type="hidden" name="c_dt_coleta" id="c_dt_coleta" value="<%=c_dt_coleta%>" />
 <input type="hidden" name="c_dt_coleta_inicio" id="c_dt_coleta_inicio" value="<%=c_dt_coleta_inicio%>" />
 <input type="hidden" name="c_dt_coleta_termino" id="c_dt_coleta_termino" value="<%=c_dt_coleta_termino%>" />
-<input type="hidden" name="ckb_exibir_verificados" id="ckb_exibir_verificados" value="<%=ckb_exibir_verificados%>" />
+<input type="hidden" name="rb_tipo_consulta" id="rb_tipo_consulta" value="<%=rb_tipo_consulta%>" />
 <input type="hidden" name="c_nfe_emitente" id="c_nfe_emitente" value="<%=c_nfe_emitente%>" />
 <input type="hidden" name="c_uf" id="c_uf" value="<%=c_uf%>" />
+<input type="hidden" name="c_numero_NF" id="c_numero_NF" value="<%=c_numero_NF%>" />
+
 <!--  ASSEGURA CRIAÇÃO DE UM ARRAY DE CAMPOS, MESMO QUANDO HOUVER SOMENTE 1 LINHA!! -->
 <input type="hidden" name="ckb_controle_impostos" id="ckb_controle_impostos" value="">
 
@@ -821,10 +892,16 @@ function fRELMarcarTodos(f) {
 
 <!-- FILTROS -->
 <% 
+    s_log = ""
+
 	s_filtro = "<table width='935' cellpadding='0' cellspacing='0' style='border-bottom:1px solid black' border='0'>"
-	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
+	
+    s = "Controle de Impostos"
+    s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
 			   "<span class='N'>Tipo de Relatório:&nbsp;</span></td><td align='left' valign='top'>" & _
-			   "<span class='N'>Controle de Impostos</span></td></tr>"
+			   "<span class='N'>" & s & "</span></td></tr>"
+    if s_log <> "" then s_log = s_log & "; "
+    s_log = s_log & "Tipo de Relatório: " & s
 
 	s = c_transportadora
 	if s = "" then 
@@ -835,35 +912,59 @@ function fRELMarcarTodos(f) {
 	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
 				"<span class='N'>Transportadora:&nbsp;</span></td><td align='left' valign='top'>" & _
 				"<span class='N'>" & s & "</span></td></tr>"
+    if s_log <> "" then s_log = s_log & "; "
+    s_log = s_log & "Transportadora: " & s
 
     s = c_uf
 	if s = "" then s = "todas"
 	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
 				"<span class='N'>UF:&nbsp;</span></td><td align='left' valign='top'>" & _
 				"<span class='N'>" & s & "</span></td></tr>"
+    if s_log <> "" then s_log = s_log & "; "
+    s_log = s_log & "UF: " & s
 	
+    s = c_numero_NF
+    if s = "" then s = "N.I."
+	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
+				"<span class='N'>Nº NF:&nbsp;</span></td><td align='left' valign='top'>" & _
+				"<span class='N'>" & s & "</span></td></tr>"
+    if s_log <> "" then s_log = s_log & "; "
+    s_log = s_log & "Nº NF: " & s
+
+'   OBS: AO CONSULTAR POR Nº NF, IGNORA A DATA/PERÍODO DE COLETA
 	s = c_dt_coleta
 	if s = "" then s = "N.I."
+    if c_numero_NF <> "" then s = "---"
 	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
 				"<span class='N'>Data Coleta:&nbsp;</span></td><td align='left' valign='top'>" & _
 				"<span class='N'>" & s & "</span></td></tr>"
+    if s_log <> "" then s_log = s_log & "; "
+    s_log = s_log & "Data Coleta: " & s
 	
+'   OBS: AO CONSULTAR POR Nº NF, IGNORA A DATA/PERÍODO DE COLETA
 	s = c_dt_coleta_inicio
 	if s <> "" then s = s + " a " + c_dt_coleta_termino
 	if s = "" then s = "N.I."
+    if c_numero_NF <> "" then s = "---"
 	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
 				"<span class='N'>Período de Coleta:&nbsp;</span></td><td align='left' valign='top'>" & _
 				"<span class='N'>" & s & "</span></td></tr>"
+    if s_log <> "" then s_log = s_log & "; "
+    s_log = s_log & "Período de Coleta: " & s
 	
-    s = ckb_exibir_verificados
-    if s = "" then
-        s = "Não"
-    else
-        s = "Sim"
+    s = rb_tipo_consulta
+    if (s = Cstr(COD_CONTROLE_IMPOSTOS_STATUS__INICIAL)) then
+        s = "Somente NÃO Baixados"
+    elseif (s = Cstr(COD_CONTROLE_IMPOSTOS_STATUS__OK)) then
+        s = "Somente JÁ Baixados"
+    elseif (s = "TODOS") then
+        s = "Todos"
         end if
 	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
-				"<span class='N'>Exibir Já Verificados:&nbsp;</span></td><td align='left' valign='top'>" & _
+				"<span class='N'>Tipo de Consulta:&nbsp;</span></td><td align='left' valign='top'>" & _
 				"<span class='N'>" & s & "</span></td></tr>"
+    if s_log <> "" then s_log = s_log & "; "
+    s_log = s_log & "Tipo de Consulta: " & s
 
     s = c_nfe_emitente
     if s = "" then
@@ -874,6 +975,8 @@ function fRELMarcarTodos(f) {
 	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
 				"<span class='N'>CD:&nbsp;</span></td><td align='left' valign='top'>" & _
 				"<span class='N'>" & s & "</span></td></tr>"
+    if s_log <> "" then s_log = s_log & "; "
+    s_log = s_log & "CD: " & s
 
 	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
 			   "<span class='N'>Emissão:&nbsp;</span></td><td align='left' valign='top' width='99%'>" & _
@@ -881,6 +984,8 @@ function fRELMarcarTodos(f) {
 
 	s_filtro = s_filtro & "</table>"
 	Response.Write s_filtro
+
+    grava_log usuario, "", "", "", OP_LOG_NFE_CTRL_IMPOSTOS, s_log
 %>
 
 <!--  RELATÓRIO  -->

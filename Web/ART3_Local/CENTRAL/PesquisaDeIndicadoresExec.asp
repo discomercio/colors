@@ -89,9 +89,9 @@
 		end if
 	
 	if alerta = "" then
-		if c_loja = "" then
-			alerta = "INFORME A LOJA."
-			end if
+'		if c_loja = "" then
+'			alerta = "INFORME A LOJA."
+'			end if
 		end if
 		
 	if alerta = "" then
@@ -183,9 +183,12 @@ v_bairros = ""
 						" Coalesce(Count(*), 0) AS qtde" & _
 					" FROM t_ORCAMENTISTA_E_INDICADOR" & _
 					" WHERE" & _
-						" (cep LIKE '" & s_cep_sql & BD_CURINGA_TODOS & "')" & _
+						" (cep LIKE '" & s_cep_sql & BD_CURINGA_TODOS & "')"
+            if c_loja <> "" then
+                s_sql = s_sql & _
 						" AND" & _
 						" (CONVERT(smallint, loja) = " & c_loja & ")"
+                end if
 			if rs.State <> 0 then rs.Close
 			rs.open s_sql, cn
 			
@@ -273,10 +276,11 @@ v_bairros = ""
 		end if
 		
 '	APENAS INDICADORES DESTA LOJA
-	if s_where <> "" then s_where = s_where & " AND"
-	s_where = s_where & _
-					" (CONVERT(smallint, loja) = " & c_loja & ")"
-
+    if c_loja <> "" then
+	    if s_where <> "" then s_where = s_where & " AND"
+	    s_where = s_where & _
+					    " (CONVERT(smallint, loja) = " & c_loja & ")"
+        end if
 	
 '	MONTA SQL DE CONSULTA
 	s_sql = "SELECT " & _
