@@ -91,7 +91,6 @@
                 .aliq_icms = Trim(Request.Form("c_aliq_icms")(i))
                 .vl_ipi = Trim(Request.Form("c_vl_ipi")(i))
                 .nfe_entrada_numero = Trim(Request.Form("c_nfe_entrada_numero")(i))                
-                .nfe_entrada_serie = Trim(Request.Form("c_nfe_entrada_serie")(i))                
                 end with
             end if
         next
@@ -129,7 +128,6 @@
                 .aliq_icms = v_item1(i).aliq_icms
                 .vl_ipi = v_item1(i).vl_ipi
                 .nfe_entrada_numero = v_item1(i).nfe_entrada_numero
-                .nfe_entrada_serie = v_item1(i).nfe_entrada_serie
                 end with
             next
 

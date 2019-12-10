@@ -177,7 +177,7 @@
     dim s_ncm, s_cst, s_preco_fabricante, s_vl_custo2, s_vl_BC_ICMS_ST, s_vl_ICMS_ST, s_st_ncm_cst_herdado_tabela_produto
     dim s_aliq_ipi, s_aliq_icms, s_vl_ipi
     dim s_preco_origem, s_produto_xml, s_entrada_tipo, s_id_estoque_origem
-    dim s_nfe_entrada_numero, s_nfe_entrada_serie
+    dim s_nfe_entrada_numero
 
 '	VERIFICA SE HÁ DISPONIBILIDADE NO ESTOQUE DE VENDA NO CD DE ORIGEM
 	if alerta = "" then    
@@ -286,7 +286,7 @@
             //$("#tableProduto thead th:nth-child(13), #tableProduto tbody td:nth-child(13)").hide();
             //$("#tdTotalGeralFabricante").hide();
             //$("#tdPreTotalGeralFabricante").removeClass("MD").attr("colSpan", 9);
-            $("#tdPreChecagem").attr("colSpan", 8);
+            $("#tdPreChecagem").attr("colSpan", 9);
         $("input:text:enabled:visible:not([readonly])").focus(function () {
             $(this).select();
         });
@@ -724,12 +724,12 @@
 	<th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">NCM</span></th>
 	<th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">CST</span></th>
 	<th class="MB" align="right" valign="bottom"><span class="PLTd">Qtde</span></th>
-	<th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Valor</span></th>
+	<th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Valor<br />Unitário</span></th>
+	<th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Valor<br />Referência</span></th>
     <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Aliq<br /><span style="font-size:7pt;">IPI (%)</span></span></th>
     <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Valor<br /><span style="font-size:7pt;">IPI</span></span></th>
     <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Aliq<br /><span style="font-size:7pt;">ICMS (%)</span></span></th>
     <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">NF Entrada<br /><span style="font-size:7pt;">N°</span></span></th>
-    <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">NF Entrada<br /><span style="font-size:7pt;">Série</span></span></th>
 	</tr>
 	</thead>
 
@@ -761,7 +761,6 @@
             s_preco_origem = formata_moeda(.preco_origem)
             s_produto_xml = .produto_xml
             s_nfe_entrada_numero = .nfe_entrada_numero
-            s_nfe_entrada_serie = .nfe_entrada_serie
             end with
 %>
 	<tr>
@@ -798,6 +797,10 @@
 		<input name="c_qtde" readonly tabindex=-1 class="PLLd" style="width:30px;"
 			value="<%=s_qtde%>"></td>
 	<td class="MDB" align="right">
+		<input name="c_vl_unitario" readonly tabindex=-1 class="PLLd" maxlength="12" style="width:62px;"
+			value="<%=s_preco_fabricante%>">
+		</td>
+	<td class="MDB" align="right">
 		<input name="c_vl_custo2" readonly tabindex=-1 class="PLLd" maxlength="12" style="width:62px;"
 			value="<%=s_vl_custo2%>">
 		</td>
@@ -824,12 +827,6 @@
 			onkeypress="if (digitou_enter(true)) $(this).hUtil('focusNext'); filtra_numerico();"
 			onblur="if (trim(this.value)!='') this.value=formata_numero(this.value, 0); if (converte_numero(this.value)<0) {alert('Valor inválido!!');this.focus();});"
 			value="<%=s_nfe_entrada_numero%>">
-	<td class="MDB" align="left">
-		<input name="c_nfe_entrada_serie" class="PLLd" maxlength="12" style="width:62px; color:blue;"
-			onkeypress="if (digitou_enter(true)) $(this).hUtil('focusNext'); filtra_numerico();"
-			onblur="if (trim(this.value)!='') this.value=formata_numero(this.value, 0); if (converte_numero(this.value)<0) {alert('Valor inválido!!');this.focus();});"
-			value="<%=s_nfe_entrada_serie%>">
-		</td>
 	</tr>
 <% next %>
 	</tbody>

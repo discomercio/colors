@@ -53,6 +53,7 @@
 	dim cod_fabricante_aux
     dim st_confirmada
     dim s_st_editavel, s_st_cor, s_st_descricao, s_st_cor_descricao
+    dim c_data_transf
 
 	c_transf_selecionada = Trim(Request("transf_selecionada"))
 
@@ -72,6 +73,7 @@
             c_nfe_emitente_origem = Trim(CStr(rs("id_nfe_emitente_origem")))
 	        c_nfe_emitente_destino = Trim(CStr(rs("id_nfe_emitente_destino")))
 	        c_documento_transf = Trim(rs("documento"))
+            c_data_transf = formata_data(rs("data"))
             c_obs = Trim(rs("obs"))            
             st_confirmada = rs("st_confirmada")
             if st_confirmada = 0 then
@@ -127,7 +129,6 @@
                     .vl_ipi = rs("vl_ipi")
                     .preco_origem = Trim(rs("preco_origem"))
                     .produto_xml = Trim(rs("produto_xml"))
-                    .nfe_entrada_serie = Trim(rs("nfe_entrada_serie"))
                     .nfe_entrada_numero = Trim(rs("nfe_entrada_numero"))
                     end with
                 rs.MoveNext
@@ -136,12 +137,12 @@
         end if
 
     dim s_fabricante, s_nome_fabricante, s_documento, ckb_especial, s_obs
-	dim s_produto, s_ean, s_descricao_html, s_qtde, s_vl_unitario, s_vl_total, m_vl_total, m_total_geral
+	dim s_produto, s_ean, s_descricao_html, s_qtde, s_vl_total, m_vl_total, m_total_geral
 	dim s_nome_nfe_emitente
     dim s_ncm, s_cst, s_preco_fabricante, s_vl_custo2, s_vl_BC_ICMS_ST, s_vl_ICMS_ST, s_st_ncm_cst_herdado_tabela_produto
     dim s_aliq_ipi, s_aliq_icms, s_vl_ipi
     dim s_preco_origem, s_produto_xml, s_entrada_tipo, s_id_estoque_origem
-    dim s_nfe_entrada_numero, s_nfe_entrada_serie
+    dim s_nfe_entrada_numero
 		
 %>
 
@@ -513,6 +514,13 @@
             value="<%=c_documento_transf%>">
     </td>
 	</tr>
+<!--  DATA DA TRANSFERÊNCIA  -->
+	<tr bgcolor="#FFFFFF">
+    <td class="MDBE" align="left" nowrap><span class="PLTe">Data da Transferência</span>
+		<br><input name="c_data_transf" id="c_data_transf" readonly tabindex=-1 class="PLLe" style="width:270px;margin-left:2pt;"
+            value="<%=c_data_transf%>">
+    </td>
+	</tr>
 <!--  OBSERVAÇÃO  -->
 	<tr bgcolor="#FFFFFF">
 	<td class="MDBE" align="left" nowrap><span class="PLTe">Observações</span>
@@ -537,12 +545,12 @@
 	<th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">NCM</span></th>
 	<th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">CST</span></th>
 	<th class="MB" align="right" valign="bottom"><span class="PLTd">Qtde</span></th>
-	<th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Valor</span></th>
+	<th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Valor<br />Unitário</span></th>
+	<th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Valor<br />Referência</span></th>
     <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Aliq<br /><span style="font-size:7pt;">IPI (%)</span></span></th>
     <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Valor<br /><span style="font-size:7pt;">IPI</span></span></th>
     <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Aliq<br /><span style="font-size:7pt;">ICMS (%)</span></span></th>
 	<th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">NF Entrada<br /><span style="font-size:7pt;">N°</span></span></th>
-    <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">NF Entrada<br /><span style="font-size:7pt;">Série</span></span></th>
 	</tr>
 	</thead>
 
@@ -574,7 +582,6 @@
             s_preco_origem = formata_moeda(.preco_origem)
             s_produto_xml = .produto_xml
             s_nfe_entrada_numero = .nfe_entrada_numero
-            s_nfe_entrada_serie = .nfe_entrada_serie
             end with
 %>
 	<tr>
@@ -611,6 +618,10 @@
 			value="<%=s_qtde%>"></td>
 	<td class="MDB" align="right">
 		<input name="c_vl_custo2" readonly tabindex=-1 class="PLLd" maxlength="12" style="width:62px;"
+			value="<%=s_preco_fabricante%>">
+		</td>
+	<td class="MDB" align="right">
+		<input name="c_vl_custo2" readonly tabindex=-1 class="PLLd" maxlength="12" style="width:62px;"
 			value="<%=s_vl_custo2%>">
 		</td>
 	<td class="MDB" align="right">
@@ -636,12 +647,6 @@
 			onkeypress="if (digitou_enter(true)) $(this).hUtil('focusNext'); filtra_numerico();"
 			onblur="if (trim(this.value)!='') this.value=formata_numero(this.value, 0); if (converte_numero(this.value)<0) {alert('Valor inválido!!');this.focus();});"
 			value="<%=s_nfe_entrada_numero%>">
-	<td class="MDB" align="left">
-		<input name="c_nfe_entrada_serie" <%=s_st_editavel%> class="PLLd" maxlength="12" style="width:62px; <%=s_st_cor%>"
-			onkeypress="if (digitou_enter(true)) $(this).hUtil('focusNext'); filtra_numerico();"
-			onblur="if (trim(this.value)!='') this.value=formata_numero(this.value, 0); if (converte_numero(this.value)<0) {alert('Valor inválido!!');this.focus();});"
-			value="<%=s_nfe_entrada_serie%>">
-		</td>
 	</tr>
 <% next %>
 	</tbody>

@@ -88,7 +88,6 @@
                 .aliq_icms = Trim(Request.Form("c_aliq_icms")(i))                
                 .vl_ipi = Trim(Request.Form("c_vl_ipi")(i))                
                 .nfe_entrada_numero = Trim(Request.Form("c_nfe_entrada_numero")(i))                
-                .nfe_entrada_serie = Trim(Request.Form("c_nfe_entrada_serie")(i))                
                 end with
             end if
         next
@@ -113,7 +112,6 @@
                 .aliq_icms = v_item1(i).aliq_icms
                 .vl_ipi = v_item1(i).vl_ipi
                 .nfe_entrada_numero = v_item1(i).nfe_entrada_numero
-                .nfe_entrada_serie = v_item1(i).nfe_entrada_serie
                 end with
             next
 
@@ -239,7 +237,7 @@
 
 			            s_sql = " INSERT INTO T_ESTOQUE_TRANSFERENCIA_ITEM_SUB " & _
 					            " (id_estoque_transferencia, id_estoque_transferencia_item, id_estoque_origem, entrada_tipo, documento, fabricante, produto, qtde, preco_fabricante, vl_custo2, vl_BC_ICMS_ST, vl_ICMS_ST,  " & _
-                                " ncm, cst, st_ncm_cst_herdado_tabela_produto, ean, aliq_ipi, aliq_icms, vl_ipi, preco_origem, produto_xml, nfe_entrada_numero, nfe_entrada_serie " & _
+                                " ncm, cst, st_ncm_cst_herdado_tabela_produto, ean, aliq_ipi, aliq_icms, vl_ipi, preco_origem, produto_xml, nfe_entrada_numero " & _
                                 "  ) VALUES " & _
                                 " ("  & _
 	                            CStr(id_estoque_transferencia) & ", " & _   
@@ -263,8 +261,7 @@
                                 Iif(Trim(.vl_ipi) = "", "NULL", bd_formata_numero(.vl_ipi)) & ", " & _
                                 " '" & .preco_origem & "', " & _
                                 " '" & .produto_xml & "', " & _
-                                " '" & .nfe_entrada_numero & "', " & _
-                                " '" & .nfe_entrada_serie & "' " & _
+                                " '" & .nfe_entrada_numero & "' " & _
                                 " )" 
 			            cn.Execute(s_sql)
                         end with
