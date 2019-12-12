@@ -562,7 +562,7 @@
             s_id_estoque_origem = .id_estoque_origem
 			s_descricao_html = produto_formata_descricao_em_html(.descricao_html)
             s_documento = .documento
-            if .entrada_tipo = "1" then
+            if .entrada_tipo = 1 then
                 s_entrada_tipo = "XML"
             else
                 s_entrada_tipo = "Manual"

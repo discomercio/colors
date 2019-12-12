@@ -3557,7 +3557,7 @@ dim s_chave
     ReDim v_entrada_tipo(0)
 	v_estoque(UBound(v_estoque)) = ""
 	v_documento(UBound(v_documento)) = ""
-    v_entrada_tipo(UBound(v_entrada_tipo)) = 0
+    v_entrada_tipo(UBound(v_entrada_tipo)) = ""
 
 	do while Not rs.Eof
 	'	ARMAZENA AS ENTRADAS NO ESTOQUE CANDIDATAS À SAÍDA DE PRODUTOS
@@ -3575,7 +3575,7 @@ dim s_chave
 			ReDim Preserve v_entrada_tipo(UBound(v_entrada_tipo) + 1)
 			v_entrada_tipo(UBound(v_entrada_tipo)) = ""
 			End If
-		v_entrada_tipo(UBound(v_entrada_tipo)) = rs("entrada_tipo")
+		v_entrada_tipo(UBound(v_entrada_tipo)) = Trim("" & CStr(rs("entrada_tipo")))
 		qtde_disponivel = qtde_disponivel + CLng(rs("saldo"))
 		rs.movenext
 		loop
