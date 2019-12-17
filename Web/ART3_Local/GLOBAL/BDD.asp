@@ -2851,6 +2851,7 @@ dim rs
                 .vl_ipi                 = rs("vl_ipi")
                 .aliq_ipi				= rs("aliq_ipi")
                 .aliq_icms				= rs("aliq_icms")
+                .vl_frete               = rs("vl_frete")
 				end with
 			rs.MoveNext 
 			Loop
