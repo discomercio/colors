@@ -31,37 +31,6 @@
 	On Error GoTo 0
 	Err.Clear
 
-    'Const MAX_TAM_T_ESTOQUE_CAMPO_OBS_TRANSF = 500
-
-	class cl_ITEM_TRANSF_ENTRE_CD
-		dim fabricante
-		dim produto
-		dim qtde
-		end class
-
-    class cl_ESTOQUE_TRANSFERENCIA_ITEM
-        dim documento
-        dim id_estoque_origem
-        dim entrada_tipo
-        dim fabricante
-        dim produto
-        dim descricao_html
-        dim qtde
-        dim preco_fabricante
-        dim vl_custo2
-        dim vl_BC_ICMS_ST
-        dim vl_ICMS_ST
-        dim ncm
-        dim cst
-        dim st_ncm_cst_herdado_tabela_produto
-        dim ean
-        dim aliq_ipi
-        dim aliq_icms
-        dim vl_ipi
-        dim preco_origem
-        dim produto_xml
-        end class
-
 	dim usuario
 	usuario = Trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
@@ -91,7 +60,7 @@
 	v_item(UBound(v_item)).produto = ""
 
     redim v_item_transf(0)
-	set v_item_transf(UBound(v_item_transf)) = New cl_ESTOQUE_TRANSFERENCIA_ITEM
+	set v_item_transf(UBound(v_item_transf)) = New cl_ESTOQUE_TRANSFERENCIA_ITEM_SUB
 	v_item_transf(UBound(v_item_transf)).produto = ""
 
 	n = Request.Form("c_produto").Count
@@ -208,6 +177,7 @@
     dim s_ncm, s_cst, s_preco_fabricante, s_vl_custo2, s_vl_BC_ICMS_ST, s_vl_ICMS_ST, s_st_ncm_cst_herdado_tabela_produto
     dim s_aliq_ipi, s_aliq_icms, s_vl_ipi
     dim s_preco_origem, s_produto_xml, s_entrada_tipo, s_id_estoque_origem
+    dim s_nfe_entrada_numero
 
 '	VERIFICA SE HÁ DISPONIBILIDADE NO ESTOQUE DE VENDA NO CD DE ORIGEM
 	if alerta = "" then    
@@ -225,209 +195,6 @@
                 end if
             next
 		end if
-
-   
-
-' _____________________________________________________________________________________________
-'
-'									F  U  N  Ç  Õ  E  S 
-' _____________________________________________________________________________________________
-' --------------------------------------------------------------------
-'   ESTOQUE PRODUTO TRANSFERÊNCIA ENTRE CD (MONTAGEM)
-'   Retorno da função:
-'      False - Ocorreu falha ao tentar alterar os dados do estoque.
-'      True - Conseguiu alterar os dados do estoque.
-'   Esta função simula a saída do produto do estoque que será 
-'	usado em um novo estoque, em outro CD.
-'	Para cada produto transferido, a rotina é executada.
-'	
-'	(melhorar esta descrição comparando com o arquivo "rotina_calcula_transf.vb")
-'	
-function estoque_produto_transf_cd_monta(ByVal id_nfe_emitente, _
-										ByVal id_fabricante, ByVal id_produto, ByVal qtde_a_sair, _
-										ByRef v_item, _
-										ByRef msg_erro)
-dim s
-dim rs
-dim qtde_disponivel
-dim qtde_movimentada
-dim v_estoque
-dim v_documento
-dim v_entrada_tipo
-dim iv
-dim descricao_html_aux
-dim qtde_aux
-dim qtde_utilizada_aux
-dim preco_fabricante_aux
-dim vl_custo2_aux
-dim vl_BC_ICMS_ST_aux
-dim vl_ICMS_ST_aux
-dim ncm_aux
-dim cst_aux
-dim st_ncm_cst_herdado_tabela_produto_aux
-dim ean_aux
-dim aliq_ipi_aux
-dim aliq_icms_aux
-dim vl_ipi_aux
-dim preco_origem_aux
-dim produto_xml_aux
-dim qtde_movto
-dim s_chave
-
-	estoque_produto_transf_cd_monta = False
-	msg_erro = ""
-	
-'	NENHUMA UNIDADE SERÁ RETIRADA!!
-	If (qtde_a_sair<=0) Or (Trim(id_produto)="") Then
-		estoque_produto_transf_cd_monta = True
-		Exit Function
-		End If
-
-	if Not cria_recordset_pessimista(rs, msg_erro) then exit function
-
-'	OBTÉM OS "LOTES" DO PRODUTO DISPONÍVEIS NO ESTOQUE (POLÍTICA FIFO)
-	s = "SELECT" & _
-			" t_ESTOQUE.id_estoque, t_ESTOQUE.documento, t_ESTOQUE.entrada_tipo, (qtde-qtde_utilizada) AS saldo" & _
-		" FROM t_ESTOQUE INNER JOIN t_ESTOQUE_ITEM ON (t_ESTOQUE.id_estoque=t_ESTOQUE_ITEM.id_estoque)" & _
-		" WHERE" & _
-			" (t_ESTOQUE.id_nfe_emitente = " & Trim("" & id_nfe_emitente) & ")" & _
-			" AND (t_ESTOQUE_ITEM.fabricante='" & id_fabricante & "')" & _
-			" AND (produto='" & id_produto & "')" & _
-			" AND ((qtde-qtde_utilizada) > 0)" & _
-		" ORDER BY" & _
-			" data_entrada, t_ESTOQUE.id_estoque"
-	rs.open s, cn
-
-	qtde_disponivel = 0
-	ReDim v_estoque(0)
-	ReDim v_documento(0)
-    ReDim v_entrada_tipo(0)
-	v_estoque(UBound(v_estoque)) = ""
-	v_documento(UBound(v_documento)) = ""
-    v_entrada_tipo(UBound(v_entrada_tipo)) = 0
-
-	do while Not rs.Eof
-	'	ARMAZENA AS ENTRADAS NO ESTOQUE CANDIDATAS À SAÍDA DE PRODUTOS
-		If v_estoque(UBound(v_estoque)) <> "" Then
-			ReDim Preserve v_estoque(UBound(v_estoque) + 1)
-			v_estoque(UBound(v_estoque)) = ""
-			End If
-		v_estoque(UBound(v_estoque)) = Trim("" & rs("id_estoque"))
-		If v_documento(UBound(v_documento)) <> "" Then
-			ReDim Preserve v_documento(UBound(v_documento) + 1)
-			v_documento(UBound(v_documento)) = ""
-			End If
-		v_documento(UBound(v_documento)) = Trim("" & rs("documento"))
-        If v_entrada_tipo(UBound(v_entrada_tipo)) <> "" Then
-			ReDim Preserve v_entrada_tipo(UBound(v_entrada_tipo) + 1)
-			v_entrada_tipo(UBound(v_entrada_tipo)) = ""
-			End If
-		v_entrada_tipo(UBound(v_entrada_tipo)) = rs("entrada_tipo")
-		qtde_disponivel = qtde_disponivel + CLng(rs("saldo"))
-		rs.movenext
-		loop
-
-'	NÃO HÁ PRODUTOS SUFICIENTES NO ESTOQUE!!
-	If qtde_a_sair > qtde_disponivel Then
-		msg_erro = "Produto " & id_produto & " do fabricante " & id_fabricante & ": faltam " & _
-					formata_inteiro(qtde_a_sair-qtde_disponivel) & " unidades no estoque (" & obtem_apelido_empresa_NFe_emitente(id_nfe_emitente) & ")."
-		Exit Function
-		End If
-
-'	SIMULA A SAÍDA DO ESTOQUE!!
-	qtde_movimentada = 0
-	For iv = LBound(v_estoque) To UBound(v_estoque)
-	
-		If Trim(v_estoque(iv)) <> "" Then
-		
-		'	A QUANTIDADE NECESSÁRIA JÁ FOI RETIRADA DO ESTOQUE!!
-			If qtde_movimentada >= qtde_a_sair Then Exit For
-			
-		'	T_ESTOQUE_ITEM: SAÍDA DE PRODUTOS
-			s = "SELECT " & _
-					"ei.*, p.descricao_html, p.ean as ean_produto" & _
-				" FROM t_ESTOQUE_ITEM ei" & _
-                " INNER JOIN t_PRODUTO p ON (ei.fabricante = p.fabricante AND ei.produto = p.produto)" & _
-				" WHERE" & _
-					" (ei.id_estoque = '" & Trim(v_estoque(iv)) & "')" & _
-					" AND (ei.fabricante = '" & id_fabricante & "')" & _
-					" AND (ei.produto = '" & id_produto & "')"
-			if rs.State <> 0 then rs.Close
-			rs.open s, cn
-			if Err <> 0 then
-				msg_erro=Cstr(Err) & ": " & Err.Description
-				exit function
-				end if
-
-			if rs.Eof then
-				msg_erro = "Falha ao acessar o registro no estoque do produto " & id_produto & " do fabricante " & id_fabricante & " (id_estoque = '" & Trim(v_estoque(iv)) & "')"
-				Exit Function
-			else
-				qtde_aux = rs("qtde")
-				qtde_utilizada_aux = rs("qtde_utilizada")
-				preco_fabricante_aux = rs("preco_fabricante")
-				vl_custo2_aux = rs("vl_custo2")
-                vl_BC_ICMS_ST_aux = rs("vl_BC_ICMS_ST")
-                vl_ICMS_ST_aux = rs("vl_ICMS_ST")
-				ncm_aux = Trim(rs("ncm"))
-				cst_aux = Trim(rs("cst"))
-                st_ncm_cst_herdado_tabela_produto_aux = rs("st_ncm_cst_herdado_tabela_produto")
-				ean_aux = Trim(rs("ean"))
-                aliq_ipi_aux = rs("aliq_ipi")
-                aliq_icms_aux = rs("aliq_icms")
-                vl_ipi_aux = rs("vl_ipi")
-                preco_origem_aux = rs("preco_origem")
-                produto_xml_aux = Trim(rs("produto_xml"))
-                descricao_html_aux = Trim(rs("descricao_html"))
-				End If
-			
-			If (qtde_a_sair - qtde_movimentada) > (qtde_aux - qtde_utilizada_aux) Then
-			'	QUANTIDADE DE PRODUTOS DESTE ITEM DE ESTOQUE É INSUFICIENTE P/ ATENDER O PEDIDO
-				qtde_movto = qtde_aux - qtde_utilizada_aux
-			Else
-			'	QUANTIDADE DE PRODUTOS DESTE ITEM SOZINHO É SUFICIENTE P/ ATENDER O PEDIDO
-				qtde_movto = qtde_a_sair - qtde_movimentada
-				End If
-
-			If v_item(Ubound(v_item)).produto <> "" Then
-				redim preserve v_item(ubound(v_item)+1)
-				set v_item(ubound(v_item)) = New cl_ESTOQUE_TRANSFERENCIA_ITEM
-				End if
-			v_item(Ubound(v_item)).documento = Trim(v_documento(iv))
-            v_item(Ubound(v_item)).entrada_tipo = v_entrada_tipo(iv)
-			v_item(Ubound(v_item)).id_estoque_origem = Trim(v_estoque(iv))
-			v_item(Ubound(v_item)).fabricante = id_fabricante
-			v_item(Ubound(v_item)).produto = id_produto
-            v_item(Ubound(v_item)).descricao_html = descricao_html_aux
-			v_item(Ubound(v_item)).qtde = qtde_movto
-            v_item(Ubound(v_item)).preco_fabricante = preco_fabricante_aux
-			v_item(Ubound(v_item)).vl_custo2 = vl_custo2_aux
-            v_item(Ubound(v_item)).vl_BC_ICMS_ST = vl_BC_ICMS_ST_aux
-            v_item(Ubound(v_item)).vl_ICMS_ST = vl_ICMS_ST_aux
-			v_item(Ubound(v_item)).ncm = ncm_aux
-			v_item(Ubound(v_item)).cst = cst_aux
-			v_item(Ubound(v_item)).ean = ean_aux
-            v_item(Ubound(v_item)).st_ncm_cst_herdado_tabela_produto = st_ncm_cst_herdado_tabela_produto_aux
-            v_item(Ubound(v_item)).aliq_ipi = aliq_ipi_aux
-            v_item(Ubound(v_item)).aliq_icms = aliq_icms_aux
-            v_item(Ubound(v_item)).vl_ipi = vl_ipi_aux
-            v_item(Ubound(v_item)).preco_origem = preco_origem_aux
-            v_item(Ubound(v_item)).produto_xml = produto_xml_aux
-		
-		'	CONTABILIZA QUANTIDADE MOVIMENTADA
-			qtde_movimentada = qtde_movimentada + qtde_movto
-		
-		'	JÁ CONSEGUIU ALOCAR TUDO?
-			If qtde_movimentada >= qtde_a_sair Then Exit For
-			End If
-		Next
-	
-	if rs.State <> 0 then rs.Close
-	set rs=nothing
-	
-	
-	estoque_produto_transf_cd_monta = True
-end function
 
 		
 %>
@@ -473,19 +240,19 @@ end function
 
 <script language="JavaScript" type="text/javascript">
 
-    $(document).ready(function() {
+    $(document).ready(function () {
         $("#divMsgAlerta").hide();
         $("#divAjaxProgress").hide();
         $("#divDialogBox").hide();
         $("#divDialogBox").hUtilUI('dialog_modal');
 
-        $("#btnDivMsgCancelar").button().click(function(event) {
+        $("#btnDivMsgCancelar").button().click(function (event) {
             event.preventDefault();
             $("#divMsgAlerta").hide();
             $("#dCONFIRMA").show();
         });
 
-        $("#btnDivMsgConfirmar").button().click(function(event) {
+        $("#btnDivMsgConfirmar").button().click(function (event) {
             event.preventDefault();
             fESTOQ.submit();
             $(this).hide();
@@ -494,7 +261,7 @@ end function
         $("input:text:enabled:visible:not([readonly])").attr("autocomplete", "off");
 
         <% if Not CADASTRAR_WMS_CD_ENTRADA_ESTOQUE then %>
-		$(".trWmsCd").hide();
+            $(".trWmsCd").hide();
         <% end if %>
 
             // Observação: Unlike JavaScript indices, the CSS-based :nth-child(n) pseudo-class begins numbering at 1, not 0.
@@ -513,14 +280,14 @@ end function
             // 13 - Total Preço Fabricante
             // 14 - Valor Referência
             // 15 - Total Valor Referência
-		//$("#tableProduto thead th:nth-child(3), #tableProduto tbody td:nth-child(3)").hide();
-        //$("#tableProduto thead th:nth-child(10), #tableProduto tbody td:nth-child(10)").hide();
-        //$("#tableProduto thead th:nth-child(11), #tableProduto tbody td:nth-child(11)").hide();
-        //$("#tableProduto thead th:nth-child(13), #tableProduto tbody td:nth-child(13)").hide();
-        //$("#tdTotalGeralFabricante").hide();
-        //$("#tdPreTotalGeralFabricante").removeClass("MD").attr("colSpan", 9);
-        $("#tdPreChecagem").attr("colSpan", 8);
-        $("input:text:enabled:visible:not([readonly])").focus(function() {
+            //$("#tableProduto thead th:nth-child(3), #tableProduto tbody td:nth-child(3)").hide();
+            //$("#tableProduto thead th:nth-child(10), #tableProduto tbody td:nth-child(10)").hide();
+            //$("#tableProduto thead th:nth-child(11), #tableProduto tbody td:nth-child(11)").hide();
+            //$("#tableProduto thead th:nth-child(13), #tableProduto tbody td:nth-child(13)").hide();
+            //$("#tdTotalGeralFabricante").hide();
+            //$("#tdPreTotalGeralFabricante").removeClass("MD").attr("colSpan", 9);
+            $("#tdPreChecagem").attr("colSpan", 9);
+        $("input:text:enabled:visible:not([readonly])").focus(function () {
             $(this).select();
         });
         $("input:text:enabled:visible:not([readonly]):first").focus();
@@ -528,7 +295,7 @@ end function
         // Tratamento p/ bug do jQuery-ui Dialog: ao tentar mover o dialog em uma tela que está c/ scroll
         // vertical, o dialog é "redesenhado" mais abaixo da posição do cursor na mesma medida do deslocamento do
         // scroll vertical. A movimentação do dialog ocorre c/ esse espaço em branco entre o cursor e o dialog.
-        $(document).scroll(function(e) {
+        $(document).scroll(function (e) {
             if ($(".ui-widget-overlay")) //the dialog has popped up in modal view
             {
                 //fix the overlay so it scrolls down with the page
@@ -559,28 +326,27 @@ end function
         return false;
     }
 
-    function recalcula_total( id ) {
+    function recalcula_total(id) {
         var idx, m, m2, f, i;
-        f=fESTOQ;
-        idx=parseInt(id)-1;
-        if (f.c_produto[idx].value=="") return;
-        m=converte_numero(f.c_vl_unitario[idx].value);
+        f = fESTOQ;
+        idx = parseInt(id) - 1;
+        if (f.c_produto[idx].value == "") return;
+        m = converte_numero(f.c_vl_unitario[idx].value);
         if (f.c_vl_unitario[idx].value != formata_moeda(m)) f.c_vl_unitario[idx].value = formata_moeda(m);
-        if (trim(f.c_vl_custo2[idx].value)!="") {
-            m2=converte_numero(f.c_vl_custo2[idx].value);
+        if (trim(f.c_vl_custo2[idx].value) != "") {
+            m2 = converte_numero(f.c_vl_custo2[idx].value);
             if (f.c_vl_custo2[idx].value != formata_moeda(m2)) f.c_vl_custo2[idx].value = formata_moeda(m2);
         }
         //  DEVIDO A ARRENDODAMENTOS
-        m=converte_numero(f.c_vl_unitario[idx].value);
+        m = converte_numero(f.c_vl_unitario[idx].value);
         if (f.c_vl_total[idx].value != formata_moeda(parseInt(f.c_qtde[idx].value) * m)) f.c_vl_total[idx].value = formata_moeda(parseInt(f.c_qtde[idx].value) * m);
-        m2=converte_numero(f.c_vl_custo2[idx].value);
+        m2 = converte_numero(f.c_vl_custo2[idx].value);
         if (f.c_vl_total_custo2[idx].value != formata_moeda(parseInt(f.c_qtde[idx].value) * m2)) f.c_vl_total_custo2[idx].value = formata_moeda(parseInt(f.c_qtde[idx].value) * m2);
-        m=0;
-        m2=0;
-        for (i=0; i<f.c_vl_total.length; i++) 
-        {
-            m=m+converte_numero(f.c_vl_total[i].value);
-            m2=m2+converte_numero(f.c_vl_total_custo2[i].value);
+        m = 0;
+        m2 = 0;
+        for (i = 0; i < f.c_vl_total.length; i++) {
+            m = m + converte_numero(f.c_vl_total[i].value);
+            m2 = m2 + converte_numero(f.c_vl_total_custo2[i].value);
         }
         if (f.c_total_geral.value != formata_moeda(m)) f.c_total_geral.value = formata_moeda(m);
         if (f.c_total_geral_custo2.value != formata_moeda(m2)) f.c_total_geral_custo2.value = formata_moeda(m2);
@@ -627,14 +393,14 @@ end function
         }
     }
 
-    function fESTOQConfirma( f ) {
+    function fESTOQConfirma(f) {
         var f, i, s, s_aux, s_produtos_preco_fabricante, s_produtos_vl_custo2, vl_total_custo2, vl_aux, intQtde;
         var s_ncm_aux, s_ibpt_ncm, s_ncm_ja_listado;
-        f=fESTOQ;
-	
-        alert("Em desenvolvimento!")
-        return;
-	
+        f = fESTOQ;
+
+        //alert("Em desenvolvimento!")
+        //return;
+
         //vl_total_custo2=0;
         //for (i=0; i<f.c_vl_custo2.length; i++) {
         //    if ((trim(f.c_produto[i].value)!="")&&(trim(f.c_vl_custo2[i].value)=="")) {
@@ -646,10 +412,10 @@ end function
         //    vl_aux=converte_numero(f.c_vl_custo2[i].value);
         //    vl_total_custo2=vl_total_custo2+(intQtde*vl_aux);
         //}
-		
+
         ////	DEVIDO A FALHAS DE PRECISÃO DO JAVASCRIPT (EX: 827,85 FICA 827,8499999999999)
         //vl_total_custo2=converte_numero(formata_moeda(vl_total_custo2));
-	
+
         //f.c_log_edicao.value="";
         //s_produtos_preco_fabricante="";
         //s_produtos_vl_custo2="";
@@ -686,11 +452,11 @@ end function
         //    s = s + "\n\n" + "Confirma o cadastramento?";
         //    if (!confirm(s)) return;
         //}
-	
+
         //if (f.c_log_edicao.value!="") {
         //    f.c_log_edicao.value="Cadastramento realizado com edição de valores: " + f.c_log_edicao.value;
         //}
-		
+
         ////  CHECAGEM DO TOTAL DO CUSTO2
         //if (trim(f.c_total_custo2_checagem.value)=="") {
         //    alert("Informe o valor total de Referência para checagem!!");
@@ -958,10 +724,12 @@ end function
 	<th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">NCM</span></th>
 	<th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">CST</span></th>
 	<th class="MB" align="right" valign="bottom"><span class="PLTd">Qtde</span></th>
-	<th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Valor</span></th>
+	<th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Valor<br />Unitário</span></th>
+	<th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Valor<br />Referência</span></th>
     <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Aliq<br /><span style="font-size:7pt;">IPI (%)</span></span></th>
     <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Valor<br /><span style="font-size:7pt;">IPI</span></span></th>
     <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">Aliq<br /><span style="font-size:7pt;">ICMS (%)</span></span></th>
+    <th class="MB" align="center" valign="bottom" align="center"><span class="PLTe">NF Entrada<br /><span style="font-size:7pt;">N°</span></span></th>
 	</tr>
 	</thead>
 
@@ -992,6 +760,7 @@ end function
             s_vl_ipi = formata_moeda(.vl_ipi)
             s_preco_origem = formata_moeda(.preco_origem)
             s_produto_xml = .produto_xml
+            s_nfe_entrada_numero = .nfe_entrada_numero
             end with
 %>
 	<tr>
@@ -1028,6 +797,10 @@ end function
 		<input name="c_qtde" readonly tabindex=-1 class="PLLd" style="width:30px;"
 			value="<%=s_qtde%>"></td>
 	<td class="MDB" align="right">
+		<input name="c_vl_unitario" readonly tabindex=-1 class="PLLd" maxlength="12" style="width:62px;"
+			value="<%=s_preco_fabricante%>">
+		</td>
+	<td class="MDB" align="right">
 		<input name="c_vl_custo2" readonly tabindex=-1 class="PLLd" maxlength="12" style="width:62px;"
 			value="<%=s_vl_custo2%>">
 		</td>
@@ -1049,6 +822,11 @@ end function
 			onblur="if (trim(this.value)!='') this.value=formata_numero(this.value, 0); if (converte_numero(this.value)<0) {alert('Valor inválido!!');this.focus();});"
 			value="<%=s_aliq_icms%>">
 		</td>
+	<td class="MDB" align="left">
+		<input name="c_nfe_entrada_numero" class="PLLd" maxlength="12" style="width:62px; color:blue;"
+			onkeypress="if (digitou_enter(true)) $(this).hUtil('focusNext'); filtra_numerico();"
+			onblur="if (trim(this.value)!='') this.value=formata_numero(this.value, 0); if (converte_numero(this.value)<0) {alert('Valor inválido!!');this.focus();});"
+			value="<%=s_nfe_entrada_numero%>">
 	</tr>
 <% next %>
 	</tbody>

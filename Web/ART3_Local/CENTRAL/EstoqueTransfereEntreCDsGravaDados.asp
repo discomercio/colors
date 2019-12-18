@@ -90,6 +90,7 @@
                 .aliq_ipi = Trim(Request.Form("c_aliq_ipi")(i))
                 .aliq_icms = Trim(Request.Form("c_aliq_icms")(i))
                 .vl_ipi = Trim(Request.Form("c_vl_ipi")(i))
+                .nfe_entrada_numero = Trim(Request.Form("c_nfe_entrada_numero")(i))                
                 end with
             end if
         next
@@ -119,6 +120,17 @@
                 .produto_xml = v_item2(i).produto_xml
                 end with
             Next
+
+    '   PREENCHENDO VALORES EM TELA PARA VETOR 2
+	    for i = Lbound(v_item2) to Ubound(v_item2)
+		    with v_item2(i)
+                .aliq_ipi = v_item1(i).aliq_ipi
+                .aliq_icms = v_item1(i).aliq_icms
+                .vl_ipi = v_item1(i).vl_ipi
+                .nfe_entrada_numero = v_item1(i).nfe_entrada_numero
+                end with
+            next
+
 
 	'	INFORMAÇÕES PARA O LOG
 		s_log = ""
@@ -500,12 +512,12 @@
 <br>
 <!--  T E L A  -->
 <p class="T">A V I S O</p>
-<div class='MtAviso' style="width:649px;font-weight:bold;border:1pt solid black;" align="center"><p style='margin:5px 2px 5px 2px;'>Transferência '<%=c_documento_transf%>' realizada com sucesso!!!</p></div>
+<div class='MtAviso' style="width:649px;font-weight:bold;border:1pt solid black;" align="center"><p style='margin:5px 2px 5px 2px;'>Transferência '<%=c_transf_selecionada%>' realizada com sucesso!!!</p></div>
 <br><br>
 <p class="TracoBottom"></p>
 <table cellSpacing="0">
 <tr>
-	<td align="center"><a name="bVOLTAR" id="bVOLTAR" href="estoquetransfereentrecds.asp"><img src="..\botao\voltar.gif" width="176" height="55" border="0"></a></td>
+	<td align="center"><a name="bVOLTAR" id="bVOLTAR" href="estoquetransfereentrecdsfiltro.asp"><img src="..\botao\voltar.gif" width="176" height="55" border="0"></a></td>
 </tr>
 </table>
 </center>
