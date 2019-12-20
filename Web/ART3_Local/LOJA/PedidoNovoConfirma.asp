@@ -712,6 +712,21 @@
 		end if
 	
 	
+'	CONSISTÊNCIA PARA VALOR ZERADO
+	if alerta="" then
+		for i=Lbound(v_item) to Ubound(v_item)
+			with v_item(i)
+				if .preco_venda <= 0 then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "Produto '" & .produto & "' está com valor de venda zerado!"
+				elseif ((rb_RA = "S") And (permite_RA_status = 1)) And (.preco_NF <= 0) then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "Produto '" & .produto & "' está com preço zerado!"
+					end if
+				end with
+			next
+		end if
+
 '	VERIFICA CADA UM DOS PRODUTOS SELECIONADOS
 	dim desc_dado_arredondado
 	if alerta="" then

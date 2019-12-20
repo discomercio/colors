@@ -955,6 +955,12 @@ var objAjaxCustoFinancFornecConsultaPreco;
 var blnConfirmaDifRAeValores=false;
 var objSenhaDesconto;
 
+<% if blnTemRA then %>
+var blnTemRA = 1;
+<% else %>
+var blnTemRA = 0;
+<% end if %>
+
 function processaFormaPagtoDefault() {
 var f, i;
 	f=fPED;
@@ -1987,7 +1993,7 @@ var f;
 }
 
 function fPEDConfirma( f ) {
-var s, i, j, blnFlag, vlAux, vl_preco_lista, vl_preco_venda, perc_desc, strMsgErro;
+var s, i, j, blnFlag, vlAux, vl_preco_lista, vl_preco_venda, vl_NF, perc_desc, strMsgErro;
 var perc_RT, perc_RT_novo, perc_max_RT, perc_max_comissao_e_desconto, perc_max_comissao_e_desconto_pj, perc_max_comissao_e_desconto_nivel2, perc_max_comissao_e_desconto_nivel2_pj, perc_senha_desconto, perc_desc_medio;
 var perc_max_comissao_e_desconto_a_utilizar;
 	
@@ -2216,7 +2222,32 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		alert(strMsgErro);
 		return;
 		}
-	
+
+    // CONSISTÊNCIA PARA VALOR ZERADO
+    strMsgErro = "";
+    for (i = 0; i < f.c_produto.length; i++) {
+        if (trim(f.c_produto[i].value) != "") {
+            vl_preco_venda = converte_numero(f.c_vl_unitario[i].value);
+            if (vl_preco_venda <= 0) {
+                if (strMsgErro != "") strMsgErro += "\n";
+                strMsgErro += "O produto '" + f.c_descricao[i].value + "' está com valor de venda zerado!";
+            }
+            else if ((f.c_permite_RA_status.value == '1') || (f.c_st_violado_permite_RA_status.value == '1') || (blnTemRA == 1)) {
+                vl_NF = converte_numero(f.c_vl_NF[i].value);
+                if (vl_NF <= 0) {
+                    if (strMsgErro != "") strMsgErro += "\n";
+                    strMsgErro += "O produto '" + f.c_descricao[i].value + "' está com o preço zerado!";
+                }
+            }
+        }
+    }
+
+    if (strMsgErro != "") {
+        strMsgErro += "\n\nNão é possível continuar!!";
+        alert(strMsgErro);
+        return;
+    }
+
 	dCONFIRMA.style.visibility="hidden";
 	window.status = "Aguarde ...";
 	f.submit();
