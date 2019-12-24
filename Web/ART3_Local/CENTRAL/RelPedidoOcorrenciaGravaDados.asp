@@ -53,9 +53,10 @@
 		Response.Redirect("aviso.asp?id=" & ERR_NIVEL_ACESSO_INSUFICIENTE)
 		end if
 
-	dim rb_status, c_qtde_ocorrencias, intQtdeOcorrencias, vOcorrencia, c_loja
+	dim rb_status, c_qtde_ocorrencias, intQtdeOcorrencias, vOcorrencia, c_loja, c_transportadora
 	rb_status=Trim(Request("rb_status"))
 	c_loja=Trim(Request("c_loja"))
+	c_transportadora=Trim(Request("c_transportadora"))
 	c_qtde_ocorrencias=Trim(Request("c_qtde_ocorrencias"))
 	intQtdeOcorrencias=CInt(c_qtde_ocorrencias)
 	
@@ -222,7 +223,7 @@
 			cn.CommitTrans
 		'	~~~~~~~~~~~~~~
 			if Err=0 then 
-				Response.Redirect("RelPedidoOcorrencia.asp?origem=A&rb_status=" & rb_status & "&c_loja=" & c_loja & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")))
+				Response.Redirect("RelPedidoOcorrencia.asp?origem=A&rb_status=" & rb_status & "&c_loja=" & c_loja & "&c_transportadora=" & c_transportadora & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")))
 			else
 				alerta=Cstr(Err) & ": " & Err.Description
 				end if
