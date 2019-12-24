@@ -176,6 +176,17 @@ var i, blnFlag;
 				onblur="this.value=normaliza_codigo(this.value,TAM_MIN_LOJA);">
 		</td>
 	</tr>
+<!--  TRANSPORTADORA  -->
+	<tr>
+		<td class="ME MB MD PLTe" NOWRAP style="background-color:whitesmoke;" valign="bottom">&nbsp;TRANSPORTADORA</td>
+	</tr>
+	<tr bgColor="#FFFFFF" NOWRAP>
+		<td class="ME MB MD" style="padding:5px;">
+			<select id="c_transportadora" name="c_transportadora" style="margin:1px 10px 6px 10px;" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;">
+			<% =transportadora_monta_itens_select(Null) %>
+			</select>
+		</td>
+	</tr>
 </table>
 
 <!-- ************   SEPARADOR   ************ -->
@@ -187,7 +198,7 @@ var i, blnFlag;
 
 <table width="649" cellSpacing="0">
 <tr>
-	<td><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()" title="volta para a página anterior">
+	<td><a name="bVOLTAR" id="bVOLTAR" href="resumo.asp<%= "?" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>" title="volta para a página anterior">
 		<img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
 	<td align="right"><div name="dCONFIRMA" id="dCONFIRMA"><a name="bCONFIRMA" id="bCONFIRMA" href="javascript:fFILTROConfirma(fFILTRO)" title="executa a consulta">
 		<img src="../botao/confirmar.gif" width="176" height="55" border="0"></a></div>
