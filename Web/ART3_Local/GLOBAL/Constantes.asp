@@ -851,6 +851,7 @@
 	Const ID_PARAMETRO_EmailDestinatarioAlertaEdicaoCadastroClienteComPedidoCreditoOkEntregaPendente = "EmailDestinatarioAlertaEdicaoCadastroClienteComPedidoCreditoOkEntregaPendente"
 	Const ID_PARAMETRO_CtrlRelatorio_RelControleImpostos_TimeoutLockEmMinutos = "CtrlRelatorio_RelControleImpostos_TimeoutLockEmMinutos"
     Const ID_PARAMETRO_CtrlRelatorio_RelControleImpostos_MaxQtdeResultadoPorConsulta = "CtrlRelatorio_RelControleImpostos_MaxQtdeResultadoPorConsulta"
+	Const ID_PARAMETRO_SSW_Rastreamento_Lista_Transportadoras = "SSW_Rastreamento_Lista_Transportadoras"
 	
 '   CONSTANTES QUE IDENTIFICAM REGISTROS ARMAZENADOS NA TABELA "t_CTRL_RELATORIO"
     Const ID_CTRL_RELATORIO_RelControleImpostos = 1

@@ -4,6 +4,7 @@
 <!-- #include file = "../global/constantes.asp" -->
 <!-- #include file = "../global/funcoes.asp"    -->
 <!-- #include file = "../global/bdd.asp" -->
+<!-- #include file = "../global/Global.asp"    -->
 
 <!-- #include file = "../global/TrataSessaoExpirada.asp"        -->
 
@@ -803,7 +804,11 @@ dim w_cliente, w_st_entrega, w_valor
 dim blnRelAnalitico
 dim intNumLinha
 dim s_grupo_origem
+dim s_link_rastreio
+dim rPSSW
 	
+	set rPSSW = get_registro_t_parametro(ID_PARAMETRO_SSW_Rastreamento_Lista_Transportadoras)
+
 '	RELATÓRIO SINTÉTICO OU ANALÍTICO?
 	blnRelAnalitico=False
 	if operacao_permitida(OP_CEN_REL_MULTICRITERIO_PEDIDOS_ANALITICO, s_lista_operacoes_permitidas) then blnRelAnalitico=True
@@ -1282,7 +1287,8 @@ dim s_grupo_origem
 	
 '	MONTA CLÁUSULA FROM
 	s_from = " FROM t_PEDIDO" & _
-			 " INNER JOIN t_PEDIDO AS t_PEDIDO__BASE ON (t_PEDIDO.pedido_base=t_PEDIDO__BASE.pedido)"
+			 " INNER JOIN t_PEDIDO AS t_PEDIDO__BASE ON (t_PEDIDO.pedido_base=t_PEDIDO__BASE.pedido)" & _
+			 " INNER JOIN t_NFe_EMITENTE ON (t_PEDIDO.id_nfe_emitente = t_NFe_EMITENTE.id)"
 	
 	if ckb_produto <> "" then
 		s_from = s_from & " INNER JOIN t_PEDIDO_ITEM ON (t_PEDIDO.pedido=t_PEDIDO_ITEM.pedido)"
@@ -1388,7 +1394,8 @@ dim s_grupo_origem
 '		 SE "check_expression" FOR NULL, RETORNA "replacement_value"
 	s_sql = "SELECT DISTINCT t_PEDIDO.loja, t_PEDIDO.numero_loja," & _
 			" t_PEDIDO.data, t_PEDIDO.pedido, t_PEDIDO.pedido_bs_x_ac, t_PEDIDO.obs_2," & _
-			" t_PEDIDO.st_entrega, t_CLIENTE.nome, t_CLIENTE.nome_iniciais_em_maiusculas," & _
+			" t_PEDIDO.st_entrega, t_PEDIDO.transportadora_id, t_CLIENTE.nome, t_CLIENTE.nome_iniciais_em_maiusculas," & _
+			" t_NFe_EMITENTE.cnpj AS cnpj_emitente," & _
 			" t_PEDIDO__BASE.st_pagto," & _
             " t_PEDIDO__BASE.vendedor," & _
             " t_PEDIDO__BASE.indicador," & _
@@ -1691,7 +1698,9 @@ dim s_grupo_origem
 	    x = x & "		<TD align='center' valign='top' class='MDB'><P class='Cn''>" & Trim("" & r("data")) & "</P></TD>" & chr(13)
 		
 	'> NF
-		x = x & "		<TD align='center' valign='top' class='MDB'><P class='Cn''>" & Trim("" & r("obs_2")) & "</P></TD>" & chr(13)
+		s_link_rastreio = monta_link_rastreio_do_emitente(Trim("" & r("cnpj_emitente")), Trim("" & r("obs_2")), Trim("" & r("transportadora_id")), Trim("" & rPSSW.campo_texto), Trim("" & r("loja")))
+		if s_link_rastreio <> "" then s_link_rastreio = "&nbsp;" & s_link_rastreio
+		x = x & "		<TD align='left' valign='top' class='MDB'><P class='Cn''>" & Trim("" & r("obs_2")) & s_link_rastreio & "</P></TD>" & chr(13)
 		
 	'> CLIENTE
 		if blnSaidaExcel then s_nowrap = " NOWRAP" else s_nowrap = ""
@@ -1991,7 +2000,61 @@ end sub
 
 
 
+<% if False then 'APENAS P/ HABILITAR O INTELLISENSE DURANTE O DESENVOLVIMENTO!! %>
+<script src="../Global/jquery.js" language="JavaScript" type="text/javascript"></script>
+<% end if %>
+
+<script src="<%=URL_FILE__JQUERY%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__GLOBAL_JS%>" Language="JavaScript" Type="text/javascript"></script>
+<script src="<%=URL_FILE__AJAX_JS%>" language="JavaScript" type="text/javascript"></script>
+
+<script language="JavaScript" type="text/javascript">
+    var historyBackCount = 1;
+
+    $(document).ready(function () {
+        $("#divRastreioConsultaView").hide();
+        $('#divInternoRastreioConsultaView').addClass('divFixo');
+        sizeDivRastreioConsultaView();
+
+        $(document).keyup(function (e) {
+            if (e.keyCode == 27) {
+                fechaDivRastreioConsultaView();
+            }
+        });
+
+        $("#divRastreioConsultaView").click(function () {
+            fechaDivRastreioConsultaView();
+        });
+
+        $("#imgFechaDivRastreioConsultaView").click(function () {
+            fechaDivRastreioConsultaView();
+        });
+    });
+
+    //Every resize of window
+    $(window).resize(function () {
+        sizeDivRastreioConsultaView();
+    });
+
+    function sizeDivRastreioConsultaView() {
+        var newHeight = $(document).height() + "px";
+        $("#divRastreioConsultaView").css("height", newHeight);
+    }
+
+    function fechaDivRastreioConsultaView() {
+        $("#divRastreioConsultaView").fadeOut();
+        $("#iframeRastreioConsultaView").attr("src", "");
+    }
+
+    function fRastreioConsultaView(url) {
+        historyBackCount++;
+        sizeDivRastreioConsultaView();
+        $("#iframeRastreioConsultaView").attr("src", url);
+        $("#divRastreioConsultaView").fadeIn();
+    }
+
+</script>
 
 <script language="JavaScript" type="text/javascript">
 window.status='Aguarde, executando a consulta ...';
@@ -2020,6 +2083,54 @@ function fRELConcluir( id_pedido ){
 
 <link href="<%=URL_FILE__E_CSS%>" Rel="stylesheet" Type="text/css">
 <link href="<%=URL_FILE__EPRINTER_CSS%>" Rel="stylesheet" Type="text/css" media="print">
+
+<style type="text/css">
+#divRastreioConsultaView
+{
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	z-index:1000;
+	background-color:#808080;
+	opacity: 1;
+}
+#divInternoRastreioConsultaView
+{
+	position:absolute;
+	top:6%;
+	left:5%;
+	width:90%;
+	height:90%;
+	z-index:1000;
+	background-color:#fff;
+	opacity: 1;
+}
+#divInternoRastreioConsultaView.divFixo
+{
+	position:fixed;
+	top:6%;
+}
+#imgFechaDivRastreioConsultaView
+{
+	position:fixed;
+	top:6%;
+	left: 50%;
+	margin-left: -16px; /* -1 * image width / 2 */
+	margin-top: -32px;
+	z-index:1001;
+}
+#iframeRastreioConsultaView
+{
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	border: solid 4px black;
+}
+</style>
+
 
 
 <% if alerta <> "" then %>
@@ -2563,13 +2674,16 @@ function fRELConcluir( id_pedido ){
 
 <table class="notPrint" width="849" cellSpacing="0">
 <tr>
-	<td align="center"><a name="bVOLTA" id="bVOLTA" href="javascript:history.back()" title="volta para a página anterior">
+	<td align="center"><a name="bVOLTA" id="bVOLTA" href="javascript:history.go(-historyBackCount);" title="volta para a página anterior">
 		<img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
 </tr>
 </table>
 </form>
 
 </center>
+
+<div id="divRastreioConsultaView"><center><div id="divInternoRastreioConsultaView"><img id="imgFechaDivRastreioConsultaView" src="../imagem/close_button_32.png" title="clique para fechar o painel de consulta" /><iframe id="iframeRastreioConsultaView"></iframe></div></center></div>
+
 </body>
 
 <% end if %>
