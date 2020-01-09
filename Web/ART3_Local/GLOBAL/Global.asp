@@ -3250,6 +3250,7 @@ end function
 function monta_url_rastreio(byval numero_pedido, byval numero_NF, byval transportadora_id, byval loja)
 dim s_url, s_cnpj
 dim lista_transportadora
+dim rPSSW
 
 	monta_url_rastreio = ""
 
@@ -3263,7 +3264,8 @@ dim lista_transportadora
 	s_cnpj = obtemCnpjNFeEmitentePeloPedido(numero_pedido)
 	if s_cnpj = "" then exit function
 
-	lista_transportadora = "|ATIVA|TRANSPRESS|ATUAL|MAEX|WALDEMAR|M.O.S|GLOBAL RIO|EXODO LOG|CITY RIO|SUÍÇA|LL MATHIAS|LEITE|PACIFICO L|GENEROSO|DOMINALOG|TRANS CASE|"
+	set rPSSW = get_registro_t_parametro(ID_PARAMETRO_SSW_Rastreamento_Lista_Transportadoras)
+	lista_transportadora = Trim("" & rPSSW.campo_texto)
 
 	s_url = ""
 	if InStr(lista_transportadora, "|" & transportadora_id & "|") <> 0 then
@@ -3292,6 +3294,64 @@ dim s_url, s_link
 				"</a>"
 		end if
 	monta_link_rastreio = s_link
+end function
+
+
+
+' __________________________________________________
+' monta_url_rastreio_do_emitente
+'
+function monta_url_rastreio_do_emitente(byval cnpj_emitente, byval numero_NF, byval transportadora_id, byval ssw_lista_transportadoras, byval loja)
+dim s_url, s_cnpj
+dim lista_transportadora
+dim rPSSW
+
+	monta_url_rastreio_do_emitente = ""
+
+	if Trim("" & numero_NF) = "" then exit function
+
+	if Trim("" & numero_NF) = "0" then exit function
+
+	transportadora_id = Ucase(Trim("" & transportadora_id))
+	if transportadora_id = "" then exit function
+
+	s_cnpj = retorna_so_digitos(Trim("" & cnpj_emitente))
+	if s_cnpj = "" then exit function
+
+	lista_transportadora = Trim("" & ssw_lista_transportadoras)
+
+	if lista_transportadora = "" then
+		set rPSSW = get_registro_t_parametro(ID_PARAMETRO_SSW_Rastreamento_Lista_Transportadoras)
+		lista_transportadora = Trim("" & rPSSW.campo_texto)
+		end if
+
+	s_url = ""
+	if InStr(lista_transportadora, "|" & transportadora_id & "|") <> 0 then
+		s_url = "http://ssw.inf.br/cgi-local/tracking/" & s_cnpj & "/" & numero_NF
+		end if
+
+	monta_url_rastreio_do_emitente = s_url
+end function
+
+
+
+' __________________________________________________
+' monta_link_rastreio_do_emitente
+'
+function monta_link_rastreio_do_emitente(byval cnpj_emitente, byval numero_NF, byval transportadora_id, byval ssw_lista_transportadoras, byval loja)
+dim s_url, s_link
+	monta_link_rastreio_do_emitente = ""
+	if Trim("" & numero_NF) = "" then exit function
+	s_link = ""
+	s_url = monta_url_rastreio_do_emitente(cnpj_emitente, numero_NF, transportadora_id, ssw_lista_transportadoras, loja)
+	if s_url <> "" then
+		s_link = "<a href='javascript:fRastreioConsultaView(" & _
+					chr(34) & s_url & chr(34) & _
+				");' style='cursor:default;' title='clique para consultar dados de rastreamento do pedido'>" & _
+				"<img id='imgRastreioConsultaView' src='../imagem/truck_16.png' class='notPrint' />" & _
+				"</a>"
+		end if
+	monta_link_rastreio_do_emitente = s_link
 end function
 
 
