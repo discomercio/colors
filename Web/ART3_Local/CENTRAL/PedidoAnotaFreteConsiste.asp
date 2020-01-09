@@ -263,9 +263,10 @@
                             rs.open s, cn            
                             if rs.Eof then
                                 if (Ucase(.transportadora_id) <> Ucase(c_transportadora)) And (.transportadora_id <> "") then
-								    blnErroFatal = True
-							        .msg_erro = texto_add_br(.msg_erro)
-								    .msg_erro = .msg_erro & "Pedido " & Trim(.pedido) & " está alocado para outra transportadora (" & .transportadora_id & ")"
+								    '08/01/2020 Devido a uma nova situação em que uma transportadora delega a entrega para outra, é permitido registrar o frete no pedido com uma transportadora diferente, pois normalmente a transportadora do pedido foi a responsável pela entrega e a transportadora indicada nesta operação foi responsável pelo faturamento do serviço.
+									'blnErroFatal = True
+							        .msg_alerta = texto_add_br(.msg_alerta)
+								    .msg_alerta = .msg_alerta & "Pedido " & Trim(.pedido) & " está alocado para outra transportadora (" & .transportadora_id & ")"
                                 end if
                             else               
                                 do while Not rs.Eof
