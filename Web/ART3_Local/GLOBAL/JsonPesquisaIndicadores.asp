@@ -93,9 +93,10 @@
 				end if
             end if
             if Not operacao_permitida(OP_LJA_CONSULTA_UNIVERSAL_PEDIDO_ORCAMENTO, s_lista_operacoes_permitidas) then
-			    if Not isLojaVrf(loja) then
+                '10/01/2020 - Unis - Desativação do acesso dos vendedores a todos os parceiros da Unis
+			    'if Not isLojaVrf(loja) then
 				    if rs("vendedor") <> usuario then flag_ok = False
-				end if
+				'end if
 		    end if              
 
             if flag_ok then
