@@ -116,7 +116,8 @@ dim r
 						")" & _
 					")"
 	else
-		if isLojaVrf(loja) then
+		'10/01/2020 - Unis - Desativação do acesso dos vendedores a todos os parceiros da Unis
+		if (False And isLojaVrf(loja)) then
 			if s_where <> "" then s_where = s_where & " AND"
 			s_where = s_where & _
 						"(" & _
