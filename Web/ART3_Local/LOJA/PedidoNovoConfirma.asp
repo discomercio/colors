@@ -1533,8 +1533,8 @@
 		end if 'if (loja = NUMERO_LOJA_BONSHOP) And (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO)
 
 	'TRATAMENTO PARA CADASTRAMENTO DE PEDIDOS DO SITE MAGENTO DO ARCLUBE
-	dim blnPedidoECommerceOrigemMarketplaceCreditoOkAutomatico
-	blnPedidoECommerceOrigemMarketplaceCreditoOkAutomatico = False
+	dim blnPedidoECommerceCreditoOkAutomatico
+	blnPedidoECommerceCreditoOkAutomatico = False
 	if loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
 		if alerta = "" then
 			if s_origem_pedido = "" then
@@ -1543,8 +1543,10 @@
 			end if
 		
 		if alerta = "" then
-		'	SOMENTE PEDIDO ORIGINADO PELO TELEVENDAS DO ARCLUBE PODE FICAR SEM O Nº PEDIDO MAGENTO
-			if Trim(s_origem_pedido) <> "002" then
+		'	PARA PEDIDOS DO ARCLUBE, É PERMITIDO FICAR SEM O Nº MAGENTO SOMENTE NOS SEGUINTES CASOS:
+		'		1) PEDIDO ORIGINADO PELO TELEVENDAS
+		'		2) PEDIDO GERADO CONTRA A TRANSPORTADORA (EM CASOS QUE A TRANSPORTADORA SE RESPONSABILIZA PELA REPOSIÇÃO DE MERCADORIA EXTRAVIADA)
+			if (Trim(s_origem_pedido) <> "002") And (Trim(s_origem_pedido) <> "019") then
 				if s_pedido_ac = "" then
 					alerta=texto_add_br(alerta)
 					alerta=alerta & "Informe o nº Magento"
@@ -1584,7 +1586,7 @@
 				'	OBTÉM O PERCENTUAL DE COMISSÃO DO MARKETPLACE
 					perc_RT = rs2("parametro_campo_real")
 				'	DEVE COLOCAR AUTOMATICAMENTE COM 'CRÉDITO OK'?
-					if rs2("parametro_1_campo_flag") = 1 then blnPedidoECommerceOrigemMarketplaceCreditoOkAutomatico = True
+					if rs2("parametro_1_campo_flag") = 1 then blnPedidoECommerceCreditoOkAutomatico = True
 				'	Nº PEDIDO MARKETPLACE É OBRIGATÓRIO?
 					if rs2("parametro_2_campo_flag") = 1 then
 						if s_numero_mktplace = "" then
@@ -1828,7 +1830,7 @@
 						end if
 					rs("forma_pagto")=s_forma_pagto
 					rs("vl_total_familia")=vl_total
-					if blnPedidoECommerceOrigemMarketplaceCreditoOkAutomatico then
+					if blnPedidoECommerceCreditoOkAutomatico then
 						rs("analise_credito")=Clng(COD_AN_CREDITO_OK)
 						rs("analise_credito_data")=Now
 						rs("analise_credito_usuario")="AUTOMÁTICO"
