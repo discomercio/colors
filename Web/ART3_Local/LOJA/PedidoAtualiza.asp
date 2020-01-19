@@ -215,6 +215,9 @@
 			end if
 		end if
 	
+	dim blnMarketplaceCodigoOrigemAlterado
+	blnMarketplaceCodigoOrigemAlterado = False
+
 	dim s_qtde_parcelas, s_forma_pagto, s_obs1, s_obs2, s_obs3, s_ped_bonshop, s_indicador, s_pedido_ac, s_pedido_mktplace, s_pedido_origem
 	dim s_analise_credito, s_analise_credito_a, s_nf_texto, s_num_pedido_compra
 	dim s_etg_imediata, s_bem_uso_consumo
@@ -234,7 +237,17 @@
     s_nf_texto = Trim(Request("c_nf_texto"))
     s_num_pedido_compra = Trim(Request("c_num_pedido_compra"))
 
-	if s_pedido_mktplace = "" then s_pedido_origem = ""
+' BUG:	if s_pedido_mktplace = "" then s_pedido_origem = ""
+
+'	PARA PEDIDOS DO ARCLUBE, É PERMITIDO FICAR SEM O Nº MAGENTO SOMENTE NOS SEGUINTES CASOS:
+'		1) PEDIDO ORIGINADO PELO TELEVENDAS
+'		2) PEDIDO GERADO CONTRA A TRANSPORTADORA (EM CASOS QUE A TRANSPORTADORA SE RESPONSABILIZA PELA REPOSIÇÃO DE MERCADORIA EXTRAVIADA)
+	if (Trim(s_pedido_origem) <> "002") And (Trim(s_pedido_origem) <> "019") then
+		if s_pedido_ac = "" then
+			alerta=texto_add_br(alerta)
+			alerta=alerta & "Informe o nº Magento"
+			end if
+		end if
 
     dim c_loja
 	c_loja = Trim(Request.Form("c_loja"))
@@ -1033,6 +1046,7 @@
 								end if
 							end if
 						
+						blnMarketplaceCodigoOrigemAlterado = True
 						rs("marketplace_codigo_origem")=s_pedido_origem
 						end if
 					end if
@@ -1183,6 +1197,7 @@
 								end if
 							end if
 						
+						blnMarketplaceCodigoOrigemAlterado = True
 						rs("marketplace_codigo_origem")=s_pedido_origem
 						end if
 					end if
@@ -1572,6 +1587,24 @@
 				next
 			end if
 		
+		'Sincroniza o campo 'marketplace_codigo_origem' dos pedidos-filhote, se existirem
+		if alerta = "" then
+			if blnMarketplaceCodigoOrigemAlterado then
+				s = "UPDATE t_PED__FILHOTE" & _
+					" SET" & _
+						" t_PED__FILHOTE.marketplace_codigo_origem = t_PED__BASE.marketplace_codigo_origem" & _
+					" FROM t_PEDIDO AS t_PED__FILHOTE" & _
+						" INNER JOIN t_PEDIDO AS t_PED__BASE ON (t_PED__FILHOTE.pedido_base = t_PED__BASE.pedido)" & _
+					" WHERE" & _
+						" (t_PED__FILHOTE.pedido_base = '" & retorna_num_pedido_base(pedido_selecionado) & "')" & _
+						" AND (t_PED__FILHOTE.pedido <> t_PED__FILHOTE.pedido_base)"
+				cn.Execute(s)
+				If Err <> 0 then
+					alerta = "FALHA AO SINCRONIZAR O CAMPO 'marketplace_codigo_origem' (" & Cstr(Err) & ": " & Err.Description & ")."
+					end if
+				end if
+			end if
+
 		if alerta = "" then
 			if (s_log <> "") And (s_log_FP <> "") then s_log = s_log & "; "
 			s_log = s_log & s_log_FP

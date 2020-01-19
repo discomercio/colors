@@ -195,6 +195,10 @@
 			rs("etg_imediata_data") = sx("etg_imediata_data")
 			rs("etg_imediata_usuario") = sx("etg_imediata_usuario")
 			
+			rs("pedido_bs_x_ac") = sx("pedido_bs_x_ac")
+			rs("pedido_bs_x_marketplace") = sx("pedido_bs_x_marketplace")
+			rs("marketplace_codigo_origem") = sx("marketplace_codigo_origem")
+
 			rs("GarantiaIndicadorStatus") = sx("GarantiaIndicadorStatus")
 			rs("GarantiaIndicadorUsuarioUltAtualiz") = sx("GarantiaIndicadorUsuarioUltAtualiz")
 			rs("GarantiaIndicadorDtHrUltAtualiz") = sx("GarantiaIndicadorDtHrUltAtualiz")
