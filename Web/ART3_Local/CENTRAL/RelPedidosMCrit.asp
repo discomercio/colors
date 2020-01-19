@@ -209,7 +209,7 @@ function grupo_origem_pedido_monta_itens_select(byval id_default)
 dim x, r, strResp
 	id_default = Trim("" & id_default)
 
-	set r = cn.Execute("SELECT * FROM t_CODIGO_DESCRICAO WHERE grupo='PedidoECommerce_Origem_Grupo' AND st_inativo=0")
+	set r = cn.Execute("SELECT * FROM t_CODIGO_DESCRICAO WHERE (grupo='PedidoECommerce_Origem_Grupo') AND (st_inativo=0) ORDER BY ordenacao")
 	strResp = ""
 	do while Not r.eof 
 		x = Trim("" & r("codigo"))
@@ -238,7 +238,7 @@ function origem_pedido_monta_itens_select(byval id_default)
 dim x, r, strResp
 	id_default = Trim("" & id_default)
 
-	set r = cn.Execute("SELECT * FROM t_CODIGO_DESCRICAO WHERE grupo='PedidoECommerce_Origem' AND st_inativo=0")
+	set r = cn.Execute("SELECT * FROM t_CODIGO_DESCRICAO WHERE (grupo='PedidoECommerce_Origem') AND (st_inativo=0) ORDER BY ordenacao")
 	strResp = ""
 	do while Not r.eof 
 		x = Trim("" & r("codigo"))
