@@ -160,10 +160,12 @@
 '	PARA PEDIDOS DO ARCLUBE, É PERMITIDO FICAR SEM O Nº MAGENTO SOMENTE NOS SEGUINTES CASOS:
 '		1) PEDIDO ORIGINADO PELO TELEVENDAS
 '		2) PEDIDO GERADO CONTRA A TRANSPORTADORA (EM CASOS QUE A TRANSPORTADORA SE RESPONSABILIZA PELA REPOSIÇÃO DE MERCADORIA EXTRAVIADA)
-	if (Trim(s_pedido_origem) <> "002") And (Trim(s_pedido_origem) <> "019") then
-		if s_pedido_ac = "" then
-			alerta=texto_add_br(alerta)
-			alerta=alerta & "Informe o nº Magento"
+	if r_pedido.loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
+		if (Trim(s_pedido_origem) <> "002") And (Trim(s_pedido_origem) <> "019") then
+			if s_pedido_ac = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Informe o nº Magento"
+				end if
 			end if
 		end if
 
