@@ -2279,15 +2279,15 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 		<!--  EDIÇÃO ESTÁ BLOQUEADA EM PEDIDO ENTREGUE   -->
 		<table class="Q" style="width:649px;" cellspacing="0">
 			<tr>
-				<td class="MB" colspan="6" align="left"><p class="Rf">Observações </p>
+				<td class="MB" colspan="7" align="left"><p class="Rf">Observações </p>
 					<textarea name="c_obs1" id="c_obs1" class="PLLe" rows="<%=Cstr(MAX_LINHAS_OBS1)%>" 
-						style="width:642px;margin-left:2pt;" onkeypress="limita_tamanho(this,MAX_TAM_OBS1);" onblur="this.value=trim(this.value);"
+						style="width:99%;margin-left:2pt;" onkeypress="limita_tamanho(this,MAX_TAM_OBS1);" onblur="this.value=trim(this.value);"
 						<% if Not blnObs1EdicaoLiberada then Response.Write " readonly tabindex=-1 " %>
 						><%=r_pedido.obs_1%></textarea>
 				</td>
 			</tr>
             <tr>
-		        <td class="MB" colspan="6" align="left"><p class="Rf">Constar na NF</p>
+		        <td class="MB" colspan="7" align="left"><p class="Rf">Constar na NF</p>
 			        <textarea name="c_nf_texto" id="c_nf_texto" class="PLLe" rows="<%=Cstr(MAX_LINHAS_NF_TEXTO_CONSTAR)%>" 
 				        style="width:99%;margin-left:2pt;" onkeypress="limita_tamanho(this,MAX_TAM_NF_TEXTO);" onblur="this.value=trim(this.value);"
 				        <% if Not blnObs1EdicaoLiberada then Response.Write " readonly tabindex=-1 " %>
@@ -2295,7 +2295,7 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 		        </td>
 	        </tr>
             <tr>
-                <td class="MB" align="left" colspan="6" nowrap><p class="Rf">xPed</p>
+                <td class="MB" align="left" colspan="7" nowrap><p class="Rf">xPed</p>
 			        <input name="c_num_pedido_compra" id="c_num_pedido_compra" class="PLLe" maxlength="15" style="width:100px;margin-left:2pt;" onkeypress="filtra_nome_identificador();" onblur="this.value=trim(this.value);"
 				    <% if Not blnObs1EdicaoLiberada then Response.Write " readonly tabindex=-1 " %>
                         value='<%=r_pedido.NFe_xPed%>'>
@@ -2312,12 +2312,12 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 					<% if Not blnObs3EdicaoLiberada then Response.Write " readonly tabindex=-1 " %>
 						value='<%=r_pedido.obs_3%>'>
 				</td>
-                <% if blnNumPedidoECommerceEdicaoLiberada then %>
                 <td class="MD" align="left" valign="top" nowrap><p class="Rf">Número Magento</p>
 			        <input name="c_pedido_ac" id="c_pedido_ac" class="PLLe" style="width:90px;margin-left:2pt;" maxlength="9" onkeypress="if (digitou_enter(true)) fPED.c_qtde_parcelas.focus(); filtra_nome_identificador();return SomenteNumero(event)" onblur="this.value=trim(this.value);"
-				        value='<%=r_pedido.pedido_ac%>'>
+				        value='<%=r_pedido.pedido_ac%>'
+						<%if Not blnNumPedidoECommerceEdicaoLiberada then Response.Write " readonly tabindex=-1" %>
+						/>
 		        </td>
-                <% end if %>
 				<td class="MD" nowrap align="left" valign="top"><p class="Rf">Entrega Imediata</p>
 					<% if Not blnEntregaImediataEdicaoLiberada then strDisabled=" disabled" else strDisabled=""%>
 					<input type="radio" id="rb_etg_imediata" name="rb_etg_imediata" 
@@ -2359,7 +2359,7 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 			<tr>
 			    <td class="MC" colspan="2"><p class="Rf">Referente Pedido Bonshop: </p>
 			    </td>
-			    <td class="MC" colspan="4" align="left">
+			    <td class="MC" colspan="5" align="left">
 			        <select id="Select1" name="pedBonshop" style="width: 120px">
 			            <option value="">&nbsp;</option>
 			            <%
@@ -2539,12 +2539,12 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 						<% if Not blnObs3EdicaoLiberada then Response.Write " readonly tabindex=-1 " %>
 						value='<%=r_pedido.obs_3%>'>
 				</td>
-                <% if blnNumPedidoECommerceEdicaoLiberada then %>                
                 <td class="MD" align="left" valign="top" nowrap><p class="Rf">Número Magento</p>
 			        <input name="c_pedido_ac" id="c_pedido_ac" maxlength="9" class="PLLe" style="width:90px;margin-left:2pt;" onkeypress="if (digitou_enter(true)) fPED.c_qtde_parcelas.focus(); filtra_nome_identificador();return SomenteNumero(event)" onblur="this.value=trim(this.value);"
-				        value='<%=r_pedido.pedido_ac%>'>
+				        value='<%=r_pedido.pedido_ac%>'
+						<%if Not blnNumPedidoECommerceEdicaoLiberada then Response.Write " readonly tabindex=-1" %>
+						/>
 		        </td>
-                <% end if %>
 				<td class="MD" nowrap align="left" valign="top"><p class="Rf">Entrega Imediata</p>
 					<% if Not blnEntregaImediataEdicaoLiberada then strDisabled=" disabled" else strDisabled=""%>
 					<input type="radio" id="rb_etg_imediata" name="rb_etg_imediata" 
@@ -2586,7 +2586,7 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 			<tr>
 			    <td class="MC" colspan="2"><p class="Rf">Referente Pedido Bonshop: </p>
 			    </td>
-			    <td class="MC" colspan="4" align="left">
+			    <td class="MC" colspan="5" align="left">
 			        <select id="Select2" name="pedBonshop" style="width: 120px">
 			            <option value="">&nbsp;</option>
 			            <%
