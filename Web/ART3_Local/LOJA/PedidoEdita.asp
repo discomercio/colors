@@ -2587,7 +2587,7 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 			<tr>
 				<td class="MB" colspan="6" align="left"><p class="Rf">Observações </p>
 					<textarea name="c_obs1" id="c_obs1" class="PLLe" rows="<%=Cstr(MAX_LINHAS_OBS1)%>" 
-						style="width:642px;margin-left:2pt;" onkeypress="limita_tamanho(this,MAX_TAM_OBS1);" onblur="this.value=trim(this.value);"
+						style="width:99%;margin-left:2pt;" onkeypress="limita_tamanho(this,MAX_TAM_OBS1);" onblur="this.value=trim(this.value);"
 						<% if Not blnObs1EdicaoLiberada then Response.Write " readonly tabindex=-1 " %>
 						><%=r_pedido.obs_1%></textarea>
 				</td>
@@ -2816,7 +2816,7 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 			<tr>
 				<td class="MB" colspan="6" align="left"><p class="Rf">Observações </p>
 					<textarea name="c_obs1" id="c_obs1" class="PLLe" rows="<%=Cstr(MAX_LINHAS_OBS1)%>" 
-						style="width:642px;margin-left:2pt;" onkeypress="limita_tamanho(this,MAX_TAM_OBS1);" onblur="this.value=trim(this.value);"
+						style="width:99%;margin-left:2pt;" onkeypress="limita_tamanho(this,MAX_TAM_OBS1);" onblur="this.value=trim(this.value);"
 						<% if Not blnObs1EdicaoLiberada then Response.Write " readonly tabindex=-1 " %>
 						><%=r_pedido.obs_1%></textarea>
 				</td>
