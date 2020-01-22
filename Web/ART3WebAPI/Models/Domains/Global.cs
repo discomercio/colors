@@ -36,8 +36,8 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.18";
-				public const string Data = "30.OUT.2019";
+				public const string Numero = "2.19";
+				public const string Data = "21.JAN.2020";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
             #endregion
@@ -139,6 +139,9 @@ namespace ART3WebAPI.Models.Domains
 			 * v 2.18 - 30.10.2019 - por HHO
              *      Desenvolvimento de tratamento em MagentoApiController para pedidos do marketplace Leroy
              *      Merlin.
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.19 - 21.01.2020 - por LHGX
+             *      Desenvolvimento do download XLS do relatório de ocorrências.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.00 - XX.XX.20XX - por XXX
 			 * -----------------------------------------------------------------------------------------------

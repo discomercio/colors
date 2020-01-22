@@ -87,6 +87,7 @@
 <script src="<%=URL_FILE__JQUERY_MY_GLOBAL%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__JQUERY_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__GLOBAL_JS%>" Language="JavaScript" Type="text/javascript"></script>
+<script src="<%=URL_FILE__AJAX_JS%>" language="JavaScript" type="text/javascript"></script>
 
 <script language="JavaScript" type="text/javascript">
 function fFILTROConfirma(f) {
@@ -109,6 +110,80 @@ var i, blnFlag;
 }
 </script>
 
+<script type="text/javascript">
+    function geraArquivoXLS(f) {
+        var serverVariableUrl, strUrl, xmlHttp;
+        var i, oc_status, transportadora, loja;
+        var s_de, s_ate, s_hoje;
+        loja = $("#c_loja").val();
+
+        var idxStatus = $("input[name=rb_status]:checked").index();
+        if (idxStatus == 0) {
+            oc_status = "ABERTA";
+        }
+        else if (idxStatus == 3) {
+            oc_status = "EM_ANDAMENTO";
+        }
+        else {
+            oc_status = "AMBOS";
+        }
+
+        serverVariableUrl = '<%=Request.ServerVariables("URL")%>';
+        serverVariableUrl = serverVariableUrl.toUpperCase();
+        serverVariableUrl = serverVariableUrl.substring(0, serverVariableUrl.indexOf("CENTRAL"));
+
+        xmlhttp = GetXmlHttpObject();
+        if (xmlhttp == null) {
+            alert("O browser NÃO possui suporte ao AJAX!!");
+            return;
+        }
+
+        window.status = "Aguarde, gerando arquivo ...";
+        divMsgAguardeObtendoDados.style.visibility = "";
+
+        strUrl = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/GetXLSReport2/';
+        strUrl = strUrl + '?usuario=<%=usuario%>';
+        strUrl = strUrl + '&oc_status=' + oc_status;
+        strUrl = strUrl + '&transportadora=' + $("#c_transportadora").val();
+        strUrl = strUrl + '&loja=' + loja;
+
+
+        xmlhttp.onreadystatechange = function () {
+            var xmlResp;
+
+            if (xmlhttp.readyState == AJAX_REQUEST_IS_COMPLETE) {
+                xmlResp = JSON.parse(xmlhttp.responseText);
+
+                if (xmlResp.Status == "OK") {
+
+                    gerarRelatorio.action = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/downloadXLS2/?fileName=' + xmlResp.fileName;
+                    gerarRelatorio.submit();
+
+                    window.status = "Concluído";
+                    divMsgAguardeObtendoDados.style.visibility = "hidden";
+                }
+                else if (xmlResp.Status == "Falha") {
+                    window.status = "Concluído";
+                    divMsgAguardeObtendoDados.style.visibility = "hidden";
+
+                    alert("Falha ao gerar o arquivo XLS\n" + xmlResp.Exception);
+                    return;
+                }
+                else if (xmlResp.Status == "Vazio") {
+                    window.status = "Concluído";
+                    divMsgAguardeObtendoDados.style.visibility = "hidden";
+
+                    alert(xmlResp.Exception);
+                    return;
+                }
+            }
+        }
+
+        xmlhttp.open("POST", strUrl, true);
+        xmlhttp.send();
+
+    }
+</script>
 
 
 
@@ -124,11 +199,21 @@ var i, blnFlag;
 -->
 
 <link href="<%=URL_FILE__E_CSS%>" Rel="stylesheet" Type="text/css">
+<link href="<%=URL_FILE__JQUERY_UI_CSS%>" rel="stylesheet" type="text/css">
 
 
 <body onload="focus();">
 <center>
 
+<!-- MENSAGEM: "Aguarde, obtendo dados" -->
+
+	<div id="divMsgAguardeObtendoDados" name="divMsgAguardeObtendoDados" style="background-image: url('../Imagem/ajax_loader_gray_256.gif');background-repeat:no-repeat;background-position: center center;position:absolute;bottom:0px;left:0px;width:100%;height:100%;z-index:9;border: 1pt solid #C0C0C0;background-color: black;opacity:0.6;visibility:hidden;vertical-align: middle">
+
+	</div>
+
+    <form name="gerarRelatorio" id="gerarRelatorio" method="POST">
+    <input type="hidden" name="idRel" id="idRel" value="" />
+    </form>
 <form id="fFILTRO" name="fFILTRO" method="post" action="RelPedidoOcorrencia.asp">
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
 
@@ -187,6 +272,12 @@ var i, blnFlag;
 			</select>
 		</td>
 	</tr>
+<!-- ArquivoXLS -->
+    <tr bgColor="#FFFFFF" NOWRAP>
+        <td class="ME MB MD" >
+            <a href="javascript:geraArquivoXLS(gerarRelatorio);" class="C" style="margin-left:0px;"><div class="Button" style="width:150px;margin-left:10px;margin-top:10px; padding:3px;color:black;text-align:center;">Arquivo XLS</div></a></td>
+        </td>
+    </tr>
 </table>
 
 <!-- ************   SEPARADOR   ************ -->
