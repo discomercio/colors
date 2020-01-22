@@ -117,6 +117,16 @@ var i, blnFlag;
         var s_de, s_ate, s_hoje;
         loja = $("#c_loja").val();
 
+        var idxStatus = $("input[name=rb_status]:checked").index();
+        if (idxStatus == 0) {
+            oc_status = "ABERTA";
+        }
+        else if (idxStatus == 3) {
+            oc_status = "EM_ANDAMENTO";
+        }
+        else {
+            oc_status = "AMBOS";
+        }
 
         serverVariableUrl = '<%=Request.ServerVariables("URL")%>';
         serverVariableUrl = serverVariableUrl.toUpperCase();
@@ -133,7 +143,7 @@ var i, blnFlag;
 
         strUrl = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/GetXLSReport2/';
         strUrl = strUrl + '?usuario=<%=usuario%>';
-        strUrl = strUrl + '&oc_status=' + $("#rb_status").val();
+        strUrl = strUrl + '&oc_status=' + oc_status;
         strUrl = strUrl + '&transportadora=' + $("#c_transportadora").val();
         strUrl = strUrl + '&loja=' + loja;
 

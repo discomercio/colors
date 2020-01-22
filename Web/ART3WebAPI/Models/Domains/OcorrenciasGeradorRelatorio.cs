@@ -57,18 +57,18 @@ namespace ART3WebAPI.Models.Domains
 
 
                     ws.Column(1).Width = 2;
-                    ws.Column(COL_Loja).Width = 15;
-                    ws.Column(COL_CD).Width = 15;
-                    ws.Column(COL_Pedido).Width = 15;
-                    ws.Column(COL_NF).Width = 15;
+                    ws.Column(COL_Loja).Width = 10;
+                    ws.Column(COL_CD).Width = 10;
+                    ws.Column(COL_Pedido).Width = 10;
+                    ws.Column(COL_NF).Width = 10;
                     ws.Column(COL_Cliente).Width = 40;
-					ws.Column(COL_UF).Width = 15;
+					ws.Column(COL_UF).Width = 10;
 					ws.Column(COL_Cidade).Width = 40;
-					ws.Column(COL_Transportadora).Width = 20;
-					ws.Column(COL_Contato).Width = 20;
+					ws.Column(COL_Transportadora).Width = 30;
+					ws.Column(COL_Contato).Width = 30;
                     ws.Column(COL_Telefone).Width = 20;
 					ws.Column(COL_Ocorrencia).Width = 40;
-                    ws.Column(COL_TipoOcorrencia).Width = 40;
+                    ws.Column(COL_TipoOcorrencia).Width = 20;
 					ws.Column(COL_Status).Width = 20;
  
                     ws.Row(1).Height = 1;                
@@ -95,7 +95,7 @@ namespace ART3WebAPI.Models.Domains
                         rng1.Style.Border.Left.Style = ExcelBorderStyle.Thin;
                     }
 
-                    ws.Cells[LIN_CABECALHO, COL_TipoOcorrencia].Style.Border.Right.Style = ExcelBorderStyle.Medium;
+                    ws.Cells[LIN_CABECALHO, COL_Status].Style.Border.Right.Style = ExcelBorderStyle.Medium;
                     ws.Cells[LIN_CABECALHO, COL_Loja].Value = "Loja";
                     ws.Cells[LIN_CABECALHO, COL_CD].Value = "CD";
                     ws.Cells[LIN_CABECALHO, COL_Pedido].Value = "Pedido";
@@ -129,6 +129,7 @@ namespace ART3WebAPI.Models.Domains
                     #region [ Registros ]
                     using (ExcelRange rng2 = ws.Cells["B" + LIN_INICIO_REGISTROS + ":" + ws.Cells[NumRegistros + LIN_INICIO_REGISTROS - 1, COL_Status]])
                     {
+                        rng2.Style.Font.Bold = false;
                         rng2.Style.Border.Bottom.Style = ExcelBorderStyle.Hair;
                         rng2.Style.Border.Left.Style = ExcelBorderStyle.Thin;
                         rng2.Style.Border.Right.Style = ExcelBorderStyle.Thin;
@@ -153,12 +154,15 @@ namespace ART3WebAPI.Models.Domains
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_Cidade].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_Transportadora].Value = datasource.ElementAt(i).Transportadora;
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_Transportadora].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+                        ws.Cells[i + LIN_INICIO_REGISTROS, COL_Transportadora].Style.WrapText = true;
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_Contato].Value = datasource.ElementAt(i).Contato;
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_Contato].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+                        ws.Cells[i + LIN_INICIO_REGISTROS, COL_Contato].Style.WrapText = true;
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_Telefone].Value = datasource.ElementAt(i).Telefone;
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_Telefone].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_Ocorrencia].Value = datasource.ElementAt(i).Ocorrencia;
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_Ocorrencia].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+                        ws.Cells[i + LIN_INICIO_REGISTROS, COL_Ocorrencia].Style.WrapText = true;
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_TipoOcorrencia].Value = datasource.ElementAt(i).TipoOcorrencia;
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_TipoOcorrencia].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_TipoOcorrencia].Style.WrapText = true;

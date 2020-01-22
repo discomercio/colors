@@ -38,6 +38,7 @@ namespace ART3WebAPI.Models.Repository
                         "'('+ tPO.ddd_1+')'+tPO.tel_1 AS telefone," +
                         " tPO.texto_ocorrencia," +
                         " tPO.tipo_ocorrencia," +
+                        " tPO.cod_motivo_abertura," +
                         " tP.loja," +
 						" tP.loja AS pedido_loja," +
 						" tP.transportadora_id," +
@@ -147,6 +148,7 @@ namespace ART3WebAPI.Models.Repository
                     int idxOcorrencia = reader.GetOrdinal("texto_ocorrencia");
                     int idxTipoOcorrencia = reader.GetOrdinal("tipo_ocorrencia");
                     int idxStatus = reader.GetOrdinal("status_ocorrencia");
+                    int idxCod_motivo_abertura = reader.GetOrdinal("cod_motivo_abertura");
 
                     while (reader.Read())
                     {
@@ -162,15 +164,16 @@ namespace ART3WebAPI.Models.Repository
                         _novo.Transportadora = reader.IsDBNull(idxTransportadora) ? "" : reader.GetString(idxTransportadora);
 						_novo.Contato = reader.IsDBNull(idxContato) ? "" : reader.GetString(idxContato);
 						_novo.Telefone = reader.IsDBNull(idxTelefone) ? "" : reader.GetString(idxTelefone);
-						_novo.Ocorrencia = reader.IsDBNull(idxOcorrencia) ? "" : reader.GetString(idxOcorrencia);
-						_novo.TipoOcorrencia = reader.IsDBNull(idxTipoOcorrencia) ? "" : reader.GetString(idxTipoOcorrencia);
+						//_novo.Ocorrencia = reader.IsDBNull(idxOcorrencia) ? "" : reader.GetString(idxOcorrencia);
+						//_novo.TipoOcorrencia = reader.IsDBNull(idxTipoOcorrencia) ? "" : reader.GetString(idxTipoOcorrencia);
 						_novo.Status = reader.IsDBNull(idxStatus) ? "" : reader.GetString(idxStatus);
+    
 
-                        /* consulta = BD.obtem_descricao_tabela_t_codigo_descricao(Global.Cte.GRUPO_T_CODIGO_DESCRICAO__OCORRENCIAS_EM_PEDIDOS__MOTIVO_ABERTURA, reader.IsDBNull(idxCod_motivo_abertura) ? "" : reader.GetString(idxCod_motivo_abertura));
+                        consulta = BD.obtem_descricao_tabela_t_codigo_descricao(Global.Cte.GRUPO_T_CODIGO_DESCRICAO__OCORRENCIAS_EM_PEDIDOS__MOTIVO_ABERTURA, reader.IsDBNull(idxCod_motivo_abertura) ? "" : reader.GetString(idxCod_motivo_abertura));
                         if (!string.IsNullOrEmpty(consulta))
                         {
                             _novo.Ocorrencia = consulta + " " + reader.GetString(idxOcorrencia);
-                            
+
                         }
                         else
                         {
@@ -178,7 +181,7 @@ namespace ART3WebAPI.Models.Repository
                         }
 
                         consulta = BD.obtem_descricao_tabela_t_codigo_descricao(Global.Cte.GRUPO_T_CODIGO_DESCRICAO__OCORRENCIAS_EM_PEDIDOS__TIPO_OCORRENCIA, reader.IsDBNull(idxTipoOcorrencia) ? "" : reader.GetString(idxTipoOcorrencia));
-                        
+
                         if (!string.IsNullOrEmpty(consulta))
                         {
                             _novo.TipoOcorrencia = consulta;
@@ -187,8 +190,8 @@ namespace ART3WebAPI.Models.Repository
                         else
                         {
                             _novo.TipoOcorrencia = reader.IsDBNull(idxTipoOcorrencia) ? "" : reader.GetString(idxTipoOcorrencia);
-                        } */
-                        
+                        }
+
                         ListaOcorrenciasStatus.Add(_novo);
                     }
                 }
