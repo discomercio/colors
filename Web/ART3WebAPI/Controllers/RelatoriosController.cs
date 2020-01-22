@@ -153,7 +153,75 @@ namespace ART3WebAPI.Controllers
             result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.ms-excel");
 
             return result;
-        } 
+        }
+        #endregion
+
+
+        #region [ OcorrenciaStatus ]
+        [HttpPost]
+        public async Task<HttpResponseMessage> GetXLSReport2(string usuario, string oc_status, string transportadora, string loja)
+        {
+
+
+            DateTime data = DateTime.Now;
+            string fileName = "Ocorrencias_" + data.ToString("yyyyMMdd_HHmmss");
+            fileName = fileName + ".xlsx";
+            string filePath = HttpContext.Current.Server.MapPath("~/Report/Relatorios/" + fileName);
+            StringBuilder xmlResponse = new StringBuilder();
+            Log s_log = new Log();
+            s_log.complemento = " Nome do arquivo: " + fileName;
+            s_log.operacao = "Relatório Ocorrencias";
+            s_log.usuario = usuario;
+            string strMsgErro = "";
+            string statusResponse = "";
+            string MsgErroException = "";
+            HttpResponseMessage result = null;
+
+            try
+            {
+
+                DataOcorrencias datasource = new DataOcorrencias();
+                List<OcorrenciasStatus> relOcorrenciasList = datasource.Get(oc_status, transportadora, loja).ToList();
+                if (relOcorrenciasList.Count != 0)
+                {
+                    await ART3WebAPI.Models.Domains.OcorrenciasGeradorRelatorio.GenerateXLS(relOcorrenciasList, filePath, oc_status, transportadora, loja);
+                    statusResponse = "OK";
+                    LogDAO.insere(usuario, s_log, strMsgErro);
+                }
+                else
+                {
+                    statusResponse = "Vazio";
+                    MsgErroException = "Nenhum registro foi encontrado!";
+                }
+
+            }
+            catch (Exception e)
+            {
+                statusResponse = "Falha";
+                MsgErroException = e.Message;
+            }
+
+            xmlResponse.Append("{ \"fileName\" : \"" + fileName + "\", " + "\"Status\" : \"" + statusResponse + "\", " + "\"Exception\" : " + System.Web.Helpers.Json.Encode(MsgErroException) + "}");
+            result = Request.CreateResponse(HttpStatusCode.OK);
+            result.Content = new StringContent(xmlResponse.ToString(), Encoding.UTF8, "application/json");
+
+            return result;
+        }
+
+        [HttpPost]
+        public HttpResponseMessage downloadXLS2(string fileName)
+        {
+            string filePath = HttpContext.Current.Server.MapPath("~/Report/Relatorios/" + fileName);
+
+            HttpResponseMessage result = null;
+            result = Request.CreateResponse(HttpStatusCode.OK);
+            result.Content = new StreamContent(new FileStream(filePath, FileMode.Open));
+            result.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment");
+            result.Content.Headers.ContentDisposition.FileName = fileName;
+            result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.ms-excel");
+
+            return result;
+        }
         #endregion
 
         #region [ Compras 2 ]
