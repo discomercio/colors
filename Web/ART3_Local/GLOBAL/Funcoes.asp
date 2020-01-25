@@ -4603,6 +4603,40 @@ dim s_resp, intIdNFeEmitente
 end function
 
 
+
+' ------------------------------------------------------------------------
+'   OBTEM PATH XML NFE
+'   Retorna o path do diretório onde estão os arquivos XML das NFe's
+'	do referido emitente.
+function obtem_path_xml_nfe(byval idNFeEmitente)
+dim s_resp, intIdNFeEmitente
+
+	obtem_path_xml_nfe = ""
+	
+	if Not IsNumeric(idNFeEmitente) then exit function
+	intIdNFeEmitente= CInt(idNFeEmitente)
+	
+	if intIdNFeEmitente = ID_NFE_EMITENTE__OLD01_01 then
+		s_resp = DIR_TARGET_ONE_XML_NFE_EMITENTE__OLD01_01
+	elseif intIdNFeEmitente = ID_NFE_EMITENTE__OLD03_01 then
+		s_resp = DIR_TARGET_ONE_XML_NFE_EMITENTE__OLD03_01
+	elseif intIdNFeEmitente = ID_NFE_EMITENTE__OLD02_02 then
+		s_resp = DIR_TARGET_ONE_XML_NFE_EMITENTE__OLD02_02
+	elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_01 then
+		s_resp = DIR_TARGET_ONE_XML_NFE_EMITENTE__DIS_01
+	elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_03 then
+		s_resp = DIR_TARGET_ONE_XML_NFE_EMITENTE__DIS_03
+	elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_903 then
+		s_resp = DIR_TARGET_ONE_XML_NFE_EMITENTE__DIS_903
+	else
+		s_resp = ""
+		end if
+		
+	obtem_path_xml_nfe=s_resp
+end function
+
+
+
 ' ------------------------------------------------------------------------
 '   MONTA DESCRICAO FORMA PAGTO
 '   Monta a descrição para a forma de pagamento especificada.
