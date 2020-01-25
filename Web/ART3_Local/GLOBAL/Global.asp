@@ -2767,6 +2767,134 @@ end function
 
 
 
+' ___________________________________________________________________________________
+' IsNFeCompletamenteEmitidaMontaLinkXmlNFe
+'
+function IsNFeCompletamenteEmitidaMontaLinkXmlNFe(byval strIdNfeEmitente, byval strSerieNFe, byval strNumeroNFe, byval html_elemento_interno_anchor, ByRef ChaveAcesso, ByRef LinkXml)
+dim s
+dim tNE, tNFE
+dim dbcNFe
+dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptografadaBd
+dim chave
+dim senha_decodificada
+dim fso
+dim intIdNFeEmitente
+dim strArqXml, strArqXmlNovo, strArqXmlAntigo
+dim strPathArqXml, strArqXmlCompletoAntigo, strArqXmlCompletoNovo
+dim blnArqXmlExiste
+	
+	IsNFeCompletamenteEmitidaMontaLinkXmlNFe = False
+	
+	LinkXml = ""
+
+	if Trim("" & strNumeroNFe) = "" then exit function
+	
+'	VERIFICA SE A NFe FOI COMPLETAMENTE EMITIDA
+	s = "SELECT" & _
+			" NFe_T1_servidor_BD," & _
+			" NFe_T1_nome_BD," & _
+			" NFe_T1_usuario_BD," & _
+			" NFe_T1_senha_BD" & _
+		" FROM t_NFe_EMITENTE" & _
+		" WHERE" & _
+			" (id = " & strIdNfeEmitente & ")"
+	set tNE = cn.Execute(s)
+	if tNE.Eof then exit function
+	
+	strNfeT1ServidorBd = Trim("" & tNE("NFe_T1_servidor_BD"))
+	strNfeT1NomeBd = Trim("" & tNE("NFe_T1_nome_BD"))
+	strNfeT1UsuarioBd = Trim("" & tNE("NFe_T1_usuario_BD"))
+	strNfeT1SenhaCriptografadaBd = Trim("" & tNE("NFe_T1_senha_BD"))
+	
+	tNE.Close
+	set tNE = nothing
+	
+	chave = gera_chave(FATOR_BD)
+	decodifica_dado strNfeT1SenhaCriptografadaBd, senha_decodificada, chave
+	s = "Provider=SQLOLEDB;" & _
+		"Data Source=" & strNfeT1ServidorBd & ";" & _
+		"Initial Catalog=" & strNfeT1NomeBd & ";" & _
+		"User ID=" & strNfeT1UsuarioBd & ";" & _
+		"Password=" & senha_decodificada & ";"
+	set dbcNFe = server.CreateObject("ADODB.Connection")
+	dbcNFe.ConnectionTimeout = 45
+	dbcNFe.CommandTimeout = 900
+	dbcNFe.ConnectionString = s
+	dbcNFe.Open
+
+	s = "SELECT" & _
+			" Nfe," & _
+			" Serie, " & _
+            " ChaveAcesso" & _
+		" FROM NFE" & _
+		" WHERE" & _
+			" (Serie = '" & NFeFormataSerieNF(strSerieNFe) & "')" & _
+			" AND (Nfe = '" & NFeFormataNumeroNF(strNumeroNFe) & "')" & _
+			" AND (CodProcAtual = 100)"
+	set tNFE = dbcNFe.Execute(s)
+	if tNFE.Eof then
+		dbcNFe.Close
+		set dbcNFe = nothing
+		exit function
+    else
+        ChaveAcesso = tNFE("ChaveAcesso")
+		end if
+		
+	tNFE.Close
+	set tNFE = nothing
+	
+	dbcNFe.Close
+	set dbcNFe = nothing
+	
+'	MONTA O NOME DO ARQUIVO DO XML DA NFE
+	strArqXml = ""
+	intIdNFeEmitente = CLng(strIdNfeEmitente)
+	strArqXmlAntigo = "NFe_" & strNumeroNFe & "_Série_" & strSerieNFe & ".XML"
+	strArqXmlNovo = "NFe_" & strNumeroNFe & "_Serie_" & strSerieNFe & ".XML"
+	if intIdNFeEmitente = ID_NFE_EMITENTE__OLD01_01 then
+		strArqXmlAntigo = "OLD01_" & strArqXmlAntigo
+		strArqXmlNovo = "OLD01_" & strArqXmlNovo
+	elseif intIdNFeEmitente = ID_NFE_EMITENTE__OLD02_02 then
+		strArqXmlAntigo = "OLD02_" & strArqXmlAntigo
+		strArqXmlNovo = "OLD02_" & strArqXmlNovo
+	elseif intIdNFeEmitente = ID_NFE_EMITENTE__OLD03_01 then
+		strArqXmlAntigo = "OLD03_" & strArqXmlAntigo
+		strArqXmlNovo = "OLD03_" & strArqXmlNovo
+	elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_01 then
+		strArqXmlAntigo = "DIS_" & strArqXmlAntigo
+		strArqXmlNovo = "DIS_" & strArqXmlNovo
+	elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_03 then
+		strArqXmlAntigo = "DIS_" & strArqXmlAntigo
+        strArqXmlNovo = "DIS_" & strArqXmlNovo
+	elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_903 then
+		strArqXmlAntigo = "DIS_" & strArqXmlAntigo
+		strArqXmlNovo = "DIS_" & strArqXmlNovo
+	else
+		exit function
+		end if
+
+	strPathArqXml = obtem_path_xml_nfe(intIdNFeEmitente)
+	strArqXmlCompletoAntigo = strPathArqXml & "\" & strArqXmlAntigo
+	strArqXmlCompletoNovo = strPathArqXml & "\" & strArqXmlNovo
+	
+	set fso = Server.CreateObject("Scripting.FileSystemObject")
+	blnArqXmlExiste = fso.FileExists(strArqXmlCompletoNovo)
+	if blnArqXmlExiste then strArqXml = strArqXmlNovo
+	if Not blnArqXmlExiste then
+		blnArqXmlExiste = fso.FileExists(strArqXmlCompletoAntigo)
+		if blnArqXmlExiste then strArqXml = strArqXmlAntigo
+		end if
+	set fso = nothing
+
+	if blnArqXmlExiste then
+		LinkXml = "<a name='lnkXmlNFePedido' href='../Global/DownloadXmlNFe.asp?file=" & strArqXml & "&emitente=" & Cstr(intIdNFeEmitente) & "&force=true" & "' title='Clique para consultar o XML da NFe deste pedido'>" & html_elemento_interno_anchor & "</a>"
+		end if
+
+	IsNFeCompletamenteEmitidaMontaLinkXmlNFe = True
+end function
+
+
+
 ' ____________________________________________
 ' CODIGO DESCRICAO MONTA ITENS SELECT
 '
