@@ -732,9 +732,9 @@ Option Explicit
 '|          |      | - Correção de bug (Emitir NFe com Número Manual)          |
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
-'|XX.XX.XXXX| XXXX |V X.XX                                                     |
-'|          |      |                                                           |
-'|          |      |                                                           |
+'|24.01.2020| LHGX |V 2.12                                                     |
+'|          |      | - Criação do arquivo UFS_INSCRICAO_VIRTUAL.TXT, para que  |
+'|          |      |   o texto sobre DIFAL/Partilha não seja impresso na NF    |
 '|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
@@ -747,8 +747,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.11"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  18/11/2019"
+Global Const m_id_versao = "2.12"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  24/01/2020"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"
@@ -1300,7 +1300,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -1622,7 +1622,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -1978,7 +1978,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -2295,7 +2295,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -2883,6 +2883,23 @@ Function cfop_eh_de_remessa(ByVal cod_cfop As String) As Boolean
         Next
     
     cfop_eh_de_remessa = ok
+    
+End Function
+
+Function uf_tem_instricao_virtual(ByVal s_uf As String) As Boolean
+    
+    Dim ok As Boolean
+    Dim i As Integer
+    
+    ok = False
+    For i = LBound(vCUFsInscricaoVirtual) To UBound(vCUFsInscricaoVirtual)
+        If vCUFsInscricaoVirtual(i) = s_uf Then
+            ok = True
+            Exit For
+            End If
+        Next
+    
+    uf_tem_instricao_virtual = ok
     
 End Function
 
@@ -4318,8 +4335,6 @@ Exit Function
 
 
 
-
-
 '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 LARCFOP_TRATA_ERRO_ARQUIVO:
 '=========================
@@ -4352,6 +4367,85 @@ LARCFOP_TRATA_ERRO:
     
     
 End Function
+
+Function le_arquivo_UFs_INSCRICAO_VIRTUAL(ByRef v_UF() As String, ByRef msg_erro As String) As Boolean
+' ------------------------------------------------------------------------
+'   LÊ ARQUIVO COM A LISTA DE UFs PARA OS QUAIS NÃO SERÁ EMITIDA A INFORMAÇÃO SOBRE PARTILHA DO ICMS
+
+Dim s_arq As String
+Dim s_linha As String
+Dim v() As String
+Dim i As Integer
+
+' ARQUIVO-TEXTO
+Dim Fnum As Integer
+
+    On Error GoTo LAUIV_TRATA_ERRO
+    
+    le_arquivo_UFs_INSCRICAO_VIRTUAL = False
+    msg_erro = ""
+    ReDim v_UF(0)
+    v_UF(UBound(v_UF)) = ""
+    
+    s_arq = barra_invertida_add(App.Path) & "UFs_INSCRICAO_VIRTUAL.TXT"
+    
+    Fnum = FreeFile
+    Open s_arq For Input As Fnum
+        
+    On Error GoTo LAUIV_TRATA_ERRO_ARQUIVO
+        
+    Do While Not EOF(Fnum)
+        
+        Line Input #Fnum, s_linha
+        
+        'LER APENAS LINHAS NÃO VAZIAS E NÃO INICIADAS POR APÓSTROFE
+        If Trim$(s_linha) <> "" And (left$(s_linha, 1) <> "'") Then
+
+            If (InStr("AC_AL_AP_AM_BA_CE_DF_ES_GO_MA_MT_MS_MG_PA_PB_PR_PE_PI_RJ_RN_RS_RO_RR_SC_SP_SE_TO", s_linha) > 0) Then
+                If Trim$(v_UF(UBound(v_UF))) <> "" Then
+                    ReDim Preserve v_UF(UBound(v_UF) + 1)
+                    End If
+                
+                v_UF(UBound(v_UF)) = s_linha
+                End If
+            End If
+        Loop
+        
+    Close Fnum
+        
+        
+    le_arquivo_UFs_INSCRICAO_VIRTUAL = True
+    
+Exit Function
+
+
+
+
+
+
+
+'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+LAUIV_TRATA_ERRO_ARQUIVO:
+'=========================
+    msg_erro = CStr(Err) & ": " & Error$(Err)
+    Err.Clear
+    
+    On Error Resume Next
+    Close Fnum
+    
+    Exit Function
+    
+'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+LAUIV_TRATA_ERRO:
+'=================
+    msg_erro = CStr(Err) & ": " & Error$(Err)
+    Err.Clear
+    
+    Exit Function
+    
+    
+End Function
+
 
 Function normaliza_codigo(ByVal codigo As String, ByVal tamanho_default As Long) As String
 ' ------------------------------------------------------------------------

@@ -86,6 +86,8 @@ Option Explicit
     
     Global vCFOPsSemPartilha() As TIPO_LISTA_CFOP
     
+    Global vCUFsInscricaoVirtual() As String
+    
     Global sPedidoTriangular As String
     
     Global sPedidoDANFETelaAnterior As String

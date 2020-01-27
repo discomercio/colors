@@ -41,7 +41,7 @@ namespace ART3WebAPI.Models.Domains
                 if (string.IsNullOrEmpty(oc_status))
                     oc_status = "Ambos";
                 if ((string.IsNullOrEmpty(transportadora)) || (transportadora == "0"))
-                    transportadora = "Todos";
+                    transportadora = "Todoa";
                 if (string.IsNullOrEmpty(loja))
                     loja = "Todas";
                 using (ExcelPackage pck = new ExcelPackage())
