@@ -79,10 +79,17 @@
 	Const DIR_TARGET_ONE_PDF_DANFE_EMITENTE__OLD01_01 = "C:\Program Files\Target One\E@syway NFe - S1\Integracao\PDF"
 	Const DIR_TARGET_ONE_PDF_DANFE_EMITENTE__OLD02_02 = "C:\Program Files\Target One\E@syway NFe - S3\Integracao\PDF"
 	Const DIR_TARGET_ONE_PDF_DANFE_EMITENTE__OLD03_01 = "C:\Program Files\Target One\E@syway NFe - S2\Integracao\PDF"
-	Const DIR_TARGET_ONE_PDF_DANFE_EMITENTE__DIS_01 = "C:\Program Files\Target One\E@syway NFe - S4\Integracao\PDF"
-	Const DIR_TARGET_ONE_PDF_DANFE_EMITENTE__DIS_03 = "C:\Program Files\Target One\E@syway NFe - S5\Integracao\PDF"
-    Const DIR_TARGET_ONE_PDF_DANFE_EMITENTE__DIS_903 = "C:\Program Files\Target One\E@syway NFe - S5\Integracao\PDF"
+	Const DIR_TARGET_ONE_PDF_DANFE_EMITENTE__DIS_01 = "D:\Work\Target One\E@syway NFe 4.00 P2\Integracao\PDF"
+	Const DIR_TARGET_ONE_PDF_DANFE_EMITENTE__DIS_03 = "D:\Work\Target One\E@syway NFe 4.00 P1\Integracao\PDF"
+    Const DIR_TARGET_ONE_PDF_DANFE_EMITENTE__DIS_903 = "D:\Work\Target One\E@syway NFe 4.00 P1\Integracao\PDF"
 	
+	Const DIR_TARGET_ONE_XML_NFE_EMITENTE__OLD01_01 = "C:\Program Files\Target One\E@syway NFe - S1\Integracao\XML"
+	Const DIR_TARGET_ONE_XML_NFE_EMITENTE__OLD02_02 = "C:\Program Files\Target One\E@syway NFe - S3\Integracao\XML"
+	Const DIR_TARGET_ONE_XML_NFE_EMITENTE__OLD03_01 = "C:\Program Files\Target One\E@syway NFe - S2\Integracao\XML"
+	Const DIR_TARGET_ONE_XML_NFE_EMITENTE__DIS_01 = "D:\Work\Target One\E@syway NFe 4.00 P2\Integracao\XML"
+	Const DIR_TARGET_ONE_XML_NFE_EMITENTE__DIS_03 = "D:\Work\Target One\E@syway NFe 4.00 P1\Integracao\XML"
+    Const DIR_TARGET_ONE_XML_NFE_EMITENTE__DIS_903 = "D:\Work\Target One\E@syway NFe 4.00 P1\Integracao\XML"
+
 	Const FATOR_BD = "1209"
 	
 	Const VISANET_SHOPID = ""
