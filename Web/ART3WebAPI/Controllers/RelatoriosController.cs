@@ -184,7 +184,7 @@ namespace ART3WebAPI.Controllers
                 List<OcorrenciasStatus> relOcorrenciasList = datasource.Get(oc_status, transportadora, loja).ToList();
                 if (relOcorrenciasList.Count != 0)
                 {
-                    await ART3WebAPI.Models.Domains.OcorrenciasGeradorRelatorio.GenerateXLS(relOcorrenciasList, filePath, oc_status, transportadora, loja);
+                    await ART3WebAPI.Models.Domains.OcorrenciasGeradorRelatorio.GenerateXLS(relOcorrenciasList, filePath, oc_status, loja, transportadora);
                     statusResponse = "OK";
                     LogDAO.insere(usuario, s_log, strMsgErro);
                 }

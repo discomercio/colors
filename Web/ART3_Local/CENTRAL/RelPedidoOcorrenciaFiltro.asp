@@ -144,8 +144,8 @@ var i, blnFlag;
         strUrl = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/GetXLSReport2/';
         strUrl = strUrl + '?usuario=<%=usuario%>';
         strUrl = strUrl + '&oc_status=' + oc_status;
-        strUrl = strUrl + '&transportadora=' + $("#c_transportadora").val();
         strUrl = strUrl + '&loja=' + loja;
+        strUrl = strUrl + '&transportadora=' + $("#c_transportadora").val();
 
 
         xmlhttp.onreadystatechange = function () {

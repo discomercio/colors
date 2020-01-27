@@ -101,12 +101,12 @@ namespace ART3WebAPI.Models.Repository
 						
 					if ((!string.IsNullOrEmpty(transportadora)) && (transportadora != "0"))
 					{						
-						sqlString = sqlString + " AND (tP.transportadora_id = < " + transportadora + ")";					
+						sqlString = sqlString + " AND (tP.transportadora_id = '" + transportadora + "')";					
 					}
 
 					if (!string.IsNullOrEmpty(loja))
 					{
-						sqlString = sqlString + " AND (tP.numero_loja = < " + loja + ")";					
+						sqlString = sqlString + " AND (tP.numero_loja = " + loja + ")";					
 					}
 
 					if (oc_status == "ABERTA") 
