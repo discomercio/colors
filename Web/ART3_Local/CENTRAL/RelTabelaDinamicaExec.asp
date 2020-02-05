@@ -85,7 +85,7 @@
 '	CAMPOS DE SAÍDA SELECIONADOS
 	dim ckb_COL_DATA, ckb_COL_NF, ckb_COL_DT_EMISSAO_NF, ckb_COL_PEDIDO, ckb_COL_VENDEDOR, ckb_COL_INDICADOR
 	dim ckb_COL_CPF_CNPJ_CLIENTE, ckb_COL_NOME_CLIENTE, ckb_COL_RT
-	dim ckb_COL_PRODUTO, ckb_COL_DESCRICAO_PRODUTO, ckb_COL_VL_UNITARIO, ckb_COL_QTDE
+	dim ckb_COL_PRODUTO, ckb_COL_DESCRICAO_PRODUTO, ckb_COL_VL_UNITARIO, ckb_COL_VL_TOTAL, ckb_COL_QTDE
 	dim ckb_COL_VL_CUSTO, ckb_COL_VL_LISTA, ckb_COL_GRUPO, ckb_COL_POTENCIA_BTU
 	dim ckb_COL_CICLO, ckb_COL_POSICAO_MERCADO, ckb_COL_MARCA, ckb_COL_TRANSPORTADORA
 	dim ckb_COL_CIDADE, ckb_COL_UF, ckb_COL_QTDE_PARCELAS, ckb_COL_MEIO_PAGAMENTO, ckb_COL_TEL, ckb_COL_EMAIL
@@ -104,6 +104,7 @@
 	ckb_COL_PRODUTO = Trim(Request.Form("ckb_COL_PRODUTO"))
 	ckb_COL_DESCRICAO_PRODUTO = Trim(Request.Form("ckb_COL_DESCRICAO_PRODUTO"))
 	ckb_COL_VL_UNITARIO = Trim(Request.Form("ckb_COL_VL_UNITARIO"))
+	ckb_COL_VL_TOTAL = Trim(Request.Form("ckb_COL_VL_TOTAL"))
 	ckb_COL_QTDE = Trim(Request.Form("ckb_COL_QTDE"))
 	ckb_COL_VL_CUSTO = Trim(Request.Form("ckb_COL_VL_CUSTO"))
 	ckb_COL_VL_LISTA = Trim(Request.Form("ckb_COL_VL_LISTA"))
@@ -165,6 +166,7 @@
 		if ckb_COL_VL_CUSTO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_CUSTO" & "|"
 		if ckb_COL_VL_LISTA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_LISTA" & "|"
 		if ckb_COL_VL_UNITARIO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_UNITARIO" & "|"
+		if ckb_COL_VL_TOTAL <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_TOTAL" & "|"
 		if ckb_COL_RT <> "" then s_campos_saida = s_campos_saida & "ckb_COL_RT" & "|"	
 		if ckb_COL_QTDE_PARCELAS <> "" then s_campos_saida = s_campos_saida & "ckb_COL_QTDE_PARCELAS" & "|"
 		if ckb_COL_MEIO_PAGAMENTO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_MEIO_PAGAMENTO" & "|"
@@ -509,6 +511,7 @@ dim s_qtde, item_peso, item_cubagem, item_qtde
 	if ckb_COL_VL_CUSTO <> "" then x_cab = x_cab & "VL CUSTO;"
 	if ckb_COL_VL_LISTA <> "" then x_cab = x_cab & "VL LISTA;"
 	if ckb_COL_VL_UNITARIO <> "" then x_cab = x_cab & "VL UNITARIO;"
+	if ckb_COL_VL_TOTAL <> "" then x_cab = x_cab & "VL TOTAL"
 	if ckb_COL_RT <> "" then x_cab = x_cab & "RT;"
 	if ckb_COL_QTDE_PARCELAS <> "" then x_cab = x_cab & "QTDE PARCELAS;"
 	if ckb_COL_MEIO_PAGAMENTO <> "" then x_cab = x_cab & "MEIO DE PAGAMENTO;"
@@ -537,273 +540,280 @@ dim s_qtde, item_peso, item_cubagem, item_qtde
 
         for i=1 to Abs(item_qtde)
 
-	 '> DATA
-		if ckb_COL_DATA <> "" then
-			x = x & formata_data(r("faturamento_data")) & ";"
-			end if
-		
-	 '> NF
-		if ckb_COL_NF <> "" then
-			s = Trim("" & r("numero_NF"))
-			if s = "" then
-				s = Trim("" & r("obs_2"))
+		 '> DATA
+			if ckb_COL_DATA <> "" then
+				x = x & formata_data(r("faturamento_data")) & ";"
 				end if
-			x = x & s & ";"
-			end if
 		
-	'> DATA DA EMISSÃO NF
-		if ckb_COL_DT_EMISSAO_NF <> "" then
-			if Trim("" & r("dt_emissao")) <> "" then 
-				s = formata_data(r("dt_emissao"))
-			else
-				s = ""
+		 '> NF
+			if ckb_COL_NF <> "" then
+				s = Trim("" & r("numero_NF"))
+				if s = "" then
+					s = Trim("" & r("obs_2"))
+					end if
+				x = x & s & ";"
 				end if
-			x = x & s & ";"
-			end if
+		
+		'> DATA DA EMISSÃO NF
+			if ckb_COL_DT_EMISSAO_NF <> "" then
+				if Trim("" & r("dt_emissao")) <> "" then 
+					s = formata_data(r("dt_emissao"))
+				else
+					s = ""
+					end if
+				x = x & s & ";"
+				end if
 
-	 '> PEDIDO
-		if ckb_COL_PEDIDO <> "" then
-			x = x & Trim("" & r("pedido")) & ";"
-			end if
+		 '> PEDIDO
+			if ckb_COL_PEDIDO <> "" then
+				x = x & Trim("" & r("pedido")) & ";"
+				end if
 			
-	'> CLIENTE: CPF/CNPJ
-		if ckb_COL_CPF_CNPJ_CLIENTE <> "" then
-			x = x & cnpj_cpf_formata(Trim("" & r("cnpj_cpf"))) & ";"
-			end if
+		'> CLIENTE: CPF/CNPJ
+			if ckb_COL_CPF_CNPJ_CLIENTE <> "" then
+				x = x & cnpj_cpf_formata(Trim("" & r("cnpj_cpf"))) & ";"
+				end if
 			
-	'> CLIENTE: NOME
-		if ckb_COL_NOME_CLIENTE <> "" then
-			s = Trim("" & r("nome_cliente"))
-			s = substitui_caracteres(s, ";", ",")
-			x = x & s & ";"
-			end if
+		'> CLIENTE: NOME
+			if ckb_COL_NOME_CLIENTE <> "" then
+				s = Trim("" & r("nome_cliente"))
+				s = substitui_caracteres(s, ";", ",")
+				x = x & s & ";"
+				end if
 			
-	 '> CIDADE
-	    if ckb_COL_CIDADE <> "" then
-	        x = x & Trim("" & r("cidade")) & ";"
-	    end if
+		 '> CIDADE
+			if ckb_COL_CIDADE <> "" then
+				x = x & Trim("" & r("cidade")) & ";"
+			end if
 	 
-	 '> UF
-	    if ckb_COL_UF <> "" then
-	        x = x & Trim("" & r("uf")) & ";"
-	    end if
+		 '> UF
+			if ckb_COL_UF <> "" then
+				x = x & Trim("" & r("uf")) & ";"
+			end if
 
-     '> TELEFONES
-        if ckb_COL_TEL <> "" then
-            if CStr(r("tipo_cliente")) = ID_PF then
-                x = x & iif( (Trim("" & r("ddd_res")) <> ""),   "(" & Trim("" & r("ddd_res")) & ") " & Trim("" & r("tel_res")) & ";",   ";" )
-                x = x & iif( (Trim("" & r("ddd_cel")) <> ""),   "(" & Trim("" & r("ddd_cel")) & ") " & Trim("" & r("tel_cel")) & ";",   ";" )
-                x = x & iif( (Trim("" & r("ddd_com")) <> ""),   "(" & Trim("" & r("ddd_com")) & ") " & Trim("" & r("tel_com")),   "" )
-                x = x & iif( (Trim("" & r("ramal_com")) <> ""),   " R:" & Trim("" & r("ramal_com")) & ";",  ";" )
-            elseif CStr(r("tipo_cliente")) = ID_PJ then
-                x = x & iif( (Trim("" & r("ddd_com")) <> ""),   "(" & Trim("" & r("ddd_com")) & ") " & Trim("" & r("tel_com")),   "" )
-                x = x & iif( (Trim("" & r("ramal_com")) <> ""),   " R:" & Trim("" & r("ramal_com")) & ";",  ";" )   
-                x = x & iif( (Trim("" & r("ddd_com_2")) <> ""),   "(" & Trim("" & r("ddd_com_2")) & ") " & Trim("" & r("tel_com_2")),   "" )
-                x = x & iif( (Trim("" & r("ramal_com_2")) <> ""),   " R:" & Trim("" & r("ramal_com_2")) & ";",   ";" )  
-                x = x & ";"             
-            end if
-        end if
+		 '> TELEFONES
+			if ckb_COL_TEL <> "" then
+				if CStr(r("tipo_cliente")) = ID_PF then
+					x = x & iif( (Trim("" & r("ddd_res")) <> ""),   "(" & Trim("" & r("ddd_res")) & ") " & Trim("" & r("tel_res")) & ";",   ";" )
+					x = x & iif( (Trim("" & r("ddd_cel")) <> ""),   "(" & Trim("" & r("ddd_cel")) & ") " & Trim("" & r("tel_cel")) & ";",   ";" )
+					x = x & iif( (Trim("" & r("ddd_com")) <> ""),   "(" & Trim("" & r("ddd_com")) & ") " & Trim("" & r("tel_com")),   "" )
+					x = x & iif( (Trim("" & r("ramal_com")) <> ""),   " R:" & Trim("" & r("ramal_com")) & ";",  ";" )
+				elseif CStr(r("tipo_cliente")) = ID_PJ then
+					x = x & iif( (Trim("" & r("ddd_com")) <> ""),   "(" & Trim("" & r("ddd_com")) & ") " & Trim("" & r("tel_com")),   "" )
+					x = x & iif( (Trim("" & r("ramal_com")) <> ""),   " R:" & Trim("" & r("ramal_com")) & ";",  ";" )   
+					x = x & iif( (Trim("" & r("ddd_com_2")) <> ""),   "(" & Trim("" & r("ddd_com_2")) & ") " & Trim("" & r("tel_com_2")),   "" )
+					x = x & iif( (Trim("" & r("ramal_com_2")) <> ""),   " R:" & Trim("" & r("ramal_com_2")) & ";",   ";" )  
+					x = x & ";"             
+				end if
+			end if
      
-    '> E-MAIL
-		if ckb_COL_EMAIL <> "" then
-			x = x & Trim("" & r("email")) & ";"
-			end if        
+		'> E-MAIL
+			if ckb_COL_EMAIL <> "" then
+				x = x & Trim("" & r("email")) & ";"
+				end if        
 		
-	 '> VENDEDOR
-		if ckb_COL_VENDEDOR <> "" then
-			x = x & Trim("" & r("vendedor")) & ";"
-			end if
+		 '> VENDEDOR
+			if ckb_COL_VENDEDOR <> "" then
+				x = x & Trim("" & r("vendedor")) & ";"
+				end if
 		
-	 '> INDICADOR
-		if ckb_COL_INDICADOR <> "" then
-			x = x & Trim("" & r("indicador")) & ";"
-			end if
+		 '> INDICADOR
+			if ckb_COL_INDICADOR <> "" then
+				x = x & Trim("" & r("indicador")) & ";"
+				end if
 		
-	 '> TRANSPORTADORA
-		if ckb_COL_TRANSPORTADORA <> "" then
-			x = x & UCase(Trim("" & r("transportadora_id"))) & ";"
-			end if 
+		 '> TRANSPORTADORA
+			if ckb_COL_TRANSPORTADORA <> "" then
+				x = x & UCase(Trim("" & r("transportadora_id"))) & ";"
+				end if 
 
-    '> INDICADOR: CPF/CNPJ
-		if ckb_COL_INDICADOR_CPF_CNPJ <> "" then
-			x = x & cnpj_cpf_formata(Trim("" & r("indicador_cnpj_cpf"))) & ";"
-			end if 
+		'> INDICADOR: CPF/CNPJ
+			if ckb_COL_INDICADOR_CPF_CNPJ <> "" then
+				x = x & cnpj_cpf_formata(Trim("" & r("indicador_cnpj_cpf"))) & ";"
+				end if 
 
-    '> INDICADOR: ENDEREÇO
-        if ckb_COL_INDICADOR_ENDERECO <> "" then
-            x = x & formata_endereco(Trim("" & r("indicador_endereco")), Trim("" & r("indicador_endereco_numero")), Trim("" & r("indicador_endereco_complemento")), Trim("" & r("indicador_bairro")), "", "", Trim("" & r("indicador_cep"))) & ";"
-            end if
+		'> INDICADOR: ENDEREÇO
+			if ckb_COL_INDICADOR_ENDERECO <> "" then
+				x = x & formata_endereco(Trim("" & r("indicador_endereco")), Trim("" & r("indicador_endereco_numero")), Trim("" & r("indicador_endereco_complemento")), Trim("" & r("indicador_bairro")), "", "", Trim("" & r("indicador_cep"))) & ";"
+				end if
 			
-    '> INDICADOR: CIDADE
-	    if ckb_COL_INDICADOR_CIDADE <> "" then
-	        x = x & Trim("" & r("indicador_cidade")) & ";"
-	    end if
+		'> INDICADOR: CIDADE
+			if ckb_COL_INDICADOR_CIDADE <> "" then
+				x = x & Trim("" & r("indicador_cidade")) & ";"
+			end if
 	 
-	 '> INDICADOR: UF
-	    if ckb_COL_INDICADOR_UF <> "" then
-	        x = x & Trim("" & r("indicador_uf")) & ";"
-	    end if
-
-    '> INDICADOR: E-MAIL 
-		if ckb_COL_INDICADOR_EMAILS <> "" then
-			x = x & Trim("" & r("indicador_email")) & ";"
+		 '> INDICADOR: UF
+			if ckb_COL_INDICADOR_UF <> "" then
+				x = x & Trim("" & r("indicador_uf")) & ";"
 			end if
 
-    '> INDICADOR: E-MAIL 2
-		if ckb_COL_INDICADOR_EMAILS <> "" then
-			x = x & Trim("" & r("indicador_email2")) & ";"
-			end if
+		'> INDICADOR: E-MAIL 
+			if ckb_COL_INDICADOR_EMAILS <> "" then
+				x = x & Trim("" & r("indicador_email")) & ";"
+				end if
 
-    '> INDICADOR: E-MAIL 3
-		if ckb_COL_INDICADOR_EMAILS <> "" then
-			x = x & Trim("" & r("indicador_email3")) & ";"
-			end if
+		'> INDICADOR: E-MAIL 2
+			if ckb_COL_INDICADOR_EMAILS <> "" then
+				x = x & Trim("" & r("indicador_email2")) & ";"
+				end if
 
-	'> NOME FABRICANTE
-		if ckb_COL_MARCA <> "" then
-			x = x & UCase(Trim("" & r("nome_fabricante"))) & ";"
-			end if
+		'> INDICADOR: E-MAIL 3
+			if ckb_COL_INDICADOR_EMAILS <> "" then
+				x = x & Trim("" & r("indicador_email3")) & ";"
+				end if
+
+		'> NOME FABRICANTE
+			if ckb_COL_MARCA <> "" then
+				x = x & UCase(Trim("" & r("nome_fabricante"))) & ";"
+				end if
 			
-	'> GRUPO
-		if ckb_COL_GRUPO <> "" then
-			x = x & Trim("" & r("grupo")) & ";"
-			end if
+		'> GRUPO
+			if ckb_COL_GRUPO <> "" then
+				x = x & Trim("" & r("grupo")) & ";"
+				end if
 		
-	 '> BTU
-		if ckb_COL_POTENCIA_BTU <> "" then
-			s = Trim("" & r("potencia_BTU"))
-			if s = "0" then s = ""
-			x = x & s & ";"
-			end if
+		 '> BTU
+			if ckb_COL_POTENCIA_BTU <> "" then
+				s = Trim("" & r("potencia_BTU"))
+				if s = "0" then s = ""
+				x = x & s & ";"
+				end if
 		
-	 '> CICLO
-		if ckb_COL_CICLO <> "" then
-			x = x & Trim("" & r("ciclo")) & ";"
-			end if
+		 '> CICLO
+			if ckb_COL_CICLO <> "" then
+				x = x & Trim("" & r("ciclo")) & ";"
+				end if
 		
-	 '> POSIÇÃO MERCADO
-		if ckb_COL_POSICAO_MERCADO <> "" then
-			x = x & Trim("" & r("posicao_mercado")) & ";"
-			end if
+		 '> POSIÇÃO MERCADO
+			if ckb_COL_POSICAO_MERCADO <> "" then
+				x = x & Trim("" & r("posicao_mercado")) & ";"
+				end if
 		
-     '> CÓDIGO DO PRODUTO
-		if ckb_COL_PRODUTO <> "" then
-		 '	FORÇA P/ SER TRATADO COMO TEXTO
-			x = x & chr(34) & "=" & chr(34) & chr(34) & Trim("" & r("produto")) & chr(34) & chr(34) & chr(34) & ";"
-			end if
+		 '> CÓDIGO DO PRODUTO
+			if ckb_COL_PRODUTO <> "" then
+			 '	FORÇA P/ SER TRATADO COMO TEXTO
+				x = x & chr(34) & "=" & chr(34) & chr(34) & Trim("" & r("produto")) & chr(34) & chr(34) & chr(34) & ";"
+				end if
 		
-	 '> DESCRIÇÃO DO PRODUTO
-		if ckb_COL_DESCRICAO_PRODUTO <> "" then
-			s = Trim("" & r("descricao"))
-			s = substitui_caracteres(s, ";", ",")
-			x = x & s & ";"
-			end if
+		 '> DESCRIÇÃO DO PRODUTO
+			if ckb_COL_DESCRICAO_PRODUTO <> "" then
+				s = Trim("" & r("descricao"))
+				s = substitui_caracteres(s, ";", ",")
+				x = x & s & ";"
+				end if
 	
-    ' DESMEMBRAR ITENS ?
-	    if ckb_AGRUPAMENTO <> "" then
-            if CInt(Trim("" & r("qtde"))) < 0 then
-                s_qtde = CInt(Trim("" & r("qtde"))) / CInt(Trim("" & r("qtde"))) * (-1)
-            else 
-                s_qtde = CInt(Trim("" & r("qtde"))) / CInt(Trim("" & r("qtde")))
-            end if
-        else
-		    s_qtde = Trim("" & r("qtde"))
-        end if
-
-    '> QTDE
-		if ckb_COL_QTDE <> "" then
-            x = x & s_qtde & ";"                 
-		end if
-
-    '> PERCENTUAL DE DESCONTO
-        if ckb_COL_PERC_DESC <> "" then
-            x = x & formata_perc_desc(Trim("" & r("desc_dado"))) & ";"
-        end if
-
-    '> CUBAGEM
-        if ckb_COL_CUBAGEM <> "" then
-            item_cubagem = converte_numero(s_qtde) * converte_numero(r("cubagem"))
-            x = x & formata_numero(item_cubagem, 2) & ";"
-        end if
-
-    '> PESO
-        if ckb_COL_PESO <> "" then
-            item_peso = s_qtde * r("peso")
-            x = x & item_peso & ";"
-        end if
-
-    '> FRETE
-        if ckb_COL_FRETE <> "" then
-            s = formata_moeda(Trim("" & r("vl_frete")))
-            if s = "" then s = 0
-            x = x & s & ";"       
-        end if
-			
-	'> VALOR CUSTO
-		if ckb_COL_VL_CUSTO <> "" then
-		'	EXPORTAR VALOR UTILIZANDO '.' COMO SEPARADOR DECIMAL
-			s = substitui_caracteres(bd_formata_moeda(r("vl_custo2")), ".", SEPARADOR_DECIMAL)
-			x = x & s & ";"
+		' DESMEMBRAR ITENS ?
+			if ckb_AGRUPAMENTO <> "" then
+				if CInt(Trim("" & r("qtde"))) < 0 then
+					s_qtde = CInt(Trim("" & r("qtde"))) / CInt(Trim("" & r("qtde"))) * (-1)
+				else 
+					s_qtde = CInt(Trim("" & r("qtde"))) / CInt(Trim("" & r("qtde")))
+				end if
+			else
+				s_qtde = Trim("" & r("qtde"))
 			end if
+
+		'> QTDE
+			if ckb_COL_QTDE <> "" then
+				x = x & s_qtde & ";"                 
+			end if
+
+		'> PERCENTUAL DE DESCONTO
+			if ckb_COL_PERC_DESC <> "" then
+				x = x & formata_perc_desc(Trim("" & r("desc_dado"))) & ";"
+			end if
+
+		'> CUBAGEM
+			if ckb_COL_CUBAGEM <> "" then
+				item_cubagem = converte_numero(s_qtde) * converte_numero(r("cubagem"))
+				x = x & formata_numero(item_cubagem, 2) & ";"
+			end if
+
+		'> PESO
+			if ckb_COL_PESO <> "" then
+				item_peso = s_qtde * r("peso")
+				x = x & item_peso & ";"
+			end if
+
+		'> FRETE
+			if ckb_COL_FRETE <> "" then
+				s = formata_moeda(Trim("" & r("vl_frete")))
+				if s = "" then s = 0
+				x = x & s & ";"       
+			end if
+			
+		'> VALOR CUSTO
+			if ckb_COL_VL_CUSTO <> "" then
+			'	EXPORTAR VALOR UTILIZANDO '.' COMO SEPARADOR DECIMAL
+				s = substitui_caracteres(bd_formata_moeda(r("vl_custo2")), ".", SEPARADOR_DECIMAL)
+				x = x & s & ";"
+				end if
 		
-	 '> PREÇO DE LISTA
-		if ckb_COL_VL_LISTA <> "" then
-		'	EXPORTAR VALOR UTILIZANDO '.' COMO SEPARADOR DECIMAL
-			s = substitui_caracteres(bd_formata_moeda(r("preco_lista")), ".", SEPARADOR_DECIMAL)
-			x = x & s & ";"
-			end if
+		 '> PREÇO DE LISTA
+			if ckb_COL_VL_LISTA <> "" then
+			'	EXPORTAR VALOR UTILIZANDO '.' COMO SEPARADOR DECIMAL
+				s = substitui_caracteres(bd_formata_moeda(r("preco_lista")), ".", SEPARADOR_DECIMAL)
+				x = x & s & ";"
+				end if
 			
-	'> VALOR UNITÁRIO
-		if ckb_COL_VL_UNITARIO <> "" then
-		'	EXPORTAR VALOR UTILIZANDO '.' COMO SEPARADOR DECIMAL
-			s = substitui_caracteres(bd_formata_moeda(r("preco_venda")), ".", SEPARADOR_DECIMAL)
-			x = x & s & ";"
-			end if
+		'> VALOR UNITÁRIO
+			if ckb_COL_VL_UNITARIO <> "" then
+			'	EXPORTAR VALOR UTILIZANDO '.' COMO SEPARADOR DECIMAL
+				s = substitui_caracteres(bd_formata_moeda(r("preco_venda")), ".", SEPARADOR_DECIMAL)
+				x = x & s & ";"
+				end if
 		
-	 '> RT
-		perc_RT = r("perc_RT")
-	'	EVITA DIFERENÇAS DE ARREDONDAMENTO
-		vl_preco_venda = converte_numero(formata_moeda(r("preco_venda")))
-		vl_RT = (perc_RT/100) * vl_preco_venda
-		if ckb_COL_RT <> "" then
-			s = substitui_caracteres(bd_formata_moeda(vl_RT), ".", SEPARADOR_DECIMAL)
-			x = x & s & ";"
-			end if
-			
-	 '> QTDE DE PARCELAS
+		'> VALOR TOTAL
+			if ckb_COL_VL_TOTAL <> "" then
+			'	EXPORTAR VALOR UTILIZANDO '.' COMO SEPARADOR DECIMAL
+				s = substitui_caracteres(bd_formata_moeda(CLng(s_qtde) * r("preco_venda")), ".", SEPARADOR_DECIMAL)
+				x = x & s & ";"
+				end if
 
-	    if ckb_COL_QTDE_PARCELAS <> "" then
-	        x = x & Trim("" & r("qtde_parcelas")) & ";"
-	    end if
+		 '> RT
+			perc_RT = r("perc_RT")
+		'	EVITA DIFERENÇAS DE ARREDONDAMENTO
+			vl_preco_venda = converte_numero(formata_moeda(r("preco_venda")))
+			vl_RT = (perc_RT/100) * vl_preco_venda
+			if ckb_COL_RT <> "" then
+				s = substitui_caracteres(bd_formata_moeda(vl_RT), ".", SEPARADOR_DECIMAL)
+				x = x & s & ";"
+				end if
+			
+		 '> QTDE DE PARCELAS
+
+			if ckb_COL_QTDE_PARCELAS <> "" then
+				x = x & Trim("" & r("qtde_parcelas")) & ";"
+			end if
 	    
-     '> MEIO DE PAGAMENTO
-        if ckb_COL_MEIO_PAGAMENTO <> "" then
-        	tipo_parc = Trim("" & r("tipo_parcelamento"))
-            if tipo_parc = 1 then       
-                 s = x_opcao_forma_pagamento(Trim("" & r("forma_pagamento_av"))) 
-            elseif tipo_parc = 2 then    
-                     s = x_opcao_forma_pagamento(Trim(ID_FORMA_PAGTO_CARTAO))
-            elseif tipo_parc = 3 then    
-                     s = x_opcao_forma_pagamento(Trim("" & r("parcelamento_c_entrada"))) 
-            elseif tipo_parc = 4 then    
-                     s = x_opcao_forma_pagamento(Trim("" & r("parcelamento_s_entrada"))) 
-            elseif tipo_parc = 5 then     
-                    s = x_opcao_forma_pagamento(Trim("" & r("parcela_unica"))) 
-			elseif tipo_parc = 6 then
-                     s = x_opcao_forma_pagamento(Trim(ID_FORMA_PAGTO_CARTAO_MAQUINETA))
-            end if          
-            x = x & s & ";"
-        end if            
+		 '> MEIO DE PAGAMENTO
+			if ckb_COL_MEIO_PAGAMENTO <> "" then
+        		tipo_parc = Trim("" & r("tipo_parcelamento"))
+				if tipo_parc = 1 then       
+					 s = x_opcao_forma_pagamento(Trim("" & r("forma_pagamento_av"))) 
+				elseif tipo_parc = 2 then    
+						 s = x_opcao_forma_pagamento(Trim(ID_FORMA_PAGTO_CARTAO))
+				elseif tipo_parc = 3 then    
+						 s = x_opcao_forma_pagamento(Trim("" & r("parcelamento_c_entrada"))) 
+				elseif tipo_parc = 4 then    
+						 s = x_opcao_forma_pagamento(Trim("" & r("parcelamento_s_entrada"))) 
+				elseif tipo_parc = 5 then     
+						s = x_opcao_forma_pagamento(Trim("" & r("parcela_unica"))) 
+				elseif tipo_parc = 6 then
+						 s = x_opcao_forma_pagamento(Trim(ID_FORMA_PAGTO_CARTAO_MAQUINETA))
+				end if          
+				x = x & s & ";"
+			end if            
                 
 		
-		x = x & vbCrLf
+			x = x & vbCrLf
 		
-		if (n_reg_total mod 100) = 0 then
-			Response.Write x
-			x = ""
-			end if
+			if (n_reg_total mod 100) = 0 then
+				Response.Write x
+				x = ""
+				end if
 
-        next
+        next 'for i=1 to Abs(item_qtde)
 		
 		r.MoveNext
 		loop
