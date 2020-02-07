@@ -189,17 +189,20 @@ function fOPConcluir( f ){
 	
 	intIdx++;
 	if (f.rb_op[intIdx].checked) {
-		s_dest="OrcamentistaEIndicadorLista.asp?op=A";
+        s_dest = "OrcamentistaEIndicadorLista.asp?op=A";
+        f.filtro_loja.value = f.c_loja_ativos.value;
 		}
 	
 	intIdx++;
 	if (f.rb_op[intIdx].checked) {
-		s_dest="OrcamentistaEIndicadorLista.asp?op=I";
+        s_dest = "OrcamentistaEIndicadorLista.asp?op=I";
+        f.filtro_loja.value = f.c_loja_inativos.value;
 		}
 	
 	intIdx++;
 	if (f.rb_op[intIdx].checked) {
-		s_dest="OrcamentistaEIndicadorLista.asp?op=T";
+        s_dest = "OrcamentistaEIndicadorLista.asp?op=T";
+        f.filtro_loja.value = f.c_loja_todos.value;
 		}
 	
 	intIdx++;
@@ -362,6 +365,7 @@ function geraArquivoCSV(f) {
 <input type="hidden" name='id_selecionado' id="id_selecionado" value=''>
 <input type="hidden" name='operacao_selecionada' id="operacao_selecionada" value=''>
 <input type="hidden" name="url_origem" id="url_origem" value="MenuOrcamentistaEIndicador.asp<%= "?" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>" />
+<input type="hidden" name="filtro_loja" id="filtro_loja" value="" />
 
 
 
@@ -392,15 +396,18 @@ function geraArquivoCSV(f) {
             <br />
 			<br />
 			<% intIdx = intIdx+1 %>
-			<input type="radio" id="rb_op" name="rb_op" value="<%=Cstr(intIdx+1)%>" class="CBOX"<%=permissao%>><span class="rbLink" onclick="fOP.rb_op[<%=Cstr(intIdx)%>].click(); fOP.bEXECUTAR.click();">Consultar Ativos</span>
+			<input type="radio" id="rb_op" name="rb_op" value="<%=Cstr(intIdx+1)%>" class="CBOX"<%=permissao%>><span class="rbLink" onclick="fOP.rb_op[<%=Cstr(intIdx)%>].click(); fOP.bEXECUTAR.click();">Consultar Ativos</span>&nbsp;&nbsp;
+				<span class="Lbl">Loja:</span>&nbsp;<input name="c_loja_ativos" id="c_loja_ativos" type="text" maxlength="3" size="4" onblur="this.value=trim(this.value);" onclick="fOP.rb_op[<%= Cstr(intIdx) %>].click()" onkeypress="this.click(); if (digitou_enter(true) && tem_info(this.value)) if (fOPConcluir(fOP)) fOP.submit(); filtra_numerico();">
 			<br />
 			<br />
 			<% intIdx = intIdx+1 %>
-			<input type="radio" id="rb_op" name="rb_op" value="<%=Cstr(intIdx+1)%>" class="CBOX"<%=permissao%>><span class="rbLink" onclick="fOP.rb_op[<%=Cstr(intIdx)%>].click(); fOP.bEXECUTAR.click();">Consultar Inativos</span>
+			<input type="radio" id="rb_op" name="rb_op" value="<%=Cstr(intIdx+1)%>" class="CBOX"<%=permissao%>><span class="rbLink" onclick="fOP.rb_op[<%=Cstr(intIdx)%>].click(); fOP.bEXECUTAR.click();">Consultar Inativos</span>&nbsp;&nbsp;
+				<span class="Lbl">Loja:</span>&nbsp;<input name="c_loja_inativos" id="c_loja_inativos" type="text" maxlength="3" size="4" onblur="this.value=trim(this.value);" onclick="fOP.rb_op[<%= Cstr(intIdx) %>].click()" onkeypress="this.click(); if (digitou_enter(true) && tem_info(this.value)) if (fOPConcluir(fOP)) fOP.submit(); filtra_numerico();">
 			<br />
 			<br />
 			<% intIdx = intIdx+1 %>
-			<input type="radio" id="rb_op" name="rb_op" value="<%=Cstr(intIdx+1)%>" class="CBOX"<%=permissao%>><span class="rbLink" onclick="fOP.rb_op[<%=Cstr(intIdx)%>].click(); fOP.bEXECUTAR.click();">Consultar Ativos e Inativos</span>
+			<input type="radio" id="rb_op" name="rb_op" value="<%=Cstr(intIdx+1)%>" class="CBOX"<%=permissao%>><span class="rbLink" onclick="fOP.rb_op[<%=Cstr(intIdx)%>].click(); fOP.bEXECUTAR.click();">Consultar Ativos e Inativos</span>&nbsp;&nbsp;
+				<span class="Lbl">Loja:</span>&nbsp;<input name="c_loja_todos" id="c_loja_todos" type="text" maxlength="3" size="4" onblur="this.value=trim(this.value);" onclick="fOP.rb_op[<%= Cstr(intIdx) %>].click()" onkeypress="this.click(); if (digitou_enter(true) && tem_info(this.value)) if (fOPConcluir(fOP)) fOP.submit(); filtra_numerico();">
 			<br />
 			<br />
 			<% intIdx = intIdx+1 %>
