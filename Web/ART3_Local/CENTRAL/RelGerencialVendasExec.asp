@@ -332,7 +332,7 @@ sub consulta_executa
 dim intLargCodProduto, intLargDescrProduto, intLargQtdeProduto, intLargVendedor, intLargCidade , intLargCodFabricante ,intLargNomeFabricante
 dim intLargIndicador, intLargUF, intLargColPerc, intLargColMonetario, intLargLoja
 dim r
-dim s, s_aux, s_where, s_where_aux, s_where_venda, s_where_devolucao, s_where_loja, s_where_cst, s_cor
+dim s, s_aux, s_where, s_where_aux, s_where_venda, s_where_devolucao, s_where_loja, s_where_cst, s_cor, s_nome_loja
 dim s_sql, cab_table, cab, n_reg_BD, n_reg_vetor, x
 dim vl_total_final_venda, vl_total_venda
 dim percFatVenda, percFinalFatVenda, percRTFatVenda, percRTEDesc
@@ -1108,7 +1108,7 @@ dim vTotGrupo, vl_aux_RA_liquido
 	intLargColMonetario = 70
 	intLargColPerc = 42
 	intLargCidade = 270
-    intLargLoja = 70
+    intLargLoja = 90
 	cab_table = "<table cellspacing=0>" & chr(13)
 	cab = "	<tr style='background:azure' nowrap>" & chr(13)
 	
@@ -2160,10 +2160,15 @@ dim vTotGrupo, vl_aux_RA_liquido
             '> QUANTIDADE
 				x = x & "		<td class='MTD' style='width:" & CStr(intLargQtdeProduto) & "px;' align='right' valign='bottom'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeProdutos) & "</span></td>" & chr(13)
             elseif rb_saida = COD_SAIDA_REL_LOJA then
-			'> UF
+			'> LOJA
 				s = UCase(Trim(vRelat(intIdxVetor).c1))
-				if s = "" then s = "&nbsp;"
-				x = x & "		<td class='MDTE' style='width:" & CStr(intLargLoja) & "px;' align='center' valign='bottom'><span class='Cnc' style='color:" & s_cor & ";'>" & s & "</span></td>" & chr(13)
+				if s = "" then
+					s = "&nbsp;"
+					s_nome_loja = ""
+				else
+					s_nome_loja = "<br /><span class='Cnc' style='color:" & s_cor & ";'>(" & x_loja(s) & ")</span>"
+					end if
+				x = x & "		<td class='MDTE' style='width:" & CStr(intLargLoja) & "px;' align='center' valign='bottom'><span class='Cnc' style='color:" & s_cor & ";'>" & s & "</span>" & s_nome_loja & "</td>" & chr(13)
             '> QUANTIDADE
 				x = x & "		<td class='MTD' style='width:" & CStr(intLargQtdeProduto) & "px;' align='right' valign='bottom'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeProdutos) & "</span></td>" & chr(13)
 			elseif rb_saida = COD_SAIDA_REL_INDICADOR_UF then
