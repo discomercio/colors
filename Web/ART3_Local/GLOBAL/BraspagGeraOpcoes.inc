@@ -23,6 +23,9 @@ dim credito_habilitado, debito_habilitado
 	elseif bandeira = BRASPAG_BANDEIRA__ELO then
 		credito_habilitado = True
 		debito_habilitado = False
+	elseif bandeira = BRASPAG_BANDEIRA__HIPERCARD then
+		credito_habilitado = True
+		debito_habilitado = False
 	elseif bandeira = BRASPAG_BANDEIRA__DINERS then
 		credito_habilitado = True
 		debito_habilitado = False
@@ -84,6 +87,8 @@ dim credito_habilitado, debito_habilitado
 						texto_obs_juros = "* Verificar a taxa de juros praticada junto ao emissor do seu cartão Amex."
 					elseif bandeira = BRASPAG_BANDEIRA__ELO Then
 						texto_obs_juros = "* Verificar a taxa de juros praticada junto ao emissor do seu cartão ELO."
+					elseif bandeira = BRASPAG_BANDEIRA__HIPERCARD Then
+						texto_obs_juros = "* Verificar a taxa de juros praticada junto ao emissor do seu cartão Hipercard."
 					elseif bandeira = BRASPAG_BANDEIRA__DINERS Then
 						texto_obs_juros = "* Verificar a taxa de juros praticada junto ao emissor do seu cartão Diners."
 					elseif bandeira = BRASPAG_BANDEIRA__DISCOVER Then
