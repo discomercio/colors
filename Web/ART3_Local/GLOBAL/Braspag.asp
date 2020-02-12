@@ -508,6 +508,8 @@ dim s_resp
 		s_resp = "Amex"
 	elseif bandeira = "elo" then
 		s_resp = "Elo"
+	elseif bandeira = "hipercard" then
+		s_resp = "Hipercard"
 	elseif bandeira = "diners" then
 		s_resp = "Diners"
 	elseif bandeira = "discover" then
@@ -543,6 +545,8 @@ dim s_resp
 		s_resp = COD_AMEX_PRAZO_PAGTO_LOJA
 	elseif bandeira = Ucase(BRASPAG_BANDEIRA__ELO) then
 		s_resp = COD_ELO_PRAZO_PAGTO_LOJA
+	elseif bandeira = Ucase(BRASPAG_BANDEIRA__HIPERCARD) then
+		s_resp = COD_HIPERCARD_PRAZO_PAGTO_LOJA
 	elseif bandeira = Ucase(BRASPAG_BANDEIRA__DINERS) then
 		s_resp = COD_DINERS_PRAZO_PAGTO_LOJA
 	elseif bandeira = Ucase(BRASPAG_BANDEIRA__DISCOVER) then
@@ -576,6 +580,8 @@ dim s_resp
 		s_resp = COD_AMEX_PRAZO_PAGTO_EMISSOR
 	elseif bandeira = Ucase(BRASPAG_BANDEIRA__ELO) then
 		s_resp = COD_ELO_PRAZO_PAGTO_EMISSOR
+	elseif bandeira = Ucase(BRASPAG_BANDEIRA__HIPERCARD) then
+		s_resp = COD_HIPERCARD_PRAZO_PAGTO_EMISSOR
 	elseif bandeira = Ucase(BRASPAG_BANDEIRA__DINERS) then
 		s_resp = COD_DINERS_PRAZO_PAGTO_EMISSOR
 	elseif bandeira = Ucase(BRASPAG_BANDEIRA__DISCOVER) then
@@ -608,6 +614,8 @@ dim s_resp
 		s_resp = "Amex.gif"
 	elseif bandeira = Ucase(BRASPAG_BANDEIRA__ELO) then
 		s_resp = "Elo.gif"
+	elseif bandeira = Ucase(BRASPAG_BANDEIRA__HIPERCARD) then
+		s_resp = "Hipercard.gif"
 	elseif bandeira = Ucase(BRASPAG_BANDEIRA__DINERS) then
 		s_resp = "Diners.gif"
 	elseif bandeira = Ucase(BRASPAG_BANDEIRA__DISCOVER) then
@@ -642,6 +650,8 @@ dim s_resp
 		s_resp = "opt_Amex.gif"
 	elseif bandeira = Ucase(BRASPAG_BANDEIRA__ELO) then
 		s_resp = "opt_Elo.gif"
+	elseif bandeira = Ucase(BRASPAG_BANDEIRA__HIPERCARD) then
+		s_resp = "opt_Hipercard.gif"
 	elseif bandeira = Ucase(BRASPAG_BANDEIRA__DINERS) then
 		s_resp = "opt_Diners.gif"
 	elseif bandeira = Ucase(BRASPAG_BANDEIRA__DISCOVER) then
@@ -673,6 +683,7 @@ dim qtdeBandeiras
 		if BRASPAG_OLD01_BANDEIRA_HABILITADA__MASTERCARD then qtdeBandeiras = qtdeBandeiras + 1
 		if BRASPAG_OLD01_BANDEIRA_HABILITADA__AMEX then qtdeBandeiras = qtdeBandeiras + 1
 		if BRASPAG_OLD01_BANDEIRA_HABILITADA__ELO then qtdeBandeiras = qtdeBandeiras + 1
+		if BRASPAG_OLD01_BANDEIRA_HABILITADA__HIPERCARD then qtdeBandeiras = qtdeBandeiras + 1
 		if BRASPAG_OLD01_BANDEIRA_HABILITADA__DINERS then qtdeBandeiras = qtdeBandeiras + 1
 		if BRASPAG_OLD01_BANDEIRA_HABILITADA__DISCOVER then qtdeBandeiras = qtdeBandeiras + 1
 		if BRASPAG_OLD01_BANDEIRA_HABILITADA__AURA then qtdeBandeiras = qtdeBandeiras + 1
@@ -683,6 +694,7 @@ dim qtdeBandeiras
 		if BRASPAG_OLD02_BANDEIRA_HABILITADA__MASTERCARD then qtdeBandeiras = qtdeBandeiras + 1
 		if BRASPAG_OLD02_BANDEIRA_HABILITADA__AMEX then qtdeBandeiras = qtdeBandeiras + 1
 		if BRASPAG_OLD02_BANDEIRA_HABILITADA__ELO then qtdeBandeiras = qtdeBandeiras + 1
+		if BRASPAG_OLD02_BANDEIRA_HABILITADA__HIPERCARD then qtdeBandeiras = qtdeBandeiras + 1
 		if BRASPAG_OLD02_BANDEIRA_HABILITADA__DINERS then qtdeBandeiras = qtdeBandeiras + 1
 		if BRASPAG_OLD02_BANDEIRA_HABILITADA__DISCOVER then qtdeBandeiras = qtdeBandeiras + 1
 		if BRASPAG_OLD02_BANDEIRA_HABILITADA__AURA then qtdeBandeiras = qtdeBandeiras + 1
@@ -693,6 +705,7 @@ dim qtdeBandeiras
 		if BRASPAG_DIS_BANDEIRA_HABILITADA__MASTERCARD then qtdeBandeiras = qtdeBandeiras + 1
 		if BRASPAG_DIS_BANDEIRA_HABILITADA__AMEX then qtdeBandeiras = qtdeBandeiras + 1
 		if BRASPAG_DIS_BANDEIRA_HABILITADA__ELO then qtdeBandeiras = qtdeBandeiras + 1
+		if BRASPAG_DIS_BANDEIRA_HABILITADA__HIPERCARD then qtdeBandeiras = qtdeBandeiras + 1
 		if BRASPAG_DIS_BANDEIRA_HABILITADA__DINERS then qtdeBandeiras = qtdeBandeiras + 1
 		if BRASPAG_DIS_BANDEIRA_HABILITADA__DISCOVER then qtdeBandeiras = qtdeBandeiras + 1
 		if BRASPAG_DIS_BANDEIRA_HABILITADA__AURA then qtdeBandeiras = qtdeBandeiras + 1
@@ -714,6 +727,7 @@ function BraspagArrayBandeiras
 							BRASPAG_BANDEIRA__MASTERCARD, _
 							BRASPAG_BANDEIRA__AMEX, _
 							BRASPAG_BANDEIRA__ELO, _
+							BRASPAG_BANDEIRA__HIPERCARD, _
 							BRASPAG_BANDEIRA__DINERS, _
 							BRASPAG_BANDEIRA__DISCOVER, _
 							BRASPAG_BANDEIRA__AURA, _
@@ -776,6 +790,8 @@ dim strResposta, strBandeira
 		strResposta = "DinersClub"
 	elseif strBandeira = UCase(BRASPAG_BANDEIRA__ELO) then
 		strResposta = "Elo"
+	elseif strBandeira = UCase(BRASPAG_BANDEIRA__HIPERCARD) then
+		strResposta = "Hipercard"
 	else
 		strResposta = ""
 		end if
@@ -901,9 +917,11 @@ dim trx
 	elseif (bandeira = Lcase(BRASPAG_BANDEIRA__MASTERCARD)) then
 		trx.PAG_PaymentDataCollection_PaymentMethod = "612" 'Cielo MASTERCARD = 501 / SiTef Santander MASTERCARD (Getnet) = 532 / Getnet WebService = 599 / SafraPay = 612
 	elseif (bandeira = Lcase(BRASPAG_BANDEIRA__AMEX)) then
-		trx.PAG_PaymentDataCollection_PaymentMethod = "599" 'Cielo AMEX = 502 / Getnet WebService = 599 / SafraPay = 612
+		trx.PAG_PaymentDataCollection_PaymentMethod = "612" 'Cielo AMEX = 502 / Getnet WebService = 599 / SafraPay = 612
 	elseif (bandeira = Lcase(BRASPAG_BANDEIRA__ELO)) then
-		trx.PAG_PaymentDataCollection_PaymentMethod = "599" 'Cielo ELO = 504 / Getnet WebService = 599 / SafraPay = 612
+		trx.PAG_PaymentDataCollection_PaymentMethod = "612" 'Cielo ELO = 504 / Getnet WebService = 599 / SafraPay = 612
+	elseif (bandeira = Lcase(BRASPAG_BANDEIRA__HIPERCARD)) then
+		trx.PAG_PaymentDataCollection_PaymentMethod = "612" 'Cielo ELO = 504 / Getnet WebService = 599 / SafraPay = 612
 	elseif (bandeira = Lcase(BRASPAG_BANDEIRA__DINERS)) then
 		trx.PAG_PaymentDataCollection_PaymentMethod = "503"
 	elseif (bandeira = Lcase(BRASPAG_BANDEIRA__DISCOVER)) then
@@ -963,9 +981,11 @@ dim i, bandeira
 			elseif (bandeira = Lcase(BRASPAG_BANDEIRA__MASTERCARD)) then
 				v_trx(Ubound(v_trx)).PAG_PaymentMethod = "612" 'Cielo MASTERCARD = 501 / SiTef Santander MASTERCARD (Getnet) = 532 / Getnet WebService = 599 / SafraPay = 612
 			elseif (bandeira = Lcase(BRASPAG_BANDEIRA__AMEX)) then
-				v_trx(Ubound(v_trx)).PAG_PaymentMethod = "599" 'Cielo AMEX = 502 / Getnet WebService = 599 / SafraPay = 612
+				v_trx(Ubound(v_trx)).PAG_PaymentMethod = "612" 'Cielo AMEX = 502 / Getnet WebService = 599 / SafraPay = 612
 			elseif (bandeira = Lcase(BRASPAG_BANDEIRA__ELO)) then
-				v_trx(Ubound(v_trx)).PAG_PaymentMethod = "599" 'Cielo ELO = 504 / Getnet WebService = 599 / SafraPay = 612
+				v_trx(Ubound(v_trx)).PAG_PaymentMethod = "612" 'Cielo ELO = 504 / Getnet WebService = 599 / SafraPay = 612
+			elseif (bandeira = Lcase(BRASPAG_BANDEIRA__HIPERCARD)) then
+				v_trx(Ubound(v_trx)).PAG_PaymentMethod = "612" 'Cielo ELO = 504 / Getnet WebService = 599 / SafraPay = 612
 			elseif (bandeira = Lcase(BRASPAG_BANDEIRA__DINERS)) then
 				v_trx(Ubound(v_trx)).PAG_PaymentMethod = "503"
 			elseif (bandeira = Lcase(BRASPAG_BANDEIRA__DISCOVER)) then
@@ -5197,6 +5217,8 @@ dim blnResp
 			blnResp = BRASPAG_OLD01_BANDEIRA_HABILITADA__AMEX
 		elseif Ucase(Cstr(bandeira)) = Ucase(Cstr(BRASPAG_BANDEIRA__ELO)) then
 			blnResp = BRASPAG_OLD01_BANDEIRA_HABILITADA__ELO
+		elseif Ucase(Cstr(bandeira)) = Ucase(Cstr(BRASPAG_BANDEIRA__HIPERCARD)) then
+			blnResp = BRASPAG_OLD01_BANDEIRA_HABILITADA__HIPERCARD
 		elseif Ucase(Cstr(bandeira)) = Ucase(Cstr(BRASPAG_BANDEIRA__DINERS)) then
 			blnResp = BRASPAG_OLD01_BANDEIRA_HABILITADA__DINERS
 		elseif Ucase(Cstr(bandeira)) = Ucase(Cstr(BRASPAG_BANDEIRA__DISCOVER)) then
@@ -5217,6 +5239,8 @@ dim blnResp
 			blnResp = BRASPAG_OLD02_BANDEIRA_HABILITADA__AMEX
 		elseif Ucase(Cstr(bandeira)) = Ucase(Cstr(BRASPAG_BANDEIRA__ELO)) then
 			blnResp = BRASPAG_OLD02_BANDEIRA_HABILITADA__ELO
+		elseif Ucase(Cstr(bandeira)) = Ucase(Cstr(BRASPAG_BANDEIRA__HIPERCARD)) then
+			blnResp = BRASPAG_OLD02_BANDEIRA_HABILITADA__HIPERCARD
 		elseif Ucase(Cstr(bandeira)) = Ucase(Cstr(BRASPAG_BANDEIRA__DINERS)) then
 			blnResp = BRASPAG_OLD02_BANDEIRA_HABILITADA__DINERS
 		elseif Ucase(Cstr(bandeira)) = Ucase(Cstr(BRASPAG_BANDEIRA__DISCOVER)) then
@@ -5237,6 +5261,8 @@ dim blnResp
 			blnResp = BRASPAG_DIS_BANDEIRA_HABILITADA__AMEX
 		elseif Ucase(Cstr(bandeira)) = Ucase(Cstr(BRASPAG_BANDEIRA__ELO)) then
 			blnResp = BRASPAG_DIS_BANDEIRA_HABILITADA__ELO
+		elseif Ucase(Cstr(bandeira)) = Ucase(Cstr(BRASPAG_BANDEIRA__HIPERCARD)) then
+			blnResp = BRASPAG_DIS_BANDEIRA_HABILITADA__HIPERCARD
 		elseif Ucase(Cstr(bandeira)) = Ucase(Cstr(BRASPAG_BANDEIRA__DINERS)) then
 			blnResp = BRASPAG_DIS_BANDEIRA_HABILITADA__DINERS
 		elseif Ucase(Cstr(bandeira)) = Ucase(Cstr(BRASPAG_BANDEIRA__DISCOVER)) then

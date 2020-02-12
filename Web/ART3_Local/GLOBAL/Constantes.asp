@@ -40,7 +40,7 @@
 	Const URL_FILE__JQUERY_MY_PLUGIN = "../Global/jquery-my-plugin.js?v=002"
 	Const URL_FILE__JQUERY_UI_MY_PLUGIN = "../Global/jquery-ui-my-plugin.js?v=002"
 	Const URL_FILE__JQUERY_MASKMONEY = "../Global/jquery.maskMoney.min.js?v=001"
-	Const URL_FILE__GLOBAL_JS = "../Global/global.js?v=064"
+	Const URL_FILE__GLOBAL_JS = "../Global/global.js?v=065"
 	Const URL_FILE__SSL_JS = "../Global/SSL.js?v=004"
 	Const URL_FILE__CONST_JS = "../Global/const.js?v=001"
 	Const URL_FILE__CONSTXL_JS = "../Global/constXL.js?v=001"
@@ -189,6 +189,7 @@
 	Const CIELO_BANDEIRA__MASTERCARD = "mastercard"
 	Const CIELO_BANDEIRA__AMEX = "amex"
 	Const CIELO_BANDEIRA__ELO = "elo"
+	Const CIELO_BANDEIRA__HIPERCARD = "hipercard"
 	Const CIELO_BANDEIRA__DINERS = "diners"
 	Const CIELO_BANDEIRA__DISCOVER = "discover"
 	Const CIELO_BANDEIRA__AURA = "aura"
@@ -303,6 +304,7 @@
 	Const BRASPAG_BANDEIRA__MASTERCARD = "mastercard"
 	Const BRASPAG_BANDEIRA__AMEX = "amex"
 	Const BRASPAG_BANDEIRA__ELO = "elo"
+	Const BRASPAG_BANDEIRA__HIPERCARD = "hipercard"
 	Const BRASPAG_BANDEIRA__DINERS = "diners"
 	Const BRASPAG_BANDEIRA__DISCOVER = "discover"
 	Const BRASPAG_BANDEIRA__AURA = "aura"
@@ -355,6 +357,9 @@
 	Const COD_ELO_PRAZO_PAGTO_LOJA = "EloPrazoLj"
 	Const COD_ELO_PRAZO_PAGTO_EMISSOR = "EloPrazoCar"
 	
+	Const COD_HIPERCARD_PRAZO_PAGTO_LOJA = "HipePrazoLj"
+	Const COD_HIPERCARD_PRAZO_PAGTO_EMISSOR = "HipePrazoCar"
+
 	Const COD_DINERS_PRAZO_PAGTO_LOJA = "DnrsPrazoLj"
 	Const COD_DINERS_PRAZO_PAGTO_EMISSOR = "DnrsPrazoCar"
 	
