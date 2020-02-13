@@ -9109,7 +9109,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         If (rNFeImg.ide__tpNF <> "0") And _
             (strNFeCodFinalidade <> "3") And _
             (strNFeCodFinalidade <> "4") And _
-                Not uf_tem_instricao_virtual(rNFeImg.dest__UF) Then
+                Not tem_instricao_virtual(usuario.emit_id, rNFeImg.dest__UF) Then
             If (vl_total_ICMSUFDest > 0) Then
                 If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
                 strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "Valores totais do ICMS Interestadual: partilha da UF Destino " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFDest)
@@ -12739,6 +12739,10 @@ Dim cor_inicial As String
            '~~~
             End If
             
+    '   CARREGA AS UF's POR CNPJ QUE POSSUEM INSCRIÇÃO VIRTUAL
+    '   (rotina está aqui e não no Form_Load devido à necessidade de consulta ao BD
+        carrega_UFs_inscricao_virtual
+            
     '   LIMPA CAMPOS/POSICIONA DEFAULTS
         formulario_limpa
         
@@ -12955,8 +12959,7 @@ Private Sub Form_Load()
     
     CriaListaParcelasEmBoletos
     carrega_CFOPs_sem_partilha
-    carrega_UFs_inscricao_virtual
-
+    
 End Sub
 
 
