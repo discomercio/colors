@@ -560,7 +560,7 @@ dim linkXmlNFe
 
 			if s = "S" then s_row = s_row & " checked disabled"
 
-			s_row = s_row & chr(13)
+			s_row = s_row & " />" & chr(13)
 
 			s_row = s_row & _
 				"		</td>" & chr(13)
