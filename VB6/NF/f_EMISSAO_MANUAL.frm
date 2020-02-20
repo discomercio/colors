@@ -8331,7 +8331,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             If (rNFeImg.ide__tpNF <> "0") And _
                 (strNFeCodFinalidade <> "3") And _
                 (strNFeCodFinalidade <> "4") And _
-                Not tem_instricao_virtual(usuario.emit_id, rNFeImg.dest__UF) Then
+                   Not tem_instricao_virtual(usuario.emit_id, rNFeImg.dest__UF) Then
                 If (vl_total_ICMSUFDest > 0) Then
                     If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
                     strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "Valores totais do ICMS Interestadual: partilha da UF Destino " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFDest)

@@ -736,6 +736,18 @@ Option Explicit
 '|          |      | - Criação do arquivo UFS_INSCRICAO_VIRTUAL.CFG, para que  |
 '|          |      |   o texto sobre DIFAL/Partilha não seja impresso na NF    |
 '|__________|______|___________________________________________________________|
+'|10.02.2020| LHGX |V 2.13                                                     |
+'|          |      | - Ajustes sobre o UFS_INSCRICAO_VIRTUAL.CFG, para que     |
+'|          |      |   a definição das UF's seja feita por emitente            |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
 '|          |      |                                                           |
@@ -747,8 +759,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.12"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  24/01/2020"
+Global Const m_id_versao = "2.13"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  10/02/2020"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"
@@ -4368,28 +4380,18 @@ LARCFOP_TRATA_ERRO:
     
 End Function
 
-Function le_arquivo_UFs_INSCRICAO_VIRTUAL(ByRef v_ID_UF() As TIPO_DUAS_COLUNAS, ByRef msg_erro As String) As Boolean
+Function le_UFs_INSCRICAO_VIRTUAL(ByRef v_ID_UF() As TIPO_DUAS_COLUNAS, ByRef msg_erro As String) As Boolean
 ' ------------------------------------------------------------------------
-'   LÊ ARQUIVO COM A LISTA DE UFs PARA OS QUAIS NÃO SERÁ EMITIDA A INFORMAÇÃO SOBRE PARTILHA DO ICMS
+'   LÊ TABELA COM A LISTA DE UFs PARA OS QUAIS NÃO SERÁ EMITIDA A INFORMAÇÃO SOBRE PARTILHA DO ICMS
 
-Dim s_arq As String
-Dim s_linha As String
-Dim v() As String
-Dim i As Integer
-Dim encontrou_cnpj As Boolean
-Dim s_cnpj As String
-Dim t_NFE_EMITENTE As ADODB.Recordset
-Dim id_emitente As Integer
+Dim t_INSCRICAO_VIRTUAL_EMITENTE As ADODB.Recordset
 Dim s As String
 
-' ARQUIVO-TEXTO
-Dim Fnum As Integer
-
-    On Error GoTo LAUIV_TRATA_ERRO
+    On Error GoTo LUIV_TRATA_ERRO
     
-'   t_NFE_EMITENTE
-    Set t_NFE_EMITENTE = New ADODB.Recordset
-    With t_NFE_EMITENTE
+'   t_INSCRICAO_VIRTUAL_EMITENTE
+    Set t_INSCRICAO_VIRTUAL_EMITENTE = New ADODB.Recordset
+    With t_INSCRICAO_VIRTUAL_EMITENTE
         .CursorType = BD_CURSOR_SOMENTE_LEITURA
         .LockType = BD_POLITICA_LOCKING
         .CacheSize = BD_CACHE_CONSULTA
@@ -4397,94 +4399,54 @@ Dim Fnum As Integer
 
     
     
-    le_arquivo_UFs_INSCRICAO_VIRTUAL = False
+    le_UFs_INSCRICAO_VIRTUAL = False
     msg_erro = ""
     ReDim v_ID_UF(0)
     v_ID_UF(UBound(v_ID_UF)).c1 = 0
     v_ID_UF(UBound(v_ID_UF)).c2 = ""
-    encontrou_cnpj = False
     
-    s_arq = barra_invertida_add(App.Path) & "UFs_INSCRICAO_VIRTUAL.CFG"
+    On Error GoTo LUIV_TRATA_ERRO
+        
+    s = "SELECT *" & _
+        " FROM t_INSCRICAO_VIRTUAL_EMITENTE"
+    If t_INSCRICAO_VIRTUAL_EMITENTE.State <> adStateClosed Then t_INSCRICAO_VIRTUAL_EMITENTE.Close
+    t_INSCRICAO_VIRTUAL_EMITENTE.Open s, dbc, , , adCmdText
     
-    Fnum = FreeFile
-    Open s_arq For Input As Fnum
+    Do While Not t_INSCRICAO_VIRTUAL_EMITENTE.EOF
         
-    On Error GoTo LAUIV_TRATA_ERRO_ARQUIVO
-        
-    Do While Not EOF(Fnum)
-        
-        Line Input #Fnum, s_linha
-        
-        'LER APENAS LINHAS NÃO VAZIAS E NÃO INICIADAS POR APÓSTROFE
-        If Trim$(s_linha) <> "" And (left$(s_linha, 1) <> "'") Then
-            If (left(s_linha, 1) = "[") And (right(s_linha, 1) = "]") Then
-                encontrou_cnpj = False
-                s_linha = retorna_so_digitos(s_linha)
-                'se a linha contém um CNPJ, verificar se o mesmo está na t_NFE_EMITENTE
-                If cnpj_cpf_ok(s_linha) Then
-                    id_emitente = 0
-                    s = "SELECT *" & _
-                        " FROM t_NFE_EMITENTE" & _
-                        " WHERE" & _
-                            " (cnpj = '" & s_linha & "')"
-                    If t_NFE_EMITENTE.State <> adStateClosed Then t_NFE_EMITENTE.Close
-                    t_NFE_EMITENTE.Open s, dbc, , , adCmdText
-                    If Not t_NFE_EMITENTE.EOF Then
-                        id_emitente = t_NFE_EMITENTE("id")
-                        End If
-                    'usar o id do emitente no vetor
-                    If id_emitente <> 0 Then encontrou_cnpj = True
-                    End If
-            ElseIf encontrou_cnpj And _
-                    (InStr("AC_AL_AP_AM_BA_CE_DF_ES_GO_MA_MT_MS_MG_PA_PB_PR_PE_PI_RJ_RN_RS_RO_RR_SC_SP_SE_TO", s_linha) > 0) Then
-                If Trim$(v_ID_UF(UBound(v_ID_UF)).c1) <> "" Then
-                    ReDim Preserve v_ID_UF(UBound(v_ID_UF) + 1)
-                    End If
-                
-                v_ID_UF(UBound(v_ID_UF)).c1 = id_emitente
-                v_ID_UF(UBound(v_ID_UF)).c2 = s_linha
-                End If
+        If Trim$(v_ID_UF(UBound(v_ID_UF)).c1) <> 0 Then
+            ReDim Preserve v_ID_UF(UBound(v_ID_UF) + 1)
             End If
+        v_ID_UF(UBound(v_ID_UF)).c1 = t_INSCRICAO_VIRTUAL_EMITENTE("id_nfe_emitente")
+        v_ID_UF(UBound(v_ID_UF)).c2 = Trim("" & t_INSCRICAO_VIRTUAL_EMITENTE("uf"))
+        
+        t_INSCRICAO_VIRTUAL_EMITENTE.MoveNext
+        
         Loop
         
-    Close Fnum
-        
-    GoSub LAUIV_FECHA_TABELAS
+    GoSub LUIV_FECHA_TABELAS
     
-    le_arquivo_UFs_INSCRICAO_VIRTUAL = True
+    le_UFs_INSCRICAO_VIRTUAL = True
     
     
     Exit Function
     
 '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-LAUIV_FECHA_TABELAS:
+LUIV_FECHA_TABELAS:
 '===================
 '   RECORDSETS
-    bd_desaloca_recordset t_NFE_EMITENTE, True
+    bd_desaloca_recordset t_INSCRICAO_VIRTUAL_EMITENTE, True
         
     Return
 
 
 '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-LAUIV_TRATA_ERRO_ARQUIVO:
-'=========================
-    msg_erro = CStr(Err) & ": " & Error$(Err)
-    Err.Clear
-    
-    On Error Resume Next
-    Close Fnum
-    
-    GoSub LAUIV_FECHA_TABELAS
-    
-    Exit Function
-    
-'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-LAUIV_TRATA_ERRO:
+LUIV_TRATA_ERRO:
 '=================
     msg_erro = CStr(Err) & ": " & Error$(Err)
     Err.Clear
     
-    GoSub LAUIV_FECHA_TABELAS
+    GoSub LUIV_FECHA_TABELAS
     
     Exit Function
     

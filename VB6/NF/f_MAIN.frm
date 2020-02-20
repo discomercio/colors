@@ -11635,8 +11635,8 @@ Sub carrega_UFs_inscricao_virtual()
 
 Dim msg_erro As String
 
-    If Not le_arquivo_UFs_INSCRICAO_VIRTUAL(vCUFsInscricaoVirtual, msg_erro) Then
-        If msg_erro <> "" Then aviso "Arquivo de UF's com inscrição virtual não carregado!!!"
+    If Not le_UFs_INSCRICAO_VIRTUAL(vCUFsInscricaoVirtual, msg_erro) Then
+        If msg_erro <> "" Then aviso "Lista de UF's com inscrição virtual não carregada!!!"
         End If
     
 End Sub
