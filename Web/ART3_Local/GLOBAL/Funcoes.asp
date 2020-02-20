@@ -5085,6 +5085,8 @@ dim s_resp
 		s_resp = "Amex"
 	elseif bandeira = "elo" then
 		s_resp = "Elo"
+	elseif bandeira = "hipercard" then
+		s_resp = "Hipercard"
 	elseif bandeira = "diners" then
 		s_resp = "Diners"
 	elseif bandeira = "discover" then
@@ -5119,6 +5121,8 @@ dim s_resp
 		s_resp = COD_AMEX_PRAZO_PAGTO_LOJA
 	elseif bandeira = Ucase(CIELO_BANDEIRA__ELO) then
 		s_resp = COD_ELO_PRAZO_PAGTO_LOJA
+	elseif bandeira = Ucase(CIELO_BANDEIRA__HIPERCARD) then
+		s_resp = COD_HIPERCARD_PRAZO_PAGTO_LOJA
 	elseif bandeira = Ucase(CIELO_BANDEIRA__DINERS) then
 		s_resp = COD_DINERS_PRAZO_PAGTO_LOJA
 	elseif bandeira = Ucase(CIELO_BANDEIRA__DISCOVER) then
@@ -5151,6 +5155,8 @@ dim s_resp
 		s_resp = COD_AMEX_PRAZO_PAGTO_EMISSOR
 	elseif bandeira = Ucase(CIELO_BANDEIRA__ELO) then
 		s_resp = COD_ELO_PRAZO_PAGTO_EMISSOR
+	elseif bandeira = Ucase(CIELO_BANDEIRA__HIPERCARD) then
+		s_resp = COD_HIPERCARD_PRAZO_PAGTO_EMISSOR
 	elseif bandeira = Ucase(CIELO_BANDEIRA__DINERS) then
 		s_resp = COD_DINERS_PRAZO_PAGTO_EMISSOR
 	elseif bandeira = Ucase(CIELO_BANDEIRA__DISCOVER) then
@@ -5182,6 +5188,8 @@ dim s_resp
 		s_resp = "Amex.gif"
 	elseif bandeira = Ucase(CIELO_BANDEIRA__ELO) then
 		s_resp = "Elo.gif"
+	elseif bandeira = Ucase(CIELO_BANDEIRA__HIPERCARD) then
+		s_resp = "Hipercard.gif"
 	elseif bandeira = Ucase(CIELO_BANDEIRA__DINERS) then
 		s_resp = "Diners.gif"
 	elseif bandeira = Ucase(CIELO_BANDEIRA__DISCOVER) then
@@ -5227,6 +5235,7 @@ function CieloArrayBandeiras
 							CIELO_BANDEIRA__MASTERCARD, _
 							CIELO_BANDEIRA__AMEX, _
 							CIELO_BANDEIRA__ELO, _
+							CIELO_BANDEIRA__HIPERCARD, _
 							CIELO_BANDEIRA__DINERS, _
 							CIELO_BANDEIRA__DISCOVER, _
 							CIELO_BANDEIRA__AURA, _
@@ -6165,7 +6174,7 @@ function isLojaVrf(byval loja)
 
 	loja  = Trim("" & loja)
 	
-	if (loja = NUMERO_LOJA_VRF) Or (loja = NUMERO_LOJA_VRF2) Or (loja = NUMERO_LOJA_VRF3) Or (loja = NUMERO_LOJA_VRF4) Or (loja = NUMERO_LOJA_VRF5) then
+	if (loja = NUMERO_LOJA_VRF) Or (loja = NUMERO_LOJA_VRF2) Or (loja = NUMERO_LOJA_VRF3) Or (loja = NUMERO_LOJA_VRF4) Or (loja = NUMERO_LOJA_VRF5) Or (loja = NUMERO_LOJA_VRF6) Or (loja = NUMERO_LOJA_VRF7) Or (loja = NUMERO_LOJA_VRF8) then
 		isLojaVrf = True
 		end if
 
