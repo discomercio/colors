@@ -733,8 +733,20 @@ Option Explicit
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
 '|24.01.2020| LHGX |V 2.12                                                     |
-'|          |      | - Criação do arquivo UFS_INSCRICAO_VIRTUAL.TXT, para que  |
+'|          |      | - Criação do arquivo UFS_INSCRICAO_VIRTUAL.CFG, para que  |
 '|          |      |   o texto sobre DIFAL/Partilha não seja impresso na NF    |
+'|__________|______|___________________________________________________________|
+'|10.02.2020| LHGX |V 2.13                                                     |
+'|          |      | - Ajustes sobre o UFS_INSCRICAO_VIRTUAL.CFG, para que     |
+'|          |      |   a definição das UF's seja feita por emitente            |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
 '|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
@@ -747,8 +759,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.12"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  24/01/2020"
+Global Const m_id_versao = "2.13"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  10/02/2020"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"
@@ -2886,20 +2898,20 @@ Function cfop_eh_de_remessa(ByVal cod_cfop As String) As Boolean
     
 End Function
 
-Function uf_tem_instricao_virtual(ByVal s_uf As String) As Boolean
+Function tem_instricao_virtual(ByVal id_emitente, s_uf As String) As Boolean
     
     Dim ok As Boolean
     Dim i As Integer
     
     ok = False
     For i = LBound(vCUFsInscricaoVirtual) To UBound(vCUFsInscricaoVirtual)
-        If vCUFsInscricaoVirtual(i) = s_uf Then
+        If vCUFsInscricaoVirtual(i).c1 = id_emitente And vCUFsInscricaoVirtual(i).c2 = s_uf Then
             ok = True
             Exit For
             End If
         Next
     
-    uf_tem_instricao_virtual = ok
+    tem_instricao_virtual = ok
     
 End Function
 
@@ -4368,78 +4380,73 @@ LARCFOP_TRATA_ERRO:
     
 End Function
 
-Function le_arquivo_UFs_INSCRICAO_VIRTUAL(ByRef v_UF() As String, ByRef msg_erro As String) As Boolean
+Function le_UFs_INSCRICAO_VIRTUAL(ByRef v_ID_UF() As TIPO_DUAS_COLUNAS, ByRef msg_erro As String) As Boolean
 ' ------------------------------------------------------------------------
-'   LÊ ARQUIVO COM A LISTA DE UFs PARA OS QUAIS NÃO SERÁ EMITIDA A INFORMAÇÃO SOBRE PARTILHA DO ICMS
+'   LÊ TABELA COM A LISTA DE UFs PARA OS QUAIS NÃO SERÁ EMITIDA A INFORMAÇÃO SOBRE PARTILHA DO ICMS
 
-Dim s_arq As String
-Dim s_linha As String
-Dim v() As String
-Dim i As Integer
+Dim t_INSCRICAO_VIRTUAL_EMITENTE As ADODB.Recordset
+Dim s As String
 
-' ARQUIVO-TEXTO
-Dim Fnum As Integer
-
-    On Error GoTo LAUIV_TRATA_ERRO
+    On Error GoTo LUIV_TRATA_ERRO
     
-    le_arquivo_UFs_INSCRICAO_VIRTUAL = False
+'   t_INSCRICAO_VIRTUAL_EMITENTE
+    Set t_INSCRICAO_VIRTUAL_EMITENTE = New ADODB.Recordset
+    With t_INSCRICAO_VIRTUAL_EMITENTE
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
+
+    
+    
+    le_UFs_INSCRICAO_VIRTUAL = False
     msg_erro = ""
-    ReDim v_UF(0)
-    v_UF(UBound(v_UF)) = ""
+    ReDim v_ID_UF(0)
+    v_ID_UF(UBound(v_ID_UF)).c1 = 0
+    v_ID_UF(UBound(v_ID_UF)).c2 = ""
     
-    s_arq = barra_invertida_add(App.Path) & "UFs_INSCRICAO_VIRTUAL.TXT"
+    On Error GoTo LUIV_TRATA_ERRO
+        
+    s = "SELECT *" & _
+        " FROM t_INSCRICAO_VIRTUAL_EMITENTE"
+    If t_INSCRICAO_VIRTUAL_EMITENTE.State <> adStateClosed Then t_INSCRICAO_VIRTUAL_EMITENTE.Close
+    t_INSCRICAO_VIRTUAL_EMITENTE.Open s, dbc, , , adCmdText
     
-    Fnum = FreeFile
-    Open s_arq For Input As Fnum
+    Do While Not t_INSCRICAO_VIRTUAL_EMITENTE.EOF
         
-    On Error GoTo LAUIV_TRATA_ERRO_ARQUIVO
-        
-    Do While Not EOF(Fnum)
-        
-        Line Input #Fnum, s_linha
-        
-        'LER APENAS LINHAS NÃO VAZIAS E NÃO INICIADAS POR APÓSTROFE
-        If Trim$(s_linha) <> "" And (left$(s_linha, 1) <> "'") Then
-
-            If (InStr("AC_AL_AP_AM_BA_CE_DF_ES_GO_MA_MT_MS_MG_PA_PB_PR_PE_PI_RJ_RN_RS_RO_RR_SC_SP_SE_TO", s_linha) > 0) Then
-                If Trim$(v_UF(UBound(v_UF))) <> "" Then
-                    ReDim Preserve v_UF(UBound(v_UF) + 1)
-                    End If
-                
-                v_UF(UBound(v_UF)) = s_linha
-                End If
+        If Trim$(v_ID_UF(UBound(v_ID_UF)).c1) <> 0 Then
+            ReDim Preserve v_ID_UF(UBound(v_ID_UF) + 1)
             End If
+        v_ID_UF(UBound(v_ID_UF)).c1 = t_INSCRICAO_VIRTUAL_EMITENTE("id_nfe_emitente")
+        v_ID_UF(UBound(v_ID_UF)).c2 = Trim("" & t_INSCRICAO_VIRTUAL_EMITENTE("uf"))
+        
+        t_INSCRICAO_VIRTUAL_EMITENTE.MoveNext
+        
         Loop
         
-    Close Fnum
-        
-        
-    le_arquivo_UFs_INSCRICAO_VIRTUAL = True
+    GoSub LUIV_FECHA_TABELAS
     
-Exit Function
-
-
-
-
-
-
-
-'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-LAUIV_TRATA_ERRO_ARQUIVO:
-'=========================
-    msg_erro = CStr(Err) & ": " & Error$(Err)
-    Err.Clear
+    le_UFs_INSCRICAO_VIRTUAL = True
     
-    On Error Resume Next
-    Close Fnum
     
     Exit Function
     
+'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+LUIV_FECHA_TABELAS:
+'===================
+'   RECORDSETS
+    bd_desaloca_recordset t_INSCRICAO_VIRTUAL_EMITENTE, True
+        
+    Return
+
+
 '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-LAUIV_TRATA_ERRO:
+LUIV_TRATA_ERRO:
 '=================
     msg_erro = CStr(Err) & ": " & Error$(Err)
     Err.Clear
+    
+    GoSub LUIV_FECHA_TABELAS
     
     Exit Function
     
