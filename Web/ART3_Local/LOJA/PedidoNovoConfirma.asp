@@ -2028,6 +2028,9 @@
 					rs("plataforma_origem_pedido") = COD_PLATAFORMA_ORIGEM_PEDIDO__ERP
 					end if
 
+				rs("sistema_responsavel_cadastro") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
+				rs("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
+
 				rs("id_nfe_emitente") = vEmpresaAutoSplit(iv)
 
 				rs.Update

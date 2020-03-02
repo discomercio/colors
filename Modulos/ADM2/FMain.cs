@@ -21,6 +21,7 @@ namespace ADM2
 		private String REGISTRY_PATH_FORM_OPTIONS;
 		FIbpt fIbpt;
 		FAtualizaPlanilhaEstoque fAtualizaPlanilhaEstoque;
+		FAnotarPedidoRecebidoCliente fAnotarPedidoRecebidoCliente;
 		private bool _InicializacaoOk;
 		private bool _OcorreuExceptionNaInicializacao = false;
 		#endregion
@@ -357,6 +358,35 @@ namespace ADM2
 		}
 		#endregion
 
+		#region [ trataBotaoAnotarPedidosRecebidosCliente ]
+		private void trataBotaoAnotarPedidosRecebidosCliente()
+		{
+			#region [ Verifica se a conexão c/ o BD está ok ]
+			if (!contextoBD.AmbienteBase.BD.isConexaoOk())
+			{
+				if (!FMain.reiniciaBancoDados())
+				{
+					avisoErro("Ocorreu uma falha na conexão com o Banco de Dados!!\nA tentativa de reconectar automaticamente falhou!!\nPor favor, aguarde alguns instantes e tente outra vez!!");
+					return;
+				}
+			}
+			#endregion
+
+			#region [ Permissão de acesso ]
+			if (!Global.Acesso.operacaoPermitida(Global.Acesso.OP_CEN_ADM2_ANOTAR_PEDIDOS_RECEBIDOS_PELO_CLIENTE))
+			{
+				avisoErro("Nível de acesso insuficiente!!");
+				return;
+			}
+			#endregion
+
+			fAnotarPedidoRecebidoCliente = new FAnotarPedidoRecebidoCliente();
+			fAnotarPedidoRecebidoCliente.Location = this.Location;
+			fAnotarPedidoRecebidoCliente.Show();
+			if (!fAnotarPedidoRecebidoCliente.ocorreuExceptionNaInicializacao) this.Visible = false;
+		}
+		#endregion
+
 		#endregion
 
 		#region [ Eventos ]
@@ -442,6 +472,10 @@ namespace ADM2
 					#region [ Registry: dados da sessão anterior ]
 					strUltimoUsuario = (String)regKey.GetValue(Global.RegistryApp.Chaves.usuario, "");
 					Global.Usuario.Defaults.FIbpt.pathIbptArquivoCsv = (String)regKey.GetValue(Global.RegistryApp.Chaves.FIbpt.pathIbptArquivoCsv, "");
+					Global.Usuario.Defaults.FAtualizaPlanilhaEstoque.pathArquivoPlanilhaEstoque = (String)regKey.GetValue(Global.RegistryApp.Chaves.FAtualizaPlanilhaEstoque.pathArquivoPlanilhaEstoque, "");
+					Global.Usuario.Defaults.FAtualizaPlanilhaEstoque.fileNameArquivoPlanilhaEstoque = (String)regKey.GetValue(Global.RegistryApp.Chaves.FAtualizaPlanilhaEstoque.fileNameArquivoPlanilhaEstoque, "");
+					Global.Usuario.Defaults.FAnotarPedidoRecebidoCliente.pathArquivoRastreio = (String)regKey.GetValue(Global.RegistryApp.Chaves.FAnotarPedidoRecebidoCliente.pathArquivoRastreio, "");
+					Global.Usuario.Defaults.FAnotarPedidoRecebidoCliente.fileNameArquivoRastreio = (String)regKey.GetValue(Global.RegistryApp.Chaves.FAnotarPedidoRecebidoCliente.fileNameArquivoRastreio, "");
 					#endregion
 
 					#region [ Login do usuário ]
@@ -706,6 +740,10 @@ namespace ADM2
 				regKey.SetValue(Global.RegistryApp.Chaves.left, this.Left.ToString());
 				regKey.SetValue(Global.RegistryApp.Chaves.usuario, Global.Usuario.usuario);
 				regKey.SetValue(Global.RegistryApp.Chaves.FIbpt.pathIbptArquivoCsv, Global.Usuario.Defaults.FIbpt.pathIbptArquivoCsv);
+				regKey.SetValue(Global.RegistryApp.Chaves.FAtualizaPlanilhaEstoque.pathArquivoPlanilhaEstoque, Global.Usuario.Defaults.FAtualizaPlanilhaEstoque.pathArquivoPlanilhaEstoque);
+				regKey.SetValue(Global.RegistryApp.Chaves.FAtualizaPlanilhaEstoque.fileNameArquivoPlanilhaEstoque, Global.Usuario.Defaults.FAtualizaPlanilhaEstoque.fileNameArquivoPlanilhaEstoque);
+				regKey.SetValue(Global.RegistryApp.Chaves.FAnotarPedidoRecebidoCliente.pathArquivoRastreio, Global.Usuario.Defaults.FAnotarPedidoRecebidoCliente.pathArquivoRastreio);
+				regKey.SetValue(Global.RegistryApp.Chaves.FAnotarPedidoRecebidoCliente.fileNameArquivoRastreio, Global.Usuario.Defaults.FAnotarPedidoRecebidoCliente.fileNameArquivoRastreio);
 				#endregion
 
 				#region [ Log em arquivo ]
@@ -749,6 +787,17 @@ namespace ADM2
 		private void btnAtualizarPlanilhaEstoque_Click(object sender, EventArgs e)
 		{
 			trataBotaoAtualizaPlanilhaEstoque();
+		}
+		#endregion
+
+		#endregion
+
+		#region [ btnAnotarPedidosRecebidosCliente ]
+
+		#region [ btnAnotarPedidosRecebidosCliente_Click ]
+		private void btnAnotarPedidosRecebidosCliente_Click(object sender, EventArgs e)
+		{
+			trataBotaoAnotarPedidosRecebidosCliente();
 		}
 		#endregion
 

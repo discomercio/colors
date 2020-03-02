@@ -53,6 +53,9 @@
 	dim cn, tMAP_XML, tMAP_ITEM
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim blnLojaHabilitadaProdCompostoECommerce
+	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
+
 	set r_cliente = New cl_CLIENTE
 	if Not x_cliente_bd(cliente_selecionado, r_cliente) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
 	
@@ -289,7 +292,7 @@
 		end if 'if alerta = ""
 
 	dim s_campo_inicial
-	if isLojaHabilitadaProdCompostoECommerce(loja) then
+	if blnLojaHabilitadaProdCompostoECommerce then
 		s_campo_inicial = "c_produto"
 	else
 		s_campo_inicial = "c_fabricante"

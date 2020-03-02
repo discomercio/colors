@@ -192,7 +192,7 @@ namespace ADM2
 			try
 			{
 				openFileDialogCtrl.InitialDirectory = pathPlanilhaEstoqueValorDefault();
-				openFileDialogCtrl.FileName = fileNamePlanilhaEstoqueValorDefault();
+				openFileDialogCtrl.FileName = "";
 				dr = openFileDialogCtrl.ShowDialog();
 				if (dr != DialogResult.OK) return;
 
@@ -1159,7 +1159,7 @@ namespace ADM2
 					if (File.Exists(strFileNameArquivoPlanilhaEstoque)) txtPlanilhaEstoque.Text = strFileNameArquivoPlanilhaEstoque;
 
 					openFileDialogCtrl.InitialDirectory = pathPlanilhaEstoqueValorDefault();
-					openFileDialogCtrl.FileName = fileNamePlanilhaEstoqueValorDefault();
+					openFileDialogCtrl.FileName = "";
 
 					_InicializacaoOk = true;
 				}

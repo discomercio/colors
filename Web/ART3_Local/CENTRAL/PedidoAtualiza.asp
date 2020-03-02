@@ -965,6 +965,8 @@
 
 				rs("pedido_bs_x_at")=s_ped_bonshop
 
+				rs("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
+
 				rs.Update
 				log_via_vetor_carrega_do_recordset rs, vLogFP2, campos_a_omitir_FP
 				s_log_FP = log_via_vetor_monta_alteracao(vLogFP1, vLogFP2)
@@ -1315,6 +1317,8 @@
 					rs("usuario_violado_permite_RA_status") = usuario
 					end if
 				
+				rs("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
+
 				rs.Update 
 				if Err <> 0 then
 					alerta = Cstr(Err) & ": " & Err.Description

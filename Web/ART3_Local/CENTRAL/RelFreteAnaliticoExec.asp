@@ -55,12 +55,13 @@
 	dim c_dt_entregue_inicio, c_dt_entregue_termino
 	dim c_transportadora, c_fabricante, c_loja, c_vendedor, c_indicador, c_uf, c_tipo_frete
 	dim s_nome_vendedor, s_nome_indicador, s_nome_loja, s_nome_fabricante, s_nome_transportadora
-	dim rb_frete_status, rb_tipo_saida, codigo_tipo_frete
+	dim rb_frete_status, rb_tipo_saida, codigo_tipo_frete, rb_tipo_nf
 
 	alerta = ""
 
 	rb_frete_status = Trim(Request.Form("rb_frete_status"))
 	rb_tipo_saida = Ucase(Trim(Request.Form("rb_tipo_saida")))
+	rb_tipo_nf = Trim(Request.Form("rb_tipo_nf"))
 
 	c_dt_entregue_inicio = Trim(Request.Form("c_dt_entregue_inicio"))
 	c_dt_entregue_termino = Trim(Request.Form("c_dt_entregue_termino"))
@@ -200,6 +201,8 @@
 			end if
 		end if
 
+	'MEMORIZA OPÇÃO DE CONSULTA NO BD
+	call set_default_valor_texto_bd(usuario, "RelFreteAnalitico|rb_tipo_nf", rb_tipo_nf)
 
 
 
@@ -360,6 +363,22 @@ dim s, s_aux, s_filtro
 				   "<span class='N'>" & s & "</span></td></tr>"
 		end if
 	
+	s = rb_tipo_nf
+	if s = "1" then
+		s = "Somente de Remessa, quando houver"
+	else
+		s = "Fatura e de Remessa"
+		end if
+
+	if blnSaidaExcel then
+		if s_filtro <> "" then s_filtro = s_filtro & "<br>"
+		s_filtro = s_filtro & "<span class='N'>Tipo de NF:&nbsp;" & s & "</span>"
+	else
+		s_filtro = s_filtro & "<tr><td align='right' valign='top' NOWRAP>" & _
+				   "<span class='N'>Tipo de NF:&nbsp;</span></td><td align='left' valign='top'>" & _
+				   "<span class='N'>" & s & "</span></td></tr>"
+		end if
+
 	if blnSaidaExcel then
 		if s_filtro <> "" then s_filtro = s_filtro & "<br>"
 		s_filtro = s_filtro & "<span class='N'>Emissão:&nbsp;" & formata_data_hora(Now) & "</span>"
@@ -492,6 +511,8 @@ dim qtde_Pedido,lista_pedidos_total_geral,strPercPrecoVendaSomado,vlTotalPercPre
     s_sql = "SELECT transportadora_id " & _
 	            ",data " & _
 	            ",pedido " & _
+				",obs_2 " & _
+				",obs_3 " & _
 	            ",qtde_fretes " & _
 	            ",qtde_pedido " & _
 	            ",st_end_entrega " & _
@@ -514,6 +535,8 @@ dim qtde_Pedido,lista_pedidos_total_geral,strPercPrecoVendaSomado,vlTotalPercPre
 				"Coalesce(pf.transportadora_id, p.transportadora_id) AS transportadora_id,  " & _
 				"p.data, " & _
 				"p.pedido, " & _
+				"p.obs_2, " & _
+				"p.obs_3, " & _
                 "( SELECT COUNT(*) FROM t_PEDIDO_FRETE WHERE pedido = p.pedido ) AS qtde_fretes, " & _
                 "( SELECT COUNT(*) FROM t_PEDIDO_FRETE WHERE pedido=p.pedido AND transportadora_id=pf.transportadora_id " 
                 if s_where_tipo_frete <> "" then s_sql = s_sql + s_where_tipo_frete 
@@ -798,7 +821,18 @@ dim qtde_Pedido,lista_pedidos_total_geral,strPercPrecoVendaSomado,vlTotalPercPre
 						"</TD>" & chr(13)
         end if
 	'>  NF
-		strNF = Trim("" & r("numeros_NF"))
+		' ALTERADO EM 28/02/2020		strNF = Trim("" & r("numeros_NF"))
+		if rb_tipo_nf = "1" then
+			'Somente NF de Remessa, quando houver
+			strNF = Trim("" & r("obs_3"))
+			if strNF = "" then strNF = Trim("" & r("obs_2"))
+		else
+			'NF de Fatura e de Remessa
+			strNF = Trim("" & r("obs_2"))
+			if (strNF <> "") And (Trim("" & r("obs_3")) <> "") then strNF = strNF & ", "
+			strNF = strNF & Trim("" & r("obs_3"))
+			end if
+
 		if Not blnSaidaExcel then
 			if strNF = "" then strNF = "&nbsp;"
 			end if
@@ -1318,6 +1352,7 @@ function fRELConcluir(s_id){
 <input type="hidden" name="c_indicador" id="c_indicador" value="<%=c_indicador%>">
 <input type="hidden" name="c_uf" id="c_uf" value="<%=c_uf%>">
 <input type="hidden" name="rb_frete_status" id="rb_frete_status" value="<%=rb_frete_status%>">
+<input type="hidden" name="rb_tipo_nf" id="rb_tipo_nf" value="<%=rb_tipo_nf%>" />
 
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->
 <table width="836" cellPadding="4" CellSpacing="0" style="border-bottom:1px solid black">

@@ -78,12 +78,13 @@
 	dim ckb_entrega_imediata_sim, ckb_entrega_imediata_nao
 	dim op_forma_pagto, c_forma_pagto_qtde_parc
 	dim c_vendedor, c_indicador
-	dim ckb_obs2_preenchido, ckb_obs2_nao_preenchido, ckb_indicador_preenchido, ckb_indicador_nao_preenchido
+	dim ckb_obs2_preenchido, ckb_obs2_nao_preenchido, ckb_indicador_preenchido, ckb_indicador_nao_preenchido, ckb_nao_exibir_rastreio
 	dim rb_saida
 	dim data_pedido
     dim c_pedido_origem, c_grupo_pedido_origem,c_empresa
 	dim c_FormFieldValues
     dim blnMostraMotivoCancelado, c_cancelados_ordena
+	dim ckb_exibir_vendedor, ckb_exibir_parceiro, ckb_exibir_uf
 
 	alerta = ""
 
@@ -138,6 +139,7 @@
 	c_indicador = Trim(Request.Form("c_indicador"))
 	ckb_obs2_preenchido = Trim(Request.Form("ckb_obs2_preenchido"))
 	ckb_obs2_nao_preenchido = Trim(Request.Form("ckb_obs2_nao_preenchido"))
+	ckb_nao_exibir_rastreio = Trim(Request.Form("ckb_nao_exibir_rastreio"))
 	ckb_indicador_preenchido = Trim(Request.Form("ckb_indicador_preenchido"))
 	ckb_indicador_nao_preenchido = Trim(Request.Form("ckb_indicador_nao_preenchido"))
 	rb_saida = Ucase(Trim(Request.Form("rb_saida")))
@@ -147,8 +149,15 @@
 	c_FormFieldValues = Trim(Request.Form("c_FormFieldValues"))
     c_grupo = Trim(Request.Form("c_grupo"))
     c_cancelados_ordena = Trim(Request.Form("c_cancelados_ordena"))
+	ckb_exibir_vendedor = Trim(Request.Form("ckb_exibir_vendedor"))
+	ckb_exibir_parceiro = Trim(Request.Form("ckb_exibir_parceiro"))
+	ckb_exibir_uf = Trim(Request.Form("ckb_exibir_uf"))
 
 	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|FormFields", c_FormFieldValues)
+	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_nao_exibir_rastreio", ckb_nao_exibir_rastreio)
+	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_vendedor", ckb_exibir_vendedor)
+	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_parceiro", ckb_exibir_parceiro)
+	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_uf", ckb_exibir_uf)
 
 	if alerta = "" then
 		if c_fabricante <> "" then
@@ -791,7 +800,7 @@ end function
 sub consulta_executa
 dim r
 dim blnPorFornecedor
-dim s, s_aux, s_cor, s_bkg_color, s_nbsp, s_align, s_nowrap, s_sql, cab_table, cab, n_reg, n_reg_total, s_colspan, s_loja
+dim s, s_aux, s_cor, s_bkg_color, s_nbsp, s_align, s_nowrap, s_sql, cab_table, cab, n_reg, n_reg_total, n_colspan, n_colspan_final, s_colspan_final, s_loja
 dim s_where, s_from, cont
 dim vl_total_faturamento, vl_sub_total_faturamento, vl_total_pago, vl_sub_total_pago
 dim vl_total_faturamento_NF, vl_sub_total_faturamento_NF
@@ -804,7 +813,7 @@ dim w_cliente, w_st_entrega, w_valor
 dim blnRelAnalitico
 dim intNumLinha
 dim s_grupo_origem
-dim s_link_rastreio
+dim s_link_rastreio, s_link_rastreio2, s_numero_NF
 dim rPSSW
 	
 	set rPSSW = get_registro_t_parametro(ID_PARAMETRO_SSW_Rastreamento_Lista_Transportadoras)
@@ -812,6 +821,15 @@ dim rPSSW
 '	RELATÓRIO SINTÉTICO OU ANALÍTICO?
 	blnRelAnalitico=False
 	if operacao_permitida(OP_CEN_REL_MULTICRITERIO_PEDIDOS_ANALITICO, s_lista_operacoes_permitidas) then blnRelAnalitico=True
+
+	s_colspan_final = ""
+	n_colspan_final = 1
+	if Not blnMostraMotivoCancelado then
+		if ckb_exibir_vendedor <> "" then n_colspan_final = n_colspan_final + 1
+		if ckb_exibir_parceiro <> "" then n_colspan_final = n_colspan_final + 1
+		if ckb_exibir_uf <> "" then n_colspan_final = n_colspan_final + 1
+		end if
+	if n_colspan_final > 0 then s_colspan_final = " colspan=" & Cstr(n_colspan_final)
 
 '	MONTA CLÁUSULA WHERE
 	s_where = ""
@@ -1282,8 +1300,6 @@ dim rPSSW
 '	CLÁUSULA WHERE
 	if s_where <> "" then s_where = " WHERE" & s_where
 	
-
-	
 	
 '	MONTA CLÁUSULA FROM
 	s_from = " FROM t_PEDIDO" & _
@@ -1393,8 +1409,9 @@ dim rPSSW
 '		 ISNULL ( check_expression , replacement_value )
 '		 SE "check_expression" FOR NULL, RETORNA "replacement_value"
 	s_sql = "SELECT DISTINCT t_PEDIDO.loja, t_PEDIDO.numero_loja," & _
-			" t_PEDIDO.data, t_PEDIDO.pedido, t_PEDIDO.pedido_bs_x_ac, t_PEDIDO.obs_2," & _
+			" t_PEDIDO.data, t_PEDIDO.pedido, t_PEDIDO.pedido_bs_x_ac, t_PEDIDO.obs_2, t_PEDIDO.obs_3," & _
 			" t_PEDIDO.st_entrega, t_PEDIDO.transportadora_id, t_CLIENTE.nome, t_CLIENTE.nome_iniciais_em_maiusculas," & _
+			" t_PEDIDO.endereco_uf AS uf_cliente," & _
 			" t_NFe_EMITENTE.cnpj AS cnpj_emitente," & _
 			" t_PEDIDO__BASE.st_pagto," & _
             " t_PEDIDO__BASE.vendedor," & _
@@ -1500,13 +1517,32 @@ dim rPSSW
         cab = cab & _
                 "		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><p class='R' style='font-weight:bold;'>Vendedor</p></td>" & chr(13) & _
                 "		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><p class='R' style='font-weight:bold;'>Indicador</p></td>" & chr(13)
-        if blnRelAnalitico then
+        if ckb_exibir_uf <> "" then
+			cab = cab & _
+				"		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><p class='R' style='font-weight:bold;'>UF</p></td>" & chr(13)
+			end if
+		if blnRelAnalitico then
             cab = cab & _
                 "		<TD class='MTBD' style='width:" & Cstr(w_valor) & "px' align='right' valign='bottom' NOWRAP><P class='Rd' style='font-weight:bold;'>VL Original</P></TD>" & chr(13)
         end if
         cab = cab & _
             "		<TD class='MTBD' style='width:200px' valign='bottom' NOWRAP><P class='R' style='font-weight:bold;'>Motivo Cancelamento</P></TD>" & chr(13)
-    end if
+    else
+		if ckb_exibir_vendedor <> "" then
+			cab = cab & _
+					"		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><p class='R' style='font-weight:bold;'>Vendedor</p></td>" & chr(13)
+			end if
+
+		if ckb_exibir_parceiro <> "" then
+			cab = cab & _
+                "		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><p class='R' style='font-weight:bold;'>Indicador</p></td>" & chr(13)
+			end if
+
+		if ckb_exibir_uf <> "" then
+			cab = cab & _
+                "		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><p class='R' style='font-weight:bold;'>UF</p></td>" & chr(13)
+			end if
+	end if
 	
 	cab = cab & _
 		  "	</TR>" & chr(13)
@@ -1566,12 +1602,17 @@ dim rPSSW
 							"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><p class='Cd'" & s_cor & " style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_a_pagar) & "</p></td>" & chr(13)
 
 					x = x & _
-							"		<TD class='" & s_class & "'><p class='C'>&nbsp;</p></td>" & chr(13)
+							"		<TD class='" & s_class & "'" & s_colspan_final & "><p class='C'>&nbsp;</p></td>" & chr(13)
 
                     if blnMostraMotivoCancelado then
                         x = x & _
                             "		<TD class='MB'><p class='C'>&nbsp;</p></td>" & chr(13) & _
-                            "       <TD class='MB'><p class='C'>&nbsp;</p></td>" & chr(13) & _
+                            "       <TD class='MB'><p class='C'>&nbsp;</p></td>" & chr(13)
+						if ckb_exibir_uf <> "" then
+							x = x & _
+								"       <TD class='MB'><p class='C'>&nbsp;</p></td>" & chr(13)
+							end if
+						x = x & _
 							"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_pedido_original) & "</p></td>" & chr(13) & _
 							"		<TD class='MDB'><p class='C'>&nbsp;</p></td>" & chr(13)
                         end if
@@ -1607,41 +1648,49 @@ dim rPSSW
 				if blnPorFornecedor then
 					if blnRelAnalitico then 
                         if blnMostraMotivoCancelado then
-                            s_colspan = "16"
+                            n_colspan = 16
                         else
-						    s_colspan = "12" 
+						    n_colspan = 12
                         end if
 					else
 						if blnMostraMotivoCancelado then
-                            s_colspan = "9"
+                            n_colspan = 9
                         else
-						    s_colspan = "6" 
+						    n_colspan = 6
                             end if
 						end if
 				else 
 					if blnRelAnalitico then
                         if s_loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
 						    if blnMostraMotivoCancelado then
-                            s_colspan = "14"
+								n_colspan = 14
                             else
-						        s_colspan = "10" 
+						        n_colspan = 10
                             end if 
                         else
                             if blnMostraMotivoCancelado then
-                                s_colspan = "13"
+                                n_colspan = 13
                             else
-					            s_colspan = "9" 
+					            n_colspan = 9
                             end if
                         end if
 					else
 						if blnMostraMotivoCancelado then
-                            s_colspan = "9"
+                            n_colspan = 9
                         else
-						    s_colspan = "6" 
+						    n_colspan = 6
                             end if
 						end if
 					end if
 				
+				if Not blnMostraMotivoCancelado then
+					if ckb_exibir_vendedor <> "" then n_colspan = n_colspan + 1
+					if ckb_exibir_parceiro <> "" then n_colspan = n_colspan + 1
+					if ckb_exibir_uf <> "" then n_colspan = n_colspan + 1
+				else
+					if ckb_exibir_uf <> "" then n_colspan = n_colspan + 1
+					end if
+
 				if blnSaidaExcel then 
 					s_bkg_color = "tomato"
 					s_align = " align='center'"
@@ -1652,7 +1701,7 @@ dim rPSSW
 				x = x & _
 					"	<TR>" & chr(13) & _
 					"		<TD style='background:white;'>" & s_nbsp & "</td>" & chr(13) & _
-					"		<TD class='MDTE' COLSPAN='" & s_colspan & "'" & s_align & " valign='bottom' style='background:" & s_bkg_color & ";'><p class='N' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s_nbsp & s & "</p></td>" & chr(13) & _
+					"		<TD class='MDTE' COLSPAN='" & Cstr(n_colspan) & "'" & s_align & " valign='bottom' style='background:" & s_bkg_color & ";'><p class='N' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s_nbsp & s & "</p></td>" & chr(13) & _
 					"	</TR>" & chr(13)
 				end if
 
@@ -1698,9 +1747,21 @@ dim rPSSW
 	    x = x & "		<TD align='center' valign='top' class='MDB'><P class='Cn''>" & Trim("" & r("data")) & "</P></TD>" & chr(13)
 		
 	'> NF
-		s_link_rastreio = monta_link_rastreio_do_emitente(Trim("" & r("cnpj_emitente")), Trim("" & r("obs_2")), Trim("" & r("transportadora_id")), Trim("" & rPSSW.campo_texto), Trim("" & r("loja")))
-		if s_link_rastreio <> "" then s_link_rastreio = "&nbsp;" & s_link_rastreio
-		x = x & "		<TD align='left' valign='top' class='MDB'><P class='Cn''>" & Trim("" & r("obs_2")) & s_link_rastreio & "</P></TD>" & chr(13)
+		if ckb_nao_exibir_rastreio <> "" then
+			s_numero_NF = Trim("" & r("obs_2"))
+			if (s_numero_NF <> "") And (Trim("" & r("obs_3")) <> "") then s_numero_NF = s_numero_NF & ", "
+			s_numero_NF = s_numero_NF & Trim("" & r("obs_3"))
+		else
+			s_link_rastreio = monta_link_rastreio_do_emitente(Trim("" & r("cnpj_emitente")), Trim("" & r("obs_2")), Trim("" & r("transportadora_id")), Trim("" & rPSSW.campo_texto), Trim("" & r("loja")))
+			if s_link_rastreio <> "" then s_link_rastreio = "&nbsp;" & s_link_rastreio
+			s_link_rastreio = Trim("" & r("obs_2")) & s_link_rastreio
+			s_link_rastreio2 = monta_link_rastreio_do_emitente(Trim("" & r("cnpj_emitente")), Trim("" & r("obs_3")), Trim("" & r("transportadora_id")), Trim("" & rPSSW.campo_texto), Trim("" & r("loja")))
+			if s_link_rastreio2 <> "" then s_link_rastreio2 = "&nbsp;" & s_link_rastreio2
+			s_link_rastreio2 = Trim("" & r("obs_3")) & s_link_rastreio2
+			if (s_link_rastreio <> "") And (s_link_rastreio2 <> "") then s_link_rastreio = s_link_rastreio & "<br />"
+			s_numero_NF = s_link_rastreio & s_link_rastreio2
+			end if
+		x = x & "		<TD align='left' valign='top' style='width:50px;' class='MDB'><P class='Cn''>" & s_numero_NF & "</P></TD>" & chr(13)
 		
 	'> CLIENTE
 		if blnSaidaExcel then s_nowrap = " NOWRAP" else s_nowrap = ""
@@ -1775,6 +1836,14 @@ dim rPSSW
             x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><P class='Cn'>" & s & "</P></TD>" & chr(13)
         end if
 
+	'> UF (OPCIONAL)
+		if blnMostraMotivoCancelado then
+			if ckb_exibir_uf <> "" then
+				s = Trim("" & r("uf_cliente"))
+				x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><P class='Cn'>" & s & "</P></TD>" & chr(13)
+				end if
+			end if
+
     '> VALOR ORIGINAL DO PEDIDO
         if blnMostraMotivoCancelado then
             if blnRelAnalitico then
@@ -1793,6 +1862,27 @@ dim rPSSW
             end if
 		    x = x & "		<TD valign='top' style='width:200px' class='MDB'><P class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</P></TD>" & chr(13)            
         end if
+
+	'> CAMPOS OPCIONAIS
+		if Not blnMostraMotivoCancelado then
+			'> VENDEDOR
+			if ckb_exibir_vendedor <> "" then
+				s = Trim("" & r("vendedor"))
+				x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><P class='Cn'>" & s & "</P></TD>" & chr(13)
+				end if
+
+			'> PARCEIRO
+			if ckb_exibir_parceiro <> "" then
+				s = Trim("" & r("indicador"))
+				x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><P class='Cn'>" & s & "</P></TD>" & chr(13)
+				end if
+
+			'> UF
+			if ckb_exibir_uf <> "" then
+				s = Trim("" & r("uf_cliente"))
+				x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><P class='Cn'>" & s & "</P></TD>" & chr(13)
+				end if
+			end if
 
 	'> TOTALIZAÇÃO DE VALORES
 		vl_sub_total_faturamento = vl_sub_total_faturamento + r("vl_total_pedido")
@@ -1854,12 +1944,17 @@ dim rPSSW
 					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_faturamento_NF) & "</p></td>" & chr(13) & _
 					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_pago) & "</p></td>" & chr(13) & _
 					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><p class='Cd' style='" & s_cor & "font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_a_pagar) & "</p></td>" & chr(13) & _
-					"		<TD class='" & s_class & "'><p class='C'>&nbsp;</p></td>" & chr(13)
+					"		<TD class='" & s_class & "'" & s_colspan_final & "><p class='C'>&nbsp;</p></td>" & chr(13)
 
             if blnMostraMotivoCancelado then
                 x = x & _
                     "		<TD class='MB'><p class='C'>&nbsp;</p></td>" & chr(13) & _
-                    "		<TD class='MB'><p class='C'>&nbsp;</p></td>" & chr(13) & _
+                    "		<TD class='MB'><p class='C'>&nbsp;</p></td>" & chr(13)
+				if ckb_exibir_uf <> "" then
+					x = x & _
+						"		<TD class='MB'><p class='C'>&nbsp;</p></td>" & chr(13)
+					end if
+				x = x & _
 					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_pedido_original) & "</p></td>" & chr(13) & _
 					"		<TD class='MDB'><p class='C'>&nbsp;</p></td>" & chr(13)
                 end if
@@ -1871,13 +1966,18 @@ dim rPSSW
 			if qtde_lojas > 1 then
 				s_cor = ""
 				if vl_total_a_pagar < 0 then s_cor = "color:red;"
-				if blnPorFornecedor then s_colspan = "11" else s_colspan = "9" 
+				if blnPorFornecedor then n_colspan = 11 else n_colspan = 9
+				if Not blnMostraMotivoCancelado then
+					if ckb_exibir_vendedor <> "" then n_colspan = n_colspan + 1
+					if ckb_exibir_parceiro <> "" then n_colspan = n_colspan + 1
+					if ckb_exibir_uf <> "" then n_colspan = n_colspan + 1
+					end if
 				x = x & _
 					"	<TR>" & chr(13) & _
-					"		<TD COLSPAN='" & s_colspan & "' style='border-left:0px;border-right:0px;'>&nbsp;</td>" & chr(13) & _
+					"		<TD COLSPAN='" & Cstr(n_colspan) & "' style='border-left:0px;border-right:0px;'>&nbsp;</td>" & chr(13) & _
 					"	</TR>" & chr(13) & _
 					"	<TR>" & chr(13) & _
-					"		<TD COLSPAN='" & s_colspan & "' style='border-left:0px;border-right:0px;'>&nbsp;</td>" & chr(13) & _
+					"		<TD COLSPAN='" & Cstr(n_colspan) & "' style='border-left:0px;border-right:0px;'>&nbsp;</td>" & chr(13) & _
 					"	</TR>" & chr(13) & _
 					"	<TR style='background:honeydew'>" & chr(13) & _
 					"		<TD style='background:white;'>&nbsp;</td>" & chr(13)
@@ -1906,12 +2006,17 @@ dim rPSSW
 					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_faturamento_NF) & "</p></td>" & chr(13) & _
 					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_pago) & "</p></td>" & chr(13) & _
 					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><p class='Cd' style='" & s_cor & "font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_a_pagar) & "</p></td>" & chr(13) & _
-					"		<TD class='" & s_class & "'><p class='C'>&nbsp;</p></td>" & chr(13)
+					"		<TD class='" & s_class & "'" & s_colspan_final & "><p class='C'>&nbsp;</p></td>" & chr(13)
 
                 if blnMostraMotivoCancelado then
                     x = x & _
                     "		<td class='MTB'><p class='C'>&nbsp;</p></td>" & chr(13) & _
-                    "		<td class='MTB'><p class='C'>&nbsp;</p></td>" & chr(13) & _
+                    "		<td class='MTB'><p class='C'>&nbsp;</p></td>" & chr(13)
+					if ckb_exibir_uf <> "" then
+						x = x & _
+							"		<td class='MTB'><p class='C'>&nbsp;</p></td>" & chr(13)
+						end if
+					x = x & _
 					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_pedido_original) & "</p></td>" & chr(13) & _
 					"		<TD class='MTBD'><p class='C'>&nbsp;</p></td>" & chr(13)
                 end if
@@ -1928,37 +2033,45 @@ dim rPSSW
 		if blnPorFornecedor then
 			if blnRelAnalitico then
 				if blnMostraMotivoCancelado then
-                    s_colspan = "13"
+                    n_colspan = 15
                 else
-					s_colspan = "11" 
+					n_colspan = 11
                 end if 
 			else
 				if blnMostraMotivoCancelado then
-                    s_colspan = "6"
+                    n_colspan = 8
                 else
-				    s_colspan = "5" 
+				    n_colspan = 5
                     end if
 				end if
 		else 
 			if blnRelAnalitico then
 				if blnMostraMotivoCancelado then
-                    s_colspan = "11"
+                    n_colspan = 13
                 else
-					s_colspan = "9" 
+					n_colspan = 9
                 end if
 			else
 				if blnMostraMotivoCancelado then
-                    s_colspan = "6"
+                    n_colspan = 8
                 else
-					s_colspan = "5" 
+					n_colspan = 5
                     end if
 				end if
 			end if
 		
+		if Not blnMostraMotivoCancelado then
+			if ckb_exibir_vendedor <> "" then n_colspan = n_colspan + 1
+			if ckb_exibir_parceiro <> "" then n_colspan = n_colspan + 1
+			if ckb_exibir_uf <> "" then n_colspan = n_colspan + 1
+		else
+			if ckb_exibir_uf <> "" then n_colspan = n_colspan + 1
+			end if
+
 		x = cab_table & cab
 		x = x & "	<TR>" & chr(13) & _
 				"		<TD style='background:white;'>&nbsp;</td>" & chr(13) & _
-				"		<TD class='MDBE' align='center' colspan='" & s_colspan & "'><P class='ALERTA'>&nbsp;NENHUM PEDIDO ENCONTRADO&nbsp;</P></TD>" & chr(13) & _
+				"		<TD class='MDBE' align='center' colspan='" & Cstr(n_colspan) & "'><P class='ALERTA'>&nbsp;NENHUM PEDIDO ENCONTRADO&nbsp;</P></TD>" & chr(13) & _
 				"	</TR>" & chr(13)
 		end if
 

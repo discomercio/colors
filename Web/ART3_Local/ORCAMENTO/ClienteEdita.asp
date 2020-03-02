@@ -69,6 +69,9 @@
 	dim cn,rs,tRefBancaria,tRefComercial,tRefProfissional
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim blnLojaHabilitadaProdCompostoECommerce
+	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
+
 	dim intIdx
 	Dim id_cliente, msg_erro
 	if operacao_selecionada=OP_INCLUI then
@@ -1904,7 +1907,7 @@ else {
 
 <!-- ************   FORM PARA OPÇÃO DE CADASTRAR NOVO ORÇAMENTO?  ************ -->
 <% if operacao_selecionada = OP_CONSULTA then %>
-	<% if isLojaHabilitadaProdCompostoECommerce(loja) then
+	<% if blnLojaHabilitadaProdCompostoECommerce then
 			s_dest = "OrcamentoNovoProdCompostoMask.asp"
 		else
 			s_dest = "OrcamentoNovo.asp"

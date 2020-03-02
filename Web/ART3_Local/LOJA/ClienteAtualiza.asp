@@ -59,6 +59,9 @@
 	dim cn, r, tMAP_XML, tMAP_END_ETG, tMAP_END_COB
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	
+	dim blnLojaHabilitadaProdCompostoECommerce
+	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
+
 	Dim criou_novo_reg_cliente, criou_novo_reg_aux
 	Dim s_log, s_log_aux
 	Dim campos_a_omitir, campos_a_omitir_ref_bancaria
@@ -951,6 +954,7 @@
 					r("id")=cliente_selecionado
 					r("dt_cadastro") = Date
 					r("usuario_cadastro") = usuario
+					r("sistema_responsavel_cadastro") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
 				else
 					criou_novo_reg_cliente = False
 					log_via_vetor_carrega_do_recordset r, vLog1, campos_a_omitir
@@ -1024,7 +1028,9 @@
 					r("SocMaj_telefone")=retorna_so_digitos(strSocMajTelefone)
 					r("SocMaj_contato")=strSocMajContato
 					end if
-					
+				
+				r("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
+
 				r.Update
 
 				If Err = 0 then 
@@ -1849,7 +1855,7 @@ function fNEWConcluir( f ){
 	<br />
 	<% end if %>
 
-	<% if isLojaHabilitadaProdCompostoECommerce(loja) then
+	<% if blnLojaHabilitadaProdCompostoECommerce then
 		s = "PedidoNovoProdCompostoMask.asp"
 	else
 		s = "pedidonovo.asp"
