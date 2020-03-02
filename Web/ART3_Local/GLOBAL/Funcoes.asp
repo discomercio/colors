@@ -5630,30 +5630,6 @@ End Function
 
 
 ' ------------------------------------------------------------------------
-'   isLojaHabilitadaProdCompostoECommerce
-'
-function isLojaHabilitadaProdCompostoECommerce(byval loja)
-dim blnLojaHabilitada
-	isLojaHabilitadaProdCompostoECommerce = False
-	loja = Trim("" & loja)
-	blnLojaHabilitada = False
-	if loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
-		blnLojaHabilitada = True
-	elseif loja = NUMERO_LOJA_BONSHOP then
-		blnLojaHabilitada = True
-	elseif isLojaVrf(loja) then
-		blnLojaHabilitada = True
-	elseif loja = NUMERO_LOJA_MARCELO_ARTVEN then
-		blnLojaHabilitada = True
-	elseif loja = NUMERO_LOJA_BONSHOP_LAB then
-		blnLojaHabilitada = True
-		end if
-
-	if blnLojaHabilitada = True then isLojaHabilitadaProdCompostoECommerce = True
-end function
-
-
-' ------------------------------------------------------------------------
 '   inicializa_cl_CTRL_ESTOQUE_PEDIDO_ITEM_NOVO
 '
 sub inicializa_cl_CTRL_ESTOQUE_PEDIDO_ITEM_NOVO(byref o)
@@ -6162,21 +6138,5 @@ dim s_descricao, s_cor
     end select
     st_devolucao_descricao = s_descricao
     st_devolucao_cor = s_cor
-end function
-
-
-' ___________________________________
-' isLojaVrf
-'
-function isLojaVrf(byval loja)
-	
-	isLojaVrf = False
-
-	loja  = Trim("" & loja)
-	
-	if (loja = NUMERO_LOJA_VRF) Or (loja = NUMERO_LOJA_VRF2) Or (loja = NUMERO_LOJA_VRF3) Or (loja = NUMERO_LOJA_VRF4) Or (loja = NUMERO_LOJA_VRF5) Or (loja = NUMERO_LOJA_VRF6) Or (loja = NUMERO_LOJA_VRF7) Or (loja = NUMERO_LOJA_VRF8) then
-		isLojaVrf = True
-		end if
-
 end function
 %>

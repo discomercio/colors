@@ -43,6 +43,9 @@
 	dim cn, r, strSql
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim blnLojaHabilitadaProdCompostoECommerce
+	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
+
 	dim r_cliente
 	set r_cliente = New cl_CLIENTE
 	if Not x_cliente_bd(cliente_selecionado, r_cliente) then Response.Redirect("aviso.asp?id=" & ERR_CLIENTE_FALHA_RECUPERAR_DADOS)
@@ -161,7 +164,7 @@
 	vProduto(0).qtde = 0
 
 	if alerta = "" then
-		if isLojaHabilitadaProdCompostoECommerce(loja) then
+		if blnLojaHabilitadaProdCompostoECommerce then
 			n = Request.Form("c_produto").Count
 			for i = 1 to n
 				s_fabricante = Trim(Request.Form("c_fabricante")(i))
@@ -423,7 +426,7 @@
 					alerta=alerta & "O número de itens que está sendo cadastrado (" & CStr(n) & ") excede o máximo permitido por pedido (" & CStr(MAX_ITENS) & ")!!"
 					end if
 				end if
-			end if 'if isLojaHabilitadaProdCompostoECommerce(loja)
+			end if 'if blnLojaHabilitadaProdCompostoECommerce
 		end if 'if alerta = ""
 %>
 
@@ -461,7 +464,7 @@
 <script type="text/javascript">
 	$(function() {
 	    $("#divAjaxRunning").css('filter', 'alpha(opacity=60)'); // TRANSPARÊNCIA NO IE8
-	    <%if isLojaHabilitadaProdCompostoECommerce(loja) then%>
+	    <%if blnLojaHabilitadaProdCompostoECommerce then%>
 	    fORC.submit();
         <%end if%>
 
@@ -1008,7 +1011,7 @@ var i, b, ha_item, strMsgErro;
 <br>
 
 <!--  R E L A Ç Ã O   D E   P R O D U T O S  -->
-<table class="Qx" cellspacing="0" <%if isLojaHabilitadaProdCompostoECommerce(loja) then Response.Write "style='display:none;'"%>>
+<table class="Qx" cellspacing="0" <%if blnLojaHabilitadaProdCompostoECommerce then Response.Write "style='display:none;'"%>>
 	<tr bgcolor="#FFFFFF">
 	<td class="MB" align="left"><span class="PLTe">Fabr</span></td>
 	<td class="MB" align="left"><span class="PLTe">Produto</span></td>
@@ -1024,7 +1027,7 @@ var i, b, ha_item, strMsgErro;
 		s_qtde = ""
 		s_preco_lista = ""
 		s_descricao = ""
-		if isLojaHabilitadaProdCompostoECommerce(loja) then
+		if blnLojaHabilitadaProdCompostoECommerce then
 			if intIdxProduto <= Ubound(vProduto) then
 				if Trim("" & vProduto(intIdxProduto).produto) <> "" then
 					with vProduto(intIdxProduto)
@@ -1083,7 +1086,7 @@ var i, b, ha_item, strMsgErro;
 </table>
 
 <br>
-<div <%if isLojaHabilitadaProdCompostoECommerce(loja) then Response.Write "style='display:none;'"%>>
+<div <%if blnLojaHabilitadaProdCompostoECommerce then Response.Write "style='display:none;'"%>>
     <span class="PLLe">Forma de pagamento: </span>
     <input name="c_custoFinancFornecParcelamentoDescricao" id="c_custoFinancFornecParcelamentoDescricao" class="PLLe" style="width:115px;color:#0000CD;font-weight:bold;"
 	    value="<%=descricaoCustoFinancFornecTipoParcelamento(COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__A_VISTA)%>">
@@ -1110,9 +1113,9 @@ var i, b, ha_item, strMsgErro;
 <br>
 
 
-<table class="notPrint" width="749" cellspacing="0" <%if isLojaHabilitadaProdCompostoECommerce(loja) then Response.Write "style='display:none;'"%>>
+<table class="notPrint" width="749" cellspacing="0" <%if blnLojaHabilitadaProdCompostoECommerce then Response.Write "style='display:none;'"%>>
 <tr>
-	<% if isLojaHabilitadaProdCompostoECommerce(loja) then %>
+	<% if blnLojaHabilitadaProdCompostoECommerce then %>
 	<td align="left"><a name="bCANCELA" id="bCANCELA" href="javascript:history.back();" title="volta para a página anterior">
 		<img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
 	<% else %>
@@ -1126,7 +1129,7 @@ var i, b, ha_item, strMsgErro;
 </tr>
 </table>
 </form>
-    <%if isLojaHabilitadaProdCompostoECommerce(loja) then%>
+    <%if blnLojaHabilitadaProdCompostoECommerce then%>
 <!-- Aguarde //-->
 <table width="749" class="notPrint">
     <tr>

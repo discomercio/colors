@@ -63,6 +63,9 @@
 		Response.End
 		end if
 
+	dim blnLojaHabilitadaProdCompostoECommerce
+	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(strLoja)
+
 	dim vResp
 	redim vResp(0)
 	set vResp(0) = new cl_RespConsultaDadosProdutoBD
@@ -88,7 +91,7 @@
 			blnProdutoCompostoProcessadoOk = False
 
 		'	CONSULTA NO CADASTRO DE PRODUTOS COMPOSTOS (E-COMMERCE)
-			if isLojaHabilitadaProdCompostoECommerce(strLoja) then
+			if blnLojaHabilitadaProdCompostoECommerce then
 				strSql = "SELECT " & _
 							"*" & _
 						" FROM t_EC_PRODUTO_COMPOSTO" & _
@@ -153,7 +156,7 @@
 							end if
 						end if
 					end if
-				end if ' if isLojaHabilitadaProdCompostoECommerce(strLoja)
+				end if ' if blnLojaHabilitadaProdCompostoECommerce
 			
 		'	SE O CÓDIGO SE REFERE A UM PRODUTO COMPOSTO (E-COMMERCE) E FOI PROCESSADO CORRETAMENTE, NÃO DEVE FAZER O PROCESSAMENTO A SEGUIR
 			if Not blnProdutoCompostoProcessadoOk then
@@ -180,7 +183,7 @@
 				rs.open strSql, cn
 				if rs.Eof then
 				'	CONSULTA NO CADASTRO DE PRODUTOS COMPOSTOS (E-COMMERCE)
-					if isLojaHabilitadaProdCompostoECommerce(strLoja) then
+					if blnLojaHabilitadaProdCompostoECommerce then
 						strSql = "SELECT " & _
 									"*" & _
 								" FROM t_EC_PRODUTO_COMPOSTO" & _

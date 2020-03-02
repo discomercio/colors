@@ -6138,4 +6138,47 @@ dim rFPUECM
 	if Trim("" & rFPUECM.campo_inteiro) = "1" then isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = True
 	set rFPUECM = Nothing
 end function
+
+
+' ___________________________________
+' isLojaVrf
+'
+function isLojaVrf(byval loja)
+dim s, tLAux
+	isLojaVrf = False
+
+	loja  = Trim("" & loja)
+	
+	s = "SELECT * FROM t_LOJA WHERE (loja = '" & loja & "') AND (unidade_negocio = '" & COD_UNIDADE_NEGOCIO_LOJA__VRF & "')"
+	set tLAux = cn.Execute(s)
+	if Not tLAux.Eof then
+		isLojaVrf = True
+		tLAux.Close
+		set tLAux = nothing
+		end if
+end function
+
+
+' ------------------------------------------------------------------------
+'   isLojaHabilitadaProdCompostoECommerce
+'
+function isLojaHabilitadaProdCompostoECommerce(byval loja)
+dim blnLojaHabilitada
+	isLojaHabilitadaProdCompostoECommerce = False
+	loja = Trim("" & loja)
+	blnLojaHabilitada = False
+	if loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
+		blnLojaHabilitada = True
+	elseif loja = NUMERO_LOJA_BONSHOP then
+		blnLojaHabilitada = True
+	elseif isLojaVrf(loja) then
+		blnLojaHabilitada = True
+	elseif loja = NUMERO_LOJA_MARCELO_ARTVEN then
+		blnLojaHabilitada = True
+	elseif loja = NUMERO_LOJA_BONSHOP_LAB then
+		blnLojaHabilitada = True
+		end if
+
+	if blnLojaHabilitada = True then isLojaHabilitadaProdCompostoECommerce = True
+end function
 %>

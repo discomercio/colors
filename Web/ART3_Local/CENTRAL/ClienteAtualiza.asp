@@ -734,6 +734,8 @@
 				r("SocMaj_contato")=strSocMajContato
 				end if
 
+			r("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
+
 			r.Update
 
 			If Err = 0 then 

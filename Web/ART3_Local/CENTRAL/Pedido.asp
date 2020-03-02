@@ -1701,7 +1701,7 @@ function fPEDPreDevolucao(f) {
 <% end if %>
 
 
-<% if (CStr(r_pedido.loja) = CStr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE)) Or (CStr(r_pedido.loja) = CStr(NUMERO_LOJA_BONSHOP)) then %>
+<% if (CStr(r_pedido.loja) = CStr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE)) Or (CStr(r_pedido.loja) = CStr(NUMERO_LOJA_BONSHOP)) Or isLojaVrf(r_pedido.loja) then %>
 
 	<%
 	s_width = js_formata_numero(100 / MAX_PEDIDOS_POR_LINHA_ANALISE_ENDERECO)
@@ -1716,11 +1716,12 @@ function fPEDPreDevolucao(f) {
 			" data_hora," & _
 			" Coalesce((SELECT Count(*) FROM t_PEDIDO tP WHERE tP.pedido_base=t_PEDIDO.pedido_base AND tP.st_entrega <> t_PEDIDO.st_entrega), 0) AS qtde_st_entrega_diferente" & _
 		" FROM t_PEDIDO" & _
+			" INNER JOIN t_LOJA ON (t_PEDIDO.loja = t_LOJA.loja)" & _
 		" WHERE" & _
 			" (id_cliente = '" & r_pedido.id_cliente & "')" & _
 			" AND (pedido = pedido_base)" & _
 			" AND (pedido_base <> '" & retorna_num_pedido_base(r_pedido.pedido) & "')" & _
-			" AND (numero_loja IN (" & NUMERO_LOJA_ECOMMERCE_AR_CLUBE & "," & NUMERO_LOJA_BONSHOP & "))" & _
+			" AND (t_LOJA.unidade_negocio IN ('" & COD_UNIDADE_NEGOCIO_LOJA__AC & "','" & COD_UNIDADE_NEGOCIO_LOJA__BS & "','" & COD_UNIDADE_NEGOCIO_LOJA__VRF & "'))" & _
 		" ORDER BY" & _
 			" data_hora," & _
 			" pedido_base"

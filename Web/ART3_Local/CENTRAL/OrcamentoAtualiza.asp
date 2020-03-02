@@ -634,6 +634,8 @@
 					rs("usuario_violado_permite_RA_status") = usuario
 					end if
 				
+				rs("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
+
 				rs.Update 
 				if Err <> 0 then
 					alerta = Cstr(Err) & ": " & Err.Description

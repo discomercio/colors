@@ -83,6 +83,9 @@
 	dim cn, rs, tMAP_XML, tOI
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim blnLojaHabilitadaProdCompostoECommerce
+	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
+
 	dim s_lista_operacoes_permitidas
 	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
 
@@ -915,7 +918,7 @@
 		strScriptJS = strScriptJS & "var bloquear_cadastramento_quando_produto_indiponivel = false;" & chr(13)
 		end if
 
-	if isLojaHabilitadaProdCompostoECommerce(loja) then
+	if blnLojaHabilitadaProdCompostoECommerce then
 		strScriptJS = strScriptJS & "var formata_perc_desconto = formata_perc_2dec;" & chr(13)
 	else
 		strScriptJS = strScriptJS & "var formata_perc_desconto = formata_perc_desc;" & chr(13)
@@ -2718,7 +2721,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 	</td>
 	<td class="MDB" align="right">
 		<input name="c_desc" id="c_desc" class="PLLd" style="width:36px;" value=""
-		<% if isLojaHabilitadaProdCompostoECommerce(loja) then %>
+		<% if blnLojaHabilitadaProdCompostoECommerce then %>
 			<%=s_readonly%>
 			onkeypress="if (digitou_enter(true)){fPED.c_vl_unitario[<%=Cstr(i-1)%>].focus();} filtra_percentual();"
 			onblur="this.value=formata_perc_desconto(this.value); calcula_desconto(<%=Cstr(i-1)%>); trata_edicao_RA(<%=Cstr(i-1)%>); recalcula_total_linha(<%=Cstr(i)%>); recalcula_RA(); recalcula_RA_Liquido();"
@@ -2728,7 +2731,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		/>
 	</td>
 	<td class="MDB" align="right">
-		<% if isLojaHabilitadaProdCompostoECommerce(loja) then s_campo_focus="c_desc" else s_campo_focus="c_vl_unitario"%>
+		<% if blnLojaHabilitadaProdCompostoECommerce then s_campo_focus="c_desc" else s_campo_focus="c_vl_unitario"%>
 		<input name="c_vl_unitario" id="c_vl_unitario" class="PLLd" style="width:62px;"
 			onkeypress="if (digitou_enter(true)) {if ((<%=Cstr(i)%>==fPED.c_vl_unitario.length)||(trim(fPED.c_produto[<%=Cstr(i)%>].value)=='')) fPED.c_obs1.focus(); else <% if (permite_RA_status = 1) And (rb_RA = "S") then Response.Write "fPED.c_vl_NF" else Response.Write "fPED." & s_campo_focus%>[<%=Cstr(i)%>].focus();} filtra_moeda_positivo();"
 			onblur="this.value=formata_moeda(this.value); trata_edicao_RA(<%=Cstr(i-1)%>); recalcula_total_linha(<%=Cstr(i)%>); recalcula_RA(); recalcula_RA_Liquido(); recalcula_parcelas();"

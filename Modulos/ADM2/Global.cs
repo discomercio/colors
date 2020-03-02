@@ -28,8 +28,8 @@ namespace ADM2
 			{
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "ADM2";
-				public const string VERSAO_NUMERO = "1.05";
-				public const string VERSAO_DATA = "18.JAN.2019";
+				public const string VERSAO_NUMERO = "1.06";
+				public const string VERSAO_DATA = "02.MAR.2020";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Módulo Administrativo";
@@ -72,8 +72,10 @@ namespace ADM2
 			 *			2) Se o estoque estiver zerado, zerar o valor do custo médio na planilha
 			 *			3) Calcular e preencher o preço de lista na planilha
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.06 - XX.XX.20XX - por XXX
-			 *		  
+			 * v 1.06 - 02.03.2020 - por HHO
+			 *		  Desenvolvimento de rotina para processar arquivo CSV da SSW para cadastrar a data de
+			 *		  recebimento do pedido pelo cliente (campo: PedidoRecebidoData). No caso de pedidos de
+			 *		  marketplace, também é atualizado o campo MarketplacePedidoRecebidoRegistrarDataRecebido.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.07 - XX.XX.20XX - por XXX
 			 *		  
@@ -163,6 +165,9 @@ namespace ADM2
 					public const String IBPT_CARGA_ARQUIVO_CSV = "ADM2-IbptCargaArqCsv";
 					public const String IBPT_CARGA_ARQUIVO_CSV_AUTORIZACAO = "ADM2-IbptCgArqCsvAut";
 					public const String PROCESSAMENTO_PLANILHA_ESTOQUE = "ADM2-ProcXlsEstoque";
+					public const String OP_LOG_PEDIDO_RECEBIDO_VIA_ADM2 = "ADM2-PEDIDO RECEBIDO";
+					public const String OP_LOG_PEDIDO_RECEBIDO = "PEDIDO RECEBIDO";
+					public const String OP_LOG_PEDIDO_RECEBIDO_MARKETPLACE = "PEDIDO RECEBIDO MKTP";
 				}
 				#endregion
 
@@ -531,6 +536,7 @@ namespace ADM2
 		{
 			#region [ Constantes ]
 			public const String OP_CEN_ADM2_APP_ADMINISTRATIVO_ACESSO_AO_MODULO = "25200";
+			public const string OP_CEN_ADM2_ANOTAR_PEDIDOS_RECEBIDOS_PELO_CLIENTE = "29700";
 			#endregion
 
 			#region [ Atributos ]
@@ -601,6 +607,12 @@ namespace ADM2
 					public static String pathArquivoPlanilhaEstoque = "";
 					public static String fileNameArquivoPlanilhaEstoque = "";
 				}
+
+				public class FAnotarPedidoRecebidoCliente
+				{
+					public static string pathArquivoRastreio = "";
+					public static string fileNameArquivoRastreio = "";
+				}
 			}
 			#endregion
 		}
@@ -620,6 +632,16 @@ namespace ADM2
 				public class FIbpt
 				{
 					public static String pathIbptArquivoCsv = "FIbpt_pathIbptArquivoCsv";
+				}
+				public class FAtualizaPlanilhaEstoque
+				{
+					public static String pathArquivoPlanilhaEstoque = "FAtualizaPlanilhaEstoque_pathArquivoPlanilhaEstoque";
+					public static String fileNameArquivoPlanilhaEstoque = "FAtualizaPlanilhaEstoque_fileNameArquivoPlanilhaEstoque";
+				}
+				public class FAnotarPedidoRecebidoCliente
+				{
+					public static String pathArquivoRastreio = "FAnotarPedidoRecebidoCliente_pathArquivoRastreio";
+					public static String fileNameArquivoRastreio = "FAnotarPedidoRecebidoCliente_fileNameArquivoRastreio";
 				}
 			}
 			#endregion
@@ -887,6 +909,161 @@ namespace ADM2
 						 Cte.DataHora.FmtMes +
 						 Cte.DataHora.FmtAno;
 			if (DateTime.TryParseExact(digitos(strDdMmYyyy), strFormato, myCultureInfo, DateTimeStyles.NoCurrentDateDefault, out dtDataHoraResp)) return dtDataHoraResp;
+			return DateTime.MinValue;
+		}
+		#endregion
+
+		#region[ converteYyyyMmDdHhMmSsParaDateTime ]
+		/// <summary>
+		/// Converte o texto que representa uma data/hora para DateTime
+		/// </summary>
+		/// <param name="strYyyyMmDdHhMmSs">
+		/// Texto representando uma data/hora, com ou sem separadores, sendo que a parte da hora é opcional.
+		/// </param>
+		/// <returns>
+		/// Retorna a data/hora como DateTime, se não for possível fazer a conversão, retorna DateTime.MinValue
+		/// </returns>
+		public static DateTime converteYyyyMmDdHhMmSsParaDateTime(string strYyyyMmDdHhMmSs)
+		{
+			#region [ Declarações ]
+			char c;
+			string strDia = "";
+			string strMes = "";
+			string strAno = "";
+			string strHora = "";
+			string strMinuto = "";
+			string strSegundo = "";
+			string strFormato;
+			string strDataHoraAConverter;
+			DateTime dtDataHoraResp;
+			CultureInfo myCultureInfo = new CultureInfo("pt-BR");
+			#endregion
+
+			#region [ Ano ]
+			while (strYyyyMmDdHhMmSs.Length > 0)
+			{
+				c = strYyyyMmDdHhMmSs[0];
+				strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+				if (!isDigit(c)) break;
+				strAno += c;
+				if (strAno.Length == 4) break;
+			}
+			if (strAno.Length == 2)
+			{
+				if (converteInteiro(strAno) >= 80)
+					strAno = "19" + strAno;
+				else
+					strAno = "20" + strAno;
+			}
+			#endregion
+
+			#region [ Remove separador, se houver ]
+			if ((strYyyyMmDdHhMmSs.Length > 0) && (!isDigit(strYyyyMmDdHhMmSs[0]))) strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+			#endregion
+
+			#region [ Mês ]
+			while (strYyyyMmDdHhMmSs.Length > 0)
+			{
+				c = strYyyyMmDdHhMmSs[0];
+				strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+				if (!isDigit(c)) break;
+				strMes += c;
+				if (strMes.Length == 2) break;
+			}
+			while (strMes.Length < 2) strMes = '0' + strMes;
+			#endregion
+
+			#region [ Remove separador, se houver ]
+			if ((strYyyyMmDdHhMmSs.Length > 0) && (!isDigit(strYyyyMmDdHhMmSs[0]))) strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+			#endregion
+
+			#region [ Dia ]
+			while (strYyyyMmDdHhMmSs.Length > 0)
+			{
+				c = strYyyyMmDdHhMmSs[0];
+				strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+				if (!isDigit(c)) break;
+				strDia += c;
+				if (strDia.Length == 2) break;
+			}
+			while (strDia.Length < 2) strDia = '0' + strDia;
+			#endregion
+
+			#region [ Remove separador(es) entre a data e hora, se houver ]
+			while (strYyyyMmDdHhMmSs.Length > 0)
+			{
+				if (!isDigit(strYyyyMmDdHhMmSs[0]))
+					strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+				else
+					break;
+			}
+			#endregion
+
+			#region [ Hora ]
+			while (strYyyyMmDdHhMmSs.Length > 0)
+			{
+				c = strYyyyMmDdHhMmSs[0];
+				strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+				if (!isDigit(c)) break;
+				strHora += c;
+				if (strHora.Length == 2) break;
+			}
+			while (strHora.Length < 2) strHora = '0' + strHora;
+			#endregion
+
+			#region [ Remove separador, se houver ]
+			if ((strYyyyMmDdHhMmSs.Length > 0) && (!isDigit(strYyyyMmDdHhMmSs[0]))) strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+			#endregion
+
+			#region [ Minuto ]
+			while (strYyyyMmDdHhMmSs.Length > 0)
+			{
+				c = strYyyyMmDdHhMmSs[0];
+				strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+				if (!isDigit(c)) break;
+				strMinuto += c;
+				if (strMinuto.Length == 2) break;
+			}
+			while (strMinuto.Length < 2) strMinuto = '0' + strMinuto;
+			#endregion
+
+			#region [ Remove separador, se houver ]
+			if ((strYyyyMmDdHhMmSs.Length > 0) && (!isDigit(strYyyyMmDdHhMmSs[0]))) strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+			#endregion
+
+			#region [ Segundo ]
+			while (strYyyyMmDdHhMmSs.Length > 0)
+			{
+				c = strYyyyMmDdHhMmSs[0];
+				strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+				if (!isDigit(c)) break;
+				strSegundo += c;
+				if (strSegundo.Length == 2) break;
+			}
+			while (strSegundo.Length < 2) strSegundo = '0' + strSegundo;
+			#endregion
+
+			#region [ Monta máscara ]
+			strFormato = Cte.DataHora.FmtAno +
+						 Cte.DataHora.FmtMes +
+						 Cte.DataHora.FmtDia +
+						 ' ' +
+						 Cte.DataHora.FmtHora +
+						 Cte.DataHora.FmtMin +
+						 Cte.DataHora.FmtSeg;
+			#endregion
+
+			#region [ Monta data/hora normalizada ]
+			strDataHoraAConverter = strAno +
+									strMes +
+									strDia +
+									' ' +
+									strHora +
+									strMinuto +
+									strSegundo;
+			#endregion
+
+			if (DateTime.TryParseExact(strDataHoraAConverter, strFormato, myCultureInfo, DateTimeStyles.NoCurrentDateDefault, out dtDataHoraResp)) return dtDataHoraResp;
 			return DateTime.MinValue;
 		}
 		#endregion
@@ -2986,6 +3163,105 @@ namespace ADM2
 		{
 			String strResp;
 			strResp = " Coalesce(Replicate('" + preenchimento + "'," + tamanhoCampo.ToString() + "-Len(" + nomeCampo + ")), '') + " + nomeCampo;
+			return strResp;
+		}
+		#endregion
+
+		#region [ stEntregaPedidoCor ]
+		/// <summary>
+		/// Obtém a cor de exibição do status de entrega do pedido
+		/// </summary>
+		/// <param name="status">
+		/// Código do status de entrega do pedido
+		/// </param>
+		/// <returns>
+		/// Retorna uma cor para exibição do status de entrega do pedido
+		/// </returns>
+		public static Color stEntregaPedidoCor(String status)
+		{
+			Color cor = Color.Black;
+
+			if (status == null) return cor;
+			status = status.Trim();
+			if (status.Length == 0) return cor;
+
+			if (status.Equals(Cte.StEntregaPedido.ST_ENTREGA_ESPERAR))
+				cor = Color.DeepPink;
+			else if (status.Equals(Cte.StEntregaPedido.ST_ENTREGA_SPLIT_POSSIVEL))
+				cor = Color.DarkOrange;
+			else if (status.Equals(Cte.StEntregaPedido.ST_ENTREGA_SEPARAR))
+				cor = Color.Maroon;
+			else if (status.Equals(Cte.StEntregaPedido.ST_ENTREGA_A_ENTREGAR))
+				cor = Color.Blue;
+			else if (status.Equals(Cte.StEntregaPedido.ST_ENTREGA_ENTREGUE))
+				cor = Color.Green;
+			else if (status.Equals(Cte.StEntregaPedido.ST_ENTREGA_CANCELADO))
+				cor = Color.Red;
+
+			return cor;
+		}
+		#endregion
+
+		#region [ stEntregaPedidoCor ]
+		/// <summary>
+		/// Obtém a cor de exibição do status de entrega do pedido
+		/// </summary>
+		/// <param name="status">
+		/// Código do status de entrega do pedido
+		/// </param>
+		/// <param name="qtdeItensDevolvidos">
+		/// Quantidade de itens devolvidos que o pedido já teve
+		/// </param>
+		/// <returns>
+		/// Retorna uma cor para exibição do status de entrega do pedido
+		/// </returns>
+		public static Color stEntregaPedidoCor(String status, int qtdeItensDevolvidos)
+		{
+			Color cor;
+
+			cor = stEntregaPedidoCor(status);
+
+			if (status.Equals(Cte.StEntregaPedido.ST_ENTREGA_ENTREGUE))
+			{
+				if (qtdeItensDevolvidos > 0) cor = Color.Red;
+			}
+			return cor;
+		}
+		#endregion
+
+		#region [ stEntregaPedidoDescricao ]
+		/// <summary>
+		/// Obtém a descrição do status de entrega do pedido
+		/// </summary>
+		/// <param name="status">
+		/// Código do status de entrega do pedido
+		/// </param>
+		/// <returns>
+		/// Retorna uma descrição do status de entrega do pedido
+		/// </returns>
+		public static String stEntregaPedidoDescricao(String status)
+		{
+			String strResp = "";
+
+			if (status == null) return "";
+			status = status.Trim();
+			if (status.Length == 0) return "";
+
+			if (status.Equals(Cte.StEntregaPedido.ST_ENTREGA_ESPERAR))
+				strResp = "Esperar Mercadoria";
+			else if (status.Equals(Cte.StEntregaPedido.ST_ENTREGA_SPLIT_POSSIVEL))
+				strResp = "Split Possível";
+			else if (status.Equals(Cte.StEntregaPedido.ST_ENTREGA_SEPARAR))
+				strResp = "Separar Mercadoria";
+			else if (status.Equals(Cte.StEntregaPedido.ST_ENTREGA_A_ENTREGAR))
+				strResp = "A Entregar";
+			else if (status.Equals(Cte.StEntregaPedido.ST_ENTREGA_ENTREGUE))
+				strResp = "Entregue";
+			else if (status.Equals(Cte.StEntregaPedido.ST_ENTREGA_CANCELADO))
+				strResp = "Cancelado";
+			else
+				strResp = "Desconhecido (" + status + ")";
+
 			return strResp;
 		}
 		#endregion

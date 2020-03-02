@@ -28,6 +28,9 @@ namespace ADM2
 		public ComboDAO comboDAO;
 		public PedidoDAO pedidoDAO;
 		public ProdutoDAO produtoDAO;
+		public ClienteDAO clienteDAO;
+		public AnotarPedidoRecebidoClienteDAO anotarPedidoRecebidoClienteDAO;
+		public NFeDAO nfeDAO;
 		public List<PercentualCustoFinanceiroFornecedor> tabelaPercCustoFinanceiroFornecedor = null;
 		public List<ProdutoLoja> tabelaProdutoLojaOriginal = null;
 		#endregion
@@ -171,6 +174,9 @@ namespace ADM2
 				comboDAO = new ComboDAO(ref BD);
 				pedidoDAO = new PedidoDAO(ref BD);
 				produtoDAO = new ProdutoDAO(ref BD);
+				clienteDAO = new ClienteDAO(ref BD);
+				anotarPedidoRecebidoClienteDAO = new AnotarPedidoRecebidoClienteDAO(ref BD);
+				nfeDAO = new NFeDAO(ref BD);
 				tabelaPercCustoFinanceiroFornecedor = produtoDAO.GetTabelaPercentualCustoFinanceiroFornecedor(out msg_erro_aux);
 
 				Global.gravaLogAtividade("Sucesso na inicialização dos objetos DAO do banco de dados '" + NomeBancoDados + "' (Servidor: " + EnderecoServidor + ")");
