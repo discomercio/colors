@@ -107,6 +107,7 @@
                 rs("cancelado_motivo") = motivo_cancelamento
                 rs("cancelado_codigo_motivo") = c_cod_motivo
                 if c_cod_sub_motivo <> "" then rs("cancelado_codigo_sub_motivo") = c_cod_sub_motivo
+				rs("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
 				rs.Update
 				if Err <> 0 then
 				'	~~~~~~~~~~~~~~~~

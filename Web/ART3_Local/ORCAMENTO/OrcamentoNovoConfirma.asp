@@ -211,6 +211,11 @@
 		end if
 
 	dim rb_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep,EndEtg_obs
+	dim EndEtg_email, EndEtg_email_xml, EndEtg_nome, EndEtg_ddd_res, EndEtg_tel_res, EndEtg_ddd_com, EndEtg_tel_com, EndEtg_ramal_com
+	dim EndEtg_ddd_cel, EndEtg_tel_cel, EndEtg_ddd_com_2, EndEtg_tel_com_2, EndEtg_ramal_com_2
+	dim EndEtg_tipo_pessoa, EndEtg_cnpj_cpf, EndEtg_contribuinte_icms_status, EndEtg_produtor_rural_status
+	dim EndEtg_ie, EndEtg_rg
+
 	rb_end_entrega = Trim(Request.Form("rb_end_entrega"))
 	EndEtg_endereco = Trim(Request.Form("EndEtg_endereco"))
 	EndEtg_endereco_numero = Trim(Request.Form("EndEtg_endereco_numero"))
@@ -220,6 +225,25 @@
 	EndEtg_uf = Trim(Request.Form("EndEtg_uf"))
 	EndEtg_cep = retorna_so_digitos(Trim(Request.Form("EndEtg_cep")))
 	EndEtg_obs = Trim(Request.Form("EndEtg_obs"))
+	EndEtg_email = Trim(Request.Form("EndEtg_email"))
+	EndEtg_email_xml = Trim(Request.Form("EndEtg_email_xml"))
+	EndEtg_nome = Trim(Request.Form("EndEtg_nome"))
+	EndEtg_ddd_res = Trim(Request.Form("EndEtg_ddd_res"))
+	EndEtg_tel_res = Trim(Request.Form("EndEtg_tel_res"))
+	EndEtg_ddd_com = Trim(Request.Form("EndEtg_ddd_com"))
+	EndEtg_tel_com = Trim(Request.Form("EndEtg_tel_com"))
+	EndEtg_ramal_com = Trim(Request.Form("EndEtg_ramal_com"))
+	EndEtg_ddd_cel = Trim(Request.Form("EndEtg_ddd_cel"))
+	EndEtg_tel_cel = Trim(Request.Form("EndEtg_tel_cel"))
+	EndEtg_ddd_com_2 = Trim(Request.Form("EndEtg_ddd_com_2"))
+	EndEtg_tel_com_2 = Trim(Request.Form("EndEtg_tel_com_2"))
+	EndEtg_ramal_com_2 = Trim(Request.Form("EndEtg_ramal_com_2"))
+	EndEtg_tipo_pessoa = Trim(Request.Form("EndEtg_tipo_pessoa"))
+	EndEtg_cnpj_cpf = Trim(Request.Form("EndEtg_cnpj_cpf"))
+	EndEtg_contribuinte_icms_status = Trim(Request.Form("EndEtg_contribuinte_icms_status"))
+	EndEtg_produtor_rural_status = Trim(Request.Form("EndEtg_produtor_rural_status"))
+	EndEtg_ie = Trim(Request.Form("EndEtg_ie"))
+	EndEtg_rg = Trim(Request.Form("EndEtg_rg"))
 
 	dim s, i, k, n, opcao_venda_sem_estoque, qtde_spe, vl_total, vl_total_NF, vl_total_RA
 	dim v_desconto()
@@ -240,6 +264,9 @@
 '	=========================
 	dim cn, rs, rs2
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
+
+	dim blnUsarMemorizacaoCompletaEnderecos
+	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 
 	dim r_orcamentista_e_indicador
 	if alerta = "" then
@@ -684,10 +711,34 @@
 			rs("EndEtg_uf") = EndEtg_uf
             rs("EndEtg_cep") = EndEtg_cep
 			rs("EndEtg_cod_justificativa") = EndEtg_obs          
+			if blnUsarMemorizacaoCompletaEnderecos then
+				rs("EndEtg_email") = EndEtg_email
+				rs("EndEtg_email_xml") = EndEtg_email_xml
+				rs("EndEtg_nome") = EndEtg_nome
+				rs("EndEtg_ddd_res") = EndEtg_ddd_res
+				rs("EndEtg_tel_res") = EndEtg_tel_res
+				rs("EndEtg_ddd_com") = EndEtg_ddd_com
+				rs("EndEtg_tel_com") = EndEtg_tel_com
+				rs("EndEtg_ramal_com") = EndEtg_ramal_com
+				rs("EndEtg_ddd_cel") = EndEtg_ddd_cel
+				rs("EndEtg_tel_cel") = EndEtg_tel_cel
+				rs("EndEtg_ddd_com_2") = EndEtg_ddd_com_2
+				rs("EndEtg_tel_com_2") = EndEtg_tel_com_2
+				rs("EndEtg_ramal_com_2") = EndEtg_ramal_com_2
+				rs("EndEtg_tipo_pessoa") = EndEtg_tipo_pessoa
+				rs("EndEtg_cnpj_cpf") = retorna_so_digitos(EndEtg_cnpj_cpf)
+				rs("EndEtg_contribuinte_icms_status") = converte_numero(EndEtg_contribuinte_icms_status)
+				rs("EndEtg_produtor_rural_status") = converte_numero(EndEtg_produtor_rural_status)
+				rs("EndEtg_ie") = EndEtg_ie
+				rs("EndEtg_rg") = EndEtg_rg
+				end if
 			end if
 		
 		rs("perc_desagio_RA_liquida") = PERC_DESAGIO_RA_LIQUIDA
 		rs("permite_RA_status") = r_orcamentista_e_indicador.permite_RA_status
+
+		rs("sistema_responsavel_cadastro") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
+		rs("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
 		
 		rs.Update 
 		if Err <> 0 then
@@ -745,12 +796,31 @@
 		s_log = s_log & "; custoFinancFornecQtdeParcelas=" & formata_texto_log(rs("custoFinancFornecQtdeParcelas"))
 		
 		if rb_end_entrega = "S" then
-			s_log = s_log & "; Endereço entrega=" & EndEtg_endereco
-			if EndEtg_endereco_numero <> "" then s_log = s_log & ", " & EndEtg_endereco_numero
-			if EndEtg_endereco_complemento <> "" then s_log = s_log & " " & EndEtg_endereco_complemento
-			s_log = s_log & " - " & EndEtg_bairro & " - " & EndEtg_cidade & " - " & EndEtg_uf
-			if EndEtg_cep <> "" then s_log = s_log & " - " & cep_formata(EndEtg_cep)
-            if EndEtg_obs <> "" then s_log = s_log & " - " & EndEtg_obs
+			s_log = s_log & "; Endereço entrega=" & formata_endereco(EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep) & " [EndEtg_cod_justificativa=" & EndEtg_obs & "]"
+			if blnUsarMemorizacaoCompletaEnderecos then
+				s_log = s_log & _
+						" (" & _
+						"email=" & EndEtg_email & _
+						", email_xml=" & EndEtg_email_xml & _
+						", nome=" & EndEtg_nome & _
+						", ddd_res=" & EndEtg_ddd_res & _
+						", tel_res=" & EndEtg_tel_res & _
+						", ddd_com=" & EndEtg_ddd_com & _
+						", tel_com=" & EndEtg_tel_com & _
+						", ramal_com=" & EndEtg_ramal_com & _
+						", ddd_cel=" & EndEtg_ddd_cel & _
+						", tel_cel=" & EndEtg_tel_cel & _
+						", ddd_com_2=" & EndEtg_ddd_com_2 & _
+						", tel_com_2=" & EndEtg_tel_com_2 & _
+						", ramal_com_2=" & EndEtg_ramal_com_2 & _
+						", tipo_pessoa=" & EndEtg_tipo_pessoa & _
+						", cnpj_cpf=" & EndEtg_cnpj_cpf & _
+						", contribuinte_icms_status=" & EndEtg_contribuinte_icms_status & _
+						", produtor_rural_status=" & EndEtg_produtor_rural_status & _
+						", ie=" & EndEtg_ie & _
+						", rg=" & EndEtg_rg & _
+						")"
+				end if
 		else
 			s_log = s_log & "; Endereço entrega=mesmo do cadastro"
 			end if

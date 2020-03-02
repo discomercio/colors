@@ -225,8 +225,11 @@
 
 '	CONECTA AO BANCO DE DADOS
 '	=========================
-	dim cn, rs, rs2
+	dim cn, rs, rs2, t_CLIENTE
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
+
+	dim blnUsarMemorizacaoCompletaEnderecos
+	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 
 	dim r_orcamento, v_orcamento_item
 	if Not le_orcamento(orcamento_selecionado, r_orcamento, msg_erro) then 
@@ -1187,6 +1190,16 @@
 	'	~~~~~~~~~~~~~
 		cn.BeginTrans
 	'	~~~~~~~~~~~~~
+		if Not cria_recordset_pessimista(t_CLIENTE, msg_erro) then
+		'	~~~~~~~~~~~~~~~~
+			cn.RollbackTrans
+		'	~~~~~~~~~~~~~~~~
+			Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+			end if
+
+		s = "SELECT * FROM t_CLIENTE WHERE (id='" & r_orcamento.id_cliente & "')"
+		t_CLIENTE.Open s, cn
+
 		for iv = LBound(vEmpresaAutoSplit) to UBound(vEmpresaAutoSplit)
 			if (vEmpresaAutoSplit(iv) <> 0) then
 				if Not (rs Is nothing) then
@@ -1291,23 +1304,14 @@
 						rs("analise_credito_usuario")="AUTOMÁTICO"
 						end if
 
-			'	CUSTO FINANCEIRO FORNECEDOR
-				rs("custoFinancFornecTipoParcelamento") = c_custoFinancFornecTipoParcelamento
-				rs("custoFinancFornecQtdeParcelas") = c_custoFinancFornecQtdeParcelas
-				rs("vl_total_NF") = vl_total_NF
-				rs("vl_total_RA") = vl_total_RA
-				rs("perc_RT") = perc_RT
-				rs("perc_desagio_RA") = perc_desagio_RA
-				rs("perc_limite_RA_sem_desagio") = perc_limite_RA_sem_desagio
-
-				rs("endereco_memorizado_status") = 1
-				rs("endereco_logradouro") = r_cliente.endereco
-				rs("endereco_bairro") = r_cliente.bairro
-				rs("endereco_cidade") = r_cliente.cidade
-				rs("endereco_uf") = r_cliente.uf
-				rs("endereco_cep") = r_cliente.cep
-				rs("endereco_numero") = r_cliente.endereco_numero
-				rs("endereco_complemento") = r_cliente.endereco_complemento
+				'	CUSTO FINANCEIRO FORNECEDOR
+					rs("custoFinancFornecTipoParcelamento") = c_custoFinancFornecTipoParcelamento
+					rs("custoFinancFornecQtdeParcelas") = c_custoFinancFornecQtdeParcelas
+					rs("vl_total_NF") = vl_total_NF
+					rs("vl_total_RA") = vl_total_RA
+					rs("perc_RT") = perc_RT
+					rs("perc_desagio_RA") = perc_desagio_RA
+					rs("perc_limite_RA_sem_desagio") = perc_limite_RA_sem_desagio
 
 				else
 				'	PEDIDO FILHOTE
@@ -1326,6 +1330,7 @@
 					rs("forma_pagto")=""
 					end if
 
+			'	CAMPOS ARMAZENADOS TANTO NO PEDIDO-PAI QUANTO NO PEDIDO-FILHOTE
 				rs("st_orc_virou_pedido")=1
 				rs("orcamento")=orcamento_selecionado
 				rs("orcamentista")=r_orcamento.orcamentista
@@ -1377,6 +1382,28 @@
 					rs("EndEtg_uf") = r_orcamento.EndEtg_uf
 					rs("EndEtg_cep") = r_orcamento.EndEtg_cep
 					rs("EndEtg_cod_justificativa") = r_orcamento.EndEtg_cod_justificativa
+					
+					if blnUsarMemorizacaoCompletaEnderecos then
+						rs("EndEtg_email") = r_orcamento.EndEtg_email
+						rs("EndEtg_email_xml") = r_orcamento.EndEtg_email_xml
+						rs("EndEtg_nome") = r_orcamento.EndEtg_nome
+						rs("EndEtg_ddd_res") = r_orcamento.EndEtg_ddd_res
+						rs("EndEtg_tel_res") = r_orcamento.EndEtg_tel_res
+						rs("EndEtg_ddd_com") = r_orcamento.EndEtg_ddd_com
+						rs("EndEtg_tel_com") = r_orcamento.EndEtg_tel_com
+						rs("EndEtg_ramal_com") = r_orcamento.EndEtg_ramal_com
+						rs("EndEtg_ddd_cel") = r_orcamento.EndEtg_ddd_cel
+						rs("EndEtg_tel_cel") = r_orcamento.EndEtg_tel_cel
+						rs("EndEtg_ddd_com_2") = r_orcamento.EndEtg_ddd_com_2
+						rs("EndEtg_tel_com_2") = r_orcamento.EndEtg_tel_com_2
+						rs("EndEtg_ramal_com_2") = r_orcamento.EndEtg_ramal_com_2
+						rs("EndEtg_tipo_pessoa") = r_orcamento.EndEtg_tipo_pessoa
+						rs("EndEtg_cnpj_cpf") = r_orcamento.EndEtg_cnpj_cpf
+						rs("EndEtg_contribuinte_icms_status") = converte_numero(r_orcamento.EndEtg_contribuinte_icms_status)
+						rs("EndEtg_produtor_rural_status") = converte_numero(r_orcamento.EndEtg_produtor_rural_status)
+						rs("EndEtg_ie") = r_orcamento.EndEtg_ie
+						rs("EndEtg_rg") = r_orcamento.EndEtg_rg
+						end if
 					end if
 
 				'OBTENÇÃO DE TRANSPORTADORA QUE ATENDA AO CEP INFORMADO, SE HOUVER
@@ -1410,7 +1437,42 @@
 				rs("dt_hr_violado_permite_RA_status") = r_orcamento.dt_hr_violado_permite_RA_status
 				rs("usuario_violado_permite_RA_status") = r_orcamento.usuario_violado_permite_RA_status
 
+				rs("endereco_memorizado_status") = 1
+				rs("endereco_logradouro") = Trim("" & t_CLIENTE("endereco"))
+				rs("endereco_bairro") = Trim("" & t_CLIENTE("bairro"))
+				rs("endereco_cidade") = Trim("" & t_CLIENTE("cidade"))
+				rs("endereco_uf") = Trim("" & t_CLIENTE("uf"))
+				rs("endereco_cep") = Trim("" & t_CLIENTE("cep"))
+				rs("endereco_numero") = Trim("" & t_CLIENTE("endereco_numero"))
+				rs("endereco_complemento") = Trim("" & t_CLIENTE("endereco_complemento"))
+
+				if blnUsarMemorizacaoCompletaEnderecos then
+					rs("st_memorizacao_completa_enderecos") = 1
+					rs("endereco_email") = Trim("" & t_CLIENTE("email"))
+					rs("endereco_email_xml") = Trim("" & t_CLIENTE("email_xml"))
+					rs("endereco_nome") = Trim("" & t_CLIENTE("nome"))
+					rs("endereco_ddd_res") = Trim("" & t_CLIENTE("ddd_res"))
+					rs("endereco_tel_res") = Trim("" & t_CLIENTE("tel_res"))
+					rs("endereco_ddd_com") = Trim("" & t_CLIENTE("ddd_com"))
+					rs("endereco_tel_com") = Trim("" & t_CLIENTE("tel_com"))
+					rs("endereco_ramal_com") = Trim("" & t_CLIENTE("ramal_com"))
+					rs("endereco_ddd_cel") = Trim("" & t_CLIENTE("ddd_cel"))
+					rs("endereco_tel_cel") = Trim("" & t_CLIENTE("tel_cel"))
+					rs("endereco_ddd_com_2") = Trim("" & t_CLIENTE("ddd_com_2"))
+					rs("endereco_tel_com_2") = Trim("" & t_CLIENTE("tel_com_2"))
+					rs("endereco_ramal_com_2") = Trim("" & t_CLIENTE("ramal_com_2"))
+					rs("endereco_tipo_pessoa") = Trim("" & t_CLIENTE("tipo"))
+					rs("endereco_cnpj_cpf") = Trim("" & t_CLIENTE("cnpj_cpf"))
+					rs("endereco_contribuinte_icms_status") = t_CLIENTE("contribuinte_icms_status")
+					rs("endereco_produtor_rural_status") = t_CLIENTE("produtor_rural_status")
+					rs("endereco_ie") = Trim("" & t_CLIENTE("ie"))
+					rs("endereco_rg") = Trim("" & t_CLIENTE("rg"))
+					end if
+
 				rs("plataforma_origem_pedido") = COD_PLATAFORMA_ORIGEM_PEDIDO__ERP
+
+				rs("sistema_responsavel_cadastro") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
+				rs("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
 
 				rs("id_nfe_emitente") = vEmpresaAutoSplit(iv)
 
@@ -2142,6 +2204,32 @@
 				s_log = s_log & "; custoFinancFornecTipoParcelamento=" & formata_texto_log(rs("custoFinancFornecTipoParcelamento"))
 				s_log = s_log & "; custoFinancFornecQtdeParcelas=" & formata_texto_log(rs("custoFinancFornecQtdeParcelas"))
 	
+				s_log = s_log & "; Endereço cobrança=" & formata_endereco(Trim("" & t_CLIENTE("endereco")), Trim("" & t_CLIENTE("endereco_numero")), Trim("" & t_CLIENTE("endereco_complemento")), Trim("" & t_CLIENTE("bairro")), Trim("" & t_CLIENTE("cidade")), Trim("" & t_CLIENTE("uf")), Trim("" & t_CLIENTE("cep")))
+				if blnUsarMemorizacaoCompletaEnderecos then
+					s_log = s_log & _
+							" (" & _
+							"email=" & Trim("" & t_CLIENTE("email")) & _
+							", email_xml=" & Trim("" & t_CLIENTE("email_xml")) & _
+							", nome=" & Trim("" & t_CLIENTE("nome")) & _
+							", ddd_res=" & Trim("" & t_CLIENTE("ddd_res")) & _
+							", tel_res=" & Trim("" & t_CLIENTE("tel_res")) & _
+							", ddd_com=" & Trim("" & t_CLIENTE("ddd_com")) & _
+							", tel_com=" & Trim("" & t_CLIENTE("tel_com")) & _
+							", ramal_com=" & Trim("" & t_CLIENTE("ramal_com")) & _
+							", ddd_cel=" & Trim("" & t_CLIENTE("ddd_cel")) & _
+							", tel_cel=" & Trim("" & t_CLIENTE("tel_cel")) & _
+							", ddd_com_2=" & Trim("" & t_CLIENTE("ddd_com_2")) & _
+							", tel_com_2=" & Trim("" & t_CLIENTE("tel_com_2")) & _
+							", ramal_com_2=" & Trim("" & t_CLIENTE("ramal_com_2")) & _
+							", tipo_pessoa=" & Trim("" & t_CLIENTE("tipo")) & _
+							", cnpj_cpf=" & Trim("" & t_CLIENTE("cnpj_cpf")) & _
+							", contribuinte_icms_status=" & t_CLIENTE("contribuinte_icms_status") & _
+							", produtor_rural_status=" & t_CLIENTE("produtor_rural_status") & _
+							", ie=" & Trim("" & t_CLIENTE("ie")) & _
+							", rg=" & Trim("" & t_CLIENTE("rg")) & _
+							")"
+					end if
+
 				if CLng(r_orcamento.st_end_entrega) <> 0 then
 					s_log = s_log & "; Endereço entrega=" & r_orcamento.EndEtg_endereco
 					if Trim(r_orcamento.EndEtg_endereco_numero) <> "" then s_log = s_log & ", " & r_orcamento.EndEtg_endereco_numero
@@ -2149,6 +2237,30 @@
 					s_log = s_log & " - " & r_orcamento.EndEtg_bairro & " - " & r_orcamento.EndEtg_cidade & " - " & r_orcamento.EndEtg_uf
 					if r_orcamento.EndEtg_cep <> "" then s_log = s_log & " - " & cep_formata(r_orcamento.EndEtg_cep)
 					if r_orcamento.EndEtg_obs <> "" then s_log = s_log & " - " & r_orcamento.EndEtg_obs
+					if blnUsarMemorizacaoCompletaEnderecos then
+						s_log = s_log & _
+								" (" & _
+								"email=" & r_orcamento.EndEtg_email & _
+								", email_xml=" & r_orcamento.EndEtg_email_xml & _
+								", nome=" & r_orcamento.EndEtg_nome & _
+								", ddd_res=" & r_orcamento.EndEtg_ddd_res & _
+								", tel_res=" & r_orcamento.EndEtg_tel_res & _
+								", ddd_com=" & r_orcamento.EndEtg_ddd_com & _
+								", tel_com=" & r_orcamento.EndEtg_tel_com & _
+								", ramal_com=" & r_orcamento.EndEtg_ramal_com & _
+								", ddd_cel=" & r_orcamento.EndEtg_ddd_cel & _
+								", tel_cel=" & r_orcamento.EndEtg_tel_cel & _
+								", ddd_com_2=" & r_orcamento.EndEtg_ddd_com_2 & _
+								", tel_com_2=" & r_orcamento.EndEtg_tel_com_2 & _
+								", ramal_com_2=" & r_orcamento.EndEtg_ramal_com_2 & _
+								", tipo_pessoa=" & r_orcamento.EndEtg_tipo_pessoa & _
+								", cnpj_cpf=" & r_orcamento.EndEtg_cnpj_cpf & _
+								", contribuinte_icms_status=" & r_orcamento.EndEtg_contribuinte_icms_status & _
+								", produtor_rural_status=" & r_orcamento.EndEtg_produtor_rural_status & _
+								", ie=" & r_orcamento.EndEtg_ie & _
+								", rg=" & r_orcamento.EndEtg_rg & _
+								")"
+						end if
 				else
 					s_log = s_log & "; Endereço entrega=mesmo do cadastro"
 					end if
@@ -2310,6 +2422,11 @@
 	if rs.State <> 0 then rs.Close
 	set rs = nothing
 	
+	if Not (t_CLIENTE is nothing) then
+		if t_CLIENTE.State <> 0 then t_CLIENTE.Close
+		set t_CLIENTE = nothing
+		end if
+
 '	FECHA CONEXAO COM O BANCO DE DADOS
 	cn.Close
 	set cn = nothing

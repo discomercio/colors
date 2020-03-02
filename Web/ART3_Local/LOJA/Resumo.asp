@@ -382,8 +382,6 @@ strWhereBase = " (t1.st_entrega <> '" & ST_ENTREGA_ENTREGUE & "')" & _
 								" AND (Coalesce(tPedBase.st_pagto, '') <> '" & ST_PAGTO_PAGO & "')" & _
 								" AND (Coalesce(tPedBase.st_pagto, '') <> '" & ST_PAGTO_PARCIAL & "')" & _
                                 " AND (tPedBase.loja = '" & loja & "')"
-' A LISTA DE LOJAS IMUNES FOI DESATIVADA EM 24/10/2019 A PEDIDO DA LILIAN/CARLOS
-'								" AND (tPedBase.loja NOT IN ('" & NUMERO_LOJA_VRF2 & "','" & NUMERO_LOJA_VRF3 & "','" & NUMERO_LOJA_VRF4 & "','" & NUMERO_LOJA_VRF5 & "','" & NUMERO_LOJA_VRF6 & "','" & NUMERO_LOJA_VRF7 & "','" & NUMERO_LOJA_VRF8 & "'))"
 
 if Not operacao_permitida(OP_LJA_CONSULTA_UNIVERSAL_PEDIDO_ORCAMENTO, s_lista_operacoes_permitidas) then
     strWhereBase = strWhereBase & " AND (tPedBase.vendedor = '" & usuario & "')"

@@ -638,6 +638,8 @@
                     rs("EndEtg_cod_justificativa") = EndEtg_obs
 					end if
 				
+				rs("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
+
 				rs.Update 
 				if Err <> 0 then
 					alerta = Cstr(Err) & ": " & Err.Description

@@ -56,6 +56,9 @@
 	dim cn, r
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim blnLojaHabilitadaProdCompostoECommerce
+	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
+
 	Dim criou_novo_reg_cliente, criou_novo_reg_aux
 	Dim s_log, s_log_aux
 	Dim campos_a_omitir, campos_a_omitir_ref_bancaria
@@ -612,6 +615,8 @@
 					r("usuario_cadastro") = usuario
 				'	O ORÇAMENTISTA É O INDICADOR
 					r("indicador") = usuario
+					r("sistema_responsavel_cadastro") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
+					r("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
 				else
 					alerta = "REGISTRO COM ID=" & cliente_selecionado & " JÁ EXISTE."
 				'	~~~~~~~~~~~~~~~~
@@ -1090,6 +1095,8 @@
 				r("dt_ult_atualizacao")=Now
 				r("usuario_ult_atualizacao")=usuario
 
+				r("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
+
 				r.Update
 
 				If Err = 0 then
@@ -1378,7 +1385,7 @@ function fORCConcluir( f ){
 
 <!-- ************   FORM PARA OPÇÃO DE CADASTRAR NOVO ORÇAMENTO?  ************ -->
 <% if exibir_botao_novo_item then %>
-	<% if isLojaHabilitadaProdCompostoECommerce(loja) then
+	<% if blnLojaHabilitadaProdCompostoECommerce then
 			s_dest = "OrcamentoNovoProdCompostoMask.asp"
 		else
 			s_dest = "OrcamentoNovo.asp"

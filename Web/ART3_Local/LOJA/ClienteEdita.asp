@@ -83,6 +83,9 @@
         if Not bdd_BS_conecta(cnBsp) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
         end if
 
+	dim blnLojaHabilitadaProdCompostoECommerce
+	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
+
 	dim intIdx
 	Dim id_cliente, msg_erro
 	if operacao_selecionada=OP_INCLUI then
@@ -2516,7 +2519,7 @@ function trataProdutorRural() {
 
 <!-- ************   FORM PARA OPÇÃO DE CADASTRAR NOVO PEDIDO?  ************ -->
 <% if (operacao_selecionada = OP_CONSULTA) And operacao_permitida(OP_LJA_CADASTRA_NOVO_PEDIDO, s_lista_operacoes_permitidas) then %>
-	<% if isLojaHabilitadaProdCompostoECommerce(loja) then
+	<% if blnLojaHabilitadaProdCompostoECommerce then
 		s = "PedidoNovoProdCompostoMask.asp"
 	else
 		s = "pedidonovo.asp"

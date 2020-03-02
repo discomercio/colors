@@ -57,9 +57,10 @@
 		strMinDtInicialFiltroPeriodoDDMMYYYY = ""
 		end if
 
-
 	dim url_origem
 	url_origem = Trim(Request("url_origem"))
+
+	dim s_memoria
 
 	' PREENCHIMENTO DA LISTA DE INDICADORES: GRAVA ÚLTIMA OPÇÃO DE CONSULTA NO BD
 	dim lst_indicadores_carrega
@@ -937,6 +938,12 @@ function exibe_botao_confirmar() {
 			value="ON"><span class="C" style="cursor:default" 
 			onclick="fFILTRO.ckb_obs2_nao_preenchido.click();">OBS II não preenchido</span>
 		</td></tr>
+	<tr bgcolor="#FFFFFF"><td align="left">
+		<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_nao_exibir_rastreio") %>
+		<input type="checkbox" tabindex="-1" id="ckb_nao_exibir_rastreio" name="ckb_nao_exibir_rastreio"
+			value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+			onclick="fFILTRO.ckb_nao_exibir_rastreio.click();">Não exibir link de rastreamento</span>
+		</td></tr>
 	</table>
 </td></tr>
 
@@ -1170,6 +1177,32 @@ function exibe_botao_confirmar() {
 			<span class="aviso">Vendedor selecionado não possui indicadores.</span>&nbsp;
 		</td>
 	</tr>
+	</table>
+</td></tr>
+
+<!--  COLUNAS OPCIONAIS  -->
+<tr bgcolor="#FFFFFF">
+<td class="MDBE" align="left" nowrap><span class="PLTe">CAMPOS OPCIONAIS</span>
+	<br>
+	<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;">
+	<tr bgcolor="#FFFFFF"><td align="left">
+		<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_vendedor") %>
+		<input type="checkbox" tabindex="-1" id="ckb_exibir_vendedor" name="ckb_exibir_vendedor"
+			value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+			onclick="fFILTRO.ckb_exibir_vendedor.click();">Vendedor</span>
+		</td></tr>
+	<tr bgcolor="#FFFFFF"><td align="left">
+		<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_parceiro") %>
+		<input type="checkbox" tabindex="-1" id="ckb_exibir_parceiro" name="ckb_exibir_parceiro"
+			value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+			onclick="fFILTRO.ckb_exibir_parceiro.click();">Parceiro</span>
+		</td></tr>
+	<tr bgcolor="#FFFFFF"><td align="left">
+		<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_uf") %>
+		<input type="checkbox" tabindex="-1" id="ckb_exibir_uf" name="ckb_exibir_uf"
+			value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+			onclick="fFILTRO.ckb_exibir_uf.click();">UF</span>
+		</td></tr>
 	</table>
 </td></tr>
 
