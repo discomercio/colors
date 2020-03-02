@@ -1,7 +1,0 @@
-'----------------------------------------------------------------------------------------------------
-'Este arquivo traz as siglas de UFs para as quais deve ser omitido o texto sobre PARTILHA/DIFAL na NF
-'(TEXTO: Valores totais do ICMS Interestadual: partilha da UF Destino ...)
-'
-'Cada UF deve estar em uma linha distinta
-'----------------------------------------------------------------------------------------------------
-RJ
