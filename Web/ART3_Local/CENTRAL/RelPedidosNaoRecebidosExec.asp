@@ -58,9 +58,9 @@
 		end if
 
 	dim alerta
-	dim s, s_aux, s_filtro
+	dim s, s_aux
 	dim c_dt_entregue_inicio, c_dt_entregue_termino
-	dim c_transportadora, c_loja, c_grupo_pedido_origem, c_pedido_origem
+	dim c_transportadora, c_loja, c_grupo_pedido_origem, c_pedido_origem, rb_tipo_saida
 	dim s_nome_loja, s_nome_transportadora, s_nome_grupo_pedido_origem, s_nome_pedido_origem
 	dim qtde_total_pedidos
 
@@ -72,6 +72,7 @@
 	c_loja = retorna_so_digitos(Trim(Request.Form("c_loja")))
     c_grupo_pedido_origem = Trim(Request.Form("c_grupo_pedido_origem"))
     c_pedido_origem = Trim(Request.Form("c_pedido_origem"))
+	rb_tipo_saida = Ucase(Trim(Request.Form("rb_tipo_saida")))
 
 	if alerta = "" then
 		s_nome_transportadora = ""
@@ -171,6 +172,22 @@
 		end if
 
 
+	dim blnSaidaExcel
+	blnSaidaExcel = False
+	if alerta = "" then
+		if rb_tipo_saida = "XLS" then
+			blnSaidaExcel = True
+			Response.ContentType = "application/vnd.ms-excel"
+			Response.AddHeader "Content-Disposition", "attachment; filename=RelPedidosNaoRecebidosPeloCliente_" & formata_data_yyyymmdd(Now) & "_" & formata_hora_hhnnss(Now) & ".xls"
+			Response.Write "<h2>Relatório de Pedidos Não Recebidos Pelo Cliente</h2>"
+			Response.Write monta_texto_filtro
+			Response.Write "<br><br>"
+			consulta_executa
+			Response.End
+			end if
+		end if
+
+
 
 
 
@@ -178,20 +195,129 @@
 '
 '									F  U  N  Ç  Õ  E  S
 ' _____________________________________________________________________________________________
+function monta_texto_filtro
+dim s, s_aux, s_filtro
+
+	s_filtro = ""
+	
+	if Not blnSaidaExcel then s_filtro = "<table width='709' cellpadding='0' cellspacing='0' style='border-bottom:1px solid black' border='0'>"
+
+	s = ""
+	s_aux = c_dt_entregue_inicio
+	if s_aux = "" then s_aux = "N.I."
+	s = s & s_aux & " a "
+	s_aux = c_dt_entregue_termino
+	if s_aux = "" then s_aux = "N.I."
+	s = s & s_aux
+	
+	if blnSaidaExcel then
+		s_filtro = s_filtro & "<span class='N'>Período de Entrega:&nbsp;" & s & "</span>"
+	else
+		s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
+				   "<span class='N'>Período de Entrega:&nbsp;</span></td><td align='left' valign='top' width='99%'>" & _
+				   "<span class='N'>" & s & "</span></td></tr>"
+		end if
+
+	s = c_transportadora
+	if s = "" then 
+		s = "todas"
+	else
+		if (s_nome_transportadora <> "") And (s_nome_transportadora <> c_transportadora) then s = s & "  (" & s_nome_transportadora & ")"
+		end if
+
+	if blnSaidaExcel then
+		if s_filtro <> "" then s_filtro = s_filtro & "<br>"
+		s_filtro = s_filtro & "<span class='N'>Transportadora:&nbsp;" & s & "</span>"
+	else
+		s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
+				   "<span class='N'>Transportadora:&nbsp;</span></td><td align='left' valign='top'>" & _
+				   "<span class='N'>" & s & "</span></td></tr>"
+		end if
+
+    s = c_grupo_pedido_origem
+	if s = "" then 
+		s = "todos"
+	else
+		s = s_nome_grupo_pedido_origem
+		end if
+
+	if blnSaidaExcel then
+		if s_filtro <> "" then s_filtro = s_filtro & "<br>"
+		s_filtro = s_filtro & "<span class='N'>Origem do Pedido (Grupo):&nbsp;" & s & "</span>"
+	else
+		s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
+				   "<span class='N'>Origem do Pedido (Grupo):&nbsp;</span></td><td align='left' valign='top'>" & _
+				   "<span class='N'>" & s & "</span></td></tr>"
+		end if
+
+    s = c_pedido_origem
+	if s = "" then 
+		s = "todos"
+	else
+		s = s_nome_pedido_origem
+		end if
+
+	if blnSaidaExcel then
+		if s_filtro <> "" then s_filtro = s_filtro & "<br>"
+		s_filtro = s_filtro & "<span class='N'>Origem do Pedido:&nbsp;" & s & "</span>"
+	else
+		s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
+				   "<span class='N'>Origem do Pedido:&nbsp;</span></td><td align='left' valign='top'>" & _
+				   "<span class='N'>" & s & "</span></td></tr>"
+		end if
+
+	s = c_loja
+	if s = "" then 
+		s = "todas"
+	else
+		s = s & "  (" & s_nome_loja & ")"
+		end if
+
+	if blnSaidaExcel then
+		if s_filtro <> "" then s_filtro = s_filtro & "<br>"
+		s_filtro = s_filtro & "<span class='N'>Loja:&nbsp;" & s & "</span>"
+	else
+		s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
+				   "<span class='N'>Loja:&nbsp;</span></td><td align='left' valign='top'>" & _
+				   "<span class='N'>" & s & "</span></td></tr>"
+		end if
+
+	if blnSaidaExcel then
+		if s_filtro <> "" then s_filtro = s_filtro & "<br>"
+		s_filtro = s_filtro & "<span class='N'>Emissão:&nbsp;" & formata_data_hora(Now) & "</span>"
+	else
+		s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
+				   "<span class='N'>Emissão:&nbsp;</span></td><td align='left' valign='top' width='99%'>" & _
+				   "<span class='N'>" & formata_data_hora(Now) & "</span></td></tr>"
+		s_filtro = s_filtro & "</table>"
+		end if
+
+	monta_texto_filtro = s_filtro
+end function
+
+
 
 ' _____________________________________
 ' CONSULTA EXECUTA
 '
 sub consulta_executa
+const MSO_NUMBER_FORMAT_PERC = "\#\#0\.0%"
+const MSO_NUMBER_FORMAT_MOEDA = "\#\#\#\,\#\#\#\,\#\#0\.00"
+const MSO_NUMBER_FORMAT_FLOAT = "\#\#\#\,\#\#\#\,\#\#0\.0"
+const MSO_NUMBER_FORMAT_INTEIRO = "\#\#\#\,\#\#\#\,\#\#0"
+const MSO_NUMBER_FORMAT_TEXTO = "\@"
 dim r
 dim x
 dim cab, cab_table
 dim s_sql, s_where
 dim n_reg
-dim strTransportadora, strTransportadoraAnterior, strTransportadoraAux, strPlural, strObs2
+dim strTransportadora, strTransportadoraAnterior, strTransportadoraAux, strPlural, strNF
 dim strCidade, strUf, strCidadeUf
 dim intQtdeTotalPedidos, intQtdeTransportadoras
-dim intQtdeSubTotalPedidos, s_grupo_origem
+dim intQtdeSubTotalPedidos, s_grupo_origem, nColSpan
+
+	nColSpan = 7
+	if blnSaidaExcel then nColSpan = nColSpan - 1
 
 '	CRITÉRIOS DE RESTRIÇÃO
 	s_where = "(p.st_entrega = '" & ST_ENTREGA_ENTREGUE & "')" & _
@@ -255,6 +381,7 @@ dim intQtdeSubTotalPedidos, s_grupo_origem
 				" p.data," & _
 				" p.pedido," & _
 				" p.obs_2," & _
+				" p.obs_3," & _
 				" p.loja," & _
 				" p.st_end_entrega," & _
 				" p.EndEtg_cidade," & _
@@ -275,16 +402,29 @@ dim intQtdeSubTotalPedidos, s_grupo_origem
   ' CABEÇALHO
 	cab_table = "<table cellspacing=0 cellpadding=0 class='MB'>" & chr(13)
 	
-	cab = _
-		"	<tr style='background:azure' nowrap>" & chr(13) & _
-		"		<td class='MDTE tdDataEntrega' align='center' valign='bottom' nowrap><span class='Rc'>Data Coleta</span></td>" & chr(13) & _
-		"		<td class='MTD tdRecebido' align='center' valign='bottom' nowrap><span class='Rc'>Receb</span></td>" &  chr(13) & _
-		"		<td class='MTD tdPedido' valign='bottom' nowrap><span class='R'>Pedido</span></td>" &  chr(13) & _
-		"		<td class='MTD tdCidade' valign='bottom' nowrap><span class='R' style='text-align:left;'>Cidade</span></td>" &  chr(13) & _
-		"		<td class='MTD tdObs2' valign='bottom' nowrap><span class='R' style='text-align:left;'>Obs II</span></td>" &  chr(13) & _
-		"		<td class='MTD tdLoja' align='center' valign='bottom' nowrap><span class='Rc'>Loja</span></td>" &  chr(13) & _
-		"		<td class='MTD tdCliente' valign='bottom' ><span style='font-weight:bold; text-align:left;' class='R'>Cliente</span></td>" & chr(13) & _
-		"	</tr>" & chr(13)
+	if Not blnSaidaExcel then
+		cab = _
+			"	<tr style='background:azure' nowrap>" & chr(13) & _
+			"		<td class='MDTE tdDataEntrega' align='center' valign='bottom' nowrap><span class='Rc'>Data Coleta</span></td>" & chr(13) & _
+			"		<td class='MTD tdRecebido' align='center' valign='bottom' nowrap><span class='Rc'>Receb</span></td>" &  chr(13) & _
+			"		<td class='MTD tdPedido' valign='bottom' nowrap><span class='R'>Pedido</span></td>" &  chr(13) & _
+			"		<td class='MTD tdCidade' valign='bottom' nowrap><span class='R' style='text-align:left;'>Cidade</span></td>" &  chr(13) & _
+			"		<td class='MTD tdObs2' valign='bottom' nowrap><span class='R' style='text-align:left;'>NF</span></td>" &  chr(13) & _
+			"		<td class='MTD tdLoja' align='center' valign='bottom' nowrap><span class='Rc'>Loja</span></td>" &  chr(13) & _
+			"		<td class='MTD tdCliente' valign='bottom'><span style='font-weight:bold; text-align:left;' class='R'>Cliente</span></td>" & chr(13) & _
+			"	</tr>" & chr(13)
+	else
+		cab = _
+			"	<tr style='background:azure' nowrap>" & chr(13) & _
+			"		<td class='MDTE tdDataEntrega' align='center' valign='bottom' nowrap style='width:100px;><span class='Rc' style='font-weight:bold;text-align:center;'>Data Coleta</span></td>" & chr(13) & _
+			"		<td class='MTD tdPedido' valign='bottom' nowrap style='width:90px;><span class='R' style='font-weight:bold;'>Pedido</span></td>" &  chr(13) & _
+			"		<td class='MTD tdCidade' valign='bottom' nowrap style='width:300px;><span class='R' style='font-weight:bold;text-align:left;'>Cidade</span></td>" &  chr(13) & _
+			"		<td class='MTD tdObs2' valign='bottom' nowrap style='width:80px;><span class='R' style='font-weight:bold;text-align:left;'>NF</span></td>" &  chr(13) & _
+			"		<td class='MTD tdLoja' align='center' valign='bottom' nowrap style='width:70px;><span class='Rc' style='font-weight:bold;text-align:center;'>Loja</span></td>" &  chr(13) & _
+			"		<td class='MTD tdCliente' valign='bottom' style='width:500px;'><span style='font-weight:bold;text-align:left;' class='R'>Cliente</span></td>" & chr(13) & _
+			"	</tr>" & chr(13)
+		end if
+
 	
 '	LAÇO P/ LEITURA DO RECORDSET
 	x = cab_table
@@ -307,7 +447,7 @@ dim intQtdeSubTotalPedidos, s_grupo_origem
 				if intQtdeSubTotalPedidos > 1 then strPlural = "s" else strPlural = ""
 				x = x & _
 					"	<tr style='background:ivory;'>" & chr(13) & _
-					"		<td class='MDTE' colspan='7'>" & _
+					"		<td class='MDTE' colspan='" & Cstr(nColSpan) & "'>" & _
 								"<span class='C' style='text-align:left;'>" & formata_inteiro(intQtdeSubTotalPedidos) & " pedido" & strPlural & "</span>" & _
 					"		</td>" & chr(13) & _
 					"	</tr>" & chr(13)
@@ -315,17 +455,18 @@ dim intQtdeSubTotalPedidos, s_grupo_origem
 			
 			strTransportadoraAux = strTransportadora
 			if strTransportadoraAux = "" then strTransportadoraAux = "SEM TRANSPORTADORA"
+			if blnSaidaExcel then strTransportadoraAux = "Transportadora: " & strTransportadoraAux
 			
 			if intQtdeTotalPedidos > 0 then
 			x = x & _
 					"	<tr>" & chr(13) & _
-					"		<td colspan='7' class='MC'>&nbsp;</td>" & chr(13) & _
+					"		<td colspan='" & Cstr(nColSpan) & "' class='MC'>&nbsp;</td>" & chr(13) & _
 					"	</tr>" & chr(13)
 				end if
 				
 			x = x & _
 				"	<tr style='background:azure'>" & chr(13) & _
-				"		<td colspan='7' class='MC ME MD'><span class='C'>" & strTransportadoraAux & "</span></td>" & chr(13) & _
+				"		<td colspan='" & Cstr(nColSpan) & "' class='MC ME MD'><span class='C' style='font-weight:bold;'>" & strTransportadoraAux & "</span></td>" & chr(13) & _
 				"	</tr>" & chr(13)
 			
 		'	TÍTULO DAS COLUNAS
@@ -340,30 +481,53 @@ dim intQtdeSubTotalPedidos, s_grupo_origem
 		intQtdeTotalPedidos = intQtdeTotalPedidos + 1
 		intQtdeSubTotalPedidos = intQtdeSubTotalPedidos + 1
 
-		x = x & "	<tr onmouseover='realca_cor_mouse_over(this);' onmouseout='realca_cor_mouse_out(this);'>" & chr(13)
-		
+		if Not blnSaidaExcel then
+			x = x & "	<tr onmouseover='realca_cor_mouse_over(this);' onmouseout='realca_cor_mouse_out(this);'>" & chr(13)
+		else
+			x = x & "	<tr>" & chr(13)
+			end if
+
 	'>  DATA DE COLETA (RÓTULO ANTIGO: DATA DA ENTREGA)
-		x = x & "		<td class='MDTE tdDataEntrega' align='center'>" & _
-							"<input type='text' class='Cc cDtColeta' style='border:0;width:70px;' name='c_dt_coleta' id='c_dt_coleta' " & _
-							"value = '" & formata_data(r("entregue_data")) & "' readonly" & _
-							">" & _
-						"</td>" & chr(13)
+		x = x & "		<td class='MDTE tdDataEntrega' align='center'>"
+		if Not blnSaidaExcel then
+			x = x & _
+					"<input type='text' class='Cc cDtColeta' style='border:0;width:70px;' name='c_dt_coleta' id='c_dt_coleta' " & _
+					"value = '" & formata_data(r("entregue_data")) & "' readonly" & _
+					" />"
+		else
+			s = formata_data(r("entregue_data"))
+			x = x & _
+				"<p class='Cc' style='text-align:center;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</p>"
+			end if
+
+		x = x & "</td>" & chr(13)
 
 	'>  RECEBIDO
-		x = x & "		<td class='MTD tdCkb tdRecebido' align='center'>" & _
-							"<input type='checkbox' name='ckb_recebido' id='ckb_recebido' class='Cc CKB_REC' " & _
-								" value='" & Trim("" & r("pedido")) & "'" & _
-								">" & _
-						"</td>" & chr(13)
+		if Not blnSaidaExcel then
+			x = x & "		<td class='MTD tdCkb tdRecebido' align='center'>" & _
+								"<input type='checkbox' name='ckb_recebido' id='ckb_recebido' class='Cc CKB_REC' " & _
+									" value='" & Trim("" & r("pedido")) & "'" & _
+									">" & _
+							"</td>" & chr(13)
+			end if
 
 	'>  PEDIDO
-		x = x & "		<td class='MTD tdPedido'>" & _
-							"<span class='Cc'>" & _
-								"<a href='javascript:fPEDConsulta(" & chr(34) & r("pedido") & chr(34) & "," & chr(34) & usuario & chr(34) & ")' title='clique para consultar o pedido'>" & _
-								Trim("" & r("pedido")) & _
-								"</a>" & _
-							"</span>" & _
-						"</td>" & chr(13)
+		x = x & "		<td class='MTD tdPedido'>"
+
+		if Not blnSaidaExcel then
+			x = x & _
+						"<span class='Cc'>" & _
+							"<a href='javascript:fPEDConsulta(" & chr(34) & r("pedido") & chr(34) & "," & chr(34) & usuario & chr(34) & ")' title='clique para consultar o pedido'>" & _
+							Trim("" & r("pedido")) & _
+							"</a>" & _
+						"</span>"
+		else
+			s = Trim("" & r("pedido"))
+			x = x & _
+				"<p class='C' style='text-align:left;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</p>"
+			end if
+
+		x = x & "</td>" & chr(13)
 
 	'>  CIDADE
 		if CInt(r("st_end_entrega")) = 0 then
@@ -382,36 +546,66 @@ dim intQtdeSubTotalPedidos, s_grupo_origem
 			strCidadeUf = strCidade & strUf
 			end if
 			
-		x = x & "		<td class='MTD tdCidade'>" & _
-							"<span class='C' style='text-align:left;'>" & _
-								strCidadeUf & _
-							"</span>" & _
-						"</td>" & chr(13)
+		x = x & "		<td class='MTD tdCidade'>"
 
-	'>  OBS II
-		strObs2 = Trim("" & r("obs_2"))
-		if strObs2 = "" then strObs2 = "&nbsp;"
-		x = x & "		<td class='MTD tdObs2'>" & _
-							"<span class='C' style='text-align:left;'>" & _
-								"<a href='javascript:fRELConcluir(" & chr(34) & r("pedido") & chr(34) & ")' title='clique para consultar o pedido'>" & _
-								strObs2 & _
-								"</a>" & _
-							"</span>" & _
-						"</td>" & chr(13)
+		if Not blnSaidaExcel then
+			x = x & _
+								"<span class='C' style='text-align:left;'>" & _
+									strCidadeUf & _
+								"</span>"
+		else
+			x = x & _
+				"<p class='C' style='text-align:left;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & strCidadeUf & "</p>"
+			end if
+
+		x = x & "</td>" & chr(13)
+
+	'>  NF
+		'Somente NF de Remessa, quando houver
+		strNF = Trim("" & r("obs_3"))
+		if strNF = "" then strNF = Trim("" & r("obs_2"))
+
+		x = x & "		<td class='MTD tdObs2'>"
+		if Not blnSaidaExcel then
+			if strNF = "" then strNF = "&nbsp;"
+			x = x & _
+					"<span class='C' style='text-align:left;'>" & _
+						"<a href='javascript:fRELConcluir(" & chr(34) & r("pedido") & chr(34) & ")' title='clique para consultar o pedido'>" & _
+						strNF & _
+						"</a>" & _
+					"</span>"
+		else
+			x = x & _
+				"<p class='C' style='text-align:left;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & strNF & "</p>"
+			end if
+
+		x = x & "</td>" & chr(13)
 						
 	'>  Nº LOJA
-		x = x & "		<td class='MTD tdLoja' align='center'>" & _
-							"<span class='C' style='text-align:left;'>" & _
-								Trim("" & r("loja")) & _
-							"</span>" & _
-						"</td>" & chr(13)
+		x = x & "		<td class='MTD tdLoja' align='center'>"
+		if Not blnSaidaExcel then
+			x = x & _
+					"<span class='C' style='text-align:left;'>" & _
+						Trim("" & r("loja")) & _
+					"</span>"
+		else
+			x = x & _
+				"<p class='Cc' style='text-align:center;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & Trim("" & r("loja")) & "</p>"
+			end if
+		x = x & "</td>" & chr(13)
 
 	'>  NOME DO CLIENTE
-		x = x & "		<td class='MTD tdCliente'>" & _
-							"<span class='C' style='text-align:left;'>" & _
-								Trim("" & r("nome_iniciais_em_maiusculas")) & _
-							"</span>" & _
-						"</td>" & chr(13)
+		x = x & "		<td class='MTD tdCliente'>"
+		if Not blnSaidaExcel then
+			x = x & _
+					"<span class='C' style='text-align:left;'>" & _
+						Trim("" & r("nome_iniciais_em_maiusculas")) & _
+					"</span>"
+		else
+			x = x & _
+				"<p class='C' style='text-align:left;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & Trim("" & r("nome_iniciais_em_maiusculas")) & "</p>"
+			end if
+		x = x & "</td>" & chr(13)
 
 		x = x & "	</tr>" & chr(13)
 		
@@ -430,14 +624,14 @@ dim intQtdeSubTotalPedidos, s_grupo_origem
 		x = cab_table & _
 			cab & _
 			"	<tr nowrap>" & chr(13) & _
-			"		<td class='MC MD ME ALERTA' colspan='7' align='center'><span class='ALERTA'>&nbsp;NENHUM PEDIDO ENCONTRADO&nbsp;</span></td>" & chr(13) & _
+			"		<td class='MC MD ME ALERTA' colspan='" & Cstr(nColSpan) & "' align='center'><span class='ALERTA'>&nbsp;NENHUM PEDIDO ENCONTRADO&nbsp;</span></td>" & chr(13) & _
 			"	</tr>" & chr(13)
 	else
 	'	SUB-TOTAL DA ÚLTIMA TRANSPORTADORA
 		if intQtdeSubTotalPedidos > 1 then strPlural = "s" else strPlural = ""
 		x = x & _
 			"	<tr style='background:ivory;'>" & chr(13) & _
-			"		<td class='MDTE' colspan='7' align='left'>" & _
+			"		<td class='MDTE' colspan='" & Cstr(nColSpan) & "' align='left'>" & _
 						"<span class='C' style='text-align:left;'>" & formata_inteiro(intQtdeSubTotalPedidos) & " pedido" & strPlural & "</span>" & _
 			"		</td>" & chr(13) & _
 			"	</tr>" & chr(13)
@@ -447,13 +641,13 @@ dim intQtdeSubTotalPedidos, s_grupo_origem
 			if intQtdeTotalPedidos > 1 then strPlural = "s" else strPlural = ""
 			x = x & _
 				"	<tr>" & chr(13) & _
-				"		<td colspan='7' class='MC' align='left'>&nbsp;</td>" & chr(13) & _
+				"		<td colspan='" & Cstr(nColSpan) & "' class='MC' align='left'>&nbsp;</td>" & chr(13) & _
 				"	</tr>" & chr(13) & _
 				"	<tr>" & chr(13) & _
-				"		<td colspan='7' align='left'><span class='C' style='text-align:left;'>TOTAL GERAL</span></td>" & chr(13) & _
+				"		<td colspan='" & Cstr(nColSpan) & "' align='left'><span class='C' style='font-weight:bold;text-align:left;'>TOTAL GERAL</span></td>" & chr(13) & _
 				"	</tr>" & chr(13) & _
 				"	<tr style='background:ivory;'>" & chr(13) & _
-				"		<td class='MDTE' colspan='7' align='left'>" & _
+				"		<td class='MDTE' colspan='" & Cstr(nColSpan) & "' align='left'>" & _
 							"<span class='C' style='text-align:left;'>" & formata_inteiro(intQtdeTotalPedidos) & " pedido" & strPlural & "</span>" & _
 				"		</td>" & chr(13) & _
 				"	</tr>" & chr(13)
@@ -804,65 +998,8 @@ function fRELGravaDados(f) {
 
 <!-- FILTROS -->
 <% 
-	s_filtro = "<table width='709' cellpadding='0' cellspacing='0' style='border-bottom:1px solid black' border='0'>"
-
-	s = ""
-	s_aux = c_dt_entregue_inicio
-	if s_aux = "" then s_aux = "N.I."
-	s = s & s_aux & " a "
-	s_aux = c_dt_entregue_termino
-	if s_aux = "" then s_aux = "N.I."
-	s = s & s_aux
-	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
-			   "<span class='N'>Período de Entrega:&nbsp;</span></td><td align='left' valign='top' width='99%'>" & _
-			   "<span class='N'>" & s & "</span></td></tr>"
-
-	s = c_transportadora
-	if s = "" then 
-		s = "todas"
-	else
-		if (s_nome_transportadora <> "") And (s_nome_transportadora <> c_transportadora) then s = s & "  (" & s_nome_transportadora & ")"
-		end if
-	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
-			   "<span class='N'>Transportadora:&nbsp;</span></td><td align='left' valign='top'>" & _
-			   "<span class='N'>" & s & "</span></td></tr>"
-
-    s = c_grupo_pedido_origem
-	if s = "" then 
-		s = "todos"
-	else
-		s = s_nome_grupo_pedido_origem
-		end if
-	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
-			   "<span class='N'>Origem do Pedido (Grupo):&nbsp;</span></td><td align='left' valign='top'>" & _
-			   "<span class='N'>" & s & "</span></td></tr>"
-
-    s = c_pedido_origem
-	if s = "" then 
-		s = "todos"
-	else
-		s = s_nome_pedido_origem
-		end if
-	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
-			   "<span class='N'>Origem do Pedido:&nbsp;</span></td><td align='left' valign='top'>" & _
-			   "<span class='N'>" & s & "</span></td></tr>"
-
-	s = c_loja
-	if s = "" then 
-		s = "todas"
-	else
-		s = s & "  (" & s_nome_loja & ")"
-		end if
-	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
-			   "<span class='N'>Loja:&nbsp;</span></td><td align='left' valign='top'>" & _
-			   "<span class='N'>" & s & "</span></td></tr>"
-	
-	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
-			   "<span class='N'>Emissão:&nbsp;</span></td><td align='left' valign='top' width='99%'>" & _
-			   "<span class='N'>" & formata_data_hora(Now) & "</span></td></tr>"
-
-	s_filtro = s_filtro & "</table>"
-	Response.Write s_filtro
+	s = monta_texto_filtro
+	Response.Write s
 %>
 
 <!--  RELATÓRIO  -->
