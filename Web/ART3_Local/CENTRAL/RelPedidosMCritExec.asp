@@ -809,7 +809,7 @@ dim vl_total_fornecedor, vl_sub_total_fornecedor
 dim vl_total_fornecedor_NF, vl_sub_total_fornecedor_NF
 dim vl_total_pedido_original, vl_sub_total_pedido_original, vl_pedido_original, s_class
 dim x, loja_a, qtde_lojas
-dim w_cliente, w_st_entrega, w_valor
+dim w_pedido, w_pedido_magento, w_data, w_NF, w_cliente, w_st_entrega, w_valor, w_motivo_cancelamento
 dim blnRelAnalitico
 dim intNumLinha
 dim s_grupo_origem
@@ -1451,6 +1451,11 @@ dim rPSSW
     end if
 
   ' CABEÇALHO
+	w_pedido = 70
+	w_pedido_magento = 70
+	w_data = 70
+	w_NF = 50
+
 	if blnPorFornecedor then
 		if blnRelAnalitico then
 			w_cliente = 201
@@ -1470,17 +1475,23 @@ dim rPSSW
 		end if
 	
 	if blnSaidaExcel then
+		w_pedido = 80
+		w_pedido_magento = 90
+		w_data = 80
+		w_NF = 70
 		w_valor = 120
 		w_st_entrega = 100
 		end if
 	
+	w_motivo_cancelamento = 200
+
 	cab_table = "<TABLE cellSpacing=0>" & chr(13)
 	cab = "	<TR style='background:azure'>" & chr(13) & _
 		  "		<TD valign='bottom' style='background:white;' NOWRAP>&nbsp;</TD>" & chr(13) & _
-		  "     <TD class='MT' style='width:70px' valign='bottom' NOWRAP><P class='R' style='font-weight:bold;'>Nº Pedido</P></TD>" & chr(13) & _
+		  "     <TD class='MT' style='width:" & Cstr(w_pedido) & "px' valign='bottom' NOWRAP><P class='R' style='font-weight:bold;'>Nº Pedido</P></TD>" & chr(13) & _
           "<!--Magento-->" & chr(13) & _
-		  "		<TD class='MTBD' align='center' style='width:70px' valign='bottom'><P class='R' style='font-weight:bold;'>Data</P></TD>" & chr(13) & _
-		  "		<td class='MTBD' align='center' style='width:50px' valign='bottom'><P class='R' style='font-weight:bold;'>NF</P></TD>" & chr(13) & _
+		  "		<TD class='MTBD' align='center' style='width:" & Cstr(w_data) & "px' valign='bottom'><P class='R' style='font-weight:bold;'>Data</P></TD>" & chr(13) & _
+		  "		<td class='MTBD' align='center' style='width:" & Cstr(w_NF) & "px' valign='bottom'><P class='R' style='font-weight:bold;'>NF</P></TD>" & chr(13) & _
 		  "		<TD class='MTBD' style='width:" & Cstr(w_cliente) & "px' valign='bottom'><P class='R' style='font-weight:bold;'>Cliente</P></TD>" & chr(13)
 	
 	if blnPorFornecedor then
@@ -1526,7 +1537,7 @@ dim rPSSW
                 "		<TD class='MTBD' style='width:" & Cstr(w_valor) & "px' align='right' valign='bottom' NOWRAP><P class='Rd' style='font-weight:bold;'>VL Original</P></TD>" & chr(13)
         end if
         cab = cab & _
-            "		<TD class='MTBD' style='width:200px' valign='bottom' NOWRAP><P class='R' style='font-weight:bold;'>Motivo Cancelamento</P></TD>" & chr(13)
+            "		<TD class='MTBD' style='width:" & Cstr(w_motivo_cancelamento) & "px' valign='bottom' NOWRAP><P class='R' style='font-weight:bold;'>Motivo Cancelamento</P></TD>" & chr(13)
     else
 		if ckb_exibir_vendedor <> "" then
 			cab = cab & _
@@ -1707,9 +1718,9 @@ dim rPSSW
 
             
             if s_loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
-                cab = Replace(cab, "<!--Magento-->", "		<td class='MTBD' style='width:70px;font-weight:bold' align='left' valign='bottom'><p class='R'>Número Magento</p></td>")
+                cab = Replace(cab, "<!--Magento-->", "		<td class='MTBD' style='width:" & Cstr(w_pedido_magento) & "px;font-weight:bold' align='left' valign='bottom'><p class='R'>Número Magento</p></td>")
             else
-                cab = Replace(cab,"		<td class='MTBD' style='width:70px;font-weight:bold' align='left' valign='bottom'><p class='R'>Número Magento</p></td>", "<!--Magento-->")
+                cab = Replace(cab,"		<td class='MTBD' style='width:" & Cstr(w_pedido_magento) & "px;font-weight:bold' align='left' valign='bottom'><p class='R'>Número Magento</p></td>", "<!--Magento-->")
             end if
 			x = x & cab
 			end if
@@ -1740,14 +1751,14 @@ dim rPSSW
 
     '> PEDIDO MAGENTO
         if Trim("" & r("loja")) = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
-		    x = x & "		<td align='left' valign='top' class='MDB'><p class='C' style='font-weight:bold;'>&nbsp;" & Trim("" & r("pedido_bs_x_ac")) & "</p></td>" & chr(13)
+		    x = x & "		<td align='left' valign='top' class='MDB'><p class='C' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>&nbsp;" & Trim("" & r("pedido_bs_x_ac")) & "</p></td>" & chr(13)
         end if
 	
 	'> DATA DO PEDIDO
 	    x = x & "		<TD align='center' valign='top' class='MDB'><P class='Cn''>" & Trim("" & r("data")) & "</P></TD>" & chr(13)
 		
 	'> NF
-		if ckb_nao_exibir_rastreio <> "" then
+		if (ckb_nao_exibir_rastreio <> "") Or blnSaidaExcel then
 			s_numero_NF = Trim("" & r("obs_2"))
 			if (s_numero_NF <> "") And (Trim("" & r("obs_3")) <> "") then s_numero_NF = s_numero_NF & ", "
 			s_numero_NF = s_numero_NF & Trim("" & r("obs_3"))
@@ -1761,7 +1772,7 @@ dim rPSSW
 			if (s_link_rastreio <> "") And (s_link_rastreio2 <> "") then s_link_rastreio = s_link_rastreio & "<br />"
 			s_numero_NF = s_link_rastreio & s_link_rastreio2
 			end if
-		x = x & "		<TD align='left' valign='top' style='width:50px;' class='MDB'><P class='Cn''>" & s_numero_NF & "</P></TD>" & chr(13)
+		x = x & "		<TD align='left' valign='top' class='MDB'><P class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s_numero_NF & "</P></TD>" & chr(13)
 		
 	'> CLIENTE
 		if blnSaidaExcel then s_nowrap = " NOWRAP" else s_nowrap = ""
@@ -1860,7 +1871,7 @@ dim rPSSW
             if Trim("" & r("cancelado_codigo_sub_motivo")) <> "" then
                 s = s & " (" & obtem_descricao_tabela_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__CANCELAMENTOPEDIDO_MOTIVO_SUB, Trim("" & r("cancelado_codigo_sub_motivo"))) & ")"
             end if
-		    x = x & "		<TD valign='top' style='width:200px' class='MDB'><P class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</P></TD>" & chr(13)            
+		    x = x & "		<TD valign='top' style='width:" & Cstr(w_motivo_cancelamento) & "px' class='MDB'><P class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</P></TD>" & chr(13)            
         end if
 
 	'> CAMPOS OPCIONAIS
