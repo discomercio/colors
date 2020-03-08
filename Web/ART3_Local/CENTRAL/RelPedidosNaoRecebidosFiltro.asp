@@ -169,7 +169,10 @@ end function
 
 	$(document).ready(function () {
 		$("#c_dt_entregue_inicio").hUtilUI('datepicker_filtro_inicial');
-		$("#c_dt_entregue_termino").hUtilUI('datepicker_filtro_final');
+        $("#c_dt_entregue_termino").hUtilUI('datepicker_filtro_final');
+        $("input[name='rb_tipo_saida']").change(function () {
+            dCONFIRMA.style.visibility = "";
+        });
 	});
 
 </script>
@@ -244,9 +247,16 @@ var i;
 		
 	dCONFIRMA.style.visibility="hidden";
 	window.status = "Aguarde ...";
-	f.submit();
+
+    if (f.rb_tipo_saida[1].checked) setTimeout('exibe_botao_confirmar()', 15000);
+
+    f.submit();
 }
 
+function exibe_botao_confirmar() {
+    dCONFIRMA.style.visibility = "";
+    window.status = "";
+}
 </script>
 
 
@@ -342,6 +352,19 @@ var i;
 		<input class="PLLe" maxlength="3" style="width:150px;" name="c_loja" id="c_loja" onblur="this.value=normaliza_codigo(this.value, TAM_MIN_LOJA);" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); filtra_numerico();">
 		</td></tr>
 
+<!--  SAÍDA DO RELATÓRIO  -->
+	<tr bgColor="#FFFFFF">
+		<td class="MDBE" align="left" NOWRAP><span class="PLTe">SAÍDA DO RELATÓRIO</span>
+		<br>
+			<% intIdx=-1 %>
+			<input type="radio" id="rb_tipo_saida_html" name="rb_tipo_saida" value="HTML" class="CBOX" style="margin-left:20px;" checked>
+			<% intIdx=intIdx+1 %>
+			<span style="cursor:default" class="rbLink" onclick="fFILTRO.rb_tipo_saida[<%=Cstr(intIdx)%>].click();">Html</span>
+			<br />
+			<input type="radio" id="rb_tipo_saida_xls" name="rb_tipo_saida" value="XLS" class="CBOX" style="margin-left:20px;">
+			<% intIdx=intIdx+1 %>
+			<span style="cursor:default" class="rbLink" onclick="fFILTRO.rb_tipo_saida[<%=Cstr(intIdx)%>].click();">Excel</span>
+			</td></tr>
 </table>
 
 <!-- ************   SEPARADOR   ************ -->
