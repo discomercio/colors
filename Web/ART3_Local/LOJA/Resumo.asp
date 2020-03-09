@@ -2391,7 +2391,7 @@ if operacao_permitida(OP_LJA_CONSULTA_PEDIDO, s_lista_operacoes_permitidas) Or _
 	</tr>
 	<% end if %>
 
-	<% if (loja = NUMERO_LOJA_BONSHOP) And operacao_permitida(OP_LJA_CADASTRA_NOVO_PEDIDO_EC_INDICADOR_SEMI_AUTOMATICO, s_lista_operacoes_permitidas) then %>
+	<% if isLojaBonshop(loja) And operacao_permitida(OP_LJA_CADASTRA_NOVO_PEDIDO_EC_INDICADOR_SEMI_AUTOMATICO, s_lista_operacoes_permitidas) then %>
     <!--  C O N S U L T A   P E D I D O   P E L O   N Ú M E R O   M A G E N T O -->
 	<tr class="DefaultBkg">
 		<td width="40%" align="left">
