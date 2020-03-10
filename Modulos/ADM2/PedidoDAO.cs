@@ -718,16 +718,19 @@ namespace ADM2
 			{
 				rowResultado = dtbResultado.Rows[i];
 				strPedido = BD.readToString(rowResultado["pedido"]);
-				try
+				if (strPedido.Trim().Length > 0)
 				{
-					pedido = pedidoDAO.getPedido(strPedido);
-				}
-				catch (Exception)
-				{
-					pedido = null;
-				}
+					try
+					{
+						pedido = pedidoDAO.getPedido(strPedido);
+					}
+					catch (Exception)
+					{
+						pedido = null;
+					}
 
-				if (pedido != null) listaPedidos.Add(pedido);
+					if (pedido != null) listaPedidos.Add(pedido);
+				}
 			}
 			#endregion
 
@@ -747,7 +750,7 @@ namespace ADM2
 				iStep++;
 				strNfZeroPadding = (new String('0', iStep)) + numeroNF.ToString();
 				if (strListaNF.Length > 0) strListaNF += ", ";
-				strListaNF = "'" + strNfZeroPadding + "'";
+				strListaNF += "'" + strNfZeroPadding + "'";
 				if (strNfZeroPadding.Length >= MAX_TAMANHO_OBS_2) break;
 			}
 
