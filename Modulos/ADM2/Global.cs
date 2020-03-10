@@ -28,8 +28,8 @@ namespace ADM2
 			{
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "ADM2";
-				public const string VERSAO_NUMERO = "1.07";
-				public const string VERSAO_DATA = "07.MAR.2020";
+				public const string VERSAO_NUMERO = "1.08";
+				public const string VERSAO_DATA = "10.MAR.2020";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Módulo Administrativo";
@@ -85,8 +85,8 @@ namespace ADM2
 			 *		  situações em que o CPF do cliente vem formatado como sendo um CNPJ (ex: 123.456.789/09
 			 *		  sendo informado como 00.012.345/6789-09)
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.08 - XX.XX.20XX - por XXX
-			 *		  
+			 * v 1.08 - 10.03.2020 - por HHO
+			 *		  Correção de bug na rotina que tenta localizar o pedido através do número da NF.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.09 - XX.XX.20XX - por XXX
 			 *		  
