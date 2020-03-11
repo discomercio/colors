@@ -907,6 +907,19 @@ end function
                 }
 
 
+                if ((trim(f.EndEtg_email.value) != "") && (!email_ok(f.EndEtg_email.value))) {
+                    alert('Endereço de entrega: e-mail inválido!!');
+                    f.EndEtg_email.focus();
+                    return;
+                }
+
+                if ((trim(f.EndEtg_email_xml.value) != "") && (!email_ok(f.EndEtg_email_xml.value))) {
+                    alert('Endereço de entrega: e-mail (XML) inválido!!');
+                    f.EndEtg_email_xml.focus();
+                    return;
+                }
+
+
             }
             else {
                 //campos PF
@@ -3026,10 +3039,29 @@ end function
 	    <input id="EndEtg_tel_com_2" name="EndEtg_tel_com_2" class="TA" value="" maxlength="9" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fNEW.EndEtg_ramal_com_2.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Telefone inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p>
 	    </td>
 	    <td align="left" class="MC"><p class="R">RAMAL</p><p class="C">
-	    <input id="EndEtg_ramal_com_2" name="EndEtg_ramal_com_2" class="TA" value="" maxlength="4" size="6" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_obs.focus(); filtra_numerico();" /></p>
+	    <input id="EndEtg_ramal_com_2" name="EndEtg_ramal_com_2" class="TA" value="" maxlength="4" size="6" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_email.focus(); filtra_numerico();" /></p>
 	    </td>
 	</tr>
 </table>
+
+
+<!-- ************   ENDEREÇO DE ENTREGA: E-MAIL   ************ -->
+<table width="649" class="QS Mostrar_EndEtg_pj Habilitar_EndEtg_outroendereco" cellspacing="0">
+	<tr>
+	<td width="100%" align="left"><p class="R">E-MAIL</p><p class="C">
+		<input id="EndEtg_email" name="EndEtg_email" class="TA" value="" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_email_xml.focus(); filtra_email();"></p></td>
+    </tr>
+</table>
+
+<!-- ************   ENDEREÇO DE ENTREGA: E-MAIL (XML)  ************ -->
+<table width="649" class="QS Mostrar_EndEtg_pj Habilitar_EndEtg_outroendereco" cellspacing="0">
+	<tr>
+	<td width="100%" align="left"><p class="R">E-MAIL (XML)</p><p class="C">
+		<input id="EndEtg_email_xml" name="EndEtg_email_xml" class="TA" value="" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_obs.focus(); filtra_email();"></p></td>
+	</tr>
+</table>
+
+
 
 <% end if %>
 
