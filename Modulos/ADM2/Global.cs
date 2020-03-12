@@ -28,8 +28,8 @@ namespace ADM2
 			{
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "ADM2";
-				public const string VERSAO_NUMERO = "1.06";
-				public const string VERSAO_DATA = "02.MAR.2020";
+				public const string VERSAO_NUMERO = "1.09";
+				public const string VERSAO_DATA = "10.MAR.2020";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Módulo Administrativo";
@@ -77,16 +77,52 @@ namespace ADM2
 			 *		  recebimento do pedido pelo cliente (campo: PedidoRecebidoData). No caso de pedidos de
 			 *		  marketplace, também é atualizado o campo MarketplacePedidoRecebidoRegistrarDataRecebido.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.07 - XX.XX.20XX - por XXX
-			 *		  
+			 * v 1.07 - 07.03.2020 - por HHO
+			 *		  Ajustes na rotina de processamento do arquivo CSV que cadastra a data de recebimento
+			 *		  do pedido pelo cliente para verificar a existência de registros repetidos, pois nesse
+			 *		  caso o processamento do registro repetido iria gerar um erro devido a data já estar
+			 *		  preenchida no banco de dados. Além disso, foi implementado um tratamento para as
+			 *		  situações em que o CPF do cliente vem formatado como sendo um CNPJ (ex: 123.456.789/09
+			 *		  sendo informado como 00.012.345/6789-09)
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.08 - XX.XX.20XX - por XXX
-			 *		  
+			 * v 1.08 - 10.03.2020 - por HHO
+			 *		  Correção de bug na rotina que tenta localizar o pedido através do número da NF.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.09 - XX.XX.20XX - por XXX
-			 *		  
+			 * v 1.09 - 10.03.2020 - por HHO
+			 *		  Ajustes na rotina que registra o recebimento do pedido pelo cliente para tratar o caso
+			 *		  em que a entrega é cancelada e a mercadoria é retornada.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.10 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.11 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.12 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.13 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.14 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.15 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.16 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.17 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.18 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.19 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.20 - XX.XX.20XX - por XXX
 			 *		  
 			 * ===============================================================================================
 			 */

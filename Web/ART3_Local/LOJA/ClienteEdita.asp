@@ -2854,7 +2854,9 @@ end function
 		</p>
 		</td>
 		<td style="width:40px;text-align:right;vertical-align:top;">
-			<a href="javascript:copyMagentoShipAddrToShipAddr();"><img src="../IMAGEM/copia_20x20.png" name="btnMagentoCopyShipAddrToShipAddr" id="btnMagentoCopyShipAddrToShipAddr" title="Altera o endereço usando os dados do endereço de entrega obtidos do Magento" /></a>
+            <% if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then %>
+    			<a href="javascript:copyMagentoShipAddrToShipAddr();"><img src="../IMAGEM/copia_20x20.png" name="btnMagentoCopyShipAddrToShipAddr" id="btnMagentoCopyShipAddrToShipAddr" title="Altera o endereço usando os dados do endereço de entrega obtidos do Magento" /></a>
+            <% end if %>
 		</td>
 	</tr>
 </table>

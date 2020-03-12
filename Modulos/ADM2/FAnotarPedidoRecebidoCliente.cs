@@ -231,7 +231,9 @@ namespace ADM2
             int percProgressoAnterior;
             int qtdeRegErro = 0;
             int qtdeRegApto = 0;
+            bool blnCnpjCpfOk;
             bool blnHaLinhasStatusDesconhecido = false;
+            bool blnDevolucao;
             string MARGEM_MSG_NIVEL_2 = new string(' ', 8);
             string sYYYYMMDDBrancos;
             string sOrdenacao;
@@ -252,6 +254,10 @@ namespace ADM2
             string strMsgErro;
             string strMsgProgresso;
             string linhaHeader;
+            string sCpfLeftPaddedZero;
+            string sCpfRightPaddedZero;
+            string sOcorrenciaSituacao;
+            string sOcorrenciaDetalhe;
             string[] linhasCSV;
             string[] camposHeader;
             string[] camposCSV;
@@ -589,6 +595,105 @@ namespace ADM2
                 }
                 #endregion
 
+                #region [ Analisa as ocorrências que podem ser de devolução ]
+                strMsgProgresso = "Analisando existência de registros de devolução";
+                info(ModoExibicaoMensagemRodape.EmExecucao, strMsgProgresso);
+                try
+                {
+                    for (int iv = 0; iv < _vRastreio.Count; iv++)
+                    {
+                        if (_vRastreio[iv].dadosNormalizado.DataEntrega.Trim().Length == 0) continue;
+
+                        blnDevolucao = false;
+                        sOcorrenciaSituacao = Global.filtraAcentuacao(_vRastreio[iv].dadosRaw.Situacao.Trim().ToUpper());
+                        sOcorrenciaDetalhe = Global.filtraAcentuacao(_vRastreio[iv].dadosRaw.Detalhe.Trim().ToUpper());
+                        if (sOcorrenciaSituacao.Contains("DEVOLUC") || sOcorrenciaSituacao.Contains("DEVOLV")) blnDevolucao = true;
+                        if (sOcorrenciaDetalhe.Contains("DEVOLUC") || sOcorrenciaDetalhe.Contains("DEVOLV")) blnDevolucao = true;
+                        if (blnDevolucao)
+                        {
+                            _vRastreio[iv].processo.Status = eRastreioPedidoRecebidoClienteProcessoStatus.ERRO_INCONSISTENCIA;
+                            _vRastreio[iv].processo.CodigoErro = eRastreioPedidoRecebidoClienteProcessoCodigoErro.OCORRENCIA_DEVOLUCAO;
+                            _vRastreio[iv].processo.MensagemErro = "Esta ocorrência não será processada por haver indícios de se tratar de uma devolução";
+
+                            #region [ Se houver outras ocorrências para a mesma NF neste arquivo, bloqueia o processamento ]
+                            for (int jv = 0; jv < _vRastreio.Count; jv++)
+                            {
+                                // É este próprio registro
+                                if (_vRastreio[iv].processo.Guid.Equals(_vRastreio[jv].processo.Guid)) continue;
+                                // Já está com algum outro erro
+                                if (_vRastreio[jv].processo.Status != eRastreioPedidoRecebidoClienteProcessoStatus.STATUS_INICIAL) continue;
+
+                                if ((_vRastreio[iv].dadosNormalizado.CnpjCpfRemetente.Equals(_vRastreio[jv].dadosNormalizado.CnpjCpfRemetente))
+                                    && (_vRastreio[iv].dadosNormalizado.CnpjCpfDestinatario.Equals(_vRastreio[jv].dadosNormalizado.CnpjCpfDestinatario))
+                                    && (_vRastreio[iv].dadosNormalizado.numSerieNF == _vRastreio[jv].dadosNormalizado.numSerieNF)
+                                    && (_vRastreio[iv].dadosNormalizado.numNF == _vRastreio[jv].dadosNormalizado.numNF))
+                                {
+                                    _vRastreio[jv].processo.Status = eRastreioPedidoRecebidoClienteProcessoStatus.ERRO_INCONSISTENCIA;
+                                    _vRastreio[jv].processo.CodigoErro = eRastreioPedidoRecebidoClienteProcessoCodigoErro.OCORRENCIA_DEVOLUCAO;
+                                    _vRastreio[jv].processo.MensagemErro = "Esta ocorrência não será processada por estar relacionada com outra ocorrência deste arquivo que possui indícios de se tratar de uma devolução";
+                                }
+                            }
+                            #endregion
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Global.gravaLogAtividade(ex.ToString());
+                    adicionaErro(ex.Message);
+                    avisoErro(ex.ToString());
+                    return;
+                }
+                finally
+                {
+                    info(ModoExibicaoMensagemRodape.Normal);
+                }
+                #endregion
+
+                #region [ Analisa se há duplicidade ]
+                strMsgProgresso = "Analisando existência de registros em duplicidade";
+                info(ModoExibicaoMensagemRodape.EmExecucao, strMsgProgresso);
+                try
+                {
+                    for (int iv = 0; iv < _vRastreio.Count; iv++)
+                    {
+                        if (_vRastreio[iv].dadosNormalizado.DataEntrega.Trim().Length == 0) continue;
+
+                        #region [ Verifica se linha está repetida ]
+                        for (int jv = 0; jv < _vRastreio.Count; jv++)
+                        {
+                            if (_vRastreio[jv].dadosNormalizado.DataEntrega.Trim().Length == 0) continue;
+
+                            if ((_vRastreio[iv].processo.Status == eRastreioPedidoRecebidoClienteProcessoStatus.STATUS_INICIAL)
+                                && (_vRastreio[jv].processo.Status == eRastreioPedidoRecebidoClienteProcessoStatus.STATUS_INICIAL)
+                                && (!_vRastreio[iv].processo.Guid.Equals(_vRastreio[jv].processo.Guid))
+                                && (_vRastreio[iv].dadosNormalizado.CnpjCpfRemetente.Equals(_vRastreio[jv].dadosNormalizado.CnpjCpfRemetente))
+                                && (_vRastreio[iv].dadosNormalizado.CnpjCpfDestinatario.Equals(_vRastreio[jv].dadosNormalizado.CnpjCpfDestinatario))
+                                && (_vRastreio[iv].dadosNormalizado.numSerieNF == _vRastreio[jv].dadosNormalizado.numSerieNF)
+                                && (_vRastreio[iv].dadosNormalizado.numNF == _vRastreio[jv].dadosNormalizado.numNF)
+                                && (_vRastreio[iv].dadosNormalizado.DataEntrega.Equals(_vRastreio[jv].dadosNormalizado.DataEntrega)))
+                            {
+                                _vRastreio[jv].processo.Status = eRastreioPedidoRecebidoClienteProcessoStatus.ERRO_INCONSISTENCIA;
+                                _vRastreio[jv].processo.CodigoErro = eRastreioPedidoRecebidoClienteProcessoCodigoErro.OCORRENCIA_REPETIDA;
+                                _vRastreio[jv].processo.MensagemErro = "Esta ocorrência será ignorada por já existir outra igual no mesmo arquivo";
+                            }
+                        }
+                        #endregion
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Global.gravaLogAtividade(ex.ToString());
+                    adicionaErro(ex.Message);
+                    avisoErro(ex.ToString());
+                    return;
+                }
+                finally
+                {
+                    info(ModoExibicaoMensagemRodape.Normal);
+                }
+                #endregion
+
                 #region [ Pesquisa as NFs no BD ]
                 try
                 {
@@ -603,6 +708,13 @@ namespace ADM2
                             percProgressoAnterior = percProgresso;
                             Application.DoEvents();
                         }
+
+                        #region [ Registro já reprovado por consistência anterior? ]
+                        if (_vRastreio[iv].processo.Status != eRastreioPedidoRecebidoClienteProcessoStatus.STATUS_INICIAL)
+                        {
+                            continue;
+                        }
+                        #endregion
 
                         #region [ Consistências ]
 
@@ -623,6 +735,16 @@ namespace ADM2
                             _vRastreio[iv].processo.Status = eRastreioPedidoRecebidoClienteProcessoStatus.ERRO_INCONSISTENCIA;
                             _vRastreio[iv].processo.CodigoErro = eRastreioPedidoRecebidoClienteProcessoCodigoErro.NUMERO_NF_FORMATO_INVALIDO;
                             _vRastreio[iv].processo.MensagemErro = "NF foi informada em formato inválido (" + _vRastreio[iv].dadosRaw.NF.Trim() + ")";
+                            continue;
+                        }
+                        #endregion
+
+                        #region [ Verifica campo 'Situacao' ]
+                        if (!_vRastreio[iv].dadosNormalizado.Situacao.Trim().ToUpper().Equals("MERCADORIA ENTREGUE"))
+                        {
+                            _vRastreio[iv].processo.Status = eRastreioPedidoRecebidoClienteProcessoStatus.ERRO_INCONSISTENCIA;
+                            _vRastreio[iv].processo.CodigoErro = eRastreioPedidoRecebidoClienteProcessoCodigoErro.OCORRENCIA_COM_SITUACAO_INVALIDA;
+                            _vRastreio[iv].processo.MensagemErro = "Ocorrência informa situação diferente de 'Mercadoria Entregue'";
                             continue;
                         }
                         #endregion
@@ -750,10 +872,28 @@ namespace ADM2
                         {
                             if (!Global.digitos(nFeImagem.dest__CNPJ).Equals(_vRastreio[iv].dadosNormalizado.CnpjCpfDestinatario))
                             {
-                                _vRastreio[iv].processo.Status = eRastreioPedidoRecebidoClienteProcessoStatus.ERRO_INCONSISTENCIA;
-                                _vRastreio[iv].processo.CodigoErro = eRastreioPedidoRecebidoClienteProcessoCodigoErro.CNPJ_CPF_DIVERGENTE;
-                                _vRastreio[iv].processo.MensagemErro = "A NFe " + _vRastreio[iv].dadosNormalizado.NF + " foi informada como sendo do cliente " + Global.formataCnpjCpf(_vRastreio[iv].dadosNormalizado.CnpjCpfDestinatario) + " mas no sistema consta que foi emitida para " + Global.formataCnpjCpf(nFeImagem.dest__CNPJ);
-                                continue;
+                                blnCnpjCpfOk = false;
+                                #region [ Verifica se é a situação em que o CPF do cliente é informado formatado como CNPJ (ex: 002.449.961/72 informado como 00.000.244/9961-72) ]
+                                sCpfLeftPaddedZero = Global.digitos(nFeImagem.dest__CPF);
+                                sCpfRightPaddedZero = Global.digitos(nFeImagem.dest__CPF);
+                                while (sCpfLeftPaddedZero.Length < _vRastreio[iv].dadosNormalizado.CnpjCpfDestinatario.Length)
+                                {
+                                    sCpfLeftPaddedZero = '0' + sCpfLeftPaddedZero;
+                                }
+                                while (sCpfRightPaddedZero.Length < _vRastreio[iv].dadosNormalizado.CnpjCpfDestinatario.Length)
+                                {
+                                    sCpfRightPaddedZero = sCpfRightPaddedZero + '0';
+                                }
+                                if (sCpfLeftPaddedZero.Equals(_vRastreio[iv].dadosNormalizado.CnpjCpfDestinatario) || sCpfRightPaddedZero.Equals(_vRastreio[iv].dadosNormalizado.CnpjCpfDestinatario)) blnCnpjCpfOk = true;
+                                #endregion
+
+                                if (!blnCnpjCpfOk)
+                                {
+                                    _vRastreio[iv].processo.Status = eRastreioPedidoRecebidoClienteProcessoStatus.ERRO_INCONSISTENCIA;
+                                    _vRastreio[iv].processo.CodigoErro = eRastreioPedidoRecebidoClienteProcessoCodigoErro.CNPJ_CPF_DIVERGENTE;
+                                    _vRastreio[iv].processo.MensagemErro = "A NFe " + _vRastreio[iv].dadosNormalizado.NF + " foi informada como sendo do cliente " + Global.formataCnpjCpf(_vRastreio[iv].dadosNormalizado.CnpjCpfDestinatario) + " mas no sistema consta que foi emitida para " + Global.formataCnpjCpf(nFeImagem.dest__CNPJ);
+                                    continue;
+                                }
                             }
                         }
                         #endregion
@@ -797,7 +937,7 @@ namespace ADM2
                     {
                         #region [ Situação desconhecida ]
                         blnHaLinhasStatusDesconhecido = true;
-                        sOrdenacao = Global.normalizaCodigo("3", 2) + Global.normalizaCodigo(_vRastreio[iv].dadosNormalizado.numSerieNF.ToString(), 3) + Global.normalizaCodigo(_vRastreio[iv].dadosNormalizado.numNF.ToString(), 9);
+                        sOrdenacao = Global.normalizaCodigo("3", 2) + Global.normalizaCodigo("0", 3) + Global.normalizaCodigo(_vRastreio[iv].dadosNormalizado.numSerieNF.ToString(), 3) + Global.normalizaCodigo(_vRastreio[iv].dadosNormalizado.numNF.ToString(), 9);
                         #endregion
                     }
 
@@ -812,6 +952,13 @@ namespace ADM2
                 {
                     grid.SuspendLayout();
                     grid.Rows.Add(vRastreioOrdenado.Count);
+
+                    #region [ Mantém a exibição do grid sem nenhuma linha selecionada enquanto os dados são carregados ]
+                    for (int i = 0; i < grid.Rows.Count; i++)
+                    {
+                        if (grid.Rows[i].Selected) grid.Rows[i].Selected = false;
+                    }
+                    #endregion
 
                     try
                     {
@@ -855,7 +1002,15 @@ namespace ADM2
                                 qtdeRegErro++;
                                 grid.Rows[iv].Cells[GRID_COL_STATUS].Value = "ERRO";
                                 grid.Rows[iv].Cells[GRID_COL_MENSAGEM].Value = vRastreioOrdenado[iv].processo.MensagemErro;
-                                grid.Rows[iv].DefaultCellStyle.ForeColor = Color.Red;
+                                if ((vRastreioOrdenado[iv].processo.CodigoErro == eRastreioPedidoRecebidoClienteProcessoCodigoErro.OCORRENCIA_COM_SITUACAO_INVALIDA)
+                                    || (vRastreioOrdenado[iv].processo.CodigoErro == eRastreioPedidoRecebidoClienteProcessoCodigoErro.PEDIDO_RECEBIDO_JA_REGISTRADO))
+                                {
+                                    grid.Rows[iv].DefaultCellStyle.ForeColor = Color.DarkViolet;
+                                }
+                                else
+                                {
+                                    grid.Rows[iv].DefaultCellStyle.ForeColor = Color.Red;
+                                }
                             }
                             else if (vRastreioOrdenado[iv].processo.Status == eRastreioPedidoRecebidoClienteProcessoStatus.LIBERADO_PARA_REGISTRAR_PEDIDO_RECEBIDO_CLIENTE)
                             {
@@ -864,9 +1019,16 @@ namespace ADM2
                             else
                             {
                                 // SITUAÇÃO DESCONHECIDA: ALTERA A COR P/ CHAMAR A ATENÇÃO PARA A SITUAÇÃO
-                                grid.Rows[iv].DefaultCellStyle.BackColor = Color.Pink;
+                                grid.Rows[iv].DefaultCellStyle.BackColor = Color.DeepPink;
                             }
                         }
+
+                        #region [ Exibe o grid sem nenhuma linha pré-selecionada ]
+                        for (int i = 0; i < grid.Rows.Count; i++)
+                        {
+                            if (grid.Rows[i].Selected) grid.Rows[i].Selected = false;
+                        }
+                        #endregion
                     }
                     finally
                     {
@@ -925,7 +1087,9 @@ namespace ADM2
             int qtdeRegistrosAtualizados = 0;
             int qtdeRegistrosAtualizadosSucesso = 0;
             int qtdeRegistrosAtualizadosFalha = 0;
+            int qtdeRegistrosAtualizadosSucessoUpdatePedidoRecebidoData = 0;
             int qtdeRegistrosAtualizadosFalhaUpdatePedidoRecebidoData = 0;
+            int qtdeRegistrosAtualizadosSucessoUpdateMarketplacePedidoRecebidoRegistrarDataRecebido = 0;
             int qtdeRegistrosAtualizadosFalhaUpdateMarketplacePedidoRecebidoRegistrarDataRecebido = 0;
             int percProgresso;
             int percProgressoAnterior;
@@ -992,6 +1156,7 @@ namespace ADM2
                         blnUpdatePedidoRecebidoData = FMain.contextoBD.AmbienteBase.anotarPedidoRecebidoClienteDAO.UpdatePedidoRecebidoData(_vRastreio[iv].processo.Pedido, _vRastreio[iv].dadosNormalizado.dtDataEntrega, Global.Usuario.usuario, out msg_erro);
                         if (blnUpdatePedidoRecebidoData)
                         {
+                            qtdeRegistrosAtualizadosSucessoUpdatePedidoRecebidoData++;
                             if (sbLogSucessoUpdatePedidoRecebidoData.Length > 0) sbLogSucessoUpdatePedidoRecebidoData.Append(", ");
                             sbLogSucessoUpdatePedidoRecebidoData.Append(_vRastreio[iv].processo.Pedido);
                         }
@@ -1015,6 +1180,7 @@ namespace ADM2
                                 blnUpdateMarketplacePedidoRecebidoRegistrarDataRecebido = FMain.contextoBD.AmbienteBase.anotarPedidoRecebidoClienteDAO.UpdateMarketplacePedidoRecebidoRegistrarDataRecebido(_vRastreio[iv].processo.Pedido, _vRastreio[iv].dadosNormalizado.dtDataEntrega, Global.Usuario.usuario, out msg_erro);
                                 if (blnUpdateMarketplacePedidoRecebidoRegistrarDataRecebido)
                                 {
+                                    qtdeRegistrosAtualizadosSucessoUpdateMarketplacePedidoRecebidoRegistrarDataRecebido++;
                                     if (sbLogSucessoUpdateMarketplacePedidoRecebidoRegistrarDataRecebido.Length > 0) sbLogSucessoUpdateMarketplacePedidoRecebidoRegistrarDataRecebido.Append(", ");
                                     sbLogSucessoUpdateMarketplacePedidoRecebidoRegistrarDataRecebido.Append(_vRastreio[iv].processo.Pedido);
                                 }
@@ -1075,10 +1241,10 @@ namespace ADM2
 
                 #region [ Grava o log ]
                 strMsg = "[Módulo ADM2] Operação 'Anotar Pedidos Recebidos pelo Cliente':";
-                if (sbLogSucessoUpdatePedidoRecebidoData.Length > 0) strMsg += "\nSucesso (campo 'PedidoRecebidoData'): " + sbLogSucessoUpdatePedidoRecebidoData.ToString();
-                if (sbLogSucessoUpdateMarketplacePedidoRecebidoRegistrarDataRecebido.Length > 0) strMsg += "\nSucesso (campo 'MarketplacePedidoRecebidoRegistrarDataRecebido'): " + sbLogSucessoUpdateMarketplacePedidoRecebidoRegistrarDataRecebido.ToString();
-                if (sbLogFalhaUpdatePedidoRecebidoData.Length > 0) strMsg += "\nFalha (campo 'PedidoRecebidoData'): " + sbLogFalhaUpdatePedidoRecebidoData.ToString();
-                if (sbLogFalhaUpdateMarketplacePedidoRecebidoRegistrarDataRecebido.Length > 0) strMsg += "\nFalha (campo 'MarketplacePedidoRecebidoRegistrarDataRecebido'): " + sbLogFalhaUpdateMarketplacePedidoRecebidoRegistrarDataRecebido.ToString();
+                if (sbLogSucessoUpdatePedidoRecebidoData.Length > 0) strMsg += "\nSucesso (campo 'PedidoRecebidoData') [" + Global.formataInteiro(qtdeRegistrosAtualizadosSucessoUpdatePedidoRecebidoData) + " pedidos]: " + sbLogSucessoUpdatePedidoRecebidoData.ToString();
+                if (sbLogSucessoUpdateMarketplacePedidoRecebidoRegistrarDataRecebido.Length > 0) strMsg += "\nSucesso (campo 'MarketplacePedidoRecebidoRegistrarDataRecebido') [" + Global.formataInteiro(qtdeRegistrosAtualizadosSucessoUpdateMarketplacePedidoRecebidoRegistrarDataRecebido) + " pedidos]: " + sbLogSucessoUpdateMarketplacePedidoRecebidoRegistrarDataRecebido.ToString();
+                if (sbLogFalhaUpdatePedidoRecebidoData.Length > 0) strMsg += "\nFalha (campo 'PedidoRecebidoData') [" + Global.formataInteiro(qtdeRegistrosAtualizadosFalhaUpdatePedidoRecebidoData) + " pedidos]: " + sbLogFalhaUpdatePedidoRecebidoData.ToString();
+                if (sbLogFalhaUpdateMarketplacePedidoRecebidoRegistrarDataRecebido.Length > 0) strMsg += "\nFalha (campo 'MarketplacePedidoRecebidoRegistrarDataRecebido') [" + Global.formataInteiro(qtdeRegistrosAtualizadosFalhaUpdateMarketplacePedidoRecebidoRegistrarDataRecebido) + " pedidos]: " + sbLogFalhaUpdateMarketplacePedidoRecebidoRegistrarDataRecebido.ToString();
                 strMsg += "\nArquivo processado: " + txtArquivoRastreio.Text.Trim() + " (contendo " + Global.formataInteiro(_vRastreio.Count) + " registros)";
                 log.operacao = Global.Cte.ADM2.LogOperacao.OP_LOG_PEDIDO_RECEBIDO_VIA_ADM2;
                 log.usuario = Global.Usuario.usuario;
