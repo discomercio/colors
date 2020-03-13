@@ -86,6 +86,9 @@
 	dim blnLojaHabilitadaProdCompostoECommerce
 	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
 
+	dim blnUsarMemorizacaoCompletaEnderecos
+	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim intIdx
 	Dim id_cliente, msg_erro
 	if operacao_selecionada=OP_INCLUI then
@@ -509,8 +512,8 @@ end function
         }
 
         // Trata o problema em que os campos do formulário são limpos após retornar à esta página c/ o history.back() pela 2ª vez quando ocorre erro de consistência
-    if (trim(fCAD.c_FormFieldValues.value) != "")
-    {
+        if (trim(fCAD.c_FormFieldValues.value) != "")
+        {
             stringToForm(fCAD.c_FormFieldValues.value, $('#fCAD'));
         }
 
@@ -519,6 +522,8 @@ end function
                 stringToForm(fNEW.c_FormFieldValues.value, $('#fNEW'));
             }
         }
+        trataProdutorRuralEndEtg_PF(null);
+        trocarEndEtgTipoPessoa(null);
     });
 
     function copyMagentoCli() {
@@ -817,7 +822,7 @@ end function
                 return;
             }
 
-
+<%if blnUsarMemorizacaoCompletaEnderecos then%>
 <%if Not eh_cpf then%>
             var EndEtg_tipo_pessoa = $('input[name="EndEtg_tipo_pessoa"]:checked').val();
             if (!EndEtg_tipo_pessoa)
@@ -1027,6 +1032,7 @@ end function
             }
 
 
+<%end if%>
 <%end if%>
 
         }
@@ -1611,32 +1617,30 @@ end function
         //Temos dois conjuntos de campos (para PF e PJ) porque o layout é muito diferente.
         var pj = $('input[name="EndEtg_tipo_pessoa"]:checked').val() == "PJ";
         if (pj) {
-            fNEW.EndEtg_cnpj_cpf = fNEW.EndEtg_cnpj_cpf_PJ;
-            fNEW.EndEtg_ie = fNEW.EndEtg_ie_PJ;
-            fNEW.EndEtg_contribuinte_icms_status = fNEW.EndEtg_contribuinte_icms_status_PJ;
+            fNEW.EndEtg_cnpj_cpf.value = fNEW.EndEtg_cnpj_cpf_PJ.value;
+            fNEW.EndEtg_ie.value = fNEW.EndEtg_ie_PJ.value;
+            fNEW.EndEtg_contribuinte_icms_status.value = $('input[name="EndEtg_contribuinte_icms_status_PJ"]:checked').val();
+            if (!$('input[name="EndEtg_contribuinte_icms_status_PJ"]:checked').val())
+                fNEW.EndEtg_contribuinte_icms_status.value = "";
         }
         else {
-            fNEW.EndEtg_cnpj_cpf = fNEW.EndEtg_cnpj_cpf_PJ;
-            fNEW.EndEtg_ie = fNEW.EndEtg_ie_PJ;
-            fNEW.EndEtg_contribuinte_icms_status = fNEW.EndEtg_contribuinte_icms_status_PJ;
-            fNEW.EndEtg_rg = fNEW.EndEtg_rg_PJ;
-            fNEW.EndEtg_produtor_rural_status = fNEW.EndEtg_produtor_rural_status_PJ;
+            fNEW.EndEtg_cnpj_cpf.value = fNEW.EndEtg_cnpj_cpf_PF.value;
+            fNEW.EndEtg_ie.value = fNEW.EndEtg_ie_PF.value;
+            fNEW.EndEtg_contribuinte_icms_status.value = $('input[name="EndEtg_contribuinte_icms_status_PF"]:checked').val();
+            if (!$('input[name="EndEtg_contribuinte_icms_status_PF"]:checked').val())
+                fNEW.EndEtg_contribuinte_icms_status.value = "";
+            fNEW.EndEtg_rg.value = fNEW.EndEtg_rg_PF.value;
+            fNEW.EndEtg_produtor_rural_status.value = $('input[name="EndEtg_produtor_rural_status_PF"]:checked').val();
+            if (!$('input[name="EndEtg_produtor_rural_status_PF"]:checked').val())
+                fNEW.EndEtg_produtor_rural_status.value = "";
         }
 
-        //Tip: Disabled <input> elements in a form will not be submitted!
-        //entao deixamos como disabled todos os que usamos para montar estes dados!
-        if(fNEW.EndEtg_cnpj_cpf_PJ) fNEW.EndEtg_cnpj_cpf_PJ.disabled = true;
-        if(fNEW.EndEtg_ie_PJ) fNEW.EndEtg_ie_PJ.disabled = true;
-        if(fNEW.EndEtg_contribuinte_icms_status_PJ) fNEW.EndEtg_contribuinte_icms_status_PJ.disabled = true;
-        if(fNEW.EndEtg_cnpj_cpf_PJ) fNEW.EndEtg_cnpj_cpf_PJ.disabled = true;
-        if(fNEW.EndEtg_ie_PJ) fNEW.EndEtg_ie_PJ.disabled = true;
-        if(fNEW.EndEtg_contribuinte_icms_status_PJ) fNEW.EndEtg_contribuinte_icms_status_PJ.disabled = true;
-        if(fNEW.EndEtg_rg_PJ) fNEW.EndEtg_rg_PJ.disabled = true;
-        if(fNEW.EndEtg_produtor_rural_status_PJ) fNEW.EndEtg_produtor_rural_status_PJ.disabled = true;
+        //os campos a mais são enviados junto. Deixamos enviar...
     }
 
     //para mudar o tipo do endereço de entrega
     function trocarEndEtgTipoPessoa(novoTipo) {
+<%if blnUsarMemorizacaoCompletaEnderecos then%>
         if (novoTipo && $('input[name="EndEtg_tipo_pessoa"]:disabled').length == 0)
             setarValorRadio($('input[name="EndEtg_tipo_pessoa"]'), novoTipo);
 
@@ -1653,6 +1657,12 @@ end function
             $(".Mostrar_EndEtg_pj").css("display", "none");
             $("#Label_EndEtg_nome").text("NOME");
         }
+<%else%>
+        //oculta todos
+        $(".Mostrar_EndEtg_pf").css("display", "none");
+        $(".Mostrar_EndEtg_pj").css("display", "none");
+        $(".Habilitar_EndEtg_outroendereco").css("display", "none");
+<%end if%>
     }
 
     function trataContribuinteIcmsEndEtg_PJ(novoTipo)
@@ -2863,17 +2873,16 @@ end function
 
 
 <!--  ************  TIPO DO ENDEREÇO DE ENTREGA: PF/PJ (SOMENTE SE O CLIENTE FOR PJ)   ************ -->
-<input type="hidden" name="st_memorizacao_completa_enderecos" id="st_memorizacao_completa_enderecos" value="1" />
 
 <%if Not eh_cpf then%>
 <table width="649" class="QS Habilitar_EndEtg_outroendereco" cellspacing="0">
 	<tr>
 		<td align="left">
 		<p class="R">TIPO</p><p class="C">
-			<input type="radio" name="EndEtg_tipo_pessoa" value="PJ" onclick="trocarEndEtgTipoPessoa(null);" checked>
+			<input type="radio" id="EndEtg_tipo_pessoa_PJ" name="EndEtg_tipo_pessoa" value="PJ" onclick="trocarEndEtgTipoPessoa(null);" checked>
 			<span class="C" style="cursor:default" onclick="trocarEndEtgTipoPessoa('PJ');">Pessoa Jurídica</span>
 			&nbsp;
-			<input type="radio" name="EndEtg_tipo_pessoa" value="PF" onclick="trocarEndEtgTipoPessoa(null);">
+			<input type="radio" id="EndEtg_tipo_pessoa_PF" name="EndEtg_tipo_pessoa" value="PF" onclick="trocarEndEtgTipoPessoa(null);">
 			<span class="C" style="cursor:default" onclick="trocarEndEtgTipoPessoa('PF');">Pessoa Física</span>
 		</p>
 		</td>
@@ -2884,26 +2893,26 @@ end function
         <!-- ************   PF: CPF/RG/PRODUTOR RURAL/CONTRIBUINTE ICMS/IE - DO ENDEREÇO DE ENTREGA DE PJ  ************ -->
         <!-- fizemos dois conjuntos diferentes de campos porque a ordem é muito diferente -->
 
-<input type="hidden" name="EndEtg_cnpj_cpf" />
-<input type="hidden" name="EndEtg_ie" />
-<input type="hidden" name="EndEtg_contribuinte_icms_status" />
-<input type="hidden" name="EndEtg_rg" />
-<input type="hidden" name="EndEtg_produtor_rural_status" />
+<input type="hidden" id="EndEtg_cnpj_cpf" name="EndEtg_cnpj_cpf" />
+<input type="hidden" id="EndEtg_ie" name="EndEtg_ie" />
+<input type="hidden" id="EndEtg_contribuinte_icms_status" name="EndEtg_contribuinte_icms_status" />
+<input type="hidden" id="EndEtg_rg" name="EndEtg_rg" />
+<input type="hidden" id="EndEtg_produtor_rural_status" name="EndEtg_produtor_rural_status" />
 
 
 <table width="649" class="QS Habilitar_EndEtg_outroendereco Mostrar_EndEtg_pj" cellspacing="0">
 	<tr>
 		<td width="210" align="left">
 	<p class="R">CNPJ</p><p class="C">
-	<input name="EndEtg_cnpj_cpf_PJ" class="TA" value="" size="22" style="text-align:center; color:#0000ff"></p></td>
+	<input id="EndEtg_cnpj_cpf_PJ" name="EndEtg_cnpj_cpf_PJ" class="TA" value="" size="22" style="text-align:center; color:#0000ff"></p></td>
 
 	<td class="MDE" width="215" align="left"><p class="R">IE</p><p class="C">
-		<input name="EndEtg_ie_PJ" class="TA" type="text" maxlength="20" size="25" value="" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_Nome.focus(); filtra_nome_identificador();"></p></td>
+		<input id="EndEtg_ie_PJ" name="EndEtg_ie_PJ" class="TA" type="text" maxlength="20" size="25" value="" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_Nome.focus(); filtra_nome_identificador();"></p></td>
 
 	<td align="left" class="Mostrar_EndEtg_contribuinte_icms_PJ"><p class="R">CONTRIBUINTE ICMS</p><p class="C">
-		<input type="radio" name="EndEtg_contribuinte_icms_status_PJ" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PJ('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO%>');">Não</span>
-		<input type="radio" name="EndEtg_contribuinte_icms_status_PJ" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PJ('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM%>');">Sim</span>
-		<input type="radio" name="EndEtg_contribuinte_icms_status_PJ" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PJ('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO%>');">Isento</span></p></td>
+		<input type="radio" id="EndEtg_contribuinte_icms_status_PJ_nao" name="EndEtg_contribuinte_icms_status_PJ" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PJ('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO%>');">Não</span>
+		<input type="radio" id="EndEtg_contribuinte_icms_status_PJ_sim" name="EndEtg_contribuinte_icms_status_PJ" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PJ('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM%>');">Sim</span>
+		<input type="radio" id="EndEtg_contribuinte_icms_status_PJ_isento" name="EndEtg_contribuinte_icms_status_PJ" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PJ('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO%>');">Isento</span></p></td>
 	</tr>
 </table>
 
@@ -2911,27 +2920,27 @@ end function
 	<tr>
 		<td width="210" align="left">
 	<p class="R">CPF</p><p class="C">
-	<input name="EndEtg_cnpj_cpf_PF" class="TA" value="" size="22" style="text-align:center; color:#0000ff"></p></td>
+	<input id="EndEtg_cnpj_cpf_PF" name="EndEtg_cnpj_cpf_PF" class="TA" value="" size="22" style="text-align:center; color:#0000ff"></p></td>
 
 	<td class="MDE" width="210" align="left"><p class="R">RG</p><p class="C">
-		<input name="EndEtg_rg_PF" class="TA" type="text" maxlength="20" size="22" value="" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_produtor_rural_status_PF.focus(); filtra_nome_identificador();"></p></td>
+		<input id="EndEtg_rg_PF" name="EndEtg_rg_PF" class="TA" type="text" maxlength="20" size="22" value="" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_produtor_rural_status_PF.focus(); filtra_nome_identificador();"></p></td>
 
 
 	<td align="left" ><p class="R">PRODUTOR RURAL</p><p class="C">
-		<input type="radio" name="EndEtg_produtor_rural_status_PF" value="<%=COD_ST_CLIENTE_PRODUTOR_RURAL_NAO%>" onclick="trataProdutorRuralEndEtg_PF(null);"><span class="C" style="cursor:default" onclick="trataProdutorRuralEndEtg_PF('<%=COD_ST_CLIENTE_PRODUTOR_RURAL_NAO%>');">Não</span>
-		<input type="radio" name="EndEtg_produtor_rural_status_PF" value="<%=COD_ST_CLIENTE_PRODUTOR_RURAL_SIM%>" onclick="trataProdutorRuralEndEtg_PF(null);"><span class="C" style="cursor:default" onclick="trataProdutorRuralEndEtg_PF('<%=COD_ST_CLIENTE_PRODUTOR_RURAL_SIM%>')">Sim</span></p></td>
+		<input type="radio" id="EndEtg_produtor_rural_status_PF_nao" name="EndEtg_produtor_rural_status_PF" value="<%=COD_ST_CLIENTE_PRODUTOR_RURAL_NAO%>" onclick="trataProdutorRuralEndEtg_PF(null);"><span class="C" style="cursor:default" onclick="trataProdutorRuralEndEtg_PF('<%=COD_ST_CLIENTE_PRODUTOR_RURAL_NAO%>');">Não</span>
+		<input type="radio" id="EndEtg_produtor_rural_status_PF_sim" name="EndEtg_produtor_rural_status_PF" value="<%=COD_ST_CLIENTE_PRODUTOR_RURAL_SIM%>" onclick="trataProdutorRuralEndEtg_PF(null);"><span class="C" style="cursor:default" onclick="trataProdutorRuralEndEtg_PF('<%=COD_ST_CLIENTE_PRODUTOR_RURAL_SIM%>')">Sim</span></p></td>
 	</tr>
 </table>
 
 <table width="649" class="QS Habilitar_EndEtg_outroendereco Mostrar_EndEtg_pf Mostrar_EndEtg_contribuinte_icms_PF" cellspacing="0">
 	<tr>
 	<td width="210" align="left"><p class="R">IE</p><p class="C">
-		<input name="EndEtg_ie_PF" class="TA" type="text" maxlength="20" size="25" value="" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_Nome.focus(); filtra_nome_identificador();"></p></td>
+		<input id="EndEtg_ie_PF" name="EndEtg_ie_PF" class="TA" type="text" maxlength="20" size="25" value="" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_Nome.focus(); filtra_nome_identificador();"></p></td>
 
 	<td align="left" class="ME" ><p class="R">CONTRIBUINTE ICMS</p><p class="C">
-		<input type="radio" name="EndEtg_contribuinte_icms_status_PF" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PF('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO%>');">Não</span>
-		<input type="radio" name="EndEtg_contribuinte_icms_status_PF" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PF('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM%>');">Sim</span>
-		<input type="radio" name="EndEtg_contribuinte_icms_status_PF" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PF('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO%>');">Isento</span></p></td>
+		<input type="radio" id="EndEtg_contribuinte_icms_status_PF_nao" name="EndEtg_contribuinte_icms_status_PF" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PF('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO%>');">Não</span>
+		<input type="radio" id="EndEtg_contribuinte_icms_status_PF_sim" name="EndEtg_contribuinte_icms_status_PF" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PF('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM%>');">Sim</span>
+		<input type="radio" id="EndEtg_contribuinte_icms_status_PF_isento" name="EndEtg_contribuinte_icms_status_PF" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PF('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO%>');">Isento</span></p></td>
 	</tr>
 </table>
 

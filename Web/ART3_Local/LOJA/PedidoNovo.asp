@@ -64,6 +64,10 @@
 
 	dim rb_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento
 	dim EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep,EndEtg_obs
+	dim EndEtg_email, EndEtg_email_xml, EndEtg_nome, EndEtg_ddd_res, EndEtg_tel_res, EndEtg_ddd_com, EndEtg_tel_com, EndEtg_ramal_com
+	dim EndEtg_ddd_cel, EndEtg_tel_cel, EndEtg_ddd_com_2, EndEtg_tel_com_2, EndEtg_ramal_com_2
+	dim EndEtg_tipo_pessoa, EndEtg_cnpj_cpf, EndEtg_contribuinte_icms_status, EndEtg_produtor_rural_status
+	dim EndEtg_ie, EndEtg_rg
 	rb_end_entrega = Trim(Request.Form("rb_end_entrega"))
 	EndEtg_endereco = Trim(Request.Form("EndEtg_endereco"))
 	EndEtg_endereco_numero = Trim(Request.Form("EndEtg_endereco_numero"))
@@ -73,6 +77,25 @@
 	EndEtg_uf = Trim(Request.Form("EndEtg_uf"))
 	EndEtg_cep = Trim(Request.Form("EndEtg_cep"))
 	EndEtg_obs = Trim(Request.Form("EndEtg_obs"))
+	EndEtg_email = Trim(Request.Form("EndEtg_email"))
+	EndEtg_email_xml = Trim(Request.Form("EndEtg_email_xml"))
+	EndEtg_nome = Trim(Request.Form("EndEtg_nome"))
+	EndEtg_ddd_res = Trim(Request.Form("EndEtg_ddd_res"))
+	EndEtg_tel_res = Trim(Request.Form("EndEtg_tel_res"))
+	EndEtg_ddd_com = Trim(Request.Form("EndEtg_ddd_com"))
+	EndEtg_tel_com = Trim(Request.Form("EndEtg_tel_com"))
+	EndEtg_ramal_com = Trim(Request.Form("EndEtg_ramal_com"))
+	EndEtg_ddd_cel = Trim(Request.Form("EndEtg_ddd_cel"))
+	EndEtg_tel_cel = Trim(Request.Form("EndEtg_tel_cel"))
+	EndEtg_ddd_com_2 = Trim(Request.Form("EndEtg_ddd_com_2"))
+	EndEtg_tel_com_2 = Trim(Request.Form("EndEtg_tel_com_2"))
+	EndEtg_ramal_com_2 = Trim(Request.Form("EndEtg_ramal_com_2"))
+	EndEtg_tipo_pessoa = Trim(Request.Form("EndEtg_tipo_pessoa"))
+	EndEtg_cnpj_cpf = Trim(Request.Form("EndEtg_cnpj_cpf"))
+	EndEtg_contribuinte_icms_status = Trim(Request.Form("EndEtg_contribuinte_icms_status"))
+	EndEtg_produtor_rural_status = Trim(Request.Form("EndEtg_produtor_rural_status"))
+	EndEtg_ie = Trim(Request.Form("EndEtg_ie"))
+	EndEtg_rg = Trim(Request.Form("EndEtg_rg"))
 
 	dim alerta
 	alerta = ""
@@ -1504,26 +1527,25 @@ var s, i, b, ha_item, idx, blnIndicacaoOk, strMsgErro;
 <input type="hidden" name="sessionToken" id="sessionToken" value="<%=sessionToken%>" />
 
 <!--  CAMPOS ADICIONAIS DO ENDERECO DE ENTREGA  -->
-<input type="hidden" name="st_memorizacao_completa_enderecos" id="st_memorizacao_completa_enderecos" value="<%=Trim(Request.Form("st_memorizacao_completa_enderecos"))%>" />
-<input type="hidden" name="EndEtg_email" id="EndEtg_email" value="<%=Trim(Request.Form("EndEtg_email"))%>" />
-<input type="hidden" name="EndEtg_email_xml" id="EndEtg_email_xml" value="<%=Trim(Request.Form("EndEtg_email_xml"))%>" />
-<input type="hidden" name="EndEtg_nome" id="EndEtg_nome" value="<%=Trim(Request.Form("EndEtg_nome"))%>" />
-<input type="hidden" name="EndEtg_ddd_res" id="EndEtg_ddd_res" value="<%=Trim(Request.Form("EndEtg_ddd_res"))%>" />
-<input type="hidden" name="EndEtg_tel_res" id="EndEtg_tel_res" value="<%=Trim(Request.Form("EndEtg_tel_res"))%>" />
-<input type="hidden" name="EndEtg_ddd_com" id="EndEtg_ddd_com" value="<%=Trim(Request.Form("EndEtg_ddd_com"))%>" />
-<input type="hidden" name="EndEtg_tel_com" id="EndEtg_tel_com" value="<%=Trim(Request.Form("EndEtg_tel_com"))%>" />
-<input type="hidden" name="EndEtg_ramal_com" id="EndEtg_ramal_com" value="<%=Trim(Request.Form("EndEtg_ramal_com"))%>" />
-<input type="hidden" name="EndEtg_ddd_cel" id="EndEtg_ddd_cel" value="<%=Trim(Request.Form("EndEtg_ddd_cel"))%>" />
-<input type="hidden" name="EndEtg_tel_cel" id="EndEtg_tel_cel" value="<%=Trim(Request.Form("EndEtg_tel_cel"))%>" />
-<input type="hidden" name="EndEtg_ddd_com_2" id="EndEtg_ddd_com_2" value="<%=Trim(Request.Form("EndEtg_ddd_com_2"))%>" />
-<input type="hidden" name="EndEtg_tel_com_2" id="EndEtg_tel_com_2" value="<%=Trim(Request.Form("EndEtg_tel_com_2"))%>" />
-<input type="hidden" name="EndEtg_ramal_com_2" id="EndEtg_ramal_com_2" value="<%=Trim(Request.Form("EndEtg_ramal_com_2"))%>" />
-<input type="hidden" name="EndEtg_tipo_pessoa" id="EndEtg_tipo_pessoa" value="<%=Trim(Request.Form("EndEtg_tipo_pessoa"))%>" />
-<input type="hidden" name="EndEtg_cnpj_cpf" id="EndEtg_cnpj_cpf" value="<%=Trim(Request.Form("EndEtg_cnpj_cpf"))%>" />
-<input type="hidden" name="EndEtg_contribuinte_icms_status" id="EndEtg_contribuinte_icms_status" value="<%=Trim(Request.Form("EndEtg_contribuinte_icms_status"))%>" />
-<input type="hidden" name="EndEtg_produtor_rural_status" id="EndEtg_produtor_rural_status" value="<%=Trim(Request.Form("EndEtg_produtor_rural_status"))%>" />
-<input type="hidden" name="EndEtg_ie" id="EndEtg_ie" value="<%=Trim(Request.Form("EndEtg_ie"))%>" />
-<input type="hidden" name="EndEtg_rg" id="EndEtg_rg" value="<%=Trim(Request.Form("EndEtg_rg"))%>" />
+<input type="hidden" name="EndEtg_email" id="EndEtg_email" value="<%=EndEtg_email%>" />
+<input type="hidden" name="EndEtg_email_xml" id="EndEtg_email_xml" value="<%=EndEtg_email_xml%>" />
+<input type="hidden" name="EndEtg_nome" id="EndEtg_nome" value="<%=EndEtg_nome%>" />
+<input type="hidden" name="EndEtg_ddd_res" id="EndEtg_ddd_res" value="<%=EndEtg_ddd_res%>" />
+<input type="hidden" name="EndEtg_tel_res" id="EndEtg_tel_res" value="<%=EndEtg_tel_res%>" />
+<input type="hidden" name="EndEtg_ddd_com" id="EndEtg_ddd_com" value="<%=EndEtg_ddd_com%>" />
+<input type="hidden" name="EndEtg_tel_com" id="EndEtg_tel_com" value="<%=EndEtg_tel_com%>" />
+<input type="hidden" name="EndEtg_ramal_com" id="EndEtg_ramal_com" value="<%=EndEtg_ramal_com%>" />
+<input type="hidden" name="EndEtg_ddd_cel" id="EndEtg_ddd_cel" value="<%=EndEtg_ddd_cel%>" />
+<input type="hidden" name="EndEtg_tel_cel" id="EndEtg_tel_cel" value="<%=EndEtg_tel_cel%>" />
+<input type="hidden" name="EndEtg_ddd_com_2" id="EndEtg_ddd_com_2" value="<%=EndEtg_ddd_com_2%>" />
+<input type="hidden" name="EndEtg_tel_com_2" id="EndEtg_tel_com_2" value="<%=EndEtg_tel_com_2%>" />
+<input type="hidden" name="EndEtg_ramal_com_2" id="EndEtg_ramal_com_2" value="<%=EndEtg_ramal_com_2%>" />
+<input type="hidden" name="EndEtg_tipo_pessoa" id="EndEtg_tipo_pessoa" value="<%=EndEtg_tipo_pessoa%>" />
+<input type="hidden" name="EndEtg_cnpj_cpf" id="EndEtg_cnpj_cpf" value="<%=EndEtg_cnpj_cpf%>" />
+<input type="hidden" name="EndEtg_contribuinte_icms_status" id="EndEtg_contribuinte_icms_status" value="<%=EndEtg_contribuinte_icms_status%>" />
+<input type="hidden" name="EndEtg_produtor_rural_status" id="EndEtg_produtor_rural_status" value="<%=EndEtg_produtor_rural_status%>" />
+<input type="hidden" name="EndEtg_ie" id="EndEtg_ie" value="<%=EndEtg_ie%>" />
+<input type="hidden" name="EndEtg_rg" id="EndEtg_rg" value="<%=EndEtg_rg%>" />
 
 
 <!-- AJAX EM ANDAMENTO -->
