@@ -2020,6 +2020,7 @@
 					rs("endereco_produtor_rural_status") = t_CLIENTE("produtor_rural_status")
 					rs("endereco_ie") = Trim("" & t_CLIENTE("ie"))
 					rs("endereco_rg") = Trim("" & t_CLIENTE("rg"))
+					rs("endereco_contato") = Trim("" & t_CLIENTE("contato"))
 					end if
 
 				if (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO) OR ( (Cstr(loja) = Cstr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE)) And (Trim(s_pedido_ac) <> "") ) then
