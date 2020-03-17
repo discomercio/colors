@@ -1711,14 +1711,6 @@ function fNEWConcluir( f ){
                 return;
             }
 
-            if (trim(f.EndEtg_nome.value) == "") {
-                alert('Preencha o nome/razão social no endereço de entrega!!');
-                f.EndEtg_nome.focus();
-                return;
-            }
-
-
-
             if (EndEtg_tipo_pessoa == "PJ") {
                 //Campos PJ: 
 
@@ -1729,14 +1721,34 @@ function fNEWConcluir( f ){
                 }
 
                 if ($('input[name="EndEtg_contribuinte_icms_status_PJ"]:checked').length == 0) {
-                    alert('Endereço de entrega: selecione o tipo de contribuinte de ICMS!!');
+                    alert('Endereço de entrega: informe se o cliente é contribuinte do ICMS, não contribuinte ou isento!!');
                     f.EndEtg_contribuinte_icms_status_PJ.focus();
                     return;
                 }
 
-                /*
-                sem validação: EndEtg_ie_PJ e  EndEtg_contribuinte_icms_status_PJ
+                if ((f.EndEtg_contribuinte_icms_status_PJ[1].checked) && (trim(f.EndEtg_ie_PJ.value) == "")) {
+                    alert('Endereço de entrega: se o cliente é contribuinte do ICMS a inscrição estadual deve ser preenchida!!');
+                    f.EndEtg_ie_PJ.focus();
+                    return;
+                }
+                if ((f.EndEtg_contribuinte_icms_status_PJ[0].checked) && (f.EndEtg_ie_PJ.value.toUpperCase().indexOf('ISEN') >= 0)) {
+                    alert('Endereço de entrega: se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
+                    f.EndEtg_ie_PJ.focus();
+                    return;
+                }
+                if ((f.EndEtg_contribuinte_icms_status_PJ[1].checked) && (f.EndEtg_ie_PJ.value.toUpperCase().indexOf('ISEN') >= 0)) {
+                    alert('Endereço de entrega: se cliente é contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
+                    f.EndEtg_ie_PJ.focus();
+                    return;
+                }
 
+                if (trim(f.EndEtg_nome.value) == "") {
+                    alert('Preencha a razão social no endereço de entrega!!');
+                    f.EndEtg_nome.focus();
+                    return;
+                }
+
+                /*
                 telefones PJ:
                 EndEtg_ddd_com
                 EndEtg_tel_com
@@ -1837,7 +1849,11 @@ function fNEWConcluir( f ){
                     }
                 }
             
-
+                if (trim(f.EndEtg_nome.value) == "") {
+                    alert('Preencha o nome no endereço de entrega!!');
+                    f.EndEtg_nome.focus();
+                    return;
+                }
 
                 /*
                 telefones PF:
@@ -1912,6 +1928,7 @@ function fNEWConcluir( f ){
 
 
     function transferirCamposEndEtg(fNEW) {
+<%if Not eh_cpf then%>
         //Transferimos os dados do endereço de entrega dos campos certos. 
         //Temos dois conjuntos de campos (para PF e PJ) porque o layout é muito diferente.
         var pj = $('input[name="EndEtg_tipo_pessoa"]:checked').val() == "PJ";
@@ -1934,6 +1951,7 @@ function fNEWConcluir( f ){
         }
 
         //os campos a mais são enviados junto. Deixamos enviar...
+<%end if%>
     }
 
     //para mudar o tipo do endereço de entrega
@@ -2194,7 +2212,22 @@ function fNEWConcluir( f ){
 
 <!--  ************  TIPO DO ENDEREÇO DE ENTREGA: PF/PJ (SOMENTE SE O CLIENTE FOR PJ)   ************ -->
 
-<%if Not eh_cpf then%>
+<%if eh_cpf then%>
+    <!-- ************   ENDEREÇO DE ENTREGA PARA CLIENTE PF   ************ -->
+    <!-- Pegamos todos os atuais. Sem campos editáveis. -->
+<input type="hidden" id="EndEtg_tipo_pessoa" name="EndEtg_tipo_pessoa" value="PF"/>
+<input type="hidden" id="EndEtg_cnpj_cpf" name="EndEtg_cnpj_cpf" value="<%=s_cnpj_cpf%>"/>
+<input type="hidden" id="EndEtg_ie" name="EndEtg_ie" value="<%=s_ie%>"/>
+<input type="hidden" id="EndEtg_contribuinte_icms_status" name="EndEtg_contribuinte_icms_status" value="<%=s_contribuinte_icms%>"/>
+<input type="hidden" id="EndEtg_rg" name="EndEtg_rg" value="<%=s_rg%>"/>
+<input type="hidden" id="EndEtg_produtor_rural_status" name="EndEtg_produtor_rural_status" value="<%=s_produtor_rural%>"/>
+<input type="hidden" id="EndEtg_email" name="EndEtg_email" value="<%=s_email%>"/>
+<input type="hidden" id="EndEtg_email_xml" name="EndEtg_email_xml" value="<%=s_email_xml%>"/>
+<input type="hidden" id="EndEtg_nome" name="EndEtg_nome" value="<%=s_nome%>"/>
+
+
+<%else%>
+
 <table width="649" class="QS Habilitar_EndEtg_outroendereco" cellspacing="0">
 	<tr>
 		<td align="left">
@@ -2332,16 +2365,16 @@ function fNEWConcluir( f ){
 
     <!-- ************   ENDEREÇO DE ENTREGA PARA PF: TELEFONES   ************ -->
     <!-- pegamos todos os atuais -->
-    <input type="hidden" id="EndEtg_ddd_res" name="EndEtg_ddd_res" value="<%=s=Trim("" & rs("ddd_res"))%>"/>
-    <input type="hidden" id="EndEtg_tel_res" name="EndEtg_tel_res" value="<%=s=Trim("" & rs("tel_res"))%>"/>
-    <input type="hidden" id="EndEtg_ddd_cel" name="EndEtg_ddd_cel" value="<%=s=Trim("" & rs("ddd_cel"))%>"/>
-    <input type="hidden" id="EndEtg_tel_cel" name="EndEtg_tel_cel" value="<%=s=Trim("" & rs("tel_cel"))%>"/>
-    <input type="hidden" id="EndEtg_ddd_com" name="EndEtg_ddd_com" value="<%=s=Trim("" & rs("ddd_com"))%>"/>
-    <input type="hidden" id="EndEtg_tel_com" name="EndEtg_tel_com" value="<%=s=Trim("" & rs("tel_com"))%>"/>
-    <input type="hidden" id="EndEtg_ramal_com" name="EndEtg_ramal_com" value="<%=s=Trim("" & rs("ramal_com"))%>"/>
-    <input type="hidden" id="EndEtg_ddd_com_2" name="EndEtg_ddd_com_2" value="<%=s=Trim("" & rs("ddd_com_2"))%>"/>
-    <input type="hidden" id="EndEtg_tel_com_2" name="EndEtg_tel_com_2" value="<%=s=Trim("" & rs("tel_com_2"))%>"/>
-    <input type="hidden" id="EndEtg_ramal_com_2" name="EndEtg_ramal_com_2" value="<%=s=Trim("" & rs("ramal_com_2"))%>"/>
+    <input type="hidden" id="EndEtg_ddd_res" name="EndEtg_ddd_res" value="<%=s_ddd_res%>"/>
+    <input type="hidden" id="EndEtg_tel_res" name="EndEtg_tel_res" value="<%=s_tel_res%>"/>
+    <input type="hidden" id="EndEtg_ddd_cel" name="EndEtg_ddd_cel" value="<%=s_ddd_cel%>"/>
+    <input type="hidden" id="EndEtg_tel_cel" name="EndEtg_tel_cel" value="<%=s_tel_cel%>"/>
+    <input type="hidden" id="EndEtg_ddd_com" name="EndEtg_ddd_com" value="<%=s_ddd_com%>"/>
+    <input type="hidden" id="EndEtg_tel_com" name="EndEtg_tel_com" value="<%=s_tel_com%>"/>
+    <input type="hidden" id="EndEtg_ramal_com" name="EndEtg_ramal_com" value="<%=s_ramal_com%>"/>
+    <input type="hidden" id="EndEtg_ddd_com_2" name="EndEtg_ddd_com_2" value="<%=s_ddd_com_2%>"/>
+    <input type="hidden" id="EndEtg_tel_com_2" name="EndEtg_tel_com_2" value="<%=s_tel_com_2%>"/>
+    <input type="hidden" id="EndEtg_ramal_com_2" name="EndEtg_ramal_com_2" value="<%=s_ramal_com_2%>"/>
 
 <%else%>
         
