@@ -392,7 +392,6 @@
                     '//campos PF
                     if EndEtg_cnpj_cpf = "" or not cpf_ok(EndEtg_cnpj_cpf_PF) then
                         alerta = "Endereço de entrega: CPF inválido!!"
-                    '//sem validação: EndEtg_rg_PF
                     elseif EndEtg_produtor_rural_status = "" then
                         alerta = "Endereço de entrega: informe se o cliente é produtor rural ou não!!"
                     elseif converte_numero(EndEtg_produtor_rural_status) <> converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_NAO) then

@@ -846,7 +846,7 @@ end function
 
                 if (f.EndEtg_cnpj_cpf_PJ.value == "" || !cnpj_ok(f.EndEtg_cnpj_cpf_PJ.value)) {
                     alert('Endereço de entrega: CNPJ inválido!!');
-                    f.EndEtg_cnpj_cpf_PF.focus();
+                    f.EndEtg_cnpj_cpf_PJ.focus();
                     return;
                 }
 
@@ -911,20 +911,6 @@ end function
                     return;
                 }
 
-
-                if ((trim(f.EndEtg_email.value) != "") && (!email_ok(f.EndEtg_email.value))) {
-                    alert('Endereço de entrega: e-mail inválido!!');
-                    f.EndEtg_email.focus();
-                    return;
-                }
-
-                if ((trim(f.EndEtg_email_xml.value) != "") && (!email_ok(f.EndEtg_email_xml.value))) {
-                    alert('Endereço de entrega: e-mail (XML) inválido!!');
-                    f.EndEtg_email_xml.focus();
-                    return;
-                }
-
-
             }
             else {
                 //campos PF
@@ -934,8 +920,6 @@ end function
                     f.EndEtg_cnpj_cpf_PF.focus();
                     return;
                 }
-
-                //sem validação: EndEtg_rg_PF
 
                 if ((!f.EndEtg_produtor_rural_status_PF[0].checked) && (!f.EndEtg_produtor_rural_status_PF[1].checked)) {
                     alert('Endereço de entrega: informe se o cliente é produtor rural ou não!!');
@@ -1629,7 +1613,6 @@ end function
             fNEW.EndEtg_contribuinte_icms_status.value = $('input[name="EndEtg_contribuinte_icms_status_PF"]:checked').val();
             if (!$('input[name="EndEtg_contribuinte_icms_status_PF"]:checked').val())
                 fNEW.EndEtg_contribuinte_icms_status.value = "";
-            fNEW.EndEtg_rg.value = fNEW.EndEtg_rg_PF.value;
             fNEW.EndEtg_produtor_rural_status.value = $('input[name="EndEtg_produtor_rural_status_PF"]:checked').val();
             if (!$('input[name="EndEtg_produtor_rural_status_PF"]:checked').val())
                 fNEW.EndEtg_produtor_rural_status.value = "";
@@ -1685,7 +1668,7 @@ end function
 
         //contribuinte ICMS sempre aparece para PJ
         if(sim) {
-            $(".Mostrar_EndEtg_contribuinte_icms_PF").css("display", "block");
+            $(".Mostrar_EndEtg_contribuinte_icms_PF").css("display", "");
         }
         else {
             $(".Mostrar_EndEtg_contribuinte_icms_PF").css("display", "none");
@@ -2890,14 +2873,17 @@ end function
 </table>
 
         <!-- ************   PJ: CNPJ/CONTRIBUINTE ICMS/IE - DO ENDEREÇO DE ENTREGA DE PJ ************ -->
-        <!-- ************   PF: CPF/RG/PRODUTOR RURAL/CONTRIBUINTE ICMS/IE - DO ENDEREÇO DE ENTREGA DE PJ  ************ -->
+        <!-- ************   PF: CPF/PRODUTOR RURAL/CONTRIBUINTE ICMS/IE - DO ENDEREÇO DE ENTREGA DE PJ  ************ -->
         <!-- fizemos dois conjuntos diferentes de campos porque a ordem é muito diferente -->
+        <!-- EndEtg_rg EndEtg_email e EndEtg_email_xml vem diretamente do t_CLIENTE -->
 
 <input type="hidden" id="EndEtg_cnpj_cpf" name="EndEtg_cnpj_cpf" />
 <input type="hidden" id="EndEtg_ie" name="EndEtg_ie" />
 <input type="hidden" id="EndEtg_contribuinte_icms_status" name="EndEtg_contribuinte_icms_status" />
-<input type="hidden" id="EndEtg_rg" name="EndEtg_rg" />
+<input type="hidden" id="EndEtg_rg" name="EndEtg_rg" value="<%=Trim("" & rs("rg"))%>"/>
 <input type="hidden" id="EndEtg_produtor_rural_status" name="EndEtg_produtor_rural_status" />
+<input type="hidden" id="EndEtg_email" name="EndEtg_email" value="<%=Trim("" & rs("email"))%>"/>
+<input type="hidden" id="EndEtg_email_xml" name="EndEtg_email_xml" value="<%=Trim("" & rs("email_xml"))%>"/>
 
 
 <table width="649" class="QS Habilitar_EndEtg_outroendereco Mostrar_EndEtg_pj" cellspacing="0">
@@ -2907,7 +2893,7 @@ end function
 	<input id="EndEtg_cnpj_cpf_PJ" name="EndEtg_cnpj_cpf_PJ" class="TA" value="" size="22" style="text-align:center; color:#0000ff"></p></td>
 
 	<td class="MDE" width="215" align="left"><p class="R">IE</p><p class="C">
-		<input id="EndEtg_ie_PJ" name="EndEtg_ie_PJ" class="TA" type="text" maxlength="20" size="25" value="" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_Nome.focus(); filtra_nome_identificador();"></p></td>
+		<input id="EndEtg_ie_PJ" name="EndEtg_ie_PJ" class="TA" type="text" maxlength="20" size="25" value="" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_nome.focus(); filtra_nome_identificador();"></p></td>
 
 	<td align="left" class="Mostrar_EndEtg_contribuinte_icms_PJ"><p class="R">CONTRIBUINTE ICMS</p><p class="C">
 		<input type="radio" id="EndEtg_contribuinte_icms_status_PJ_nao" name="EndEtg_contribuinte_icms_status_PJ" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PJ('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO%>');">Não</span>
@@ -2922,25 +2908,19 @@ end function
 	<p class="R">CPF</p><p class="C">
 	<input id="EndEtg_cnpj_cpf_PF" name="EndEtg_cnpj_cpf_PF" class="TA" value="" size="22" style="text-align:center; color:#0000ff"></p></td>
 
-	<td class="MDE" width="210" align="left"><p class="R">RG</p><p class="C">
-		<input id="EndEtg_rg_PF" name="EndEtg_rg_PF" class="TA" type="text" maxlength="20" size="22" value="" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_produtor_rural_status_PF.focus(); filtra_nome_identificador();"></p></td>
-
-
-	<td align="left" ><p class="R">PRODUTOR RURAL</p><p class="C">
+	<td align="left" class="ME" style="min-width: 110px;" ><p class="R">PRODUTOR RURAL</p><p class="C">
 		<input type="radio" id="EndEtg_produtor_rural_status_PF_nao" name="EndEtg_produtor_rural_status_PF" value="<%=COD_ST_CLIENTE_PRODUTOR_RURAL_NAO%>" onclick="trataProdutorRuralEndEtg_PF(null);"><span class="C" style="cursor:default" onclick="trataProdutorRuralEndEtg_PF('<%=COD_ST_CLIENTE_PRODUTOR_RURAL_NAO%>');">Não</span>
 		<input type="radio" id="EndEtg_produtor_rural_status_PF_sim" name="EndEtg_produtor_rural_status_PF" value="<%=COD_ST_CLIENTE_PRODUTOR_RURAL_SIM%>" onclick="trataProdutorRuralEndEtg_PF(null);"><span class="C" style="cursor:default" onclick="trataProdutorRuralEndEtg_PF('<%=COD_ST_CLIENTE_PRODUTOR_RURAL_SIM%>')">Sim</span></p></td>
-	</tr>
-</table>
 
-<table width="649" class="QS Habilitar_EndEtg_outroendereco Mostrar_EndEtg_pf Mostrar_EndEtg_contribuinte_icms_PF" cellspacing="0">
-	<tr>
-	<td width="210" align="left"><p class="R">IE</p><p class="C">
-		<input id="EndEtg_ie_PF" name="EndEtg_ie_PF" class="TA" type="text" maxlength="20" size="25" value="" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_Nome.focus(); filtra_nome_identificador();"></p></td>
+	<td align="left" class="MDE Mostrar_EndEtg_contribuinte_icms_PF"><p class="R">IE</p><p class="C">
+		<input id="EndEtg_ie_PF" name="EndEtg_ie_PF" class="TA" type="text" maxlength="20" size="13" value="" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_nome.focus(); filtra_nome_identificador();"></p>
+	</td>
 
-	<td align="left" class="ME" ><p class="R">CONTRIBUINTE ICMS</p><p class="C">
+	<td align="left" class="Mostrar_EndEtg_contribuinte_icms_PF" ><p class="R">CONTRIBUINTE ICMS</p><p class="C">
 		<input type="radio" id="EndEtg_contribuinte_icms_status_PF_nao" name="EndEtg_contribuinte_icms_status_PF" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PF('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO%>');">Não</span>
 		<input type="radio" id="EndEtg_contribuinte_icms_status_PF_sim" name="EndEtg_contribuinte_icms_status_PF" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PF('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM%>');">Sim</span>
-		<input type="radio" id="EndEtg_contribuinte_icms_status_PF_isento" name="EndEtg_contribuinte_icms_status_PF" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PF('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO%>');">Isento</span></p></td>
+		<input type="radio" id="EndEtg_contribuinte_icms_status_PF_isento" name="EndEtg_contribuinte_icms_status_PF" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PF('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO%>');">Isento</span></p>
+	</td>
 	</tr>
 </table>
 
@@ -3012,67 +2992,62 @@ end function
 	</tr>
 </table>
 
-<%if Not eh_cpf then%>
+<%if eh_cpf then%>
 
+    <!-- ************   ENDEREÇO DE ENTREGA PARA PF: TELEFONES   ************ -->
+    <!-- pegamos todos os atuais -->
+    <input type="hidden" id="EndEtg_ddd_res" name="EndEtg_ddd_res" value="<%=s=Trim("" & rs("ddd_res"))%>"/>
+    <input type="hidden" id="EndEtg_tel_res" name="EndEtg_tel_res" value="<%=s=Trim("" & rs("tel_res"))%>"/>
+    <input type="hidden" id="EndEtg_ddd_cel" name="EndEtg_ddd_cel" value="<%=s=Trim("" & rs("ddd_cel"))%>"/>
+    <input type="hidden" id="EndEtg_tel_cel" name="EndEtg_tel_cel" value="<%=s=Trim("" & rs("tel_cel"))%>"/>
+    <input type="hidden" id="EndEtg_ddd_com" name="EndEtg_ddd_com" value="<%=s=Trim("" & rs("ddd_com"))%>"/>
+    <input type="hidden" id="EndEtg_tel_com" name="EndEtg_tel_com" value="<%=s=Trim("" & rs("tel_com"))%>"/>
+    <input type="hidden" id="EndEtg_ramal_com" name="EndEtg_ramal_com" value="<%=s=Trim("" & rs("ramal_com"))%>"/>
+    <input type="hidden" id="EndEtg_ddd_com_2" name="EndEtg_ddd_com_2" value="<%=s=Trim("" & rs("ddd_com_2"))%>"/>
+    <input type="hidden" id="EndEtg_tel_com_2" name="EndEtg_tel_com_2" value="<%=s=Trim("" & rs("tel_com_2"))%>"/>
+    <input type="hidden" id="EndEtg_ramal_com_2" name="EndEtg_ramal_com_2" value="<%=s=Trim("" & rs("ramal_com_2"))%>"/>
+
+<%else%>
         
-<!-- ************   ENDEREÇO DE ENTREGA: TELEFONE RESIDENCIAL   ************ -->
-<table width="649" class="QS Mostrar_EndEtg_pf Habilitar_EndEtg_outroendereco" cellspacing="0">
-	<tr>
-	<td class="MD" width="20%" align="left"><p class="R">DDD</p><p class="C">
-		<input id="EndEtg_ddd_res" name="EndEtg_ddd_res" class="TA" value="" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fNEW.EndEtg_tel_res.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p></td>
-	<td align="left"><p class="R">TELEFONE RESIDENCIAL</p><p class="C">
-		<input id="EndEtg_tel_res" name="EndEtg_tel_res" class="TA" value="" maxlength="11" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fNEW.EndEtg_ddd_cel.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Telefone inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p></td>
-	</tr>
-	<tr>
-	<td class="MD MC" width="20%" align="left"><p class="R">DDD</p><p class="C">
-		<input id="EndEtg_ddd_cel" name="EndEtg_ddd_cel" class="TA" value="" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fNEW.EndEtg_tel_cel.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p></td>
-	<td align="left" class="MC"><p class="R">CELULAR</p><p class="C">
-		<input id="EndEtg_tel_cel" name="EndEtg_tel_cel" class="TA" value="" maxlength="10" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fNEW.EndEtg_obs.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Número de celular inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p></td>
-	</tr>
-</table>
+    <!-- ************   ENDEREÇO DE ENTREGA: TELEFONE RESIDENCIAL   ************ -->
+    <table width="649" class="QS Mostrar_EndEtg_pf Habilitar_EndEtg_outroendereco" cellspacing="0">
+	    <tr>
+	    <td class="MD" width="20%" align="left"><p class="R">DDD</p><p class="C">
+		    <input id="EndEtg_ddd_res" name="EndEtg_ddd_res" class="TA" value="" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fNEW.EndEtg_tel_res.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p></td>
+	    <td align="left"><p class="R">TELEFONE RESIDENCIAL</p><p class="C">
+		    <input id="EndEtg_tel_res" name="EndEtg_tel_res" class="TA" value="" maxlength="11" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fNEW.EndEtg_ddd_cel.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Telefone inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p></td>
+	    </tr>
+	    <tr>
+	    <td class="MD MC" width="20%" align="left"><p class="R">DDD</p><p class="C">
+		    <input id="EndEtg_ddd_cel" name="EndEtg_ddd_cel" class="TA" value="" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fNEW.EndEtg_tel_cel.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p></td>
+	    <td align="left" class="MC"><p class="R">CELULAR</p><p class="C">
+		    <input id="EndEtg_tel_cel" name="EndEtg_tel_cel" class="TA" value="" maxlength="10" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fNEW.EndEtg_obs.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Número de celular inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p></td>
+	    </tr>
+    </table>
 	
         
-<!-- ************   ENDEREÇO DE ENTREGA: TELEFONE COMERCIAL   ************ -->
-<table width="649" class="QS Mostrar_EndEtg_pj Habilitar_EndEtg_outroendereco" cellspacing="0">
-	<tr>
-	<td class="MD" width="20%" align="left"><p class="R">DDD</p><p class="C">
-		<input id="EndEtg_ddd_com" name="EndEtg_ddd_com" class="TA" value="" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fNEW.EndEtg_tel_com.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p></td>
-	<td class="MD" align="left"><p class="R">TELEFONE </p><p class="C">
-		<input id="EndEtg_tel_com" name="EndEtg_tel_com" class="TA" value="" maxlength="11" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fNEW.EndEtg_ramal_com.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Telefone inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p></td>
-	<td align="left"><p class="R">RAMAL</p><p class="C">
-		<input id="EndEtg_ramal_com" name="EndEtg_ramal_com" class="TA" value="" maxlength="4" size="6" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_ddd_com_2.focus(); filtra_numerico();"></p></td>
-	</tr>
-	<tr>
-	    <td class="MD MC" width="20%" align="left"><p class="R">DDD</p><p class="C">
-	    <input id="EndEtg_ddd_com_2" name="EndEtg_ddd_com_2" class="TA" value="" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fNEW.EndEtg_tel_com_2.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!!');this.focus();}" /></p>  
-	    </td>
-	    <td class="MD MC" align="left"><p class="R">TELEFONE</p><p class="C">
-	    <input id="EndEtg_tel_com_2" name="EndEtg_tel_com_2" class="TA" value="" maxlength="9" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fNEW.EndEtg_ramal_com_2.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Telefone inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p>
-	    </td>
-	    <td align="left" class="MC"><p class="R">RAMAL</p><p class="C">
-	    <input id="EndEtg_ramal_com_2" name="EndEtg_ramal_com_2" class="TA" value="" maxlength="4" size="6" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_email.focus(); filtra_numerico();" /></p>
-	    </td>
-	</tr>
-</table>
-
-
-<!-- ************   ENDEREÇO DE ENTREGA: E-MAIL   ************ -->
-<table width="649" class="QS Mostrar_EndEtg_pj Habilitar_EndEtg_outroendereco" cellspacing="0">
-	<tr>
-	<td width="100%" align="left"><p class="R">E-MAIL</p><p class="C">
-		<input id="EndEtg_email" name="EndEtg_email" class="TA" value="" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_email_xml.focus(); filtra_email();"></p></td>
-    </tr>
-</table>
-
-<!-- ************   ENDEREÇO DE ENTREGA: E-MAIL (XML)  ************ -->
-<table width="649" class="QS Mostrar_EndEtg_pj Habilitar_EndEtg_outroendereco" cellspacing="0">
-	<tr>
-	<td width="100%" align="left"><p class="R">E-MAIL (XML)</p><p class="C">
-		<input id="EndEtg_email_xml" name="EndEtg_email_xml" class="TA" value="" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_obs.focus(); filtra_email();"></p></td>
-	</tr>
-</table>
-
-
+    <!-- ************   ENDEREÇO DE ENTREGA: TELEFONE COMERCIAL   ************ -->
+    <table width="649" class="QS Mostrar_EndEtg_pj Habilitar_EndEtg_outroendereco" cellspacing="0">
+	    <tr>
+	    <td class="MD" width="20%" align="left"><p class="R">DDD</p><p class="C">
+		    <input id="EndEtg_ddd_com" name="EndEtg_ddd_com" class="TA" value="" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fNEW.EndEtg_tel_com.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p></td>
+	    <td class="MD" align="left"><p class="R">TELEFONE </p><p class="C">
+		    <input id="EndEtg_tel_com" name="EndEtg_tel_com" class="TA" value="" maxlength="11" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fNEW.EndEtg_ramal_com.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Telefone inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p></td>
+	    <td align="left"><p class="R">RAMAL</p><p class="C">
+		    <input id="EndEtg_ramal_com" name="EndEtg_ramal_com" class="TA" value="" maxlength="4" size="6" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_ddd_com_2.focus(); filtra_numerico();"></p></td>
+	    </tr>
+	    <tr>
+	        <td class="MD MC" width="20%" align="left"><p class="R">DDD</p><p class="C">
+	        <input id="EndEtg_ddd_com_2" name="EndEtg_ddd_com_2" class="TA" value="" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fNEW.EndEtg_tel_com_2.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!!');this.focus();}" /></p>  
+	        </td>
+	        <td class="MD MC" align="left"><p class="R">TELEFONE</p><p class="C">
+	        <input id="EndEtg_tel_com_2" name="EndEtg_tel_com_2" class="TA" value="" maxlength="9" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fNEW.EndEtg_ramal_com_2.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Telefone inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p>
+	        </td>
+	        <td align="left" class="MC"><p class="R">RAMAL</p><p class="C">
+	        <input id="EndEtg_ramal_com_2" name="EndEtg_ramal_com_2" class="TA" value="" maxlength="4" size="6" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_obs.focus(); filtra_numerico();" /></p>
+	        </td>
+	    </tr>
+    </table>
 
 <% end if %>
 
