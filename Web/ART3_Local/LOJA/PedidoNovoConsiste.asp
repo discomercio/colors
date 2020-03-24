@@ -120,6 +120,9 @@
 	dim eh_cpf
 	eh_cpf=(len(r_cliente.cnpj_cpf)=11)
 
+	dim blnUsarMemorizacaoCompletaEnderecos
+	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim rCD
 	set rCD = obtem_perc_max_comissao_e_desconto_por_loja(loja)
 
@@ -347,12 +350,13 @@
 				end if
 
 
-            if alerta = "" and Not eh_cpf then
+            if alerta = "" and not eh_cpf and blnUsarMemorizacaoCompletaEnderecos then
                 if EndEtg_tipo_pessoa <> "PJ" and EndEtg_tipo_pessoa <> "PF" then
                     alerta = "Necessário escolher Pessoa Jurídica ou Pessoa Física no Endereço de entrega!!"
     			elseif EndEtg_nome = "" then
                     alerta = "Preencha o nome/razão social no endereço de entrega!!"
                     end if 
+	
                 if alerta = "" and EndEtg_tipo_pessoa = "PJ" then
                     '//Campos PJ: 
                     if EndEtg_cnpj_cpf = "" or not cnpj_ok(EndEtg_cnpj_cpf) then
@@ -446,6 +450,13 @@
                         end if
 
                     end if
+
+		        if alerta = "" and EndEtg_ie <> "" then
+			        if Not isInscricaoEstadualValida(EndEtg_ie, EndEtg_uf) then
+				        alerta="Endereço de entrega: preencha a IE (Inscrição Estadual) com um número válido!!" & _
+						        "<br>" & "Certifique-se de que a UF do endereço de entrega corresponde à UF responsável pelo registro da IE."
+				        end if
+			        end if
 
                 end if
 
@@ -615,6 +626,8 @@
 			alerta="O CAMPO BAIRRO DO ENDEREÇO DE ENTREGA POSSUI UM OU MAIS CARACTERES INVÁLIDOS: " & s_caracteres_invalidos
 		elseif Not isTextoValido(EndEtg_cidade, s_caracteres_invalidos) then
 			alerta="O CAMPO CIDADE DO ENDEREÇO DE ENTREGA POSSUI UM OU MAIS CARACTERES INVÁLIDOS: " & s_caracteres_invalidos
+		elseif Not isTextoValido(EndEtg_nome, s_caracteres_invalidos) then
+			alerta="O CAMPO NOME DO ENDEREÇO DE ENTREGA POSSUI UM OU MAIS CARACTERES INVÁLIDOS: " & s_caracteres_invalidos
 			end if
 		end if
 	

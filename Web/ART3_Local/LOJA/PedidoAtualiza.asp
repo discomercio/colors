@@ -97,6 +97,12 @@
 	call x_cliente_bd(cliente_selecionado, r_cliente)
 	tipo_cliente = r_cliente.tipo
 	
+	dim eh_cpf
+	eh_cpf=(len(r_cliente.cnpj_cpf)=11)
+
+	dim blnUsarMemorizacaoCompletaEnderecos
+	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim rCD
 	set rCD = obtem_perc_max_comissao_e_desconto_por_loja(loja)
 
@@ -315,7 +321,13 @@
 	c_consiste_perc_max_comissao_e_desconto = Trim(Request("c_consiste_perc_max_comissao_e_desconto"))
 	
 	dim blnEndEntregaEdicaoLiberada, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep,EndEtg_obs,blnEndEtg_obs
+	dim EndEtg_email, EndEtg_email_xml, EndEtg_nome, EndEtg_ddd_res, EndEtg_tel_res, EndEtg_ddd_com, EndEtg_tel_com, EndEtg_ramal_com
+	dim EndEtg_ddd_cel, EndEtg_tel_cel, EndEtg_ddd_com_2, EndEtg_tel_com_2, EndEtg_ramal_com_2
+	dim EndEtg_tipo_pessoa, EndEtg_cnpj_cpf, EndEtg_contribuinte_icms_status, EndEtg_produtor_rural_status
+	dim EndEtg_ie, EndEtg_rg
+	dim blnEndEtgComDados
     blnEndEtg_obs = false
+    blnEndEtgComDados = false
 	s = Trim(Request.Form("blnEndEntregaEdicaoLiberada"))
 	blnEndEntregaEdicaoLiberada = CBool(s)
 	EndEtg_endereco = Trim(Request.Form("EndEtg_endereco"))
@@ -326,6 +338,26 @@
 	EndEtg_uf = Trim(Request.Form("EndEtg_uf"))
 	EndEtg_cep = retorna_so_digitos(Trim(Request.Form("EndEtg_cep")))
     EndEtg_obs = Trim(Request.Form("EndEtg_obs"))
+	EndEtg_email = Trim(Request.Form("EndEtg_email"))
+	EndEtg_email_xml = Trim(Request.Form("EndEtg_email_xml"))
+	EndEtg_nome = Trim(Request.Form("EndEtg_nome"))
+	EndEtg_ddd_res = retorna_so_digitos(Trim(Request.Form("EndEtg_ddd_res")))
+	EndEtg_tel_res = retorna_so_digitos(Trim(Request.Form("EndEtg_tel_res")))
+	EndEtg_ddd_com = retorna_so_digitos(Trim(Request.Form("EndEtg_ddd_com")))
+	EndEtg_tel_com = retorna_so_digitos(Trim(Request.Form("EndEtg_tel_com")))
+	EndEtg_ramal_com = retorna_so_digitos(Trim(Request.Form("EndEtg_ramal_com")))
+	EndEtg_ddd_cel = retorna_so_digitos(Trim(Request.Form("EndEtg_ddd_cel")))
+	EndEtg_tel_cel = retorna_so_digitos(Trim(Request.Form("EndEtg_tel_cel")))
+	EndEtg_ddd_com_2 = retorna_so_digitos(Trim(Request.Form("EndEtg_ddd_com_2")))
+	EndEtg_tel_com_2 = retorna_so_digitos(Trim(Request.Form("EndEtg_tel_com_2")))
+	EndEtg_ramal_com_2 = retorna_so_digitos(Trim(Request.Form("EndEtg_ramal_com_2")))
+	EndEtg_tipo_pessoa = Trim(Request.Form("EndEtg_tipo_pessoa"))
+	EndEtg_cnpj_cpf = Trim(Request.Form("EndEtg_cnpj_cpf"))
+	EndEtg_contribuinte_icms_status = Trim(Request.Form("EndEtg_contribuinte_icms_status"))
+	EndEtg_produtor_rural_status = Trim(Request.Form("EndEtg_produtor_rural_status"))
+	EndEtg_ie = Trim(Request.Form("EndEtg_ie"))
+	EndEtg_rg = Trim(Request.Form("EndEtg_rg"))
+
 	
 	dim v_item, i, n, k, vl_TotalFamiliaPrecoVenda, vl_TotalFamiliaPrecoNF, vl_totalFamiliaPrecoNFLiquido, vl_TotalFamiliaPago, vl_TotalFamiliaDevolucaoPrecoVenda, vl_TotalFamiliaDevolucaoPrecoNF, st_pagto, id_pedido_base
 	redim v_item(0)
@@ -729,9 +761,66 @@
 	if blnEndEntregaEdicaoLiberada then
 		if alerta = "" then
             if (EndEtg_endereco<>r_pedido.EndEtg_endereco) Or (EndEtg_bairro<>r_pedido.EndEtg_bairro) Or (EndEtg_cidade<>r_pedido.EndEtg_cidade) Or (EndEtg_uf<>r_pedido.EndEtg_uf) Or (EndEtg_cep<>r_pedido.EndEtg_cep) Or (EndEtg_obs<>r_pedido.EndEtg_cod_justificativa) then
-                  blnEndEtg_obs = true 
-            end if
-			if (EndEtg_endereco<>"") Or (EndEtg_bairro<>"") Or (EndEtg_cidade<>"") Or (EndEtg_uf<>"") Or (EndEtg_cep<>"") Or (EndEtg_obs<>"") then
+                blnEndEtg_obs = true 
+                end if
+
+            'na memorizacao de endereços ligada, sempre verificamos
+            if r_pedido.st_memorizacao_completa_enderecos = 1 and blnUsarMemorizacaoCompletaEnderecos then
+                blnEndEtg_obs = true 
+                end if
+
+            blnEndEtgComDados = false
+			if (EndEtg_endereco<>"") Or (EndEtg_endereco_numero<>"") Or (EndEtg_endereco_complemento<>"") Or (EndEtg_bairro<>"") Or (EndEtg_cidade<>"") Or (EndEtg_uf<>"") Or (EndEtg_cep<>"") Or (EndEtg_obs<>"") then
+                blnEndEtgComDados = true
+                end if
+            if r_pedido.st_memorizacao_completa_enderecos = 1 and blnUsarMemorizacaoCompletaEnderecos then
+                if not eh_cpf then
+                    'EndEtg_email e EndEtg_email_xml não entram na verificação porque sempre são preenchidos
+			        if (EndEtg_ddd_res<>"") Or (EndEtg_tel_res<>"") Or (EndEtg_ddd_com<>"") Or (EndEtg_tel_com<>"") Or (EndEtg_ramal_com<>"") then
+                        blnEndEtgComDados = true
+                        end if
+			        if (EndEtg_ddd_cel<>"") Or (EndEtg_tel_cel<>"") Or (EndEtg_ddd_com_2<>"") Or (EndEtg_tel_com_2<>"") Or (EndEtg_ramal_com_2<>"") Or (EndEtg_tipo_pessoa<>"") then
+                        blnEndEtgComDados = true
+                        end if
+			        if (EndEtg_cnpj_cpf<>"") Or (EndEtg_contribuinte_icms_status<>"") Or (EndEtg_produtor_rural_status<>"") Or (EndEtg_ie<>"") Or (EndEtg_rg<>"") then
+                        blnEndEtgComDados = true
+                        end if
+
+                    'limpamos os campos que devem ser removidos (PJ)
+                    if not blnEndEtgComDados then
+                        EndEtg_email = ""
+                        EndEtg_email_xml = ""
+                        end if
+                    end if
+
+                if eh_cpf and not blnEndEtgComDados then
+                    'nenhum campo deve ser preenchido pelo usuário
+                    'todos possuem prenchimento automático
+                    EndEtg_ddd_res = ""
+                    EndEtg_tel_res = ""
+                    EndEtg_ddd_cel = ""
+                    EndEtg_tel_cel = ""
+                    EndEtg_ddd_com = ""
+                    EndEtg_tel_com = ""
+                    EndEtg_ramal_com = ""
+                    EndEtg_ddd_com_2 = ""
+                    EndEtg_tel_com_2 = ""
+                    EndEtg_ramal_com_2 = ""
+                    EndEtg_tipo_pessoa = ""
+                    EndEtg_cnpj_cpf = ""
+                    EndEtg_ie = ""
+                    EndEtg_contribuinte_icms_status = ""
+                    EndEtg_rg = ""
+                    EndEtg_produtor_rural_status = ""
+                    EndEtg_email = ""
+                    EndEtg_email_xml = ""
+                    EndEtg_nome = ""
+                    end if
+
+                end if
+
+
+			if blnEndEtgComDados then
 				if EndEtg_endereco="" then
 					alerta="PREENCHA O ENDEREÇO DE ENTREGA."
 				elseif Len(EndEtg_endereco) > CLng(MAX_TAMANHO_CAMPO_ENDERECO) then
@@ -749,6 +838,120 @@
 					end if
 				end if
 			end if
+
+
+
+        if alerta = "" and blnEndEtgComDados and r_pedido.st_memorizacao_completa_enderecos = 1 and blnUsarMemorizacaoCompletaEnderecos and Not eh_cpf then
+            if EndEtg_tipo_pessoa <> "PJ" and EndEtg_tipo_pessoa <> "PF" then
+                alerta = "Necessário escolher Pessoa Jurídica ou Pessoa Física no Endereço de entrega!!"
+    		elseif EndEtg_nome = "" then
+                alerta = "Preencha o nome/razão social no endereço de entrega!!"
+                end if 
+	
+            if alerta = "" and EndEtg_tipo_pessoa = "PJ" then
+                '//Campos PJ: 
+                if EndEtg_cnpj_cpf = "" or not cnpj_ok(EndEtg_cnpj_cpf) then
+                    alerta = "Endereço de entrega: CNPJ inválido!!"
+                elseif EndEtg_contribuinte_icms_status = "" then
+                    alerta = "Endereço de entrega: selecione o tipo de contribuinte de ICMS!!"
+                elseif converte_numero(EndEtg_contribuinte_icms_status) = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) and EndEtg_ie = "" then
+                    alerta = "Endereço de entrega: se o cliente é contribuinte do ICMS a inscrição estadual deve ser preenchida!!"
+                elseif converte_numero(EndEtg_contribuinte_icms_status) = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) and InStr(EndEtg_ie, "ISEN") > 0 then 
+                    alerta = "Endereço de entrega: se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!"
+                elseif converte_numero(EndEtg_contribuinte_icms_status) = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) and InStr(EndEtg_ie, "ISEN") > 0 then 
+                    alerta = "Endereço de entrega: se cliente é contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!"
+                'telefones PJ:
+                'EndEtg_ddd_com
+                'EndEtg_tel_com
+                'EndEtg_ramal_com
+                'EndEtg_ddd_com_2
+                'EndEtg_tel_com_2
+                'EndEtg_ramal_com_2
+                elseif not ddd_ok(EndEtg_ddd_com) then
+                    alerta = "Endereço de entrega: DDD inválido!!"
+                elseif not telefone_ok(EndEtg_tel_com) then
+                    alerta = "Endereço de entrega: telefone inválido!!"
+                elseif EndEtg_ddd_com = "" and EndEtg_tel_com <> "" then
+                    alerta = "Endereço de entrega: preencha o DDD do telefone."
+                elseif EndEtg_tel_com = "" and EndEtg_ddd_com <> "" then
+                    alerta = "Endereço de entrega: preencha o telefone."
+
+                elseif not ddd_ok(EndEtg_ddd_com_2) then
+                    alerta = "Endereço de entrega: DDD inválido!!"
+                elseif not telefone_ok(EndEtg_tel_com_2) then
+                    alerta = "Endereço de entrega: telefone inválido!!"
+                elseif EndEtg_ddd_com_2 = "" and EndEtg_tel_com_2 <> "" then
+                    alerta = "Endereço de entrega: preencha o DDD do telefone."
+                elseif EndEtg_tel_com_2 = "" and EndEtg_ddd_com_2 <> "" then
+                    alerta = "Endereço de entrega: preencha o telefone."
+                    end if 
+                end if 
+
+            if alerta = "" and EndEtg_tipo_pessoa <> "PJ" then
+                '//campos PF
+                if EndEtg_cnpj_cpf = "" or not cpf_ok(EndEtg_cnpj_cpf) then
+                    alerta = "Endereço de entrega: CPF inválido!!"
+                elseif EndEtg_produtor_rural_status = "" then
+                    alerta = "Endereço de entrega: informe se o cliente é produtor rural ou não!!"
+                elseif converte_numero(EndEtg_produtor_rural_status) <> converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_NAO) then
+                    if converte_numero(EndEtg_contribuinte_icms_status) <> converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
+                        alerta = "Endereço de entrega: para ser cadastrado como Produtor Rural, é necessário ser contribuinte do ICMS e possuir nº de IE!!"
+                    elseif EndEtg_contribuinte_icms_status = "" then
+                        alerta = "Endereço de entrega: informe se o cliente é contribuinte do ICMS, não contribuinte ou isento!!"
+                    elseif converte_numero(EndEtg_contribuinte_icms_status) = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) and EndEtg_ie = "" then
+                        alerta = "Endereço de entrega: se o cliente é contribuinte do ICMS a inscrição estadual deve ser preenchida!!"
+                    elseif converte_numero(EndEtg_contribuinte_icms_status) = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) and InStr(EndEtg_ie, "ISEN") > 0 then 
+                        alerta = "Endereço de entrega: se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!"
+                    elseif converte_numero(EndEtg_contribuinte_icms_status) = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) and InStr(EndEtg_ie, "ISEN") > 0 then 
+                        alerta = "Endereço de entrega: se cliente é contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!"
+                    elseif converte_numero(EndEtg_contribuinte_icms_status) = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO) and EndEtg_ie <> "" then 
+                        alerta = "Endereço de entrega: se o Contribuinte ICMS é isento, o campo IE deve ser vazio!"
+                        end if
+                    end if
+
+                if alerta = "" then
+                    'telefones PF:
+                    'EndEtg_ddd_res
+                    'EndEtg_tel_res
+                    'EndEtg_ddd_cel
+                    'EndEtg_tel_cel
+                    if not ddd_ok(retorna_so_digitos(EndEtg_ddd_res)) then
+                        alerta = "Endereço de entrega: DDD inválido!!"
+                    elseif not telefone_ok(retorna_so_digitos(EndEtg_tel_res)) then
+                        alerta = "Endereço de entrega: telefone inválido!!"
+                    elseif EndEtg_ddd_res <> "" or EndEtg_tel_res <> "" then
+                        if EndEtg_ddd_res = "" then
+                            alerta = "Endereço de entrega: preencha o DDD!!"
+                        elseif EndEtg_tel_res = "" then
+                            alerta = "Endereço de entrega: preencha o telefone!!"
+                            end if
+                        end if
+                    end if
+
+                if alerta = "" then
+                    if not ddd_ok(retorna_so_digitos(EndEtg_ddd_cel)) then
+                        alerta = "Endereço de entrega: DDD inválido!!"
+                    elseif not telefone_ok(retorna_so_digitos(EndEtg_tel_cel)) then
+                        alerta = "Endereço de entrega: telefone inválido!!"
+                    elseif EndEtg_ddd_cel = "" and EndEtg_tel_cel <> "" then
+                        alerta = "Endereço de entrega: preencha o DDD do celular."
+                    elseif EndEtg_tel_cel = "" and EndEtg_ddd_cel <> "" then
+                        alerta = "Endereço de entrega: preencha o número do celular."
+                        end if
+                    end if
+
+                end if
+
+		    if alerta = "" and EndEtg_ie <> "" then
+			    if Not isInscricaoEstadualValida(EndEtg_ie, EndEtg_uf) then
+				    alerta="Endereço de entrega: preencha a IE (Inscrição Estadual) com um número válido!!" & _
+						    "<br>" & "Certifique-se de que a UF do endereço de entrega corresponde à UF responsável pelo registro da IE."
+				    end if
+			    end if
+
+            end if
+
+
 		end if
 	
 '	CONSISTÊNCIAS P/ EMISSÃO DE NFe
@@ -821,6 +1024,8 @@
 			alerta="O CAMPO BAIRRO DO ENDEREÇO DE ENTREGA POSSUI UM OU MAIS CARACTERES INVÁLIDOS: " & s_caracteres_invalidos
 		elseif Not isTextoValido(EndEtg_cidade, s_caracteres_invalidos) then
 			alerta="O CAMPO CIDADE DO ENDEREÇO DE ENTREGA POSSUI UM OU MAIS CARACTERES INVÁLIDOS: " & s_caracteres_invalidos
+		elseif Not isTextoValido(EndEtg_nome, s_caracteres_invalidos) then
+			alerta="O CAMPO NOME DO ENDEREÇO DE ENTREGA POSSUI UM OU MAIS CARACTERES INVÁLIDOS: " & s_caracteres_invalidos
 			end if
 		end if
 	
@@ -1227,6 +1432,30 @@
 					rs("EndEtg_uf") = EndEtg_uf
 					rs("EndEtg_cep") = EndEtg_cep
                     rs("EndEtg_cod_justificativa") = EndEtg_obs
+                	if not blnUsarMemorizacaoCompletaEnderecos then
+                        rs("st_memorizacao_completa_enderecos") = 0
+                        end if
+                	if r_pedido.st_memorizacao_completa_enderecos = 1 and blnUsarMemorizacaoCompletaEnderecos then
+						rs("EndEtg_email") = EndEtg_email
+						rs("EndEtg_email_xml") = EndEtg_email_xml
+						rs("EndEtg_nome") = EndEtg_nome
+						rs("EndEtg_ddd_res") = EndEtg_ddd_res
+						rs("EndEtg_tel_res") = EndEtg_tel_res
+						rs("EndEtg_ddd_com") = EndEtg_ddd_com
+						rs("EndEtg_tel_com") = EndEtg_tel_com
+						rs("EndEtg_ramal_com") = EndEtg_ramal_com
+						rs("EndEtg_ddd_cel") = EndEtg_ddd_cel
+						rs("EndEtg_tel_cel") = EndEtg_tel_cel
+						rs("EndEtg_ddd_com_2") = EndEtg_ddd_com_2
+						rs("EndEtg_tel_com_2") = EndEtg_tel_com_2
+						rs("EndEtg_ramal_com_2") = EndEtg_ramal_com_2
+						rs("EndEtg_tipo_pessoa") = EndEtg_tipo_pessoa
+						rs("EndEtg_cnpj_cpf") = retorna_so_digitos(EndEtg_cnpj_cpf)
+						rs("EndEtg_contribuinte_icms_status") = converte_numero(EndEtg_contribuinte_icms_status)
+						rs("EndEtg_produtor_rural_status") = converte_numero(EndEtg_produtor_rural_status)
+						rs("EndEtg_ie") = EndEtg_ie
+						rs("EndEtg_rg") = EndEtg_rg
+						end if
 					end if
 				
 			'	SELEÇÃO AUTOMÁTICA DA TRANSPORTADORA COM BASE NO CEP

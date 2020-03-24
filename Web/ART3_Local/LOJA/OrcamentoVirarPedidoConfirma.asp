@@ -1447,7 +1447,8 @@
 				rs("endereco_complemento") = Trim("" & t_CLIENTE("endereco_complemento"))
 
 				if blnUsarMemorizacaoCompletaEnderecos then
-					rs("st_memorizacao_completa_enderecos") = 1
+                    'Definido em 20/03/2020: o orcamento que foi criado sem memorização continua sua vida sem memorização
+					rs("st_memorizacao_completa_enderecos") = r_orcamento.st_memorizacao_completa_enderecos
 					rs("endereco_email") = Trim("" & t_CLIENTE("email"))
 					rs("endereco_email_xml") = Trim("" & t_CLIENTE("email_xml"))
 					rs("endereco_nome") = Trim("" & t_CLIENTE("nome"))

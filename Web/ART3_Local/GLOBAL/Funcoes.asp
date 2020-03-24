@@ -3791,7 +3791,7 @@ dim s_cabecalho, s_aux, s_tel_aux_1, s_tel_aux_2, s_telefones, s_endereco
                 if r_pedido.EndEtg_contribuinte_icms_status = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) then
                     s_aux = "Sim (Não contribuinte)"
                 elseif r_pedido.EndEtg_contribuinte_icms_status = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
-                    s_aux = "Sim (IE: " & r_pedido.endereco_ie & ")"
+                    s_aux = "Sim (IE: " & r_pedido.EndEtg_ie & ")"
                 elseif r_pedido.EndEtg_contribuinte_icms_status = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO) then
                     s_aux = "Sim (Isento)"
                 end if
@@ -3827,7 +3827,7 @@ dim s_cabecalho, s_aux, s_tel_aux_1, s_tel_aux_2, s_telefones, s_endereco
     if r_pedido.EndEtg_contribuinte_icms_status = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) then
         s_aux = "Não"
     elseif r_pedido.EndEtg_contribuinte_icms_status = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
-        s_aux = "Sim (IE: " & r_pedido.endereco_ie & ")"
+        s_aux = "Sim (IE: " & r_pedido.EndEtg_ie & ")"
     elseif r_pedido.EndEtg_contribuinte_icms_status = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO) then
         s_aux = "Isento"
     end if
