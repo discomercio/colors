@@ -1215,6 +1215,11 @@ Type RECT
     bottom As Long
     End Type
 
+Global vCFOPsSemPartilha() As TIPO_LISTA_CFOP
+
+Global vCUFsInscricaoVirtual() As TIPO_DUAS_COLUNAS
+    
+
 Declare Function DrawText Lib "user32" Alias "DrawTextA" (ByVal hdc As Long, ByVal lpStr As String, ByVal nCount As Long, lpRect As RECT, ByVal wFormat As Long) As Long
 Declare Function SetMapMode Lib "gdi32" (ByVal hdc As Long, ByVal nMapMode As Long) As Long
   
