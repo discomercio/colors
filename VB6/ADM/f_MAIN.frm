@@ -2255,13 +2255,13 @@ Dim oDescricao As Object
                         GoTo TPC_ABORTA_PROCESSAMENTO
                         End If
                         
-                    If (Len(.grupo) > 2) Then
+                    If (Len(.grupo) > 4) Then
                         msg_erro = "Planilha " & oWS.Name & ", linha " & CStr(ilinha) & _
                                   vbCrLf & "Produto " & .produto & " especifica grupo (" & .grupo & ") que excede o tamanho máximo!!"
                         GoTo TPC_ABORTA_PROCESSAMENTO
                         End If
                         
-                    If (Len(.subgrupo) > 6) Then
+                    If (Len(.subgrupo) > 10) Then
                         msg_erro = "Planilha " & oWS.Name & ", linha " & CStr(ilinha) & _
                                   vbCrLf & "Produto " & .produto & " especifica subgrupo (" & .subgrupo & ") que excede o tamanho máximo!!"
                         GoTo TPC_ABORTA_PROCESSAMENTO
