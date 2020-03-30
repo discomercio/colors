@@ -1203,6 +1203,10 @@ function AtualizaClienteContrib(f) {
 			return;
 		}
 		if (!f.rb_produtor_rural[0].checked) {
+			if (!fCAD.rb_contribuinte_icms[1].checked) {
+				alert('Para ser cadastrado como Produtor Rural, é necessário ser contribuinte do ICMS e possuir nº de IE!!');
+				return;
+			}
 			if ((!f.rb_contribuinte_icms[0].checked) && (!f.rb_contribuinte_icms[1].checked) && (!f.rb_contribuinte_icms[2].checked)) {
 				alert('Informe se o cliente é contribuinte do ICMS, não contribuinte ou isento!!');
 				return;

@@ -45,6 +45,7 @@
 	
 	dim intIdx, intCounter
 	dim s, s_aux, usuario, loja, alerta, exibir_botao_novo_item, s_dest
+	dim s_tabela_municipios_IBGE
 	exibir_botao_novo_item = False
 	
 	usuario = Trim(Session("usuario_atual"))
@@ -307,16 +308,15 @@
 			end if
 
 
-	if alerta = "" then
-		if (s_produtor_rural = COD_ST_CLIENTE_PRODUTOR_RURAL_SIM) Then
-			if (s_contribuinte_icms <> COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) Or (s_ie = "") then
-				alerta = "Para ser cadastrado como Produtor Rural, é necessário ser contribuinte do ICMS e possuir nº de IE"
-				end if
-			end if
-		end if
+	    if alerta = "" then
+		    if (s_produtor_rural = COD_ST_CLIENTE_PRODUTOR_RURAL_SIM) Then
+			    if (s_contribuinte_icms <> COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) Or (s_ie = "") then
+				    alerta = "Para ser cadastrado como Produtor Rural, é necessário ser contribuinte do ICMS e possuir nº de IE"
+				    end if
+			    end if
+		    end if
 	
 	'	CONSISTÊNCIAS P/ EMISSÃO DE NFe
-		dim s_tabela_municipios_IBGE
 		s_tabela_municipios_IBGE = ""
 		if alerta = "" then
 		'	I.E. É VÁLIDA?
@@ -505,20 +505,42 @@
 					end if
 				end if
 			end if
-		end if 'operacao_selecionada
+		end if 'operacao_selecionada = OP_INCLUI
+
+	if operacao_selecionada = OP_CONSULTA then
+
+	    if alerta = "" then
+		    if (s_produtor_rural = COD_ST_CLIENTE_PRODUTOR_RURAL_SIM) Then
+			    if (s_contribuinte_icms <> COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) Or (s_ie = "") then
+				    alerta = "Para ser cadastrado como Produtor Rural, é necessário ser contribuinte do ICMS e possuir nº de IE"
+				    end if
+			    end if
+		    end if
+	
+	'	CONSISTÊNCIAS P/ EMISSÃO DE NFe
+		if alerta = "" then
+		'	I.E. É VÁLIDA?
+			if s_ie <> "" then
+				if Not isInscricaoEstadualValida(s_ie, s_uf) then
+					alerta="Preencha a IE (Inscrição Estadual) com um número válido!!" & _
+							"<br>" & "Certifique-se de que a UF informada corresponde à UF responsável pelo registro da IE."
+					end if
+				end if
+			end if
+		end if 'operacao_selecionada = OP_CONSULTA
 
 	dim s_cnpj_cpf
 	dim r_cliente
     dim blnVerificarTel
-	if alerta = "" then
-		if operacao_selecionada = OP_INCLUI then
-			s_cnpj_cpf = cnpj_cpf_selecionado
-		else
-			set r_cliente = New cl_CLIENTE
-			call x_cliente_bd(cliente_selecionado, r_cliente)
-			s_cnpj_cpf = r_cliente.cnpj_cpf
-			end if
+	if operacao_selecionada = OP_INCLUI then
+		s_cnpj_cpf = cnpj_cpf_selecionado
+	else
+		set r_cliente = New cl_CLIENTE
+		call x_cliente_bd(cliente_selecionado, r_cliente)
+		s_cnpj_cpf = r_cliente.cnpj_cpf
+		end if
 		
+	if alerta = "" then
 		if s_email <> "" then
 		'	CONSISTÊNCIA DESATIVADA TEMPORARIAMENTE
 '			if Not email_AF_ok(s_email, s_cnpj_cpf, msg_erro_aux) then
