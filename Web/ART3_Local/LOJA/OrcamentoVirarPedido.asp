@@ -680,7 +680,7 @@
 			if Not isInscricaoEstadualValida(r_cliente.ie, r_cliente.uf) then
 				if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
 				alerta=alerta & "Corrija a IE (Inscrição Estadual) com um número válido!!" & _
-						"<br>" & "Certifique-se de que a UF informada corresponde à UF responsável pelo registro da IE."
+						"<br>" & "Certifique-se de que a UF informada corresponde à UF responsável pelo registro da IE no cadastro do cliente."
 				end if
 			end if
 

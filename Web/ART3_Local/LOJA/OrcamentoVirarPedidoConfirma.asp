@@ -1446,7 +1446,7 @@
 				rs("endereco_numero") = Trim("" & t_CLIENTE("endereco_numero"))
 				rs("endereco_complemento") = Trim("" & t_CLIENTE("endereco_complemento"))
 
-				if blnUsarMemorizacaoCompletaEnderecos then
+				if blnUsarMemorizacaoCompletaEnderecos and r_orcamento.st_memorizacao_completa_enderecos = 1 then
                     'Definido em 20/03/2020: o orcamento que foi criado sem memorização continua sua vida sem memorização
 					rs("st_memorizacao_completa_enderecos") = r_orcamento.st_memorizacao_completa_enderecos
 					rs("endereco_email") = Trim("" & t_CLIENTE("email"))
@@ -1468,6 +1468,9 @@
 					rs("endereco_produtor_rural_status") = t_CLIENTE("produtor_rural_status")
 					rs("endereco_ie") = Trim("" & t_CLIENTE("ie"))
 					rs("endereco_rg") = Trim("" & t_CLIENTE("rg"))
+					rs("endereco_contato") = Trim("" & t_CLIENTE("contato"))
+                else
+					rs("st_memorizacao_completa_enderecos") = 0
 					end if
 
 				rs("plataforma_origem_pedido") = COD_PLATAFORMA_ORIGEM_PEDIDO__ERP
