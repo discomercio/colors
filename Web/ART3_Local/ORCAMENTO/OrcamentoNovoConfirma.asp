@@ -401,6 +401,7 @@
 					.descricao_html = Trim("" & rs("descricao_html"))
 					.ean = Trim("" & rs("ean"))
 					.grupo = Trim("" & rs("grupo"))
+                    .subgrupo = Trim("" & rs("subgrupo"))
 					.peso = rs("peso")
 					.qtde_volumes = rs("qtde_volumes")
 					.markup_fabricante = rs("markup")
@@ -863,6 +864,7 @@
 				rs("obs")=.obs
 				rs("ean")=.ean
 				rs("grupo")=.grupo
+                rs("subgrupo")=.subgrupo
 				rs("peso")=.peso
 				rs("qtde_volumes")=.qtde_volumes
 				rs("abaixo_min_status")=.abaixo_min_status
