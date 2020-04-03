@@ -2088,6 +2088,7 @@
 		dim descricao_html
 		dim ean
 		dim grupo
+        dim subgrupo
 		dim peso
 		dim qtde_volumes
 		dim abaixo_min_status
@@ -2122,6 +2123,7 @@
 		dim descricao_html
 		dim ean
 		dim grupo
+        dim subgrupo
 		dim peso
 		dim qtde_volumes
 		dim abaixo_min_status
@@ -2401,6 +2403,7 @@
 		dim descricao_html
 		dim ean
 		dim grupo
+        dim subgrupo
 		dim peso
 		dim qtde_volumes
 		dim abaixo_min_status
@@ -2577,6 +2580,7 @@
 		dim obs
 		dim ean
 		dim grupo
+        dim subgrupo
 		dim peso
 		dim qtde_volumes
 		dim abaixo_min_status
@@ -2613,6 +2617,7 @@
 		dim obs
 		dim ean
 		dim grupo
+        dim subgrupo
 		dim peso
 		dim qtde_volumes
 		dim abaixo_min_status
