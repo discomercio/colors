@@ -2153,7 +2153,7 @@ dim rs, rsi
 					.descricao_html			= Trim("" & rsi("descricao_html"))
 					.ean					= Trim("" & rsi("ean"))
 					.grupo					= Trim("" & rsi("grupo"))
-                    .subgrupo				= Trim("" & rs("subgrupo"))
+                    .subgrupo				= Trim("" & rsi("subgrupo"))
 					.peso					= rsi("peso")
 					.qtde_volumes			= rsi("qtde_volumes")
 					.abaixo_min_status		= rsi("abaixo_min_status")
