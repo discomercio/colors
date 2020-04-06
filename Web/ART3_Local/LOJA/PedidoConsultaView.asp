@@ -828,7 +828,9 @@ function exibeOcultaEnderecoOriginal() {
 		end if %>
 <table width="649" class="QS" cellspacing="0">
 	<tr>
-<%	with r_cliente
+<%	
+    'aqui usamos o endereço do cliente; se for diferente de quando o pedido foi criado, o endereço do pedido será mostrado abaixo
+    with r_cliente
 		s = formata_endereco(.endereco, .endereco_numero, .endereco_complemento, .bairro, .cidade, .uf, .cep)
 		end with
 %>		

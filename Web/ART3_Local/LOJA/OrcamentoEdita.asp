@@ -137,11 +137,67 @@
 
     'procesamos acessar o cliente só para saber se é PF ou PJ
 	set r_cliente = New cl_CLIENTE
-	call x_cliente_bd(r_orcamento.id_cliente, r_cliente)
+	dim xcliente_bd_resultado
+	xcliente_bd_resultado = x_cliente_bd(r_orcamento.id_cliente, r_cliente)
 
 	dim eh_cpf
 	if len(r_cliente.cnpj_cpf)=11 then eh_cpf=True else eh_cpf=False
 
+    'le as variáveis da origem certa: ou do pedido ou do cliente, todas comecam com cliente__
+    dim cliente__tipo, cliente__cnpj_cpf, cliente__rg, cliente__ie, cliente__nome
+    dim cliente__endereco, cliente__endereco_numero, cliente__endereco_complemento, cliente__bairro, cliente__cidade, cliente__uf, cliente__cep
+    dim cliente__tel_res, cliente__ddd_res, cliente__tel_com, cliente__ddd_com, cliente__ramal_com, cliente__tel_cel, cliente__ddd_cel
+    dim cliente__tel_com_2, cliente__ddd_com_2, cliente__ramal_com_2, cliente__email
+
+    cliente__tipo = r_cliente.tipo
+    cliente__cnpj_cpf = r_cliente.cnpj_cpf
+	cliente__rg = r_cliente.rg
+    cliente__ie = r_cliente.ie
+    cliente__nome = r_cliente.nome
+    cliente__endereco = r_cliente.endereco
+    cliente__endereco_numero = r_cliente.endereco_numero
+    cliente__endereco_complemento = r_cliente.endereco_complemento
+    cliente__bairro = r_cliente.bairro
+    cliente__cidade = r_cliente.cidade
+    cliente__uf = r_cliente.uf
+    cliente__cep = r_cliente.cep
+    cliente__tel_res = r_cliente.tel_res
+    cliente__ddd_res = r_cliente.ddd_res
+    cliente__tel_com = r_cliente.tel_com
+    cliente__ddd_com = r_cliente.ddd_com
+    cliente__ramal_com = r_cliente.ramal_com
+    cliente__tel_cel = r_cliente.tel_cel
+    cliente__ddd_cel = r_cliente.ddd_cel
+    cliente__tel_com_2 = r_cliente.tel_com_2
+    cliente__ddd_com_2 = r_cliente.ddd_com_2
+    cliente__ramal_com_2 = r_cliente.ramal_com_2
+    cliente__email = r_cliente.email
+
+    if blnUsarMemorizacaoCompletaEnderecos and r_orcamento.st_memorizacao_completa_enderecos <> 0 then 
+        cliente__tipo = r_orcamento.endereco_tipo_pessoa
+        cliente__cnpj_cpf = r_orcamento.endereco_cnpj_cpf
+	    cliente__rg = r_orcamento.endereco_rg
+        cliente__ie = r_orcamento.endereco_ie
+        cliente__nome = r_orcamento.endereco_nome
+        cliente__endereco = r_orcamento.endereco_logradouro
+        cliente__endereco_numero = r_orcamento.endereco_numero
+        cliente__endereco_complemento = r_orcamento.endereco_complemento
+        cliente__bairro = r_orcamento.endereco_bairro
+        cliente__cidade = r_orcamento.endereco_cidade
+        cliente__uf = r_orcamento.endereco_uf
+        cliente__cep = r_orcamento.endereco_cep
+        cliente__tel_res = r_orcamento.endereco_tel_res
+        cliente__ddd_res = r_orcamento.endereco_ddd_res
+        cliente__tel_com = r_orcamento.endereco_tel_com
+        cliente__ddd_com = r_orcamento.endereco_ddd_com
+        cliente__ramal_com = r_orcamento.endereco_ramal_com
+        cliente__tel_cel = r_orcamento.endereco_tel_cel
+        cliente__ddd_cel = r_orcamento.endereco_ddd_cel
+        cliente__tel_com_2 = r_orcamento.endereco_tel_com_2
+        cliente__ddd_com_2 = r_orcamento.endereco_ddd_com_2
+        cliente__ramal_com_2 = r_orcamento.endereco_ramal_com_2
+        cliente__email = r_orcamento.endereco_email
+        end if
 
 %>
 
@@ -1645,12 +1701,11 @@ var blnConfirmaDifRAeValores=false;
 <table width="649" class="Q" cellspacing="0">
 	<tr>
 <%	s = ""
-	set r_cliente = New cl_CLIENTE
-	if x_cliente_bd(r_orcamento.id_cliente, r_cliente) then
+	if xcliente_bd_resultado then
 	%>
 	
-	<%	if r_cliente.tipo = ID_PF then s_aux="CPF" else s_aux="CNPJ"
-	s = cnpj_cpf_formata(r_cliente.cnpj_cpf) 
+	<%	if cliente__tipo = ID_PF then s_aux="CPF" else s_aux="CNPJ"
+	s = cnpj_cpf_formata(cliente__cnpj_cpf) 
 %>
 		<td width="50%" class="MD" align="left"><p class="Rf"><%=s_aux%></p>
 		
@@ -1658,10 +1713,8 @@ var blnConfirmaDifRAeValores=false;
 		
 		</td>
 		<%
-		with r_cliente
-		if .tipo = ID_PF then s = Trim(.rg) else s = Trim(.ie)
-	end with
-			if r_cliente.tipo = ID_PF then 
+		if cliente__tipo = ID_PF then s = Trim(cliente__rg) else s = Trim(cliente__ie)
+			if cliente__tipo = ID_PF then 
 %>
 	<td align="left"><p class="Rf">RG</p><p class="C"><%=s%>&nbsp;</p></td>
 <% else %>
@@ -1670,14 +1723,12 @@ var blnConfirmaDifRAeValores=false;
 		</tr>
 		<tr>
 	<%
-		with r_cliente
-			if Trim(.nome) <> "" then
-				s = Trim(.nome)
-				end if
-			end with
+		if Trim(cliente__nome) <> "" then
+			s = Trim(cliente__nome)
+			end if
 		end if
 	
-	if r_cliente.tipo = ID_PF then s_aux="NOME DO CLIENTE" else s_aux="RAZÃO SOCIAL DO CLIENTE"
+	if cliente__tipo = ID_PF then s_aux="NOME DO CLIENTE" else s_aux="RAZÃO SOCIAL DO CLIENTE"
 %>
 	<td class="MC" align="left" colspan="2"><p class="Rf"><%=s_aux%></p>
 	
@@ -1693,44 +1744,36 @@ var blnConfirmaDifRAeValores=false;
 <table width="649" class="QS" cellspacing="0">
 	<tr>
 <%	s = ""
-	with r_cliente
-		if Trim(.tel_res) <> "" then
-			s = telefone_formata(Trim(.tel_res))
-			s_aux=Trim(.ddd_res)
-			if s_aux<>"" then s = "(" & s_aux & ") " & s
-			end if
-		end with
+	if Trim(cliente__tel_res) <> "" then
+		s = telefone_formata(Trim(cliente__tel_res))
+		s_aux=Trim(cliente__ddd_res)
+		if s_aux<>"" then s = "(" & s_aux & ") " & s
+		end if
 	
 	s2 = ""
-	with r_cliente
-		if Trim(.tel_com) <> "" then
-			s2 = telefone_formata(Trim(.tel_com))
-			s_aux = Trim(.ddd_com)
-			if s_aux<>"" then s2 = "(" & s_aux & ") " & s2
-			s_aux = Trim(.ramal_com)
-			if s_aux<>"" then s2 = s2 & "  (R. " & s_aux & ")"
-			end if
-		end with
-	with r_cliente
-		if Trim(.tel_cel) <> "" then
-			s3 = telefone_formata(Trim(.tel_cel))
-			s_aux = Trim(.ddd_cel)
-			if s_aux<>"" then s3 = "(" & s_aux & ") " & s3
-			end if
-		end with
-	with r_cliente
-		if Trim(.tel_com_2) <> "" then
-			s4 = telefone_formata(Trim(.tel_com_2))
-			s_aux = Trim(.ddd_com_2)
-			if s_aux<>"" then s4 = "(" & s_aux & ") " & s4
-			s_aux = Trim(.ramal_com_2)
-			if s_aux<>"" then s4 = s4 & "  (R. " & s_aux & ")"
-			end if
-		end with
+	if Trim(cliente__tel_com) <> "" then
+		s2 = telefone_formata(Trim(cliente__tel_com))
+		s_aux = Trim(cliente__ddd_com)
+		if s_aux<>"" then s2 = "(" & s_aux & ") " & s2
+		s_aux = Trim(cliente__ramal_com)
+		if s_aux<>"" then s2 = s2 & "  (R. " & s_aux & ")"
+		end if
+	if Trim(cliente__tel_cel) <> "" then
+		s3 = telefone_formata(Trim(cliente__tel_cel))
+		s_aux = Trim(cliente__ddd_cel)
+		if s_aux<>"" then s3 = "(" & s_aux & ") " & s3
+		end if
+	if Trim(cliente__tel_com_2) <> "" then
+		s4 = telefone_formata(Trim(cliente__tel_com_2))
+		s_aux = Trim(cliente__ddd_com_2)
+		if s_aux<>"" then s4 = "(" & s_aux & ") " & s4
+		s_aux = Trim(cliente__ramal_com_2)
+		if s_aux<>"" then s4 = s4 & "  (R. " & s_aux & ")"
+		end if
 	
 %>
 
-<% if r_cliente.tipo = ID_PF then %>
+<% if cliente__tipo = ID_PF then %>
 	<td class="MD" width="33%" align="left"><p class="Rf">TELEFONE RESIDENCIAL</p><p class="C"><%=s%>&nbsp;</p></td>
 	<td class="MD" width="33%" align="left"><p class="Rf">TELEFONE COMERCIAL</p><p class="C"><%=s2%>&nbsp;</p></td>
 		<td align="left"><p class="Rf">CELULAR</p><p class="C"><%=s3%>&nbsp;</p></td>
@@ -1747,7 +1790,7 @@ var blnConfirmaDifRAeValores=false;
 <!--  E-MAIL DO CLIENTE  -->
 <table width="649" class="QS" cellspacing="0">
 	<tr>
-		<td align="left"><p class="Rf">E-MAIL</p><p class="C"><%=Trim(r_cliente.email)%>&nbsp;</p></td>
+		<td align="left"><p class="Rf">E-MAIL</p><p class="C"><%=Trim(cliente__email)%>&nbsp;</p></td>
 	</tr>
 </table>
 
