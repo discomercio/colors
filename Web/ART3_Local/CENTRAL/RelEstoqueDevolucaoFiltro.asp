@@ -271,7 +271,25 @@ function fFILTROConfirma( f ) {
 			<% =apelido_empresa_nfe_emitente_monta_itens_select(Null) %>
 			</select>
 			</td></tr>
-			
+
+<!--  UF  -->
+	<tr bgColor="#FFFFFF">
+		<td class="MDBE" NOWRAP><span class="PLTe">UF</span>
+		<br>
+			<select name="c_uf" id="c_uf" style="margin:1px 10px 6px 10px;" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;">
+                <%=UF_monta_itens_select(Null) %>
+			</select>
+			</td></tr>
+
+<!--  TRANSPORTADORA  -->
+	<tr bgColor="#FFFFFF">
+		<td class="MDBE" NOWRAP><span class="PLTe">TRANSPORTADORA</span>
+		<br>
+			<select id="c_transportadora" name="c_transportadora" style="margin:1px 10px 6px 10px;" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;">
+			<% =transportadora_monta_itens_select("") %>
+			</select>
+			</td></tr>
+
 <!-- ************   LOJAS   ************ -->
 	<tr bgColor="#FFFFFF">
 	<td class="MDBE" NOWRAP><span class="PLTe">LOJA(S)</span>

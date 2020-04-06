@@ -734,7 +734,7 @@
 				end if
 			end if
 		
-		rs("perc_desagio_RA_liquida") = PERC_DESAGIO_RA_LIQUIDA
+		rs("perc_desagio_RA_liquida") = getParametroPercDesagioRALiquida
 		rs("permite_RA_status") = r_orcamentista_e_indicador.permite_RA_status
 
 		rs("sistema_responsavel_cadastro") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP

@@ -50,8 +50,11 @@
     
 	alerta = ""
 
-    if Day(Date) > PRAZO_ACESSO_REL_PEDIDOS_INDICADORES_LOJA  then 
-        alerta="NÃO É POSSÍVEL ACESSAR O RELATÓRIO.<br>O relatório fica disponível apenas nos primeiros " & PRAZO_ACESSO_REL_PEDIDOS_INDICADORES_LOJA & " dias de cada mês."
+	dim nPrazoAcessoRelPedidosIndicadoresLoja
+	nPrazoAcessoRelPedidosIndicadoresLoja = getParametroPrazoAcessoRelPedidosIndicadoresLoja
+
+    if Day(Date) > nPrazoAcessoRelPedidosIndicadoresLoja then 
+        alerta="NÃO É POSSÍVEL ACESSAR O RELATÓRIO.<br>O relatório fica disponível apenas nos primeiros " & nPrazoAcessoRelPedidosIndicadoresLoja & " dias de cada mês."
     end if
 
 	c_dt_entregue_mes = Month(Date)
