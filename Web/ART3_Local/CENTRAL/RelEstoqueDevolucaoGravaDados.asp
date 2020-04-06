@@ -90,6 +90,7 @@
 	dim c_fabricante, c_produto, c_pedido
 	dim c_vendedor, c_indicador, c_captador
 	dim c_lista_loja
+	dim c_empresa, c_uf, c_transportadora
 	c_fabricante = retorna_so_digitos(Trim(Request.Form("c_fabricante")))
 	c_produto = Ucase(Trim(Request.Form("c_produto")))
 	c_pedido = Ucase(Trim(Request.Form("c_pedido")))
@@ -97,7 +98,9 @@
 	c_indicador = Ucase(Trim(Request.Form("c_indicador")))
 	c_captador = Ucase(Trim(Request.Form("c_captador")))
 	c_lista_loja = Trim(Request.Form("c_lista_loja"))
-
+	c_uf = Trim(Request.Form("c_uf"))
+	c_transportadora = Trim(Request.Form("c_transportadora"))
+	c_empresa = Trim(Request.Form("c_empresa"))
 	
 	dim intNsuNovoRegistro
 	dim campos_a_omitir
@@ -178,6 +181,9 @@
 						"&c_vendedor=" & c_vendedor & _
 						"&c_indicador=" & c_indicador & _
 						"&c_captador=" & c_captador & _
+						"&c_empresa=" & c_empresa & _
+						"&c_uf=" & c_uf & _
+						"&c_transportadora=" & c_transportadora & _
 						"&c_lista_loja=" & c_lista_loja & _
 						"&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))
 				Response.Redirect(s_url)

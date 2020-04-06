@@ -84,9 +84,9 @@
 
 '	CAMPOS DE SAÍDA SELECIONADOS
 	dim ckb_COL_DATA, ckb_COL_NF, ckb_COL_DT_EMISSAO_NF, ckb_COL_PEDIDO, ckb_COL_VENDEDOR, ckb_COL_INDICADOR
-	dim ckb_COL_CPF_CNPJ_CLIENTE, ckb_COL_NOME_CLIENTE, ckb_COL_RT
-	dim ckb_COL_PRODUTO, ckb_COL_DESCRICAO_PRODUTO, ckb_COL_VL_UNITARIO, ckb_COL_VL_TOTAL, ckb_COL_QTDE
-	dim ckb_COL_VL_CUSTO, ckb_COL_VL_LISTA, ckb_COL_GRUPO, ckb_COL_POTENCIA_BTU
+	dim ckb_COL_CPF_CNPJ_CLIENTE, ckb_COL_CONTRIBUINTE_ICMS, ckb_COL_NOME_CLIENTE, ckb_COL_RT, ckb_COL_ICMS_UF_DEST
+	dim ckb_COL_PRODUTO, ckb_COL_NAC_IMP, ckb_COL_DESCRICAO_PRODUTO, ckb_COL_VL_NF, ckb_COL_VL_UNITARIO, ckb_COL_VL_TOTAL, ckb_COL_QTDE
+	dim ckb_COL_VL_CUSTO_ULT_ENTRADA, ckb_COL_VL_CUSTO_REAL, ckb_COL_VL_LISTA, ckb_COL_GRUPO, ckb_COL_POTENCIA_BTU
 	dim ckb_COL_CICLO, ckb_COL_POSICAO_MERCADO, ckb_COL_MARCA, ckb_COL_TRANSPORTADORA
 	dim ckb_COL_CIDADE, ckb_COL_UF, ckb_COL_QTDE_PARCELAS, ckb_COL_MEIO_PAGAMENTO, ckb_COL_TEL, ckb_COL_EMAIL
     dim ckb_COL_PERC_DESC, ckb_COL_CUBAGEM, ckb_COL_PESO, ckb_COL_FRETE
@@ -99,14 +99,19 @@
 	ckb_COL_VENDEDOR = Trim(Request.Form("ckb_COL_VENDEDOR"))
 	ckb_COL_INDICADOR = Trim(Request.Form("ckb_COL_INDICADOR"))
 	ckb_COL_CPF_CNPJ_CLIENTE = Trim(Request.Form("ckb_COL_CPF_CNPJ_CLIENTE"))
+	ckb_COL_CONTRIBUINTE_ICMS = Trim(Request.Form("ckb_COL_CONTRIBUINTE_ICMS"))
 	ckb_COL_NOME_CLIENTE = Trim(Request.Form("ckb_COL_NOME_CLIENTE"))
 	ckb_COL_RT = Trim(Request.Form("ckb_COL_RT"))
+	ckb_COL_ICMS_UF_DEST = Trim(Request.Form("ckb_COL_ICMS_UF_DEST"))
 	ckb_COL_PRODUTO = Trim(Request.Form("ckb_COL_PRODUTO"))
+	ckb_COL_NAC_IMP = Trim(Request.Form("ckb_COL_NAC_IMP"))
 	ckb_COL_DESCRICAO_PRODUTO = Trim(Request.Form("ckb_COL_DESCRICAO_PRODUTO"))
+	ckb_COL_VL_NF = Trim(Request.Form("ckb_COL_VL_NF"))
 	ckb_COL_VL_UNITARIO = Trim(Request.Form("ckb_COL_VL_UNITARIO"))
 	ckb_COL_VL_TOTAL = Trim(Request.Form("ckb_COL_VL_TOTAL"))
 	ckb_COL_QTDE = Trim(Request.Form("ckb_COL_QTDE"))
-	ckb_COL_VL_CUSTO = Trim(Request.Form("ckb_COL_VL_CUSTO"))
+	ckb_COL_VL_CUSTO_ULT_ENTRADA = Trim(Request.Form("ckb_COL_VL_CUSTO_ULT_ENTRADA"))
+	ckb_COL_VL_CUSTO_REAL = Trim(Request.Form("ckb_COL_VL_CUSTO_REAL"))
 	ckb_COL_VL_LISTA = Trim(Request.Form("ckb_COL_VL_LISTA"))
 	ckb_COL_GRUPO = Trim(Request.Form("ckb_COL_GRUPO"))
 	ckb_COL_POTENCIA_BTU = Trim(Request.Form("ckb_COL_POTENCIA_BTU"))
@@ -138,6 +143,7 @@
 		if ckb_COL_DT_EMISSAO_NF <> "" then s_campos_saida = s_campos_saida & "ckb_COL_DT_EMISSAO_NF" & "|"
 		if ckb_COL_PEDIDO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_PEDIDO" & "|"
 		if ckb_COL_CPF_CNPJ_CLIENTE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_CPF_CNPJ_CLIENTE" & "|"
+		if ckb_COL_CONTRIBUINTE_ICMS <> "" then s_campos_saida = s_campos_saida & "ckb_COL_CONTRIBUINTE_ICMS" & "|"
 		if ckb_COL_NOME_CLIENTE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_NOME_CLIENTE" & "|"
 		if ckb_COL_CIDADE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_CIDADE" & "|"
 		if ckb_COL_UF <> "" then s_campos_saida = s_campos_saida & "ckb_COL_UF" & "|"
@@ -157,22 +163,23 @@
 		if ckb_COL_CICLO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_CICLO" & "|"
 		if ckb_COL_POSICAO_MERCADO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_POSICAO_MERCADO" & "|"
 		if ckb_COL_PRODUTO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_PRODUTO" & "|"
+		if ckb_COL_NAC_IMP <> "" then s_campos_saida = s_campos_saida & "ckb_COL_NAC_IMP" & "|"
 		if ckb_COL_DESCRICAO_PRODUTO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_DESCRICAO_PRODUTO" & "|"
 		if ckb_COL_QTDE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_QTDE" & "|"
         if ckb_COL_PERC_DESC <> "" then s_campos_saida = s_campos_saida & "ckb_COL_PERC_DESC" & "|"
         if ckb_COL_CUBAGEM <> "" then s_campos_saida = s_campos_saida & "ckb_COL_CUBAGEM" & "|"
         if ckb_COL_PESO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_PESO" & "|"
         if ckb_COL_FRETE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_FRETE" & "|"
-		if ckb_COL_VL_CUSTO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_CUSTO" & "|"
+		if ckb_COL_VL_CUSTO_ULT_ENTRADA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_CUSTO_ULT_ENTRADA" & "|"
+		if ckb_COL_VL_CUSTO_REAL <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_CUSTO_REAL" & "|"
 		if ckb_COL_VL_LISTA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_LISTA" & "|"
+		if ckb_COL_VL_NF <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_NF" & "|"
 		if ckb_COL_VL_UNITARIO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_UNITARIO" & "|"
 		if ckb_COL_VL_TOTAL <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_TOTAL" & "|"
-		if ckb_COL_RT <> "" then s_campos_saida = s_campos_saida & "ckb_COL_RT" & "|"	
+		if ckb_COL_RT <> "" then s_campos_saida = s_campos_saida & "ckb_COL_RT" & "|"
+		if ckb_COL_ICMS_UF_DEST <> "" then s_campos_saida = s_campos_saida & "ckb_COL_ICMS_UF_DEST" & "|"
 		if ckb_COL_QTDE_PARCELAS <> "" then s_campos_saida = s_campos_saida & "ckb_COL_QTDE_PARCELAS" & "|"
 		if ckb_COL_MEIO_PAGAMENTO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_MEIO_PAGAMENTO" & "|"
-		
-		
-		
 		
 		if s_campos_saida = "|" then s_campos_saida = "NENHUM"
 		call set_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|campos_saida_selecionados", s_campos_saida)
@@ -204,16 +211,55 @@
 '									F  U  N  Ç  Õ  E  S 
 ' _____________________________________________________________________________________________
 
+' ------------------------------------------------------------------------
+'   descricao_icms_contribuinte_x_produtor_rural
+'
+function descricao_icms_contribuinte_x_produtor_rural(byval tipo_pessoa, byval contribuinte_icms_status, byval produtor_rural_status)
+dim strResp
+
+    tipo_pessoa = Trim(tipo_pessoa)
+    contribuinte_icms_status = Trim(contribuinte_icms_status)
+    produtor_rural_status = Trim(produtor_rural_status)
+
+    if tipo_pessoa = ID_PJ then
+        select case contribuinte_icms_status
+            case COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO
+                strResp = "Não Contribuinte"
+            case COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM
+                strResp = "Contribuinte"
+            case COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO
+                strResp = "Isento"
+            case else
+                strResp = ""
+        end select
+    elseif tipo_pessoa = ID_PF then
+        select case produtor_rural_status
+            case COD_ST_CLIENTE_PRODUTOR_RURAL_NAO
+                strResp = ""
+            case COD_ST_CLIENTE_PRODUTOR_RURAL_SIM
+                strResp = "Produtor Rural"
+            case else
+                strResp = ""
+        end select
+    end if
+
+    descricao_icms_contribuinte_x_produtor_rural = strResp
+end function
+
+
+
 ' _____________________________________
 ' CONSULTA EXECUTA
 '
 sub consulta_executa
 const SEPARADOR_DECIMAL = ","
-dim s, s_sql, x, x_cab, s_where, s_where_venda, s_where_devolucao, s_where_loja
+dim s, s_sql, s_cst, x, x_cab, s_where, s_where_venda, s_where_devolucao, s_where_loja
 dim perc_RT, vl_RT, vl_preco_venda, n_reg, n_reg_total
 dim r
 dim tipo_parc
 dim s_qtde, item_peso, item_cubagem, item_qtde
+dim s_vICMSUFDest, vl_vICMSUFDest, s_vICMSUFDest_unitario, vl_vICMSUFDest_unitario, s_det__qCom, n_det__qCom
+dim v
 
 '	CRITÉRIOS COMUNS
 '	================
@@ -309,24 +355,43 @@ dim s_qtde, item_peso, item_cubagem, item_qtde
 '	==============
 '	VENDAS NORMAIS
 	s_sql = "SELECT" & _
+				" 'VENDA_NORMAL' AS operacao," & _
 				" t_PEDIDO.data_hora," & _
 				" t_PEDIDO.entregue_data AS faturamento_data," & _
-				" (SELECT TOP 1 dt_emissao FROM t_NFe_EMISSAO WHERE (t_NFe_EMISSAO.pedido = t_PEDIDO.pedido) AND (t_NFe_EMISSAO.tipo_NF = '1') AND (t_NFe_EMISSAO.st_anulado = 0) AND (t_NFe_EMISSAO.codigo_retorno_NFe_T1 = 1) ORDER BY id) AS dt_emissao," & _
-				" (SELECT TOP 1 NFe_numero_NF FROM t_NFe_EMISSAO WHERE (t_NFe_EMISSAO.pedido = t_PEDIDO.pedido) AND (t_NFe_EMISSAO.tipo_NF = '1') AND (t_NFe_EMISSAO.st_anulado = 0) AND (t_NFe_EMISSAO.codigo_retorno_NFe_T1 = 1) ORDER BY id) AS numero_NF," & _
-				" t_PEDIDO.pedido," & _
+				" (SELECT TOP 1 Convert(datetime, ide__dEmi, 121) FROM t_NFe_IMAGEM WHERE (t_NFe_IMAGEM.NFe_numero_NF = t_PEDIDO.num_obs_2) AND (t_NFe_IMAGEM.id_nfe_emitente = t_PEDIDO.id_nfe_emitente) AND (t_NFe_IMAGEM.ide__tpNF = '1') AND (t_NFe_IMAGEM.st_anulado = 0) AND (t_NFe_IMAGEM.codigo_retorno_NFe_T1 = 1) ORDER BY id DESC) AS dt_emissao," & _
+				" t_PEDIDO.num_obs_2 AS numero_NF," & _
 				" t_PEDIDO.obs_2," & _
+				" t_PEDIDO.pedido," & _
 				" t_PEDIDO.transportadora_id," & _
 				" t_PEDIDO__BASE.vendedor," & _
 				" t_PEDIDO__BASE.indicador," & _
 				" t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente," & _
+                " t_CLIENTE.tipo AS tipo_cliente," & _
 				" t_CLIENTE.cnpj_cpf," & _
-				" t_PEDIDO__BASE.perc_RT," & _
-				" t_PEDIDO_ITEM.qtde," & _
+				" t_CLIENTE.contribuinte_icms_status," & _
+				" t_CLIENTE.produtor_rural_status," & _
+				" t_PEDIDO__BASE.perc_RT,"
+
+	if ckb_COL_VL_CUSTO_REAL <> "" then
+		s_sql = s_sql & _
+				" t_ESTOQUE_MOVIMENTO.qtde,"
+	else
+		s_sql = s_sql & _
+				" t_PEDIDO_ITEM.qtde,"
+		end if
+
+	if ckb_COL_NAC_IMP <> "" then
+		s_sql = s_sql & _
+				" t_ESTOQUE_ITEM.cst,"
+		end if
+
+	s_sql = s_sql & _
 				" t_PEDIDO_ITEM.fabricante," & _
 				" t_PEDIDO_ITEM.produto," & _
 				" t_PEDIDO_ITEM.descricao," & _
 				" t_PEDIDO_ITEM.preco_venda," & _
 				" t_PEDIDO_ITEM.preco_lista," & _
+				" t_PEDIDO_ITEM.preco_NF," & _
                 " t_PEDIDO_ITEM.desc_dado," & _
                 " t_PEDIDO_ITEM.cubagem," & _
                 " t_PEDIDO_ITEM.peso," & _
@@ -337,7 +402,6 @@ dim s_qtde, item_peso, item_cubagem, item_qtde
 				" t_FABRICANTE.nome AS nome_fabricante," & _
 				" t_CLIENTE.cidade AS cidade," & _
 				" t_CLIENTE.uf AS uf," & _
-                " t_CLIENTE.tipo AS tipo_cliente," & _
                 " t_CLIENTE.ddd_res," & _
                 " t_CLIENTE.tel_res," & _
                 " t_CLIENTE.ddd_cel," & _
@@ -367,17 +431,44 @@ dim s_qtde, item_peso, item_cubagem, item_qtde
 				" t_PEDIDO__BASE.pse_forma_pagto_demais_prest AS parcelamento_s_entrada," & _
 				" t_PEDIDO__BASE.pu_forma_pagto AS parcela_unica," & _
                 " (SELECT SUM(vl_frete) AS vl_frete FROM t_PEDIDO_FRETE WHERE (pedido=t_PEDIDO.pedido)) AS vl_frete," & _
-				" (SELECT TOP 1 vl_custo2 FROM t_ESTOQUE_ITEM tEI WHERE (tEI.fabricante = t_PEDIDO_ITEM.fabricante) AND (tEI.produto = t_PEDIDO_ITEM.produto) ORDER BY id_estoque DESC) AS vl_custo2" & _
+				" (SELECT TOP 1 vl_custo2 FROM t_ESTOQUE tE INNER JOIN t_ESTOQUE_ITEM tEI ON (tE.id_estoque = tEI.id_estoque) WHERE (tE.devolucao_status = 0) AND (tEI.fabricante = t_PEDIDO_ITEM.fabricante) AND (tEI.produto = t_PEDIDO_ITEM.produto) ORDER BY tEI.id_estoque DESC) AS vl_custo2_ult_entrada"
+
+	if ckb_COL_VL_CUSTO_REAL <> "" then
+		s_sql = s_sql & _
+				", (t_ESTOQUE_ITEM.vl_custo2) AS vl_custo2_real"
+		end if
+
+	if ckb_COL_ICMS_UF_DEST <> "" then
+		s_sql = s_sql & _
+				", (SELECT TOP 1 ICMSUFDest__vICMSUFDest FROM t_NFe_IMAGEM tNFe INNER JOIN t_NFe_IMAGEM_ITEM tNFeItem ON (tNFe.id = tNFeItem.id_nfe_imagem) WHERE (tNFe.st_anulado = 0) AND (tNFe.codigo_retorno_NFe_T1 = 1) AND (tNFe.id_nfe_emitente = t_PEDIDO.id_nfe_emitente) AND (tNFe.NFe_numero_NF = t_PEDIDO.num_obs_2) AND (tNFeItem.fabricante = t_PEDIDO_ITEM.fabricante) AND (tNFeItem.produto = t_PEDIDO_ITEM.produto) ORDER BY tNFe.id DESC, tNFeItem.id DESC) AS vICMSUFDest" & _
+				", (SELECT TOP 1 det__qCom FROM t_NFe_IMAGEM tNFe INNER JOIN t_NFe_IMAGEM_ITEM tNFeItem ON (tNFe.id = tNFeItem.id_nfe_imagem) WHERE (tNFe.st_anulado = 0) AND (tNFe.codigo_retorno_NFe_T1 = 1) AND (tNFe.id_nfe_emitente = t_PEDIDO.id_nfe_emitente) AND (tNFe.NFe_numero_NF = t_PEDIDO.num_obs_2) AND (tNFeItem.fabricante = t_PEDIDO_ITEM.fabricante) AND (tNFeItem.produto = t_PEDIDO_ITEM.produto) ORDER BY tNFe.id DESC, tNFeItem.id DESC) AS det__qCom"
+		end if
+
+	s_sql = s_sql & _
 			" FROM t_PEDIDO" & _
 				" INNER JOIN t_PEDIDO AS t_PEDIDO__BASE ON (t_PEDIDO.pedido_base = t_PEDIDO__BASE.pedido)" & _
                 " LEFT JOIN t_ORCAMENTISTA_E_INDICADOR ON (t_PEDIDO__BASE.indicador = t_ORCAMENTISTA_E_INDICADOR.apelido)" & _
 				" INNER JOIN t_PEDIDO_ITEM ON (t_PEDIDO.pedido = t_PEDIDO_ITEM.pedido)" & _
 				" INNER JOIN t_PRODUTO ON (t_PRODUTO.fabricante = t_PEDIDO_ITEM.fabricante) AND (t_PRODUTO.produto = t_PEDIDO_ITEM.produto)" & _
 				" INNER JOIN t_FABRICANTE ON (t_PRODUTO.fabricante = t_FABRICANTE.fabricante)" & _
-				" INNER JOIN t_CLIENTE ON (t_PEDIDO.id_cliente = t_CLIENTE.id)" & _
+				" INNER JOIN t_CLIENTE ON (t_PEDIDO.id_cliente = t_CLIENTE.id)"
+
+	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_NAC_IMP <> "") then
+		s_sql = s_sql & _
+				" INNER JOIN t_ESTOQUE_MOVIMENTO ON ((t_ESTOQUE_MOVIMENTO.pedido=t_PEDIDO_ITEM.pedido)AND(t_ESTOQUE_MOVIMENTO.fabricante=t_PEDIDO_ITEM.fabricante)AND(t_ESTOQUE_MOVIMENTO.produto=t_PEDIDO_ITEM.produto))" & _
+				" INNER JOIN t_ESTOQUE_ITEM ON ((t_ESTOQUE_MOVIMENTO.id_estoque=t_ESTOQUE_ITEM.id_estoque)AND(t_ESTOQUE_MOVIMENTO.fabricante=t_ESTOQUE_ITEM.fabricante)AND(t_ESTOQUE_MOVIMENTO.produto=t_ESTOQUE_ITEM.produto))"
+		end if
+
+	s_sql = s_sql & _
 			" WHERE" & _
 				" (t_PEDIDO.st_entrega = '" & ST_ENTREGA_ENTREGUE & "')"
-	
+
+	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_NAC_IMP <> "") then
+		s_sql = s_sql & _
+				" AND (t_ESTOQUE_MOVIMENTO.anulado_status=0)" & _
+				" AND (t_ESTOQUE_MOVIMENTO.estoque='" & ID_ESTOQUE_ENTREGUE & "')"
+		end if
+
 	s = s_where
 	if (s <> "") And (s_where_venda <> "") then s = s & " AND"
 	s = s & s_where_venda
@@ -390,24 +481,43 @@ dim s_qtde, item_peso, item_cubagem, item_qtde
 '		 O USO DE 'UNION ALL' RETORNARIA TODAS AS LINHAS, INCLUSIVE AS DUPLICADAS
 	s_sql = s_sql & " UNION ALL " & _
 			"SELECT" & _
+				" 'DEVOLUCAO' AS operacao," & _
 				" t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data AS data_hora," & _
 				" t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data AS faturamento_data," & _
 				" NULL AS dt_emissao," & _
 				" t_PEDIDO_ITEM_DEVOLVIDO.NFe_numero_NF AS numero_NF," & _
-				" t_PEDIDO_ITEM_DEVOLVIDO.pedido," & _
 				" t_PEDIDO.obs_2," & _
+				" t_PEDIDO_ITEM_DEVOLVIDO.pedido," & _
 				" t_PEDIDO.transportadora_id," & _
 				" t_PEDIDO__BASE.vendedor," & _
 				" t_PEDIDO__BASE.indicador," & _
 				" t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente," & _
+                " t_CLIENTE.tipo AS tipo_cliente," & _
 				" t_CLIENTE.cnpj_cpf," & _
-				" t_PEDIDO__BASE.perc_RT," & _
-				" -t_PEDIDO_ITEM_DEVOLVIDO.qtde," & _
+				" t_CLIENTE.contribuinte_icms_status," & _
+				" t_CLIENTE.produtor_rural_status," & _
+				" t_PEDIDO__BASE.perc_RT,"
+
+	if ckb_COL_VL_CUSTO_REAL <> "" then
+		s_sql = s_sql & _
+				" -t_ESTOQUE_ITEM.qtde,"
+	else
+		s_sql = s_sql & _
+				" -t_PEDIDO_ITEM_DEVOLVIDO.qtde,"
+		end if
+
+	if ckb_COL_NAC_IMP <> "" then
+		s_sql = s_sql & _
+				" t_ESTOQUE_ITEM.cst,"
+		end if
+
+	s_sql = s_sql & _
 				" t_PEDIDO_ITEM_DEVOLVIDO.fabricante," & _
 				" t_PEDIDO_ITEM_DEVOLVIDO.produto," & _
 				" t_PEDIDO_ITEM_DEVOLVIDO.descricao," & _
 				" t_PEDIDO_ITEM_DEVOLVIDO.preco_venda," & _
 				" t_PEDIDO_ITEM_DEVOLVIDO.preco_lista," & _
+				" t_PEDIDO_ITEM_DEVOLVIDO.preco_NF," & _
                 " t_PEDIDO_ITEM_DEVOLVIDO.desc_dado," & _
                 " t_PEDIDO_ITEM_DEVOLVIDO.cubagem," & _
                 " t_PEDIDO_ITEM_DEVOLVIDO.peso," & _
@@ -418,7 +528,6 @@ dim s_qtde, item_peso, item_cubagem, item_qtde
 				" t_FABRICANTE.nome AS nome_fabricante," & _
 				" t_CLIENTE.cidade AS cidade," & _
 				" t_CLIENTE.uf AS uf," & _
-                " t_CLIENTE.tipo AS tipo_cliente," & _
                 " t_CLIENTE.ddd_res," & _
                 " t_CLIENTE.tel_res," & _
                 " t_CLIENTE.ddd_cel," & _
@@ -448,14 +557,35 @@ dim s_qtde, item_peso, item_cubagem, item_qtde
 				" t_PEDIDO__BASE.pse_forma_pagto_demais_prest AS parcelamento_s_entrada," & _
 				" t_PEDIDO__BASE.pu_forma_pagto AS parcela_unica," & _
                 " (SELECT SUM(vl_frete) AS vl_frete FROM t_PEDIDO_FRETE WHERE (pedido=t_PEDIDO.pedido)) AS vl_frete," & _
-				" (SELECT TOP 1 vl_custo2 FROM t_ESTOQUE_ITEM tEI WHERE (tEI.fabricante = t_PEDIDO_ITEM_DEVOLVIDO.fabricante) AND (tEI.produto = t_PEDIDO_ITEM_DEVOLVIDO.produto) ORDER BY id_estoque DESC) AS vl_custo2" & _
+				" (SELECT TOP 1 vl_custo2 FROM t_ESTOQUE tE INNER JOIN t_ESTOQUE_ITEM tEI ON (tE.id_estoque = tEI.id_estoque) WHERE (tE.devolucao_status = 0) AND (tEI.fabricante = t_PEDIDO_ITEM_DEVOLVIDO.fabricante) AND (tEI.produto = t_PEDIDO_ITEM_DEVOLVIDO.produto) ORDER BY tEI.id_estoque DESC) AS vl_custo2_ult_entrada"
+
+	if ckb_COL_VL_CUSTO_REAL <> "" then
+		s_sql = s_sql & _
+				", (t_ESTOQUE_ITEM.vl_custo2) AS vl_custo2_real"
+		end if
+
+	if ckb_COL_ICMS_UF_DEST <> "" then
+		s_sql = s_sql & _
+				", NULL AS vICMSUFDest" & _
+				", NULL AS det__qCom"
+		end if
+
+	s_sql = s_sql & _
 			" FROM t_PEDIDO_ITEM_DEVOLVIDO" & _
 				" INNER JOIN t_PEDIDO ON (t_PEDIDO_ITEM_DEVOLVIDO.pedido = t_PEDIDO.pedido)" & _
 				" INNER JOIN t_PEDIDO AS t_PEDIDO__BASE ON (t_PEDIDO.pedido_base = t_PEDIDO__BASE.pedido)" & _
                 " LEFT JOIN t_ORCAMENTISTA_E_INDICADOR ON (t_PEDIDO__BASE.indicador = t_ORCAMENTISTA_E_INDICADOR.apelido)" & _
 				" INNER JOIN t_PRODUTO ON (t_PRODUTO.fabricante = t_PEDIDO_ITEM_DEVOLVIDO.fabricante) AND (t_PRODUTO.produto = t_PEDIDO_ITEM_DEVOLVIDO.produto)" & _
 				" INNER JOIN t_FABRICANTE ON (t_PRODUTO.fabricante = t_FABRICANTE.fabricante)" & _
-				" INNER JOIN t_CLIENTE ON (t_PEDIDO.id_cliente = t_CLIENTE.id)" & _
+				" INNER JOIN t_CLIENTE ON (t_PEDIDO.id_cliente = t_CLIENTE.id)"
+
+	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_NAC_IMP <> "") then
+		s_sql = s_sql & _
+				" INNER JOIN t_ESTOQUE ON (t_PEDIDO_ITEM_DEVOLVIDO.id=t_ESTOQUE.devolucao_id_item_devolvido)" & _
+				" INNER JOIN t_ESTOQUE_ITEM ON ((t_ESTOQUE.id_estoque=t_ESTOQUE_ITEM.id_estoque)AND(t_PEDIDO_ITEM_DEVOLVIDO.fabricante=t_ESTOQUE_ITEM.fabricante)AND(t_PEDIDO_ITEM_DEVOLVIDO.produto=t_ESTOQUE_ITEM.produto))"
+		end if
+
+	s_sql = s_sql & _
 			" WHERE" & _
 				" (t_PEDIDO.st_entrega = '" & ST_ENTREGA_ENTREGUE & "')"
 	
@@ -483,6 +613,7 @@ dim s_qtde, item_peso, item_cubagem, item_qtde
 	if ckb_COL_DT_EMISSAO_NF <> "" then x_cab = x_cab & "EMISSAO NF;"
 	if ckb_COL_PEDIDO <> "" then x_cab = x_cab & "PEDIDO;"
 	if ckb_COL_CPF_CNPJ_CLIENTE <> "" then x_cab = x_cab & "CPF/CNPJ;"
+	if ckb_COL_CONTRIBUINTE_ICMS <> "" then x_cab = x_cab & "Contrib ICMS;"
 	if ckb_COL_NOME_CLIENTE <> "" then x_cab = x_cab & "NOME CLIENTE;"
 	if ckb_COL_CIDADE <> "" then x_cab = x_cab & "CIDADE;"
 	if ckb_COL_UF <> "" then x_cab = x_cab & "UF;"
@@ -502,17 +633,21 @@ dim s_qtde, item_peso, item_cubagem, item_qtde
 	if ckb_COL_CICLO <> "" then x_cab = x_cab & "CICLO;"
 	if ckb_COL_POSICAO_MERCADO <> "" then x_cab = x_cab & "POS MERC;"
 	if ckb_COL_PRODUTO <> "" then x_cab = x_cab & "PRODUTO;"
+	if ckb_COL_NAC_IMP <> "" then x_cab = x_cab & "NAC/IMP;"
 	if ckb_COL_DESCRICAO_PRODUTO <> "" then x_cab = x_cab & "DESCRICAO;"
 	if ckb_COL_QTDE <> "" then x_cab = x_cab & "QTDE;"
     if ckb_COL_PERC_DESC <> "" then x_cab = x_cab & "DESC %;"
     if ckb_COL_CUBAGEM <> "" then x_cab = x_cab & "CUBAGEM;"
     if ckb_COL_PESO <> "" then x_cab = x_cab & "PESO;"
     if ckb_COL_FRETE <> "" then x_cab = x_cab & "VL FRETE;"
-	if ckb_COL_VL_CUSTO <> "" then x_cab = x_cab & "VL CUSTO;"
+	if ckb_COL_VL_CUSTO_ULT_ENTRADA <> "" then x_cab = x_cab & "VL CUSTO (ÚLT ENTRADA);"
+	if ckb_COL_VL_CUSTO_REAL <> "" then x_cab = x_cab & "VL CUSTO (REAL);"
 	if ckb_COL_VL_LISTA <> "" then x_cab = x_cab & "VL LISTA;"
+	if ckb_COL_VL_NF <> "" then x_cab = x_cab & "VL NF;"
 	if ckb_COL_VL_UNITARIO <> "" then x_cab = x_cab & "VL UNITARIO;"
-	if ckb_COL_VL_TOTAL <> "" then x_cab = x_cab & "VL TOTAL"
+	if ckb_COL_VL_TOTAL <> "" then x_cab = x_cab & "VL TOTAL;"
 	if ckb_COL_RT <> "" then x_cab = x_cab & "RT;"
+	if ckb_COL_ICMS_UF_DEST <> "" then x_cab = x_cab & "ICMS UF DESTINO (UNIT);"
 	if ckb_COL_QTDE_PARCELAS <> "" then x_cab = x_cab & "QTDE PARCELAS;"
 	if ckb_COL_MEIO_PAGAMENTO <> "" then x_cab = x_cab & "MEIO DE PAGAMENTO;"
 	
@@ -548,7 +683,7 @@ dim s_qtde, item_peso, item_cubagem, item_qtde
 		 '> NF
 			if ckb_COL_NF <> "" then
 				s = Trim("" & r("numero_NF"))
-				if s = "" then
+				if (Trim("" & r("operacao")) = "VENDA_NORMAL") And ((s = "") Or (s = "0")) then
 					s = Trim("" & r("obs_2"))
 					end if
 				x = x & s & ";"
@@ -574,6 +709,12 @@ dim s_qtde, item_peso, item_cubagem, item_qtde
 				x = x & cnpj_cpf_formata(Trim("" & r("cnpj_cpf"))) & ";"
 				end if
 			
+		'> CLIENTE: CONTRIBUINTE ICMS
+			if ckb_COL_CONTRIBUINTE_ICMS <> "" then
+				x = x & descricao_icms_contribuinte_x_produtor_rural(Trim("" & r("tipo_cliente")), Trim("" & r("contribuinte_icms_status")), Trim("" & r("produtor_rural_status"))) & ";"
+				end if
+			
+
 		'> CLIENTE: NOME
 			if ckb_COL_NOME_CLIENTE <> "" then
 				s = Trim("" & r("nome_cliente"))
@@ -694,6 +835,22 @@ dim s_qtde, item_peso, item_cubagem, item_qtde
 			 '	FORÇA P/ SER TRATADO COMO TEXTO
 				x = x & chr(34) & "=" & chr(34) & chr(34) & Trim("" & r("produto")) & chr(34) & chr(34) & chr(34) & ";"
 				end if
+
+		 '> NACIONAL/IMPORTADO
+			if ckb_COL_NAC_IMP <> "" then
+				s_cst = Trim("" & r("cst"))
+				if s_cst = "000" then
+					s = "Nacional"
+				elseif s_cst = "200" then
+					s = "Importado"
+				elseif (s_cst = "060") Or (s_cst = "241") Or (s_cst = "260") then
+					s = "Importado"
+				else
+					s = s_cst
+					end if
+					
+				x = x & s & ";"
+				end if
 		
 		 '> DESCRIÇÃO DO PRODUTO
 			if ckb_COL_DESCRICAO_PRODUTO <> "" then
@@ -742,30 +899,44 @@ dim s_qtde, item_peso, item_cubagem, item_qtde
 				x = x & s & ";"       
 			end if
 			
-		'> VALOR CUSTO
-			if ckb_COL_VL_CUSTO <> "" then
-			'	EXPORTAR VALOR UTILIZANDO '.' COMO SEPARADOR DECIMAL
-				s = substitui_caracteres(bd_formata_moeda(r("vl_custo2")), ".", SEPARADOR_DECIMAL)
+		'> VALOR CUSTO (ÚLT ENTRADA)
+			if ckb_COL_VL_CUSTO_ULT_ENTRADA <> "" then
+			'	EXPORTAR VALOR UTILIZANDO SEPARADOR DECIMAL DEFINIDO
+				s = substitui_caracteres(bd_formata_moeda(r("vl_custo2_ult_entrada")), ".", SEPARADOR_DECIMAL)
+				x = x & s & ";"
+				end if
+
+		'> VALOR CUSTO (REAL)
+			if ckb_COL_VL_CUSTO_REAL <> "" then
+			'	EXPORTAR VALOR UTILIZANDO SEPARADOR DECIMAL DEFINIDO
+				s = substitui_caracteres(bd_formata_moeda(r("vl_custo2_real")), ".", SEPARADOR_DECIMAL)
 				x = x & s & ";"
 				end if
 		
 		 '> PREÇO DE LISTA
 			if ckb_COL_VL_LISTA <> "" then
-			'	EXPORTAR VALOR UTILIZANDO '.' COMO SEPARADOR DECIMAL
+			'	EXPORTAR VALOR UTILIZANDO SEPARADOR DECIMAL DEFINIDO
 				s = substitui_caracteres(bd_formata_moeda(r("preco_lista")), ".", SEPARADOR_DECIMAL)
 				x = x & s & ";"
 				end if
 			
+		'> VALOR NF
+			if ckb_COL_VL_NF <> "" then
+			'	EXPORTAR VALOR UTILIZANDO SEPARADOR DECIMAL DEFINIDO
+				s = substitui_caracteres(bd_formata_moeda(r("preco_NF")), ".", SEPARADOR_DECIMAL)
+				x = x & s & ";"
+				end if
+
 		'> VALOR UNITÁRIO
 			if ckb_COL_VL_UNITARIO <> "" then
-			'	EXPORTAR VALOR UTILIZANDO '.' COMO SEPARADOR DECIMAL
+			'	EXPORTAR VALOR UTILIZANDO SEPARADOR DECIMAL DEFINIDO
 				s = substitui_caracteres(bd_formata_moeda(r("preco_venda")), ".", SEPARADOR_DECIMAL)
 				x = x & s & ";"
 				end if
 		
 		'> VALOR TOTAL
 			if ckb_COL_VL_TOTAL <> "" then
-			'	EXPORTAR VALOR UTILIZANDO '.' COMO SEPARADOR DECIMAL
+			'	EXPORTAR VALOR UTILIZANDO SEPARADOR DECIMAL DEFINIDO
 				s = substitui_caracteres(bd_formata_moeda(CLng(s_qtde) * r("preco_venda")), ".", SEPARADOR_DECIMAL)
 				x = x & s & ";"
 				end if
@@ -774,14 +945,34 @@ dim s_qtde, item_peso, item_cubagem, item_qtde
 			perc_RT = r("perc_RT")
 		'	EVITA DIFERENÇAS DE ARREDONDAMENTO
 			vl_preco_venda = converte_numero(formata_moeda(r("preco_venda")))
-			vl_RT = (perc_RT/100) * vl_preco_venda
+		'	CALCULA VL RT UNITÁRIO, MAS MANTENDO O SINAL (POSITIVO/NEGATIVO)
+			vl_RT = (perc_RT/100) * (CLng(s_qtde)/Abs(CLng(s_qtde)) * vl_preco_venda)
 			if ckb_COL_RT <> "" then
 				s = substitui_caracteres(bd_formata_moeda(vl_RT), ".", SEPARADOR_DECIMAL)
 				x = x & s & ";"
 				end if
 			
-		 '> QTDE DE PARCELAS
+		'>  ICMS UF DESTINO (UNITÁRIO)
+			if ckb_COL_ICMS_UF_DEST <> "" then
+				s_vICMSUFDest_unitario = ""
+				s_vICMSUFDest = Trim("" & r("vICMSUFDest"))
+				s_det__qCom = Trim("" & r("det__qCom"))
+				if s_vICMSUFDest <> "" then
+					vl_vICMSUFDest = converte_numero(s_vICMSUFDest)
+					if s_det__qCom <> "" then
+						'A quantidade está formatada com 4 decimais: 1 unidade = 1.0000
+						v = Split(s_det__qCom, ".")
+						if Trim("" & v(Lbound(v))) <> "" then
+							n_det__qCom = CLng(Trim("" & v(Lbound(v))))
+							vl_vICMSUFDest_unitario = vl_vICMSUFDest / n_det__qCom
+							s_vICMSUFDest_unitario = substitui_caracteres(bd_formata_moeda(vl_vICMSUFDest_unitario), ".", SEPARADOR_DECIMAL)
+							end if
+						end if
+					end if
+				x = x & s_vICMSUFDest_unitario & ";"
+				end if
 
+		 '> QTDE DE PARCELAS
 			if ckb_COL_QTDE_PARCELAS <> "" then
 				x = x & Trim("" & r("qtde_parcelas")) & ";"
 			end if
