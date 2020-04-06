@@ -3599,8 +3599,8 @@ dim blnUsarMemorizacaoCompletaEnderecos
 
 			'O orçamento não armazenava o endereço de cobrança anteriormente da forma como ocorria no pedido
 			if blnUsarMemorizacaoCompletaEnderecos then
-				.endereco_memorizado_status		= rs("endereco_memorizado_status")
-				if CLng(.endereco_memorizado_status) <> 0 then
+				.st_memorizacao_completa_enderecos = rs("st_memorizacao_completa_enderecos")
+				if CLng(.st_memorizacao_completa_enderecos) <> 0 then
 					.endereco_logradouro			= Trim("" & rs("endereco_logradouro"))
 					.endereco_numero				= Trim("" & rs("endereco_numero"))
 					.endereco_complemento			= Trim("" & rs("endereco_complemento"))
@@ -3608,28 +3608,25 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.endereco_cidade				= Trim("" & rs("endereco_cidade"))
 					.endereco_uf					= Trim("" & rs("endereco_uf"))
 					.endereco_cep					= Trim("" & rs("endereco_cep"))
-					if blnUsarMemorizacaoCompletaEnderecos then
-						.st_memorizacao_completa_enderecos = rs("st_memorizacao_completa_enderecos")
-						.endereco_email = Trim("" & rs("endereco_email"))
-						.endereco_email_xml = Trim("" & rs("endereco_email_xml"))
-						.endereco_nome = Trim("" & rs("endereco_nome"))
-						.endereco_ddd_res = Trim("" & rs("endereco_ddd_res"))
-						.endereco_tel_res = Trim("" & rs("endereco_tel_res"))
-						.endereco_ddd_com = Trim("" & rs("endereco_ddd_com"))
-						.endereco_tel_com = Trim("" & rs("endereco_tel_com"))
-						.endereco_ramal_com = Trim("" & rs("endereco_ramal_com"))
-						.endereco_ddd_cel = Trim("" & rs("endereco_ddd_cel"))
-						.endereco_tel_cel = Trim("" & rs("endereco_tel_cel"))
-						.endereco_ddd_com_2 = Trim("" & rs("endereco_ddd_com_2"))
-						.endereco_tel_com_2 = Trim("" & rs("endereco_tel_com_2"))
-						.endereco_ramal_com_2 = Trim("" & rs("endereco_ramal_com_2"))
-						.endereco_tipo_pessoa = Trim("" & rs("endereco_tipo_pessoa"))
-						.endereco_cnpj_cpf = Trim("" & rs("endereco_cnpj_cpf"))
-						.endereco_contribuinte_icms_status = rs("endereco_contribuinte_icms_status")
-						.endereco_produtor_rural_status = rs("endereco_produtor_rural_status")
-						.endereco_ie = Trim("" & rs("endereco_ie"))
-						.endereco_rg = Trim("" & rs("endereco_rg"))
-						end if
+					.endereco_email = Trim("" & rs("endereco_email"))
+					.endereco_email_xml = Trim("" & rs("endereco_email_xml"))
+					.endereco_nome = Trim("" & rs("endereco_nome"))
+					.endereco_ddd_res = Trim("" & rs("endereco_ddd_res"))
+					.endereco_tel_res = Trim("" & rs("endereco_tel_res"))
+					.endereco_ddd_com = Trim("" & rs("endereco_ddd_com"))
+					.endereco_tel_com = Trim("" & rs("endereco_tel_com"))
+					.endereco_ramal_com = Trim("" & rs("endereco_ramal_com"))
+					.endereco_ddd_cel = Trim("" & rs("endereco_ddd_cel"))
+					.endereco_tel_cel = Trim("" & rs("endereco_tel_cel"))
+					.endereco_ddd_com_2 = Trim("" & rs("endereco_ddd_com_2"))
+					.endereco_tel_com_2 = Trim("" & rs("endereco_tel_com_2"))
+					.endereco_ramal_com_2 = Trim("" & rs("endereco_ramal_com_2"))
+					.endereco_tipo_pessoa = Trim("" & rs("endereco_tipo_pessoa"))
+					.endereco_cnpj_cpf = Trim("" & rs("endereco_cnpj_cpf"))
+					.endereco_contribuinte_icms_status = rs("endereco_contribuinte_icms_status")
+					.endereco_produtor_rural_status = rs("endereco_produtor_rural_status")
+					.endereco_ie = Trim("" & rs("endereco_ie"))
+					.endereco_rg = Trim("" & rs("endereco_rg"))
 					end if
 				end if
 
@@ -3668,7 +3665,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 				.EndEtg_cidade				= Trim("" & rs("EndEtg_cidade"))
 				.EndEtg_uf					= Trim("" & rs("EndEtg_uf"))
 				.EndEtg_cep					= Trim("" & rs("EndEtg_cep"))
-				if blnUsarMemorizacaoCompletaEnderecos then
+				if blnUsarMemorizacaoCompletaEnderecos and CLng(.st_memorizacao_completa_enderecos) <> 0 then
 					.EndEtg_email = Trim("" & rs("EndEtg_email"))
 					.EndEtg_email_xml = Trim("" & rs("EndEtg_email_xml"))
 					.EndEtg_nome = Trim("" & rs("EndEtg_nome"))
@@ -6142,6 +6139,30 @@ dim rFPUECM
 	set rFPUECM = get_registro_t_parametro(ID_PARAMETRO_Flag_Pedido_MemorizacaoCompletaEnderecos)
 	if Trim("" & rFPUECM.campo_inteiro) = "1" then isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = True
 	set rFPUECM = Nothing
+end function
+
+
+' ________________________________________________________
+' getParametroPercDesagioRALiquida
+'
+function getParametroPercDesagioRALiquida
+dim rP
+	getParametroPercDesagioRALiquida = 0
+	set rP = get_registro_t_parametro(ID_PARAMETRO_PERC_DESAGIO_RA_LIQUIDA)
+	if Trim("" & rP.campo_real) <> "" then getParametroPercDesagioRALiquida = rP.campo_real
+	set rP = Nothing
+end function
+
+
+' ________________________________________________________
+' getParametroPrazoAcessoRelPedidosIndicadoresLoja
+'
+function getParametroPrazoAcessoRelPedidosIndicadoresLoja
+dim rP
+	getParametroPrazoAcessoRelPedidosIndicadoresLoja = 0
+	set rP = get_registro_t_parametro(ID_PARAMETRO_PRAZO_ACESSO_REL_PEDIDOS_INDICADORES_LOJA)
+	if Trim("" & rP.campo_inteiro) <> "" then getParametroPrazoAcessoRelPedidosIndicadoresLoja = rP.campo_inteiro
+	set rP = Nothing
 end function
 
 
