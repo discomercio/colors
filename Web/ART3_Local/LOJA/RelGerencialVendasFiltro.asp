@@ -199,17 +199,19 @@ dim x, r, strSql, strResp, ha_default
 	r.close
 	set r=nothing
 end function
+
 '----------------------------------------------------------------------------------------------
 ' GRUPOS MONTA ITENS SELECT
 function grupos_monta_itens_select(byval id_default)
-dim x, r, strSql, strResp, ha_default
+dim x, r, strSql, strResp, ha_default, sDescricao
 	id_default = Trim("" & id_default)
 	ha_default=False
-	strSql = "SELECT DISTINCT grupo from t_PRODUTO WHERE grupo <> '' ORDER by grupo"
+	strSql = "SELECT DISTINCT tP.grupo, tPG.descricao FROM t_PRODUTO tP LEFT JOIN t_PRODUTO_GRUPO tPG ON (tP.grupo = tPG.codigo) WHERE LEN(Coalesce(tP.grupo,'')) > 0 ORDER by tP.grupo"
 	set r = cn.Execute(strSql)
 	strResp = ""
 	do while Not r.eof 
 		x = UCase(Trim("" & r("grupo")))
+		sDescricao = Trim("" & r("descricao"))
 		if (id_default<>"") And (id_default=x) then
 			strResp = strResp & "<OPTION SELECTED"
 			ha_default=True
@@ -218,6 +220,7 @@ dim x, r, strSql, strResp, ha_default
 			end if
 		strResp = strResp & " VALUE='" & x & "'>"
 		strResp = strResp & x 
+		if sDescricao <> "" then strResp = strResp & " &nbsp;(" & sDescricao & ")"
 		strResp = strResp & "</OPTION>" & chr(13)
 		r.MoveNext
 		loop
@@ -227,6 +230,40 @@ dim x, r, strSql, strResp, ha_default
 		end if
 		
 	grupos_monta_itens_select = strResp
+	r.close
+	set r=nothing
+end function
+
+'----------------------------------------------------------------------------------------------
+' SUBGRUPOS MONTA ITENS SELECT
+function subgrupos_monta_itens_select(byval id_default)
+dim x, r, strSql, strResp, ha_default, sDescricao
+	id_default = Trim("" & id_default)
+	ha_default=False
+	strSql = "SELECT DISTINCT tP.subgrupo, tPS.descricao FROM t_PRODUTO tP LEFT JOIN t_PRODUTO_SUBGRUPO tPS ON (tP.subgrupo = tPS.codigo) WHERE LEN(Coalesce(tP.subgrupo,'')) > 0 ORDER by tP.subgrupo"
+	set r = cn.Execute(strSql)
+	strResp = ""
+	do while Not r.eof 
+		x = UCase(Trim("" & r("subgrupo")))
+		sDescricao = Trim("" & r("descricao"))
+		if (id_default<>"") And (id_default=x) then
+			strResp = strResp & "<OPTION SELECTED"
+			ha_default=True
+		else
+			strResp = strResp & "<OPTION"
+			end if
+		strResp = strResp & " VALUE='" & x & "'>"
+		strResp = strResp & x
+		if sDescricao <> "" then strResp = strResp & " &nbsp;(" & sDescricao & ")"
+		strResp = strResp & "</OPTION>" & chr(13)
+		r.MoveNext
+		loop
+
+	if Not ha_default then
+		strResp = "<OPTION SELECTED VALUE=''>&nbsp;</OPTION>" & chr(13) & strResp
+		end if
+		
+	subgrupos_monta_itens_select = strResp
 	r.close
 	set r=nothing
 end function
@@ -782,6 +819,9 @@ var i, blnFlagOk;
     function limpaCampoSelectGrupo() {
         $("#c_grupo").children().prop('selected', false);
     }
+    function limpaCampoSelectSubGrupo() {
+        $("#c_subgrupo").children().prop('selected', false);
+    }
     function deselecionar_checkbox(){      
         
         $("#ckb_colocado_mesmo_periodo").prop("checked", false);
@@ -994,19 +1034,42 @@ html
 		<table cellpadding="0" cellspacing="0">
 		<tr>
 		<td>
-			<select id="c_grupo" name="c_grupo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="10"style="width:100px;margin:1px 10px 6px 10px;" multiple>
+			<select id="c_grupo" name="c_grupo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="10" style="min-width:250px;margin:1px 10px 6px 10px;" multiple>
 			<% =grupos_monta_itens_select(get_default_valor_texto_bd(usuario, "RelGerencialVendasFiltro|c_grupo")) %>
 			</select>
 		</td>
 		<td style="width:1px;"></td>
 		<td align="left" valign="top">
-			<a name="bLimparGrupo" id="bLimparGrupo" href="javascript:limpaCampoSelectGrupo()" title="limpa o filtro 'Fabricante'">
+			<a name="bLimparGrupo" id="bLimparGrupo" href="javascript:limpaCampoSelectGrupo()" title="limpa o filtro 'Grupo'">
 						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
 		</td>
 		</tr>
 		</table>
 	</td>
 	</tr>
+
+<!--  SUBGRUPO  -->
+	<tr bgcolor="#FFFFFF">
+	<td class="ME MD MB" align="left" nowrap>
+		<span class="PLTe">SUBGRUPO</span>
+		<br>
+		<table cellpadding="0" cellspacing="0">
+		<tr>
+		<td>
+			<select id="c_subgrupo" name="c_subgrupo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="10" style="min-width:250px;margin:1px 10px 6px 10px;" multiple>
+			<% =subgrupos_monta_itens_select(get_default_valor_texto_bd(usuario, "RelGerencialVendasFiltro|c_subgrupo")) %>
+			</select>
+		</td>
+		<td style="width:1px;"></td>
+		<td align="left" valign="top">
+			<a name="bLimparSubGrupo" id="bLimparSubGrupo" href="javascript:limpaCampoSelectSubGrupo()" title="limpa o filtro 'Subgrupo'">
+						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+		</td>
+		</tr>
+		</table>
+	</td>
+	</tr>
+
     <!--  CNPJ/CPF  -->
 	<tr bgcolor="#FFFFFF" id="tr_cnpj_cpf">
 	<td class="MDBE" align="left" nowrap><span class="PLTe">CNPJ/CPF</span>
