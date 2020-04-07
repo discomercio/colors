@@ -80,7 +80,7 @@
 	dim alerta
 	dim s, s_aux, s_filtro, lista_loja, s_filtro_loja, v_loja, v, i, flag_ok
 	dim c_dt_entregue_inicio, c_dt_entregue_termino, c_dt_cadastro_inicio, c_dt_cadastro_termino
-	dim c_loja, c_fabricante, c_produto, c_vendedor, c_indicador, c_captador, c_cnpj_cpf, rb_tipo_cliente, ckb_contribuinte_icms_nao, ckb_contribuinte_icms_sim, ckb_contribuinte_icms_isento, c_grupo
+	dim c_loja, c_fabricante, c_produto, c_vendedor, c_indicador, c_captador, c_cnpj_cpf, rb_tipo_cliente, ckb_contribuinte_icms_nao, ckb_contribuinte_icms_sim, ckb_contribuinte_icms_isento, c_grupo, c_subgrupo
     dim c_pedido_origem, c_grupo_pedido_origem
 	dim c_loc_uf, c_loc_digitada, c_loc_escolhidas, s_where_loc, v_loc_escolhidas,c_uf_saida
     dim c_empresa
@@ -116,6 +116,7 @@
 	c_captador = Ucase(Trim(Request.Form("c_captador")))
 	c_cnpj_cpf = retorna_so_digitos(Trim(Request.Form("c_cnpj_cpf")))
     c_grupo = Ucase(Trim(Request.Form("c_grupo")))
+	c_subgrupo = Ucase(Trim(Request.Form("c_subgrupo")))
 	rb_tipo_cliente = Trim(Request.Form("rb_tipo_cliente"))
 	ckb_contribuinte_icms_nao = Trim(Request.Form("ckb_contribuinte_icms_nao"))
 	ckb_contribuinte_icms_sim = Trim(Request.Form("ckb_contribuinte_icms_sim"))
@@ -374,7 +375,7 @@ dim vl_total_NF, vl_sub_total_NF, lucro_bruto_total, lucro_bruto_subtotal, marg_
 dim marg_contrib_bruta_ProdutoGrupo, vl_NF_ProdutoGrupo, lucro_bruto_ProdutoGrupo, vl_NF_Empresa, marg_contrib_bruta_Empresa, lucro_bruto_Empresa, marg_contrib_bruta_final, vl_total_final_NF, vl_marg_contrib_bruta_ProdutoGrupo
 dim lucro_liquido_UF, marg_contrib_UF, marg_contrib_final, subtotal_entrada, total_entrada, vl_ent_UF
 dim iEspacos, md
-dim strEspacos,v_grupos,cont,s_where_temp,s_nome_grupo,intQtdeTotalIndicadorCidUf,intQtdeTotal
+dim strEspacos,v_grupos,v_subgrupos,cont,s_where_temp,intQtdeTotalIndicadorCidUf,intQtdeTotal
 dim vTotGrupo, vl_aux_RA_liquido
 
 
@@ -431,32 +432,39 @@ dim vTotGrupo, vl_aux_RA_liquido
         s_where = s_where & " (t_PEDIDO.marketplace_codigo_origem IN (" & s_where_temp & "))"
     end if
 
+	s_where_temp = ""
 	if c_grupo <> "" then
-		s = "SELECT DISTINCT grupo from t_PRODUTO WHERE "
 		v_grupos = split(c_grupo, ", ")
 		for cont = LBound(v_grupos) to UBound(v_grupos)
-            if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
-		    s_where_temp = s_where_temp & " (grupo = '" & v_grupos(cont) & "')"
-        next
-        s = s & s_where_temp
-		set rs = cn.Execute(s)
-		if rs.Eof then
-			alerta = "grupo '" & c_grupo & "' NÃO ESTÁ CADASTRADO"
-		else
-			s_nome_grupo = Trim("" & rs("grupo"))
-			if s_nome_grupo = "" then s_nome_grupo = Trim("" & rs("grupo"))
+			if Trim(v_grupos(cont)) <> "" then
+				if s_where_temp <> "" then s_where_temp = s_where_temp & ", "
+				s_where_temp = s_where_temp & "'" & Trim(v_grupos(cont)) & "'"
+				end if
+			next
+		
+		if s_where_temp <> "" then
+			s_where_temp = " (t_PRODUTO.grupo IN (" & s_where_temp & "))"
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (" & s_where_temp & ")"
+			end if
 		end if
 
-        s_where_temp = ""	
-	    for cont = Lbound(v_grupos) to Ubound(v_grupos)
-	        if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
-		    s_where_temp = s_where_temp & _
-			" (t_PEDIDO_ITEM.grupo = '" & v_grupos(cont) & "')"
-	    next
-	    if s_where <> "" then s_where = s_where & " AND"
-	    s_where = s_where & "(" & s_where_temp & ")"
-	end if
-
+	s_where_temp = ""
+	if c_subgrupo <> "" then
+		v_subgrupos = split(c_subgrupo, ", ")
+		for cont = LBound(v_subgrupos) to UBound(v_subgrupos)
+			if Trim(v_subgrupos(cont)) <> "" then
+				if s_where_temp <> "" then s_where_temp = s_where_temp & ", "
+				s_where_temp = s_where_temp & "'" & Trim(v_subgrupos(cont)) & "'"
+				end if
+			next
+		
+		if s_where_temp <> "" then
+			s_where_temp = " (t_PRODUTO.subgrupo IN (" & s_where_temp & "))"
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (" & s_where_temp & ")"
+			end if
+		end if
 
 	if c_cnpj_cpf <> "" then
 		if s_where <> "" then s_where = s_where & " AND"
@@ -4735,11 +4743,15 @@ window.status='Aguarde, executando a consulta ...';
 		end if
 	
     s = c_grupo
-	if s = "" then 
-		s = "todos"
-	end if 
+	if s = "" then s = "todos"
 	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
 			   "<span class='N'>Grupo(s):&nbsp;</span></td><td align='left' valign='top'>" & _
+			   "<span class='N'>" & s & "</span></td></tr>"
+
+    s = c_subgrupo
+	if s = "" then s = "todos"
+	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
+			   "<span class='N'>Subgrupo(s):&nbsp;</span></td><td align='left' valign='top'>" & _
 			   "<span class='N'>" & s & "</span></td></tr>"
 
 	s = rb_tipo_cliente
