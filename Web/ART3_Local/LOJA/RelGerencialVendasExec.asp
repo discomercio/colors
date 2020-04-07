@@ -66,13 +66,13 @@
 	dim alerta
 	dim s, s_aux, s_filtro, flag_ok
 	dim c_dt_entregue_inicio, c_dt_entregue_termino, c_dt_cadastro_inicio, c_dt_cadastro_termino
-	dim c_loja, c_fabricante, c_produto, c_vendedor, c_indicador, c_captador, c_cnpj_cpf, rb_tipo_cliente,c_grupo
+	dim c_loja, c_fabricante, c_produto, c_vendedor, c_indicador, c_captador, c_cnpj_cpf, rb_tipo_cliente,c_grupo, c_subgrupo
     dim c_pedido_origem, c_grupo_pedido_origem, c_empresa
 	dim c_loc_uf, c_loc_digitada, c_loc_escolhidas, s_where_loc, v_loc_escolhidas,c_uf_saida
 	dim s_nome_vendedor
 	dim rb_periodo, rb_saida
 	dim c_forma_como_conheceu_codigo
-	dim op_forma_pagto, c_forma_pagto_qtde_parc,v_grupos
+	dim op_forma_pagto, c_forma_pagto_qtde_parc
     dim ckb_colocado_mesmo_periodo, ckb_ordenar_marg_contrib
 
 	alerta = ""
@@ -100,6 +100,7 @@
 	c_indicador = Ucase(Trim(Request.Form("c_indicador")))
 	c_captador = Ucase(Trim(Request.Form("c_captador")))
     c_grupo = Ucase(Trim(Request.Form("c_grupo")))
+	c_subgrupo = Ucase(Trim(Request.Form("c_subgrupo")))
 	c_cnpj_cpf = retorna_so_digitos(Trim(Request.Form("c_cnpj_cpf")))
 	rb_tipo_cliente = Trim(Request.Form("rb_tipo_cliente"))
 	op_forma_pagto = Trim(Request.Form("op_forma_pagto"))
@@ -322,11 +323,11 @@ dim lucro_liquido_UF, marg_contrib_UF, marg_contrib_final, subtotal_entrada, tot
 dim iEspacos
 dim strEspacos
 dim md
-dim s_nome_grupo
 dim s_where_temp, cont,intQtdeTotalUF,intQtdeTotalCidUF,intQtdeTotal
 dim c_grupo_pedido_origem_aux
 dim vTotGrupo, vl_aux_RA_liquido
 dim idxAux
+dim v_grupos,v_subgrupos
 
 	intQtdeTotal = 0
 
@@ -376,38 +377,40 @@ dim idxAux
         s_where = s_where & " (t_PEDIDO.marketplace_codigo_origem IN (" & c_grupo_pedido_origem_aux & "))"
     end if
 
-	s_nome_grupo = ""
 	s_where_temp = ""
-	v_grupos = ""
-	
 	if c_grupo <> "" then
-		s = "SELECT DISTINCT grupo from t_PRODUTO WHERE "
 		v_grupos = split(c_grupo, ", ")
 		for cont = LBound(v_grupos) to UBound(v_grupos)
-            if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
-		    s_where_temp = s_where_temp & " (grupo = '" & v_grupos(cont) & "')"
-        next
-        s = s & s_where_temp
-		set rs = cn.Execute(s)
-		if rs.Eof then
-			alerta = "grupo '" & c_grupo & "' NÃO ESTÁ CADASTRADO"
-		else
-			s_nome_grupo = Trim("" & rs("grupo"))
-			if s_nome_grupo = "" then s_nome_grupo = Trim("" & rs("grupo"))
+			if Trim(v_grupos(cont)) <> "" then
+				if s_where_temp <> "" then s_where_temp = s_where_temp & ", "
+				s_where_temp = s_where_temp & "'" & Trim(v_grupos(cont)) & "'"
+				end if
+			next
+		
+		if s_where_temp <> "" then
+			s_where_temp = " (t_PRODUTO.grupo IN (" & s_where_temp & "))"
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (" & s_where_temp & ")"
+			end if
 		end if
 
-        s_where_temp = ""	
-	    for cont = Lbound(v_grupos) to Ubound(v_grupos)
-	        if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
-		    s_where_temp = s_where_temp & _
-			" (t_PEDIDO_ITEM.grupo = '" & v_grupos(cont) & "')"
-	    next
-	    if s_where <> "" then s_where = s_where & " AND"
-	    s_where = s_where & "(" & s_where_temp & ")"
-
-	end if
+	s_where_temp = ""
+	if c_subgrupo <> "" then
+		v_subgrupos = split(c_subgrupo, ", ")
+		for cont = LBound(v_subgrupos) to UBound(v_subgrupos)
+			if Trim(v_subgrupos(cont)) <> "" then
+				if s_where_temp <> "" then s_where_temp = s_where_temp & ", "
+				s_where_temp = s_where_temp & "'" & Trim(v_subgrupos(cont)) & "'"
+				end if
+			next
 		
-
+		if s_where_temp <> "" then
+			s_where_temp = " (t_PRODUTO.subgrupo IN (" & s_where_temp & "))"
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (" & s_where_temp & ")"
+			end if
+		end if
+		
 	if c_cnpj_cpf <> "" then
 		if s_where <> "" then s_where = s_where & " AND"
 		s_where = s_where & " (t_CLIENTE.cnpj_cpf = '" & c_cnpj_cpf & "')"
@@ -4153,11 +4156,15 @@ window.status='Aguarde, executando a consulta ...';
 		end if
 
 	s = c_grupo
-	if s = "" then 
-		s = "todos"
-	end if 
+	if s = "" then s = "todos"
 	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
 			   "<span class='N'>Grupo(s):&nbsp;</span></td><td align='left' valign='top'>" & _
+			   "<span class='N'>" & s & "</span></td></tr>"
+
+    s = c_subgrupo
+	if s = "" then s = "todos"
+	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
+			   "<span class='N'>Subgrupo(s):&nbsp;</span></td><td align='left' valign='top'>" & _
 			   "<span class='N'>" & s & "</span></td></tr>"
 
 	s = rb_tipo_cliente
