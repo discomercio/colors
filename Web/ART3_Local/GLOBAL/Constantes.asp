@@ -145,9 +145,6 @@
 	Const MAX_TAMANHO_ID_ORCAMENTISTA_E_INDICADOR = 20
 	Const MAX_TAMANHO_SENHA = 16
 	Const MAX_TAMANHO_LOJA = 3
-	
-'	Percentual de deságio para RA Líquida
-	Const PERC_DESAGIO_RA_LIQUIDA = 25
 
 '	Criptografia em SessionCtrl (tratamento da sessão expirada)
 	Const FATOR_CRIPTO_SESSION_CTRL = "1329"
@@ -866,7 +863,10 @@
 	Const ID_PARAMETRO_CtrlRelatorio_RelControleImpostos_TimeoutLockEmMinutos = "CtrlRelatorio_RelControleImpostos_TimeoutLockEmMinutos"
     Const ID_PARAMETRO_CtrlRelatorio_RelControleImpostos_MaxQtdeResultadoPorConsulta = "CtrlRelatorio_RelControleImpostos_MaxQtdeResultadoPorConsulta"
 	Const ID_PARAMETRO_SSW_Rastreamento_Lista_Transportadoras = "SSW_Rastreamento_Lista_Transportadoras"
-	
+	Const ID_PARAMETRO_PERC_DESAGIO_RA_LIQUIDA = "PERC_DESAGIO_RA_LIQUIDA"
+	Const ID_PARAMETRO_PRAZO_ACESSO_REL_PEDIDOS_INDICADORES_LOJA = "PRAZO_ACESSO_REL_PEDIDOS_INDICADORES_LOJA"
+
+
 '   CONSTANTES QUE IDENTIFICAM REGISTROS ARMAZENADOS NA TABELA "t_CTRL_RELATORIO"
     Const ID_CTRL_RELATORIO_RelControleImpostos = 1
 
@@ -1430,8 +1430,6 @@
 
 
   ' LOJA
-'	Const PRAZO_ACESSO_REL_PEDIDOS_INDICADORES_LOJA     = 5
-	Const PRAZO_ACESSO_REL_PEDIDOS_INDICADORES_LOJA     = 8
 	Const OP_LJA_CADASTRA_NOVO_PEDIDO					= 50100
 	Const OP_LJA_CADASTRA_NOVO_ORCAMENTO				= 50200
 	Const OP_LJA_CONSULTA_PEDIDO						= 50300
@@ -2088,6 +2086,7 @@
 		dim descricao_html
 		dim ean
 		dim grupo
+        dim subgrupo
 		dim peso
 		dim qtde_volumes
 		dim abaixo_min_status
@@ -2122,6 +2121,7 @@
 		dim descricao_html
 		dim ean
 		dim grupo
+        dim subgrupo
 		dim peso
 		dim qtde_volumes
 		dim abaixo_min_status
@@ -2401,6 +2401,7 @@
 		dim descricao_html
 		dim ean
 		dim grupo
+        dim subgrupo
 		dim peso
 		dim qtde_volumes
 		dim abaixo_min_status
@@ -2578,6 +2579,7 @@
 		dim obs
 		dim ean
 		dim grupo
+        dim subgrupo
 		dim peso
 		dim qtde_volumes
 		dim abaixo_min_status
@@ -2614,6 +2616,7 @@
 		dim obs
 		dim ean
 		dim grupo
+        dim subgrupo
 		dim peso
 		dim qtde_volumes
 		dim abaixo_min_status

@@ -244,6 +244,7 @@
 						.descricao_html = Trim("" & rs("descricao_html"))
 						.ean = Trim("" & rs("ean"))
 						.grupo = Trim("" & rs("grupo"))
+                        .subgrupo = Trim("" & rs("subgrupo"))
 						.peso = rs("peso")
 						.qtde_volumes = Trim("" & rs("qtde_volumes"))
 						.cubagem = rs("cubagem")

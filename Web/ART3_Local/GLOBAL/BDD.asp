@@ -2031,6 +2031,7 @@ dim rs
 				.descricao_html			= Trim("" & rs("descricao_html"))
 				.ean					= Trim("" & rs("ean"))
 				.grupo					= Trim("" & rs("grupo"))
+                .subgrupo				= Trim("" & rs("subgrupo"))
 				.peso					= rs("peso")
 				.qtde_volumes			= rs("qtde_volumes")
 				.abaixo_min_status		= rs("abaixo_min_status")
@@ -2152,6 +2153,7 @@ dim rs, rsi
 					.descricao_html			= Trim("" & rsi("descricao_html"))
 					.ean					= Trim("" & rsi("ean"))
 					.grupo					= Trim("" & rsi("grupo"))
+                    .subgrupo				= Trim("" & rsi("subgrupo"))
 					.peso					= rsi("peso")
 					.qtde_volumes			= rsi("qtde_volumes")
 					.abaixo_min_status		= rsi("abaixo_min_status")
@@ -3243,6 +3245,7 @@ dim rs
 			.descricao_html			= Trim("" & rs("descricao_html"))
 			.ean					= Trim("" & rs("ean"))
 			.grupo					= Trim("" & rs("grupo"))
+            .subgrupo				= Trim("" & rs("subgrupo"))
 			.peso					= rs("peso")
 			.qtde_volumes			= rs("qtde_volumes")
 			.abaixo_min_status		= rs("abaixo_min_status")
@@ -3331,6 +3334,7 @@ dim rs
 			.descricao_html			= Trim("" & rs("descricao_html"))
 			.ean					= Trim("" & rs("ean"))
 			.grupo					= Trim("" & rs("grupo"))
+            .subgrupo				= Trim("" & rs("subgrupo"))
 			.peso					= rs("peso")
 			.qtde_volumes			= rs("qtde_volumes")
 			.abaixo_min_status		= rs("abaixo_min_status")
@@ -3765,6 +3769,7 @@ dim rs
 				.obs					= Trim("" & rs("obs"))
 				.ean					= Trim("" & rs("ean"))
 				.grupo					= Trim("" & rs("grupo"))
+                .subgrupo				= Trim("" & rs("subgrupo"))
 				.peso					= rs("peso")
 				.qtde_volumes			= rs("qtde_volumes")
 				.abaixo_min_status		= rs("abaixo_min_status")
@@ -6136,6 +6141,30 @@ dim rFPUECM
 	set rFPUECM = get_registro_t_parametro(ID_PARAMETRO_Flag_Pedido_MemorizacaoCompletaEnderecos)
 	if Trim("" & rFPUECM.campo_inteiro) = "1" then isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = True
 	set rFPUECM = Nothing
+end function
+
+
+' ________________________________________________________
+' getParametroPercDesagioRALiquida
+'
+function getParametroPercDesagioRALiquida
+dim rP
+	getParametroPercDesagioRALiquida = 0
+	set rP = get_registro_t_parametro(ID_PARAMETRO_PERC_DESAGIO_RA_LIQUIDA)
+	if Trim("" & rP.campo_real) <> "" then getParametroPercDesagioRALiquida = rP.campo_real
+	set rP = Nothing
+end function
+
+
+' ________________________________________________________
+' getParametroPrazoAcessoRelPedidosIndicadoresLoja
+'
+function getParametroPrazoAcessoRelPedidosIndicadoresLoja
+dim rP
+	getParametroPrazoAcessoRelPedidosIndicadoresLoja = 0
+	set rP = get_registro_t_parametro(ID_PARAMETRO_PRAZO_ACESSO_REL_PEDIDOS_INDICADORES_LOJA)
+	if Trim("" & rP.campo_inteiro) <> "" then getParametroPrazoAcessoRelPedidosIndicadoresLoja = rP.campo_inteiro
+	set rP = Nothing
 end function
 
 

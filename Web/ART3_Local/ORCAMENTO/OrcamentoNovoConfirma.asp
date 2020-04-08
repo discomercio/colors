@@ -444,6 +444,7 @@
 					.descricao_html = Trim("" & rs("descricao_html"))
 					.ean = Trim("" & rs("ean"))
 					.grupo = Trim("" & rs("grupo"))
+                    .subgrupo = Trim("" & rs("subgrupo"))
 					.peso = rs("peso")
 					.qtde_volumes = rs("qtde_volumes")
 					.markup_fabricante = rs("markup")
@@ -935,7 +936,7 @@
 				end if
 			end if
 		
-		rs("perc_desagio_RA_liquida") = PERC_DESAGIO_RA_LIQUIDA
+		rs("perc_desagio_RA_liquida") = getParametroPercDesagioRALiquida
 		rs("permite_RA_status") = r_orcamentista_e_indicador.permite_RA_status
 
 		rs("sistema_responsavel_cadastro") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
@@ -1064,6 +1065,7 @@
 				rs("obs")=.obs
 				rs("ean")=.ean
 				rs("grupo")=.grupo
+                rs("subgrupo")=.subgrupo
 				rs("peso")=.peso
 				rs("qtde_volumes")=.qtde_volumes
 				rs("abaixo_min_status")=.abaixo_min_status

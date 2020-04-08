@@ -676,7 +676,12 @@ function exibe_botao_confirmar() {
 					        if (InStr(s_campos_saida_default, "|ckb_COL_CPF_CNPJ_CLIENTE|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_CPF_CNPJ_CLIENTE" name="ckb_COL_CPF_CNPJ_CLIENTE"
 						value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_CPF_CNPJ_CLIENTE.click();">CPF/CNPJ Cliente</span><br />
-				
+
+				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_CONTRIBUINTE_ICMS|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_CONTRIBUINTE_ICMS" name="ckb_COL_CONTRIBUINTE_ICMS"
+						value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_CONTRIBUINTE_ICMS.click();">Contribuinte ICMS</span><br />
+
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_NOME_CLIENTE|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_NOME_CLIENTE" name="ckb_COL_NOME_CLIENTE"
@@ -773,6 +778,11 @@ function exibe_botao_confirmar() {
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_PRODUTO.click();">Produto</span><br />
 						
 				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_NAC_IMP|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_COMERCIAL" tabindex="-1" id="ckb_COL_NAC_IMP" name="ckb_COL_NAC_IMP"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_NAC_IMP.click();">Nacional/Importado</span><br />
+
+				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_DESCRICAO_PRODUTO|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_COMERCIAL" tabindex="-1" id="ckb_COL_DESCRICAO_PRODUTO" name="ckb_COL_DESCRICAO_PRODUTO"
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_DESCRICAO_PRODUTO.click();">Descrição Produto</span><br />
@@ -809,15 +819,25 @@ function exibe_botao_confirmar() {
 				    <fieldset style="border: solid 1px #555;padding: auto"><legend><input id="financeiro" type="checkbox" onclick="marcarDesmarcarFinanceiro()" /><label for="financeiro">Financeiro</label></legend>
 				    
 				        <%	s_checked = ""
-					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_CUSTO|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
-					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_CUSTO" name="ckb_COL_VL_CUSTO"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_CUSTO.click();">VL Custo</span><br />
+					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_CUSTO_ULT_ENTRADA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_CUSTO_ULT_ENTRADA" name="ckb_COL_VL_CUSTO_ULT_ENTRADA"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_CUSTO_ULT_ENTRADA.click();">VL Custo (Últ Entrada)</span><br />
 						
+				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_CUSTO_REAL|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_CUSTO_REAL" name="ckb_COL_VL_CUSTO_REAL"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_CUSTO_REAL.click();">VL Custo (Real)</span><br />
+
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_LISTA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 			    	        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_LISTA" name="ckb_COL_VL_LISTA"
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_LISTA.click();">VL Lista</span><br />
 						
+				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_NF|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_NF" name="ckb_COL_VL_NF"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_NF.click();">VL NF</span><br />
+
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_UNITARIO|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_UNITARIO" name="ckb_COL_VL_UNITARIO"
@@ -833,6 +853,11 @@ function exibe_botao_confirmar() {
                 	        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_RT" name="ckb_COL_RT"
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_RT.click();">RT</span><br />
 						
+				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_ICMS_UF_DEST|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+                	        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_ICMS_UF_DEST" name="ckb_COL_ICMS_UF_DEST"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_ICMS_UF_DEST.click();">ICMS UF Destino</span><br />
+
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_QTDE_PARCELAS|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_QTDE_PARCELAS" name="ckb_COL_QTDE_PARCELAS"

@@ -758,6 +758,7 @@
 					.descricao_html = Trim("" & rs("descricao_html"))
 					.ean = Trim("" & rs("ean"))
 					.grupo = Trim("" & rs("grupo"))
+                    .subgrupo = Trim("" & rs("subgrupo"))
 					.peso = rs("peso")
 					.qtde_volumes = rs("qtde_volumes")
 					.markup_fabricante = rs("markup")
@@ -1974,7 +1975,7 @@
 					end if
 		
 				'01/02/2018: os pedidos do Arclube usam o RA para incluir o valor do frete e, portanto, não devem ter deságio do RA
-				if (Cstr(loja) <> Cstr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE)) And (Not blnMagentoPedidoComIndicador) then rs("perc_desagio_RA_liquida") = PERC_DESAGIO_RA_LIQUIDA
+				if (Cstr(loja) <> Cstr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE)) And (Not blnMagentoPedidoComIndicador) then rs("perc_desagio_RA_liquida") = getParametroPercDesagioRALiquida
 
 				if (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO) And blnMagentoPedidoComIndicador then
 					rs("magento_installer_commission_value") = percCommissionValue
@@ -2085,6 +2086,7 @@
 										rs("descricao_html") = .descricao_html
 										rs("ean") = .ean
 										rs("grupo") = .grupo
+                                        rs("subgrupo") = .subgrupo
 										rs("peso") = .peso
 										rs("qtde_volumes") = .qtde_volumes
 										rs("abaixo_min_status") = .abaixo_min_status

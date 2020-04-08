@@ -533,6 +533,7 @@
 						.descricao_html = Trim("" & rs("descricao_html"))
 						.ean = Trim("" & rs("ean"))
 						.grupo = Trim("" & rs("grupo"))
+                        .subgrupo = Trim("" & rs("subgrupo"))
 						.peso = rs("peso")
 						.qtde_volumes = Trim("" & rs("qtde_volumes"))
 						.cubagem = rs("cubagem")
@@ -1048,7 +1049,7 @@
 					  "var PERC_DESAGIO_RA_LIQUIDA_PEDIDO = " & js_formata_numero(0) & ";" & chr(13)
 	else
 		strScriptJS = "<script language='JavaScript'>" & chr(13) & _
-					  "var PERC_DESAGIO_RA_LIQUIDA_PEDIDO = " & js_formata_numero(PERC_DESAGIO_RA_LIQUIDA) & ";" & chr(13)
+					  "var PERC_DESAGIO_RA_LIQUIDA_PEDIDO = " & js_formata_numero(getParametroPercDesagioRALiquida) & ";" & chr(13)
 		end if
 
 	if erro_produto_indisponivel then

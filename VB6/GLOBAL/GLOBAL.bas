@@ -84,10 +84,6 @@ Option Explicit
     
     Global identificador_ambiente_padrao As String
     
-    Global vCFOPsSemPartilha() As TIPO_LISTA_CFOP
-    
-    Global vCUFsInscricaoVirtual() As TIPO_DUAS_COLUNAS
-    
     Global sPedidoTriangular As String
     
     Global sPedidoDANFETelaAnterior As String

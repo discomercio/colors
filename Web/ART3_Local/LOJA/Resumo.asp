@@ -271,6 +271,9 @@
         PRAZO_EXIBICAO_CANCEL_AUTO_PEDIDO = 2
     end if
 
+	dim nPrazoAcessoRelPedidosIndicadoresLoja
+	nPrazoAcessoRelPedidosIndicadoresLoja = getParametroPrazoAcessoRelPedidosIndicadoresLoja
+
 	s_sessionToken = ""
 	s = "SELECT Convert(varchar(36), SessionTokenModuloLoja) AS SessionTokenModuloLoja FROM t_USUARIO WHERE (usuario = '" & usuario & "')"
     if rs.State <> 0 then rs.Close
@@ -1476,7 +1479,7 @@ function fPesqPrePedido(orcamento) {
 			"		}" & chr(13) & _
 			"" & chr(13)
     end if
-    if Day(Date) <= PRAZO_ACESSO_REL_PEDIDOS_INDICADORES_LOJA then
+    if Day(Date) <= nPrazoAcessoRelPedidosIndicadoresLoja then
         if operacao_permitida(OP_LJA_REL_COMISSAO_INDICADORES, s_lista_operacoes_permitidas) then
     strScript = strScript & _
 			" // Relatorio pedidos indicadores (Preview)" & chr(13) & _
@@ -2837,7 +2840,7 @@ if operacao_permitida(OP_LJA_EDITA_CAD_ORCAMENTISTAS_E_INDICADORES, s_lista_oper
     	<%	'RELATÓRIO DE PEDIDOS INDICADORES (Preview)
 
 		 if operacao_permitida(OP_LJA_REL_COMISSAO_INDICADORES, s_lista_operacoes_permitidas) then
-            if Day(Date) <= PRAZO_ACESSO_REL_PEDIDOS_INDICADORES_LOJA then
+            if Day(Date) <= nPrazoAcessoRelPedidosIndicadoresLoja then
 			idx=idx+1
 			Response.Write s_separacao
 			s_separacao = "<br>" 
