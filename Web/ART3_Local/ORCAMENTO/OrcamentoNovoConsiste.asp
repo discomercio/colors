@@ -115,6 +115,40 @@
 	EndEtg_ie = Trim(Request.Form("EndEtg_ie"))
 	EndEtg_rg = Trim(Request.Form("EndEtg_rg"))
 
+    dim orcamento_endereco_logradouro, orcamento_endereco_bairro, orcamento_endereco_cidade, orcamento_endereco_uf, orcamento_endereco_cep, orcamento_endereco_numero
+    dim orcamento_endereco_complemento, orcamento_endereco_email, orcamento_endereco_email_xml, orcamento_endereco_nome, orcamento_endereco_ddd_res
+    dim orcamento_endereco_tel_res, orcamento_endereco_ddd_com, orcamento_endereco_tel_com, orcamento_endereco_ramal_com, orcamento_endereco_ddd_cel
+    dim orcamento_endereco_tel_cel, orcamento_endereco_ddd_com_2, orcamento_endereco_tel_com_2, orcamento_endereco_ramal_com_2, orcamento_endereco_tipo_pessoa
+    dim orcamento_endereco_cnpj_cpf, orcamento_endereco_contribuinte_icms_status, orcamento_endereco_produtor_rural_status, orcamento_endereco_ie
+    dim orcamento_endereco_rg, orcamento_endereco_contato
+    orcamento_endereco_logradouro = Trim(Request.Form("orcamento_endereco_logradouro"))
+    orcamento_endereco_bairro = Trim(Request.Form("orcamento_endereco_bairro"))
+    orcamento_endereco_cidade = Trim(Request.Form("orcamento_endereco_cidade"))
+    orcamento_endereco_uf = Trim(Request.Form("orcamento_endereco_uf"))
+    orcamento_endereco_cep = Trim(Request.Form("orcamento_endereco_cep"))
+    orcamento_endereco_numero = Trim(Request.Form("orcamento_endereco_numero"))
+    orcamento_endereco_complemento = Trim(Request.Form("orcamento_endereco_complemento"))
+    orcamento_endereco_email = Trim(Request.Form("orcamento_endereco_email"))
+    orcamento_endereco_email_xml = Trim(Request.Form("orcamento_endereco_email_xml"))
+    orcamento_endereco_nome = Trim(Request.Form("orcamento_endereco_nome"))
+    orcamento_endereco_ddd_res = Trim(Request.Form("orcamento_endereco_ddd_res"))
+    orcamento_endereco_tel_res = Trim(Request.Form("orcamento_endereco_tel_res"))
+    orcamento_endereco_ddd_com = Trim(Request.Form("orcamento_endereco_ddd_com"))
+    orcamento_endereco_tel_com = Trim(Request.Form("orcamento_endereco_tel_com"))
+    orcamento_endereco_ramal_com = Trim(Request.Form("orcamento_endereco_ramal_com"))
+    orcamento_endereco_ddd_cel = Trim(Request.Form("orcamento_endereco_ddd_cel"))
+    orcamento_endereco_tel_cel = Trim(Request.Form("orcamento_endereco_tel_cel"))
+    orcamento_endereco_ddd_com_2 = Trim(Request.Form("orcamento_endereco_ddd_com_2"))
+    orcamento_endereco_tel_com_2 = Trim(Request.Form("orcamento_endereco_tel_com_2"))
+    orcamento_endereco_ramal_com_2 = Trim(Request.Form("orcamento_endereco_ramal_com_2"))
+    orcamento_endereco_tipo_pessoa = Trim(Request.Form("orcamento_endereco_tipo_pessoa"))
+    orcamento_endereco_cnpj_cpf = Trim(Request.Form("orcamento_endereco_cnpj_cpf"))
+    orcamento_endereco_contribuinte_icms_status = Trim(Request.Form("orcamento_endereco_contribuinte_icms_status"))
+    orcamento_endereco_produtor_rural_status = Trim(Request.Form("orcamento_endereco_produtor_rural_status"))
+    orcamento_endereco_ie = Trim(Request.Form("orcamento_endereco_ie"))
+    orcamento_endereco_rg = Trim(Request.Form("orcamento_endereco_rg"))
+    orcamento_endereco_contato = Trim(Request.Form("orcamento_endereco_contato"))
+
 	dim s_fabricante, s_produto, s_descricao, s_descricao_html, s_qtde, s_readonly
 	dim s_preco_lista, s_vl_TotalItem, m_TotalItem, m_TotalItemComRA, m_TotalDestePedido, m_TotalDestePedidoComRA
 	dim s_campo_focus
@@ -153,7 +187,139 @@
 	elseif (converte_numero(s_perc_RT)<0) Or (converte_numero(s_perc_RT)>100) then
 		alerte = "Percentual de comissão inválido."
 		end if
-	
+
+	if alerta = "" then
+		if orcamento_endereco_nome = "" then
+			if eh_cpf then
+				alerta="DADOS CADASTRAIS: PREENCHA O NOME DO CLIENTE."
+			else
+				alerta="DADOS CADASTRAIS: PREENCHA A RAZÃO SOCIAL DO CLIENTE."
+				end if
+		elseif orcamento_endereco_logradouro = "" then
+			alerta="DADOS CADASTRAIS: PREENCHA O ENDEREÇO."
+		elseif Len(orcamento_endereco_logradouro) > CLng(MAX_TAMANHO_CAMPO_ENDERECO) then
+			alerta="DADOS CADASTRAIS: ENDEREÇO EXCEDE O TAMANHO MÁXIMO PERMITIDO:<br>TAMANHO ATUAL: " & Cstr(Len(orcamento_endereco_logradouro)) & " CARACTERES<br>TAMANHO MÁXIMO: " & Cstr(MAX_TAMANHO_CAMPO_ENDERECO) & " CARACTERES"
+		elseif orcamento_endereco_numero = "" then
+			alerta="DADOS CADASTRAIS: PREENCHA O NÚMERO DO ENDEREÇO."
+		elseif orcamento_endereco_bairro = "" then
+			alerta="DADOS CADASTRAIS: PREENCHA O BAIRRO."
+		elseif orcamento_endereco_cidade = "" then
+			alerta="DADOS CADASTRAIS: PREENCHA A CIDADE."
+		elseif (orcamento_endereco_uf="") Or (Not uf_ok(orcamento_endereco_uf)) then
+			alerta="DADOS CADASTRAIS: UF INVÁLIDA."
+		elseif orcamento_endereco_cep = "" then
+			alerta="DADOS CADASTRAIS: INFORME O CEP."
+		elseif Not cep_ok(orcamento_endereco_cep) then
+			alerta="DADOS CADASTRAIS: CEP INVÁLIDO."
+		elseif Not ddd_ok(orcamento_endereco_ddd_res) then
+			alerta="DADOS CADASTRAIS: DDD INVÁLIDO."
+		elseif Not telefone_ok(orcamento_endereco_tel_res) then
+			alerta="DADOS CADASTRAIS: TELEFONE RESIDENCIAL INVÁLIDO."
+		elseif (orcamento_endereco_ddd_res <> "") And ((orcamento_endereco_tel_res = "")) then
+			alerta="DADOS CADASTRAIS: PREENCHA O TELEFONE RESIDENCIAL."
+		elseif (orcamento_endereco_ddd_res = "") And ((orcamento_endereco_tel_res <> "")) then
+			alerta="DADOS CADASTRAIS: PREENCHA O DDD."
+		elseif Not ddd_ok(orcamento_endereco_ddd_com) then
+			alerta="DADOS CADASTRAIS: DDD INVÁLIDO."
+		elseif Not telefone_ok(orcamento_endereco_tel_com) then
+			alerta="DADOS CADASTRAIS: TELEFONE COMERCIAL INVÁLIDO."
+		elseif (orcamento_endereco_ddd_com <> "") And ((orcamento_endereco_tel_com = "")) then
+			alerta="DADOS CADASTRAIS: PREENCHA O TELEFONE COMERCIAL."
+		elseif (orcamento_endereco_ddd_com = "") And ((orcamento_endereco_tel_com <> "")) then
+			alerta="DADOS CADASTRAIS: PREENCHA O DDD."
+		elseif eh_cpf And (orcamento_endereco_tel_res="") And (orcamento_endereco_tel_com="") And (orcamento_endereco_tel_cel="") then
+			alerta="DADOS CADASTRAIS: PREENCHA PELO MENOS UM TELEFONE."
+		elseif (Not eh_cpf) And (orcamento_endereco_tel_com="") And (orcamento_endereco_tel_com_2="") then
+			alerta="DADOS CADASTRAIS: PREENCHA O TELEFONE."
+		elseif (orcamento_endereco_ie="") And (orcamento_endereco_contribuinte_icms_status = COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
+			alerta="DADOS CADASTRAIS: PREENCHA A INSCRIÇÃO ESTADUAL."
+			end if
+		end if
+
+'	CONSISTÊNCIAS P/ EMISSÃO DE NFe
+    dim s_tabela_municipios_IBGE 
+	s_tabela_municipios_IBGE = ""
+	if alerta = "" then
+	'	I.E. É VÁLIDA? (somente para pj; pf pode ter outro estado de cadastro)
+		if not eh_cpf and orcamento_endereco_ie <> "" then
+			if Not isInscricaoEstadualValida(orcamento_endereco_ie, orcamento_endereco_uf) then
+				alerta="Preencha a IE (Inscrição Estadual) com um número válido!!" & _
+						"<br>" & "Certifique-se de que a UF informada corresponde à UF responsável pelo registro da IE."
+				end if
+			end if
+		
+	'	MUNICÍPIO DE ACORDO C/ TABELA DO IBGE?
+		dim s_lista_sugerida_municipios
+		dim v_lista_sugerida_municipios
+		dim iCounterLista, iNumeracaoLista
+		if Not consiste_municipio_IBGE_ok(orcamento_endereco_cidade, orcamento_endereco_uf, s_lista_sugerida_municipios, msg_erro) then
+			if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
+			if msg_erro <> "" then
+				alerta = alerta & msg_erro
+			else
+				alerta = alerta & "Município '" & orcamento_endereco_cidade & "' não consta na relação de municípios do IBGE para a UF de '" & orcamento_endereco_uf & "'!!"
+				if s_lista_sugerida_municipios <> "" then
+					alerta = alerta & "<br>" & _
+										"Localize o município na lista abaixo e verifique se a grafia está correta!!"
+					v_lista_sugerida_municipios = Split(s_lista_sugerida_municipios, chr(13))
+					iNumeracaoLista=0
+					for iCounterLista=LBound(v_lista_sugerida_municipios) to UBound(v_lista_sugerida_municipios)
+						if Trim("" & v_lista_sugerida_municipios(iCounterLista)) <> "" then
+							iNumeracaoLista=iNumeracaoLista+1
+							s_tabela_municipios_IBGE = s_tabela_municipios_IBGE & _
+												"	<tr>" & chr(13) & _
+												"		<td align='right'>" & chr(13) & _
+												"			<span class='N'>&nbsp;" & Cstr(iNumeracaoLista) & "." & "</span>" & chr(13) & _
+												"		</td>" & chr(13) & _
+												"		<td align='left'>" & chr(13) & _
+												"			<span class='N'>" & Trim("" & v_lista_sugerida_municipios(iCounterLista)) & "</span>" & chr(13) & _
+												"		</td>" & chr(13) & _
+												"	</tr>" & chr(13)
+							end if
+						next
+						
+					if s_tabela_municipios_IBGE <> "" then
+						s_tabela_municipios_IBGE = _
+								"<table cellspacing='0' cellpadding='1'>" & chr(13) & _
+								"	<tr>" & chr(13) & _
+								"		<td align='center'>" & chr(13) & _
+								"			<p class='N'>" & "Relação de municípios de '" & orcamento_endereco_uf & "' que se iniciam com a letra '" & Ucase(left(orcamento_endereco_cidade,1)) & "'" & "</p>" & chr(13) & _
+								"		</td>" & chr(13) & _
+								"	</tr>" & chr(13) & _
+								"	<tr>" & chr(13) & _
+								"		<td align='center'>" & chr(13) &_
+								"			<table cellspacing='0' border='1'>" & chr(13) & _
+												s_tabela_municipios_IBGE & _
+								"			</table>" & chr(13) & _
+								"		</td>" & chr(13) & _
+								"	</tr>" & chr(13) & _
+								"</table>" & chr(13)
+						end if
+					end if
+				end if
+			end if
+		end if
+
+	dim s_caracteres_invalidos
+	if alerta = "" then
+		if Not isTextoValido(orcamento_endereco_nome, s_caracteres_invalidos) then
+			alerta="DADOS CADASTRAIS: O CAMPO 'NOME' POSSUI UM OU MAIS CARACTERES INVÁLIDOS: " & s_caracteres_invalidos
+		elseif Not isTextoValido(orcamento_endereco_logradouro, s_caracteres_invalidos) then
+			alerta="DADOS CADASTRAIS: O CAMPO 'ENDEREÇO' POSSUI UM OU MAIS CARACTERES INVÁLIDOS: " & s_caracteres_invalidos
+		elseif Not isTextoValido(orcamento_endereco_numero, s_caracteres_invalidos) then
+			alerta="DADOS CADASTRAIS: O CAMPO NÚMERO DO ENDEREÇO POSSUI UM OU MAIS CARACTERES INVÁLIDOS: " & s_caracteres_invalidos
+		elseif Not isTextoValido(orcamento_endereco_complemento, s_caracteres_invalidos) then
+			alerta="DADOS CADASTRAIS: O CAMPO 'COMPLEMENTO' POSSUI UM OU MAIS CARACTERES INVÁLIDOS: " & s_caracteres_invalidos
+		elseif Not isTextoValido(orcamento_endereco_bairro, s_caracteres_invalidos) then
+			alerta="DADOS CADASTRAIS: O CAMPO 'BAIRRO' POSSUI UM OU MAIS CARACTERES INVÁLIDOS: " & s_caracteres_invalidos
+		elseif Not isTextoValido(orcamento_endereco_cidade, s_caracteres_invalidos) then
+			alerta="DADOS CADASTRAIS: O CAMPO 'CIDADE' POSSUI UM OU MAIS CARACTERES INVÁLIDOS: " & s_caracteres_invalidos
+		elseif Not isTextoValido(orcamento_endereco_contato, s_caracteres_invalidos) then
+			alerta="DADOS CADASTRAIS: O CAMPO 'CONTATO' POSSUI UM OU MAIS CARACTERES INVÁLIDOS: " & s_caracteres_invalidos
+			end if
+		end if
+
+
 	if alerta = "" then
 		if rb_end_entrega = "" then
 			alerta = "Não foi informado se o endereço de entrega é o mesmo do cadastro ou não."
@@ -417,7 +583,6 @@
 			next
 		end if
 
-	dim s_caracteres_invalidos
 	if alerta = "" then
 		if Not isTextoValido(EndEtg_endereco, s_caracteres_invalidos) then
 			alerta="O CAMPO 'ENDEREÇO DE ENTREGA' POSSUI UM OU MAIS CARACTERES INVÁLIDOS: " & s_caracteres_invalidos
@@ -2010,6 +2175,35 @@ var blnConfirmaDifRAeValores=false;
 <input type="hidden" name="EndEtg_produtor_rural_status" id="EndEtg_produtor_rural_status" value="<%=EndEtg_produtor_rural_status%>" />
 <input type="hidden" name="EndEtg_ie" id="EndEtg_ie" value="<%=EndEtg_ie%>" />
 <input type="hidden" name="EndEtg_rg" id="EndEtg_rg" value="<%=EndEtg_rg%>" />
+
+<input type="hidden" name="orcamento_endereco_logradouro" id="orcamento_endereco_logradouro" value="<%=orcamento_endereco_logradouro%>" />
+<input type="hidden" name="orcamento_endereco_bairro" id="orcamento_endereco_bairro" value="<%=orcamento_endereco_bairro%>" />
+<input type="hidden" name="orcamento_endereco_cidade" id="orcamento_endereco_cidade" value="<%=orcamento_endereco_cidade%>" />
+<input type="hidden" name="orcamento_endereco_uf" id="orcamento_endereco_uf" value="<%=orcamento_endereco_uf%>" />
+<input type="hidden" name="orcamento_endereco_cep" id="orcamento_endereco_cep" value="<%=orcamento_endereco_cep%>" />
+<input type="hidden" name="orcamento_endereco_numero" id="orcamento_endereco_numero" value="<%=orcamento_endereco_numero%>" />
+<input type="hidden" name="orcamento_endereco_complemento" id="orcamento_endereco_complemento" value="<%=orcamento_endereco_complemento%>" />
+<input type="hidden" name="orcamento_endereco_email" id="orcamento_endereco_email" value="<%=orcamento_endereco_email%>" />
+<input type="hidden" name="orcamento_endereco_email_xml" id="orcamento_endereco_email_xml" value="<%=orcamento_endereco_email_xml%>" />
+<input type="hidden" name="orcamento_endereco_nome" id="orcamento_endereco_nome" value="<%=orcamento_endereco_nome%>" />
+<input type="hidden" name="orcamento_endereco_ddd_res" id="orcamento_endereco_ddd_res" value="<%=orcamento_endereco_ddd_res%>" />
+<input type="hidden" name="orcamento_endereco_tel_res" id="orcamento_endereco_tel_res" value="<%=orcamento_endereco_tel_res%>" />
+<input type="hidden" name="orcamento_endereco_ddd_com" id="orcamento_endereco_ddd_com" value="<%=orcamento_endereco_ddd_com%>" />
+<input type="hidden" name="orcamento_endereco_tel_com" id="orcamento_endereco_tel_com" value="<%=orcamento_endereco_tel_com%>" />
+<input type="hidden" name="orcamento_endereco_ramal_com" id="orcamento_endereco_ramal_com" value="<%=orcamento_endereco_ramal_com%>" />
+<input type="hidden" name="orcamento_endereco_ddd_cel" id="orcamento_endereco_ddd_cel" value="<%=orcamento_endereco_ddd_cel%>" />
+<input type="hidden" name="orcamento_endereco_tel_cel" id="orcamento_endereco_tel_cel" value="<%=orcamento_endereco_tel_cel%>" />
+<input type="hidden" name="orcamento_endereco_ddd_com_2" id="orcamento_endereco_ddd_com_2" value="<%=orcamento_endereco_ddd_com_2%>" />
+<input type="hidden" name="orcamento_endereco_tel_com_2" id="orcamento_endereco_tel_com_2" value="<%=orcamento_endereco_tel_com_2%>" />
+<input type="hidden" name="orcamento_endereco_ramal_com_2" id="orcamento_endereco_ramal_com_2" value="<%=orcamento_endereco_ramal_com_2%>" />
+<input type="hidden" name="orcamento_endereco_tipo_pessoa" id="orcamento_endereco_tipo_pessoa" value="<%=orcamento_endereco_tipo_pessoa%>" />
+<input type="hidden" name="orcamento_endereco_cnpj_cpf" id="orcamento_endereco_cnpj_cpf" value="<%=orcamento_endereco_cnpj_cpf%>" />
+<input type="hidden" name="orcamento_endereco_contribuinte_icms_status" id="orcamento_endereco_contribuinte_icms_status" value="<%=orcamento_endereco_contribuinte_icms_status%>" />
+<input type="hidden" name="orcamento_endereco_produtor_rural_status" id="orcamento_endereco_produtor_rural_status" value="<%=orcamento_endereco_produtor_rural_status%>" />
+<input type="hidden" name="orcamento_endereco_ie" id="orcamento_endereco_ie" value="<%=orcamento_endereco_ie%>" />
+<input type="hidden" name="orcamento_endereco_rg" id="orcamento_endereco_rg" value="<%=orcamento_endereco_rg%>" />
+<input type="hidden" name="orcamento_endereco_contato" id="orcamento_endereco_contato" value="<%=orcamento_endereco_contato%>" />
+
 
 <!-- AJAX EM ANDAMENTO -->
 <div id="divAjaxRunning" style="display:none;"><img src="../Imagem/ajax_loader_gray_256.gif" class="AjaxImgLoader"/></div>

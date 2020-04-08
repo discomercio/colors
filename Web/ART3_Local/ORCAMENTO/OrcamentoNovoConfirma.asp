@@ -245,6 +245,40 @@
 	EndEtg_ie = Trim(Request.Form("EndEtg_ie"))
 	EndEtg_rg = Trim(Request.Form("EndEtg_rg"))
 
+    dim orcamento_endereco_logradouro, orcamento_endereco_bairro, orcamento_endereco_cidade, orcamento_endereco_uf, orcamento_endereco_cep, orcamento_endereco_numero
+    dim orcamento_endereco_complemento, orcamento_endereco_email, orcamento_endereco_email_xml, orcamento_endereco_nome, orcamento_endereco_ddd_res
+    dim orcamento_endereco_tel_res, orcamento_endereco_ddd_com, orcamento_endereco_tel_com, orcamento_endereco_ramal_com, orcamento_endereco_ddd_cel
+    dim orcamento_endereco_tel_cel, orcamento_endereco_ddd_com_2, orcamento_endereco_tel_com_2, orcamento_endereco_ramal_com_2, orcamento_endereco_tipo_pessoa
+    dim orcamento_endereco_cnpj_cpf, orcamento_endereco_contribuinte_icms_status, orcamento_endereco_produtor_rural_status, orcamento_endereco_ie
+    dim orcamento_endereco_rg, orcamento_endereco_contato
+    orcamento_endereco_logradouro = Trim(Request.Form("orcamento_endereco_logradouro"))
+    orcamento_endereco_bairro = Trim(Request.Form("orcamento_endereco_bairro"))
+    orcamento_endereco_cidade = Trim(Request.Form("orcamento_endereco_cidade"))
+    orcamento_endereco_uf = Trim(Request.Form("orcamento_endereco_uf"))
+    orcamento_endereco_cep = retorna_so_digitos(Trim(Request.Form("orcamento_endereco_cep")))
+    orcamento_endereco_numero = Trim(Request.Form("orcamento_endereco_numero"))
+    orcamento_endereco_complemento = Trim(Request.Form("orcamento_endereco_complemento"))
+    orcamento_endereco_email = Trim(Request.Form("orcamento_endereco_email"))
+    orcamento_endereco_email_xml = Trim(Request.Form("orcamento_endereco_email_xml"))
+    orcamento_endereco_nome = Trim(Request.Form("orcamento_endereco_nome"))
+    orcamento_endereco_ddd_res = retorna_so_digitos(Trim(Request.Form("orcamento_endereco_ddd_res")))
+    orcamento_endereco_tel_res = retorna_so_digitos(Trim(Request.Form("orcamento_endereco_tel_res")))
+    orcamento_endereco_ddd_com = retorna_so_digitos(Trim(Request.Form("orcamento_endereco_ddd_com")))
+    orcamento_endereco_tel_com = retorna_so_digitos(Trim(Request.Form("orcamento_endereco_tel_com")))
+    orcamento_endereco_ramal_com = retorna_so_digitos(Trim(Request.Form("orcamento_endereco_ramal_com")))
+    orcamento_endereco_ddd_cel = retorna_so_digitos(Trim(Request.Form("orcamento_endereco_ddd_cel")))
+    orcamento_endereco_tel_cel = retorna_so_digitos(Trim(Request.Form("orcamento_endereco_tel_cel")))
+    orcamento_endereco_ddd_com_2 = retorna_so_digitos(Trim(Request.Form("orcamento_endereco_ddd_com_2")))
+    orcamento_endereco_tel_com_2 = retorna_so_digitos(Trim(Request.Form("orcamento_endereco_tel_com_2")))
+    orcamento_endereco_ramal_com_2 = retorna_so_digitos(Trim(Request.Form("orcamento_endereco_ramal_com_2")))
+    orcamento_endereco_tipo_pessoa = Trim(Request.Form("orcamento_endereco_tipo_pessoa"))
+    orcamento_endereco_cnpj_cpf = retorna_so_digitos(Trim(Request.Form("orcamento_endereco_cnpj_cpf")))
+    orcamento_endereco_contribuinte_icms_status = Trim(Request.Form("orcamento_endereco_contribuinte_icms_status"))
+    orcamento_endereco_produtor_rural_status = Trim(Request.Form("orcamento_endereco_produtor_rural_status"))
+    orcamento_endereco_ie = Trim(Request.Form("orcamento_endereco_ie"))
+    orcamento_endereco_rg = Trim(Request.Form("orcamento_endereco_rg"))
+    orcamento_endereco_contato = Trim(Request.Form("orcamento_endereco_contato"))
+
 	dim s_caracteres_invalidos
 
 	dim s, i, k, n, opcao_venda_sem_estoque, qtde_spe, vl_total, vl_total_NF, vl_total_RA
@@ -839,33 +873,33 @@
 		
 		if blnUsarMemorizacaoCompletaEnderecos then
 			rs("st_memorizacao_completa_enderecos") = 1
-		    rs("endereco_logradouro") = Trim("" & r_cliente.endereco)
-		    rs("endereco_bairro") = Trim("" & r_cliente.bairro)
-		    rs("endereco_cidade") = Trim("" & r_cliente.cidade)
-		    rs("endereco_uf") = Trim("" & r_cliente.uf)
-		    rs("endereco_cep") = Trim("" & r_cliente.cep)
-		    rs("endereco_numero") = Trim("" & r_cliente.endereco_numero)
-		    rs("endereco_complemento") = Trim("" & r_cliente.endereco_complemento)
-			rs("endereco_email") = Trim("" & r_cliente.email)
-			rs("endereco_email_xml") = Trim("" & r_cliente.email_xml)
-			rs("endereco_nome") = Trim("" & r_cliente.nome)
-			rs("endereco_ddd_res") = Trim("" & r_cliente.ddd_res)
-			rs("endereco_tel_res") = Trim("" & r_cliente.tel_res)
-			rs("endereco_ddd_com") = Trim("" & r_cliente.ddd_com)
-			rs("endereco_tel_com") = Trim("" & r_cliente.tel_com)
-			rs("endereco_ramal_com") = Trim("" & r_cliente.ramal_com)
-			rs("endereco_ddd_cel") = Trim("" & r_cliente.ddd_cel)
-			rs("endereco_tel_cel") = Trim("" & r_cliente.tel_cel)
-			rs("endereco_ddd_com_2") = Trim("" & r_cliente.ddd_com_2)
-			rs("endereco_tel_com_2") = Trim("" & r_cliente.tel_com_2)
-			rs("endereco_ramal_com_2") = Trim("" & r_cliente.ramal_com_2)
-			rs("endereco_tipo_pessoa") = Trim("" & r_cliente.tipo)
-			rs("endereco_cnpj_cpf") = Trim("" & r_cliente.cnpj_cpf)
-			rs("endereco_contribuinte_icms_status") = r_cliente.contribuinte_icms_status
-			rs("endereco_produtor_rural_status") = r_cliente.produtor_rural_status
-			rs("endereco_ie") = Trim("" & r_cliente.ie)
-			rs("endereco_rg") = Trim("" & r_cliente.rg)
-			rs("endereco_contato") = Trim("" & r_cliente.contato)
+		    rs("endereco_logradouro") = orcamento_endereco_logradouro
+		    rs("endereco_bairro") = orcamento_endereco_bairro
+		    rs("endereco_cidade") = orcamento_endereco_cidade
+		    rs("endereco_uf") = orcamento_endereco_uf
+		    rs("endereco_cep") = orcamento_endereco_cep
+		    rs("endereco_numero") = orcamento_endereco_numero
+		    rs("endereco_complemento") = orcamento_endereco_complemento
+			rs("endereco_email") = orcamento_endereco_email
+			rs("endereco_email_xml") = orcamento_endereco_email_xml
+			rs("endereco_nome") = orcamento_endereco_nome
+			rs("endereco_ddd_res") = orcamento_endereco_ddd_res
+			rs("endereco_tel_res") = orcamento_endereco_tel_res
+			rs("endereco_ddd_com") = orcamento_endereco_ddd_com
+			rs("endereco_tel_com") = orcamento_endereco_tel_com
+			rs("endereco_ramal_com") = orcamento_endereco_ramal_com
+			rs("endereco_ddd_cel") = orcamento_endereco_ddd_cel
+			rs("endereco_tel_cel") = orcamento_endereco_tel_cel
+			rs("endereco_ddd_com_2") = orcamento_endereco_ddd_com_2
+			rs("endereco_tel_com_2") = orcamento_endereco_tel_com_2
+			rs("endereco_ramal_com_2") = orcamento_endereco_ramal_com_2
+			rs("endereco_tipo_pessoa") = orcamento_endereco_tipo_pessoa
+			rs("endereco_cnpj_cpf") = orcamento_endereco_cnpj_cpf
+			rs("endereco_contribuinte_icms_status") = orcamento_endereco_contribuinte_icms_status
+			rs("endereco_produtor_rural_status") = orcamento_endereco_produtor_rural_status
+			rs("endereco_ie") = orcamento_endereco_ie
+			rs("endereco_rg") = orcamento_endereco_rg
+			rs("endereco_contato") = orcamento_endereco_contato
 			end if
 
 		if rb_end_entrega = "S" then 

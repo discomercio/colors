@@ -3592,6 +3592,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.endereco_produtor_rural_status = 0
 			.endereco_ie = ""
 			.endereco_rg = ""
+			.endereco_contato = ""
 
 			'O orçamento não armazenava o endereço de cobrança anteriormente da forma como ocorria no pedido
 			if blnUsarMemorizacaoCompletaEnderecos then
@@ -3623,6 +3624,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.endereco_produtor_rural_status = rs("endereco_produtor_rural_status")
 					.endereco_ie = Trim("" & rs("endereco_ie"))
 					.endereco_rg = Trim("" & rs("endereco_rg"))
+					.endereco_contato = Trim("" & rs("endereco_contato"))
 					end if
 				end if
 

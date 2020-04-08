@@ -2537,6 +2537,7 @@
 		dim endereco_produtor_rural_status
 		dim endereco_ie
 		dim endereco_rg
+		dim endereco_contato
 		dim EndEtg_email
 		dim EndEtg_email_xml
 		dim EndEtg_nome

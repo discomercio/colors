@@ -176,7 +176,12 @@ var conteudo_original;
 var fCepPopup;
 
 $(function () {
-	var f;
+
+<%if blnUsarMemorizacaoCompletaEnderecos then%>
+    copiarDadosCadastrais();
+<% end if%>
+
+    var f;
 	if ((typeof (fORC) !== "undefined") && (fORC !== null)) {
 		f = fORC;
 
@@ -198,6 +203,7 @@ $(function () {
 
     trataProdutorRuralEndEtg_PF(null);
     trocarEndEtgTipoPessoa(null);
+
 });
 function Disabled_True(f) {
     Disabled_change(f, true);
@@ -228,7 +234,10 @@ function Disabled_change(f, value) {
 
 function ProcessaSelecaoCEP(){};
 
-function AbrePesquisaCep(){
+function OrcamentoAbrePesquisaCep(){ AbrePesquisaCepComum(TrataCepEnderecoOrcamento); }
+function AbrePesquisaCep(){ AbrePesquisaCepComum(TrataCepEnderecoCadastro); }
+
+function AbrePesquisaCepComum(TrataCepEnderecoRotina){
 var f, strUrl;
 	try
 		{
@@ -241,7 +250,7 @@ var f, strUrl;
 	 // NOP
 		}
 	f=fCAD;
-	ProcessaSelecaoCEP=TrataCepEnderecoCadastro;
+	ProcessaSelecaoCEP=TrataCepEnderecoRotina;
 	strUrl="../Global/AjaxCepPesqPopup.asp";
 	if (trim(f.cep.value)!="") strUrl=strUrl+"?CepDefault="+trim(f.cep.value);
 	fCepPopup=window.open(strUrl, "AjaxCepPesqPopup", "status=1,toolbar=0,location=0,menubar=0,directories=0,resizable=1,scrollbars=1,width=980,height=650,left=0,top=0");
@@ -259,6 +268,20 @@ var f;
 	f.endereco_numero.value=strEnderecoNumero;
 	f.endereco_complemento.value=strEnderecoComplemento;
 	f.endereco.focus();
+	window.status="Concluído";
+}
+
+function TrataCepEnderecoOrcamento(strCep, strUF, strLocalidade, strBairro, strLogradouro, strEnderecoNumero, strEnderecoComplemento) {
+var f;
+	f=fORC;
+	f.orcamento_endereco_cep.value=cep_formata(strCep);
+	f.orcamento_endereco_uf.value=strUF;
+	f.orcamento_endereco_cidade.value=strLocalidade;
+	f.orcamento_endereco_bairro.value=strBairro;
+	f.orcamento_endereco_logradouro.value=strLogradouro;
+	f.orcamento_endereco_numero.value=strEnderecoNumero;
+	f.orcamento_endereco_complemento.value=strEnderecoComplemento;
+	f.orcamento_endereco_logradouro.focus();
 	window.status="Concluído";
 }
 
@@ -356,7 +379,11 @@ var eh_cpf;
 	if (s!=conteudo_original) {
 		if (!confirm("As alterações feitas serão perdidas!!\nContinua mesmo assim?")) return;
 		}
-	
+
+    ValidarDadosCadastrais();
+    if (!ValidarDadosCadastraisOK)
+        return;
+
 	if ((!f.rb_end_entrega[0].checked)&&(!f.rb_end_entrega[1].checked)) {
 		alert('Informe se o endereço de entrega será o mesmo endereço do cadastro ou não!!');
 		return;
@@ -1187,6 +1214,247 @@ if (!eh_cpf) {
 	f.submit();
 }
 
+//retornamos através de uma variavel global. Fizemos para deixar a estrutura da rotina fica igual às outras.
+var ValidarDadosCadastraisOK = false;
+function ValidarDadosCadastrais() {
+    var eh_cpf, s;
+    var f = fORC;
+    ValidarDadosCadastraisOK = false;
+
+	s = retorna_so_digitos(fCAD.cnpj_cpf_selecionado.value);
+	eh_cpf=false;
+	if (s.length==11) eh_cpf=true;
+	
+	if (!eh_cpf) {
+		s=trim(f.orcamento_endereco_contato.value);
+		if (s=="") {
+			alert('Dados cadastrais: informe o nome da pessoa para contato!!');
+			f.orcamento_endereco_contato.focus();
+			return;
+			}
+		if ((!f.orcamento_endereco_contribuinte_icms_status[0].checked) && (!f.orcamento_endereco_contribuinte_icms_status[1].checked) && (!f.orcamento_endereco_contribuinte_icms_status[2].checked)) {
+			alert('Dados cadastrais: informe se o cliente é contribuinte do ICMS, não contribuinte ou isento!!');
+			return;
+			}
+		if ((f.orcamento_endereco_contribuinte_icms_status[1].checked) && (trim(f.orcamento_endereco_ie.value) == "")) {
+			alert('Dados cadastrais: se o cliente é contribuinte do ICMS a inscrição estadual deve ser preenchida!!');
+			f.orcamento_endereco_ie.focus();
+			return;
+		}
+		if ((f.orcamento_endereco_contribuinte_icms_status[0].checked) && (f.orcamento_endereco_ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
+			alert('Dados cadastrais: se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
+			f.orcamento_endereco_ie.focus();
+			return;
+		}
+		if ((f.orcamento_endereco_contribuinte_icms_status[1].checked) && (f.orcamento_endereco_ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
+			alert('Dados cadastrais: se cliente é contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
+			f.orcamento_endereco_ie.focus();
+			return;
+			}
+		}
+
+		// Verifica se o campo IE está vazio quando contribuinte ICMS = isento
+		if (!eh_cpf) {
+			if (f.orcamento_endereco_contribuinte_icms_status[2].checked) {
+				if (f.orcamento_endereco_ie.value != "") {
+					alert("Dados cadastrais: se o Contribuinte ICMS é isento, o campo IE deve ser vazio!");
+					f.orcamento_endereco_ie.focus();
+					return;
+				}
+			}
+		}
+
+	if (!eh_cpf) {
+	    if (trim(f.orcamento_endereco_nome.value)=="") {
+		    alert('Dados cadastrais: preencha o nome!!');
+		    f.orcamento_endereco_nome.focus();
+		    return;
+		    }
+		}
+
+	if (trim(f.orcamento_endereco_logradouro.value)=="") {
+		alert('Dados cadastrais: preencha o endereço!!');
+		f.orcamento_endereco_logradouro.focus();
+		return;
+		}
+
+	if (trim(f.orcamento_endereco_numero.value)=="") {
+		alert('Dados cadastrais: preencha o número do endereço!!');
+		f.orcamento_endereco_numero.focus();
+		return;
+		}
+
+	if (trim(f.orcamento_endereco_bairro.value)=="") {
+		alert('Dados cadastrais: preencha o bairro!!');
+		f.orcamento_endereco_bairro.focus();
+		return;
+		}
+
+	if (trim(f.orcamento_endereco_cidade.value)=="") {
+		alert('Dados cadastrais: preencha a cidade!!');
+		f.orcamento_endereco_cidade.focus();
+		return;
+		}
+
+	s=trim(f.orcamento_endereco_uf.value);
+	if ((s=="")||(!uf_ok(s))) {
+		alert('Dados cadastrais: UF inválida!!');
+		f.orcamento_endereco_uf.focus();
+		return;
+		}
+		
+	if (trim(f.orcamento_endereco_cep.value)=="") {
+		alert('Dados cadastrais: informe o CEP!!');
+		return;
+		}
+		
+	if (!cep_ok(f.orcamento_endereco_cep.value)) {
+		alert('Dados cadastrais: CEP inválido!!');
+		f.orcamento_endereco_cep.focus();
+		return;
+		}
+
+	if (eh_cpf) {
+		if (!ddd_ok(f.orcamento_endereco_ddd_res.value)) {
+			alert('Dados cadastrais: DDD inválido!!');
+			f.orcamento_endereco_ddd_res.focus();
+			return;
+			}
+		if (!telefone_ok(f.orcamento_endereco_tel_res.value)) {
+			alert('Dados cadastrais: telefone inválido!!');
+			f.orcamento_endereco_tel_res.focus();
+			return;
+			}
+		if ((trim(f.orcamento_endereco_ddd_res.value)!="")||(trim(f.orcamento_endereco_tel_res.value)!="")) {
+			if (trim(f.orcamento_endereco_ddd_res.value)=="") {
+				alert('Dados cadastrais: preencha o DDD!!');
+				f.orcamento_endereco_ddd_res.focus();
+				return;
+				}
+			if (trim(f.orcamento_endereco_tel_res.value)=="") {
+				alert('Dados cadastrais: preencha o telefone!!');
+				f.orcamento_endereco_tel_res.focus();
+				return;
+				}
+			}
+		}
+		
+	if (!ddd_ok(f.orcamento_endereco_ddd_com.value)) {
+		alert('Dados cadastrais: DDD inválido!!');
+		f.orcamento_endereco_ddd_com.focus();
+		return;
+		}
+
+	if (!telefone_ok(f.orcamento_endereco_tel_com.value)) {
+		alert('Dados cadastrais: telefone comercial inválido!!');
+		f.orcamento_endereco_tel_com.focus();
+		return;
+		}
+
+	if ((trim(f.orcamento_endereco_ddd_com.value)!="")||(trim(f.orcamento_endereco_tel_com.value)!="")) {
+		if (trim(f.orcamento_endereco_ddd_com.value)=="") {
+			alert('Dados cadastrais: preencha o DDD!!');
+			f.orcamento_endereco_ddd_com.focus();
+			return;
+			}
+		if (trim(f.orcamento_endereco_tel_com.value)=="") {
+			alert('Dados cadastrais: preencha o telefone!!');
+			f.orcamento_endereco_tel_com.focus();
+			return;
+			}
+		}
+	
+	if (eh_cpf) {
+		if ((trim(f.orcamento_endereco_tel_res.value)=="")&&(trim(f.orcamento_endereco_tel_com.value)=="")&&(trim(f.orcamento_endereco_tel_cel.value)=="")) {
+			alert('Dados cadastrais: preencha pelo menos um telefone!!');
+			return;
+			}
+		}
+		else {
+		    if (trim(f.orcamento_endereco_tel_com_2.value) == "") {
+		        if (trim(f.orcamento_endereco_ddd_com.value) == "") {
+		            alert('Dados cadastrais: preencha o DDD!!');
+		            f.orcamento_endereco_ddd_com.focus();
+		            return;
+		        }
+		        if (trim(f.orcamento_endereco_tel_com.value) == "") {
+		            alert('Dados cadastrais: preencha o telefone!!');
+		            f.orcamento_endereco_tel_com.focus();
+		            return;
+		        }
+		    }
+
+}
+if (eh_cpf) {
+    if (!ddd_ok(f.orcamento_endereco_ddd_cel.value)) {
+        alert('Dados cadastrais: DDD inválido!!');
+        f.orcamento_endereco_ddd_cel.focus();
+        return;
+    }
+    if (!telefone_ok(f.orcamento_endereco_tel_cel.value)) {
+        alert('Dados cadastrais: telefone inválido!!');
+        f.orcamento_endereco_tel_cel.focus();
+        return;
+    }
+    if ((f.orcamento_endereco_ddd_cel.value == "") && (f.orcamento_endereco_tel_cel.value != "")) {
+        alert('Dados cadastrais: preencha o DDD do celular.');
+        f.orcamento_endereco_ddd_cel.focus();
+        return;
+    }
+    if ((f.orcamento_endereco_tel_cel.value == "") && (f.orcamento_endereco_ddd_cel.value != "")) {
+        alert('Dados cadastrais: preencha o número do celular.');
+        f.orcamento_endereco_tel_cel.focus();
+        return;
+    }
+}
+if (!eh_cpf) {
+    if (!ddd_ok(f.orcamento_endereco_ddd_com_2.value)) {
+        alert('Dados cadastrais: DDD inválido!!');
+        f.orcamento_endereco_ddd_com_2.focus();
+        return;
+    }
+    if (!telefone_ok(f.orcamento_endereco_tel_com_2.value)) {
+        alert('Dados cadastrais: telefone inválido!!');
+        f.orcamento_endereco_tel_com_2.focus();
+        return;
+    }
+    if ((f.orcamento_endereco_ddd_com_2.value == "") && (f.orcamento_endereco_tel_com_2.value != "")) {
+        alert('Dados cadastrais: preencha o DDD do telefone.');
+        f.orcamento_endereco_ddd_com_2.focus();
+        return;
+    }
+    if ((f.orcamento_endereco_tel_com_2.value == "") && (f.orcamento_endereco_ddd_com_2.value != "")) {
+        alert('Dados cadastrais: preencha o telefone.');
+        f.orcamento_endereco_tel_com_2.focus();
+        return;
+    }
+
+}
+	
+	if ( (trim(f.orcamento_endereco_email.value)!="") && (!email_ok(f.orcamento_endereco_email.value)) ) {
+		alert('Dados cadastrais: e-mail inválido!!');
+		f.orcamento_endereco_email.focus();
+		return;
+		}
+
+	if ( (trim(f.orcamento_endereco_email_xml.value)!="") && (!email_ok(f.orcamento_endereco_email_xml.value)) ) {
+		alert('Dados cadastrais: e-mail (XML) inválido!!');
+		f.orcamento_endereco_email_xml.focus();
+		return;
+	}
+
+    // PARA CLIENTE PJ, É OBRIGATÓRIO O PREENCHIMENTO DO E-MAIL
+    if (!eh_cpf) {
+        if ((trim(f.orcamento_endereco_email.value) == "") && (trim(f.orcamento_endereco_email.value) == "")) {
+            alert("Dados cadastrais: é obrigatório informar um endereço de e-mail");
+            f.orcamento_endereco_email.focus();
+            return;
+        }
+    }
+
+    ValidarDadosCadastraisOK = true;
+}
+
 
 function AtualizaClienteContrib(f) {
 	var s, eh_cpf, i;
@@ -1399,6 +1667,10 @@ function setarValorRadio(array, valor)
 		$.mostraJanelaCEP("EndEtg_cep", "EndEtg_uf", "EndEtg_cidade", "EndEtg_bairro", "EndEtg_endereco", "EndEtg_endereco_numero", "EndEtg_endereco_complemento");
 	}
 
+	function exibeJanelaCEP_Orc() {
+		$.mostraJanelaCEP("orcamento_endereco_cep", "orcamento_endereco_uf", "orcamento_endereco_cidade", "orcamento_endereco_bairro", "orcamento_endereco_logradouro", "orcamento_endereco_numero", "orcamento_endereco_complemento");
+    }
+
 	function trataProdutorRural() {
 		//ao clicar na opção Produtor Rural, exibir/ocultar os campos apropriados
 		if ((typeof (fCAD.rb_produtor_rural) !== "undefined") && (fCAD.rb_produtor_rural !== null)) {
@@ -1411,6 +1683,47 @@ function setarValorRadio(array, valor)
 		}
 	}
 
+<%if blnUsarMemorizacaoCompletaEnderecos then%>
+    function copiarDadosCadastrais() {
+        <%if not eh_cpf then %>
+            fORC.orcamento_endereco_nome.value = fCAD.nome.value;
+            fORC.orcamento_endereco_contribuinte_icms_status[0].checked = fCAD.rb_contribuinte_icms[0].checked;
+            fORC.orcamento_endereco_contribuinte_icms_status[1].checked = fCAD.rb_contribuinte_icms[1].checked;
+            fORC.orcamento_endereco_contribuinte_icms_status[2].checked = fCAD.rb_contribuinte_icms[2].checked;
+            fORC.orcamento_endereco_ie.value = fCAD.ie.value;
+        <% end if%>
+
+        fORC.orcamento_endereco_logradouro.value = fCAD.endereco.value;
+        fORC.orcamento_endereco_numero.value = fCAD.endereco_numero.value;
+        fORC.orcamento_endereco_complemento.value = fCAD.endereco_complemento.value;
+        fORC.orcamento_endereco_bairro.value = fCAD.bairro.value;
+        fORC.orcamento_endereco_cidade.value = fCAD.cidade.value;
+        fORC.orcamento_endereco_uf.value = fCAD.uf.value;
+        fORC.orcamento_endereco_cep.value = fCAD.cep.value;
+
+        <%if eh_cpf then %>
+            fORC.orcamento_endereco_ddd_res.value = fCAD.ddd_res.value;
+            fORC.orcamento_endereco_tel_res.value = fCAD.tel_res.value;
+            fORC.orcamento_endereco_ddd_cel.value = fCAD.ddd_cel.value;
+            fORC.orcamento_endereco_tel_cel.value = fCAD.tel_cel.value;
+            fORC.orcamento_endereco_ddd_com.value = fCAD.ddd_com.value;
+            fORC.orcamento_endereco_tel_com.value = fCAD.tel_com.value;
+            fORC.orcamento_endereco_ramal_com.value = fCAD.ramal_com.value;
+        <%else %>
+
+            fORC.orcamento_endereco_ddd_com.value = fCAD.ddd_com.value;
+            fORC.orcamento_endereco_tel_com.value = fCAD.tel_com.value;
+            fORC.orcamento_endereco_ramal_com.value = fCAD.ramal_com.value;
+            fORC.orcamento_endereco_ddd_com_2.value = fCAD.ddd_com_2.value;
+            fORC.orcamento_endereco_tel_com_2.value = fCAD.tel_com_2.value;
+            fORC.orcamento_endereco_ramal_com_2.value = fCAD.ramal_com_2.value;
+            fORC.orcamento_endereco_contato.value = fCAD.contato.value;
+        <% end if %>
+
+        fORC.orcamento_endereco_email.value = fCAD.email.value;
+        fORC.orcamento_endereco_email_xml.value = fCAD.email_xml.value;
+    }
+<%end if%>
 
 </script>
 
@@ -2240,6 +2553,207 @@ function setarValorRadio(array, valor)
 	<input type="hidden" name="cliente_selecionado" id="cliente_selecionado" value='<%=id_cliente%>'>
 	<input type="hidden" name="operacao_selecionada" id="operacao_selecionada" value='<%=OP_INCLUI%>'>
 	<input type="hidden" name="c_FormFieldValues" id="c_FormFieldValues" value="" />
+
+
+<!-- ************   DADOS CADASTRAIS   ************ -->
+<%if blnUsarMemorizacaoCompletaEnderecos then%>
+    <br>
+    <table width="649" class="Q" cellspacing="0">
+	    <tr>
+		    <td align="left">
+		        <p class="R">DADOS CADASTRAIS</p>
+		    </td>
+		    <td style="width:40px;text-align:right;vertical-align:top;">
+    			<a href="javascript:copiarDadosCadastrais();"><img src="../IMAGEM/copia_20x20.png" name="btnCopiarDadosCadastrais" id="btnCopiarDadosCadastrais" title="Copia os dados já existentes para o bloco de dados cadastrais" /></a>
+		    </td>
+	    </tr>
+    </table>
+    <%if eh_cpf then %>
+        <input type="hidden" name="orcamento_endereco_nome" id="orcamento_endereco_nome" value="<%=rs("nome") %>" />
+        <input type="hidden" name="orcamento_endereco_contribuinte_icms_status" id="orcamento_endereco_contribuinte_icms_status" value="<%=rs("contribuinte_icms_status") %>" />
+        <input type="hidden" name="orcamento_endereco_ie" id="orcamento_endereco_ie" value="<%=rs("ie") %>" />
+
+    <%else %>
+        <!-- ************   DADOS CADASTRAIS PESSOA JURÍDICA   ************ -->
+
+        <!-- ************   NOME  ************ -->
+        <table width="649" class="QS" cellspacing="0">
+	        <tr>
+	        <td width="100%" align="left"><p class="R">RAZÃO SOCIAL</p><p class="C">
+		        <input id="orcamento_endereco_nome" name="orcamento_endereco_nome" class="TA" maxlength="60" size="85" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fORC.orcamento_endereco_contribuinte_icms_status_nao.focus(); filtra_nome_identificador();"></p></td>
+	        </tr>
+        </table>
+
+        <!-- ************   CONTRIBUINTE ICMS / IE ************ -->
+        <table width="649" class="QS" cellspacing="0">
+	        <tr>
+	        <td align="left"><p class="R">CONTRIBUINTE ICMS</p><p class="C">
+		        <% intIdx = 0 %>
+		        <input type="radio" id="orcamento_endereco_contribuinte_icms_status_nao" name="orcamento_endereco_contribuinte_icms_status" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO%>"><span class="C" style="cursor:default" onclick="fORC.orcamento_endereco_contribuinte_icms_status[<%=Cstr(intIdx)%>].click();">Não</span>
+		        <% intIdx = intIdx + 1 %>
+		        <input type="radio" id="orcamento_endereco_contribuinte_icms_status_sim" name="orcamento_endereco_contribuinte_icms_status" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM%>"><span class="C" style="cursor:default" onclick="fORC.orcamento_endereco_contribuinte_icms_status[<%=Cstr(intIdx)%>].click();">Sim</span>
+		        <% intIdx = intIdx + 1 %>
+		        <input type="radio" id="orcamento_endereco_contribuinte_icms_status_isento" name="orcamento_endereco_contribuinte_icms_status" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO%>"><span class="C" style="cursor:default" onclick="fORC.orcamento_endereco_contribuinte_icms_status[<%=Cstr(intIdx)%>].click();">Isento</span></p></td>
+	        <td class="MDE" width="215" align="left"><p class="R">IE</p><p class="C">
+		        <input id="orcamento_endereco_ie" name="orcamento_endereco_ie" class="TA" type="text" maxlength="20" size="25" onkeypress="if (digitou_enter(true)) fORC.orcamento_endereco_logradouro.focus(); filtra_nome_identificador();"></p></td>
+	        </tr>
+        </table>
+
+    <%end if%>
+
+    <!-- ************   ENDEREÇO   ************ -->
+    <table width="649" class="QS" cellspacing="0">
+	    <tr>
+	    <td width="100%" align="left"><p class="R">ENDEREÇO</p><p class="C">
+		    <input id="orcamento_endereco_logradouro" name="orcamento_endereco_logradouro" class="TA" maxlength="60" style="width:635px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fORC.orcamento_endereco_numero.focus(); filtra_nome_identificador();"></p></td>
+	    </tr>
+    </table>
+
+    <!-- ************   Nº/COMPLEMENTO   ************ -->
+    <table width="649" class="QS" cellspacing="0">
+	    <tr>
+	    <td class="MD" width="50%" align="left"><p class="R">Nº</p><p class="C">
+		    <input id="orcamento_endereco_numero" name="orcamento_endereco_numero" class="TA" maxlength="20" style="width:310px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fORC.orcamento_endereco_complemento.focus(); filtra_nome_identificador();"></p></td>
+	    <td align="left"><p class="R">COMPLEMENTO</p><p class="C">
+		    <input id="orcamento_endereco_complemento" name="orcamento_endereco_complemento" class="TA" maxlength="60" style="width:310px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fORC.orcamento_endereco_bairro.focus(); filtra_nome_identificador();"></p></td>
+	    </tr>
+    </table>
+
+    <!-- ************   BAIRRO/CIDADE   ************ -->
+    <table width="649" class="QS" cellspacing="0">
+	    <tr>
+	    <td class="MD" width="50%" align="left"><p class="R">BAIRRO</p><p class="C">
+		    <input id="orcamento_endereco_bairro" name="orcamento_endereco_bairro" class="TA" maxlength="72" style="width:310px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fORC.orcamento_endereco_cidade.focus(); filtra_nome_identificador();"></p></td>
+	    <td align="left"><p class="R">CIDADE</p><p class="C">
+		    <input id="orcamento_endereco_cidade" name="orcamento_endereco_cidade" class="TA" maxlength="60" style="width:310px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fORC.orcamento_endereco_uf.focus(); filtra_nome_identificador();"></p></td>
+	    </tr>
+    </table>
+
+    <!-- ************   UF/CEP   ************ -->
+    <table width="649" class="QS" cellspacing="0">
+	    <tr>
+	    <td class="MD" width="50%" align="left"><p class="R">UF</p><p class="C">
+		    <input id="orcamento_endereco_uf" name="orcamento_endereco_uf" class="TA" maxlength="2" size="3" onkeypress="if (digitou_enter(true) && tem_info(this.value) && uf_ok(this.value)) fORC.orcamento_endereco_ddd_res.focus();" onblur="this.value=trim(this.value); if (!uf_ok(this.value)) {alert('UF inválida!!');this.focus();} else this.value=ucase(this.value);"></p></td>
+	    <td width="50%" align="left">
+		    <table width="100%" cellpadding="0" cellspacing="0">
+		    <tr>
+			    <td width="50%" align="left"><p class="R">CEP</p><p class="C">
+				    <input id="orcamento_endereco_cep" name="orcamento_endereco_cep" readonly tabindex=-1 class="TA" maxlength="9" size="11" onkeypress="if (digitou_enter(true) && cep_ok(this.value)) fORC.orcamento_endereco_ddd_res.focus(); filtra_cep();" onblur="if (!cep_ok(this.value)) {alert('CEP inválido!!');this.focus();} else this.value=cep_formata(this.value);"></p></td>
+			    <td align="center" width="50%">
+				    <% if blnPesquisaCEPAntiga then %>
+				    <button type="button" name="bPesqCepOrcamento" id="bPesqCepOrcamento" style="width:130px;font-size:10pt;" class="Botao" onclick="OrcamentoAbrePesquisaCep();">Pesquisar CEP</button>
+				    <% end if %>
+				    <% if blnPesquisaCEPAntiga and blnPesquisaCEPNova then Response.Write "&nbsp;" %>
+				    <% if blnPesquisaCEPNova then %>
+				    <button type="button" name="bPesqCepNovoOrcamento" id="bPesqCepNovoOrcamento" style="width:130px;font-size:10pt;" class="Botao" onclick="exibeJanelaCEP_Orc();">&nbsp;Busca de CEP&nbsp;</button>
+				    <% end if %>
+			    </td>
+		    </tr>
+		    </table>
+	    </td>
+	    </tr>
+    </table>
+
+    <%if eh_cpf then %>
+        <!-- ************   TELEFONES PESSOA FÍSICA   ************ -->
+        <input type="hidden" name="orcamento_endereco_ddd_com_2" id="orcamento_endereco_ddd_com_2" value="<%=rs("ddd_com_2") %>" />
+        <input type="hidden" name="orcamento_endereco_tel_com_2" id="orcamento_endereco_tel_com_2" value="<%=rs("tel_com_2") %>" />
+        <input type="hidden" name="orcamento_endereco_ramal_com_2" id="orcamento_endereco_ramal_com_2" value="<%=rs("ramal_com_2") %>" />
+        <input type="hidden" name="orcamento_endereco_tipo_pessoa" id="orcamento_endereco_tipo_pessoa" value="<%=rs("tipo") %>" />
+        <input type="hidden" name="orcamento_endereco_cnpj_cpf" id="orcamento_endereco_cnpj_cpf" value="<%=rs("cnpj_cpf") %>" />
+        <input type="hidden" name="orcamento_endereco_produtor_rural_status" id="orcamento_endereco_produtor_rural_status" value="<%=rs("produtor_rural_status") %>" />
+        <input type="hidden" name="orcamento_endereco_rg" id="orcamento_endereco_rg" value="<%=rs("rg") %>" />
+        <input type="hidden" name="orcamento_endereco_contato" id="orcamento_endereco_contato" value="<%=rs("contato") %>" />
+
+        <!-- ************   TELEFONE RESIDENCIAL   ************ -->
+        <table width="649" class="QS" cellspacing="0">
+	        <tr>
+	        <td class="MD" width="20%" align="left"><p class="R">DDD</p><p class="C">
+		        <input id="orcamento_endereco_ddd_res" name="orcamento_endereco_ddd_res" class="TA" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fORC.orcamento_endereco_tel_res.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p></td>
+	        <td align="left"><p class="R">TELEFONE RESIDENCIAL</p><p class="C">
+		        <input id="orcamento_endereco_tel_res" name="orcamento_endereco_tel_res" class="TA" maxlength="11" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fORC.orcamento_endereco_ddd_cel.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Telefone inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p></td>
+	        </tr>
+	        <tr>
+	        <td class="MD MC" width="20%" align="left"><p class="R">DDD</p><p class="C">
+		        <input id="orcamento_endereco_ddd_cel" name="orcamento_endereco_ddd_cel" class="TA" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fORC.orcamento_endereco_tel_cel.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p></td>
+	        <td align="left" class="MC"><p class="R">CELULAR</p><p class="C">
+		        <input id="orcamento_endereco_tel_cel" name="orcamento_endereco_tel_cel" class="TA" maxlength="9" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fORC.orcamento_endereco_ddd_com.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Número de celular inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p></td>
+	        </tr>
+        </table>
+	
+        <!-- ************   TELEFONE COMERCIAL   ************ -->
+        <table width="649" class="QS" cellspacing="0">
+	        <tr>
+	        <td class="MD" width="20%" align="left"><p class="R">DDD</p><p class="C">
+		        <input id="orcamento_endereco_ddd_com" name="orcamento_endereco_ddd_com" class="TA" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fORC.orcamento_endereco_tel_com.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p></td>
+	        <td class="MD" align="left"><p class="R">TELEFONE COMERCIAL</p><p class="C">
+		        <input id="orcamento_endereco_tel_com" name="orcamento_endereco_tel_com" class="TA" maxlength="11" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fORC.orcamento_endereco_ramal_com.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Telefone inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p></td>
+	        <td align="left"><p class="R">RAMAL</p><p class="C">
+		        <input id="orcamento_endereco_ramal_com" name="orcamento_endereco_ramal_com" class="TA" maxlength="4" size="6" onkeypress="if (digitou_enter(true)) fORC.orcamento_endereco_email.focus(); filtra_numerico();"></p></td>
+	        </tr>
+        </table>
+    <%else %>
+        <!-- ************   TELEFONES PESSOA JURÍDICA   ************ -->
+        <input type="hidden" name="orcamento_endereco_ddd_res" id="orcamento_endereco_ddd_res" value="<%=rs("ddd_res") %>" />
+        <input type="hidden" name="orcamento_endereco_tel_res" id="orcamento_endereco_tel_res" value="<%=rs("tel_res") %>" />
+        <input type="hidden" name="orcamento_endereco_ddd_cel" id="orcamento_endereco_ddd_cel" value="<%=rs("ddd_cel") %>" />
+        <input type="hidden" name="orcamento_endereco_tel_cel" id="orcamento_endereco_tel_cel" value="<%=rs("tel_cel") %>" />
+        <input type="hidden" name="orcamento_endereco_tipo_pessoa" id="orcamento_endereco_tipo_pessoa" value="<%=rs("tipo") %>" />
+        <input type="hidden" name="orcamento_endereco_cnpj_cpf" id="orcamento_endereco_cnpj_cpf" value="<%=rs("cnpj_cpf") %>" />
+        <input type="hidden" name="orcamento_endereco_produtor_rural_status" id="orcamento_endereco_produtor_rural_status" value="<%=rs("produtor_rural_status") %>" />
+        <input type="hidden" name="orcamento_endereco_rg" id="orcamento_endereco_rg" value="<%=rs("rg") %>" />
+
+        <!-- ************   TELEFONE COMERCIAL   ************ -->
+        <table width="649" class="QS" cellspacing="0">
+	        <tr>
+	        <td class="MD" width="20%" align="left"><p class="R">DDD</p><p class="C">
+		        <input id="orcamento_endereco_ddd_com" name="orcamento_endereco_ddd_com" class="TA" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fORC.orcamento_endereco_tel_com.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p></td>
+	        <td class="MD" align="left"><p class="R">TELEFONE</p><p class="C">
+		        <input id="orcamento_endereco_tel_com" name="orcamento_endereco_tel_com" class="TA" maxlength="11" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fORC.orcamento_endereco_ramal_com.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Telefone inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p></td>
+	        <td align="left"><p class="R">RAMAL</p><p class="C">
+		        <input id="orcamento_endereco_ramal_com" name="orcamento_endereco_ramal_com" class="TA" maxlength="4" size="6" onkeypress="if (digitou_enter(true)) fORC.orcamento_endereco_ddd_com_2.focus(); filtra_numerico();"></p></td>
+	        </tr>
+	        <tr>
+	        <td class="MD MC" width="20%" align="left"><p class="R">DDD</p><p class="C">
+	        <input id="orcamento_endereco_ddd_com_2" name="orcamento_endereco_ddd_com_2" class="TA" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fORC.orcamento_endereco_tel_com_2.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!!');this.focus();}" /></p>  
+	        </td>
+	        <td class="MD MC" align="left"><p class="R">TELEFONE</p><p class="C">
+	        <input id="orcamento_endereco_tel_com_2" name="orcamento_endereco_tel_com_2" class="TA" maxlength="9" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fORC.orcamento_endereco_ramal_com_2.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Telefone inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p>
+	        </td>
+	        <td align="left" class="MC"><p class="R">RAMAL</p><p class="C">
+	        <input id="orcamento_endereco_ramal_com_2" name="orcamento_endereco_ramal_com_2" class="TA" maxlength="4" size="6" onkeypress="if (digitou_enter(true)) fORC.orcamento_endereco_contato.focus(); filtra_numerico();" /></p>
+	        </td>
+	        </tr>
+        </table>
+
+        <!-- ************   CONTATO   ************ -->
+        <table width="649" class="QS" cellspacing="0">
+	        <tr>
+	        <td width="100%" align="left"><p class="R">NOME DA PESSOA PARA CONTATO NA EMPRESA</p><p class="C">
+		        <input id="orcamento_endereco_contato" name="orcamento_endereco_contato" class="TA" maxlength="30" size="45" onkeypress="if (digitou_enter(true)) fORC.orcamento_endereco_email.focus(); filtra_nome_identificador();"></p></td>
+	        </tr>
+        </table>
+
+    <%end if %>
+
+    <!-- ************   E-MAIL   ************ -->
+    <table width="649" class="QS" cellspacing="0">
+	    <tr>
+	    <td width="100%" align="left"><p class="R">E-MAIL</p><p class="C">
+		    <input id="orcamento_endereco_email" name="orcamento_endereco_email" class="TA" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fORC.orcamento_endereco_email_xml.focus(); filtra_email();"></p></td>
+        </tr>
+    </table>
+
+    <!-- ************   E-MAIL (XML)  ************ -->
+    <table width="649" class="QS" cellspacing="0">
+	    <tr>
+	    <td width="100%" align="left"><p class="R">E-MAIL (XML)</p><p class="C">
+		    <input id="orcamento_endereco_email_xml" name="orcamento_endereco_email_xml" class="TA" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fORC.rb_end_entrega_nao.focus(); filtra_email();"></p></td>
+	    </tr>
+    </table>
+
+<%end if%>
+        
 
 <!-- ************   ENDEREÇO DE ENTREGA: S/N   ************ -->
 <br>

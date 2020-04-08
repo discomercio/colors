@@ -1739,6 +1739,43 @@ function setarValorRadio(array, valor)
 	<input type="hidden" name="c_FormFieldValues" id="c_FormFieldValues" value="" />
 
 
+<!-- ************   DAODS CADASTRAIS   ************ -->
+<%if blnUsarMemorizacaoCompletaEnderecos then%>
+    <%
+	set r_cliente = New cl_CLIENTE
+	call x_cliente_bd(cliente_selecionado, r_cliente)
+    %>
+    <input type="hidden" name="orcamento_endereco_logradouro" id="orcamento_endereco_logradouro" value="<%=Trim("" & r_cliente.endereco) %>" />
+    <input type="hidden" name="orcamento_endereco_bairro" id="orcamento_endereco_bairro" value="<%=Trim("" & r_cliente.bairro) %>" />
+    <input type="hidden" name="orcamento_endereco_cidade" id="orcamento_endereco_cidade" value="<%=Trim("" & r_cliente.cidade) %>" />
+    <input type="hidden" name="orcamento_endereco_uf" id="orcamento_endereco_uf" value="<%=Trim("" & r_cliente.uf) %>" />
+    <input type="hidden" name="orcamento_endereco_cep" id="orcamento_endereco_cep" value="<%=Trim("" & r_cliente.cep) %>" />
+    <input type="hidden" name="orcamento_endereco_numero" id="orcamento_endereco_numero" value="<%=Trim("" & r_cliente.endereco_numero) %>" />
+    <input type="hidden" name="orcamento_endereco_complemento" id="orcamento_endereco_complemento" value="<%=Trim("" & r_cliente.endereco_complemento) %>" />
+    <input type="hidden" name="orcamento_endereco_email" id="orcamento_endereco_email" value="<%=Trim("" & r_cliente.email) %>" />
+    <input type="hidden" name="orcamento_endereco_email_xml" id="orcamento_endereco_email_xml" value="<%=Trim("" & r_cliente.email_xml) %>" />
+    <input type="hidden" name="orcamento_endereco_nome" id="orcamento_endereco_nome" value="<%=Trim("" & r_cliente.nome) %>" />
+    <input type="hidden" name="orcamento_endereco_ddd_res" id="orcamento_endereco_ddd_res" value="<%=Trim("" & r_cliente.ddd_res) %>" />
+    <input type="hidden" name="orcamento_endereco_tel_res" id="orcamento_endereco_tel_res" value="<%=Trim("" & r_cliente.tel_res) %>" />
+    <input type="hidden" name="orcamento_endereco_ddd_com" id="orcamento_endereco_ddd_com" value="<%=Trim("" & r_cliente.ddd_com) %>" />
+    <input type="hidden" name="orcamento_endereco_tel_com" id="orcamento_endereco_tel_com" value="<%=Trim("" & r_cliente.tel_com) %>" />
+    <input type="hidden" name="orcamento_endereco_ramal_com" id="orcamento_endereco_ramal_com" value="<%=Trim("" & r_cliente.ramal_com) %>" />
+    <input type="hidden" name="orcamento_endereco_ddd_cel" id="orcamento_endereco_ddd_cel" value="<%=Trim("" & r_cliente.ddd_cel) %>" />
+    <input type="hidden" name="orcamento_endereco_tel_cel" id="orcamento_endereco_tel_cel" value="<%=Trim("" & r_cliente.tel_cel) %>" />
+    <input type="hidden" name="orcamento_endereco_ddd_com_2" id="orcamento_endereco_ddd_com_2" value="<%=Trim("" & r_cliente.ddd_com_2) %>" />
+    <input type="hidden" name="orcamento_endereco_tel_com_2" id="orcamento_endereco_tel_com_2" value="<%=Trim("" & r_cliente.tel_com_2) %>" />
+    <input type="hidden" name="orcamento_endereco_ramal_com_2" id="orcamento_endereco_ramal_com_2" value="<%=Trim("" & r_cliente.ramal_com_2) %>" />
+    <input type="hidden" name="orcamento_endereco_tipo_pessoa" id="orcamento_endereco_tipo_pessoa" value="<%=Trim("" & r_cliente.tipo) %>" />
+    <input type="hidden" name="orcamento_endereco_cnpj_cpf" id="orcamento_endereco_cnpj_cpf" value="<%=Trim("" & r_cliente.cnpj_cpf) %>" />
+    <input type="hidden" name="orcamento_endereco_contribuinte_icms_status" id="orcamento_endereco_contribuinte_icms_status" value="<%=Trim("" & r_cliente.contribuinte_icms_status) %>" />
+    <input type="hidden" name="orcamento_endereco_produtor_rural_status" id="orcamento_endereco_produtor_rural_status" value="<%=Trim("" & r_cliente.produtor_rural_status) %>" />
+    <input type="hidden" name="orcamento_endereco_ie" id="orcamento_endereco_ie" value="<%=Trim("" & r_cliente.ie) %>" />
+    <input type="hidden" name="orcamento_endereco_rg" id="orcamento_endereco_rg" value="<%=Trim("" & r_cliente.rg) %>" />
+    <input type="hidden" name="orcamento_endereco_contato" id="orcamento_endereco_contato" value="<%=Trim("" & r_cliente.contato) %>" />
+
+<%end if%>
+        
+
 <!-- ************   ENDEREÇO DE ENTREGA: S/N   ************ -->
 <table width="649" class="Q" cellspacing="0">
 	<tr>

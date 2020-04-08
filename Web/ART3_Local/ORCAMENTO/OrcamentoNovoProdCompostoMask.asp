@@ -93,6 +93,40 @@
 	EndEtg_ie = Trim(Request.Form("EndEtg_ie"))
 	EndEtg_rg = Trim(Request.Form("EndEtg_rg"))
 
+    dim orcamento_endereco_logradouro, orcamento_endereco_bairro, orcamento_endereco_cidade, orcamento_endereco_uf, orcamento_endereco_cep, orcamento_endereco_numero
+    dim orcamento_endereco_complemento, orcamento_endereco_email, orcamento_endereco_email_xml, orcamento_endereco_nome, orcamento_endereco_ddd_res
+    dim orcamento_endereco_tel_res, orcamento_endereco_ddd_com, orcamento_endereco_tel_com, orcamento_endereco_ramal_com, orcamento_endereco_ddd_cel
+    dim orcamento_endereco_tel_cel, orcamento_endereco_ddd_com_2, orcamento_endereco_tel_com_2, orcamento_endereco_ramal_com_2, orcamento_endereco_tipo_pessoa
+    dim orcamento_endereco_cnpj_cpf, orcamento_endereco_contribuinte_icms_status, orcamento_endereco_produtor_rural_status, orcamento_endereco_ie
+    dim orcamento_endereco_rg, orcamento_endereco_contato
+    orcamento_endereco_logradouro = Trim(Request.Form("orcamento_endereco_logradouro"))
+    orcamento_endereco_bairro = Trim(Request.Form("orcamento_endereco_bairro"))
+    orcamento_endereco_cidade = Trim(Request.Form("orcamento_endereco_cidade"))
+    orcamento_endereco_uf = Trim(Request.Form("orcamento_endereco_uf"))
+    orcamento_endereco_cep = Trim(Request.Form("orcamento_endereco_cep"))
+    orcamento_endereco_numero = Trim(Request.Form("orcamento_endereco_numero"))
+    orcamento_endereco_complemento = Trim(Request.Form("orcamento_endereco_complemento"))
+    orcamento_endereco_email = Trim(Request.Form("orcamento_endereco_email"))
+    orcamento_endereco_email_xml = Trim(Request.Form("orcamento_endereco_email_xml"))
+    orcamento_endereco_nome = Trim(Request.Form("orcamento_endereco_nome"))
+    orcamento_endereco_ddd_res = Trim(Request.Form("orcamento_endereco_ddd_res"))
+    orcamento_endereco_tel_res = Trim(Request.Form("orcamento_endereco_tel_res"))
+    orcamento_endereco_ddd_com = Trim(Request.Form("orcamento_endereco_ddd_com"))
+    orcamento_endereco_tel_com = Trim(Request.Form("orcamento_endereco_tel_com"))
+    orcamento_endereco_ramal_com = Trim(Request.Form("orcamento_endereco_ramal_com"))
+    orcamento_endereco_ddd_cel = Trim(Request.Form("orcamento_endereco_ddd_cel"))
+    orcamento_endereco_tel_cel = Trim(Request.Form("orcamento_endereco_tel_cel"))
+    orcamento_endereco_ddd_com_2 = Trim(Request.Form("orcamento_endereco_ddd_com_2"))
+    orcamento_endereco_tel_com_2 = Trim(Request.Form("orcamento_endereco_tel_com_2"))
+    orcamento_endereco_ramal_com_2 = Trim(Request.Form("orcamento_endereco_ramal_com_2"))
+    orcamento_endereco_tipo_pessoa = Trim(Request.Form("orcamento_endereco_tipo_pessoa"))
+    orcamento_endereco_cnpj_cpf = Trim(Request.Form("orcamento_endereco_cnpj_cpf"))
+    orcamento_endereco_contribuinte_icms_status = Trim(Request.Form("orcamento_endereco_contribuinte_icms_status"))
+    orcamento_endereco_produtor_rural_status = Trim(Request.Form("orcamento_endereco_produtor_rural_status"))
+    orcamento_endereco_ie = Trim(Request.Form("orcamento_endereco_ie"))
+    orcamento_endereco_rg = Trim(Request.Form("orcamento_endereco_rg"))
+    orcamento_endereco_contato = Trim(Request.Form("orcamento_endereco_contato"))
+
 	dim alerta
 	alerta = ""
 	
@@ -587,6 +621,35 @@ var i, b, ha_item;
 <input type="hidden" name="EndEtg_produtor_rural_status" id="EndEtg_produtor_rural_status" value="<%=EndEtg_produtor_rural_status%>" />
 <input type="hidden" name="EndEtg_ie" id="EndEtg_ie" value="<%=EndEtg_ie%>" />
 <input type="hidden" name="EndEtg_rg" id="EndEtg_rg" value="<%=EndEtg_rg%>" />
+
+<input type="hidden" name="orcamento_endereco_logradouro" id="orcamento_endereco_logradouro" value="<%=orcamento_endereco_logradouro%>" />
+<input type="hidden" name="orcamento_endereco_bairro" id="orcamento_endereco_bairro" value="<%=orcamento_endereco_bairro%>" />
+<input type="hidden" name="orcamento_endereco_cidade" id="orcamento_endereco_cidade" value="<%=orcamento_endereco_cidade%>" />
+<input type="hidden" name="orcamento_endereco_uf" id="orcamento_endereco_uf" value="<%=orcamento_endereco_uf%>" />
+<input type="hidden" name="orcamento_endereco_cep" id="orcamento_endereco_cep" value="<%=orcamento_endereco_cep%>" />
+<input type="hidden" name="orcamento_endereco_numero" id="orcamento_endereco_numero" value="<%=orcamento_endereco_numero%>" />
+<input type="hidden" name="orcamento_endereco_complemento" id="orcamento_endereco_complemento" value="<%=orcamento_endereco_complemento%>" />
+<input type="hidden" name="orcamento_endereco_email" id="orcamento_endereco_email" value="<%=orcamento_endereco_email%>" />
+<input type="hidden" name="orcamento_endereco_email_xml" id="orcamento_endereco_email_xml" value="<%=orcamento_endereco_email_xml%>" />
+<input type="hidden" name="orcamento_endereco_nome" id="orcamento_endereco_nome" value="<%=orcamento_endereco_nome%>" />
+<input type="hidden" name="orcamento_endereco_ddd_res" id="orcamento_endereco_ddd_res" value="<%=orcamento_endereco_ddd_res%>" />
+<input type="hidden" name="orcamento_endereco_tel_res" id="orcamento_endereco_tel_res" value="<%=orcamento_endereco_tel_res%>" />
+<input type="hidden" name="orcamento_endereco_ddd_com" id="orcamento_endereco_ddd_com" value="<%=orcamento_endereco_ddd_com%>" />
+<input type="hidden" name="orcamento_endereco_tel_com" id="orcamento_endereco_tel_com" value="<%=orcamento_endereco_tel_com%>" />
+<input type="hidden" name="orcamento_endereco_ramal_com" id="orcamento_endereco_ramal_com" value="<%=orcamento_endereco_ramal_com%>" />
+<input type="hidden" name="orcamento_endereco_ddd_cel" id="orcamento_endereco_ddd_cel" value="<%=orcamento_endereco_ddd_cel%>" />
+<input type="hidden" name="orcamento_endereco_tel_cel" id="orcamento_endereco_tel_cel" value="<%=orcamento_endereco_tel_cel%>" />
+<input type="hidden" name="orcamento_endereco_ddd_com_2" id="orcamento_endereco_ddd_com_2" value="<%=orcamento_endereco_ddd_com_2%>" />
+<input type="hidden" name="orcamento_endereco_tel_com_2" id="orcamento_endereco_tel_com_2" value="<%=orcamento_endereco_tel_com_2%>" />
+<input type="hidden" name="orcamento_endereco_ramal_com_2" id="orcamento_endereco_ramal_com_2" value="<%=orcamento_endereco_ramal_com_2%>" />
+<input type="hidden" name="orcamento_endereco_tipo_pessoa" id="orcamento_endereco_tipo_pessoa" value="<%=orcamento_endereco_tipo_pessoa%>" />
+<input type="hidden" name="orcamento_endereco_cnpj_cpf" id="orcamento_endereco_cnpj_cpf" value="<%=orcamento_endereco_cnpj_cpf%>" />
+<input type="hidden" name="orcamento_endereco_contribuinte_icms_status" id="orcamento_endereco_contribuinte_icms_status" value="<%=orcamento_endereco_contribuinte_icms_status%>" />
+<input type="hidden" name="orcamento_endereco_produtor_rural_status" id="orcamento_endereco_produtor_rural_status" value="<%=orcamento_endereco_produtor_rural_status%>" />
+<input type="hidden" name="orcamento_endereco_ie" id="orcamento_endereco_ie" value="<%=orcamento_endereco_ie%>" />
+<input type="hidden" name="orcamento_endereco_rg" id="orcamento_endereco_rg" value="<%=orcamento_endereco_rg%>" />
+<input type="hidden" name="orcamento_endereco_contato" id="orcamento_endereco_contato" value="<%=orcamento_endereco_contato%>" />
+
 
 <!-- AJAX EM ANDAMENTO -->
 <div id="divAjaxRunning" style="display:none;"><img src="../Imagem/ajax_loader_gray_256.gif" class="AjaxImgLoader"/></div>

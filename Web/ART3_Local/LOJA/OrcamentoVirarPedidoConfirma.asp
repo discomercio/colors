@@ -1438,39 +1438,47 @@
 				rs("usuario_violado_permite_RA_status") = r_orcamento.usuario_violado_permite_RA_status
 
 				rs("endereco_memorizado_status") = 1
-				rs("endereco_logradouro") = Trim("" & t_CLIENTE("endereco"))
-				rs("endereco_bairro") = Trim("" & t_CLIENTE("bairro"))
-				rs("endereco_cidade") = Trim("" & t_CLIENTE("cidade"))
-				rs("endereco_uf") = Trim("" & t_CLIENTE("uf"))
-				rs("endereco_cep") = Trim("" & t_CLIENTE("cep"))
-				rs("endereco_numero") = Trim("" & t_CLIENTE("endereco_numero"))
-				rs("endereco_complemento") = Trim("" & t_CLIENTE("endereco_complemento"))
 
 				if blnUsarMemorizacaoCompletaEnderecos and r_orcamento.st_memorizacao_completa_enderecos = 1 then
                     'Definido em 20/03/2020: o orcamento que foi criado sem memorização continua sua vida sem memorização
 					rs("st_memorizacao_completa_enderecos") = r_orcamento.st_memorizacao_completa_enderecos
-					rs("endereco_email") = Trim("" & t_CLIENTE("email"))
-					rs("endereco_email_xml") = Trim("" & t_CLIENTE("email_xml"))
-					rs("endereco_nome") = Trim("" & t_CLIENTE("nome"))
-					rs("endereco_ddd_res") = Trim("" & t_CLIENTE("ddd_res"))
-					rs("endereco_tel_res") = Trim("" & t_CLIENTE("tel_res"))
-					rs("endereco_ddd_com") = Trim("" & t_CLIENTE("ddd_com"))
-					rs("endereco_tel_com") = Trim("" & t_CLIENTE("tel_com"))
-					rs("endereco_ramal_com") = Trim("" & t_CLIENTE("ramal_com"))
-					rs("endereco_ddd_cel") = Trim("" & t_CLIENTE("ddd_cel"))
-					rs("endereco_tel_cel") = Trim("" & t_CLIENTE("tel_cel"))
-					rs("endereco_ddd_com_2") = Trim("" & t_CLIENTE("ddd_com_2"))
-					rs("endereco_tel_com_2") = Trim("" & t_CLIENTE("tel_com_2"))
-					rs("endereco_ramal_com_2") = Trim("" & t_CLIENTE("ramal_com_2"))
-					rs("endereco_tipo_pessoa") = Trim("" & t_CLIENTE("tipo"))
-					rs("endereco_cnpj_cpf") = Trim("" & t_CLIENTE("cnpj_cpf"))
-					rs("endereco_contribuinte_icms_status") = t_CLIENTE("contribuinte_icms_status")
-					rs("endereco_produtor_rural_status") = t_CLIENTE("produtor_rural_status")
-					rs("endereco_ie") = Trim("" & t_CLIENTE("ie"))
-					rs("endereco_rg") = Trim("" & t_CLIENTE("rg"))
-					rs("endereco_contato") = Trim("" & t_CLIENTE("contato"))
+				    rs("endereco_logradouro") = r_orcamento.endereco_logradouro
+				    rs("endereco_bairro") = r_orcamento.endereco_bairro
+				    rs("endereco_cidade") = r_orcamento.endereco_cidade
+				    rs("endereco_uf") = r_orcamento.endereco_uf
+				    rs("endereco_cep") = r_orcamento.endereco_cep
+				    rs("endereco_numero") = r_orcamento.endereco_numero
+				    rs("endereco_complemento") = r_orcamento.endereco_complemento
+					rs("endereco_email") = r_orcamento.endereco_email
+					rs("endereco_email_xml") = r_orcamento.endereco_email_xml
+					rs("endereco_nome") = r_orcamento.endereco_nome
+					rs("endereco_ddd_res") = r_orcamento.endereco_ddd_res
+					rs("endereco_tel_res") = r_orcamento.endereco_tel_res
+					rs("endereco_ddd_com") = r_orcamento.endereco_ddd_com
+					rs("endereco_tel_com") = r_orcamento.endereco_tel_com
+					rs("endereco_ramal_com") = r_orcamento.endereco_ramal_com
+					rs("endereco_ddd_cel") = r_orcamento.endereco_ddd_cel
+					rs("endereco_tel_cel") = r_orcamento.endereco_tel_cel
+					rs("endereco_ddd_com_2") = r_orcamento.endereco_ddd_com_2
+					rs("endereco_tel_com_2") = r_orcamento.endereco_tel_com_2
+					rs("endereco_ramal_com_2") = r_orcamento.endereco_ramal_com_2
+					rs("endereco_tipo_pessoa") = r_orcamento.endereco_tipo_pessoa
+					rs("endereco_cnpj_cpf") = r_orcamento.endereco_cnpj_cpf
+					rs("endereco_contribuinte_icms_status") = r_orcamento.endereco_contribuinte_icms_status
+					rs("endereco_produtor_rural_status") = r_orcamento.endereco_produtor_rural_status
+					rs("endereco_ie") = r_orcamento.endereco_ie
+					rs("endereco_rg") = r_orcamento.endereco_rg
+					rs("endereco_contato") = r_orcamento.endereco_contato
                 else
 					rs("st_memorizacao_completa_enderecos") = 0
+                    'estes campos são do rs("endereco_memorizado_status") = 1
+				    rs("endereco_logradouro") = Trim("" & t_CLIENTE("endereco"))
+				    rs("endereco_bairro") = Trim("" & t_CLIENTE("bairro"))
+				    rs("endereco_cidade") = Trim("" & t_CLIENTE("cidade"))
+				    rs("endereco_uf") = Trim("" & t_CLIENTE("uf"))
+				    rs("endereco_cep") = Trim("" & t_CLIENTE("cep"))
+				    rs("endereco_numero") = Trim("" & t_CLIENTE("endereco_numero"))
+				    rs("endereco_complemento") = Trim("" & t_CLIENTE("endereco_complemento"))
 					end if
 
 				rs("plataforma_origem_pedido") = COD_PLATAFORMA_ORIGEM_PEDIDO__ERP
