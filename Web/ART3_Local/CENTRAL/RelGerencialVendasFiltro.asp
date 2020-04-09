@@ -193,9 +193,9 @@ dim x, r, strSql, strResp, ha_default, sDescricao
 		r.MoveNext
 		loop
 
-	if Not ha_default then
-		strResp = "<OPTION SELECTED VALUE=''>&nbsp;</OPTION>" & chr(13) & strResp
-		end if
+'	if Not ha_default then
+'		strResp = "<OPTION SELECTED VALUE=''>&nbsp;</OPTION>" & chr(13) & strResp
+'		end if
 		
 	grupos_monta_itens_select = strResp
 	r.close
@@ -227,9 +227,9 @@ dim x, r, strSql, strResp, ha_default, sDescricao
 		r.MoveNext
 		loop
 
-	if Not ha_default then
-		strResp = "<OPTION SELECTED VALUE=''>&nbsp;</OPTION>" & chr(13) & strResp
-		end if
+'	if Not ha_default then
+'		strResp = "<OPTION SELECTED VALUE=''>&nbsp;</OPTION>" & chr(13) & strResp
+'		end if
 		
 	subgrupos_monta_itens_select = strResp
 	r.close
@@ -413,6 +413,27 @@ end function
 				reOrdenarEscolhidos();
 			}
 		}
+
+        $("#c_grupo_pedido_origem").change(function () {
+            $("#spnCounterGrupoOrigemPedido").text($("#c_grupo_pedido_origem :selected").length);
+        });
+
+        $("#c_pedido_origem").change(function () {
+            $("#spnCounterOrigemPedido").text($("#c_pedido_origem :selected").length);
+        });
+
+        $("#c_grupo").change(function () {
+            $("#spnCounterGrupo").text($("#c_grupo :selected").length);
+        });
+
+        $("#c_subgrupo").change(function () {
+            $("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
+        });
+
+        $("#spnCounterGrupoOrigemPedido").text($("#c_grupo_pedido_origem :selected").length);
+        $("#spnCounterOrigemPedido").text($("#c_pedido_origem :selected").length);
+        $("#spnCounterGrupo").text($("#c_grupo :selected").length);
+        $("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
 	});
 
 	//início bloco cidades
@@ -828,9 +849,11 @@ var i, blnFlagOk;
     }
     function limpaCampoSelectGrupo() {
         $("#c_grupo").children().prop('selected', false);
+        $("#spnCounterGrupo").text($("#c_grupo :selected").length);
     }
     function limpaCampoSelectSubGrupo() {
         $("#c_subgrupo").children().prop('selected', false);
+        $("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
     }
 </script>
 <script language="JavaScript" type="text/javascript">
@@ -845,9 +868,11 @@ var i, blnFlagOk;
 <script type="text/javascript">
     function limpaCampoSelectGrupoOrigemPedido() {
         $("#c_grupo_pedido_origem").children().prop('selected', false);
+        $("#spnCounterGrupoOrigemPedido").text($("#c_grupo_pedido_origem :selected").length);
     }
     function limpaCampoSelectOrigemPedido() {
         $("#c_pedido_origem").children().prop('selected', false);
+        $("#spnCounterOrigemPedido").text($("#c_pedido_origem :selected").length);
     }
 </script>
 
@@ -1023,6 +1048,8 @@ html
         <td align="left" valign="top">
 			<a href="javascript:limpaCampoSelectGrupoOrigemPedido()" title="limpa o filtro 'Origem do Pedido (Grupo)'">
 						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterGrupoOrigemPedido"></span>)
 		</td></tr></table>
         </td></tr>
 
@@ -1038,6 +1065,8 @@ html
             <td align="left" valign="top">
 			<a href="javascript:limpaCampoSelectOrigemPedido()" title="limpa o filtro 'Origem do Pedido'">
 						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterOrigemPedido"></span>)
 		</td></tr></table>
         </td></tr>
 
@@ -1057,6 +1086,8 @@ html
 		<td align="left" valign="top">
 			<a name="bLimparGrupo" id="bLimparGrupo" href="javascript:limpaCampoSelectGrupo()" title="limpa o filtro 'Grupo'">
 						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterGrupo"></span>)
 		</td>
 		</tr>
 		</table>
@@ -1079,6 +1110,8 @@ html
 		<td align="left" valign="top">
 			<a name="bLimparSubGrupo" id="bLimparSubGrupo" href="javascript:limpaCampoSelectSubGrupo()" title="limpa o filtro 'Subgrupo'">
 						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterSubgrupo"></span>)
 		</td>
 		</tr>
 		</table>
