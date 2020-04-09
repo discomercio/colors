@@ -18,7 +18,7 @@ namespace ART3WebAPI.Controllers
     public class FarolController : ApiController
     {
         [HttpPost]
-        public async Task<HttpResponseMessage> GetXLSReport(string usuario, string dt_inicio, string dt_termino, string fabricante, string grupo, string btu, string ciclo, string pos_mercado, string perc_est_cresc, string loja, string visao)
+        public async Task<HttpResponseMessage> GetXLSReport(string usuario, string dt_inicio, string dt_termino, string fabricante, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string perc_est_cresc, string loja, string visao)
         {
             if (string.IsNullOrEmpty(dt_inicio.ToString())) throw new Exception("Não foi informada a data inicial do período de vendas.");
             if (string.IsNullOrEmpty(dt_termino.ToString())) throw new Exception("Não foi informada a data final do período de vendas.");
@@ -44,7 +44,8 @@ namespace ART3WebAPI.Controllers
                 Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_dt_periodo_termino", dt_termino);
                 Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_perc_est_cresc", string.IsNullOrEmpty(perc_est_cresc) ? "" : perc_est_cresc);
                 Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_fabricante", string.IsNullOrEmpty(fabricante) ? "" : fabricante.Replace("_", ", "));
-                Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_grupo", string.IsNullOrEmpty(grupo) ? "" : grupo.Replace("_", ", "));
+                Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_grupo", string.IsNullOrEmpty(grupo) ? "" : grupo.Replace("|", ", "));
+                Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_subgrupo", string.IsNullOrEmpty(subgrupo) ? "" : subgrupo.Replace("|", ", "));
                 Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_potencia_BTU", string.IsNullOrEmpty(btu) ? "" : btu);
                 Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_ciclo", string.IsNullOrEmpty(ciclo) ? "" : ciclo);
                 Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_posicao_mercado", string.IsNullOrEmpty(pos_mercado) ? "" : pos_mercado);
@@ -52,11 +53,11 @@ namespace ART3WebAPI.Controllers
                 Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|rb_visao", visao);
 
                 DataFarol datasource = new DataFarol();
-                List<Farol> relFarolList = datasource.Get(dt_inicio, dt_termino, fabricante, grupo, btu, ciclo, pos_mercado, loja).ToList();
+                List<Farol> relFarolList = datasource.Get(dt_inicio, dt_termino, fabricante, grupo, subgrupo, btu, ciclo, pos_mercado, loja).ToList();
 
                 if (relFarolList.Count != 0)
                 {
-                    await ART3WebAPI.Models.Domains.FarolGeradorRelatorio.GenerateXLS(relFarolList, filePath, dt_inicio, dt_termino, fabricante, grupo, btu, ciclo, pos_mercado, perc_est_cresc, loja, visao);
+                    await ART3WebAPI.Models.Domains.FarolGeradorRelatorio.GenerateXLS(relFarolList, filePath, dt_inicio, dt_termino, fabricante, grupo, subgrupo, btu, ciclo, pos_mercado, perc_est_cresc, loja, visao);
                     statusResponse = "OK";
 
                     LogDAO.insere(usuario, s_log, strMsgErro);
