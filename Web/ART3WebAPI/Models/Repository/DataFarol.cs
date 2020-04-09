@@ -11,7 +11,7 @@ namespace ART3WebAPI.Models.Repository
 {
     public class DataFarol
     {
-        public Farol[] Get(string dt_inicio, string dt_termino, string fabricante, string grupo, string btu, string ciclo, string pos_mercado, string loja)
+        public Farol[] Get(string dt_inicio, string dt_termino, string fabricante, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string loja)
         {
             List<Farol> listaFarol = new List<Farol>();
             SqlConnection cn = new SqlConnection(BD.getConnectionString());
@@ -352,7 +352,7 @@ namespace ART3WebAPI.Models.Repository
 
             #region [ Consulta Completa ]
 
-            sqlString = "SELECT fabricante, produto, descricao, descricao_html, grupo, potencia_BTU, ciclo, posicao_mercado, descontinuado, Coalesce(farol_qtde_comprada, 0) AS farol_qtde_comprada, Coalesce(qtde_vendida, 0) AS qtde_vendida, Coalesce(qtde_devolvida, 0) AS qtde_devolvida, Coalesce(qtde_estoque_venda, 0) AS qtde_estoque_venda";
+            sqlString = "SELECT fabricante, produto, descricao, descricao_html, grupo, subgrupo, potencia_BTU, ciclo, posicao_mercado, descontinuado, Coalesce(farol_qtde_comprada, 0) AS farol_qtde_comprada, Coalesce(qtde_vendida, 0) AS qtde_vendida, Coalesce(qtde_devolvida, 0) AS qtde_devolvida, Coalesce(qtde_estoque_venda, 0) AS qtde_estoque_venda";
 
             for (int i = 0; i <= totalMeses; i++)
             {
@@ -364,7 +364,7 @@ namespace ART3WebAPI.Models.Repository
 
             }
 
-            sqlString = string.Concat(sqlString, " FROM (SELECT t_PROD_LISTA_BASE.fabricante, t_PROD_LISTA_BASE.produto, t_PRODUTO.descricao, t_PRODUTO.descricao_html, Coalesce(t_PRODUTO.grupo, '') AS grupo, Coalesce(t_PRODUTO.potencia_BTU, '') AS potencia_BTU, Coalesce(t_PRODUTO.ciclo, '') AS ciclo, Coalesce(t_PRODUTO.posicao_mercado, '') AS posicao_mercado, Coalesce(t_PRODUTO.descontinuado, '') AS descontinuado," +
+            sqlString = string.Concat(sqlString, " FROM (SELECT t_PROD_LISTA_BASE.fabricante, t_PROD_LISTA_BASE.produto, t_PRODUTO.descricao, t_PRODUTO.descricao_html, Coalesce(t_PRODUTO.grupo, '') AS grupo, Coalesce(t_PRODUTO.subgrupo, '') AS subgrupo, Coalesce(t_PRODUTO.potencia_BTU, '') AS potencia_BTU, Coalesce(t_PRODUTO.ciclo, '') AS ciclo, Coalesce(t_PRODUTO.posicao_mercado, '') AS posicao_mercado, Coalesce(t_PRODUTO.descontinuado, '') AS descontinuado," +
                                 " t_PRODUTO.farol_qtde_comprada, (" + s_sql_qtde_vendida + ") AS qtde_vendida, (" + s_sql_qtde_devolvida + ") AS qtde_devolvida, (" + s_sql_qtde_estoque_venda + ") AS qtde_estoque_venda, " + s_sql_qtde_vendida_mes +
                                 " FROM (" + s_sql_lista_base + ") t_PROD_LISTA_BASE" +
                                 " LEFT JOIN t_PRODUTO ON (t_PROD_LISTA_BASE.fabricante = t_PRODUTO.fabricante) AND (t_PROD_LISTA_BASE.produto = t_PRODUTO.produto)" +
@@ -378,11 +378,23 @@ namespace ART3WebAPI.Models.Repository
             s_where_temp = "";
             if (!string.IsNullOrEmpty(grupo))
             {
-                string[] v_grupo = grupo.Split('_');
+                string[] v_grupo = grupo.Split('|');
                 for (int i = 0; i < v_grupo.GetLength(0); i++)
                 {
                     if (s_where_temp != "") s_where_temp = string.Concat(s_where_temp, " OR");
                     s_where_temp = string.Concat(s_where_temp, " (grupo = '" + v_grupo[i] + "')");
+                }
+                sqlString = string.Concat(sqlString, string.Concat("AND (", s_where_temp) + ")");
+            }
+
+            s_where_temp = "";
+            if (!string.IsNullOrEmpty(subgrupo))
+            {
+                string[] v_subgrupo = subgrupo.Split('|');
+                for (int i = 0; i < v_subgrupo.GetLength(0); i++)
+                {
+                    if (s_where_temp != "") s_where_temp = string.Concat(s_where_temp, " OR");
+                    s_where_temp = string.Concat(s_where_temp, " (subgrupo = '" + v_subgrupo[i] + "')");
                 }
                 sqlString = string.Concat(sqlString, string.Concat("AND (", s_where_temp) + ")");
             }
@@ -414,6 +426,7 @@ namespace ART3WebAPI.Models.Repository
                     int idxDescricao = reader.GetOrdinal("descricao");
                     int idxDescricaoHtml = reader.GetOrdinal("descricao_html");
                     int idxGrupo = reader.GetOrdinal("grupo");
+                    int idxSubgrupo = reader.GetOrdinal("subgrupo");
                     int idxPontenciaBTU = reader.GetOrdinal("potencia_BTU");
                     int idxCiclo = reader.GetOrdinal("ciclo");
                     int idxPosicaoMercado = reader.GetOrdinal("posicao_mercado");
@@ -435,7 +448,7 @@ namespace ART3WebAPI.Models.Repository
                         }
 
                         Farol _novo = new Farol(reader.GetString(idxFabricante), reader.GetString(idxProduto), reader.GetString(idxDescricao), reader.GetString(idxDescricaoHtml),
-                            reader.GetString(idxGrupo), reader.GetInt32(idxPontenciaBTU), reader.GetString(idxCiclo), reader.GetString(idxPosicaoMercado),
+                            reader.GetString(idxGrupo), reader.GetString(idxSubgrupo), reader.GetInt32(idxPontenciaBTU), reader.GetString(idxCiclo), reader.GetString(idxPosicaoMercado),
                             reader.GetInt32(idxQtdeComprada), reader.GetInt32(idxQtdeVendida), reader.GetInt32(idxQtdeDevolvida), reader.GetInt32(idxQtdeEstoqueVenda), 0, qtdeVendidaMeses);
 
                         listaFarol.Add(_novo);
@@ -454,7 +467,7 @@ namespace ART3WebAPI.Models.Repository
             return listaFarol.ToArray();
         }
 
-        public Farol[] GetV3(string dt_inicio, string dt_termino, string fabricante, string grupo, string btu, string ciclo, string pos_mercado, string loja)
+        public Farol[] GetV3(string dt_inicio, string dt_termino, string fabricante, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string loja)
         {
             List<Farol> listaFarol = new List<Farol>();
             List<Farol> listaFarolUnificados = new List<Farol>();
@@ -462,7 +475,6 @@ namespace ART3WebAPI.Models.Repository
 
             DateTime dt1 = Global.converteDdMmYyyyParaDateTime(dt_inicio);
             DateTime dt2 = Global.converteDdMmYyyyParaDateTime(dt_termino);
-            SqlDataReader readerComposto;
             SqlCommand cmdComposto = new SqlCommand();
             SqlDataAdapter daDataAdapter = new SqlDataAdapter();
             DataTable dtbCompostos = new DataTable();
@@ -803,7 +815,7 @@ namespace ART3WebAPI.Models.Repository
 
             #region [ Consulta Completa ]
 
-            sqlString = "SELECT fabricante, produto, descricao, descricao_html, custo, grupo, potencia_BTU, ciclo, posicao_mercado, descontinuado, Coalesce(farol_qtde_comprada, 0) AS farol_qtde_comprada, Coalesce(qtde_vendida, 0) AS qtde_vendida, Coalesce(qtde_devolvida, 0) AS qtde_devolvida, Coalesce(qtde_estoque_venda, 0) AS qtde_estoque_venda";
+            sqlString = "SELECT fabricante, produto, descricao, descricao_html, custo, grupo, subgrupo, potencia_BTU, ciclo, posicao_mercado, descontinuado, Coalesce(farol_qtde_comprada, 0) AS farol_qtde_comprada, Coalesce(qtde_vendida, 0) AS qtde_vendida, Coalesce(qtde_devolvida, 0) AS qtde_devolvida, Coalesce(qtde_estoque_venda, 0) AS qtde_estoque_venda";
 
             for (int i = 0; i <= totalMeses; i++)
             {
@@ -815,7 +827,7 @@ namespace ART3WebAPI.Models.Repository
 
             }
 
-            sqlString = string.Concat(sqlString, " FROM (SELECT t_PROD_LISTA_BASE.fabricante, t_PROD_LISTA_BASE.produto, t_PRODUTO.descricao, t_PRODUTO.descricao_html, t_PRODUTO.preco_fabricante AS custo, Coalesce(t_PRODUTO.grupo, '') AS grupo, Coalesce(t_PRODUTO.potencia_BTU, '') AS potencia_BTU, Coalesce(t_PRODUTO.ciclo, '') AS ciclo, Coalesce(t_PRODUTO.posicao_mercado, '') AS posicao_mercado, Coalesce(t_PRODUTO.descontinuado, '') AS descontinuado," +
+            sqlString = string.Concat(sqlString, " FROM (SELECT t_PROD_LISTA_BASE.fabricante, t_PROD_LISTA_BASE.produto, t_PRODUTO.descricao, t_PRODUTO.descricao_html, t_PRODUTO.preco_fabricante AS custo, Coalesce(t_PRODUTO.grupo, '') AS grupo, Coalesce(t_PRODUTO.subgrupo, '') AS subgrupo, Coalesce(t_PRODUTO.potencia_BTU, '') AS potencia_BTU, Coalesce(t_PRODUTO.ciclo, '') AS ciclo, Coalesce(t_PRODUTO.posicao_mercado, '') AS posicao_mercado, Coalesce(t_PRODUTO.descontinuado, '') AS descontinuado," +
                                 " t_PRODUTO.farol_qtde_comprada, (" + s_sql_qtde_vendida + ") AS qtde_vendida, (" + s_sql_qtde_devolvida + ") AS qtde_devolvida, (" + s_sql_qtde_estoque_venda + ") AS qtde_estoque_venda, " + s_sql_qtde_vendida_mes +
                                 " FROM (" + s_sql_lista_base + ") t_PROD_LISTA_BASE" +
                                 " LEFT JOIN t_PRODUTO ON (t_PROD_LISTA_BASE.fabricante = t_PRODUTO.fabricante) AND (t_PROD_LISTA_BASE.produto = t_PRODUTO.produto)" +
@@ -829,11 +841,23 @@ namespace ART3WebAPI.Models.Repository
             s_where_temp = "";
             if (!string.IsNullOrEmpty(grupo))
             {
-                string[] v_grupo = grupo.Split('_');
+                string[] v_grupo = grupo.Split('|');
                 for (int i = 0; i < v_grupo.GetLength(0); i++)
                 {
                     if (s_where_temp != "") s_where_temp = string.Concat(s_where_temp, " OR");
                     s_where_temp = string.Concat(s_where_temp, " (grupo = '" + v_grupo[i] + "')");
+                }
+                sqlString = string.Concat(sqlString, string.Concat("AND (", s_where_temp) + ")");
+            }
+
+            s_where_temp = "";
+            if (!string.IsNullOrEmpty(subgrupo))
+            {
+                string[] v_subgrupo = subgrupo.Split('|');
+                for (int i = 0; i < v_subgrupo.GetLength(0); i++)
+                {
+                    if (s_where_temp != "") s_where_temp = string.Concat(s_where_temp, " OR");
+                    s_where_temp = string.Concat(s_where_temp, " (subgrupo = '" + v_subgrupo[i] + "')");
                 }
                 sqlString = string.Concat(sqlString, string.Concat("AND (", s_where_temp) + ")");
             }
@@ -865,6 +889,7 @@ namespace ART3WebAPI.Models.Repository
                     int idxDescricao = reader.GetOrdinal("descricao");
                     int idxDescricaoHtml = reader.GetOrdinal("descricao_html");
                     int idxGrupo = reader.GetOrdinal("grupo");
+                    int idxSubgrupo = reader.GetOrdinal("subgrupo");
                     int idxPontenciaBTU = reader.GetOrdinal("potencia_BTU");
                     int idxCiclo = reader.GetOrdinal("ciclo");
                     int idxPosicaoMercado = reader.GetOrdinal("posicao_mercado");
@@ -887,7 +912,7 @@ namespace ART3WebAPI.Models.Repository
                         }
 
                         Farol _novo = new Farol(reader.GetString(idxFabricante), reader.GetString(idxProduto), reader.GetString(idxDescricao), reader.GetString(idxDescricaoHtml),
-                            reader.GetString(idxGrupo), reader.GetInt32(idxPontenciaBTU), reader.GetString(idxCiclo), reader.GetString(idxPosicaoMercado),
+                            reader.GetString(idxGrupo), reader.GetString(idxSubgrupo), reader.GetInt32(idxPontenciaBTU), reader.GetString(idxCiclo), reader.GetString(idxPosicaoMercado),
                             reader.GetInt32(idxQtdeComprada), reader.GetInt32(idxQtdeVendida), reader.GetInt32(idxQtdeDevolvida), reader.GetInt32(idxQtdeEstoqueVenda), reader.GetDecimal(idxCusto), qtdeVendidaMeses);
 
                         listaFarol.Add(_novo);
@@ -907,6 +932,7 @@ namespace ART3WebAPI.Models.Repository
                                 " tECPC.descricao," +
                                 " tF.nome AS nome_fabricante," +
                                 " tP.grupo," +
+                                " tP.subgrupo," +
                                 " tP.potencia_BTU," +
                                 " tP.ciclo," +
                                 " tP.posicao_mercado" +
@@ -964,6 +990,7 @@ namespace ART3WebAPI.Models.Repository
                                     fCompostoItem.Ciclo = BD.readToString(dtbCompostos.Rows[i]["ciclo"]);
                                     fCompostoItem.Farol_qtde_comprada = fAux.Farol_qtde_comprada;
                                     fCompostoItem.Grupo = BD.readToString(dtbCompostos.Rows[i]["grupo"]);
+                                    fCompostoItem.Subgrupo = BD.readToString(dtbCompostos.Rows[i]["subgrupo"]);
                                     fCompostoItem.Meses = qm;
                                     fCompostoItem.Posicao_mercado = BD.readToString(dtbCompostos.Rows[i]["posicao_mercado"]);
                                     fCompostoItem.Potencia_BTU = BD.readToInt(!Convert.IsDBNull(dtbCompostos.Rows[i]["potencia_BTU"]) ? dtbCompostos.Rows[i]["potencia_BTU"] : 0);
