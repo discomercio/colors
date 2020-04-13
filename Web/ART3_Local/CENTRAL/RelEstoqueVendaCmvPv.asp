@@ -111,6 +111,7 @@ dim x, r, strResp, ha_default, strSql, v, i
 			" FROM t_PRODUTO_GRUPO" & _
 			" WHERE" & _
 				" (Coalesce(codigo,'') <> '')" & _
+				" AND (inativo = 0)" & _
 			" ORDER BY" & _
 				" Coalesce(codigo,'')"
 	set r = cn.Execute(strSql)
