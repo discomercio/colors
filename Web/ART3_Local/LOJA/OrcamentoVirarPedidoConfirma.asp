@@ -54,10 +54,11 @@
 
 	dim blnAnalisarEndereco, blnGravouRegPai, intNsu, intNsuPai, vAnEndConfrontacao
 	dim intQtdeTotalPedidosAnEndereco
-	dim blnAnEnderecoCadClienteUsaEndParceiro, blnAnEnderecoEndEntregaUsaEndParceiro
+	dim blnAnEnderecoCadClienteUsaEndParceiro, blnAnEnderecoEndEntregaUsaEndParceiro, blnTemEnderecoIgual
 	blnAnalisarEndereco = False
 	blnAnEnderecoCadClienteUsaEndParceiro = False
 	blnAnEnderecoEndEntregaUsaEndParceiro = False
+    blnTemEnderecoIgual = False
 
 '	FORMA DE PAGAMENTO (NOVA VERSÃO)
 	dim rb_forma_pagto, op_av_forma_pagto, c_pc_qtde, c_pc_valor, c_pc_maquineta_qtde, c_pc_maquineta_valor
@@ -1717,7 +1718,13 @@
 					'	====================
 					'	1) VERIFICA SE O ENDEREÇO USADO É O DO PARCEIRO
 						if r_orcamento.orcamentista <> "" then
-							if isEnderecoIgual(r_cliente.endereco, r_cliente.endereco_numero, r_cliente.cep, r_orcamentista_e_indicador.endereco, r_orcamentista_e_indicador.endereco_numero, r_orcamentista_e_indicador.cep) then
+                            'comparamos com o endereço do orçamento ou do cliente. Existem orçamentos criados com a versão anterior
+            				if blnUsarMemorizacaoCompletaEnderecos and r_orcamento.st_memorizacao_completa_enderecos = 1 then
+                                blnTemEnderecoIgual = isEnderecoIgual(r_orcamento.endereco_logradouro, r_orcamento.endereco_numero, r_orcamento.endereco_cep, r_orcamentista_e_indicador.endereco, r_orcamentista_e_indicador.endereco_numero, r_orcamentista_e_indicador.cep)
+                            else
+                                blnTemEnderecoIgual = isEnderecoIgual(r_cliente.endereco, r_cliente.endereco_numero, r_cliente.cep, r_orcamentista_e_indicador.endereco, r_orcamentista_e_indicador.endereco_numero, r_orcamentista_e_indicador.cep)
+                                end if
+							if blnTemEnderecoIgual then
 								blnAnEnderecoCadClienteUsaEndParceiro = True
 								blnAnalisarEndereco = True
 					
@@ -1732,13 +1739,23 @@
 									rs("pedido") = id_pedido
 									rs("id_cliente") = r_orcamento.id_cliente
 									rs("tipo_endereco") = COD_PEDIDO_AN_ENDERECO__CAD_CLIENTE
-									rs("endereco_logradouro") = r_cliente.endereco
-									rs("endereco_bairro") = r_cliente.bairro
-									rs("endereco_cidade") = r_cliente.cidade
-									rs("endereco_uf") = r_cliente.uf
-									rs("endereco_cep") = r_cliente.cep
-									rs("endereco_numero") = r_cliente.endereco_numero
-									rs("endereco_complemento") = r_cliente.endereco_complemento
+                    				if blnUsarMemorizacaoCompletaEnderecos and r_orcamento.st_memorizacao_completa_enderecos = 1 then
+									    rs("endereco_logradouro") = r_orcamento.endereco_logradouro
+									    rs("endereco_bairro") = r_orcamento.endereco_bairro
+									    rs("endereco_cidade") = r_orcamento.endereco_cidade
+									    rs("endereco_uf") = r_orcamento.endereco_uf
+									    rs("endereco_cep") = r_orcamento.endereco_cep
+									    rs("endereco_numero") = r_orcamento.endereco_numero
+									    rs("endereco_complemento") = r_orcamento.endereco_complemento
+                                    else
+									    rs("endereco_logradouro") = r_cliente.endereco
+									    rs("endereco_bairro") = r_cliente.bairro
+									    rs("endereco_cidade") = r_cliente.cidade
+									    rs("endereco_uf") = r_cliente.uf
+									    rs("endereco_cep") = r_cliente.cep
+									    rs("endereco_numero") = r_cliente.endereco_numero
+									    rs("endereco_complemento") = r_cliente.endereco_complemento
+                                        end if
 									rs("usuario_cadastro") = usuario
 									rs.Update
 									end if ' if Not fin_gera_nsu()
@@ -1779,27 +1796,9 @@
 							set vAnEndConfrontacao(Ubound(vAnEndConfrontacao)) = new cl_ANALISE_ENDERECO_CONFRONTACAO
 							intQtdeTotalPedidosAnEndereco = 0
 				
+                            'em 2020-04-16 não temos mais registros com endereco_memorizado_status = 0
 							s = "SELECT DISTINCT * FROM " & _
 									"(" & _
-										"SELECT" & _
-											" '" & COD_PEDIDO_AN_ENDERECO__CAD_CLIENTE & "' AS tipo_endereco," & _
-											" p.pedido," & _
-											" p.data_hora," & _
-											" p.id_cliente," & _
-											" c.endereco AS endereco_logradouro," & _
-											" c.endereco_numero," & _
-											" c.endereco_complemento," & _
-											" c.bairro AS endereco_bairro," & _
-											" c.cidade AS endereco_cidade," & _
-											" c.uf AS endereco_uf," & _
-											" c.cep AS endereco_cep" & _
-										" FROM t_PEDIDO p" & _
-											" INNER JOIN t_CLIENTE c ON (p.id_cliente = c.id)" & _
-										" WHERE" & _
-											" (endereco_memorizado_status = 0)" & _
-											" AND (c.id <> '" & r_orcamento.id_cliente & "')" & _
-											" AND (c.cep = '" & retorna_so_digitos(r_cliente.cep) & "')" & _
-										" UNION " & _
 										"SELECT" & _
 											" '" & COD_PEDIDO_AN_ENDERECO__CAD_CLIENTE_MEMORIZADO & "' AS tipo_endereco," & _
 											" pedido," & _
@@ -1814,8 +1813,7 @@
 											" endereco_cep" & _
 										" FROM t_PEDIDO" & _
 										" WHERE" & _
-											" (endereco_memorizado_status = 1)" & _
-											" AND (id_cliente <> '" & r_orcamento.id_cliente & "')" & _
+											" (id_cliente <> '" & r_orcamento.id_cliente & "')" & _
 											" AND (endereco_cep = '" & retorna_so_digitos(r_cliente.cep) & "')" & _
 										" UNION " & _
 										"SELECT" & _
@@ -1841,7 +1839,12 @@
 							if rs.State <> 0 then rs.Close
 							rs.Open s, cn
 							do while Not rs.Eof
-								if isEnderecoIgual(r_cliente.endereco, r_cliente.endereco_numero, r_cliente.cep, Trim("" & rs("endereco_logradouro")), Trim("" & rs("endereco_numero")), Trim("" & rs("endereco_cep"))) then
+            				    if blnUsarMemorizacaoCompletaEnderecos and r_orcamento.st_memorizacao_completa_enderecos = 1 then
+                                    blnTemEnderecoIgual = isEnderecoIgual(r_orcamento.endereco_logradouro, r_orcamento.endereco_numero, r_orcamento.endereco_cep, Trim("" & rs("endereco_logradouro")), Trim("" & rs("endereco_numero")), Trim("" & rs("endereco_cep"))) 
+                                else
+                                    blnTemEnderecoIgual = isEnderecoIgual(r_cliente.endereco, r_cliente.endereco_numero, r_cliente.cep, Trim("" & rs("endereco_logradouro")), Trim("" & rs("endereco_numero")), Trim("" & rs("endereco_cep"))) 
+                                    end if
+								if blnTemEnderecoIgual then
 									if Trim("" & vAnEndConfrontacao(Ubound(vAnEndConfrontacao)).pedido) <> "" then
 										redim preserve vAnEndConfrontacao(UBound(vAnEndConfrontacao)+1)
 										set vAnEndConfrontacao(UBound(vAnEndConfrontacao)) = new cl_ANALISE_ENDERECO_CONFRONTACAO
@@ -1889,13 +1892,23 @@
 											rs("pedido") = id_pedido
 											rs("id_cliente") = r_orcamento.id_cliente
 											rs("tipo_endereco") = COD_PEDIDO_AN_ENDERECO__CAD_CLIENTE
-											rs("endereco_logradouro") = r_cliente.endereco
-											rs("endereco_bairro") = r_cliente.bairro
-											rs("endereco_cidade") = r_cliente.cidade
-											rs("endereco_uf") = r_cliente.uf
-											rs("endereco_cep") = r_cliente.cep
-											rs("endereco_numero") = r_cliente.endereco_numero
-											rs("endereco_complemento") = r_cliente.endereco_complemento
+                    				        if blnUsarMemorizacaoCompletaEnderecos and r_orcamento.st_memorizacao_completa_enderecos = 1 then
+									            rs("endereco_logradouro") = r_orcamento.endereco_logradouro
+									            rs("endereco_bairro") = r_orcamento.endereco_bairro
+									            rs("endereco_cidade") = r_orcamento.endereco_cidade
+									            rs("endereco_uf") = r_orcamento.endereco_uf
+									            rs("endereco_cep") = r_orcamento.endereco_cep
+									            rs("endereco_numero") = r_orcamento.endereco_numero
+									            rs("endereco_complemento") = r_orcamento.endereco_complemento
+                                            else
+									            rs("endereco_logradouro") = r_cliente.endereco
+									            rs("endereco_bairro") = r_cliente.bairro
+									            rs("endereco_cidade") = r_cliente.cidade
+									            rs("endereco_uf") = r_cliente.uf
+									            rs("endereco_cep") = r_cliente.cep
+									            rs("endereco_numero") = r_cliente.endereco_numero
+									            rs("endereco_complemento") = r_cliente.endereco_complemento
+                                                end if
 											rs("usuario_cadastro") = usuario
 											rs.Update
 											end if 'if Not blnGravouRegPai
@@ -1995,27 +2008,9 @@
 									set vAnEndConfrontacao(Ubound(vAnEndConfrontacao)) = new cl_ANALISE_ENDERECO_CONFRONTACAO
 									intQtdeTotalPedidosAnEndereco = 0
 						
+                                    'em 2020-04-16 não temos mais registros com endereco_memorizado_status = 0
 									s = "SELECT DISTINCT * FROM " & _
 											"(" & _
-												"SELECT" & _
-													" '" & COD_PEDIDO_AN_ENDERECO__CAD_CLIENTE & "' AS tipo_endereco," & _
-													" p.pedido," & _
-													" p.data_hora," & _
-													" p.id_cliente," & _
-													" c.endereco AS endereco_logradouro," & _
-													" c.endereco_numero," & _
-													" c.endereco_complemento," & _
-													" c.bairro AS endereco_bairro," & _
-													" c.cidade AS endereco_cidade," & _
-													" c.uf AS endereco_uf," & _
-													" c.cep AS endereco_cep" & _
-												" FROM t_PEDIDO p" & _
-													" INNER JOIN t_CLIENTE c ON (p.id_cliente = c.id)" & _
-												" WHERE" & _
-													" (endereco_memorizado_status = 0)" & _
-													" AND (c.id <> '" & r_orcamento.id_cliente & "')" & _
-													" AND (c.cep = '" & retorna_so_digitos(r_orcamento.EndEtg_cep) & "')" & _
-												" UNION " & _
 												"SELECT" & _
 													" '" & COD_PEDIDO_AN_ENDERECO__CAD_CLIENTE_MEMORIZADO & "' AS tipo_endereco," & _
 													" pedido," & _
@@ -2030,8 +2025,7 @@
 													" endereco_cep" & _
 												" FROM t_PEDIDO" & _
 												" WHERE" & _
-													" (endereco_memorizado_status = 1)" & _
-													" AND (id_cliente <> '" & r_orcamento.id_cliente & "')" & _
+													" (id_cliente <> '" & r_orcamento.id_cliente & "')" & _
 													" AND (endereco_cep = '" & retorna_so_digitos(r_orcamento.EndEtg_cep) & "')" & _
 												" UNION " & _
 												"SELECT" & _

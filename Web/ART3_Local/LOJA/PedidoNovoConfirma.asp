@@ -2268,6 +2268,7 @@
 					'	ENDEREÇO DO CADASTRO
 					'	====================
 					'	1) VERIFICA SE O ENDEREÇO USADO É O DO PARCEIRO
+					'	  estamos verificando contra o endereço da t_CLIENTE porque o pedido acabou de ser criado com esses dados
 						if c_indicador <> "" then
 							if isEnderecoIgual(Trim("" & t_CLIENTE("endereco")), Trim("" & t_CLIENTE("endereco_numero")), Trim("" & t_CLIENTE("cep")), r_orcamentista_e_indicador.endereco, r_orcamentista_e_indicador.endereco_numero, r_orcamentista_e_indicador.cep) then
 								blnAnEnderecoCadClienteUsaEndParceiro = True
@@ -2331,27 +2332,9 @@
 							set vAnEndConfrontacao(Ubound(vAnEndConfrontacao)) = new cl_ANALISE_ENDERECO_CONFRONTACAO
 							intQtdeTotalPedidosAnEndereco = 0
 				
+                            'em 2020-04-16 não temos mais registros com endereco_memorizado_status = 0
 							s = "SELECT DISTINCT * FROM " & _
 									"(" & _
-										"SELECT" & _
-											" '" & COD_PEDIDO_AN_ENDERECO__CAD_CLIENTE & "' AS tipo_endereco," & _
-											" p.pedido," & _
-											" p.data_hora," & _
-											" p.id_cliente," & _
-											" c.endereco AS endereco_logradouro," & _
-											" c.endereco_numero," & _
-											" c.endereco_complemento," & _
-											" c.bairro AS endereco_bairro," & _
-											" c.cidade AS endereco_cidade," & _
-											" c.uf AS endereco_uf," & _
-											" c.cep AS endereco_cep" & _
-										" FROM t_PEDIDO p" & _
-											" INNER JOIN t_CLIENTE c ON (p.id_cliente = c.id)" & _
-										" WHERE" & _
-											" (endereco_memorizado_status = 0)" & _
-											" AND (c.id <> '" & cliente_selecionado & "')" & _
-											" AND (c.cep = '" & retorna_so_digitos(Trim("" & t_CLIENTE("cep"))) & "')" & _
-										" UNION " & _
 										"SELECT" & _
 											" '" & COD_PEDIDO_AN_ENDERECO__CAD_CLIENTE_MEMORIZADO & "' AS tipo_endereco," & _
 											" pedido," & _
@@ -2366,8 +2349,7 @@
 											" endereco_cep" & _
 										" FROM t_PEDIDO" & _
 										" WHERE" & _
-											" (endereco_memorizado_status = 1)" & _
-											" AND (id_cliente <> '" & cliente_selecionado & "')" & _
+											" (id_cliente <> '" & cliente_selecionado & "')" & _
 											" AND (endereco_cep = '" & retorna_so_digitos(Trim("" & t_CLIENTE("cep"))) & "')" & _
 										" UNION " & _
 										"SELECT" & _
@@ -2547,27 +2529,9 @@
 									set vAnEndConfrontacao(Ubound(vAnEndConfrontacao)) = new cl_ANALISE_ENDERECO_CONFRONTACAO
 									intQtdeTotalPedidosAnEndereco = 0
 						
+                                    'em 2020-04-16 não temos mais registros com endereco_memorizado_status = 0
 									s = "SELECT DISTINCT * FROM " & _
 											"(" & _
-												"SELECT" & _
-													" '" & COD_PEDIDO_AN_ENDERECO__CAD_CLIENTE & "' AS tipo_endereco," & _
-													" p.pedido," & _
-													" p.data_hora," & _
-													" p.id_cliente," & _
-													" c.endereco AS endereco_logradouro," & _
-													" c.endereco_numero," & _
-													" c.endereco_complemento," & _
-													" c.bairro AS endereco_bairro," & _
-													" c.cidade AS endereco_cidade," & _
-													" c.uf AS endereco_uf," & _
-													" c.cep AS endereco_cep" & _
-												" FROM t_PEDIDO p" & _
-													" INNER JOIN t_CLIENTE c ON (p.id_cliente = c.id)" & _
-												" WHERE" & _
-													" (endereco_memorizado_status = 0)" & _
-													" AND (c.id <> '" & cliente_selecionado & "')" & _
-													" AND (c.cep = '" & retorna_so_digitos(EndEtg_cep) & "')" & _
-												" UNION " & _
 												"SELECT" & _
 													" '" & COD_PEDIDO_AN_ENDERECO__CAD_CLIENTE_MEMORIZADO & "' AS tipo_endereco," & _
 													" pedido," & _
@@ -2582,8 +2546,7 @@
 													" endereco_cep" & _
 												" FROM t_PEDIDO" & _
 												" WHERE" & _
-													" (endereco_memorizado_status = 1)" & _
-													" AND (id_cliente <> '" & cliente_selecionado & "')" & _
+													" (id_cliente <> '" & cliente_selecionado & "')" & _
 													" AND (endereco_cep = '" & retorna_so_digitos(EndEtg_cep) & "')" & _
 												" UNION " & _
 												"SELECT" & _
