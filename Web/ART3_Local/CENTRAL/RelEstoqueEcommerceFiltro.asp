@@ -114,6 +114,7 @@ end function
 %>
 
 
+<%=DOCTYPE_LEGADO%>
 
 <html>
 
@@ -125,6 +126,16 @@ end function
 
 <script src="<%=URL_FILE__JQUERY%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__GLOBAL_JS%>" language="JavaScript" type="text/javascript"></script>
+
+<script type="text/javascript">
+    $(function () {
+        $("#c_fabricante").change(function () {
+            $("#spnCounterFabricante").text($("#c_fabricante :selected").length);
+        });
+
+        $("#spnCounterFabricante").text($("#c_fabricante :selected").length);
+    });
+</script>
 
 <script language="JavaScript" type="text/javascript">
 function fESTOQConsulta( f ) {
@@ -192,6 +203,7 @@ function exibe_botao_confirmar() {
     }
     function limpaCampoSelectFabricante() {
         $("#c_fabricante").children().prop('selected', false);
+        $("#spnCounterFabricante").text($("#c_fabricante :selected").length);
     }
 </script>
 
@@ -303,6 +315,8 @@ function exibe_botao_confirmar() {
 		<td align="left" valign="top">
 			<a name="bLimparFabricante" id="bLimparFabricante" href="javascript:limpaCampoSelectFabricante()" title="limpa o filtro 'Fabricante'">
 						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterFabricante"></span>)
 		</td>
 		</tr>
 		</table>
