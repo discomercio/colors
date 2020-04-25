@@ -635,7 +635,7 @@ function limpaCampoSelectSubgrupo() {
 	<!-- SUBGRUPO DE PRODUTOS -->
 	<tr bgcolor="#FFFFFF">
 	<td class="ME MD MB" colspan="2" align="left" nowrap>
-		<span class="PLTe">SUBGRUPO DE PRODUTOS</span>
+		<span class="PLTe">Subgrupo de Produtos</span>
 		<br>
 		<table cellpadding="0" cellspacing="0">
 		<tr>

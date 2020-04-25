@@ -62,7 +62,7 @@
 	dim rb_periodo, c_dt_entregue_inicio, c_dt_entregue_termino, c_dt_cadastro_inicio, c_dt_cadastro_termino, c_loja
 	dim rb_fabricante, c_fabricante, c_fabricante_de, c_fabricante_ate
 	dim rb_produto, c_produto, c_produto_de, c_produto_ate
-	dim rb_grupo, c_grupo, c_grupo_de, c_grupo_ate 
+	dim c_grupo, c_subgrupo
     dim c_empresa
 	dim rb_saida
 
@@ -93,16 +93,19 @@
 	c_produto_de = Ucase(Trim(Request.Form("c_produto_de")))
 	c_produto_ate = Ucase(Trim(Request.Form("c_produto_ate")))
 	
-	rb_grupo = Ucase(Trim(Request.Form("rb_grupo")))
 	c_grupo = Ucase(Trim(Request.Form("c_grupo")))
-	c_grupo_de = Ucase(Trim(Request.Form("c_grupo_de")))
-	c_grupo_ate = Ucase(Trim(Request.Form("c_grupo_ate")))
+	c_subgrupo = Ucase(Trim(Request.Form("c_subgrupo")))
 
 	c_loja = Trim(Request.Form("c_loja"))
 	lista_loja = substitui_caracteres(c_loja,chr(10),"")
 	v_loja = split(lista_loja,chr(13),-1)
     c_empresa = Trim(Request.Form("c_empresa"))
 	rb_saida = Ucase(Trim(Request.Form("rb_saida")))
+
+	if alerta = "" then
+		call set_default_valor_texto_bd(usuario, "RelProdVendidos|c_grupo", c_grupo)
+		call set_default_valor_texto_bd(usuario, "RelProdVendidos|c_subgrupo", c_subgrupo)
+		end if
 
 '	Período de consulta está restrito por perfil de acesso?
 	dim dtMinDtInicialFiltroPeriodo, intMaxDiasDtInicialFiltroPeriodo
@@ -255,22 +258,14 @@ dim s, s_aux, s_filtro
 	s_filtro = s_filtro & "Produto: " & s & "<br>"
 	
 '	GRUPO DE PRODUTOS
-	s = ""
-	if rb_grupo = OPCAO_UM_CODIGO then
-		s = c_grupo
-	elseif rb_grupo = OPCAO_FAIXA_CODIGOS then
-		if (c_grupo_de<>"") Or (c_grupo_ate<>"") then
-			s_aux = c_grupo_de
-			if s_aux = "" then s_aux = "N.I."
-			s = s & s_aux & " a "
-			s_aux = c_grupo_ate
-			if s_aux = "" then s_aux = "N.I."
-			s = s & s_aux
-			end if
-		end if
-
-	if s = "" then s = "todos"
+	s = c_grupo
+	if s = "" then s = "N.I."
 	s_filtro = s_filtro & "Grupo de Produtos: " & s & "<br>"
+
+'	SUBGRUPO DE PRODUTOS
+	s = c_subgrupo
+	if s = "" then s = "N.I."
+	s_filtro = s_filtro & "Subgrupo de Produtos: " & s & "<br>"
 
 	s_filtro_loja = ""
 	for i = Lbound(v_loja) to Ubound(v_loja)
@@ -312,47 +307,57 @@ const NOME_CAMPO_DATA = "§DATA§"
 const NOME_CAMPO_FABRICANTE = "§FABR§"
 const NOME_CAMPO_PRODUTO = "§PROD§"
 dim r
-dim s, s_aux, s_where_loja, s_sql, cab_table, cab, n_reg, n_reg_total, x, fabricante_a
+dim s, s_aux, s_where_loja, s_where_temp, s_sql, cab_table, cab, n_reg, n_reg_total, x, fabricante_a
 dim qtde_sub_total, qtde_total
 dim vl_sub_total_faturamento, vl_total_faturamento
 dim i, v, qtde_fabricante
 dim s_where, s_where_aux, s_where_venda, s_where_devolucao, s_cor, s_nbsp, s_bkg_color, s_align, s_nowrap
+dim cont, v_grupos, v_subgrupos
 
 '	CRITÉRIOS COMUNS
 '	================
 	s_where = ""
 	
 '	GRUPO DE PRODUTOS
-	if rb_grupo = OPCAO_UM_CODIGO then
-		if c_grupo <> "" then
+	s_where_temp = ""
+	if c_grupo <> "" then
+		v_grupos = split(c_grupo, ", ")
+		for cont = LBound(v_grupos) to UBound(v_grupos)
+			if Trim(v_grupos(cont)) <> "" then
+				if s_where_temp <> "" then s_where_temp = s_where_temp & ", "
+				s_where_temp = s_where_temp & "'" & Trim(v_grupos(cont)) & "'"
+				end if
+			next
+		
+		if s_where_temp <> "" then
+			s_where_temp = " (t_PRODUTO.grupo IN (" & s_where_temp & "))"
 			if s_where <> "" then s_where = s_where & " AND"
-			s_where = s_where & " (t_PRODUTO.grupo = '" & c_grupo & "')"
-
-			if s_where <> "" then s_where = s_where & " AND"
-			s_where = s_where & " (t_PRODUTO.grupo IS NOT NULL)"
-			end if
-	elseif rb_grupo = OPCAO_FAIXA_CODIGOS then
-		if (c_grupo_de<>"") Or (c_grupo_ate<>"") then
-			s = ""
-			if c_grupo_de<>"" then
-				if s <> "" then s = s & " AND"
-				s = s & " (t_PRODUTO.grupo >= '" & c_grupo_de & "')"
-				end if
-			if c_grupo_ate<>"" then
-				if s <> "" then s = s & " AND"
-				s = s & " (t_PRODUTO.grupo <= '" & c_grupo_ate & "')"
-				end if
-			if s <> "" then 
-				s = " (" & s & ")"
-				if s_where <> "" then s_where = s_where & " AND"
-				s_where = s_where & s
-				end if
+			s_where = s_where & " (" & s_where_temp & ")"
 			end if
 		end if
+
+'	SUBGRUPO DE PRODUTOS
+	s_where_temp = ""
+	if c_subgrupo <> "" then
+		v_subgrupos = split(c_subgrupo, ", ")
+		for cont = LBound(v_subgrupos) to UBound(v_subgrupos)
+			if Trim(v_subgrupos(cont)) <> "" then
+				if s_where_temp <> "" then s_where_temp = s_where_temp & ", "
+				s_where_temp = s_where_temp & "'" & Trim(v_subgrupos(cont)) & "'"
+				end if
+			next
 		
+		if s_where_temp <> "" then
+			s_where_temp = " (t_PRODUTO.subgrupo IN (" & s_where_temp & "))"
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (" & s_where_temp & ")"
+			end if
+		end if
+	
+'	EMPRESA
     if c_empresa <> "" then
         if s_where <> "" then s_where = s_where & " AND"
-		s_where = s_where & " (t_PEDIDO.id_nfe_emitente = " & c_empresa & ")"			
+		s_where = s_where & " (t_PEDIDO.id_nfe_emitente = " & c_empresa & ")"
 	end if
 
 '	LOJA(S)
@@ -764,24 +769,22 @@ window.status='Aguarde, executando a consulta ...';
 
 <form id="fREL" name="fREL" method="post">
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
-<input type="hidden" name="c_dt_cadastro_inicio" id="c_dt_cadastro_inicio" value="<%=c_dt_cadastro_inicio%>">
-<input type="hidden" name="c_dt_cadastro_termino" id="c_dt_cadastro_termino" value="<%=c_dt_cadastro_termino%>">
-<input type="hidden" name="c_dt_entregue_inicio" id="c_dt_entregue_inicio" value="<%=c_dt_entregue_inicio%>">
-<input type="hidden" name="c_dt_entregue_termino" id="c_dt_entregue_termino" value="<%=c_dt_entregue_termino%>">
-<input type="hidden" name="rb_periodo" id="rb_periodo" value="<%=rb_periodo%>">
-<input type="hidden" name="rb_fabricante" id="rb_fabricante" value="<%=rb_fabricante%>">
-<input type="hidden" name="c_fabricante" id="c_fabricante" value="<%=c_fabricante%>">
-<input type="hidden" name="c_fabricante_de" id="c_fabricante_de" value="<%=c_fabricante_de%>">
-<input type="hidden" name="c_fabricante_ate" id="c_fabricante_ate" value="<%=c_fabricante_ate%>">
-<input type="hidden" name="rb_produto" id="rb_produto" value="<%=rb_produto%>">
-<input type="hidden" name="c_produto" id="c_produto" value="<%=c_produto%>">
-<input type="hidden" name="c_produto_de" id="c_produto_de" value="<%=c_produto_de%>">
-<input type="hidden" name="c_produto_ate" id="c_produto_ate" value="<%=c_produto_ate%>">
-<input type="hidden" name="rb_grupo" id="rb_grupo" value="<%=rb_grupo%>">
-<input type="hidden" name="c_grupo" id="c_grupo" value="<%=c_grupo%>">
-<input type="hidden" name="c_grupo_de" id="c_grupo_de" value="<%=c_grupo_de%>">
-<input type="hidden" name="c_grupo_ate" id="c_grupo_ate" value="<%=c_grupo_ate%>">
-<input type="hidden" name="c_loja" id="c_loja" value="<%=c_loja%>">
+<input type="hidden" name="c_dt_cadastro_inicio" id="c_dt_cadastro_inicio" value="<%=c_dt_cadastro_inicio%>" />
+<input type="hidden" name="c_dt_cadastro_termino" id="c_dt_cadastro_termino" value="<%=c_dt_cadastro_termino%>" />
+<input type="hidden" name="c_dt_entregue_inicio" id="c_dt_entregue_inicio" value="<%=c_dt_entregue_inicio%>" />
+<input type="hidden" name="c_dt_entregue_termino" id="c_dt_entregue_termino" value="<%=c_dt_entregue_termino%>" />
+<input type="hidden" name="rb_periodo" id="rb_periodo" value="<%=rb_periodo%>" />
+<input type="hidden" name="rb_fabricante" id="rb_fabricante" value="<%=rb_fabricante%>" />
+<input type="hidden" name="c_fabricante" id="c_fabricante" value="<%=c_fabricante%>" />
+<input type="hidden" name="c_fabricante_de" id="c_fabricante_de" value="<%=c_fabricante_de%>" />
+<input type="hidden" name="c_fabricante_ate" id="c_fabricante_ate" value="<%=c_fabricante_ate%>" />
+<input type="hidden" name="rb_produto" id="rb_produto" value="<%=rb_produto%>" />
+<input type="hidden" name="c_produto" id="c_produto" value="<%=c_produto%>" />
+<input type="hidden" name="c_produto_de" id="c_produto_de" value="<%=c_produto_de%>" />
+<input type="hidden" name="c_produto_ate" id="c_produto_ate" value="<%=c_produto_ate%>" />
+<input type="hidden" name="c_grupo" id="c_grupo" value="<%=c_grupo%>" />
+<input type="hidden" name="c_subgrupo" id="c_subgrupo" value="<%=c_subgrupo%>" />
+<input type="hidden" name="c_loja" id="c_loja" value="<%=c_loja%>" />
 
 
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->
@@ -872,27 +875,24 @@ window.status='Aguarde, executando a consulta ...';
 				"	</tr>" & chr(13)
 	
 '	GRUPO DE PRODUTOS
-	s = ""
-	if rb_grupo = OPCAO_UM_CODIGO then
-		s = c_grupo
-	elseif rb_grupo = OPCAO_FAIXA_CODIGOS then
-		if (c_grupo_de<>"") Or (c_grupo_ate<>"") then
-			s_aux = c_grupo_de
-			if s_aux = "" then s_aux = "N.I."
-			s = s & s_aux & " a "
-			s_aux = c_grupo_ate
-			if s_aux = "" then s_aux = "N.I."
-			s = s & s_aux
-			end if
-		end if
-
-	if s = "" then s = "todos"
+	s = c_grupo
+	if s = "" then s = "N.I."
 	s_filtro = s_filtro & _
 				"	<tr>" & chr(13) & _
 				"		<td align='right' valign='top' NOWRAP><p class='N'>Grupo de Produtos:&nbsp;</p></td>" & chr(13) & _
 				"		<td valign='top'><p class='N'>" & s & "</p></td>" & chr(13) & _
 				"	</tr>" & chr(13)
 
+'	SUBGRUPO DE PRODUTOS
+	s = c_subgrupo
+	if s = "" then s = "N.I."
+	s_filtro = s_filtro & _
+				"	<tr>" & chr(13) & _
+				"		<td align='right' valign='top' NOWRAP><p class='N'>Subgrupo de Produtos:&nbsp;</p></td>" & chr(13) & _
+				"		<td valign='top'><p class='N'>" & s & "</p></td>" & chr(13) & _
+				"	</tr>" & chr(13)
+
+'	EMPRESA
     s = c_empresa
 	if s = "" then 
 		s = "todas"
