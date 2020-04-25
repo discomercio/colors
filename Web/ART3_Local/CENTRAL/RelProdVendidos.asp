@@ -58,6 +58,81 @@
 		strMinDtInicialFiltroPeriodoDDMMYYYY = ""
 		end if
 
+
+
+
+
+
+' ____________________________________________________________________________
+' GRUPO MONTA ITENS SELECT
+'
+function grupo_monta_itens_select(byval id_default)
+dim x, r, strResp, ha_default, strSql, v, i, sDescricao
+	id_default = Trim("" & id_default)
+	v = split(id_default, ", ")
+	ha_default=False
+	strSql = "SELECT DISTINCT" & _
+				" tP.grupo," & _
+				" tPG.descricao" & _
+			" FROM t_PRODUTO tP" & _
+				" LEFT JOIN t_PRODUTO_GRUPO tPG ON (tP.grupo = tPG.codigo)" & _
+			" WHERE" & _
+				" (LEN(Coalesce(tP.grupo,'')) > 0)" & _
+			" ORDER BY" & _
+				" tP.grupo"
+	set r = cn.Execute(strSql)
+	strResp = ""
+	do while Not r.eof 
+		x = Trim("" & r("grupo"))
+		sDescricao = Trim("" & r("descricao"))
+		strResp = strResp & "<option "
+		for i=LBound(v) to UBound(v) 
+			if (id_default<>"") And (v(i)=x) then
+				strResp = strResp & "selected"
+				end if
+			next
+		strResp = strResp & " value='" & x & "'>"
+		strResp = strResp & Trim("" & r("grupo"))
+		if sDescricao <> "" then strResp = strResp & " &nbsp;(" & sDescricao & ")"
+		strResp = strResp & "</option>" & chr(13)
+		r.MoveNext	
+ 	loop
+		
+	grupo_monta_itens_select = strResp
+	r.close
+	set r=nothing
+end function
+
+'----------------------------------------------------------------------------------------------
+' SUBGRUPO MONTA ITENS SELECT
+function subgrupo_monta_itens_select(byval id_default)
+dim x, r, strSql, strResp, ha_default, v, i, sDescricao
+	id_default = Trim("" & id_default)
+	v = split(id_default, ", ")
+	ha_default=False
+	strSql = "SELECT DISTINCT tP.subgrupo, tPS.descricao FROM t_PRODUTO tP LEFT JOIN t_PRODUTO_SUBGRUPO tPS ON (tP.subgrupo = tPS.codigo) WHERE LEN(Coalesce(tP.subgrupo,'')) > 0 ORDER by tP.subgrupo"
+	set r = cn.Execute(strSql)
+	strResp = ""
+	do while Not r.eof 
+		x = UCase(Trim("" & r("subgrupo")))
+		sDescricao = Trim("" & r("descricao"))
+		strResp = strResp & "<option "
+		for i=LBound(v) to UBound(v) 
+			if (id_default<>"") And (v(i)=x) then
+				strResp = strResp & "selected"
+				end if
+			next
+		strResp = strResp & " VALUE='" & x & "'>"
+		strResp = strResp & x
+		if sDescricao <> "" then strResp = strResp & " &nbsp;(" & sDescricao & ")"
+		strResp = strResp & "</OPTION>" & chr(13)
+		r.MoveNext
+		loop
+	
+	subgrupo_monta_itens_select = strResp
+	r.close
+	set r=nothing
+end function
 %>
 
 
@@ -104,7 +179,27 @@
 	    $("#c_dt_cadastro_termino").hUtilUI('datepicker_filtro_final');
 	    $("#c_dt_entregue_inicio").hUtilUI('datepicker_filtro_inicial');
 	    $("#c_dt_entregue_termino").hUtilUI('datepicker_filtro_final');
+
+        $("#c_grupo").change(function () {
+            $("#spnCounterGrupo").text($("#c_grupo :selected").length);
+        });
+
+        $("#c_subgrupo").change(function () {
+            $("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
+        });
+
+        $("#spnCounterGrupo").text($("#c_grupo :selected").length);
+        $("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
 	});
+
+    function limpaCampoSelectGrupo() {
+        $("#c_grupo").children().prop('selected', false);
+        $("#spnCounterGrupo").text($("#c_grupo :selected").length);
+    }
+    function limpaCampoSelectSubgrupo() {
+        $("#c_subgrupo").children().prop('selected', false);
+        $("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
+    }
 </script>
 
 <script language="JavaScript" type="text/javascript">
@@ -261,6 +356,13 @@ function exibe_botao_confirmar() {
 <link href="<%=URL_FILE__E_CSS%>" rel="stylesheet" type="text/css">
 <link href="<%=URL_FILE__JQUERY_UI_CSS%>" rel="stylesheet" type="text/css">
 
+<style type="text/css">
+.LST
+{
+	margin:6px 6px 6px 6px;
+}
+</style>
+
 
 <body onload="fFILTRO.c_dt_inicio.focus();">
 <center>
@@ -405,35 +507,53 @@ function exibe_botao_confirmar() {
 		</table>
 	</td></tr>
 
-<!--  GRUPO DE PRODUTOS  -->
+	<!-- GRUPO DE PRODUTOS -->
 	<tr bgcolor="#FFFFFF">
-	<td class="MDBE" align="left" nowrap><span class="PLTe">GRUPO DE PRODUTOS</span>
-	<br>
-		<table cellspacing="0" cellpadding="0" style="margin:0px 20px 6px 30px;">
-		<tr bgcolor="#FFFFFF">
-			<td align="left">
-				<input type="radio" tabindex="-1" id="rb_grupo" name="rb_grupo"
-					value="UM"><span class="C" style="cursor:default" 
-					onclick="fFILTRO.rb_grupo[0].click();">Grupo</span>
-			</td>
-			<td align="left">
-				<input maxlength="2" class="Cc" style="width:60px;" name="c_grupo" id="c_grupo" onkeypress="if (digitou_enter(true)) fFILTRO.c_grupo_de.focus(); else fFILTRO.rb_grupo[0].click();" onblur="this.value=ucase(this.value);">
-			</td>
-		</tr>
-		<tr bgcolor="#FFFFFF">
-			<td align="left">
-				<input type="radio" tabindex="-1" id="rb_grupo" name="rb_grupo"
-					value="FAIXA"><span class="C" style="cursor:default" 
-					onclick="fFILTRO.rb_grupo[1].click();">Grupos</span>
-			</td>
-			<td align="left">
-				<input maxlength="2" class="Cc" style="width:60px;" name="c_grupo_de" id="c_grupo_de" onkeypress="if (digitou_enter(true)) fFILTRO.c_grupo_ate.focus(); else fFILTRO.rb_grupo[1].click();" onblur="this.value=ucase(this.value);">
-				<span class="C">a</span>
-				<input maxlength="2" class="Cc" style="width:60px;" name="c_grupo_ate" id="c_grupo_ate" onkeypress="if (digitou_enter(true)) fFILTRO.c_loja.focus(); else fFILTRO.rb_grupo[1].click();" onblur="this.value=ucase(this.value);">
-			</td>
+	<td class="ME MD MB" align="left" nowrap>
+		<span class="PLTe">GRUPO DE PRODUTOS</span>
+		<br>
+		<table cellpadding="0" cellspacing="0">
+		<tr>
+		<td>
+			<select id="c_grupo" name="c_grupo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="10" style="min-width:250px" multiple>
+			<% =grupo_monta_itens_select(get_default_valor_texto_bd(usuario, "RelProdVendidos|c_grupo")) %>
+			</select>
+		</td>
+		<td style="width:1px;"></td>
+		<td align="left" valign="top">
+			<a name="bLimparGrupo" id="bLimparGrupo" href="javascript:limpaCampoSelectGrupo()" title="limpa o filtro 'Grupo de Produtos'">
+						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterGrupo"></span>)
+		</td>
 		</tr>
 		</table>
-	</td></tr>
+	</td>
+	</tr>
+
+	<!-- SUBGRUPO DE PRODUTOS -->
+	<tr bgcolor="#FFFFFF">
+	<td class="ME MD MB" align="left" nowrap>
+		<span class="PLTe">SUBGRUPO DE PRODUTOS</span>
+		<br>
+		<table cellpadding="0" cellspacing="0">
+		<tr>
+		<td>
+			<select id="c_subgrupo" name="c_subgrupo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="10" style="min-width:250px" multiple>
+			<% =subgrupo_monta_itens_select(get_default_valor_texto_bd(usuario, "RelProdVendidos|c_subgrupo")) %>
+			</select>
+		</td>
+		<td style="width:1px;"></td>
+		<td align="left" valign="top">
+			<a name="bLimparSubgrupo" id="bLimparSubgrupo" href="javascript:limpaCampoSelectSubgrupo()" title="limpa o filtro 'Subgrupo de Produtos'">
+						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterSubgrupo"></span>)
+		</td>
+		</tr>
+		</table>
+	</td>
+	</tr>
 
 <!--  EMPRESA  -->
 	<tr bgColor="#FFFFFF">
