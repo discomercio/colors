@@ -853,6 +853,14 @@ namespace ADM2
                             _vRastreio[iv].processo.MensagemErro = "NFe " + _vRastreio[iv].dadosNormalizado.NF + " não foi encontrada no sistema!";
                             continue;
                         }
+
+                        if (listaNFeImagem.Count == 0)
+                        {
+                            _vRastreio[iv].processo.Status = eRastreioPedidoRecebidoClienteProcessoStatus.ERRO_INCONSISTENCIA;
+                            _vRastreio[iv].processo.CodigoErro = eRastreioPedidoRecebidoClienteProcessoCodigoErro.NUMERO_NF_NAO_ENCONTRADO;
+                            _vRastreio[iv].processo.MensagemErro = "NFe " + _vRastreio[iv].dadosNormalizado.NF + " não foi localizada no sistema!";
+                            continue;
+                        }
                         #endregion
 
                         // Analisa o registro da emissão mais recente (se houver mais de um registro, a lista é retornada em ordem decrescente)
