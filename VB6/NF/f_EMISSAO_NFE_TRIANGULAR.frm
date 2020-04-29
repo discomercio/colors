@@ -5777,12 +5777,12 @@ Dim aliquota_icms As Single
 
 '   REABILITANDO CONTROLES DESABILITADOS EM CASO DE EMISSÃO DE NOTA DE REMESSA
 '   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    chk_InfoComprador.Enabled = True
-    c_cnpj_cpf_dest.Enabled = True
-    c_nome_dest.Enabled = True
-    c_rg_dest.Enabled = True
+    chk_InfoComprador.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
+    c_cnpj_cpf_dest.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
+    c_nome_dest.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
+    c_rg_dest.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
     cb_natureza_recebedor.Enabled = True
-    b_editar_endereco.Enabled = True
+    b_editar_endereco.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
     c_dados_adicionais_venda.Locked = False
     
 '   INFO CONTRIBUINTE
@@ -6294,7 +6294,7 @@ Dim s_NFe_texto_constar As String
     If pedido <> "" Then
         'verificar se os dados do cliente devem vir da memorização no pedido
         If param_pedidomemorizacaoenderecos.campo_inteiro = 1 Then
-            If obtem_info_pedido_triangular_memorizada(pedido, s_resp, s_end_entrega, s_end_entrega_uf, s_NFe_texto_constar, s_end_cliente_uf, s_erro) Then
+            If Not obtem_info_pedido_triangular_memorizada(pedido, s_resp, s_end_entrega, s_end_entrega_uf, s_NFe_texto_constar, s_end_cliente_uf, s_erro) Then
                 If s_erro <> "" Then
                     aviso_erro s_erro
                     c_pedido = ""
@@ -6395,6 +6395,11 @@ Dim s_NFe_texto_constar As String
         c_cnpj_cpf_dest = cnpj_cpf_formata(endereco_recebedor__cnpj_cpf)
         c_nome_dest = endereco_recebedor__nome
         c_rg_dest = endereco_recebedor__rg
+    ElseIf param_pedidomemorizacaoenderecos.campo_inteiro = 1 Then
+        'se ainda não existe nota de venda emitida e existe memorização de endereço, usar os dados da t_PEDIDO
+        c_cnpj_cpf_dest = cnpj_cpf_formata(endereco_comprador__cnpj_cpf)
+        c_nome_dest = endereco_comprador__nome
+        c_rg_dest = endereco_comprador__rg
     Else
         'no caso de pessoa jurídica, a opção será pesquisar/preencher os dados do recebedor
         chk_InfoComprador.Value = 0
@@ -6434,12 +6439,12 @@ Dim s_NFe_texto_constar As String
     b_imprime_venda.Enabled = True
     b_imprime_remessa.Enabled = False
     b_cancela_triangular.Enabled = True
-    chk_InfoComprador.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 1
-    c_cnpj_cpf_dest.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 1
-    c_nome_dest.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 1
-    c_rg_dest.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 1
+    chk_InfoComprador.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
+    c_cnpj_cpf_dest.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
+    c_nome_dest.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
+    c_rg_dest.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
     cb_natureza_recebedor.Enabled = True
-    b_editar_endereco.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 1
+    b_editar_endereco.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
     c_dados_adicionais_venda.Locked = False
     c_dados_adicionais_remessa.Locked = False
     
@@ -6483,12 +6488,12 @@ Dim s_NFe_texto_constar As String
                         Next
                     End If
             Else
-                chk_InfoComprador.Enabled = True
-                c_cnpj_cpf_dest.Enabled = True
-                c_nome_dest.Enabled = True
-                c_rg_dest.Enabled = True
+                chk_InfoComprador.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
+                c_cnpj_cpf_dest.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
+                c_nome_dest.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
+                c_rg_dest.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
                 cb_natureza_recebedor.Enabled = True
-                b_editar_endereco.Enabled = True
+                b_editar_endereco.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
                 c_dados_adicionais_venda.Locked = False
                 c_dados_adicionais_remessa.Locked = False
                 pn_aviso_operacao_concluida.Visible = False
@@ -6757,7 +6762,7 @@ Dim t_DESTINATARIO As ADODB.Recordset
     pedido_a = ""
     s_erro = ""
     s = "SELECT" & _
-            " pedido, st_entrega, id_cliente, obs_1, st_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep" & _
+            " pedido, st_entrega, id_cliente, obs_1, st_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep, NFe_texto_constar" & _
         " FROM t_PEDIDO" & _
         " WHERE" & _
             " (pedido = '" & Trim$(pedido) & "')"
@@ -7101,7 +7106,7 @@ Dim t_DESTINATARIO As ADODB.Recordset
     pedido_a = ""
     s_erro = ""
     s = "SELECT" & _
-            " pedido, st_entrega, id_cliente, obs_1, st_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep" & _
+            " pedido, st_entrega, id_cliente, obs_1, st_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep, NFe_texto_constar" & _
         " FROM t_PEDIDO" & _
         " WHERE" & _
             " (pedido = '" & Trim$(pedido) & "')"
