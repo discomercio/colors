@@ -201,7 +201,7 @@
                 end if
                                 
                 if destinatario <> "" then
-                EmailSndSvcGravaMensagemParaEnvio EMAILSNDSVC_REMETENTE__CHAMADOS_EM_PEDIDOS, _
+                EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__CHAMADOS_EM_PEDIDOS), _
                                                     usuario_email, _
                                                     destinatario, _
                                                     "", _

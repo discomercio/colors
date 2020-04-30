@@ -55,9 +55,112 @@
 		Session("nivel_acesso_bloco_notas") = nivel_acesso_bloco_notas
 		end if
 		
-	dim cn
+	dim cn, rs
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
+	If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
+	dim r_pedido, r_vendedor, alerta, msg_erro
+	dim s, s_ckb_notificar_vendedor_status, s_ckb_notificar_vendedor_msg, s_ckb_notificar_demais_particip_status, s_ckb_notificar_demais_particip_msg
+	dim qtde_demais_particip, qtde_demais_particip_com_email, qtde_demais_particip_sem_email
+	alerta=""
+	if Not le_pedido(pedido_selecionado, r_pedido, msg_erro) then 
+		alerta = msg_erro
+		end if
+
+	if alerta = "" then
+		if Not le_usuario(r_pedido.vendedor, r_vendedor, msg_erro) then
+			alerta = msg_erro
+			end if
+		end if
+
+	s_ckb_notificar_vendedor_status = ""
+	s_ckb_notificar_vendedor_msg = ""
+	if alerta = "" then
+		if Ucase(usuario) = Ucase(r_pedido.vendedor) then
+			s_ckb_notificar_vendedor_status = " disabled"
+			s_ckb_notificar_vendedor_msg = ""
+		else
+			if Trim(r_vendedor.email) = "" then
+				s_ckb_notificar_vendedor_status = " disabled"
+				s_ckb_notificar_vendedor_msg = " (endereço de e-mail não cadastrado)"
+				end if
+			end if
+		end if
+
+	dim i, v_demais_particip
+	redim v_demais_particip(0)
+	set v_demais_particip(ubound(v_demais_particip)) = new cl_QUATRO_COLUNAS
+	v_demais_particip(ubound(v_demais_particip)).c1 = ""
+
+	qtde_demais_particip = 0
+	qtde_demais_particip_com_email = 0
+	qtde_demais_particip_sem_email = 0
+	s_ckb_notificar_demais_particip_status = ""
+	s_ckb_notificar_demais_particip_msg = ""
+	if alerta = "" then
+		s = "SELECT DISTINCT" & _
+				" tPBN.usuario," & _
+				" tU.email," & _
+				" (SELECT Coalesce(Max(nivel_acesso_bloco_notas_pedido), " & Cstr(COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__NAO_DEFINIDO) & ") AS max_nivel_acesso_bloco_notas_pedido FROM t_PERFIL INNER JOIN t_PERFIL_X_USUARIO ON t_PERFIL.id=t_PERFIL_X_USUARIO.id_perfil WHERE (t_PERFIL_X_USUARIO.usuario = tPBN.usuario)) AS nivel_acesso_bloco_notas_pedido" & _
+			" FROM t_PEDIDO_BLOCO_NOTAS tPBN" & _
+				" LEFT JOIN t_USUARIO tU ON (tU.usuario = tPBN.usuario)" & _
+			" WHERE" & _
+				" (pedido = '" & pedido_selecionado & "')" & _
+				" AND (tPBN.usuario NOT IN ('" & usuario & "','" & r_pedido.vendedor & "'))"
+		if rs.State <> 0 then rs.Close
+		rs.open s, cn
+		if rs.Eof then
+			s_ckb_notificar_demais_particip_status = " disabled"
+			s_ckb_notificar_demais_particip_msg = " (não há outros participantes)"
+		else
+			do while Not rs.Eof
+				if v_demais_particip(ubound(v_demais_particip)).c1 <> "" then
+					redim preserve v_demais_particip(ubound(v_demais_particip)+1)
+					set v_demais_particip(ubound(v_demais_particip)) = new cl_QUATRO_COLUNAS
+					end if
+				qtde_demais_particip = qtde_demais_particip + 1
+				v_demais_particip(ubound(v_demais_particip)).c1 = Trim("" & rs("usuario"))
+				v_demais_particip(ubound(v_demais_particip)).c2 = rs("nivel_acesso_bloco_notas_pedido")
+				v_demais_particip(ubound(v_demais_particip)).c3 = Trim("" & rs("email"))
+				if Trim("" & rs("email")) = "" then
+					v_demais_particip(ubound(v_demais_particip)).c4 = "Usuário '" & Trim("" & rs("usuario")) & "' participante do bloco de notas não possui e-mail cadastrado!"
+					qtde_demais_particip_sem_email = qtde_demais_particip_sem_email + 1
+				else
+					v_demais_particip(ubound(v_demais_particip)).c4 = ""
+					qtde_demais_particip_com_email = qtde_demais_particip_com_email + 1
+					end if
+				rs.MoveNext
+				loop
+			
+			if qtde_demais_particip_com_email = 0 then
+				s_ckb_notificar_demais_particip_status = " disabled"
+				s_ckb_notificar_demais_particip_msg = " (demais participantes não possuem e-mail cadastrado)"
+				end if
+			end if
+		end if
+
+	dim strJscript
+	strJscript = "<script language='JavaScript' type='text/javascript'>" & vbCrLf & _
+					"	var vendedor_nivel_acesso_bloco_notas = " & r_vendedor.nivel_acesso_bloco_notas_pedido & ";" & vbCrLf & _
+					"	var vDemaisParticip = new Array();" & vbCrLf & _
+					"	vDemaisParticip[0] = new oUsuario(" & chr(34) & chr(34) & "," & chr(34) & chr(34) & "," & chr(34) & chr(34) & "," & chr(34) & chr(34) & ");" & vbCrLf
+
+	if qtde_demais_particip > 0 then
+		for i=LBound(v_demais_particip) to UBound(v_demais_particip)
+			if Trim("" & v_demais_particip(i).c1) <> "" then
+				strJscript = strJscript & _
+								"	vDemaisParticip[vDemaisParticip.length] = new oUsuario(" & _
+										chr(34) & v_demais_particip(i).c1 & chr(34) & _
+										"," & chr(34) & v_demais_particip(i).c2 & chr(34) & _
+										"," & chr(34) & v_demais_particip(i).c3 & chr(34) & _
+										"," & chr(34) & v_demais_particip(i).c4 & chr(34) & _
+										");" & vbCrLf
+				end if
+			next
+		end if
+
+	strJscript = strJscript & _
+				"</script>" & vbCrLf
 %>
 
 
@@ -90,11 +193,64 @@
 <script src="<%=URL_FILE__AJAX_JS%>" Language="JavaScript" Type="text/javascript"></script>
 
 <script language="JavaScript" type="text/javascript">
+	function oUsuario(usuario, nivel_acesso_bloco_notas_pedido, email, msg_alerta) {
+		this.usuario = usuario;
+		this.nivel_acesso_bloco_notas_pedido = nivel_acesso_bloco_notas_pedido;
+		this.email = email;
+		this.msg_alerta = msg_alerta;
+	}
+</script>
+
+<% =strJscript %>
+
+<script language="JavaScript" type="text/javascript">
 function calcula_tamanho_restante() {
 	var f, s;
 	f = fPED;
 	s = "" + fPED.c_mensagem.value;
 	f.c_tamanho_restante.value = MAX_TAM_MENSAGEM_BLOCO_NOTAS - s.length;
+}
+
+function isNivelAcessoOk(f) {
+var msg_demais_particip, msg_demais_particip_sem_email, msg_demais_particip_sem_acesso;
+	if (f.ckb_notificar_vendedor.checked) {
+		if (converte_numero(f.c_nivel_acesso_bloco_notas.value) > vendedor_nivel_acesso_bloco_notas) {
+			alert("Não é possível enviar a notificação por e-mail para o vendedor porque ele não possui o nível de acesso necessário!");
+			return false;
+		}
+	}
+
+	if (f.ckb_notificar_demais_particip.checked) {
+		msg_demais_particip = "";
+		msg_demais_particip_sem_email = "";
+		msg_demais_particip_sem_acesso = "";
+		for (var i = 0; i < vDemaisParticip.length; i++) {
+			if (vDemaisParticip[i].usuario != "") {
+				if (vDemaisParticip[i].email == "") {
+					if (msg_demais_particip_sem_email != "") msg_demais_particip_sem_email += "\n";
+					msg_demais_particip_sem_email += "Usuário '" + vDemaisParticip[i].usuario + "' não possui e-mail cadastrado!";
+				}
+				if (converte_numero(f.c_nivel_acesso_bloco_notas.value) > converte_numero(vDemaisParticip[i].nivel_acesso_bloco_notas_pedido)) {
+					if (msg_demais_particip_sem_acesso != "") msg_demais_particip_sem_acesso += "\n";
+					msg_demais_particip_sem_acesso += "Usuário '" + vDemaisParticip[i].usuario + "' não irá receber o e-mail por não possuir nível de acesso!";
+				}
+			}
+
+			if ((msg_demais_particip_sem_email != "") && (msg_demais_particip_sem_acesso != "")) {
+				msg_demais_particip = msg_demais_particip_sem_email + "\n" + msg_demais_particip_sem_acesso;
+			}
+			else {
+				msg_demais_particip = msg_demais_particip_sem_email + msg_demais_particip_sem_acesso;
+			}
+
+			if (msg_demais_particip != "") {
+				msg_demais_particip = "Foram detectadas as seguintes pendências:" + "\n\n" + msg_demais_particip + "\n\nDeseja continuar mesmo assim?";
+				if (!confirm(msg_demais_particip)) return false;
+			}
+		}
+	}
+
+	return true;
 }
 
 function fPEDBlocoNotasNovoConfirma(f) {
@@ -117,7 +273,9 @@ var s;
 		f.c_nivel_acesso_bloco_notas.focus();
 		return;
 		}
-		
+
+	if (!isNivelAcessoOk(f)) return;
+
 	dCONFIRMA.style.visibility="hidden";
 	window.status = "Aguarde ...";
 	f.submit();
@@ -141,6 +299,30 @@ var s;
 <link href="<%=URL_FILE__E_CSS%>" Rel="stylesheet" Type="text/css">
 <link href="<%=URL_FILE__EPRINTER_CSS%>" Rel="stylesheet" Type="text/css" media="print">
 
+<% if alerta <> "" then %>
+<!-- ************************************************************ -->
+<!-- **********  PÁGINA PARA EXIBIR MENSAGENS DE ERRO  ********** -->
+<!-- ************************************************************ -->
+<body onload="bVOLTAR.focus();">
+<center>
+<br>
+<!--  T E L A  -->
+<p class="T">A V I S O</p>
+<div class="MtAlerta" style="width:600px;font-weight:bold;" align="center"><p style='margin:5px 2px 5px 2px;'><%=alerta%></p></div>
+<br><br>
+<p class="TracoBottom"></p>
+<table cellspacing="0">
+<tr>
+	<td align="center"><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()"><img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
+</tr>
+</table>
+</center>
+</body>
+
+
+
+
+<% else %>
 <body onload="fPED.c_mensagem.focus();">
 <center>
 
@@ -192,6 +374,21 @@ var s;
 	</td>
 </tr>
 <% end if %>
+
+<tr>
+	<td>
+		<br />
+		<p class="Rf">ENVIAR NOTIFICAÇÃO POR E-MAIL</p>
+		<input type="checkbox" name="ckb_notificar_vendedor" id="ckb_notificar_vendedor" value="ON" <%=s_ckb_notificar_vendedor_status%> /><span class="C" style="cursor:default;" onclick="fPED.ckb_notificar_vendedor.click();">Notificar o vendedor</span>
+			<span style="font-size:8pt;font-style:italic;color:red;" name="spnVendedorMsg" id="spnVendedorMsg"><%=s_ckb_notificar_vendedor_msg%></span>
+		<!-- FUNCIONALIDADE DESABILITADA -->
+		<div style="display:none;">
+		<br />
+		<input type="checkbox" name="ckb_notificar_demais_particip" id="ckb_notificar_demais_particip" value="ON" <%=s_ckb_notificar_demais_particip_status%> /><span class="C" style="cursor:default;" onclick="fPED.ckb_notificar_demais_particip.click();">Notificar demais participantes</span>
+			<span style="font-size:8pt;font-style:italic;color:red;" name="spnDemaisParticipMsg" id="spnDemaisParticipMsg"><%=s_ckb_notificar_demais_particip_msg%></span>
+		</div>
+	</td>
+</tr>
 </table>
 
 <!-- ************   SEPARADOR   ************ -->
@@ -215,9 +412,14 @@ var s;
 
 </center>
 </body>
+<% end if %>
+
 </html>
 
 <%
+	if rs.State <> 0 then rs.Close
+	set rs = nothing
+
 '	FECHA CONEXAO COM O BANCO DE DADOS
 	cn.Close
 	set cn = nothing

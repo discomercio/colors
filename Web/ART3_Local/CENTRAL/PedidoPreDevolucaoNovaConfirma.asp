@@ -444,7 +444,7 @@
             dim strEmailAdministrador
             set strEmailAdministrador = get_registro_t_parametro("PEDIDO_DEVOLUCAO_EMAIL_ADMINISTRADOR")
             corpo_mensagem = "Foi cadastrada uma nova pré-devolução no pedido " & pedido_selecionado & "."
-            EmailSndSvcGravaMensagemParaEnvio EMAILSNDSVC_REMETENTE__PEDIDO_DEVOLUCAO, _
+            EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__PEDIDO_DEVOLUCAO), _
                                                                     "", _
                                                                     strEmailAdministrador.campo_texto, _
                                                                     "", _
