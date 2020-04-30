@@ -3,6 +3,7 @@
 <% Response.Buffer=True %>
 <!-- #include file = "../global/constantes.asp" -->
 <!-- #include file = "../global/funcoes.asp"    -->
+<!-- #include file = "../global/Global.asp"    -->
 <!-- #include file = "../global/bdd.asp" -->
 
 <!-- #include file = "../global/TrataSessaoExpirada.asp"        -->
@@ -92,11 +93,16 @@
 	dim alerta
 	alerta=""
 
+	dim r_vendedor, s_vendedor_pedido
+	dim id_email, corpo_mensagem, msg_erro_grava_email, emailSndSvcRemetenteMensagemSistema
+
 '	CONECTA AO BANCO DE DADOS
 '	=========================
 	dim cn, rs
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	
+	emailSndSvcRemetenteMensagemSistema = getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__MENSAGEM_SISTEMA)
+
 	if alerta = "" then
 	'	~~~~~~~~~~~~~
 		cn.BeginTrans
@@ -118,55 +124,100 @@
             end if
         next
 
-		for i=Lbound(v_dados) to Ubound(v_dados)
-			if v_dados(i).c1 <> "" then
-				s = "SELECT * FROM t_PEDIDO WHERE (pedido = '" & v_dados(i).c1 & "')"
-				if rs.State <> 0 then rs.Close
-				rs.Open s, cn
-				if rs.Eof then
-					alerta=texto_add_br(alerta)
-					alerta=alerta & "Pedido " & v_pedido(i) & " não foi encontrado."
-				else
-					log_via_vetor_carrega_do_recordset rs, vLog1, campos_a_omitir
-				'	EDIÇÃO DO CAMPO "OBS_1" BLOQUEADO?
-					if Not blnEdicaoCampoObs1Bloqueado then
-						rs("obs_1")=v_dados(i).c2
-						end if
+		if alerta = "" then
+			for i=Lbound(v_dados) to Ubound(v_dados)
+				if v_dados(i).c1 <> "" then
+					s = "SELECT * FROM t_PEDIDO WHERE (pedido = '" & v_dados(i).c1 & "')"
+					if rs.State <> 0 then rs.Close
+					rs.Open s, cn
+					if rs.Eof then
+						alerta=texto_add_br(alerta)
+						alerta=alerta & "Pedido " & v_pedido(i) & " não foi encontrado."
+					else
+						log_via_vetor_carrega_do_recordset rs, vLog1, campos_a_omitir
+
+						s_vendedor_pedido = Trim("" & rs("vendedor"))
+
+					'	EDIÇÃO DO CAMPO "OBS_1" BLOQUEADO?
+						if Not blnEdicaoCampoObs1Bloqueado then
+							rs("obs_1")=v_dados(i).c2
+							end if
 						
-					if IsNumeric(v_dados(i).c3) then 
-						rs("analise_credito")=CLng(v_dados(i).c3)
-						rs("analise_credito_data")=Now
-						rs("analise_credito_usuario")=usuario
-                        if v_dados(i).c3 = COD_AN_CREDITO_PENDENTE_VENDAS then rs("analise_credito_pendente_vendas_motivo") = v_dados(i).c6
-						end if
+						if IsNumeric(v_dados(i).c3) then 
+							rs("analise_credito")=CLng(v_dados(i).c3)
+							rs("analise_credito_data")=Now
+							rs("analise_credito_usuario")=usuario
+							if v_dados(i).c3 = COD_AN_CREDITO_PENDENTE_VENDAS then rs("analise_credito_pendente_vendas_motivo") = v_dados(i).c6
+							end if
 					
-					rs("forma_pagto")=v_dados(i).c4
+						rs("forma_pagto")=v_dados(i).c4
 					
-					if Trim("" & v_dados(i).c5) = "AN_END_MARCAR_JA_TRATADO_OK" then
-						if rs("analise_endereco_tratar_status") <> 0 then
-							rs("analise_endereco_tratado_status") = CLng(COD_ANALISE_ENDERECO_TRATADO_STATUS_OK)
-							rs("analise_endereco_tratado_data") = Date
-							rs("analise_endereco_tratado_data_hora") = Now
-							rs("analise_endereco_tratado_usuario") = usuario
+						if Trim("" & v_dados(i).c5) = "AN_END_MARCAR_JA_TRATADO_OK" then
+							if rs("analise_endereco_tratar_status") <> 0 then
+								rs("analise_endereco_tratado_status") = CLng(COD_ANALISE_ENDERECO_TRATADO_STATUS_OK)
+								rs("analise_endereco_tratado_data") = Date
+								rs("analise_endereco_tratado_data_hora") = Now
+								rs("analise_endereco_tratado_usuario") = usuario
+								end if
+							end if
+					
+						rs.Update
+						if Err <> 0 then 
+							alerta=texto_add_br(alerta)
+							alerta=alerta & Cstr(Err) & ": " & Err.Description
+						else
+						'	INFORMAÇÕES PARA O LOG
+							log_via_vetor_carrega_do_recordset rs, vLog2, campos_a_omitir
+							s_log = log_via_vetor_monta_alteracao(vLog1, vLog2)
+							end if
+
+						'Para status de análise de crédito 'Pendente Vendas', envia e-mail avisando o vendedor
+						if v_dados(i).c3 = COD_AN_CREDITO_PENDENTE_VENDAS then
+							call le_usuario(s_vendedor_pedido, r_vendedor, msg_erro)
+							if Trim("" & r_vendedor.email) = "" then
+								if s_log <> "" then s_log = s_log & "; "
+								s_log = s_log & "Vendedor não possui e-mail cadastrado"
+							else
+								corpo_mensagem = "Pedido " & v_dados(i).c1 & " foi alterado para '" & x_analise_credito(v_dados(i).c3) & "' às " & formata_data_hora_sem_seg(Now) & _
+												vbCrLf & _
+												"Motivo: " & obtem_descricao_tabela_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__AC_PENDENTE_VENDAS_MOTIVO, v_dados(i).c6) & _
+												vbCrLf & vbCrLf & _
+												String(60, "-") & _
+												vbCrLf & _
+												"Atenção: esta é uma mensagem automática, NÃO responda a este e-mail!"
+							
+								if EmailSndSvcGravaMensagemParaEnvio(emailSndSvcRemetenteMensagemSistema, _
+																"", _
+																r_vendedor.email, _
+																"", _
+																"", _
+																"Pedido " & v_dados(i).c1 & " alterado para '" & x_analise_credito(v_dados(i).c3) & "'", _
+																corpo_mensagem, _
+																Now, _
+																id_email, _
+																msg_erro_grava_email) then
+									if s_log <> "" then s_log = s_log & "; "
+									s_log = s_log & "Enviado e-mail para o vendedor: " & r_vendedor.email & " (mensagem id: " & id_email & ")"
+								else
+									if s_log <> "" then s_log = s_log & "; "
+									s_log = s_log & "Falha ao tentar enviar e-mail para o vendedor: " & msg_erro_grava_email
+									end if
+								end if
+							end if
+
+						if Err <> 0 then 
+							alerta=texto_add_br(alerta)
+							alerta=alerta & Cstr(Err) & ": " & Err.Description
+						else
+							if s_log <> "" then grava_log usuario, "", v_dados(i).c1, "", OP_LOG_ANALISE_CREDITO, s_log
 							end if
 						end if
-					
-					rs.Update
-					if Err <> 0 then 
-						alerta=texto_add_br(alerta)
-						alerta=alerta & Cstr(Err) & ": " & Err.Description
-					else
-					'	INFORMAÇÕES PARA O LOG
-						log_via_vetor_carrega_do_recordset rs, vLog2, campos_a_omitir
-						s_log = log_via_vetor_monta_alteracao(vLog1, vLog2)
-						if s_log <> "" then grava_log usuario, "", v_dados(i).c1, "", OP_LOG_ANALISE_CREDITO, s_log
-						end if
 					end if
-				end if
 			
-		'	SE HOUVE ERRO, CANCELA O LAÇO
-			if alerta <> "" then exit for
-			next
+			'	SE HOUVE ERRO, CANCELA O LAÇO
+				if alerta <> "" then exit for
+				next
+			end if
 
 		if alerta = "" then
 		'	~~~~~~~~~~~~~~

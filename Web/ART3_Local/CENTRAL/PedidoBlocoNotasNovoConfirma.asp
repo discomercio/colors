@@ -3,6 +3,7 @@
 <% Response.Buffer=True %>
 <!-- #include file = "../global/constantes.asp" -->
 <!-- #include file = "../global/funcoes.asp"    -->
+<!-- #include file = "../global/Global.asp" -->
 <!-- #include file = "../global/bdd.asp" -->
 
 <!-- #include file = "../global/TrataSessaoExpirada.asp"        -->
@@ -47,15 +48,23 @@
 	if Not operacao_permitida(OP_CEN_BLOCO_NOTAS_PEDIDO_CADASTRAMENTO, s_lista_operacoes_permitidas) then
 		Response.Redirect("aviso.asp?id=" & ERR_NIVEL_ACESSO_INSUFICIENTE)
 		end if
+
+'	CONECTA AO BANCO DE DADOS
+'	=========================
+	dim cn, rs
+	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
+	if Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	
 	dim pedido_selecionado
 	pedido_selecionado = Trim(request("pedido_selecionado"))
 	if (pedido_selecionado = "") then Response.Redirect("aviso.asp?id=" & ERR_PEDIDO_NAO_ESPECIFICADO)
 
-	dim c_mensagem, c_nivel_acesso_bloco_notas
+	dim c_mensagem, c_nivel_acesso_bloco_notas, ckb_notificar_vendedor, ckb_notificar_demais_particip, s_vendedor, s_email_vendedor
 	c_mensagem = Trim(Request("c_mensagem"))
 	c_nivel_acesso_bloco_notas = Trim(Request("c_nivel_acesso_bloco_notas"))
-	
+	ckb_notificar_vendedor = Trim(Request("ckb_notificar_vendedor"))
+	ckb_notificar_demais_particip = Trim(Request("ckb_notificar_demais_particip"))
+
 	if c_mensagem = "" then
 		alerta = "Não foi escrita nenhuma mensagem para gravar no bloco de notas."
 	elseif len(c_mensagem) > MAX_TAM_MENSAGEM_BLOCO_NOTAS then
@@ -70,17 +79,86 @@
 		alerta = "Nível de acesso definido para a leitura da mensagem é inválido: " & c_nivel_acesso_bloco_notas
 		end if
 
+	dim id_email, corpo_mensagem, msg_erro_grava_email, dtHrMensagem
+	dim s_dados_cliente
+	dim rParametro, r_usuario, r_pedido, r_cliente
+	dim i, v_demais_particip
+	redim v_demais_particip(0)
+	set v_demais_particip(ubound(v_demais_particip)) = new cl_TRES_COLUNAS
+	v_demais_particip(ubound(v_demais_particip)).c1 = ""
+
+	s_vendedor = ""
+	s_email_vendedor = ""
+	if alerta = "" then
+		if ckb_notificar_vendedor <> "" then
+			s = "SELECT" & _
+					" tP.vendedor," & _
+					" tU.email," & _
+					" (SELECT Coalesce(Max(nivel_acesso_bloco_notas_pedido), " & Cstr(COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__NAO_DEFINIDO) & ") AS max_nivel_acesso_bloco_notas_pedido FROM t_PERFIL INNER JOIN t_PERFIL_X_USUARIO ON t_PERFIL.id=t_PERFIL_X_USUARIO.id_perfil WHERE (t_PERFIL_X_USUARIO.usuario = tU.usuario)) AS nivel_acesso_bloco_notas_pedido" & _
+				" FROM t_PEDIDO tP" & _
+					" INNER JOIN t_USUARIO tU ON (tP.vendedor = tU.usuario)" & _
+				" WHERE" & _
+					" (tP.pedido = '" & pedido_selecionado & "')"
+			if rs.State <> 0 then rs.Close
+			rs.Open s, cn
+			if Not rs.Eof then
+				if Trim("" & rs("email")) = "" then
+					alerta = "O vendedor não possui e-mail cadastrado e, portanto, não é possível enviar a mensagem de notificação!"
+				elseif converte_numero(rs("nivel_acesso_bloco_notas_pedido")) < converte_numero(c_nivel_acesso_bloco_notas) then
+					alerta = "O vendedor não possui nível de acesso suficiente para ler a mensagem!"
+					end if
+				end if
+
+			s_vendedor = Trim("" & rs("vendedor"))
+			s_email_vendedor = LCase(Trim("" & rs("email")))
+			end if 'if ckb_notificar_vendedor <> ""
+
+		if ckb_notificar_demais_particip <> "" then
+			s = "SELECT DISTINCT" & _
+					" tPBN.usuario," & _
+					" tU.email," & _
+					" (SELECT Coalesce(Max(nivel_acesso_bloco_notas_pedido), " & Cstr(COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__NAO_DEFINIDO) & ") AS max_nivel_acesso_bloco_notas_pedido FROM t_PERFIL INNER JOIN t_PERFIL_X_USUARIO ON t_PERFIL.id=t_PERFIL_X_USUARIO.id_perfil WHERE (t_PERFIL_X_USUARIO.usuario = tU.usuario)) AS nivel_acesso_bloco_notas_pedido" & _
+				" FROM t_PEDIDO_BLOCO_NOTAS tPBN" & _
+					" LEFT JOIN t_USUARIO tU ON (tU.usuario = tPBN.usuario)" & _
+				" WHERE" & _
+					" (pedido = '" & pedido_selecionado & "')" & _
+					" AND (tPBN.usuario NOT IN ('" & usuario & "','" & s_vendedor & "'))"
+			if rs.State <> 0 then rs.Close
+			rs.Open s, cn
+			do while Not rs.Eof
+				'Possui acesso suficiente p/ ler a mensagem?
+				if converte_numero(rs("nivel_acesso_bloco_notas_pedido")) >= converte_numero(c_nivel_acesso_bloco_notas) then
+					if v_demais_particip(ubound(v_demais_particip)).c1 <> "" then
+						redim preserve v_demais_particip(ubound(v_demais_particip)+1)
+						set v_demais_particip(ubound(v_demais_particip)) = new cl_TRES_COLUNAS
+						end if
+					v_demais_particip(ubound(v_demais_particip)).c1 = Trim("" & rs("usuario"))
+					v_demais_particip(ubound(v_demais_particip)).c2 = rs("nivel_acesso_bloco_notas_pedido")
+					v_demais_particip(ubound(v_demais_particip)).c3 = Trim("" & rs("email"))
+					end if
+
+				rs.MoveNext
+				loop
+			end if 'if ckb_notificar_demais_particip <> ""
+		end if 'if alerta = ""
+
+	if alerta = "" then
+		if (ckb_notificar_vendedor <> "") Or (ckb_notificar_demais_particip <> "") then
+			set rParametro = get_registro_t_parametro(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__MENSAGEM_SISTEMA)
+
+			call le_usuario(usuario, r_usuario, msg_erro)
+			call le_pedido(pedido_selecionado, r_pedido, msg_erro)
+			
+			set r_cliente = New cl_CLIENTE
+			call x_cliente_bd(r_pedido.id_cliente, r_cliente)
+			end if
+		end if
+
 	dim campos_a_omitir
 	dim vLog()
 	dim s_log
 	s_log = ""
 	campos_a_omitir = "|dt_cadastro|dt_hr_cadastro|anulado_status|anulado_usuario|anulado_data|anulado_data_hora|"
-
-
-'	CONECTA AO BANCO DE DADOS
-'	=========================
-	dim cn, rs
-	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
 '	GRAVA A MENSAGEM NO BLOCO DE NOTAS
 	if alerta = "" then
@@ -88,6 +166,7 @@
 	'	~~~~~~~~~~~~~
 		cn.BeginTrans
 	'	~~~~~~~~~~~~~
+		if rs.State <> 0 then rs.Close
 		if Not cria_recordset_pessimista(rs, msg_erro) then
 		'	~~~~~~~~~~~~~~~~
 			cn.RollbackTrans
@@ -128,8 +207,66 @@
 			if rs.State <> 0 then rs.Close
 				
 			if s_log <> "" then grava_log usuario, "", pedido_selecionado, "", OP_LOG_PEDIDO_BLOCO_NOTAS_INCLUSAO, s_log
-			end if
+			end if 'if alerta = ""
 		
+		if alerta = "" then
+			dtHrMensagem = Now
+		
+			if r_pedido.st_memorizacao_completa_enderecos <> 0 then
+				s_dados_cliente = "Cliente: " & r_pedido.endereco_nome & " (" & cnpj_cpf_formata(r_pedido.endereco_cnpj_cpf) & ")"
+			else
+				s_dados_cliente = "Cliente: " & r_cliente.nome & " (" & cnpj_cpf_formata(r_cliente.cnpj_cpf) & ")"
+				end if
+			
+			corpo_mensagem = "Usuário '" & usuario & "' (" & r_usuario.nome_iniciais_em_maiusculas & ") registrou uma mensagem no bloco de notas do pedido " & pedido_selecionado & " às " & formata_data_hora_sem_seg(dtHrMensagem) & _
+							vbCrLf & _
+							"Pedido: " & pedido_selecionado & _
+							vbCrLf & _
+							s_dados_cliente & _
+							vbCrLf & vbCrLf & _
+							String(30, "-") & "( Início )" & String(30, "-") & _
+							vbCrLf & _
+							c_mensagem & _
+							vbCrLf & _
+							String(31, "-") & "( Fim )" & String(32, "-") & _
+							vbCrLf & vbCrLf & _
+							"Atenção: esta é uma mensagem automática, NÃO responda a este e-mail!"
+
+			if Trim("" & rParametro.campo_texto) <> "" then
+				if (ckb_notificar_vendedor <> "") And (s_email_vendedor <> "") then
+					'Envia e-mail para o vendedor
+					EmailSndSvcGravaMensagemParaEnvio Trim("" & rParametro.campo_texto), _
+													"", _
+													s_email_vendedor, _
+													"", _
+													"", _
+													"Nova mensagem registrada no bloco de notas do pedido " & pedido_selecionado, _
+													corpo_mensagem, _
+													Now, _
+													id_email, _
+													msg_erro_grava_email
+					end if 'if (ckb_notificar_vendedor <> "") And (s_email_vendedor <> "")
+				
+				if ckb_notificar_demais_particip <> "" then
+					'Envia e-mail para os demais participantes que tenham escrito mensagens anteriormente no bloco de notas
+					for i=LBound(v_demais_particip) to UBound(v_demais_particip)
+						if (Trim("" & v_demais_particip(i).c1) <> "") And (Trim("" & v_demais_particip(i).c3) <> "") then
+							EmailSndSvcGravaMensagemParaEnvio Trim("" & rParametro.campo_texto), _
+															"", _
+															Trim("" & v_demais_particip(i).c3), _
+															"", _
+															"", _
+															"Nova mensagem registrada no bloco de notas do pedido " & pedido_selecionado, _
+															corpo_mensagem, _
+															Now, _
+															id_email, _
+															msg_erro_grava_email
+							end if 'if (Trim("" & v_demais_particip(i).c1) <> "") And (Trim("" & v_demais_particip(i).c3) <> "")
+						next
+					end if 'if ckb_notificar_demais_particip <> ""
+				end if 'if Trim("" & rParametro.campo_texto) <> ""
+			end if 'if alerta = ""
+
 		if alerta = "" then
 		'	~~~~~~~~~~~~~~
 			cn.CommitTrans
