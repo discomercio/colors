@@ -297,7 +297,7 @@
                     dim strEmailAdministrador
                     set strEmailAdministrador = get_registro_t_parametro("PEDIDO_DEVOLUCAO_EMAIL_ADMINISTRADOR_2")
                     corpo_mensagem = "A pré-devolução referente o pedido " & pedido_selecionado & " foi aprovada por " & usuario & " em " & formata_data_hora(Now) & "."
-                    EmailSndSvcGravaMensagemParaEnvio EMAILSNDSVC_REMETENTE__PEDIDO_DEVOLUCAO, _
+                    EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__PEDIDO_DEVOLUCAO), _
                                                                             "", _
                                                                             strEmailAdministrador.campo_texto, _
                                                                             "", _
@@ -708,7 +708,7 @@
                                 s_destinatario = Trim("" & rs("email"))
 
                                 if s_destinatario <> "" then
-                                EmailSndSvcGravaMensagemParaEnvio EMAILSNDSVC_REMETENTE__CHAMADOS_EM_PEDIDOS, _
+                                EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__CHAMADOS_EM_PEDIDOS), _
                                                                     s_remetente, _
                                                                     s_destinatario, _
                                                                     "", _
@@ -805,7 +805,7 @@
                                 s_destinatario = Trim("" & rs("email"))
 
                                 if s_destinatario <> "" then
-                                EmailSndSvcGravaMensagemParaEnvio EMAILSNDSVC_REMETENTE__CHAMADOS_EM_PEDIDOS, _
+                                EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__CHAMADOS_EM_PEDIDOS), _
                                                                     s_remetente, _
                                                                     s_destinatario, _
                                                                     "", _
