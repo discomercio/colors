@@ -210,61 +210,63 @@
 			end if 'if alerta = ""
 		
 		if alerta = "" then
-			dtHrMensagem = Now
+			if (ckb_notificar_vendedor <> "") Or (ckb_notificar_demais_particip <> "") then
+				dtHrMensagem = Now
 		
-			if r_pedido.st_memorizacao_completa_enderecos <> 0 then
-				s_dados_cliente = "Cliente: " & r_pedido.endereco_nome & " (" & cnpj_cpf_formata(r_pedido.endereco_cnpj_cpf) & ")"
-			else
-				s_dados_cliente = "Cliente: " & r_cliente.nome & " (" & cnpj_cpf_formata(r_cliente.cnpj_cpf) & ")"
-				end if
+				if r_pedido.st_memorizacao_completa_enderecos <> 0 then
+					s_dados_cliente = "Cliente: " & r_pedido.endereco_nome & " (" & cnpj_cpf_formata(r_pedido.endereco_cnpj_cpf) & ")"
+				else
+					s_dados_cliente = "Cliente: " & r_cliente.nome & " (" & cnpj_cpf_formata(r_cliente.cnpj_cpf) & ")"
+					end if
 			
-			corpo_mensagem = "Usuário '" & usuario & "' (" & r_usuario.nome_iniciais_em_maiusculas & ") registrou uma mensagem no bloco de notas do pedido " & pedido_selecionado & " às " & formata_data_hora_sem_seg(dtHrMensagem) & _
-							vbCrLf & _
-							"Pedido: " & pedido_selecionado & _
-							vbCrLf & _
-							s_dados_cliente & _
-							vbCrLf & vbCrLf & _
-							String(30, "-") & "( Início )" & String(30, "-") & _
-							vbCrLf & _
-							c_mensagem & _
-							vbCrLf & _
-							String(31, "-") & "( Fim )" & String(32, "-") & _
-							vbCrLf & vbCrLf & _
-							"Atenção: esta é uma mensagem automática, NÃO responda a este e-mail!"
+				corpo_mensagem = "Usuário '" & usuario & "' (" & r_usuario.nome_iniciais_em_maiusculas & ") registrou uma mensagem no bloco de notas do pedido " & pedido_selecionado & " às " & formata_data_hora_sem_seg(dtHrMensagem) & _
+								vbCrLf & _
+								"Pedido: " & pedido_selecionado & _
+								vbCrLf & _
+								s_dados_cliente & _
+								vbCrLf & vbCrLf & _
+								String(30, "-") & "( Início )" & String(30, "-") & _
+								vbCrLf & _
+								c_mensagem & _
+								vbCrLf & _
+								String(31, "-") & "( Fim )" & String(32, "-") & _
+								vbCrLf & vbCrLf & _
+								"Atenção: esta é uma mensagem automática, NÃO responda a este e-mail!"
 
-			if Trim("" & rParametro.campo_texto) <> "" then
-				if (ckb_notificar_vendedor <> "") And (s_email_vendedor <> "") then
-					'Envia e-mail para o vendedor
-					EmailSndSvcGravaMensagemParaEnvio Trim("" & rParametro.campo_texto), _
-													"", _
-													s_email_vendedor, _
-													"", _
-													"", _
-													"Nova mensagem registrada no bloco de notas do pedido " & pedido_selecionado, _
-													corpo_mensagem, _
-													Now, _
-													id_email, _
-													msg_erro_grava_email
-					end if 'if (ckb_notificar_vendedor <> "") And (s_email_vendedor <> "")
+				if Trim("" & rParametro.campo_texto) <> "" then
+					if (ckb_notificar_vendedor <> "") And (s_email_vendedor <> "") then
+						'Envia e-mail para o vendedor
+						EmailSndSvcGravaMensagemParaEnvio Trim("" & rParametro.campo_texto), _
+														"", _
+														s_email_vendedor, _
+														"", _
+														"", _
+														"Nova mensagem registrada no bloco de notas do pedido " & pedido_selecionado, _
+														corpo_mensagem, _
+														Now, _
+														id_email, _
+														msg_erro_grava_email
+						end if 'if (ckb_notificar_vendedor <> "") And (s_email_vendedor <> "")
 				
-				if ckb_notificar_demais_particip <> "" then
-					'Envia e-mail para os demais participantes que tenham escrito mensagens anteriormente no bloco de notas
-					for i=LBound(v_demais_particip) to UBound(v_demais_particip)
-						if (Trim("" & v_demais_particip(i).c1) <> "") And (Trim("" & v_demais_particip(i).c3) <> "") then
-							EmailSndSvcGravaMensagemParaEnvio Trim("" & rParametro.campo_texto), _
-															"", _
-															Trim("" & v_demais_particip(i).c3), _
-															"", _
-															"", _
-															"Nova mensagem registrada no bloco de notas do pedido " & pedido_selecionado, _
-															corpo_mensagem, _
-															Now, _
-															id_email, _
-															msg_erro_grava_email
-							end if 'if (Trim("" & v_demais_particip(i).c1) <> "") And (Trim("" & v_demais_particip(i).c3) <> "")
-						next
-					end if 'if ckb_notificar_demais_particip <> ""
-				end if 'if Trim("" & rParametro.campo_texto) <> ""
+					if ckb_notificar_demais_particip <> "" then
+						'Envia e-mail para os demais participantes que tenham escrito mensagens anteriormente no bloco de notas
+						for i=LBound(v_demais_particip) to UBound(v_demais_particip)
+							if (Trim("" & v_demais_particip(i).c1) <> "") And (Trim("" & v_demais_particip(i).c3) <> "") then
+								EmailSndSvcGravaMensagemParaEnvio Trim("" & rParametro.campo_texto), _
+																"", _
+																Trim("" & v_demais_particip(i).c3), _
+																"", _
+																"", _
+																"Nova mensagem registrada no bloco de notas do pedido " & pedido_selecionado, _
+																corpo_mensagem, _
+																Now, _
+																id_email, _
+																msg_erro_grava_email
+								end if 'if (Trim("" & v_demais_particip(i).c1) <> "") And (Trim("" & v_demais_particip(i).c3) <> "")
+							next
+						end if 'if ckb_notificar_demais_particip <> ""
+					end if 'if Trim("" & rParametro.campo_texto) <> ""
+				end if 'if (ckb_notificar_vendedor <> "") Or (ckb_notificar_demais_particip <> "")
 			end if 'if alerta = ""
 
 		if alerta = "" then
