@@ -143,7 +143,8 @@
 			rs("texto_chamado")=c_texto
             rs("nivel_acesso")=c_nivel_acesso_chamado
             rs("id_depto")=c_depto
-			rs("contato") = c_contato
+            't_PEDIDO_CHAMADO.contato varchar(40) mas pode vir maior se o usuário usar o botão para preencher automaticamente. O browser nao respeita o maxlength quando o campo é alterado por javascript
+			rs("contato") = Left(c_contato, 40)
 			rs("ddd_1") = c_ddd_1
 			rs("tel_1") = c_tel_1
 			rs("ddd_2") = c_ddd_2
