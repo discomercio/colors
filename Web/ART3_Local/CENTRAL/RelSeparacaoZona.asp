@@ -331,18 +331,8 @@ dim rNfeEmitente
 				" t_PRODUTO.descricao_html," & _
 				" t_PRODUTO.deposito_zona_id AS zona_id," & _
 				" t_WMS_DEPOSITO_MAP_ZONA.zona_codigo," & _
-				" (" & _
-					"SELECT" & _
-						" TOP 1 NFe_numero_NF" & _
-					" FROM t_NFe_EMISSAO tNE" & _
-					" WHERE" & _
-						" (tNE.pedido=t_PEDIDO.pedido)" & _
-						" AND (tipo_NF = '1')" & _
-						" AND (st_anulado = 0)" & _
-						" AND (codigo_retorno_NFe_T1 = 1)" & _
-					" ORDER BY" & _
-						" id DESC" & _
-				") AS numeroNFe," & _
+				" t_PEDIDO.num_obs_2 AS numNFeFaturamento," & _
+				" t_PEDIDO.num_obs_3 AS numNFeRemessa," & _
 				" (" & _
 					"SELECT " & _
 						" Sum(qtde*qtde_volumes)" & _
@@ -392,10 +382,10 @@ dim rNfeEmitente
 	s_where = ""
 	if rb_nfe = "EMITIDA" then
 		if s_where <> "" then s_where = s_where & " AND"
-		s_where = s_where & " (numeroNFe IS NOT NULL)"
+		s_where = s_where & " ((numNFeFaturamento <> 0) OR (numNFeRemessa <> 0))"
 	elseif rb_nfe = "NAO_EMITIDA" then
 		if s_where <> "" then s_where = s_where & " AND"
-		s_where = s_where & " (numeroNFe IS NULL)"
+		s_where = s_where & " ((numNFeFaturamento = 0) AND (numNFeRemessa = 0))"
 		end if
 	
 	if s_where <> "" then s_where = " WHERE" & s_where
@@ -431,7 +421,14 @@ dim rNfeEmitente
 			.descricao_html = Trim("" & r("descricao_html"))
 			.zona_id = r("zona_id")
 			.zona_codigo = Trim("" & r("zona_codigo"))
-			.numeroNFe = Trim("" & r("numeroNFe"))
+			'Somente NF de Remessa, quando houver
+			if r("numNFeRemessa") > 0 then
+				.numeroNFe = Trim("" & r("numNFeRemessa"))
+			elseif r("numNFeFaturamento") > 0 then
+				.numeroNFe = Trim("" & r("numNFeFaturamento"))
+			else
+				.numeroNFe = ""
+				end if
 			.qtde_volumes_pedido = r("qtde_volumes_pedido")
 			.nome_fabricante = Trim("" & r("nome_fabricante"))
 			if .nome_fabricante = "" then .nome_fabricante = Trim("" & r("razao_social_fabricante"))
