@@ -59,6 +59,11 @@
 		if Not le_pedido(pedido_selecionado, r_pedido, msg_erro) then alerta = msg_erro
 		end if
 	
+	dim id_email, corpo_mensagem, msg_erro_grava_email, emailSndSvcRemetenteMensagemSistema
+	dim r_vendedor, blnEnviarEmailVendedorStatusAnaliseCredito
+	blnEnviarEmailVendedorStatusAnaliseCredito = False
+	emailSndSvcRemetenteMensagemSistema = getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__MENSAGEM_SISTEMA)
+
 '	FORMA DE PAGAMENTO (NOVA VERSÃO)
 	dim versao_forma_pagamento 
 	dim rb_forma_pagto, op_av_forma_pagto, c_pc_qtde, c_pc_valor, c_pc_maquineta_qtde, c_pc_maquineta_valor
@@ -1042,6 +1047,7 @@
 					if s_analise_credito <> "" then 
 						if CLng(rs("analise_credito")) <> CLng(s_analise_credito) then
                             if s_analise_credito = COD_AN_CREDITO_PENDENTE_VENDAS then
+								blnEnviarEmailVendedorStatusAnaliseCredito = True
                                 if s_ac_pendente_vendas_motivo = "" then
                                     alerta = "Não foi informado o motivo do status 'Pendente Vendas'."
                                 end if
@@ -1193,6 +1199,7 @@
 						if s_analise_credito <> "" then 
 							if CLng(rs("analise_credito")) <> CLng(s_analise_credito) then
                                 if s_analise_credito = COD_AN_CREDITO_PENDENTE_VENDAS then
+									blnEnviarEmailVendedorStatusAnaliseCredito = True
                                     if s_ac_pendente_vendas_motivo = "" then
                                         alerta = "Não foi informado o motivo do status 'Pendente Vendas'."
                                     end if
@@ -1933,6 +1940,40 @@
 				cn.Execute(s)
 				If Err <> 0 then
 					alerta = "FALHA AO SINCRONIZAR O CAMPO 'marketplace_codigo_origem' (" & Cstr(Err) & ": " & Err.Description & ")."
+					end if
+				end if
+			end if
+
+		if alerta = "" then
+			if blnEnviarEmailVendedorStatusAnaliseCredito then
+				call le_usuario(r_pedido.vendedor, r_vendedor, msg_erro)
+				if Trim("" & r_vendedor.email) = "" then
+					if s_log <> "" then s_log = s_log & "; "
+					s_log = s_log & "Vendedor não possui e-mail cadastrado para ser notificado sobre alteração do status da análise de crédito"
+				else
+					corpo_mensagem = "Pedido " & pedido_base & " foi alterado para '" & x_analise_credito(s_analise_credito) & "' às " & formata_data_hora_sem_seg(Now) & _
+									vbCrLf & _
+									"Motivo: " & obtem_descricao_tabela_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__AC_PENDENTE_VENDAS_MOTIVO, s_ac_pendente_vendas_motivo) & _
+									vbCrLf & vbCrLf & _
+									String(60, "-") & _
+									vbCrLf & _
+									"Atenção: esta é uma mensagem automática, NÃO responda a este e-mail!"
+					if EmailSndSvcGravaMensagemParaEnvio(emailSndSvcRemetenteMensagemSistema, _
+													"", _
+													r_vendedor.email, _
+													"", _
+													"", _
+													"Pedido " & pedido_base & " alterado para '" & x_analise_credito(s_analise_credito) & "'", _
+													corpo_mensagem, _
+													Now, _
+													id_email, _
+													msg_erro_grava_email) then
+						if s_log <> "" then s_log = s_log & "; "
+						s_log = s_log & "Enviado e-mail para o vendedor avisando sobre alteração do status da análise de crédito: " & r_vendedor.email & " (mensagem id: " & id_email & ")"
+					else
+						if s_log <> "" then s_log = s_log & "; "
+						s_log = s_log & "Falha ao tentar enviar e-mail para o vendedor avisando sobre alteração do status da análise de crédito: " & msg_erro_grava_email
+						end if
 					end if
 				end if
 			end if

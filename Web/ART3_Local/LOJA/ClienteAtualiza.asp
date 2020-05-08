@@ -1421,7 +1421,7 @@
 													 "Informações detalhadas sobre as alterações:" & vbCrLf & _
 													 s_log_aux
 
-									EmailSndSvcGravaMensagemParaEnvio EMAILSNDSVC_REMETENTE__SENTINELA_SISTEMA, _
+									EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__SENTINELA_SISTEMA), _
 																	"", _
 																	rEmailDestinatario.campo_texto, _
 																	"", _

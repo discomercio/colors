@@ -268,11 +268,11 @@
                     end if
 
                 if destinatario_to = "" and destinatario_cc <> "" then
-                    destinatario_to = EMAILSNDSVC_REMETENTE__CHAMADOS_EM_PEDIDOS
+                    destinatario_to = getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__CHAMADOS_EM_PEDIDOS)
                 end if
                 
                 if destinatario_to <> "" then
-                    EmailSndSvcGravaMensagemParaEnvio EMAILSNDSVC_REMETENTE__CHAMADOS_EM_PEDIDOS, _
+                    EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__CHAMADOS_EM_PEDIDOS), _
                                                         usuario_email, _
                                                         destinatario_to, _
                                                         destinatario_cc, _
@@ -373,7 +373,7 @@
                     end if
                 
                 if destinatario_to <> "" then
-                    EmailSndSvcGravaMensagemParaEnvio EMAILSNDSVC_REMETENTE__CHAMADOS_EM_PEDIDOS, _
+                    EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__CHAMADOS_EM_PEDIDOS), _
                                                         usuario_email, _
                                                         destinatario_to, _
                                                         destinatario_cc, _
