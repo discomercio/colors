@@ -5941,12 +5941,12 @@ Dim t_DESTINATARIO As ADODB.Recordset
     s = s & " UNION" & _
         " SELECT" & _
             " pedido, id_cliente, st_memorizacao_completa_enderecos, endereco_uf as uf, endereco_cnpj_cpf as cnpj_cpf, " & _
-            " case EndEtg_endereco when '' then endereco_logradouro else EndEtg_endereco end as endereco, " & _
-            " case EndEtg_endereco when '' then endereco_bairro else EndEtg_bairro end as bairro, " & _
-            " case EndEtg_endereco when '' then endereco_cidade else EndEtg_cidade end as cidade, " & _
-            " case EndEtg_endereco when '' then endereco_cep else EndEtg_cep end as cep, " & _
-            " case EndEtg_endereco when '' then endereco_numero else EndEtg_endereco_numero end as endereco_numero, " & _
-            " case EndEtg_endereco when '' then endereco_complemento else EndEtg_endereco_complemento end as endereco_complemento, " & _
+            " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_logradouro else EndEtg_endereco end as endereco, " & _
+            " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_bairro else EndEtg_bairro end as bairro, " & _
+            " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_cidade else EndEtg_cidade end as cidade, " & _
+            " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_cep else EndEtg_cep end as cep, " & _
+            " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_numero else EndEtg_endereco_numero end as endereco_numero, " & _
+            " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_complemento else EndEtg_endereco_complemento end as endereco_complemento, " & _
             " endereco_email as email, endereco_email_xml as email_xml, " & _
             " endereco_nome as nome, " & _
             " endereco_ddd_res as ddd_res, endereco_tel_res as tel_res, " & _
@@ -6047,7 +6047,6 @@ Dim t_DESTINATARIO As ADODB.Recordset
         If (Len(strDDD) = 2) Then strTelCom2 = "(" & strDDD & ") " & strTelCom2
         If (strRamal <> "") And (converte_para_single(strRamal) <> 0) Then strTelCom2 = strTelCom2 & " R: " & strRamal
         End If
-
     
     s_end_linha_1 = s_endereco
     If (s_end_linha_1 <> "") And (s_bairro <> "") Then s_end_linha_1 = s_end_linha_1 & "  -  "
@@ -7867,12 +7866,12 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         s = s & " UNION" & _
             " SELECT" & _
                 " pedido, id_cliente, st_memorizacao_completa_enderecos, endereco_uf as uf, endereco_cnpj_cpf as cnpj_cpf, " & _
-                " case EndEtg_endereco when '' then endereco_logradouro else EndEtg_endereco end as endereco, " & _
-                " case EndEtg_endereco when '' then endereco_bairro else EndEtg_bairro end as bairro, " & _
-                " case EndEtg_endereco when '' then endereco_cidade else EndEtg_cidade end as cidade, " & _
-                " case EndEtg_endereco when '' then endereco_cep else EndEtg_cep end as cep, " & _
-                " case EndEtg_endereco when '' then endereco_numero else EndEtg_endereco_numero end as endereco_numero, " & _
-                " case EndEtg_endereco when '' then endereco_complemento else EndEtg_endereco_complemento end as endereco_complemento, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_logradouro else EndEtg_endereco end as endereco, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_bairro else EndEtg_bairro end as bairro, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_cidade else EndEtg_cidade end as cidade, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_cep else EndEtg_cep end as cep, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_numero else EndEtg_endereco_numero end as endereco_numero, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_complemento else EndEtg_endereco_complemento end as endereco_complemento, " & _
                 " endereco_email as email, endereco_email_xml as email_xml, " & _
                 " endereco_nome as nome, " & _
                 " endereco_ddd_res as ddd_res, endereco_tel_res as tel_res, " & _
