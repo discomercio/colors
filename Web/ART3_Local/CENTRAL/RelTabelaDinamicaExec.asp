@@ -42,8 +42,9 @@
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO)
 
 '	CONECTA COM O BANCO DE DADOS
-	dim cn
+	dim cn, r, msg_erro
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
+	If Not cria_recordset_otimista(r, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	
 	dim s_lista_operacoes_permitidas
 	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
@@ -85,7 +86,7 @@
 '	CAMPOS DE SAÍDA SELECIONADOS
 	dim ckb_COL_DATA, ckb_COL_NF, ckb_COL_DT_EMISSAO_NF, ckb_COL_PEDIDO, ckb_COL_VENDEDOR, ckb_COL_INDICADOR
 	dim ckb_COL_CPF_CNPJ_CLIENTE, ckb_COL_CONTRIBUINTE_ICMS, ckb_COL_NOME_CLIENTE, ckb_COL_RT, ckb_COL_ICMS_UF_DEST
-	dim ckb_COL_PRODUTO, ckb_COL_NAC_IMP, ckb_COL_DESCRICAO_PRODUTO, ckb_COL_VL_NF, ckb_COL_VL_UNITARIO, ckb_COL_VL_TOTAL, ckb_COL_QTDE
+	dim ckb_COL_PRODUTO, ckb_COL_NAC_IMP, ckb_COL_DESCRICAO_PRODUTO, ckb_COL_VL_NF, ckb_COL_VL_UNITARIO, ckb_COL_VL_CUSTO_REAL_TOTAL, ckb_COL_VL_TOTAL, ckb_COL_QTDE
 	dim ckb_COL_VL_CUSTO_ULT_ENTRADA, ckb_COL_VL_CUSTO_REAL, ckb_COL_VL_LISTA, ckb_COL_GRUPO, ckb_COL_POTENCIA_BTU
 	dim ckb_COL_CICLO, ckb_COL_POSICAO_MERCADO, ckb_COL_MARCA, ckb_COL_TRANSPORTADORA
 	dim ckb_COL_CIDADE, ckb_COL_UF, ckb_COL_QTDE_PARCELAS, ckb_COL_MEIO_PAGAMENTO, ckb_COL_TEL, ckb_COL_EMAIL
@@ -108,6 +109,7 @@
 	ckb_COL_DESCRICAO_PRODUTO = Trim(Request.Form("ckb_COL_DESCRICAO_PRODUTO"))
 	ckb_COL_VL_NF = Trim(Request.Form("ckb_COL_VL_NF"))
 	ckb_COL_VL_UNITARIO = Trim(Request.Form("ckb_COL_VL_UNITARIO"))
+	ckb_COL_VL_CUSTO_REAL_TOTAL = Trim(Request.Form("ckb_COL_VL_CUSTO_REAL_TOTAL"))
 	ckb_COL_VL_TOTAL = Trim(Request.Form("ckb_COL_VL_TOTAL"))
 	ckb_COL_QTDE = Trim(Request.Form("ckb_COL_QTDE"))
 	ckb_COL_VL_CUSTO_ULT_ENTRADA = Trim(Request.Form("ckb_COL_VL_CUSTO_ULT_ENTRADA"))
@@ -175,6 +177,7 @@
 		if ckb_COL_VL_LISTA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_LISTA" & "|"
 		if ckb_COL_VL_NF <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_NF" & "|"
 		if ckb_COL_VL_UNITARIO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_UNITARIO" & "|"
+		if ckb_COL_VL_CUSTO_REAL_TOTAL <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_CUSTO_REAL_TOTAL" & "|"
 		if ckb_COL_VL_TOTAL <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_TOTAL" & "|"
 		if ckb_COL_RT <> "" then s_campos_saida = s_campos_saida & "ckb_COL_RT" & "|"
 		if ckb_COL_ICMS_UF_DEST <> "" then s_campos_saida = s_campos_saida & "ckb_COL_ICMS_UF_DEST" & "|"
@@ -253,13 +256,25 @@ end function
 '
 sub consulta_executa
 const SEPARADOR_DECIMAL = ","
-dim s, s_sql, s_cst, x, x_cab, s_where, s_where_venda, s_where_devolucao, s_where_loja
+dim s, s_sql, s_cst, x, x_cab, s_where, s_where_aux, s_where_venda, s_where_devolucao, s_where_loja, s_where_lista_codigo_frete_devolucao
 dim perc_RT, vl_RT, vl_preco_venda, n_reg, n_reg_total
-dim r
 dim tipo_parc
 dim s_qtde, item_peso, item_cubagem, item_qtde
-dim s_vICMSUFDest, vl_vICMSUFDest, s_vICMSUFDest_unitario, vl_vICMSUFDest_unitario, s_det__qCom, n_det__qCom
+dim s_vICMSUFDest, vl_vICMSUFDest, s_vICMSUFDest_unitario, vl_vICMSUFDest_unitario, s_det__qCom, n_det__qCom, vl_frete_proporcional
 dim v
+
+'	OBTÉM O CÓDIGO REFERENTE AO FRETE DE DEVOLUÇÃO
+	s_where_lista_codigo_frete_devolucao = ""
+	s = "SELECT * FROM t_CODIGO_DESCRICAO WHERE (grupo = '" & GRUPO_T_CODIGO_DESCRICAO__PEDIDO_TIPO_FRETE & "') AND (parametro_campo_texto = 'DEV')"
+	if r.State <> 0 then r.Close
+	r.open s, cn
+	do while Not r.Eof
+		if s_where_lista_codigo_frete_devolucao <> "" then s_where_lista_codigo_frete_devolucao = s_where_lista_codigo_frete_devolucao & ","
+		s_where_lista_codigo_frete_devolucao = s_where_lista_codigo_frete_devolucao & "'" & Trim("" & r("codigo")) & "'"
+		r.MoveNext
+		loop
+
+	if s_where_lista_codigo_frete_devolucao <> "" then s_where_lista_codigo_frete_devolucao = " (" & s_where_lista_codigo_frete_devolucao & ")"
 
 '	CRITÉRIOS COMUNS
 '	================
@@ -429,8 +444,19 @@ dim v
 				" t_PEDIDO__BASE.av_forma_pagto AS forma_pagamento_av," & _
 				" t_PEDIDO__BASE.pce_forma_pagto_prestacao AS parcelamento_c_entrada," & _
 				" t_PEDIDO__BASE.pse_forma_pagto_demais_prest AS parcelamento_s_entrada," & _
-				" t_PEDIDO__BASE.pu_forma_pagto AS parcela_unica," & _
-                " (SELECT SUM(vl_frete) AS vl_frete FROM t_PEDIDO_FRETE WHERE (pedido=t_PEDIDO.pedido)) AS vl_frete," & _
+				" t_PEDIDO__BASE.pu_forma_pagto AS parcela_unica,"
+	
+	s_where_aux = ""
+	if s_where_lista_codigo_frete_devolucao <> "" then
+	'	EXCLUI OS FRETES DE DEVOLUÇÃO
+		s_where_aux = " AND (codigo_tipo_frete NOT IN " & s_where_lista_codigo_frete_devolucao & ")"
+		end if
+
+	s_sql = s_sql & _
+                " (SELECT Coalesce(SUM(vl_frete),0) AS vl_frete FROM t_PEDIDO_FRETE WHERE (t_PEDIDO_FRETE.pedido=t_PEDIDO.pedido)" & s_where_aux & ") AS vl_frete," & _
+				" (SELECT Coalesce(SUM(qtde * preco_venda),0) AS vl_total_produtos_calc_frete FROM t_PEDIDO_ITEM WHERE (t_PEDIDO_ITEM.pedido = t_PEDIDO.pedido)) AS vl_total_produtos_calc_frete,"
+	
+	s_sql = s_sql & _
 				" (SELECT TOP 1 vl_custo2 FROM t_ESTOQUE tE INNER JOIN t_ESTOQUE_ITEM tEI ON (tE.id_estoque = tEI.id_estoque) WHERE (tE.devolucao_status = 0) AND (tEI.fabricante = t_PEDIDO_ITEM.fabricante) AND (tEI.produto = t_PEDIDO_ITEM.produto) ORDER BY tEI.id_estoque DESC) AS vl_custo2_ult_entrada"
 
 	if ckb_COL_VL_CUSTO_REAL <> "" then
@@ -555,8 +581,19 @@ dim v
 				" t_PEDIDO__BASE.av_forma_pagto AS forma_pagamento_av," & _
 				" t_PEDIDO__BASE.pce_forma_pagto_prestacao AS parcelamento_c_entrada," & _
 				" t_PEDIDO__BASE.pse_forma_pagto_demais_prest AS parcelamento_s_entrada," & _
-				" t_PEDIDO__BASE.pu_forma_pagto AS parcela_unica," & _
-                " (SELECT SUM(vl_frete) AS vl_frete FROM t_PEDIDO_FRETE WHERE (pedido=t_PEDIDO.pedido)) AS vl_frete," & _
+				" t_PEDIDO__BASE.pu_forma_pagto AS parcela_unica,"
+
+	s_where_aux = ""
+	if s_where_lista_codigo_frete_devolucao <> "" then
+	'	SOMENTE OS FRETES DE DEVOLUÇÃO
+		s_where_aux = " AND (codigo_tipo_frete IN " & s_where_lista_codigo_frete_devolucao & ")"
+		end if
+
+	s_sql = s_sql & _
+                " (SELECT Coalesce(SUM(vl_frete),0) AS vl_frete FROM t_PEDIDO_FRETE WHERE (t_PEDIDO_FRETE.pedido=t_PEDIDO.pedido)" & s_where_aux & ") AS vl_frete," & _
+				" (SELECT Coalesce(SUM(qtde * preco_venda),0) AS vl_total_produtos_calc_frete FROM t_PEDIDO_ITEM_DEVOLVIDO WHERE (t_PEDIDO_ITEM_DEVOLVIDO.pedido = t_PEDIDO.pedido)) AS vl_total_produtos_calc_frete,"
+	
+	s_sql = s_sql & _
 				" (SELECT TOP 1 vl_custo2 FROM t_ESTOQUE tE INNER JOIN t_ESTOQUE_ITEM tEI ON (tE.id_estoque = tEI.id_estoque) WHERE (tE.devolucao_status = 0) AND (tEI.fabricante = t_PEDIDO_ITEM_DEVOLVIDO.fabricante) AND (tEI.produto = t_PEDIDO_ITEM_DEVOLVIDO.produto) ORDER BY tEI.id_estoque DESC) AS vl_custo2_ult_entrada"
 
 	if ckb_COL_VL_CUSTO_REAL <> "" then
@@ -645,6 +682,7 @@ dim v
 	if ckb_COL_VL_LISTA <> "" then x_cab = x_cab & "VL LISTA;"
 	if ckb_COL_VL_NF <> "" then x_cab = x_cab & "VL NF;"
 	if ckb_COL_VL_UNITARIO <> "" then x_cab = x_cab & "VL UNITARIO;"
+	if ckb_COL_VL_CUSTO_REAL_TOTAL <> "" then x_cab = x_cab & "VL CUSTO TOTAL (REAL);"
 	if ckb_COL_VL_TOTAL <> "" then x_cab = x_cab & "VL TOTAL;"
 	if ckb_COL_RT <> "" then x_cab = x_cab & "RT;"
 	if ckb_COL_ICMS_UF_DEST <> "" then x_cab = x_cab & "ICMS UF DESTINO (UNIT);"
@@ -659,7 +697,8 @@ dim v
 	n_reg_total = 0
     item_qtde = 1
 
-	set r = cn.execute(s_sql)
+	if r.State <> 0 then r.Close
+	r.open s_sql, cn
 	
 	if Not r.Eof then x = x_cab & vbCrLf
 	
@@ -894,7 +933,12 @@ dim v
 
 		'> FRETE
 			if ckb_COL_FRETE <> "" then
-				s = formata_moeda(Trim("" & r("vl_frete")))
+			'	CALCULA O VALOR PROPORCIONAL DO FRETE (LEMBRANDO QUE O VALOR DO FRETE OBTIDO É O TOTAL EM FRETES, MAS OS FRETES DE DEVOLUÇÃO SÃO COMPUTADOS APENAS P/ AS DEVOLUÇÕES)
+				vl_frete_proporcional = 0
+				if r("vl_total_produtos_calc_frete") <> 0 then
+					vl_frete_proporcional = (Abs(CLng(s_qtde)) * r("preco_venda")) * (r("vl_frete") / r("vl_total_produtos_calc_frete"))
+					end if
+				s = formata_moeda(vl_frete_proporcional)
 				if s = "" then s = 0
 				x = x & s & ";"       
 			end if
@@ -931,6 +975,13 @@ dim v
 			if ckb_COL_VL_UNITARIO <> "" then
 			'	EXPORTAR VALOR UTILIZANDO SEPARADOR DECIMAL DEFINIDO
 				s = substitui_caracteres(bd_formata_moeda(r("preco_venda")), ".", SEPARADOR_DECIMAL)
+				x = x & s & ";"
+				end if
+		
+		'> VALOR CUSTO TOTAL (REAL)
+			if ckb_COL_VL_CUSTO_REAL_TOTAL <> "" then
+			'	EXPORTAR VALOR UTILIZANDO SEPARADOR DECIMAL DEFINIDO
+				s = substitui_caracteres(bd_formata_moeda(CLng(s_qtde) * r("vl_custo2_real")), ".", SEPARADOR_DECIMAL)
 				x = x & s & ";"
 				end if
 		
@@ -1268,6 +1319,9 @@ window.status='Aguarde, executando a consulta ...';
 
 
 <%
+	if r.State <> 0 then r.Close
+	set r = nothing
+
 '	FECHA CONEXAO COM O BANCO DE DADOS
 	cn.Close
 	set cn = nothing

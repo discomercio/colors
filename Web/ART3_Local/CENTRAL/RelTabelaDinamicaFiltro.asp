@@ -844,6 +844,11 @@ function exibe_botao_confirmar() {
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_UNITARIO.click();">VL Unitário</span><br />
 						
 				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_CUSTO_REAL_TOTAL|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_CUSTO_REAL_TOTAL" name="ckb_COL_VL_CUSTO_REAL_TOTAL"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_CUSTO_REAL_TOTAL.click();">VL Custo Total (Real)</span><br />
+
+				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_TOTAL|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_TOTAL" name="ckb_COL_VL_TOTAL"
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_TOTAL.click();">VL Total</span><br />
