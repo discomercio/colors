@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ART3WebAPI.Models.Entities;
 using System;
+using ART3WebAPI.Controllers;
 
 namespace ART3WebAPI.Models.Domains
 {
@@ -366,11 +367,12 @@ namespace ART3WebAPI.Models.Domains
         #endregion
 
         #region[ GenerateXLS versão 3 ]
-        public static Task GenerateXLSv3(List<Farol> datasource, string filePath, string dt_inicio, string dt_termino, string fabricante, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string perc_est_cresc, string loja, string visao)
+        public static Task GenerateXLSv3(List<Farol> datasource, string filePath, string opcao_periodo, string dt_inicio, string dt_termino, string fabricante, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string perc_est_cresc, string loja, string visao)
         {
             return Task.Run(() =>
             {
                 #region [ Declarações ]
+                string sAux;
                 string totalVenda = "";
                 string totalProjecao = "";
                 int cont = 0;
@@ -448,7 +450,19 @@ namespace ART3WebAPI.Models.Domains
                     lineAux = 2;
                     ws.Cells["B" + lineAux.ToString()].Style.Font.Size = 12;
                     ws.Cells["B" + lineAux.ToString()].Value = "Farol Resumido (v3)";
-                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "Período de vendas: " + dt_inicio + " a " + dt_termino;
+                    if (opcao_periodo.Equals(FarolV3Controller.COD_CONSULTA_POR_PERIODO_CADASTRO))
+                    {
+                        sAux = "Período de vendas: ";
+                    }
+                    else if (opcao_periodo.Equals(FarolV3Controller.COD_CONSULTA_POR_PERIODO_ENTREGA))
+                    {
+                        sAux = "Período de entrega: ";
+                    }
+                    else
+                    {
+                        sAux = "";
+                    }
+                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = sAux + dt_inicio + " a " + dt_termino;
                     lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "Fabricante(s): " + fabricante;
                     lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "Grupo(s) de produtos: " + grupo;
                     lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "Subgrupo(s) de produtos: " + subgrupo;
@@ -481,8 +495,6 @@ namespace ART3WebAPI.Models.Domains
                         ws.Cells["I12"].Style.Font.Bold = true;
                         ws.Cells["I12"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
                     }
-
-
                     #endregion
 
                     #region [ Cabeçalho ]
@@ -554,7 +566,6 @@ namespace ART3WebAPI.Models.Domains
                         }
 
                         cont++;
-
                     }
 
                     ws.Cells[LIN_CABECALHO, COL_VENDA_HISTORICO + totalMeses + totalMesesProjecao].Value = "Total";

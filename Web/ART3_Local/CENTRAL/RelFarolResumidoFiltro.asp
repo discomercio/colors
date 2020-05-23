@@ -30,6 +30,9 @@
 	On Error GoTo 0
 	Err.Clear
 
+	Const COD_CONSULTA_POR_PERIODO_CADASTRO = "CADASTRO"
+	Const COD_CONSULTA_POR_PERIODO_ENTREGA = "ENTREGA"
+
 	dim usuario
 	usuario = Trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
@@ -47,9 +50,21 @@
 	dim cn
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	
+	dim intIdx
 	dim strDtHojeYYYYMMDD, strDtHojeDDMMYYYY
 	strDtHojeYYYYMMDD = formata_data_yyyymmdd(Date)
 	strDtHojeDDMMYYYY = formata_data(Date)
+
+	dim s_rb_opcao_default, s_checked
+	s_rb_opcao_default = get_default_valor_texto_bd(usuario, "RelFarolResumidoFiltro|rb_periodo")
+
+	dim strScript
+	strScript = _
+		"<script language='JavaScript'>" & chr(13) & _
+        "var COD_CONSULTA_POR_PERIODO_CADASTRO = '" & COD_CONSULTA_POR_PERIODO_CADASTRO & "';" & chr(13) & _
+        "var COD_CONSULTA_POR_PERIODO_ENTREGA = '" & COD_CONSULTA_POR_PERIODO_ENTREGA & "';" & chr(13) & _
+		"</script>" & chr(13)
+
 
 
 
@@ -327,10 +342,15 @@ end function
 <script src="<%=URL_FILE__GLOBAL_JS%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__AJAX_JS%>" language="JavaScript" type="text/javascript"></script>
 
+<%=strScript%>
+
 <script type="text/javascript">
 	$(function() {
 		$("#c_dt_periodo_inicio").hUtilUI('datepicker_filtro_inicial');
 		$("#c_dt_periodo_termino").hUtilUI('datepicker_filtro_final');
+
+        $("#c_dt_entregue_inicio").hUtilUI('datepicker_filtro_inicial');
+        $("#c_dt_entregue_termino").hUtilUI('datepicker_filtro_final');
 
 		$("#divMsgAguardeObtendoDados").css('filter', 'alpha(opacity=50)');
 
@@ -376,6 +396,11 @@ function filtra_percentual_crescimento() {
 
 function fFILTROConfirma( f ) {
     var s_de, s_ate, s_hoje;
+
+    if (!f.rb_periodo[0].checked) {
+        alert("É necessário selecionar a opção 'Período de Vendas' para esta consulta!");
+        return;
+    }
 
     if (trim(f.c_dt_periodo_inicio.value) == "") {
         alert("Informe a data de início do período de vendas!!");
@@ -436,6 +461,11 @@ function fFILTROConfirma( f ) {
     var serverVariableUrl, strUrl, xmlHttp;
     var i, dt_inicio, dt_termino, fabricante, grupo, subgrupo, valorVisao;
     var s_de, s_ate, s_hoje, lojaAux;
+
+	if (!f.rb_periodo[0].checked) {
+		alert("É necessário selecionar a opção 'Período de Vendas' para esta consulta!");
+		return;
+	}
 
     if (trim(f.c_dt_periodo_inicio.value) == "") {
         alert("Informe a data de início do período de vendas!!");
@@ -594,53 +624,125 @@ function fFILTROConfirma( f ) {
     var serverVariableUrl, strUrl, xmlHttp;
     var i, dt_inicio, dt_termino, fabricante, grupo, subgrupo, valorVisao;
     var s_de, s_ate, s_hoje, lojaAux;
+	var s_opcao_periodo, blnFlagOk;
 
-    if (trim(f.c_dt_periodo_inicio.value) == "") {
-        alert("Informe a data de início do período de vendas!!");
-        f.c_dt_periodo_inicio.focus();
+    //  TIPO DE CONSULTA: PEDIDOS CADASTRADOS OU PEDIDOS ENTREGUES
+    blnFlagOk = false;
+    for (i = 0; i < f.rb_periodo.length; i++) {
+        if (f.rb_periodo[i].checked) blnFlagOk = true;
+    }
+    if (!blnFlagOk) {
+        alert("Selecione o tipo de consulta:\n    Período de Vendas\n    Período de Entrega");
         return;
     }
 
-    if (!isDate(f.c_dt_periodo_inicio)) {
-        alert("Data inválida!!");
-        f.c_dt_periodo_inicio.focus();
-        return;
-    }
+//	PERÍODO DE VENDAS
+	if (f.rb_periodo[0].checked) {
+		if (trim(f.c_dt_periodo_inicio.value) == "") {
+			alert("Informe a data de início do período de vendas!!");
+			f.c_dt_periodo_inicio.focus();
+			return;
+		}
 
-    if (trim(f.c_dt_periodo_termino.value) == "") {
-        alert("Informe a data de término do período de vendas!!");
-        f.c_dt_periodo_termino.focus();
-        return;
-    }
+		if (!isDate(f.c_dt_periodo_inicio)) {
+			alert("Data inválida!!");
+			f.c_dt_periodo_inicio.focus();
+			return;
+		}
 
-    if (!isDate(f.c_dt_periodo_termino)) {
-        alert("Data inválida!!");
-        f.c_dt_periodo_termino.focus();
-        return;
-    }
+		if (trim(f.c_dt_periodo_termino.value) == "") {
+			alert("Informe a data de término do período de vendas!!");
+			f.c_dt_periodo_termino.focus();
+			return;
+		}
 
-    s_de = trim(f.c_dt_periodo_inicio.value);
-    s_ate = trim(f.c_dt_periodo_termino.value);
-    if ((s_de != "") && (s_ate != "")) {
-        s_de = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_de));
-        s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
-        if (s_de > s_ate) {
-            alert("Data de término é menor que a data de início!!");
-            f.c_dt_periodo_termino.focus();
+		if (!isDate(f.c_dt_periodo_termino)) {
+			alert("Data inválida!!");
+			f.c_dt_periodo_termino.focus();
+			return;
+		}
+
+		s_de = trim(f.c_dt_periodo_inicio.value);
+		s_ate = trim(f.c_dt_periodo_termino.value);
+		if ((s_de != "") && (s_ate != "")) {
+			s_de = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_de));
+			s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
+			if (s_de > s_ate) {
+				alert("Data de término é menor que a data de início!!");
+				f.c_dt_periodo_termino.focus();
+				return;
+			}
+		}
+
+		s_ate = trim(f.c_dt_periodo_termino.value);
+		if (s_ate != "") {
+			s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
+			s_hoje = retorna_so_digitos(f.c_DtHojeYYYYMMDD.value);
+			if (s_ate > s_hoje) {
+				alert("Data de término não pode ser uma data futura!!");
+				f.c_dt_periodo_termino.focus();
+				return;
+			}
+		}
+
+        s_opcao_periodo = COD_CONSULTA_POR_PERIODO_CADASTRO;
+        dt_inicio = f.c_dt_periodo_inicio.value;
+        dt_termino = f.c_dt_periodo_termino.value;
+	}
+
+// PERÍODO DE ENTREGA
+	if (f.rb_periodo[1].checked) {
+        if (trim(f.c_dt_entregue_inicio.value) == "") {
+            alert("Informe a data de início do período de entrega!");
+            f.c_dt_entregue_inicio.focus();
             return;
         }
-    }
 
-    s_ate = trim(f.c_dt_periodo_termino.value);
-    if (s_ate != "") {
-        s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
-        s_hoje = retorna_so_digitos(f.c_DtHojeYYYYMMDD.value);
-        if (s_ate > s_hoje) {
-            alert("Data de término não pode ser uma data futura!!");
-            f.c_dt_periodo_termino.focus();
+        if (!isDate(f.c_dt_entregue_inicio)) {
+            alert("Data inválida!");
+            f.c_dt_entregue_inicio.focus();
             return;
         }
-    }
+
+        if (trim(f.c_dt_entregue_termino.value) == "") {
+            alert("Informe a data de término do período de entrega!");
+            f.c_dt_entregue_termino.focus();
+            return;
+        }
+
+        if (!isDate(f.c_dt_entregue_termino)) {
+            alert("Data inválida!");
+            f.c_dt_entregue_termino.focus();
+            return;
+        }
+
+        s_de = trim(f.c_dt_entregue_inicio.value);
+        s_ate = trim(f.c_dt_entregue_termino.value);
+        if ((s_de != "") && (s_ate != "")) {
+            s_de = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_de));
+            s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
+            if (s_de > s_ate) {
+                alert("Data de término é menor que a data de início!");
+                f.c_dt_entregue_termino.focus();
+                return;
+            }
+        }
+
+        s_ate = trim(f.c_dt_entregue_termino.value);
+        if (s_ate != "") {
+            s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
+            s_hoje = retorna_so_digitos(f.c_DtHojeYYYYMMDD.value);
+            if (s_ate > s_hoje) {
+                alert("Data de término não pode ser uma data futura!");
+                f.c_dt_entregue_termino.focus();
+                return;
+            }
+        }
+
+        s_opcao_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA;
+        dt_inicio = f.c_dt_entregue_inicio.value;
+        dt_termino = f.c_dt_entregue_termino.value;
+	}
 
     var visao = document.getElementsByName('rb_visao');
        i = 0;
@@ -654,8 +756,6 @@ function fFILTROConfirma( f ) {
     fabricante = "";
     grupo = "";
     subgrupo = "";
-	dt_inicio = f.c_dt_periodo_inicio.value;
-    dt_termino = f.c_dt_periodo_termino.value;
 
     for (i = 0; i < f.c_fabricante.length; i++) {
         if (f.c_fabricante[i].selected == true) {
@@ -696,7 +796,8 @@ function fFILTROConfirma( f ) {
 
     strUrl = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/FarolV3/GetXLSReport/';
     strUrl = strUrl + '?usuario=<%=usuario%>';
-    strUrl = strUrl + '&dt_inicio=' + dt_inicio;
+    strUrl = strUrl + '&opcao_periodo=' + s_opcao_periodo;
+	strUrl = strUrl + '&dt_inicio=' + dt_inicio;
     strUrl = strUrl + '&dt_termino=' + dt_termino;
     strUrl = strUrl + '&fabricante=' + fabricante;
 	strUrl = strUrl + '&grupo=' + grupo;
@@ -742,7 +843,6 @@ function fFILTROConfirma( f ) {
 
     xmlhttp.open("POST", strUrl, true);
     xmlhttp.send();
-
 }
 </script>
 
@@ -797,15 +897,64 @@ function fFILTROConfirma( f ) {
 	<!--  PERÍODO DE VENDAS  -->
 	<tr bgcolor="#FFFFFF">
 	<td class="MT" align="left" nowrap>
-		<span class="PLTe">PERÍODO DE VENDAS</span>
-		<br>
+		<% intIdx=-1 %>
+		<table cellspacing="0" cellpadding="0">
+		<tr>
+			<td align="left">
+				<% s_checked = ""
+					if s_rb_opcao_default = COD_CONSULTA_POR_PERIODO_CADASTRO then s_checked = " checked" %>
+				<input type="radio" id="rb_periodo" name="rb_periodo" value="<%=COD_CONSULTA_POR_PERIODO_CADASTRO%>" <%=s_checked%> />
+			</td>
+			<td align="left" valign="bottom">
+				<% intIdx=intIdx+1 %>
+				<span class="PLTe" style="cursor:default" onclick="fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();">PERÍODO DE VENDAS</span>
+			</td>
+		</tr>
+		</table>
 		<table cellspacing="0" cellpadding="0">
 			<tr bgcolor="#FFFFFF">
 			<td align="left">
-				<input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_periodo_inicio" id="c_dt_periodo_inicio" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de início inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_periodo_termino.focus(); filtra_data();"
+				<input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_periodo_inicio" id="c_dt_periodo_inicio" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de início inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_periodo_termino.focus(); else {if (!fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].checked) fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();} filtra_data();"
+					onchange="fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();"
+					onclick="fFILTRO.rb_periodo[<%= Cstr(intIdx) %>].click();"
 					value='<%=get_default_valor_texto_bd(usuario, "RelFarolResumidoFiltro|c_dt_periodo_inicio")%>'
-					/>&nbsp;<span class="PLLc" style="color:#808080;">&nbsp;&nbsp;&nbsp;até&nbsp;</span>&nbsp;<input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_periodo_termino" id="c_dt_periodo_termino" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de término inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_fabricante.focus(); filtra_data();"
+					/>&nbsp;<span class="PLLc" style="color:#808080;">&nbsp;&nbsp;&nbsp;até&nbsp;</span>&nbsp;<input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_periodo_termino" id="c_dt_periodo_termino" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de término inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_fabricante.focus(); else {if (!fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].checked) fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();} filtra_data();"
+					onchange="fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();"
+					onclick="fFILTRO.rb_periodo[<%= Cstr(intIdx) %>].click();"
 					value='<%=get_default_valor_texto_bd(usuario, "RelFarolResumidoFiltro|c_dt_periodo_termino")%>'
+					/>
+			</td>
+			</tr>
+		</table>
+	</td>
+	</tr>
+	<!--  PERÍODO DE ENTREGA  -->
+	<tr bgcolor="#FFFFFF">
+	<td class="ME MD MB" align="left" nowrap>
+		<table cellspacing="0" cellpadding="0">
+		<tr>
+			<td align="left">
+				<% s_checked = ""
+					if s_rb_opcao_default = COD_CONSULTA_POR_PERIODO_ENTREGA then s_checked = " checked" %>
+				<input type="radio" id="rb_periodo" name="rb_periodo" value="<%=COD_CONSULTA_POR_PERIODO_ENTREGA%>" <%=s_checked%> />
+			</td>
+			<td align="left" valign="bottom">
+				<% intIdx=intIdx+1 %>
+				<span class="PLTe" style="cursor:default" onclick="fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();">PERÍODO DE ENTREGA</span>
+			</td>
+		</tr>
+		</table>
+		<table cellspacing="0" cellpadding="0">
+			<tr bgcolor="#FFFFFF">
+			<td align="left">
+				<input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_entregue_inicio" id="c_dt_entregue_inicio" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de início inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_entregue_termino.focus(); else {if (!fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].checked) fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();} filtra_data();"
+					onchange="fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();"
+					onclick="fFILTRO.rb_periodo[<%= Cstr(intIdx) %>].click();"
+					value='<%=get_default_valor_texto_bd(usuario, "RelFarolResumidoFiltro|c_dt_entregue_inicio")%>'
+					/>&nbsp;<span class="PLLc" style="color:#808080;">&nbsp;&nbsp;&nbsp;até&nbsp;</span>&nbsp;<input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_entregue_termino" id="c_dt_entregue_termino" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de término inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_fabricante.focus(); else {if (!fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].checked) fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();} filtra_data();"
+					onchange="fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();"
+					onclick="fFILTRO.rb_periodo[<%= Cstr(intIdx) %>].click();"
+					value='<%=get_default_valor_texto_bd(usuario, "RelFarolResumidoFiltro|c_dt_entregue_termino")%>'
 					/>
 			</td>
 			</tr>
