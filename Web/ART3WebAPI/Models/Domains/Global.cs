@@ -36,8 +36,8 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.20";
-				public const string Data = "08.ABR.2020";
+				public const string Numero = "2.21";
+				public const string Data = "21.MAI.2020";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
 			#endregion
@@ -146,7 +146,9 @@ namespace ART3WebAPI.Models.Domains
 			 * v 2.20 - 08.04.2020 - por HHO
 			 *      Implementação do filtro para o campo 'subgrupo' no relatório Farol Resumido.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.21 - XX.XX.20XX - por XXX
+			 * v 2.21 - 21.05.2020 - por HHO
+			 *      Implementação da consulta por período de entrega no relatório Farol Resumido em
+			 *      FarolV3Controller.GetXLSReport().
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.22 - XX.XX.20XX - por XXX
 			 * -----------------------------------------------------------------------------------------------
