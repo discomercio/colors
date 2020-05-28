@@ -230,6 +230,44 @@
 	dim blnUsarMemorizacaoCompletaEnderecos
 	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 
+	dim endereco__bairro, endereco__endereco, endereco__numero, endereco__complemento, endereco__cidade, endereco__uf, endereco__cep
+	dim cliente__ddd_res, cliente__tel_res, cliente__ddd_cel, cliente__tel_cel, cliente__ddd_com, cliente__tel_com, cliente__ramal_com,cliente__ddd_com_2, cliente__tel_com_2, cliente__ramal_com_2
+	dim cliente__email, cliente__nome, cliente__ie, cliente__rg
+	
+	if r_pedido.st_memorizacao_completa_enderecos = 1 or r_pedido.st_memorizacao_completa_enderecos = 9 then
+
+		endereco__bairro = Trim(Request.Form("endereco__bairro"))
+		endereco__endereco = Trim(Request.Form("endereco__endereco"))
+		endereco__numero = Trim(Request.Form("endereco__numero"))
+		endereco__complemento = Trim(Request.Form("endereco__complemento"))
+		endereco__cidade = Trim(Request.Form("endereco__cidade"))
+		endereco__uf = Trim(Request.Form("endereco__uf"))
+		endereco__cep = retorna_so_digitos(Trim(Request.Form("endereco__cep"))) 
+
+
+	cliente__ddd_res = retorna_so_digitos(Trim(Request.Form("cliente__ddd_res"))) 
+	cliente__tel_res = retorna_so_digitos(Trim(Request.Form("cliente__tel_res"))) 
+	
+	cliente__ddd_cel = retorna_so_digitos(Trim(Request.Form("cliente__ddd_cel"))) 
+	cliente__tel_cel = retorna_so_digitos(Trim(Request.Form("cliente__tel_cel"))) 
+	
+	cliente__ddd_com = retorna_so_digitos(Trim(Request.Form("cliente__ddd_com"))) 
+	cliente__tel_com = retorna_so_digitos(Trim(Request.Form("cliente__tel_com"))) 
+	cliente__ramal_com = retorna_so_digitos(Trim(Request.Form("cliente__ramal_com"))) 
+	
+	cliente__ddd_com_2 = retorna_so_digitos(Trim(Request.Form("cliente__ddd_com_2"))) 
+	cliente__tel_com_2 = retorna_so_digitos(Trim(Request.Form("cliente__tel_com_2"))) 
+	cliente__ramal_com_2 = retorna_so_digitos(Trim(Request.Form("cliente__ramal_com_2"))) 
+	
+	cliente__email = Trim(Request.Form("cliente__email"))
+	cliente__nome = Trim(Request.Form("cliente__nome"))
+	cliente__ie = Trim(Request.Form("cliente__ie"))
+	cliente__rg = Trim(Request.Form("cliente__rg"))
+
+	end if
+
+
+
 	dim blnEndEntregaEdicaoLiberada, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep,EndEtg_obs,blnEndEtg_obs
 	dim EndEtg_email, EndEtg_email_xml, EndEtg_nome, EndEtg_ddd_res, EndEtg_tel_res, EndEtg_ddd_com, EndEtg_tel_com, EndEtg_ramal_com
 	dim EndEtg_ddd_cel, EndEtg_tel_cel, EndEtg_ddd_com_2, EndEtg_tel_com_2, EndEtg_ramal_com_2
@@ -789,6 +827,31 @@
 				end if
 			end if
 
+			if r_pedido.st_memorizacao_completa_enderecos = 1 or r_pedido.st_memorizacao_completa_enderecos = 9 then
+			
+				if endereco__endereco="" then
+					alerta="PREENCHA O ENDEREÇO."
+				elseif Len(endereco__endereco) > CLng(MAX_TAMANHO_CAMPO_ENDERECO) then
+					alerta="ENDEREÇO EXCEDE O TAMANHO MÁXIMO PERMITIDO:<br>TAMANHO ATUAL: " & Cstr(Len(endereco__endereco)) & " CARACTERES<br>TAMANHO MÁXIMO: " & Cstr(endereco__endereco) & " CARACTERES"
+				elseif endereco__numero="" then
+					alerta="PREENCHA O NÚMERO DO ENDEREÇO."
+				elseif endereco__cidade="" then
+					alerta="PREENCHA A CIDADE DO ENDEREÇO."
+				elseif endereco__uf="" then
+					alerta="PREENCHA A UF DO ENDEREÇO."
+				elseif endereco__cep="" then
+					alerta="PREENCHA O CEP DO ENDEREÇO."	
+				end if
+
+				if	cliente__ie <> "" then 
+					if Not isInscricaoEstadualValida(cliente__ie, endereco__uf) then
+						alerta="Preencha a IE (Inscrição Estadual) com um número válido!!" & _
+							"<br>" & "Certifique-se de que a UF do endereço corresponde à UF responsável pelo registro da IE."
+						end if
+				end if
+
+
+			end if
 
 
         if alerta = "" and blnEndEtgComDados and r_pedido.st_memorizacao_completa_enderecos = 1 and blnUsarMemorizacaoCompletaEnderecos and Not eh_cpf then
@@ -1374,6 +1437,45 @@
 				st_end_entrega_anterior = rs("st_end_entrega")
 				EndEtg_cep_anterior = rs("EndEtg_cep")
 				
+	
+				if r_pedido.st_memorizacao_completa_enderecos = 1 or r_pedido.st_memorizacao_completa_enderecos = 9 then
+				rs("endereco_bairro") = endereco__bairro
+				rs("endereco_numero") = endereco__numero
+				rs("endereco_complemento") = endereco__complemento
+				rs("endereco_cidade") = endereco__cidade
+				rs("endereco_uf") = endereco__uf
+				rs("endereco_cep") = endereco__cep
+				rs("endereco_logradouro") = endereco__endereco
+
+
+				rs("endereco_ddd_res") = cliente__ddd_res
+				rs("endereco_tel_res") = cliente__tel_res
+				
+				rs("endereco_ddd_cel") = cliente__ddd_cel
+				rs("endereco_tel_cel") = cliente__tel_cel
+				
+				
+				rs("endereco_ddd_com") = cliente__ddd_com
+				rs("endereco_tel_com") = cliente__tel_com
+				rs("endereco_ramal_com") = cliente__ramal_com
+				
+				
+				rs("endereco_ddd_com_2") = cliente__ddd_com_2
+				rs("endereco_tel_com_2") = cliente__tel_com_2
+				rs("endereco_ramal_com_2") = cliente__ramal_com_2
+
+				rs("endereco_email") = cliente__email
+				rs("endereco_nome") = cliente__nome 
+
+				rs("endereco_ie") = cliente__ie
+				rs("endereco_rg") = cliente__rg
+
+
+				
+
+				end if
+
+
 				'Editável?
 				if blnEndEntregaEdicaoLiberada then
 					if EndEtg_endereco <> "" then 

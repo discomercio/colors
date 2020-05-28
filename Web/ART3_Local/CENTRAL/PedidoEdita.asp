@@ -1621,6 +1621,118 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
         if (trim(f.EndEtg_tel_cel.value) != "") blnTemEndEntrega = true;
 <%end if%>
 
+<%if r_pedido.st_memorizacao_completa_enderecos <> 0 then %>
+
+		if (trim(f.endereco__endereco.value)=="") {
+			alert('Endereço não foi preenchido corretamente!!');
+			f.endereco__endereco.focus();
+			return;
+			}
+		if (trim(f.endereco__bairro.value)=="") {
+			alert('Endereço não foi preenchido corretamente!!');
+			f.endereco__bairro.focus();
+			return;
+			}
+		
+		if (trim(f.endereco__numero.value)=="") {
+			alert('Endereço não foi preenchido corretamente!!');
+			f.endereco__numero.focus();
+			return;
+			}
+		if (trim(f.endereco__cidade.value)=="") {
+			alert('Endereço não foi preenchido corretamente!!');
+			f.endereco__cidade.focus();
+			return;
+			}
+		
+		if (trim(f.endereco__uf.value)=="") {
+			alert('Endereço não foi preenchido corretamente!!');
+			f.endereco__uf.focus();
+			return;
+			}
+		
+		if (trim(f.endereco__cep.value)=="") {
+			alert('Endereço não foi preenchido corretamente!!');
+			f.endereco__cep.focus();
+			return;
+		}
+
+		if ((trim(f.cliente__email.value) == "") || (!email_ok(f.cliente__email.value))) {
+            alert('E-mail inválido!!');
+            f.cliente__email.focus();
+            return;
+		}
+
+
+       <% if cliente__tipo = ID_PF then %>
+
+			if ((trim(f.cliente__ddd_res.value) == "") || !ddd_ok(f.cliente__ddd_res.value)) {
+			    alert('DDD inválido!!');
+			    f.cliente__ddd_res.focus();
+			    return;
+			}
+
+			if ((trim(f.cliente__tel_res.value) == "") || !telefone_ok(f.cliente__tel_res.value)) {
+			    alert('Telefone residêncial inválido!!');
+			    f.cliente__tel_res.focus();
+			    return;
+			}
+
+			if (!ddd_ok(f.cliente__ddd_cel.value)) {
+			    alert('DDD inválido!!');
+			    f.cliente__ddd_cel.focus();
+			    return;
+			}
+
+			if (!telefone_ok(f.cliente__tel_cel.value)) {
+			    alert('Telefone celular inválido!!');
+			    f.cliente__tel_cel.focus();
+			    return;
+			}
+
+			if (!ddd_ok(f.cliente__ddd_com.value)) {
+			    alert('DDD inválido!!');
+				f.cliente__ddd_com.focus();
+			    return;
+			}
+
+			if (!telefone_ok(f.cliente__tel_com.value)) {
+			    alert('Telefone comercial inválido!!');
+                f.cliente__tel_com.focus();
+			    return;
+			}
+
+
+		<% else %>
+
+			if ((trim(f.cliente__ddd_com.value) == "") || !ddd_ok(f.cliente__ddd_com.value)) {
+            alert('DDD inválido!!');
+            f.cliente__ddd_com.focus();
+            return;
+			}
+
+        if ((trim(f.cliente__tel_com.value) == "") || !telefone_ok(f.cliente__tel_com.value)) {
+            alert('Telefone comercial inválido!!');
+            f.cliente__tel_com.focus();
+            return;
+		}
+
+			if (!ddd_ok(f.cliente__ddd_com_2.value)) {
+            alert('DDD inválido!!');
+            f.cliente__ddd_com_2.focus();
+            return;
+        }
+
+			if (!telefone_ok(f.cliente__tel_com_2.value)) {
+            alert('Telefone comercial inválido!!');
+            f.cliente__tel_com_2.focus();
+            return;
+		}
+		<% end if%>
+
+		
+<% end if%>
+		
 		if (blnTemEndEntrega) {
 		    var blnEndEtg_obs
 		    blnEndEtg_obs = false;
@@ -1937,6 +2049,7 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 
 	f.action="pedidoatualiza.asp";
 	dCONFIRMA.style.visibility="hidden";
+	
 
 	blnExcFreteMarcado = false;
 	for (i = 0; i < f.c_valor_frete.length; i++) {
@@ -2093,6 +2206,10 @@ function setarValorRadio(array, valor)
 	function exibeJanelaCEP_Etg() {
 		$.mostraJanelaCEP("EndEtg_cep", "EndEtg_uf", "EndEtg_cidade", "EndEtg_bairro", "EndEtg_endereco", "EndEtg_endereco_numero", "EndEtg_endereco_complemento");
 	}
+
+    function exibeJanelaCEP() {
+        $.mostraJanelaCEP("endereco__cep", "endereco__uf", "endereco__cidade", "endereco__bairro", "endereco__endereco", "endereco__numero", "endereco__complemento");
+    }
 </script>
 
 
@@ -2265,7 +2382,13 @@ function setarValorRadio(array, valor)
 
 <br>
 
-<!--  CLIENTE   -->
+
+
+
+<!--  ENDEREÇO DO CLIENTE  -->
+<% if r_pedido.st_memorizacao_completa_enderecos = 0 then %>
+
+	<!--  CLIENTE   -->
 <table width="649" class="Q" cellspacing="0">
 	<tr>
 <%	s = ""
@@ -2305,19 +2428,18 @@ function setarValorRadio(array, valor)
 	</tr>
 	</table>
 
+	<!--  ENDEREÇO DO CLIENTE  -->
+	<table width="649" class="QS" cellspacing="0">
+		<tr>
+			<%
+		s = formata_endereco(cliente__endereco, cliente__endereco_numero, cliente__endereco_complemento, cliente__bairro, cliente__cidade, cliente__uf, cliente__cep)
+	%>		
+			<td align="left"><p class="Rf">ENDEREÇO</p><p class="C"><%=s%>&nbsp;</p></td>
+		</tr>
+	</table>
 
-<!--  ENDEREÇO DO CLIENTE  -->
-<table width="649" class="QS" cellspacing="0">
-	<tr>
-<%
-	s = formata_endereco(cliente__endereco, cliente__endereco_numero, cliente__endereco_complemento, cliente__bairro, cliente__cidade, cliente__uf, cliente__cep)
-%>		
-		<td align="left"><p class="Rf">ENDEREÇO</p><p class="C"><%=s%>&nbsp;</p></td>
-	</tr>
-</table>
-
-<!--  TELEFONE DO CLIENTE  -->
-<table width="649" class="QS" cellspacing="0">
+	<!--  TELEFONE DO CLIENTE  -->
+	<table width="649" class="QS" cellspacing="0">
 	<tr>
 <%	s = ""
 	if Trim(cliente__tel_res) <> "" then
@@ -2362,12 +2484,172 @@ function setarValorRadio(array, valor)
 
 	</tr>
 </table>
-<!--  E-MAIL DO CLIENTE  -->
-<table width="649" class="QS" cellspacing="0">
+
+	<!--  E-MAIL DO CLIENTE  -->
+	<table width="649" class="QS" cellspacing="0">
 	<tr>
 		<td align="left"><p class="Rf">E-MAIL</p><p class="C"><%=Trim(cliente__email)%>&nbsp;</p></td>
 	</tr>
 </table>
+
+<% else %>
+
+		<!--  CLIENTE   -->
+	<table width="649" class="Q" cellspacing="0">
+	<tr>
+<%	s = ""
+	if xcliente_bd_resultado then
+%>
+<%	if cliente__tipo = ID_PF then s_aux="CPF" else s_aux="CNPJ"
+	s = cnpj_cpf_formata(cliente__cnpj_cpf) 
+%>
+		<td align="left" width="50%" class="MD"><p class="Rf"><%=s_aux%></p>
+		
+			<!--<p class="C"><%=s%>&nbsp;</p>-->
+			<input id="endereco__cpf_cnpj" name="endereco__cpf_cnpj" readonly="readonly" class="TA" maxlength="72" style="width:310px;" value="<%=s%>">
+		
+		</td>
+		<%
+		if cliente__tipo = ID_PF then s = Trim(cliente__rg) else s = Trim(cliente__ie)
+			if cliente__tipo = ID_PF then 
+%>
+	<td align="left"><p class="Rf">RG</p><input id="cliente__rg" name="cliente__rg" class="TA" maxlength="72" style="width:310px;" value="<%=s%>"></td>
+<% else %>
+	<td align="left"><p class="Rf">IE</p><input id="cliente__ie" name="cliente__ie" class="TA" maxlength="72" style="width:310px;" value="<%=s%>"></td>
+<% end if %>
+		</tr>
+	<%
+		if Trim(cliente__nome) <> "" then
+			s = Trim(cliente__nome)
+			end if
+		end if
+	
+	if cliente__tipo = ID_PF then s_aux="NOME DO CLIENTE" else s_aux="RAZÃO SOCIAL DO CLIENTE"
+%>
+    <tr>
+	<td class="MC" align="left" colspan="2"><p class="Rf"><%=s_aux%></p>
+	
+		
+		<input id="cliente__nome" name="cliente__nome" class="TA" value="<%=s%>" maxlength="60" style="width:635px;" />
+				
+	
+		</td>
+	</tr>
+	</table>
+	
+	<!--  ENDEREÇO DO CLIENTE  -->
+	<table width="649" class="QS" cellspacing="0">
+	    <tr>           
+		    <td colspan="2" class="MB" align="left"><p class="Rf">ENDEREÇO</p><input id="endereco__endereco" name="endereco__endereco" class="TA" maxlength="60" style="width:635px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fPED.EndEtg_endereco_numero.focus(); filtra_nome_identificador();" value="<%=cliente__endereco%>"></td>
+	    </tr>
+	    <tr>
+		    <td class="MDB" align="left"><p class="Rf">Nº</p><input id="endereco__numero" name="endereco__numero" class="TA" maxlength="20" style="width:310px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fPED.EndEtg_endereco_complemento.focus(); filtra_nome_identificador();" value="<%=cliente__endereco_numero%>"></td>
+		    <td class="MB" align="left"><p class="Rf">COMPLEMENTO</p><input id="endereco__complemento" name="endereco__complemento" class="TA" maxlength="60" style="width:310px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fPED.EndEtg_bairro.focus(); filtra_nome_identificador();" value="<%=cliente__endereco_complemento%>"></td>
+	    </tr>
+	    <tr>
+		    <td class="MDB" align="left"><p class="Rf">BAIRRO</p><input id="endereco__bairro" name="endereco__bairro" class="TA" maxlength="72" style="width:310px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fPED.EndEtg_cidade.focus(); filtra_nome_identificador();" value="<%=cliente__bairro%>"></td>
+		    <td class="MB" align="left"><p class="Rf">CIDADE</p><input id="endereco__cidade" name="endereco__cidade" class="TA" maxlength="60" style="width:310px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fPED.EndEtg_uf.focus(); filtra_nome_identificador();" value="<%=cliente__cidade%>"></td>
+	    </tr>
+	    <tr>
+		    <td width="50%" class="MD" align="left"><p class="Rf">UF</p><input id="endereco__uf" name="endereco__uf" class="TA" maxlength="2" size="3" onkeypress="if (digitou_enter(true) && tem_info(this.value) && uf_ok(this.value)) fPED.EndEtg_cep.focus();" onblur="this.value=trim(this.value); if (!uf_ok(this.value)) {alert('UF inválida!!');this.focus();} else this.value=ucase(this.value);" value="<%=cliente__uf%>"></td>
+		    <td>
+			    <table width="100%" cellspacing="0" cellpadding="0">
+			    <tr>
+			    <td width="50%" align="left"><p class="Rf">CEP</p><input id="endereco__cep" name="endereco__cep" readonly tabindex=-1 class="TA" maxlength="9" size="11" onkeypress="if (digitou_enter(true) && cep_ok(this.value)) filtra_cep();" onblur="if (!cep_ok(this.value)) {alert('CEP inválido!!');this.focus();} else this.value=cep_formata(this.value);" value='<%=cep_formata(cliente__cep)%>'></td>
+			    <td align="center">
+				    <% if blnPesquisaCEPAntiga then %>
+				    <button type="button" name="bPesqCepEndEtg" id="bPesqCepEndEtg" style='width:130px;font-size:10pt;' class="Botao" onclick="AbrePesquisaCepEndEtg();">Pesquisar CEP</button>
+				    <% end if %>
+				    <% if blnPesquisaCEPAntiga and blnPesquisaCEPNova then Response.Write "&nbsp;" %>
+				    <% if blnPesquisaCEPNova then %>
+				    <button type="button" name="bPesqCepEndEtg" id="bPesqCepEndEtg" style='width:130px;font-size:10pt;' class="Botao" onclick="exibeJanelaCEP();">Pesquisar CEP</button>
+				    <% end if %>
+				    <a name="bLimparEndEtg" id="bLimparEndEtg" href="javascript:LimparCamposEndEtg(fPED)" title="limpa o endereço de entrega">
+					    <img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+			    </td>
+			    </tr>
+			    </table>
+		    </td>
+	    </tr>
+    </table>
+
+		<% if cliente__tipo = ID_PF then %>
+			<!--  TELEFONE DO CLIENTE  -->
+			<table width="649" class="QS" cellspacing="0">
+	            <tr>
+					<td class="MD" width="20%" align="left"><p class="R">DDD</p><p class="C">
+						<input id="cliente__ddd_res" name="cliente__ddd_res" class="TA" value="<%=cliente__ddd_res%>" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fPED.EndEtg_tel_res.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p>
+					</td>
+					<td class="MD" align="left"><p class="R">TELEFONE RESIDENCIAL</p><p class="C">
+						<input id="cliente__tel_res" name="cliente__tel_res" class="TA" value="<%=telefone_formata(cliente__tel_res)%>" maxlength="11" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fPED.EndEtg_ddd_cel.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Telefone inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p>
+					</td>
+	            </tr>
+			</table>
+			<table width="649" class="QS" cellspacing="0">
+				<tr>
+					<td class="MD" width="20%" align="left"><p class="R">DDD</p><p class="C">
+						<input id="cliente__ddd_cel" name="cliente__ddd_cel" class="TA" value="<%=cliente__ddd_cel%>" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fPED.EndEtg_tel_cel.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p>
+					</td>
+					<td align="left" class="MD"><p class="R">CELULAR</p><p class="C">
+						<input id="cliente__tel_cel" name="cliente__tel_cel" class="TA" value="<%=telefone_formata(cliente__tel_cel)%>" maxlength="9" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fPED.EndEtg_obs.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Número de celular inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p>
+					</td>
+	            </tr>
+			</table>
+			<table width="649" class="QS" cellspacing="0">
+	            <tr>
+					<td class="MD" width="20%" align="left"><p class="R">DDD</p><p class="C">
+						<input id="cliente__ddd_com" name="cliente__ddd_com" class="TA" value="<%=cliente__ddd_com%>" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fPED.EndEtg_tel_cel.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p>
+					</td>
+					<td class="MD" align="left"><p class="R">COMERCIAL</p><p class="C">
+						<input id="cliente__tel_com" name="cliente__tel_com" class="TA" value="<%=telefone_formata(cliente__tel_com)%>" maxlength="9" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fPED.EndEtg_obs.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Número de telefone comercial inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p>
+					</td>
+					<td align="left"><p class="R">RAMAL</p><p class="C">
+						<input id="cliente__ramal_com" name="cliente__ramal_com" class="TA" value="<%=cliente__ramal_com%>" maxlength="4" size="6" onkeypress="if (digitou_enter(true)) fPED.EndEtg_ddd_com_2.focus(); filtra_numerico();"></p>
+					</td>
+				</tr>
+				
+			</table>	
+
+		<% else %>
+			<!--  TELEFONE DO CLIENTE  -->
+			<table width="649" class="QS" cellspacing="0">
+	            <tr>
+					<td class="MD" width="20%" align="left"><p class="R">DDD</p><p class="C">
+						<input id="cliente__ddd_com" name="cliente__ddd_com" class="TA" value="<%=cliente__ddd_com%>" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fPED.EndEtg_tel_com.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p></td>
+					<td class="MD" align="left"><p class="R">TELEFONE </p><p class="C">
+						<input id="cliente__tel_com" name="cliente__tel_com" class="TA" value="<%=telefone_formata(cliente__tel_com)%>" maxlength="11" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fPED.EndEtg_ramal_com.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Telefone inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p></td>
+					<td align="left"><p class="R">RAMAL</p><p class="C">
+						<input id="cliente__ramal_com" name="cliente__ramal_com" class="TA" value="<%=cliente__ramal_com%>" maxlength="4" size="6" onkeypress="if (digitou_enter(true)) fPED.EndEtg_ddd_com_2.focus(); filtra_numerico();"></p>
+					</td>
+	            </tr>
+	            <tr>
+	                <td class="MD MC" width="20%" align="left"><p class="R">DDD</p><p class="C">
+						<input id="cliente__ddd_com_2" name="cliente__ddd_com_2" class="TA" value="<%=cliente__ddd_com_2%>" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fPED.EndEtg_tel_com_2.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!!');this.focus();}" /></p>  
+	                </td>
+	                <td class="MD MC" align="left"><p class="R">TELEFONE</p><p class="C">
+						<input id="cliente__tel_com_2" name="cliente__tel_com_2" class="TA" value="<%=telefone_formata(cliente__tel_com_2)%>" maxlength="9" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fPED.EndEtg_ramal_com_2.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Telefone inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p>
+	                </td>
+	                <td align="left" class="MC"><p class="R">RAMAL</p><p class="C">
+						<input id="cliente__ramal_com_2" name="cliente__ramal_com_2" class="TA" value="<%=cliente__ramal_com_2%>" maxlength="4" size="6" onkeypress="if (digitou_enter(true)) fPED.EndEtg_obs.focus(); filtra_numerico();" /></p>
+	                </td>
+	            </tr>
+            </table>
+		<% end if %>
+
+	<!--  E-MAIL DO CLIENTE  -->
+	<table width="649" class="QS" cellspacing="0">
+		 <tr>           
+		    <td colspan="2" class="Rf" align="left"><p class="Rf">E-MAIL</p>
+				<input id="cliente__email" name="cliente__email" class="TA" maxlength="60" style="width:635px;" value="<%=cliente__email%>" onkeypress="Sfiltra_email();" />
+
+		    </td>
+	    </tr>
+	</table>
+
+<%end if%>
+
+
+
 
 <% if Not blnEndEntregaEdicaoLiberada then %>
 <!--  ENDEREÇO DE ENTREGA  -->

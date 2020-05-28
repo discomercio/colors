@@ -337,7 +337,7 @@ end function
 
 <script language="JavaScript" type="text/javascript">
 	$(document).ready(function() {
-	    $("#trEndOriginal").hide();
+	   
 	    $("#motivo_alternativo").hide();
 		$(".TR_INFO_AN_END").hide().addClass("TR_INFO_AN_END_HIDDEN");
 		$(".TIT_INFO_AN_END_BLOCO").addClass("TR_INFO_AN_END_HIDDEN");
@@ -874,9 +874,7 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 	}
 }
 
-function exibeOcultaEnderecoOriginal() {
-	$("#trEndOriginal").toggle();
-}
+
 
 function fPEDRemove( f ) {
     var b;
@@ -1409,33 +1407,19 @@ function fPEDPreDevolucao(f) {
 	</table>
 
 <!--  ENDEREÇO DO CLIENTE  -->
-<% if (r_pedido.endereco_memorizado_status <> 0) then 
-		if operacao_permitida(OP_CEN_EDITA_ANALISE_CREDITO, s_lista_operacoes_permitidas) Or _
-			operacao_permitida(OP_CEN_REL_ANALISE_CREDITO, s_lista_operacoes_permitidas) then
-			if Not isEnderecoIgual(r_cliente.endereco, r_cliente.endereco_numero, r_cliente.cep, r_pedido.endereco_logradouro, r_pedido.endereco_numero, r_pedido.endereco_cep) then
-				blnEnderecoAlterado = True
-				strIconWarn = "&nbsp;<span class='notPrint'><a href='javascript:exibeOcultaEnderecoOriginal();' title='clique para exibir/ocultar o endereço original'>&nbsp;<img class='notPrint' src='../imagem/red-warn-circle_12x12.png' border='0' /></a></span>"
+<% 
 				with r_pedido
-					strEnderecoOriginal = formata_endereco(.endereco_logradouro, .endereco_numero, .endereco_complemento, .endereco_bairro, .endereco_cidade, .endereco_uf, .endereco_cep)
+					strEnderecoOriginal = formata_endereco(cliente__endereco, cliente__endereco_numero, cliente__endereco_complemento, cliente__bairro, cliente__cidade, cliente__uf, cliente__cep)
 					end with
-				end if
-			end if
-		end if %>
+				 %>
 <table width="649" class="QS" cellspacing="0">
+	
+	
 	<tr>
-<%	
-    'aqui usamos o endereço do cliente; se for diferente de quando o pedido foi criado, o endereço do pedido será mostrado abaixo
-    with r_cliente
-		s = formata_endereco(.endereco, .endereco_numero, .endereco_complemento, .bairro, .cidade, .uf, .cep)
-		end with
-%>		
-		<td align="left"><p class="Rf">ENDEREÇO<%=strIconWarn%></p><p class="C"><%=s%>&nbsp;</p></td>
+		<td class="MC" align="left"><p class="Rf">ENDEREÇO</p><p class="C"><%=strEnderecoOriginal%>&nbsp;</p></td>
 	</tr>
-	<% if blnEnderecoAlterado then %>
-	<tr id="trEndOriginal">
-		<td class="MC" align="left"><p class="Rf">ENDEREÇO ORIGINAL</p><p class="C"><%=strEnderecoOriginal%>&nbsp;</p></td>
-	</tr>
-	<% end if %>
+	
+	
 </table>
 
 <!--  TELEFONE DO CLIENTE  -->

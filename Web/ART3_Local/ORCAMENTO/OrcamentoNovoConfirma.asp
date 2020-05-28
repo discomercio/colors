@@ -1021,6 +1021,13 @@
 						", produtor_rural_status=" & EndEtg_produtor_rural_status & _
 						", ie=" & EndEtg_ie & _
 						", rg=" & EndEtg_rg & _
+						", endereco_logradouro=" & orcamento_endereco_logradouro & _
+						", endereco_bairro=" & orcamento_endereco_bairro & _
+						", endereco_cidade=" & orcamento_endereco_cidade & _
+						", endereco_uf=" & orcamento_endereco_uf & _
+						", endereco_cep=" & orcamento_endereco_cep & _
+						", endereco_numero=" & orcamento_endereco_numero & _
+						", endereco_complemento=" & orcamento_endereco_complemento & _
 						")"
 				end if
 		else
