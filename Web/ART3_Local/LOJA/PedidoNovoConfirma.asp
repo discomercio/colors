@@ -329,7 +329,7 @@
 
 	opcao_venda_sem_estoque = Trim(request("opcao_venda_sem_estoque"))
 	
-	dim s_forma_pagto, s_obs1, s_obs2, s_recebido, s_etg_imediata, s_bem_uso_consumo, s_pedido_ac, s_numero_mktplace, s_origem_pedido
+	dim s_forma_pagto, s_obs1, s_obs2, s_recebido, s_etg_imediata, s_bem_uso_consumo, s_pedido_ac, s_numero_mktplace, s_origem_pedido, c_data_previsao_entrega
     dim s_nf_texto, s_num_pedido_compra
 	s_obs1=Trim(request("c_obs1"))
 	s_obs2=Trim(request("c_obs2"))
@@ -338,6 +338,7 @@
     s_origem_pedido = Trim(Request("c_origem_pedido"))
 	s_recebido=Trim(request("rb_recebido"))
 	s_etg_imediata=Trim(request("rb_etg_imediata"))
+	c_data_previsao_entrega = Trim(Request("c_data_previsao_entrega"))
 	s_bem_uso_consumo=Trim(request("rb_bem_uso_consumo"))
 	s_forma_pagto=Trim(request("c_forma_pagto"))
     s_nf_texto = Trim(request("c_nf_texto"))
@@ -1357,6 +1358,19 @@
 		if s_etg_imediata = "" then
 			alerta = "É necessário selecionar uma opção para o campo 'Entrega Imediata'."
 			end if
+
+		if CLng(s_etg_imediata) = CLng(COD_ETG_IMEDIATA_NAO) then
+			if c_data_previsao_entrega = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "É necessário informar a data de previsão de entrega"
+			elseif Not IsDate(c_data_previsao_entrega) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Data de previsão de entrega informada é inválida"
+			elseif StrToDate(c_data_previsao_entrega) <= Date then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Data de previsão de entrega deve ser uma data futura"
+				end if
+			end if
 		end if
 
 	if alerta = "" then
@@ -1905,6 +1919,11 @@
 					rs("st_etg_imediata")=CLng(s_etg_imediata)
 					rs("etg_imediata_data")=Now
 					rs("etg_imediata_usuario")=usuario
+					end if
+				if CLng(s_etg_imediata) = CLng(COD_ETG_IMEDIATA_NAO) then
+					rs("PrevisaoEntregaData") = StrToDate(c_data_previsao_entrega)
+					rs("PrevisaoEntregaUsuarioUltAtualiz") = usuario
+					rs("PrevisaoEntregaDtHrUltAtualiz") = Now
 					end if
 				if s_bem_uso_consumo <> "" then 
 					rs("StBemUsoConsumo")=CLng(s_bem_uso_consumo)
@@ -2726,6 +2745,7 @@
 				if (Trim("" & rs("vl_servicos"))<>"") And (Trim("" & rs("vl_servicos"))<>"0") then s_log = s_log & "; vl_servicos=" & formata_texto_log(rs("vl_servicos")) 
 				if Trim("" & rs("st_recebido"))<>"" then s_log = s_log & "; st_recebido=" & formata_texto_log(rs("st_recebido")) 
 				if Trim("" & rs("st_etg_imediata"))<> "" then s_log = s_log & "; st_etg_imediata=" & formata_texto_log(rs("st_etg_imediata")) 
+				if Trim("" & rs("st_etg_imediata")) = Trim(COD_ETG_IMEDIATA_NAO) then s_log = s_log & " (previsão de entrega: " & formata_data(rs("PrevisaoEntregaData")) & ")"
 				if Trim("" & rs("StBemUsoConsumo"))<> "" then s_log = s_log & "; StBemUsoConsumo=" & formata_texto_log(rs("StBemUsoConsumo")) 
 				if Trim("" & rs("InstaladorInstalaStatus"))<> "" then s_log = s_log & "; InstaladorInstalaStatus=" & formata_texto_log(rs("InstaladorInstalaStatus")) 
 				if Trim("" & rs("obs_1"))<>"" then s_log = s_log & "; obs_1=" & formata_texto_log(rs("obs_1"))
