@@ -2066,6 +2066,9 @@
 		dim EndEtg_produtor_rural_status
 		dim EndEtg_ie
 		dim EndEtg_rg
+		dim PrevisaoEntregaData
+		dim PrevisaoEntregaUsuarioUltAtualiz
+		dim PrevisaoEntregaDtHrUltAtualiz
 		end class
 
 	class cl_ITEM_PEDIDO
@@ -2556,6 +2559,9 @@
 		dim EndEtg_produtor_rural_status
 		dim EndEtg_ie
 		dim EndEtg_rg
+		dim PrevisaoEntregaData
+		dim PrevisaoEntregaUsuarioUltAtualiz
+		dim PrevisaoEntregaDtHrUltAtualiz
 		end class
 
 	class cl_ITEM_ORCAMENTO

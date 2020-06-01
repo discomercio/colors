@@ -989,7 +989,15 @@ end function
 
 
 
+<% if False then 'APENAS P/ HABILITAR O INTELLISENSE DURANTE O DESENVOLVIMENTO!! %>
+<script src="../Global/jquery.js" language="JavaScript" type="text/javascript"></script>
+<% end if %>
+
 <script src="<%=URL_FILE__JQUERY%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI_I18N%>" Language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__GLOBAL_JS%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__AJAX_JS%>" language="JavaScript" type="text/javascript"></script>
 
@@ -1008,6 +1016,21 @@ end function
 		<% end if %>
 		$(".tdGarInd").hide();
 		$(".rbGarIndNao").attr('checked', 'checked');
+		$("#c_data_previsao_entrega").hUtilUI('datepicker_padrao');
+
+        $("input[name = 'rb_etg_imediata']").change(function () {
+			if ($("input[name='rb_etg_imediata']:checked").val() == '<%=COD_ETG_IMEDIATA_NAO%>') {
+				$("#c_data_previsao_entrega").prop("readonly", false);
+				$("#c_data_previsao_entrega").prop("disabled", false);
+                $("#c_data_previsao_entrega").datepicker("enable");
+			}
+			else {
+				$("#c_data_previsao_entrega").val("");
+                $("#c_data_previsao_entrega").prop("readonly", true);
+				$("#c_data_previsao_entrega").prop("disabled", true);
+				$("#c_data_previsao_entrega").datepicker("disable");
+            }
+		});
 	});
 
 	//Every resize of window
@@ -2236,6 +2259,27 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		return;
 		}
 
+	if (f.rb_etg_imediata[0].checked)
+	{
+		if (trim(f.c_data_previsao_entrega.value) == "") {
+			alert("Informe a data de previsão de entrega!");
+			f.c_data_previsao_entrega.focus();
+			return;
+		}
+
+		if (!isDate(f.c_data_previsao_entrega)) {
+            alert("Data de previsão de entrega é inválida!");
+            f.c_data_previsao_entrega.focus();
+			return;
+		}
+
+		if (retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(f.c_data_previsao_entrega.value)) <= retorna_so_digitos(formata_ddmmyyyy_yyyymmdd('<%=formata_data(Date)%>'))) {
+			alert("Data de previsão de entrega deve ser uma data futura!");
+            f.c_data_previsao_entrega.focus();
+			return;
+        }
+	}
+
 	blnFlag=false;
 	for (i=0; i < f.rb_bem_uso_consumo.length; i++) {
 		if (f.rb_bem_uso_consumo[i].checked) blnFlag=true;
@@ -2388,6 +2432,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 -->
 
 <link href="<%=URL_FILE__E_CSS%>" Rel="stylesheet" Type="text/css">
+<link href="<%=URL_FILE__JQUERY_UI_CSS%>" rel="stylesheet" type="text/css">
 <link href="<%=URL_FILE__EPRINTER_CSS%>" Rel="stylesheet" Type="text/css" media="print">
 
 <style type="text/css">
@@ -2838,16 +2883,10 @@ var perc_max_comissao_e_desconto_a_utilizar;
 				></textarea>
 		</td>
 	</tr>
-    <tr>
-        <td class="MB" align="left" colspan="5" nowrap><p class="Rf">xPed</p>
-			<input name="c_num_pedido_compra" id="c_num_pedido_compra" class="PLLe" maxlength="15" style="width:100px;margin-left:2pt;" onkeypress="filtra_nome_identificador();" onblur="this.value=trim(this.value);"
-				value=''>
-		</td>
-    </tr>
 	<tr>
-		<td class="MD" align="left" nowrap><p class="Rf">Nº Nota Fiscal</p>
+		<td class="MB MD" align="left" nowrap><p class="Rf">Nº Nota Fiscal</p>
 			<input name="c_obs2" id="c_obs2" class="PLLe" maxlength="10" style="width:100px;margin-left:2pt;" onkeypress="filtra_nome_identificador();" onblur="this.value=trim(this.value);"
-				value=''>
+				value='' readonly />
 		</td>
         <%if (loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE) Or blnMagentoPedidoComIndicador then
 				s_value = ""
@@ -2855,25 +2894,25 @@ var perc_max_comissao_e_desconto_a_utilizar;
 					s_value = c_numero_magento
 					end if
 		%>
-        <td class="MD" align="left" nowrap><p class="Rf">Número Magento</p>
+        <td class="MB MD" align="left" nowrap><p class="Rf">Número Magento</p>
 			<input name="c_pedido_ac" id="c_pedido_ac" class="PLLe" maxlength="9" style="width:100px;margin-left:2pt;" onkeypress="filtra_nome_identificador();return SomenteNumero(event)" onblur="this.value=trim(this.value);"
 				value='<%=s_value%>'>
 		</td>
         <%end if %>
-		<td class="MD" align="left" nowrap><p class="Rf">Entrega Imediata</p>
+		<td class="MB MD" align="left" nowrap><p class="Rf">Entrega Imediata</p>
 			<input type="radio" id="rb_etg_imediata" name="rb_etg_imediata" 
 				value="<%=COD_ETG_IMEDIATA_NAO%>"><span class="C" style="cursor:default" onclick="fPED.rb_etg_imediata[0].click();">Não</span>
 			<input type="radio" id="rb_etg_imediata" name="rb_etg_imediata" 
 				value="<%=COD_ETG_IMEDIATA_SIM%>" <%if Cstr(loja)=NUMERO_LOJA_ECOMMERCE_AR_CLUBE then Response.write " checked"%>><span class="C" style="cursor:default" onclick="fPED.rb_etg_imediata[1].click();">Sim</span>
 		</td>
-		<td align="left" nowrap><p class="Rf">Bem de Uso/Consumo&nbsp;</p>
+		<td class="MB" align="left" nowrap><p class="Rf">Bem de Uso/Consumo&nbsp;</p>
 			<input type="radio" id="rb_bem_uso_consumo" name="rb_bem_uso_consumo" 
 				value="<%=COD_ST_BEM_USO_CONSUMO_NAO%>"><span class="C" style="cursor:default" onclick="fPED.rb_bem_uso_consumo[0].click();">Não</span>
 			<input type="radio" id="rb_bem_uso_consumo" name="rb_bem_uso_consumo" 
 				value="<%=COD_ST_BEM_USO_CONSUMO_SIM%>" <%if Cstr(loja)=NUMERO_LOJA_ECOMMERCE_AR_CLUBE then Response.write " checked"%>><span class="C" style="cursor:default" onclick="fPED.rb_bem_uso_consumo[1].click();">Sim</span>
 		</td>
 		<% if operacao_permitida(OP_LJA_EXIBIR_CAMPO_INSTALADOR_INSTALA_AO_CADASTRAR_NOVO_PEDIDO, s_lista_operacoes_permitidas) then %>
-		<td class="ME" align="left" nowrap><p class="Rf">Instalador Instala</p>
+		<td class="MB ME" align="left" nowrap><p class="Rf">Instalador Instala</p>
 			<input type="radio" id="rb_instalador_instala" name="rb_instalador_instala" 
 				value="<%=COD_INSTALADOR_INSTALA_NAO%>" <%if Cstr(loja)=NUMERO_LOJA_ECOMMERCE_AR_CLUBE then Response.write " checked"%>><span class="C" style="cursor:default" onclick="fPED.rb_instalador_instala[0].click();">Não</span>
 			<input type="radio" id="rb_instalador_instala" name="rb_instalador_instala" 
@@ -2881,7 +2920,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		</td>
 		<% end if %>
 	<% if rb_indicacao = "S" then %>
-		<td class="ME tdGarInd" align="left" nowrap><p class="Rf">Garantia Indicador</p>
+		<td class="MB ME tdGarInd" align="left" nowrap><p class="Rf">Garantia Indicador</p>
 			<input type="radio" id="rb_garantia_indicador" name="rb_garantia_indicador" class="rbGarIndNao"
 				value="<%=COD_GARANTIA_INDICADOR_STATUS__NAO%>" <%if Cstr(loja)=NUMERO_LOJA_ECOMMERCE_AR_CLUBE then Response.write " checked"%>><span class="C" style="cursor:default" onclick="fPED.rb_garantia_indicador[0].click();">Não</span>
 			<input type="radio" id="rb_garantia_indicador" name="rb_garantia_indicador"
@@ -2889,7 +2928,17 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		</td>
 	<% end if %>
 	</tr>
-
+    <tr>
+        <td class="MD" align="left" valign="top" nowrap>
+			<p class="Rf">xPed</p>
+			<input name="c_num_pedido_compra" id="c_num_pedido_compra" class="PLLe" maxlength="15" style="width:100px;padding-top:10px;margin-left:2pt;" onkeypress="filtra_nome_identificador();" onblur="this.value=trim(this.value);"
+				value=''>
+		</td>
+		<td align="left" colspan="4">
+			<p class="Rf">Previsão de Entrega</p>
+			<input type="text" class="PLLc" name="c_data_previsao_entrega" id="c_data_previsao_entrega" maxlength="10" style="width:90px;" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="filtra_data();" />
+		</td>
+    </tr>
     <% if loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
 			s_value = ""
 			if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then

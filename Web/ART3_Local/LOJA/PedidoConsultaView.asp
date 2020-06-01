@@ -346,6 +346,12 @@ end function
 			fechaDivRastreioConsultaView();
 		});
 
+        $(".tdGarInd").hide();
+        // Para a nova versão da forma de pagamento
+        if ($(".tdGarInd").prev("td").hasClass("MD")) { $(".tdGarInd").prev("td").removeClass("MD") };
+        // Para a versão antiga da forma de pagamento
+        if ($(".tdGarInd").prev("td").hasClass("MDB")) { $(".tdGarInd").prev("td").removeClass("MDB").addClass("MB") }
+
 		//Every resize of window
 		$(window).resize(function () {
 			sizeDivRastreioConsultaView();
@@ -1371,9 +1377,17 @@ function exibeOcultaEnderecoOriginal() {
 		</td>
 	</tr>
     <tr>
-        <td class="MB" align="left" colspan="6" nowrap><p class="Rf">xPed</p>
+        <td class="MB MD" align="left" colspan="2" nowrap><p class="Rf">xPed</p>
 			<input name="c_num_pedido_compra" id="c_num_pedido_compra" class="PLLe" maxlength="15" style="width:100px;margin-left:2pt;" onkeypress="filtra_nome_identificador();" onblur="this.value=trim(this.value);"
 				value='<%=r_pedido.NFe_xPed%>' readonly tabindex=-1>
+		</td>
+		<td class="MB" align="left" colspan="4">
+			<p class="Rf">Previsão de Entrega</p>
+			<% s = formata_data_e_talvez_hora_hhmm(r_pedido.PrevisaoEntregaData)
+				if s <> "" then s = s & " &nbsp; (" & iniciais_em_maiusculas(r_pedido.PrevisaoEntregaUsuarioUltAtualiz) & " - " & formata_data_e_talvez_hora_hhmm(r_pedido.PrevisaoEntregaDtHrUltAtualiz) & ")"
+				if s="" then s="&nbsp;"
+			%>
+			<p class="C"><%=s%></p>
 		</td>
     </tr>
 	<tr>
@@ -1430,7 +1444,7 @@ function exibeOcultaEnderecoOriginal() {
 		%>
 		<p class="C" style="margin-top:3px;"><%=s%></p>
 		</td>
-		<td nowrap align="left" valign="top"><p class="Rf">Garantia Indicador</p>
+		<td class="tdGarInd" nowrap align="left" valign="top"><p class="Rf">Garantia Indicador</p>
 		<% 	if Cstr(r_pedido.GarantiaIndicadorStatus) = Cstr(COD_GARANTIA_INDICADOR_STATUS__NAO) then
 				s = "NÃO"
 			elseif Cstr(r_pedido.GarantiaIndicadorStatus) = Cstr(COD_GARANTIA_INDICADOR_STATUS__SIM) then

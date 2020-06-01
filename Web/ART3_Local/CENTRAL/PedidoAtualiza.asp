@@ -99,6 +99,10 @@
 	s = Trim(Request.Form("blnEntregaImediataEdicaoLiberada"))
 	blnEntregaImediataEdicaoLiberada = CBool(s)
 	
+	dim blnEntregaImediataNaoSemDataPrevisao
+	s = Trim(Request.Form("blnEntregaImediataNaoSemDataPrevisao"))
+	blnEntregaImediataNaoSemDataPrevisao = CBool(s)
+
 	dim blnInstaladorInstalaEdicaoLiberada
 	s = Trim(Request.Form("blnInstaladorInstalaEdicaoLiberada"))
 	blnInstaladorInstalaEdicaoLiberada = CBool(s)
@@ -134,7 +138,7 @@
     dim s_nf_texto, s_num_pedido_compra
 	dim blnAEntregarStatusEdicaoLiberada, c_a_entregar_data_marcada
 	dim s_analise_credito, s_analise_credito_a, s_ac_pendente_vendas_motivo
-	dim s_etg_imediata, s_bem_uso_consumo
+	dim s_etg_imediata, s_bem_uso_consumo, s_etg_imediata_original, c_data_previsao_entrega
 	dim blnUpdate, blnFlag, blnEditou
 	dim blnEditouTransp, blnProcessaSelecaoAutoTransp
     dim transportadora_cnpj, blnEditouFrete
@@ -150,6 +154,7 @@
 	blnAEntregarStatusEdicaoLiberada = CBool(s)
 	s_analise_credito=Trim(request("rb_analise_credito"))
 	s_etg_imediata=Trim(request("rb_etg_imediata"))
+	c_data_previsao_entrega = Trim(Request("c_data_previsao_entrega"))
 	s_bem_uso_consumo=Trim(request("rb_bem_uso_consumo"))
 	s_forma_pagto=Trim(request("c_forma_pagto"))
     s_indicador = Trim(Request("c_indicador"))
@@ -776,6 +781,29 @@
 			end if
 		end if
 
+	if alerta = "" then
+		if blnEntregaImediataEdicaoLiberada then
+			if CLng(s_etg_imediata) = CLng(COD_ETG_IMEDIATA_NAO) then
+				if Not blnEntregaImediataNaoSemDataPrevisao then
+					if c_data_previsao_entrega = "" then
+						alerta=texto_add_br(alerta)
+						alerta=alerta & "É necessário informar a data de previsão de entrega"
+						end if
+					end if
+
+				if c_data_previsao_entrega <> "" then
+					if Not IsDate(c_data_previsao_entrega) then
+						alerta=texto_add_br(alerta)
+						alerta=alerta & "Data de previsão de entrega informada é inválida"
+					elseif StrToDate(c_data_previsao_entrega) <= Date then
+						alerta=texto_add_br(alerta)
+						alerta=alerta & "Data de previsão de entrega deve ser uma data futura"
+						end if
+					end if
+				end if
+			end if
+		end if
+
 	if alerta <> "" then blnErroConsistencia=True
 	
 	
@@ -1283,11 +1311,33 @@
 					end if
 					
 				if blnEntregaImediataEdicaoLiberada then
+					s_etg_imediata_original = Trim("" & rs("st_etg_imediata"))
 					if s_etg_imediata <> "" then 
 						if CLng(rs("st_etg_imediata")) <> CLng(s_etg_imediata) then
 							rs("st_etg_imediata")=CLng(s_etg_imediata)
 							rs("etg_imediata_data")=Now
 							rs("etg_imediata_usuario")=usuario
+							end if
+						end if
+					
+					if CLng(s_etg_imediata) = CLng(COD_ETG_IMEDIATA_NAO) then
+						if s_etg_imediata_original <> Trim(s_etg_imediata) then
+							rs("PrevisaoEntregaData") = StrToDate(c_data_previsao_entrega)
+							rs("PrevisaoEntregaUsuarioUltAtualiz") = usuario
+							rs("PrevisaoEntregaDtHrUltAtualiz") = Now
+						elseif blnEntregaImediataNaoSemDataPrevisao And (c_data_previsao_entrega = "") then
+							'NOP
+							'O STATUS DA ENTREGA IMEDIATA JÁ ESTAVA COMO NÃO E SEM DATA DE PREVISÃO, PORTANTO, NÃO FAZ NADA
+						elseif (s_etg_imediata_original <> Trim(s_etg_imediata)) Or (formata_data(rs("PrevisaoEntregaData")) <> formata_data(StrToDate(c_data_previsao_entrega))) then
+							rs("PrevisaoEntregaData") = StrToDate(c_data_previsao_entrega)
+							rs("PrevisaoEntregaUsuarioUltAtualiz") = usuario
+							rs("PrevisaoEntregaDtHrUltAtualiz") = Now
+							end if
+					else
+						if (s_etg_imediata_original <> Trim(s_etg_imediata)) then
+							rs("PrevisaoEntregaData") = Null
+							rs("PrevisaoEntregaUsuarioUltAtualiz") = usuario
+							rs("PrevisaoEntregaDtHrUltAtualiz") = Now
 							end if
 						end if
 					end if

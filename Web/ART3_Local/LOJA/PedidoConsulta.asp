@@ -1321,12 +1321,18 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 				Response.Write s %></span>
 		</td>
 	</tr>
-<%  notPrint = ""
-    if Trim(r_pedido.NFe_xPed) = "" then notPrint="class='notPrint'" %>
-    <tr <%=notPrint%>>
-        <td class="MB" align="left" colspan="5" nowrap><p class="Rf">xPed</p>
+    <tr>
+        <td class="MB MD" align="left" colspan="2" nowrap><p class="Rf">xPed</p>
 			<input name="c_num_pedido_compra" id="c_num_pedido_compra" class="PLLe" maxlength="15" style="width:100px;margin-left:2pt;" onkeypress="filtra_nome_identificador();" onblur="this.value=trim(this.value);"
 				value='<%=r_pedido.NFe_xPed%>' readonly tabindex=-1>
+		</td>
+		<td class="MB" align="left" colspan="4">
+			<p class="Rf">Previsão de Entrega</p>
+			<% s = formata_data_e_talvez_hora_hhmm(r_pedido.PrevisaoEntregaData)
+				if s <> "" then s = s & " &nbsp; (" & iniciais_em_maiusculas(r_pedido.PrevisaoEntregaUsuarioUltAtualiz) & " - " & formata_data_e_talvez_hora_hhmm(r_pedido.PrevisaoEntregaDtHrUltAtualiz) & ")"
+				if s="" then s="&nbsp;"
+			%>
+			<p class="C"><%=s%></p>
 		</td>
     </tr>
 	<tr>

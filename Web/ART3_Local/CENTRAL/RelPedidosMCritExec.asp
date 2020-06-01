@@ -75,7 +75,7 @@
 	dim ckb_visanet
 	dim ckb_analise_credito_st_inicial, ckb_analise_credito_pendente_vendas, ckb_analise_credito_pendente_endereco, ckb_analise_credito_pendente, ckb_analise_credito_pendente_cartao
 	dim ckb_analise_credito_ok, ckb_analise_credito_ok_aguardando_deposito, ckb_analise_credito_ok_deposito_aguardando_desbloqueio
-	dim ckb_entrega_imediata_sim, ckb_entrega_imediata_nao
+	dim ckb_entrega_imediata_sim, ckb_entrega_imediata_nao, c_dt_previsao_entrega_inicio, c_dt_previsao_entrega_termino
 	dim op_forma_pagto, c_forma_pagto_qtde_parc
 	dim c_vendedor, c_indicador
 	dim ckb_obs2_preenchido, ckb_obs2_nao_preenchido, ckb_indicador_preenchido, ckb_indicador_nao_preenchido, ckb_nao_exibir_rastreio
@@ -133,6 +133,8 @@
 	ckb_analise_credito_ok_deposito_aguardando_desbloqueio = Trim(Request.Form("ckb_analise_credito_ok_deposito_aguardando_desbloqueio"))
 	ckb_entrega_imediata_sim = Trim(Request.Form("ckb_entrega_imediata_sim"))
 	ckb_entrega_imediata_nao = Trim(Request.Form("ckb_entrega_imediata_nao"))
+	c_dt_previsao_entrega_inicio = Trim(Request.Form("c_dt_previsao_entrega_inicio"))
+	c_dt_previsao_entrega_termino = Trim(Request.Form("c_dt_previsao_entrega_termino"))
 	op_forma_pagto = Trim(Request.Form("op_forma_pagto"))
 	c_forma_pagto_qtde_parc = retorna_so_digitos(Trim(Request.Form("c_forma_pagto_qtde_parc")))
 	c_vendedor = Trim(Request.Form("c_vendedor"))
@@ -623,6 +625,15 @@ dim s, s_aux, s_resp
 	if s_aux<>"" then
 		if s <> "" then s = s & ", "
 		s = s & s_aux
+		s = s & " (previsão de entrega: "
+		s_aux = c_dt_previsao_entrega_inicio
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux
+		s = s & " a "
+		s_aux = c_dt_previsao_entrega_termino
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux
+		s = s & ")"
 		end if
 
 	if s <> "" then
@@ -800,7 +811,7 @@ end function
 sub consulta_executa
 dim r
 dim blnPorFornecedor
-dim s, s_aux, s_cor, s_bkg_color, s_nbsp, s_align, s_nowrap, s_sql, cab_table, cab, n_reg, n_reg_total, n_colspan, n_colspan_final, s_colspan_final, s_loja
+dim s, s_aux, s_periodo_aux, s_cor, s_bkg_color, s_nbsp, s_align, s_nowrap, s_sql, cab_table, cab, n_reg, n_reg_total, n_colspan, n_colspan_final, s_colspan_final, s_loja
 dim s_where, s_from, cont
 dim vl_total_faturamento, vl_sub_total_faturamento, vl_total_pago, vl_sub_total_pago
 dim vl_total_faturamento_NF, vl_sub_total_faturamento_NF
@@ -1027,16 +1038,23 @@ dim rPSSW
 
 '	CRITÉRIO: ENTREGA IMEDIATA
 	s = ""
-	s_aux = ckb_entrega_imediata_sim
-	if s_aux <> "" then
+	if ckb_entrega_imediata_sim <> "" then
 		if s <> "" then s = s & " OR"
-		s = s & " (t_PEDIDO.st_etg_imediata = " & s_aux & ")"
+		s = s & " (t_PEDIDO.st_etg_imediata = " & COD_ETG_IMEDIATA_SIM & ")"
 		end if
 	
-	s_aux = ckb_entrega_imediata_nao
-	if s_aux <> "" then
+	if ckb_entrega_imediata_nao <> "" then
+		s_periodo_aux = ""
+		if c_dt_previsao_entrega_inicio <> "" then
+			s_periodo_aux = " (t_PEDIDO.PrevisaoEntregaData >= " & bd_formata_data(StrToDate(c_dt_previsao_entrega_inicio)) & ")"
+			end if
+		if c_dt_previsao_entrega_termino <> "" then
+			if s_periodo_aux <> "" then s_periodo_aux = s_periodo_aux & " AND"
+			s_periodo_aux = s_periodo_aux & " (t_PEDIDO.PrevisaoEntregaData < " & bd_formata_data(StrToDate(c_dt_previsao_entrega_termino)+1) & ")"
+			end if
+		if s_periodo_aux <> "" then s_periodo_aux = " AND" & s_periodo_aux
 		if s <> "" then s = s & " OR"
-		s = s & " (t_PEDIDO.st_etg_imediata = " & s_aux & ")"
+		s = s & " ((t_PEDIDO.st_etg_imediata = " & COD_ETG_IMEDIATA_NAO & ")" & s_periodo_aux & ")"
 		end if
 
 	if s <> "" then 
@@ -2521,6 +2539,15 @@ function fRELConcluir( id_pedido ){
 	if s_aux<>"" then
 		if s <> "" then s = s & ",&nbsp;&nbsp;"
 		s = s & s_aux
+		s = s & " (previsão de entrega: "
+		s_aux = c_dt_previsao_entrega_inicio
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux
+		s = s & " a "
+		s_aux = c_dt_previsao_entrega_termino
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux
+		s = s & ")"
 		end if
 
 	if s <> "" then
