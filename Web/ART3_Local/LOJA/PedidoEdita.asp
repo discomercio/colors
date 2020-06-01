@@ -483,6 +483,14 @@ end function
 		if ($(".tdGarInd").prev("td").hasClass("MD")) {$(".tdGarInd").prev("td").removeClass("MD")};
 		// Para a versão antiga da forma de pagamento
 		if ($(".tdGarInd").prev("td").hasClass("MDB")) {$(".tdGarInd").prev("td").removeClass("MDB").addClass("MB")}
+
+        $("#c_data_previsao_entrega").hUtilUI('datepicker_padrao');
+
+        $("input[name = 'rb_etg_imediata']").change(function () {
+            configuraCampoDataPrevisaoEntrega();
+        });
+
+        configuraCampoDataPrevisaoEntrega();
 	});
 
 	//Every resize of window
@@ -500,6 +508,20 @@ end function
 		var newTop = $(window).scrollTop() + "px";
 		$("#divAjaxRunning").css("top", newTop);
 	}
+
+    function configuraCampoDataPrevisaoEntrega() {
+        if ($("input[name='rb_etg_imediata']:checked").val() == '<%=COD_ETG_IMEDIATA_NAO%>') {
+            $("#c_data_previsao_entrega").prop("readonly", false);
+            $("#c_data_previsao_entrega").prop("disabled", false);
+            $("#c_data_previsao_entrega").datepicker("enable");
+        }
+        else {
+            $("#c_data_previsao_entrega").val("");
+            $("#c_data_previsao_entrega").prop("readonly", true);
+            $("#c_data_previsao_entrega").prop("disabled", true);
+            $("#c_data_previsao_entrega").datepicker("disable");
+        }
+    }
 </script>
 
 <script language="JavaScript" type="text/javascript">
@@ -1781,6 +1803,28 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 		}
 	}
 
+    if (f.blnEtgImediataEdicaoLiberada.value == "<%=Cstr(True)%>") {
+        if (f.rb_etg_imediata[0].checked) {
+            if (trim(f.c_data_previsao_entrega.value) == "") {
+                alert("Informe a data de previsão de entrega!");
+                f.c_data_previsao_entrega.focus();
+                return;
+            }
+
+            if (!isDate(f.c_data_previsao_entrega)) {
+                alert("Data de previsão de entrega é inválida!");
+                f.c_data_previsao_entrega.focus();
+                return;
+            }
+
+            if (retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(f.c_data_previsao_entrega.value)) <= retorna_so_digitos(formata_ddmmyyyy_yyyymmdd('<%=formata_data(Date)%>'))) {
+                alert("Data de previsão de entrega deve ser uma data futura!");
+                f.c_data_previsao_entrega.focus();
+                return;
+            }
+        }
+    }
+
 	// Percentual máximo de comissão e desconto
 	// ========================================
 	// Lembretes:
@@ -1943,6 +1987,7 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 <link href="<%=URL_FILE__E_CSS%>" rel="stylesheet" type="text/css">
 <link href="<%=URL_FILE__EPRINTER_CSS%>" rel="stylesheet" type="text/css" media="print">
 <link href="<%=URL_FILE__E_JANELABUSCACEP_CSS%>" rel="stylesheet" type="text/css">
+<link href="<%=URL_FILE__JQUERY_UI_CSS%>" rel="stylesheet" type="text/css">
 
 <style type="text/css">
 #rb_etg_imediata, #rb_bem_uso_consumo {
@@ -2601,11 +2646,17 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 		        </td>
 	        </tr>
             <tr>
-                <td class="MB" align="left" colspan="6" nowrap><p class="Rf">xPed</p>
+                <td class="MB MD" align="left" colspan="2" nowrap><p class="Rf">xPed</p>
 			        <input name="c_num_pedido_compra" id="c_num_pedido_compra" class="PLLe" maxlength="15" style="width:100px;margin-left:2pt;" onkeypress="filtra_nome_identificador();" onblur="this.value=trim(this.value);"
 				    <% if Not blnObs1EdicaoLiberada then Response.Write " readonly tabindex=-1 " %>
                         value='<%=r_pedido.NFe_xPed%>'>
 		        </td>
+				<td class="MB" align="left" colspan="4">
+					<p class="Rf">Previsão de Entrega</p>
+					<input name="c_data_previsao_entrega" id="c_data_previsao_entrega" class="PLLe" maxlength="10" style="width:90px;margin-left:2pt"
+					<% if Not blnEtgImediataEdicaoLiberada then Response.Write " readonly tabindex=-1 " %>
+						value="<%=formata_data(r_pedido.PrevisaoEntregaData)%>" />
+				</td>
             </tr>
 			<tr>
 				<td class="MD" align="left" nowrap><p class="Rf">Nº Nota Fiscal</p>
@@ -2830,11 +2881,17 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 		        </td>
 	        </tr>
             <tr>
-                <td class="MB" align="left" colspan="6" nowrap><p class="Rf">xPed</p>
+                <td class="MB MD" align="left" colspan="2" nowrap><p class="Rf">xPed</p>
 			        <input name="c_num_pedido_compra" id="c_num_pedido_compra" class="PLLe" maxlength="15" style="width:100px;margin-left:2pt;" onkeypress="filtra_nome_identificador();" onblur="this.value=trim(this.value);"
 				    <% if Not blnObs1EdicaoLiberada then Response.Write " readonly tabindex=-1 " %>
                         value='<%=r_pedido.NFe_xPed%>'>
 		        </td>
+				<td class="MB" align="left" colspan="4">
+					<p class="Rf">Previsão de Entrega</p>
+					<input name="c_data_previsao_entrega" id="c_data_previsao_entrega" class="PLLe" maxlength="10" style="width:90px;margin-left:2pt"
+					<% if Not blnEtgImediataEdicaoLiberada then Response.Write " readonly tabindex=-1 " %>
+						value="<%=formata_data(r_pedido.PrevisaoEntregaData)%>" />
+				</td>
             </tr>
 			<tr>
 				<td class="MD" align="left" nowrap><p class="Rf">Nº Nota Fiscal</p>

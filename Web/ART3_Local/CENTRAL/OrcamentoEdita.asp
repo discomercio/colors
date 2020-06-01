@@ -157,6 +157,14 @@
 	    f.Verifica_UF.value = f.EndEtg_uf.value;
 	    f.Verifica_CEP.value = f.EndEtg_cep.value;
 	    f.Verifica_Justificativa.value = f.EndEtg_obs.value;
+
+        $("#c_data_previsao_entrega").hUtilUI('datepicker_padrao');
+
+        $("input[name = 'rb_etg_imediata']").change(function () {
+            configuraCampoDataPrevisaoEntrega();
+        });
+
+        configuraCampoDataPrevisaoEntrega();
 	});
 
 	//Every resize of window
@@ -174,6 +182,20 @@
 		var newTop = $(window).scrollTop() + "px";
 		$("#divAjaxRunning").css("top", newTop);
 	}
+
+    function configuraCampoDataPrevisaoEntrega() {
+        if ($("input[name='rb_etg_imediata']:checked").val() == '<%=COD_ETG_IMEDIATA_NAO%>') {
+            $("#c_data_previsao_entrega").prop("readonly", false);
+            $("#c_data_previsao_entrega").prop("disabled", false);
+            $("#c_data_previsao_entrega").datepicker("enable");
+        }
+        else {
+            $("#c_data_previsao_entrega").val("");
+            $("#c_data_previsao_entrega").prop("readonly", true);
+            $("#c_data_previsao_entrega").prop("disabled", true);
+            $("#c_data_previsao_entrega").datepicker("disable");
+        }
+    }
 </script>
 
 <script language="JavaScript" type="text/javascript">
@@ -1049,6 +1071,26 @@ var blnConfirmaDifRAeValores=false;
 		return;
 		}
 
+    if (f.rb_etg_imediata[0].checked) {
+        if (trim(f.c_data_previsao_entrega.value) == "") {
+            alert("Informe a data de previsão de entrega!");
+            f.c_data_previsao_entrega.focus();
+            return;
+        }
+
+        if (!isDate(f.c_data_previsao_entrega)) {
+            alert("Data de previsão de entrega é inválida!");
+            f.c_data_previsao_entrega.focus();
+            return;
+        }
+
+        if (retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(f.c_data_previsao_entrega.value)) <= retorna_so_digitos(formata_ddmmyyyy_yyyymmdd('<%=formata_data(Date)%>'))) {
+            alert("Data de previsão de entrega deve ser uma data futura!");
+            f.c_data_previsao_entrega.focus();
+            return;
+        }
+    }
+
 	f.action="OrcamentoAtualiza.asp";
 	dCONFIRMA.style.visibility="hidden";
 	window.status = "Aguarde ...";
@@ -1078,6 +1120,7 @@ var blnConfirmaDifRAeValores=false;
 <link href="<%=URL_FILE__E_CSS%>" Rel="stylesheet" Type="text/css">
 <link href="<%=URL_FILE__EPRINTER_CSS%>" Rel="stylesheet" Type="text/css" media="print">
 <link href="<%=URL_FILE__E_JANELABUSCACEP_CSS%>" rel="stylesheet" type="text/css">
+<link href="<%=URL_FILE__JQUERY_UI_CSS%>" rel="stylesheet" type="text/css">
 
 <style TYPE="text/css">
 #rb_etg_imediata, #rb_bem_uso_consumo {
@@ -1590,8 +1633,15 @@ var blnConfirmaDifRAeValores=false;
 		</td>
 	</tr>
 	<tr>
-		<td class="MD" align="left" nowrap><p class="Rf">Observações II</p>
-			<input name="c_obs2" id="c_obs2" class="PLLe" maxlength="10" style="width:85px;margin-left:2pt;" onkeypress="if (digitou_enter(true)) fORC.c_qtde_parcelas.focus(); filtra_nome_identificador();" onblur="this.value=trim(this.value);"
+		<td class="MB" align="left" colspan="5">
+			<p class="Rf">Previsão de Entrega</p>
+			<input name="c_data_previsao_entrega" id="c_data_previsao_entrega" class="PLLe" maxlength="10" style="width:90px;margin-left:2pt"
+				value="<%=formata_data(r_orcamento.PrevisaoEntregaData)%>" />
+		</td>
+	</tr>
+	<tr>
+		<td class="MD" align="left" nowrap><p class="Rf">Nº Nota Fiscal</p>
+			<input name="c_obs2" id="c_obs2" class="PLLe" maxlength="10" style="width:85px;margin-left:2pt;" readonly tabindex="-1" onkeypress="if (digitou_enter(true)) fORC.c_qtde_parcelas.focus(); filtra_nome_identificador();" onblur="this.value=trim(this.value);"
 				value='<%=r_orcamento.obs_2%>'>
 		</td>
 		<td class="MD" nowrap align="left" valign="top"><p class="Rf">Entrega Imediata</p>
