@@ -69,7 +69,7 @@
     '- chamar novamente a rotina de montagem e armazenar no vetor 2
     '- fazer a comparação entre os vetores; só efetuar a movimentação de estoque se os valores baterem
  
-    n = Request.Form("c_produto").Count
+    n = Request.Form("c_produto").Countmo
 
    	redim v_item1(0)
 	set v_item1(0) = New cl_ESTOQUE_TRANSFERENCIA_ITEM_SUB
@@ -85,6 +85,7 @@
                 .fabricante = Trim(Request.Form("c_fabricante")(i))
                 .produto = Trim(Request.Form("c_produto")(i))
                 .qtde  = CInt(Trim(Request.Form("c_qtde")(i)))
+                .preco_fabricante = Trim(Request.Form("c_vl_unitario")(i))                
                 .vl_custo2 = Trim(Request.Form("c_vl_custo2")(i))                
                 .ean = Trim(Request.Form("c_ean")(i))
                 .aliq_ipi = Trim(Request.Form("c_aliq_ipi")(i))
