@@ -63,7 +63,7 @@
         dim ean_original
         end class
 	
-    dim s, s_log, i, n, usuario, msg_erro, c_log_edicao
+    dim s, s_log, i, n, usuario, msg_erro, c_log_edicao, s_nfe_dt_hr_emissao, s_nfe_hr_emissao, s_nfe_dt_hr_emissao2, s_nfe_hr_emissao2
 	usuario = Trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
 	
@@ -90,7 +90,32 @@
     dim uploaded_file_guid2
 	uploaded_file_guid = Trim(Request("uploaded_file_guid"))
     uploaded_file_guid2 = Trim(Request("uploaded_file_guid2"))
-	
+
+    dim vDtHr, vDt, vHr
+	if alerta = "" then
+		's_nfe_dt_hr_emissao = c_nfe_dt_hr_emissao
+        s_nfe_dt_hr_emissao = Trim(Request("c_dt_hr_emissao"))	
+		if s_nfe_dt_hr_emissao <> "" then
+			vDtHr = Split(s_nfe_dt_hr_emissao, "T")
+			vDt = Split(vDtHr(LBound(vDtHr)), "-")
+            vHr = Split(vDtHr(UBound(vDtHr)), "-")
+			s_nfe_dt_hr_emissao = vDt(LBound(vDt)+2) & "/" & vDt(LBound(vDt)+1) & "/" & vDt(LBound(vDt))
+            s_nfe_hr_emissao = Mid(vHr(LBound(vHr)), 1, 2) & Mid(vHr(LBound(vHr)), 4, 2) & Mid(vHr(LBound(vHr)), 7, 2)
+			end if
+		end if
+    
+    dim vDtHr2, vDt2, vHr2
+	if alerta = "" then
+		s_nfe_dt_hr_emissao2 = Trim(Request("c_dt_hr_emissao2"))
+		if s_nfe_dt_hr_emissao2 <> "" then
+			vDtHr2 = Split(s_nfe_dt_hr_emissao2, "T")
+			vDt2 = Split(vDtHr2(LBound(vDtHr2)), "-")
+            vHr2 = Split(vDtHr2(UBound(vDtHr2)), "-")
+			s_nfe_dt_hr_emissao2 = vDt2(LBound(vDt2)+2) & "/" & vDt2(LBound(vDt2)+1) & "/" & vDt2(LBound(vDt2))
+            s_nfe_hr_emissao2 = Mid(vHr2(LBound(vHr2)), 1, 2) & Mid(vHr2(LBound(vHr2)), 4, 2) & Mid(vHr2(LBound(vHr2)), 7, 2)
+			end if
+		end if
+    
     n = converte_numero(Request.Form("iQtdeItens"))
 
     dim c_xml_ide__cNF_1 
@@ -196,6 +221,7 @@
 		.fabricante = normaliza_codigo(retorna_so_digitos(Request.Form("c_fabricante")), TAM_MIN_FABRICANTE)
 		.documento = Trim(Request.Form("c_documento"))
         .perc_agio = converte_numero(c_perc_agio)
+        .data_emissao_NF_entrada = StrToDate(s_nfe_dt_hr_emissao)
 		if CADASTRAR_WMS_CD_ENTRADA_ESTOQUE then
 			.id_nfe_emitente = Trim(Request.Form("c_id_nfe_emitente"))
 		else
@@ -432,7 +458,7 @@
 			    s_sql = " INSERT INTO T_ESTOQUE_XML " & _
 					 " (id, id_estoque, xml_data_import, xml_hora_import, xml_prioridade, xml_usuario, xml_ide__cNF, " & _
                      "  xml_ide__serie, xml_ide__nNF, xml_emit__CNPJ, xml_emit__xNome, xml_dest__CNPJ, xml_dest__xNome, " & _
-                     "  xml_conteudo " & _   
+                     "  xml_data_emissao_NF_entrada, xml_hora_emissao_NF_entrada, xml_conteudo " & _   
                      "  ) VALUES " & _
                      " ("  & _
 	                 CStr(id_estoque_xml) & ", " & _   
@@ -448,6 +474,8 @@
                      " '" & QuotedStr(c_xml_emit__xNome_1) & "', " & _
                      " '" & c_xml_dest__CNPJ_1 & "', " & _
                      " '" & QuotedStr(c_xml_dest__xNome_1) & "', " & _
+                     bd_formata_data(StrToDate(s_nfe_dt_hr_emissao)) & ", " & _
+                     " '" & s_nfe_hr_emissao & "', " & _
                      "(select file_content_text from t_UPLOAD_FILE where guid = '" & uploaded_file_guid & "') " & _
                      " )" 
 			     cn.Execute(s_sql)
@@ -516,7 +544,7 @@
 			    s_sql = " INSERT INTO T_ESTOQUE_XML " & _
 					 " (id, id_estoque, xml_data_import, xml_hora_import, xml_prioridade, xml_usuario, xml_ide__cNF, " & _
                      "  xml_ide__serie, xml_ide__nNF, xml_emit__CNPJ, xml_emit__xNome, xml_dest__CNPJ, xml_dest__xNome, " & _
-                     "  xml_conteudo " & _   
+                     "  xml_data_emissao_NF_entrada, xml_hora_emissao_NF_entrada, xml_conteudo " & _   
                      "  ) VALUES " & _
                      " ("  & _
 	                 CStr(id_estoque_xml) & ", " & _   
@@ -532,6 +560,8 @@
                      " '" & QuotedStr(c_xml_emit__xNome_2) & "', " & _
                      " '" & c_xml_dest__CNPJ_2 & "', " & _
                      " '" & QuotedStr(c_xml_dest__xNome_2) & "', " & _
+                     bd_formata_data(StrToDate(s_nfe_dt_hr_emissao2)) & ", " & _
+                     " '" & s_nfe_hr_emissao2 & "', " & _
                      "(select file_content_text from t_UPLOAD_FILE where guid = '" & uploaded_file_guid2 & "') " & _
                      " )" 
 			     cn.Execute(s_sql)
