@@ -177,10 +177,6 @@ var fCepPopup;
 
 $(function () {
 
-<%if blnUsarMemorizacaoCompletaEnderecos then%>
-    copiarDadosCadastrais();
-<% end if%>
-
     var f;
 	if ((typeof (fORC) !== "undefined") && (fORC !== null)) {
 		f = fORC;
