@@ -84,7 +84,7 @@
     ckb_AGRUPAMENTO = Trim(Request.Form("ckb_AGRUPAMENTO"))
 
 '	CAMPOS DE SAÍDA SELECIONADOS
-	dim ckb_COL_DATA, ckb_COL_NF, ckb_COL_DT_EMISSAO_NF, ckb_COL_PEDIDO, ckb_COL_VENDEDOR, ckb_COL_INDICADOR
+	dim ckb_COL_DATA, ckb_COL_NF, ckb_COL_DT_EMISSAO_NF, ckb_COL_LOJA, ckb_COL_PEDIDO, ckb_COL_VENDEDOR, ckb_COL_INDICADOR
 	dim ckb_COL_CPF_CNPJ_CLIENTE, ckb_COL_CONTRIBUINTE_ICMS, ckb_COL_NOME_CLIENTE, ckb_COL_RT, ckb_COL_ICMS_UF_DEST
 	dim ckb_COL_PRODUTO, ckb_COL_NAC_IMP, ckb_COL_DESCRICAO_PRODUTO, ckb_COL_VL_NF, ckb_COL_VL_UNITARIO, ckb_COL_VL_CUSTO_REAL_TOTAL, ckb_COL_VL_TOTAL, ckb_COL_QTDE
 	dim ckb_COL_VL_CUSTO_ULT_ENTRADA, ckb_COL_VL_CUSTO_REAL, ckb_COL_VL_LISTA, ckb_COL_GRUPO, ckb_COL_POTENCIA_BTU
@@ -96,6 +96,7 @@
 	ckb_COL_DATA = Trim(Request.Form("ckb_COL_DATA"))
 	ckb_COL_NF = Trim(Request.Form("ckb_COL_NF"))
 	ckb_COL_DT_EMISSAO_NF = Trim(Request.Form("ckb_COL_DT_EMISSAO_NF"))
+	ckb_COL_LOJA = Trim(Request.Form("ckb_COL_LOJA"))
 	ckb_COL_PEDIDO = Trim(Request.Form("ckb_COL_PEDIDO"))
 	ckb_COL_VENDEDOR = Trim(Request.Form("ckb_COL_VENDEDOR"))
 	ckb_COL_INDICADOR = Trim(Request.Form("ckb_COL_INDICADOR"))
@@ -143,6 +144,7 @@
 		if ckb_COL_DATA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_DATA" & "|"
 		if ckb_COL_NF <> "" then s_campos_saida = s_campos_saida & "ckb_COL_NF" & "|"
 		if ckb_COL_DT_EMISSAO_NF <> "" then s_campos_saida = s_campos_saida & "ckb_COL_DT_EMISSAO_NF" & "|"
+		if ckb_COL_LOJA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_LOJA" & "|"
 		if ckb_COL_PEDIDO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_PEDIDO" & "|"
 		if ckb_COL_CPF_CNPJ_CLIENTE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_CPF_CNPJ_CLIENTE" & "|"
 		if ckb_COL_CONTRIBUINTE_ICMS <> "" then s_campos_saida = s_campos_saida & "ckb_COL_CONTRIBUINTE_ICMS" & "|"
@@ -376,6 +378,7 @@ dim v
 				" (SELECT TOP 1 Convert(datetime, ide__dEmi, 121) FROM t_NFe_IMAGEM WHERE (t_NFe_IMAGEM.NFe_numero_NF = t_PEDIDO.num_obs_2) AND (t_NFe_IMAGEM.id_nfe_emitente = t_PEDIDO.id_nfe_emitente) AND (t_NFe_IMAGEM.ide__tpNF = '1') AND (t_NFe_IMAGEM.st_anulado = 0) AND (t_NFe_IMAGEM.codigo_retorno_NFe_T1 = 1) ORDER BY id DESC) AS dt_emissao," & _
 				" t_PEDIDO.num_obs_2 AS numero_NF," & _
 				" t_PEDIDO.obs_2," & _
+				" t_PEDIDO.loja," & _
 				" t_PEDIDO.pedido," & _
 				" t_PEDIDO.transportadora_id," & _
 				" t_PEDIDO__BASE.vendedor," & _
@@ -513,6 +516,7 @@ dim v
 				" NULL AS dt_emissao," & _
 				" t_PEDIDO_ITEM_DEVOLVIDO.NFe_numero_NF AS numero_NF," & _
 				" t_PEDIDO.obs_2," & _
+				" t_PEDIDO__BASE.loja," & _
 				" t_PEDIDO_ITEM_DEVOLVIDO.pedido," & _
 				" t_PEDIDO.transportadora_id," & _
 				" t_PEDIDO__BASE.vendedor," & _
@@ -648,6 +652,7 @@ dim v
 	if ckb_COL_DATA <> "" then x_cab = x_cab & "DATA;"
 	if ckb_COL_NF <> "" then x_cab = x_cab & "NF;"
 	if ckb_COL_DT_EMISSAO_NF <> "" then x_cab = x_cab & "EMISSAO NF;"
+	if ckb_COL_LOJA <> "" then x_cab = x_cab & "LOJA;"
 	if ckb_COL_PEDIDO <> "" then x_cab = x_cab & "PEDIDO;"
 	if ckb_COL_CPF_CNPJ_CLIENTE <> "" then x_cab = x_cab & "CPF/CNPJ;"
 	if ckb_COL_CONTRIBUINTE_ICMS <> "" then x_cab = x_cab & "Contrib ICMS;"
@@ -736,6 +741,11 @@ dim v
 					s = ""
 					end if
 				x = x & s & ";"
+				end if
+
+		 '> LOJA
+			if ckb_COL_LOJA <> "" then
+				x = x & Trim("" & r("loja")) & ";"
 				end if
 
 		 '> PEDIDO

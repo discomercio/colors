@@ -43,6 +43,7 @@
     Const COD_SAIDA_REL_ORIGEM_PEDIDO = "ORIGEM_PEDIDO"
     Const COD_SAIDA_REL_EMPRESA = "EMPRESA"
     Const COD_SAIDA_REL_GRUPO_PRODUTO = "GRUPO_PRODUTO"
+	Const COD_SAIDA_REL_SUBGRUPO_PRODUTO = "SUBGRUPO_PRODUTO"
 
 	dim usuario, loja
 	usuario = Trim(Session("usuario_atual"))
@@ -82,6 +83,7 @@
 		"var COD_SAIDA_REL_CIDADE_UF = '" & COD_SAIDA_REL_CIDADE_UF & "';" & chr(13) & _
         "var COD_SAIDA_REL_ORIGEM_PEDIDO = '" & COD_SAIDA_REL_ORIGEM_PEDIDO & "';" & chr(13) & _
         "var COD_SAIDA_REL_GRUPO_PRODUTO = '" & COD_SAIDA_REL_GRUPO_PRODUTO & "';" & chr(13) & _
+		"var COD_SAIDA_REL_SUBGRUPO_PRODUTO = '" & COD_SAIDA_REL_SUBGRUPO_PRODUTO & "';" & chr(13) & _
         "var COD_CONSULTA_POR_PERIODO_ENTREGA = '" & COD_CONSULTA_POR_PERIODO_ENTREGA & "';" & chr(13) & _
 		"</script>" & chr(13)
 
@@ -626,7 +628,15 @@ end function
 		    $("#ckb_ordenar_marg_contrib").prop("checked", false);
 		    $("#ckb_ordenar_marg_contrib").prop("disabled", true);
 		}
-		
+
+        if ($("input[name='rb_saida']:checked").val() == COD_SAIDA_REL_SUBGRUPO_PRODUTO) {
+            $("#ckb_subgrupo_ordenar_marg_contrib").prop("disabled", false);
+        }
+        else {
+            $("#ckb_subgrupo_ordenar_marg_contrib").prop("checked", false);
+            $("#ckb_subgrupo_ordenar_marg_contrib").prop("disabled", true);
+        }
+
 		$("input[name='rb_saida']").change(function() {
 			if (($("input[name='rb_saida']:checked").val() == COD_SAIDA_REL_INDICADOR) || ($("input[name='rb_saida']:checked").val() == COD_SAIDA_REL_INDICADOR_UF)) {
 				$("#tr_FormaComoConheceu").show();
@@ -648,6 +658,13 @@ end function
 			else {
 			    $("#ckb_ordenar_marg_contrib").prop("disabled", true);
 			    $("#ckb_ordenar_marg_contrib").prop("checked", false);
+			}
+            if ($("input[name='rb_saida']:checked").val() == COD_SAIDA_REL_SUBGRUPO_PRODUTO) {
+                $("#ckb_subgrupo_ordenar_marg_contrib").prop("disabled", false);
+            }
+            else {
+                $("#ckb_subgrupo_ordenar_marg_contrib").prop("disabled", true);
+                $("#ckb_subgrupo_ordenar_marg_contrib").prop("checked", false);
             }
 		});
 		$("input[name='rb_periodo']").change(function() {
@@ -657,7 +674,14 @@ end function
 		    else {
 		        $("#ckb_ordenar_marg_contrib").prop("disabled", true);
 		        $("#ckb_ordenar_marg_contrib").prop("checked", false);
-		    }
+			}
+            if ($("input[name='rb_saida']:checked").val() == COD_SAIDA_REL_SUBGRUPO_PRODUTO) {
+                $("#ckb_subgrupo_ordenar_marg_contrib").prop("disabled", false);
+            }
+            else {
+                $("#ckb_subgrupo_ordenar_marg_contrib").prop("disabled", true);
+                $("#ckb_subgrupo_ordenar_marg_contrib").prop("checked", false);
+            }
 		});
 	});
 </script>
@@ -1184,12 +1208,19 @@ html
 					<% intIdx=intIdx+1 %>
 					<span style="cursor:default" class="rbLink" onclick="fFILTRO.rb_saida[<%=Cstr(intIdx)%>].click();">Empresa</span>
                     <br />
-                    <input type="radio" id="rb_saida_produto_grupo" name="rb_saida" value="<%=COD_SAIDA_REL_GRUPO_PRODUTO%>" checked class="CBOX" style="margin-left:20px;">
+                    <input type="radio" id="rb_saida" name="rb_saida" value="<%=COD_SAIDA_REL_GRUPO_PRODUTO%>" class="CBOX" style="margin-left:20px;">
 					<% intIdx=intIdx+1 %>
 					<span style="cursor:default" class="rbLink" onclick="fFILTRO.rb_saida[<%=Cstr(intIdx)%>].click();habilitar_ckb_ordenar_marg_contrib();">Grupo de Produtos</span>
                     &nbsp;&nbsp;&nbsp;
                     <input type="checkbox" name="ckb_ordenar_marg_contrib" id="ckb_ordenar_marg_contrib" value="1" />
                         <span class="PLLc" style="cursor:default" onclick="fFILTRO.ckb_ordenar_marg_contrib.click();fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();">&nbsp;Ordenar pela Margem Contrib</span>            
+                    <br />
+                    <input type="radio" id="rb_saida" name="rb_saida" value="<%=COD_SAIDA_REL_SUBGRUPO_PRODUTO%>" checked class="CBOX" style="margin-left:20px;">
+					<% intIdx=intIdx+1 %>
+					<span style="cursor:default" class="rbLink" onclick="fFILTRO.rb_saida[<%=Cstr(intIdx)%>].click();">Subgrupo de Produtos</span>
+                    &nbsp;&nbsp;
+                    <input type="checkbox" name="ckb_subgrupo_ordenar_marg_contrib" id="ckb_subgrupo_ordenar_marg_contrib" value="1" />
+                        <span class="PLLc" style="cursor:default" onclick="fFILTRO.ckb_subgrupo_ordenar_marg_contrib.click();fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();">Ordenar pela Margem Contrib</span>   
 			</td>
 		</tr>
 		</table>

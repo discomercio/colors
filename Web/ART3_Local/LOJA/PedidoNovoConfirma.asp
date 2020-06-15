@@ -1853,6 +1853,11 @@
 						rs("analise_credito")=Clng(COD_AN_CREDITO_OK)
 						rs("analise_credito_data")=Now
 						rs("analise_credito_usuario")="AUTOMÁTICO"
+					elseif (Cstr(loja) = Cstr(NUMERO_LOJA_TRANSFERENCIA)) Or (Cstr(loja) = Cstr(NUMERO_LOJA_KITS)) Or isLojaGarantia(loja) then
+						'Lojas usadas para pedidos de operações internas
+						rs("analise_credito")=Clng(COD_AN_CREDITO_OK)
+						rs("analise_credito_data")=Now
+						rs("analise_credito_usuario")="AUTOMÁTICO"
 					elseif Cstr(loja) = Cstr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) And (rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA) And (CStr(op_av_forma_pagto) = Cstr(ID_FORMA_PAGTO_DINHEIRO)) then
 						rs("analise_credito")=Clng(COD_AN_CREDITO_PENDENTE_VENDAS)
 						rs("analise_credito_data")=Now
@@ -1864,11 +1869,6 @@
 						rs("analise_credito_usuario")="AUTOMÁTICO"
 					elseif (rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA) And ( (CStr(op_av_forma_pagto) = CStr(ID_FORMA_PAGTO_DEPOSITO)) Or (CStr(op_av_forma_pagto) = Cstr(ID_FORMA_PAGTO_BOLETO_AV)) ) then
 						rs("analise_credito")=Clng(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO)
-						rs("analise_credito_data")=Now
-						rs("analise_credito_usuario")="AUTOMÁTICO"
-					elseif (Cstr(loja) = Cstr(NUMERO_LOJA_TRANSFERENCIA)) Or (Cstr(loja) = Cstr(NUMERO_LOJA_KITS)) then
-						'Lojas usadas para pedidos de operações internas
-						rs("analise_credito")=Clng(COD_AN_CREDITO_OK)
 						rs("analise_credito_data")=Now
 						rs("analise_credito_usuario")="AUTOMÁTICO"
 					elseif (rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA) then
