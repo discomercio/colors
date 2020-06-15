@@ -93,10 +93,10 @@
 	if len(r_cliente.cnpj_cpf)=11 then eh_cpf=True else eh_cpf=False
 
     'le as variáveis da origem certa: ou do pedido ou do cliente, todas comecam com cliente__
-    dim cliente__tipo, cliente__cnpj_cpf, cliente__rg, cliente__ie, cliente__nome
+     dim cliente__tipo, cliente__cnpj_cpf, cliente__rg, cliente__ie, cliente__nome
     dim cliente__endereco, cliente__endereco_numero, cliente__endereco_complemento, cliente__bairro, cliente__cidade, cliente__uf, cliente__cep
     dim cliente__tel_res, cliente__ddd_res, cliente__tel_com, cliente__ddd_com, cliente__ramal_com, cliente__tel_cel, cliente__ddd_cel
-    dim cliente__tel_com_2, cliente__ddd_com_2, cliente__ramal_com_2, cliente__email
+    dim cliente__tel_com_2, cliente__ddd_com_2, cliente__ramal_com_2, cliente__email, cliente__email_xml, cliente__icms, cliente_produtor_rural_status
 
     cliente__tipo = r_cliente.tipo
     cliente__cnpj_cpf = r_cliente.cnpj_cpf
@@ -120,10 +120,10 @@
     cliente__tel_com_2 = r_cliente.tel_com_2
     cliente__ddd_com_2 = r_cliente.ddd_com_2
     cliente__ramal_com_2 = r_cliente.ramal_com_2
-    cliente__email = r_cliente.email
+    
 
     if blnUsarMemorizacaoCompletaEnderecos and r_pedido.st_memorizacao_completa_enderecos <> 0 then 
-        cliente__tipo = r_pedido.endereco_tipo_pessoa
+         cliente__tipo = r_pedido.endereco_tipo_pessoa
         cliente__cnpj_cpf = r_pedido.endereco_cnpj_cpf
 	    cliente__rg = r_pedido.endereco_rg
         cliente__ie = r_pedido.endereco_ie
@@ -146,7 +146,11 @@
         cliente__ddd_com_2 = r_pedido.endereco_ddd_com_2
         cliente__ramal_com_2 = r_pedido.endereco_ramal_com_2
         cliente__email = r_pedido.endereco_email
-        end if
+		cliente__icms = r_pedido.endereco_contribuinte_icms_status
+		cliente_produtor_rural_status = r_pedido.endereco_produtor_rural_status
+		cliente__email = r_pedido.endereco_email
+		cliente__email_xml = r_pedido.endereco_email_xml
+    end if
 
 
 	dim s_aux, s2, s3, s4, r_loja, s_cor, s_falta
@@ -1623,111 +1627,151 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 
 <%if r_pedido.st_memorizacao_completa_enderecos <> 0 then %>
 
-		if (trim(f.endereco__endereco.value)=="") {
-			alert('Endereço não foi preenchido corretamente!!');
-			f.endereco__endereco.focus();
-			return;
-			}
-		if (trim(f.endereco__bairro.value)=="") {
-			alert('Endereço não foi preenchido corretamente!!');
-			f.endereco__bairro.focus();
-			return;
-			}
-		
-		if (trim(f.endereco__numero.value)=="") {
-			alert('Endereço não foi preenchido corretamente!!');
-			f.endereco__numero.focus();
-			return;
-			}
-		if (trim(f.endereco__cidade.value)=="") {
-			alert('Endereço não foi preenchido corretamente!!');
-			f.endereco__cidade.focus();
-			return;
-			}
-		
-		if (trim(f.endereco__uf.value)=="") {
-			alert('Endereço não foi preenchido corretamente!!');
-			f.endereco__uf.focus();
-			return;
-			}
-		
-		if (trim(f.endereco__cep.value)=="") {
-			alert('Endereço não foi preenchido corretamente!!');
-			f.endereco__cep.focus();
-			return;
-		}
+		if (trim(f.endereco__endereco.value) == "") {
+            alert('Endereço não foi preenchido corretamente!!');
+            f.endereco__endereco.focus();
+            return;
+        }
+        if (trim(f.endereco__bairro.value) == "") {
+            alert('Endereço não foi preenchido corretamente!!');
+            f.endereco__bairro.focus();
+            return;
+        }
 
-		if ((trim(f.cliente__email.value) == "") || (!email_ok(f.cliente__email.value))) {
+        if (trim(f.endereco__numero.value) == "") {
+            alert('Endereço não foi preenchido corretamente!!');
+            f.endereco__numero.focus();
+            return;
+        }
+        if (trim(f.endereco__cidade.value) == "") {
+            alert('Endereço não foi preenchido corretamente!!');
+            f.endereco__cidade.focus();
+            return;
+        }
+
+        if (trim(f.endereco__uf.value) == "") {
+            alert('Endereço não foi preenchido corretamente!!');
+            f.endereco__uf.focus();
+            return;
+        }
+
+        if (trim(f.endereco__cep.value) == "") {
+            alert('Endereço não foi preenchido corretamente!!');
+            f.endereco__cep.focus();
+            return;
+        }
+
+        if ((trim(f.cliente__email.value) == "") || (!email_ok(f.cliente__email.value))) {
             alert('E-mail inválido!!');
             f.cliente__email.focus();
             return;
-		}
+        }
+
+        if ((trim(f.cliente__email_xml.value) == "") || (!email_ok(f.cliente__email_xml.value))) {
+            alert('E-mail xml inválido!!');
+            f.cliente__email_xml.focus();
+            return;
+        }
 
 
        <% if cliente__tipo = ID_PF then %>
 
-			if ((trim(f.cliente__ddd_res.value) == "") || !ddd_ok(f.cliente__ddd_res.value)) {
-			    alert('DDD inválido!!');
-			    f.cliente__ddd_res.focus();
-			    return;
-			}
+		if ((trim(f.cliente__ddd_res.value) == "") || !ddd_ok(f.cliente__ddd_res.value)) {
+            alert('DDD inválido!!');
+            f.cliente__ddd_res.focus();
+            return;
+        }
 
-			if ((trim(f.cliente__tel_res.value) == "") || !telefone_ok(f.cliente__tel_res.value)) {
-			    alert('Telefone residêncial inválido!!');
-			    f.cliente__tel_res.focus();
-			    return;
-			}
+        if ((trim(f.cliente__tel_res.value) == "") || !telefone_ok(f.cliente__tel_res.value)) {
+            alert('Telefone residencial inválido!!');
+            f.cliente__tel_res.focus();
+            return;
+        }
 
-			if (!ddd_ok(f.cliente__ddd_cel.value)) {
-			    alert('DDD inválido!!');
-			    f.cliente__ddd_cel.focus();
-			    return;
-			}
+        if (!ddd_ok(f.cliente__ddd_cel.value) || (trim(f.cliente__ddd_cel.value) == "") && (trim(f.cliente__tel_cel.value) != "")) {
+            alert('Celular com DDD inválido!!');
+            f.cliente__ddd_cel.focus();
+            return;
+        }
 
-			if (!telefone_ok(f.cliente__tel_cel.value)) {
-			    alert('Telefone celular inválido!!');
-			    f.cliente__tel_cel.focus();
-			    return;
-			}
+        if (!telefone_ok(f.cliente__tel_cel.value) || (trim(f.cliente__tel_cel.value) == "") && (trim(f.cliente__ddd_cel.value) != "")) {
+            alert('Telefone celular inválido!!');
+            f.cliente__tel_cel.focus();
+            return;
+        }
 
-			if (!ddd_ok(f.cliente__ddd_com.value)) {
-			    alert('DDD inválido!!');
-				f.cliente__ddd_com.focus();
-			    return;
-			}
 
-			if (!telefone_ok(f.cliente__tel_com.value)) {
-			    alert('Telefone comercial inválido!!');
-                f.cliente__tel_com.focus();
-			    return;
-			}
+        if (!ddd_ok(f.cliente__ddd_com.value) || (trim(f.cliente__ddd_com.value) == "") && (trim(f.cliente__tel_com.value) != "") || (trim(f.cliente__ddd_com.value) == "") && (trim(f.cliente__ramal_com.value) != "")) {
+            alert('DDD inválido!!');
+            f.cliente__ddd_com.focus();
+            return;
+        }
+
+        if (!telefone_ok(f.cliente__tel_com.value) || (trim(f.cliente__ddd_com.value) != "") && (trim(f.cliente__tel_com.value) == "") || (trim(f.cliente__ramal_com.value) != "") && (trim(f.cliente__tel_com.value) == "")) {
+            alert('Telefone comercial inválido!!');
+            f.cliente__tel_com.focus();
+            return;
+        }
+
+
+
+
+
+        if (fPED.rb_produtor_rural[1].checked) {
+            if ((!fPED.rb_contribuinte_icms[0].checked) && (!fPED.rb_contribuinte_icms[1].checked) && (!fPED.rb_contribuinte_icms[2].checked)) {
+                alert('Informe se o cliente é contribuinte do ICMS, não contribuinte ou isento!!');
+                return;
+            }
+            if ((fPED.rb_contribuinte_icms[1].checked) && (trim(fPED.cliente__ie.value) == "")) {
+                alert('Se o cliente é contribuinte do ICMS a inscrição estadual deve ser preenchida!!');
+                fPED.cliente__ie.focus();
+                return;
+            }
+            if ((fPED.rb_contribuinte_icms[0].checked) && (fPED.cliente__ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
+                alert('Se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
+                fPED.ie.focus();
+                return;
+            }
+            if ((fPED.rb_contribuinte_icms[1].checked) && (fPED.cliente__ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
+                alert('Se cliente é contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
+                fPED.cliente__ie.focus();
+                return;
+            }
+            if (fPED.rb_contribuinte_icms[2].checked) {
+                if (fPED.cliente__ie.value != "") {
+                    alert("Se o Contribuinte ICMS é isento, o campo IE deve ser vazio!");
+                    fPED.cliente__ie.focus();
+                    return;
+                }
+            }
+        }
 
 
 		<% else %>
 
-			if ((trim(f.cliente__ddd_com.value) == "") || !ddd_ok(f.cliente__ddd_com.value)) {
+		if ((trim(f.cliente__ddd_com.value) == "") || !ddd_ok(f.cliente__ddd_com.value)) {
             alert('DDD inválido!!');
             f.cliente__ddd_com.focus();
             return;
-			}
+        }
 
         if ((trim(f.cliente__tel_com.value) == "") || !telefone_ok(f.cliente__tel_com.value)) {
             alert('Telefone comercial inválido!!');
             f.cliente__tel_com.focus();
             return;
-		}
+        }
 
-			if (!ddd_ok(f.cliente__ddd_com_2.value)) {
+        if (!ddd_ok(f.cliente__ddd_com_2.value) || (trim(f.cliente__ddd_com_2.value) == "") && (trim(f.cliente__tel_com_2.value) != "") || (trim(f.cliente__ddd_com_2.value) == "") && (trim(f.cliente__ramal_com_2.value) != "")) {
             alert('DDD inválido!!');
             f.cliente__ddd_com_2.focus();
             return;
         }
 
-			if (!telefone_ok(f.cliente__tel_com_2.value)) {
+        if (!telefone_ok(f.cliente__tel_com_2.value) || (trim(f.cliente__ddd_com_2.value) != "") && (trim(f.cliente__tel_com_2.value) == "") || (trim(f.cliente__ramal_com_2.value) != "") && (trim(f.cliente__tel_com_2.value) == "")) {
             alert('Telefone comercial inválido!!');
             f.cliente__tel_com_2.focus();
             return;
-		}
+        }
 		<% end if%>
 
 		
@@ -2141,6 +2185,16 @@ function trataContribuinteIcmsEndEtg_PF(novoTipo)
         setarValorRadio($('input[name="EndEtg_contribuinte_icms_status_PF"]'),novoTipo);
 }
 
+function trataProdutorRural() {
+    //ao clicar na opção Produtor Rural, exibir/ocultar os campos apropriados
+    if (!fPED.rb_produtor_rural[1].checked) {
+        $("#t_contribuinte_icms").css("display", "none");
+    }
+    else {
+        $("#t_contribuinte_icms").css("display", "block");
+    }
+}
+
 function trataProdutorRuralEndEtg_PF(novoTipo) {
     //ao clicar na opção Produtor Rural, exibir/ocultar os campos apropriados (endereço de entrega)
     if (novoTipo && $('input[name="EndEtg_produtor_rural_status_PF"]:disabled').length == 0)
@@ -2284,7 +2338,7 @@ function setarValorRadio(array, valor)
 <!-- ********************************************************** -->
 <!-- **********  PÁGINA PARA EDITAR ITENS DO PEDIDO  ********** -->
 <!-- ********************************************************** -->
-<body id="corpoPagina" onload="processaFormaPagtoDefault();">
+<body id="corpoPagina" onload="processaFormaPagtoDefault();trataProdutorRural();">
 <center>
 
 
@@ -2387,9 +2441,8 @@ function setarValorRadio(array, valor)
 
 <!--  ENDEREÇO DO CLIENTE  -->
 <% if r_pedido.st_memorizacao_completa_enderecos = 0 then %>
-
 	<!--  CLIENTE   -->
-<table width="649" class="Q" cellspacing="0">
+	<table width="649" class="Q" cellspacing="0">
 	<tr>
 <%	s = ""
 	if xcliente_bd_resultado then
@@ -2427,17 +2480,17 @@ function setarValorRadio(array, valor)
 		</td>
 	</tr>
 	</table>
-
+	
 	<!--  ENDEREÇO DO CLIENTE  -->
 	<table width="649" class="QS" cellspacing="0">
-		<tr>
-			<%
-		s = formata_endereco(cliente__endereco, cliente__endereco_numero, cliente__endereco_complemento, cliente__bairro, cliente__cidade, cliente__uf, cliente__cep)
-	%>		
-			<td align="left"><p class="Rf">ENDEREÇO</p><p class="C"><%=s%>&nbsp;</p></td>
-		</tr>
-	</table>
-
+	<tr>
+<%
+	s = formata_endereco(cliente__endereco, cliente__endereco_numero, cliente__endereco_complemento, cliente__bairro, cliente__cidade, cliente__uf, cliente__cep)
+%>		
+		<td align="left"><p class="Rf">ENDEREÇO</p><p class="C"><%=s%>&nbsp;</p></td>
+	</tr>
+</table>
+	
 	<!--  TELEFONE DO CLIENTE  -->
 	<table width="649" class="QS" cellspacing="0">
 	<tr>
@@ -2484,7 +2537,7 @@ function setarValorRadio(array, valor)
 
 	</tr>
 </table>
-
+	
 	<!--  E-MAIL DO CLIENTE  -->
 	<table width="649" class="QS" cellspacing="0">
 	<tr>
@@ -2494,7 +2547,7 @@ function setarValorRadio(array, valor)
 
 <% else %>
 
-		<!--  CLIENTE   -->
+			<!--  CLIENTE   -->
 	<table width="649" class="Q" cellspacing="0">
 	<tr>
 <%	s = ""
@@ -2503,7 +2556,7 @@ function setarValorRadio(array, valor)
 <%	if cliente__tipo = ID_PF then s_aux="CPF" else s_aux="CNPJ"
 	s = cnpj_cpf_formata(cliente__cnpj_cpf) 
 %>
-		<td align="left" width="50%" class="MD"><p class="Rf"><%=s_aux%></p>
+		<td align="left" class="MD" width="210"><p class="Rf"><%=s_aux%></p>
 		
 			<!--<p class="C"><%=s%>&nbsp;</p>-->
 			<input id="endereco__cpf_cnpj" name="endereco__cpf_cnpj" readonly="readonly" class="TA" maxlength="72" style="width:310px;" value="<%=s%>">
@@ -2512,12 +2565,88 @@ function setarValorRadio(array, valor)
 		<%
 		if cliente__tipo = ID_PF then s = Trim(cliente__rg) else s = Trim(cliente__ie)
 			if cliente__tipo = ID_PF then 
-%>
+		%>
 	<td align="left"><p class="Rf">RG</p><input id="cliente__rg" name="cliente__rg" class="TA" maxlength="72" style="width:310px;" value="<%=s%>"></td>
-<% else %>
-	<td align="left"><p class="Rf">IE</p><input id="cliente__ie" name="cliente__ie" class="TA" maxlength="72" style="width:310px;" value="<%=s%>"></td>
-<% end if %>
+	</tr>
+	</table>
+
+
+	<table width="649" class="QS" cellspacing="0">
+		<tr>
+			<td align="left"><p class="R">PRODUTOR RURAL</p><p class="C">
+				<%s=r_pedido.endereco_produtor_rural_status%>
+				<%if s = converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_NAO) then s_aux="checked" else s_aux=""%>
+				
+				<input type="radio" id="rb_produtor_rural_nao" name="rb_produtor_rural" value="<%=COD_ST_CLIENTE_PRODUTOR_RURAL_NAO%>" <%=s_aux%> onclick="trataProdutorRural();"><span class="C" style="cursor:default" onclick="fPED.rb_produtor_rural[0].click();">Não</span>
+				<%if s = converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_SIM) then s_aux="checked" else s_aux=""%>
+				
+				<input type="radio" id="rb_produtor_rural_sim" name="rb_produtor_rural" value="<%=COD_ST_CLIENTE_PRODUTOR_RURAL_SIM%>" <%=s_aux%> onclick="trataProdutorRural();"><span class="C" style="cursor:default" onclick="fPED.rb_produtor_rural[1].click();">Sim</span></p>
+			</td>
 		</tr>
+	</table>
+
+
+	
+
+	<table width="649" class="QS" cellspacing="0" id="t_contribuinte_icms" onload="trataProdutorRural();">
+		<tr>
+			<%s=cliente__ie%>
+			<td width="210" class="MD" align="left"><p class="R">IE</p><p class="C">
+				<input id="cliente__ie" name="cliente__ie" class="TA" maxlength="72" style="width:310px;" value="<%=s%>" /></p>
+			</td>
+			<td align="left"><p class="R">CONTRIBUINTE ICMS</p><p class="C">
+				<%s=cliente__icms%>
+				<%if s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) then s_aux="checked" else s_aux=""%>
+				<% intIdx = 0 %>
+				<input type="radio" id="rb_contribuinte_icms_nao" name="rb_contribuinte_icms" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO%>" <%=s_aux%>><span class="C" style="cursor:default" onclick="fPED.rb_contribuinte_icms[<%=Cstr(intIdx)%>].click();">Não</span>
+				<%if s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then s_aux="checked" else s_aux=""%>
+				<% intIdx = intIdx + 1 %>
+				<input type="radio" id="rb_contribuinte_icms_sim" name="rb_contribuinte_icms" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM%>" <%=s_aux%>><span class="C" style="cursor:default" onclick="fPED.rb_contribuinte_icms[<%=Cstr(intIdx)%>].click();">Sim</span>
+				<%if s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO) then s_aux="checked" else s_aux=""%>
+				<% intIdx = intIdx + 1 %>
+				<input type="radio" id="rb_contribuinte_icms_isento" name="rb_contribuinte_icms" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO%>" <%=s_aux%>><span class="C" style="cursor:default" onclick="fPED.rb_contribuinte_icms[<%=Cstr(intIdx)%>].click();">Isento</span></p>
+			</td>
+		</tr>
+	</table>
+	
+
+<% else %>
+	<td width="215"  align="left"><p class="Rf">IE</p><input id="cliente__ie" name="cliente__ie" class="TA" maxlength="72" style="width:310px;" value="<%=s%>"></td>
+	</tr>
+	<tr>
+		<td class="MC" align="left" colspan="2"><p class="R">CONTRIBUINTE ICMS</p><p class="C">
+
+				<%
+                    s = " "
+                    if r_pedido.endereco_contribuinte_icms_status = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) then
+                        s = " checked "
+                    end if
+                %>
+			
+			<input type="radio" id="rb_contribuinte_icms_nao" name="rb_contribuinte_icms" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO%>" <%=s%>><span class="C" style="cursor:default" onclick="fPED.rb_contribuinte_icms[1].click();">Não</span>
+				<%
+                    s = " "
+                    if r_pedido.endereco_contribuinte_icms_status = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
+                        s = " checked "
+                    end if
+                %>
+			<input type="radio" id="rb_contribuinte_icms_sim" name="rb_contribuinte_icms" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM%>" <%=s%>><span class="C" style="cursor:default" onclick="fPED.rb_contribuinte_icms[2].click();">Sim</span>
+				<%
+                    s = " "
+                    if r_pedido.endereco_contribuinte_icms_status = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO) then
+                        s = " checked "
+                    end if
+                %>
+			<input type="radio" id="rb_contribuinte_icms_isento" name="rb_contribuinte_icms" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO%>" <%=s%>><span class="C" style="cursor:default" onclick="fPED.rb_contribuinte_icms[3].click();">Isento</span></p>
+			
+		</td>
+	</tr>
+	</table>
+<% end if %>
+		
+		
+	<table width="649" class="QS" cellspacing="0">
+		
 	<%
 		if Trim(cliente__nome) <> "" then
 			s = Trim(cliente__nome)
@@ -2527,7 +2656,7 @@ function setarValorRadio(array, valor)
 	if cliente__tipo = ID_PF then s_aux="NOME DO CLIENTE" else s_aux="RAZÃO SOCIAL DO CLIENTE"
 %>
     <tr>
-	<td class="MC" align="left" colspan="2"><p class="Rf"><%=s_aux%></p>
+	<td class="MD" align="left" colspan="2"><p class="Rf"><%=s_aux%></p>
 	
 		
 		<input id="cliente__nome" name="cliente__nome" class="TA" value="<%=s%>" maxlength="60" style="width:635px;" />
@@ -2646,7 +2775,16 @@ function setarValorRadio(array, valor)
 	    </tr>
 	</table>
 
+	 <!-- ************   E-MAIL (XML)  ************ -->
+    <table width="649" class="QS" cellspacing="0">
+	    <tr>
+	    <td width="100%" align="left"><p class="R">E-MAIL (XML)</p><p class="C">
+		    <input id="cliente__email_xml" name="cliente__email_xml" value="<%=cliente__email_xml%>" class="TA" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fPED.rb_end_entrega_nao.focus(); filtra_email();"></p></td>
+	    </tr>
+    </table>
+
 <%end if%>
+
 
 
 

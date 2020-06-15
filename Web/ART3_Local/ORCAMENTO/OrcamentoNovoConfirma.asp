@@ -996,6 +996,15 @@
 
 		s_log = s_log & "; custoFinancFornecTipoParcelamento=" & formata_texto_log(rs("custoFinancFornecTipoParcelamento"))
 		s_log = s_log & "; custoFinancFornecQtdeParcelas=" & formata_texto_log(rs("custoFinancFornecQtdeParcelas"))
+
+
+		s_log = s_log &	"; endereco_logradouro=" &formata_texto_log(rs("endereco_logradouro")) 
+		s_log = s_log &	"; endereco_bairro=" &  formata_texto_log(rs("endereco_bairro"))
+		s_log = s_log &	"; endereco_cidade=" & formata_texto_log(rs("endereco_cidade")) 
+		s_log = s_log &	"; endereco_uf=" &  formata_texto_log(rs("endereco_uf")) 
+		s_log = s_log &	"; endereco_cep=" & formata_texto_log(rs("endereco_cep")) 
+		s_log = s_log &	"; endereco_numero=" & formata_texto_log(rs("endereco_numero")) 
+		s_log = s_log &	"; endereco_complemento=" & formata_texto_log(rs("endereco_complemento")) 
 		
 		if rb_end_entrega = "S" then
 			s_log = s_log & "; Endereço entrega=" & formata_endereco(EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep) & " [EndEtg_cod_justificativa=" & EndEtg_obs & "]"
@@ -1020,14 +1029,7 @@
 						", contribuinte_icms_status=" & EndEtg_contribuinte_icms_status & _
 						", produtor_rural_status=" & EndEtg_produtor_rural_status & _
 						", ie=" & EndEtg_ie & _
-						", rg=" & EndEtg_rg & _
-						", endereco_logradouro=" & orcamento_endereco_logradouro & _
-						", endereco_bairro=" & orcamento_endereco_bairro & _
-						", endereco_cidade=" & orcamento_endereco_cidade & _
-						", endereco_uf=" & orcamento_endereco_uf & _
-						", endereco_cep=" & orcamento_endereco_cep & _
-						", endereco_numero=" & orcamento_endereco_numero & _
-						", endereco_complemento=" & orcamento_endereco_complemento & _
+						", rg=" & EndEtg_rg & _					
 						")"
 				end if
 		else
