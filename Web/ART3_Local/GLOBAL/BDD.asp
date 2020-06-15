@@ -6210,6 +6210,25 @@ dim s, tLAux
 end function
 
 
+' ___________________________________
+' isLojaGarantia
+'
+function isLojaGarantia(byval loja)
+dim s, tLAux
+	isLojaGarantia = False
+
+	loja  = Trim("" & loja)
+	
+	s = "SELECT * FROM t_LOJA WHERE (loja = '" & loja & "') AND (unidade_negocio = '" & COD_UNIDADE_NEGOCIO_LOJA__GARANTIA & "')"
+	set tLAux = cn.Execute(s)
+	if Not tLAux.Eof then
+		isLojaGarantia = True
+		tLAux.Close
+		set tLAux = nothing
+		end if
+end function
+
+
 ' ------------------------------------------------------------------------
 '   isLojaHabilitadaProdCompostoECommerce
 '

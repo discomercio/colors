@@ -650,7 +650,7 @@ function exibe_botao_confirmar() {
 		<table width="100%" cellpadding="2" cellspacing="2">
 			<tr>	
 			    <td rowspan="2" class="tdColSaida" align="left" valign="top" style="margin-left:2px; margin-right:2px">	
-			        <fieldset style="height:400px; border: solid 1px #555; padding: auto"><legend><input id="cadastro" type="checkbox" onclick="marcarDesmarcarCadastro()"/><label for="cadastro">Cadastro</label></legend>	   
+			        <fieldset style="height:415px; border: solid 1px #555; padding: auto"><legend><input id="cadastro" type="checkbox" onclick="marcarDesmarcarCadastro()"/><label for="cadastro">Cadastro</label></legend>	   
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_DATA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 				
@@ -668,9 +668,14 @@ function exibe_botao_confirmar() {
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_DT_EMISSAO_NF.click();">Data Emissão NF</span><br />
 
 				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_LOJA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_LOJA" name="ckb_COL_LOJA"
+						        value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_LOJA.click();">Loja</span><br />
+
+				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_PEDIDO|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_PEDIDO" name="ckb_COL_PEDIDO"
-						        value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_PEDIDO.click();">Pedido</span><br />		
+						        value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_PEDIDO.click();">Pedido</span><br />
 				
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_CPF_CNPJ_CLIENTE|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
