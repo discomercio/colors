@@ -2013,7 +2013,7 @@
 				set rEmailDestinatario = get_registro_t_parametro(ID_PARAMETRO_EmailDestinatarioAlertaEdicaoCadastroClienteComPedidoCreditoOkEntregaPendente)
 				if Trim("" & rEmailDestinatario.campo_texto) <> "" then
 					
-					corpo_mensagem = "O usuário '" & usuario & "' editou em " & formata_data_hora_sem_seg(Now) & " na Central o endereço do cliente:" & _
+					corpo_mensagem = "O usuário '" & usuario & "' editou em " & formata_data_hora_sem_seg(Now) & " na Loja o endereço do cliente:" & _
 									vbCrLf & _
 										cnpj_cpf_formata(r_cliente.cnpj_cpf) & " - " & r_cliente.nome  & _
 										vbCrLf & _
