@@ -375,7 +375,7 @@ dim v
 				" 'VENDA_NORMAL' AS operacao," & _
 				" t_PEDIDO.data_hora," & _
 				" t_PEDIDO.entregue_data AS faturamento_data," & _
-				" (SELECT TOP 1 Convert(datetime, ide__dEmi, 121) FROM t_NFe_IMAGEM WHERE (t_NFe_IMAGEM.NFe_numero_NF = t_PEDIDO.num_obs_2) AND (t_NFe_IMAGEM.id_nfe_emitente = t_PEDIDO.id_nfe_emitente) AND (t_NFe_IMAGEM.ide__tpNF = '1') AND (t_NFe_IMAGEM.st_anulado = 0) AND (t_NFe_IMAGEM.codigo_retorno_NFe_T1 = 1) ORDER BY id DESC) AS dt_emissao," & _
+				" Convert(DATETIME, t_NFe_IMAGEM_NORMALIZADO.ide__dEmi, 121) AS dt_emissao," & _
 				" t_PEDIDO.num_obs_2 AS numero_NF," & _
 				" t_PEDIDO.obs_2," & _
 				" t_PEDIDO.loja," & _
@@ -469,8 +469,8 @@ dim v
 
 	if ckb_COL_ICMS_UF_DEST <> "" then
 		s_sql = s_sql & _
-				", (SELECT TOP 1 ICMSUFDest__vICMSUFDest FROM t_NFe_IMAGEM tNFe INNER JOIN t_NFe_IMAGEM_ITEM tNFeItem ON (tNFe.id = tNFeItem.id_nfe_imagem) WHERE (tNFe.st_anulado = 0) AND (tNFe.codigo_retorno_NFe_T1 = 1) AND (tNFe.id_nfe_emitente = t_PEDIDO.id_nfe_emitente) AND (tNFe.NFe_numero_NF = t_PEDIDO.num_obs_2) AND (tNFeItem.fabricante = t_PEDIDO_ITEM.fabricante) AND (tNFeItem.produto = t_PEDIDO_ITEM.produto) ORDER BY tNFe.id DESC, tNFeItem.id DESC) AS vICMSUFDest" & _
-				", (SELECT TOP 1 det__qCom FROM t_NFe_IMAGEM tNFe INNER JOIN t_NFe_IMAGEM_ITEM tNFeItem ON (tNFe.id = tNFeItem.id_nfe_imagem) WHERE (tNFe.st_anulado = 0) AND (tNFe.codigo_retorno_NFe_T1 = 1) AND (tNFe.id_nfe_emitente = t_PEDIDO.id_nfe_emitente) AND (tNFe.NFe_numero_NF = t_PEDIDO.num_obs_2) AND (tNFeItem.fabricante = t_PEDIDO_ITEM.fabricante) AND (tNFeItem.produto = t_PEDIDO_ITEM.produto) ORDER BY tNFe.id DESC, tNFeItem.id DESC) AS det__qCom"
+				", t_NFe_IMAGEM_ITEM_NORMALIZADO.ICMSUFDest__vICMSUFDest AS vICMSUFDest" & _
+				", t_NFe_IMAGEM_ITEM_NORMALIZADO.det__qCom AS det__qCom"
 		end if
 
 	s_sql = s_sql & _
@@ -487,6 +487,45 @@ dim v
 				" INNER JOIN t_ESTOQUE_MOVIMENTO ON ((t_ESTOQUE_MOVIMENTO.pedido=t_PEDIDO_ITEM.pedido)AND(t_ESTOQUE_MOVIMENTO.fabricante=t_PEDIDO_ITEM.fabricante)AND(t_ESTOQUE_MOVIMENTO.produto=t_PEDIDO_ITEM.produto))" & _
 				" INNER JOIN t_ESTOQUE_ITEM ON ((t_ESTOQUE_MOVIMENTO.id_estoque=t_ESTOQUE_ITEM.id_estoque)AND(t_ESTOQUE_MOVIMENTO.fabricante=t_ESTOQUE_ITEM.fabricante)AND(t_ESTOQUE_MOVIMENTO.produto=t_ESTOQUE_ITEM.produto))"
 		end if
+
+	' Monta derived table para acessar os dados de NFe
+	' Inicialmente, esses dados estavam sendo obtidos através de selects introduzidos diretamente no select principal, ou seja, uma consulta interna p/ cada campo referente a esses dados da NFe,
+	' mas isso se mostrou muito ineficiente em termos de performance.
+	' Na tabela t_NFe_IMAGEM pode haver mais de um registro com o mesmo número de nota do mesmo emitente, isso pode ocorrer devido à reutilização do número após uma emissão que tenha sido rejeitada pela Sefaz.
+	' Na tabela t_NFe_IMAGEM_ITEM também pode haver mais de um registro para o mesmo código de produto, isso pode ocorrer quando o pedido consumiu produtos de estoques diferentes e caso esses produtos tenham
+	' alguns dados diferentes entre si, como códigos de CST, por exemplo.
+	' Para que essas derived tables tenham apenas um registro por NFe ou produto, é usada a técnica em que se obtém o ID mais recente de um grupo de registros similares.
+	s_sql = s_sql & _
+			" LEFT JOIN (" & _
+				"SELECT" & _
+					" t_NFE_IMAGEM.*" & _
+				" FROM t_NFe_IMAGEM INNER JOIN (" & _
+					"SELECT" & _
+						" id_nfe_emitente, NFe_serie_NF, NFe_numero_NF, Max(id) AS id" & _
+					" FROM t_NFe_IMAGEM" & _
+					" WHERE" & _
+						" (t_NFe_IMAGEM.ide__tpNF = '1')" & _
+						" AND (t_NFe_IMAGEM.st_anulado = 0)" & _
+						" AND (t_NFe_IMAGEM.codigo_retorno_NFe_T1 = 1)" & _
+					" GROUP BY" & _
+						" id_nfe_emitente, NFe_serie_NF, NFe_numero_NF" & _
+					") t_NFe_IMAGEM_max_id" & _
+					" ON (t_NFe_IMAGEM_max_id.id = t_NFe_IMAGEM.id) AND (t_NFe_IMAGEM_max_id.id_nfe_emitente = t_NFe_IMAGEM.id_nfe_emitente)" & _
+				" WHERE" & _
+					" (t_NFe_IMAGEM.ide__tpNF = '1') AND (t_NFe_IMAGEM.st_anulado = 0) AND (t_NFe_IMAGEM.codigo_retorno_NFe_T1 = 1)" & _
+			") t_NFe_IMAGEM_NORMALIZADO ON (t_NFe_IMAGEM_NORMALIZADO.id_nfe_emitente = t_PEDIDO.id_nfe_emitente) AND (t_NFe_IMAGEM_NORMALIZADO.NFe_numero_NF = t_PEDIDO.num_obs_2)"
+
+	s_sql = s_sql & _
+			" LEFT JOIN (" & _
+				"SELECT" & _
+					" t_NFe_IMAGEM_ITEM.*" & _
+				" FROM t_NFe_IMAGEM_ITEM INNER JOIN (" & _
+					"SELECT" & _
+						" id_nfe_imagem, fabricante, produto, Max(id) AS id" & _
+					" FROM t_NFe_IMAGEM_ITEM" & _
+					" GROUP BY id_nfe_imagem, fabricante, produto" & _
+					") t_NFe_IMAGEM_ITEM_max_id ON (t_NFe_IMAGEM_ITEM_max_id.id = t_NFe_IMAGEM_ITEM.id)" & _
+				") t_NFe_IMAGEM_ITEM_NORMALIZADO ON (t_NFe_IMAGEM_NORMALIZADO.id = t_NFe_IMAGEM_ITEM_NORMALIZADO.id_nfe_imagem) AND (t_NFe_IMAGEM_ITEM_NORMALIZADO.fabricante = t_PEDIDO_ITEM.fabricante) AND (t_NFe_IMAGEM_ITEM_NORMALIZADO.produto = t_PEDIDO_ITEM.produto)"
 
 	s_sql = s_sql & _
 			" WHERE" & _
@@ -641,12 +680,20 @@ dim v
 				"*" & _
 			" FROM (" & s_sql & ") t"
 	
+	' Tratamento para evitar erro que ocorre quando há registro do estoque com o campo 'qtde' com valor zerado.
+	' Essa situação em que a 'qtde' é zero não deveria ocorrer, entretanto, devido a algumas correções de problemas ocorridos anteriormente em operações no estoque,
+	' há alguns registros de entrada no estoque em que a 'qtde' foi ajustada para zero através de intervenção manual no banco de dados.
+	' Lembrando que as devoluções são tratadas com valores negativos de qtde.
+	s_sql = s_sql & _
+			" WHERE (qtde <> 0)"
+
 	s_sql = s_sql & _
 			" ORDER BY" & _
 				" faturamento_data," & _
 				" pedido," & _
 				" fabricante," & _
-				" produto"
+				" produto," & _
+				" qtde"
 	
 	x_cab = ""
 	if ckb_COL_DATA <> "" then x_cab = x_cab & "DATA;"
