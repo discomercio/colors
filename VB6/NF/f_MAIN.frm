@@ -4146,7 +4146,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hWnd As Long
+Dim hwnd As Long
 
 ' VETORES
 Dim v() As String
@@ -4466,7 +4466,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hWnd As Long
+Dim hwnd As Long
 
 ' VETORES
 Dim v() As String
@@ -4784,7 +4784,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hWnd As Long
+Dim hwnd As Long
 
 Dim blnOperacaoNaoTriangular As Boolean
 
@@ -7843,12 +7843,14 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     If param_pedidomemorizacaoenderecos.campo_inteiro = 1 Then
         s = "SELECT" & _
                 " pedido, id_cliente, st_memorizacao_completa_enderecos, endereco_uf as uf, endereco_cnpj_cpf as cnpj_cpf, " & _
-                " endereco_logradouro as endereco, " & _
-                " endereco_bairro as bairro, " & _
-                " endereco_cidade as cidade, " & _
-                " endereco_cep as cep, " & _
-                " endereco_numero, " & _
-                " endereco_complemento, " & _
+                " endereco_logradouro as endereco, endereco_bairro as bairro, endereco_cidade as cidade, endereco_cep as cep, endereco_numero, endereco_complemento, " & _
+                " endereco_logradouro as endereco_end_nota, " & _
+                " endereco_bairro as bairro_end_nota, " & _
+                " endereco_cidade as cidade_end_nota, " & _
+                " endereco_cep as cep_end_nota, " & _
+                " endereco_numero as numero_end_nota, " & _
+                " endereco_complemento as complemento_end_nota, " & _
+                " endereco_uf as uf_end_nota, " & _
                 " endereco_email as email, endereco_email_xml as email_xml, " & _
                 " endereco_nome as nome, " & _
                 " endereco_ddd_res as ddd_res, endereco_tel_res as tel_res, " & _
@@ -7866,12 +7868,14 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         s = s & " UNION" & _
             " SELECT" & _
                 " pedido, id_cliente, st_memorizacao_completa_enderecos, endereco_uf as uf, endereco_cnpj_cpf as cnpj_cpf, " & _
-                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_logradouro else EndEtg_endereco end as endereco, " & _
-                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_bairro else EndEtg_bairro end as bairro, " & _
-                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_cidade else EndEtg_cidade end as cidade, " & _
-                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_cep else EndEtg_cep end as cep, " & _
-                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_numero else EndEtg_endereco_numero end as endereco_numero, " & _
-                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_complemento else EndEtg_endereco_complemento end as endereco_complemento, " & _
+                " endereco_logradouro as endereco, endereco_bairro as bairro, endereco_cidade as cidade, endereco_cep as cep, endereco_numero, endereco_complemento, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_logradouro else EndEtg_endereco end as endereco_end_nota, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_bairro else EndEtg_bairro end as bairro_end_nota, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_cidade else EndEtg_cidade end as cidade_end_nota, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_cep else EndEtg_cep end as cep_end_nota, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_numero else EndEtg_endereco_numero end as numero_end_nota, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_complemento else EndEtg_endereco_complemento end as complemento_end_nota, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_uf else EndEtg_uf end as uf_end_nota, " & _
                 " endereco_email as email, endereco_email_xml as email_xml, " & _
                 " endereco_nome as nome, " & _
                 " endereco_ddd_res as ddd_res, endereco_tel_res as tel_res, " & _
@@ -7895,6 +7899,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             Exit Sub
             End If
         If t_DESTINATARIO("st_memorizacao_completa_enderecos") > 0 Then blnExisteMemorizacaoEndereco = True
+        strEndEtgUf = UCase$(Trim$("" & t_DESTINATARIO("uf_end_nota")))
         End If
         
     'SEGUNDO CASO: A MEMORIZAÇÃO DO ENDEREÇO DO CLIENTE NA TABELA DE PEDIDOS NÃO ESTÁ OK
@@ -8259,7 +8264,11 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("xNome", rNFeImg.dest__xNome)
     
 '   LOGRADOURO
-    strCampo = Trim("" & t_DESTINATARIO("endereco"))
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+        strCampo = Trim$("" & t_DESTINATARIO("endereco_end_nota"))
+    Else
+        strCampo = Trim("" & t_DESTINATARIO("endereco"))
+        End If
     If strCampo = "" Then
         s_erro = "O endereço do cliente não está preenchido no cadastro!!"
         GoTo NFE_EMITE_ENCERRA_POR_ERRO_CONSISTENCIA
@@ -8271,7 +8280,11 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("xLgr", rNFeImg.dest__xLgr)
     
 '   ENDEREÇO: NÚMERO
-    strCampo = Trim$("" & t_DESTINATARIO("endereco_numero"))
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+        strCampo = Trim$("" & t_DESTINATARIO("numero_end_nota"))
+    Else
+        strCampo = Trim$("" & t_DESTINATARIO("endereco_numero"))
+        End If
     If strCampo = "" Then
         s_erro = "O endereço no cadastro do cliente deve ser preenchido corretamente para poder emitir a NFe!!" & vbCrLf & _
                  "As informações de número e complemento do endereço devem ser preenchidas nos campos adequados!!"
@@ -8284,7 +8297,11 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("nro", rNFeImg.dest__nro)
         
 '   ENDEREÇO: COMPLEMENTO
-    strCampo = Trim$("" & t_DESTINATARIO("endereco_complemento"))
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+        strCampo = Trim$("" & t_DESTINATARIO("complemento_end_nota"))
+    Else
+        strCampo = Trim$("" & t_DESTINATARIO("endereco_complemento"))
+        End If
     If Len(strCampo) > 60 Then
         s_erro = "O campo complemento do endereço do cliente excede o tamanho máximo (60 caracteres)!!"
         GoTo NFE_EMITE_ENCERRA_POR_ERRO_CONSISTENCIA
@@ -8293,7 +8310,11 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     If Len(strCampo) > 0 Then strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("xCpl", rNFeImg.dest__xCpl)
     
 '   BAIRRO
-    strCampo = Trim$("" & t_DESTINATARIO("bairro"))
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+        strCampo = Trim$("" & t_DESTINATARIO("bairro_end_nota"))
+    Else
+        strCampo = Trim$("" & t_DESTINATARIO("bairro"))
+        End If
     If Len(strCampo) > 60 Then
         s_erro = "O campo bairro no endereço do cliente excede o tamanho máximo (60 caracteres)!!"
         GoTo NFE_EMITE_ENCERRA_POR_ERRO_CONSISTENCIA
@@ -8302,14 +8323,26 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("xBairro", rNFeImg.dest__xBairro)
     
 '   MUNICIPIO
-    strCampo = Trim$("" & t_DESTINATARIO("cidade"))
-    s_aux = Trim$("" & t_DESTINATARIO("uf"))
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+        strCampo = Trim$("" & t_DESTINATARIO("cidade_end_nota"))
+    Else
+        strCampo = Trim$("" & t_DESTINATARIO("cidade"))
+        End If
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+        s_aux = Trim$("" & t_DESTINATARIO("uf_end_nota"))
+    Else
+        s_aux = Trim$("" & t_DESTINATARIO("uf"))
+        End If
     If (strCampo <> "") And (s_aux <> "") Then strCampo = strCampo & "/"
     strCampo = strCampo & s_aux
     rNFeImg.dest__cMun = strCampo
     strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("cMun", rNFeImg.dest__cMun)
     
-    strCampo = Trim$("" & t_DESTINATARIO("cidade"))
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+        strCampo = Trim$("" & t_DESTINATARIO("cidade_end_nota"))
+    Else
+        strCampo = Trim$("" & t_DESTINATARIO("cidade"))
+        End If
     If Len(strCampo) > 60 Then
         s_erro = "O campo cidade no endereço do cliente excede o tamanho máximo (60 caracteres)!!"
         GoTo NFE_EMITE_ENCERRA_POR_ERRO_CONSISTENCIA
@@ -8318,7 +8351,11 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("xMun", rNFeImg.dest__xMun)
     
 '   UF
-    strCampo = Trim$("" & t_DESTINATARIO("uf"))
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+        strCampo = Trim$("" & t_DESTINATARIO("uf_end_nota"))
+    Else
+        strCampo = Trim$("" & t_DESTINATARIO("uf"))
+        End If
     If strCampo = "" Then
         s_erro = "O campo UF no endereço do cliente não está preenchido no cadastro!!"
         GoTo NFE_EMITE_ENCERRA_POR_ERRO_CONSISTENCIA
@@ -8340,7 +8377,11 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         End If
 
 '   CEP
-    strCampo = retorna_so_digitos(Trim$("" & t_DESTINATARIO("cep")))
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+        strCampo = retorna_so_digitos(Trim$("" & t_DESTINATARIO("cep_end_nota")))
+    Else
+        strCampo = retorna_so_digitos(Trim$("" & t_DESTINATARIO("cep")))
+        End If
     If strCampo = "" Then
         s_erro = "O campo CEP no endereço do cliente não está preenchido no cadastro!!"
         GoTo NFE_EMITE_ENCERRA_POR_ERRO_CONSISTENCIA
@@ -11495,7 +11536,8 @@ Dim s_erro As String
     strIE = ""
     If pedido <> "" Then
         'verificar se os dados do cliente devem vir da memorização no pedido
-        If param_pedidomemorizacaoenderecos.campo_inteiro = 1 Then
+        'If param_pedidomemorizacaoenderecos.campo_inteiro = 1 Then
+        If False Then
             If obtem_info_pedido_memorizada(pedido, s_resp, s_end_entrega, s_end_entrega_uf, s_end_cliente_uf, s_NFe_texto_constar, strIE, s_erro) Then
                 c_info_pedido = s_resp
                 c_dados_adicionais = s_NFe_texto_constar
