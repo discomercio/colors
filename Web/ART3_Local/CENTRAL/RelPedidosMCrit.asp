@@ -820,6 +820,11 @@ function exibe_botao_confirmar() {
 			value="<%=ST_ENTREGA_CANCELADO%>"><span class="C" style="cursor:default" 
 			onclick="fFILTRO.ckb_st_entrega_exceto_cancelados.click();">Exceto Cancelados</span>
 		</td></tr>
+	<tr bgcolor="#FFFFFF"><td align="left">
+		<input type="checkbox" tabindex="-1" id="ckb_st_entrega_exceto_entregues" name="ckb_st_entrega_exceto_entregues"
+			value="<%=ST_ENTREGA_ENTREGUE%>"><span class="C" style="cursor:default" 
+			onclick="fFILTRO.ckb_st_entrega_exceto_entregues.click();">Exceto Entregues</span>
+		</td></tr>
 	</table>
 </td></tr>
 
@@ -1213,6 +1218,12 @@ function exibe_botao_confirmar() {
 		<input type="checkbox" tabindex="-1" id="ckb_exibir_uf" name="ckb_exibir_uf"
 			value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
 			onclick="fFILTRO.ckb_exibir_uf.click();">UF</span>
+		</td></tr>
+	<tr bgcolor="#FFFFFF"><td align="left">
+		<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_data_previsao_entrega") %>
+		<input type="checkbox" tabindex="-1" id="ckb_exibir_data_previsao_entrega" name="ckb_exibir_data_previsao_entrega"
+			value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+			onclick="fFILTRO.ckb_exibir_data_previsao_entrega.click();">Previsão de Entrega</span>
 		</td></tr>
 	</table>
 </td></tr>
