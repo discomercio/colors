@@ -61,7 +61,7 @@
 	dim s, c_fabricante, c_produto, rb_estoque, rb_detalhe, rb_saida
 	dim cod_fabricante, cod_produto
 	dim s_nome_fabricante, s_nome_produto, s_nome_produto_html
-    dim c_fabricante_multiplo, c_grupo, c_potencia_BTU, c_ciclo, c_posicao_mercado, v_fabricantes, v_grupos, rb_tipo_agrupamento
+    dim c_fabricante_multiplo, c_grupo, c_subgrupo, c_potencia_BTU, c_ciclo, c_posicao_mercado, v_fabricantes, v_grupos, v_subgrupos, rb_tipo_agrupamento
     dim c_empresa
 	dim blnSaidaExcel
     dim Relatorio_Url, Relatorio_Id
@@ -76,6 +76,7 @@
 
     c_fabricante_multiplo = Trim(Request.Form("c_fabricante_multiplo"))
 	c_grupo = Ucase(Trim(Request.Form("c_grupo")))
+	c_subgrupo = Ucase(Trim(Request.Form("c_subgrupo")))
 	c_potencia_BTU = Trim(Request.Form("c_potencia_BTU"))
 	c_ciclo = Trim(Request.Form("c_ciclo"))
 	c_posicao_mercado = Trim(Request.Form("c_posicao_mercado"))
@@ -96,8 +97,9 @@
 		cod_produto = c_produto
 		cod_fabricante = c_fabricante
 
-        call set_default_valor_texto_bd(usuario, "RelEstoque2Filtro|c_fabricante", c_fabricante_multiplo)
+        call set_default_valor_texto_bd(usuario, "RelEstoque2Filtro|c_fabricante_multiplo", c_fabricante_multiplo)
 		call set_default_valor_texto_bd(usuario, "RelEstoque2Filtro|c_grupo", c_grupo)
+		call set_default_valor_texto_bd(usuario, "RelEstoque2Filtro|c_subgrupo", c_subgrupo)
 		call set_default_valor_texto_bd(usuario, "RelEstoque2Filtro|c_potencia_BTU", c_potencia_BTU)
 		call set_default_valor_texto_bd(usuario, "RelEstoque2Filtro|c_ciclo", c_ciclo)
 		call set_default_valor_texto_bd(usuario, "RelEstoque2Filtro|c_posicao_mercado", c_posicao_mercado)
@@ -323,6 +325,18 @@ dim input_Id_Subtotal_Grupo, input_Id_Subtotal_Fabricante, input_Id_Total_Grupo
 	        if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
 		    s_where_temp = s_where_temp & _
 			    " (t_PRODUTO.grupo = '" & v_grupos(cont) & "')"
+	    next
+	    s_sql = s_sql & "AND "
+	    s_sql = s_sql & "(" & s_where_temp & ")"
+    end if
+
+    s_where_temp = ""
+	if c_subgrupo <> "" then
+	    v_subgrupos = split(c_subgrupo, ", ")
+	    for cont = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+	        if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		    s_where_temp = s_where_temp & _
+			    " (t_PRODUTO.subgrupo = '" & v_subgrupos(cont) & "')"
 	    next
 	    s_sql = s_sql & "AND "
 	    s_sql = s_sql & "(" & s_where_temp & ")"
@@ -904,6 +918,18 @@ dim input_Id_Subtotal_Grupo, input_Id_Subtotal_Fabricante, input_Id_Total_Grupo
 	        if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
 		    s_where_temp = s_where_temp & _
 			    " (t_PRODUTO.grupo = '" & v_grupos(cont) & "')"
+	    next
+	    s_sql = s_sql & "AND "
+	    s_sql = s_sql & "(" & s_where_temp & ")"
+    end if
+
+    s_where_temp = ""
+	if c_subgrupo <> "" then
+	    v_subgrupos = split(c_subgrupo, ", ")
+	    for cont = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+	        if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		    s_where_temp = s_where_temp & _
+			    " (t_PRODUTO.subgrupo = '" & v_subgrupos(cont) & "')"
 	    next
 	    s_sql = s_sql & "AND "
 	    s_sql = s_sql & "(" & s_where_temp & ")"
@@ -1541,6 +1567,18 @@ dim vt_CodigoGrupo(), vt_DescricaoGrupo(), vt_QtdeGrupo(), vt_CustoEntrada(), vt
 	    s_sql = s_sql & "(" & s_where_temp & ")"
     end if
 
+    s_where_temp = ""
+	if c_subgrupo <> "" then
+	    v_subgrupos = split(c_subgrupo, ", ")
+	    for cont = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+	        if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		    s_where_temp = s_where_temp & _
+			    " (t_PRODUTO.subgrupo = '" & v_subgrupos(cont) & "')"
+	    next
+	    s_sql = s_sql & "AND "
+	    s_sql = s_sql & "(" & s_where_temp & ")"
+    end if
+
     if c_potencia_BTU <> "" then
 		s_sql = s_sql & _
 			" AND (t_PRODUTO.potencia_BTU = " & c_potencia_BTU & ")"
@@ -2030,6 +2068,18 @@ dim input_Id_Subtotal_Grupo, input_Id_Subtotal_Fabricante, input_Id_Total_Grupo
 	    s_sql = s_sql & "(" & s_where_temp & ")"
     end if
 
+    s_where_temp = ""
+	if c_subgrupo <> "" then
+	    v_subgrupos = split(c_subgrupo, ", ")
+	    for cont = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+	        if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		    s_where_temp = s_where_temp & _
+			    " (t_PRODUTO.subgrupo = '" & v_subgrupos(cont) & "')"
+	    next
+	    s_sql = s_sql & "AND "
+	    s_sql = s_sql & "(" & s_where_temp & ")"
+    end if
+
     if c_potencia_BTU <> "" then
 		s_sql = s_sql & _
 			" AND (t_PRODUTO.potencia_BTU = " & c_potencia_BTU & ")"
@@ -2485,6 +2535,18 @@ dim input_Id_Subtotal_Grupo, input_Id_Subtotal_Fabricante, input_Id_Total_Grupo
 	        if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
 		    s_where_temp = s_where_temp & _
 			    " (t_PRODUTO.grupo = '" & v_grupos(cont) & "')"
+	    next
+	    s_sql = s_sql & "AND "
+	    s_sql = s_sql & "(" & s_where_temp & ")"
+    end if
+
+    s_where_temp = ""
+	if c_subgrupo <> "" then
+	    v_subgrupos = split(c_subgrupo, ", ")
+	    for cont = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+	        if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		    s_where_temp = s_where_temp & _
+			    " (t_PRODUTO.subgrupo = '" & v_subgrupos(cont) & "')"
 	    next
 	    s_sql = s_sql & "AND "
 	    s_sql = s_sql & "(" & s_where_temp & ")"
@@ -3006,6 +3068,18 @@ dim vt_CodigoGrupo(), vt_DescricaoGrupo(), vt_QtdeGrupo(), vt_CustoEntrada(), vt
 	    s_sql = s_sql & "(" & s_where_temp & ")"
     end if
 
+    s_where_temp = ""
+	if c_subgrupo <> "" then
+	    v_subgrupos = split(c_subgrupo, ", ")
+	    for cont = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+	        if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		    s_where_temp = s_where_temp & _
+			    " (t_PRODUTO.subgrupo = '" & v_subgrupos(cont) & "')"
+	    next
+	    s_sql = s_sql & "AND "
+	    s_sql = s_sql & "(" & s_where_temp & ")"
+    end if
+
     if c_potencia_BTU <> "" then
 		s_sql = s_sql & _
 			" AND (t_PRODUTO.potencia_BTU = " & c_potencia_BTU & ")"
@@ -3431,6 +3505,18 @@ dim input_Id_Subtotal_Grupo, input_Id_Subtotal_Fabricante, input_Id_Total_Grupo
 	    s_sql = s_sql & "(" & s_where_temp & ")"
     end if
 
+    s_where_temp = ""
+	if c_subgrupo <> "" then
+	    v_subgrupos = split(c_subgrupo, ", ")
+	    for cont = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+	        if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		    s_where_temp = s_where_temp & _
+			    " (t_PRODUTO.subgrupo = '" & v_subgrupos(cont) & "')"
+	    next
+	    s_sql = s_sql & "AND "
+	    s_sql = s_sql & "(" & s_where_temp & ")"
+    end if
+
     if c_potencia_BTU <> "" then
 		s_sql = s_sql & _
 			" AND (t_PRODUTO.potencia_BTU = " & c_potencia_BTU & ")"
@@ -3493,6 +3579,18 @@ dim input_Id_Subtotal_Grupo, input_Id_Subtotal_Fabricante, input_Id_Total_Grupo
 	        if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
 		    s_where_temp = s_where_temp & _
 			    " (t_PRODUTO.grupo = '" & v_grupos(cont) & "')"
+	    next
+	    s_sql = s_sql & "AND "
+	    s_sql = s_sql & "(" & s_where_temp & ")"
+    end if
+
+    s_where_temp = ""
+	if c_subgrupo <> "" then
+	    v_subgrupos = split(c_subgrupo, ", ")
+	    for cont = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+	        if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		    s_where_temp = s_where_temp & _
+			    " (t_PRODUTO.subgrupo = '" & v_subgrupos(cont) & "')"
 	    next
 	    s_sql = s_sql & "AND "
 	    s_sql = s_sql & "(" & s_where_temp & ")"
@@ -3953,6 +4051,18 @@ dim input_Id_Subtotal_Grupo, input_Id_Subtotal_Fabricante, input_Id_Total_Grupo
 	    s_sql = s_sql & "(" & s_where_temp & ")"
     end if
 
+    s_where_temp = ""
+	if c_subgrupo <> "" then
+	    v_subgrupos = split(c_subgrupo, ", ")
+	    for cont = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+	        if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		    s_where_temp = s_where_temp & _
+			    " (t_PRODUTO.subgrupo = '" & v_subgrupos(cont) & "')"
+	    next
+	    s_sql = s_sql & "AND "
+	    s_sql = s_sql & "(" & s_where_temp & ")"
+    end if
+
     if c_potencia_BTU <> "" then
 		s_sql = s_sql & _
 			" AND (t_PRODUTO.potencia_BTU = " & c_potencia_BTU & ")"
@@ -4016,6 +4126,18 @@ dim input_Id_Subtotal_Grupo, input_Id_Subtotal_Fabricante, input_Id_Total_Grupo
 	        if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
 		    s_where_temp = s_where_temp & _
 			    " (t_PRODUTO.grupo = '" & v_grupos(cont) & "')"
+	    next
+	    s_sql = s_sql & "AND "
+	    s_sql = s_sql & "(" & s_where_temp & ")"
+    end if
+
+    s_where_temp = ""
+	if c_subgrupo <> "" then
+	    v_subgrupos = split(c_subgrupo, ", ")
+	    for cont = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+	        if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		    s_where_temp = s_where_temp & _
+			    " (t_PRODUTO.subgrupo = '" & v_subgrupos(cont) & "')"
 	    next
 	    s_sql = s_sql & "AND "
 	    s_sql = s_sql & "(" & s_where_temp & ")"

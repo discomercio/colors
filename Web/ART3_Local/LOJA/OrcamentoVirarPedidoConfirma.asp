@@ -269,11 +269,12 @@
 
 	opcao_venda_sem_estoque = Trim(request("opcao_venda_sem_estoque"))
 	
-	dim s_forma_pagto, s_obs1, s_obs2, s_recebido, c_perc_RT, s_etg_imediata, s_bem_uso_consumo
+	dim s_forma_pagto, s_obs1, s_obs2, s_recebido, c_perc_RT, s_etg_imediata, s_bem_uso_consumo, c_data_previsao_entrega
 	s_obs1=Trim(request("c_obs1"))
 	s_obs2=Trim(request("c_obs2"))
 	s_recebido=Trim(request("rb_recebido"))
 	s_etg_imediata=Trim(request("rb_etg_imediata"))
+	c_data_previsao_entrega = Trim(Request("c_data_previsao_entrega"))
 	s_bem_uso_consumo=Trim(request("rb_bem_uso_consumo"))
 	s_forma_pagto=Trim(request("c_forma_pagto"))
 	c_perc_RT = Trim(request("c_perc_RT"))
@@ -1118,6 +1119,19 @@
 		if s_etg_imediata = "" then
 			alerta = "É necessário selecionar uma opção para o campo 'Entrega Imediata'."
 			end if
+
+		if CLng(s_etg_imediata) = CLng(COD_ETG_IMEDIATA_NAO) then
+			if c_data_previsao_entrega = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "É necessário informar a data de previsão de entrega"
+			elseif Not IsDate(c_data_previsao_entrega) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Data de previsão de entrega informada é inválida"
+			elseif StrToDate(c_data_previsao_entrega) <= Date then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Data de previsão de entrega deve ser uma data futura"
+				end if
+			end if
 		end if
 
 	if alerta = "" then
@@ -1350,6 +1364,19 @@
 					rs("st_etg_imediata")=r_orcamento.st_etg_imediata
 					rs("etg_imediata_data")=r_orcamento.etg_imediata_data
 					rs("etg_imediata_usuario")=r_orcamento.etg_imediata_usuario
+					end if
+
+				if CLng(s_etg_imediata) = CLng(COD_ETG_IMEDIATA_NAO) then
+					rs("PrevisaoEntregaData") = StrToDate(c_data_previsao_entrega)
+					if (Trim("" & r_orcamento.st_etg_imediata) <> Trim(s_etg_imediata)) Or (formata_data(r_orcamento.PrevisaoEntregaData) <> formata_data(StrToDate(c_data_previsao_entrega))) then
+					'	SE A DATA DA PREVISÃO DE ENTREGA FOI ALTERADA EM RELAÇÃO AO QUE CONSTAVA NO PRÉ-PEDIDO, ATUALIZA O USUÁRIO RESPONSÁVEL
+						rs("PrevisaoEntregaUsuarioUltAtualiz") = usuario
+						rs("PrevisaoEntregaDtHrUltAtualiz") = Now
+					else
+					'	SE A DATA DA PREVISÃO DE ENTREGA PERMANECE A MESMA QUE CONSTAVA NO PRÉ-PEDIDO, MANTÉM O MESMO USUÁRIO RESPONSÁVEL
+						rs("PrevisaoEntregaUsuarioUltAtualiz") = r_orcamento.PrevisaoEntregaUsuarioUltAtualiz
+						rs("PrevisaoEntregaDtHrUltAtualiz") = r_orcamento.PrevisaoEntregaDtHrUltAtualiz
+						end if
 					end if
 
 				if Trim("" & r_orcamento.StBemUsoConsumo) <> Trim(s_bem_uso_consumo) then
@@ -2163,6 +2190,7 @@
 				if (Trim("" & rs("vl_servicos"))<>"") And (Trim("" & rs("vl_servicos"))<>"0") then s_log = s_log & "; vl_servicos=" & formata_texto_log(rs("vl_servicos")) 
 				if Trim("" & rs("st_recebido"))<>"" then s_log = s_log & "; st_recebido=" & formata_texto_log(rs("st_recebido")) 
 				if Trim("" & rs("st_etg_imediata"))<> "" then s_log = s_log & "; st_etg_imediata=" & formata_texto_log(rs("st_etg_imediata")) 
+				if Trim("" & rs("st_etg_imediata")) = Trim(COD_ETG_IMEDIATA_NAO) then s_log = s_log & " (previsão de entrega: " & formata_data(rs("PrevisaoEntregaData")) & ")"
 				if Trim("" & rs("StBemUsoConsumo"))<> "" then s_log = s_log & "; StBemUsoConsumo=" & formata_texto_log(rs("StBemUsoConsumo")) 
 				if Trim("" & rs("InstaladorInstalaStatus"))<> "" then s_log = s_log & "; InstaladorInstalaStatus=" & formata_texto_log(rs("InstaladorInstalaStatus")) 
 				if Trim("" & rs("obs_1"))<>"" then s_log = s_log & "; obs_1=" & formata_texto_log(rs("obs_1")) 

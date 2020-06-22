@@ -12,16 +12,33 @@ using ART3WebAPI.Models.Repository;
 using ART3WebAPI.Models.Entities;
 using ART3WebAPI.Models.Domains;
 using System.Text;
+using System.Data;
 
 namespace ART3WebAPI.Controllers
 {
     public class FarolV3Controller : ApiController
     {
+        public const string COD_CONSULTA_POR_PERIODO_CADASTRO = "CADASTRO";
+        public const string COD_CONSULTA_POR_PERIODO_ENTREGA = "ENTREGA";
+
         [HttpPost]
-        public async Task<HttpResponseMessage> GetXLSReport(string usuario, string dt_inicio, string dt_termino, string fabricante, string grupo, string btu, string ciclo, string pos_mercado, string perc_est_cresc, string loja, string visao)
+        public async Task<HttpResponseMessage> GetXLSReport(string usuario, string opcao_periodo, string dt_inicio, string dt_termino, string fabricante, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string perc_est_cresc, string loja, string visao)
         {
-            if (string.IsNullOrEmpty(dt_inicio.ToString())) throw new Exception("Não foi informada a data inicial do período de vendas.");
-            if (string.IsNullOrEmpty(dt_termino.ToString())) throw new Exception("Não foi informada a data final do período de vendas.");
+            if (string.IsNullOrEmpty(opcao_periodo.ToString())) throw new Exception("Não foi informado o tipo de período de consulta!");
+            if (opcao_periodo.Equals(COD_CONSULTA_POR_PERIODO_CADASTRO))
+            {
+                if (string.IsNullOrEmpty(dt_inicio.ToString())) throw new Exception("Não foi informada a data inicial do período de vendas!");
+                if (string.IsNullOrEmpty(dt_termino.ToString())) throw new Exception("Não foi informada a data final do período de vendas!");
+            }
+            else if (opcao_periodo.Equals(COD_CONSULTA_POR_PERIODO_ENTREGA))
+            {
+                if (string.IsNullOrEmpty(dt_inicio.ToString())) throw new Exception("Não foi informada a data inicial do período de entrega!");
+                if (string.IsNullOrEmpty(dt_termino.ToString())) throw new Exception("Não foi informada a data final do período de entrega!");
+            }
+            else
+            {
+                throw new Exception("Opção de período de consulta inválido!");
+            }
 
             HttpResponseMessage result = null;
 
@@ -42,11 +59,20 @@ namespace ART3WebAPI.Controllers
 
             try
             {
-                Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_dt_periodo_inicio", dt_inicio);
-                Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_dt_periodo_termino", dt_termino);
+                Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|rb_periodo", opcao_periodo);
+                if (opcao_periodo.Equals(COD_CONSULTA_POR_PERIODO_CADASTRO))
+                {
+                    Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_dt_periodo_inicio", dt_inicio);
+                    Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_dt_periodo_termino", dt_termino);
+                }
+                else if (opcao_periodo.Equals(COD_CONSULTA_POR_PERIODO_ENTREGA)){
+                    Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_dt_entregue_inicio", dt_inicio);
+                    Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_dt_entregue_termino", dt_termino);
+                }
                 Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_perc_est_cresc", string.IsNullOrEmpty(perc_est_cresc) ? "" : perc_est_cresc);
                 Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_fabricante", string.IsNullOrEmpty(fabricante) ? "" : fabricante.Replace("_", ", "));
-                Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_grupo", string.IsNullOrEmpty(grupo) ? "" : grupo.Replace("_", ", "));
+                Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_grupo", string.IsNullOrEmpty(grupo) ? "" : grupo.Replace("|", ", "));
+                Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_subgrupo", string.IsNullOrEmpty(subgrupo) ? "" : subgrupo.Replace("|", ", "));
                 Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_potencia_BTU", string.IsNullOrEmpty(btu) ? "" : btu);
                 Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_ciclo", string.IsNullOrEmpty(ciclo) ? "" : ciclo);
                 Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|c_posicao_mercado", string.IsNullOrEmpty(pos_mercado) ? "" : pos_mercado);
@@ -54,11 +80,11 @@ namespace ART3WebAPI.Controllers
                 Global.setDefaultBD(usuario, "RelFarolResumidoFiltro|rb_visao", visao);
 
                 DataFarol datasource = new DataFarol();
-                List<Farol> relFarolList = datasource.GetV3(dt_inicio, dt_termino, fabricante, grupo, btu, ciclo, pos_mercado, loja).ToList();
+                List<Farol> relFarolList = datasource.GetV3(opcao_periodo, dt_inicio, dt_termino, fabricante, grupo, subgrupo, btu, ciclo, pos_mercado, loja).ToList();
 
                 if (relFarolList.Count != 0)
                 {
-                    await ART3WebAPI.Models.Domains.FarolGeradorRelatorio.GenerateXLSv3(relFarolList, filePath, dt_inicio, dt_termino, fabricante, grupo, btu, ciclo, pos_mercado, perc_est_cresc, loja, visao);
+                    await ART3WebAPI.Models.Domains.FarolGeradorRelatorio.GenerateXLSv3(relFarolList, filePath, opcao_periodo, dt_inicio, dt_termino, fabricante, grupo, subgrupo, btu, ciclo, pos_mercado, perc_est_cresc, loja, visao);
                     statusResponse = "OK";
 
                     LogDAO.insere(usuario, s_log, strMsgErro);

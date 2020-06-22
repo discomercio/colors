@@ -44,6 +44,7 @@
     Const COD_SAIDA_REL_LOJA = "LOJA"
     Const COD_SAIDA_REL_EMPRESA = "EMPRESA"
     Const COD_SAIDA_REL_GRUPO_PRODUTO = "GRUPO_PRODUTO"
+	Const COD_SAIDA_REL_SUBGRUPO_PRODUTO = "SUBGRUPO_PRODUTO"
 
 	dim usuario
 	usuario = Trim(Session("usuario_atual"))
@@ -80,6 +81,7 @@
 		"var COD_SAIDA_REL_INDICADOR_UF = '" & COD_SAIDA_REL_INDICADOR_UF & "';" & chr(13) & _
 		"var COD_SAIDA_REL_CIDADE_UF = '" & COD_SAIDA_REL_CIDADE_UF & "';" & chr(13) & _
         "var COD_SAIDA_REL_GRUPO_PRODUTO = '" & COD_SAIDA_REL_GRUPO_PRODUTO & "';" & chr(13) & _
+		"var COD_SAIDA_REL_SUBGRUPO_PRODUTO = '" & COD_SAIDA_REL_SUBGRUPO_PRODUTO & "';" & chr(13) & _
         "var COD_CONSULTA_POR_PERIODO_ENTREGA = '" & COD_CONSULTA_POR_PERIODO_ENTREGA & "';" & chr(13) & _
 		"</script>" & chr(13)
 
@@ -171,14 +173,15 @@ end function
 '----------------------------------------------------------------------------------------------
 ' GRUPOS MONTA ITENS SELECT
 function grupos_monta_itens_select(byval id_default)
-dim x, r, strSql, strResp, ha_default
+dim x, r, strSql, strResp, ha_default, sDescricao
 	id_default = Trim("" & id_default)
 	ha_default=False
-	strSql = "SELECT DISTINCT grupo from t_PRODUTO WHERE grupo <> '' ORDER by grupo"
+	strSql = "SELECT DISTINCT tP.grupo, tPG.descricao FROM t_PRODUTO tP LEFT JOIN t_PRODUTO_GRUPO tPG ON (tP.grupo = tPG.codigo) WHERE LEN(Coalesce(tP.grupo,'')) > 0 ORDER by tP.grupo"
 	set r = cn.Execute(strSql)
 	strResp = ""
 	do while Not r.eof 
 		x = UCase(Trim("" & r("grupo")))
+		sDescricao = Trim("" & r("descricao"))
 		if (id_default<>"") And (id_default=x) then
 			strResp = strResp & "<OPTION SELECTED"
 			ha_default=True
@@ -186,16 +189,51 @@ dim x, r, strSql, strResp, ha_default
 			strResp = strResp & "<OPTION"
 			end if
 		strResp = strResp & " VALUE='" & x & "'>"
-		strResp = strResp & x 
+		strResp = strResp & x
+		if sDescricao <> "" then strResp = strResp & " &nbsp;(" & sDescricao & ")"
 		strResp = strResp & "</OPTION>" & chr(13)
 		r.MoveNext
 		loop
 
-	if Not ha_default then
-		strResp = "<OPTION SELECTED VALUE=''>&nbsp;</OPTION>" & chr(13) & strResp
-		end if
+'	if Not ha_default then
+'		strResp = "<OPTION SELECTED VALUE=''>&nbsp;</OPTION>" & chr(13) & strResp
+'		end if
 		
 	grupos_monta_itens_select = strResp
+	r.close
+	set r=nothing
+end function
+
+'----------------------------------------------------------------------------------------------
+' SUBGRUPOS MONTA ITENS SELECT
+function subgrupos_monta_itens_select(byval id_default)
+dim x, r, strSql, strResp, ha_default, sDescricao
+	id_default = Trim("" & id_default)
+	ha_default=False
+	strSql = "SELECT DISTINCT tP.subgrupo, tPS.descricao FROM t_PRODUTO tP LEFT JOIN t_PRODUTO_SUBGRUPO tPS ON (tP.subgrupo = tPS.codigo) WHERE LEN(Coalesce(tP.subgrupo,'')) > 0 ORDER by tP.subgrupo"
+	set r = cn.Execute(strSql)
+	strResp = ""
+	do while Not r.eof 
+		x = UCase(Trim("" & r("subgrupo")))
+		sDescricao = Trim("" & r("descricao"))
+		if (id_default<>"") And (id_default=x) then
+			strResp = strResp & "<OPTION SELECTED"
+			ha_default=True
+		else
+			strResp = strResp & "<OPTION"
+			end if
+		strResp = strResp & " VALUE='" & x & "'>"
+		strResp = strResp & x
+		if sDescricao <> "" then strResp = strResp & " &nbsp;(" & sDescricao & ")"
+		strResp = strResp & "</OPTION>" & chr(13)
+		r.MoveNext
+		loop
+
+'	if Not ha_default then
+'		strResp = "<OPTION SELECTED VALUE=''>&nbsp;</OPTION>" & chr(13) & strResp
+'		end if
+		
+	subgrupos_monta_itens_select = strResp
 	r.close
 	set r=nothing
 end function
@@ -377,6 +415,27 @@ end function
 				reOrdenarEscolhidos();
 			}
 		}
+
+        $("#c_grupo_pedido_origem").change(function () {
+            $("#spnCounterGrupoOrigemPedido").text($("#c_grupo_pedido_origem :selected").length);
+        });
+
+        $("#c_pedido_origem").change(function () {
+            $("#spnCounterOrigemPedido").text($("#c_pedido_origem :selected").length);
+        });
+
+        $("#c_grupo").change(function () {
+            $("#spnCounterGrupo").text($("#c_grupo :selected").length);
+        });
+
+        $("#c_subgrupo").change(function () {
+            $("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
+        });
+
+        $("#spnCounterGrupoOrigemPedido").text($("#c_grupo_pedido_origem :selected").length);
+        $("#spnCounterOrigemPedido").text($("#c_pedido_origem :selected").length);
+        $("#spnCounterGrupo").text($("#c_grupo :selected").length);
+        $("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
 	});
 
 	//início bloco cidades
@@ -575,6 +634,14 @@ end function
 		    $("#ckb_ordenar_marg_contrib").prop("disabled", true);
 		}
 
+        if ($("input[name='rb_saida']:checked").val() == COD_SAIDA_REL_SUBGRUPO_PRODUTO) {
+            $("#ckb_subgrupo_ordenar_marg_contrib").prop("disabled", false);
+        }
+        else {
+            $("#ckb_subgrupo_ordenar_marg_contrib").prop("checked", false);
+            $("#ckb_subgrupo_ordenar_marg_contrib").prop("disabled", true);
+        }
+
 		$("input[name='rb_saida']").change(function() {
 			if ((true) || ($("input[name='rb_saida']:checked").val() == COD_SAIDA_REL_UF) || ($("input[name='rb_saida']:checked").val() == COD_SAIDA_REL_VENDEDOR)) {
 				$("#tr_FormaPagto").show();
@@ -597,6 +664,13 @@ end function
 			    $("#ckb_ordenar_marg_contrib").prop("disabled", true);
 			    $("#ckb_ordenar_marg_contrib").prop("checked", false);
 			}
+            if ($("input[name='rb_saida']:checked").val() == COD_SAIDA_REL_SUBGRUPO_PRODUTO) {
+                $("#ckb_subgrupo_ordenar_marg_contrib").prop("disabled", false);
+            }
+            else {
+                $("#ckb_subgrupo_ordenar_marg_contrib").prop("disabled", true);
+                $("#ckb_subgrupo_ordenar_marg_contrib").prop("checked", false);
+            }
 		});
 		$("input[name='rb_periodo']").change(function() {
 		    if ($("input[name='rb_saida']:checked").val() == COD_SAIDA_REL_GRUPO_PRODUTO) {
@@ -605,7 +679,14 @@ end function
 		    else {
 		        $("#ckb_ordenar_marg_contrib").prop("disabled", true);
 		        $("#ckb_ordenar_marg_contrib").prop("checked", false);
-		    }
+			}
+            if ($("input[name='rb_saida']:checked").val() == COD_SAIDA_REL_SUBGRUPO_PRODUTO) {
+                $("#ckb_subgrupo_ordenar_marg_contrib").prop("disabled", false);
+            }
+            else {
+                $("#ckb_subgrupo_ordenar_marg_contrib").prop("disabled", true);
+                $("#ckb_subgrupo_ordenar_marg_contrib").prop("checked", false);
+            }
 		    if ($("input[name='rb_periodo']:checked").val() == COD_CONSULTA_POR_PERIODO_ENTREGA) {
 		    	$("#RowFiltroCst").show();
 		    }
@@ -792,6 +873,11 @@ var i, blnFlagOk;
     }
     function limpaCampoSelectGrupo() {
         $("#c_grupo").children().prop('selected', false);
+        $("#spnCounterGrupo").text($("#c_grupo :selected").length);
+    }
+    function limpaCampoSelectSubGrupo() {
+        $("#c_subgrupo").children().prop('selected', false);
+        $("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
     }
 </script>
 <script language="JavaScript" type="text/javascript">
@@ -806,9 +892,11 @@ var i, blnFlagOk;
 <script type="text/javascript">
     function limpaCampoSelectGrupoOrigemPedido() {
         $("#c_grupo_pedido_origem").children().prop('selected', false);
+        $("#spnCounterGrupoOrigemPedido").text($("#c_grupo_pedido_origem :selected").length);
     }
     function limpaCampoSelectOrigemPedido() {
         $("#c_pedido_origem").children().prop('selected', false);
+        $("#spnCounterOrigemPedido").text($("#c_pedido_origem :selected").length);
     }
 </script>
 
@@ -984,6 +1072,8 @@ html
         <td align="left" valign="top">
 			<a href="javascript:limpaCampoSelectGrupoOrigemPedido()" title="limpa o filtro 'Origem do Pedido (Grupo)'">
 						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterGrupoOrigemPedido"></span>)
 		</td></tr></table>
         </td></tr>
 
@@ -999,6 +1089,8 @@ html
             <td align="left" valign="top">
 			<a href="javascript:limpaCampoSelectOrigemPedido()" title="limpa o filtro 'Origem do Pedido'">
 						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterOrigemPedido"></span>)
 		</td></tr></table>
         </td></tr>
 
@@ -1010,14 +1102,40 @@ html
 		<table cellpadding="0" cellspacing="0">
 		<tr>
 		<td>
-			<select id="c_grupo" name="c_grupo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="10" style="width:100px;margin:1px 10px 6px 10px;" multiple>
+			<select id="c_grupo" name="c_grupo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="10" style="min-width:250px;margin:1px 10px 6px 10px;" multiple>
 			<% =grupos_monta_itens_select(get_default_valor_texto_bd(usuario, "RelGerencialVendasFiltro|c_grupo")) %>
 			</select>
 		</td>
 		<td style="width:1px;"></td>
 		<td align="left" valign="top">
-			<a name="bLimparGrupo" id="bLimparGrupo" href="javascript:limpaCampoSelectGrupo()" title="limpa o filtro 'Fabricante'">
+			<a name="bLimparGrupo" id="bLimparGrupo" href="javascript:limpaCampoSelectGrupo()" title="limpa o filtro 'Grupo'">
 						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterGrupo"></span>)
+		</td>
+		</tr>
+		</table>
+	</td>
+	</tr>
+
+<!--  SUBGRUPO  -->
+	<tr bgcolor="#FFFFFF">
+	<td class="ME MD MB" align="left" nowrap>
+		<span class="PLTe">SUBGRUPO</span>
+		<br>
+		<table cellpadding="0" cellspacing="0">
+		<tr>
+		<td>
+			<select id="c_subgrupo" name="c_subgrupo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="10" style="min-width:250px;margin:1px 10px 6px 10px;" multiple>
+			<% =subgrupos_monta_itens_select(get_default_valor_texto_bd(usuario, "RelGerencialVendasFiltro|c_subgrupo")) %>
+			</select>
+		</td>
+		<td style="width:1px;"></td>
+		<td align="left" valign="top">
+			<a name="bLimparSubGrupo" id="bLimparSubGrupo" href="javascript:limpaCampoSelectSubGrupo()" title="limpa o filtro 'Subgrupo'">
+						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterSubgrupo"></span>)
 		</td>
 		</tr>
 		</table>
@@ -1157,12 +1275,19 @@ html
 					<% intIdx=intIdx+1 %>
 					<span style="cursor:default" class="rbLink" onclick="fFILTRO.rb_saida[<%=Cstr(intIdx)%>].click();">Empresa</span>
                     <br />
-                    <input type="radio" id="rb_saida" name="rb_saida" value="<%=COD_SAIDA_REL_GRUPO_PRODUTO%>" checked class="CBOX" style="margin-left:20px;">
+                    <input type="radio" id="rb_saida" name="rb_saida" value="<%=COD_SAIDA_REL_GRUPO_PRODUTO%>" class="CBOX" style="margin-left:20px;">
 					<% intIdx=intIdx+1 %>
 					<span style="cursor:default" class="rbLink" onclick="fFILTRO.rb_saida[<%=Cstr(intIdx)%>].click();">Grupo de Produtos</span>
                     &nbsp;&nbsp;
                     <input type="checkbox" name="ckb_ordenar_marg_contrib" id="ckb_ordenar_marg_contrib" value="1" />
                         <span class="PLLc" style="cursor:default" onclick="fFILTRO.ckb_ordenar_marg_contrib.click();fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();">Ordenar pela Margem Contrib</span>   
+                    <br />
+                    <input type="radio" id="rb_saida" name="rb_saida" value="<%=COD_SAIDA_REL_SUBGRUPO_PRODUTO%>" checked class="CBOX" style="margin-left:20px;">
+					<% intIdx=intIdx+1 %>
+					<span style="cursor:default" class="rbLink" onclick="fFILTRO.rb_saida[<%=Cstr(intIdx)%>].click();">Subgrupo de Produtos</span>
+                    &nbsp;&nbsp;
+                    <input type="checkbox" name="ckb_subgrupo_ordenar_marg_contrib" id="ckb_subgrupo_ordenar_marg_contrib" value="1" />
+                        <span class="PLLc" style="cursor:default" onclick="fFILTRO.ckb_subgrupo_ordenar_marg_contrib.click();fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();">Ordenar pela Margem Contrib</span>   
 			</td>
 		</tr>
 		</table>

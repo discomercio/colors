@@ -42,6 +42,7 @@
     Const COD_SAIDA_REL_ORIGEM_PEDIDO = "ORIGEM_PEDIDO"
     Const COD_SAIDA_REL_EMPRESA = "EMPRESA"
     Const COD_SAIDA_REL_GRUPO_PRODUTO = "GRUPO_PRODUTO"
+	Const COD_SAIDA_REL_SUBGRUPO_PRODUTO = "SUBGRUPO_PRODUTO"
 	
 	dim usuario, loja
 	usuario = Trim(Session("usuario_atual"))
@@ -66,14 +67,14 @@
 	dim alerta
 	dim s, s_aux, s_filtro, flag_ok
 	dim c_dt_entregue_inicio, c_dt_entregue_termino, c_dt_cadastro_inicio, c_dt_cadastro_termino
-	dim c_loja, c_fabricante, c_produto, c_vendedor, c_indicador, c_captador, c_cnpj_cpf, rb_tipo_cliente,c_grupo
+	dim c_loja, c_fabricante, c_produto, c_vendedor, c_indicador, c_captador, c_cnpj_cpf, rb_tipo_cliente,c_grupo, c_subgrupo
     dim c_pedido_origem, c_grupo_pedido_origem, c_empresa
 	dim c_loc_uf, c_loc_digitada, c_loc_escolhidas, s_where_loc, v_loc_escolhidas,c_uf_saida
 	dim s_nome_vendedor
 	dim rb_periodo, rb_saida
 	dim c_forma_como_conheceu_codigo
-	dim op_forma_pagto, c_forma_pagto_qtde_parc,v_grupos
-    dim ckb_colocado_mesmo_periodo, ckb_ordenar_marg_contrib
+	dim op_forma_pagto, c_forma_pagto_qtde_parc
+    dim ckb_colocado_mesmo_periodo, ckb_ordenar_marg_contrib, ckb_subgrupo_ordenar_marg_contrib, blnOrdenarMargemContrib
 
 	alerta = ""
 
@@ -100,6 +101,7 @@
 	c_indicador = Ucase(Trim(Request.Form("c_indicador")))
 	c_captador = Ucase(Trim(Request.Form("c_captador")))
     c_grupo = Ucase(Trim(Request.Form("c_grupo")))
+	c_subgrupo = Ucase(Trim(Request.Form("c_subgrupo")))
 	c_cnpj_cpf = retorna_so_digitos(Trim(Request.Form("c_cnpj_cpf")))
 	rb_tipo_cliente = Trim(Request.Form("rb_tipo_cliente"))
 	op_forma_pagto = Trim(Request.Form("op_forma_pagto"))
@@ -112,6 +114,11 @@
 	c_loja = Trim(Request.Form("c_loja"))
 	ckb_colocado_mesmo_periodo = Trim(Request.Form("ckb_colocado_mesmo_periodo"))
     ckb_ordenar_marg_contrib = Trim(Request.Form("ckb_ordenar_marg_contrib"))
+	ckb_subgrupo_ordenar_marg_contrib = Trim(Request.Form("ckb_subgrupo_ordenar_marg_contrib"))
+
+	blnOrdenarMargemContrib = False
+	if ckb_ordenar_marg_contrib = "1" then blnOrdenarMargemContrib = True
+	if ckb_subgrupo_ordenar_marg_contrib = "1" then blnOrdenarMargemContrib = True
 
 	c_forma_como_conheceu_codigo = ""
 	if (rb_saida = COD_SAIDA_REL_INDICADOR) Or (rb_saida = COD_SAIDA_REL_INDICADOR_UF) then
@@ -287,7 +294,7 @@ dim vl_total_final_venda, vl_total_venda
 dim percFatVenda, percFinalFatVenda, percRTFatVenda, percRTEDesc
 dim percFinalDesc, percFinalRTFatVenda, percFinalRTEDescFatVenda
 dim v, intQtdeTotalProdutos
-dim strSqlCampoSaida, strSqlCampoSaidaNameOnly, strSqlCampoGroupByOrderBy, strSqlCampoGroupByOrderByNameOnly, strColSpanTodasColunas
+dim strSqlCampoSaida, strSqlCampoSaidaNameOnly, strSqlCampoGroupByOrderBy, strSqlCampoGroupByOrderByNameOnly, intColSpanTodasColunas, strColSpanTodasColunas
 dim vl_desconto, vl_total_desconto
 dim vl_total_final_lista, vl_lista, vl_total_lista
 dim vl_venda, vl_RT, vl_total_RT
@@ -301,11 +308,11 @@ dim vl_sub_total_RT, vl_sub_total_RA_liquido
 dim strCampoOrdenacao
 dim strAuxUF, strAuxUFAnterior, strAuxIndicador, strAuxIndicadorAnterior, strAuxCodigoPai, strAuxCodigoPaiAnterior, strAuxCodigo, strAuxCodigoAnterior
 dim strAuxCidade, strAuxCidadeAnterior
-dim strAuxFabricante,strAuxFabricanteAnterior,strAuxNomeFabricante,strAuxNomeFabricanteAnterior, strAuxProdutoGrupo,strAuxProdutoGrupoAnterior,strAuxNomeProdutoGrupo,strAuxNomeProdutoGrupoAnterior
+dim strAuxFabricante,strAuxFabricanteAnterior,strAuxNomeFabricante,strAuxNomeFabricanteAnterior, strAuxProdutoGrupo,strAuxProdutoSubgrupo,strAuxProdutoGrupoAnterior,strAuxProdutoSubgrupoAnterior,strAuxNomeProdutoGrupo,strAuxNomeProdutoGrupoAnterior,strAuxNomeProdutoSubgrupo,strAuxNomeProdutoSubgrupoAnterior
 dim strAuxEmpresa,strAuxEmpresaAnterior,strAuxNomeEmpresa,strAuxNomeEmpresaAnterior
 dim intIdxUF,intIdxEmpresa
 dim vl_venda_UF, percFatVenda_UF, vl_lista_UF, vl_desconto_UF, perc_desconto_UF, vl_RT_UF, percRTFatVenda_UF, percRTEDesc_UF, vl_RA_liquido_UF
-dim i, v_total_UF, blnAchou, intIdxSelecionado, vl_aux, vl_aux_ProdutoGrupo, vl_marg_contrib_ProdutoGrupo
+dim i, v_total_UF, blnAchou, intIdxSelecionado, vl_aux, vl_aux_ProdutoGrupo, vl_marg_contrib_ProdutoGrupo, vl_aux_ProdutoSubgrupo, vl_marg_contrib_ProdutoSubgrupo
 dim v_total_FABRICANTE,v_total_origem_pedido,v_total_Empresa, v_total_GRUPO_PRODUTO
 dim intIdxFabricante 
 dim vl_desconto_Fabricante,vl_RA_liquido_Fabricante,percFatVenda_Fabricante,perc_desconto_Fabricante,vl_lista_Fabricante,vl_venda_Fabricante
@@ -314,21 +321,32 @@ dim percRTFatVenda_Fabricante,vl_RT_Fabricante,percRTEDesc_Fabricante,marg_contr
 dim percRTFatVenda_Empresa,vl_RT_Empresa,percRTEDesc_Empresa,marg_contrib_Empresa	
 dim vl_ent_Fabricante,lucro_liquido_Fabricante,vl_ent_Empresa,lucro_liquido_Empresa
 dim strAuxVlFabricante,strAuxVlFabricanteAnterior,intQtdeTotalFabricante
-dim strAuxVlEmpresa,strAuxVlEmpresaAnterior,intQtdeTotalEmpresa, strAuxVlProdutoGrupo
+dim strAuxVlEmpresa,strAuxVlEmpresaAnterior,intQtdeTotalEmpresa, strAuxVlProdutoGrupo, idxFabricante, idxProdutoGrupo, idxProdutoSubgrupo
 dim intQtdeTotalProdutoGrupo, vl_total_ProdutoGrupo, vl_venda_ProdutoGrupo, percFatVenda_ProdutoGrupo, vl_lista_ProdutoGrupo, vl_desconto_ProdutoGrupo, perc_desconto_ProdutoGrupo, vl_RT_ProdutoGrupo
+dim intQtdeTotalProdutoSubgrupo, vl_total_ProdutoSubgrupo, vl_venda_ProdutoSubgrupo, percFatVenda_ProdutoSubgrupo, vl_lista_ProdutoSubgrupo, vl_desconto_ProdutoSubgrupo, perc_desconto_ProdutoSubgrupo, vl_RT_ProdutoSubgrupo
 dim percRTFatVenda_ProdutoGrupo, percRTEDesc_ProdutoGrupo, vl_RA_liquido_ProdutoGrupo, lucro_liquido_ProdutoGrupo, marg_contrib_ProdutoGrupo, vl_ent_ProdutoGrupo
+dim percRTFatVenda_ProdutoSubgrupo, percRTEDesc_ProdutoSubgrupo, vl_RA_liquido_ProdutoSubgrupo, lucro_liquido_ProdutoSubgrupo, marg_contrib_ProdutoSubgrupo, vl_ent_ProdutoSubgrupo
 dim lucro_liquido, marg_contrib, vl_ent, lucro_liquido_total, lucro_liquido_subtotal, marg_contrib_ordenacao
+dim marg_contrib_bruta_ProdutoSubgrupo, vl_NF_ProdutoSubgrupo, lucro_bruto_ProdutoSubgrupo, vl_marg_contrib_bruta_ProdutoSubgrupo
 dim lucro_liquido_UF, marg_contrib_UF, marg_contrib_final, subtotal_entrada, total_entrada, vl_ent_UF
 dim iEspacos
 dim strEspacos
 dim md
-dim s_nome_grupo
 dim s_where_temp, cont,intQtdeTotalUF,intQtdeTotalCidUF,intQtdeTotal
 dim c_grupo_pedido_origem_aux
-dim vTotGrupo, vl_aux_RA_liquido
+dim vTotGrupo, vTotSubgrupo, vl_aux_RA_liquido
 dim idxAux
+dim v_grupos,v_subgrupos
+dim last_rec_field__produto
+dim sBkgColorProdutoSubgrupo
+dim vCodAux, vDescAux
+dim vl_NF, lucro_bruto, lucro_bruto_UF
+dim vl_total_NF, vl_sub_total_NF, lucro_bruto_total, lucro_bruto_subtotal, marg_contrib_bruta, marg_contrib_bruta_ordenacao, marg_contrib_bruta_UF, vl_NF_UF, marg_contrib_bruta_Fabricante, vl_NF_Fabricante, lucro_bruto_Fabricante
+dim marg_contrib_bruta_ProdutoGrupo, vl_NF_ProdutoGrupo, lucro_bruto_ProdutoGrupo, vl_NF_Empresa, marg_contrib_bruta_Empresa, lucro_bruto_Empresa, marg_contrib_bruta_final, vl_total_final_NF, vl_marg_contrib_bruta_ProdutoGrupo
 
 	intQtdeTotal = 0
+
+	sBkgColorProdutoSubgrupo = "#edf2f7"
 
 '	CRITÉRIOS COMUNS
 	s_where = ""
@@ -376,38 +394,40 @@ dim idxAux
         s_where = s_where & " (t_PEDIDO.marketplace_codigo_origem IN (" & c_grupo_pedido_origem_aux & "))"
     end if
 
-	s_nome_grupo = ""
 	s_where_temp = ""
-	v_grupos = ""
-	
 	if c_grupo <> "" then
-		s = "SELECT DISTINCT grupo from t_PRODUTO WHERE "
 		v_grupos = split(c_grupo, ", ")
 		for cont = LBound(v_grupos) to UBound(v_grupos)
-            if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
-		    s_where_temp = s_where_temp & " (grupo = '" & v_grupos(cont) & "')"
-        next
-        s = s & s_where_temp
-		set rs = cn.Execute(s)
-		if rs.Eof then
-			alerta = "grupo '" & c_grupo & "' NÃO ESTÁ CADASTRADO"
-		else
-			s_nome_grupo = Trim("" & rs("grupo"))
-			if s_nome_grupo = "" then s_nome_grupo = Trim("" & rs("grupo"))
+			if Trim(v_grupos(cont)) <> "" then
+				if s_where_temp <> "" then s_where_temp = s_where_temp & ", "
+				s_where_temp = s_where_temp & "'" & Trim(v_grupos(cont)) & "'"
+				end if
+			next
+		
+		if s_where_temp <> "" then
+			s_where_temp = " (t_PRODUTO.grupo IN (" & s_where_temp & "))"
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (" & s_where_temp & ")"
+			end if
 		end if
 
-        s_where_temp = ""	
-	    for cont = Lbound(v_grupos) to Ubound(v_grupos)
-	        if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
-		    s_where_temp = s_where_temp & _
-			" (t_PEDIDO_ITEM.grupo = '" & v_grupos(cont) & "')"
-	    next
-	    if s_where <> "" then s_where = s_where & " AND"
-	    s_where = s_where & "(" & s_where_temp & ")"
-
-	end if
+	s_where_temp = ""
+	if c_subgrupo <> "" then
+		v_subgrupos = split(c_subgrupo, ", ")
+		for cont = LBound(v_subgrupos) to UBound(v_subgrupos)
+			if Trim(v_subgrupos(cont)) <> "" then
+				if s_where_temp <> "" then s_where_temp = s_where_temp & ", "
+				s_where_temp = s_where_temp & "'" & Trim(v_subgrupos(cont)) & "'"
+				end if
+			next
 		
-
+		if s_where_temp <> "" then
+			s_where_temp = " (t_PRODUTO.subgrupo IN (" & s_where_temp & "))"
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (" & s_where_temp & ")"
+			end if
+		end if
+		
 	if c_cnpj_cpf <> "" then
 		if s_where <> "" then s_where = s_where & " AND"
 		s_where = s_where & " (t_CLIENTE.cnpj_cpf = '" & c_cnpj_cpf & "')"
@@ -609,6 +629,23 @@ dim idxAux
 										"produto," & _
 										"descricao, " & _
 										"descricao_html"
+        elseif rb_saida = COD_SAIDA_REL_SUBGRUPO_PRODUTO then
+            strSqlCampoSaida = "t_PEDIDO_ITEM.fabricante, " & _
+                                "t_PRODUTO.grupo, " & _
+                                "t_PRODUTO_GRUPO.descricao AS grupo_descricao, " & _
+								"t_PRODUTO.subgrupo, " & _
+								"t_PRODUTO_SUBGRUPO.descricao AS subgrupo_descricao, " & _
+                                "t_PEDIDO_ITEM.produto," & _
+								"t_PRODUTO.descricao, " & _
+								"t_PRODUTO.descricao_html"
+            strSqlCampoSaidaNameOnly = "fabricante, " & _
+										"grupo, " & _
+										"grupo_descricao, " & _
+										"subgrupo, " & _
+										"subgrupo_descricao, " & _
+										"produto," & _
+										"descricao, " & _
+										"descricao_html"
 		elseif rb_saida = COD_SAIDA_REL_VENDEDOR then
 			strSqlCampoSaida = "t_PEDIDO__BASE.vendedor"
 			strSqlCampoSaidaNameOnly = "vendedor"
@@ -666,7 +703,7 @@ dim idxAux
 			strSqlCampoSaidaNameOnly = ""
 			end if
 		
-		if strSqlCampoGroupByOrderBy = "" then strSqlCampoGroupByOrderBy = replace(replace(strSqlCampoSaida, "AS grupo_descricao", ""), "AS cidade", "")
+		if strSqlCampoGroupByOrderBy = "" then strSqlCampoGroupByOrderBy = replace(replace(replace(strSqlCampoSaida, "AS grupo_descricao", ""), "AS cidade", ""), "AS subgrupo_descricao", "")
 		if strSqlCampoGroupByOrderByNameOnly = "" then strSqlCampoGroupByOrderByNameOnly = replace(strSqlCampoSaidaNameOnly, "AS cidade", "")
 
 		s = s_where
@@ -703,6 +740,7 @@ dim idxAux
 					" LEFT JOIN t_PRODUTO" & _
 						" ON ((t_PEDIDO_ITEM.fabricante=t_PRODUTO.fabricante)AND(t_PEDIDO_ITEM.produto=t_PRODUTO.produto))" & _
 					" LEFT JOIN t_PRODUTO_GRUPO ON (t_PRODUTO.grupo=t_PRODUTO_GRUPO.codigo)" & _
+					" LEFT JOIN t_PRODUTO_SUBGRUPO ON (t_PRODUTO.subgrupo = t_PRODUTO_SUBGRUPO.codigo)" & _
 					" LEFT JOIN t_ORCAMENTISTA_E_INDICADOR" & _
 						" ON (t_PEDIDO__BASE.indicador=t_ORCAMENTISTA_E_INDICADOR.apelido)" & _
 					" LEFT JOIN t_CODIGO_DESCRICAO ON ((t_CODIGO_DESCRICAO.codigo=t_PEDIDO.marketplace_codigo_origem) AND (t_CODIGO_DESCRICAO.grupo='PedidoECommerce_Origem'))" & _
@@ -772,6 +810,7 @@ dim idxAux
 							" ON ((t_PEDIDO_ITEM.fabricante = t_PRODUTO.fabricante)" & _
 							" AND (t_PEDIDO_ITEM.produto = t_PRODUTO.produto))" & _
 						" LEFT JOIN t_PRODUTO_GRUPO ON (t_PRODUTO.grupo = t_PRODUTO_GRUPO.codigo)" & _
+						" LEFT JOIN t_PRODUTO_SUBGRUPO ON (t_PRODUTO.subgrupo = t_PRODUTO_SUBGRUPO.codigo)" & _
 						" LEFT JOIN t_ORCAMENTISTA_E_INDICADOR ON (t_PEDIDO__BASE.indicador = t_ORCAMENTISTA_E_INDICADOR.apelido)" & _
 						" LEFT JOIN t_CODIGO_DESCRICAO" & _
 							" ON ((t_CODIGO_DESCRICAO.codigo = t_PEDIDO.marketplace_codigo_origem)" & _
@@ -837,6 +876,16 @@ dim idxAux
 								"t_PRODUTO.produto," & _
 								"t_PRODUTO.descricao, " & _
 								"t_PRODUTO.descricao_html"
+        elseif rb_saida = COD_SAIDA_REL_SUBGRUPO_PRODUTO then
+			strSqlCampoSaida =	"t_FABRICANTE.fabricante, " & _
+			                    "t_FABRICANTE.nome, " & _
+                                "t_PRODUTO.grupo, " & _
+                                "t_PRODUTO_GRUPO.descricao AS grupo_descricao, " & _
+								"t_PRODUTO.subgrupo, " & _
+								"t_PRODUTO_SUBGRUPO.descricao AS subgrupo_descricao, " & _
+								"t_PRODUTO.produto," & _
+								"t_PRODUTO.descricao, " & _
+								"t_PRODUTO.descricao_html"
 		elseif rb_saida = COD_SAIDA_REL_VENDEDOR then
 			strSqlCampoSaida = "t_PEDIDO__BASE.vendedor"
 		elseif rb_saida = COD_SAIDA_REL_INDICADOR then
@@ -872,7 +921,7 @@ dim idxAux
 			strSqlCampoSaida = ""
 			end if
 		
-		if strSqlCampoGroupByOrderBy = "" then strSqlCampoGroupByOrderBy = replace(strSqlCampoSaida, "AS grupo_descricao", "")
+		if strSqlCampoGroupByOrderBy = "" then strSqlCampoGroupByOrderBy = replace(replace(strSqlCampoSaida, "AS grupo_descricao", ""), "AS subgrupo_descricao", "")
 
 	' 	A) LEMBRE-SE DE INCLUIR A RESTRIÇÃO "anulado_status=0" P/ SELECIONAR APENAS 
 	'	OS MOVIMENTOS VÁLIDOS, POIS "anulado_status<>0" INDICAM MOVIMENTOS QUE 
@@ -914,6 +963,7 @@ dim idxAux
 					" LEFT JOIN t_PRODUTO" & _
 						" ON ((t_ESTOQUE_MOVIMENTO.fabricante=t_PRODUTO.fabricante)AND(t_ESTOQUE_MOVIMENTO.produto=t_PRODUTO.produto))" & _
                     " LEFT JOIN t_PRODUTO_GRUPO ON (t_PRODUTO.grupo=t_PRODUTO_GRUPO.codigo)" & _
+					" LEFT JOIN t_PRODUTO_SUBGRUPO ON (t_PRODUTO.subgrupo = t_PRODUTO_SUBGRUPO.codigo)" & _
 					" LEFT JOIN t_ORCAMENTISTA_E_INDICADOR" & _
 						" ON (t_PEDIDO__BASE.indicador=t_ORCAMENTISTA_E_INDICADOR.apelido)" & _
                     " LEFT JOIN t_CODIGO_DESCRICAO ON ((t_CODIGO_DESCRICAO.codigo=t_PEDIDO.marketplace_codigo_origem) AND (t_CODIGO_DESCRICAO.grupo='PedidoECommerce_Origem'))" & _ 
@@ -973,6 +1023,7 @@ dim idxAux
 					" LEFT JOIN t_PRODUTO" & _
 						" ON ((t_PEDIDO_ITEM_DEVOLVIDO.fabricante=t_PRODUTO.fabricante)AND(t_PEDIDO_ITEM_DEVOLVIDO.produto=t_PRODUTO.produto))" & _
                     " LEFT JOIN t_PRODUTO_GRUPO ON (t_PRODUTO.grupo=t_PRODUTO_GRUPO.codigo)" & _
+					" LEFT JOIN t_PRODUTO_SUBGRUPO ON (t_PRODUTO.subgrupo = t_PRODUTO_SUBGRUPO.codigo)" & _
 					" LEFT JOIN t_ORCAMENTISTA_E_INDICADOR" & _
 						" ON (t_PEDIDO.indicador=t_ORCAMENTISTA_E_INDICADOR.apelido)" & _
                     " LEFT JOIN t_CODIGO_DESCRICAO ON ((t_CODIGO_DESCRICAO.codigo=t_PEDIDO.marketplace_codigo_origem) AND (t_CODIGO_DESCRICAO.grupo='PedidoECommerce_Origem'))" & _                    
@@ -1017,29 +1068,39 @@ dim idxAux
 			"		<td align='left' valign='bottom' style='background:white;' nowrap>&nbsp;</td>" & chr(13)
 	
 	if rb_saida = COD_SAIDA_REL_PRODUTO then
-		strColSpanTodasColunas = "colspan='14'"
+		intColSpanTodasColunas = 17 '14+3
+		strColSpanTodasColunas = "colspan='" & Cstr(intColSpanTodasColunas) & "'"
 		cab = cab & _
 			"		<td class='MDTE' style='width:" & CStr(intLargCodProduto) & "px' align='left' valign='bottom' nowrap><span class='R'>Código</span></td>" & chr(13) & _
 			"		<td class='MTD' style='width:" & CStr(intLargDescrProduto) & "px' align='left' valign='bottom' nowrap><span class='R'>Descrição</span></td>" & chr(13) 
 			
 	elseif rb_saida = COD_SAIDA_REL_FABRICANTE then
-	    strColSpanTodasColunas = "colspan='14'"
+	    intColSpanTodasColunas = 17 '14+3
+		strColSpanTodasColunas = "colspan='" & Cstr(intColSpanTodasColunas) & "'"
 	    cab = cab & _
 	        "		<td class='MDTE' style='width:" & CStr(intLargCodFabricante) & "px' align='left' valign='bottom' nowrap><span class='R'> Código </span></td>" & chr(13) & _
 	        "		<td class='MTD' style='width:" & CStr(intLargNomeFabricante) & "px' align='left' valign='bottom' nowrap><span class='R'>Descrição</span></td>" & chr(13) 
 	 
     elseif rb_saida = COD_SAIDA_REL_GRUPO_PRODUTO then
-	    strColSpanTodasColunas = "colspan='14'"
+	    intColSpanTodasColunas = 17 '14+3
+		strColSpanTodasColunas = "colspan='" & Cstr(intColSpanTodasColunas) & "'"
 	    cab = cab & _
 	        "		<td class='MDTE' style='width:" & CStr(intLargCodFabricante) & "px' align='left' valign='bottom' nowrap><span class='R'>Código</span></td>" & chr(13) & _
 	        "		<td class='MTD' style='width:" & CStr(intLargNomeFabricante) & "px' align='left' valign='bottom' nowrap><span class='R'>Descrição</span></td>" & chr(13) 
-
+    elseif rb_saida = COD_SAIDA_REL_SUBGRUPO_PRODUTO then
+	    intColSpanTodasColunas = 17 '14+3
+		strColSpanTodasColunas = "colspan='" & Cstr(intColSpanTodasColunas) & "'"
+	    cab = cab & _
+	        "		<td class='MDTE' style='width:" & CStr(intLargCodFabricante) & "px' align='left' valign='bottom' nowrap><span class='R'>Código</span></td>" & chr(13) & _
+	        "		<td class='MTD' style='width:" & CStr(intLargNomeFabricante) & "px' align='left' valign='bottom' nowrap><span class='R'>Descrição</span></td>" & chr(13) 
 	elseif rb_saida = COD_SAIDA_REL_VENDEDOR then
-		strColSpanTodasColunas = "colspan='13'"
+		intColSpanTodasColunas = 16 '13+3
+		strColSpanTodasColunas = "colspan='" & Cstr(intColSpanTodasColunas) & "'"
 		cab = cab & _
 			"		<td class='MDTE' style='width:" & CStr(intLargVendedor) & "px' align='left' valign='bottom' nowrap><span class='R'>Vendedor</span></td>" & chr(13)
 	elseif rb_saida = COD_SAIDA_REL_INDICADOR then
-		strColSpanTodasColunas = "colspan='17'"
+		intColSpanTodasColunas = 17 '14+3
+		strColSpanTodasColunas = "colspan='" & Cstr(intColSpanTodasColunas) & "'"
 		cab = cab & _
 			"		<td class='MDTE' style='width:" & CStr(intLargApelidoIndicador) & "px' align='left' valign='bottom' nowrap><span class='R'>Indicador</span></td>" & chr(13) & _
 			"		<td class='MTD' style='width:" & CStr(intLargApelidoVendedor) & "px' align='left' valign='bottom' nowrap><span class='Rc'>Vendedor</span></td>" & chr(13) & _
@@ -1047,23 +1108,28 @@ dim idxAux
 			"		<td class='MTD' style='width:" & CStr(intLargMunicipio) & "px' align='left' valign='bottom' nowrap><span class='Rc'>Município</span></td>" & chr(13) & _
 			"		<td class='MTD' style='width:" & CStr(intLargUF) & "px' align='center' valign='bottom' nowrap><span class='Rc'>UF</span></td>" & chr(13)
 	elseif rb_saida = COD_SAIDA_REL_UF then
-		strColSpanTodasColunas = "colspan='13'"
+		intColSpanTodasColunas = 16 '13+3
+		strColSpanTodasColunas = "colspan='" & Cstr(intColSpanTodasColunas) & "'"
 		cab = cab & _
 			"		<td class='MDTE' style='width:" & CStr(intLargUF) & "px' align='center' valign='bottom' nowrap><span class='Rc'>UF</span></td>" & chr(13)
 	elseif rb_saida = COD_SAIDA_REL_INDICADOR_UF then
-		strColSpanTodasColunas = "colspan='14'"
+		intColSpanTodasColunas = 17 '14+3
+		strColSpanTodasColunas = "colspan='" & Cstr(intColSpanTodasColunas) & "'"
 		cab = cab & _
 			"		<td class='MDTE' style='width:" & CStr(intLargIndicador) & "px' align='left' valign='bottom' nowrap><span class='R'>Indicador</span></td>" & chr(13)
 	elseif rb_saida = COD_SAIDA_REL_CIDADE_UF then
-		strColSpanTodasColunas = "colspan='14'"
+		intColSpanTodasColunas = 17 '14+3
+		strColSpanTodasColunas = "colspan='" & Cstr(intColSpanTodasColunas) & "'"
 		cab = cab & _
 			"		<td class='MDTE' style='width:" & CStr(intLargCidade) & "px' align='left' valign='bottom' nowrap><span class='R'>Cidade</span></td>" & chr(13)
     elseif rb_saida = COD_SAIDA_REL_ORIGEM_PEDIDO then
-        strColSpanTodasColunas = "colspan='14'"
+        intColSpanTodasColunas = 17 '14+3
+		strColSpanTodasColunas = "colspan='" & Cstr(intColSpanTodasColunas) & "'"
         cab = cab & _
             "       <td class='MDTE' style='width:220px' align='left' valign='bottom' nowrap><span class='R'>Origem Pedido</span></td>" & chr(13) 
     elseif rb_saida = COD_SAIDA_REL_EMPRESA then
-	    strColSpanTodasColunas = "colspan='14'"
+	    intColSpanTodasColunas = 17 '14+3
+		strColSpanTodasColunas = "colspan='" & Cstr(intColSpanTodasColunas) & "'"
 	    cab = cab & _
 	        "		<td class='MDTE' style='width:" & CStr(intLargCodFabricante) & "px' align='left' valign='bottom' nowrap><span class='R'> Código </span></td>" & chr(13) & _
 	        "		<td class='MTD' style='width:" & CStr(intLargNomeFabricante) & "px' align='left' valign='bottom' nowrap><span class='R'>Descrição</span></td>" & chr(13)
@@ -1082,12 +1148,18 @@ dim idxAux
 			"		<td class='MTD' style='width:" & CStr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>RA Líquido (" & SIMBOLO_MONETARIO & ")</span></td>" & chr(13)
 			if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 			    cab = cab & _
+			        "		<td class='MTD' style='width:" & CStr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto -RA -COM (" & SIMBOLO_MONETARIO & ")</span></td>" & chr(13) & _
+			        "		<td class='MTD' style='width:" & CStr(intLargColPerc) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib (%)</span></td>" & chr(13) & _
+					"		<td class='MTD' style='width:" & CStr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>VL Fat (" & SIMBOLO_MONETARIO & ")</span></td>" & chr(13) & _
 			        "		<td class='MTD' style='width:" & CStr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto (" & SIMBOLO_MONETARIO & ")</span></td>" & chr(13) & _
-			        "		<td class='MTD' style='width:" & CStr(intLargColPerc) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib (%)</span></td>" & chr(13) 
+			        "		<td class='MTD' style='width:" & CStr(intLargColPerc) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Bruta (%)</span></td>" & chr(13) 
 			else
 			    cab = cab & _
+			        "		<td class='MTD' style='width:" & CStr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto Estimado -RA -COM (" & SIMBOLO_MONETARIO & ")</span></td>" & chr(13) & _
+			        "		<td class='MTD' style='width:" & CStr(intLargColPerc) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib Estimada (%)</span></td>" & chr(13) & _
+					"		<td class='MTD' style='width:" & CStr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>VL Fat (" & SIMBOLO_MONETARIO & ")</span></td>" & chr(13) & _
 			        "		<td class='MTD' style='width:" & CStr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto Estimado (" & SIMBOLO_MONETARIO & ")</span></td>" & chr(13) & _
-			        "		<td class='MTD' style='width:" & CStr(intLargColPerc) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib Estimada (%)</span></td>" & chr(13) 
+			        "		<td class='MTD' style='width:" & CStr(intLargColPerc) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Bruta Estimada (%)</span></td>" & chr(13) 
 			end if
 			cab = cab & _
 			"	</tr>" & chr(13)
@@ -1111,48 +1183,98 @@ dim idxAux
         vTotGrupo(UBound(vTotGrupo)).c13 = 0 'Lucro Líquido
         vTotGrupo(UBound(vTotGrupo)).c14 = 0 'Margem Contrib %
         vTotGrupo(UBound(vTotGrupo)).c15 = 0 'valor entrada
+		vTotGrupo(UBound(vTotGrupo)).c16 = 0 'Valor NF
+		vTotGrupo(UBound(vTotGrupo)).c17 = 0 'Lucro Bruto (R$)
+		vTotGrupo(UBound(vTotGrupo)).c18 = 0 'Margem Contrib Bruta (%)
     end if
 	
+    redim vTotSubgrupo(0)
+	set vTotSubgrupo(UBound(vTotSubgrupo)) = new cl_VINTE_COLUNAS
+	vTotSubgrupo(UBound(vTotSubgrupo)).CampoOrdenacao = ""
+    vTotSubgrupo(UBound(vTotSubgrupo)).c1 = "-x-x-x-" 'código grupo | código subgrupo
+    vTotSubgrupo(UBound(vTotSubgrupo)).c2 = "" 'descrição grupo | descrição subgrupo
+    vTotSubgrupo(UBound(vTotSubgrupo)).c3 = 0 'qtde
+    vTotSubgrupo(UBound(vTotSubgrupo)).c4 = 0 'valor venda
+    vTotSubgrupo(UBound(vTotSubgrupo)).c5 = 0 '%fat venda total
+    vTotSubgrupo(UBound(vTotSubgrupo)).c6 = 0 'valor lista
+    vTotSubgrupo(UBound(vTotSubgrupo)).c7 = 0 'desc R$
+    vTotSubgrupo(UBound(vTotSubgrupo)).c8 = 0 'desc %
+    vTotSubgrupo(UBound(vTotSubgrupo)).c9 = 0 'COM R$
+    vTotSubgrupo(UBound(vTotSubgrupo)).c10 = 0 'COM %
+    vTotSubgrupo(UBound(vTotSubgrupo)).c11 = 0 '%COM + %Desc
+    vTotSubgrupo(UBound(vTotSubgrupo)).c12 = 0 'RA líquido
+    if rb_saida = COD_SAIDA_REL_SUBGRUPO_PRODUTO then
+		vTotSubgrupo(UBound(vTotSubgrupo)).c13 = 0 'Lucro Líquido
+		vTotSubgrupo(UBound(vTotSubgrupo)).c14 = 0 'Margem Contrib %
+		vTotSubgrupo(UBound(vTotSubgrupo)).c15 = 0 'valor entrada
+		vTotSubgrupo(UBound(vTotSubgrupo)).c16 = 0 'Valor NF
+		vTotSubgrupo(UBound(vTotSubgrupo)).c17 = 0 'Lucro Bruto (R$)
+		vTotSubgrupo(UBound(vTotSubgrupo)).c18 = 0 'Margem Contrib Bruta (%)
+    end if
+
 	redim v_total_UF(0)
-	set v_total_UF(UBound(v_total_UF)) = new cl_DUAS_COLUNAS
+	set v_total_UF(UBound(v_total_UF)) = new cl_TRES_COLUNAS
 	v_total_UF(UBound(v_total_UF)).c1 = ""
 	v_total_UF(UBound(v_total_UF)).c2 = 0
+	v_total_UF(UBound(v_total_UF)).c3 = 0
 	vl_total_final_venda = 0
+	vl_total_final_NF = 0
 	vl_total_final_lista = 0
 	
 	' TOTAL FABRICANTE
 	redim v_total_FABRICANTE(0)
-	set v_total_FABRICANTE(UBound(v_total_FABRICANTE)) = new cl_DUAS_COLUNAS
+	set v_total_FABRICANTE(UBound(v_total_FABRICANTE)) = new cl_TRES_COLUNAS
 	v_total_FABRICANTE(UBound(v_total_FABRICANTE)).c1 = ""
 	v_total_FABRICANTE(UBound(v_total_FABRICANTE)).c2 = 0
+	v_total_FABRICANTE(UBound(v_total_FABRICANTE)).c3 = 0
 
     ' TOTAL GRUPO DE PRODUTOS
     redim v_total_GRUPO_PRODUTO(0)
-    set v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)) = new cl_CINCO_COLUNAS
+    set v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)) = new cl_DEZ_COLUNAS
     v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c1 = ""
     v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c2 = 0
     v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c3 = 0
     v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c4 = 0
     v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c5 = 0
+    v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c6 = 0
+    v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c7 = 0
+
+	' TOTAL SUBGRUPO DE PRODUTOS
+    redim v_total_SUBGRUPO_PRODUTO(0)
+    set v_total_SUBGRUPO_PRODUTO(UBound(v_total_SUBGRUPO_PRODUTO)) = new cl_DEZ_COLUNAS
+    v_total_SUBGRUPO_PRODUTO(UBound(v_total_SUBGRUPO_PRODUTO)).c1 = ""
+	v_total_SUBGRUPO_PRODUTO(UBound(v_total_SUBGRUPO_PRODUTO)).c2 = 0
+    v_total_SUBGRUPO_PRODUTO(UBound(v_total_SUBGRUPO_PRODUTO)).c3 = 0
+    v_total_SUBGRUPO_PRODUTO(UBound(v_total_SUBGRUPO_PRODUTO)).c4 = 0
+    v_total_SUBGRUPO_PRODUTO(UBound(v_total_SUBGRUPO_PRODUTO)).c5 = 0
+    v_total_SUBGRUPO_PRODUTO(UBound(v_total_SUBGRUPO_PRODUTO)).c6 = 0
+    v_total_SUBGRUPO_PRODUTO(UBound(v_total_SUBGRUPO_PRODUTO)).c7 = 0
 
     ' TOTAL GRUPO ORIGEM DE PEDIDO
     redim v_total_origem_pedido(0)
-    set v_total_origem_pedido(UBound(v_total_origem_pedido)) = new cl_DUAS_COLUNAS
+    set v_total_origem_pedido(UBound(v_total_origem_pedido)) = new cl_TRES_COLUNAS
     v_total_origem_pedido(UBound(v_total_origem_pedido)).c1 = ""
     v_total_origem_pedido(UBound(v_total_origem_pedido)).c2 = 0
+	v_total_origem_pedido(UBound(v_total_origem_pedido)).c3 = 0
 
     ' TOTAL EMPRESA
 	redim v_total_Empresa(0)
-	set v_total_Empresa(UBound(v_total_Empresa)) = new cl_DUAS_COLUNAS
+	set v_total_Empresa(UBound(v_total_Empresa)) = new cl_TRES_COLUNAS
 	v_total_Empresa(UBound(v_total_Empresa)).c1 = ""
 	v_total_Empresa(UBound(v_total_Empresa)).c2 = 0
+	v_total_Empresa(UBound(v_total_Empresa)).c3 = 0
 	
 	set r = cn.execute(s_sql)
 	n_reg_BD = 0
 	do while Not r.Eof
 		n_reg_BD = n_reg_BD + 1
 		vl_total_final_venda = vl_total_final_venda + r("valor_venda")
+		vl_total_final_NF = vl_total_final_NF + r("valor_NF")
 		vl_total_final_lista = vl_total_final_lista + r("valor_lista")
+
+'		======================
+'		OPÇÃO SAÍDA: CIDADE/UF
+'		======================
 		if rb_saida = COD_SAIDA_REL_CIDADE_UF then
 			blnAchou = False
 			for i=LBound(v_total_UF) to UBound(v_total_UF)
@@ -1164,13 +1286,18 @@ dim idxAux
 				next
 			if Not blnAchou then
 				redim preserve v_total_UF(UBound(v_total_UF)+1)
-				set v_total_UF(UBound(v_total_UF)) = new cl_DUAS_COLUNAS
+				set v_total_UF(UBound(v_total_UF)) = new cl_TRES_COLUNAS
 				v_total_UF(UBound(v_total_UF)).c1 = Trim("" & r("uf"))
 				v_total_UF(UBound(v_total_UF)).c2 = 0
+				v_total_UF(UBound(v_total_UF)).c3 = 0
 				intIdxSelecionado = UBound(v_total_UF)
 				end if
 			v_total_UF(intIdxSelecionado).c2 = v_total_UF(intIdxSelecionado).c2 + r("valor_venda")
+			v_total_UF(intIdxSelecionado).c3 = v_total_UF(intIdxSelecionado).c3 + r("valor_NF")
 			end if 
+'		=======================
+'		OPÇÃO SAÍDA: FABRICANTE
+'		=======================
 		'ENCONTRAR OS FABRICANTES
 		if rb_saida = COD_SAIDA_REL_FABRICANTE then
 		blnAchou = False
@@ -1183,14 +1310,19 @@ dim idxAux
 				next
 		 if Not blnAchou then
 		   redim preserve v_total_FABRICANTE(UBound(v_total_FABRICANTE)+1)
-				set v_total_FABRICANTE(UBound(v_total_FABRICANTE)) = new cl_DUAS_COLUNAS
+				set v_total_FABRICANTE(UBound(v_total_FABRICANTE)) = new cl_TRES_COLUNAS
 				v_total_FABRICANTE(UBound(v_total_FABRICANTE)).c1 = Trim("" & r("fabricante"))
 				v_total_FABRICANTE(UBound(v_total_FABRICANTE)).c2 = 0
+				v_total_FABRICANTE(UBound(v_total_FABRICANTE)).c3 = 0
 				strAuxVlFabricante = UBound(v_total_FABRICANTE)
 				 end if
 			v_total_FABRICANTE(strAuxVlFabricante).c2 = v_total_FABRICANTE(strAuxVlFabricante).c2 + r("valor_venda")
+			v_total_FABRICANTE(strAuxVlFabricante).c3 = v_total_FABRICANTE(strAuxVlFabricante).c3 + r("valor_NF")
 		 end if
 
+'		==============================
+'		OPÇÃO SAÍDA: GRUPO DE PRODUTOS
+'		==============================
         ' ENCONTRAR FABRICANTES E GRUPOS DE PRODUTOS
         if rb_saida = COD_SAIDA_REL_GRUPO_PRODUTO then
         blnAchou = False
@@ -1203,12 +1335,14 @@ dim idxAux
 				next
 		 if Not blnAchou then
 		   redim preserve v_total_FABRICANTE(UBound(v_total_FABRICANTE)+1)
-				set v_total_FABRICANTE(UBound(v_total_FABRICANTE)) = new cl_DUAS_COLUNAS
+				set v_total_FABRICANTE(UBound(v_total_FABRICANTE)) = new cl_TRES_COLUNAS
 				v_total_FABRICANTE(UBound(v_total_FABRICANTE)).c1 = Trim("" & r("fabricante"))
 				v_total_FABRICANTE(UBound(v_total_FABRICANTE)).c2 = 0
+				v_total_FABRICANTE(UBound(v_total_FABRICANTE)).c3 = 0
 				strAuxVlFabricante = UBound(v_total_FABRICANTE)
 				 end if
 			v_total_FABRICANTE(strAuxVlFabricante).c2 = v_total_FABRICANTE(strAuxVlFabricante).c2 + r("valor_venda")
+			v_total_FABRICANTE(strAuxVlFabricante).c3 = v_total_FABRICANTE(strAuxVlFabricante).c3 + r("valor_NF")
 		blnAchou = False
 			for i=LBound(v_total_GRUPO_PRODUTO) to UBound(v_total_GRUPO_PRODUTO)
 				if v_total_GRUPO_PRODUTO(i).c1 = Trim("" & r("fabricante")) & Trim("" & r("grupo")) then
@@ -1219,18 +1353,22 @@ dim idxAux
 				next
 		     if Not blnAchou then
 		       redim preserve v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)+1)
-				    set v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)) = new cl_CINCO_COLUNAS
+				    set v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)) = new cl_DEZ_COLUNAS
 				    v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c1 = Trim("" & r("fabricante")) & Trim("" & r("grupo"))
-                    v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c2 = 0
-                    v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c3 = 0
-                    v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c4 = 0
-                    v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c5 = 0
+                    v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c2 = 0 'Valor Venda
+                    v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c3 = 0 'Valor Entrada
+                    v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c4 = 0 'Comissão (R$)
+                    v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c5 = 0 'Margem Contrib (%)
+                    v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c6 = 0 'Valor NF
+                    v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c7 = 0 'Margem Contrib Bruta (%)
 				    strAuxVlProdutoGrupo = UBound(v_total_GRUPO_PRODUTO)
             end if
 			v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c2 = v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c2 + r("valor_venda")
+			v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c6 = v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c6 + r("valor_NF")
 			if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 				v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c3 = v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c3 + r("valor_entrada")
 				v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c4 = v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c4 + ((r("perc_RT")/100) * r("valor_venda"))
+                'Margem Contrib (%)
 				if v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c3 = 0 then
 					v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c5 = 0
 				else
@@ -1240,9 +1378,20 @@ dim idxAux
 						v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c5 = 100 * (v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c2 - v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c3 - (v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c4)) / v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c2
 						end if
 					end if
-			else
+				'Margem Contrib Bruta (%)
+				if v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c3 = 0 then
+					v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c7 = 0
+				else
+					if v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c6 = 0 then
+						v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c7 = 0
+					else
+						v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c7 = 100 * ((v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c6 - v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c3) / v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c6)
+						end if
+					end if
+			else 'if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA
 				v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c3 = v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c3 + r("valor_entrada")
 				v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c4 = v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c4 + ((r("perc_RT")/100) * r("valor_venda"))
+				'Margem Contrib (%)
 				if v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c3 = 0 then
 					v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c5 = 0
 				else
@@ -1250,6 +1399,16 @@ dim idxAux
 						v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c5 = 0
 					else
 						v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c5 = 100 * (v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c2 - v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c3 - (v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c4)) / v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c2
+						end if
+					end if
+				'Margem Contrib Bruta (%)
+				if v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c3 = 0 then
+					v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c7 = 0
+				else
+					if v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c6 = 0 then
+						v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c7 = 0
+					else
+						v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c7 = 100 * ((v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c6 - v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c3) / v_total_GRUPO_PRODUTO(strAuxVlProdutoGrupo).c6)
 						end if
 					end if
 				end if
@@ -1284,10 +1443,16 @@ dim idxAux
                 vTotGrupo(UBound(vTotGrupo)).c13 = 0 'Lucro Líquido
                 vTotGrupo(UBound(vTotGrupo)).c14 = 0 'Margem Contrib %
                 vTotGrupo(UBound(vTotGrupo)).c15 = 0 'Vl entrada
+				vTotGrupo(UBound(vTotGrupo)).c16 = 0 'VL NF
+				vTotGrupo(UBound(vTotGrupo)).c17 = 0 'Lucro Bruto (R$)
+				vTotGrupo(UBound(vTotGrupo)).c18 = 0 'Margem Contrib Bruta (%)
             else
                 vTotGrupo(UBound(vTotGrupo)).c13 = 0 'Lucro Líquido
                 vTotGrupo(UBound(vTotGrupo)).c14 = 0 'Margem Contrib %
                 vTotGrupo(UBound(vTotGrupo)).c15 = 0 'Vl entrada
+				vTotGrupo(UBound(vTotGrupo)).c16 = 0 'VL NF
+				vTotGrupo(UBound(vTotGrupo)).c17 = 0 'Lucro Bruto (R$)
+				vTotGrupo(UBound(vTotGrupo)).c18 = 0 'Margem Contrib Bruta (%)
 			end if
             strAuxVlProdutoGrupo = UBound(vTotGrupo)
         end if
@@ -1311,20 +1476,31 @@ dim idxAux
         vTotGrupo(strAuxVlProdutoGrupo).c11 = 0
         vTotGrupo(strAuxVlProdutoGrupo).c12 = vTotGrupo(strAuxVlProdutoGrupo).c12 + vl_aux_RA_liquido
         if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then    
+			'Lucro Líquido
             vTotGrupo(strAuxVlProdutoGrupo).c13 = vTotGrupo(strAuxVlProdutoGrupo).c13 + (r("valor_venda")-((r("perc_RT")/100) * r("valor_venda"))-r("valor_entrada"))
             vTotGrupo(strAuxVlProdutoGrupo).c14 = 0
             vTotGrupo(strAuxVlProdutoGrupo).c15 = vTotGrupo(strAuxVlProdutoGrupo).c15 + r("valor_entrada")
+			vTotGrupo(strAuxVlProdutoGrupo).c16 = vTotGrupo(strAuxVlProdutoGrupo).c16 + r("valor_NF")
+			'Margem Contrib %
             if vTotGrupo(strAuxVlProdutoGrupo).c4 = 0 then
                 vTotGrupo(strAuxVlProdutoGrupo).c14 = 0
             else
                 vTotGrupo(strAuxVlProdutoGrupo).c14 = 100 * ((vTotGrupo(strAuxVlProdutoGrupo).c4 - vTotGrupo(strAuxVlProdutoGrupo).c15 - vTotGrupo(strAuxVlProdutoGrupo).c9) / vTotGrupo(strAuxVlProdutoGrupo).c4)
             end if
-            if ckb_ordenar_marg_contrib = "1" then
-                ' ordena pela marg contrib
-                vTotGrupo(strAuxVlProdutoGrupo).CampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vTotGrupo(strAuxVlProdutoGrupo).c14)), 20)
+			'Lucro Bruto (R$)
+			vTotGrupo(strAuxVlProdutoGrupo).c17 = vTotGrupo(strAuxVlProdutoGrupo).c17 + (r("valor_NF") - r("valor_entrada"))
+			'Margem Contrib Bruta (%)
+			if vTotGrupo(strAuxVlProdutoGrupo).c16 = 0 then
+				vTotGrupo(strAuxVlProdutoGrupo).c18 = 0
+			else
+				vTotGrupo(strAuxVlProdutoGrupo).c18 = 100 * ((vTotGrupo(strAuxVlProdutoGrupo).c16 - vTotGrupo(strAuxVlProdutoGrupo).c15) / vTotGrupo(strAuxVlProdutoGrupo).c16)
+				end if
+            if blnOrdenarMargemContrib then
+                ' ordena pela marg contrib bruta
+                vTotGrupo(strAuxVlProdutoGrupo).CampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vTotGrupo(strAuxVlProdutoGrupo).c18)), 20)
             else
-                ' ordena pelo valor de venda
-                vTotGrupo(strAuxVlProdutoGrupo).CampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vTotGrupo(strAuxVlProdutoGrupo).c4)), 20)
+                ' ordena pelo valor NF
+                vTotGrupo(strAuxVlProdutoGrupo).CampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vTotGrupo(strAuxVlProdutoGrupo).c16)), 20)
             end if
         else          
             vTotGrupo(strAuxVlProdutoGrupo).c13 = vTotGrupo(strAuxVlProdutoGrupo).c13 + (r("valor_venda")-((r("perc_RT")/100) * r("valor_venda"))-r("valor_entrada"))
@@ -1335,18 +1511,441 @@ dim idxAux
             else
                 vTotGrupo(strAuxVlProdutoGrupo).c14 = 100 * ((vTotGrupo(strAuxVlProdutoGrupo).c4 - vTotGrupo(strAuxVlProdutoGrupo).c15 - vTotGrupo(strAuxVlProdutoGrupo).c9) / vTotGrupo(strAuxVlProdutoGrupo).c4)
             end if
-            if ckb_ordenar_marg_contrib = "1" then
-                ' ordena pela marg contrib
-                vTotGrupo(strAuxVlProdutoGrupo).CampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vTotGrupo(strAuxVlProdutoGrupo).c14)), 20)
+			vTotGrupo(strAuxVlProdutoGrupo).c16 = vTotGrupo(strAuxVlProdutoGrupo).c16 + r("valor_NF")
+			'Lucro Bruto
+			vTotGrupo(strAuxVlProdutoGrupo).c17 = vTotGrupo(strAuxVlProdutoGrupo).c17 + (r("valor_NF") - r("valor_entrada"))
+			'Margem Contrib Bruta (%)
+			if vTotGrupo(strAuxVlProdutoGrupo).c16 = 0 then
+				vTotGrupo(strAuxVlProdutoGrupo).c18 = 0
+			else
+				vTotGrupo(strAuxVlProdutoGrupo).c18 = 100 * ((vTotGrupo(strAuxVlProdutoGrupo).c16 - vTotGrupo(strAuxVlProdutoGrupo).c15) / vTotGrupo(strAuxVlProdutoGrupo).c16)
+				end if
+
+            if blnOrdenarMargemContrib then
+                ' ordena pela marg contrib bruta
+                vTotGrupo(strAuxVlProdutoGrupo).CampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vTotGrupo(strAuxVlProdutoGrupo).c18)), 20)
             else
-				' ordena pelo valor de venda
-				vTotGrupo(strAuxVlProdutoGrupo).CampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vTotGrupo(strAuxVlProdutoGrupo).c4)), 20)
+				' ordena pelo valor NF
+				vTotGrupo(strAuxVlProdutoGrupo).CampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vTotGrupo(strAuxVlProdutoGrupo).c16)), 20)
 				end if
         end if
+
+        ordena_cl_vinte_colunas vTotGrupo, 1, Ubound(vTotGrupo)
+		end if
+
+'		=================================
+'		OPÇÃO SAÍDA: SUBGRUPO DE PRODUTOS
+'		=================================
+		' ENCONTRAR FABRICANTES E SUBGRUPOS DE PRODUTOS
+		if rb_saida = COD_SAIDA_REL_SUBGRUPO_PRODUTO then
+			'TOTALIZA POR FABRICANTE
+			blnAchou = False
+			for i=LBound(v_total_FABRICANTE) to UBound(v_total_FABRICANTE)
+				if v_total_FABRICANTE(i).c1 = Trim("" & r("fabricante")) then
+					blnAchou = True
+					idxFabricante = i
+					exit for
+					end if
+				next
+			if Not blnAchou then
+				redim preserve v_total_FABRICANTE(UBound(v_total_FABRICANTE)+1)
+				set v_total_FABRICANTE(UBound(v_total_FABRICANTE)) = new cl_TRES_COLUNAS
+				v_total_FABRICANTE(UBound(v_total_FABRICANTE)).c1 = Trim("" & r("fabricante"))
+				v_total_FABRICANTE(UBound(v_total_FABRICANTE)).c2 = 0
+				v_total_FABRICANTE(UBound(v_total_FABRICANTE)).c3 = 0
+				idxFabricante = UBound(v_total_FABRICANTE)
+				end if
+			v_total_FABRICANTE(idxFabricante).c2 = v_total_FABRICANTE(idxFabricante).c2 + r("valor_venda")
+			v_total_FABRICANTE(idxFabricante).c3 = v_total_FABRICANTE(idxFabricante).c3 + r("valor_NF")
+
+			'TOTALIZA POR GRUPO DE PRODUTOS
+			blnAchou = False
+			for i=LBound(v_total_GRUPO_PRODUTO) to UBound(v_total_GRUPO_PRODUTO)
+				if v_total_GRUPO_PRODUTO(i).c1 = Trim("" & r("fabricante")) & "|" & Trim("" & r("grupo")) then
+					blnAchou = True
+					idxProdutoGrupo = i
+					exit for
+					end if
+				next
+			if Not blnAchou then
+				redim preserve v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)+1)
+				set v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)) = new cl_DEZ_COLUNAS
+				v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c1 = Trim("" & r("fabricante")) & "|" & Trim("" & r("grupo"))
+				v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c2 = 0 'Valor Venda
+				v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c3 = 0 'Valor Entrada
+				v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c4 = 0 'Comissão (R$)
+				v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c5 = 0 'Margem Contrib (%)
+				v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c6 = 0 'Valor NF
+				v_total_GRUPO_PRODUTO(UBound(v_total_GRUPO_PRODUTO)).c7 = 0 'Margem Contrib Bruta (%)
+				idxProdutoGrupo = UBound(v_total_GRUPO_PRODUTO)
+				end if
+
+			v_total_GRUPO_PRODUTO(idxProdutoGrupo).c2 = v_total_GRUPO_PRODUTO(idxProdutoGrupo).c2 + r("valor_venda")
+			v_total_GRUPO_PRODUTO(idxProdutoGrupo).c6 = v_total_GRUPO_PRODUTO(idxProdutoGrupo).c6 + r("valor_NF")
+
+			if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
+				v_total_GRUPO_PRODUTO(idxProdutoGrupo).c3 = v_total_GRUPO_PRODUTO(idxProdutoGrupo).c3 + r("valor_entrada")
+				v_total_GRUPO_PRODUTO(idxProdutoGrupo).c4 = v_total_GRUPO_PRODUTO(idxProdutoGrupo).c4 + ((r("perc_RT")/100) * r("valor_venda"))
+				'Margem Contrib (%)
+				if v_total_GRUPO_PRODUTO(idxProdutoGrupo).c3 = 0 then
+					v_total_GRUPO_PRODUTO(idxProdutoGrupo).c5 = 0
+				else
+					if v_total_GRUPO_PRODUTO(idxProdutoGrupo).c2 = 0 then
+						v_total_GRUPO_PRODUTO(idxProdutoGrupo).c5 = 0
+					else
+						v_total_GRUPO_PRODUTO(idxProdutoGrupo).c5 = 100 * (v_total_GRUPO_PRODUTO(idxProdutoGrupo).c2 - v_total_GRUPO_PRODUTO(idxProdutoGrupo).c3 - (v_total_GRUPO_PRODUTO(idxProdutoGrupo).c4)) / v_total_GRUPO_PRODUTO(idxProdutoGrupo).c2
+					end if
+				end if
+				'Margem Contrib Bruta (%)
+				if v_total_GRUPO_PRODUTO(idxProdutoGrupo).c3 = 0 then
+					v_total_GRUPO_PRODUTO(idxProdutoGrupo).c7 = 0
+				else
+					if v_total_GRUPO_PRODUTO(idxProdutoGrupo).c6 = 0 then
+						v_total_GRUPO_PRODUTO(idxProdutoGrupo).c7 = 0
+					else
+						v_total_GRUPO_PRODUTO(idxProdutoGrupo).c7 = 100 * ((v_total_GRUPO_PRODUTO(idxProdutoGrupo).c6 - v_total_GRUPO_PRODUTO(idxProdutoGrupo).c3) / v_total_GRUPO_PRODUTO(idxProdutoGrupo).c6)
+						end if
+					end if
+			else 'if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA
+				v_total_GRUPO_PRODUTO(idxProdutoGrupo).c3 = v_total_GRUPO_PRODUTO(idxProdutoGrupo).c3 + r("valor_entrada")
+				v_total_GRUPO_PRODUTO(idxProdutoGrupo).c4 = v_total_GRUPO_PRODUTO(idxProdutoGrupo).c4 + ((r("perc_RT")/100) * r("valor_venda"))
+				'Margem Contrib (%)
+				if v_total_GRUPO_PRODUTO(idxProdutoGrupo).c3 = 0 then
+					v_total_GRUPO_PRODUTO(idxProdutoGrupo).c5 = 0
+				else
+					if v_total_GRUPO_PRODUTO(idxProdutoGrupo).c2 = 0 then
+						v_total_GRUPO_PRODUTO(idxProdutoGrupo).c5 = 0
+					else
+						v_total_GRUPO_PRODUTO(idxProdutoGrupo).c5 = 100 * (v_total_GRUPO_PRODUTO(idxProdutoGrupo).c2 - v_total_GRUPO_PRODUTO(idxProdutoGrupo).c3 - (v_total_GRUPO_PRODUTO(idxProdutoGrupo).c4)) / v_total_GRUPO_PRODUTO(idxProdutoGrupo).c2
+						end if
+					end if
+				'Margem Contrib Bruta (%)
+				if v_total_GRUPO_PRODUTO(idxProdutoGrupo).c3 = 0 then
+					v_total_GRUPO_PRODUTO(idxProdutoGrupo).c7 = 0
+				else
+					if v_total_GRUPO_PRODUTO(idxProdutoGrupo).c6 = 0 then
+						v_total_GRUPO_PRODUTO(idxProdutoGrupo).c7 = 0
+					else
+						v_total_GRUPO_PRODUTO(idxProdutoGrupo).c7 = 100 * ((v_total_GRUPO_PRODUTO(idxProdutoGrupo).c6 - v_total_GRUPO_PRODUTO(idxProdutoGrupo).c3) / v_total_GRUPO_PRODUTO(idxProdutoGrupo).c6)
+						end if
+					end if
+				end if
+			
+			' TOTALIZA POR SUBGRUPO DE PRODUTOS
+			blnAchou = False
+			for i=LBound(v_total_SUBGRUPO_PRODUTO) to UBound(v_total_SUBGRUPO_PRODUTO)
+				if v_total_SUBGRUPO_PRODUTO(i).c1 = Trim("" & r("fabricante")) & "|" & Trim("" & r("grupo")) & "|" & Trim("" & r("subgrupo")) then
+					blnAchou = True
+					idxProdutoSubgrupo = i
+					exit for
+					end if
+				next
+			if Not blnAchou then
+				redim preserve v_total_SUBGRUPO_PRODUTO(UBound(v_total_SUBGRUPO_PRODUTO)+1)
+				set v_total_SUBGRUPO_PRODUTO(UBound(v_total_SUBGRUPO_PRODUTO)) = new cl_DEZ_COLUNAS
+				v_total_SUBGRUPO_PRODUTO(UBound(v_total_SUBGRUPO_PRODUTO)).c1 = Trim("" & r("fabricante")) & "|" & Trim("" & r("grupo")) & "|" & Trim("" & r("subgrupo"))
+				v_total_SUBGRUPO_PRODUTO(UBound(v_total_SUBGRUPO_PRODUTO)).c2 = 0 'Valor Venda
+				v_total_SUBGRUPO_PRODUTO(UBound(v_total_SUBGRUPO_PRODUTO)).c3 = 0 'Valor Entrada
+				v_total_SUBGRUPO_PRODUTO(UBound(v_total_SUBGRUPO_PRODUTO)).c4 = 0 'Comissão (R$)
+				v_total_SUBGRUPO_PRODUTO(UBound(v_total_SUBGRUPO_PRODUTO)).c5 = 0 'Margem Contrib (%)
+				v_total_SUBGRUPO_PRODUTO(UBound(v_total_SUBGRUPO_PRODUTO)).c6 = 0 'Valor NF
+				v_total_SUBGRUPO_PRODUTO(UBound(v_total_SUBGRUPO_PRODUTO)).c7 = 0 'Margem Contrib Bruta (%)
+				idxProdutoSubgrupo = UBound(v_total_SUBGRUPO_PRODUTO)
+				end if
+
+			v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c2 = v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c2 + r("valor_venda")
+			v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c6 = v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c6 + r("valor_NF")
+			if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
+				v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c3 = v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c3 + r("valor_entrada")
+				v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c4 = v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c4 + ((r("perc_RT")/100) * r("valor_venda"))
+				'Margem Contrib (%)
+				if v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c3 = 0 then
+					v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c5 = 0
+				else
+					if v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c2 = 0 then
+						v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c5 = 0
+					else
+						v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c5 = 100 * (v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c2 - v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c3 - (v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c4)) / v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c2
+					end if
+				end if
+				'Margem Contrib Bruta (%)
+				if v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c3 = 0 then
+					v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c7 = 0
+				else
+					if v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c6 = 0 then
+						v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c7 = 0
+					else
+						v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c7 = 100 * ((v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c6 - v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c3) / v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c6)
+						end if
+					end if
+			else 'if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA
+				v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c3 = v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c3 + r("valor_entrada")
+				v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c4 = v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c4 + ((r("perc_RT")/100) * r("valor_venda"))
+				'Margem Contrib (%)
+				if v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c3 = 0 then
+					v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c5 = 0
+				else
+					if v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c2 = 0 then
+						v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c5 = 0
+					else
+						v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c5 = 100 * (v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c2 - v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c3 - (v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c4)) / v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c2
+						end if
+					end if
+				'Margem Contrib Bruta (%)
+				if v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c3 = 0 then
+					v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c7 = 0
+				else
+					if v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c6 = 0 then
+						v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c7 = 0
+					else
+						v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c7 = 100 * ((v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c6 - v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c3) / v_total_SUBGRUPO_PRODUTO(idxProdutoSubgrupo).c6)
+						end if
+					end if
+				end if
+
+        ' FAZER TOTALIZAÇÃO GERAL POR GRUPO DE PRODUTO
+        idxProdutoGrupo = 0
+        blnAchou = False
+        for i=LBound(vTotGrupo) to UBound(vTotGrupo)
+            if vTotGrupo(i).c1 = Trim("" & r("grupo")) then
+                blnAchou = True
+                idxProdutoGrupo = i
+                exit for
+            end if
+        next 
+        if Not blnAchou then
+            redim preserve vTotGrupo(UBound(vTotGrupo)+1)
+            set vTotGrupo(UBound(vTotGrupo)) = New cl_VINTE_COLUNAS
+            vTotGrupo(UBound(vTotGrupo)).CampoOrdenacao = ""
+            vTotGrupo(UBound(vTotGrupo)).c1 = Trim("" & r("grupo")) 'código grupo
+            vTotGrupo(UBound(vTotGrupo)).c2 = Trim("" & r("grupo_descricao")) 'descrição grupo
+            vTotGrupo(UBound(vTotGrupo)).c3 = 0 'qtde
+            vTotGrupo(UBound(vTotGrupo)).c4 = 0 'valor venda
+            vTotGrupo(UBound(vTotGrupo)).c5 = 0 '%fat venda total
+            vTotGrupo(UBound(vTotGrupo)).c6 = 0 'valor lista
+            vTotGrupo(UBound(vTotGrupo)).c7 = 0 'desc R$
+            vTotGrupo(UBound(vTotGrupo)).c8 = 0 'desc %
+            vTotGrupo(UBound(vTotGrupo)).c9 = 0 'COM R$
+            vTotGrupo(UBound(vTotGrupo)).c10 = 0 'COM %
+            vTotGrupo(UBound(vTotGrupo)).c11 = 0 '%COM + %Desc
+            vTotGrupo(UBound(vTotGrupo)).c12 = 0 'RA líquido
+            if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
+                vTotGrupo(UBound(vTotGrupo)).c13 = 0 'Lucro Líquido
+                vTotGrupo(UBound(vTotGrupo)).c14 = 0 'Margem Contrib %
+                vTotGrupo(UBound(vTotGrupo)).c15 = 0 'Vl entrada
+				vTotGrupo(UBound(vTotGrupo)).c16 = 0 'VL NF
+				vTotGrupo(UBound(vTotGrupo)).c17 = 0 'Lucro Bruto (R$)
+				vTotGrupo(UBound(vTotGrupo)).c18 = 0 'Margem Contrib Bruta (%)
+            else
+                vTotGrupo(UBound(vTotGrupo)).c13 = 0 'Lucro Líquido
+                vTotGrupo(UBound(vTotGrupo)).c14 = 0 'Margem Contrib %
+                vTotGrupo(UBound(vTotGrupo)).c15 = 0 'Vl entrada
+				vTotGrupo(UBound(vTotGrupo)).c16 = 0 'VL NF
+				vTotGrupo(UBound(vTotGrupo)).c17 = 0 'Lucro Bruto (R$)
+				vTotGrupo(UBound(vTotGrupo)).c18 = 0 'Margem Contrib Bruta (%)
+			end if
+            idxProdutoGrupo = UBound(vTotGrupo)
+        end if
+            
+        '> RA LÍQUIDO (R$)
+        vl_aux_RA_liquido = 0
+		vl_RA_bruto = r("valor_NF")-r("valor_venda")
+		if Not calcula_total_RA_liquido(r("perc_desagio_RA_liquida"), vl_RA_bruto, vl_aux_RA_liquido) then
+			Response.Write "FALHA AO CALCULAR O RA LÍQUIDO"
+			Response.End
+		end if
+        
+        vTotGrupo(idxProdutoGrupo).c3 = vTotGrupo(idxProdutoGrupo).c3 + r("qtde")
+        vTotGrupo(idxProdutoGrupo).c4 = vTotGrupo(idxProdutoGrupo).c4 + r("valor_venda")
+        vTotGrupo(idxProdutoGrupo).c5 = 0
+        vTotGrupo(idxProdutoGrupo).c6 = vTotGrupo(idxProdutoGrupo).c6 + r("valor_lista")
+        vTotGrupo(idxProdutoGrupo).c7 = vTotGrupo(idxProdutoGrupo).c7 + (r("valor_lista") - r("valor_venda"))
+        vTotGrupo(idxProdutoGrupo).c8 = 0
+        vTotGrupo(idxProdutoGrupo).c9 = vTotGrupo(idxProdutoGrupo).c9 + ((r("perc_RT")/100) * r("valor_venda"))
+        vTotGrupo(idxProdutoGrupo).c10 = 0
+        vTotGrupo(idxProdutoGrupo).c11 = 0
+        vTotGrupo(idxProdutoGrupo).c12 = vTotGrupo(idxProdutoGrupo).c12 + vl_aux_RA_liquido
+        if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
+			'Lucro Líquido
+            vTotGrupo(idxProdutoGrupo).c13 = vTotGrupo(idxProdutoGrupo).c13 + (r("valor_venda")-((r("perc_RT")/100) * r("valor_venda"))-r("valor_entrada"))
+            vTotGrupo(idxProdutoGrupo).c14 = 0
+            vTotGrupo(idxProdutoGrupo).c15 = vTotGrupo(idxProdutoGrupo).c15 + r("valor_entrada")
+			vTotGrupo(idxProdutoGrupo).c16 = vTotGrupo(idxProdutoGrupo).c16 + r("valor_NF")
+			'Margem Contrib %
+			if vTotGrupo(idxProdutoGrupo).c4 = 0 then
+                    vTotGrupo(idxProdutoGrupo).c14 = 0
+                else
+                    vTotGrupo(idxProdutoGrupo).c14 = 100 * ((vTotGrupo(idxProdutoGrupo).c4 - vTotGrupo(idxProdutoGrupo).c15 - vTotGrupo(idxProdutoGrupo).c9) / vTotGrupo(idxProdutoGrupo).c4)
+                end if
+			'Lucro Bruto (R$)
+			vTotGrupo(idxProdutoGrupo).c17 = vTotGrupo(idxProdutoGrupo).c17 + (r("valor_NF") - r("valor_entrada"))
+			'Margem Contrib Bruta (%)
+			if vTotGrupo(idxProdutoGrupo).c16 = 0 then
+				vTotGrupo(idxProdutoGrupo).c18 = 0
+			else
+				vTotGrupo(idxProdutoGrupo).c18 = 100 * ((vTotGrupo(idxProdutoGrupo).c16 - vTotGrupo(idxProdutoGrupo).c15) / vTotGrupo(idxProdutoGrupo).c16)
+				end if
+            if blnOrdenarMargemContrib then
+                ' ordena pela marg contrib bruta
+                vTotGrupo(idxProdutoGrupo).CampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vTotGrupo(idxProdutoGrupo).c18)), 20)
+            else
+                ' ordena pelo valor NF
+                vTotGrupo(idxProdutoGrupo).CampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vTotGrupo(idxProdutoGrupo).c16)), 20)
+            end if
+        else
+            vTotGrupo(idxProdutoGrupo).c13 = vTotGrupo(idxProdutoGrupo).c13 + (r("valor_venda")-((r("perc_RT")/100) * r("valor_venda"))-r("valor_entrada"))
+            vTotGrupo(idxProdutoGrupo).c14 = 0
+			vTotGrupo(idxProdutoGrupo).c15 = vTotGrupo(idxProdutoGrupo).c15 + r("valor_entrada")
+            if vTotGrupo(idxProdutoGrupo).c4 = 0 then
+                vTotGrupo(idxProdutoGrupo).c14 = 0
+            else
+                vTotGrupo(idxProdutoGrupo).c14 = 100 * ((vTotGrupo(idxProdutoGrupo).c4 - vTotGrupo(idxProdutoGrupo).c15 - vTotGrupo(idxProdutoGrupo).c9) / vTotGrupo(idxProdutoGrupo).c4)
+            end if
+			vTotGrupo(idxProdutoGrupo).c16 = vTotGrupo(idxProdutoGrupo).c16 + r("valor_NF")
+			'Lucro Bruto
+			vTotGrupo(idxProdutoGrupo).c17 = vTotGrupo(idxProdutoGrupo).c17 + (r("valor_NF") - r("valor_entrada"))
+			'Margem Contrib Bruta (%)
+			if vTotGrupo(idxProdutoGrupo).c16 = 0 then
+				vTotGrupo(idxProdutoGrupo).c18 = 0
+			else
+				vTotGrupo(idxProdutoGrupo).c18 = 100 * ((vTotGrupo(idxProdutoGrupo).c16 - vTotGrupo(idxProdutoGrupo).c15) / vTotGrupo(idxProdutoGrupo).c16)
+				end if
+
+            if blnOrdenarMargemContrib then
+                ' ordena pela marg contrib bruta
+                vTotGrupo(idxProdutoGrupo).CampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vTotGrupo(idxProdutoGrupo).c18)), 20)
+            else
+				' ordena pelo valor NF
+				vTotGrupo(idxProdutoGrupo).CampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vTotGrupo(idxProdutoGrupo).c16)), 20)
+				end if
+        end if
+
         ordena_cl_vinte_colunas vTotGrupo, 1, Ubound(vTotGrupo)
 
-    end if
 
+        ' FAZER TOTALIZAÇÃO GERAL POR SUBGRUPO DE PRODUTO
+        idxProdutoSubgrupo = 0
+        blnAchou = False
+        for i=LBound(vTotSubgrupo) to UBound(vTotSubgrupo)
+            if vTotSubgrupo(i).c1 = Trim("" & r("grupo")) & "|" & Trim("" & r("subgrupo")) then
+                blnAchou = True
+                idxProdutoSubgrupo = i
+                exit for
+            end if
+        next 
+        if Not blnAchou then
+            redim preserve vTotSubgrupo(UBound(vTotSubgrupo)+1)
+            set vTotSubgrupo(UBound(vTotSubgrupo)) = New cl_VINTE_COLUNAS
+            vTotSubgrupo(UBound(vTotSubgrupo)).CampoOrdenacao = ""
+            vTotSubgrupo(UBound(vTotSubgrupo)).c1 = Trim("" & r("grupo")) & "|" & Trim("" & r("subgrupo")) 'código grupo | código subgrupo
+            vTotSubgrupo(UBound(vTotSubgrupo)).c2 = Trim("" & r("grupo_descricao")) & "|" & Trim("" & r("subgrupo_descricao")) 'descrição grupo | descrição subgrupo
+            vTotSubgrupo(UBound(vTotSubgrupo)).c3 = 0 'qtde
+            vTotSubgrupo(UBound(vTotSubgrupo)).c4 = 0 'valor venda
+            vTotSubgrupo(UBound(vTotSubgrupo)).c5 = 0 '%fat venda total
+            vTotSubgrupo(UBound(vTotSubgrupo)).c6 = 0 'valor lista
+            vTotSubgrupo(UBound(vTotSubgrupo)).c7 = 0 'desc R$
+            vTotSubgrupo(UBound(vTotSubgrupo)).c8 = 0 'desc %
+            vTotSubgrupo(UBound(vTotSubgrupo)).c9 = 0 'COM R$
+            vTotSubgrupo(UBound(vTotSubgrupo)).c10 = 0 'COM %
+            vTotSubgrupo(UBound(vTotSubgrupo)).c11 = 0 '%COM + %Desc
+            vTotSubgrupo(UBound(vTotSubgrupo)).c12 = 0 'RA líquido
+            if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
+                vTotSubgrupo(UBound(vTotSubgrupo)).c13 = 0 'Lucro Líquido
+                vTotSubgrupo(UBound(vTotSubgrupo)).c14 = 0 'Margem Contrib %
+                vTotSubgrupo(UBound(vTotSubgrupo)).c15 = 0 'Vl entrada
+				vTotSubgrupo(UBound(vTotSubgrupo)).c16 = 0 'VL NF
+				vTotSubgrupo(UBound(vTotSubgrupo)).c17 = 0 'Lucro Bruto (R$)
+				vTotSubgrupo(UBound(vTotSubgrupo)).c18 = 0 'Margem Contrib Bruta (%)
+            else
+                vTotSubgrupo(UBound(vTotSubgrupo)).c13 = 0 'Lucro Líquido
+                vTotSubgrupo(UBound(vTotSubgrupo)).c14 = 0 'Margem Contrib %
+                vTotSubgrupo(UBound(vTotSubgrupo)).c15 = 0 'Vl entrada
+				vTotSubgrupo(UBound(vTotSubgrupo)).c16 = 0 'VL NF
+				vTotSubgrupo(UBound(vTotSubgrupo)).c17 = 0 'Lucro Bruto (R$)
+				vTotSubgrupo(UBound(vTotSubgrupo)).c18 = 0 'Margem Contrib Bruta (%)
+			end if
+            idxProdutoSubgrupo = UBound(vTotSubgrupo)
+        end if
+            
+        '> RA LÍQUIDO (R$)
+        vl_aux_RA_liquido = 0
+		vl_RA_bruto = r("valor_NF")-r("valor_venda")
+		if Not calcula_total_RA_liquido(r("perc_desagio_RA_liquida"), vl_RA_bruto, vl_aux_RA_liquido) then
+			Response.Write "FALHA AO CALCULAR O RA LÍQUIDO"
+			Response.End
+		end if
+        
+        vTotSubgrupo(idxProdutoSubgrupo).c3 = vTotSubgrupo(idxProdutoSubgrupo).c3 + r("qtde")
+        vTotSubgrupo(idxProdutoSubgrupo).c4 = vTotSubgrupo(idxProdutoSubgrupo).c4 + r("valor_venda")
+        vTotSubgrupo(idxProdutoSubgrupo).c5 = 0
+        vTotSubgrupo(idxProdutoSubgrupo).c6 = vTotSubgrupo(idxProdutoSubgrupo).c6 + r("valor_lista")
+        vTotSubgrupo(idxProdutoSubgrupo).c7 = vTotSubgrupo(idxProdutoSubgrupo).c7 + (r("valor_lista") - r("valor_venda"))
+        vTotSubgrupo(idxProdutoSubgrupo).c8 = 0
+        vTotSubgrupo(idxProdutoSubgrupo).c9 = vTotSubgrupo(idxProdutoSubgrupo).c9 + ((r("perc_RT")/100) * r("valor_venda"))
+        vTotSubgrupo(idxProdutoSubgrupo).c10 = 0
+        vTotSubgrupo(idxProdutoSubgrupo).c11 = 0
+        vTotSubgrupo(idxProdutoSubgrupo).c12 = vTotSubgrupo(idxProdutoSubgrupo).c12 + vl_aux_RA_liquido
+        if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
+			'Lucro Líquido
+            vTotSubgrupo(idxProdutoSubgrupo).c13 = vTotSubgrupo(idxProdutoSubgrupo).c13 + (r("valor_venda")-((r("perc_RT")/100) * r("valor_venda"))-r("valor_entrada"))
+            vTotSubgrupo(idxProdutoSubgrupo).c14 = 0
+            vTotSubgrupo(idxProdutoSubgrupo).c15 = vTotSubgrupo(idxProdutoSubgrupo).c15 + r("valor_entrada")
+			vTotSubgrupo(idxProdutoSubgrupo).c16 = vTotSubgrupo(idxProdutoSubgrupo).c16 + r("valor_NF")
+			'Margem Contrib %
+			if vTotSubgrupo(idxProdutoSubgrupo).c4 = 0 then
+                    vTotSubgrupo(idxProdutoSubgrupo).c14 = 0
+                else
+                    vTotSubgrupo(idxProdutoSubgrupo).c14 = 100 * ((vTotSubgrupo(idxProdutoSubgrupo).c4 - vTotSubgrupo(idxProdutoSubgrupo).c15 - vTotSubgrupo(idxProdutoSubgrupo).c9) / vTotSubgrupo(idxProdutoSubgrupo).c4)
+                end if
+			'Lucro Bruto (R$)
+			vTotSubgrupo(idxProdutoSubgrupo).c17 = vTotSubgrupo(idxProdutoSubgrupo).c17 + (r("valor_NF") - r("valor_entrada"))
+			'Margem Contrib Bruta (%)
+			if vTotSubgrupo(idxProdutoSubgrupo).c16 = 0 then
+				vTotSubgrupo(idxProdutoSubgrupo).c18 = 0
+			else
+				vTotSubgrupo(idxProdutoSubgrupo).c18 = 100 * ((vTotSubgrupo(idxProdutoSubgrupo).c16 - vTotSubgrupo(idxProdutoSubgrupo).c15) / vTotSubgrupo(idxProdutoSubgrupo).c16)
+				end if
+            if blnOrdenarMargemContrib then
+                ' ordena pela marg contrib bruta
+                vTotSubgrupo(idxProdutoSubgrupo).CampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vTotSubgrupo(idxProdutoSubgrupo).c18)), 20)
+            else
+                ' ordena pelo valor NF
+                vTotSubgrupo(idxProdutoSubgrupo).CampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vTotSubgrupo(idxProdutoSubgrupo).c16)), 20)
+            end if
+        else
+            vTotSubgrupo(idxProdutoSubgrupo).c13 = vTotSubgrupo(idxProdutoSubgrupo).c13 + (r("valor_venda")-((r("perc_RT")/100) * r("valor_venda"))-r("valor_entrada"))
+            vTotSubgrupo(idxProdutoSubgrupo).c14 = 0
+			vTotSubgrupo(idxProdutoSubgrupo).c15 = vTotSubgrupo(idxProdutoSubgrupo).c15 + r("valor_entrada")
+            if vTotSubgrupo(idxProdutoSubgrupo).c4 = 0 then
+                vTotSubgrupo(idxProdutoSubgrupo).c14 = 0
+            else
+                vTotSubgrupo(idxProdutoSubgrupo).c14 = 100 * ((vTotSubgrupo(idxProdutoSubgrupo).c4 - vTotSubgrupo(idxProdutoSubgrupo).c15 - vTotSubgrupo(idxProdutoSubgrupo).c9) / vTotSubgrupo(idxProdutoSubgrupo).c4)
+            end if
+			vTotSubgrupo(idxProdutoSubgrupo).c16 = vTotSubgrupo(idxProdutoSubgrupo).c16 + r("valor_NF")
+			'Lucro Bruto
+			vTotSubgrupo(idxProdutoSubgrupo).c17 = vTotSubgrupo(idxProdutoSubgrupo).c17 + (r("valor_NF") - r("valor_entrada"))
+			'Margem Contrib Bruta (%)
+			if vTotSubgrupo(idxProdutoSubgrupo).c16 = 0 then
+				vTotSubgrupo(idxProdutoSubgrupo).c18 = 0
+			else
+				vTotSubgrupo(idxProdutoSubgrupo).c18 = 100 * ((vTotSubgrupo(idxProdutoSubgrupo).c16 - vTotSubgrupo(idxProdutoSubgrupo).c15) / vTotSubgrupo(idxProdutoSubgrupo).c16)
+				end if
+
+            if blnOrdenarMargemContrib then
+                ' ordena pela marg contrib bruta
+                vTotSubgrupo(idxProdutoSubgrupo).CampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vTotSubgrupo(idxProdutoSubgrupo).c18)), 20)
+            else
+				' ordena pelo valor NF
+				vTotSubgrupo(idxProdutoSubgrupo).CampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vTotSubgrupo(idxProdutoSubgrupo).c16)), 20)
+				end if
+        end if
+
+        ordena_cl_vinte_colunas vTotSubgrupo, 1, Ubound(vTotSubgrupo)
+		end if
+
+'		=============================
+'		OPÇÃO SAÍDA: ORIGEM DO PEDIDO
+'		=============================
         ' ENCONTRAR OS GRUPOS DE ORIGEM DO PEDIDO
         if rb_saida = COD_SAIDA_REL_ORIGEM_PEDIDO then
 		blnAchou = False
@@ -1359,14 +1958,19 @@ dim idxAux
 				next
 		 if Not blnAchou then
 		   redim preserve v_total_origem_pedido(UBound(v_total_origem_pedido)+1)
-				set v_total_origem_pedido(UBound(v_total_origem_pedido)) = new cl_DUAS_COLUNAS
+				set v_total_origem_pedido(UBound(v_total_origem_pedido)) = new cl_TRES_COLUNAS
 				v_total_origem_pedido(UBound(v_total_origem_pedido)).c1 = Trim("" & r("codigo_pai"))
 				v_total_origem_pedido(UBound(v_total_origem_pedido)).c2 = 0
+				v_total_origem_pedido(UBound(v_total_origem_pedido)).c3 = 0
 				strAuxCodigoPai = UBound(v_total_origem_pedido)
 				 end if
 			v_total_origem_pedido(strAuxCodigoPai).c2 = v_total_origem_pedido(strAuxCodigoPai).c2 + r("valor_venda")
+			v_total_origem_pedido(strAuxCodigoPai).c3 = v_total_origem_pedido(strAuxCodigoPai).c3 + r("valor_NF")
 		 end if
 
+'		====================
+'		OPÇÃO SAÍDA: EMPRESA
+'		====================
         'ENCONTRAR AS EMPRESAS
 		if rb_saida = COD_SAIDA_REL_EMPRESA then
 		blnAchou = False
@@ -1379,12 +1983,14 @@ dim idxAux
 				next
 		 if Not blnAchou then
 		   redim preserve v_total_Empresa(UBound(v_total_Empresa)+1)
-				set v_total_Empresa(UBound(v_total_Empresa)) = new cl_DUAS_COLUNAS
+				set v_total_Empresa(UBound(v_total_Empresa)) = new cl_TRES_COLUNAS
 				v_total_Empresa(UBound(v_total_Empresa)).c1 = Trim("" & r("id_nfe_emitente"))
 				v_total_Empresa(UBound(v_total_Empresa)).c2 = 0
+				v_total_Empresa(UBound(v_total_Empresa)).c3 = 0
 				strAuxVlEmpresa = UBound(v_total_Empresa)
 				 end if
 			v_total_Empresa(strAuxVlEmpresa).c2 = v_total_Empresa(strAuxVlEmpresa).c2 + r("valor_venda")
+			v_total_Empresa(strAuxVlEmpresa).c3 = v_total_Empresa(strAuxVlEmpresa).c3 + r("valor_NF")
 		 end if
 
 		r.MoveNext
@@ -1395,11 +2001,13 @@ dim idxAux
 	n_reg_BD = 0
 	intQtdeTotalProdutos = 0
 	vl_total_venda = 0
+	vl_total_NF = 0
 	vl_total_lista = 0
 	vl_total_desconto = 0
 	vl_total_RT = 0
 	vl_total_RA_liquido = 0
 	lucro_liquido_total = 0
+	lucro_bruto_total = 0
 	total_entrada = 0
 
 	redim vRelat(1)
@@ -1416,6 +2024,7 @@ dim idxAux
 	strAuxFabricanteAnterior="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     strAuxEmpresaAnterior="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     strAuxCodigoPaiAnterior = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+	last_rec_field__produto = ""
 '	A VARIÁVEL ABAIXO É UTILIZADA PARA A ORDENAÇÃO POR ESTADO FICAR EM ORDEM CRESCENTE POR SIGLA
 	intIdxUF = 99
 '   ORDENAÇÃO POR FABRICANTE
@@ -1435,6 +2044,11 @@ dim idxAux
 		    strItemAtual = Trim("" & r("fabricante")) & "|" & Trim("" & r("descricao")) & "|" & Trim("" & r("grupo")) & "|" & Trim("" & r("grupo_descricao")) & "|" & Trim("" & r("produto"))& "|" & Trim("" & r("descricao_html"))
 		    strAuxNomeFabricante = Ucase(Trim("" & r("fabricante")))
             strAuxNomeProdutoGrupo = Trim("" & r("grupo"))
+        elseif rb_saida = COD_SAIDA_REL_SUBGRUPO_PRODUTO then
+		    strItemAtual = Trim("" & r("fabricante")) & "|" & Trim("" & r("descricao")) & "|" & Trim("" & r("grupo")) & "|" & Trim("" & r("grupo_descricao")) & "|" & Trim("" & r("subgrupo")) & "|" & Trim("" & r("subgrupo_descricao")) & "|" & Trim("" & r("produto"))& "|" & Trim("" & r("descricao_html"))
+		    strAuxNomeFabricante = Ucase(Trim("" & r("fabricante")))
+            strAuxNomeProdutoGrupo = Trim("" & r("grupo"))
+			strAuxNomeProdutoSubgrupo = Trim("" & r("subgrupo"))
 		elseif rb_saida = COD_SAIDA_REL_VENDEDOR then
 			strItemAtual = Trim("" & r("vendedor"))
 		elseif rb_saida = COD_SAIDA_REL_INDICADOR then
@@ -1471,7 +2085,7 @@ dim idxAux
 				
 			if n_reg_BD > 0 then
 				if rb_saida = COD_SAIDA_REL_INDICADOR_UF then
-					strCampoOrdenacao = Trim(CStr(intIdxUF)) & "|" & strAuxUFAnterior & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_sub_total_venda)), 20) & "|" & _
+					strCampoOrdenacao = Trim(CStr(intIdxUF)) & "|" & strAuxUFAnterior & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_sub_total_NF)), 20) & "|" & _
 										strAuxIndicadorAnterior
 					if strAuxUF <> strAuxUFAnterior then 
 						intIdxUF = intIdxUF - 1
@@ -1480,11 +2094,11 @@ dim idxAux
 					vl_aux = 0
 					for i=LBound(v_total_UF) to UBound(v_total_UF)
 						if v_total_UF(i).c1 = strAuxUFAnterior then
-							vl_aux = v_total_UF(i).c2
+							vl_aux = v_total_UF(i).c3
 							exit for
 							end if
 						next
-					strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & strAuxUFAnterior & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_sub_total_venda)), 20) & "|" & _
+					strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & strAuxUFAnterior & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_sub_total_NF)), 20) & "|" & _
 										strAuxCidadeAnterior
 					if strAuxUF <> strAuxUFAnterior then 
 						intIdxUF = intIdxUF - 1
@@ -1494,11 +2108,11 @@ dim idxAux
 					vl_aux = 0
 					for i=LBound(v_total_origem_pedido) to UBound(v_total_origem_pedido)
 						if v_total_origem_pedido(i).c1 = strauxCodigoPaiAnterior then
-							vl_aux = v_total_origem_pedido(i).c2
+							vl_aux = v_total_origem_pedido(i).c3
 							exit for
 							end if
 						next
-					strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & strauxCodigoPaiAnterior & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_sub_total_venda)), 20) & "|" & _
+					strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & strauxCodigoPaiAnterior & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_sub_total_NF)), 20) & "|" & _
 										strauxCodigoPaiAnterior
 					if strauxCodigoPai <> strauxCodigoPaiAnterior then 
 						intIdxUF = intIdxUF - 1
@@ -1509,7 +2123,7 @@ dim idxAux
 			        vl_aux = 0
 					    for i=LBound(v_total_FABRICANTE) to UBound(v_total_FABRICANTE)
 						    if v_total_FABRICANTE(i).c1 = strAuxNomeFabricanteAnterior then
-							    vl_aux = v_total_FABRICANTE(i).c2
+							    vl_aux = v_total_FABRICANTE(i).c3
 							    exit for
 							    end if
 						    next
@@ -1531,44 +2145,119 @@ dim idxAux
 				    else
 				        marg_contrib_ordenacao = 100 * ((vl_sub_total_venda - subtotal_entrada - vl_sub_total_RT) / vl_sub_total_venda)
 				    end if
+
+					if vl_sub_total_NF = 0 then
+						marg_contrib_bruta_ordenacao = 0
+					else
+						marg_contrib_bruta_ordenacao = 100 * ((vl_sub_total_NF - subtotal_entrada) / vl_sub_total_NF)
+						end if
+
 			        vl_aux = 0
                     vl_aux_ProdutoGrupo = 0
                     for i=LBound(v_total_FABRICANTE) to UBound(v_total_FABRICANTE)
 						if v_total_FABRICANTE(i).c1 = strAuxNomeFabricanteAnterior then
-							vl_aux = v_total_FABRICANTE(i).c2
+							vl_aux = v_total_FABRICANTE(i).c3
 							exit for
 							end if
 						next
 					for i=LBound(v_total_GRUPO_PRODUTO) to UBound(v_total_GRUPO_PRODUTO)
 						if v_total_GRUPO_PRODUTO(i).c1 = strAuxNomeFabricanteAnterior & strAuxNomeProdutoGrupoAnterior then
-							vl_aux_ProdutoGrupo = v_total_GRUPO_PRODUTO(i).c2
-                            vl_marg_contrib_ProdutoGrupo = v_total_GRUPO_PRODUTO(i).c5
+							vl_aux_ProdutoGrupo = v_total_GRUPO_PRODUTO(i).c6
+                            vl_marg_contrib_bruta_ProdutoGrupo = v_total_GRUPO_PRODUTO(i).c7
 							exit for
 							end if
 						next
                     
                     if rb_periodo = COD_CONSULTA_POR_PERIODO_CADASTRO then
-                        if ckb_ordenar_marg_contrib = "1" then
-					        strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & iif(CInt(vl_marg_contrib_ProdutoGrupo)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_marg_contrib_ProdutoGrupo)), 20) & "|" & iif(CInt(marg_contrib_ordenacao)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(marg_contrib_ordenacao)), 20)
+                        if blnOrdenarMargemContrib then
+					        strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & iif(CInt(vl_marg_contrib_bruta_ProdutoGrupo)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_marg_contrib_bruta_ProdutoGrupo)), 20) & "|" & iif(CInt(marg_contrib_bruta_ordenacao)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(marg_contrib_bruta_ordenacao)), 20)
                         else
 							strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux_ProdutoGrupo)), 20) & "|" & strAuxNomeFabricanteAnterior & normaliza_codigo(retorna_so_digitos(intQtdeSubTotalProdutos), 20) & "|" & _
 											strAuxFabricanteAnterior
 							end if
                     else
-                        if ckb_ordenar_marg_contrib = "1" then
-					        strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & iif(CInt(vl_marg_contrib_ProdutoGrupo)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_marg_contrib_ProdutoGrupo)), 20) & "|" & iif(CInt(marg_contrib_ordenacao)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(marg_contrib_ordenacao)), 20)
+                        if blnOrdenarMargemContrib then
+					        strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & iif(CInt(vl_marg_contrib_bruta_ProdutoGrupo)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_marg_contrib_bruta_ProdutoGrupo)), 20) & "|" & iif(CInt(marg_contrib_bruta_ordenacao)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(marg_contrib_bruta_ordenacao)), 20)
                         else
                             strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux_ProdutoGrupo)), 20) & "|" & strAuxNomeFabricanteAnterior & normaliza_codigo(retorna_so_digitos(intQtdeSubTotalProdutos), 20) & "|" & _
 										strAuxFabricanteAnterior
                         end if
 					 end if	
 
+        'ORDENA OS ITENS FABRICANTE/GRUPO PRODUTO/SUBGRUPO PRODUTO
+			elseif rb_saida = COD_SAIDA_REL_SUBGRUPO_PRODUTO then
+                    if vl_sub_total_venda = 0 then
+				        marg_contrib_ordenacao = 0
+				    else
+				        marg_contrib_ordenacao = 100 * ((vl_sub_total_venda - subtotal_entrada - vl_sub_total_RT) / vl_sub_total_venda)
+				    end if
+
+					if vl_sub_total_NF = 0 then
+						marg_contrib_bruta_ordenacao = 0
+					else
+						marg_contrib_bruta_ordenacao = 100 * ((vl_sub_total_NF - subtotal_entrada) / vl_sub_total_NF)
+						end if
+
+			        vl_aux = 0
+                    vl_aux_ProdutoGrupo = 0
+					vl_aux_ProdutoSubgrupo = 0
+                    for i=LBound(v_total_FABRICANTE) to UBound(v_total_FABRICANTE)
+						if v_total_FABRICANTE(i).c1 = strAuxNomeFabricanteAnterior then
+							vl_aux = v_total_FABRICANTE(i).c3
+							exit for
+							end if
+						next
+
+					for i=LBound(v_total_GRUPO_PRODUTO) to UBound(v_total_GRUPO_PRODUTO)
+						if v_total_GRUPO_PRODUTO(i).c1 = strAuxNomeFabricanteAnterior & "|" & strAuxNomeProdutoGrupoAnterior then
+							vl_aux_ProdutoGrupo = v_total_GRUPO_PRODUTO(i).c6
+                            vl_marg_contrib_bruta_ProdutoGrupo = v_total_GRUPO_PRODUTO(i).c7
+							exit for
+							end if
+						next
+
+					for i=LBound(v_total_SUBGRUPO_PRODUTO) to UBound(v_total_SUBGRUPO_PRODUTO)
+						if v_total_SUBGRUPO_PRODUTO(i).c1 = strAuxNomeFabricanteAnterior & "|" & strAuxNomeProdutoGrupoAnterior & "|" & strAuxNomeProdutoSubgrupoAnterior then
+							vl_aux_ProdutoSubgrupo = v_total_SUBGRUPO_PRODUTO(i).c6
+							vl_marg_contrib_bruta_ProdutoSubgrupo = v_total_SUBGRUPO_PRODUTO(i).c7
+							exit for
+							end if
+						next
+                    
+                    if rb_periodo = COD_CONSULTA_POR_PERIODO_CADASTRO then
+                        if blnOrdenarMargemContrib then
+					        strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & _
+												iif(CInt(vl_marg_contrib_bruta_ProdutoGrupo)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_marg_contrib_bruta_ProdutoGrupo)), 20) & "|" & _
+												iif(CInt(vl_marg_contrib_bruta_ProdutoSubgrupo)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_marg_contrib_bruta_ProdutoSubgrupo)), 20) & "|" & _
+												iif(CInt(marg_contrib_bruta_ordenacao)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(marg_contrib_bruta_ordenacao)), 20)
+                        else
+							strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & _
+												normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux_ProdutoGrupo)), 20) & "|" & _
+												normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux_ProdutoSubgrupo)), 20) & "|" & _
+												strAuxNomeFabricanteAnterior & normaliza_codigo(retorna_so_digitos(intQtdeSubTotalProdutos), 20) & "|" & _
+												strAuxFabricanteAnterior
+							end if
+                    else
+					    if blnOrdenarMargemContrib then
+					        strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & _
+												iif(CInt(vl_marg_contrib_bruta_ProdutoGrupo)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_marg_contrib_bruta_ProdutoGrupo)), 20) & "|" & _
+												iif(CInt(vl_marg_contrib_bruta_ProdutoSubgrupo)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_marg_contrib_bruta_ProdutoSubgrupo)), 20) & "|" & _
+												iif(CInt(marg_contrib_bruta_ordenacao)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(marg_contrib_bruta_ordenacao)), 20)
+                        else
+                            strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & _
+												normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux_ProdutoGrupo)), 20) & "|" & _
+												normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux_ProdutoSubgrupo)), 20) & "|" & _
+												strAuxNomeFabricanteAnterior & normaliza_codigo(retorna_so_digitos(intQtdeSubTotalProdutos), 20) & "|" & _
+												strAuxFabricanteAnterior
+                        end if
+					 end if
+
             'ORDENA OS ITEMS EMPRESA
 			    elseif rb_saida = COD_SAIDA_REL_EMPRESA  then
 			        vl_aux = 0
 					    for i=LBound(v_total_Empresa) to UBound(v_total_Empresa)
 						    if v_total_Empresa(i).c1 = strAuxNomeEmpresaAnterior then
-							    vl_aux = v_total_Empresa(i).c2
+							    vl_aux = v_total_Empresa(i).c3
 							    exit for
 						    end if
 					    next
@@ -1584,10 +2273,10 @@ dim idxAux
 					    end if				
                 
                elseif rb_saida = COD_SAIDA_REL_PRODUTO then
-               strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(intQtdeSubTotalProdutos), 20) & "|" &  normaliza_codigo(retorna_so_digitos(codigoProdutoComplemento(Trim("" & r(1)))), 20) & "|" & _
+               strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(intQtdeSubTotalProdutos), 20) & "|" & normaliza_codigo(retorna_so_digitos(codigoProdutoComplemento(Trim("" & r("produto")))), 20) & "|" & _
 										strItemAnterior
 				else
-					strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_sub_total_venda)), 20) & _
+					strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_sub_total_NF)), 20) & _
 										strItemAnterior
 					end if
 				
@@ -1624,6 +2313,13 @@ dim idxAux
 				        marg_contrib = 100 * ((vl_sub_total_venda - subtotal_entrada - vl_sub_total_RT) / vl_sub_total_venda)
 				    end if
 
+				'	% MARGEM CONTRIBUIÇÃO BRUTA
+					if vl_sub_total_NF = 0 then
+						marg_contrib_bruta = 0
+					else
+						marg_contrib_bruta = 100 * ((vl_sub_total_NF - subtotal_entrada) / vl_sub_total_NF)
+						end if
+
 					.CampoOrdenacao = strCampoOrdenacao
 					.c1 = strItemAnterior
 					.c2 = intQtdeSubTotalProdutos
@@ -1639,22 +2335,28 @@ dim idxAux
 					.c12 = lucro_liquido_subtotal
 					.c13 = marg_contrib
 					.c14 = subtotal_entrada
+					.c15 = vl_sub_total_NF
+					.c16 = lucro_bruto_subtotal
+					.c17 = marg_contrib_bruta
 					end with
 				end if
 				
 			intQtdeSubTotalProdutos = 0
 			vl_sub_total_venda = 0
+			vl_sub_total_NF = 0
 			vl_sub_total_lista = 0
 			vl_sub_total_desconto = 0
 			vl_sub_total_RT = 0
 			vl_sub_total_RA_liquido = 0
 			lucro_liquido_subtotal = 0
+			lucro_bruto_subtotal = 0
 			subtotal_entrada = 0
 			strItemAnterior = strItemAtual
 			strAuxUFAnterior = strAuxUF
 			strAuxNomeFabricanteAnterior = strAuxNomeFabricante
 			strAuxFabricanteAnterior = strAuxFabricante
             strAuxNomeProdutoGrupoAnterior = strAuxNomeProdutoGrupo
+			strAuxNomeProdutoSubgrupoAnterior = strAuxNomeProdutoSubgrupo
             strAuxNomeEmpresaAnterior = strAuxNomeEmpresa
 			strAuxEmpresaAnterior = strAuxEmpresa
 			strAuxIndicadorAnterior = strAuxIndicador
@@ -1665,6 +2367,9 @@ dim idxAux
 		
 	 '> VALOR DE VENDA
 		vl_venda = r("valor_venda")
+
+	 '> VALOR NF
+		vl_NF = r("valor_NF")
 
 	 '> VALOR DE LISTA
 		vl_lista = r("valor_lista")
@@ -1695,16 +2400,22 @@ dim idxAux
 			lucro_liquido = vl_venda - vl_RT - vl_ent
 			end if
 
+	 '> LUCRO BRUTO (R$)
+		lucro_bruto = vl_NF - vl_ent
+
 		vl_sub_total_venda = vl_sub_total_venda + vl_venda
+		vl_sub_total_NF = vl_sub_total_NF + vl_NF
 		vl_sub_total_lista = vl_sub_total_lista + vl_lista
 		vl_sub_total_desconto = vl_sub_total_desconto + vl_desconto
 		vl_sub_total_RT = vl_sub_total_RT + vl_RT
 		vl_sub_total_RA_liquido = vl_sub_total_RA_liquido + vl_RA_liquido
 		lucro_liquido_subtotal = lucro_liquido_subtotal + lucro_liquido
+		lucro_bruto_subtotal = lucro_bruto_subtotal + lucro_bruto
 		subtotal_entrada = subtotal_entrada + vl_ent
 		intQtdeSubTotalProdutos = intQtdeSubTotalProdutos + r("qtde")
 		
 		vl_total_venda = vl_total_venda + vl_venda
+		vl_total_NF = vl_total_NF + vl_NF
 		strAuxVlFabricante =  strAuxVlFabricante + vl_total_venda
         strAuxVlEmpresa =  strAuxVlEmpresa + vl_total_venda
 		vl_total_lista = vl_total_lista + vl_lista
@@ -1712,9 +2423,14 @@ dim idxAux
 		vl_total_RT = vl_total_RT + vl_RT
 		vl_total_RA_liquido = vl_total_RA_liquido + vl_RA_liquido
 		lucro_liquido_total = lucro_liquido_total + lucro_liquido
+		lucro_bruto_total = lucro_bruto_total + lucro_bruto
 		total_entrada = total_entrada + vl_ent
 		intQtdeTotalProdutos = intQtdeTotalProdutos + r("qtde")
 		
+		'Se o campo produto estiver entre os campos de saída, armazena o valor p/ que o processamento
+		'seguinte tenha o valor do último registro disponível
+		if Instr(strSqlCampoSaida, ".produto,") <> 0 then last_rec_field__produto = Trim("" & r("produto"))
+
 		r.MoveNext
 		loop
 
@@ -1728,57 +2444,179 @@ dim idxAux
 			end if
 	
 		if rb_saida = COD_SAIDA_REL_INDICADOR_UF then
-			strCampoOrdenacao = Trim(CStr(intIdxUF)) & "|" & strAuxUFAnterior & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_sub_total_venda)), 20) & "|" & _
+			strCampoOrdenacao = Trim(CStr(intIdxUF)) & "|" & strAuxUFAnterior & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_sub_total_NF)), 20) & "|" & _
 								strAuxIndicadorAnterior
 		elseif rb_saida = COD_SAIDA_REL_CIDADE_UF then
 			vl_aux = 0
 			for i=LBound(v_total_UF) to UBound(v_total_UF)
 				if v_total_UF(i).c1 = strAuxUFAnterior then
-					vl_aux = v_total_UF(i).c2
+					vl_aux = v_total_UF(i).c3
 					exit for
 					end if
 				next
-			strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & strAuxUFAnterior & normaliza_codigo(retorna_so_digitos(formata_moeda(intQtdeSubTotalProdutos)), 20) & "|" & _
+			strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & strAuxUFAnterior & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_sub_total_NF)), 20) & "|" & _
 								strAuxCidadeAnterior
 
         elseif rb_saida = COD_SAIDA_REL_ORIGEM_PEDIDO then
 			vl_aux = 0
 			for i=LBound(v_total_origem_pedido) to UBound(v_total_origem_pedido)
 				if v_total_origem_pedido(i).c1 = strauxCodigoPaiAnterior then
-					vl_aux = v_total_origem_pedido(i).c2
+					vl_aux = v_total_origem_pedido(i).c3
 					exit for
 					end if
 				next
-			strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & strauxCodigoPaiAnterior & normaliza_codigo(retorna_so_digitos(formata_moeda(intQtdeSubTotalProdutos)), 20) & "|" & _
-								strauxCodigoAnterior
+			strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & strauxCodigoPaiAnterior & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_sub_total_NF)), 20) & "|" & _
+								strauxCodigoPaiAnterior
 
 		elseif rb_saida = COD_SAIDA_REL_FABRICANTE  then
 	        vl_aux = 0
 			for i=LBound(v_total_FABRICANTE) to UBound(v_total_FABRICANTE)
 				if v_total_FABRICANTE(i).c1 = strAuxNomeFabricanteAnterior then
-					vl_aux = v_total_FABRICANTE(i).c2
+					vl_aux = v_total_FABRICANTE(i).c3
 					exit for
 					end if
 				next
-			strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & strAuxNomeFabricanteAnterior & normaliza_codigo(retorna_so_digitos(intQtdeSubTotalProdutos), 20) & "|"  & _
+			if rb_periodo = COD_CONSULTA_POR_PERIODO_CADASTRO then
+				strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & strAuxNomeFabricanteAnterior & normaliza_codigo(retorna_so_digitos(intQtdeSubTotalProdutos), 20) & "|" &  normaliza_codigo(retorna_so_digitos(codigoProdutoComplemento(last_rec_field__produto)), 20) & "|" & _
+									strAuxFabricanteAnterior
+			else
+				strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & strAuxNomeFabricanteAnterior & normaliza_codigo(retorna_so_digitos(intQtdeSubTotalProdutos), 20) & "|" &  normaliza_codigo(retorna_so_digitos(codigoProdutoComplemento(last_rec_field__produto)), 20) & "|" & _
+								strAuxFabricanteAnterior
+				end if
+
+		elseif rb_saida = COD_SAIDA_REL_GRUPO_PRODUTO then
+            if vl_sub_total_venda = 0 then
+				marg_contrib_ordenacao = 0
+			else
+				marg_contrib_ordenacao = 100 * ((vl_sub_total_venda - subtotal_entrada - vl_sub_total_RT) / vl_sub_total_venda)
+			end if
+
+			if vl_sub_total_NF = 0 then
+				marg_contrib_bruta_ordenacao = 0
+			else
+				marg_contrib_bruta_ordenacao = 100 * ((vl_sub_total_NF - subtotal_entrada) / vl_sub_total_NF)
+				end if
+
+			vl_aux = 0
+            vl_aux_ProdutoGrupo = 0
+            for i=LBound(v_total_FABRICANTE) to UBound(v_total_FABRICANTE)
+				if v_total_FABRICANTE(i).c1 = strAuxNomeFabricanteAnterior then
+					vl_aux = v_total_FABRICANTE(i).c3
+					exit for
+					end if
+				next
+			for i=LBound(v_total_GRUPO_PRODUTO) to UBound(v_total_GRUPO_PRODUTO)
+				if v_total_GRUPO_PRODUTO(i).c1 = strAuxNomeFabricanteAnterior & strAuxNomeProdutoGrupoAnterior then
+					vl_aux_ProdutoGrupo = v_total_GRUPO_PRODUTO(i).c6
+                    vl_marg_contrib_bruta_ProdutoGrupo = v_total_GRUPO_PRODUTO(i).c7
+					exit for
+					end if
+				next
+                    
+            if rb_periodo = COD_CONSULTA_POR_PERIODO_CADASTRO then
+                if blnOrdenarMargemContrib then
+					strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & iif(CInt(vl_marg_contrib_bruta_ProdutoGrupo)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_marg_contrib_bruta_ProdutoGrupo)), 20) & "|" & iif(CInt(marg_contrib_bruta_ordenacao)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(marg_contrib_bruta_ordenacao)), 20)
+                else
+					strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux_ProdutoGrupo)), 20) & "|" & strAuxNomeFabricanteAnterior & normaliza_codigo(retorna_so_digitos(intQtdeSubTotalProdutos), 20) & "|" & _
+									strAuxFabricanteAnterior
+					end if
+            else
+				if blnOrdenarMargemContrib then
+					strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & iif(CInt(vl_marg_contrib_bruta_ProdutoGrupo)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_marg_contrib_bruta_ProdutoGrupo)), 20) & "|" & iif(CInt(marg_contrib_bruta_ordenacao)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(marg_contrib_bruta_ordenacao)), 20)
+                else
+                    strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux_ProdutoGrupo)), 20) & "|" & strAuxNomeFabricanteAnterior & normaliza_codigo(retorna_so_digitos(intQtdeSubTotalProdutos), 20) & "|" & _
+								strAuxFabricanteAnterior
+                end if
+				end if
+
+		elseif rb_saida = COD_SAIDA_REL_SUBGRUPO_PRODUTO then
+            if vl_sub_total_venda = 0 then
+				marg_contrib_ordenacao = 0
+			else
+				marg_contrib_ordenacao = 100 * ((vl_sub_total_venda - subtotal_entrada - vl_sub_total_RT) / vl_sub_total_venda)
+			end if
+
+			if vl_sub_total_NF = 0 then
+				marg_contrib_bruta_ordenacao = 0
+			else
+				marg_contrib_bruta_ordenacao = 100 * ((vl_sub_total_NF - subtotal_entrada) / vl_sub_total_NF)
+				end if
+
+			vl_aux = 0
+            vl_aux_ProdutoGrupo = 0
+			vl_aux_ProdutoSubgrupo = 0
+            for i=LBound(v_total_FABRICANTE) to UBound(v_total_FABRICANTE)
+				if v_total_FABRICANTE(i).c1 = strAuxNomeFabricanteAnterior then
+					vl_aux = v_total_FABRICANTE(i).c3
+					exit for
+					end if
+				next
+
+			for i=LBound(v_total_GRUPO_PRODUTO) to UBound(v_total_GRUPO_PRODUTO)
+				if v_total_GRUPO_PRODUTO(i).c1 = strAuxNomeFabricanteAnterior & "|" & strAuxNomeProdutoGrupoAnterior then
+					vl_aux_ProdutoGrupo = v_total_GRUPO_PRODUTO(i).c6
+                    vl_marg_contrib_bruta_ProdutoGrupo = v_total_GRUPO_PRODUTO(i).c7
+					exit for
+					end if
+				next
+
+			for i=LBound(v_total_SUBGRUPO_PRODUTO) to UBound(v_total_SUBGRUPO_PRODUTO)
+				if v_total_SUBGRUPO_PRODUTO(i).c1 = strAuxNomeFabricanteAnterior & "|" & strAuxNomeProdutoGrupoAnterior & "|" & strAuxNomeProdutoSubgrupoAnterior then
+					vl_aux_ProdutoSubgrupo = v_total_SUBGRUPO_PRODUTO(i).c6
+					vl_marg_contrib_bruta_ProdutoSubgrupo = v_total_SUBGRUPO_PRODUTO(i).c7
+					exit for
+					end if
+				next
+                    
+            if rb_periodo = COD_CONSULTA_POR_PERIODO_CADASTRO then
+                if blnOrdenarMargemContrib then
+					strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & _
+										iif(CInt(vl_marg_contrib_bruta_ProdutoGrupo)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_marg_contrib_bruta_ProdutoGrupo)), 20) & "|" & _
+										iif(CInt(vl_marg_contrib_bruta_ProdutoSubgrupo)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_marg_contrib_bruta_ProdutoSubgrupo)), 20) & "|" & _
+										iif(CInt(marg_contrib_bruta_ordenacao)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(marg_contrib_bruta_ordenacao)), 20)
+                else
+					strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & _
+										normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux_ProdutoGrupo)), 20) & "|" & _
+										normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux_ProdutoSubgrupo)), 20) & "|" & _
+										strAuxNomeFabricanteAnterior & normaliza_codigo(retorna_so_digitos(intQtdeSubTotalProdutos), 20) & "|" & _
 										strAuxFabricanteAnterior
+					end if
+            else
+				if blnOrdenarMargemContrib then
+					strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & _
+										iif(CInt(vl_marg_contrib_bruta_ProdutoGrupo)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_marg_contrib_bruta_ProdutoGrupo)), 20) & "|" & _
+										iif(CInt(vl_marg_contrib_bruta_ProdutoSubgrupo)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(vl_marg_contrib_bruta_ProdutoSubgrupo)), 20) & "|" & _
+										iif(CInt(marg_contrib_bruta_ordenacao)<0, "1", "2") & normaliza_codigo(retorna_so_digitos(formata_moeda(marg_contrib_bruta_ordenacao)), 20)
+                else
+                    strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & _
+										normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux_ProdutoGrupo)), 20) & "|" & _
+										normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux_ProdutoSubgrupo)), 20) & "|" & _
+										strAuxNomeFabricanteAnterior & normaliza_codigo(retorna_so_digitos(intQtdeSubTotalProdutos), 20) & "|" & _
+										strAuxFabricanteAnterior
+                end if
+				end if
 
         elseif rb_saida = COD_SAIDA_REL_EMPRESA  then
 	        vl_aux = 0
 			for i=LBound(v_total_Empresa) to UBound(v_total_Empresa)
 				if v_total_Empresa(i).c1 = strAuxNomeEmpresaAnterior then
-					vl_aux = v_total_Empresa(i).c2
+					vl_aux = v_total_Empresa(i).c3
 					exit for
 					end if
 				next
-			strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & strAuxNomeEmpresaAnterior & normaliza_codigo(retorna_so_digitos(intQtdeSubTotalProdutos), 20) & "|"  & _
-										strAuxEmpresaAnterior
+			if rb_periodo = COD_CONSULTA_POR_PERIODO_CADASTRO then
+				strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & strAuxNomeEmpresaAnterior & normaliza_codigo(retorna_so_digitos(intQtdeSubTotalProdutos), 20) & "|" &  normaliza_codigo(retorna_so_digitos(codigoProdutoComplemento(last_rec_field__produto)), 20) & "|" & _
+											strAuxEmpresaAnterior
+			else
+				strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_aux)), 20) & "|" & strAuxNomeEmpresaAnterior & normaliza_codigo(retorna_so_digitos(intQtdeSubTotalProdutos), 20) & "|" & normaliza_codigo(retorna_so_digitos(codigoProdutoComplemento(last_rec_field__produto)), 20) & "|" & _
+									strAuxEmpresaAnterior
+				end if
 
             elseif rb_saida = COD_SAIDA_REL_PRODUTO then
-               strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(intQtdeSubTotalProdutos), 20) & "|"  & _
+               strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(intQtdeSubTotalProdutos), 20) & "|" & normaliza_codigo(retorna_so_digitos(codigoProdutoComplemento(last_rec_field__produto)), 20) & "|" & _
 										strItemAnterior
     		else
-			strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_sub_total_venda)), 20) & _
+			strCampoOrdenacao = normaliza_codigo(retorna_so_digitos(formata_moeda(vl_sub_total_NF)), 20) & _
 								strItemAnterior
 			end if
 		
@@ -1815,6 +2653,13 @@ dim idxAux
 	            marg_contrib = 100 * ((vl_sub_total_venda - subtotal_entrada - vl_sub_total_RT) / vl_sub_total_venda)
 	        end if 
 
+		'	MARGEM CONTRIBUIÇÃO BRUTA (%)
+			if vl_sub_total_NF = 0 then
+				marg_contrib_bruta = 0
+			else
+				marg_contrib_bruta = 100 * ((vl_sub_total_NF - subtotal_entrada) / vl_sub_total_NF)
+				end if
+
 			.CampoOrdenacao = strCampoOrdenacao
 			.c1 = strItemAnterior
 			.c2 = intQtdeSubTotalProdutos
@@ -1830,6 +2675,9 @@ dim idxAux
 			.c12 = lucro_liquido_subtotal
 			.c13 = marg_contrib
 			.c14 = subtotal_entrada
+			.c15 = vl_sub_total_NF
+			.c16 = lucro_bruto_subtotal
+			.c17 = marg_contrib_bruta
 			end with
 		end if
 
@@ -1840,7 +2688,7 @@ dim idxAux
 
 	n_reg_vetor = 0
 	if n_reg_BD > 0 then
-		if (rb_saida <> COD_SAIDA_REL_INDICADOR_UF) and (rb_saida <> COD_SAIDA_REL_CIDADE_UF)and(rb_saida <> COD_SAIDA_REL_FABRICANTE)and (rb_saida <> COD_SAIDA_REL_GRUPO_PRODUTO) and (rb_saida <> COD_SAIDA_REL_ORIGEM_PEDIDO) and (rb_saida <> COD_SAIDA_REL_EMPRESA) then
+		if (rb_saida <> COD_SAIDA_REL_INDICADOR_UF) and (rb_saida <> COD_SAIDA_REL_CIDADE_UF)and(rb_saida <> COD_SAIDA_REL_FABRICANTE)and (rb_saida <> COD_SAIDA_REL_GRUPO_PRODUTO) and (rb_saida <> COD_SAIDA_REL_SUBGRUPO_PRODUTO) and (rb_saida <> COD_SAIDA_REL_ORIGEM_PEDIDO) and (rb_saida <> COD_SAIDA_REL_EMPRESA) then
 			x = cab_table
 			x = x & cab
 			end if
@@ -1855,12 +2703,14 @@ dim idxAux
         strAuxCodigoPai = "-XX-XX-"
         strAuxNomeProdutoGrupo = "-XX-XX-"
 	    strAuxNomeProdutoGrupoAnterior = "-XX-XX-"
+        strAuxNomeProdutoSubgrupo = "-XX-XX-"
+	    strAuxNomeProdutoSubgrupoAnterior = "-XX-XX-"
 	
 		for intIdxVetor = Ubound(vRelat) to 1 step -1
 		  ' CONTAGEM
 			n_reg_vetor = n_reg_vetor + 1
 
-			if (rb_saida <> COD_SAIDA_REL_INDICADOR_UF) and (rb_saida <> COD_SAIDA_REL_CIDADE_UF)and(rb_saida <> COD_SAIDA_REL_FABRICANTE)and (rb_saida <> COD_SAIDA_REL_GRUPO_PRODUTO) and (rb_saida <> COD_SAIDA_REL_ORIGEM_PEDIDO) and (rb_saida <> COD_SAIDA_REL_EMPRESA)then
+			if (rb_saida <> COD_SAIDA_REL_INDICADOR_UF) and (rb_saida <> COD_SAIDA_REL_CIDADE_UF)and(rb_saida <> COD_SAIDA_REL_FABRICANTE)and (rb_saida <> COD_SAIDA_REL_GRUPO_PRODUTO)and(rb_saida <> COD_SAIDA_REL_SUBGRUPO_PRODUTO) and (rb_saida <> COD_SAIDA_REL_ORIGEM_PEDIDO) and (rb_saida <> COD_SAIDA_REL_EMPRESA)then
 				x = x & "	<tr nowrap>" & chr(13)
 				end if
 			
@@ -1878,16 +2728,22 @@ dim idxAux
 				lucro_liquido = .c12
 				marg_contrib = .c13
 				vl_ent = .c14
+				vl_NF = .c15
+				lucro_bruto = .c16
+				marg_contrib_bruta = .c17
 				end with
 				
 			s_cor="black"
 			if vl_venda < 0 then s_cor="red"
 
-			if (rb_saida <> COD_SAIDA_REL_INDICADOR_UF) and (rb_saida <> COD_SAIDA_REL_CIDADE_UF)and (rb_saida <> COD_SAIDA_REL_FABRICANTE)and (rb_saida <> COD_SAIDA_REL_GRUPO_PRODUTO) and (rb_saida <> COD_SAIDA_REL_ORIGEM_PEDIDO) and (rb_saida <> COD_SAIDA_REL_EMPRESA) then
+			if (rb_saida <> COD_SAIDA_REL_INDICADOR_UF) and (rb_saida <> COD_SAIDA_REL_CIDADE_UF)and (rb_saida <> COD_SAIDA_REL_FABRICANTE) and (rb_saida <> COD_SAIDA_REL_GRUPO_PRODUTO) and (rb_saida <> COD_SAIDA_REL_SUBGRUPO_PRODUTO) and (rb_saida <> COD_SAIDA_REL_ORIGEM_PEDIDO) and (rb_saida <> COD_SAIDA_REL_EMPRESA) then
 				x = x & "		<td valign='bottom' align='right' nowrap><span class='Rd' style='margin-right:2px;'>" & Cstr(n_reg_vetor) & ".</span></td>" & chr(13)
 				end if
 
 		 '> CAMPO DE SAÍDA
+'			====================
+'			OPÇÃO SAÍDA: PRODUTO
+'			====================
 			if rb_saida = COD_SAIDA_REL_PRODUTO then
 				v = Split(vRelat(intIdxVetor).c1, "|")
 			'> CÓDIGO DO PRODUTO
@@ -1899,6 +2755,10 @@ dim idxAux
 				x = x & "		<td class='MTD' style='width:" & CStr(intLargDescrProduto) & "px;' align='left' valign='bottom'><span class='Cn' style='color:" & s_cor & ";'>" & s & "</span></td>" & chr(13)
 			'> QUANTIDADE
 				x = x & "		<td class='MTD' style='width:" & CStr(intLargQtdeProduto) & "px;' align='right' valign='bottom'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeProdutos) & "</span></td>" & chr(13)
+
+'			=====================
+'			OPÇÃO SAÍDA: VENDEDOR
+'			=====================
 			elseif rb_saida = COD_SAIDA_REL_VENDEDOR then
 			'> VENDEDOR
 				s = Trim(vRelat(intIdxVetor).c1)
@@ -1908,6 +2768,10 @@ dim idxAux
 				x = x & "		<td class='MDTE' style='width:" & CStr(intLargVendedor) & "px;' align='left' valign='bottom'><span class='Cn' style='color:" & s_cor & ";'>" & s & "</span></td>" & chr(13)
             '> QUANTIDADE
 				x = x & "		<td class='MTD' style='width:" & CStr(intLargQtdeProduto) & "px;' align='right' valign='bottom'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeProdutos) & "</span></td>" & chr(13)
+
+'			======================
+'			OPÇÃO SAÍDA: INDICADOR
+'			======================
 			elseif rb_saida = COD_SAIDA_REL_INDICADOR then
 				v = Split(vRelat(intIdxVetor).c1, "|")
 				idxAux = LBound(v) - 1
@@ -1945,6 +2809,10 @@ dim idxAux
 				x = x & "		<td class='MDTE' style='width:" & CStr(intLargUF) & "px;' align='center' valign='bottom'><span class='Cnc' style='color:" & s_cor & ";'>" & s & "</span></td>" & chr(13)
             '> QUANTIDADE
 				x = x & "		<td class='MTD' style='width:" & CStr(intLargQtdeProduto) & "px;' align='right' valign='bottom'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeProdutos) & "</span></td>" & chr(13)
+
+'			=========================
+'			OPÇÃO SAÍDA: INDICADOR/UF
+'			=========================
 			elseif rb_saida = COD_SAIDA_REL_INDICADOR_UF then
 			'	CRIAR QUEBRA PARA A MUDANÇA DE UF
 				v = Split(vRelat(intIdxVetor).c1, "|")
@@ -1984,6 +2852,12 @@ dim idxAux
 					        marg_contrib_UF = 100 * ((vl_venda_UF - vl_RT_UF - vl_ent_UF) / vl_venda_UF)
 					    end if
 
+						if vl_NF_UF = 0 then
+							marg_contrib_bruta_UF = 0
+						else
+							marg_contrib_bruta_UF = 100 * ((vl_NF_UF - vl_ent_UF) / vl_NF_UF)
+							end if
+
 						s_cor="black"
 						if vl_total_venda < 0 then s_cor="red"
 						x = x & "	</tr>" & chr(13)
@@ -2004,11 +2878,17 @@ dim idxAux
 								if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 								    x = x & _
 								        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_UF) & "</span></td>" & chr(13) & _
-								        "       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_UF) & "%" & "</span></td>" & chr(13)  
+								        "       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_UF) & "%" & "</span></td>" & chr(13) & _
+										"       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_UF) & "</span></td>" & chr(13) & _
+										"       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_UF) & "</span></td>" & chr(13) & _
+										"       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_UF) & "%" & "</span></td>" & chr(13)
 								else
 								    x = x & _
 								        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_UF) & "</span></td>" & chr(13) & _
-								        "       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_UF) & "%" & "</span></td>" & chr(13)  
+								        "       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_UF) & "%" & "</span></td>" & chr(13) & _
+										"       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_UF) & "</span></td>" & chr(13) & _
+										"       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_UF) & "</span></td>" & chr(13) & _
+										"       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_UF) & "%" & "</span></td>" & chr(13)
 								end if
 								x = x & _
 								"	</tr>" & chr(13)
@@ -2027,6 +2907,7 @@ dim idxAux
 					x = x & cab
 					
 					vl_venda_UF = 0
+					vl_NF_UF = 0
 					percFatVenda_UF = 0
 					vl_lista_UF = 0
 					vl_desconto_UF = 0
@@ -2036,7 +2917,9 @@ dim idxAux
 					percRTEDesc_UF = 0
 					vl_RA_liquido_UF = 0
 					lucro_liquido_UF = 0
+					lucro_bruto_UF = 0
 					marg_contrib_UF = 0
+					marg_contrib_bruta_UF = 0
 					vl_ent_UF = 0
                     intQtdeTotalUF = 0
 					end if
@@ -2044,11 +2927,13 @@ dim idxAux
 			'	FAZENDO A SUBTOTALIZAÇÃO POR UF
                 intQtdeTotalUF = intQtdeTotalUF + intQtdeProdutos
 				vl_venda_UF = vl_venda_UF + vl_venda
+				vl_NF_UF = vl_NF_UF + vl_NF
 				vl_lista_UF = vl_lista_UF +vl_lista
 				vl_desconto_UF = vl_desconto_UF + vl_desconto
 				vl_RT_UF = vl_RT_UF + vl_RT
 				vl_RA_liquido_UF = vl_RA_liquido_UF + vl_RA_liquido
 				lucro_liquido_UF = lucro_liquido_UF + lucro_liquido
+				lucro_bruto_UF = lucro_bruto_UF + lucro_bruto
 				vl_ent_UF = vl_ent_UF + vl_ent
 				
 			'	NUMERAÇÃO DA LINHA
@@ -2056,9 +2941,9 @@ dim idxAux
 				x = x & "		<td valign='bottom' align='right' nowrap><span class='Rd' style='margin-right:2px;'>" & Cstr(n_reg_vetor) & ".</span></td>" & chr(13)
 
 			'> UF
-				s = UCase(Trim("" & v(0)))
-				if s = "" then s = "&nbsp;"
-				s = s & " <> " & vRelat(intIdxVetor).CampoOrdenacao
+'				s = UCase(Trim("" & v(0)))
+'				if s = "" then s = "&nbsp;"
+'				s = s & " <> " & vRelat(intIdxVetor).CampoOrdenacao
 			'> INDICADOR
 				s = Trim("" & v(1))
 				s_aux = x_orcamentista_e_indicador(v(1))
@@ -2067,6 +2952,10 @@ dim idxAux
 				x = x & "		<td class='MDTE' style='width:" & CStr(intLargIndicador) & "px;' align='left' valign='bottom'><span class='Cn' style='color:" & s_cor & ";'>" & s & "</span></td>" & chr(13)
                 '> QUANTIDADE
 				x = x & "		<td class='MTD' style='width:" & CStr(intLargQtdeProduto) & "px;' align='right' valign='bottom'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeProdutos) & "</span></td>" & chr(13)
+
+'			======================
+'			OPÇÃO SAÍDA: CIDADE/UF
+'			======================
 			elseif rb_saida = COD_SAIDA_REL_CIDADE_UF then
 			'	CRIAR QUEBRA PARA A MUDANÇA DE UF
 				v = Split(vRelat(intIdxVetor).c1, "|")
@@ -2106,6 +2995,13 @@ dim idxAux
                             marg_contrib_UF = 100 * ((vl_venda_UF - vl_RT_UF - vl_ent_UF) / vl_venda_UF)
                         end if
 
+					'	% MARGEM CONTRIB BRUTA
+						if vl_NF_UF = 0 then
+							marg_contrib_bruta_UF = 0
+						else
+							marg_contrib_bruta_UF = 100 * ((vl_NF_UF - vl_ent_UF) / vl_NF_UF)
+							end if
+
 						s_cor="black"
 						if vl_total_venda < 0 then s_cor="red"
 						x = x & "	</tr>" & chr(13)
@@ -2126,11 +3022,17 @@ dim idxAux
 								if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 								    x = x & _
 								        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_UF) & "</span></td>" & chr(13) & _
-								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_UF) & "%" & "</span></td>" & chr(13)
+								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_UF) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_UF) & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_UF) & "</span></td>" & chr(13) & _
+										"       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_UF) & "%" & "</span></td>" & chr(13)
 								else
 								    x = x & _
 								        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_UF) & "</span></td>" & chr(13) & _
-								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_UF) & "%" & "</span></td>" & chr(13)
+								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_UF) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_UF) & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_UF) & "</span></td>" & chr(13) & _
+										"       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_UF) & "%" & "</span></td>" & chr(13)
 								end if
 								x = x & _
 								"	</tr>" & chr(13)
@@ -2149,6 +3051,7 @@ dim idxAux
 					x = x & cab
 					
 					vl_venda_UF = 0
+					vl_NF_UF = 0
 					percFatVenda_UF = 0
 					vl_lista_UF = 0
 					vl_desconto_UF = 0
@@ -2158,7 +3061,9 @@ dim idxAux
 					percRTEDesc_UF = 0
 					vl_RA_liquido_UF = 0
 					lucro_liquido_UF = 0
+					lucro_bruto_UF = 0
 					marg_contrib_UF = 0
+					marg_contrib_bruta_UF = 0
 					vl_ent_UF = 0
                     intQtdeTotalCidUF = 0
 					end if
@@ -2166,11 +3071,13 @@ dim idxAux
 			'	FAZENDO A SUBTOTALIZAÇÃO POR UF
                 intQtdeTotalCidUF = intQtdeTotalCidUF + intQtdeProdutos
 				vl_venda_UF = vl_venda_UF + vl_venda
+				vl_NF_UF = vl_NF_UF + vl_NF
 				vl_lista_UF = vl_lista_UF +vl_lista
 				vl_desconto_UF = vl_desconto_UF + vl_desconto
 				vl_RT_UF = vl_RT_UF + vl_RT
 				vl_RA_liquido_UF = vl_RA_liquido_UF + vl_RA_liquido
 				lucro_liquido_UF = lucro_liquido_UF + lucro_liquido
+				lucro_bruto_UF = lucro_bruto_UF + lucro_bruto
 				vl_ent_UF = vl_ent_UF + vl_ent
 				
 			'	NUMERAÇÃO DA LINHA
@@ -2178,9 +3085,9 @@ dim idxAux
 				x = x & "		<td valign='bottom' align='right' nowrap><span class='Rd' style='margin-right:2px;'>" & Cstr(n_reg_vetor) & ".</span></td>" & chr(13)
 
 			'> UF
-				s = UCase(Trim("" & v(0)))
-				if s = "" then s = "&nbsp;"
-				s = s & " <> " & vRelat(intIdxVetor).CampoOrdenacao
+'				s = UCase(Trim("" & v(0)))
+'				if s = "" then s = "&nbsp;"
+'				s = s & " <> " & vRelat(intIdxVetor).CampoOrdenacao
 			'> CIDADE
 				s = Trim("" & v(1))
 				if s = "" then s = "&nbsp;"
@@ -2188,6 +3095,9 @@ dim idxAux
             '> QUANTIDADE
 				x = x & "		<td class='MTD' style='width:" & CStr(intLargQtdeProduto) & "px;' align='right' valign='bottom'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeProdutos) & "</span></td>" & chr(13) 
         		
+'			=============================
+'			OPÇÃO SAÍDA: ORIGEM DO PEDIDO
+'			=============================
             elseif rb_saida = COD_SAIDA_REL_ORIGEM_PEDIDO then
 			'	CRIAR QUEBRA PARA A MUDANÇA DE PEDIDO ORIGEM
 				v = Split(vRelat(intIdxVetor).c1, "|")
@@ -2227,6 +3137,13 @@ dim idxAux
                             marg_contrib_UF = 100 * ((vl_venda_UF - vl_RT_UF - vl_ent_UF) / vl_venda_UF)
                         end if
 
+					'	% MARG CONTRIB BRUTA
+						if vl_NF_UF = 0 then
+							marg_contrib_bruta_UF = 0
+						else
+							marg_contrib_bruta_UF = 100 * ((vl_NF_UF - vl_ent_UF) / vl_NF_UF)
+							end if
+
 						s_cor="black"
 						if vl_total_venda < 0 then s_cor="red"
 						x = x & "	</tr>" & chr(13)
@@ -2247,11 +3164,17 @@ dim idxAux
 								if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 								    x = x & _
 								        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_UF) & "</span></td>" & chr(13) & _
-								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_UF) & "%" & "</span></td>" & chr(13)
+								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_UF) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_UF) & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_UF) & "</span></td>" & chr(13) & _
+										"       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_UF) & "%" & "</span></td>" & chr(13)
 								else
 								    x = x & _
 								        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_UF) & "</span></td>" & chr(13) & _
-								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_UF) & "%" & "</span></td>" & chr(13)
+								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_UF) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_UF) & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_UF) & "</span></td>" & chr(13) & _
+										"       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_UF) & "%" & "</span></td>" & chr(13)
 								end if
 								x = x & _
 								"	</tr>" & chr(13)
@@ -2270,6 +3193,7 @@ dim idxAux
 					x = x & cab
 					
 					vl_venda_UF = 0
+					vl_NF_UF = 0
 					percFatVenda_UF = 0
 					vl_lista_UF = 0
 					vl_desconto_UF = 0
@@ -2279,7 +3203,9 @@ dim idxAux
 					percRTEDesc_UF = 0
 					vl_RA_liquido_UF = 0
 					lucro_liquido_UF = 0
+					lucro_bruto_UF = 0
 					marg_contrib_UF = 0
+					marg_contrib_bruta_UF = 0
 					vl_ent_UF = 0
                     intQtdeTotalCidUF = 0
 					end if
@@ -2287,11 +3213,13 @@ dim idxAux
 			'	FAZENDO A SUBTOTALIZAÇÃO POR UF
                 intQtdeTotalCidUF = intQtdeTotalCidUF + intQtdeProdutos
 				vl_venda_UF = vl_venda_UF + vl_venda
+				vl_NF_UF = vl_NF_UF + vl_NF
 				vl_lista_UF = vl_lista_UF +vl_lista
 				vl_desconto_UF = vl_desconto_UF + vl_desconto
 				vl_RT_UF = vl_RT_UF + vl_RT
 				vl_RA_liquido_UF = vl_RA_liquido_UF + vl_RA_liquido
 				lucro_liquido_UF = lucro_liquido_UF + lucro_liquido
+				lucro_bruto_UF = lucro_bruto_UF + lucro_bruto
 				vl_ent_UF = vl_ent_UF + vl_ent
 				
 			'	NUMERAÇÃO DA LINHA
@@ -2299,16 +3227,20 @@ dim idxAux
 				x = x & "		<td valign='bottom' align='right' nowrap><span class='Rd' style='margin-right:2px;'>" & Cstr(n_reg_vetor) & ".</span></td>" & chr(13)
 
 			'> UF
-				s = UCase(Trim("" & v(0)))
-				if s = "" then s = "&nbsp;"
-				s = s & " <> " & vRelat(intIdxVetor).CampoOrdenacao
+'				s = UCase(Trim("" & v(0)))
+'				if s = "" then s = "&nbsp;"
+'				s = s & " <> " & vRelat(intIdxVetor).CampoOrdenacao
 			'> CIDADE
 				s = Trim("" & v(1))
 				if s = "" then s = "&nbsp;"
 				x = x & "		<td class='MDTE' style='width:" & CStr(intLargCidade) & "px;' align='left' valign='bottom'><span class='Cn' style='color:" & s_cor & ";'>" & s & "</span></td>" & chr(13)
             '> QUANTIDADE
 				x = x & "		<td class='MTD' style='width:" & CStr(intLargQtdeProduto) & "px;' align='right' valign='bottom'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeProdutos) & "</span></td>" & chr(13)   
-        elseif rb_saida = COD_SAIDA_REL_FABRICANTE then
+
+'			=======================
+'			OPÇÃO SAÍDA: FABRICANTE
+'			=======================
+			elseif rb_saida = COD_SAIDA_REL_FABRICANTE then
 			'	CRIAR QUEBRA PARA A MUDANÇA FABRICANTE
 				v = Split(vRelat(intIdxVetor).c1, "|")
 				strAuxFabricanteAnterior = strAuxFabricante
@@ -2347,6 +3279,13 @@ dim idxAux
 					    else
 					        marg_contrib_Fabricante = 100 * ((vl_venda_Fabricante - vl_RT_Fabricante - vl_ent_Fabricante) / vl_venda_Fabricante)
 					    end if
+
+						if vl_NF_Fabricante = 0 then
+							marg_contrib_bruta_Fabricante = 0
+						else
+							marg_contrib_bruta_Fabricante = 100 * ((vl_NF_Fabricante - vl_ent_Fabricante) / vl_NF_Fabricante)
+							end if
+
                         md = ""
 					    if (rb_periodo <> COD_CONSULTA_POR_PERIODO_ENTREGA) And (rb_periodo <> COD_CONSULTA_POR_PERIODO_CADASTRO) then md = "MD"
 						s_cor="black"
@@ -2369,11 +3308,17 @@ dim idxAux
 								if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 								    x = x & _
 								        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_Fabricante) & "</span></td>" & chr(13) & _
-								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_Fabricante) & "%" & "</span></td>" & chr(13)  
+								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_Fabricante) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_Fabricante) & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_Fabricante) & "</span></td>" & chr(13) & _
+										"       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_Fabricante) & "%" & "</span></td>" & chr(13)
 								else
 								    x = x & _
 								        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_Fabricante) & "</span></td>" & chr(13) & _
-								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_Fabricante) & "%" & "</span></td>" & chr(13)  
+								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_Fabricante) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_Fabricante) & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_Fabricante) & "</span></td>" & chr(13) & _
+										"       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_Fabricante) & "%" & "</span></td>" & chr(13)
 								end if
 								x = x & _
 								"	</tr>" & chr(13) 
@@ -2392,6 +3337,7 @@ dim idxAux
 					x = x & cab
 					
 					vl_venda_Fabricante = 0
+					vl_NF_Fabricante = 0
 					percFatVenda_Fabricante = 0
 					vl_lista_Fabricante = 0
 					vl_desconto_Fabricante = 0
@@ -2401,7 +3347,9 @@ dim idxAux
 					percRTEDesc_Fabricante = 0
 					vl_RA_liquido_Fabricante = 0
 					lucro_liquido_Fabricante = 0
+					lucro_bruto_Fabricante = 0
 					marg_contrib_Fabricante = 0
+					marg_contrib_bruta_Fabricante = 0
 					vl_ent_Fabricante = 0
 					intQtdeTotalFabricante=0
 					end if
@@ -2409,11 +3357,13 @@ dim idxAux
 			'	FAZENDO A SUBTOTALIZAÇÃO POR FABRICANTE
 			    intQtdeTotalFabricante= intQtdeTotalFabricante + intQtdeProdutos
 				vl_venda_Fabricante = vl_venda_Fabricante + vl_venda
+				vl_NF_Fabricante = vl_NF_Fabricante + vl_NF
 				vl_lista_Fabricante = vl_lista_Fabricante +vl_lista
 				vl_desconto_Fabricante = vl_desconto_Fabricante + vl_desconto
 				vl_RT_Fabricante = vl_RT_Fabricante + vl_RT
 				vl_RA_liquido_Fabricante = vl_RA_liquido_Fabricante + vl_RA_liquido
 				lucro_liquido_Fabricante = lucro_liquido_Fabricante + lucro_liquido
+				lucro_bruto_Fabricante = lucro_bruto_Fabricante + lucro_bruto
 				vl_ent_Fabricante = vl_ent_Fabricante + vl_ent
 				
 				
@@ -2422,9 +3372,9 @@ dim idxAux
 				x = x & "		<td valign='bottom' align='right' nowrap><span class='Rd' style='margin-right:2px;'>" & Cstr(n_reg_vetor) & ".</span></td>" & chr(13)
             
               '> NOME FABRICANTE
-				s = Trim("" & v(2))
-				if s = "" then s = "&nbsp;"
-				s = s & " <> " & vRelat(intIdxVetor).CampoOrdenacao
+'				s = Trim("" & v(2))
+'				if s = "" then s = "&nbsp;"
+'				s = s & " <> " & vRelat(intIdxVetor).CampoOrdenacao
                 
               '> CODIGO FABRICANTE E PRODUTO
 				 s = Trim("" & v(2))
@@ -2438,7 +3388,10 @@ dim idxAux
                 '> QUANTIDADE
 				x = x & "		<td class='MTD' style='width:" & CStr(intLargQtdeProduto) & "px;' align='right' valign='bottom'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeProdutos) & "</span></td>" & chr(13)
 	    
-        elseif rb_saida = COD_SAIDA_REL_GRUPO_PRODUTO then
+'			==============================
+'			OPÇÃO SAÍDA: GRUPO DE PRODUTOS
+'			==============================
+			elseif rb_saida = COD_SAIDA_REL_GRUPO_PRODUTO then
 			'	CRIAR QUEBRA PARA A MUDANÇA FABRICANTE
 				v = Split(vRelat(intIdxVetor).c1, "|")
 				strAuxFabricanteAnterior = strAuxFabricante
@@ -2484,6 +3437,12 @@ dim idxAux
 					        marg_contrib_ProdutoGrupo = 100 * ((vl_venda_ProdutoGrupo - vl_RT_ProdutoGrupo - vl_ent_ProdutoGrupo) / vl_venda_ProdutoGrupo)
 					    end if
 
+						if vl_NF_ProdutoGrupo = 0 then
+							marg_contrib_bruta_ProdutoGrupo = 0
+						else
+							marg_contrib_bruta_ProdutoGrupo = 100 * ((vl_NF_ProdutoGrupo - vl_ent_ProdutoGrupo) / vl_NF_ProdutoGrupo)
+							end if
+
                         x = x & "	</tr>" & chr(13)
 						x = x & "	<tr nowrap>" & chr(13) & _
 								"		<td align='left' valign='bottom' style='background:white;' nowrap>&nbsp;</td>" & chr(13) & _
@@ -2502,11 +3461,17 @@ dim idxAux
 								if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 								    x = x & _
 								        "		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_ProdutoGrupo) & "</span></td>" & chr(13) & _
-								        "       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoGrupo) & "%" & "</span></td>" & chr(13)  
+								        "       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_ProdutoGrupo) & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_ProdutoGrupo) & "</span></td>" & chr(13) & _
+										"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_ProdutoGrupo) & "%" & "</span></td>" & chr(13)
 								else
 								    x = x & _
 								        "		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_ProdutoGrupo) & "</span></td>" & chr(13) & _
-								        "       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoGrupo) & "%" & "</span></td>" & chr(13)  
+								        "       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_ProdutoGrupo) & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_ProdutoGrupo) & "</span></td>" & chr(13) & _
+										"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_ProdutoGrupo) & "%" & "</span></td>" & chr(13)
 								end if         
     
                     '	PERCENTUAL RELATIVO AO FATURAMENTO VENDA TOTAL
@@ -2539,6 +3504,12 @@ dim idxAux
 					    else
 					        marg_contrib_Fabricante = 100 * ((vl_venda_Fabricante - vl_RT_Fabricante - vl_ent_Fabricante) / vl_venda_Fabricante)
 					    end if
+
+						if vl_NF_Fabricante = 0 then
+							marg_contrib_bruta_Fabricante = 0
+						else
+							marg_contrib_bruta_Fabricante = 100 * ((vl_NF_Fabricante - vl_ent_Fabricante) / vl_NF_Fabricante)
+							end if
                                   
 
 						x = x & "	</tr>" & chr(13)
@@ -2559,11 +3530,17 @@ dim idxAux
 								if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 								    x = x & _
 								        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_Fabricante) & "</span></td>" & chr(13) & _
-								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_Fabricante) & "%" & "</span></td>" & chr(13)  
+								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_Fabricante) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_Fabricante) & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_Fabricante) & "</span></td>" & chr(13) & _
+										"       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_Fabricante) & "%" & "</span></td>" & chr(13)
 								else
 								    x = x & _
 								        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_Fabricante) & "</span></td>" & chr(13) & _
-								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_Fabricante) & "%" & "</span></td>" & chr(13)  
+								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_Fabricante) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_Fabricante) & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_Fabricante) & "</span></td>" & chr(13) & _
+										"       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_Fabricante) & "%" & "</span></td>" & chr(13)
 								end if
 								x = x & _
 								"	</tr>" & chr(13) 
@@ -2589,6 +3566,7 @@ dim idxAux
 					x = x & "<br>" & chr(13)
                     
                     vl_venda_ProdutoGrupo = 0
+					vl_NF_ProdutoGrupo = 0
 					percFatVenda_ProdutoGrupo = 0
 					vl_lista_ProdutoGrupo = 0
 					vl_desconto_ProdutoGrupo = 0
@@ -2598,11 +3576,14 @@ dim idxAux
 					percRTEDesc_ProdutoGrupo = 0
 					vl_RA_liquido_ProdutoGrupo = 0
 					lucro_liquido_ProdutoGrupo = 0
+					lucro_bruto_ProdutoGrupo = 0
 					marg_contrib_ProdutoGrupo = 0
+					marg_contrib_bruta_ProdutoGrupo = 0
 					vl_ent_ProdutoGrupo = 0
 					intQtdeTotalProdutoGrupo=0
 					
 					vl_venda_Fabricante = 0
+					vl_NF_Fabricante = 0
 					percFatVenda_Fabricante = 0
 					vl_lista_Fabricante = 0
 					vl_desconto_Fabricante = 0
@@ -2612,7 +3593,9 @@ dim idxAux
 					percRTEDesc_Fabricante = 0
 					vl_RA_liquido_Fabricante = 0
 					lucro_liquido_Fabricante = 0
+					lucro_bruto_Fabricante = 0
 					marg_contrib_Fabricante = 0
+					marg_contrib_bruta_Fabricante = 0
 					vl_ent_Fabricante = 0
 					intQtdeTotalFabricante=0
                 end if
@@ -2620,11 +3603,13 @@ dim idxAux
 		'	FAZENDO A SUBTOTALIZAÇÃO POR FABRICANTE
 			intQtdeTotalFabricante= intQtdeTotalFabricante + intQtdeProdutos
 			vl_venda_Fabricante = vl_venda_Fabricante + vl_venda
+			vl_NF_Fabricante = vl_NF_Fabricante + vl_NF
 			vl_lista_Fabricante = vl_lista_Fabricante +vl_lista
 			vl_desconto_Fabricante = vl_desconto_Fabricante + vl_desconto
 			vl_RT_Fabricante = vl_RT_Fabricante + vl_RT
 			vl_RA_liquido_Fabricante = vl_RA_liquido_Fabricante + vl_RA_liquido
 			lucro_liquido_Fabricante = lucro_liquido_Fabricante + lucro_liquido
+			lucro_bruto_Fabricante = lucro_bruto_Fabricante + lucro_bruto
 			vl_ent_Fabricante = vl_ent_Fabricante + vl_ent               
 
             ' FAZ A QUEBRA DO GRUPO DE PRODUTOS
@@ -2665,6 +3650,13 @@ dim idxAux
 					else
 					    marg_contrib_ProdutoGrupo = 100 * ((vl_venda_ProdutoGrupo - vl_RT_ProdutoGrupo - vl_ent_ProdutoGrupo) / vl_venda_ProdutoGrupo)
 					end if
+
+					if vl_NF_ProdutoGrupo = 0 then
+						marg_contrib_bruta_ProdutoGrupo = 0
+					else
+						marg_contrib_bruta_ProdutoGrupo = 100 * ((vl_NF_ProdutoGrupo - vl_ent_ProdutoGrupo) / vl_NF_ProdutoGrupo)
+						end if
+
 					md = ""
 					if (rb_periodo <> COD_CONSULTA_POR_PERIODO_ENTREGA) And (rb_periodo <> COD_CONSULTA_POR_PERIODO_CADASTRO) then md = "MD"
 					s_cor="black"
@@ -2690,11 +3682,17 @@ dim idxAux
 								if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 								    x = x & _
 								        "		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_ProdutoGrupo) & "</span></td>" & chr(13) & _
-								        "       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoGrupo) & "%" & "</span></td>" & chr(13)  
+								        "       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_ProdutoGrupo) & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_ProdutoGrupo) & "</span></td>" & chr(13) & _
+										"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_ProdutoGrupo) & "%" & "</span></td>" & chr(13)
 								else
 								    x = x & _
 								        "		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_ProdutoGrupo) & "</span></td>" & chr(13) & _
-								        "       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoGrupo) & "%" & "</span></td>" & chr(13)  
+								        "       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_ProdutoGrupo) & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_ProdutoGrupo) & "</span></td>" & chr(13) & _
+										"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_ProdutoGrupo) & "%" & "</span></td>" & chr(13)
 								end if
 								x = x & _
 								"	</tr>" & chr(13)
@@ -2707,6 +3705,7 @@ dim idxAux
 					    x = x & "<br>" & chr(13)
 
                         vl_venda_ProdutoGrupo = 0
+						vl_NF_ProdutoGrupo = 0
 					    percFatVenda_ProdutoGrupo = 0
 					    vl_lista_ProdutoGrupo = 0
 					    vl_desconto_ProdutoGrupo = 0
@@ -2716,7 +3715,9 @@ dim idxAux
 					    percRTEDesc_ProdutoGrupo = 0
 					    vl_RA_liquido_ProdutoGrupo = 0
 					    lucro_liquido_ProdutoGrupo = 0
+						lucro_bruto_ProdutoGrupo = 0
 					    marg_contrib_ProdutoGrupo = 0
+						marg_contrib_bruta_ProdutoGrupo = 0
 					    vl_ent_ProdutoGrupo = 0
 					    intQtdeTotalProdutoGrupo=0
                     end if
@@ -2726,11 +3727,13 @@ dim idxAux
 			'	FAZENDO A SUBTOTALIZAÇÃO POR GRUPO DE PRODUTOS
 			    intQtdeTotalProdutoGrupo= intQtdeTotalProdutoGrupo + intQtdeProdutos
 				vl_venda_ProdutoGrupo = vl_venda_ProdutoGrupo + vl_venda
+				vl_NF_ProdutoGrupo = vl_NF_ProdutoGrupo + vl_NF
 				vl_lista_ProdutoGrupo = vl_lista_ProdutoGrupo +vl_lista
 				vl_desconto_ProdutoGrupo = vl_desconto_ProdutoGrupo + vl_desconto
 				vl_RT_ProdutoGrupo = vl_RT_ProdutoGrupo + vl_RT
 				vl_RA_liquido_ProdutoGrupo = vl_RA_liquido_ProdutoGrupo + vl_RA_liquido
 				lucro_liquido_ProdutoGrupo = lucro_liquido_ProdutoGrupo + lucro_liquido
+				lucro_bruto_ProdutoGrupo = lucro_bruto_ProdutoGrupo + lucro_bruto
 				vl_ent_ProdutoGrupo = vl_ent_ProdutoGrupo + vl_ent 
 
 			'	NUMERAÇÃO DA LINHA
@@ -2738,9 +3741,9 @@ dim idxAux
 				x = x & "		<td valign='bottom' align='right' nowrap><span class='Rd' style='margin-right:2px;'>" & Cstr(n_reg_vetor) & ".</span></td>" & chr(13)
             
               '> NOME FABRICANTE
-				s = Trim("" & v(2))
-				if s = "" then s = "&nbsp;"
-				s = s & " <> " & vRelat(intIdxVetor).CampoOrdenacao
+'				s = Trim("" & v(2))
+'				if s = "" then s = "&nbsp;"
+'				s = s & " <> " & vRelat(intIdxVetor).CampoOrdenacao
                 
               '> CODIGO FABRICANTE E PRODUTO
 				 s = Trim("" & v(4))
@@ -2754,8 +3757,695 @@ dim idxAux
                 '> QUANTIDADE
 				x = x & "		<td class='MTD' style='width:" & CStr(intLargQtdeProduto) & "px;' align='right' valign='bottom'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeProdutos) & "</span></td>" & chr(13)	  
     
+'			=================================
+'			OPÇÃO SAÍDA: SUBGRUPO DE PRODUTOS
+'			=================================
+           elseif rb_saida = COD_SAIDA_REL_SUBGRUPO_PRODUTO then
+			'	CRIAR QUEBRA PARA A MUDANÇA FABRICANTE
+				v = Split(vRelat(intIdxVetor).c1, "|")
+				strAuxFabricanteAnterior = strAuxFabricante
+				strAuxNomeFabricanteAnterior = strAuxNomeFabricante
+				strAuxNomeFabricante = UCase(Trim("" & v(0)))
+				if strAuxNomeFabricanteAnterior <> strAuxNomeFabricante then
+					if strAuxNomeFabricanteAnterior <> "-XX-XX-" then
+					
+					    md = ""
+					    if rb_periodo <> COD_CONSULTA_POR_PERIODO_ENTREGA then md = "MD"
+						s_cor="black"
+						if vl_total_venda < 0 then s_cor="red"
+					
+					' PERCENTUAIS RELATIVOS AOS SUBGRUPOS DE PRODUTO
+                    '	PERCENTUAL RELATIVO AO FATURAMENTO VENDA TOTAL
+						if vl_total_final_venda = 0 then
+							percFatVenda_ProdutoSubgrupo = 0
+						else
+							percFatVenda_ProdutoSubgrupo = (vl_venda_ProdutoSubgrupo/vl_total_final_venda)*100
+							end if
+					
+					'	% DESCONTO
+						if vl_lista_ProdutoSubgrupo = 0 then
+							perc_desconto_ProdutoSubgrupo = 0
+						else
+							perc_desconto_ProdutoSubgrupo = 100 * (vl_lista_ProdutoSubgrupo-vl_venda_ProdutoSubgrupo) / vl_lista_ProdutoSubgrupo
+							end if
+					
+					'	%COM SOBRE FATURAMENTO VENDA
+						if vl_venda_ProdutoSubgrupo = 0 then
+							percRTFatVenda_ProdutoSubgrupo = 0
+						else
+							percRTFatVenda_ProdutoSubgrupo = (vl_RT_ProdutoSubgrupo/vl_venda_ProdutoSubgrupo)*100
+							end if
+							
+					'	%COM + %DESCONTO
+						percRTEDesc_ProdutoSubgrupo = perc_desconto_ProdutoSubgrupo + percRTFatVenda_ProdutoSubgrupo
+						
+					'   %MARGEM CONTRIBUIÇÃO
+					    if vl_venda_ProdutoSubgrupo = 0 then
+					        marg_contrib_ProdutoSubgrupo = 0
+					    else
+					        marg_contrib_ProdutoSubgrupo = 100 * ((vl_venda_ProdutoSubgrupo - vl_RT_ProdutoSubgrupo - vl_ent_ProdutoSubgrupo) / vl_venda_ProdutoSubgrupo)
+					    end if
 
-        elseif rb_saida = COD_SAIDA_REL_EMPRESA then
+						if vl_NF_ProdutoSubgrupo = 0 then
+							marg_contrib_bruta_ProdutoSubgrupo = 0
+						else
+							marg_contrib_bruta_ProdutoSubgrupo = 100 * ((vl_NF_ProdutoSubgrupo - vl_ent_ProdutoSubgrupo) / vl_NF_ProdutoSubgrupo)
+							end if
+
+                        x = x & "	</tr>" & chr(13)
+						x = x & "	<tr nowrap>" & chr(13) & _
+								"		<td align='left' valign='bottom' style='background:white;' nowrap>&nbsp;</td>" & chr(13) & _
+								"		<td class='ME MC' align='right' colspan='2' nowrap><span class='Cd' style='color:" & s_cor & ";'>" & _
+								"Total do Subgrupo:</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeTotalProdutoSubgrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_venda_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percFatVenda_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_lista_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_desconto_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(perc_desconto_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RT_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percRTFatVenda_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percRTEDesc_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MC " & md & "' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RA_liquido_ProdutoSubgrupo) & "</span></td>" & chr(13) 
+								if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
+								    x = x & _
+								        "		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+								        "       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+										"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13)
+								else
+								    x = x & _
+								        "		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+								        "       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+										"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13)
+								end if
+
+                    ' PERCENTUAIS RELATIVOS AOS GRUPOS DE PRODUTO
+                    '	PERCENTUAL RELATIVO AO FATURAMENTO VENDA TOTAL
+						if vl_total_final_venda = 0 then
+							percFatVenda_ProdutoGrupo = 0
+						else
+							percFatVenda_ProdutoGrupo = (vl_venda_ProdutoGrupo/vl_total_final_venda)*100
+							end if
+					
+					'	% DESCONTO
+						if vl_lista_ProdutoGrupo = 0 then
+							perc_desconto_ProdutoGrupo = 0
+						else
+							perc_desconto_ProdutoGrupo = 100 * (vl_lista_ProdutoGrupo-vl_venda_ProdutoGrupo) / vl_lista_ProdutoGrupo
+							end if
+					
+					'	%COM SOBRE FATURAMENTO VENDA
+						if vl_venda_ProdutoGrupo = 0 then
+							percRTFatVenda_ProdutoGrupo = 0
+						else
+							percRTFatVenda_ProdutoGrupo = (vl_RT_ProdutoGrupo/vl_venda_ProdutoGrupo)*100
+							end if
+							
+					'	%COM + %DESCONTO
+						percRTEDesc_ProdutoGrupo = perc_desconto_ProdutoGrupo + percRTFatVenda_ProdutoGrupo
+						
+					'   %MARGEM CONTRIBUIÇÃO
+					    if vl_venda_ProdutoGrupo = 0 then
+					        marg_contrib_ProdutoGrupo = 0
+					    else
+					        marg_contrib_ProdutoGrupo = 100 * ((vl_venda_ProdutoGrupo - vl_RT_ProdutoGrupo - vl_ent_ProdutoGrupo) / vl_venda_ProdutoGrupo)
+					    end if
+
+						if vl_NF_ProdutoGrupo = 0 then
+							marg_contrib_bruta_ProdutoGrupo = 0
+						else
+							marg_contrib_bruta_ProdutoGrupo = 100 * ((vl_NF_ProdutoGrupo - vl_ent_ProdutoGrupo) / vl_NF_ProdutoGrupo)
+							end if
+
+                        x = x & "	</tr>" & chr(13)
+						x = x & "	<tr nowrap>" & chr(13) & _
+								"		<td align='left' valign='bottom' style='background:white;' nowrap>&nbsp;</td>" & chr(13) & _
+								"		<td class='ME MC' align='right' colspan='2' nowrap><span class='Cd' style='color:" & s_cor & ";'>" & _
+								"Total do Grupo:</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeTotalProdutoGrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_venda_ProdutoGrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percFatVenda_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_lista_ProdutoGrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_desconto_ProdutoGrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(perc_desconto_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RT_ProdutoGrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percRTFatVenda_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percRTEDesc_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MC " & md & "' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RA_liquido_ProdutoGrupo) & "</span></td>" & chr(13) 
+								if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
+								    x = x & _
+								        "		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_ProdutoGrupo) & "</span></td>" & chr(13) & _
+								        "       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_ProdutoGrupo) & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_ProdutoGrupo) & "</span></td>" & chr(13) & _
+										"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_ProdutoGrupo) & "%" & "</span></td>" & chr(13)
+								else
+								    x = x & _
+								        "		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_ProdutoGrupo) & "</span></td>" & chr(13) & _
+								        "       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_ProdutoGrupo) & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_ProdutoGrupo) & "</span></td>" & chr(13) & _
+										"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_ProdutoGrupo) & "%" & "</span></td>" & chr(13)
+								end if
+    
+                    '	PERCENTUAL RELATIVO AO FATURAMENTO VENDA TOTAL
+						if vl_total_final_venda = 0 then
+							percFatVenda_Fabricante = 0
+						else
+							percFatVenda_Fabricante = (vl_venda_Fabricante/vl_total_final_venda)*100
+							end if
+					
+					'	% DESCONTO
+						if vl_lista_Fabricante = 0 then
+							perc_desconto_Fabricante = 0
+						else
+							perc_desconto_Fabricante = 100 * (vl_lista_Fabricante-vl_venda_Fabricante) / vl_lista_Fabricante
+							end if
+					
+					'	%COM SOBRE FATURAMENTO VENDA
+						if vl_venda_Fabricante = 0 then
+							percRTFatVenda_Fabricante = 0
+						else
+							percRTFatVenda_Fabricante = (vl_RT_Fabricante/vl_venda_Fabricante)*100
+							end if
+							
+					'	%COM + %DESCONTO
+						percRTEDesc_Fabricante = perc_desconto_Fabricante + percRTFatVenda_Fabricante
+						
+					'   %MARGEM CONTRIBUIÇÃO
+					    if vl_venda_Fabricante = 0 then
+					        marg_contrib_Fabricante = 0
+					    else
+					        marg_contrib_Fabricante = 100 * ((vl_venda_Fabricante - vl_RT_Fabricante - vl_ent_Fabricante) / vl_venda_Fabricante)
+					    end if
+
+						if vl_NF_Fabricante = 0 then
+							marg_contrib_bruta_Fabricante = 0
+						else
+							marg_contrib_bruta_Fabricante = 100 * ((vl_NF_Fabricante - vl_ent_Fabricante) / vl_NF_Fabricante)
+							end if
+
+						x = x & "	</tr>" & chr(13)
+						x = x & "	<tr nowrap style='background: #FFFFDD'>" & chr(13) & _
+								"		<td align='left' valign='bottom' style='background:white;' nowrap>&nbsp;</td>" & chr(13) & _
+								"		<td class='MTBE' align='right' colspan='2' nowrap><span class='Cd' style='color:" & s_cor & ";'>" & _
+								"TOTAL:</span></td>" & chr(13) & _
+								"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeTotalFabricante) & "</span></td>" & chr(13) & _
+								"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_venda_Fabricante) & "</span></td>" & chr(13) & _
+								"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percFatVenda_Fabricante) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_lista_Fabricante) & "</span></td>" & chr(13) & _
+								"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_desconto_Fabricante) & "</span></td>" & chr(13) & _
+								"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(perc_desconto_Fabricante) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RT_Fabricante) & "</span></td>" & chr(13) & _
+								"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percRTFatVenda_Fabricante) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percRTEDesc_Fabricante) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MTB " & md & "' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RA_liquido_Fabricante) & "</span></td>" & chr(13) 
+								if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
+								    x = x & _
+								        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_Fabricante) & "</span></td>" & chr(13) & _
+								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_Fabricante) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_Fabricante) & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_Fabricante) & "</span></td>" & chr(13) & _
+										"       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_Fabricante) & "%" & "</span></td>" & chr(13)
+								else
+								    x = x & _
+								        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_Fabricante) & "</span></td>" & chr(13) & _
+								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_Fabricante) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_Fabricante) & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_Fabricante) & "</span></td>" & chr(13) & _
+										"       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_Fabricante) & "%" & "</span></td>" & chr(13)
+								end if
+								x = x & _
+								"	</tr>" & chr(13) 
+						
+						x = x & "</table>" & chr(13) 
+						x = x & "<br /><br />" & chr(13)
+						end if
+					
+					x = x & "<br />" & chr(13)
+					x = x & "<table cellspacing=0>" & chr(13)
+					x = x & _
+						"	<tr>" & chr(13) & _
+						"		<td style='background:white;'>&nbsp;</td>" & chr(13) & _
+						"		<td class='MDTE' " & strColSpanTodasColunas & " align='left' valign='bottom' style='background:azure;'><span class='N'>&nbsp;" & strAuxNomeFabricante & iif(strAuxNomeFabricante <> "", " &nbsp;-&nbsp; " & Fabricante_descricao(strAuxNomeFabricante), "") & "</span></td>" & chr(13) & _
+						"	</tr>" & chr(13)
+					x = x & cab
+        
+                    x = x & _
+					"	<tr>" & chr(13) & _
+					"		<td style='background:white;'>&nbsp;</td>" & chr(13) & _
+					"		<td class='MDTE' " & strColSpanTodasColunas & " align='left' valign='bottom' style='background:#EEE;'><span class='N'>&nbsp;" & v(2) & " - " & v(3) & "</span></td>" & chr(13) & _
+					"	</tr>" & chr(13)
+
+                    x = x & _
+					"	<tr>" & chr(13) & _
+					"		<td style='background:white;'>&nbsp;</td>" & chr(13) & _
+					"		<td class='MC ME' style='background:" & sBkgColorProdutoSubgrupo & ";'>&nbsp;</td><td class='MC MD' colspan='" & Cstr(intColSpanTodasColunas-1) & "' align='left' valign='bottom' style='background:" & sBkgColorProdutoSubgrupo & ";'><span class='N'>&nbsp;" & v(4) & " - " & v(5) & "</span></td>" & chr(13) & _
+					"	</tr>" & chr(13)
+
+					vl_venda_ProdutoSubgrupo = 0
+					vl_NF_ProdutoSubgrupo = 0
+					percFatVenda_ProdutoSubgrupo = 0
+					vl_lista_ProdutoSubgrupo = 0
+					vl_desconto_ProdutoSubgrupo = 0
+					perc_desconto_ProdutoSubgrupo = 0
+					vl_RT_ProdutoSubgrupo = 0
+					percRTFatVenda_ProdutoSubgrupo = 0
+					percRTEDesc_ProdutoSubgrupo = 0
+					vl_RA_liquido_ProdutoSubgrupo = 0
+					lucro_liquido_ProdutoSubgrupo = 0
+					lucro_bruto_ProdutoSubgrupo = 0
+					marg_contrib_ProdutoSubgrupo = 0
+					marg_contrib_bruta_ProdutoSubgrupo = 0
+					vl_ent_ProdutoSubgrupo = 0
+					intQtdeTotalProdutoSubgrupo=0
+
+					vl_venda_ProdutoGrupo = 0
+					vl_NF_ProdutoGrupo = 0
+					percFatVenda_ProdutoGrupo = 0
+					vl_lista_ProdutoGrupo = 0
+					vl_desconto_ProdutoGrupo = 0
+					perc_desconto_ProdutoGrupo = 0
+					vl_RT_ProdutoGrupo = 0
+					percRTFatVenda_ProdutoGrupo = 0
+					percRTEDesc_ProdutoGrupo = 0
+					vl_RA_liquido_ProdutoGrupo = 0
+					lucro_liquido_ProdutoGrupo = 0
+					lucro_bruto_ProdutoGrupo = 0
+					marg_contrib_ProdutoGrupo = 0
+					marg_contrib_bruta_ProdutoGrupo = 0
+					vl_ent_ProdutoGrupo = 0
+					intQtdeTotalProdutoGrupo=0
+					
+					vl_venda_Fabricante = 0
+					vl_NF_Fabricante = 0
+					percFatVenda_Fabricante = 0
+					vl_lista_Fabricante = 0
+					vl_desconto_Fabricante = 0
+					perc_desconto_Fabricante = 0
+					vl_RT_Fabricante = 0
+					percRTFatVenda_Fabricante = 0
+					percRTEDesc_Fabricante = 0
+					vl_RA_liquido_Fabricante = 0
+					lucro_liquido_Fabricante = 0
+					lucro_bruto_Fabricante = 0
+					marg_contrib_Fabricante = 0
+					marg_contrib_bruta_Fabricante = 0
+					vl_ent_Fabricante = 0
+					intQtdeTotalFabricante=0
+                end if
+				
+		'	FAZENDO A SUBTOTALIZAÇÃO POR FABRICANTE
+			intQtdeTotalFabricante= intQtdeTotalFabricante + intQtdeProdutos
+			vl_venda_Fabricante = vl_venda_Fabricante + vl_venda
+			vl_NF_Fabricante = vl_NF_Fabricante + vl_NF
+			vl_lista_Fabricante = vl_lista_Fabricante +vl_lista
+			vl_desconto_Fabricante = vl_desconto_Fabricante + vl_desconto
+			vl_RT_Fabricante = vl_RT_Fabricante + vl_RT
+			vl_RA_liquido_Fabricante = vl_RA_liquido_Fabricante + vl_RA_liquido
+			lucro_liquido_Fabricante = lucro_liquido_Fabricante + lucro_liquido
+			lucro_bruto_Fabricante = lucro_bruto_Fabricante + lucro_bruto
+			vl_ent_Fabricante = vl_ent_Fabricante + vl_ent               
+
+            ' FAZ A QUEBRA DO GRUPO DE PRODUTOS
+            v = Split(vRelat(intIdxVetor).c1, "|")
+			strAuxProdutoGrupoAnterior = strAuxProdutoGrupo
+			strAuxNomeProdutoGrupoAnterior = strAuxNomeProdutoGrupo
+			strAuxNomeProdutoGrupo = UCase(Trim("" & v(2)))
+            if (strAuxNomeFabricanteAnterior = strAuxNomeFabricante) And (strAuxNomeProdutoGrupoAnterior <> strAuxNomeProdutoGrupo) then
+				if strAuxNomeProdutoGrupoAnterior <> "-XX-XX-" then
+					'PERCENTUAIS RELATIVOS AOS SUBGRUPOS DE PRODUTO
+				'	PERCENTUAL RELATIVO AO FATURAMENTO VENDA TOTAL
+					if vl_total_final_venda = 0 then
+						percFatVenda_ProdutoSubgrupo = 0
+					else
+						percFatVenda_ProdutoSubgrupo = (vl_venda_ProdutoSubgrupo/vl_total_final_venda)*100
+						end if
+					
+				'	% DESCONTO
+					if vl_lista_ProdutoSubgrupo = 0 then
+						perc_desconto_ProdutoSubgrupo = 0
+					else
+						perc_desconto_ProdutoSubgrupo = 100 * (vl_lista_ProdutoSubgrupo-vl_venda_ProdutoSubgrupo) / vl_lista_ProdutoSubgrupo
+						end if
+					
+				'	%COM SOBRE FATURAMENTO VENDA
+					if vl_venda_ProdutoSubgrupo = 0 then
+						percRTFatVenda_ProdutoSubgrupo = 0
+					else
+						percRTFatVenda_ProdutoSubgrupo = (vl_RT_ProdutoSubgrupo/vl_venda_ProdutoSubgrupo)*100
+						end if
+							
+				'	%COM + %DESCONTO
+					percRTEDesc_ProdutoSubgrupo = perc_desconto_ProdutoSubgrupo + percRTFatVenda_ProdutoSubgrupo
+						
+				'   %MARGEM CONTRIBUIÇÃO
+					if vl_venda_ProdutoSubgrupo = 0 then
+					    marg_contrib_ProdutoSubgrupo = 0
+					else
+					    marg_contrib_ProdutoSubgrupo = 100 * ((vl_venda_ProdutoSubgrupo - vl_RT_ProdutoSubgrupo - vl_ent_ProdutoSubgrupo) / vl_venda_ProdutoSubgrupo)
+					end if
+
+					if vl_NF_ProdutoSubgrupo = 0 then
+						marg_contrib_bruta_ProdutoSubgrupo = 0
+					else
+						marg_contrib_bruta_ProdutoSubgrupo = 100 * ((vl_NF_ProdutoSubgrupo - vl_ent_ProdutoSubgrupo) / vl_NF_ProdutoSubgrupo)
+						end if
+
+					md = ""
+					if rb_periodo <> COD_CONSULTA_POR_PERIODO_ENTREGA then md = "MD"
+					s_cor="black"
+					if vl_total_venda < 0 then s_cor="red"
+                    
+                    if strAuxNomeFabricanteAnterior = strAuxNomeFabricante then
+
+                        x = x & "	</tr>" & chr(13)
+						x = x & "	<tr nowrap>" & chr(13) & _
+								"		<td align='left' valign='bottom' style='background:white;' nowrap>&nbsp;</td>" & chr(13) & _
+								"		<td class='MC ME' align='right' colspan='2' nowrap><span class='Cd' style='color:" & s_cor & ";'>" & _
+								"Total do Subgrupo:</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeTotalProdutoSubgrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_venda_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percFatVenda_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_lista_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_desconto_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(perc_desconto_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RT_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percRTFatVenda_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percRTEDesc_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MC " & md & "' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RA_liquido_ProdutoSubgrupo) & "</span></td>" & chr(13) 
+								if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
+								    x = x & _
+								        "		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+								        "       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+										"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13)
+								else
+								    x = x & _
+								        "		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+								        "       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+										"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13)
+								end if
+								x = x & _
+								"	</tr>" & chr(13)
+
+                        vl_venda_ProdutoSubgrupo = 0
+						vl_NF_ProdutoSubgrupo = 0
+					    percFatVenda_ProdutoSubgrupo = 0
+					    vl_lista_ProdutoSubgrupo = 0
+					    vl_desconto_ProdutoSubgrupo = 0
+					    perc_desconto_ProdutoSubgrupo = 0
+					    vl_RT_ProdutoSubgrupo = 0
+					    percRTFatVenda_ProdutoSubgrupo = 0
+					    percRTEDesc_ProdutoSubgrupo = 0
+					    vl_RA_liquido_ProdutoSubgrupo = 0
+					    lucro_liquido_ProdutoSubgrupo = 0
+						lucro_bruto_ProdutoSubgrupo = 0
+					    marg_contrib_ProdutoSubgrupo = 0
+						marg_contrib_bruta_ProdutoSubgrupo = 0
+					    vl_ent_ProdutoSubgrupo = 0
+					    intQtdeTotalProdutoSubgrupo=0
+						end if
+
+
+					'PERCENTUAIS RELATIVOS AOS GRUPOS DE PRODUTO
+				'	PERCENTUAL RELATIVO AO FATURAMENTO VENDA TOTAL
+					if vl_total_final_venda = 0 then
+						percFatVenda_ProdutoGrupo = 0
+					else
+						percFatVenda_ProdutoGrupo = (vl_venda_ProdutoGrupo/vl_total_final_venda)*100
+						end if
+					
+				'	% DESCONTO
+					if vl_lista_ProdutoGrupo = 0 then
+						perc_desconto_ProdutoGrupo = 0
+					else
+						perc_desconto_ProdutoGrupo = 100 * (vl_lista_ProdutoGrupo-vl_venda_ProdutoGrupo) / vl_lista_ProdutoGrupo
+						end if
+					
+				'	%COM SOBRE FATURAMENTO VENDA
+					if vl_venda_ProdutoGrupo = 0 then
+						percRTFatVenda_ProdutoGrupo = 0
+					else
+						percRTFatVenda_ProdutoGrupo = (vl_RT_ProdutoGrupo/vl_venda_ProdutoGrupo)*100
+						end if
+							
+				'	%COM + %DESCONTO
+					percRTEDesc_ProdutoGrupo = perc_desconto_ProdutoGrupo + percRTFatVenda_ProdutoGrupo
+						
+				'   %MARGEM CONTRIBUIÇÃO
+					if vl_venda_ProdutoGrupo = 0 then
+					    marg_contrib_ProdutoGrupo = 0
+					else
+					    marg_contrib_ProdutoGrupo = 100 * ((vl_venda_ProdutoGrupo - vl_RT_ProdutoGrupo - vl_ent_ProdutoGrupo) / vl_venda_ProdutoGrupo)
+					end if
+
+					if vl_NF_ProdutoGrupo = 0 then
+						marg_contrib_bruta_ProdutoGrupo = 0
+					else
+						marg_contrib_bruta_ProdutoGrupo = 100 * ((vl_NF_ProdutoGrupo - vl_ent_ProdutoGrupo) / vl_NF_ProdutoGrupo)
+						end if
+
+					md = ""
+					if rb_periodo <> COD_CONSULTA_POR_PERIODO_ENTREGA then md = "MD"
+					s_cor="black"
+					if vl_total_venda < 0 then s_cor="red"
+                    
+                    if strAuxNomeFabricanteAnterior = strAuxNomeFabricante then
+
+                        x = x & "	</tr>" & chr(13)
+						x = x & "	<tr nowrap>" & chr(13) & _
+								"		<td align='left' valign='bottom' style='background:white;' nowrap>&nbsp;</td>" & chr(13) & _
+								"		<td class='MC ME' align='right' colspan='2' nowrap><span class='Cd' style='color:" & s_cor & ";'>" & _
+								"Total do Grupo:</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeTotalProdutoGrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_venda_ProdutoGrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percFatVenda_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_lista_ProdutoGrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_desconto_ProdutoGrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(perc_desconto_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RT_ProdutoGrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percRTFatVenda_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percRTEDesc_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MC " & md & "' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RA_liquido_ProdutoGrupo) & "</span></td>" & chr(13) 
+								if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
+								    x = x & _
+								        "		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_ProdutoGrupo) & "</span></td>" & chr(13) & _
+								        "       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_ProdutoGrupo) & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_ProdutoGrupo) & "</span></td>" & chr(13) & _
+										"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_ProdutoGrupo) & "%" & "</span></td>" & chr(13)
+								else
+								    x = x & _
+								        "		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_ProdutoGrupo) & "</span></td>" & chr(13) & _
+								        "       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_ProdutoGrupo) & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_ProdutoGrupo) & "</span></td>" & chr(13) & _
+										"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_ProdutoGrupo) & "%" & "</span></td>" & chr(13)
+								end if
+								x = x & _
+								"	</tr>" & chr(13)
+
+						x = x & _
+						"	<tr>" & chr(13) & _
+						"		<td style='background:white;'>&nbsp;</td>" & chr(13) & _
+						"		<td class='MDTE' " & strColSpanTodasColunas & " align='left' valign='bottom' style='background:#EEE;'><span class='N'>&nbsp;" & v(2) & " - " & v(3) & "</span></td>" & chr(13) & _
+						"	</tr>" & chr(13)
+
+						x = x & _
+						"	<tr>" & chr(13) & _
+						"		<td style='background:white;'>&nbsp;</td>" & chr(13) & _
+						"		<td class='MC ME' style='background:" & sBkgColorProdutoSubgrupo & ";'>&nbsp;</td><td class='MC MD' colspan='" & Cstr(intColSpanTodasColunas-1) & "' align='left' valign='bottom' style='background:" & sBkgColorProdutoSubgrupo & ";'><span class='N'>&nbsp;" & v(4) & " - " & v(5) & "</span></td>" & chr(13) & _
+						"	</tr>" & chr(13)
+
+                        vl_venda_ProdutoGrupo = 0
+						vl_NF_ProdutoGrupo = 0
+					    percFatVenda_ProdutoGrupo = 0
+					    vl_lista_ProdutoGrupo = 0
+					    vl_desconto_ProdutoGrupo = 0
+					    perc_desconto_ProdutoGrupo = 0
+					    vl_RT_ProdutoGrupo = 0
+					    percRTFatVenda_ProdutoGrupo = 0
+					    percRTEDesc_ProdutoGrupo = 0
+					    vl_RA_liquido_ProdutoGrupo = 0
+					    lucro_liquido_ProdutoGrupo = 0
+						lucro_bruto_ProdutoGrupo = 0
+					    marg_contrib_ProdutoGrupo = 0
+						marg_contrib_bruta_ProdutoGrupo = 0
+					    vl_ent_ProdutoGrupo = 0
+					    intQtdeTotalProdutoGrupo=0
+                    end if
+                end if
+			end if
+				
+		'	FAZENDO A SUBTOTALIZAÇÃO POR GRUPO DE PRODUTOS
+			intQtdeTotalProdutoGrupo= intQtdeTotalProdutoGrupo + intQtdeProdutos
+			vl_venda_ProdutoGrupo = vl_venda_ProdutoGrupo + vl_venda
+			vl_NF_ProdutoGrupo = vl_NF_ProdutoGrupo + vl_NF
+			vl_lista_ProdutoGrupo = vl_lista_ProdutoGrupo +vl_lista
+			vl_desconto_ProdutoGrupo = vl_desconto_ProdutoGrupo + vl_desconto
+			vl_RT_ProdutoGrupo = vl_RT_ProdutoGrupo + vl_RT
+			vl_RA_liquido_ProdutoGrupo = vl_RA_liquido_ProdutoGrupo + vl_RA_liquido
+			lucro_liquido_ProdutoGrupo = lucro_liquido_ProdutoGrupo + lucro_liquido
+			lucro_bruto_ProdutoGrupo = lucro_bruto_ProdutoGrupo + lucro_bruto
+			vl_ent_ProdutoGrupo = vl_ent_ProdutoGrupo + vl_ent 
+
+            ' FAZ A QUEBRA POR SUBGRUPO DE PRODUTOS
+            v = Split(vRelat(intIdxVetor).c1, "|")
+			strAuxProdutoSubgrupoAnterior = strAuxProdutoSubgrupo
+			strAuxNomeProdutoSubgrupoAnterior = strAuxNomeProdutoSubgrupo
+			strAuxNomeProdutoSubgrupo = UCase(Trim("" & v(4)))
+            if (strAuxNomeFabricanteAnterior = strAuxNomeFabricante) And (strAuxNomeProdutoGrupoAnterior = strAuxNomeProdutoGrupo) And (strAuxNomeProdutoSubgrupoAnterior <> strAuxNomeProdutoSubgrupo) then
+				if strAuxNomeProdutoSubgrupoAnterior <> "-XX-XX-" then
+
+					'PERCENTUAIS RELATIVOS AOS SUBGRUPOS DE PRODUTO
+				'	PERCENTUAL RELATIVO AO FATURAMENTO VENDA TOTAL
+					if vl_total_final_venda = 0 then
+						percFatVenda_ProdutoSubgrupo = 0
+					else
+						percFatVenda_ProdutoSubgrupo = (vl_venda_ProdutoSubgrupo/vl_total_final_venda)*100
+						end if
+					
+				'	% DESCONTO
+					if vl_lista_ProdutoSubgrupo = 0 then
+						perc_desconto_ProdutoSubgrupo = 0
+					else
+						perc_desconto_ProdutoSubgrupo = 100 * (vl_lista_ProdutoSubgrupo-vl_venda_ProdutoSubgrupo) / vl_lista_ProdutoSubgrupo
+						end if
+					
+				'	%COM SOBRE FATURAMENTO VENDA
+					if vl_venda_ProdutoSubgrupo = 0 then
+						percRTFatVenda_ProdutoSubgrupo = 0
+					else
+						percRTFatVenda_ProdutoSubgrupo = (vl_RT_ProdutoSubgrupo/vl_venda_ProdutoSubgrupo)*100
+						end if
+							
+				'	%COM + %DESCONTO
+					percRTEDesc_ProdutoSubgrupo = perc_desconto_ProdutoSubgrupo + percRTFatVenda_ProdutoSubgrupo
+						
+				'   %MARGEM CONTRIBUIÇÃO
+					if vl_venda_ProdutoSubgrupo = 0 then
+					    marg_contrib_ProdutoSubgrupo = 0
+					else
+					    marg_contrib_ProdutoSubgrupo = 100 * ((vl_venda_ProdutoSubgrupo - vl_RT_ProdutoSubgrupo - vl_ent_ProdutoSubgrupo) / vl_venda_ProdutoSubgrupo)
+					end if
+
+					if vl_NF_ProdutoSubgrupo = 0 then
+						marg_contrib_bruta_ProdutoSubgrupo = 0
+					else
+						marg_contrib_bruta_ProdutoSubgrupo = 100 * ((vl_NF_ProdutoSubgrupo - vl_ent_ProdutoSubgrupo) / vl_NF_ProdutoSubgrupo)
+						end if
+
+					md = ""
+					if rb_periodo <> COD_CONSULTA_POR_PERIODO_ENTREGA then md = "MD"
+					s_cor="black"
+					if vl_total_venda < 0 then s_cor="red"
+                    
+                    if (strAuxNomeFabricanteAnterior = strAuxNomeFabricante) And (strAuxNomeProdutoGrupoAnterior = strAuxNomeProdutoGrupo) then
+
+                        x = x & "	</tr>" & chr(13)
+						x = x & "	<tr nowrap>" & chr(13) & _
+								"		<td align='left' valign='bottom' style='background:white;' nowrap>&nbsp;</td>" & chr(13) & _
+								"		<td class='MC ME' align='right' colspan='2' nowrap><span class='Cd' style='color:" & s_cor & ";'>" & _
+								"Total do Subgrupo:</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeTotalProdutoSubgrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_venda_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percFatVenda_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_lista_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_desconto_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(perc_desconto_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RT_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percRTFatVenda_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percRTEDesc_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+								"		<td class='MC " & md & "' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RA_liquido_ProdutoSubgrupo) & "</span></td>" & chr(13) 
+								if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
+								    x = x & _
+								        "		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+								        "       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+										"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13)
+								else
+								    x = x & _
+								        "		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+								        "       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+										"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+										"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13)
+								end if
+								x = x & _
+								"	</tr>" & chr(13)
+
+						x = x & _
+						"	<tr>" & chr(13) & _
+						"		<td style='background:white;'>&nbsp;</td>" & chr(13) & _
+						"		<td class='MC ME' style='background:" & sBkgColorProdutoSubgrupo & ";'>&nbsp;</td><td class='MC MD' colspan='" & Cstr(intColSpanTodasColunas-1) & "' align='left' valign='bottom' style='background:" & sBkgColorProdutoSubgrupo & ";'><span class='N'>&nbsp;" & v(4) & " - " & v(5) & "</span></td>" & chr(13) & _
+						"	</tr>" & chr(13)
+
+                        vl_venda_ProdutoSubgrupo = 0
+						vl_NF_ProdutoSubgrupo = 0
+					    percFatVenda_ProdutoSubgrupo = 0
+					    vl_lista_ProdutoSubgrupo = 0
+					    vl_desconto_ProdutoSubgrupo = 0
+					    perc_desconto_ProdutoSubgrupo = 0
+					    vl_RT_ProdutoSubgrupo = 0
+					    percRTFatVenda_ProdutoSubgrupo = 0
+					    percRTEDesc_ProdutoSubgrupo = 0
+					    vl_RA_liquido_ProdutoSubgrupo = 0
+					    lucro_liquido_ProdutoSubgrupo = 0
+						lucro_bruto_ProdutoSubgrupo = 0
+					    marg_contrib_ProdutoSubgrupo = 0
+						marg_contrib_bruta_ProdutoSubgrupo = 0
+					    vl_ent_ProdutoSubgrupo = 0
+					    intQtdeTotalProdutoSubgrupo=0
+                    end if
+                end if
+			end if
+
+				'FAZENDO A SUBTOTALIZAÇÃO POR SUBGRUPO DE PRODUTOS
+			    intQtdeTotalProdutoSubgrupo= intQtdeTotalProdutoSubgrupo + intQtdeProdutos
+				vl_venda_ProdutoSubgrupo = vl_venda_ProdutoSubgrupo + vl_venda
+				vl_NF_ProdutoSubgrupo = vl_NF_ProdutoSubgrupo + vl_NF
+				vl_lista_ProdutoSubgrupo = vl_lista_ProdutoSubgrupo +vl_lista
+				vl_desconto_ProdutoSubgrupo = vl_desconto_ProdutoSubgrupo + vl_desconto
+				vl_RT_ProdutoSubgrupo = vl_RT_ProdutoSubgrupo + vl_RT
+				vl_RA_liquido_ProdutoSubgrupo = vl_RA_liquido_ProdutoSubgrupo + vl_RA_liquido
+				lucro_liquido_ProdutoSubgrupo = lucro_liquido_ProdutoSubgrupo + lucro_liquido
+				lucro_bruto_ProdutoSubgrupo = lucro_bruto_ProdutoSubgrupo + lucro_bruto
+				vl_ent_ProdutoSubgrupo = vl_ent_ProdutoSubgrupo + vl_ent 
+
+			'	NUMERAÇÃO DA LINHA
+				x = x & "	<tr nowrap>" & chr(13)
+				x = x & "		<td valign='bottom' align='right' nowrap><span class='Rd' style='margin-right:2px;'>" & Cstr(n_reg_vetor) & ".</span></td>" & chr(13)
+            
+              '> NOME FABRICANTE
+'				s = Trim("" & v(2))
+'				if s = "" then s = "&nbsp;"
+'				s = s & " <> " & vRelat(intIdxVetor).CampoOrdenacao
+                
+              '> CODIGO FABRICANTE E PRODUTO
+				 s = Trim("" & v(6))
+				if s = "" then s = "&nbsp;"
+				x = x & "		<td class='MDTE' style='width:" & CStr(intLargCodFabricante) & "px;' align='left' valign='bottom'><span class='Cn' style='color:" & s_cor & ";'>" & s & "</span></td>" & chr(13)
+              
+               '> Descricao
+				s = Trim("" & v(7))
+				if s <> "" then s = produto_formata_descricao_em_html(s) else s = "&nbsp;"
+				x = x & "		<td class='MTD' style='width:" & CStr(intLargDescrProduto) & "px;' align='left' valign='bottom'><span class='Cn' style='color:" & s_cor & ";'>" & s & "</span></td>" & chr(13)
+                '> QUANTIDADE
+				x = x & "		<td class='MTD' style='width:" & CStr(intLargQtdeProduto) & "px;' align='right' valign='bottom'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeProdutos) & "</span></td>" & chr(13)	  
+
+'			====================
+'			OPÇÃO SAÍDA: EMPRESA
+'			====================
+			elseif rb_saida = COD_SAIDA_REL_EMPRESA then
 			'	CRIAR QUEBRA PARA A MUDANÇA DE EMPRESA
 				v = Split(vRelat(intIdxVetor).c1, "|")
 				strAuxEmpresaAnterior = strAuxEmpresa
@@ -2794,6 +4484,13 @@ dim idxAux
 					    else
 					        marg_contrib_Empresa = 100 * ((vl_venda_Empresa - vl_RT_Empresa - vl_ent_Empresa) / vl_venda_Empresa)
 					    end if
+
+						if vl_NF_Empresa = 0 then
+							marg_contrib_bruta_Empresa = 0
+						else
+							marg_contrib_bruta_Empresa = 100 * ((vl_NF_Empresa - vl_ent_Empresa) / vl_NF_Empresa)
+							end if
+
                         md = ""
 					    if (rb_periodo <> COD_CONSULTA_POR_PERIODO_ENTREGA) And (rb_periodo <> COD_CONSULTA_POR_PERIODO_CADASTRO) then md = "MD"
 						s_cor="black"
@@ -2816,11 +4513,17 @@ dim idxAux
 								if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 								    x = x & _
 								        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_Empresa) & "</span></td>" & chr(13) & _
-								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_Empresa) & "%" & "</span></td>" & chr(13)  
+								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_Empresa) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_Empresa) & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_Empresa) & "</span></td>" & chr(13) & _
+										"       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_Empresa) & "%" & "</span></td>" & chr(13)
 								else
 								    x = x & _
 								        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_Empresa) & "</span></td>" & chr(13) & _
-								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_Empresa) & "%" & "</span></td>" & chr(13)  
+								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_Empresa) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_Empresa) & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_Empresa) & "</span></td>" & chr(13) & _
+										"       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_Empresa) & "%" & "</span></td>" & chr(13)
 								end if
 								x = x & _
 								"	</tr>" & chr(13) 
@@ -2839,6 +4542,7 @@ dim idxAux
 					x = x & cab
 					
 					vl_venda_Empresa = 0
+					vl_NF_Empresa = 0
 					percFatVenda_Empresa = 0
 					vl_lista_Empresa = 0
 					vl_desconto_Empresa = 0
@@ -2848,7 +4552,9 @@ dim idxAux
 					percRTEDesc_Empresa = 0
 					vl_RA_liquido_Empresa = 0
 					lucro_liquido_Empresa = 0
+					lucro_bruto_Empresa = 0
 					marg_contrib_Empresa = 0
+					marg_contrib_bruta_Empresa = 0
 					vl_ent_Empresa = 0
 					intQtdeTotalEmpresa = 0
 					end if
@@ -2856,11 +4562,13 @@ dim idxAux
 			'	FAZENDO A SUBTOTALIZAÇÃO POR EMPRESA
 			    intQtdeTotalEmpresa = intQtdeTotalEmpresa + intQtdeProdutos
 				vl_venda_Empresa = vl_venda_Empresa + vl_venda
+				vl_NF_Empresa = vl_NF_Empresa + vl_NF
 				vl_lista_Empresa = vl_lista_Empresa +vl_lista
 				vl_desconto_Empresa = vl_desconto_Empresa + vl_desconto
 				vl_RT_Empresa = vl_RT_Empresa + vl_RT
 				vl_RA_liquido_Empresa = vl_RA_liquido_Empresa + vl_RA_liquido
 				lucro_liquido_Empresa = lucro_liquido_Empresa + lucro_liquido
+				lucro_bruto_Empresa = lucro_bruto_Empresa + lucro_bruto
 				vl_ent_Empresa = vl_ent_Empresa + vl_ent
 				
 				
@@ -2869,9 +4577,9 @@ dim idxAux
 				x = x & "		<td valign='bottom' align='right' nowrap><span class='Rd' style='margin-right:2px;'>" & Cstr(n_reg_vetor) & ".</span></td>" & chr(13)
             
               '> NOME EMPRESA
-				s = Trim("" & v(0))
-				if s = "" then s = "&nbsp;"
-				s = s & " <> " & vRelat(intIdxVetor).CampoOrdenacao
+'				s = Trim("" & v(0))
+'				if s = "" then s = "&nbsp;"
+'				s = s & " <> " & vRelat(intIdxVetor).CampoOrdenacao
                 
               '> CODIGO FABRICANTE E PRODUTO
 				 s = Trim("" & v(3))
@@ -2886,9 +4594,14 @@ dim idxAux
 				x = x & "		<td class='MTD' style='width:" & CStr(intLargQtdeProduto) & "px;' align='right' valign='bottom'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeProdutos) & "</span></td>" & chr(13)
 
 
+'			====================================================
+'			OPÇÃO SAÍDA: TRATAMENTO FINAL DO BLOCO DE TRATAMENTO
+'			====================================================
 			else ' if (rb_saida = ...)
 				s = ""
 				end if
+
+
 
 		 '> VALOR DE VENDA
 			x = x & "		<td align='right' valign='bottom' class='MTD'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_moeda(vl_venda) & "</span></td>" & chr(13)
@@ -2924,6 +4637,15 @@ dim idxAux
 			
 			    '> Margem Contrib (%)
 			        x = x & "		<td align='right' valign='bottom' class='MTD'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib) & "%" & "</span></td>" & chr(13)
+			
+				 '> VALOR NF
+					x = x & "		<td align='right' valign='bottom' class='MTD'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF) & "</span></td>" & chr(13)
+
+			    '> LUCRO BRUTO (R$)
+			        x = x & "		<td align='right' valign='bottom' class='MTD'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto) & "</span></td>" & chr(13)
+
+			    '> Margem Contrib Bruta (%)
+			        x = x & "		<td align='right' valign='bottom' class='MTD'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta) & "%" & "</span></td>" & chr(13)
 			else
 			    '> LUCRO LIQUIDO (R$)
 			
@@ -2931,7 +4653,18 @@ dim idxAux
 			
 			    '> Margem Contrib (%)
 			        x = x & "		<td align='right' valign='bottom' class='MTD'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib) & "%" & "</span></td>" & chr(13)
+
+				 '> VALOR NF
+					x = x & "		<td align='right' valign='bottom' class='MTD'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF) & "</span></td>" & chr(13)
+
+			    '> LUCRO BRUTO (R$)
+			        x = x & "		<td align='right' valign='bottom' class='MTD'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto) & "</span></td>" & chr(13)
+
+			    '> Margem Contrib Bruta (%)
+			        x = x & "		<td align='right' valign='bottom' class='MTD'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta) & "%" & "</span></td>" & chr(13)
 			end if
+
+			x = x & "	<input type='hidden' value='" & formata_moeda(vl_ent) & "' />" & chr(13)
 
 			x = x & "	</tr>" & chr(13)
 				
@@ -2943,6 +4676,9 @@ dim idxAux
 			next
 
 
+'		======================================
+'		OPÇÃO SAÍDA: INDICADOR/UF OU CIDADE/UF
+'		======================================
 	'	ÚLTIMO SUBTOTAL NO RELATÓRIO INDICADOR/UF E CIDADE/UF
 		if (rb_saida = COD_SAIDA_REL_INDICADOR_UF) or (rb_saida = COD_SAIDA_REL_CIDADE_UF) then
 
@@ -2977,6 +4713,12 @@ dim idxAux
 		        marg_contrib_UF = 100 * ((vl_venda_UF - vl_RT_UF - vl_ent_UF) / vl_venda_UF)
 		    end if
 
+			if vl_NF_UF = 0 then
+				marg_contrib_bruta_UF = 0
+			else
+				marg_contrib_bruta_UF = 100 * ((vl_NF_UF - vl_ent_UF) / vl_NF_UF)
+				end if
+
         '  QTDE
             if rb_saida = COD_SAIDA_REL_INDICADOR_UF then
                intQtdeTotal = intQtdeTotalUf       
@@ -3003,11 +4745,17 @@ dim idxAux
 					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 					    x = x & _
 					        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_UF) & "</span></td>" & chr(13) & _
-					        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_UF) & "%" & "</span></td>" & chr(13)
+					        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_UF) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_UF) & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_UF) & "</span></td>" & chr(13) & _
+							"       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_UF) & "%" & "</span></td>" & chr(13)
 					else
 					    x = x & _
 					        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_UF) & "</span></td>" & chr(13) & _
-					        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_UF) & "%" & "</span></td>" & chr(13)
+					        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_UF) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_UF) & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_UF) & "</span></td>" & chr(13) & _
+							"       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_UF) & "%" & "</span></td>" & chr(13)
 					end if
 					x = x & _
 					"	</tr>" & chr(13)
@@ -3044,19 +4792,28 @@ dim idxAux
 					"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>RA Líquido (R$)</span></td>" & chr(13) 
 					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 					    x = x & _
+					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto -RA -COM (R$)</span></td>" & chr(13) & _
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib (%)</span></td>" & chr(13) & _
+							"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>VL Fat (R$)</span></td>" & chr(13) & _
 					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto (R$)</span></td>" & chr(13) & _
-					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib (%)</span></td>" & chr(13)
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Bruta (%)</span></td>" & chr(13)
 					else
 					    x = x & _
+					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto Estimado -RA -COM (R$)</span></td>" & chr(13) & _
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib Estimada (%)</span></td>" & chr(13) & _
+							"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>VL Fat (R$)</span></td>" & chr(13) & _
 					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto Estimado (R$)</span></td>" & chr(13) & _
-					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib Estimada (%)</span></td>" & chr(13)
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Bruta Estimada (%)</span></td>" & chr(13)
 					end if
 					x = x & _
 					"	</tr>" & chr(13)
 			end if
 
-    	     '	ÚLTIMO SUBTOTAL NO RELATÓRIO ORIGEM PEDIDO
-		     if (rb_saida = COD_SAIDA_REL_ORIGEM_PEDIDO)  then
+'		=============================
+'		OPÇÃO SAÍDA: ORIGEM DO PEDIDO
+'		=============================
+    	'	ÚLTIMO SUBTOTAL NO RELATÓRIO ORIGEM PEDIDO
+		if (rb_saida = COD_SAIDA_REL_ORIGEM_PEDIDO)  then
 
 
 					'	PERCENTUAL RELATIVO AO FATURAMENTO VENDA TOTAL
@@ -3089,6 +4846,12 @@ dim idxAux
 				        else
                             marg_contrib_UF = 100 * ((vl_venda_UF - vl_RT_UF - vl_ent_UF) / vl_venda_UF)
                         end if
+
+						if vl_NF_UF = 0 then
+							marg_contrib_bruta_UF = 0
+						else
+							marg_contrib_bruta_UF = 100 * ((vl_NF_UF - vl_ent_UF) / vl_NF_UF)
+							end if
 		    
 			s_cor="black"
 			if vl_total_venda < 0 then s_cor="red"
@@ -3110,11 +4873,17 @@ dim idxAux
 								if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 								    x = x & _
 								        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_UF) & "</span></td>" & chr(13) & _
-								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_UF) & "%" & "</span></td>" & chr(13)
+								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_UF) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_UF) & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_UF) & "</span></td>" & chr(13) & _
+										"       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_UF) & "%" & "</span></td>" & chr(13)
 								else
 								    x = x & _
 								        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_UF) & "</span></td>" & chr(13) & _
-								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_UF) & "%" & "</span></td>" & chr(13)
+								        "       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_UF) & "%" & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_UF) & "</span></td>" & chr(13) & _
+										"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_UF) & "</span></td>" & chr(13) & _
+										"       <td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_UF) & "%" & "</span></td>" & chr(13)
 								end if
 								x = x & _
 								"	</tr>" & chr(13)
@@ -3150,17 +4919,26 @@ dim idxAux
 					"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>RA Líquido (R$)</span></td>" & chr(13) 
 					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 					    x = x & _
+					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto -RA -COM (R$)</span></td>" & chr(13) & _
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib (%)</span></td>" & chr(13) & _
+							"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>VL Fat (R$)</span></td>" & chr(13) & _
 					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto (R$)</span></td>" & chr(13) & _
-					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib (%)</span></td>" & chr(13)
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Bruta (%)</span></td>" & chr(13)
 					else
 					    x = x & _
+					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto Estimado -RA -COM (R$)</span></td>" & chr(13) & _
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib Estimada (%)</span></td>" & chr(13) & _
+							"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>VL Fat (R$)</span></td>" & chr(13) & _
 					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto Estimado (R$)</span></td>" & chr(13) & _
-					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib Estimada (%)</span></td>" & chr(13)
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Bruta Estimada (%)</span></td>" & chr(13)
 					end if
 					x = x & _
 					"	</tr>" & chr(13)
 			end if
 
+'		=======================
+'		OPÇÃO SAÍDA: FABRICANTE
+'		=======================
 	 '	ÚLTIMO SUBTOTAL NO RELATÓRIO FABRICANTE
 		if (rb_saida = COD_SAIDA_REL_FABRICANTE)  then
 
@@ -3202,6 +4980,13 @@ dim idxAux
 		        marg_contrib_FABRICANTE = 100 * ((vl_venda_FABRICANTE - vl_RT_FABRICANTE - vl_ent_FABRICANTE) / vl_venda_FABRICANTE)
 		    end if
 		    
+
+			if vl_NF_Fabricante = 0 then
+				marg_contrib_bruta_Fabricante = 0
+			else
+				marg_contrib_bruta_Fabricante = 100 * ((vl_NF_Fabricante - vl_ent_Fabricante) / vl_NF_Fabricante)
+				end if
+
             md = ""
 			if (rb_periodo <> COD_CONSULTA_POR_PERIODO_ENTREGA) And (rb_periodo <> COD_CONSULTA_POR_PERIODO_CADASTRO) then md = "MD"
 			s_cor="black"
@@ -3224,11 +5009,17 @@ dim idxAux
 					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 					    x = x & _
 					        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_FABRICANTE) & "</span></td>" & chr(13) & _
-					        "       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_FABRICANTE) & "%" & "</span></td>" & chr(13)
+					        "       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_FABRICANTE) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_Fabricante) & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_Fabricante) & "</span></td>" & chr(13) & _
+							"       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_Fabricante) & "%" & "</span></td>" & chr(13)
 					else
 					    x = x & _
 					        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_FABRICANTE) & "</span></td>" & chr(13) & _
-					        "       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_FABRICANTE) & "%" & "</span></td>" & chr(13)
+					        "       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_FABRICANTE) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_Fabricante) & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_Fabricante) & "</span></td>" & chr(13) & _
+							"       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_Fabricante) & "%" & "</span></td>" & chr(13)
 					end if
 					x = x & _
 					"	</tr>" & chr(13)
@@ -3264,17 +5055,26 @@ dim idxAux
 					"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>RA Líquido (R$)</span></td>" & chr(13) 
 					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 					    x = x & _
+					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto -RA -COM (R$)</span></td>" & chr(13) & _
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib (%)</span></td>" & chr(13) & _
+							"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>VL Fat (R$)</span></td>" & chr(13) & _
 					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto (R$)</span></td>" & chr(13) & _
-					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib (%)</span></td>" & chr(13)
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Bruta (%)</span></td>" & chr(13)
 					else
 					    x = x & _
+					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto Estimado -RA -COM (R$)</span></td>" & chr(13) & _
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib Estimada (%)</span></td>" & chr(13) & _
+							"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>VL Fat (R$)</span></td>" & chr(13) & _
 					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto Estimado (R$)</span></td>" & chr(13) & _
-					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib Estimada (%)</span></td>" & chr(13)
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Bruta Estimada (%)</span></td>" & chr(13)
 					end if
 					x = x & _
 					"	</tr>" & chr(13)
 			end if
 
+'		==============================
+'		OPÇÃO SAÍDA: GRUPO DE PRODUTOS
+'		==============================
     '	ÚLTIMO SUBTOTAL NO RELATÓRIO GRUPO PRODUTO
 		if (rb_saida = COD_SAIDA_REL_GRUPO_PRODUTO)  then
 
@@ -3309,6 +5109,11 @@ dim idxAux
 					        marg_contrib_ProdutoGrupo = 100 * ((vl_venda_ProdutoGrupo - vl_RT_ProdutoGrupo - vl_ent_ProdutoGrupo) / vl_venda_ProdutoGrupo)
 					    end if
 
+						if vl_NF_ProdutoGrupo = 0 then
+							marg_contrib_bruta_ProdutoGrupo = 0
+						else
+							marg_contrib_bruta_ProdutoGrupo = 100 * ((vl_NF_ProdutoGrupo - vl_ent_ProdutoGrupo) / vl_NF_ProdutoGrupo)
+							end if
 
             x = x & "	</tr>" & chr(13)
 			x = x & "	<tr nowrap>" & chr(13) & _
@@ -3328,11 +5133,17 @@ dim idxAux
 					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 						x = x & _
 							"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_ProdutoGrupo) & "</span></td>" & chr(13) & _
-							"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoGrupo) & "%" & "</span></td>" & chr(13)  
+							"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_ProdutoGrupo) & "</span></td>" & chr(13) & _
+							"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_ProdutoGrupo) & "</span></td>" & chr(13) & _
+							"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_ProdutoGrupo) & "%" & "</span></td>" & chr(13)
 					else
 						x = x & _
 							"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_ProdutoGrupo) & "</span></td>" & chr(13) & _
-							"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoGrupo) & "%" & "</span></td>" & chr(13)  
+							"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_ProdutoGrupo) & "</span></td>" & chr(13) & _
+							"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_ProdutoGrupo) & "</span></td>" & chr(13) & _
+							"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_ProdutoGrupo) & "%" & "</span></td>" & chr(13)
 					end if
 
 
@@ -3372,6 +5183,13 @@ dim idxAux
 		    else
 		        marg_contrib_FABRICANTE = 100 * ((vl_venda_FABRICANTE - vl_RT_FABRICANTE - vl_ent_FABRICANTE) / vl_venda_FABRICANTE)
 		    end if
+
+			if vl_NF_Fabricante = 0 then
+				marg_contrib_bruta_Fabricante = 0
+			else
+				marg_contrib_bruta_Fabricante = 100 * ((vl_NF_Fabricante - vl_ent_Fabricante) / vl_NF_Fabricante)
+				end if
+
 		    md = ""
 			if (rb_periodo <> COD_CONSULTA_POR_PERIODO_ENTREGA) And (rb_periodo <> COD_CONSULTA_POR_PERIODO_CADASTRO) then md = "MD"
 			s_cor="black"
@@ -3394,11 +5212,17 @@ dim idxAux
 					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 					    x = x & _
 					        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_FABRICANTE) & "</span></td>" & chr(13) & _
-					        "       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_FABRICANTE) & "%" & "</span></td>" & chr(13)
+					        "       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_FABRICANTE) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_Fabricante) & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_Fabricante) & "</span></td>" & chr(13) & _
+							"       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_Fabricante) & "%" & "</span></td>" & chr(13)
 					else
 					    x = x & _
 					        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_FABRICANTE) & "</span></td>" & chr(13) & _
-					        "       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_FABRICANTE) & "%" & "</span></td>" & chr(13)
+					        "       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_FABRICANTE) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_Fabricante) & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_Fabricante) & "</span></td>" & chr(13) & _
+							"       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_Fabricante) & "%" & "</span></td>" & chr(13)
 					end if
 					x = x & _
 					"	</tr>" & chr(13)
@@ -3434,17 +5258,298 @@ dim idxAux
 					"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>RA Líquido (R$)</span></td>" & chr(13) 
 					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 					    x = x & _
+					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto -RA -COM (R$)</span></td>" & chr(13) & _
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib (%)</span></td>" & chr(13) & _
+							"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>VL Fat (R$)</span></td>" & chr(13) & _
 					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto (R$)</span></td>" & chr(13) & _
-					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib (%)</span></td>" & chr(13)
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Bruta (%)</span></td>" & chr(13)
 					else
 					    x = x & _
+					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto Estimado -RA -COM (R$)</span></td>" & chr(13) & _
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib Estimada (%)</span></td>" & chr(13) & _
+							"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>VL Fat (R$)</span></td>" & chr(13) & _
 					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto Estimado (R$)</span></td>" & chr(13) & _
-					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib Estimada (%)</span></td>" & chr(13)
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Bruta Estimada (%)</span></td>" & chr(13)
 					end if
 					x = x & _
 					"	</tr>" & chr(13)
 			end if
 
+'		=================================
+'		OPÇÃO SAÍDA: SUBGRUPO DE PRODUTOS
+'		=================================
+    '	ÚLTIMO SUBTOTAL NO RELATÓRIO SUBGRUPO PRODUTO
+		if (rb_saida = COD_SAIDA_REL_SUBGRUPO_PRODUTO)  then
+			'PERCENTUAIS P/ SUBGRUPO DE PRODUTO
+			' PERCENTUAL RELATIVO AO FATURAMENTO VENDA TOTAL
+			if vl_total_final_venda = 0 then
+				percFatVenda_ProdutoSubgrupo = 0
+			else
+				percFatVenda_ProdutoSubgrupo = (vl_venda_ProdutoSubgrupo/vl_total_final_venda)*100
+				end if
+					
+		'	% DESCONTO
+			if vl_lista_ProdutoSubgrupo = 0 then
+				perc_desconto_ProdutoSubgrupo = 0
+			else
+				perc_desconto_ProdutoSubgrupo = 100 * (vl_lista_ProdutoSubgrupo-vl_venda_ProdutoSubgrupo) / vl_lista_ProdutoSubgrupo
+				end if
+					
+		'	%COM SOBRE FATURAMENTO VENDA
+			if vl_venda_ProdutoSubgrupo = 0 then
+				percRTFatVenda_ProdutoSubgrupo = 0
+			else
+				percRTFatVenda_ProdutoSubgrupo = (vl_RT_ProdutoSubgrupo/vl_venda_ProdutoSubgrupo)*100
+				end if
+							
+		'	%COM + %DESCONTO
+			percRTEDesc_ProdutoSubgrupo = perc_desconto_ProdutoSubgrupo + percRTFatVenda_ProdutoSubgrupo
+						
+		'   %MARGEM CONTRIBUIÇÃO
+			if vl_venda_ProdutoSubgrupo = 0 then
+				marg_contrib_ProdutoSubgrupo = 0
+			else
+				marg_contrib_ProdutoSubgrupo = 100 * ((vl_venda_ProdutoSubgrupo - vl_RT_ProdutoSubgrupo - vl_ent_ProdutoSubgrupo) / vl_venda_ProdutoSubgrupo)
+			end if
+
+			if vl_NF_ProdutoSubgrupo = 0 then
+				marg_contrib_bruta_ProdutoSubgrupo = 0
+			else
+				marg_contrib_bruta_ProdutoSubgrupo = 100 * ((vl_NF_ProdutoSubgrupo - vl_ent_ProdutoSubgrupo) / vl_NF_ProdutoSubgrupo)
+				end if
+
+            x = x & "	</tr>" & chr(13)
+			x = x & "	<tr nowrap>" & chr(13) & _
+					"		<td align='left' valign='bottom' style='background:white;' nowrap>&nbsp;</td>" & chr(13) & _
+					"		<td class='MC ME' align='right' colspan='2' nowrap><span class='Cd' style='color:" & s_cor & ";'>" & _
+					"Total do Subgrupo:</span></td>" & chr(13) & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeTotalProdutoSubgrupo) & "</span></td>" & chr(13) & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_venda_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+					"		<td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percFatVenda_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_lista_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_desconto_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(perc_desconto_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RT_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percRTFatVenda_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percRTEDesc_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+					"		<td class='MC " & md & "' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RA_liquido_ProdutoSubgrupo) & "</span></td>" & chr(13) 
+			if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
+				x = x & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+					"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+					"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13)
+			else
+				x = x & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+					"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13) & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_ProdutoSubgrupo) & "</span></td>" & chr(13) & _
+					"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_ProdutoSubgrupo) & "%" & "</span></td>" & chr(13)
+				end if
+
+			' PERCENTUAIS P/ GRUPO DE PRODUTO
+			' PERCENTUAL RELATIVO AO FATURAMENTO VENDA TOTAL
+			if vl_total_final_venda = 0 then
+				percFatVenda_ProdutoGrupo = 0
+			else
+				percFatVenda_ProdutoGrupo = (vl_venda_ProdutoGrupo/vl_total_final_venda)*100
+				end if
+					
+		'	% DESCONTO
+			if vl_lista_ProdutoGrupo = 0 then
+				perc_desconto_ProdutoGrupo = 0
+			else
+				perc_desconto_ProdutoGrupo = 100 * (vl_lista_ProdutoGrupo-vl_venda_ProdutoGrupo) / vl_lista_ProdutoGrupo
+				end if
+					
+		'	%COM SOBRE FATURAMENTO VENDA
+			if vl_venda_ProdutoGrupo = 0 then
+				percRTFatVenda_ProdutoGrupo = 0
+			else
+				percRTFatVenda_ProdutoGrupo = (vl_RT_ProdutoGrupo/vl_venda_ProdutoGrupo)*100
+				end if
+							
+		'	%COM + %DESCONTO
+			percRTEDesc_ProdutoGrupo = perc_desconto_ProdutoGrupo + percRTFatVenda_ProdutoGrupo
+						
+		'   %MARGEM CONTRIBUIÇÃO
+			if vl_venda_ProdutoGrupo = 0 then
+				marg_contrib_ProdutoGrupo = 0
+			else
+				marg_contrib_ProdutoGrupo = 100 * ((vl_venda_ProdutoGrupo - vl_RT_ProdutoGrupo - vl_ent_ProdutoGrupo) / vl_venda_ProdutoGrupo)
+			end if
+
+			if vl_NF_ProdutoGrupo = 0 then
+				marg_contrib_bruta_ProdutoGrupo = 0
+			else
+				marg_contrib_bruta_ProdutoGrupo = 100 * ((vl_NF_ProdutoGrupo - vl_ent_ProdutoGrupo) / vl_NF_ProdutoGrupo)
+				end if
+
+            x = x & "	</tr>" & chr(13)
+			x = x & "	<tr nowrap>" & chr(13) & _
+					"		<td align='left' valign='bottom' style='background:white;' nowrap>&nbsp;</td>" & chr(13) & _
+					"		<td class='MC ME' align='right' colspan='2' nowrap><span class='Cd' style='color:" & s_cor & ";'>" & _
+					"Total do Grupo:</span></td>" & chr(13) & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeTotalProdutoGrupo) & "</span></td>" & chr(13) & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_venda_ProdutoGrupo) & "</span></td>" & chr(13) & _
+					"		<td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percFatVenda_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_lista_ProdutoGrupo) & "</span></td>" & chr(13) & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_desconto_ProdutoGrupo) & "</span></td>" & chr(13) & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(perc_desconto_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RT_ProdutoGrupo) & "</span></td>" & chr(13) & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percRTFatVenda_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+					"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percRTEDesc_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+					"		<td class='MC " & md & "' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RA_liquido_ProdutoGrupo) & "</span></td>" & chr(13) 
+					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
+						x = x & _
+							"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_ProdutoGrupo) & "</span></td>" & chr(13) & _
+							"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_ProdutoGrupo) & "</span></td>" & chr(13) & _
+							"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_ProdutoGrupo) & "</span></td>" & chr(13) & _
+							"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_ProdutoGrupo) & "%" & "</span></td>" & chr(13)
+					else
+						x = x & _
+							"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_ProdutoGrupo) & "</span></td>" & chr(13) & _
+							"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_ProdutoGrupo) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_ProdutoGrupo) & "</span></td>" & chr(13) & _
+							"		<td class='MC' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_ProdutoGrupo) & "</span></td>" & chr(13) & _
+							"       <td class='MC MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_ProdutoGrupo) & "%" & "</span></td>" & chr(13)
+					end if
+
+
+		'	PERCENTUAL RELATIVO AO FATURAMENTO VENDA TOTAL
+			    if vl_total_final_venda = 0 then
+				percFatVenda_FABRICANTE = 0
+			    else
+				percFatVenda_FABRICANTE = (vl_venda_FABRICANTE/vl_total_final_venda)*100
+				end if
+		  
+		
+		'	% DESCONTO
+			if vl_lista_FABRICANTE = 0 then
+				perc_desconto_UF = 0
+			else
+				perc_desconto_FABRICANTE = 100 * (vl_lista_FABRICANTE-vl_venda_FABRICANTE) / vl_lista_FABRICANTE
+				end if
+				
+		
+		
+		'	%COM SOBRE FATURAMENTO VENDA
+			if vl_venda_FABRICANTE = 0 then
+				percRTFatVenda_FABRICANTE = 0
+			else
+				percRTFatVenda_FABRICANTE = (vl_RT_FABRICANTE/vl_venda_FABRICANTE)*100
+				end if
+			
+       
+            
+		'	%COM + %DESCONTO
+			percRTEDesc_FABRICANTE = perc_desconto_FABRICANTE + percRTFatVenda_FABRICANTE
+			
+			
+		'   %MARGEM CONTRIB
+		    if vl_venda_FABRICANTE = 0 then
+		        marg_contrib_FABRICANTE = 0
+		    else
+		        marg_contrib_FABRICANTE = 100 * ((vl_venda_FABRICANTE - vl_RT_FABRICANTE - vl_ent_FABRICANTE) / vl_venda_FABRICANTE)
+		    end if
+
+			if vl_NF_Fabricante = 0 then
+				marg_contrib_bruta_Fabricante = 0
+			else
+				marg_contrib_bruta_Fabricante = 100 * ((vl_NF_Fabricante - vl_ent_Fabricante) / vl_NF_Fabricante)
+				end if
+
+		    md = ""
+			if rb_periodo <> COD_CONSULTA_POR_PERIODO_ENTREGA then md = "MD"
+			s_cor="black"
+			if vl_total_venda < 0 then s_cor="red"
+			x = x & "	</tr>" & chr(13)
+			x = x & "	<tr nowrap style='background: #FFFFDD'>" & chr(13) & _
+					"		<td valign='bottom' style='background:white;' nowrap>&nbsp;</td>" & chr(13) & _
+					"		<td class='MTBE' align='right' colspan='2' nowrap><span class='Cd' style='color:" & s_cor & ";'>" & _
+					"TOTAL:</span></td>" & chr(13) & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeTotalFabricante) & "</span></td>" & chr(13) & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_venda_FABRICANTE) & "</span></td>" & chr(13) & _
+					"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percFatVenda_FABRICANTE) & "%" & "</span></td>" & chr(13) & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_lista_FABRICANTE) & "</span></td>" & chr(13) & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_desconto_FABRICANTE) & "</span></td>" & chr(13) & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(perc_desconto_FABRICANTE) & "%" & "</span></td>" & chr(13) & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RT_FABRICANTE) & "</span></td>" & chr(13) & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percRTFatVenda_FABRICANTE) & "%" & "</span></td>" & chr(13) & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percRTEDesc_FABRICANTE) & "%" & "</span></td>" & chr(13) & _
+					"		<td class='MTB " & md & "' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RA_liquido_FABRICANTE) & "</span></td>" & chr(13) 
+					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
+					    x = x & _
+					        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_FABRICANTE) & "</span></td>" & chr(13) & _
+					        "       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_FABRICANTE) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_Fabricante) & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_Fabricante) & "</span></td>" & chr(13) & _
+							"       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_Fabricante) & "%" & "</span></td>" & chr(13)
+					else
+					    x = x & _
+					        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_FABRICANTE) & "</span></td>" & chr(13) & _
+					        "       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_FABRICANTE) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_Fabricante) & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_Fabricante) & "</span></td>" & chr(13) & _
+							"       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_Fabricante) & "%" & "</span></td>" & chr(13)
+					end if
+					x = x & _
+					"	</tr>" & chr(13)
+			'	CRIANDO ESPAÇOS EM BRANCO PARA ALINHAR A TABELA COM O TOTAL DE TODOS OS ESTADOS
+
+			
+			strEspacos = ""
+			for iEspacos = 0 to Len(Cstr(n_reg_vetor)) + 1
+				strEspacos = strEspacos & "&nbsp;"
+				next
+			
+			x = x & "</table>" & chr(13)
+			x = x & "<br>" & chr(13)
+			x = x & "<table cellspacing=0>" & chr(13)
+			x = x & _
+					"	<tr>" & chr(13) & _
+					"		<td style='background:white;'>&nbsp;</td>" & chr(13) & _
+					"		<td class='MDTE' " & strColSpanTodasColunas & " align='left' valign='bottom' style='background:azure;'><span class='N'>&nbsp;TOTAL</span></td>" & chr(13) & _
+					"	</tr>" & chr(13)
+			x = x & "<br>" & chr(13)
+			x = x & "	<tr nowrap style='background:azure'>" & chr(13) & _
+					"		<td align='left' valign='bottom' style='background:white;' nowrap>" & strEspacos & "</td>" & chr(13) & _
+					"		<td class='MDTE' style='width:" & Cstr(intLargIndicador) & "px' align='left' valign='bottom' nowrap><span class='R'>&nbsp;</span></td>" & chr(13) & _
+					"		<td class='MTD' style='width:" & CStr(intLargQtdeProduto) & "px' align='right' valign='bottom' nowrap><span class='Rd' style='font-weight:bold;'>Qtde</span></td>" & chr(13) & _
+					"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>VL Venda (R$)</span></td>" & chr(13) & _
+					"		<td class='MTD' style='width:" & Cstr(intLargColPerc) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>% Fat Venda Total</span></td>" & chr(13) & _
+					"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>VL Lista (R$)</span></td>" & chr(13) & _
+					"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Desc (R$)</span></td>" & chr(13) & _
+					"		<td class='MTD' style='width:" & Cstr(intLargColPerc) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>% Desc</span></td>" & chr(13) & _
+					"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>COM (R$)</span></td>" & chr(13) & _
+					"		<td class='MTD' style='width:" & Cstr(intLargColPerc) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>% COM</span></td>" & chr(13) & _
+					"		<td class='MTD' style='width:" & Cstr(intLargColPerc) & "px;' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>%COM<br>+<br>%Desc</span></td>" & chr(13) & _
+					"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>RA Líquido (R$)</span></td>" & chr(13) 
+					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
+					    x = x & _
+					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto -RA -COM (R$)</span></td>" & chr(13) & _
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib (%)</span></td>" & chr(13) & _
+							"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>VL Fat (R$)</span></td>" & chr(13) & _
+							"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto (R$)</span></td>" & chr(13) & _
+							"       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Bruta (%)</span></td>" & chr(13)
+					else
+					    x = x & _
+					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto Estimado -RA -COM (R$)</span></td>" & chr(13) & _
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib Estimada (%)</span></td>" & chr(13) & _
+							"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>VL Fat (R$)</span></td>" & chr(13) & _
+							"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto Estimado (R$)</span></td>" & chr(13) & _
+							"       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Bruta Estimada (%)</span></td>" & chr(13)
+					end if
+					x = x & _
+					"	</tr>" & chr(13)
+			end if
+
+'		====================
+'		OPÇÃO SAÍDA: EMPRESA
+'		====================
     '	ÚLTIMO SUBTOTAL NO RELATÓRIO DE EMPRESA
 		if (rb_saida = COD_SAIDA_REL_EMPRESA)  then
 
@@ -3485,7 +5590,13 @@ dim idxAux
 		    else
 		        marg_contrib_Empresa = 100 * ((vl_venda_Empresa - vl_RT_Empresa - vl_ent_Empresa) / vl_venda_Empresa)
 		    end if
-		    
+
+			if vl_NF_Empresa = 0 then
+				marg_contrib_bruta_Empresa = 0
+			else
+				marg_contrib_bruta_Empresa = 100 * ((vl_NF_Empresa - vl_ent_Empresa) / vl_NF_Empresa)
+				end if
+
             md = ""
 			if (rb_periodo <> COD_CONSULTA_POR_PERIODO_ENTREGA) And (rb_periodo <> COD_CONSULTA_POR_PERIODO_CADASTRO) then md = "MD"
 			s_cor="black"
@@ -3508,11 +5619,17 @@ dim idxAux
 					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 					    x = x & _
 					        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_Empresa) & "</span></td>" & chr(13) & _
-					        "       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_Empresa) & "%" & "</span></td>" & chr(13)
+					        "       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_Empresa) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_Empresa) & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_Empresa) & "</span></td>" & chr(13) & _
+							"       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_Empresa) & "%" & "</span></td>" & chr(13)
 					else
 					    x = x & _
 					        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_Empresa) & "</span></td>" & chr(13) & _
-					        "       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_Empresa) & "%" & "</span></td>" & chr(13)
+					        "       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_Empresa) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_NF_Empresa) & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_Empresa) & "</span></td>" & chr(13) & _
+							"       <td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_Empresa) & "%" & "</span></td>" & chr(13)
 					end if
 					x = x & _
 					"	</tr>" & chr(13)
@@ -3548,12 +5665,18 @@ dim idxAux
 					"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>RA Líquido (R$)</span></td>" & chr(13) 
 					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 					    x = x & _
+					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto -RA -COM (R$)</span></td>" & chr(13) & _
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib (%)</span></td>" & chr(13) & _
+							"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>VL Fat (R$)</span></td>" & chr(13) & _
 					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto (R$)</span></td>" & chr(13) & _
-					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib (%)</span></td>" & chr(13)
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Bruta (%)</span></td>" & chr(13)
 					else
 					    x = x & _
+					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto Estimado -RA -COM (R$)</span></td>" & chr(13) & _
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib Estimada (%)</span></td>" & chr(13) & _
+							"		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>VL Fat (R$)</span></td>" & chr(13) & _
 					        "		<td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Lucro Bruto Estimado (R$)</span></td>" & chr(13) & _
-					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Contrib Estimada (%)</span></td>" & chr(13)
+					        "       <td class='MTD' style='width:" & Cstr(intLargColMonetario) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;margin-right:0px;'>Margem Bruta Estimada (%)</span></td>" & chr(13)
 					end if
 					x = x & _
 					"	</tr>" & chr(13)
@@ -3592,6 +5715,15 @@ dim idxAux
 	        marg_contrib_final = 100 * ((vl_total_venda - total_entrada - vl_total_RT) / vl_total_venda)
 	    end if
 
+		if vl_total_NF = 0 then
+			marg_contrib_bruta_final = 0
+		else
+			marg_contrib_bruta_final = 100 * ((vl_total_NF - total_entrada) / vl_total_NF)
+			end if
+
+'		====================
+'		OPÇÃO SAÍDA: PRODUTO
+'		====================
 		if rb_saida = COD_SAIDA_REL_PRODUTO then
 			s_cor="black"
 			if intQtdeTotalProdutos < 0 then s_cor="red"
@@ -3613,14 +5745,24 @@ dim idxAux
 					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 					    x = x & _
 					        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_total) & "</span></td>" & chr(13) & _
-					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) 
+					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_NF) & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_total) & "</span></td>" & chr(13) & _
+							"		<td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_final) & "%" & "</span></td>" & chr(13)
 					else
 					    x = x & _
 					        "		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_total) & "</span></td>" & chr(13) & _
-					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) 
+					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_NF) & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_total) & "</span></td>" & chr(13) & _
+							"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_final) & "%" & "</span></td>" & chr(13)
 					end if
 					x = x & _
 					"	</tr>" & chr(13)
+
+'		======================
+'		OPÇÃO SAÍDA: INDICADOR
+'		======================
 		elseif rb_saida = COD_SAIDA_REL_INDICADOR then
 			s_cor="black"
 			if vl_total_venda < 0 then s_cor="red"
@@ -3641,14 +5783,24 @@ dim idxAux
 					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 					    x = x & _
 					        "       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_total) & "</span></td>" & chr(13) & _
-				        	"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) 
+				        	"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_NF) & "</span></td>" & chr(13) & _
+							"       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_total) & "</span></td>" & chr(13) & _
+							"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_final) & "%" & "</span></td>" & chr(13)
 					else
 					    x = x & _
 					        "       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_total) & "</span></td>" & chr(13) & _
-				        	"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) 
+				        	"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_NF) & "</span></td>" & chr(13) & _
+							"       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_total) & "</span></td>" & chr(13) & _
+							"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_final) & "%" & "</span></td>" & chr(13)
 					end if
 					x = x  & _
 					"	</tr>" & chr(13)
+
+'		=========================
+'		OPÇÃO SAÍDA: INDICADOR/UF
+'		=========================
 		elseif rb_saida = COD_SAIDA_REL_INDICADOR_UF then
 			if vl_total_venda < 0 then s_cor="red"
 			x = x & "	<tr nowrap style='background: #FFFFDD'>" & chr(13) & _
@@ -3668,14 +5820,24 @@ dim idxAux
 					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 					    x = x & _
 					        "       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_total) & "</span></td>" & chr(13) & _
-					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) 
+					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_NF) & "</span></td>" & chr(13) & _
+							"       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_total) & "</span></td>" & chr(13) & _
+							"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_final) & "%" & "</span></td>" & chr(13)
 					else
 					    x = x & _
 					        "       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_total) & "</span></td>" & chr(13) & _
-					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) 
+					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_NF) & "</span></td>" & chr(13) & _
+							"       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_total) & "</span></td>" & chr(13) & _
+							"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_final) & "%" & "</span></td>" & chr(13)
 					end if
 					x = x & _
 					"	</tr>" & chr(13)
+
+'		======================
+'		OPÇÃO SAÍDA: CIDADE/UF
+'		======================
 		elseif rb_saida = COD_SAIDA_REL_CIDADE_UF then
 			if vl_total_venda < 0 then s_cor="red"
 			x = x & "	<tr nowrap style='background: #FFFFDD'>" & chr(13) & _
@@ -3695,14 +5857,24 @@ dim idxAux
 					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 					    x = x & _
 					        "       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_total) & "</span></td>" & chr(13) & _
-					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) 
+					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_NF) & "</span></td>" & chr(13) & _
+							"       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_total) & "</span></td>" & chr(13) & _
+							"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_final) & "%" & "</span></td>" & chr(13)
 					else
 					    x = x & _
 					        "       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_total) & "</span></td>" & chr(13) & _
-					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) 
+					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_NF) & "</span></td>" & chr(13) & _
+							"       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_total) & "</span></td>" & chr(13) & _
+							"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_final) & "%" & "</span></td>" & chr(13)
 					end if 
 					x = x & _
 					"	</tr>" & chr(13)
+
+'		=======================
+'		OPÇÃO SAÍDA: FABRICANTE
+'		=======================
 		elseif rb_saida = COD_SAIDA_REL_FABRICANTE then
 			if vl_total_venda < 0 then s_cor="red"
             md = ""
@@ -3724,15 +5896,24 @@ dim idxAux
 					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 					    x = x & _
 					        "       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_total) & "</span></td>" & chr(13) & _
-					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) 
+					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_NF) & "</span></td>" & chr(13) & _
+							"       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_total) & "</span></td>" & chr(13) & _
+							"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_final) & "%" & "</span></td>" & chr(13)
 					else
 					    x = x & _
 					        "       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_total) & "</span></td>" & chr(13) & _
-					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) 
+					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_NF) & "</span></td>" & chr(13) & _
+							"       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_total) & "</span></td>" & chr(13) & _
+							"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_final) & "%" & "</span></td>" & chr(13)
 					end if 
 					x = x & _
 					"	</tr>" & chr(13)
         
+'		==============================
+'		OPÇÃO SAÍDA: GRUPO DE PRODUTOS
+'		==============================
         elseif rb_saida = COD_SAIDA_REL_GRUPO_PRODUTO then
             
             for i=UBound(vTotGrupo) to 1 step -1
@@ -3752,11 +5933,18 @@ dim idxAux
                     vTotGrupo(i).c10 = (vTotGrupo(i).c9/vTotGrupo(i).c4)*100 '%comissão
                 end if
                 vTotGrupo(i).c11 = vTotGrupo(i).c10 + vTotGrupo(i).c8 '%comissão + %desconto
+                'Margem Contrib %
                 if vTotGrupo(i).c4 = 0 then
                     vTotGrupo(i).c14 = 0
                 else
                     vTotGrupo(i).c14 = 100 * ((vTotGrupo(i).c4 - vTotGrupo(i).c15 - vTotGrupo(i).c9) / vTotGrupo(i).c4)
                 end if
+				'Margem Contrib Bruta (%)
+				if vTotGrupo(i).c16 = 0 then
+					vTotGrupo(i).c18 = 0
+				else
+					vTotGrupo(i).c18 = 100 * ((vTotGrupo(i).c16 - vTotGrupo(i).c15) / vTotGrupo(i).c16)
+					end if
                 
 
     if vl_total_venda = 0 then
@@ -3764,7 +5952,13 @@ dim idxAux
 	    else
 	        marg_contrib_final = 100 * ((vl_total_venda - total_entrada - vl_total_RT) / vl_total_venda)
 	    end if
-                
+
+		if vl_total_NF = 0 then
+			marg_contrib_bruta_final = 0
+		else
+			marg_contrib_bruta_final = 100 * ((vl_total_NF - total_entrada) / vl_total_NF)
+			end if
+
                 s_cor="black"
 				if vTotGrupo(i).c3 < 0 then s_cor="red"
 				if vTotGrupo(i).c4 < 0 then s_cor="red"
@@ -3783,10 +5977,16 @@ dim idxAux
 							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotGrupo(i).c12) & "</p></td>" & chr(13)
                 if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
                     x = x & "		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotGrupo(i).c13) & "</p></td>" & chr(13) & _
-							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotGrupo(i).c14) & "%" & "</p></td>" & chr(13)
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotGrupo(i).c14) & "%" & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotGrupo(i).c16) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotGrupo(i).c17) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotGrupo(i).c18) & "%" & "</p></td>" & chr(13)
                 else
                     x = x & "		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotGrupo(i).c13) & "</p></td>" & chr(13) & _
-							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotGrupo(i).c14) & "%" & "</p></td>" & chr(13)
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotGrupo(i).c14) & "%" & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotGrupo(i).c16) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotGrupo(i).c17) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotGrupo(i).c18) & "%" & "</p></td>" & chr(13)
 				end if
 
                 x = x & "	</tr>" & chr(13)
@@ -3814,15 +6014,221 @@ dim idxAux
 					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 					    x = x & _
 					        "       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_total) & "</span></td>" & chr(13) & _
-					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) 
+					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_NF) & "</span></td>" & chr(13) & _
+							"       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_total) & "</span></td>" & chr(13) & _
+							"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_final) & "%" & "</span></td>" & chr(13)
 					else
 					    x = x & _
 					        "       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_total) & "</span></td>" & chr(13) & _
-					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) 
+					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_NF) & "</span></td>" & chr(13) & _
+							"       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_total) & "</span></td>" & chr(13) & _
+							"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_final) & "%" & "</span></td>" & chr(13)
 					end if 
 					x = x & _
 					"	</tr>" & chr(13)
 
+'		=================================
+'		OPÇÃO SAÍDA: SUBGRUPO DE PRODUTOS
+'		=================================
+        elseif rb_saida = COD_SAIDA_REL_SUBGRUPO_PRODUTO then
+            
+			for i=UBound(vTotSubgrupo) to 1 step -1
+				if vl_total_final_venda = 0 then
+					vTotSubgrupo(i).c5 = 0
+				else
+					vTotSubgrupo(i).c5 = (vTotSubgrupo(i).c4/vl_total_final_venda)*100 '%Fat Venda Total
+				end if
+				if vTotSubgrupo(i).c6 = 0 then
+					vTotSubgrupo(i).c8 = 0
+				else
+					vTotSubgrupo(i).c8 = 100 * (vTotSubgrupo(i).c6-vTotSubgrupo(i).c4) / vTotSubgrupo(i).c6 '%Desconto
+				end if
+				if vTotSubgrupo(i).c4 = 0 then
+					vTotSubgrupo(i).c10 = 0
+				else
+					vTotSubgrupo(i).c10 = (vTotSubgrupo(i).c9/vTotSubgrupo(i).c4)*100 '%comissão
+				end if
+				vTotSubgrupo(i).c11 = vTotSubgrupo(i).c10 + vTotSubgrupo(i).c8 '%comissão + %desconto
+				'Margem Contrib %
+				if vTotSubgrupo(i).c4 = 0 then
+					vTotSubgrupo(i).c14 = 0
+				else
+					vTotSubgrupo(i).c14 = 100 * ((vTotSubgrupo(i).c4 - vTotSubgrupo(i).c15 - vTotSubgrupo(i).c9) / vTotSubgrupo(i).c4)
+				end if
+				'Margem Contrib Bruta (%)
+				if vTotSubgrupo(i).c16 = 0 then
+					vTotSubgrupo(i).c18 = 0
+				else
+					vTotSubgrupo(i).c18 = 100 * ((vTotSubgrupo(i).c16 - vTotSubgrupo(i).c15) / vTotSubgrupo(i).c16)
+					end if
+
+				if vl_total_venda = 0 then
+					marg_contrib_final = 0
+				else
+					marg_contrib_final = 100 * ((vl_total_venda - total_entrada - vl_total_RT) / vl_total_venda)
+				end if
+
+				if vl_total_NF = 0 then
+					marg_contrib_bruta_final = 0
+				else
+					marg_contrib_bruta_final = 100 * ((vl_total_NF - total_entrada) / vl_total_NF)
+					end if
+
+				s_cor="black"
+				if vTotSubgrupo(i).c3 < 0 then s_cor="red"
+				if vTotSubgrupo(i).c4 < 0 then s_cor="red"
+				vCodAux = Split(vTotSubgrupo(i).c1, "|")
+				vDescAux = Split(vTotSubgrupo(i).c2, "|")
+				x = x & "	<tr nowrap style='background:honeydew'>" & chr(13) & _
+							"		<td style='background:white'>&nbsp;</td>" & chr(13) & _
+							"		<td class='MC MD ME'><p class='C' style='color:" & s_cor & ";'>" & "(" & vCodAux(LBound(vCodAux)) & " - " & vDescAux(LBound(vDescAux)) & ") &nbsp; " & vCodAux(UBound(vCodAux)) & " - " & vDescAux(UBound(vDescAux)) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_inteiro(vTotSubgrupo(i).c3) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotSubgrupo(i).c4) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotSubgrupo(i).c5) & "%" & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotSubgrupo(i).c6) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotSubgrupo(i).c7) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotSubgrupo(i).c8) & "%" & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotSubgrupo(i).c9) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotSubgrupo(i).c10) & "%" & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotSubgrupo(i).c11) & "%" & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotSubgrupo(i).c12) & "</p></td>" & chr(13)
+				if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
+					x = x & "		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotSubgrupo(i).c13) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotSubgrupo(i).c14) & "%" & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotSubgrupo(i).c16) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotSubgrupo(i).c17) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotSubgrupo(i).c18) & "%" & "</p></td>" & chr(13)
+				else
+					x = x & "		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotSubgrupo(i).c13) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotSubgrupo(i).c14) & "%" & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotSubgrupo(i).c16) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotSubgrupo(i).c17) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotSubgrupo(i).c18) & "%" & "</p></td>" & chr(13)
+				end if
+
+				x = x & "	</tr>" & chr(13)
+
+				next
+
+			for i=UBound(vTotGrupo) to 1 step -1
+				exit for 'DESATIVA EXIBIÇÃO DO TOTAL POR GRUPO DE PRODUTOS
+				
+				if vl_total_final_venda = 0 then
+					vTotGrupo(i).c5 = 0
+				else
+					vTotGrupo(i).c5 = (vTotGrupo(i).c4/vl_total_final_venda)*100 '%Fat Venda Total
+				end if
+				if vTotGrupo(i).c6 = 0 then
+					vTotGrupo(i).c8 = 0
+				else
+					vTotGrupo(i).c8 = 100 * (vTotGrupo(i).c6-vTotGrupo(i).c4) / vTotGrupo(i).c6 '%Desconto
+				end if
+				if vTotGrupo(i).c4 = 0 then
+					vTotGrupo(i).c10 = 0
+				else
+					vTotGrupo(i).c10 = (vTotGrupo(i).c9/vTotGrupo(i).c4)*100 '%comissão
+				end if
+				vTotGrupo(i).c11 = vTotGrupo(i).c10 + vTotGrupo(i).c8 '%comissão + %desconto
+				'Margem Contrib %
+				if vTotGrupo(i).c4 = 0 then
+					vTotGrupo(i).c14 = 0
+				else
+					vTotGrupo(i).c14 = 100 * ((vTotGrupo(i).c4 - vTotGrupo(i).c15 - vTotGrupo(i).c9) / vTotGrupo(i).c4)
+				end if
+				'Margem Contrib Bruta (%)
+				if vTotGrupo(i).c16 = 0 then
+					vTotGrupo(i).c18 = 0
+				else
+					vTotGrupo(i).c18 = 100 * ((vTotGrupo(i).c16 - vTotGrupo(i).c15) / vTotGrupo(i).c16)
+					end if
+				
+				if vl_total_venda = 0 then
+					marg_contrib_final = 0
+				else
+					marg_contrib_final = 100 * ((vl_total_venda - total_entrada - vl_total_RT) / vl_total_venda)
+				end if
+
+				if vl_total_NF = 0 then
+					marg_contrib_bruta_final = 0
+				else
+					marg_contrib_bruta_final = 100 * ((vl_total_NF - total_entrada) / vl_total_NF)
+					end if
+
+				s_cor="black"
+				if vTotGrupo(i).c3 < 0 then s_cor="red"
+				if vTotGrupo(i).c4 < 0 then s_cor="red"
+				x = x & "	<tr nowrap style='background:honeydew'>" & chr(13) & _
+							"		<td style='background:white'>&nbsp;</td>" & chr(13) & _
+							"		<td class='MC MD ME'><p class='C' style='color:" & s_cor & ";'>" & vTotGrupo(i).c1 & " - " & vTotGrupo(i).c2 & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_inteiro(vTotGrupo(i).c3) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotGrupo(i).c4) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotGrupo(i).c5) & "%" & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotGrupo(i).c6) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotGrupo(i).c7) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotGrupo(i).c8) & "%" & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotGrupo(i).c9) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotGrupo(i).c10) & "%" & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotGrupo(i).c11) & "%" & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotGrupo(i).c12) & "</p></td>" & chr(13)
+				if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
+					x = x & "		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotGrupo(i).c13) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotGrupo(i).c14) & "%" & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotGrupo(i).c16) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotGrupo(i).c17) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotGrupo(i).c18) & "%" & "</p></td>" & chr(13)
+				else
+					x = x & "		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotGrupo(i).c13) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotGrupo(i).c14) & "%" & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotGrupo(i).c16) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vTotGrupo(i).c17) & "</p></td>" & chr(13) & _
+							"		<td class='MC MD'><p class='Cd' style='color:" & s_cor & ";'>" & formata_perc(vTotGrupo(i).c18) & "%" & "</p></td>" & chr(13)
+				end if
+
+				x = x & "	</tr>" & chr(13)
+				next
+
+
+			'TOTAL GERAL
+			if vl_total_venda < 0 then s_cor="red"
+            md = ""
+			if rb_periodo <> COD_CONSULTA_POR_PERIODO_ENTREGA then md = "MD"
+			x = x & "	<tr nowrap style='background: #FFFFDD'>" & chr(13) & _
+					"		<td style='background:white;'>&nbsp;</td>" & chr(13) & _
+					"		<td class='MTBE' align='right' nowrap><span class='Cd' style='color:" & s_cor & ";'>" & _
+					"TOTAL GERAL:</span></td>" & chr(13) & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_inteiro(intQtdeTotalProdutos) & "</span></td>" & chr(13) & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_venda) & "</span></td>" & chr(13) & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percFinalFatVenda) & "%" & "</span></td>" & chr(13) & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_lista) & "</span></td>" & chr(13) & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_desconto) & "</span></td>" & chr(13) & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percFinalDesc) & "%" & "</span></td>" & chr(13) & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_RT) & "</span></td>" & chr(13) & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percFinalRTFatVenda) & "%" & "</span></td>" & chr(13) & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(percFinalRTEDescFatVenda) & "%" & "</span></td>" & chr(13) & _
+					"		<td class='MTB " & md & "' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_RA_liquido) & "</span></td>" & chr(13) 
+					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
+					    x = x & _
+					        "       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_total) & "</span></td>" & chr(13) & _
+					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_NF) & "</span></td>" & chr(13) & _
+							"       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_total) & "</span></td>" & chr(13) & _
+							"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_final) & "%" & "</span></td>" & chr(13)
+					else
+					    x = x & _
+					        "       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_total) & "</span></td>" & chr(13) & _
+					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_NF) & "</span></td>" & chr(13) & _
+							"       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_total) & "</span></td>" & chr(13) & _
+							"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_final) & "%" & "</span></td>" & chr(13)
+					end if 
+					x = x & _
+					"	</tr>" & chr(13)
+
+'		====================
+'		OPÇÃO SAÍDA: EMPRESA
+'		====================
         elseif rb_saida = COD_SAIDA_REL_EMPRESA then
 			if vl_total_venda < 0 then s_cor="red"
             md = ""
@@ -3844,11 +6250,17 @@ dim idxAux
 					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 					    x = x & _
 					        "       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_total) & "</span></td>" & chr(13) & _
-					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) 
+					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_NF) & "</span></td>" & chr(13) & _
+							"       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_total) & "</span></td>" & chr(13) & _
+							"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_final) & "%" & "</span></td>" & chr(13)
 					else
 					    x = x & _
 					        "       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_total) & "</span></td>" & chr(13) & _
-					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) 
+					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_NF) & "</span></td>" & chr(13) & _
+							"       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_total) & "</span></td>" & chr(13) & _
+							"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_final) & "%" & "</span></td>" & chr(13)
 					end if 
 					x = x & _
 					"	</tr>" & chr(13)
@@ -3872,11 +6284,17 @@ dim idxAux
 					if rb_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA then
 					    x = x & _
 					        "       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_total) & "</span></td>" & chr(13) & _
-					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) 
+					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_NF) & "</span></td>" & chr(13) & _
+							"       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_total) & "</span></td>" & chr(13) & _
+							"		<td class='MTBD MD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_final) & "%" & "</span></td>" & chr(13)
 				    else
 					    x = x & _
 					        "       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_liquido_total) & "</span></td>" & chr(13) & _
-					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) 
+					        "		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_final) & "%" & "</span></td>" & chr(13) & _
+							"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_NF) & "</span></td>" & chr(13) & _
+							"       <td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(lucro_bruto_total) & "</span></td>" & chr(13) & _
+							"		<td class='MTBD' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_perc(marg_contrib_bruta_final) & "%" & "</span></td>" & chr(13)
 					end if
 				    x = x & _
 					"	</tr>" & chr(13)
@@ -4153,11 +6571,15 @@ window.status='Aguarde, executando a consulta ...';
 		end if
 
 	s = c_grupo
-	if s = "" then 
-		s = "todos"
-	end if 
+	if s = "" then s = "todos"
 	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
 			   "<span class='N'>Grupo(s):&nbsp;</span></td><td align='left' valign='top'>" & _
+			   "<span class='N'>" & s & "</span></td></tr>"
+
+    s = c_subgrupo
+	if s = "" then s = "todos"
+	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
+			   "<span class='N'>Subgrupo(s):&nbsp;</span></td><td align='left' valign='top'>" & _
 			   "<span class='N'>" & s & "</span></td></tr>"
 
 	s = rb_tipo_cliente

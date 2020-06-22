@@ -1839,6 +1839,9 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.st_etg_imediata			= rs("st_etg_imediata")
 			.etg_imediata_data			= rs("etg_imediata_data")
 			.etg_imediata_usuario		= Trim("" & rs("etg_imediata_usuario"))
+			.PrevisaoEntregaData = rs("PrevisaoEntregaData")
+			.PrevisaoEntregaUsuarioUltAtualiz = Trim("" & rs("PrevisaoEntregaUsuarioUltAtualiz"))
+			.PrevisaoEntregaDtHrUltAtualiz = rs("PrevisaoEntregaDtHrUltAtualiz")
 			.frete_status				= rs("frete_status")
 			.frete_valor				= rs("frete_valor")
 			.frete_data					= rs("frete_data")
@@ -3692,6 +3695,9 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.st_etg_imediata			= rs("st_etg_imediata")
 			.etg_imediata_data			= rs("etg_imediata_data")
 			.etg_imediata_usuario		= Trim("" & rs("etg_imediata_usuario"))
+			.PrevisaoEntregaData = rs("PrevisaoEntregaData")
+			.PrevisaoEntregaUsuarioUltAtualiz = Trim("" & rs("PrevisaoEntregaUsuarioUltAtualiz"))
+			.PrevisaoEntregaDtHrUltAtualiz = rs("PrevisaoEntregaDtHrUltAtualiz")
 			.StBemUsoConsumo			= rs("StBemUsoConsumo")
 			.InstaladorInstalaStatus	= rs("InstaladorInstalaStatus")
 			.InstaladorInstalaUsuarioUltAtualiz = Trim("" & rs("InstaladorInstalaUsuarioUltAtualiz"))
@@ -6205,6 +6211,25 @@ dim s, tLAux
 end function
 
 
+' ___________________________________
+' isLojaGarantia
+'
+function isLojaGarantia(byval loja)
+dim s, tLAux
+	isLojaGarantia = False
+
+	loja  = Trim("" & loja)
+	
+	s = "SELECT * FROM t_LOJA WHERE (loja = '" & loja & "') AND (unidade_negocio = '" & COD_UNIDADE_NEGOCIO_LOJA__GARANTIA & "')"
+	set tLAux = cn.Execute(s)
+	if Not tLAux.Eof then
+		isLojaGarantia = True
+		tLAux.Close
+		set tLAux = nothing
+		end if
+end function
+
+
 ' ------------------------------------------------------------------------
 '   isLojaHabilitadaProdCompostoECommerce
 '
@@ -6224,5 +6249,161 @@ dim blnLojaHabilitada
 		end if
 
 	if blnLojaHabilitada = True then isLojaHabilitadaProdCompostoECommerce = True
+end function
+
+
+' ------------------------------------------------------------------------
+'   le_usuario
+'
+function le_usuario(byval id_usuario, byref r_usuario, byref msg_erro)
+dim s
+dim rs
+
+	le_usuario = False
+	msg_erro = ""
+	id_usuario = Trim("" & id_usuario)
+	set r_usuario = New cl_USUARIO
+	s="SELECT * FROM t_USUARIO WHERE (usuario = '" & id_usuario & "')"
+	set rs=cn.Execute(s)
+	if Err <> 0 then
+		msg_erro=Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+
+	if rs.EOF then
+		msg_erro="Usuário " & id_usuario & " não está cadastrado."
+	else
+		with r_usuario
+			.usuario = Trim("" & rs("usuario"))
+			.nivel = Trim("" & rs("nivel"))
+			.loja = Trim("" & rs("loja"))
+			.senha = Trim("" & rs("senha"))
+			.nome = Trim("" & rs("nome"))
+			.datastamp = Trim("" & rs("datastamp"))
+			.bloqueado = rs("bloqueado")
+			.dt_cadastro = rs("dt_cadastro")
+			.dt_ult_atualizacao = rs("dt_ult_atualizacao")
+			.dt_ult_alteracao_senha = rs("dt_ult_alteracao_senha")
+			.dt_ult_acesso = rs("dt_ult_acesso")
+			.vendedor_externo = rs("vendedor_externo")
+			.vendedor_loja = rs("vendedor_loja")
+			.SessionCtrlTicket = Trim("" & rs("SessionCtrlTicket"))
+			.SessionCtrlLoja = Trim("" & rs("SessionCtrlLoja"))
+			.SessionCtrlModulo = Trim("" & rs("SessionCtrlModulo"))
+			.SessionCtrlDtHrLogon = rs("SessionCtrlDtHrLogon")
+			.fin_email_remetente = Trim("" & rs("fin_email_remetente"))
+			.fin_servidor_smtp = Trim("" & rs("fin_servidor_smtp"))
+			.fin_usuario_smtp = Trim("" & rs("fin_usuario_smtp"))
+			.fin_senha_smtp = Trim("" & rs("fin_senha_smtp"))
+			.fin_display_name_remetente = Trim("" & rs("fin_display_name_remetente"))
+			.nome_iniciais_em_maiusculas = Trim("" & rs("nome_iniciais_em_maiusculas"))
+			.fin_servidor_smtp_porta = rs("fin_servidor_smtp_porta")
+			.email = Trim("" & rs("email"))
+			.SessionTokenModuloCentral = Trim("" & rs("SessionTokenModuloCentral"))
+			.DtHrSessionTokenModuloCentral = rs("DtHrSessionTokenModuloCentral")
+			.SessionTokenModuloLoja = Trim("" & rs("SessionTokenModuloLoja"))
+			.DtHrSessionTokenModuloLoja = rs("DtHrSessionTokenModuloLoja")
+			end with
+		end if
+
+	if Err <> 0 then
+		msg_erro=Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+
+	if rs.State <> 0 then rs.Close
+
+	with r_usuario
+		.nivel_acesso_bloco_notas_pedido = COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__NAO_DEFINIDO
+		.nivel_acesso_chamado = COD_NIVEL_ACESSO_CHAMADO_PEDIDO__NAO_DEFINIDO
+		
+		s="SELECT Coalesce(Max(nivel_acesso_bloco_notas_pedido), " & Cstr(COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__NAO_DEFINIDO) & ") AS max_nivel_acesso_bloco_notas_pedido FROM t_PERFIL INNER JOIN t_PERFIL_X_USUARIO ON t_PERFIL.id=t_PERFIL_X_USUARIO.id_perfil WHERE (usuario = '" & id_usuario & "')"
+		if rs.State <> 0 then rs.Close
+		set rs=cn.Execute(s)
+		if Err <> 0 then
+			msg_erro=Cstr(Err) & ": " & Err.Description
+			exit function
+			end if
+
+		if Not rs.Eof then
+			.nivel_acesso_bloco_notas_pedido = rs("max_nivel_acesso_bloco_notas_pedido")
+			end if
+		
+		s="SELECT Coalesce(Max(nivel_acesso_chamado), " & Cstr(COD_NIVEL_ACESSO_CHAMADO_PEDIDO__NAO_DEFINIDO) & ") AS max_nivel_acesso_chamado FROM t_PERFIL INNER JOIN t_PERFIL_X_USUARIO ON t_PERFIL.id=t_PERFIL_X_USUARIO.id_perfil WHERE (usuario = '" & id_usuario & "')"
+		if rs.State <> 0 then rs.Close
+		set rs=cn.Execute(s)
+		if Err <> 0 then
+			msg_erro=Cstr(Err) & ": " & Err.Description
+			exit function
+			end if
+
+		if Not rs.Eof then
+			.nivel_acesso_chamado = rs("max_nivel_acesso_chamado")
+			end if
+		end with
+
+	if Err <> 0 then
+		msg_erro=Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+
+	if rs.State <> 0 then rs.Close
+
+	if msg_erro = "" then le_usuario = True
+end function
+
+
+' ________________________________________________________
+' getParametroFromCampoTexto
+'
+function getParametroFromCampoTexto(ByVal id_registro)
+dim rP
+	set rP = get_registro_t_parametro(id_registro)
+	getParametroFromCampoTexto = rP.campo_texto
+	set rP = Nothing
+end function
+
+
+' ________________________________________________________
+' getParametroFromCampoInteiro
+'
+function getParametroFromCampoInteiro(ByVal id_registro)
+dim rP
+	set rP = get_registro_t_parametro(id_registro)
+	getParametroFromCampoInteiro = rP.campo_inteiro
+	set rP = Nothing
+end function
+
+
+' ________________________________________________________
+' getParametroFromCampoReal
+'
+function getParametroFromCampoReal(ByVal id_registro)
+dim rP
+	set rP = get_registro_t_parametro(id_registro)
+	getParametroFromCampoReal = rP.campo_real
+	set rP = Nothing
+end function
+
+
+' ________________________________________________________
+' getParametroFromCampoMonetario
+'
+function getParametroFromCampoMonetario(ByVal id_registro)
+dim rP
+	set rP = get_registro_t_parametro(id_registro)
+	getParametroFromCampoMonetario = rP.campo_monetario
+	set rP = Nothing
+end function
+
+
+' ________________________________________________________
+' getParametroFromCampoData
+'
+function getParametroFromCampoData(ByVal id_registro)
+dim rP
+	set rP = get_registro_t_parametro(id_registro)
+	getParametroFromCampoData = rP.campo_data
+	set rP = Nothing
 end function
 %>

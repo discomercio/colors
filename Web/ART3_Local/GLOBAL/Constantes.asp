@@ -61,6 +61,7 @@
 	Const COD_UNIDADE_NEGOCIO_LOJA__BS = "BS"
 	Const COD_UNIDADE_NEGOCIO_LOJA__AC = "AC"
 	Const COD_UNIDADE_NEGOCIO_LOJA__VRF = "VRF"
+	Const COD_UNIDADE_NEGOCIO_LOJA__GARANTIA = "GAR"
 
 '	SIGLAS DE UF
 	Const SIGLA_UF__SP = "SP"
@@ -685,11 +686,6 @@
     Const COD_FLUXO_MENSAGEM_CHAMADOS_EM_PEDIDOS__TX = "TX"
     Const COD_FLUXO_MENSAGEM_CHAMADOS_EM_PEDIDOS__RX = "RX"
 
-'   EMAIL REMETENTE DE ENVIO DE NOTIFICAÇÃO
-    Const EMAILSNDSVC_REMETENTE__CHAMADOS_EM_PEDIDOS = "modulo_chamados@tropikal.com.br"
-    Const EMAILSNDSVC_REMETENTE__PEDIDO_DEVOLUCAO = "modulo_devolucao@tropikal.com.br"
-	Const EMAILSNDSVC_REMETENTE__SENTINELA_SISTEMA = "sentinela_sistema@tropikal.com.br"
-
 
 '	GRUPOS DE CÓDIGOS ARMAZENADOS EM T_CODIGO_DESCRICAO
 	Const GRUPO_T_CODIGO_DESCRICAO__OCORRENCIAS_EM_PEDIDOS__TIPO_OCORRENCIA = "OcorrenciasEmPedidos_TipoOcorrencia"
@@ -865,6 +861,10 @@
 	Const ID_PARAMETRO_SSW_Rastreamento_Lista_Transportadoras = "SSW_Rastreamento_Lista_Transportadoras"
 	Const ID_PARAMETRO_PERC_DESAGIO_RA_LIQUIDA = "PERC_DESAGIO_RA_LIQUIDA"
 	Const ID_PARAMETRO_PRAZO_ACESSO_REL_PEDIDOS_INDICADORES_LOJA = "PRAZO_ACESSO_REL_PEDIDOS_INDICADORES_LOJA"
+	Const ID_PARAMETRO_EMAILSNDSVC_REMETENTE__MENSAGEM_SISTEMA = "EMAILSNDSVC_REMETENTE__MENSAGEM_SISTEMA"
+	Const ID_PARAMETRO_EMAILSNDSVC_REMETENTE__CHAMADOS_EM_PEDIDOS = "EMAILSNDSVC_REMETENTE__CHAMADOS_EM_PEDIDOS"
+	Const ID_PARAMETRO_EMAILSNDSVC_REMETENTE__PEDIDO_DEVOLUCAO = "EMAILSNDSVC_REMETENTE__PEDIDO_DEVOLUCAO"
+	Const ID_PARAMETRO_EMAILSNDSVC_REMETENTE__SENTINELA_SISTEMA = "EMAILSNDSVC_REMETENTE__SENTINELA_SISTEMA"
 
 
 '   CONSTANTES QUE IDENTIFICAM REGISTROS ARMAZENADOS NA TABELA "t_CTRL_RELATORIO"
@@ -2067,6 +2067,9 @@
 		dim EndEtg_produtor_rural_status
 		dim EndEtg_ie
 		dim EndEtg_rg
+		dim PrevisaoEntregaData
+		dim PrevisaoEntregaUsuarioUltAtualiz
+		dim PrevisaoEntregaDtHrUltAtualiz
 		end class
 
 	class cl_ITEM_PEDIDO
@@ -2558,6 +2561,9 @@
 		dim EndEtg_produtor_rural_status
 		dim EndEtg_ie
 		dim EndEtg_rg
+		dim PrevisaoEntregaData
+		dim PrevisaoEntregaUsuarioUltAtualiz
+		dim PrevisaoEntregaDtHrUltAtualiz
 		end class
 
 	class cl_ITEM_ORCAMENTO
@@ -3067,4 +3073,38 @@
         dim nome_fantasia
         dim razao_social_nome_iniciais_em_maiusculas
         end class
+
+	class cl_USUARIO
+		dim usuario
+		dim nivel
+		dim loja
+		dim senha
+		dim nome
+		dim datastamp
+		dim bloqueado
+		dim dt_cadastro
+		dim dt_ult_atualizacao
+		dim dt_ult_alteracao_senha
+		dim dt_ult_acesso
+		dim vendedor_externo
+		dim vendedor_loja
+		dim SessionCtrlTicket
+		dim SessionCtrlLoja
+		dim SessionCtrlModulo
+		dim SessionCtrlDtHrLogon
+		dim fin_email_remetente
+		dim fin_servidor_smtp
+		dim fin_usuario_smtp
+		dim fin_senha_smtp
+		dim fin_display_name_remetente
+		dim nome_iniciais_em_maiusculas
+		dim fin_servidor_smtp_porta
+		dim email
+		dim SessionTokenModuloCentral
+		dim DtHrSessionTokenModuloCentral
+		dim SessionTokenModuloLoja
+		dim DtHrSessionTokenModuloLoja
+		dim nivel_acesso_bloco_notas_pedido
+		dim nivel_acesso_chamado
+		end class
 %>

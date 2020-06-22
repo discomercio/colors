@@ -59,6 +59,7 @@
 	dim s_nome_fabricante
 	dim rb_saida
     dim c_empresa
+	dim c_grupo, c_subgrupo
 
 	c_fabricante = retorna_so_digitos(Request.Form("c_fabricante"))
 	if c_fabricante <> "" then c_fabricante = normaliza_codigo(c_fabricante, TAM_MIN_FABRICANTE)
@@ -68,12 +69,22 @@
 	rb_saida = Ucase(Trim(Request.Form("rb_saida")))
     c_empresa = Trim(Request.Form("c_empresa"))
 
+	c_grupo = Ucase(Trim(Request.Form("c_grupo")))
+	c_subgrupo = Ucase(Trim(Request.Form("c_subgrupo")))
+
 	if c_fabricante <> "" then
 		s_nome_fabricante = fabricante_descricao(c_fabricante)
 	else
 		s_nome_fabricante = ""
 		end if
 	
+	if alerta = "" then
+		call set_default_valor_texto_bd(usuario, "RelContagemEstoque|c_fabricante", c_fabricante)
+		call set_default_valor_texto_bd(usuario, "RelContagemEstoque|c_grupo", c_grupo)
+		call set_default_valor_texto_bd(usuario, "RelContagemEstoque|c_subgrupo", c_subgrupo)
+		call set_default_valor_texto_bd(usuario, "RelContagemEstoque|c_empresa", c_empresa)
+		end if
+
 	dim blnSaidaExcel
 	blnSaidaExcel = False
 	if alerta = "" then
@@ -82,14 +93,35 @@
 			Response.ContentType = "application/vnd.ms-excel"
 			Response.AddHeader "Content-Disposition", "attachment; filename=ContagemEstoque_" & formata_data_yyyymmdd(Now) & "_" & formata_hora_hhnnss(Now) & ".xls"
 			Response.Write "<h2>Relatório de Contagem de Estoque</h2>"
+		'	FABRICANTE
 			s = Trim(c_fabricante)
 			if s = "" then
-				s = "Todos"
+				s = "todos"
 			else
 				if s_nome_fabricante <> "" then s = s & " - " & s_nome_fabricante 
 				end if
 			Response.Write "Fabricante: " & s
 			Response.Write "<br>"
+		'	EMPRESA
+			s = c_empresa
+			if s = "" then 
+				s = "todas"
+			else
+				s = obtem_apelido_empresa_NFe_emitente(c_empresa)
+				end if
+			Response.Write "Empresa: " & s
+			Response.Write "<br>"
+		'	GRUPO DE PRODUTOS
+			s = c_grupo
+			if s = "" then s = "N.I."
+			Response.Write "Grupo de Produtos: " & s
+			Response.Write "<br>"
+		'	SUBGRUPO DE PRODUTOS
+			s = c_subgrupo
+			if s = "" then s = "N.I."
+			Response.Write "Subgrupo de Produtos: " & s
+			Response.Write "<br>"
+		'	DATA EMISSÃO
 			s = "Emissão: " & formata_data_hora(Now)
 			Response.Write s
 			Response.Write "<br><br>"
@@ -121,6 +153,7 @@ dim s, s_aux, s_bkg_color, s_nbsp, s_sql,s_sql_aux, x, cab_table, cab, fabricant
 dim n, n_total_linha, n_reg, qtde_fabricantes
 dim n_sub_total_estoque_venda, n_sub_total_split_possivel, n_sub_total_a_separar, n_sub_total_todos
 dim n_total_estoque_venda, n_total_split_possivel, n_total_a_separar, n_total_todos
+dim cont, v_grupos, v_subgrupos, s_where_grupo, s_where_subgrupo
 
 '	SELECIONA TODOS OS PRODUTOS QUE POSSUEM ALGUM ITEM NA SITUAÇÃO DESEJADA
 '	OBS: O USO DE 'UNION' SIMPLES ELIMINA AS LINHAS DUPLICADAS DOS RESULTADOS
@@ -130,10 +163,49 @@ dim n_total_estoque_venda, n_total_split_possivel, n_total_a_separar, n_total_to
 '	OS MOVIMENTOS VÁLIDOS, POIS "anulado_status<>0" INDICAM MOVIMENTOS QUE 
 '	FORAM CANCELADOS E QUE ESTÃO NO BD APENAS POR QUESTÃO DE HISTÓRICO.
 
+'	GRUPO DE PRODUTOS
+	s_where_grupo = ""
+	if c_grupo <> "" then
+		v_grupos = split(c_grupo, ", ")
+		for cont = LBound(v_grupos) to UBound(v_grupos)
+			if Trim(v_grupos(cont)) <> "" then
+				if s_where_grupo <> "" then s_where_grupo = s_where_grupo & ", "
+				s_where_grupo = s_where_grupo & "'" & Trim(v_grupos(cont)) & "'"
+				end if
+			next
+		
+		if s_where_grupo <> "" then
+			s_where_grupo = " (t_PRODUTO.grupo IN (" & s_where_grupo & "))"
+			end if
+		end if
+
+'	SUBGRUPO DE PRODUTOS
+	s_where_subgrupo = ""
+	if c_subgrupo <> "" then
+		v_subgrupos = split(c_subgrupo, ", ")
+		for cont = LBound(v_subgrupos) to UBound(v_subgrupos)
+			if Trim(v_subgrupos(cont)) <> "" then
+				if s_where_subgrupo <> "" then s_where_subgrupo = s_where_subgrupo & ", "
+				s_where_subgrupo = s_where_subgrupo & "'" & Trim(v_subgrupos(cont)) & "'"
+				end if
+			next
+		
+		if s_where_subgrupo <> "" then
+			s_where_subgrupo = " (t_PRODUTO.subgrupo IN (" & s_where_subgrupo & "))"
+			end if
+		end if
+
 '	PRODUTOS NO ESTOQUE DE VENDA
 	s_sql_aux = "SELECT DISTINCT t_ESTOQUE_ITEM.fabricante, t_ESTOQUE_ITEM.produto" & _
 			" FROM t_ESTOQUE_ITEM" & _
-            " INNER JOIN t_ESTOQUE ON (t_ESTOQUE_ITEM.id_estoque = t_ESTOQUE.id_estoque)" & _
+            " INNER JOIN t_ESTOQUE ON (t_ESTOQUE_ITEM.id_estoque = t_ESTOQUE.id_estoque)"
+	
+	if (s_where_grupo <> "") Or (s_where_subgrupo <> "") then
+		s_sql_aux = s_sql_aux & _
+				" LEFT JOIN t_PRODUTO ON ((t_ESTOQUE_ITEM.fabricante=t_PRODUTO.fabricante) AND (t_ESTOQUE_ITEM.produto=t_PRODUTO.produto))"
+		end if
+
+	s_sql_aux = s_sql_aux & _
 			" WHERE ((qtde-qtde_utilizada) > 0)"
 
 	if c_fabricante <> "" then
@@ -142,15 +214,29 @@ dim n_total_estoque_venda, n_total_split_possivel, n_total_a_separar, n_total_to
 
     if c_empresa <> "" then
         s_sql_aux = s_sql_aux & " AND (t_ESTOQUE.id_nfe_emitente= " & c_empresa & ")"
-    end if
+		end if
 
+	if s_where_grupo <> "" then
+		s_sql_aux = s_sql_aux & " AND" & s_where_grupo
+		end if
+
+	if s_where_subgrupo <> "" then
+		s_sql_aux = s_sql_aux & " AND" & s_where_subgrupo
+		end if
 
 '	PRODUTOS DO ESTOQUE DE PRODUTOS VENDIDOS (PEDIDOS EM STATUS SPLIT POSSÍVEL)
 	s_sql_aux = s_sql_aux & _
 			" UNION " & _
 			"SELECT DISTINCT t_ESTOQUE_MOVIMENTO.fabricante, t_ESTOQUE_MOVIMENTO.produto" & _
 			" FROM t_ESTOQUE_MOVIMENTO INNER JOIN t_PEDIDO ON (t_ESTOQUE_MOVIMENTO.pedido=t_PEDIDO.pedido)" & _
-            " INNER JOIN t_ESTOQUE ON (t_ESTOQUE_MOVIMENTO.id_estoque = t_ESTOQUE.id_estoque)" & _
+            " INNER JOIN t_ESTOQUE ON (t_ESTOQUE_MOVIMENTO.id_estoque = t_ESTOQUE.id_estoque)"
+
+	if (s_where_grupo <> "") Or (s_where_subgrupo <> "") then
+		s_sql_aux = s_sql_aux & _
+				" LEFT JOIN t_PRODUTO ON ((t_ESTOQUE_MOVIMENTO.fabricante=t_PRODUTO.fabricante) AND (t_ESTOQUE_MOVIMENTO.produto=t_PRODUTO.produto))"
+		end if
+
+	s_sql_aux = s_sql_aux & _
 			" WHERE (anulado_status=0)" & _
 			" AND (estoque='" & ID_ESTOQUE_VENDIDO & "')" & _
 			" AND (qtde > 0)" & _
@@ -162,14 +248,29 @@ dim n_total_estoque_venda, n_total_split_possivel, n_total_a_separar, n_total_to
 
     if c_empresa <> "" then
         s_sql_aux = s_sql_aux & " AND (t_ESTOQUE.id_nfe_emitente= " & c_empresa & ")"
-    end if
+		end if
+
+	if s_where_grupo <> "" then
+		s_sql_aux = s_sql_aux & " AND" & s_where_grupo
+		end if
+
+	if s_where_subgrupo <> "" then
+		s_sql_aux = s_sql_aux & " AND" & s_where_subgrupo
+		end if
 
 '	PRODUTOS DO ESTOQUE DE PRODUTOS VENDIDOS (PEDIDOS EM STATUS 'A SEPARAR')
 	s_sql_aux = s_sql_aux & _
 			" UNION " & _
 			"SELECT DISTINCT t_ESTOQUE_MOVIMENTO.fabricante, t_ESTOQUE_MOVIMENTO.produto" & _
 			" FROM t_ESTOQUE_MOVIMENTO INNER JOIN t_PEDIDO ON (t_ESTOQUE_MOVIMENTO.pedido=t_PEDIDO.pedido)" & _
-            " INNER JOIN t_ESTOQUE ON (t_ESTOQUE_MOVIMENTO.id_estoque = t_ESTOQUE.id_estoque)" & _
+            " INNER JOIN t_ESTOQUE ON (t_ESTOQUE_MOVIMENTO.id_estoque = t_ESTOQUE.id_estoque)"
+
+	if (s_where_grupo <> "") Or (s_where_subgrupo <> "") then
+		s_sql_aux = s_sql_aux & _
+				" LEFT JOIN t_PRODUTO ON ((t_ESTOQUE_MOVIMENTO.fabricante=t_PRODUTO.fabricante) AND (t_ESTOQUE_MOVIMENTO.produto=t_PRODUTO.produto))"
+		end if
+
+	s_sql_aux = s_sql_aux & _
 			" WHERE (anulado_status=0)" & _
 			" AND (estoque='" & ID_ESTOQUE_VENDIDO & "')" & _
 			" AND (qtde > 0)" & _
@@ -181,28 +282,51 @@ dim n_total_estoque_venda, n_total_split_possivel, n_total_a_separar, n_total_to
 
     if c_empresa <> "" then
         s_sql_aux = s_sql_aux & " AND (t_ESTOQUE.id_nfe_emitente= " & c_empresa & ")"
-    end if    
+		end if
+
+	if s_where_grupo <> "" then
+		s_sql_aux = s_sql_aux & " AND" & s_where_grupo
+		end if
+
+	if s_where_subgrupo <> "" then
+		s_sql_aux = s_sql_aux & " AND" & s_where_subgrupo
+		end if
 
 '	A PARTIR DA CONSULTA QUE OBTÉM TODA A RELAÇÃO DE PRODUTOS A SER LISTADA,
 '	REALIZA A CONSULTA P/ CALCULAR AS QUANTIDADES
-	    s_sql = "SELECT" & _
-				    " tAuxBase.fabricante," & _
-				    " tAuxBase.produto," & _
-				    " tProd.descricao," & _
-				    " tProd.descricao_html," & _
-				    "(" & _
-					    "SELECT" & _
-						    " Sum(qtde-qtde_utilizada)" & _
-					    " FROM t_ESTOQUE_ITEM tEI" & _
-                        " INNER JOIN t_ESTOQUE ON (tEI.id_estoque = t_ESTOQUE.id_estoque)" & _
-					    " WHERE" & _
-						    " ((qtde-qtde_utilizada) > 0)" & _
-						    " AND (tEI.fabricante=tAuxBase.fabricante)" & _
-						    " AND (tEI.produto=tAuxBase.produto)" 
+	s_sql = "SELECT" & _
+				" tAuxBase.fabricante," & _
+				" tAuxBase.produto," & _
+				" tProd.descricao," & _
+				" tProd.descricao_html," & _
+				"(" & _
+					"SELECT" & _
+						" Sum(qtde-qtde_utilizada)" & _
+					" FROM t_ESTOQUE_ITEM tEI" & _
+                    " INNER JOIN t_ESTOQUE ON (tEI.id_estoque = t_ESTOQUE.id_estoque)"
+
+	if (s_where_grupo <> "") Or (s_where_subgrupo <> "") then
+		s_sql = s_sql & _
+				" LEFT JOIN t_PRODUTO ON ((tEI.fabricante=t_PRODUTO.fabricante) AND (tEI.produto=t_PRODUTO.produto))"
+		end if
+
+	s_sql = s_sql & _
+					" WHERE" & _
+						" ((qtde-qtde_utilizada) > 0)" & _
+						" AND (tEI.fabricante=tAuxBase.fabricante)" & _
+						" AND (tEI.produto=tAuxBase.produto)" 
 
     if c_empresa <> "" then
         s_sql = s_sql & " AND (t_ESTOQUE.id_nfe_emitente= " & c_empresa & ")"
     end if
+
+	if s_where_grupo <> "" then
+		s_sql = s_sql & " AND" & s_where_grupo
+		end if
+
+	if s_where_subgrupo <> "" then
+		s_sql = s_sql & " AND" & s_where_subgrupo
+		end if
 
 	s_sql = s_sql & ") AS qtde_estoque_venda," & _
 				"(" & _
@@ -210,7 +334,14 @@ dim n_total_estoque_venda, n_total_split_possivel, n_total_a_separar, n_total_to
 						" Sum(qtde)" & _
 					" FROM t_ESTOQUE_MOVIMENTO tEM" & _
 						" INNER JOIN t_PEDIDO tP ON (tEM.pedido=tP.pedido)" & _
-                        " INNER JOIN t_ESTOQUE ON (tEM.id_estoque = t_ESTOQUE.id_estoque)" & _
+                        " INNER JOIN t_ESTOQUE ON (tEM.id_estoque = t_ESTOQUE.id_estoque)"
+
+	if (s_where_grupo <> "") Or (s_where_subgrupo <> "") then
+		s_sql = s_sql & _
+				" LEFT JOIN t_PRODUTO ON ((tEM.fabricante=t_PRODUTO.fabricante) AND (tEM.produto=t_PRODUTO.produto))"
+		end if
+
+	s_sql = s_sql & _
 					" WHERE" & _
 						" (anulado_status=0)" & _
 						" AND (estoque='" & ID_ESTOQUE_VENDIDO & "')" & _
@@ -223,13 +354,28 @@ dim n_total_estoque_venda, n_total_split_possivel, n_total_a_separar, n_total_to
         s_sql = s_sql & " AND (t_ESTOQUE.id_nfe_emitente= " & c_empresa & ")"
     end if
 
+	if s_where_grupo <> "" then
+		s_sql = s_sql & " AND" & s_where_grupo
+		end if
+
+	if s_where_subgrupo <> "" then
+		s_sql = s_sql & " AND" & s_where_subgrupo
+		end if
+
 	s_sql = s_sql & ") AS qtde_split_possivel," & _
 				"(" & _
 					"SELECT" & _
 						" Sum(qtde)" & _
 					" FROM t_ESTOQUE_MOVIMENTO tEM" & _
 						" INNER JOIN t_PEDIDO tP ON (tEM.pedido=tP.pedido)" & _
-                        " INNER JOIN t_ESTOQUE ON (tEM.id_estoque = t_ESTOQUE.id_estoque)" & _
+                        " INNER JOIN t_ESTOQUE ON (tEM.id_estoque = t_ESTOQUE.id_estoque)"
+
+	if (s_where_grupo <> "") Or (s_where_subgrupo <> "") then
+		s_sql = s_sql & _
+				" LEFT JOIN t_PRODUTO ON ((tEM.fabricante=t_PRODUTO.fabricante) AND (tEM.produto=t_PRODUTO.produto))"
+		end if
+
+	s_sql = s_sql & _
 					" WHERE" & _
 						" (anulado_status=0)" & _
 						" AND (estoque='" & ID_ESTOQUE_VENDIDO & "')" & _
@@ -241,6 +387,14 @@ dim n_total_estoque_venda, n_total_split_possivel, n_total_a_separar, n_total_to
     if c_empresa <> "" then
         s_sql = s_sql & " AND (t_ESTOQUE.id_nfe_emitente= " & c_empresa & ")"
     end if
+
+	if s_where_grupo <> "" then
+		s_sql = s_sql & " AND" & s_where_grupo
+		end if
+
+	if s_where_subgrupo <> "" then
+		s_sql = s_sql & " AND" & s_where_subgrupo
+		end if
 
 	s_sql = s_sql & ") AS qtde_a_separar" & _
 			" FROM (" & s_sql_aux & ") tAuxBase" & _
@@ -533,7 +687,7 @@ P.F { font-size:11pt; }
 	s_filtro = "<table width='649' cellPadding='0' CellSpacing='4' style='border-bottom:1px solid black' border='0'>" & chr(13)
 	s = Trim(c_fabricante)
 	if s = "" then
-		s = "TODOS"
+		s = "todos"
 	else
 		if s_nome_fabricante <> "" then s = s & " - " & s_nome_fabricante 
 		end if
@@ -552,6 +706,30 @@ P.F { font-size:11pt; }
 	 s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
 				       "<span class='N'>Empresa:&nbsp;</span></td><td align='left' valign='top'>" & _
 				       "<span class='N'>" & s & "</span></td></tr>"
+
+'	GRUPO DE PRODUTOS
+	s = c_grupo
+	if s = "" then s = "N.I."
+	s_filtro = s_filtro & _
+				"	<tr>" & chr(13) & _
+				"		<td align='right' valign='top' NOWRAP><p class='N'>Grupo de Produtos:&nbsp;</p></td>" & chr(13) & _
+				"		<td valign='top'><p class='N'>" & s & "</p></td>" & chr(13) & _
+				"	</tr>" & chr(13)
+
+'	SUBGRUPO DE PRODUTOS
+	s = c_subgrupo
+	if s = "" then s = "N.I."
+	s_filtro = s_filtro & _
+				"	<tr>" & chr(13) & _
+				"		<td align='right' valign='top' NOWRAP><p class='N'>Subgrupo de Produtos:&nbsp;</p></td>" & chr(13) & _
+				"		<td valign='top'><p class='N'>" & s & "</p></td>" & chr(13) & _
+				"	</tr>" & chr(13)
+
+	s_filtro = s_filtro & _
+				"	<tr>" & chr(13) & _
+				"		<td align='right' valign='top' NOWRAP><p class='N'>Emissão:&nbsp;</p></td>" & chr(13) & _
+				"		<td valign='top' width='99%'><p class='N'>" & formata_data_hora(Now) & "</p></td>" & chr(13) & _
+				"	</tr>" & chr(13)
 
 	s_filtro = s_filtro & "</table>" & chr(13)
 	Response.Write s_filtro

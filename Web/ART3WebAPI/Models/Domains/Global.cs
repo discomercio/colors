@@ -36,14 +36,14 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.19";
-				public const string Data = "21.JAN.2020";
+				public const string Numero = "2.21";
+				public const string Data = "21.MAI.2020";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
-            #endregion
+			#endregion
 
-            #region [ Comentário sobre as versões ]
-            /*================================================================================================
+			#region [ Comentário sobre as versões ]
+			/*================================================================================================
 			 * v 2.00 - 08.09.2017 - por TRR
 			 *		Ajuste no relatório Farol para aceitar lista de lojas no filtro.
 			 * -----------------------------------------------------------------------------------------------
@@ -143,15 +143,38 @@ namespace ART3WebAPI.Models.Domains
 			 * v 2.19 - 21.01.2020 - por LHGX
              *      Desenvolvimento do download XLS do relatório de ocorrências.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.00 - XX.XX.20XX - por XXX
+			 * v 2.20 - 08.04.2020 - por HHO
+			 *      Implementação do filtro para o campo 'subgrupo' no relatório Farol Resumido.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.00 - XX.XX.20XX - por XXX
+			 * v 2.21 - 21.05.2020 - por HHO
+			 *      Implementação da consulta por período de entrega no relatório Farol Resumido em
+			 *      FarolV3Controller.GetXLSReport().
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.22 - XX.XX.20XX - por XXX
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.23 - XX.XX.20XX - por XXX
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.24 - XX.XX.20XX - por XXX
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.25 - XX.XX.20XX - por XXX
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.26 - XX.XX.20XX - por XXX
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.27 - XX.XX.20XX - por XXX
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.28 - XX.XX.20XX - por XXX
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.29 - XX.XX.20XX - por XXX
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.30 - XX.XX.20XX - por XXX
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.XX - XX.XX.20XX - por XXX
 			* ===============================================================================================
 			*/
-            #endregion
+			#endregion
 
-            #region [ Usuario ]
-            public static class Usuario
+			#region [ Usuario ]
+			public static class Usuario
 			{
 				public const string ID_USUARIO_SISTEMA = "SISTEMA";
 			}

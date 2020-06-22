@@ -30,6 +30,9 @@
 	On Error GoTo 0
 	Err.Clear
 
+	Const COD_CONSULTA_POR_PERIODO_CADASTRO = "CADASTRO"
+	Const COD_CONSULTA_POR_PERIODO_ENTREGA = "ENTREGA"
+
 	dim usuario
 	usuario = Trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
@@ -47,9 +50,21 @@
 	dim cn
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	
+	dim intIdx
 	dim strDtHojeYYYYMMDD, strDtHojeDDMMYYYY
 	strDtHojeYYYYMMDD = formata_data_yyyymmdd(Date)
 	strDtHojeDDMMYYYY = formata_data(Date)
+
+	dim s_rb_opcao_default, s_checked
+	s_rb_opcao_default = get_default_valor_texto_bd(usuario, "RelFarolResumidoFiltro|rb_periodo")
+
+	dim strScript
+	strScript = _
+		"<script language='JavaScript'>" & chr(13) & _
+        "var COD_CONSULTA_POR_PERIODO_CADASTRO = '" & COD_CONSULTA_POR_PERIODO_CADASTRO & "';" & chr(13) & _
+        "var COD_CONSULTA_POR_PERIODO_ENTREGA = '" & COD_CONSULTA_POR_PERIODO_ENTREGA & "';" & chr(13) & _
+		"</script>" & chr(13)
+
 
 
 
@@ -105,30 +120,33 @@ end function
 ' GRUPO MONTA ITENS SELECT
 '
 function grupo_monta_itens_select(byval id_default)
-dim x, r, strResp, ha_default, strSql, v, i
+dim x, r, strResp, ha_default, strSql, v, i, sDescricao
 	id_default = Trim("" & id_default)
 	v = split(id_default, ", ")
 	ha_default=False
 	strSql = "SELECT DISTINCT" & _
-				" Coalesce(grupo,'') AS grupo" & _
-			" FROM t_PRODUTO" & _
+				" tP.grupo," & _
+				" tPG.descricao" & _
+			" FROM t_PRODUTO tP" & _
+				" LEFT JOIN t_PRODUTO_GRUPO tPG ON (tP.grupo = tPG.codigo)" & _
 			" WHERE" & _
-				" (Coalesce(grupo,'') <> '')" & _
+				" (LEN(Coalesce(tP.grupo,'')) > 0)" & _
 			" ORDER BY" & _
-				" Coalesce(grupo,'')"
+				" tP.grupo"
 	set r = cn.Execute(strSql)
 	strResp = ""
 	do while Not r.eof 
-	    
 		x = Trim("" & r("grupo"))
+		sDescricao = Trim("" & r("descricao"))
 		strResp = strResp & "<option "
-            for i=LBound(v) to UBound(v) 
-		        if (id_default<>"") And (v(i)=x) then
-		            strResp = strResp & "selected"
-		         end if
-		   	 next
+		for i=LBound(v) to UBound(v) 
+			if (id_default<>"") And (v(i)=x) then
+				strResp = strResp & "selected"
+				end if
+			next
 		strResp = strResp & " value='" & x & "'>"
-		strResp = strResp & Trim("" & r("grupo")) & "&nbsp;&nbsp;"
+		strResp = strResp & Trim("" & r("grupo"))
+		if sDescricao <> "" then strResp = strResp & " &nbsp;(" & sDescricao & ")"
 		strResp = strResp & "</option>" & chr(13)
 		r.MoveNext	
  	loop
@@ -138,7 +156,36 @@ dim x, r, strResp, ha_default, strSql, v, i
 	set r=nothing
 end function
 
-
+'----------------------------------------------------------------------------------------------
+' SUBGRUPO MONTA ITENS SELECT
+function subgrupo_monta_itens_select(byval id_default)
+dim x, r, strSql, strResp, ha_default, v, i, sDescricao
+	id_default = Trim("" & id_default)
+	v = split(id_default, ", ")
+	ha_default=False
+	strSql = "SELECT DISTINCT tP.subgrupo, tPS.descricao FROM t_PRODUTO tP LEFT JOIN t_PRODUTO_SUBGRUPO tPS ON (tP.subgrupo = tPS.codigo) WHERE LEN(Coalesce(tP.subgrupo,'')) > 0 ORDER by tP.subgrupo"
+	set r = cn.Execute(strSql)
+	strResp = ""
+	do while Not r.eof 
+		x = UCase(Trim("" & r("subgrupo")))
+		sDescricao = Trim("" & r("descricao"))
+		strResp = strResp & "<option "
+		for i=LBound(v) to UBound(v) 
+			if (id_default<>"") And (v(i)=x) then
+				strResp = strResp & "selected"
+				end if
+			next
+		strResp = strResp & " VALUE='" & x & "'>"
+		strResp = strResp & x
+		if sDescricao <> "" then strResp = strResp & " &nbsp;(" & sDescricao & ")"
+		strResp = strResp & "</OPTION>" & chr(13)
+		r.MoveNext
+		loop
+	
+	subgrupo_monta_itens_select = strResp
+	r.close
+	set r=nothing
+end function
 
 ' ____________________________________________________________________________
 ' POTENCIA BTU MONTA ITENS SELECT
@@ -295,12 +342,33 @@ end function
 <script src="<%=URL_FILE__GLOBAL_JS%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__AJAX_JS%>" language="JavaScript" type="text/javascript"></script>
 
+<%=strScript%>
+
 <script type="text/javascript">
 	$(function() {
 		$("#c_dt_periodo_inicio").hUtilUI('datepicker_filtro_inicial');
 		$("#c_dt_periodo_termino").hUtilUI('datepicker_filtro_final');
 
+        $("#c_dt_entregue_inicio").hUtilUI('datepicker_filtro_inicial');
+        $("#c_dt_entregue_termino").hUtilUI('datepicker_filtro_final');
+
 		$("#divMsgAguardeObtendoDados").css('filter', 'alpha(opacity=50)');
+
+        $("#c_fabricante").change(function () {
+            $("#spnCounterFabricante").text($("#c_fabricante :selected").length);
+        });
+
+        $("#c_grupo").change(function () {
+            $("#spnCounterGrupo").text($("#c_grupo :selected").length);
+        });
+
+        $("#c_subgrupo").change(function () {
+            $("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
+        });
+
+        $("#spnCounterFabricante").text($("#c_fabricante :selected").length);
+        $("#spnCounterGrupo").text($("#c_grupo :selected").length);
+        $("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
 	});
 </script>
 
@@ -310,9 +378,15 @@ function limpaCampoSelect(c) {
 }
 function limpaCampoSelectFabricante() {
     $("#c_fabricante").children().prop('selected', false);
+    $("#spnCounterFabricante").text($("#c_fabricante :selected").length);
 }
-function limpaCampoSelectProduto() {
+function limpaCampoSelectGrupo() {
     $("#c_grupo").children().prop('selected', false);
+    $("#spnCounterGrupo").text($("#c_grupo :selected").length);
+}
+function limpaCampoSelectSubgrupo() {
+    $("#c_subgrupo").children().prop('selected', false);
+    $("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
 }
 function filtra_percentual_crescimento() {
 	var letra;
@@ -322,6 +396,11 @@ function filtra_percentual_crescimento() {
 
 function fFILTROConfirma( f ) {
     var s_de, s_ate, s_hoje;
+
+    if (!f.rb_periodo[0].checked) {
+        alert("É necessário selecionar a opção 'Período de Vendas' para esta consulta!");
+        return;
+    }
 
     if (trim(f.c_dt_periodo_inicio.value) == "") {
         alert("Informe a data de início do período de vendas!!");
@@ -380,8 +459,13 @@ function fFILTROConfirma( f ) {
 <script type="text/javascript">
     function geraArquivoXLSv2(f) {
     var serverVariableUrl, strUrl, xmlHttp;
-    var i, dt_inicio, dt_termino, fabricante, grupo, valorVisao;
+    var i, dt_inicio, dt_termino, fabricante, grupo, subgrupo, valorVisao;
     var s_de, s_ate, s_hoje, lojaAux;
+
+	if (!f.rb_periodo[0].checked) {
+		alert("É necessário selecionar a opção 'Período de Vendas' para esta consulta!");
+		return;
+	}
 
     if (trim(f.c_dt_periodo_inicio.value) == "") {
         alert("Informe a data de início do período de vendas!!");
@@ -440,7 +524,8 @@ function fFILTROConfirma( f ) {
         }
     
     fabricante = "";
-    grupo = "";
+	grupo = "";
+    subgrupo = "";
     dt_inicio = f.c_dt_periodo_inicio.value;
     dt_termino = f.c_dt_periodo_termino.value;
 
@@ -452,8 +537,15 @@ function fFILTROConfirma( f ) {
     }
     for (i = 0; i < f.c_grupo.length; i++) {
         if (f.c_grupo[i].selected == true) {
-            if (grupo != "") grupo += "_";
+            if (grupo != "") grupo += "|";
             grupo += f.c_grupo[i].value;
+        }
+    }
+
+    for (i = 0; i < f.c_subgrupo.length; i++) {
+        if (f.c_subgrupo[i].selected == true) {
+            if (subgrupo != "") subgrupo += "|";
+            subgrupo += f.c_subgrupo[i].value;
         }
     }
 
@@ -480,7 +572,8 @@ function fFILTROConfirma( f ) {
     strUrl = strUrl + '&dt_inicio=' + dt_inicio;
     strUrl = strUrl + '&dt_termino=' + dt_termino;
     strUrl = strUrl + '&fabricante=' + fabricante;
-    strUrl = strUrl + '&grupo=' + grupo;
+	strUrl = strUrl + '&grupo=' + grupo;
+    strUrl = strUrl + '&subgrupo=' + subgrupo;
     strUrl = strUrl + '&btu=' + f.c_potencia_BTU.value;
     strUrl = strUrl + '&ciclo=' + f.c_ciclo.value;
     strUrl = strUrl + '&pos_mercado=' + f.c_posicao_mercado.value;
@@ -529,55 +622,127 @@ function fFILTROConfirma( f ) {
 <script type="text/javascript">
     function geraArquivoXLSv3(f) {
     var serverVariableUrl, strUrl, xmlHttp;
-    var i, dt_inicio, dt_termino, fabricante, grupo, valorVisao;
+    var i, dt_inicio, dt_termino, fabricante, grupo, subgrupo, valorVisao;
     var s_de, s_ate, s_hoje, lojaAux;
+	var s_opcao_periodo, blnFlagOk;
 
-    if (trim(f.c_dt_periodo_inicio.value) == "") {
-        alert("Informe a data de início do período de vendas!!");
-        f.c_dt_periodo_inicio.focus();
+    //  TIPO DE CONSULTA: PEDIDOS CADASTRADOS OU PEDIDOS ENTREGUES
+    blnFlagOk = false;
+    for (i = 0; i < f.rb_periodo.length; i++) {
+        if (f.rb_periodo[i].checked) blnFlagOk = true;
+    }
+    if (!blnFlagOk) {
+        alert("Selecione o tipo de consulta:\n    Período de Vendas\n    Período de Entrega");
         return;
     }
 
-    if (!isDate(f.c_dt_periodo_inicio)) {
-        alert("Data inválida!!");
-        f.c_dt_periodo_inicio.focus();
-        return;
-    }
+//	PERÍODO DE VENDAS
+	if (f.rb_periodo[0].checked) {
+		if (trim(f.c_dt_periodo_inicio.value) == "") {
+			alert("Informe a data de início do período de vendas!!");
+			f.c_dt_periodo_inicio.focus();
+			return;
+		}
 
-    if (trim(f.c_dt_periodo_termino.value) == "") {
-        alert("Informe a data de término do período de vendas!!");
-        f.c_dt_periodo_termino.focus();
-        return;
-    }
+		if (!isDate(f.c_dt_periodo_inicio)) {
+			alert("Data inválida!!");
+			f.c_dt_periodo_inicio.focus();
+			return;
+		}
 
-    if (!isDate(f.c_dt_periodo_termino)) {
-        alert("Data inválida!!");
-        f.c_dt_periodo_termino.focus();
-        return;
-    }
+		if (trim(f.c_dt_periodo_termino.value) == "") {
+			alert("Informe a data de término do período de vendas!!");
+			f.c_dt_periodo_termino.focus();
+			return;
+		}
 
-    s_de = trim(f.c_dt_periodo_inicio.value);
-    s_ate = trim(f.c_dt_periodo_termino.value);
-    if ((s_de != "") && (s_ate != "")) {
-        s_de = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_de));
-        s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
-        if (s_de > s_ate) {
-            alert("Data de término é menor que a data de início!!");
-            f.c_dt_periodo_termino.focus();
+		if (!isDate(f.c_dt_periodo_termino)) {
+			alert("Data inválida!!");
+			f.c_dt_periodo_termino.focus();
+			return;
+		}
+
+		s_de = trim(f.c_dt_periodo_inicio.value);
+		s_ate = trim(f.c_dt_periodo_termino.value);
+		if ((s_de != "") && (s_ate != "")) {
+			s_de = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_de));
+			s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
+			if (s_de > s_ate) {
+				alert("Data de término é menor que a data de início!!");
+				f.c_dt_periodo_termino.focus();
+				return;
+			}
+		}
+
+		s_ate = trim(f.c_dt_periodo_termino.value);
+		if (s_ate != "") {
+			s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
+			s_hoje = retorna_so_digitos(f.c_DtHojeYYYYMMDD.value);
+			if (s_ate > s_hoje) {
+				alert("Data de término não pode ser uma data futura!!");
+				f.c_dt_periodo_termino.focus();
+				return;
+			}
+		}
+
+        s_opcao_periodo = COD_CONSULTA_POR_PERIODO_CADASTRO;
+        dt_inicio = f.c_dt_periodo_inicio.value;
+        dt_termino = f.c_dt_periodo_termino.value;
+	}
+
+// PERÍODO DE ENTREGA
+	if (f.rb_periodo[1].checked) {
+        if (trim(f.c_dt_entregue_inicio.value) == "") {
+            alert("Informe a data de início do período de entrega!");
+            f.c_dt_entregue_inicio.focus();
             return;
         }
-    }
 
-    s_ate = trim(f.c_dt_periodo_termino.value);
-    if (s_ate != "") {
-        s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
-        s_hoje = retorna_so_digitos(f.c_DtHojeYYYYMMDD.value);
-        if (s_ate > s_hoje) {
-            alert("Data de término não pode ser uma data futura!!");
-            f.c_dt_periodo_termino.focus();
+        if (!isDate(f.c_dt_entregue_inicio)) {
+            alert("Data inválida!");
+            f.c_dt_entregue_inicio.focus();
             return;
         }
-    }
+
+        if (trim(f.c_dt_entregue_termino.value) == "") {
+            alert("Informe a data de término do período de entrega!");
+            f.c_dt_entregue_termino.focus();
+            return;
+        }
+
+        if (!isDate(f.c_dt_entregue_termino)) {
+            alert("Data inválida!");
+            f.c_dt_entregue_termino.focus();
+            return;
+        }
+
+        s_de = trim(f.c_dt_entregue_inicio.value);
+        s_ate = trim(f.c_dt_entregue_termino.value);
+        if ((s_de != "") && (s_ate != "")) {
+            s_de = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_de));
+            s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
+            if (s_de > s_ate) {
+                alert("Data de término é menor que a data de início!");
+                f.c_dt_entregue_termino.focus();
+                return;
+            }
+        }
+
+        s_ate = trim(f.c_dt_entregue_termino.value);
+        if (s_ate != "") {
+            s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
+            s_hoje = retorna_so_digitos(f.c_DtHojeYYYYMMDD.value);
+            if (s_ate > s_hoje) {
+                alert("Data de término não pode ser uma data futura!");
+                f.c_dt_entregue_termino.focus();
+                return;
+            }
+        }
+
+        s_opcao_periodo = COD_CONSULTA_POR_PERIODO_ENTREGA;
+        dt_inicio = f.c_dt_entregue_inicio.value;
+        dt_termino = f.c_dt_entregue_termino.value;
+	}
 
     var visao = document.getElementsByName('rb_visao');
        i = 0;
@@ -590,8 +755,7 @@ function fFILTROConfirma( f ) {
     
     fabricante = "";
     grupo = "";
-    dt_inicio = f.c_dt_periodo_inicio.value;
-    dt_termino = f.c_dt_periodo_termino.value;
+    subgrupo = "";
 
     for (i = 0; i < f.c_fabricante.length; i++) {
         if (f.c_fabricante[i].selected == true) {
@@ -601,8 +765,14 @@ function fFILTROConfirma( f ) {
     }
     for (i = 0; i < f.c_grupo.length; i++) {
         if (f.c_grupo[i].selected == true) {
-            if (grupo != "") grupo += "_";
+            if (grupo != "") grupo += "|";
             grupo += f.c_grupo[i].value;
+        }
+    }
+    for (i = 0; i < f.c_subgrupo.length; i++) {
+        if (f.c_subgrupo[i].selected == true) {
+            if (subgrupo != "") subgrupo += "|";
+            subgrupo += f.c_subgrupo[i].value;
         }
     }
 
@@ -626,10 +796,12 @@ function fFILTROConfirma( f ) {
 
     strUrl = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/FarolV3/GetXLSReport/';
     strUrl = strUrl + '?usuario=<%=usuario%>';
-    strUrl = strUrl + '&dt_inicio=' + dt_inicio;
+    strUrl = strUrl + '&opcao_periodo=' + s_opcao_periodo;
+	strUrl = strUrl + '&dt_inicio=' + dt_inicio;
     strUrl = strUrl + '&dt_termino=' + dt_termino;
     strUrl = strUrl + '&fabricante=' + fabricante;
-    strUrl = strUrl + '&grupo=' + grupo;
+	strUrl = strUrl + '&grupo=' + grupo;
+    strUrl = strUrl + '&subgrupo=' + subgrupo;
     strUrl = strUrl + '&btu=' + f.c_potencia_BTU.value;
     strUrl = strUrl + '&ciclo=' + f.c_ciclo.value;
     strUrl = strUrl + '&pos_mercado=' + f.c_posicao_mercado.value;
@@ -671,7 +843,6 @@ function fFILTROConfirma( f ) {
 
     xmlhttp.open("POST", strUrl, true);
     xmlhttp.send();
-
 }
 </script>
 
@@ -726,15 +897,64 @@ function fFILTROConfirma( f ) {
 	<!--  PERÍODO DE VENDAS  -->
 	<tr bgcolor="#FFFFFF">
 	<td class="MT" align="left" nowrap>
-		<span class="PLTe">PERÍODO DE VENDAS</span>
-		<br>
+		<% intIdx=-1 %>
+		<table cellspacing="0" cellpadding="0">
+		<tr>
+			<td align="left">
+				<% s_checked = ""
+					if s_rb_opcao_default = COD_CONSULTA_POR_PERIODO_CADASTRO then s_checked = " checked" %>
+				<input type="radio" id="rb_periodo" name="rb_periodo" value="<%=COD_CONSULTA_POR_PERIODO_CADASTRO%>" <%=s_checked%> />
+			</td>
+			<td align="left" valign="bottom">
+				<% intIdx=intIdx+1 %>
+				<span class="PLTe" style="cursor:default" onclick="fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();">PERÍODO DE VENDAS</span>
+			</td>
+		</tr>
+		</table>
 		<table cellspacing="0" cellpadding="0">
 			<tr bgcolor="#FFFFFF">
 			<td align="left">
-				<input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_periodo_inicio" id="c_dt_periodo_inicio" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de início inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_periodo_termino.focus(); filtra_data();"
+				<input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_periodo_inicio" id="c_dt_periodo_inicio" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de início inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_periodo_termino.focus(); else {if (!fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].checked) fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();} filtra_data();"
+					onchange="fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();"
+					onclick="fFILTRO.rb_periodo[<%= Cstr(intIdx) %>].click();"
 					value='<%=get_default_valor_texto_bd(usuario, "RelFarolResumidoFiltro|c_dt_periodo_inicio")%>'
-					/>&nbsp;<span class="PLLc" style="color:#808080;">&nbsp;&nbsp;&nbsp;até&nbsp;</span>&nbsp;<input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_periodo_termino" id="c_dt_periodo_termino" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de término inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_fabricante.focus(); filtra_data();"
+					/>&nbsp;<span class="PLLc" style="color:#808080;">&nbsp;&nbsp;&nbsp;até&nbsp;</span>&nbsp;<input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_periodo_termino" id="c_dt_periodo_termino" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de término inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_fabricante.focus(); else {if (!fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].checked) fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();} filtra_data();"
+					onchange="fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();"
+					onclick="fFILTRO.rb_periodo[<%= Cstr(intIdx) %>].click();"
 					value='<%=get_default_valor_texto_bd(usuario, "RelFarolResumidoFiltro|c_dt_periodo_termino")%>'
+					/>
+			</td>
+			</tr>
+		</table>
+	</td>
+	</tr>
+	<!--  PERÍODO DE ENTREGA  -->
+	<tr bgcolor="#FFFFFF">
+	<td class="ME MD MB" align="left" nowrap>
+		<table cellspacing="0" cellpadding="0">
+		<tr>
+			<td align="left">
+				<% s_checked = ""
+					if s_rb_opcao_default = COD_CONSULTA_POR_PERIODO_ENTREGA then s_checked = " checked" %>
+				<input type="radio" id="rb_periodo" name="rb_periodo" value="<%=COD_CONSULTA_POR_PERIODO_ENTREGA%>" <%=s_checked%> />
+			</td>
+			<td align="left" valign="bottom">
+				<% intIdx=intIdx+1 %>
+				<span class="PLTe" style="cursor:default" onclick="fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();">PERÍODO DE ENTREGA</span>
+			</td>
+		</tr>
+		</table>
+		<table cellspacing="0" cellpadding="0">
+			<tr bgcolor="#FFFFFF">
+			<td align="left">
+				<input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_entregue_inicio" id="c_dt_entregue_inicio" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de início inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_entregue_termino.focus(); else {if (!fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].checked) fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();} filtra_data();"
+					onchange="fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();"
+					onclick="fFILTRO.rb_periodo[<%= Cstr(intIdx) %>].click();"
+					value='<%=get_default_valor_texto_bd(usuario, "RelFarolResumidoFiltro|c_dt_entregue_inicio")%>'
+					/>&nbsp;<span class="PLLc" style="color:#808080;">&nbsp;&nbsp;&nbsp;até&nbsp;</span>&nbsp;<input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_entregue_termino" id="c_dt_entregue_termino" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de término inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_fabricante.focus(); else {if (!fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].checked) fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();} filtra_data();"
+					onchange="fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();"
+					onclick="fFILTRO.rb_periodo[<%= Cstr(intIdx) %>].click();"
+					value='<%=get_default_valor_texto_bd(usuario, "RelFarolResumidoFiltro|c_dt_entregue_termino")%>'
 					/>
 			</td>
 			</tr>
@@ -757,6 +977,8 @@ function fFILTROConfirma( f ) {
 		<td align="left" valign="top">
 			<a name="bLimparFabricante" id="bLimparFabricante" href="javascript:limpaCampoSelectFabricante()" title="limpa o filtro 'Fabricante'">
 						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterFabricante"></span>)
 		</td>
 		</tr>
 		</table>
@@ -770,14 +992,39 @@ function fFILTROConfirma( f ) {
 		<table cellpadding="0" cellspacing="0">
 		<tr>
 		<td>
-			<select id="c_grupo" name="c_grupo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="10"style="width:100px" multiple>
+			<select id="c_grupo" name="c_grupo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="10" style="min-width:250px" multiple>
 			<% =grupo_monta_itens_select(get_default_valor_texto_bd(usuario, "RelFarolResumidoFiltro|c_grupo")) %>
 			</select>
 		</td>
 		<td style="width:1px;"></td>
 		<td align="left" valign="top">
-			<a name="bLimparGrupo" id="bLimparGrupo" href="javascript:limpaCampoSelectProduto()" title="limpa o filtro 'Grupo de Produtos'">
+			<a name="bLimparGrupo" id="bLimparGrupo" href="javascript:limpaCampoSelectGrupo()" title="limpa o filtro 'Grupo de Produtos'">
 						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterGrupo"></span>)
+		</td>
+		</tr>
+		</table>
+	</td>
+	</tr>
+	<!-- SUBGRUPO DE PRODUTOS -->
+	<tr bgcolor="#FFFFFF">
+	<td class="ME MD MB" align="left" nowrap>
+		<span class="PLTe">SUBGRUPO DE PRODUTOS</span>
+		<br>
+		<table cellpadding="0" cellspacing="0">
+		<tr>
+		<td>
+			<select id="c_subgrupo" name="c_subgrupo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="10" style="min-width:250px" multiple>
+			<% =subgrupo_monta_itens_select(get_default_valor_texto_bd(usuario, "RelFarolResumidoFiltro|c_subgrupo")) %>
+			</select>
+		</td>
+		<td style="width:1px;"></td>
+		<td align="left" valign="top">
+			<a name="bLimparSubgrupo" id="bLimparSubgrupo" href="javascript:limpaCampoSelectSubgrupo()" title="limpa o filtro 'Subgrupo de Produtos'">
+						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterSubgrupo"></span>)
 		</td>
 		</tr>
 		</table>

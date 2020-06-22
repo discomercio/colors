@@ -59,6 +59,11 @@
 		if Not le_pedido(pedido_selecionado, r_pedido, msg_erro) then alerta = msg_erro
 		end if
 	
+	dim id_email, corpo_mensagem, msg_erro_grava_email, emailSndSvcRemetenteMensagemSistema
+	dim r_vendedor, blnEnviarEmailVendedorStatusAnaliseCredito
+	blnEnviarEmailVendedorStatusAnaliseCredito = False
+	emailSndSvcRemetenteMensagemSistema = getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__MENSAGEM_SISTEMA)
+
 '	FORMA DE PAGAMENTO (NOVA VERSÃO)
 	dim versao_forma_pagamento 
 	dim rb_forma_pagto, op_av_forma_pagto, c_pc_qtde, c_pc_valor, c_pc_maquineta_qtde, c_pc_maquineta_valor
@@ -94,6 +99,10 @@
 	s = Trim(Request.Form("blnEntregaImediataEdicaoLiberada"))
 	blnEntregaImediataEdicaoLiberada = CBool(s)
 	
+	dim blnEntregaImediataNaoSemDataPrevisao
+	s = Trim(Request.Form("blnEntregaImediataNaoSemDataPrevisao"))
+	blnEntregaImediataNaoSemDataPrevisao = CBool(s)
+
 	dim blnInstaladorInstalaEdicaoLiberada
 	s = Trim(Request.Form("blnInstaladorInstalaEdicaoLiberada"))
 	blnInstaladorInstalaEdicaoLiberada = CBool(s)
@@ -129,7 +138,7 @@
     dim s_nf_texto, s_num_pedido_compra
 	dim blnAEntregarStatusEdicaoLiberada, c_a_entregar_data_marcada
 	dim s_analise_credito, s_analise_credito_a, s_ac_pendente_vendas_motivo
-	dim s_etg_imediata, s_bem_uso_consumo
+	dim s_etg_imediata, s_bem_uso_consumo, s_etg_imediata_original, c_data_previsao_entrega
 	dim blnUpdate, blnFlag, blnEditou
 	dim blnEditouTransp, blnProcessaSelecaoAutoTransp
     dim transportadora_cnpj, blnEditouFrete
@@ -145,6 +154,7 @@
 	blnAEntregarStatusEdicaoLiberada = CBool(s)
 	s_analise_credito=Trim(request("rb_analise_credito"))
 	s_etg_imediata=Trim(request("rb_etg_imediata"))
+	c_data_previsao_entrega = Trim(Request("c_data_previsao_entrega"))
 	s_bem_uso_consumo=Trim(request("rb_bem_uso_consumo"))
 	s_forma_pagto=Trim(request("c_forma_pagto"))
     s_indicador = Trim(Request("c_indicador"))
@@ -771,6 +781,29 @@
 			end if
 		end if
 
+	if alerta = "" then
+		if blnEntregaImediataEdicaoLiberada then
+			if CLng(s_etg_imediata) = CLng(COD_ETG_IMEDIATA_NAO) then
+				if Not blnEntregaImediataNaoSemDataPrevisao then
+					if c_data_previsao_entrega = "" then
+						alerta=texto_add_br(alerta)
+						alerta=alerta & "É necessário informar a data de previsão de entrega"
+						end if
+					end if
+
+				if c_data_previsao_entrega <> "" then
+					if Not IsDate(c_data_previsao_entrega) then
+						alerta=texto_add_br(alerta)
+						alerta=alerta & "Data de previsão de entrega informada é inválida"
+					elseif StrToDate(c_data_previsao_entrega) <= Date then
+						alerta=texto_add_br(alerta)
+						alerta=alerta & "Data de previsão de entrega deve ser uma data futura"
+						end if
+					end if
+				end if
+			end if
+		end if
+
 	if alerta <> "" then blnErroConsistencia=True
 	
 	
@@ -841,6 +874,7 @@
 					if s_analise_credito <> "" then 
 						if CLng(rs("analise_credito")) <> CLng(s_analise_credito) then
                             if s_analise_credito = COD_AN_CREDITO_PENDENTE_VENDAS then
+								blnEnviarEmailVendedorStatusAnaliseCredito = True
                                 if s_ac_pendente_vendas_motivo = "" then
                                     alerta = "Não foi informado o motivo do status 'Pendente Vendas'."
                                 end if
@@ -992,6 +1026,7 @@
 						if s_analise_credito <> "" then 
 							if CLng(rs("analise_credito")) <> CLng(s_analise_credito) then
                                 if s_analise_credito = COD_AN_CREDITO_PENDENTE_VENDAS then
+									blnEnviarEmailVendedorStatusAnaliseCredito = True
                                     if s_ac_pendente_vendas_motivo = "" then
                                         alerta = "Não foi informado o motivo do status 'Pendente Vendas'."
                                     end if
@@ -1276,11 +1311,33 @@
 					end if
 					
 				if blnEntregaImediataEdicaoLiberada then
+					s_etg_imediata_original = Trim("" & rs("st_etg_imediata"))
 					if s_etg_imediata <> "" then 
 						if CLng(rs("st_etg_imediata")) <> CLng(s_etg_imediata) then
 							rs("st_etg_imediata")=CLng(s_etg_imediata)
 							rs("etg_imediata_data")=Now
 							rs("etg_imediata_usuario")=usuario
+							end if
+						end if
+					
+					if CLng(s_etg_imediata) = CLng(COD_ETG_IMEDIATA_NAO) then
+						if s_etg_imediata_original <> Trim(s_etg_imediata) then
+							rs("PrevisaoEntregaData") = StrToDate(c_data_previsao_entrega)
+							rs("PrevisaoEntregaUsuarioUltAtualiz") = usuario
+							rs("PrevisaoEntregaDtHrUltAtualiz") = Now
+						elseif blnEntregaImediataNaoSemDataPrevisao And (c_data_previsao_entrega = "") then
+							'NOP
+							'O STATUS DA ENTREGA IMEDIATA JÁ ESTAVA COMO NÃO E SEM DATA DE PREVISÃO, PORTANTO, NÃO FAZ NADA
+						elseif (s_etg_imediata_original <> Trim(s_etg_imediata)) Or (formata_data(rs("PrevisaoEntregaData")) <> formata_data(StrToDate(c_data_previsao_entrega))) then
+							rs("PrevisaoEntregaData") = StrToDate(c_data_previsao_entrega)
+							rs("PrevisaoEntregaUsuarioUltAtualiz") = usuario
+							rs("PrevisaoEntregaDtHrUltAtualiz") = Now
+							end if
+					else
+						if (s_etg_imediata_original <> Trim(s_etg_imediata)) then
+							rs("PrevisaoEntregaData") = Null
+							rs("PrevisaoEntregaUsuarioUltAtualiz") = usuario
+							rs("PrevisaoEntregaDtHrUltAtualiz") = Now
 							end if
 						end if
 					end if
@@ -1708,6 +1765,40 @@
 				cn.Execute(s)
 				If Err <> 0 then
 					alerta = "FALHA AO SINCRONIZAR O CAMPO 'marketplace_codigo_origem' (" & Cstr(Err) & ": " & Err.Description & ")."
+					end if
+				end if
+			end if
+
+		if alerta = "" then
+			if blnEnviarEmailVendedorStatusAnaliseCredito then
+				call le_usuario(r_pedido.vendedor, r_vendedor, msg_erro)
+				if Trim("" & r_vendedor.email) = "" then
+					if s_log <> "" then s_log = s_log & "; "
+					s_log = s_log & "Vendedor não possui e-mail cadastrado para ser notificado sobre alteração do status da análise de crédito"
+				else
+					corpo_mensagem = "Pedido " & pedido_base & " foi alterado para '" & x_analise_credito(s_analise_credito) & "' às " & formata_data_hora_sem_seg(Now) & _
+									vbCrLf & _
+									"Motivo: " & obtem_descricao_tabela_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__AC_PENDENTE_VENDAS_MOTIVO, s_ac_pendente_vendas_motivo) & _
+									vbCrLf & vbCrLf & _
+									String(60, "-") & _
+									vbCrLf & _
+									"Atenção: esta é uma mensagem automática, NÃO responda a este e-mail!"
+					if EmailSndSvcGravaMensagemParaEnvio(emailSndSvcRemetenteMensagemSistema, _
+													"", _
+													r_vendedor.email, _
+													"", _
+													"", _
+													"Pedido " & pedido_base & " alterado para '" & x_analise_credito(s_analise_credito) & "'", _
+													corpo_mensagem, _
+													Now, _
+													id_email, _
+													msg_erro_grava_email) then
+						if s_log <> "" then s_log = s_log & "; "
+						s_log = s_log & "Enviado e-mail para o vendedor avisando sobre alteração do status da análise de crédito: " & r_vendedor.email & " (mensagem id: " & id_email & ")"
+					else
+						if s_log <> "" then s_log = s_log & "; "
+						s_log = s_log & "Falha ao tentar enviar e-mail para o vendedor avisando sobre alteração do status da análise de crédito: " & msg_erro_grava_email
+						end if
 					end if
 				end if
 			end if
