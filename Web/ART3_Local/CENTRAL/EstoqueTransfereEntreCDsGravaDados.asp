@@ -85,6 +85,7 @@
                 .fabricante = Trim(Request.Form("c_fabricante")(i))
                 .produto = Trim(Request.Form("c_produto")(i))
                 .qtde  = CInt(Trim(Request.Form("c_qtde")(i)))
+                .preco_fabricante = Trim(Request.Form("c_vl_unitario")(i))                
                 .vl_custo2 = Trim(Request.Form("c_vl_custo2")(i))                
                 .ean = Trim(Request.Form("c_ean")(i))
                 .aliq_ipi = Trim(Request.Form("c_aliq_ipi")(i))
@@ -364,7 +365,10 @@
 
 		        s_sql = " UPDATE T_ESTOQUE_TRANSFERENCIA_ITEM_SUB SET" & _
                         " id_estoque_destino = '" & s_id_estoque_destino & "'" & _
-                        " WHERE (id_estoque_transferencia = '" & c_transf_selecionada & "') "
+                        " WHERE (id_estoque_origem = '" & .id_estoque_origem & "') " & _
+                        " AND (fabricante = '" & .fabricante & "') " & _
+                        " AND (produto = '" & .produto & "') " & _
+                        " AND (id_estoque_transferencia = '" & c_transf_selecionada & "') "
 		        cn.Execute(s_sql)
 		        if Err <> 0 then
                     msg_erro= "Problema na atualização da transferência" & vbCrLf
@@ -376,8 +380,8 @@
             '   Log de movimentação do estoque
 	            if Not grava_log_estoque_v2(usuario, c_nfe_emitente_origem, .fabricante, .produto, .qtde, .qtde, OP_ESTOQUE_TRANSFERENCIA, _
                                             ID_ESTOQUE_VENDA, ID_ESTOQUE_VENDA, "", "", "", "", c_documento_transf, _
-                                            "Transferência do estoque " & .id_estoque_origem & " (CD " & c_nfe_emitente_origem & _
-                                            ") para o estoque " & s_id_estoque_destino & " (CD " & c_nfe_emitente_destino & ")", "") then
+                                            "Transf estoque " & .id_estoque_origem & " (CD " & c_nfe_emitente_origem & _
+                                            ") => estoque " & s_id_estoque_destino & " (CD " & c_nfe_emitente_destino & ")", "") then
 		            msg_erro="FALHA AO GRAVAR O LOG DA MOVIMENTAÇÃO NO ESTOQUE"
 		            end if
 

@@ -617,7 +617,7 @@
 		<input name="c_qtde" readonly tabindex=-1 class="PLLd" style="width:30px;"
 			value="<%=s_qtde%>"></td>
 	<td class="MDB" align="right">
-		<input name="c_vl_custo2" readonly tabindex=-1 class="PLLd" maxlength="12" style="width:62px;"
+		<input name="c_vl_unitario" readonly tabindex=-1 class="PLLd" maxlength="12" style="width:62px;"
 			value="<%=s_preco_fabricante%>">
 		</td>
 	<td class="MDB" align="right">
