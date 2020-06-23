@@ -42,9 +42,10 @@
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO)
 
 '	CONECTA COM O BANCO DE DADOS
-	dim cn, r, msg_erro
+	dim cn, r, rs, msg_erro
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	If Not cria_recordset_otimista(r, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+	If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	
 	dim s_lista_operacoes_permitidas
 	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
@@ -61,9 +62,10 @@
 
 	dim alerta
 	dim c_dt_faturamento_inicio, c_dt_faturamento_termino
-	dim c_fabricante, c_grupo, c_potencia_BTU, c_ciclo, c_posicao_mercado
+	dim c_fabricante, c_grupo, c_potencia_BTU, c_ciclo, c_posicao_mercado, c_grupo_pedido_origem
 	dim c_loja, rb_tipo_cliente
 	dim s, s_aux, s_filtro, s_filtro_loja, lista_loja, v_loja, v, i
+	dim v_grupo_pedido_origem
     dim ckb_AGRUPAMENTO
 
 	alerta = ""
@@ -75,6 +77,7 @@
 	c_potencia_BTU = Trim(Request.Form("c_potencia_BTU"))
 	c_ciclo = Trim(Request.Form("c_ciclo"))
 	c_posicao_mercado = Trim(Request.Form("c_posicao_mercado"))
+	c_grupo_pedido_origem = Trim(Request.Form("c_grupo_pedido_origem"))
 	rb_tipo_cliente = Trim(Request.Form("rb_tipo_cliente"))
 	
 	c_loja = Trim(Request.Form("c_loja"))
@@ -84,7 +87,7 @@
     ckb_AGRUPAMENTO = Trim(Request.Form("ckb_AGRUPAMENTO"))
 
 '	CAMPOS DE SAÍDA SELECIONADOS
-	dim ckb_COL_DATA, ckb_COL_NF, ckb_COL_DT_EMISSAO_NF, ckb_COL_LOJA, ckb_COL_PEDIDO, ckb_COL_VENDEDOR, ckb_COL_INDICADOR
+	dim ckb_COL_DATA, ckb_COL_NF, ckb_COL_DT_EMISSAO_NF, ckb_COL_LOJA, ckb_COL_PEDIDO, ckb_COL_GRUPO_PEDIDO_ORIGEM, ckb_COL_VENDEDOR, ckb_COL_INDICADOR
 	dim ckb_COL_CPF_CNPJ_CLIENTE, ckb_COL_CONTRIBUINTE_ICMS, ckb_COL_NOME_CLIENTE, ckb_COL_RT, ckb_COL_ICMS_UF_DEST
 	dim ckb_COL_PRODUTO, ckb_COL_NAC_IMP, ckb_COL_DESCRICAO_PRODUTO, ckb_COL_VL_NF, ckb_COL_VL_UNITARIO, ckb_COL_VL_CUSTO_REAL_TOTAL, ckb_COL_VL_TOTAL, ckb_COL_QTDE
 	dim ckb_COL_VL_CUSTO_ULT_ENTRADA, ckb_COL_VL_CUSTO_REAL, ckb_COL_VL_LISTA, ckb_COL_GRUPO, ckb_COL_POTENCIA_BTU
@@ -98,6 +101,7 @@
 	ckb_COL_DT_EMISSAO_NF = Trim(Request.Form("ckb_COL_DT_EMISSAO_NF"))
 	ckb_COL_LOJA = Trim(Request.Form("ckb_COL_LOJA"))
 	ckb_COL_PEDIDO = Trim(Request.Form("ckb_COL_PEDIDO"))
+	ckb_COL_GRUPO_PEDIDO_ORIGEM = Trim(Request.Form("ckb_COL_GRUPO_PEDIDO_ORIGEM"))
 	ckb_COL_VENDEDOR = Trim(Request.Form("ckb_COL_VENDEDOR"))
 	ckb_COL_INDICADOR = Trim(Request.Form("ckb_COL_INDICADOR"))
 	ckb_COL_CPF_CNPJ_CLIENTE = Trim(Request.Form("ckb_COL_CPF_CNPJ_CLIENTE"))
@@ -146,6 +150,7 @@
 		if ckb_COL_DT_EMISSAO_NF <> "" then s_campos_saida = s_campos_saida & "ckb_COL_DT_EMISSAO_NF" & "|"
 		if ckb_COL_LOJA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_LOJA" & "|"
 		if ckb_COL_PEDIDO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_PEDIDO" & "|"
+		if ckb_COL_GRUPO_PEDIDO_ORIGEM <> "" then s_campos_saida = s_campos_saida & "ckb_COL_GRUPO_PEDIDO_ORIGEM" & "|"
 		if ckb_COL_CPF_CNPJ_CLIENTE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_CPF_CNPJ_CLIENTE" & "|"
 		if ckb_COL_CONTRIBUINTE_ICMS <> "" then s_campos_saida = s_campos_saida & "ckb_COL_CONTRIBUINTE_ICMS" & "|"
 		if ckb_COL_NOME_CLIENTE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_NOME_CLIENTE" & "|"
@@ -258,7 +263,7 @@ end function
 '
 sub consulta_executa
 const SEPARADOR_DECIMAL = ","
-dim s, s_sql, s_cst, x, x_cab, s_where, s_where_aux, s_where_venda, s_where_devolucao, s_where_loja, s_where_lista_codigo_frete_devolucao
+dim s, s_sql, s_cst, x, x_cab, s_where, s_where_aux, s_where_temp, s_where_venda, s_where_devolucao, s_where_loja, s_where_lista_codigo_frete_devolucao
 dim perc_RT, vl_RT, vl_preco_venda, n_reg, n_reg_total
 dim tipo_parc
 dim s_qtde, item_peso, item_cubagem, item_qtde
@@ -337,6 +342,28 @@ dim v
 		s_where = s_where & " (t_CLIENTE.tipo = '" & rb_tipo_cliente & "')"
 		end if
 	
+    s_where_temp = ""
+    if c_grupo_pedido_origem <> "" then
+        v_grupo_pedido_origem = split(c_grupo_pedido_origem, ", ")
+        for i = LBound(v_grupo_pedido_origem) to UBound(v_grupo_pedido_origem)
+            s = "SELECT codigo FROM t_CODIGO_DESCRICAO WHERE (codigo_pai = '" & v_grupo_pedido_origem(i) & "') AND grupo='PedidoECommerce_Origem'"
+            if rs.State <> 0 then rs.Close
+	        rs.open s, cn
+		    if rs.Eof then
+                alerta = "ORIGEM DO PEDIDO (GRUPO) " & c_grupo_pedido_origem & " NÃO EXISTE."
+                exit for
+            else
+                do while Not rs.Eof
+                    if s_where_temp <> "" then s_where_temp = s_where_temp & ", "
+                    s_where_temp = s_where_temp & "'" & rs("codigo") & "'"
+                    rs.MoveNext
+                loop
+            end if
+        next
+        if s_where <> "" then s_where = s_where & " AND"
+        s_where = s_where & " (t_PEDIDO.marketplace_codigo_origem IN (" & s_where_temp & "))"
+    end if
+
 	s_where_loja = ""
 	for i=Lbound(v_loja) to Ubound(v_loja)
 		if v_loja(i) <> "" then
@@ -380,6 +407,9 @@ dim v
 				" t_PEDIDO.obs_2," & _
 				" t_PEDIDO.loja," & _
 				" t_PEDIDO.pedido," & _
+				" t_PEDIDO.marketplace_codigo_origem," & _
+				" tGrupoPedidoOrigemDescricao.descricao AS GrupoPedidoOrigemDescricao," & _
+				" tPedidoOrigemDescricao.descricao AS PedidoOrigemDescricao," & _
 				" t_PEDIDO.transportadora_id," & _
 				" t_PEDIDO__BASE.vendedor," & _
 				" t_PEDIDO__BASE.indicador," & _
@@ -528,6 +558,10 @@ dim v
 				") t_NFe_IMAGEM_ITEM_NORMALIZADO ON (t_NFe_IMAGEM_NORMALIZADO.id = t_NFe_IMAGEM_ITEM_NORMALIZADO.id_nfe_imagem) AND (t_NFe_IMAGEM_ITEM_NORMALIZADO.fabricante = t_PEDIDO_ITEM.fabricante) AND (t_NFe_IMAGEM_ITEM_NORMALIZADO.produto = t_PEDIDO_ITEM.produto)"
 
 	s_sql = s_sql & _
+			" LEFT JOIN t_CODIGO_DESCRICAO tPedidoOrigemDescricao ON (tPedidoOrigemDescricao.grupo = 'PedidoECommerce_Origem') AND (tPedidoOrigemDescricao.codigo = t_PEDIDO.marketplace_codigo_origem)" & _
+			" LEFT JOIN t_CODIGO_DESCRICAO tGrupoPedidoOrigemDescricao ON (tGrupoPedidoOrigemDescricao.grupo = 'PedidoECommerce_Origem_Grupo') AND (tGrupoPedidoOrigemDescricao.codigo = tPedidoOrigemDescricao.codigo_pai)"
+
+	s_sql = s_sql & _
 			" WHERE" & _
 				" (t_PEDIDO.st_entrega = '" & ST_ENTREGA_ENTREGUE & "')"
 
@@ -557,6 +591,9 @@ dim v
 				" t_PEDIDO.obs_2," & _
 				" t_PEDIDO__BASE.loja," & _
 				" t_PEDIDO_ITEM_DEVOLVIDO.pedido," & _
+				" t_PEDIDO.marketplace_codigo_origem," & _
+				" tGrupoPedidoOrigemDescricao.descricao AS GrupoPedidoOrigemDescricao," & _
+				" tPedidoOrigemDescricao.descricao AS PedidoOrigemDescricao," & _
 				" t_PEDIDO.transportadora_id," & _
 				" t_PEDIDO__BASE.vendedor," & _
 				" t_PEDIDO__BASE.indicador," & _
@@ -666,6 +703,10 @@ dim v
 		end if
 
 	s_sql = s_sql & _
+			" LEFT JOIN t_CODIGO_DESCRICAO tPedidoOrigemDescricao ON (tPedidoOrigemDescricao.grupo = 'PedidoECommerce_Origem') AND (tPedidoOrigemDescricao.codigo = t_PEDIDO.marketplace_codigo_origem)" & _
+			" LEFT JOIN t_CODIGO_DESCRICAO tGrupoPedidoOrigemDescricao ON (tGrupoPedidoOrigemDescricao.grupo = 'PedidoECommerce_Origem_Grupo') AND (tGrupoPedidoOrigemDescricao.codigo = tPedidoOrigemDescricao.codigo_pai)"
+
+	s_sql = s_sql & _
 			" WHERE" & _
 				" (t_PEDIDO.st_entrega = '" & ST_ENTREGA_ENTREGUE & "')"
 	
@@ -701,6 +742,7 @@ dim v
 	if ckb_COL_DT_EMISSAO_NF <> "" then x_cab = x_cab & "EMISSAO NF;"
 	if ckb_COL_LOJA <> "" then x_cab = x_cab & "LOJA;"
 	if ckb_COL_PEDIDO <> "" then x_cab = x_cab & "PEDIDO;"
+	if ckb_COL_GRUPO_PEDIDO_ORIGEM <> "" then x_cab = x_cab & "ORIGEM PEDIDO (GRUPO);"
 	if ckb_COL_CPF_CNPJ_CLIENTE <> "" then x_cab = x_cab & "CPF/CNPJ;"
 	if ckb_COL_CONTRIBUINTE_ICMS <> "" then x_cab = x_cab & "Contrib ICMS;"
 	if ckb_COL_NOME_CLIENTE <> "" then x_cab = x_cab & "NOME CLIENTE;"
@@ -800,6 +842,11 @@ dim v
 				x = x & Trim("" & r("pedido")) & ";"
 				end if
 			
+		 '> ORIGEM DO PEDIDO (GRUPO)
+			if ckb_COL_GRUPO_PEDIDO_ORIGEM <> "" then
+				x = x & Trim("" & r("GrupoPedidoOrigemDescricao")) & ";"
+				end if
+
 		'> CLIENTE: CPF/CNPJ
 			if ckb_COL_CPF_CNPJ_CLIENTE <> "" then
 				x = x & cnpj_cpf_formata(Trim("" & r("cnpj_cpf"))) & ";"
@@ -1337,6 +1384,21 @@ window.status='Aguarde, executando a consulta ...';
 			   "<span class='N'>Loja(s):&nbsp;</span></td><td align='left' valign='top'>" & _
 			   "<span class='N'>" & s & "</span></td></tr>"
 	
+    s = c_grupo_pedido_origem
+	if s = "" then 
+		s = "todos"
+	else
+        v_grupo_pedido_origem = split(c_grupo_pedido_origem, ", ")
+        s = ""
+        for i = Lbound(v_grupo_pedido_origem) to Ubound(v_grupo_pedido_origem)
+            if s <> "" then s = s & ", "
+		    s = s & obtem_descricao_tabela_t_codigo_descricao("PedidoECommerce_Origem_Grupo", v_grupo_pedido_origem(i))
+        next
+		end if
+	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
+			   "<span class='N'>Origem Pedido (Grupo):&nbsp;</span></td><td align='left' valign='top'>" & _
+			   "<span class='N'>" & s & "</span></td></tr>"
+
 '	EMISSÃO
 	s_filtro = s_filtro & _
 				"	<tr>" & chr(13) & _
@@ -1378,6 +1440,9 @@ window.status='Aguarde, executando a consulta ...';
 <%
 	if r.State <> 0 then r.Close
 	set r = nothing
+
+	if rs.State <> 0 then rs.Close
+	set rs = nothing
 
 '	FECHA CONEXAO COM O BANCO DE DADOS
 	cn.Close
