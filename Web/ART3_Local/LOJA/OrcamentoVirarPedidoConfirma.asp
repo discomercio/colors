@@ -1468,7 +1468,7 @@
 
 				rs("endereco_memorizado_status") = 1
 
-				if blnUsarMemorizacaoCompletaEnderecos and r_orcamento.st_memorizacao_completa_enderecos = 1 then
+				if blnUsarMemorizacaoCompletaEnderecos and r_orcamento.st_memorizacao_completa_enderecos <> 0 then
                     'Definido em 20/03/2020: o orcamento que foi criado sem memorização continua sua vida sem memorização
 					rs("st_memorizacao_completa_enderecos") = r_orcamento.st_memorizacao_completa_enderecos
 				    rs("endereco_logradouro") = r_orcamento.endereco_logradouro
@@ -2208,7 +2208,7 @@
 				s_log = s_log & "; custoFinancFornecTipoParcelamento=" & formata_texto_log(rs("custoFinancFornecTipoParcelamento"))
 				s_log = s_log & "; custoFinancFornecQtdeParcelas=" & formata_texto_log(rs("custoFinancFornecQtdeParcelas"))
 	
-				if blnUsarMemorizacaoCompletaEnderecos and r_orcamento.st_memorizacao_completa_enderecos = 1 then
+				if blnUsarMemorizacaoCompletaEnderecos and r_orcamento.st_memorizacao_completa_enderecos <> 0 then
 				    s_log = s_log & "; Endereço cobrança=" & formata_endereco(r_orcamento.endereco_logradouro, r_orcamento.endereco_numero, r_orcamento.endereco_complemento, r_orcamento.endereco_bairro, r_orcamento.endereco_cidade, r_orcamento.endereco_uf, r_orcamento.endereco_cep)
 					s_log = s_log & _
 							" (" & _

@@ -96,7 +96,7 @@
      dim cliente__tipo, cliente__cnpj_cpf, cliente__rg, cliente__ie, cliente__nome
     dim cliente__endereco, cliente__endereco_numero, cliente__endereco_complemento, cliente__bairro, cliente__cidade, cliente__uf, cliente__cep
     dim cliente__tel_res, cliente__ddd_res, cliente__tel_com, cliente__ddd_com, cliente__ramal_com, cliente__tel_cel, cliente__ddd_cel
-    dim cliente__tel_com_2, cliente__ddd_com_2, cliente__ramal_com_2, cliente__email, cliente__email_xml, cliente__icms, cliente_produtor_rural_status
+    dim cliente__tel_com_2, cliente__ddd_com_2, cliente__ramal_com_2, cliente__email, cliente__email_xml, cliente__icms, cliente__produtor_rural_status
 
     cliente__tipo = r_cliente.tipo
     cliente__cnpj_cpf = r_cliente.cnpj_cpf
@@ -120,8 +120,11 @@
     cliente__tel_com_2 = r_cliente.tel_com_2
     cliente__ddd_com_2 = r_cliente.ddd_com_2
     cliente__ramal_com_2 = r_cliente.ramal_com_2
+    cliente__email = r_cliente.email
+	cliente__email_xml = r_cliente.email_xml
+	cliente__icms = r_cliente.contribuinte_icms_status
+	cliente__produtor_rural_status = r_cliente.produtor_rural_status
     
-
     if blnUsarMemorizacaoCompletaEnderecos and r_pedido.st_memorizacao_completa_enderecos <> 0 then 
          cliente__tipo = r_pedido.endereco_tipo_pessoa
         cliente__cnpj_cpf = r_pedido.endereco_cnpj_cpf
@@ -146,10 +149,9 @@
         cliente__ddd_com_2 = r_pedido.endereco_ddd_com_2
         cliente__ramal_com_2 = r_pedido.endereco_ramal_com_2
         cliente__email = r_pedido.endereco_email
-		cliente__icms = r_pedido.endereco_contribuinte_icms_status
-		cliente_produtor_rural_status = r_pedido.endereco_produtor_rural_status
-		cliente__email = r_pedido.endereco_email
 		cliente__email_xml = r_pedido.endereco_email_xml
+		cliente__icms = r_pedido.endereco_contribuinte_icms_status
+		cliente__produtor_rural_status = r_pedido.endereco_produtor_rural_status
     end if
 
 
@@ -2574,7 +2576,7 @@ function setarValorRadio(array, valor)
 	<table width="649" class="QS" cellspacing="0">
 		<tr>
 			<td align="left"><p class="R">PRODUTOR RURAL</p><p class="C">
-				<%s=r_pedido.endereco_produtor_rural_status%>
+				<%s=cliente__produtor_rural_status%>
 				<%if s = converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_NAO) then s_aux="checked" else s_aux=""%>
 				
 				<input type="radio" id="rb_produtor_rural_nao" name="rb_produtor_rural" value="<%=COD_ST_CLIENTE_PRODUTOR_RURAL_NAO%>" <%=s_aux%> onclick="trataProdutorRural();"><span class="C" style="cursor:default" onclick="fPED.rb_produtor_rural[0].click();">Não</span>
@@ -2618,7 +2620,7 @@ function setarValorRadio(array, valor)
 
 				<%
                     s = " "
-                    if r_pedido.endereco_contribuinte_icms_status = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) then
+                    if cliente__icms = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) then
                         s = " checked "
                     end if
                 %>
@@ -2626,14 +2628,14 @@ function setarValorRadio(array, valor)
 			<input type="radio" id="rb_contribuinte_icms_nao" name="rb_contribuinte_icms" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO%>" <%=s%>><span class="C" style="cursor:default" onclick="fPED.rb_contribuinte_icms[1].click();">Não</span>
 				<%
                     s = " "
-                    if r_pedido.endereco_contribuinte_icms_status = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
+                    if cliente__icms = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
                         s = " checked "
                     end if
                 %>
 			<input type="radio" id="rb_contribuinte_icms_sim" name="rb_contribuinte_icms" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM%>" <%=s%>><span class="C" style="cursor:default" onclick="fPED.rb_contribuinte_icms[2].click();">Sim</span>
 				<%
                     s = " "
-                    if r_pedido.endereco_contribuinte_icms_status = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO) then
+                    if cliente__icms = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO) then
                         s = " checked "
                     end if
                 %>

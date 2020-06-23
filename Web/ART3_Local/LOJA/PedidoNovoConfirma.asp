@@ -2765,6 +2765,7 @@
 							", produtor_rural_status=" & t_CLIENTE("produtor_rural_status") & _
 							", ie=" & Trim("" & t_CLIENTE("ie")) & _
 							", rg=" & Trim("" & t_CLIENTE("rg")) & _
+							", contato=" & Trim("" & t_CLIENTE("contato")) & _
 							")"
 					end if
 

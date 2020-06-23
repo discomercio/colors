@@ -151,6 +151,7 @@
 	Const SESSION_CTRL_MODULO_CENTRAL = "CENTR"
 	Const SESSION_CTRL_MODULO_LOJA = "LOJA"
 	Const SESSION_CTRL_MODULO_ORCAMENTO = "ORCTO"
+    Const SESSION_CTRL_MODULO_APIUNIS = "APIUN"
 '	Tempo de timeout (em minutos) para a sessão expirar por estar inativa.
 '	Este valor é usado pela rotina implementada p/ recriar automaticamente
 '	a sessão expirada no IIS.

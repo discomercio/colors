@@ -825,6 +825,7 @@
 		end if
 
 	'Verifica se está havendo edição no cadastro de cliente que possui pedido com status de análise de crédito 'crédito ok' e com entrega pendente
+    'somente se st_memorizacao_completa_enderecos = 0; se != 0, o endereço é controlado em cada pedido separadamente
 	dim blnHaPedidoAprovadoComEntregaPendente, listaPedidoAprovadoComEntregaPendente
 	blnHaPedidoAprovadoComEntregaPendente = False
 	listaPedidoAprovadoComEntregaPendente = ""
@@ -839,6 +840,7 @@
 					" AND (tP.loja NOT IN ('" & NUMERO_LOJA_ECOMMERCE_AR_CLUBE & "', '" & NUMERO_LOJA_TRANSFERENCIA & "', '" & NUMERO_LOJA_KITS & "'))" & _
 					" AND (tP__BASE.analise_credito = " & CStr(COD_AN_CREDITO_OK) & ")" & _
 					" AND (tP.st_entrega NOT IN ('" & ST_ENTREGA_ENTREGUE & "', '" & ST_ENTREGA_CANCELADO & "'))" & _
+					" AND (tP.st_memorizacao_completa_enderecos = 0)" & _
 				" ORDER BY" & _
 					" tP.data_hora"
 			if r.State <> 0 then r.Close

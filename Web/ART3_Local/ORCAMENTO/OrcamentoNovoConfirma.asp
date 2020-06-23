@@ -279,6 +279,11 @@
     orcamento_endereco_rg = Trim(Request.Form("orcamento_endereco_rg"))
     orcamento_endereco_contato = Trim(Request.Form("orcamento_endereco_contato"))
 
+    'os campos EndEtg_email e EndEtg_email_xml não são informados pelo usuário e vamos copiar dos dados cadastrais.
+	EndEtg_email = orcamento_endereco_email
+	EndEtg_email_xml = orcamento_endereco_email_xml
+
+
 	dim s_caracteres_invalidos
 
 	dim s, i, k, n, opcao_venda_sem_estoque, qtde_spe, vl_total, vl_total_NF, vl_total_RA
@@ -998,13 +1003,35 @@
 		s_log = s_log & "; custoFinancFornecQtdeParcelas=" & formata_texto_log(rs("custoFinancFornecQtdeParcelas"))
 
 
-		s_log = s_log &	"; endereco_logradouro=" &formata_texto_log(rs("endereco_logradouro")) 
-		s_log = s_log &	"; endereco_bairro=" &  formata_texto_log(rs("endereco_bairro"))
-		s_log = s_log &	"; endereco_cidade=" & formata_texto_log(rs("endereco_cidade")) 
-		s_log = s_log &	"; endereco_uf=" &  formata_texto_log(rs("endereco_uf")) 
-		s_log = s_log &	"; endereco_cep=" & formata_texto_log(rs("endereco_cep")) 
-		s_log = s_log &	"; endereco_numero=" & formata_texto_log(rs("endereco_numero")) 
-		s_log = s_log &	"; endereco_complemento=" & formata_texto_log(rs("endereco_complemento")) 
+		if blnUsarMemorizacaoCompletaEnderecos then
+		    s_log = s_log &	"; endereco_logradouro=" &formata_texto_log(rs("endereco_logradouro")) 
+		    s_log = s_log &	"; endereco_bairro=" &  formata_texto_log(rs("endereco_bairro"))
+		    s_log = s_log &	"; endereco_cidade=" & formata_texto_log(rs("endereco_cidade")) 
+		    s_log = s_log &	"; endereco_uf=" &  formata_texto_log(rs("endereco_uf")) 
+		    s_log = s_log &	"; endereco_cep=" & formata_texto_log(rs("endereco_cep")) 
+		    s_log = s_log &	"; endereco_numero=" & formata_texto_log(rs("endereco_numero")) 
+		    s_log = s_log &	"; endereco_email=" & formata_texto_log(rs("endereco_email")) 
+		    s_log = s_log &	"; endereco_email_xml=" & formata_texto_log(rs("endereco_email_xml")) 
+		    s_log = s_log &	"; endereco_nome=" & formata_texto_log(rs("endereco_nome")) 
+		    s_log = s_log &	"; endereco_ddd_res=" & formata_texto_log(rs("endereco_ddd_res")) 
+		    s_log = s_log &	"; endereco_tel_res=" & formata_texto_log(rs("endereco_tel_res")) 
+		    s_log = s_log &	"; endereco_ddd_com=" & formata_texto_log(rs("endereco_ddd_com")) 
+		    s_log = s_log &	"; endereco_tel_com=" & formata_texto_log(rs("endereco_tel_com")) 
+		    s_log = s_log &	"; endereco_ramal_com=" & formata_texto_log(rs("endereco_ramal_com")) 
+		    s_log = s_log &	"; endereco_ddd_cel=" & formata_texto_log(rs("endereco_ddd_cel")) 
+		    s_log = s_log &	"; endereco_tel_cel=" & formata_texto_log(rs("endereco_tel_cel")) 
+		    s_log = s_log &	"; endereco_ddd_com_2=" & formata_texto_log(rs("endereco_ddd_com_2")) 
+		    s_log = s_log &	"; endereco_tel_com_2=" & formata_texto_log(rs("endereco_tel_com_2")) 
+		    s_log = s_log &	"; endereco_ramal_com_2=" & formata_texto_log(rs("endereco_ramal_com_2")) 
+		    s_log = s_log &	"; endereco_tipo_pessoa=" & formata_texto_log(rs("endereco_tipo_pessoa")) 
+		    s_log = s_log &	"; endereco_cnpj_cpf=" & formata_texto_log(rs("endereco_cnpj_cpf")) 
+		    s_log = s_log &	"; endereco_contribuinte_icms_status=" & formata_texto_log(rs("endereco_contribuinte_icms_status")) 
+		    s_log = s_log &	"; endereco_produtor_rural_status=" & formata_texto_log(rs("endereco_produtor_rural_status")) 
+		    s_log = s_log &	"; endereco_ie=" & formata_texto_log(rs("endereco_ie")) 
+		    s_log = s_log &	"; endereco_rg=" & formata_texto_log(rs("endereco_rg")) 
+		    s_log = s_log &	"; endereco_contato=" & formata_texto_log(rs("endereco_contato")) 
+            end if
+
 		
 		if rb_end_entrega = "S" then
 			s_log = s_log & "; Endereço entrega=" & formata_endereco(EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep) & " [EndEtg_cod_justificativa=" & EndEtg_obs & "]"
