@@ -247,6 +247,63 @@ dim x, r, strResp, ha_default, strSql
 	r.close
 	set r=nothing
 end function
+
+'----------------------------------------------------------------------------------------------
+' grupo_origem_pedido_monta_itens_select
+function grupo_origem_pedido_monta_itens_select(byval id_default)
+dim x, r, strResp
+	id_default = Trim("" & id_default)
+
+	set r = cn.Execute("SELECT * FROM t_CODIGO_DESCRICAO WHERE (grupo='PedidoECommerce_Origem_Grupo') AND (st_inativo=0) ORDER BY descricao")
+	strResp = ""
+	do while Not r.eof 
+		x = Trim("" & r("codigo"))
+		if (id_default=x) then
+			strResp = strResp & "<option selected"
+		else
+			strResp = strResp & "<option"
+			end if
+		strResp = strResp & " value='" & x & "'>"
+		strResp = strResp & Trim("" & r("descricao"))
+		strResp = strResp & "</option>" & chr(13)
+		r.MoveNext
+		loop
+	
+    'strResp = "<option value=''>&nbsp;</option>" & strResp
+
+	grupo_origem_pedido_monta_itens_select = strResp
+	r.close
+	set r=nothing
+end function
+
+' __________________________________________________
+' origem_pedido_monta_itens_select
+'
+function origem_pedido_monta_itens_select(byval id_default)
+dim x, r, strResp
+	id_default = Trim("" & id_default)
+
+	set r = cn.Execute("SELECT * FROM t_CODIGO_DESCRICAO WHERE (grupo='PedidoECommerce_Origem') AND (st_inativo=0) ORDER BY descricao")
+	strResp = ""
+	do while Not r.eof 
+		x = Trim("" & r("codigo"))
+		if (id_default=x) then
+			strResp = strResp & "<option selected"
+		else
+			strResp = strResp & "<option"
+			end if
+		strResp = strResp & " value='" & x & "'>"
+		strResp = strResp & Trim("" & r("descricao"))
+		strResp = strResp & "</option>" & chr(13)
+		r.MoveNext
+		loop
+	
+    'strResp = "<option value=''>&nbsp;</option>" & strResp
+
+	origem_pedido_monta_itens_select = strResp
+	r.close
+	set r=nothing
+end function
 %>
 
 
@@ -292,6 +349,12 @@ end function
 		$("input[type=radio]").hUtil('fix_radios');
 		$("#c_dt_faturamento_inicio").hUtilUI('datepicker_filtro_inicial');
 		$("#c_dt_faturamento_termino").hUtilUI('datepicker_filtro_final');
+
+        $("#c_grupo_pedido_origem").change(function () {
+            $("#spnCounterGrupoOrigemPedido").text($("#c_grupo_pedido_origem :selected").length);
+        });
+
+        $("#spnCounterGrupoOrigemPedido").text($("#c_grupo_pedido_origem :selected").length);
 	});
 </script>
 
@@ -415,6 +478,17 @@ function exibe_botao_confirmar() {
 	dCONFIRMA.style.visibility = "";
 	window.status = "";
 }
+</script>
+
+<script type="text/javascript">
+    function limpaCampoSelectGrupoOrigemPedido() {
+        $("#c_grupo_pedido_origem").children().prop('selected', false);
+        $("#spnCounterGrupoOrigemPedido").text($("#c_grupo_pedido_origem :selected").length);
+    }
+    function limpaCampoSelectOrigemPedido() {
+        $("#c_pedido_origem").children().prop('selected', false);
+        $("#spnCounterOrigemPedido").text($("#c_pedido_origem :selected").length);
+    }
 </script>
 
 
@@ -631,6 +705,23 @@ function exibe_botao_confirmar() {
 	</td>
 	</tr>
 
+<!-- ORIGEM DO PEDIDO (GRUPO) -->
+    <tr bgcolor="#FFFFFF">
+		<td class="MDBE" align="left" nowrap><span class="PLTe">ORIGEM DO PEDIDO (GRUPO)</span>
+		<br>
+		<table cellspacing="0" cellpadding="0"><tr bgcolor="#FFFFFF"><td align="left">            
+			<select id="c_grupo_pedido_origem" name="c_grupo_pedido_origem" style="margin:1px 3px 6px 10px;width: 200px" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="5" multiple>
+			<% =grupo_origem_pedido_monta_itens_select(Null) %>
+			</select>
+			</td>
+        <td align="left" valign="top">
+			<a href="javascript:limpaCampoSelectGrupoOrigemPedido()" title="limpa o filtro 'Origem do Pedido (Grupo)'">
+						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterGrupoOrigemPedido"></span>)
+		</td></tr></table>
+        </td></tr>
+
 <!--  AGRUPAMENTO  -->
 	<tr bgcolor="#FFFFFF">
 	<td class="MDBE" align="left" nowrap>
@@ -650,7 +741,7 @@ function exibe_botao_confirmar() {
 		<table width="100%" cellpadding="2" cellspacing="2">
 			<tr>	
 			    <td rowspan="2" class="tdColSaida" align="left" valign="top" style="margin-left:2px; margin-right:2px">	
-			        <fieldset style="height:415px; border: solid 1px #555; padding: auto"><legend><input id="cadastro" type="checkbox" onclick="marcarDesmarcarCadastro()"/><label for="cadastro">Cadastro</label></legend>	   
+			        <fieldset style="height:432px; border: solid 1px #555; padding: auto"><legend><input id="cadastro" type="checkbox" onclick="marcarDesmarcarCadastro()"/><label for="cadastro">Cadastro</label></legend>	   
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_DATA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 				
@@ -677,6 +768,11 @@ function exibe_botao_confirmar() {
 					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_PEDIDO" name="ckb_COL_PEDIDO"
 						        value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_PEDIDO.click();">Pedido</span><br />
 				
+				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_GRUPO_PEDIDO_ORIGEM|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_GRUPO_PEDIDO_ORIGEM" name="ckb_COL_GRUPO_PEDIDO_ORIGEM"
+						        value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_GRUPO_PEDIDO_ORIGEM.click();">Origem do Pedido (Grupo)</span><br />
+
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_CPF_CNPJ_CLIENTE|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_CPF_CNPJ_CLIENTE" name="ckb_COL_CPF_CNPJ_CLIENTE"
