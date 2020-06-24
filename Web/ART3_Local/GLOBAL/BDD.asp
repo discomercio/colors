@@ -6187,25 +6187,6 @@ dim s, tLAux
 end function
 
 
-' ___________________________________
-' isLojaBonshop
-'
-function isLojaBonshop(byval loja)
-dim s, tLAux
-	isLojaBonshop = False
-
-	loja  = Trim("" & loja)
-	
-	s = "SELECT * FROM t_LOJA WHERE (loja = '" & loja & "') AND (unidade_negocio = '" & COD_UNIDADE_NEGOCIO_LOJA__BS & "')"
-	set tLAux = cn.Execute(s)
-	if Not tLAux.Eof then
-		isLojaBonshop = True
-		tLAux.Close
-		set tLAux = nothing
-		end if
-end function
-
-
 ' ------------------------------------------------------------------------
 '   isLojaHabilitadaProdCompostoECommerce
 '
@@ -6216,11 +6197,13 @@ dim blnLojaHabilitada
 	blnLojaHabilitada = False
 	if loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
 		blnLojaHabilitada = True
-	elseif isLojaBonshop(loja) then
+	elseif loja = NUMERO_LOJA_BONSHOP then
 		blnLojaHabilitada = True
 	elseif isLojaVrf(loja) then
 		blnLojaHabilitada = True
 	elseif loja = NUMERO_LOJA_MARCELO_ARTVEN then
+		blnLojaHabilitada = True
+	elseif loja = NUMERO_LOJA_BONSHOP_LAB then
 		blnLojaHabilitada = True
 		end if
 

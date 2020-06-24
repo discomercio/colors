@@ -58,7 +58,7 @@
 		end if
 
 	dim alerta
-	dim s, s_filtro, s_lista_loja_bs, s_lista_loja_aux
+	dim s, s_filtro
 	dim rb_pesquisar_por, c_loja, c_uf_pesq, c_localidade_pesq, c_cep_pesq, c_indicador, c_vendedor, c_cpfcnpj
 	dim c_bairro, c_uf_bairro, c_cidade_bairro
 	
@@ -162,18 +162,8 @@ dim strCidade, strUF, strLoja, strStatus, strVendedor
 dim strDdd, strTelefone, strDddCel, strTelCel, strListaTelefones
 dim v_cidades, s_where_temp, v_bairros, bairros_temp, j, i
 
-	s_lista_loja_bs = ""
-	s_sql = "SELECT loja FROM t_LOJA WHERE (unidade_negocio = '" & COD_UNIDADE_NEGOCIO_LOJA__BS & "') ORDER BY loja"
-	if rs.State <> 0 then rs.Close
-	rs.open s_sql, cn
-	do while Not rs.Eof
-		if s_lista_loja_bs <> "" then s_lista_loja_bs = s_lista_loja_bs & ", "
-		s_lista_loja_bs = s_lista_loja_bs & Trim("" & rs("loja"))
-		rs.MoveNext
-		loop
-
-	j = ""
-	v_bairros = ""
+j = ""
+v_bairros = ""
 '	CRITÉRIOS COMUNS
 	s_where = ""
 	
@@ -215,10 +205,8 @@ dim v_cidades, s_where_temp, v_bairros, bairros_temp, j, i
 						" (cep LIKE '" & s_cep_sql & BD_CURINGA_TODOS & "')" & _
 						" AND"
 			if CStr(loja) = CStr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) then
-				s_lista_loja_aux = loja
-				if s_lista_loja_bs <> "" then s_lista_loja_aux = s_lista_loja_aux & ", " & s_lista_loja_bs
 				s_sql = s_sql & _
-						" (CONVERT(smallint, loja) IN (" & s_lista_loja_aux & "))"
+						" (CONVERT(smallint, loja) IN (" & loja & "," & NUMERO_LOJA_BONSHOP & "))"
 			else
 				s_sql = s_sql & _
 						" (CONVERT(smallint, loja) = " & loja & ")"
@@ -309,13 +297,10 @@ dim v_cidades, s_where_temp, v_bairros, bairros_temp, j, i
 		end if
 		
 '	APENAS INDICADORES DESTA LOJA
-	s_lista_loja_aux = loja
-	if s_lista_loja_bs <> "" then s_lista_loja_aux = s_lista_loja_aux & ", " & s_lista_loja_bs
-
 	if s_where <> "" then s_where = s_where & " AND"
 	if CStr(loja) = CStr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) then
 		s_where = s_where & _
-						" (CONVERT(smallint, loja) IN (" & s_lista_loja_aux & "))"
+						" (CONVERT(smallint, loja) IN (" & loja & "," & NUMERO_LOJA_BONSHOP & "))"
 	else
 		s_where = s_where & _
 						" (CONVERT(smallint, loja) = " & loja & ")"
