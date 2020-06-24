@@ -1893,13 +1893,13 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
             return;
         }
 
-        if ((trim(f.cliente__email.value) == "") || (!email_ok(f.cliente__email.value))) {
+        if ((trim(f.cliente__email.value) != "") && (!email_ok(f.cliente__email.value))) {
             alert('E-mail inválido!!');
             f.cliente__email.focus();
             return;
         }
 
-        if ((trim(f.cliente__email_xml.value) == "") || (!email_ok(f.cliente__email_xml.value))) {
+        if ((trim(f.cliente__email_xml.value) != "") && (!email_ok(f.cliente__email_xml.value))) {
             alert('E-mail xml inválido!!');
             f.cliente__email_xml.focus();
             return;
@@ -1980,6 +1980,15 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 
 
 		<% else %>
+
+        <% if CStr(r_pedido.loja) <> CStr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) then %>
+        // PARA CLIENTE PJ, É OBRIGATÓRIO O PREENCHIMENTO DO E-MAIL
+        if ((trim(f.cliente__email.value) == "") && (trim(f.cliente__email_xml.value) == "")) {
+            alert("É obrigatório informar um endereço de e-mail");
+            f.cliente__email.focus();
+            return;
+        }
+        <% end if %>
 
 		if ((trim(f.cliente__ddd_com.value) == "") || !ddd_ok(f.cliente__ddd_com.value)) {
             alert('DDD inválido!!');
