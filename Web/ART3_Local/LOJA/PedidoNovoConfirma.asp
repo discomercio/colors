@@ -1436,7 +1436,7 @@
 		end if
 	
 	'TRATAMENTO PARA CADASTRAMENTO DE PEDIDOS DO SITE MAGENTO DA BONSHOP
-	if (loja = NUMERO_LOJA_BONSHOP) And (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO) then
+	if isLojaBonshop(loja) And (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO) then
 		if alerta = "" then
 			if s_pedido_ac = "" then
 				alerta=texto_add_br(alerta)
@@ -1531,7 +1531,7 @@
 					end if 'if Not rs.Eof
 				end if 'if s_pedido_ac <> "" then
 			end if 'if alerta = "" then
-		end if 'if (loja = NUMERO_LOJA_BONSHOP) And (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO)
+		end if 'if isLojaBonshop(loja) And (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO)
 
 	'TRATAMENTO PARA CADASTRAMENTO DE PEDIDOS DO SITE MAGENTO DO ARCLUBE
 	dim blnPedidoECommerceCreditoOkAutomatico

@@ -1731,7 +1731,7 @@ function fPEDPreDevolucao(f) {
 <% end if %>
 
 
-<% if (CStr(r_pedido.loja) = CStr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE)) Or (CStr(r_pedido.loja) = CStr(NUMERO_LOJA_BONSHOP)) Or isLojaVrf(r_pedido.loja) then %>
+<% if (CStr(r_pedido.loja) = CStr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE)) Or isLojaBonshop(r_pedido.loja) Or isLojaVrf(r_pedido.loja) then %>
 
 	<%
 	s_width = js_formata_numero(100 / MAX_PEDIDOS_POR_LINHA_ANALISE_ENDERECO)

@@ -277,7 +277,7 @@
 			end if
 		end if
 
-	if (r_pedido.loja = NUMERO_LOJA_BONSHOP) And (r_pedido.plataforma_origem_pedido = COD_PLATAFORMA_ORIGEM_PEDIDO__MAGENTO) then
+	if isLojaBonshop(r_pedido.loja) And (r_pedido.plataforma_origem_pedido = COD_PLATAFORMA_ORIGEM_PEDIDO__MAGENTO) then
 		if s_pedido_ac <> "" then
 			do while Len(s_pedido_ac) < 9
 				if Len(s_pedido_ac) = 8 then
