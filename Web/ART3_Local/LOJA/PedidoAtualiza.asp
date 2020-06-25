@@ -1076,12 +1076,45 @@
 	
 	
 	'Verifica se está havendo edição no cadastro de cliente que possui pedido com status de análise de crédito 'crédito ok' e com entrega pendente
+    function log_endereco_um_vetor(byref v1, nome, valor)
+		redim preserve v1(ubound(v1)+1)
+        set v1(ubound(v1)) = new cl_LOG_VIA_VETOR
+    	v1(ubound(v1)).nome = nome
+    	v1(ubound(v1)).valor = valor
+    end function
+
+    function log_endereco(byref v1, byref v2, nome, c1, c2)
+		log_endereco_um_vetor v1, nome, c1
+		log_endereco_um_vetor v2, nome, c2
+    end function
+
 	dim blnHaPedidoAprovadoComEntregaPendente				
+	dim sLogEmail
+    dim sLogVetor1
+    dim sLogVetor2
 	blnHaPedidoAprovadoComEntregaPendente = False
+    sLogEmail = ""
 	if alerta = "" then
-		if r_pedido.st_entrega  <> "ETG" and r_pedido.st_entrega  <> "CAN" and  s_analise_credito = CStr(COD_AN_CREDITO_OK) then
+		if r_pedido.st_entrega <> "ETG" and r_pedido.st_entrega <> "CAN" and CLng(r_pedido.analise_credito) = CLng(COD_AN_CREDITO_OK) then
 			if r_pedido.endereco_logradouro  <> endereco__endereco or r_pedido.endereco_bairro  <> endereco__bairro or r_pedido.endereco_numero  <> endereco__numero or r_pedido.endereco_complemento  <> endereco__complemento or r_pedido.endereco_cidade  <> endereco__cidade or r_pedido.endereco_uf  <> endereco__uf or r_pedido.endereco_cep  <> endereco__cep then 
 				blnHaPedidoAprovadoComEntregaPendente = true							
+	            redim sLogVetor1(0)
+	            set sLogVetor1(0) = new cl_LOG_VIA_VETOR
+	            redim sLogVetor2(0)
+	            set sLogVetor2(0) = new cl_LOG_VIA_VETOR
+
+                log_endereco sLogVetor1, sLogVetor2, "Endereço", r_pedido.endereco_logradouro, endereco__endereco
+                log_endereco sLogVetor1, sLogVetor2, "Bairro", r_pedido.endereco_bairro, endereco__bairro
+                log_endereco sLogVetor1, sLogVetor2, "Número", r_pedido.endereco_numero, endereco__numero
+                log_endereco sLogVetor1, sLogVetor2, "Complemento", r_pedido.endereco_complemento, endereco__complemento
+                log_endereco sLogVetor1, sLogVetor2, "Cidade", r_pedido.endereco_cidade, endereco__cidade
+                log_endereco sLogVetor1, sLogVetor2, "UF", r_pedido.endereco_uf, endereco__uf
+                log_endereco sLogVetor1, sLogVetor2, "CEP", r_pedido.endereco_cep, endereco__cep
+
+                sLogEmail = sLogEmail & log_via_vetor_monta_alteracao(sLogVetor1, sLogVetor2)
+    			sLogEmail = sLogEmail & ";;Endereço novo: " & endereco__endereco & "," & endereco__numero & " " & endereco__complemento & " - " & endereco__bairro  & " - " & endereco__cidade & "/" & endereco__uf & " " & endereco__cep
+    			sLogEmail = sLogEmail & ";Endereço anterior: " & r_pedido.endereco_logradouro & "," & r_pedido.endereco_numero & " " & r_pedido.endereco_complemento & " - " & r_pedido.endereco_bairro  & " - " & r_pedido.endereco_cidade & "/" & r_pedido.endereco_uf & " " & r_pedido.endereco_cep
+
 			end if
 		end if
 	end if
@@ -2098,7 +2131,7 @@
 				set rEmailDestinatario = get_registro_t_parametro(ID_PARAMETRO_EmailDestinatarioAlertaEdicaoCadastroClienteComPedidoCreditoOkEntregaPendente)
 				if Trim("" & rEmailDestinatario.campo_texto) <> "" then
 					
-					corpo_mensagem = "O usuário '" & usuario & "' editou em " & formata_data_hora_sem_seg(Now) & " na Loja o endereço do cliente:" & _
+					corpo_mensagem = "O usuário '" & usuario & "' editou em " & formata_data_hora_sem_seg(Now) & " no módulo Loja o endereço do cliente:" & _
 									vbCrLf & _
 										cnpj_cpf_formata(r_cliente.cnpj_cpf) & " - " & r_cliente.nome  & _
 										vbCrLf & _
@@ -2106,7 +2139,7 @@
 										vbCrLf & _
 									
 										"Informações detalhadas sobre as alterações:" & vbCrLf & _
-										endereco__endereco & "," & endereco__numero & " " & endereco__complemento & " " & endereco__cidade & "/" & endereco__uf & " " & endereco__cep
+                                        substitui_caracteres(sLogEmail, ";", vbCrLf)
 									
 										EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__SENTINELA_SISTEMA), _
 																		"", _
