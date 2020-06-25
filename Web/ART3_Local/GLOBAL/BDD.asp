@@ -1839,6 +1839,9 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.st_etg_imediata			= rs("st_etg_imediata")
 			.etg_imediata_data			= rs("etg_imediata_data")
 			.etg_imediata_usuario		= Trim("" & rs("etg_imediata_usuario"))
+			.PrevisaoEntregaData = rs("PrevisaoEntregaData")
+			.PrevisaoEntregaUsuarioUltAtualiz = Trim("" & rs("PrevisaoEntregaUsuarioUltAtualiz"))
+			.PrevisaoEntregaDtHrUltAtualiz = rs("PrevisaoEntregaDtHrUltAtualiz")
 			.frete_status				= rs("frete_status")
 			.frete_valor				= rs("frete_valor")
 			.frete_data					= rs("frete_data")
@@ -3693,6 +3696,9 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.st_etg_imediata			= rs("st_etg_imediata")
 			.etg_imediata_data			= rs("etg_imediata_data")
 			.etg_imediata_usuario		= Trim("" & rs("etg_imediata_usuario"))
+			.PrevisaoEntregaData = rs("PrevisaoEntregaData")
+			.PrevisaoEntregaUsuarioUltAtualiz = Trim("" & rs("PrevisaoEntregaUsuarioUltAtualiz"))
+			.PrevisaoEntregaDtHrUltAtualiz = rs("PrevisaoEntregaDtHrUltAtualiz")
 			.StBemUsoConsumo			= rs("StBemUsoConsumo")
 			.InstaladorInstalaStatus	= rs("InstaladorInstalaStatus")
 			.InstaladorInstalaUsuarioUltAtualiz = Trim("" & rs("InstaladorInstalaUsuarioUltAtualiz"))
@@ -6200,6 +6206,25 @@ dim s, tLAux
 	set tLAux = cn.Execute(s)
 	if Not tLAux.Eof then
 		isLojaBonshop = True
+		tLAux.Close
+		set tLAux = nothing
+		end if
+end function
+
+
+' ___________________________________
+' isLojaGarantia
+'
+function isLojaGarantia(byval loja)
+dim s, tLAux
+	isLojaGarantia = False
+
+	loja  = Trim("" & loja)
+	
+	s = "SELECT * FROM t_LOJA WHERE (loja = '" & loja & "') AND (unidade_negocio = '" & COD_UNIDADE_NEGOCIO_LOJA__GARANTIA & "')"
+	set tLAux = cn.Execute(s)
+	if Not tLAux.Eof then
+		isLojaGarantia = True
 		tLAux.Close
 		set tLAux = nothing
 		end if

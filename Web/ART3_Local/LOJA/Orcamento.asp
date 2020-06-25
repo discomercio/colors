@@ -902,6 +902,16 @@ function fORCVirarPedido( f ) {
 		</td>
 	</tr>
 	<tr>
+		<td class="MB" align="left" colspan="5">
+			<p class="Rf">Previsão de Entrega</p>
+			<% s = formata_data_e_talvez_hora_hhmm(r_orcamento.PrevisaoEntregaData)
+				if s <> "" then s = s & " &nbsp; (" & iniciais_em_maiusculas(r_orcamento.PrevisaoEntregaUsuarioUltAtualiz) & " - " & formata_data_e_talvez_hora_hhmm(r_orcamento.PrevisaoEntregaDtHrUltAtualiz) & ")"
+				if s="" then s="&nbsp;"
+			%>
+			<p class="C"><%=s%></p>
+		</td>
+	</tr>
+	<tr>
 		<td class="MD" align="left" nowrap><p class="Rf">Nº Nota Fiscal</p>
 			<input name="c_obs2" id="c_obs2" class="PLLe" style="width:85px;margin-left:2pt;" 
 				readonly tabindex=-1 value='<%=r_orcamento.obs_2%>'>
@@ -917,7 +927,7 @@ function fORCVirarPedido( f ) {
 			
 			if s <> "" then
 				s_aux=formata_data_e_talvez_hora_hhmm(r_orcamento.etg_imediata_data)
-				if s_aux <> "" then s = s & " &nbsp; (" & r_orcamento.etg_imediata_usuario & " em " & s_aux & ")"
+				if s_aux <> "" then s = s & " &nbsp; (" & iniciais_em_maiusculas(r_orcamento.etg_imediata_usuario) & " - " & s_aux & ")"
 				end if
 			if s="" then s="&nbsp;"
 		%>

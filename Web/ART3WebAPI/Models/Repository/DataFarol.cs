@@ -6,6 +6,7 @@ using ART3WebAPI.Models.Entities;
 using ART3WebAPI.Models.Domains;
 using System;
 using System.Linq;
+using ART3WebAPI.Controllers;
 
 namespace ART3WebAPI.Models.Repository
 {
@@ -467,7 +468,7 @@ namespace ART3WebAPI.Models.Repository
             return listaFarol.ToArray();
         }
 
-        public Farol[] GetV3(string dt_inicio, string dt_termino, string fabricante, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string loja)
+        public Farol[] GetV3(string opcao_periodo, string dt_inicio, string dt_termino, string fabricante, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string loja)
         {
             List<Farol> listaFarol = new List<Farol>();
             List<Farol> listaFarolUnificados = new List<Farol>();
@@ -519,8 +520,9 @@ namespace ART3WebAPI.Models.Repository
                 "SELECT DISTINCT fabricante " +
                     ", produto " +
                 "FROM t_ESTOQUE_MOVIMENTO " +
-                "WHERE (qtde > 0) " +
-                "   AND (estoque = 'SHR')");
+                "WHERE (anulado_status = 0)" +
+                    " AND (qtde > 0) " +
+                    " AND (estoque = 'SHR')");
             if (!string.IsNullOrEmpty(fabricante))
             {
                 s_sql_lista_base = string.Concat(s_sql_lista_base, "AND (" + s_where_temp + ")");
@@ -608,9 +610,16 @@ namespace ART3WebAPI.Models.Repository
 
             }
 
-            s_sql_qtde_vendida = string.Concat(s_sql_qtde_vendida, string.Concat(" AND (t_PEDIDO.data >= ", dtInicioFormatado) + ")");
-
-            s_sql_qtde_vendida = string.Concat(s_sql_qtde_vendida, string.Concat(" AND (t_PEDIDO.data < ", dtTerminoFormatado) + ")");
+            if (opcao_periodo.Equals(FarolV3Controller.COD_CONSULTA_POR_PERIODO_CADASTRO))
+            {
+                s_sql_qtde_vendida = string.Concat(s_sql_qtde_vendida, string.Concat(" AND (t_PEDIDO.data >= ", dtInicioFormatado) + ")");
+                s_sql_qtde_vendida = string.Concat(s_sql_qtde_vendida, string.Concat(" AND (t_PEDIDO.data < ", dtTerminoFormatado) + ")");
+            }
+            else if (opcao_periodo.Equals(FarolV3Controller.COD_CONSULTA_POR_PERIODO_ENTREGA))
+            {
+                s_sql_qtde_vendida = string.Concat(s_sql_qtde_vendida, string.Concat(" AND (t_PEDIDO.entregue_data >= ", dtInicioFormatado) + ")");
+                s_sql_qtde_vendida = string.Concat(s_sql_qtde_vendida, string.Concat(" AND (t_PEDIDO.entregue_data < ", dtTerminoFormatado) + ")");
+            }
             #endregion
 
             #region [ Produtos Devolvidos no Período ]
@@ -664,7 +673,6 @@ namespace ART3WebAPI.Models.Repository
             }
 
             s_sql_qtde_devolvida = string.Concat(s_sql_qtde_devolvida, string.Concat(" AND (t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data >= ", dtInicioFormatado) + ")");
-
             s_sql_qtde_devolvida = string.Concat(s_sql_qtde_devolvida, string.Concat(" AND (t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data < ", dtTerminoFormatado) + ")");
             #endregion
 
@@ -757,9 +765,16 @@ namespace ART3WebAPI.Models.Repository
                     }
                 }
 
-                s_sql_qtde_vendida_mes = string.Concat(s_sql_qtde_vendida_mes, string.Concat(" AND (t_PEDIDO.data >= ", dt1Formatado) + ")");
-
-                s_sql_qtde_vendida_mes = string.Concat(s_sql_qtde_vendida_mes, string.Concat(" AND (t_PEDIDO.data < ", dt2Formatado) + ")) AS mes" + i + ", ");
+                if (opcao_periodo.Equals(FarolV3Controller.COD_CONSULTA_POR_PERIODO_CADASTRO))
+                {
+                    s_sql_qtde_vendida_mes = string.Concat(s_sql_qtde_vendida_mes, string.Concat(" AND (t_PEDIDO.data >= ", dt1Formatado) + ")");
+                    s_sql_qtde_vendida_mes = string.Concat(s_sql_qtde_vendida_mes, string.Concat(" AND (t_PEDIDO.data < ", dt2Formatado) + ")) AS mes" + i + ", ");
+                }
+                else if (opcao_periodo.Equals(FarolV3Controller.COD_CONSULTA_POR_PERIODO_ENTREGA))
+                {
+                    s_sql_qtde_vendida_mes = string.Concat(s_sql_qtde_vendida_mes, string.Concat(" AND (t_PEDIDO.entregue_data >= ", dt1Formatado) + ")");
+                    s_sql_qtde_vendida_mes = string.Concat(s_sql_qtde_vendida_mes, string.Concat(" AND (t_PEDIDO.entregue_data < ", dt2Formatado) + ")) AS mes" + i + ", ");
+                }
 
                 s_sql_qtde_vendida_mes = string.Concat(s_sql_qtde_vendida_mes, "(SELECT SUM(qtde) FROM t_PEDIDO_ITEM_DEVOLVIDO INNER JOIN t_PEDIDO ON (t_PEDIDO_ITEM_DEVOLVIDO.pedido=t_PEDIDO.pedido) WHERE (t_PEDIDO_ITEM_DEVOLVIDO.fabricante = t_PROD_LISTA_BASE.fabricante) " +
                     "AND (t_PEDIDO_ITEM_DEVOLVIDO.produto = t_PROD_LISTA_BASE.produto) ");
@@ -805,7 +820,6 @@ namespace ART3WebAPI.Models.Repository
                 }
 
                 s_sql_qtde_vendida_mes = string.Concat(s_sql_qtde_vendida_mes, string.Concat(" AND (t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data >= ", dt1Formatado) + ")");
-
                 s_sql_qtde_vendida_mes = string.Concat(s_sql_qtde_vendida_mes, string.Concat(" AND (t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data < ", dt2Formatado) + ")");
                 s_sql_qtde_vendida_mes = string.Concat(s_sql_qtde_vendida_mes, ") AS dev_mes" + i);
 
@@ -819,12 +833,11 @@ namespace ART3WebAPI.Models.Repository
 
             for (int i = 0; i <= totalMeses; i++)
             {
-                string mesDtInicial = (dt1.AddMonths(i)).ToString("yyyy-MM-dd");
-                string mesDtFinal = (dt1.AddMonths(i + 1)).ToString("yyyy-MM-dd");
+//                string mesDtInicial = (dt1.AddMonths(i)).ToString("yyyy-MM-dd");
+//                string mesDtFinal = (dt1.AddMonths(i + 1)).ToString("yyyy-MM-dd");
 
                 sqlString = string.Concat(sqlString, ", Coalesce(mes" + i + ", 0) AS mes" + i);
                 sqlString = string.Concat(sqlString, ", Coalesce(dev_mes" + i + ", 0) AS dev_mes" + i);
-
             }
 
             sqlString = string.Concat(sqlString, " FROM (SELECT t_PROD_LISTA_BASE.fabricante, t_PROD_LISTA_BASE.produto, t_PRODUTO.descricao, t_PRODUTO.descricao_html, t_PRODUTO.preco_fabricante AS custo, Coalesce(t_PRODUTO.grupo, '') AS grupo, Coalesce(t_PRODUTO.subgrupo, '') AS subgrupo, Coalesce(t_PRODUTO.potencia_BTU, '') AS potencia_BTU, Coalesce(t_PRODUTO.ciclo, '') AS ciclo, Coalesce(t_PRODUTO.posicao_mercado, '') AS posicao_mercado, Coalesce(t_PRODUTO.descontinuado, '') AS descontinuado," +

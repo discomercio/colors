@@ -366,6 +366,9 @@ end function
 		$("#c_dt_entrega_inicio").hUtilUI('datepicker_filtro_inicial');
 		$("#c_dt_entrega_termino").hUtilUI('datepicker_filtro_final');
 
+        $("#c_dt_previsao_entrega_inicio").hUtilUI('datepicker_filtro_inicial');
+        $("#c_dt_previsao_entrega_termino").hUtilUI('datepicker_filtro_final');
+
 		//Every resize of window
 		$(window).resize(function() {
 		    sizeDivAjaxRunning();
@@ -534,7 +537,11 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 			}
 		if (!consiste_periodo(f.c_dt_entrega_inicio, f.c_dt_entrega_termino)) return;
 		}
-		
+
+    if (f.ckb_entrega_imediata_nao.checked) {
+        if (!consiste_periodo(f.c_dt_previsao_entrega_inicio, f.c_dt_previsao_entrega_termino)) return;
+    }
+
 	if (f.ckb_produto.checked) {
 		if (trim(f.c_produto.value)!="") {
 			if (!isEAN(f.c_produto.value)) {
@@ -873,6 +880,10 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 		<input type="checkbox" tabindex="-1" id="ckb_entrega_imediata_nao" name="ckb_entrega_imediata_nao"
 			value="<%=COD_ETG_IMEDIATA_NAO%>"><span class="C" style="cursor:default" 
 			onclick="fFILTRO.ckb_entrega_imediata_nao.click();">Não</span>
+			<span style="width:50px;">&nbsp;</span>
+			<span class="C" style="cursor:default;" onclick="fFILTRO.ckb_entrega_imediata_nao.click();">Previsão de Entrega entre</span>
+			<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_previsao_entrega_inicio" id="c_dt_previsao_entrega_inicio" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_previsao_entrega_termino.focus(); else fFILTRO.ckb_entrega_imediata_nao.checked=true; filtra_data();" onclick="fFILTRO.ckb_entrega_imediata_nao.checked = true;" onchange="fFILTRO.ckb_entrega_imediata_nao.checked=true;"
+			/>&nbsp;<span class="C">e</span>&nbsp;<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_previsao_entrega_termino" id="c_dt_previsao_entrega_termino" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_entrega_imediata_nao.checked=true; filtra_data();" onclick="fFILTRO.ckb_entrega_imediata_nao.checked = true;" onchange="fFILTRO.ckb_entrega_imediata_nao.checked=true;" />
 		</td></tr>
 	</table>
 </td></tr>

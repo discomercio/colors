@@ -1049,7 +1049,15 @@
 	</head>
 
 
+<% if False then 'APENAS P/ HABILITAR O INTELLISENSE DURANTE O DESENVOLVIMENTO!! %>
+<script src="../Global/jquery.js" language="JavaScript" type="text/javascript"></script>
+<% end if %>
+
 <script src="<%=URL_FILE__JQUERY%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI_I18N%>" Language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__GLOBAL_JS%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__AJAX_JS%>" language="JavaScript" type="text/javascript"></script>
 
@@ -1068,6 +1076,21 @@
 		$(".tdProdObs").hide(); <% qtdeHiddenColumnTabProd = qtdeHiddenColumnTabProd+1 %>
 		$(".tdGarInd").hide();
 		$(".rbGarIndNao").attr('checked', 'checked');
+		$("#c_data_previsao_entrega").hUtilUI('datepicker_padrao');
+
+        $("input[name = 'rb_etg_imediata']").change(function () {
+            if ($("input[name='rb_etg_imediata']:checked").val() == '<%=COD_ETG_IMEDIATA_NAO%>') {
+                $("#c_data_previsao_entrega").prop("readonly", false);
+                $("#c_data_previsao_entrega").prop("disabled", false);
+                $("#c_data_previsao_entrega").datepicker("enable");
+            }
+            else {
+                $("#c_data_previsao_entrega").val("");
+                $("#c_data_previsao_entrega").prop("readonly", true);
+                $("#c_data_previsao_entrega").prop("disabled", true);
+                $("#c_data_previsao_entrega").datepicker("disable");
+            }
+        });
 	});
 
 	//Every resize of window
@@ -1991,6 +2014,26 @@ var blnConfirmaDifRAeValores=false;
 		return;
 		}
 
+    if (f.rb_etg_imediata[0].checked) {
+        if (trim(f.c_data_previsao_entrega.value) == "") {
+            alert("Informe a data de previsão de entrega!");
+            f.c_data_previsao_entrega.focus();
+            return;
+        }
+
+        if (!isDate(f.c_data_previsao_entrega)) {
+            alert("Data de previsão de entrega é inválida!");
+            f.c_data_previsao_entrega.focus();
+            return;
+        }
+
+        if (retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(f.c_data_previsao_entrega.value)) <= retorna_so_digitos(formata_ddmmyyyy_yyyymmdd('<%=formata_data(Date)%>'))) {
+            alert("Data de previsão de entrega deve ser uma data futura!");
+            f.c_data_previsao_entrega.focus();
+            return;
+        }
+    }
+
 	blnFlag=false;
 	for (i=0; i < f.rb_bem_uso_consumo.length; i++) {
 		if (f.rb_bem_uso_consumo[i].checked) blnFlag=true;
@@ -2068,6 +2111,7 @@ var blnConfirmaDifRAeValores=false;
 -->
 
 <link href="<%=URL_FILE__E_CSS%>" rel="stylesheet" type="text/css">
+<link href="<%=URL_FILE__JQUERY_UI_CSS%>" rel="stylesheet" type="text/css">
 <link href="<%=URL_FILE__EPRINTER_CSS%>" rel="stylesheet" type="text/css" media="print">
 
 <style type="text/css">
@@ -2448,6 +2492,12 @@ var blnConfirmaDifRAeValores=false;
 				value="<%=COD_GARANTIA_INDICADOR_STATUS__SIM%>"><span class="C" style="cursor:default" onclick="fORC.rb_garantia_indicador[1].click();">Sim</span>
 		</td>
 	</tr>
+    <tr>
+		<td class="MC" align="left" colspan="5">
+			<p class="Rf">Previsão de Entrega</p>
+			<input type="text" class="PLLc" name="c_data_previsao_entrega" id="c_data_previsao_entrega" maxlength="10" style="width:90px;" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="filtra_data();" />
+		</td>
+    </tr>
 </table>
 	
 <!--  NOVA VERSÃO DA FORMA DE PAGAMENTO  -->

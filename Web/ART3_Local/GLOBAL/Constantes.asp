@@ -61,6 +61,7 @@
 	Const COD_UNIDADE_NEGOCIO_LOJA__BS = "BS"
 	Const COD_UNIDADE_NEGOCIO_LOJA__AC = "AC"
 	Const COD_UNIDADE_NEGOCIO_LOJA__VRF = "VRF"
+	Const COD_UNIDADE_NEGOCIO_LOJA__GARANTIA = "GAR"
 
 '	SIGLAS DE UF
 	Const SIGLA_UF__SP = "SP"
@@ -2067,6 +2068,9 @@
 		dim EndEtg_produtor_rural_status
 		dim EndEtg_ie
 		dim EndEtg_rg
+		dim PrevisaoEntregaData
+		dim PrevisaoEntregaUsuarioUltAtualiz
+		dim PrevisaoEntregaDtHrUltAtualiz
 		end class
 
 	class cl_ITEM_PEDIDO
@@ -2558,6 +2562,9 @@
 		dim EndEtg_produtor_rural_status
 		dim EndEtg_ie
 		dim EndEtg_rg
+		dim PrevisaoEntregaData
+		dim PrevisaoEntregaUsuarioUltAtualiz
+		dim PrevisaoEntregaDtHrUltAtualiz
 		end class
 
 	class cl_ITEM_ORCAMENTO

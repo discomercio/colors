@@ -60,7 +60,7 @@
 	dim alerta
 	dim i
 	dim s, s_aux, s_filtro, flag_ok, cadastrado
-	dim ckb_st_entrega_esperar, ckb_st_entrega_split, ckb_st_entrega_exceto_cancelados
+	dim ckb_st_entrega_esperar, ckb_st_entrega_split, ckb_st_entrega_exceto_cancelados, ckb_st_entrega_exceto_entregues
 	dim ckb_st_entrega_separar_sem_marc, ckb_st_entrega_separar_com_marc
 	dim ckb_st_entrega_a_entregar_sem_marc, ckb_st_entrega_a_entregar_com_marc, ckb_pedido_nao_recebido_pelo_cliente, ckb_pedido_recebido_pelo_cliente
 	dim ckb_st_entrega_entregue, c_dt_entregue_inicio, c_dt_entregue_termino
@@ -75,7 +75,7 @@
 	dim ckb_visanet
 	dim ckb_analise_credito_st_inicial, ckb_analise_credito_pendente_vendas, ckb_analise_credito_pendente_endereco, ckb_analise_credito_pendente, ckb_analise_credito_pendente_cartao
 	dim ckb_analise_credito_ok, ckb_analise_credito_ok_aguardando_deposito, ckb_analise_credito_ok_deposito_aguardando_desbloqueio
-	dim ckb_entrega_imediata_sim, ckb_entrega_imediata_nao
+	dim ckb_entrega_imediata_sim, ckb_entrega_imediata_nao, c_dt_previsao_entrega_inicio, c_dt_previsao_entrega_termino
 	dim op_forma_pagto, c_forma_pagto_qtde_parc
 	dim c_vendedor, c_indicador
 	dim ckb_obs2_preenchido, ckb_obs2_nao_preenchido, ckb_indicador_preenchido, ckb_indicador_nao_preenchido, ckb_nao_exibir_rastreio
@@ -84,11 +84,12 @@
     dim c_pedido_origem, c_grupo_pedido_origem,c_empresa
 	dim c_FormFieldValues
     dim blnMostraMotivoCancelado, c_cancelados_ordena
-	dim ckb_exibir_vendedor, ckb_exibir_parceiro, ckb_exibir_uf
+	dim ckb_exibir_vendedor, ckb_exibir_parceiro, ckb_exibir_uf, ckb_exibir_data_previsao_entrega
 
 	alerta = ""
 
 	ckb_st_entrega_exceto_cancelados = Trim(Request.Form("ckb_st_entrega_exceto_cancelados"))
+	ckb_st_entrega_exceto_entregues = Trim(Request.Form("ckb_st_entrega_exceto_entregues"))
 	ckb_st_entrega_esperar = Trim(Request.Form("ckb_st_entrega_esperar"))
 	ckb_st_entrega_split = Trim(Request.Form("ckb_st_entrega_split"))
 	ckb_st_entrega_separar_sem_marc = Trim(Request.Form("ckb_st_entrega_separar_sem_marc"))
@@ -133,6 +134,8 @@
 	ckb_analise_credito_ok_deposito_aguardando_desbloqueio = Trim(Request.Form("ckb_analise_credito_ok_deposito_aguardando_desbloqueio"))
 	ckb_entrega_imediata_sim = Trim(Request.Form("ckb_entrega_imediata_sim"))
 	ckb_entrega_imediata_nao = Trim(Request.Form("ckb_entrega_imediata_nao"))
+	c_dt_previsao_entrega_inicio = Trim(Request.Form("c_dt_previsao_entrega_inicio"))
+	c_dt_previsao_entrega_termino = Trim(Request.Form("c_dt_previsao_entrega_termino"))
 	op_forma_pagto = Trim(Request.Form("op_forma_pagto"))
 	c_forma_pagto_qtde_parc = retorna_so_digitos(Trim(Request.Form("c_forma_pagto_qtde_parc")))
 	c_vendedor = Trim(Request.Form("c_vendedor"))
@@ -152,12 +155,14 @@
 	ckb_exibir_vendedor = Trim(Request.Form("ckb_exibir_vendedor"))
 	ckb_exibir_parceiro = Trim(Request.Form("ckb_exibir_parceiro"))
 	ckb_exibir_uf = Trim(Request.Form("ckb_exibir_uf"))
+	ckb_exibir_data_previsao_entrega = Trim(Request.Form("ckb_exibir_data_previsao_entrega"))
 
 	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|FormFields", c_FormFieldValues)
 	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_nao_exibir_rastreio", ckb_nao_exibir_rastreio)
 	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_vendedor", ckb_exibir_vendedor)
 	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_parceiro", ckb_exibir_parceiro)
 	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_uf", ckb_exibir_uf)
+	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_data_previsao_entrega", ckb_exibir_data_previsao_entrega)
 
 	if alerta = "" then
 		if c_fabricante <> "" then
@@ -508,6 +513,12 @@ dim s, s_aux, s_resp
 		s = s & s_aux
 		end if    
 
+	if ckb_st_entrega_exceto_entregues <> "" then
+		s_aux = "exceto entregues"
+		if s <> "" then s = s & ", "
+		s = s & s_aux
+		end if
+
 	if s <> "" then
 		s_resp = s_resp & "Status de Entrega: " & s
 		s_resp = s_resp & "<br>"
@@ -623,6 +634,15 @@ dim s, s_aux, s_resp
 	if s_aux<>"" then
 		if s <> "" then s = s & ", "
 		s = s & s_aux
+		s = s & " (previsão de entrega: "
+		s_aux = c_dt_previsao_entrega_inicio
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux
+		s = s & " a "
+		s_aux = c_dt_previsao_entrega_termino
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux
+		s = s & ")"
 		end if
 
 	if s <> "" then
@@ -800,7 +820,7 @@ end function
 sub consulta_executa
 dim r
 dim blnPorFornecedor
-dim s, s_aux, s_cor, s_bkg_color, s_nbsp, s_align, s_nowrap, s_sql, cab_table, cab, n_reg, n_reg_total, n_colspan, n_colspan_final, s_colspan_final, s_loja
+dim s, s_aux, s_periodo_aux, s_cor, s_bkg_color, s_nbsp, s_align, s_nowrap, s_sql, cab_table, cab, n_reg, n_reg_total, n_colspan, n_colspan_final, s_colspan_final, s_loja
 dim s_where, s_from, cont
 dim vl_total_faturamento, vl_sub_total_faturamento, vl_total_pago, vl_sub_total_pago
 dim vl_total_faturamento_NF, vl_sub_total_faturamento_NF
@@ -824,6 +844,7 @@ dim rPSSW
 
 	s_colspan_final = ""
 	n_colspan_final = 1
+	if ckb_exibir_data_previsao_entrega <> "" then n_colspan_final = n_colspan_final + 1
 	if Not blnMostraMotivoCancelado then
 		if ckb_exibir_vendedor <> "" then n_colspan_final = n_colspan_final + 1
 		if ckb_exibir_parceiro <> "" then n_colspan_final = n_colspan_final + 1
@@ -921,6 +942,12 @@ dim rPSSW
 	if ckb_st_entrega_exceto_cancelados <> "" then
 		if s_where <> "" then s_where = s_where & " AND"
 		s_where = s_where & " (t_PEDIDO.st_entrega <> '" & ST_ENTREGA_CANCELADO & "')"
+		end if
+
+'	EXCETO ENTREGUES
+	if ckb_st_entrega_exceto_entregues <> "" then
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (t_PEDIDO.st_entrega <> '" & ST_ENTREGA_ENTREGUE & "')"
 		end if
 
 '	CRITÉRIO: PEDIDOS RECEBIDOS PELO CLIENTE
@@ -1027,16 +1054,23 @@ dim rPSSW
 
 '	CRITÉRIO: ENTREGA IMEDIATA
 	s = ""
-	s_aux = ckb_entrega_imediata_sim
-	if s_aux <> "" then
+	if ckb_entrega_imediata_sim <> "" then
 		if s <> "" then s = s & " OR"
-		s = s & " (t_PEDIDO.st_etg_imediata = " & s_aux & ")"
+		s = s & " (t_PEDIDO.st_etg_imediata = " & COD_ETG_IMEDIATA_SIM & ")"
 		end if
 	
-	s_aux = ckb_entrega_imediata_nao
-	if s_aux <> "" then
+	if ckb_entrega_imediata_nao <> "" then
+		s_periodo_aux = ""
+		if c_dt_previsao_entrega_inicio <> "" then
+			s_periodo_aux = " (t_PEDIDO.PrevisaoEntregaData >= " & bd_formata_data(StrToDate(c_dt_previsao_entrega_inicio)) & ")"
+			end if
+		if c_dt_previsao_entrega_termino <> "" then
+			if s_periodo_aux <> "" then s_periodo_aux = s_periodo_aux & " AND"
+			s_periodo_aux = s_periodo_aux & " (t_PEDIDO.PrevisaoEntregaData < " & bd_formata_data(StrToDate(c_dt_previsao_entrega_termino)+1) & ")"
+			end if
+		if s_periodo_aux <> "" then s_periodo_aux = " AND" & s_periodo_aux
 		if s <> "" then s = s & " OR"
-		s = s & " (t_PEDIDO.st_etg_imediata = " & s_aux & ")"
+		s = s & " ((t_PEDIDO.st_etg_imediata = " & COD_ETG_IMEDIATA_NAO & ")" & s_periodo_aux & ")"
 		end if
 
 	if s <> "" then 
@@ -1410,7 +1444,7 @@ dim rPSSW
 '		 SE "check_expression" FOR NULL, RETORNA "replacement_value"
 	s_sql = "SELECT DISTINCT t_PEDIDO.loja, t_PEDIDO.numero_loja," & _
 			" t_PEDIDO.data, t_PEDIDO.pedido, t_PEDIDO.pedido_bs_x_ac, t_PEDIDO.obs_2, t_PEDIDO.obs_3," & _
-			" t_PEDIDO.st_entrega, t_PEDIDO.transportadora_id, t_CLIENTE.nome, t_CLIENTE.nome_iniciais_em_maiusculas," & _
+			" t_PEDIDO.st_entrega, t_PEDIDO.PrevisaoEntregaData, t_PEDIDO.transportadora_id, t_CLIENTE.nome, t_CLIENTE.nome_iniciais_em_maiusculas," & _
 			" t_PEDIDO.endereco_uf AS uf_cliente," & _
 			" t_NFe_EMITENTE.cnpj AS cnpj_emitente," & _
 			" t_PEDIDO__BASE.st_pagto," & _
@@ -1522,6 +1556,16 @@ dim rPSSW
 	else
 		cab = cab & _
 			  "		<TD class='MTBD' style='width:" & Cstr(w_st_entrega) & "px' valign='bottom' NOWRAP><P class='R' style='font-weight:bold;'>Status de Entrega</P></TD>" & chr(13)
+		end if
+
+    if ckb_exibir_data_previsao_entrega <> "" then
+		if blnSaidaExcel then
+			cab = cab & _
+					"		<TD class='MTBD' style='width:" & Cstr(w_data) & "px' align='center' valign='bottom'><P class='R' style='font-weight:bold;'>Previsão de<br style='mso-data-placement:same-cell;' />Entrega</P></TD>" & chr(13)
+		else
+			cab = cab & _
+				"		<td class='MTBD' style='width:" & Cstr(w_data) & "px' align='center' valign='bottom' NOWRAP><p class='R' style='font-weight:bold;'>Previsão de Entrega</p></td>" & chr(13)
+			end if
 		end if
 
     if blnMostraMotivoCancelado then
@@ -1694,6 +1738,8 @@ dim rPSSW
 						end if
 					end if
 				
+				if ckb_exibir_data_previsao_entrega <> "" then n_colspan = n_colspan + 1
+
 				if Not blnMostraMotivoCancelado then
 					if ckb_exibir_vendedor <> "" then n_colspan = n_colspan + 1
 					if ckb_exibir_parceiro <> "" then n_colspan = n_colspan + 1
@@ -1755,7 +1801,7 @@ dim rPSSW
         end if
 	
 	'> DATA DO PEDIDO
-	    x = x & "		<TD align='center' valign='top' class='MDB'><P class='Cn''>" & Trim("" & r("data")) & "</P></TD>" & chr(13)
+	    x = x & "		<TD align='center' valign='top' class='MDB'><P class='Cn''>" & formata_data(r("data")) & "</P></TD>" & chr(13)
 		
 	'> NF
 		if (ckb_nao_exibir_rastreio <> "") Or blnSaidaExcel then
@@ -1835,6 +1881,12 @@ dim rPSSW
 		if (s = "") And (Not blnSaidaExcel) then s = "&nbsp;"
 		x = x & "		<TD valign='top' style='width:" & Cstr(w_st_entrega) & "px' class='MDB'><P class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</P></TD>" & chr(13)
 	
+	'> DATA PREVISÃO DE ENTREGA (OPCIONAL)
+		if ckb_exibir_data_previsao_entrega <> "" then
+			s = formata_data(r("PrevisaoEntregaData"))
+			x = x & "		<TD align='center' valign='top' style='width:" & Cstr(w_data) & "px' class='MDB'><P class='Cn'>" & s & "</P></TD>" & chr(13)
+			end if
+
     '> VENDEDOR
         if blnMostraMotivoCancelado then
             s = Trim("" & r("vendedor"))
@@ -1978,6 +2030,7 @@ dim rPSSW
 				s_cor = ""
 				if vl_total_a_pagar < 0 then s_cor = "color:red;"
 				if blnPorFornecedor then n_colspan = 11 else n_colspan = 9
+				if ckb_exibir_data_previsao_entrega <> "" then n_colspan = n_colspan + 1
 				if Not blnMostraMotivoCancelado then
 					if ckb_exibir_vendedor <> "" then n_colspan = n_colspan + 1
 					if ckb_exibir_parceiro <> "" then n_colspan = n_colspan + 1
@@ -2071,6 +2124,8 @@ dim rPSSW
 				end if
 			end if
 		
+		if ckb_exibir_data_previsao_entrega <> "" then n_colspan = n_colspan + 1
+
 		if Not blnMostraMotivoCancelado then
 			if ckb_exibir_vendedor <> "" then n_colspan = n_colspan + 1
 			if ckb_exibir_parceiro <> "" then n_colspan = n_colspan + 1
@@ -2394,6 +2449,13 @@ function fRELConcluir( id_pedido ){
 		s = s & s_aux
 		end if
 
+	if ckb_st_entrega_exceto_entregues <> "" then
+		s_aux = "exceto entregues"
+		if s <> "" then s = s & ",&nbsp; "
+		s_aux = replace(s_aux, " ", "&nbsp;")
+		s = s & s_aux
+		end if
+
 	if s <> "" then
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
@@ -2521,6 +2583,15 @@ function fRELConcluir( id_pedido ){
 	if s_aux<>"" then
 		if s <> "" then s = s & ",&nbsp;&nbsp;"
 		s = s & s_aux
+		s = s & " (previsão de entrega: "
+		s_aux = c_dt_previsao_entrega_inicio
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux
+		s = s & " a "
+		s_aux = c_dt_previsao_entrega_termino
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux
+		s = s & ")"
 		end if
 
 	if s <> "" then

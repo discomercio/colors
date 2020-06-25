@@ -73,7 +73,7 @@
 			next
 		end if
 
-	dim s_aux, s2, s3, r_loja, r_cliente, s_cor, s_falta, v_pedido, s_script
+	dim s_aux, s2, s3, r_loja, r_cliente, s_cor, s_falta, v_pedido, s_script, notPrint
 	dim v_disp
 	dim vl_TotalFamiliaPrecoVenda, vl_TotalFamiliaPrecoNF, vl_TotalFamiliaPago, vl_TotalFamiliaDevolucaoPrecoVenda, vl_TotalFamiliaDevolucaoPrecoNF
 	dim vl_saldo_a_pagar, s_vl_saldo_a_pagar, st_pagto
@@ -1007,7 +1007,7 @@ s_script = s_script & _
 	<tr>
 		<td class="MB" colspan="6"><p class="Rf">Observações </p>
 			<textarea name="c_obs1" id="c_obs1" class="PLLe notPrint" rows="<%=Cstr(MAX_LINHAS_OBS1)%>" 
-				style="width:642px;margin-left:2pt;" 
+				style="width:99%;margin-left:2pt;" 
 				readonly tabindex=-1><%=r_pedido.obs_1%></textarea>
 			<span class="PLLe notVisible"><%
 				s = substitui_caracteres(r_pedido.obs_1,chr(13),"<br>")
@@ -1015,6 +1015,33 @@ s_script = s_script & _
 				Response.Write s %></span>
 		</td>
 	</tr>
+<%  notPrint = ""
+    if Trim(r_pedido.NFe_texto_constar) = "" then notPrint="class='notPrint'" %>
+    <tr <%=notPrint%>>
+		<td class="MB" colspan="6" align="left"><p class="Rf">Constar na NF</p>
+			<textarea name="c_nf_texto" id="c_nf_texto" class="PLLe notPrint" rows="<%=Cstr(MAX_LINHAS_NF_TEXTO_CONSTAR)%>" 
+				style="width:99%;margin-left:2pt;"
+				readonly tabindex=-1><%=r_pedido.NFe_texto_constar%></textarea>
+            <span class="PLLe notVisible"><%
+				s = substitui_caracteres(r_pedido.NFe_texto_constar,chr(13),"<br>")
+				if s = "" then s = "&nbsp;"
+				Response.Write s %></span>
+		</td>
+	</tr>
+    <tr>
+        <td class="MB MD" align="left" colspan="2" nowrap><p class="Rf">xPed</p>
+			<input name="c_num_pedido_compra" id="c_num_pedido_compra" class="PLLe" maxlength="15" style="width:100px;margin-left:2pt;" onkeypress="filtra_nome_identificador();" onblur="this.value=trim(this.value);"
+				value='<%=r_pedido.NFe_xPed%>' readonly tabindex=-1>
+		</td>
+		<td class="MB" align="left" colspan="4">
+			<p class="Rf">Previsão de Entrega</p>
+			<% s = formata_data_e_talvez_hora_hhmm(r_pedido.PrevisaoEntregaData)
+				if s <> "" then s = s & " &nbsp; (" & iniciais_em_maiusculas(r_pedido.PrevisaoEntregaUsuarioUltAtualiz) & " - " & formata_data_e_talvez_hora_hhmm(r_pedido.PrevisaoEntregaDtHrUltAtualiz) & ")"
+				if s="" then s="&nbsp;"
+			%>
+			<p class="C"><%=s%></p>
+		</td>
+    </tr>
 	<tr>
 		<td class="MD" NOWRAP><p class="Rf">Nº Nota Fiscal</p>
 			<input name="c_obs2" id="c_obs2" class="PLLe" style="width:67px;margin-left:2pt;" 

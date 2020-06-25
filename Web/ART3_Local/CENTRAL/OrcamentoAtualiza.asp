@@ -58,10 +58,11 @@
 	blnFormaPagtoBloqueado = CBool(FormaPagtoBloqueado)
 	
 	dim s_qtde_parcelas, s_forma_pagto, s_obs1, s_obs2
-	dim s_etg_imediata, s_etg_imediata_a, s_bem_uso_consumo
+	dim s_etg_imediata, s_etg_imediata_original, s_bem_uso_consumo, c_data_previsao_entrega
 	s_obs1=Trim(request("c_obs1"))
 	s_obs2=Trim(request("c_obs2"))
 	s_etg_imediata=Trim(request("rb_etg_imediata"))
+	c_data_previsao_entrega = Trim(Request("c_data_previsao_entrega"))
 	s_bem_uso_consumo=Trim(request("rb_bem_uso_consumo"))
 	s_forma_pagto=Trim(request("c_forma_pagto"))
 	if versao_forma_pagamento = "1" then
@@ -252,6 +253,20 @@
 			end if
 		end if
 
+	if alerta = "" then
+		if CLng(s_etg_imediata) = CLng(COD_ETG_IMEDIATA_NAO) then
+			if c_data_previsao_entrega = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "É necessário informar a data de previsão de entrega"
+			elseif Not IsDate(c_data_previsao_entrega) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Data de previsão de entrega informada é inválida"
+			elseif StrToDate(c_data_previsao_entrega) <= Date then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Data de previsão de entrega deve ser uma data futura"
+				end if
+			end if
+		end if
 
 '	FORMA DE PAGAMENTO (NOVA VERSÃO)
 	if alerta = "" then
@@ -881,7 +896,7 @@
 			Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 			end if
 
-		s_etg_imediata_a = ""
+		s_etg_imediata_original = ""
 		if alerta = "" then
 			s = "SELECT * FROM t_ORCAMENTO WHERE orcamento='" & orcamento_selecionado & "'"
 			if rs.State <> 0 then rs.Close
@@ -893,13 +908,27 @@
 			else
 				log_via_vetor_carrega_do_recordset rs, vLog1, campos_a_omitir
 
-				s_etg_imediata_a = Trim("" & rs("st_etg_imediata"))
+				s_etg_imediata_original = Trim("" & rs("st_etg_imediata"))
 				
 				if s_etg_imediata <> "" then 
 					if CLng(rs("st_etg_imediata")) <> CLng(s_etg_imediata) then
 						rs("st_etg_imediata")=CLng(s_etg_imediata)
 						rs("etg_imediata_data")=Now
 						rs("etg_imediata_usuario")=usuario
+						end if
+					end if
+				
+				if CLng(s_etg_imediata) = CLng(COD_ETG_IMEDIATA_NAO) then
+					if (s_etg_imediata_original <> Trim(s_etg_imediata)) Or (formata_data(rs("PrevisaoEntregaData")) <> formata_data(StrToDate(c_data_previsao_entrega))) then
+						rs("PrevisaoEntregaData") = StrToDate(c_data_previsao_entrega)
+						rs("PrevisaoEntregaUsuarioUltAtualiz") = usuario
+						rs("PrevisaoEntregaDtHrUltAtualiz") = Now
+						end if
+				else
+					if (s_etg_imediata_original <> Trim(s_etg_imediata)) then
+						rs("PrevisaoEntregaData") = Null
+						rs("PrevisaoEntregaUsuarioUltAtualiz") = usuario
+						rs("PrevisaoEntregaDtHrUltAtualiz") = Now
 						end if
 					end if
 

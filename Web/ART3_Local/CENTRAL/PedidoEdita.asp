@@ -274,11 +274,14 @@
 		blnFormaPagtoEdicaoLiberada = True
 		end if
 
-	dim blnEntregaImediataEdicaoLiberada
+	dim blnEntregaImediataEdicaoLiberada, blnEntregaImediataNaoSemDataPrevisao
 	blnEntregaImediataEdicaoLiberada = False
 	if operacao_permitida(OP_CEN_EDITA_PEDIDO, s_lista_operacoes_permitidas) then
 		if (Not IsPedidoEncerrado(r_pedido.st_entrega)) Or (Trim(r_pedido.obs_2) = "") then blnEntregaImediataEdicaoLiberada = True
 		end if
+
+	blnEntregaImediataNaoSemDataPrevisao = False
+	if (Cstr(r_pedido.st_etg_imediata)=Cstr(COD_ETG_IMEDIATA_NAO)) And (Trim("" & r_pedido.PrevisaoEntregaData) = "") then blnEntregaImediataNaoSemDataPrevisao = True
 
 	dim strPercLimiteRASemDesagio, strPercDesagio
 	if alerta = "" then
@@ -586,14 +589,22 @@ end function
 <%=strScriptJS%>
 
 <script type="text/javascript">
-	$(function() {
-	    $("#divAjaxRunning").css('filter', 'alpha(opacity=60)'); // TRANSPARÊNCIA NO IE8
+	$(function () {
+		$("#divAjaxRunning").css('filter', 'alpha(opacity=60)'); // TRANSPARÊNCIA NO IE8
 
-	    <%if Cstr(r_pedido.analise_credito)=Cstr(COD_AN_CREDITO_PENDENTE_VENDAS) then %>
-            $('#trPendVendasMotivo').show();
+	    <%if Cstr(r_pedido.analise_credito) = Cstr(COD_AN_CREDITO_PENDENTE_VENDAS) then %>
+			$('#trPendVendasMotivo').show();
 	    <%else%>
-            $('#trPendVendasMotivo').hide();
-        <%end if%>
+			$('#trPendVendasMotivo').hide();
+        <% end if%>
+
+		$("#c_data_previsao_entrega").hUtilUI('datepicker_padrao');
+
+		$("input[name = 'rb_etg_imediata']").change(function () {
+			configuraCampoDataPrevisaoEntrega();
+		});
+
+		configuraCampoDataPrevisaoEntrega();
 	});
 
 	//Every resize of window
@@ -611,6 +622,20 @@ end function
 		var newTop = $(window).scrollTop() + "px";
 		$("#divAjaxRunning").css("top", newTop);
 	}
+
+	function configuraCampoDataPrevisaoEntrega() {
+        if ($("input[name='rb_etg_imediata']:checked").val() == '<%=COD_ETG_IMEDIATA_NAO%>') {
+            $("#c_data_previsao_entrega").prop("readonly", false);
+            $("#c_data_previsao_entrega").prop("disabled", false);
+            $("#c_data_previsao_entrega").datepicker("enable");
+        }
+        else {
+            $("#c_data_previsao_entrega").val("");
+            $("#c_data_previsao_entrega").prop("readonly", true);
+            $("#c_data_previsao_entrega").prop("disabled", true);
+            $("#c_data_previsao_entrega").datepicker("disable");
+        }
+    }
 </script>
 <script language='JavaScript'>
     function SomenteNumero(e){
@@ -2176,6 +2201,32 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 	    }
 	}
 
+	if (f.blnEntregaImediataEdicaoLiberada.value == "<%=Cstr(True)%>") {
+		if (f.rb_etg_imediata[0].checked) {
+			if (f.blnEntregaImediataNaoSemDataPrevisao.value == "<%=Cstr(False)%>") {
+				if (trim(f.c_data_previsao_entrega.value) == "") {
+					alert("Informe a data de previsão de entrega!");
+					f.c_data_previsao_entrega.focus();
+					return;
+				}
+			}
+
+			if (trim(f.c_data_previsao_entrega.value) != "") {
+				if (!isDate(f.c_data_previsao_entrega)) {
+					alert("Data de previsão de entrega é inválida!");
+					f.c_data_previsao_entrega.focus();
+					return;
+				}
+
+				if (retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(f.c_data_previsao_entrega.value)) <= retorna_so_digitos(formata_ddmmyyyy_yyyymmdd('<%=formata_data(Date)%>'))) {
+					alert("Data de previsão de entrega deve ser uma data futura!");
+					f.c_data_previsao_entrega.focus();
+					return;
+				}
+			}
+		}
+	}
+
 	// Percentual máximo de comissão e desconto
 	// ========================================
 	// Lembretes:
@@ -2471,6 +2522,7 @@ function setarValorRadio(array, valor)
 <input type="hidden" name="blnValorFreteEdicaoLiberada" id="blnValorFreteEdicaoLiberada" value='<%=Cstr(blnValorFreteEdicaoLiberada)%>'>
 <input type="hidden" name="blnGarantiaIndicadorEdicaoLiberada" id="blnGarantiaIndicadorEdicaoLiberada" value='<%=Cstr(blnGarantiaIndicadorEdicaoLiberada)%>'>
 <input type="hidden" name="blnEntregaImediataEdicaoLiberada" id="blnEntregaImediataEdicaoLiberada" value='<%=Cstr(blnEntregaImediataEdicaoLiberada)%>'>
+<input type="hidden" name="blnEntregaImediataNaoSemDataPrevisao" id="blnEntregaImediataNaoSemDataPrevisao" value="<%=Cstr(blnEntregaImediataNaoSemDataPrevisao)%>" />
 <input type="hidden" name="blnInstaladorInstalaEdicaoLiberada" id="blnInstaladorInstalaEdicaoLiberada" value='<%=Cstr(blnInstaladorInstalaEdicaoLiberada)%>'>
 <input type="hidden" name="blnBemUsoConsumoEdicaoLiberada" id="blnBemUsoConsumoEdicaoLiberada" value='<%=Cstr(blnBemUsoConsumoEdicaoLiberada)%>'>
 <input type="hidden" name="bln_RT_e_RA_EdicaoLiberada" id="bln_RT_e_RA_EdicaoLiberada" value='<%=Cstr(bln_RT_e_RA_EdicaoLiberada)%>'>
@@ -3490,11 +3542,17 @@ function setarValorRadio(array, valor)
 		        </td>
 	        </tr>
             <tr>
-                <td class="MB" align="left" colspan="7" nowrap><p class="Rf">xPed</p>
+                <td class="MB MD" align="left" colspan="2" nowrap><p class="Rf">xPed</p>
 			        <input name="c_num_pedido_compra" id="c_num_pedido_compra" class="PLLe" maxlength="15" style="width:100px;margin-left:2pt;" onkeypress="filtra_nome_identificador();" onblur="this.value=trim(this.value);"
 				    <% if Not blnObs1EdicaoLiberada then Response.Write " readonly tabindex=-1 " %>
                         value='<%=r_pedido.NFe_xPed%>'>
 		        </td>
+				<td class="MB" align="left" colspan="5">
+					<p class="Rf">Previsão de Entrega</p>
+					<input name="c_data_previsao_entrega" id="c_data_previsao_entrega" class="PLLe" maxlength="10" style="width:90px;margin-left:2pt"
+					<% if Not blnEntregaImediataEdicaoLiberada then Response.Write " readonly tabindex=-1 " %>
+						value="<%=formata_data(r_pedido.PrevisaoEntregaData)%>" />
+				</td>
             </tr>
 			<tr>
 				<td class="MD" nowrap align="left"><p class="Rf">Nº Nota Fiscal</p>
@@ -3507,7 +3565,7 @@ function setarValorRadio(array, valor)
 					<% if Not blnObs3EdicaoLiberada then Response.Write " readonly tabindex=-1 " %>
 						value='<%=r_pedido.obs_3%>'>
 				</td>
-                <td class="MD" align="left" valign="top" nowrap><p class="Rf">Número Magento</p>
+                <td class="MD" align="left" nowrap><p class="Rf">Número Magento</p>
 			        <input name="c_pedido_ac" id="c_pedido_ac" class="PLLe" style="width:90px;margin-left:2pt;" maxlength="9" onkeypress="if (digitou_enter(true)) fPED.c_qtde_parcelas.focus(); filtra_nome_identificador();return SomenteNumero(event)" onblur="this.value=trim(this.value);"
 				        value='<%=r_pedido.pedido_ac%>'
 						<%if Not blnNumPedidoECommerceEdicaoLiberada then Response.Write " readonly tabindex=-1" %>
@@ -3717,11 +3775,17 @@ function setarValorRadio(array, valor)
 		        </td>
 	        </tr>
             <tr>
-                <td class="MB" align="left" colspan="7" nowrap><p class="Rf">xPed</p>
+                <td class="MB MD" align="left" colspan="2" nowrap><p class="Rf">xPed</p>
 			        <input name="c_num_pedido_compra" id="c_num_pedido_compra" class="PLLe" maxlength="15" style="width:100px;margin-left:2pt;" onkeypress="filtra_nome_identificador();" onblur="this.value=trim(this.value);"
 				    <% if Not blnObs1EdicaoLiberada then Response.Write " readonly tabindex=-1 " %>
                         value='<%=r_pedido.NFe_xPed%>'>
 		        </td>
+				<td class="MB" align="left" colspan="5">
+					<p class="Rf">Previsão de Entrega</p>
+					<input name="c_data_previsao_entrega" id="c_data_previsao_entrega" class="PLLe" maxlength="10" style="width:90px;margin-left:2pt"
+					<% if Not blnEntregaImediataEdicaoLiberada then Response.Write " readonly tabindex=-1 " %>
+						value="<%=formata_data(r_pedido.PrevisaoEntregaData)%>" />
+				</td>
             </tr>
 			<tr>
 				<td class="MD" nowrap align="left"><p class="Rf">Nº Nota Fiscal</p>
@@ -3734,7 +3798,7 @@ function setarValorRadio(array, valor)
 						<% if Not blnObs3EdicaoLiberada then Response.Write " readonly tabindex=-1 " %>
 						value='<%=r_pedido.obs_3%>'>
 				</td>
-                <td class="MD" align="left" valign="top" nowrap><p class="Rf">Número Magento</p>
+                <td class="MD" align="left" nowrap><p class="Rf">Número Magento</p>
 			        <input name="c_pedido_ac" id="c_pedido_ac" maxlength="9" class="PLLe" style="width:90px;margin-left:2pt;" onkeypress="if (digitou_enter(true)) fPED.c_qtde_parcelas.focus(); filtra_nome_identificador();return SomenteNumero(event)" onblur="this.value=trim(this.value);"
 				        value='<%=r_pedido.pedido_ac%>'
 						<%if Not blnNumPedidoECommerceEdicaoLiberada then Response.Write " readonly tabindex=-1" %>
