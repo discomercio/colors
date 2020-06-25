@@ -1908,71 +1908,91 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 
        <% if cliente__tipo = ID_PF then %>
 
-		if ((trim(f.cliente__ddd_res.value) == "") || !ddd_ok(f.cliente__ddd_res.value)) {
+		if ( (trim(f.cliente__ddd_res.value) != "" && !ddd_ok(f.cliente__ddd_res.value)) || (trim(f.cliente__ddd_res.value) == "" && trim(f.cliente__tel_res.value) != "") ) {
             alert('DDD inválido!!');
             f.cliente__ddd_res.focus();
             return;
         }
 
-        if ((trim(f.cliente__tel_res.value) == "") || !telefone_ok(f.cliente__tel_res.value)) {
+		if ( (trim(f.cliente__tel_res.value) != "" && !telefone_ok(f.cliente__tel_res.value)) || (trim(f.cliente__ddd_res.value) != "" && trim(f.cliente__tel_res.value) == "") ) {
             alert('Telefone residencial inválido!!');
             f.cliente__tel_res.focus();
             return;
         }
 
-        if (!ddd_ok(f.cliente__ddd_cel.value) || (trim(f.cliente__ddd_cel.value) == "") && (trim(f.cliente__tel_cel.value) != "")) {
+		if ( (trim(f.cliente__ddd_cel.value) != "" && !ddd_ok(f.cliente__ddd_cel.value)) || (trim(f.cliente__ddd_cel.value) == "" && trim(f.cliente__tel_cel.value) != "") ) {
             alert('Celular com DDD inválido!!');
             f.cliente__ddd_cel.focus();
             return;
         }
 
-        if (!telefone_ok(f.cliente__tel_cel.value) || (trim(f.cliente__tel_cel.value) == "") && (trim(f.cliente__ddd_cel.value) != "")) {
+		if ( (trim(f.cliente__tel_cel.value) != "" && !telefone_ok(f.cliente__tel_cel.value)) || (trim(f.cliente__ddd_cel.value) != "" && trim(f.cliente__tel_cel.value) == "") ) {
             alert('Telefone celular inválido!!');
             f.cliente__tel_cel.focus();
             return;
         }
 
 
-        if (!ddd_ok(f.cliente__ddd_com.value) || (trim(f.cliente__ddd_com.value) == "") && (trim(f.cliente__tel_com.value) != "") || (trim(f.cliente__ddd_com.value) == "") && (trim(f.cliente__ramal_com.value) != "")) {
-            alert('DDD inválido!!');
+		if ( (trim(f.cliente__ddd_com.value) != "" && !ddd_ok(f.cliente__ddd_com.value)) || (trim(f.cliente__ddd_com.value) == "" && trim(f.cliente__tel_com.value) != "") ) {
+            alert('DDD comercial inválido!!');
             f.cliente__ddd_com.focus();
             return;
         }
 
-        if (!telefone_ok(f.cliente__tel_com.value) || (trim(f.cliente__ddd_com.value) != "") && (trim(f.cliente__tel_com.value) == "") || (trim(f.cliente__ramal_com.value) != "") && (trim(f.cliente__tel_com.value) == "")) {
+		if ( (trim(f.cliente__tel_com.value) != "" && !telefone_ok(f.cliente__tel_com.value)) || (trim(f.cliente__ddd_com.value) != "" && trim(f.cliente__tel_com.value) == "") ) {
             alert('Telefone comercial inválido!!');
             f.cliente__tel_com.focus();
             return;
         }
 
+		if (trim(f.cliente__ddd_com.value) == "" && trim(f.cliente__ramal_com.value) != "") {
+            alert('DDD comercial inválido!!');
+            f.cliente__ddd_com.focus();
+            return;
+        }
+
+		if (trim(f.cliente__tel_com.value) == "" && trim(f.cliente__ramal_com.value) != "") {
+            alert('Telefone comercial inválido!!');
+            f.cliente__tel_com.focus();
+            return;
+        }
+
+        if (trim(f.cliente__tel_res.value) == "" && trim(f.cliente__tel_cel.value) == "" && trim(f.cliente__tel_com.value) == "") {
+            alert('Necessário preencher ao menos um telefone!!');
+            f.cliente__ddd_cel.focus();
+            return;
+        }
 
 
 
-
-        if (fPED.rb_produtor_rural[1].checked) {
-            if ((!fPED.rb_contribuinte_icms[0].checked) && (!fPED.rb_contribuinte_icms[1].checked) && (!fPED.rb_contribuinte_icms[2].checked)) {
+        if (f.rb_produtor_rural[1].checked) {
+            if (!f.rb_contribuinte_icms[1].checked) {
+                alert('Para ser cadastrado como Produtor Rural, é necessário ser contribuinte do ICMS e possuir nº de IE!!');
+                return;
+            }
+            if ((!f.rb_contribuinte_icms[0].checked) && (!f.rb_contribuinte_icms[1].checked) && (!f.rb_contribuinte_icms[2].checked)) {
                 alert('Informe se o cliente é contribuinte do ICMS, não contribuinte ou isento!!');
                 return;
             }
-            if ((fPED.rb_contribuinte_icms[1].checked) && (trim(fPED.cliente__ie.value) == "")) {
+            if ((f.rb_contribuinte_icms[1].checked) && (trim(f.cliente__ie.value) == "")) {
                 alert('Se o cliente é contribuinte do ICMS a inscrição estadual deve ser preenchida!!');
-                fPED.cliente__ie.focus();
+                f.cliente__ie.focus();
                 return;
             }
-            if ((fPED.rb_contribuinte_icms[0].checked) && (fPED.cliente__ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
+            if ((f.rb_contribuinte_icms[0].checked) && (f.cliente__ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
                 alert('Se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
-                fPED.ie.focus();
+                f.cliente__ie.focus();
                 return;
             }
-            if ((fPED.rb_contribuinte_icms[1].checked) && (fPED.cliente__ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
+            if ((f.rb_contribuinte_icms[1].checked) && (f.cliente__ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
                 alert('Se cliente é contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
-                fPED.cliente__ie.focus();
+                f.cliente__ie.focus();
                 return;
             }
-            if (fPED.rb_contribuinte_icms[2].checked) {
-                if (fPED.cliente__ie.value != "") {
+            if (f.rb_contribuinte_icms[2].checked) {
+                if (f.cliente__ie.value != "") {
                     alert("Se o Contribuinte ICMS é isento, o campo IE deve ser vazio!");
-                    fPED.cliente__ie.focus();
+                    f.cliente__ie.focus();
                     return;
                 }
             }
@@ -1981,38 +2001,103 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 
 		<% else %>
 
-        <% if CStr(r_pedido.loja) <> CStr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) then %>
-        // PARA CLIENTE PJ, É OBRIGATÓRIO O PREENCHIMENTO DO E-MAIL
-        if ((trim(f.cliente__email.value) == "") && (trim(f.cliente__email_xml.value) == "")) {
-            alert("É obrigatório informar um endereço de e-mail");
+        if ((trim(f.cliente__email.value) != "") && (!email_ok(f.cliente__email.value))) {
+            alert('E-mail inválido!!');
             f.cliente__email.focus();
             return;
         }
-        <% end if %>
 
-		if ((trim(f.cliente__ddd_com.value) == "") || !ddd_ok(f.cliente__ddd_com.value)) {
-            alert('DDD inválido!!');
+        if ((trim(f.cliente__email_xml.value) != "") && (!email_ok(f.cliente__email_xml.value))) {
+            alert('E-mail (XML) inválido!!');
+            f.cliente__email_xml.focus();
+            return;
+        }
+
+           <% if CStr(r_pedido.loja) <> CStr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) then %>
+            // PARA CLIENTE PJ, É OBRIGATÓRIO O PREENCHIMENTO DO E-MAIL
+            if ((trim(f.cliente__email.value) == "") && (trim(f.cliente__email_xml.value) == "")) {
+                alert("É obrigatório informar um endereço de e-mail");
+                f.cliente__email.focus();
+                return;
+            }
+            <% end if %>
+
+        if ((f.rb_contribuinte_icms[1].checked) && (trim(f.cliente__ie.value) == "")) {
+            alert('Se o cliente é contribuinte do ICMS a inscrição estadual deve ser preenchida!!');
+            f.cliente__ie.focus();
+            return;
+        }
+        if ((f.rb_contribuinte_icms[0].checked) && (f.cliente__ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
+            alert('Se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
+            f.cliente__ie.focus();
+            return;
+        }
+        if ((f.rb_contribuinte_icms[1].checked) && (f.cliente__ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
+            alert('Se cliente é contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
+            f.cliente__ie.focus();
+            return;
+        }
+        if (f.rb_contribuinte_icms[2].checked) {
+            if (f.cliente__ie.value != "") {
+                alert("Se o Contribuinte ICMS é isento, o campo IE deve ser vazio!");
+                f.cliente__ie.focus();
+                return;
+            }
+        }
+		if ( (trim(f.cliente__ddd_com.value) != "" && !ddd_ok(f.cliente__ddd_com.value)) || (trim(f.cliente__ddd_com.value) == "" && trim(f.cliente__tel_com.value) != "") ) {
+            alert('DDD comercial inválido!!');
             f.cliente__ddd_com.focus();
             return;
         }
 
-        if ((trim(f.cliente__tel_com.value) == "") || !telefone_ok(f.cliente__tel_com.value)) {
+		if (trim(f.cliente__ddd_com.value) == "" && trim(f.cliente__ramal_com.value) != "") {
+            alert('DDD comercial inválido!!');
+            f.cliente__ddd_com.focus();
+            return;
+        }
+
+		if ( (trim(f.cliente__tel_com.value) != "" && !telefone_ok(f.cliente__tel_com.value)) || (trim(f.cliente__ddd_com.value) != "" && trim(f.cliente__tel_com.value) == "") ) {
             alert('Telefone comercial inválido!!');
             f.cliente__tel_com.focus();
             return;
         }
 
-        if (!ddd_ok(f.cliente__ddd_com_2.value) || (trim(f.cliente__ddd_com_2.value) == "") && (trim(f.cliente__tel_com_2.value) != "") || (trim(f.cliente__ddd_com_2.value) == "") && (trim(f.cliente__ramal_com_2.value) != "")) {
-            alert('DDD inválido!!');
+		if (trim(f.cliente__tel_com.value) == "" && trim(f.cliente__ramal_com.value) != "") {
+            alert('Telefone comercial inválido!!');
+            f.cliente__tel_com.focus();
+            return;
+        }
+
+		if ( (trim(f.cliente__ddd_com_2.value) != "" && !ddd_ok(f.cliente__ddd_com_2.value)) || (trim(f.cliente__ddd_com_2.value) == "" && trim(f.cliente__tel_com_2.value) != "") ) {
+            alert('DDD comercial 2 inválido!!');
             f.cliente__ddd_com_2.focus();
             return;
         }
 
-        if (!telefone_ok(f.cliente__tel_com_2.value) || (trim(f.cliente__ddd_com_2.value) != "") && (trim(f.cliente__tel_com_2.value) == "") || (trim(f.cliente__ramal_com_2.value) != "") && (trim(f.cliente__tel_com_2.value) == "")) {
-            alert('Telefone comercial inválido!!');
+		if (trim(f.cliente__ddd_com_2.value) == "" && trim(f.cliente__ramal_com_2.value) != "") {
+            alert('DDD comercial 2 inválido!!');
+            f.cliente__ddd_com_2.focus();
+            return;
+        }
+
+		if ( (trim(f.cliente__tel_com_2.value) != "" && !telefone_ok(f.cliente__tel_com_2.value)) || (trim(f.cliente__ddd_com_2.value) != "" && trim(f.cliente__tel_com_2.value) == "") ) {
+            alert('Telefone comercial 2 inválido!!');
             f.cliente__tel_com_2.focus();
             return;
         }
+
+		if (trim(f.cliente__tel_com_2.value) == "" && trim(f.cliente__ramal_com_2.value) != "") {
+            alert('Telefone comercial 2 inválido!!');
+            f.cliente__tel_com_2.focus();
+            return;
+        }
+
+        if (trim(f.cliente__tel_com.value) == "" && trim(f.cliente__tel_com_2.value) == "") {
+            alert('Necessário preencher ao menos um telefone!!');
+            f.cliente__ddd_com.focus();
+            return;
+        }
+
 		<% end if%>
 
 		

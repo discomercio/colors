@@ -799,7 +799,7 @@
                 end if
 
             'na memorizacao de endereços ligada, sempre verificamos
-            if r_pedido.st_memorizacao_completa_enderecos = 1 and blnUsarMemorizacaoCompletaEnderecos then
+            if r_pedido.st_memorizacao_completa_enderecos <> 0 and blnUsarMemorizacaoCompletaEnderecos then
                 blnEndEtg_obs = true 
                 end if
 
@@ -807,7 +807,7 @@
 			if (EndEtg_endereco<>"") Or (EndEtg_endereco_numero<>"") Or (EndEtg_endereco_complemento<>"") Or (EndEtg_bairro<>"") Or (EndEtg_cidade<>"") Or (EndEtg_uf<>"") Or (EndEtg_cep<>"") Or (EndEtg_obs<>"") then
                 blnEndEtgComDados = true
                 end if
-            if r_pedido.st_memorizacao_completa_enderecos = 1 and blnUsarMemorizacaoCompletaEnderecos then
+            if r_pedido.st_memorizacao_completa_enderecos <> 0 and blnUsarMemorizacaoCompletaEnderecos then
                 if not eh_cpf then
                     'EndEtg_email e EndEtg_email_xml não entram na verificação porque sempre são preenchidos
 			        if (EndEtg_ddd_res<>"") Or (EndEtg_tel_res<>"") Or (EndEtg_ddd_com<>"") Or (EndEtg_tel_com<>"") Or (EndEtg_ramal_com<>"") then
@@ -887,70 +887,52 @@
 					alerta="PREENCHA A UF DO ENDEREÇO."
 				elseif endereco__cep="" then
 					alerta="PREENCHA O CEP DO ENDEREÇO."	
+		        elseif Not cep_ok(endereco__cep) then
+			        alerta="CEP INVÁLIDO."
+		        elseif Not ddd_ok(cliente__ddd_res) then
+			        alerta="DADOS CADASTRAIS: DDD INVÁLIDO."
+		        elseif Not telefone_ok(cliente__tel_res) then
+			        alerta="DADOS CADASTRAIS: TELEFONE RESIDENCIAL INVÁLIDO."
+		        elseif (cliente__ddd_res <> "") And ((cliente__tel_res = "")) then
+			        alerta="DADOS CADASTRAIS: PREENCHA O TELEFONE RESIDENCIAL."
+		        elseif (cliente__ddd_res = "") And ((cliente__tel_res <> "")) then
+			        alerta="DADOS CADASTRAIS: PREENCHA O DDD."
+		        elseif Not ddd_ok(cliente__ddd_com) then
+			        alerta="DADOS CADASTRAIS: DDD INVÁLIDO."
+		        elseif Not telefone_ok(cliente__tel_com) then
+			        alerta="DADOS CADASTRAIS: TELEFONE COMERCIAL INVÁLIDO."
+		        elseif (cliente__ddd_com <> "") And ((cliente__tel_com = "")) then
+			        alerta="DADOS CADASTRAIS: PREENCHA O TELEFONE COMERCIAL."
+		        elseif (cliente__ddd_com = "") And ((cliente__tel_com <> "")) then
+			        alerta="DADOS CADASTRAIS: PREENCHA O DDD."
+		        elseif eh_cpf And (cliente__tel_res="") And (cliente__tel_com="") And (cliente__tel_cel="") then
+			        alerta="DADOS CADASTRAIS: PREENCHA PELO MENOS UM TELEFONE."
+		        elseif (Not eh_cpf) And (cliente__tel_com="") And (cliente__tel_com_2="") then
+			        alerta="DADOS CADASTRAIS: PREENCHA O TELEFONE."
 				end if
 
 				if  eh_cpf then
-					if cliente__produtor_rural = 2 then
-					
-						if cliente__contribuinte_icms_status = 0 then 
-							alerta = "Informe se o cliente é contribuinte do ICMS, não contribuinte ou isento!!"
-						end if
-				
-						if cliente__contribuinte_icms_status = 2 and cliente__ie = "" then 
-							alerta = "Se o cliente é contribuinte do ICMS a inscrição estadual deve ser preenchida!!"
-						end if
-				
-						if cliente__contribuinte_icms_status = 0 and cliente__ie = "" then 
-							alerta = cliente__contribuinte_icms_status & "Se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!"
-						end if
-				
-						if cliente__contribuinte_icms_status = 1 and cliente__ie = "" then 
-							alerta = "1" &  "Se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!"
-						end if
-				
-						if cliente__contribuinte_icms_status = 3 and cliente__ie <> "" then 
-							alerta = "Se o Contribuinte ICMS é isento, o campo IE deve ser vazio!"
-						end if
-
+                    if cliente__produtor_rural = "" then
+                        alerta = "Dados cadastrais: informe se o cliente é produtor rural ou não!!"
+                    elseif converte_numero(cliente__produtor_rural) = converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_NAO) then
+                        cliente__contribuinte_icms_status = COD_ST_CLIENTE_CONTRIBUINTE_ICMS_INICIAL
+                        cliente__ie = ""
+                    elseif converte_numero(cliente__produtor_rural) <> converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_NAO) then
+                        if converte_numero(cliente__contribuinte_icms_status) <> converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
+                            alerta = "Dados cadastrais: para ser cadastrado como Produtor Rural, é necessário ser contribuinte do ICMS e possuir nº de IE!!"
+                        elseif cliente__contribuinte_icms_status = "" then
+                            alerta = "Dados cadastrais: informe se o cliente é contribuinte do ICMS, não contribuinte ou isento!!"
+                        elseif converte_numero(cliente__contribuinte_icms_status) = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) and cliente__ie = "" then
+                            alerta = "Dados cadastrais: se o cliente é contribuinte do ICMS a inscrição estadual deve ser preenchida!!"
+                        elseif converte_numero(cliente__contribuinte_icms_status) = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) and InStr(cliente__ie, "ISEN") > 0 then 
+                            alerta = "Dados cadastrais: se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!"
+                        elseif converte_numero(cliente__contribuinte_icms_status) = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) and InStr(cliente__ie, "ISEN") > 0 then 
+                            alerta = "Dados cadastrais: se cliente é contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!"
+                        elseif converte_numero(cliente__contribuinte_icms_status) = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO) and cliente__ie <> "" then 
+                            alerta = "Dados cadastrais: se o Contribuinte ICMS é isento, o campo IE deve ser vazio!"
+                            end if
+                        end if
 					end if
-					
-					if cliente__ddd_res = "" and cliente__tel_res <> "" then 
-						alerta = "DDD inválido!!!"
-					end if
-					if cliente__ddd_res <> "" and cliente__tel_res = "" then 
-						alerta = "Telefone inválido!!!"
-					end if
-					if cliente__ddd_cel = "" and cliente__tel_cel <> "" then 
-						alerta = "DDD celular inválido!!!"
-					end if
-					if cliente__ddd_cel <> "" and cliente__tel_cel = "" then 
-						alerta = "Telefone celular inválido!!!"
-					end if
-					if cliente__ddd_com = "" and cliente__tel_com <> "" or cliente__ddd_com = "" and  cliente__ramal_com <> ""  then 
-						alerta = "DDD celular inválido!!!"
-					end if
-					if cliente__ddd_com <> "" and cliente__tel_com = "" or cliente__tel_com = "" and  cliente__ramal_com <> ""then 
-						alerta = "Telefone inválido!!!"
-					end if
-					
-
-				else
-
-					if cliente__ddd_com = "" and cliente__tel_com <> "" or cliente__ddd_com = "" and cliente__ramal_com <> "" then 
-						alerta = "DDD inválido!!!"
-					end if
-					if cliente__ddd_com <> "" and cliente__tel_com = "" or cliente__ddd_com <> "" and cliente__ramal_com <> "" then 
-						alerta = "Telefone inválido!!!"
-					end if
-					if cliente__ddd_com_2 = "" and cliente__tel_com_2 <> "" or cliente__ddd_com = "" and cliente__ramal_com_2 <> "" then 
-						alerta = "DDD inválido!!!"
-					end if
-					if cliente__ddd_com_2 <> "" and cliente__tel_com_2 = "" or cliente__ramal_com_2 <> "" and cliente__ramal_com_2 = "" then 
-						alerta = "Telefone inválido!!!"
-					end if
-					
-	
-				end if
 			
 				if	cliente__ie <> "" then 
 					if Not isInscricaoEstadualValida(cliente__ie, endereco__uf) then
@@ -962,7 +944,7 @@
 
 
 
-        if alerta = "" and blnEndEtgComDados and r_pedido.st_memorizacao_completa_enderecos = 1 and blnUsarMemorizacaoCompletaEnderecos and Not eh_cpf then
+        if alerta = "" and blnEndEtgComDados and r_pedido.st_memorizacao_completa_enderecos <> 0 and blnUsarMemorizacaoCompletaEnderecos and Not eh_cpf then
             if EndEtg_tipo_pessoa <> "PJ" and EndEtg_tipo_pessoa <> "PF" then
                 alerta = "Necessário escolher Pessoa Jurídica ou Pessoa Física no Endereço de entrega!!"
     		elseif EndEtg_nome = "" then
@@ -970,6 +952,13 @@
                 end if 
 	
             if alerta = "" and EndEtg_tipo_pessoa = "PJ" then
+
+                'limpa os números de telefone que não foram informados
+                EndEtg_ddd_res = ""
+                EndEtg_tel_res = ""
+                EndEtg_ddd_cel = ""
+                EndEtg_tel_cel = ""
+
                 '//Campos PJ: 
                 if EndEtg_cnpj_cpf = "" or not cnpj_ok(EndEtg_cnpj_cpf) then
                     alerta = "Endereço de entrega: CNPJ inválido!!"
@@ -1009,6 +998,15 @@
                 end if 
 
             if alerta = "" and EndEtg_tipo_pessoa <> "PJ" then
+
+                'limpa os números de telefone que não foram informados
+                EndEtg_ddd_com = ""
+                EndEtg_tel_com = ""
+                EndEtg_ramal_com = ""
+                EndEtg_ddd_com_2 = ""
+                EndEtg_tel_com_2 = ""
+                EndEtg_ramal_com_2 = ""
+
                 '//campos PF
                 if EndEtg_cnpj_cpf = "" or not cpf_ok(EndEtg_cnpj_cpf) then
                     alerta = "Endereço de entrega: CPF inválido!!"
@@ -1146,6 +1144,60 @@
 			end if 'if blnEndEntregaEdicaoLiberada And (EndEtg_cidade <> "")
 		end if 'if alerta = ""
 	
+'	CONSISTÊNCIAS P/ EMISSÃO DE NFe (DADOS CADASTRAIS)
+	s_tabela_municipios_IBGE = ""
+	if alerta = "" then
+		if r_pedido.st_memorizacao_completa_enderecos <> 0 then
+		'	MUNICÍPIO DE ACORDO C/ TABELA DO IBGE?
+			if Not consiste_municipio_IBGE_ok(endereco__cidade, endereco__uf, s_lista_sugerida_municipios, msg_erro) then
+				if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
+				if msg_erro <> "" then
+					alerta = alerta & msg_erro
+				else
+					alerta = alerta & "Município '" & endereco__cidade & "' não consta na relação de municípios do IBGE para a UF de '" & endereco__uf & "'!!"
+					if s_lista_sugerida_municipios <> "" then
+						alerta = alerta & "<br>" & _
+										  "Localize o município na lista abaixo e verifique se a grafia está correta!!"
+						v_lista_sugerida_municipios = Split(s_lista_sugerida_municipios, chr(13))
+						iNumeracaoLista=0
+						for iCounterLista=LBound(v_lista_sugerida_municipios) to UBound(v_lista_sugerida_municipios)
+							if Trim("" & v_lista_sugerida_municipios(iCounterLista)) <> "" then
+								iNumeracaoLista=iNumeracaoLista+1
+								s_tabela_municipios_IBGE = s_tabela_municipios_IBGE & _
+													"	<tr>" & chr(13) & _
+													"		<td align='right'>" & chr(13) & _
+													"			<span class='N'>&nbsp;" & Cstr(iNumeracaoLista) & "." & "</span>" & chr(13) & _
+													"		</td>" & chr(13) & _
+													"		<td>" & chr(13) & _
+													"			<span class='N'>" & Trim("" & v_lista_sugerida_municipios(iCounterLista)) & "</span>" & chr(13) & _
+													"		</td>" & chr(13) & _
+													"	</tr>" & chr(13)
+								end if
+							next
+
+						if s_tabela_municipios_IBGE <> "" then
+							s_tabela_municipios_IBGE = _
+									"<table cellspacing='0' cellpadding='1'>" & chr(13) & _
+									"	<tr>" & chr(13) & _
+									"		<td align='center'>" & chr(13) & _
+									"			<p class='N'>" & "Relação de municípios de '" & endereco__uf & "' que se iniciam com a letra '" & Ucase(left(endereco__cidade,1)) & "'" & "</p>" & chr(13) & _
+									"		</td>" & chr(13) & _
+									"	</tr>" & chr(13) & _
+									"	<tr>" & chr(13) & _
+									"		<td align='center'>" & chr(13) &_
+									"			<table cellspacing='0' border='1'>" & chr(13) & _
+													s_tabela_municipios_IBGE & _
+									"			</table>" & chr(13) & _
+									"		</td>" & chr(13) & _
+									"	</tr>" & chr(13) & _
+									"</table>" & chr(13)
+							end if
+						end if
+					end if
+				end if 'if Not consiste_municipio_IBGE_ok()
+			end if 'if r_pedido.st_memorizacao_completa_enderecos <> 0 
+		end if 'if alerta = ""
+
 	dim s_caracteres_invalidos
 	if alerta = "" then
 		if Not isTextoValido(EndEtg_endereco, s_caracteres_invalidos) then
@@ -1553,6 +1605,7 @@
 
 
 				if r_pedido.st_memorizacao_completa_enderecos = 1 or r_pedido.st_memorizacao_completa_enderecos = 9 then
+					rs("st_memorizacao_completa_enderecos") = 1
 					rs("endereco_bairro") = endereco__bairro
 					rs("endereco_numero") = endereco__numero
 					rs("endereco_complemento") = endereco__complemento
@@ -1601,7 +1654,7 @@
                 	if not blnUsarMemorizacaoCompletaEnderecos then
                         rs("st_memorizacao_completa_enderecos") = 0
                         end if
-                	if r_pedido.st_memorizacao_completa_enderecos = 1 and blnUsarMemorizacaoCompletaEnderecos then
+                	if r_pedido.st_memorizacao_completa_enderecos <> 0 and blnUsarMemorizacaoCompletaEnderecos then
 						rs("EndEtg_email") = EndEtg_email
 						rs("EndEtg_email_xml") = EndEtg_email_xml
 						rs("EndEtg_nome") = EndEtg_nome
