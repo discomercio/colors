@@ -2026,6 +2026,7 @@
 		dim st_auto_split
         dim analise_credito_pendente_vendas_motivo
         dim st_forma_pagto_possui_parcela_cartao
+		dim st_forma_pagto_possui_parcela_cartao_maquineta
 		dim usuario_cadastro
 		dim plataforma_origem_pedido
 		dim st_memorizacao_completa_enderecos
