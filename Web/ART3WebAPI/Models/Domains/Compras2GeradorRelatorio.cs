@@ -15,12 +15,12 @@ namespace ART3WebAPI.Models.Domains
     {
 
         #region [ Constantes ]
-        private const int LIN_INICIO_REGISTROS = 15;
-        private const int LIN_CABECALHO = 14; 
+        private const int LIN_INICIO_REGISTROS = 16;
+        private const int LIN_CABECALHO = 15; 
         #endregion
         
 
-        public static Task GenerateXLS(List<Compras> datasource, string filePath, string dt_inicio, string dt_termino, string fabricante,string produto, string grupo, string btu, string ciclo, string pos_mercado, string nf, string visao, string detalhamento)
+        public static Task GenerateXLS(List<Compras> datasource, string filePath, string dt_inicio, string dt_termino, string fabricante,string produto, string grupo, string btu, string ciclo, string pos_mercado, string nf, string dt_nf_inicio, string dt_nf_termino, string visao, string detalhamento)
         {
             return Task.Run(() =>
             {
@@ -56,6 +56,17 @@ namespace ART3WebAPI.Models.Domains
                     pos_mercado = "N.I";
                 if (string.IsNullOrEmpty(nf))
                     nf = "N.I";
+                string emissaoNF = "";
+                if (!string.IsNullOrEmpty(dt_nf_inicio))
+                    emissaoNF = dt_nf_inicio;
+                if (!string.IsNullOrEmpty(dt_nf_termino))
+                {
+                    if (!string.IsNullOrEmpty(emissaoNF))
+                            emissaoNF = "de " + emissaoNF + " a ";
+                    emissaoNF = emissaoNF + dt_nf_termino;
+                }
+                if (emissaoNF == "")
+                    emissaoNF = "N.I";
 
                 using (ExcelPackage pck = new ExcelPackage())
                 {
@@ -67,7 +78,7 @@ namespace ART3WebAPI.Models.Domains
                     ws.Cells["A:XFD"].Style.Font.Name = "Arial";
                     ws.Cells["A:XFD"].Style.Font.Size = 10;
                     ws.View.ShowGridLines = false;
-                    ws.View.FreezePanes(15, 1);
+                    ws.View.FreezePanes(16, 1);
                     ws.Column(1).Width = 2;
                     if (detalhamento == "SINTETICO_FABR")
                     {
@@ -114,9 +125,10 @@ namespace ART3WebAPI.Models.Domains
                     ws.Cells["B8"].Value = "Ciclo: " + ciclo;
                     ws.Cells["B09"].Value = "Posição Mercado: " + pos_mercado;
                     ws.Cells["B10"].Value = "Nº Nota Fiscal: " + nf;
-                    ws.Cells["B11"].Value = "Tipo de Detalhamento: " + Global.getDetalhamento(detalhamento);
-                    ws.Cells["B12"].Value = "Emissão: " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
-                    ws.Cells["L13:M13"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+                    ws.Cells["B11"].Value = "Emissão NF Entrada: " + emissaoNF;
+                    ws.Cells["B12"].Value = "Tipo de Detalhamento: " + Global.getDetalhamento(detalhamento);
+                    ws.Cells["B13"].Value = "Emissão: " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+                    ws.Cells["L14:M14"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
                     #endregion
 
                     #region [ Cabeçalho ]

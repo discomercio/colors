@@ -215,7 +215,7 @@
                     
                         s = "INSERT INTO t_ESTOQUE (" & _
 						        "id_estoque, data_entrada, hora_entrada, id_nfe_emitente, fabricante, documento," & _
-						        " usuario, data_ult_movimento, kit" & _
+						        " usuario, data_ult_movimento, kit, entrada_especial" & _
 					        ") VALUES (" & _
 						        "'" & s_id_estoque_destino & "'" & _
 						        "," & bd_formata_data(Date) & _
@@ -226,6 +226,7 @@
 						        ",'" & usuario & "'" & _
 						        "," & bd_formata_data(Date) & _
 						        ", " & "0" & _
+						        ", " & "1" & _
 					        ")"
 				        cn.Execute(s)
 				        if Err <> 0 then

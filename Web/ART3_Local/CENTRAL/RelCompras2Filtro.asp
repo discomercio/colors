@@ -306,6 +306,9 @@ end function
         $("#c_dt_inicio").hUtilUI('datepicker_filtro_inicial');
         $("#c_dt_termino").hUtilUI('datepicker_filtro_final');
 
+        $("#c_dt_nf_inicio").hUtilUI('datepicker_filtro_inicial');
+        $("#c_dt_nf_termino").hUtilUI('datepicker_filtro_final');
+
         $("#divMsgAguardeObtendoDados").css('filter', 'alpha(opacity=50)');
     });
 
@@ -387,6 +390,36 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 			}
 		}
 
+//  DATA NF ENTRADA
+    if (trim(f.c_dt_nf_inicio.value) != "") {
+        if (!isDate(f.c_dt_nf_inicio)) {
+            alert("Data inválida!!");
+            f.c_dt_nf_inicio.focus();
+            return;
+        }
+    }
+
+    if (trim(f.c_dt_nf_termino.value) != "") {
+        if (!isDate(f.c_dt_nf_termino)) {
+            alert("Data inválida!!");
+            f.c_dt_nf_termino.focus();
+            return;
+        }
+    }
+
+    s_de = trim(f.c_dt_nf_inicio.value);
+    s_ate = trim(f.c_dt_nf_termino.value);
+    if ((s_de != "") && (s_ate != "")) {
+        s_de = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_de));
+        s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
+        if (s_de > s_ate) {
+            alert("Emissão NF Entrada: data de término é menor que a data de início!!");
+            f.c_dt_nf_termino.focus();
+            return;
+        }
+    }
+
+
 	b=false;
 	for (i=0; i<f.rb_detalhe.length; i++) {
 		if (f.rb_detalhe[i].checked) {
@@ -417,7 +450,7 @@ function limpaCampoSelect(c) {
     <script type="text/javascript">
         function geraArquivoXLS(f) {
             var serverVariableUrl, strUrl, xmlHttp;
-            var i, dt_inicio, dt_termino, fabricante, grupo, valorVisao;
+            var i, dt_inicio, dt_termino, fabricante, grupo, dt_nf_inicio, dt_nf_termino, valorVisao;
             var s_de, s_ate, s_hoje, b;
 
             if (trim(f.c_dt_inicio.value) == "") {
@@ -467,6 +500,30 @@ function limpaCampoSelect(c) {
                 }
             }
 
+            if (!isDate(f.c_dt_nf_inicio)) {
+                alert("Data inválida!!");
+                f.c_dt_nf_inicio.focus();
+                return;
+            }
+
+            if (!isDate(f.c_dt_nf_termino)) {
+                alert("Data inválida!!");
+                f.c_dt_nf_termino.focus();
+                return;
+            }
+
+            s_de = trim(f.c_dt_nf_inicio.value);
+            s_ate = trim(f.c_dt_nf_termino.value);
+            if ((s_de != "") && (s_ate != "")) {
+                s_de = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_de));
+                s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
+                if (s_de > s_ate) {
+                    alert("Emissão NF Entrada: data de término é menor que a data de início!!");
+                    f.c_dt_nf_termino.focus();
+                    return;
+                }
+            }
+
             var detalhamento = document.getElementsByName('rb_detalhe');
             var detalhamentoValor;
             i = 0;
@@ -481,6 +538,8 @@ function limpaCampoSelect(c) {
             grupo = "";
             dt_inicio = f.c_dt_inicio.value;
             dt_termino = f.c_dt_termino.value;
+            dt_nf_inicio = f.c_dt_nf_inicio.value;
+            dt_nf_termino = f.c_dt_nf_termino.value;
 
             for (i = 0; i < f.c_fabricante.length; i++) {
                 if (f.c_fabricante[i].selected == true) {
@@ -531,6 +590,8 @@ function limpaCampoSelect(c) {
             strUrl = strUrl + '&ciclo=' + f.c_ciclo.value;
             strUrl = strUrl + '&pos_mercado=' + f.c_posicao_mercado.value;
             strUrl = strUrl + '&nf=' + f.c_nf.value;
+            strUrl = strUrl + '&dt_nf_inicio=' + dt_nf_inicio;
+            strUrl = strUrl + '&dt_nf_termino=' + dt_nf_termino;
             strUrl = strUrl + '&visao=' + "ANALITICA";
             strUrl = strUrl + '&detalhamento=' + detalhamentoValor;
 
@@ -762,6 +823,20 @@ function limpaCampoSelect(c) {
 	<td class="ME MD MB" align="left"><span class="PLTe">Nº Nota Fiscal</span>
 		<br><input name="c_nf" id="c_nf" class="PLLe" maxlength="30" style="margin-left:2pt;width:150px;" onblur="this.value=ucase(trim(this.value));"></td>
 	</tr>
+<!--  DATA DE EMISSÃO DA NOTA FISCAL DE ENTRADA  -->
+	<tr bgColor="#FFFFFF">
+	<td class="ME MD MB" colspan="2" NOWRAP>
+		<table cellSpacing="2" cellPadding="0"><tr bgColor="#FFFFFF"><td>
+		<span class="PLTe" style="cursor:default">DATA NF ENTRADA</span>
+		<br>
+            <input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_nf_inicio" id="c_dt_nf_inicio" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de início inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_nf_termino.focus(); filtra_data();"
+					value='<%=get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_nf_inicio")%>'
+					/>&nbsp;<span class="PLLc" style="color:#808080;">&nbsp;&nbsp;&nbsp;até&nbsp;</span>&nbsp;<input class="PLLc" maxlength="10" style="width:70px; " name="c_dt_nf_termino" id="c_dt_nf_termino" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de término inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.rb_detalhe.focus(); filtra_data();"
+					value='<%=get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_nf_termino")%>'
+					/>
+			</td></tr>
+		</table>
+		</td></tr>
 <!--  TIPO DE DETALHAMENTO  -->
 	<tr bgColor="#FFFFFF">
 	<td colspan="2" class="MDBE" NOWRAP><span class="PLTe">TIPO DE DETALHAMENTO</span>
