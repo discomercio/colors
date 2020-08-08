@@ -10,7 +10,7 @@ namespace ART3WebAPI.Models.Repository
 {
     public class DataCompras2
     {
-        public Compras[] Get(string dt_inicio, string dt_termino, string fabricante, string produto, string grupo, string btu, string ciclo, string pos_mercado, string nf, string dt_nf_inicio, string dt_nf_termino, string visao, string detalhamento)
+        public Compras[] Get(string dt_inicio, string dt_termino, string fabricante, string produto, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string nf, string dt_nf_inicio, string dt_nf_termino, string visao, string detalhamento)
         {
 
             #region [ Declarações ]
@@ -159,6 +159,18 @@ namespace ART3WebAPI.Models.Repository
                             s_sql_mes = string.Concat(s_sql_mes, string.Concat("AND (", s_where_temp) + ")");
                         }
 
+                        s_where_temp = "";
+                        if (!string.IsNullOrEmpty(subgrupo))
+                        {
+                            string[] v_subgrupo = subgrupo.Split('_');
+                            for (int x = 0; x < v_subgrupo.GetLength(0); x++)
+                            {
+                                if (s_where_temp != "") s_where_temp = string.Concat(s_where_temp, " OR");
+                                s_where_temp = string.Concat(s_where_temp, " (subgrupo = '" + v_subgrupo[x] + "')");
+                            }
+                            s_sql_mes = string.Concat(s_sql_mes, string.Concat("AND (", s_where_temp) + ")");
+                        }
+
                         if (!string.IsNullOrEmpty(produto)) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (tei.produto = '", produto) + "')");
 
                         if (!string.IsNullOrEmpty(btu)) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (potencia_BTU = ", btu) + ")");
@@ -229,6 +241,18 @@ namespace ART3WebAPI.Models.Repository
                             {
                                 if (s_where_temp != "") s_where_temp = string.Concat(s_where_temp, " OR");
                                 s_where_temp = string.Concat(s_where_temp, " (grupo = '" + v_grupo[x] + "')");
+                            }
+                            s_sql_mes = string.Concat(s_sql_mes, string.Concat("AND (", s_where_temp) + ")");
+                        }
+
+                        s_where_temp = "";
+                        if (!string.IsNullOrEmpty(subgrupo))
+                        {
+                            string[] v_subgrupo = subgrupo.Split('_');
+                            for (int x = 0; x < v_subgrupo.GetLength(0); x++)
+                            {
+                                if (s_where_temp != "") s_where_temp = string.Concat(s_where_temp, " OR");
+                                s_where_temp = string.Concat(s_where_temp, " (subgrupo = '" + v_subgrupo[x] + "')");
                             }
                             s_sql_mes = string.Concat(s_sql_mes, string.Concat("AND (", s_where_temp) + ")");
                         }
@@ -306,6 +330,18 @@ namespace ART3WebAPI.Models.Repository
                             s_sql_mes = string.Concat(s_sql_mes, string.Concat("AND (", s_where_temp) + ")");
                         }
 
+                        s_where_temp = "";
+                        if (!string.IsNullOrEmpty(subgrupo))
+                        {
+                            string[] v_subgrupo = subgrupo.Split('_');
+                            for (int x = 0; x < v_subgrupo.GetLength(0); x++)
+                            {
+                                if (s_where_temp != "") s_where_temp = string.Concat(s_where_temp, " OR");
+                                s_where_temp = string.Concat(s_where_temp, " (subgrupo = '" + v_subgrupo[x] + "')");
+                            }
+                            s_sql_mes = string.Concat(s_sql_mes, string.Concat("AND (", s_where_temp) + ")");
+                        }
+
                         if (!string.IsNullOrEmpty(produto)) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (tei.produto = '", produto) + "')");
 
                         if (!string.IsNullOrEmpty(btu)) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (potencia_BTU = ", btu) + ")");
@@ -363,6 +399,7 @@ namespace ART3WebAPI.Models.Repository
                 " ,e.devolucao_status" +
                 " ,e.documento" +
                 " ,grupo" +
+                " ,subgrupo" +
                 " ,potencia_BTU" +
                 " ,ciclo" +
                 " ,posicao_mercado" +
@@ -406,6 +443,18 @@ namespace ART3WebAPI.Models.Repository
                 {
                     if (s_where_temp != "") s_where_temp = string.Concat(s_where_temp, " OR");
                     s_where_temp = string.Concat(s_where_temp, " (s_mes.grupo = '" + v_grupo[i] + "')");
+                }
+                sqlString = string.Concat(sqlString, string.Concat("AND (", s_where_temp) + ")");
+            }
+
+            s_where_temp = "";
+            if (!string.IsNullOrEmpty(subgrupo))
+            {
+                string[] v_subgrupo = subgrupo.Split('_');
+                for (int i = 0; i < v_subgrupo.GetLength(0); i++)
+                {
+                    if (s_where_temp != "") s_where_temp = string.Concat(s_where_temp, " OR");
+                    s_where_temp = string.Concat(s_where_temp, " (s_mes.subgrupo = '" + v_subgrupo[i] + "')");
                 }
                 sqlString = string.Concat(sqlString, string.Concat("AND (", s_where_temp) + ")");
             }

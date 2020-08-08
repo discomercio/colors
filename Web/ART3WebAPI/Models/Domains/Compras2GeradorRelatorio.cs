@@ -15,12 +15,12 @@ namespace ART3WebAPI.Models.Domains
     {
 
         #region [ Constantes ]
-        private const int LIN_INICIO_REGISTROS = 16;
-        private const int LIN_CABECALHO = 15; 
+        private const int LIN_INICIO_REGISTROS = 17;
+        private const int LIN_CABECALHO = 16; 
         #endregion
         
 
-        public static Task GenerateXLS(List<Compras> datasource, string filePath, string dt_inicio, string dt_termino, string fabricante,string produto, string grupo, string btu, string ciclo, string pos_mercado, string nf, string dt_nf_inicio, string dt_nf_termino, string visao, string detalhamento)
+        public static Task GenerateXLS(List<Compras> datasource, string filePath, string dt_inicio, string dt_termino, string fabricante,string produto, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string nf, string dt_nf_inicio, string dt_nf_termino, string visao, string detalhamento)
         {
             return Task.Run(() =>
             {
@@ -46,6 +46,10 @@ namespace ART3WebAPI.Models.Domains
                     grupo = grupo.Replace("_", ", ");
                 else
                     grupo = "N.I";
+                if (!string.IsNullOrEmpty(subgrupo))
+                    subgrupo = subgrupo.Replace("_", ", ");
+                else
+                    subgrupo = "N.I";
                 if (string.IsNullOrEmpty(produto))
                     produto = "N.I";
                 if (string.IsNullOrEmpty(btu))
@@ -120,15 +124,16 @@ namespace ART3WebAPI.Models.Domains
                     ws.Cells["B3"].Value = "Período: " + dt_inicio + " a " + dt_termino;
                     ws.Cells["B4"].Value = "Fabricante(s): " + fabricante;
                     ws.Cells["B5"].Value = "Grupo(s) de produtos: " + grupo;
-                    ws.Cells["B6"].Value = "Produto: " + produto;
-                    ws.Cells["B7"].Value = "BTU/h: " + btu;
-                    ws.Cells["B8"].Value = "Ciclo: " + ciclo;
-                    ws.Cells["B09"].Value = "Posição Mercado: " + pos_mercado;
-                    ws.Cells["B10"].Value = "Nº Nota Fiscal: " + nf;
-                    ws.Cells["B11"].Value = "Emissão NF Entrada: " + emissaoNF;
-                    ws.Cells["B12"].Value = "Tipo de Detalhamento: " + Global.getDetalhamento(detalhamento);
-                    ws.Cells["B13"].Value = "Emissão: " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
-                    ws.Cells["L14:M14"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+                    ws.Cells["B6"].Value = "Subgrupo(s) de produtos: " + subgrupo;
+                    ws.Cells["B7"].Value = "Produto: " + produto;
+                    ws.Cells["B8"].Value = "BTU/h: " + btu;
+                    ws.Cells["B9"].Value = "Ciclo: " + ciclo;
+                    ws.Cells["B10"].Value = "Posição Mercado: " + pos_mercado;
+                    ws.Cells["B11"].Value = "Nº Nota Fiscal: " + nf;
+                    ws.Cells["B12"].Value = "Emissão NF Entrada: " + emissaoNF;
+                    ws.Cells["B13"].Value = "Tipo de Detalhamento: " + Global.getDetalhamento(detalhamento);
+                    ws.Cells["B14"].Value = "Emissão: " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+                    ws.Cells["L15:M15"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
                     #endregion
 
                     #region [ Cabeçalho ]
