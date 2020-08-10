@@ -118,8 +118,23 @@
 	alerta = ""
 	deve_devolver = False
 
+    dim id_pedido_chamado_depto
+    dim r_pedido
+	if Not le_pedido(pedido_selecionado, r_pedido, msg_erro) then
+		alerta = msg_erro
+		end if
+
+    if (r_pedido.st_forma_pagto_possui_parcela_cartao = 1) Or (r_pedido.st_forma_pagto_possui_parcela_cartao_maquineta = 1) then
+        '2=Financeiro/Devolução (Pagamento em Cartão) -> para pedidos que tenham pagamento em cartão
+        id_pedido_chamado_depto = 3
+    else
+        '2=Financeiro/Devolução -> para pedidos que não tenham pagamento em cartão
+        id_pedido_chamado_depto = 2
+        end if
+
     if c_procedimento = "" then
-        alerta = "Procedimento não foi informado."
+        alerta = texto_add_br(alerta)
+        alerta = alerta & "Procedimento não foi informado."
         end if
     if c_local_coleta = "" then
         alerta = texto_add_br(alerta)
@@ -675,7 +690,7 @@
                             rs("cod_motivo_abertura")=cod_motivo_abertura_chamado
                             rs("texto_chamado")=texto_chamado
                             rs("nivel_acesso")=COD_NIVEL_ACESSO_CHAMADO_PEDIDO__RESTRITO
-                            rs("id_depto")=2 '2=Financeiro/Devolução
+                            rs("id_depto")=id_pedido_chamado_depto
                             rs("contato")=usuario
                             rs.Update
                             if Err <> 0 then
@@ -690,7 +705,7 @@
                                     " descricao AS descricao_depto," & _
                                     " Coalesce((SELECT email FROM t_USUARIO WHERE usuario=tPCD.usuario_responsavel), '') AS email" & _ 
                                 " FROM t_PEDIDO_CHAMADO_DEPTO tPCD" & _
-                                " WHERE (id = 2)" '2=Financeiro/Devolução
+                                " WHERE (id = " & Cstr(id_pedido_chamado_depto) & ")"
                             if rs.State <> 0 then rs.Close
                             rs.Open s, cn
                             if Not rs.Eof then
@@ -772,7 +787,7 @@
                             rs("cod_motivo_abertura")=cod_motivo_abertura_chamado
                             rs("texto_chamado")=texto_chamado 
                             rs("nivel_acesso")=COD_NIVEL_ACESSO_CHAMADO_PEDIDO__RESTRITO
-                            rs("id_depto")=2
+                            rs("id_depto")=id_pedido_chamado_depto
                             rs("contato")=usuario
                             rs.Update
                             if Err <> 0 then
@@ -787,7 +802,7 @@
                                     " descricao AS descricao_depto," & _
                                     " Coalesce((SELECT email FROM t_USUARIO WHERE usuario=tPCD.usuario_responsavel), '') AS email" & _ 
                                 " FROM t_PEDIDO_CHAMADO_DEPTO tPCD" & _
-                                " WHERE (id = 2)"
+                                " WHERE (id = " & Cstr(id_pedido_chamado_depto) & ")"
                             if rs.State <> 0 then rs.Close
                             rs.Open s, cn
                             if Not rs.Eof then

@@ -1875,6 +1875,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
             .NFe_xPed = Trim("" & rs("NFe_xPed"))
 			.st_auto_split = rs("st_auto_split")
             .st_forma_pagto_possui_parcela_cartao = rs("st_forma_pagto_possui_parcela_cartao")
+			.st_forma_pagto_possui_parcela_cartao_maquineta = rs("st_forma_pagto_possui_parcela_cartao_maquineta")
 			.usuario_cadastro = Trim("" & rs("usuario_cadastro"))
 			.plataforma_origem_pedido = rs("plataforma_origem_pedido")
 			end with
@@ -1933,6 +1934,8 @@ dim blnUsarMemorizacaoCompletaEnderecos
 				.pse_demais_prest_qtde		= rs("pse_demais_prest_qtde")
 				.pse_demais_prest_valor		= rs("pse_demais_prest_valor")
 				.pse_demais_prest_periodo	= rs("pse_demais_prest_periodo")
+	            .st_forma_pagto_possui_parcela_cartao = rs("st_forma_pagto_possui_parcela_cartao")
+	            .st_forma_pagto_possui_parcela_cartao_maquineta = rs("st_forma_pagto_possui_parcela_cartao_maquineta")
 				.custoFinancFornecTipoParcelamento	= Trim("" & rs("custoFinancFornecTipoParcelamento"))
 				.custoFinancFornecQtdeParcelas 		= rs("custoFinancFornecQtdeParcelas")
 				.indicador					= Trim("" & rs("indicador"))

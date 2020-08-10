@@ -2253,6 +2253,14 @@ end function
 
 
 ' ------------------------------------------------------------------------
+'   FORMATA_NUMERO6DEC
+function formata_numero6dec(byval valor)
+	formata_numero6dec=formata_numero(valor, 6)
+end function
+
+
+
+' ------------------------------------------------------------------------
 '   FORMATA_PERC_RT
 function formata_perc_RT(byval valor)
 	formata_perc_RT=formata_numero(valor, 1)
