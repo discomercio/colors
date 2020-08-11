@@ -29,16 +29,16 @@ namespace EtqWms
 			{
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "EtqWms";
-				public const string VERSAO_NUMERO = "1.10";
-				public const string VERSAO_DATA = "31.MAR.2017";
+				public const string VERSAO_NUMERO = "1.11";
+				public const string VERSAO_DATA = "10.AGO.2020";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Módulo Etiqueta (WMS)";
 			}
-            #endregion
+			#endregion
 
-            #region[ Comentário sobre as versões ]
-            /*================================================================================================
+			#region[ Comentário sobre as versões ]
+			/*================================================================================================
 			 * v 1.00 - 01.10.2013 - por HHO
 			 *        Início.
 			 *        Este programa realiza a impressão das etiquetas c/ os dados do destinatário e que
@@ -107,8 +107,10 @@ namespace EtqWms
 			 * v 1.10 - 31.03.2017 - por LHGX
 			 *		  Remoção do controle antigo por CD's
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.11 - XX.XX.20XX - por XXX
-			 *		  
+			 * v 1.11 - 10.08.2020 - por HHO
+			 *		  Impressão do código de barras na etiqueta com as informações: nº NF, qtde total de
+			 *		  volumes, ID da etiqueta (t_WMS_ETQ_N3_SEPARACAO_ZONA_PRODUTO.id),
+			 *		  número do volume (individual).
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.12 - XX.XX.20XX - por XXX
 			 *		  
@@ -120,16 +122,16 @@ namespace EtqWms
 			 *		  
 			 * ===============================================================================================
 			 */
-            #endregion
+			#endregion
 
-            #region [ Etc ]
-            public class Etc
+			#region [ Etc ]
+			public class Etc
 			{
 				public const String SIMBOLO_MONETARIO = "R$";
 				public const byte FLAG_NAO_SETADO = 255;
 				public const int TAM_MIN_LOJA = 2;
-				public const int TAM_MIN_NUM_PEDIDO = 6;	// SOMENTE PARTE NUMÉRICA DO NÚMERO DO PEDIDO
-				public const int TAM_MIN_ID_PEDIDO = 7;	// PARTE NUMÉRICA DO NÚMERO DO PEDIDO + LETRA REFERENTE AO ANO
+				public const int TAM_MIN_NUM_PEDIDO = 6;    // SOMENTE PARTE NUMÉRICA DO NÚMERO DO PEDIDO
+				public const int TAM_MIN_ID_PEDIDO = 7; // PARTE NUMÉRICA DO NÚMERO DO PEDIDO + LETRA REFERENTE AO ANO
 				public const char COD_SEPARADOR_FILHOTE = '-';
 				public const int MAX_TAM_BOLETO_CAMPO_ENDERECO = 40;
 				public const int MAX_TAM_BOLETO_CAMPO_NOME_SACADO = 40;
@@ -2108,7 +2110,7 @@ namespace EtqWms
 		public static bool isStEntregaPedidoBloqueadoParaImpressaoEtiqueta(string st_entrega)
 		{
 			if (st_entrega == null) return false;
-			
+
 			if (st_entrega.Equals(Cte.StEntregaPedido.ST_ENTREGA_A_ENTREGAR)) return true;
 			if (st_entrega.Equals(Cte.StEntregaPedido.ST_ENTREGA_CANCELADO)) return true;
 			if (st_entrega.Equals(Cte.StEntregaPedido.ST_ENTREGA_ENTREGUE)) return true;

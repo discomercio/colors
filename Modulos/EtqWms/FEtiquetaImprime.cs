@@ -698,7 +698,7 @@ namespace EtqWms
 				#region [ Cria objetos de BD ]
 				cmCommand = BD.criaSqlCommand();
 				daAdapter = BD.criaSqlDataAdapter();
-                #endregion
+				#endregion
 
 				#region [ Monta critério de seleção do Emitente ]
 				strCriterioEmit = " AND (EXISTS" +
@@ -796,10 +796,11 @@ namespace EtqWms
 			string strDestinoUF;
 			string strDestinoCidade;
 			string strCliente;
-			string strProduto;
-			string strProdutoAux;
+			string strProdutoDescricao;
+			string strProdutoDescricaoAux;
 			string strNsuEtiqueta;
-			string strVolume;
+			string strVolumeIndividual;
+			string strVolumeTotal;
 			string strIdentVolProdComposto;
 			#endregion
 
@@ -826,17 +827,18 @@ namespace EtqWms
 				strDestinoUF = etiqueta.destino_uf.ToUpper();
 				strDestinoCidade = Texto.iniciaisEmMaiusculas(Global.filtraAcentuacao(etiqueta.destino_cidade == null ? "" : etiqueta.destino_cidade));
 				strCliente = Global.filtraAcentuacao(etiqueta.nome_cliente == null ? "" : etiqueta.nome_cliente);
-				strProduto = Global.filtraAcentuacao(etiqueta.descricao == null ? "" : etiqueta.descricao);
+				strProdutoDescricao = Global.filtraAcentuacao(etiqueta.descricao == null ? "" : etiqueta.descricao);
 
 				for (int i = 0; i < etiqueta.ctrlNumeracaoVolume.Count; i++)
 				{
 					strNsuEtiqueta = etiqueta.id_N1.ToString().PadLeft(3, '0') + "-" + etiqueta.sequencia.ToString().PadLeft(4, '0') + " / " + etiqueta.id_N3.ToString().PadLeft(4, '0');
-					strVolume = etiqueta.ctrlNumeracaoVolume[i].numeracaoVolume.ToString() + '/' + etiqueta.qtde_volumes_pedido.ToString();
+					strVolumeIndividual = etiqueta.ctrlNumeracaoVolume[i].numeracaoVolume.ToString();
+					strVolumeTotal = etiqueta.qtde_volumes_pedido.ToString();
 					strIdentVolProdComposto = etiqueta.ctrlNumeracaoVolume[i].identificacaoVolumeProdutoComposto;
 					if (strIdentVolProdComposto.Length > 0) strIdentVolProdComposto = strIdentVolProdComposto + " - ";
-					strProdutoAux = strIdentVolProdComposto + strProduto;
+					strProdutoDescricaoAux = strIdentVolProdComposto + strProdutoDescricao;
 
-					if (!montaDadosImpressaoEtiquetaIndividual(strTranportadora, strZona, strNumeroNF, strVolume, strCliente, strProdutoAux, strNsuEtiqueta, strDestinoUF, strDestinoCidade, out textoEtiqueta, out strMsgErro))
+					if (!montaDadosImpressaoEtiquetaIndividualCodeBar(strTranportadora, strZona, strNumeroNF, strVolumeIndividual, strVolumeTotal, strCliente, strProdutoDescricaoAux, etiqueta.id_N3, strDestinoUF, strDestinoCidade, out textoEtiqueta, out strMsgErro))
 					{
 						throw new Exception("Falha ao preparar os dados para a etiqueta do pedido " + etiqueta.pedido + ", produto (" + etiqueta.fabricante + ")" + etiqueta.produto + "!!");
 					}
@@ -933,7 +935,7 @@ namespace EtqWms
 					CODIGO_STX + "L" + CODIGO_CR + // Enters label formatting state
 					"H12" + CODIGO_CR + // Temperatura da cabeça p/ controlar o contraste (padrão: H10, máximo: H20, máximo recomendável: H16)
 					"D11" + CODIGO_CR + // Sets width and height pixel size (default: D22)
-					// NSU etiqueta
+										// NSU etiqueta
 					"1" + // Orientação: 1=Portrait, 2=Reverse Landscape, 3=Reverse Portrait, 4=Landscape
 					FONTE_REDUZIDA + // Fonte
 					MULTIPLICADOR_HORIZONTAL_REDUZIDA + // Multiplicador Horizontal
@@ -942,7 +944,7 @@ namespace EtqWms
 					"0020" + // Coordenadas Y
 					COORDENADAS_MARGEM_X + // Coordenadas X
 					(nsuEtiqueta == null ? "" : nsuEtiqueta) + CODIGO_CR + // Texto a ser impresso
-					// Produto
+																		   // Produto
 					"1" + // Orientação: 1=Portrait, 2=Reverse Landscape, 3=Reverse Portrait, 4=Landscape
 					FONTE_PADRAO + // Fonte
 					MULTIPLICADOR_HORIZONTAL_PADRAO + // Multiplicador Horizontal
@@ -951,7 +953,7 @@ namespace EtqWms
 					"0070" + // Coordenadas Y
 					COORDENADAS_MARGEM_X + // Coordenadas X
 					(produto == null ? "" : produto) + CODIGO_CR + // Texto a ser impresso
-					// Cliente
+																   // Cliente
 					"1" + // Orientação: 1=Portrait, 2=Reverse Landscape, 3=Reverse Portrait, 4=Landscape
 					FONTE_PADRAO + // Fonte
 					MULTIPLICADOR_HORIZONTAL_PADRAO + // Multiplicador Horizontal
@@ -960,7 +962,7 @@ namespace EtqWms
 					"0130" + // Coordenadas Y
 					COORDENADAS_MARGEM_X + // Coordenadas X
 					(cliente == null ? "" : cliente) + CODIGO_CR + // Texto a ser impresso
-					// Zona
+																   // Zona
 					"1" + // Orientação: 1=Portrait, 2=Reverse Landscape, 3=Reverse Portrait, 4=Landscape
 					FONTE_ZONA + // Fonte
 					MULTIPLICADOR_HORIZONTAL_ZONA + // Multiplicador Horizontal
@@ -969,7 +971,7 @@ namespace EtqWms
 					"0380" + // Coordenadas Y
 					"0870" + // Coordenadas X
 					(zona == null ? "" : zona) + CODIGO_CR + // Texto a ser impresso
-					// Transportadora
+															 // Transportadora
 					"1" + // Orientação: 1=Portrait, 2=Reverse Landscape, 3=Reverse Portrait, 4=Landscape
 					FONTE_TRANSPORTADORA + // Fonte
 					MULTIPLICADOR_HORIZONTAL_TRANSPORTADORA + // Multiplicador Horizontal
@@ -978,7 +980,7 @@ namespace EtqWms
 					"0380" + // Coordenadas Y
 					COORDENADAS_MARGEM_X + // Coordenadas X
 					(transportadora == null ? "" : transportadora) + CODIGO_CR + // Texto a ser impresso
-					// UF/Cidade de destino
+																				 // UF/Cidade de destino
 					"1" + // Orientação: 1=Portrait, 2=Reverse Landscape, 3=Reverse Portrait, 4=Landscape
 					FONTE_LOCALIDADE_DESTINO + // Fonte
 					MULTIPLICADOR_HORIZONTAL_LOCALIDADE_DESTINO + // Multiplicador Horizontal
@@ -987,7 +989,7 @@ namespace EtqWms
 					"0180" + // Coordenadas Y
 					COORDENADAS_MARGEM_X + // Coordenadas X
 					strUfCidadeDestino + CODIGO_CR + // Texto a ser impresso
-					// NF
+													 // NF
 					"1" + // Orientação: 1=Portrait, 2=Reverse Landscape, 3=Reverse Portrait, 4=Landscape
 					FONTE_NF + // Fonte
 					MULTIPLICADOR_HORIZONTAL_NF + // Multiplicador Horizontal
@@ -996,7 +998,7 @@ namespace EtqWms
 					"0250" + // Coordenadas Y
 					COORDENADAS_MARGEM_X + // Coordenadas X
 					"NF." + (numeroNF == null ? "" : numeroNF) + CODIGO_CR + // Texto a ser impresso
-					// Volume
+																			 // Volume
 					"1" + // Orientação: 1=Portrait, 2=Reverse Landscape, 3=Reverse Portrait, 4=Landscape
 					FONTE_VOLUME + // Fonte
 					MULTIPLICADOR_HORIZONTAL_VOLUME + // Multiplicador Horizontal
@@ -1005,7 +1007,216 @@ namespace EtqWms
 					"0250" + // Coordenadas Y
 					"0800" + // Coordenadas X
 					(volume == null ? "" : volume) + CODIGO_CR + // Texto a ser impresso
+																 // Comandos de finalização da etiqueta
+					"Q0001" + CODIGO_CR + // Sets the quantity of labels to print
+					"E" + CODIGO_CR // Ends the job and exit from label formatting mode
+					;
+
+				return true;
+			}
+			catch (Exception ex)
+			{
+				strMsgErro = ex.ToString();
+				Global.gravaLogAtividade(NOME_DESTA_ROTINA + "\n" + ex.ToString());
+				return false;
+			}
+		}
+		#endregion
+
+		#region [ montaDadosImpressaoEtiquetaIndividualCodeBar ]
+		private bool montaDadosImpressaoEtiquetaIndividualCodeBar(string transportadora, string zona, string numeroNF, string volumeIndividual, string volumeTotal, string cliente, string produtoDescricao, int id_wms_etq_n3, string destinoUF, string destinoCidade, out string textoImpressaoEtiqueta, out string strMsgErro)
+		{
+			#region [ Declarações ]
+			const String NOME_DESTA_ROTINA = "montaDadosImpressaoEtiquetaIndividualCodeBar()";
+			const string COORDENADAS_MARGEM_X = "0070";
+			#region [ Padrão ]
+			const string FONTE_PADRAO = "9";
+			const string SUB_FONTE_PADRAO = "004";
+			const string MULTIPLICADOR_HORIZONTAL_PADRAO = "1";
+			const string MULTIPLICADOR_VERTICAL_PADRAO = "1";
+			#endregion
+			#region [ NF ]
+			const string FONTE_NF = "9";
+			const string SUB_FONTE_NF = "005";
+			const string MULTIPLICADOR_HORIZONTAL_NF = "2";
+			const string MULTIPLICADOR_VERTICAL_NF = "2";
+			#endregion
+			#region [ Volume ]
+			const string FONTE_VOLUME = "9";
+			const string SUB_FONTE_VOLUME = "004";
+			const string MULTIPLICADOR_HORIZONTAL_VOLUME = "2";
+			const string MULTIPLICADOR_VERTICAL_VOLUME = "2";
+			#endregion
+			#region [ Transportadora ]
+			const string FONTE_TRANSPORTADORA = "9";
+			const string SUB_FONTE_TRANSPORTADORA = "003";
+			const string MULTIPLICADOR_HORIZONTAL_TRANSPORTADORA = "2";
+			const string MULTIPLICADOR_VERTICAL_TRANSPORTADORA = "2";
+			#endregion
+			#region [ UF/Cidade destino ]
+			const string FONTE_LOCALIDADE_DESTINO = "9";
+			const string SUB_FONTE_LOCALIDADE_DESTINO = "003";
+			const string MULTIPLICADOR_HORIZONTAL_LOCALIDADE_DESTINO = "2";
+			const string MULTIPLICADOR_VERTICAL_LOCALIDADE_DESTINO = "2";
+			#endregion
+			#region [ Zona ]
+			const string FONTE_ZONA = "9";
+			const string SUB_FONTE_ZONA = "003";
+			const string MULTIPLICADOR_HORIZONTAL_ZONA = "2";
+			const string MULTIPLICADOR_VERTICAL_ZONA = "2";
+			#endregion
+
+			string strUfCidadeDestino;
+			string strVolumeIndividualSobreTotal;
+			string strCodeBar;
+			#endregion
+
+			textoImpressaoEtiqueta = "";
+			strMsgErro = "";
+			try
+			{
+				strUfCidadeDestino = (destinoUF == null ? "" : destinoUF) + " / " + (destinoCidade == null ? "" : destinoCidade);
+
+				numeroNF = (numeroNF ?? "").Trim();
+				volumeIndividual = (volumeIndividual ?? "").Trim();
+				volumeTotal = (volumeTotal ?? "").Trim();
+				strVolumeIndividualSobreTotal = volumeIndividual + '/' + volumeTotal;
+
+				// Formato dos dados do código de barras:
+				//		Nº NF: 9 dígitos (formatado com zeros à esquerda)
+				//		Quantidade total de volumes: 3 dígitos (formatado com zeros à esquerda)
+				//		ID da etiqueta: ID do registro armazenado em t_WMS_ETQ_N3_SEPARACAO_ZONA_PRODUTO.id com tamanho de 10 dígitos (formatado com zeros à esquerda)
+				//		Número do volume (individual): 3 dígitos (formatado com zeros à esquerda)
+				strCodeBar = numeroNF.PadLeft(9, '0') +
+							volumeTotal.PadLeft(3, '0') +
+							id_wms_etq_n3.ToString().PadLeft(10, '0') +
+							volumeIndividual.PadLeft(3, '0');
+
+				// IMPORTANTE
+				// ==========
+				// 1) A impressão da etiqueta é feita usando a linguagem PPLA
+				// 2) A origem das coordenadas é no canto inferior esquerdo
+				// 3) As medidas estão em milímetros
+				// 4) Fonte:
+				//    '0','1','2','3','4','5','6','7','8': Fontes internas (Subtipo fixo em '000')
+				//    '9': fonte ASD smooth (Subtipos '000' a '006')
+				//         '000': 4 points
+				//         '001': 6 points
+				//         '002': 8 points
+				//         '003': 10 points
+				//         '004': 12 points
+				//         '005': 14 points
+				//         '006': 18 points
+				//
+				// 5) Subsídios sobre a impressão do código de barras:
+				//	  The format is: Rthvoooyyyyxxxx[data string]
+				//		R : Print direction. ‘1’, ‘2’, ‘3’ or ‘4’. (orientation, 1 represents for portrait)
+				//		t : Bar code type. The range can be ‘A’ through ‘T’ and ‘a’ through ‘z’, each character represents a bar code type and rule.Refer to section A10 for more details on bar codes.
+				//		h : ‘0’ through ‘9’ and ‘A’ through ‘O’ represent the width of wide bar. (‘A’=10, ‘B’= 11, ..and ‘O’= 24).
+				//		v : ‘0’ through ‘9’ and ‘A’ through ‘O’ represent the width of narrow bar. (‘A’=10, ‘B’= 11, ..and ‘O’= 24).
+				//		ooo : A 3-digit value that represents the bar code height. (bar code height, 000 stands for default height)
+				//		yyyy : A 4 digit value for Y coordinate. The lower left corner is the origin of the XY coordinate system. The Y value is the vertical offset from origin point.
+				//		xxxx : A 4-digit value for X coordinate. The lower left corner is the origin point of the XY coordinate system.The X value is the horizontal offset from origin point.
+				//		Data string: A string of data with maximum 255 characters in length, ended by <CR> or pre-defined EOL(end of line) code.The length of the string may be varied from the type of the bar code.
+
+				textoImpressaoEtiqueta =
+					// Comandos de inicialização da impressora
+					// =======================================
+					CODIGO_STX + "L" + CODIGO_CR + // Enters label formatting state
+					"H12" + CODIGO_CR + // Temperatura da cabeça p/ controlar o contraste (padrão: H10, máximo: H20, máximo recomendável: H16)
+					"D11" + CODIGO_CR + // Sets width and height pixel size (default: D22)
+
+					// Impressão: Código de barras
+					// ===========================
+					"1" + // R : Print direction. ‘1’, ‘2’, ‘3’ or ‘4’.
+					"E" + // t : Bar code type. The range can be ‘A’ through ‘T’ and ‘a’ through ‘z’, each character represents a bar code type and rule.Refer to section A10 for more details on bar codes.
+					"0" + // h : ‘0’ through ‘9’ and ‘A’ through ‘O’ represent the width of wide bar. (‘A’=10, ‘B’= 11, ..and ‘O’= 24).
+					"0" + // v : ‘0’ through ‘9’ and ‘A’ through ‘O’ represent the width of narrow bar. (‘A’=10, ‘B’= 11, ..and ‘O’= 24).
+					"080" + // ooo : A 3-digit value that represents the bar code height. (bar code height, 000 stands for default height)
+					"0005" + // yyyy : A 4 digit value for Y coordinate. The lower left corner is the origin of the XY coordinate system. The Y value is the vertical offset from origin point.
+					"0120" + // xxxx : A 4-digit value for X coordinate. The lower left corner is the origin point of the XY coordinate system.The X value is the horizontal offset from origin point.
+					strCodeBar + // Data string: A string of data with maximum 255 characters in length, ended by<CR> or pre-defined EOL(end of line) code.The length of the string may be varied from the type of the bar code.
+					CODIGO_CR + // Indica o término do campo 'data string'
+
+					// Impressão: Produto
+					// ==================
+					"1" + // Orientação: 1=Portrait, 2=Reverse Landscape, 3=Reverse Portrait, 4=Landscape
+					FONTE_PADRAO + // Fonte
+					MULTIPLICADOR_HORIZONTAL_PADRAO + // Multiplicador Horizontal
+					MULTIPLICADOR_VERTICAL_PADRAO + // Multiplicador Vertical
+					SUB_FONTE_PADRAO + // Subtipo da fonte
+					"0120" + // Coordenadas Y
+					COORDENADAS_MARGEM_X + // Coordenadas X
+					(produtoDescricao == null ? "" : produtoDescricao) + CODIGO_CR + // Texto a ser impresso
+
+					// Impressão: Cliente
+					// ==================
+					"1" + // Orientação: 1=Portrait, 2=Reverse Landscape, 3=Reverse Portrait, 4=Landscape
+					FONTE_PADRAO + // Fonte
+					MULTIPLICADOR_HORIZONTAL_PADRAO + // Multiplicador Horizontal
+					MULTIPLICADOR_VERTICAL_PADRAO + // Multiplicador Vertical
+					SUB_FONTE_PADRAO + // Subtipo da fonte
+					"0175" + // Coordenadas Y
+					COORDENADAS_MARGEM_X + // Coordenadas X
+					(cliente == null ? "" : cliente) + CODIGO_CR + // Texto a ser impresso
+
+					// Impressão: Zona
+					// ===============
+					"1" + // Orientação: 1=Portrait, 2=Reverse Landscape, 3=Reverse Portrait, 4=Landscape
+					FONTE_ZONA + // Fonte
+					MULTIPLICADOR_HORIZONTAL_ZONA + // Multiplicador Horizontal
+					MULTIPLICADOR_VERTICAL_ZONA + // Multiplicador Vertical
+					SUB_FONTE_ZONA + // Subtipo da fonte
+					"0380" + // Coordenadas Y
+					"0910" + // Coordenadas X
+					(zona == null ? "" : zona) + CODIGO_CR + // Texto a ser impresso
+
+					// Impressão: Transportadora
+					// =========================
+					"1" + // Orientação: 1=Portrait, 2=Reverse Landscape, 3=Reverse Portrait, 4=Landscape
+					FONTE_TRANSPORTADORA + // Fonte
+					MULTIPLICADOR_HORIZONTAL_TRANSPORTADORA + // Multiplicador Horizontal
+					MULTIPLICADOR_VERTICAL_TRANSPORTADORA + // Multiplicador Vertical
+					SUB_FONTE_TRANSPORTADORA + // Subtipo da fonte
+					"0380" + // Coordenadas Y
+					COORDENADAS_MARGEM_X + // Coordenadas X
+					(transportadora == null ? "" : transportadora) + CODIGO_CR + // Texto a ser impresso
+
+					// Impressão: UF/Cidade de destino
+					// ===============================
+					"1" + // Orientação: 1=Portrait, 2=Reverse Landscape, 3=Reverse Portrait, 4=Landscape
+					FONTE_LOCALIDADE_DESTINO + // Fonte
+					MULTIPLICADOR_HORIZONTAL_LOCALIDADE_DESTINO + // Multiplicador Horizontal
+					MULTIPLICADOR_VERTICAL_LOCALIDADE_DESTINO + // Multiplicador Vertical
+					SUB_FONTE_LOCALIDADE_DESTINO + // Subtipo da fonte
+					"0225" + // Coordenadas Y
+					COORDENADAS_MARGEM_X + // Coordenadas X
+					strUfCidadeDestino + CODIGO_CR + // Texto a ser impresso
+
+					// Impressão: NF
+					// =============
+					"1" + // Orientação: 1=Portrait, 2=Reverse Landscape, 3=Reverse Portrait, 4=Landscape
+					FONTE_NF + // Fonte
+					MULTIPLICADOR_HORIZONTAL_NF + // Multiplicador Horizontal
+					MULTIPLICADOR_VERTICAL_NF + // Multiplicador Vertical
+					SUB_FONTE_NF + // Subtipo da fonte
+					"0290" + // Coordenadas Y
+					COORDENADAS_MARGEM_X + // Coordenadas X
+					"NF." + (numeroNF == null ? "" : numeroNF) + CODIGO_CR + // Texto a ser impresso
+
+					// Impressão: Volume
+					// =================
+					"1" + // Orientação: 1=Portrait, 2=Reverse Landscape, 3=Reverse Portrait, 4=Landscape
+					FONTE_VOLUME + // Fonte
+					MULTIPLICADOR_HORIZONTAL_VOLUME + // Multiplicador Horizontal
+					MULTIPLICADOR_VERTICAL_VOLUME + // Multiplicador Vertical
+					SUB_FONTE_VOLUME + // Subtipo da fonte
+					"0290" + // Coordenadas Y
+					"0840" + // Coordenadas X
+					(strVolumeIndividualSobreTotal == null ? "" : strVolumeIndividualSobreTotal) + CODIGO_CR + // Texto a ser impresso
+
 					// Comandos de finalização da etiqueta
+					// ===================================
 					"Q0001" + CODIGO_CR + // Sets the quantity of labels to print
 					"E" + CODIGO_CR // Ends the job and exit from label formatting mode
 					;
@@ -1538,10 +1749,11 @@ namespace EtqWms
 			string strDestinoUF;
 			string strDestinoCidade;
 			string strCliente;
-			string strProduto;
-			string strProdutoAux;
+			string strProdutoDescricao;
+			string strProdutoDescricaoAux;
 			string strNsuEtiqueta;
-			string strVolume;
+			string strVolumeIndividual;
+			string strVolumeTotal;
 			string strIdentVolProdComposto;
 			EtiquetaDados etiqueta;
 			Log log = new Log();
@@ -1654,7 +1866,6 @@ namespace EtqWms
 					}
 					#endregion
 
-
 					strTranportadora = Global.filtraAcentuacao(etiqueta.transportadora_id == null ? "" : etiqueta.transportadora_id.ToUpper());
 					strZona = (etiqueta.zona_codigo == null ? "" : etiqueta.zona_codigo.ToUpper());
 					if (etiqueta.obs_3.Length > 0)
@@ -1668,7 +1879,7 @@ namespace EtqWms
 					strDestinoUF = etiqueta.destino_uf.ToUpper();
 					strDestinoCidade = Texto.iniciaisEmMaiusculas(Global.filtraAcentuacao(etiqueta.destino_cidade == null ? "" : etiqueta.destino_cidade));
 					strCliente = Global.filtraAcentuacao(etiqueta.nome_cliente == null ? "" : etiqueta.nome_cliente);
-					strProduto = Global.filtraAcentuacao(etiqueta.descricao == null ? "" : etiqueta.descricao);
+					strProdutoDescricao = Global.filtraAcentuacao(etiqueta.descricao == null ? "" : etiqueta.descricao);
 
 					if (opcaoSelecionada == FVolumeSeleciona.eOpcaoSelecao.VOLUME_UNICO)
 					{
@@ -1677,12 +1888,13 @@ namespace EtqWms
 							if (etiqueta.ctrlNumeracaoVolume[i].numeracaoVolume == numeroVolumeUnico)
 							{
 								strNsuEtiqueta = etiqueta.id_N1.ToString().PadLeft(3, '0') + "-" + etiqueta.sequencia.ToString().PadLeft(4, '0') + " / " + etiqueta.id_N3.ToString().PadLeft(4, '0');
-								strVolume = etiqueta.ctrlNumeracaoVolume[i].numeracaoVolume.ToString() + '/' + etiqueta.qtde_volumes_pedido.ToString();
+								strVolumeIndividual = etiqueta.ctrlNumeracaoVolume[i].numeracaoVolume.ToString();
+								strVolumeTotal = etiqueta.qtde_volumes_pedido.ToString();
 								strIdentVolProdComposto = etiqueta.ctrlNumeracaoVolume[i].identificacaoVolumeProdutoComposto;
 								if (strIdentVolProdComposto.Length > 0) strIdentVolProdComposto = strIdentVolProdComposto + " - ";
-								strProdutoAux = strIdentVolProdComposto + strProduto;
+								strProdutoDescricaoAux = strIdentVolProdComposto + strProdutoDescricao;
 
-								if (!montaDadosImpressaoEtiquetaIndividual(strTranportadora, strZona, strNumeroNF, strVolume, strCliente, strProdutoAux, strNsuEtiqueta, strDestinoUF, strDestinoCidade, out textoEtiqueta, out strMsgErro))
+								if (!montaDadosImpressaoEtiquetaIndividualCodeBar(strTranportadora, strZona, strNumeroNF, strVolumeIndividual, strVolumeTotal, strCliente, strProdutoDescricaoAux, etiqueta.id_N3, strDestinoUF, strDestinoCidade, out textoEtiqueta, out strMsgErro))
 								{
 									throw new Exception("Falha ao preparar os dados para a etiqueta do pedido " + etiqueta.pedido + ", produto (" + etiqueta.fabricante + ")" + etiqueta.produto + "!!");
 								}
@@ -1710,12 +1922,13 @@ namespace EtqWms
 							}
 
 							strNsuEtiqueta = etiqueta.id_N1.ToString().PadLeft(3, '0') + "-" + etiqueta.sequencia.ToString().PadLeft(4, '0') + " / " + etiqueta.id_N3.ToString().PadLeft(4, '0');
-							strVolume = etiqueta.ctrlNumeracaoVolume[i].numeracaoVolume.ToString() + '/' + etiqueta.qtde_volumes_pedido.ToString();
+							strVolumeIndividual = etiqueta.ctrlNumeracaoVolume[i].numeracaoVolume.ToString();
+							strVolumeTotal = etiqueta.qtde_volumes_pedido.ToString();
 							strIdentVolProdComposto = etiqueta.ctrlNumeracaoVolume[i].identificacaoVolumeProdutoComposto;
 							if (strIdentVolProdComposto.Length > 0) strIdentVolProdComposto = strIdentVolProdComposto + " - ";
-							strProdutoAux = strIdentVolProdComposto + strProduto;
+							strProdutoDescricaoAux = strIdentVolProdComposto + strProdutoDescricao;
 
-							if (!montaDadosImpressaoEtiquetaIndividual(strTranportadora, strZona, strNumeroNF, strVolume, strCliente, strProdutoAux, strNsuEtiqueta, strDestinoUF, strDestinoCidade, out textoEtiqueta, out strMsgErro))
+							if (!montaDadosImpressaoEtiquetaIndividualCodeBar(strTranportadora, strZona, strNumeroNF, strVolumeIndividual, strVolumeTotal, strCliente, strProdutoDescricaoAux, etiqueta.id_N3, strDestinoUF, strDestinoCidade, out textoEtiqueta, out strMsgErro))
 							{
 								throw new Exception("Falha ao preparar os dados para a etiqueta do pedido " + etiqueta.pedido + ", produto (" + etiqueta.fabricante + ")" + etiqueta.produto + "!!");
 							}
@@ -2020,7 +2233,7 @@ namespace EtqWms
 		#endregion
 
 		#region [ btnImprimirVolume ]
-		
+
 		#region [ btnImprimirVolume_Click ]
 		private void btnImprimirVolume_Click(object sender, EventArgs e)
 		{
