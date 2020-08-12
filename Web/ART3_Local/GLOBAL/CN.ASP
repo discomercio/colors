@@ -1,14 +1,10 @@
 <%
-
-'timeout bem grande para debug
-Session.Timeout=480
-
 '======================================================================================
 '*******   SITE: ARTVEN3 (BONSHOP) OU ARTVEN (FÁBRICA)   *******
 '======================================================================================
-'	Const ID_PARAM_SITE = "ArtBS"
+	Const ID_PARAM_SITE = "ArtBS"
 '	Const ID_PARAM_SITE = "AssTec"
-	Const ID_PARAM_SITE = "ArtFab"
+'	Const ID_PARAM_SITE = "ArtFab"
 	
 	
 	Const IdFormTargetArtvenBonshop = "fArtBS"
@@ -44,17 +40,11 @@ Session.Timeout=480
 
 	Const COD_FC_AMBIENTE = "L"
 
-	Const SERVIDOR_BD = "ITS-DBDEV\DESE"
-	Const NOME_BD = "ARCLUBE_DIS"
-	Const USUARIO_BD = "appAirClube"
+	Const SERVIDOR_BD = "Win2008R2BS,29981"
+	Const NOME_BD = "Artven2DIS"
+	Const USUARIO_BD = "artven2"
 	Const SCHEMA_BD = "dbo"
-	Const SENHA_BD = "0x00000000219ffb35810b0dff299b31" 'appAirClube
-    'em homologacao
-	'Const SERVIDOR_BD = "sqlserver.central85.com.br,29981"
-	'Const NOME_BD = "DIS_Homologacao"
-	'Const USUARIO_BD = "homologacao"
-	'Const SCHEMA_BD = "dbo"
-	'Const SENHA_BD = "0035ab977115650f4f07058be7dba5"
+	Const SENHA_BD = "000000007bbddfed3b85e97d47b91b"
 
 '	DADOS P/ CONEXÃO USADOS PELO RELATÓRIO DE PEDIDOS INDICADORES AO GRAVAR OS LANÇAMENTOS NO FLUXO DE CAIXA
 	Const SERVIDOR_BD_RPIFC = "Win2008R2BS,29981"
@@ -73,11 +63,10 @@ Session.Timeout=480
 	Const SENHA_BD_BS = "000000007bbddfed3b85e97d47b91b"
 
 '	Const SERVIDOR_BD_CEP = "Ora9iServer"
-	Const SERVIDOR_BD_CEP = "ITS-DBDEV\DESE"
-	Const NOME_BD_CEP = "AirClub_CEP"
-	Const USUARIO_BD_CEP = "CEP_Homologacao"
-	Const SENHA_BD_CEP = "0x003f9f6bf1d185434da50553e7573b"
-	'Const SENHA_BD_CEP_aberta = "np8#A5d53-T82z"
+	Const SERVIDOR_BD_CEP = "Win2008R2BS,29981"
+	Const NOME_BD_CEP = "CEP_Homologacao"
+	Const USUARIO_BD_CEP = "CEP_user"
+	Const SENHA_BD_CEP = "000000007bbddfed3b85e97d47b91b"
 
 '	A NUMERAÇÃO DO SUFIXO REFERE-SE À NUMERAÇÃO DO CNPJ
 	Const ID_NFE_EMITENTE__OLD01_01 = 1001
@@ -227,8 +216,7 @@ Session.Timeout=480
 	Const URL_FILE__E_LOGO_TOP_OLD03_CSS = "../Global/eLogoTopOLD03.css?v=002"
 	
 '	URL PARA ACESSO NA PÁGINA DE LOGIN DO PARCEIRO (PÁGINA C/ LOGIN DUPLO)
-	'Const URL_BASE_RELATIVA_SITE_ARTVEN3 = "/art3"
-    Const URL_BASE_RELATIVA_SITE_ARTVEN3 = ""
+	Const URL_BASE_RELATIVA_SITE_ARTVEN3 = "/art3"
 	Const URL_BASE_RELATIVA_SITE_ASSISTENCIA_TECNICA = "/assistenciatecnica"
 	
 '	Const URL_SITE_CLIENTE_PAGTO_CIELO = "http://web.bonshop.com.br/pagamento/clientecartao/default.asp"
