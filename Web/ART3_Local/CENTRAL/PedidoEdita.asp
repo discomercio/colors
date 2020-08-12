@@ -1,3 +1,7 @@
+<%
+	afazer: terminar de copiar do loja/pedidoedita.asp se esta for a solucao
+	%>
+
 <%@ Language=VBScript %>
 <%OPTION EXPLICIT%>
 <% Response.Buffer=True %>
@@ -2805,7 +2809,7 @@ function setarValorRadio(array, valor)
 	if cliente__tipo = ID_PF then s_aux="NOME DO CLIENTE" else s_aux="RAZÃO SOCIAL DO CLIENTE"
 %>
     <tr>
-	<td class="MD" align="left" colspan="2"><p class="Rf"><%=s_aux%></p>
+	<td align="left" colspan="2"><p class="Rf"><%=s_aux%></p>
 	
 		
 		<input id="cliente__nome" name="cliente__nome" class="TA" value="<%=s%>" maxlength="60" style="width:635px;" />
@@ -2842,8 +2846,6 @@ function setarValorRadio(array, valor)
 				    <% if blnPesquisaCEPNova then %>
 				    <button type="button" name="bPesqCepEndEtg" id="bPesqCepEndEtg" style='width:130px;font-size:10pt;' class="Botao" onclick="exibeJanelaCEP();">Pesquisar CEP</button>
 				    <% end if %>
-				    <a name="bLimparEndEtg" id="bLimparEndEtg" href="javascript:LimparCamposEndEtg(fPED)" title="limpa o endereço de entrega">
-					    <img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
 			    </td>
 			    </tr>
 			    </table>
@@ -2858,7 +2860,7 @@ function setarValorRadio(array, valor)
 					<td class="MD" width="20%" align="left"><p class="R">DDD</p><p class="C">
 						<input id="cliente__ddd_res" name="cliente__ddd_res" class="TA" value="<%=cliente__ddd_res%>" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fPED.EndEtg_tel_res.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p>
 					</td>
-					<td class="MD" align="left"><p class="R">TELEFONE RESIDENCIAL</p><p class="C">
+					<td align="left"><p class="R">TELEFONE RESIDENCIAL</p><p class="C">
 						<input id="cliente__tel_res" name="cliente__tel_res" class="TA" value="<%=telefone_formata(cliente__tel_res)%>" maxlength="11" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fPED.EndEtg_ddd_cel.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Telefone inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p>
 					</td>
 	            </tr>
@@ -2868,7 +2870,7 @@ function setarValorRadio(array, valor)
 					<td class="MD" width="20%" align="left"><p class="R">DDD</p><p class="C">
 						<input id="cliente__ddd_cel" name="cliente__ddd_cel" class="TA" value="<%=cliente__ddd_cel%>" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fPED.EndEtg_tel_cel.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p>
 					</td>
-					<td align="left" class="MD"><p class="R">CELULAR</p><p class="C">
+					<td align="left"><p class="R">CELULAR</p><p class="C">
 						<input id="cliente__tel_cel" name="cliente__tel_cel" class="TA" value="<%=telefone_formata(cliente__tel_cel)%>" maxlength="9" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fPED.EndEtg_obs.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Número de celular inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p>
 					</td>
 	            </tr>
@@ -2937,13 +2939,21 @@ function setarValorRadio(array, valor)
 
 
 
+<br>
+<%
+	dim estilo_superior_entrega 
+	estilo_superior_entrega = "Q"
+%>
 
 <% if Not blnEndEntregaEdicaoLiberada then %>
 <!--  ENDEREÇO DE ENTREGA  -->
 <%	
 	s = pedido_formata_endereco_entrega(r_pedido, r_cliente)
 %>		
-<table width="649" class="QS" cellspacing="0" style="table-layout:fixed">
+<table width="649" class="<%=estilo_superior_entrega%>" cellspacing="0" style="table-layout:fixed">
+	<%
+		estilo_superior_entrega = "QS"
+	%>
 	<tr>
 		<td align="left"><p class="Rf">ENDEREÇO DE ENTREGA</p><p class="C"><%=s%>&nbsp;</p></td>
 	</tr>
@@ -2973,7 +2983,10 @@ function setarValorRadio(array, valor)
 
 
         <%else%>
-            <table width="649" class="QS Habilitar_EndEtg_outroendereco" cellspacing="0">
+            <table width="649" class="<%=estilo_superior_entrega%> Habilitar_EndEtg_outroendereco" cellspacing="0">
+				<%
+					estilo_superior_entrega = "QS"
+				%>
 	            <tr>
 		            <td align="left">
 		            <p class="R">ENDEREÇO DE ENTREGA</p><p class="C">
@@ -3115,7 +3128,10 @@ function setarValorRadio(array, valor)
 
 
 
-    <table width="649" class="QS" cellspacing="0">
+    <table width="649" class="<%=estilo_superior_entrega%>" cellspacing="0">
+		<%
+			estilo_superior_entrega = "QS"
+		%>
 	    <tr>
             <%
                 s = "ENDEREÇO"

@@ -1416,7 +1416,7 @@ function fPEDPreDevolucao(f) {
 	
 	
 	<tr>
-		<td class="MC" align="left"><p class="Rf">ENDEREÇO</p><p class="C"><%=strEnderecoOriginal%>&nbsp;</p></td>
+		<td align="left"><p class="Rf">ENDEREÇO</p><p class="C"><%=strEnderecoOriginal%>&nbsp;</p></td>
 	</tr>
 	
 	
