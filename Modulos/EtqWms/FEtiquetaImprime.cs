@@ -1112,12 +1112,23 @@ namespace EtqWms
 				//	  The format is: Rthvoooyyyyxxxx[data string]
 				//		R : Print direction. ‘1’, ‘2’, ‘3’ or ‘4’. (orientation, 1 represents for portrait)
 				//		t : Bar code type. The range can be ‘A’ through ‘T’ and ‘a’ through ‘z’, each character represents a bar code type and rule.Refer to section A10 for more details on bar codes.
+				//				Bar code E: Code 128 including subset A, B and C
+				//					’E’ = Type for readable string
+				//					’e’ = Type for non-readable string
 				//		h : ‘0’ through ‘9’ and ‘A’ through ‘O’ represent the width of wide bar. (‘A’=10, ‘B’= 11, ..and ‘O’= 24).
 				//		v : ‘0’ through ‘9’ and ‘A’ through ‘O’ represent the width of narrow bar. (‘A’=10, ‘B’= 11, ..and ‘O’= 24).
 				//		ooo : A 3-digit value that represents the bar code height. (bar code height, 000 stands for default height)
 				//		yyyy : A 4 digit value for Y coordinate. The lower left corner is the origin of the XY coordinate system. The Y value is the vertical offset from origin point.
 				//		xxxx : A 4-digit value for X coordinate. The lower left corner is the origin point of the XY coordinate system.The X value is the horizontal offset from origin point.
 				//		Data string: A string of data with maximum 255 characters in length, ended by <CR> or pre-defined EOL(end of line) code.The length of the string may be varied from the type of the bar code.
+				//				The default code subset is B. To select subset A, place an ASCII ‘A’ (decimal 65 or hex 41) before the data to be encoded.
+				//				To select subset C, place an ASCII ‘C’(DEC67, HEX43) before the data to be encoded. Subset C can only encode numeric data with even byte count.
+				//				IMPORTANTE:
+				//					1) Se o 'data string' for um texto que começar com a letra 'A' (ex: ABOBORA), será interpretado que a primeira letra 'A' é o
+				//					   comando para usar o subset A e 'BOBORA' é o texto a ser impresso.
+				//					2) Se o 'data string' for um texto que começar com a letra 'C' (ex: CARAMBOLA), será interpretado que a letra 'C' é o comando
+				//					   para usar o subset C e 'ARAMBOLA' é o texto a ser impresso, mas como o subset C aceita somente dados numéricos, o código
+				//					   de barras impresso será de um texto vazio (sem conteúdo). Além disso, para usar o subset C, o número de dígitos deve ser sempre par.
 
 				textoImpressaoEtiqueta =
 					// Comandos de inicialização da impressora
