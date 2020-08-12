@@ -3034,17 +3034,17 @@ end function
     <%if eh_cpf then%>
 
         <!-- ************   ENDEREÇO DE ENTREGA PARA PF: TELEFONES   ************ -->
-        <!-- pegamos todos os atuais -->
-        <input type="hidden" id="EndEtg_ddd_res" name="EndEtg_ddd_res" value="<%=Trim("" & rs("ddd_res"))%>"/>
-        <input type="hidden" id="EndEtg_tel_res" name="EndEtg_tel_res" value="<%=Trim("" & rs("tel_res"))%>"/>
-        <input type="hidden" id="EndEtg_ddd_cel" name="EndEtg_ddd_cel" value="<%=Trim("" & rs("ddd_cel"))%>"/>
-        <input type="hidden" id="EndEtg_tel_cel" name="EndEtg_tel_cel" value="<%=Trim("" & rs("tel_cel"))%>"/>
-        <input type="hidden" id="EndEtg_ddd_com" name="EndEtg_ddd_com" value="<%=Trim("" & rs("ddd_com"))%>"/>
-        <input type="hidden" id="EndEtg_tel_com" name="EndEtg_tel_com" value="<%=Trim("" & rs("tel_com"))%>"/>
-        <input type="hidden" id="EndEtg_ramal_com" name="EndEtg_ramal_com" value="<%=Trim("" & rs("ramal_com"))%>"/>
-        <input type="hidden" id="EndEtg_ddd_com_2" name="EndEtg_ddd_com_2" value="<%=Trim("" & rs("ddd_com_2"))%>"/>
-        <input type="hidden" id="EndEtg_tel_com_2" name="EndEtg_tel_com_2" value="<%=Trim("" & rs("tel_com_2"))%>"/>
-        <input type="hidden" id="EndEtg_ramal_com_2" name="EndEtg_ramal_com_2" value="<%=Trim("" & rs("ramal_com_2"))%>"/>
+        <!-- pegamos todos em branco -->
+        <input type="hidden" id="EndEtg_ddd_res" name="EndEtg_ddd_res" value=""/>
+        <input type="hidden" id="EndEtg_tel_res" name="EndEtg_tel_res" value=""/>
+        <input type="hidden" id="EndEtg_ddd_cel" name="EndEtg_ddd_cel" value=""/>
+        <input type="hidden" id="EndEtg_tel_cel" name="EndEtg_tel_cel" value=""/>
+        <input type="hidden" id="EndEtg_ddd_com" name="EndEtg_ddd_com" value=""/>
+        <input type="hidden" id="EndEtg_tel_com" name="EndEtg_tel_com" value=""/>
+        <input type="hidden" id="EndEtg_ramal_com" name="EndEtg_ramal_com" value=""/>
+        <input type="hidden" id="EndEtg_ddd_com_2" name="EndEtg_ddd_com_2" value=""/>
+        <input type="hidden" id="EndEtg_tel_com_2" name="EndEtg_tel_com_2" value=""/>
+        <input type="hidden" id="EndEtg_ramal_com_2" name="EndEtg_ramal_com_2" value=""/>
 
     <%else%>
         

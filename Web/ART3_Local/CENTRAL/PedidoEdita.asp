@@ -1,7 +1,3 @@
-<%
-	afazer: terminar de copiar do loja/pedidoedita.asp se esta for a solucao
-	%>
-
 <%@ Language=VBScript %>
 <%OPTION EXPLICIT%>
 <% Response.Buffer=True %>
@@ -2970,17 +2966,17 @@ function setarValorRadio(array, valor)
 
         <%if eh_cpf then%>
             <!-- ************   ENDEREÇO DE ENTREGA PARA CLIENTE PF   ************ -->
-            <!-- Pegamos todos os atuais. Sem campos editáveis. Pegamos os atuais do cadastro do cliente, não do pedido em si. -->
-            <input type="hidden" id="EndEtg_tipo_pessoa" name="EndEtg_tipo_pessoa" value="PF"/>
-            <input type="hidden" id="EndEtg_cnpj_cpf" name="EndEtg_cnpj_cpf" value="<%=r_cliente.cnpj_cpf%>"/>
-            <input type="hidden" id="EndEtg_ie" name="EndEtg_ie" value="<%=r_cliente.ie%>"/>
-            <input type="hidden" id="EndEtg_contribuinte_icms_status" name="EndEtg_contribuinte_icms_status" value="<%=r_cliente.contribuinte_icms_status%>"/>
-            <input type="hidden" id="EndEtg_rg" name="EndEtg_rg" value="<%=r_cliente.rg%>"/>
-            <input type="hidden" id="EndEtg_produtor_rural_status" name="EndEtg_produtor_rural_status" value="<%=r_cliente.produtor_rural_status%>"/>
-            <input type="hidden" id="EndEtg_email" name="EndEtg_email" value="<%=r_cliente.email%>"/>
-            <input type="hidden" id="EndEtg_email_xml" name="EndEtg_email_xml" value="<%=r_cliente.email_xml%>"/>
-            <input type="hidden" id="EndEtg_nome" name="EndEtg_nome" value="<%=r_cliente.nome%>"/>
-
+			<!-- Pegamos todos os atuais. Sem campos editáveis. Pegamos os atuais dos dados cadastrais do cliente, não do campo em si. -->
+			<!-- Como não são editáveis, sempre vão ser iguais aos cadastrais. E se removermos o endereço de entrega e informarmos novamente, eles devem ser preenchidos. -->
+			<input type="hidden" id="EndEtg_tipo_pessoa" name="EndEtg_tipo_pessoa" value="PF"/>
+			<input type="hidden" id="EndEtg_cnpj_cpf" name="EndEtg_cnpj_cpf" value="<%=cliente__cnpj_cpf%>"/>
+			<input type="hidden" id="EndEtg_ie" name="EndEtg_ie" value="<%=cliente__ie%>"/>
+			<input type="hidden" id="EndEtg_contribuinte_icms_status" name="EndEtg_contribuinte_icms_status" value="<%=cliente__icms%>"/>
+			<input type="hidden" id="EndEtg_rg" name="EndEtg_rg" value="<%=cliente__rg%>"/>
+			<input type="hidden" id="EndEtg_produtor_rural_status" name="EndEtg_produtor_rural_status" value="<%=cliente__produtor_rural_status%>"/>
+			<input type="hidden" id="EndEtg_email" name="EndEtg_email" value="<%=cliente__email%>"/>
+			<input type="hidden" id="EndEtg_email_xml" name="EndEtg_email_xml" value="<%=cliente__email_xml%>"/>
+			<input type="hidden" id="EndEtg_nome" name="EndEtg_nome" value="<%=cliente__nome%>"/>
 
         <%else%>
             <table width="649" class="<%=estilo_superior_entrega%> Habilitar_EndEtg_outroendereco" cellspacing="0">
@@ -3012,19 +3008,16 @@ function setarValorRadio(array, valor)
 	            </tr>
             </table>
 
-                    <!-- ************   PJ: CNPJ/CONTRIBUINTE ICMS/IE - DO ENDEREÇO DE ENTREGA DE PJ ************ -->
-                    <!-- ************   PF: CPF/PRODUTOR RURAL/CONTRIBUINTE ICMS/IE - DO ENDEREÇO DE ENTREGA DE PJ  ************ -->
-                    <!-- fizemos dois conjuntos diferentes de campos porque a ordem é muito diferente -->
-                    <!-- EndEtg_rg EndEtg_email e EndEtg_email_xml vem diretamente do t_CLIENTE -->
-
-            <input type="hidden" id="EndEtg_cnpj_cpf" name="EndEtg_cnpj_cpf" />
-            <input type="hidden" id="EndEtg_ie" name="EndEtg_ie" />
-            <input type="hidden" id="EndEtg_contribuinte_icms_status" name="EndEtg_contribuinte_icms_status" />
-            <input type="hidden" id="EndEtg_rg" name="EndEtg_rg" value="<%=r_cliente.rg%>"/>
-            <input type="hidden" id="EndEtg_produtor_rural_status" name="EndEtg_produtor_rural_status" />
-            <input type="hidden" id="EndEtg_email" name="EndEtg_email" value="<%=r_cliente.email%>"/>
-            <input type="hidden" id="EndEtg_email_xml" name="EndEtg_email_xml" value="<%=r_cliente.email_xml%>"/>
-
+			<!-- ************   PJ: CNPJ/CONTRIBUINTE ICMS/IE - DO ENDEREÇO DE ENTREGA DE PJ ************ -->
+			<!-- ************   PF: CPF/PRODUTOR RURAL/CONTRIBUINTE ICMS/IE - DO ENDEREÇO DE ENTREGA DE PJ  ************ -->
+			<!-- fizemos dois conjuntos diferentes de campos porque a ordem é muito diferente -->
+			<input type="hidden" id="EndEtg_cnpj_cpf" name="EndEtg_cnpj_cpf" />
+			<input type="hidden" id="EndEtg_ie" name="EndEtg_ie" />
+			<input type="hidden" id="EndEtg_contribuinte_icms_status" name="EndEtg_contribuinte_icms_status" />
+			<input type="hidden" id="EndEtg_rg" name="EndEtg_rg" value="<%=cliente__rg%>"/>
+			<input type="hidden" id="EndEtg_produtor_rural_status" name="EndEtg_produtor_rural_status" />
+			<input type="hidden" id="EndEtg_email" name="EndEtg_email" value="<%=cliente__email%>"/>
+			<input type="hidden" id="EndEtg_email_xml" name="EndEtg_email_xml" value="<%=cliente__email_xml%>"/>
 
             <table width="649" class="QS Habilitar_EndEtg_outroendereco Mostrar_EndEtg_pj" cellspacing="0">
 	            <tr>
@@ -3177,17 +3170,17 @@ function setarValorRadio(array, valor)
         <%if eh_cpf then%>
 
             <!-- ************   ENDEREÇO DE ENTREGA PARA PF: TELEFONES   ************ -->
-            <!-- Pegamos todos os atuais. Sem campos editáveis. Pegamos os atuais do cadastro do cliente, não do pedido em si. -->
-            <input type="hidden" id="EndEtg_ddd_res" name="EndEtg_ddd_res" value="<%=r_cliente.ddd_res%>"/>
-            <input type="hidden" id="EndEtg_tel_res" name="EndEtg_tel_res" value="<%=r_cliente.tel_res%>"/>
-            <input type="hidden" id="EndEtg_ddd_cel" name="EndEtg_ddd_cel" value="<%=r_cliente.ddd_cel%>"/>
-            <input type="hidden" id="EndEtg_tel_cel" name="EndEtg_tel_cel" value="<%=r_cliente.tel_cel%>"/>
-            <input type="hidden" id="EndEtg_ddd_com" name="EndEtg_ddd_com" value="<%=r_cliente.ddd_com%>"/>
-            <input type="hidden" id="EndEtg_tel_com" name="EndEtg_tel_com" value="<%=r_cliente.tel_com%>"/>
-            <input type="hidden" id="EndEtg_ramal_com" name="EndEtg_ramal_com" value="<%=r_cliente.ramal_com%>"/>
-            <input type="hidden" id="EndEtg_ddd_com_2" name="EndEtg_ddd_com_2" value="<%=r_cliente.ddd_com_2%>"/>
-            <input type="hidden" id="EndEtg_tel_com_2" name="EndEtg_tel_com_2" value="<%=r_cliente.tel_com_2%>"/>
-            <input type="hidden" id="EndEtg_ramal_com_2" name="EndEtg_ramal_com_2" value="<%=r_cliente.ramal_com_2%>"/>
+			<!-- Pegamos todos os atuais. Sem campos editáveis. -->
+            <input type="hidden" id="EndEtg_ddd_res" name="EndEtg_ddd_res" value="<%=r_pedido.EndEtg_ddd_res%>"/>
+            <input type="hidden" id="EndEtg_tel_res" name="EndEtg_tel_res" value="<%=r_pedido.EndEtg_tel_res%>"/>
+            <input type="hidden" id="EndEtg_ddd_cel" name="EndEtg_ddd_cel" value="<%=r_pedido.EndEtg_ddd_cel%>"/>
+            <input type="hidden" id="EndEtg_tel_cel" name="EndEtg_tel_cel" value="<%=r_pedido.EndEtg_tel_cel%>"/>
+            <input type="hidden" id="EndEtg_ddd_com" name="EndEtg_ddd_com" value="<%=r_pedido.EndEtg_ddd_com%>"/>
+            <input type="hidden" id="EndEtg_tel_com" name="EndEtg_tel_com" value="<%=r_pedido.EndEtg_tel_com%>"/>
+            <input type="hidden" id="EndEtg_ramal_com" name="EndEtg_ramal_com" value="<%=r_pedido.EndEtg_ramal_com%>"/>
+            <input type="hidden" id="EndEtg_ddd_com_2" name="EndEtg_ddd_com_2" value="<%=r_pedido.EndEtg_ddd_com_2%>"/>
+            <input type="hidden" id="EndEtg_tel_com_2" name="EndEtg_tel_com_2" value="<%=r_pedido.EndEtg_tel_com_2%>"/>
+            <input type="hidden" id="EndEtg_ramal_com_2" name="EndEtg_ramal_com_2" value="<%=r_pedido.EndEtg_ramal_com_2%>"/>
 
         <%else%>
         
