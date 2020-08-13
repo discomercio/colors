@@ -1533,6 +1533,13 @@ var blnConfirmaDifRAeValores=false;
                         f.EndEtg_ie_PJ.focus();
                         return;
                     }
+                    if (f.EndEtg_contribuinte_icms_status_PJ[2].checked) {
+                        if (f.EndEtg_ie_PJ.value != "") {
+                            alert("Endereço de entrega: se o Contribuinte ICMS é isento, o campo IE deve ser vazio!");
+                            f.EndEtg_ie_PF.focus();
+                            return;
+                        }
+                    }
 
                     if (trim(f.EndEtg_nome.value) == "") {
                         alert('Preencha a razão social no endereço de entrega!!');

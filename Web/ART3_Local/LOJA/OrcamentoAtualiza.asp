@@ -512,8 +512,18 @@
                     EndEtg_nome = ""
                     end if
 
-                end if
+				'limpeza de campos EndEtg
+				if blnEndEtgComDados and EndEtg_tipo_pessoa = "PJ" then
+					EndEtg_produtor_rural_status = converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_INICIAL)
+					end if
+				if blnEndEtgComDados and EndEtg_tipo_pessoa <> "PJ" then
+					if converte_numero(EndEtg_produtor_rural_status) = converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_NAO) then
+						EndEtg_contribuinte_icms_status = COD_ST_CLIENTE_CONTRIBUINTE_ICMS_INICIAL
+						EndEtg_ie = ""
+						end if
+					end if
 
+                end if
 
 			if blnEndEtgComDados then
                 if EndEtg_endereco="" then
@@ -574,7 +584,7 @@
 			        alerta="DADOS CADASTRAIS: PREENCHA O TELEFONE."
 			        end if
 			
-				if  eh_cpf then
+				if eh_cpf then
                     if cliente__produtor_rural = "" then
                         alerta = "Dados cadastrais: informe se o cliente é produtor rural ou não!!"
                     elseif converte_numero(cliente__produtor_rural) = converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_NAO) then
@@ -596,7 +606,7 @@
                             end if
                         end if
 					end if
-					
+
 			    if	cliente__ie <> "" then 
 				    if Not isInscricaoEstadualValida(cliente__ie, endereco__uf) then
 					    alerta="Preencha a IE (Inscrição Estadual) com um número válido!!" & _

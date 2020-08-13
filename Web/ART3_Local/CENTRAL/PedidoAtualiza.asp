@@ -805,6 +805,17 @@
                     EndEtg_nome = ""
                     end if
 
+				'limpeza de campos EndEtg
+				if blnEndEtgComDados and EndEtg_tipo_pessoa = "PJ" then
+					EndEtg_produtor_rural_status = converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_INICIAL)
+					end if
+				if blnEndEtgComDados and EndEtg_tipo_pessoa <> "PJ" then
+					if converte_numero(EndEtg_produtor_rural_status) = converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_NAO) then
+						EndEtg_contribuinte_icms_status = COD_ST_CLIENTE_CONTRIBUINTE_ICMS_INICIAL
+						EndEtg_ie = ""
+						end if
+					end if
+
                 end if
 
 
