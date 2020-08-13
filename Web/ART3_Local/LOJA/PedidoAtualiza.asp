@@ -809,8 +809,12 @@
                 blnEndEtgComDados = true
                 end if
             if r_pedido.st_memorizacao_completa_enderecos <> 0 and blnUsarMemorizacaoCompletaEnderecos then
+
+				if (EndEtg_email<>"") Or (EndEtg_email_xml<>"") then
+					blnEndEtgComDados = true
+					end if
+
                 if not eh_cpf then
-                    'EndEtg_email e EndEtg_email_xml não entram na verificação porque sempre são preenchidos
 			        if (EndEtg_ddd_res<>"") Or (EndEtg_tel_res<>"") Or (EndEtg_ddd_com<>"") Or (EndEtg_tel_com<>"") Or (EndEtg_ramal_com<>"") then
                         blnEndEtgComDados = true
                         end if
@@ -819,12 +823,6 @@
                         end if
 			        if (EndEtg_cnpj_cpf<>"") Or (EndEtg_contribuinte_icms_status<>"") Or (EndEtg_produtor_rural_status<>"") Or (EndEtg_ie<>"") Or (EndEtg_rg<>"") then
                         blnEndEtgComDados = true
-                        end if
-
-                    'limpamos os campos que devem ser removidos (PJ)
-                    if not blnEndEtgComDados then
-                        EndEtg_email = ""
-                        EndEtg_email_xml = ""
                         end if
                     end if
 

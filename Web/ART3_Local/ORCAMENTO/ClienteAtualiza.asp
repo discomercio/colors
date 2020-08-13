@@ -1415,6 +1415,11 @@ function fORCConcluir( f ){
                     f.EndEtg_tel_com.focus();
                     return;
                 }
+                if (trim(f.EndEtg_ddd_com.value) == "" && trim(f.EndEtg_ramal_com.value) != "") {
+                    alert('Endereço de entrega: DDD comercial inválido!!');
+                    f.EndEtg_ddd_com.focus();
+                    return;
+                }
 
 
                 if (!ddd_ok(f.EndEtg_ddd_com_2.value)) {
@@ -1435,6 +1440,11 @@ function fORCConcluir( f ){
                 if ((f.EndEtg_tel_com_2.value == "") && (f.EndEtg_ddd_com_2.value != "")) {
                     alert('Endereço de entrega: preencha o telefone.');
                     f.EndEtg_tel_com_2.focus();
+                    return;
+                }
+                if (trim(f.EndEtg_ddd_com_2.value) == "" && trim(f.EndEtg_ramal_com_2.value) != "") {
+                    alert('Endereço de entrega: DDD comercial 2 inválido!!');
+                    f.EndEtg_ddd_com_2.focus();
                     return;
                 }
 

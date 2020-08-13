@@ -907,7 +907,11 @@ end function
                     f.EndEtg_tel_com.focus();
                     return;
                 }
-
+                if (trim(f.EndEtg_ddd_com.value) == "" && trim(f.EndEtg_ramal_com.value) != "") {
+                    alert('Endereço de entrega: DDD comercial inválido!!');
+                    f.EndEtg_ddd_com.focus();
+                    return;
+                }
 
                 if (!ddd_ok(f.EndEtg_ddd_com_2.value)) {
                     alert('Endereço de entrega: DDD inválido!!');
@@ -927,6 +931,11 @@ end function
                 if ((f.EndEtg_tel_com_2.value == "") && (f.EndEtg_ddd_com_2.value != "")) {
                     alert('Endereço de entrega: preencha o telefone.');
                     f.EndEtg_tel_com_2.focus();
+                    return;
+                }
+                if (trim(f.EndEtg_ddd_com_2.value) == "" && trim(f.EndEtg_ramal_com_2.value) != "") {
+                    alert('Endereço de entrega: DDD comercial 2 inválido!!');
+                    f.EndEtg_ddd_com_2.focus();
                     return;
                 }
 
@@ -1366,6 +1375,11 @@ end function
                 f.tel_com_2.focus();
                 return;
             }
+            if (trim(f.ddd_com_2.value) == "" && trim(f.ramal_com_2.value) != "") {
+                alert('DDD comercial 2 inválido!!');
+                f.ddd_com_2.focus();
+                return;
+            }
 
         }
 
@@ -1393,6 +1407,11 @@ end function
                 f.tel_com.focus();
                 return;
             }
+        }
+        if (trim(f.ddd_com.value) == "" && trim(f.ramal_com.value) != "") {
+            alert('DDD comercial inválido!!');
+            f.ddd_com.focus();
+            return;
         }
 
         if (eh_cpf) {

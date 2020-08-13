@@ -772,6 +772,11 @@ function LimparCamposEndEtg(f) {
 	f.EndEtg_cep.value = "";
     f.EndEtg_obs.selectedIndex = 0;
 
+    <%if blnUsarMemorizacaoCompletaEnderecos then %>
+		f.EndEtg_email.value = "";
+		f.EndEtg_email_xml.value = "";
+    <% end if%>
+
     <%if blnUsarMemorizacaoCompletaEnderecos and not eh_cpf then %>
         f.EndEtg_tipo_pessoa[0].checked = false;
         f.EndEtg_tipo_pessoa[1].checked = false;
@@ -1152,7 +1157,12 @@ var blnConfirmaDifRAeValores=false;
 		if (trim(f.EndEtg_bairro.value)!="") blnTemEndEntrega=true;
 		if (trim(f.EndEtg_cidade.value)!="") blnTemEndEntrega=true;
 		if (trim(f.EndEtg_uf.value)!="") blnTemEndEntrega=true;
-		if (trim(f.EndEtg_cep.value)!="") blnTemEndEntrega=true;
+        if (trim(f.EndEtg_cep.value) != "") blnTemEndEntrega = true;
+
+<%if blnUsarMemorizacaoCompletaEnderecos then %>
+        if (trim(f.EndEtg_email.value) != "") blnTemEndEntrega = true;
+        if (trim(f.EndEtg_email_xml.value) != "") blnTemEndEntrega = true;
+<% end if%>
 
 <%if blnUsarMemorizacaoCompletaEnderecos and not eh_cpf then %>
 
@@ -1577,7 +1587,11 @@ var blnConfirmaDifRAeValores=false;
                         f.EndEtg_tel_com.focus();
                         return;
                     }
-
+                    if (trim(f.EndEtg_ddd_com.value) == "" && trim(f.EndEtg_ramal_com.value) != "") {
+                        alert('Endereço de entrega: DDD comercial inválido!!');
+                        f.EndEtg_ddd_com.focus();
+                        return;
+                    }
 
                     if (!ddd_ok(f.EndEtg_ddd_com_2.value)) {
                         alert('Endereço de entrega: DDD inválido!!');
@@ -1597,6 +1611,11 @@ var blnConfirmaDifRAeValores=false;
                     if ((f.EndEtg_tel_com_2.value == "") && (f.EndEtg_ddd_com_2.value != "")) {
                         alert('Endereço de entrega: preencha o telefone.');
                         f.EndEtg_tel_com_2.focus();
+                        return;
+                    }
+                    if (trim(f.EndEtg_ddd_com_2.value) == "" && trim(f.EndEtg_ramal_com_2.value) != "") {
+                        alert('Endereço de entrega: DDD comercial 2 inválido!!');
+                        f.EndEtg_ddd_com_2.focus();
                         return;
                     }
 
@@ -1709,6 +1728,21 @@ var blnConfirmaDifRAeValores=false;
 
                 }
 <%end if%>
+
+<%if blnUsarMemorizacaoCompletaEnderecos then %>
+				//validar enderecos de email
+				if ((trim(f.EndEtg_email.value) != "") && (!email_ok(f.EndEtg_email.value))) {
+                    alert('Endereço de entrega: e-mail inválido!!');
+                    f.EndEtg_email.focus();
+					return;
+				}
+
+				if ((trim(f.EndEtg_email_xml.value) != "") && (!email_ok(f.EndEtg_email_xml.value))) {
+                    alert('Endereço de entrega: e-mail (XML) inválido!!');
+                    f.EndEtg_email_xml.focus();
+					return;
+				}
+<% end if%>
 
 			}
 		}
@@ -1953,7 +1987,7 @@ var blnConfirmaDifRAeValores=false;
 <!-- ****************************************************** -->
 <!-- **********  PÁGINA PARA EDITAR O PRÉ-PEDIDO  ********** -->
 <!-- ****************************************************** -->
-<body id="corpoPagina" onload="processaFormaPagtoDefault();trataProdutorRural()">
+<body id="corpoPagina" onload="processaFormaPagtoDefault();">
 <center>
 
 <!-- #include file = "../global/JanelaBuscaCEP.htm"    -->
@@ -2160,7 +2194,7 @@ var blnConfirmaDifRAeValores=false;
 
 	
 
-	<table width="649" class="QS" cellspacing="0" id="t_contribuinte_icms" onload="trataProdutorRural();">
+	<table width="649" class="QS" cellspacing="0" id="t_contribuinte_icms">
 		<tr>
 			<%s=cliente__ie%>
 			<td width="210" class="MD" align="left"><p class="R">IE</p><p class="C">
@@ -2395,8 +2429,6 @@ var blnConfirmaDifRAeValores=false;
         <input type="hidden" id="EndEtg_contribuinte_icms_status" name="EndEtg_contribuinte_icms_status" value="<%=cliente__icms%>"/>
         <input type="hidden" id="EndEtg_rg" name="EndEtg_rg" value="<%=cliente__rg%>"/>
         <input type="hidden" id="EndEtg_produtor_rural_status" name="EndEtg_produtor_rural_status" value="<%=cliente__produtor_rural_status%>"/>
-        <input type="hidden" id="EndEtg_email" name="EndEtg_email" value="<%=cliente__email%>"/>
-        <input type="hidden" id="EndEtg_email_xml" name="EndEtg_email_xml" value="<%=cliente__email_xml%>"/>
         <input type="hidden" id="EndEtg_nome" name="EndEtg_nome" value="<%=cliente__nome%>"/>
 
     <%else%>
@@ -2437,8 +2469,6 @@ var blnConfirmaDifRAeValores=false;
         <input type="hidden" id="EndEtg_contribuinte_icms_status" name="EndEtg_contribuinte_icms_status" />
         <input type="hidden" id="EndEtg_rg" name="EndEtg_rg" value="<%=cliente__rg%>"/>
         <input type="hidden" id="EndEtg_produtor_rural_status" name="EndEtg_produtor_rural_status" />
-        <input type="hidden" id="EndEtg_email" name="EndEtg_email" value="<%=cliente__email%>"/>
-        <input type="hidden" id="EndEtg_email_xml" name="EndEtg_email_xml" value="<%=cliente__email_xml%>"/>
 
         <table width="649" class="QS Habilitar_EndEtg_outroendereco Mostrar_EndEtg_pj" cellspacing="0">
 	        <tr>
@@ -2617,7 +2647,7 @@ var blnConfirmaDifRAeValores=false;
 	            <td class="MD MC" width="20%" align="left"><p class="R">DDD</p><p class="C">
 		            <input id="EndEtg_ddd_cel" name="EndEtg_ddd_cel" class="TA" value="<%=r_orcamento.EndEtg_ddd_cel%>" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fORC.EndEtg_tel_cel.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p></td>
 	            <td align="left" class="MC"><p class="R">CELULAR</p><p class="C">
-		            <input id="EndEtg_tel_cel" name="EndEtg_tel_cel" class="TA" value="<%=r_orcamento.EndEtg_tel_cel%>" maxlength="9" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fORC.EndEtg_obs.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Número de celular inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p></td>
+		            <input id="EndEtg_tel_cel" name="EndEtg_tel_cel" class="TA" value="<%=r_orcamento.EndEtg_tel_cel%>" maxlength="9" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fORC.EndEtg_email.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Número de celular inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p></td>
 	            </tr>
             </table>
 	
@@ -2639,12 +2669,30 @@ var blnConfirmaDifRAeValores=false;
 	                <input id="EndEtg_tel_com_2" name="EndEtg_tel_com_2" class="TA" value="<%=r_orcamento.EndEtg_tel_com_2%>" maxlength="9" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fORC.EndEtg_ramal_com_2.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Telefone inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p>
 	                </td>
 	                <td align="left" class="MC"><p class="R">RAMAL</p><p class="C">
-	                <input id="EndEtg_ramal_com_2" name="EndEtg_ramal_com_2" class="TA" value="<%=r_orcamento.EndEtg_ramal_com_2%>" maxlength="4" size="6" onkeypress="if (digitou_enter(true)) fORC.EndEtg_obs.focus(); filtra_numerico();" /></p>
+	                <input id="EndEtg_ramal_com_2" name="EndEtg_ramal_com_2" class="TA" value="<%=r_orcamento.EndEtg_ramal_com_2%>" maxlength="4" size="6" onkeypress="if (digitou_enter(true)) fORC.EndEtg_email.focus(); filtra_numerico();" /></p>
 	                </td>
 	            </tr>
             </table>
 
         <% end if %>
+
+		<!-- ************   E-MAIL   ************ -->
+		<table width="649" class="QS" cellspacing="0">
+			<tr>
+			<td width="100%" align="left"><p class="R">E-MAIL</p><p class="C">
+				<input id="EndEtg_email" name="EndEtg_email" class="TA" value="<%=r_orcamento.EndEtg_email%>" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fORC.EndEtg_email_xml.focus(); filtra_email();"></p></td>
+			</tr>
+		</table>
+
+		<!-- ************   E-MAIL (XML)  ************ -->
+		<table width="649" class="QS" cellspacing="0">
+			<tr>
+			<td width="100%" align="left"><p class="R">E-MAIL (XML)</p><p class="C">
+				<input id="EndEtg_email_xml" name="EndEtg_email_xml" class="TA" value="<%=r_orcamento.EndEtg_email_xml%>" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fORC.EndEtg_obs.focus(); filtra_email();"></p></td>
+			</tr>
+		</table>
+
+
     <%end if%> <% 'blnUsarMemorizacaoCompletaEnderecos %>
 
 
