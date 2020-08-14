@@ -55,7 +55,7 @@
 
 	dim alerta
 	dim s, s_aux, s_fabricante, s_nome_fabricante, s_produto, s_nome_produto, s_nome_produto_html, s_cadastrado_por
-	dim s_entrada_de, s_entrada_ate, ckb_especial, ckb_saldo, ckb_compras, ckb_kit, ckb_devolucao
+	dim s_entrada_de, s_entrada_ate, ckb_especial, ckb_saldo, ckb_compras, ckb_kit, ckb_devolucao, s_nf_entrada_de, s_nf_entrada_ate
 	dim rb_saida
     dim c_empresa
 
@@ -70,6 +70,8 @@
 	ckb_compras = Trim(Request.Form("ckb_compras"))
 	ckb_kit = Trim(Request.Form("ckb_kit"))
 	ckb_devolucao = Trim(Request.Form("ckb_devolucao"))
+	s_nf_entrada_de = Trim(Request.Form("c_nf_entrada_de"))
+	s_nf_entrada_ate = Trim(Request.Form("c_nf_entrada_ate"))
 	rb_saida = Ucase(Trim(Request.Form("rb_saida")))
 	c_empresa = Trim(Request.Form("c_empresa"))
 
@@ -223,6 +225,18 @@
 				end if
 			if s <> "" then
 				Response.Write "Saldo de produtos: " & s
+				Response.Write "<br>"
+				end if
+
+			s = ""
+			s_aux = s_nf_entrada_de
+			if s_aux = "" then s_aux = "N.I."
+			s = s & s_aux & " e "
+			s_aux = s_nf_entrada_ate
+			if s_aux = "" then s_aux = "N.I."
+			s = s & s_aux
+			if (s<>"") then
+				Response.Write "Data de NF entrada entre " & s
 				Response.Write "<br>"
 				end if
 
@@ -405,10 +419,21 @@ dim w_dt_entrada, w_documento, w_empresa, w_fabricante, w_produto, w_qtde, w_sal
 		s_where = s_where & " ((t_ESTOQUE_ITEM.qtde - t_ESTOQUE_ITEM.qtde_utilizada) = 0)"
 		end if
 
+	if s_nf_entrada_de <> "" then
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (t_ESTOQUE.data_emissao_NF_entrada >= " & bd_formata_data(StrToDate(s_nf_entrada_de)) & ")"
+		end if
+	
+	if s_nf_entrada_ate <> "" then
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (t_ESTOQUE.data_emissao_NF_entrada <= " & bd_formata_data(StrToDate(s_nf_entrada_ate)) & ")"
+		end if
+
 	if s_where <> "" then s_where = " WHERE" & s_where
 	s_sql = s_sql & s_where
 	s_sql = s_sql & " ORDER BY t_ESTOQUE.data_entrada, t_ESTOQUE.id_estoque, t_ESTOQUE.documento, t_ESTOQUE.fabricante, t_ESTOQUE_ITEM.sequencia"
 	
+
 '	EXECUTA CONSULTA
 	set rs = cn.Execute( s_sql )
 	
