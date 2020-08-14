@@ -255,6 +255,7 @@
 
 		$("#EndEtg_obs option[value='<%=r_orcamento.EndEtg_cod_justificativa%>']").attr("selected", true);
         
+<%if blnUsarMemorizacaoCompletaEnderecos and strFlagEndEntregaEditavel = "S" then %>
         // VERIFICAR MUDANÇA NOS CAMPOS
 		f.Verifica_End_Entrega.value = f.EndEtg_endereco.value;
 		f.Verifica_num.value = f.EndEtg_endereco_numero.value;
@@ -262,6 +263,7 @@
 		f.Verifica_UF.value = f.EndEtg_uf.value;
 		f.Verifica_CEP.value = f.EndEtg_cep.value;
 		f.Verifica_Justificativa.value = f.EndEtg_obs.value;
+<% end if%>
 
         $("#c_data_previsao_entrega").hUtilUI('datepicker_padrao');
 
@@ -270,8 +272,11 @@
         });
 
         configuraCampoDataPrevisaoEntrega();
+
+<%if blnUsarMemorizacaoCompletaEnderecos and strFlagEndEntregaEditavel = "S" then %>
         trataProdutorRuralEndEtg_PF(null);
         trocarEndEtgTipoPessoa(null);
+<% end if%>
 	});
 
 	//Every resize of window
@@ -1791,7 +1796,7 @@ var blnConfirmaDifRAeValores=false;
 }
 
     function transferirCamposEndEtg(formulario) {
-<%if blnUsarMemorizacaoCompletaEnderecos and Not eh_cpf then%>
+<%if blnUsarMemorizacaoCompletaEnderecos and Not eh_cpf and strFlagEndEntregaEditavel = "S" then%>
         //Transferimos os dados do endereço de entrega dos campos certos. 
         //Temos dois conjuntos de campos (para PF e PJ) porque o layout é muito diferente.
         var pj = $('input[name="EndEtg_tipo_pessoa"]:checked').val() == "PJ";
@@ -1819,7 +1824,7 @@ var blnConfirmaDifRAeValores=false;
 
     //para mudar o tipo do endereço de entrega
     function trocarEndEtgTipoPessoa(novoTipo) {
-<%if blnUsarMemorizacaoCompletaEnderecos then%>
+<%if blnUsarMemorizacaoCompletaEnderecos and strFlagEndEntregaEditavel = "S" then%>
         if (novoTipo && $('input[name="EndEtg_tipo_pessoa"]:disabled').length == 0)
             setarValorRadio($('input[name="EndEtg_tipo_pessoa"]'), novoTipo);
 
@@ -1867,6 +1872,7 @@ var blnConfirmaDifRAeValores=false;
     }
 
     function trataProdutorRuralEndEtg_PF(novoTipo) {
+<%if blnUsarMemorizacaoCompletaEnderecos and strFlagEndEntregaEditavel = "S" then %>
         //ao clicar na opção Produtor Rural, exibir/ocultar os campos apropriados (endereço de entrega)
         if (novoTipo && $('input[name="EndEtg_produtor_rural_status_PF"]:disabled').length == 0)
             setarValorRadio($('input[name="EndEtg_produtor_rural_status_PF"]'), novoTipo);
@@ -1880,6 +1886,7 @@ var blnConfirmaDifRAeValores=false;
         else {
             $(".Mostrar_EndEtg_contribuinte_icms_PF").css("display", "none");
         }
+<% end if%>
     }
 
     function trataProdutorRuralEndEtg_PJ(novoTipo) {

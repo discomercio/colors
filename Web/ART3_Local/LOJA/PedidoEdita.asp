@@ -2614,7 +2614,7 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 
 
     function transferirCamposEndEtg(fNEW) {
-<%if blnUsarMemorizacaoCompletaEnderecos and Not eh_cpf then%>
+<%if blnUsarMemorizacaoCompletaEnderecos and Not eh_cpf and blnEndEntregaEdicaoLiberada then%>
         //Transferimos os dados do endereço de entrega dos campos certos. 
         //Temos dois conjuntos de campos (para PF e PJ) porque o layout é muito diferente.
         var pj = $('input[name="EndEtg_tipo_pessoa"]:checked').val() == "PJ";
