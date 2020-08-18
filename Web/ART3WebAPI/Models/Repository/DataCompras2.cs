@@ -181,20 +181,20 @@ namespace ART3WebAPI.Models.Repository
 
                         if (!string.IsNullOrEmpty(nf)) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (es.documento = '", nf) + "')");
 
-                        //if (!string.IsNullOrEmpty(dt_nf_inicio))
-                        //{
-                        //    DateTime dtEmissaoInicioDateType = Global.converteDdMmYyyyParaDateTime(dt_nf_inicio);
-                        //    string dtEmissaoInicioFormatado = Global.sqlMontaDateTimeParaSqlDateTimeSomenteData(dtEmissaoInicioDateType);
-                        //    s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_emissao_NF_entrada >= '", dtEmissaoInicioFormatado) + "')");
-                        //}
+                        if (!string.IsNullOrEmpty(dt_nf_inicio))
+                        {
+                            DateTime dtEmissaoInicioDateType = Global.converteDdMmYyyyParaDateTime(dt_nf_inicio);
+                            string dtEmissaoInicioFormatado = Global.sqlMontaDateTimeParaSqlDateTimeSomenteData(dtEmissaoInicioDateType);
+                            s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (es.data_emissao_NF_entrada >= ", dtEmissaoInicioFormatado) + ")");
+                        }
 
-                        //if (!string.IsNullOrEmpty(dt_nf_termino))
-                        //{
-                        //    DateTime dtEmissaoTerminoDateType = Global.converteDdMmYyyyParaDateTime(dt_nf_termino);
-                        //    dtEmissaoTerminoDateType = dtEmissaoTerminoDateType.AddDays(1);
-                        //    string dtEmissaoTerminoFormatado = Global.sqlMontaDateTimeParaSqlDateTimeSomenteData(dtEmissaoTerminoDateType);
-                        //    s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_emissao_NF_entrada < '", dtEmissaoTerminoFormatado) + "')");
-                        //}
+                        if (!string.IsNullOrEmpty(dt_nf_termino))
+                        {
+                            DateTime dtEmissaoTerminoDateType = Global.converteDdMmYyyyParaDateTime(dt_nf_termino);
+                            dtEmissaoTerminoDateType = dtEmissaoTerminoDateType.AddDays(1);
+                            string dtEmissaoTerminoFormatado = Global.sqlMontaDateTimeParaSqlDateTimeSomenteData(dtEmissaoTerminoDateType);
+                            s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (es.data_emissao_NF_entrada < ", dtEmissaoTerminoFormatado) + ")");
+                        }
 
                         s_sql_mes = string.Concat(s_sql_mes, string.Concat("GROUP BY tei.fabricante ") + ") AS mes" + i);
 
@@ -267,20 +267,20 @@ namespace ART3WebAPI.Models.Repository
 
                         if (!string.IsNullOrEmpty(nf)) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (es.documento = '", nf) + "')");
 
-                        //if (!string.IsNullOrEmpty(dt_nf_inicio))
-                        //{
-                        //    DateTime dtEmissaoInicioDateType = Global.converteDdMmYyyyParaDateTime(dt_nf_inicio);
-                        //    string dtEmissaoInicioFormatado = Global.sqlMontaDateTimeParaSqlDateTimeSomenteData(dtEmissaoInicioDateType);
-                        //    s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_emissao_NF_entrada >= '", dtEmissaoInicioFormatado) + "')");
-                        //}
+                        if (!string.IsNullOrEmpty(dt_nf_inicio))
+                        {
+                            DateTime dtEmissaoInicioDateType = Global.converteDdMmYyyyParaDateTime(dt_nf_inicio);
+                            string dtEmissaoInicioFormatado = Global.sqlMontaDateTimeParaSqlDateTimeSomenteData(dtEmissaoInicioDateType);
+                            s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (es.data_emissao_NF_entrada >= ", dtEmissaoInicioFormatado) + ")");
+                        }
 
-                        //if (!string.IsNullOrEmpty(dt_nf_termino))
-                        //{
-                        //    DateTime dtEmissaoTerminoDateType = Global.converteDdMmYyyyParaDateTime(dt_nf_termino);
-                        //    dtEmissaoTerminoDateType = dtEmissaoTerminoDateType.AddDays(1);
-                        //    string dtEmissaoTerminoFormatado = Global.sqlMontaDateTimeParaSqlDateTimeSomenteData(dtEmissaoTerminoDateType);
-                        //    s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_emissao_NF_entrada < '", dtEmissaoTerminoFormatado) + "')");
-                        //}
+                        if (!string.IsNullOrEmpty(dt_nf_termino))
+                        {
+                            DateTime dtEmissaoTerminoDateType = Global.converteDdMmYyyyParaDateTime(dt_nf_termino);
+                            dtEmissaoTerminoDateType = dtEmissaoTerminoDateType.AddDays(1);
+                            string dtEmissaoTerminoFormatado = Global.sqlMontaDateTimeParaSqlDateTimeSomenteData(dtEmissaoTerminoDateType);
+                            s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (es.data_emissao_NF_entrada < ", dtEmissaoTerminoFormatado) + ")");
+                        }
 
                         s_sql_mes = string.Concat(s_sql_mes, string.Concat("GROUP BY tei.fabricante,pr.produto,tei.vl_custo2") + ") AS mes" + i);
 
@@ -352,20 +352,20 @@ namespace ART3WebAPI.Models.Repository
 
                         if (!string.IsNullOrEmpty(nf)) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (es.documento = '", nf) + "')");
 
-                        //if (!string.IsNullOrEmpty(dt_nf_inicio))
-                        //{
-                        //    DateTime dtEmissaoInicioDateType = Global.converteDdMmYyyyParaDateTime(dt_nf_inicio);
-                        //    string dtEmissaoInicioFormatado = Global.sqlMontaDateTimeParaSqlDateTimeSomenteData(dtEmissaoInicioDateType);
-                        //    s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_emissao_NF_entrada >= '", dtEmissaoInicioFormatado) + "')");
-                        //}
+                        if (!string.IsNullOrEmpty(dt_nf_inicio))
+                        {
+                            DateTime dtEmissaoInicioDateType = Global.converteDdMmYyyyParaDateTime(dt_nf_inicio);
+                            string dtEmissaoInicioFormatado = Global.sqlMontaDateTimeParaSqlDateTimeSomenteData(dtEmissaoInicioDateType);
+                            s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (es.data_emissao_NF_entrada >= ", dtEmissaoInicioFormatado) + ")");
+                        }
 
-                        //if (!string.IsNullOrEmpty(dt_nf_termino))
-                        //{
-                        //    DateTime dtEmissaoTerminoDateType = Global.converteDdMmYyyyParaDateTime(dt_nf_termino);
-                        //    dtEmissaoTerminoDateType = dtEmissaoTerminoDateType.AddDays(1);
-                        //    string dtEmissaoTerminoFormatado = Global.sqlMontaDateTimeParaSqlDateTimeSomenteData(dtEmissaoTerminoDateType);
-                        //    s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_emissao_NF_entrada < '", dtEmissaoTerminoFormatado) + "')");
-                        //}
+                        if (!string.IsNullOrEmpty(dt_nf_termino))
+                        {
+                            DateTime dtEmissaoTerminoDateType = Global.converteDdMmYyyyParaDateTime(dt_nf_termino);
+                            dtEmissaoTerminoDateType = dtEmissaoTerminoDateType.AddDays(1);
+                            string dtEmissaoTerminoFormatado = Global.sqlMontaDateTimeParaSqlDateTimeSomenteData(dtEmissaoTerminoDateType);
+                            s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (es.data_emissao_NF_entrada < ", dtEmissaoTerminoFormatado) + ")");
+                        }
 
                         s_sql_mes = string.Concat(s_sql_mes, string.Concat("GROUP BY tei.fabricante,pr.produto") + ") AS mes" + i);
 
@@ -406,7 +406,8 @@ namespace ART3WebAPI.Models.Repository
                 " ,i.vl_custo2" +
                 " ,i.preco_fabricante" +
                 " ,qtde" +
-                " ,data_entrada");
+                " ,data_entrada" +
+                " ,data_emissao_NF_entrada");
             if (s_sql_mes != "") sqlString = sqlString + " ," + s_sql_mes;
             sqlString = sqlString + " FROM t_ESTOQUE e" +
 		        " INNER JOIN t_ESTOQUE_ITEM i ON (e.id_estoque = i.id_estoque)" +
@@ -473,7 +474,7 @@ namespace ART3WebAPI.Models.Repository
             {
                 DateTime dtEmissaoInicioDateType = Global.converteDdMmYyyyParaDateTime(dt_nf_inicio);
                 string dtEmissaoInicioFormatado = Global.sqlMontaDateTimeParaSqlDateTimeSomenteData(dtEmissaoInicioDateType);
-                sqlString = string.Concat(sqlString, string.Concat(" AND (data_emissao_NF_entrada >= '", dtEmissaoInicioFormatado) + "')");
+                sqlString = string.Concat(sqlString, string.Concat(" AND (s_mes.data_emissao_NF_entrada >= ", dtEmissaoInicioFormatado) + ")");
             }
 
             if (!string.IsNullOrEmpty(dt_nf_termino))
@@ -481,7 +482,7 @@ namespace ART3WebAPI.Models.Repository
                 DateTime dtEmissaoTerminoDateType = Global.converteDdMmYyyyParaDateTime(dt_nf_termino);
                 dtEmissaoTerminoDateType = dtEmissaoTerminoDateType.AddDays(1);
                 string dtEmissaoTerminoFormatado = Global.sqlMontaDateTimeParaSqlDateTimeSomenteData(dtEmissaoTerminoDateType);
-                sqlString = string.Concat(sqlString, string.Concat(" AND (data_emissao_NF_entrada < '", dtEmissaoTerminoFormatado) + "')");
+                sqlString = string.Concat(sqlString, string.Concat(" AND (s_mes.data_emissao_NF_entrada < ", dtEmissaoTerminoFormatado) + ")");
             }
 
             if (detalhamento == "SINTETICO_FABR")
