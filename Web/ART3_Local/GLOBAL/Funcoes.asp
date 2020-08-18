@@ -3773,7 +3773,7 @@ end function
 '   FORMATA ENDERECO DE ENTREGA DE UM PEDIDO
 '   Formata os campos do endereço em um texto formatado.
 function pedido_formata_endereco_entrega(r_pedido, r_cliente)
-dim s_cabecalho, s_aux, s_tel_aux_1, s_tel_aux_2, s_telefones, s_endereco
+dim s_cabecalho, s_aux, s_tel_aux_1, s_tel_aux_2, s_telefones, s_endereco, s_email
     with r_pedido
 		s_endereco = formata_endereco(.EndEtg_endereco, .EndEtg_endereco_numero, .EndEtg_endereco_complemento, .EndEtg_bairro, .EndEtg_cidade, .EndEtg_uf, .EndEtg_cep)
 		end with
@@ -3786,8 +3786,23 @@ dim s_cabecalho, s_aux, s_tel_aux_1, s_tel_aux_2, s_telefones, s_endereco
     'se a memorização não estiver ativa ou o registro foi criado no formato antigo, paramos por aqui
     if not isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos or r_pedido.st_memorizacao_completa_enderecos = 0 then exit function
 
-    'PF, sem campos adicionais
-    if r_cliente.tipo = ID_PF then exit function
+    'PF, somente e-mails adicionais
+    if r_cliente.tipo = ID_PF then 
+		'EndEtg_email e EndEtg_email_xml 
+		s_email = ""
+		if Trim("" & r_pedido.EndEtg_email) <> "" or Trim("" & r_pedido.EndEtg_email_xml) <> ""  then
+			s_email = "<br>"
+			if Trim("" & r_pedido.EndEtg_email) <> "" then
+				s_email = s_email & "E-mail: " & r_pedido.EndEtg_email & " "
+				end if
+			if Trim("" & r_pedido.EndEtg_email_xml) <> "" then
+				s_email = s_email & "E-mail (XML): " & r_pedido.EndEtg_email_xml & " "
+				end if
+			end if
+
+        pedido_formata_endereco_entrega = s_endereco + s_email
+		exit function
+		end if
 
     'memorização ativa, colocamos os campos adicionais
     if r_pedido.EndEtg_tipo_pessoa = ID_PF then
@@ -3822,8 +3837,20 @@ dim s_cabecalho, s_aux, s_tel_aux_1, s_tel_aux_2, s_telefones, s_endereco
             end if
         
         if s_tel_aux_2 <> "" then s_telefones = s_telefones + "Celular " + s_tel_aux_2
-    	
-        pedido_formata_endereco_entrega = s_cabecalho + s_endereco + s_telefones
+    
+		'EndEtg_email e EndEtg_email_xml 
+		s_email = ""
+		if Trim("" & r_pedido.EndEtg_email) <> "" or Trim("" & r_pedido.EndEtg_email_xml) <> ""  then
+			s_email = "<br>"
+			if Trim("" & r_pedido.EndEtg_email) <> "" then
+				s_email = s_email & "E-mail: " & r_pedido.EndEtg_email & " "
+				end if
+			if Trim("" & r_pedido.EndEtg_email_xml) <> "" then
+				s_email = s_email & "E-mail (XML): " & r_pedido.EndEtg_email_xml & " "
+				end if
+			end if
+
+        pedido_formata_endereco_entrega = s_cabecalho + s_endereco + s_telefones + s_email
         exit function
         end if
 
@@ -3855,7 +3882,19 @@ dim s_cabecalho, s_aux, s_tel_aux_1, s_tel_aux_2, s_telefones, s_endereco
         
     if s_tel_aux_2 <> "" then s_telefones = s_telefones + s_tel_aux_2
 
-    pedido_formata_endereco_entrega = s_cabecalho + s_endereco + s_telefones
+	'EndEtg_email e EndEtg_email_xml 
+	s_email = ""
+	if Trim("" & r_pedido.EndEtg_email) <> "" or Trim("" & r_pedido.EndEtg_email_xml) <> ""  then
+		s_email = "<br>"
+		if Trim("" & r_pedido.EndEtg_email) <> "" then
+			s_email = s_email & "E-mail: " & r_pedido.EndEtg_email & " "
+			end if
+		if Trim("" & r_pedido.EndEtg_email_xml) <> "" then
+			s_email = s_email & "E-mail (XML): " & r_pedido.EndEtg_email_xml & " "
+			end if
+		end if
+
+    pedido_formata_endereco_entrega = s_cabecalho + s_endereco + s_telefones + s_email
 
 end function
 

@@ -1313,7 +1313,7 @@ function fPEDPreDevolucao(f) {
     dim cliente__tipo, cliente__cnpj_cpf, cliente__rg, cliente__ie, cliente__nome
     dim cliente__endereco, cliente__endereco_numero, cliente__endereco_complemento, cliente__bairro, cliente__cidade, cliente__uf, cliente__cep
     dim cliente__tel_res, cliente__ddd_res, cliente__tel_com, cliente__ddd_com, cliente__ramal_com, cliente__tel_cel, cliente__ddd_cel
-    dim cliente__tel_com_2, cliente__ddd_com_2, cliente__ramal_com_2, cliente__email
+    dim cliente__tel_com_2, cliente__ddd_com_2, cliente__ramal_com_2, cliente__email, cliente__email_xml, cliente__produtor_rural_status, cliente__contribuinte_icms_status
 
     cliente__tipo = r_cliente.tipo
     cliente__cnpj_cpf = r_cliente.cnpj_cpf
@@ -1338,6 +1338,9 @@ function fPEDPreDevolucao(f) {
     cliente__ddd_com_2 = r_cliente.ddd_com_2
     cliente__ramal_com_2 = r_cliente.ramal_com_2
     cliente__email = r_cliente.email
+    cliente__email_xml = r_cliente.email_xml
+	cliente__produtor_rural_status = r_cliente.produtor_rural_status
+	cliente__contribuinte_icms_status = r_cliente.contribuinte_icms_status
 
     if isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos and r_pedido.st_memorizacao_completa_enderecos <> 0 then 
         cliente__tipo = r_pedido.endereco_tipo_pessoa
@@ -1363,6 +1366,9 @@ function fPEDPreDevolucao(f) {
         cliente__ddd_com_2 = r_pedido.endereco_ddd_com_2
         cliente__ramal_com_2 = r_pedido.endereco_ramal_com_2
         cliente__email = r_pedido.endereco_email
+        cliente__email_xml = r_pedido.endereco_email_xml
+		cliente__produtor_rural_status = r_pedido.endereco_produtor_rural_status
+		cliente__contribuinte_icms_status = r_pedido.endereco_contribuinte_icms_status
         end if
 
 
@@ -1370,22 +1376,49 @@ function fPEDPreDevolucao(f) {
 <%	if cliente__tipo = ID_PF then s_aux="CPF" else s_aux="CNPJ"
 	s = cnpj_cpf_formata(cliente__cnpj_cpf) 
 %>
-		<td align="left" width="50%" class="MD"><p class="Rf"><%=s_aux%></p>
+		<td align="left" width="33%" class="MD"><p class="Rf"><%=s_aux%></p>
 		<% if operacao_permitida(OP_LJA_EDITA_CLIENTE_DADOS_CADASTRAIS, s_lista_operacoes_permitidas)then %>
 			<a href='javascript:fCLIEdita();' title='clique para editar o cadastro do cliente'><p class="C"><%=s%>&nbsp;</p></a>
 		<% else %>
 			<a href='javascript:fCLIConsulta();' title='clique para consultar o cadastro do cliente'><p class="C"><%=s%>&nbsp;</p></a>
 		<% end if %>
 		</td>
-		<%
-		if cliente__tipo = ID_PF then s = Trim(cliente__rg) else s = Trim(cliente__ie)
-			if cliente__tipo = ID_PF then 
-%>
-	<td align="left" class="MD" width="45%"><p class="Rf">RG</p><p class="C"><%=s%>&nbsp;</p></td>
-<% else %>
-	<td align="left" class="MD"><p class="Rf">IE</p><p class="C"><%=s%>&nbsp;</p></td>
-<% end if %>
-<td align="center" valign="middle" style="width:15px"><a href='javascript:fCLIConsultaView(<%=chr(34) & r_cliente.id & chr(34) & "," & chr(34) & usuario & chr(34)%>);' title="clique para visualizar o cadastro do cliente"><img id="imgClienteConsultaView" src="../imagem/doc_preview_22.png" /></a></td>
+		<% if cliente__tipo = ID_PF then %>
+			<td align="left" width="33%" class="MD"><p class="Rf">RG</p><p class="C"><%=Trim(cliente__rg)%>&nbsp;</p></td>
+			<% 
+			s_aux = ""
+			if converte_numero(Trim(cliente__produtor_rural_status)) = converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_SIM) then
+				s = converte_numero(cliente__contribuinte_icms_status)
+				if s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) then
+					s_aux = "Sim (Não contribuinte)"
+				elseif s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
+					s_aux = "Sim (IE: " & cliente__ie & ")"
+				elseif s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO) then
+					s_aux = "Sim (Isento)"
+				end if
+			elseif cliente__produtor_rural_status = converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_NAO) then
+				s_aux = "Não"
+			end if
+			%>
+			<td align="left" width="33%" class="MD"><p class="Rf">PRODUTOR RURAL</p><p class="C"><%=s_aux%>&nbsp;</p></td>
+		<% else %>
+
+			<td width="33%" class="MD" align="left"><p class="Rf">IE</p><p class="C"><%=Trim(cliente__ie)%>&nbsp;</p></td>
+			<% 
+				s_aux = ""
+				s = converte_numero(cliente__contribuinte_icms_status)
+				if s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) then
+					s_aux = "Não"
+				elseif s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
+					s_aux = "Sim"
+				elseif s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO) then
+					s_aux = "Isento"
+				end if            
+			%>
+			<td width="33%" align="left" class="MD"><p class="Rf">CONTRIBUINTE ICMS</p><p class="C"><%=s_aux%>&nbsp;</p></td>
+
+		<% end if %>
+		<td align="center" valign="middle" style="width:15px" class="MB"><a href='javascript:fCLIConsultaView(<%=chr(34) & r_cliente.id & chr(34) & "," & chr(34) & usuario & chr(34)%>);' title="clique para visualizar o cadastro do cliente"><img id="imgClienteConsultaView" src="../imagem/doc_preview_22.png" /></a></td>
 		</tr>
 <%
 			if Trim(cliente__nome) <> "" then
@@ -1474,7 +1507,8 @@ function fPEDPreDevolucao(f) {
     if Trim(cliente__email) = "" then notPrint=" notPrint" %>
 <table width="649" class="QS<%=notPrint%>" cellspacing="0">
 	<tr>
-		<td align="left"><p class="Rf">E-MAIL</p><p class="C"><%=Trim(cliente__email)%>&nbsp;</p></td>
+		<td align="left" class="MD" width="50%"><p class="Rf">E-MAIL</p><p class="C"><%=Trim(cliente__email)%>&nbsp;</p></td>
+		<td align="left" width="50%"><p class="Rf">E-MAIL (XML)</p><p class="C"><%=Trim(cliente__email_xml)%>&nbsp;</p></td>
 	</tr>
 </table>
 

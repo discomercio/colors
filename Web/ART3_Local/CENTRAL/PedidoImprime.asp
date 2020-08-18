@@ -73,7 +73,7 @@
 			next
 		end if
 
-	dim s_aux, s2, s3, r_loja, r_cliente, s_cor, s_falta, v_pedido, s_script, notPrint
+	dim s_aux, s2, r_loja, r_cliente, s_cor, s_falta, v_pedido, s_script, notPrint
 	dim v_disp
 	dim vl_TotalFamiliaPrecoVenda, vl_TotalFamiliaPrecoNF, vl_TotalFamiliaPago, vl_TotalFamiliaDevolucaoPrecoVenda, vl_TotalFamiliaDevolucaoPrecoNF
 	dim vl_saldo_a_pagar, s_vl_saldo_a_pagar, st_pagto
@@ -82,7 +82,7 @@
     dim cliente__tipo, cliente__cnpj_cpf, cliente__rg, cliente__ie, cliente__nome
     dim cliente__endereco, cliente__endereco_numero, cliente__endereco_complemento, cliente__bairro, cliente__cidade, cliente__uf, cliente__cep
     dim cliente__tel_res, cliente__ddd_res, cliente__tel_com, cliente__ddd_com, cliente__ramal_com, cliente__tel_cel, cliente__ddd_cel
-    dim cliente__tel_com_2, cliente__ddd_com_2, cliente__ramal_com_2, cliente__email
+    dim cliente__tel_com_2, cliente__ddd_com_2, cliente__ramal_com_2, cliente__email, cliente__email_xml, cliente__produtor_rural_status, cliente__contribuinte_icms_status
 
 	s_devolucoes = ""
 	s_perdas = ""
@@ -188,6 +188,9 @@
         cliente__ddd_com_2 = r_cliente.ddd_com_2
         cliente__ramal_com_2 = r_cliente.ramal_com_2
         cliente__email = r_cliente.email
+		cliente__email_xml = r_cliente.email_xml
+		cliente__produtor_rural_status = r_cliente.produtor_rural_status
+		cliente__contribuinte_icms_status = r_cliente.contribuinte_icms_status
 
         if isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos and r_pedido.st_memorizacao_completa_enderecos <> 0 then 
             cliente__tipo = r_pedido.endereco_tipo_pessoa
@@ -213,6 +216,9 @@
             cliente__ddd_com_2 = r_pedido.endereco_ddd_com_2
             cliente__ramal_com_2 = r_pedido.endereco_ramal_com_2
             cliente__email = r_pedido.endereco_email
+			cliente__email_xml = r_pedido.endereco_email_xml
+			cliente__produtor_rural_status = r_pedido.endereco_produtor_rural_status
+			cliente__contribuinte_icms_status = r_pedido.endereco_contribuinte_icms_status
             end if
 		end if
 
@@ -719,17 +725,44 @@ s_script = s_script & _
 		if s_aux<>"" then s2 = s2 & "  (R. " & s_aux & ")"
 		end if
 
-	s3 = ""
-	if cliente__tipo = ID_PF then s3 = Trim(cliente__rg) else s3 = Trim(cliente__ie)
 %>
 
 <% if cliente__tipo = ID_PF then %>
-	<td class="MD" width="33%"><p class="Rf">TELEFONE RESIDENCIAL</p><p class="C"><%=s%>&nbsp;</p></td>
-	<td class="MD" width="33%"><p class="Rf">TELEFONE COMERCIAL</p><p class="C"><%=s2%>&nbsp;</p></td>
-	<td><p class="Rf">RG</p><p class="C"><%=s3%>&nbsp;</p></td>
+	<td class="MD" width="25%"><p class="Rf">TELEFONE RESIDENCIAL</p><p class="C"><%=s%>&nbsp;</p></td>
+	<td class="MD" width="25%"><p class="Rf">TELEFONE COMERCIAL</p><p class="C"><%=s2%>&nbsp;</p></td>
+	<td class="MD" width="25%"><p class="Rf">RG</p><p class="C"><%=Trim(cliente__rg)%>&nbsp;</p></td>
+    <% 
+	s_aux = ""
+	if converte_numero(Trim(cliente__produtor_rural_status)) = converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_SIM) then
+        s = converte_numero(cliente__contribuinte_icms_status)
+        if s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) then
+            s_aux = "Sim (Não contribuinte)"
+        elseif s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
+            s_aux = "Sim (IE: " & cliente__ie & ")"
+        elseif s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO) then
+            s_aux = "Sim (Isento)"
+        end if
+    elseif cliente__produtor_rural_status = converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_NAO) then
+        s_aux = "Não"
+    end if
+    %>
+	<td align="left" width="25%"><p class="Rf">PRODUTOR RURAL</p><p class="C"><%=s_aux%>&nbsp;</p></td>
 <% else %>
-	<td class="MD" width="50%"><p class="Rf">TELEFONE</p><p class="C"><%=s2%>&nbsp;</p></td>
-	<td><p class="Rf">IE</p><p class="C"><%=s3%>&nbsp;</p></td>
+	<td class="MD" width="33%"><p class="Rf">TELEFONE</p><p class="C"><%=s2%>&nbsp;</p></td>
+	<td width="33%" class="MD" align="left"><p class="Rf">IE</p><p class="C"><%=Trim(cliente__ie)%>&nbsp;</p></td>
+    <% 
+		s_aux = ""
+		s = converte_numero(cliente__contribuinte_icms_status)
+        if s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) then
+            s_aux = "Não"
+        elseif s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
+            s_aux = "Sim"
+        elseif s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO) then
+            s_aux = "Isento"
+        end if            
+    %>
+	<td width="33%" align="left"><p class="Rf">CONTRIBUINTE ICMS</p><p class="C"><%=s_aux%>&nbsp;</p></td>
+
 <% end if %>
 
 	</tr>
@@ -738,7 +771,8 @@ s_script = s_script & _
 <!--  E-MAIL DO CLIENTE  -->
 <table width="649" class="QS" cellSpacing="0">
 	<tr>
-		<td><p class="Rf">E-MAIL</p><p class="C"><%=Trim(cliente__email)%>&nbsp;</p></td>
+		<td align="left" class="MD" width="50%"><p class="Rf">E-MAIL</p><p class="C"><%=Trim(cliente__email)%>&nbsp;</p></td>
+		<td align="left" width="50%"><p class="Rf">E-MAIL (XML)</p><p class="C"><%=Trim(cliente__email_xml)%>&nbsp;</p></td>
 	</tr>
 </table>
 
