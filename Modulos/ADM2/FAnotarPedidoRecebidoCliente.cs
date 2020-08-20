@@ -739,6 +739,28 @@ namespace ADM2
                         }
                         #endregion
 
+                        #region [ Nº NF válido? ]
+                        // Considera que o arquivo deve informar no formato: [Nº Série] [Espaço Branco] [Nº NF]
+                        if (_vRastreio[iv].dadosNormalizado.numNF == 0)
+                        {
+                            _vRastreio[iv].processo.Status = eRastreioPedidoRecebidoClienteProcessoStatus.ERRO_INCONSISTENCIA;
+                            _vRastreio[iv].processo.CodigoErro = eRastreioPedidoRecebidoClienteProcessoCodigoErro.NUMERO_NF_FORMATO_INVALIDO;
+                            _vRastreio[iv].processo.MensagemErro = "NF informada é inválida (" + _vRastreio[iv].dadosRaw.NF.Trim() + ")";
+                            continue;
+                        }
+                        #endregion
+
+                        #region [ Nº série da NF válido? ]
+                        // Considera que o arquivo deve informar no formato: [Nº Série] [Espaço Branco] [Nº NF]
+                        if (_vRastreio[iv].dadosNormalizado.numSerieNF == 0)
+                        {
+                            _vRastreio[iv].processo.Status = eRastreioPedidoRecebidoClienteProcessoStatus.ERRO_INCONSISTENCIA;
+                            _vRastreio[iv].processo.CodigoErro = eRastreioPedidoRecebidoClienteProcessoCodigoErro.NUMERO_NF_FORMATO_INVALIDO;
+                            _vRastreio[iv].processo.MensagemErro = "Nº série da NF informada é inválido (" + _vRastreio[iv].dadosRaw.NF.Trim() + ")";
+                            continue;
+                        }
+                        #endregion
+
                         #region [ Verifica campo 'Situacao' ]
                         if (!_vRastreio[iv].dadosNormalizado.Situacao.Trim().ToUpper().Equals("MERCADORIA ENTREGUE"))
                         {
