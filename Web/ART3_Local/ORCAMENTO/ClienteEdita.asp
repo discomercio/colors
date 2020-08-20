@@ -1248,6 +1248,17 @@ function ValidarDadosCadastrais() {
 	eh_cpf=false;
 	if (s.length==11) eh_cpf=true;
 	
+    if (eh_cpf) {
+        if ((f.orcamento_endereco_contribuinte_icms_status.value == "2") && (trim(f.orcamento_endereco_ie.value) != "")) {
+            // Vamos verificar se a UF esta diferente do cadastro do cliente orcamento_endereco_uf        
+            if (f.orcamento_endereco_uf.value.trim().toUpperCase() != fCAD.uf.value.trim().toUpperCase()) {
+                alert('Dados cadastrais: Inscrição estadual inválida pra esse estado (' + f.orcamento_endereco_uf.value.toUpperCase() + '). ' +
+                    'Caso o cliente esteja em outro estado, entre em contato com o suporte para alterar o cadastro do cliente.');
+                return;
+            }
+        }        
+    }
+
 	if (!eh_cpf) {
 		s=trim(f.orcamento_endereco_contato.value);
 		if (s=="") {

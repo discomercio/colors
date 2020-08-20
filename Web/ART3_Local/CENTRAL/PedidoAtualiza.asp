@@ -1624,12 +1624,13 @@
 					end if
 				
 				'Guardar informações de endereço presentes no pedido (consistência para verificar se mudou de endereço)
-				dim st_end_entrega_anterior, EndEtg_cep_anterior
+				dim st_end_entrega_anterior, EndEtg_cep_anterior, blnEndereco_cep_alterado
 				st_end_entrega_anterior = rs("st_end_entrega")
 				EndEtg_cep_anterior = rs("EndEtg_cep")
-				
+				blnEndereco_cep_alterado = False
 	
 				if r_pedido.st_memorizacao_completa_enderecos = 1 or r_pedido.st_memorizacao_completa_enderecos = 9 then
+					if rs("endereco_cep") <> endereco__cep then blnEndereco_cep_alterado = True    
 					rs("st_memorizacao_completa_enderecos") = 1
 					rs("endereco_bairro") = endereco__bairro
 					rs("endereco_numero") = endereco__numero
@@ -1737,6 +1738,9 @@
 						'	OBS: ALTERAÇÕES NO ENDEREÇO DO CADASTRO SÃO PROCESSADAS NA PÁGINA CLIENTEATUALIZA.ASP
 						'	HÁ ENDEREÇO DE ENTREGA: O CEP MUDOU?
 							if Trim("" & EndEtg_cep_anterior) <> Trim("" & rs("EndEtg_cep")) then blnProcessaSelecaoAutoTransp = True
+						else
+							'   Se teve alteração no endereco_cep vamos recalcular a transportadora
+							if blnEndereco_cep_alterado then blnProcessaSelecaoAutoTransp = True
 							end if
 						end if
 					end if
@@ -1750,8 +1754,8 @@
 						iTranspSelAutoTipoEndereco = TRANSPORTADORA_SELECAO_AUTO_TIPO_ENDERECO_ENTREGA
 						iTranspSelAutoStatus = TRANSPORTADORA_SELECAO_AUTO_STATUS_FLAG_S
 					else
-						if r_cliente.cep <> "" then sTranspSelAutoTransportadoraId = obtem_transportadora_pelo_cep(retorna_so_digitos(r_cliente.cep))
-						sTranspSelAutoCep = retorna_so_digitos(r_cliente.cep)
+						if endereco__cep <> "" then sTranspSelAutoTransportadoraId = obtem_transportadora_pelo_cep(retorna_so_digitos(endereco__cep))
+						sTranspSelAutoCep = retorna_so_digitos(endereco__cep)
 						iTranspSelAutoTipoEndereco = TRANSPORTADORA_SELECAO_AUTO_TIPO_ENDERECO_CLIENTE
 						iTranspSelAutoStatus = TRANSPORTADORA_SELECAO_AUTO_STATUS_FLAG_S
 						end if
