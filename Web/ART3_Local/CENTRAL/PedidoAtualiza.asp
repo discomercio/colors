@@ -59,6 +59,7 @@
 		if Not le_pedido(pedido_selecionado, r_pedido, msg_erro) then alerta = msg_erro
 		end if
 	
+	dim rEmailDestinatario
 	dim id_email, corpo_mensagem, msg_erro_grava_email, emailSndSvcRemetenteMensagemSistema
 	dim r_vendedor, blnEnviarEmailVendedorStatusAnaliseCredito
 	blnEnviarEmailVendedorStatusAnaliseCredito = False
@@ -807,6 +808,14 @@
 	if alerta <> "" then blnErroConsistencia=True
 	
 	
+'	MENSAGEM DE ALERTA
+	dim s_descricao_forma_pagto, s_descricao_forma_pagto_anterior, quebraLinhaFormaPagto
+	dim s_indicador_anterior
+	s_descricao_forma_pagto = ""
+	s_descricao_forma_pagto_anterior = ""
+	quebraLinhaFormaPagto = ",  "
+
+
 '	BANCO DE DADOS
 '	==============
 	dim vLogFP1()
@@ -898,6 +907,8 @@
 					
 			'	Forma de Pagamento (nova versão)
 				if (versao_forma_pagamento = "2") And blnFormaPagtoEdicaoLiberada then
+					s_descricao_forma_pagto_anterior = monta_descricao_forma_pagto_com_quebra_linha(rs, quebraLinhaFormaPagto)
+
 					rs("tipo_parcelamento")=CLng(rb_forma_pagto)
 				'	Limpa os campos não usados p/ facilitar a consulta multicritério e p/ que na próxima alteração, se houver, o log perceba a alteração (ex: parcelado c/ entrada mudou p/ parcelado no cartão; ao alterar novamente p/ parcelado c/ entrada e forem preenchidos os mesmos valores, será percebida e registrada apenas a mudança da opção "parcelado c/ entrada", já os demais campos ficaram c/ os mesmos valores).
 					rs("av_forma_pagto")=0
@@ -957,11 +968,65 @@
 					'	1ª prestação + Demais prestações
 						rs("qtde_parcelas")=CLng(c_pse_demais_prest_qtde)+1
 						end if
+
+					s_descricao_forma_pagto = monta_descricao_forma_pagto_com_quebra_linha(rs, quebraLinhaFormaPagto)
+					if (s_descricao_forma_pagto <> s_descricao_forma_pagto_anterior) And (Trim("" & rs("analise_credito")) = COD_AN_CREDITO_OK) then
+						'Envia mensagem de alerta sobre edição na forma de pagamento em pedido com status "crédito ok"
+						set rEmailDestinatario = get_registro_t_parametro(ID_PARAMETRO_EmailDestinatarioAlertaEdicaoFormaPagtoEmPedidoCreditoOk)
+						if Trim("" & rEmailDestinatario.campo_texto) <> "" then
+							corpo_mensagem = "O usuário '" & usuario & "' editou em " & formata_data_hora_sem_seg(Now) & " na Central a forma de pagamento do pedido " & pedido_selecionado & vbCrLf & _
+												vbCrLf & _
+												"Forma de pagamento anterior:" & vbCrLf & _
+												s_descricao_forma_pagto_anterior & vbCrLf & _
+												vbCrLf & _
+												"Forma de pagamento atual:" & vbCrLf & _
+												s_descricao_forma_pagto
+
+							EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__SENTINELA_SISTEMA), _
+															"", _
+															rEmailDestinatario.campo_texto, _
+															"", _
+															"", _
+															"Edição da forma de pagamento em pedido com status 'Crédito OK'", _
+															corpo_mensagem, _
+															Now, _
+															id_email, _
+															msg_erro_grava_email
+							end if
+						end if
 					end if
 					
 				if bln_RT_e_RA_EdicaoLiberada then rs("perc_RT") = converte_numero(s_perc_RT)
 				
-				if blnIndicadorEdicaoLiberada then rs("indicador") = s_indicador
+				if blnIndicadorEdicaoLiberada then
+					s_indicador_anterior = Trim("" & rs("indicador"))
+					rs("indicador") = s_indicador
+
+					if (Ucase(Trim(s_indicador_anterior)) <> Ucase(Trim(s_indicador))) And (Trim("" & rs("analise_credito")) = COD_AN_CREDITO_OK) then
+						'Envia mensagem de alerta sobre alteração do indicador em pedido com status "crédito ok"
+						set rEmailDestinatario = get_registro_t_parametro(ID_PARAMETRO_EmailDestinatarioAlertaAlteracaoIndicadorEmPedidoCreditoOk)
+						if Trim("" & rEmailDestinatario.campo_texto) <> "" then
+							corpo_mensagem = "O usuário '" & usuario & "' alterou em " & formata_data_hora_sem_seg(Now) & " na Central o indicador do pedido " & pedido_selecionado & vbCrLf & _
+												vbCrLf & _
+												"Indicador anterior:" & vbCrLf & _
+												Ucase(Trim(s_indicador_anterior)) & vbCrLf & _
+												vbCrLf & _
+												"Indicador atual:" & vbCrLf & _
+												Ucase(Trim(s_indicador))
+
+							EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__SENTINELA_SISTEMA), _
+															"", _
+															rEmailDestinatario.campo_texto, _
+															"", _
+															"", _
+															"Alteração do indicador em pedido com status 'Crédito OK'", _
+															corpo_mensagem, _
+															Now, _
+															id_email, _
+															msg_erro_grava_email
+							end if
+						end if
+					end if
 
 				if blnNumPedidoECommerceEdicaoLiberada then rs("pedido_bs_x_ac") = CStr(s_pedido_ac)
 
@@ -1050,6 +1115,8 @@
 
 				'	Forma de Pagamento (nova versão)
 					if (versao_forma_pagamento = "2") And blnFormaPagtoEdicaoLiberada then
+						s_descricao_forma_pagto_anterior = monta_descricao_forma_pagto_com_quebra_linha(rs, quebraLinhaFormaPagto)
+
 						rs("tipo_parcelamento")=CLng(rb_forma_pagto)
 					'	Limpa os campos não usados p/ facilitar a consulta multicritério e p/ que na próxima alteração, se houver, o log perceba a alteração (ex: parcelado c/ entrada mudou p/ parcelado no cartão; ao alterar novamente p/ parcelado c/ entrada e forem preenchidos os mesmos valores, será percebida e registrada apenas a mudança da opção "parcelado c/ entrada", já os demais campos ficaram c/ os mesmos valores).
 						rs("av_forma_pagto")=0
@@ -1109,12 +1176,66 @@
 						'	1ª prestação + Demais prestações
 							rs("qtde_parcelas")=CLng(c_pse_demais_prest_qtde)+1
 							end if
+
+						s_descricao_forma_pagto = monta_descricao_forma_pagto_com_quebra_linha(rs, quebraLinhaFormaPagto)
+						if (s_descricao_forma_pagto <> s_descricao_forma_pagto_anterior) And (Trim("" & rs("analise_credito")) = COD_AN_CREDITO_OK) then
+							'Envia mensagem de alerta sobre edição na forma de pagamento em pedido com status "crédito ok"
+							set rEmailDestinatario = get_registro_t_parametro(ID_PARAMETRO_EmailDestinatarioAlertaEdicaoFormaPagtoEmPedidoCreditoOk)
+							if Trim("" & rEmailDestinatario.campo_texto) <> "" then
+								corpo_mensagem = "O usuário '" & usuario & "' editou em " & formata_data_hora_sem_seg(Now) & " na Central a forma de pagamento do pedido " & pedido_selecionado & vbCrLf & _
+												vbCrLf & _
+												"Forma de pagamento anterior:" & vbCrLf & _
+												s_descricao_forma_pagto_anterior & vbCrLf & _
+												vbCrLf & _
+												"Forma de pagamento atual:" & vbCrLf & _
+												s_descricao_forma_pagto
+
+								EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__SENTINELA_SISTEMA), _
+																"", _
+																rEmailDestinatario.campo_texto, _
+																"", _
+																"", _
+																"Edição da forma de pagamento em pedido com status 'Crédito OK'", _
+																corpo_mensagem, _
+																Now, _
+																id_email, _
+																msg_erro_grava_email
+								end if
+							end if
 						end if
 					end if
 				
 				if bln_RT_e_RA_EdicaoLiberada then rs("perc_RT") = converte_numero(s_perc_RT)
 
-                if blnIndicadorEdicaoLiberada then rs("indicador") = s_indicador
+                if blnIndicadorEdicaoLiberada then
+					s_indicador_anterior = Trim("" & rs("indicador"))
+					rs("indicador") = s_indicador
+
+					if (Ucase(Trim(s_indicador_anterior)) <> Ucase(Trim(s_indicador))) And (Trim("" & rs("analise_credito")) = COD_AN_CREDITO_OK) then
+						'Envia mensagem de alerta sobre alteração do indicador em pedido com status "crédito ok"
+						set rEmailDestinatario = get_registro_t_parametro(ID_PARAMETRO_EmailDestinatarioAlertaAlteracaoIndicadorEmPedidoCreditoOk)
+						if Trim("" & rEmailDestinatario.campo_texto) <> "" then
+							corpo_mensagem = "O usuário '" & usuario & "' alterou em " & formata_data_hora_sem_seg(Now) & " na Central o indicador do pedido " & pedido_selecionado & vbCrLf & _
+												vbCrLf & _
+												"Indicador anterior:" & vbCrLf & _
+												Ucase(Trim(s_indicador_anterior)) & vbCrLf & _
+												vbCrLf & _
+												"Indicador atual:" & vbCrLf & _
+												Ucase(Trim(s_indicador))
+
+							EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__SENTINELA_SISTEMA), _
+															"", _
+															rEmailDestinatario.campo_texto, _
+															"", _
+															"", _
+															"Alteração do indicador em pedido com status 'Crédito OK'", _
+															corpo_mensagem, _
+															Now, _
+															id_email, _
+															msg_erro_grava_email
+							end if
+						end if
+					end if
 
 				if blnObs1EdicaoLiberada then
                      rs("obs_1") = s_obs1
