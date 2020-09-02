@@ -85,6 +85,7 @@
                 .fabricante = Trim(Request.Form("c_fabricante")(i))
                 .produto = Trim(Request.Form("c_produto")(i))
                 .qtde  = CInt(Trim(Request.Form("c_qtde")(i)))
+				.preco_fabricante = Trim(Request.Form("c_vl_unitario")(i))                																		  
                 .vl_custo2 = Trim(Request.Form("c_vl_custo2")(i))                
                 .ean = Trim(Request.Form("c_ean")(i))
                 .aliq_ipi = Trim(Request.Form("c_aliq_ipi")(i))
@@ -177,8 +178,6 @@
 		    msg_erro = "Falha na opperação de transferência: " & mmsg_erro
             end if
 
-'---------------- INCEPTION INICIO -------------------------
-
 
     '	REALIZA A SAÍDA DO ESTOQUE!!
    	    redim v_lista_id_estoque(0)
@@ -214,7 +213,7 @@
                     
                         s = "INSERT INTO t_ESTOQUE (" & _
 						        "id_estoque, data_entrada, hora_entrada, id_nfe_emitente, fabricante, documento," & _
-						        " usuario, data_ult_movimento, kit" & _
+						        " usuario, data_ult_movimento, kit, entrada_especial" & _
 					        ") VALUES (" & _
 						        "'" & s_id_estoque_destino & "'" & _
 						        "," & bd_formata_data(Date) & _
@@ -225,6 +224,7 @@
 						        ",'" & usuario & "'" & _
 						        "," & bd_formata_data(Date) & _
 						        ", " & "0" & _
+						        ", " & "1" & _							
 					        ")"
 				        cn.Execute(s)
 				        if Err <> 0 then
@@ -364,7 +364,10 @@
 
 		        s_sql = " UPDATE T_ESTOQUE_TRANSFERENCIA_ITEM_SUB SET" & _
                         " id_estoque_destino = '" & s_id_estoque_destino & "'" & _
-                        " WHERE (id_estoque_transferencia = '" & c_transf_selecionada & "') "
+                        " WHERE (id_estoque_origem = '" & .id_estoque_origem & "') " & _
+                        " AND (fabricante = '" & .fabricante & "') " & _
+                        " AND (produto = '" & .produto & "') " & _
+                        " AND (id_estoque_transferencia = '" & c_transf_selecionada & "') "
 		        cn.Execute(s_sql)
 		        if Err <> 0 then
                     msg_erro= "Problema na atualização da transferência" & vbCrLf
@@ -376,8 +379,8 @@
             '   Log de movimentação do estoque
 	            if Not grava_log_estoque_v2(usuario, c_nfe_emitente_origem, .fabricante, .produto, .qtde, .qtde, OP_ESTOQUE_TRANSFERENCIA, _
                                             ID_ESTOQUE_VENDA, ID_ESTOQUE_VENDA, "", "", "", "", c_documento_transf, _
-                                            "Transferência do estoque " & .id_estoque_origem & " (CD " & c_nfe_emitente_origem & _
-                                            ") para o estoque " & s_id_estoque_destino & " (CD " & c_nfe_emitente_destino & ")", "") then
+                                            "Transf estoque " & .id_estoque_origem & " (CD " & c_nfe_emitente_origem & _
+                                            ") => estoque " & s_id_estoque_destino & " (CD " & c_nfe_emitente_destino & ")", "") then
 		            msg_erro="FALHA AO GRAVAR O LOG DA MOVIMENTAÇÃO NO ESTOQUE"
 		            end if
 
@@ -397,7 +400,7 @@
 	    if rs.State <> 0 then rs.Close
 	    set rs=nothing
 	
-'---------------- INCEPTION FIM -------------------------
+
 
     ' 	ATUALIZA t_ESTOQUE_TRANSFERENCIA INDICANDO QUE A TRANSFERENCIA FOI CONFIRMADA
 
@@ -412,6 +415,14 @@
             msg_erro= "Problema na atualização da transferência" & vbCrLf
 			msg_erro= msg_erro & Cstr(Err) & ": " & Err.Description
 			end if				
+
+    '	PROCESSA OS PRODUTOS VENDIDOS SEM PRESENÇA NO ESTOQUE
+		if Not estoque_processa_produtos_vendidos_sem_presenca_v2(c_nfe_emitente_destino, usuario, msg_erro) then
+		'	~~~~~~~~~~~~~~~~
+			cn.RollbackTrans
+		'	~~~~~~~~~~~~~~~~
+			Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_MOVIMENTO_ESTOQUE)
+			end if
 
 
         if msg_erro <> "" then
