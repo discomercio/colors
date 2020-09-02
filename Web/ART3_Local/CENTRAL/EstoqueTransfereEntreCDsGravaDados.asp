@@ -85,7 +85,7 @@
                 .fabricante = Trim(Request.Form("c_fabricante")(i))
                 .produto = Trim(Request.Form("c_produto")(i))
                 .qtde  = CInt(Trim(Request.Form("c_qtde")(i)))
-                .preco_fabricante = Trim(Request.Form("c_vl_unitario")(i))                
+				.preco_fabricante = Trim(Request.Form("c_vl_unitario")(i))                																		  
                 .vl_custo2 = Trim(Request.Form("c_vl_custo2")(i))                
                 .ean = Trim(Request.Form("c_ean")(i))
                 .aliq_ipi = Trim(Request.Form("c_aliq_ipi")(i))
@@ -178,8 +178,6 @@
 		    msg_erro = "Falha na opperação de transferência: " & mmsg_erro
             end if
 
-'---------------- INCEPTION INICIO -------------------------
-
 
     '	REALIZA A SAÍDA DO ESTOQUE!!
    	    redim v_lista_id_estoque(0)
@@ -226,7 +224,7 @@
 						        ",'" & usuario & "'" & _
 						        "," & bd_formata_data(Date) & _
 						        ", " & "0" & _
-						        ", " & "1" & _
+						        ", " & "1" & _							
 					        ")"
 				        cn.Execute(s)
 				        if Err <> 0 then
@@ -402,7 +400,7 @@
 	    if rs.State <> 0 then rs.Close
 	    set rs=nothing
 	
-'---------------- INCEPTION FIM -------------------------
+
 
     ' 	ATUALIZA t_ESTOQUE_TRANSFERENCIA INDICANDO QUE A TRANSFERENCIA FOI CONFIRMADA
 
@@ -417,6 +415,14 @@
             msg_erro= "Problema na atualização da transferência" & vbCrLf
 			msg_erro= msg_erro & Cstr(Err) & ": " & Err.Description
 			end if				
+
+    '	PROCESSA OS PRODUTOS VENDIDOS SEM PRESENÇA NO ESTOQUE
+		if Not estoque_processa_produtos_vendidos_sem_presenca_v2(c_nfe_emitente_destino, usuario, msg_erro) then
+		'	~~~~~~~~~~~~~~~~
+			cn.RollbackTrans
+		'	~~~~~~~~~~~~~~~~
+			Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_MOVIMENTO_ESTOQUE)
+			end if
 
 
         if msg_erro <> "" then
