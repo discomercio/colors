@@ -354,17 +354,17 @@ var s_de, s_ate;
 var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 
 //  PERÍODO
-	if (trim(f.c_dt_inicio.value)=="") {
-		alert("Informe a data inicial do período!!");
-		f.c_dt_inicio.focus();
-		return;
-		}
+	//if (trim(f.c_dt_inicio.value)=="") {
+	//	alert("Informe a data inicial do período!!");
+	//	f.c_dt_inicio.focus();
+	//	return;
+	//	}
 	
-	if (trim(f.c_dt_termino.value)=="") {
-		alert("Informe a data final do período!!");
-		f.c_dt_termino.focus();
-		return;
-		}
+	//if (trim(f.c_dt_termino.value)=="") {
+	//	alert("Informe a data final do período!!");
+	//	f.c_dt_termino.focus();
+	//	return;
+	//	}
 		
 	if (trim(f.c_dt_inicio.value)!="") {
 		if (!isDate(f.c_dt_inicio)) {
@@ -455,6 +455,14 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
     }
 
 
+//  UMA DAS DATAS (PERÍODO OU NF ENTRADA) DEVE ESTAR PREENCHIDA
+    if ((trim(f.c_dt_inicio.value) == "") && (trim(f.c_dt_termino.value) == "") && (trim(f.c_dt_nf_inicio.value) == "") && (trim(f.c_dt_nf_termino.value) == "")) {
+		alert("Pelo menos uma faixa de datas (período ou data nf entrada) deve estar preenchida!!");
+		f.c_dt_inicio.focus();
+		return;
+		}
+
+
 	b=false;
 	for (i=0; i<f.rb_detalhe.length; i++) {
 		if (f.rb_detalhe[i].checked) {
@@ -491,11 +499,11 @@ function limpaCampoSelect(c) {
             var i, dt_inicio, dt_termino, fabricante, grupo, subgrupo, dt_nf_inicio, dt_nf_termino, valorVisao;
             var s_de, s_ate, s_hoje, b;
 
-            if (trim(f.c_dt_inicio.value) == "") {
-                alert("Informe a data de início do período de vendas!!");
-                f.c_dt_inicio.focus();
-                return;
-            }
+            //if (trim(f.c_dt_inicio.value) == "") {
+            //    alert("Informe a data de início do período de vendas!!");
+            //    f.c_dt_inicio.focus();
+            //    return;
+            //}
 
             if (!isDate(f.c_dt_inicio)) {
                 alert("Data inválida!!");
@@ -503,11 +511,11 @@ function limpaCampoSelect(c) {
                 return;
             }
 
-            if (trim(f.c_dt_termino.value) == "") {
-                alert("Informe a data de término do período de vendas!!");
-                f.c_dt_termino.focus();
-                return;
-            }
+            //if (trim(f.c_dt_termino.value) == "") {
+            //    alert("Informe a data de término do período de vendas!!");
+            //    f.c_dt_termino.focus();
+            //    return;
+            //}
 
             if (!isDate(f.c_dt_termino)) {
                 alert("Data inválida!!");
@@ -561,6 +569,14 @@ function limpaCampoSelect(c) {
                     return;
                 }
             }
+
+            //  UMA DAS DATAS (PERÍODO OU NF ENTRADA) DEVE ESTAR PREENCHIDA
+            if ((trim(f.c_dt_inicio.value) == "") && (trim(f.c_dt_termino.value) == "") && (trim(f.c_dt_nf_inicio.value) == "") && (trim(f.c_dt_nf_termino.value) == "")) {
+                alert("Pelo menos uma faixa de datas (período ou data nf entrada) deve estar preenchida!!");
+                f.c_dt_inicio.focus();
+                return;
+            }
+
 
             var detalhamento = document.getElementsByName('rb_detalhe');
             var detalhamentoValor;

@@ -134,19 +134,19 @@
 			end if
 		end if
 		
-	if alerta = "" then
-		if c_dt_inicio = "" then
-			alerta="A data de início do período não foi informada."
-		elseif Not IsDate(c_dt_inicio) then
-			alerta="A data de início do período é inválida (" & c_dt_inicio & ")."
-		elseif c_dt_termino = "" then
-			alerta="A data de término do período não foi informada."
-		elseif Not IsDate(c_dt_termino) then
-			alerta="A data de término do período é inválida (" & c_dt_termino & ")."
-		elseif CDate(c_dt_inicio) > CDate(c_dt_termino) then
-			alerta="A data de início é posterior à data de término."
-			end if
-		end if
+'	if alerta = "" then
+'		if c_dt_inicio = "" then
+'			alerta="A data de início do período não foi informada."
+'		elseif Not IsDate(c_dt_inicio) then
+'			alerta="A data de início do período é inválida (" & c_dt_inicio & ")."
+'		elseif c_dt_termino = "" then
+'			alerta="A data de término do período não foi informada."
+'		elseif Not IsDate(c_dt_termino) then
+'			alerta="A data de término do período é inválida (" & c_dt_termino & ")."
+'		elseif CDate(c_dt_inicio) > CDate(c_dt_termino) then
+'			alerta="A data de início é posterior à data de término."
+'			end if
+'		end if
 
 	if alerta = "" then
 	'	Período de consulta está restrito por perfil de acesso?
