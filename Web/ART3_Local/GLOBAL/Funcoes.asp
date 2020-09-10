@@ -4781,9 +4781,30 @@ end function
 '	O parâmetro deve ser um recordset contendo os campos que armazenam os
 '	dados da forma de pagamento.
 function monta_descricao_forma_pagto(byref r)
+dim strResp, quebraLinha
+
+	quebraLinha = chr(13) & "<br />" & chr(13)
+	strResp = monta_descricao_forma_pagto_com_quebra_linha(r, quebraLinha)
+	monta_descricao_forma_pagto = strResp
+end function
+
+
+
+' ------------------------------------------------------------------------
+'   MONTA DESCRICAO FORMA PAGTO COM QUEBRA LINHA
+'   Monta a descrição para a forma de pagamento especificada.
+'	O parâmetro 'r' deve ser um recordset contendo os campos que armazenam os
+'	dados da forma de pagamento.
+'	O parâmetro 'quebraLinha' deve ser uma string com a quebra de linha
+'	desejada para situações como:
+'		Entrada:  R$ 2.149,47   (Depósito)
+'		Prestações:  9 x R$ 2.149,47   (Boleto)  vencendo a cada 28 dias
+function monta_descricao_forma_pagto_com_quebra_linha(byref r, byval quebraLinha)
 dim strResp
 
 	strResp = ""
+
+	if Trim("" & quebraLinha) = "" then quebraLinha = ", "
 	
 	if Trim("" & r("tipo_parcelamento")) = COD_FORMA_PAGTO_A_VISTA then
 		strResp = "À Vista  (" & x_opcao_forma_pagamento(r("av_forma_pagto")) & ")"
@@ -4795,19 +4816,19 @@ dim strResp
 		strResp = "Parcelado no Cartão (maquineta) em " & Cstr(r("pc_maquineta_qtde_parcelas")) & " x  " & SIMBOLO_MONETARIO & " " & formata_moeda(r("pc_maquineta_valor_parcela"))
 	elseif Trim("" & r("tipo_parcelamento")) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
 		strResp = "Entrada:  " & SIMBOLO_MONETARIO & " " & formata_moeda(r("pce_entrada_valor")) & "  (" & x_opcao_forma_pagamento(r("pce_forma_pagto_entrada")) & ")" & _
-				  chr(13) & "<br>" & chr(13) & _
+				  quebraLinha & _
 				  "Prestações:  " & Cstr(r("pce_prestacao_qtde")) & " x  " & SIMBOLO_MONETARIO & " " & formata_moeda(r("pce_prestacao_valor")) & _
 				  "  (" & x_opcao_forma_pagamento(r("pce_forma_pagto_prestacao")) & ")  vencendo a cada " & _
 				  Cstr(r("pce_prestacao_periodo")) & " dias"
 	elseif Trim("" & r("tipo_parcelamento")) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
 		strResp = "1ª Prestação:  " & SIMBOLO_MONETARIO & " " & formata_moeda(r("pse_prim_prest_valor")) & "  (" & x_opcao_forma_pagamento(r("pse_forma_pagto_prim_prest")) & ")  vencendo após " & Cstr(r("pse_prim_prest_apos")) & " dias" & _
-				  chr(13) & "<br>" & chr(13) & _
+				  quebraLinha & _
 				  "Demais Prestações:  " & Cstr(r("pse_demais_prest_qtde")) & " x  " & SIMBOLO_MONETARIO & " " & formata_moeda(r("pse_demais_prest_valor")) & _
 				  "  (" & x_opcao_forma_pagamento(r("pse_forma_pagto_demais_prest")) & ")  vencendo a cada " & _
 				  Cstr(r("pse_demais_prest_periodo")) & " dias"
 		end if
 		
-	monta_descricao_forma_pagto = strResp
+	monta_descricao_forma_pagto_com_quebra_linha = strResp
 end function
 
 
