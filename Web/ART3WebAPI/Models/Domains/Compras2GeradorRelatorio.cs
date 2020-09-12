@@ -35,8 +35,32 @@ namespace ART3WebAPI.Models.Domains
                 }
 
                 int NumRegistros = datasource.Count;
-                DateTime dt1 = Global.converteDdMmYyyyParaDateTime(dt_inicio);
-                DateTime dt2 = Global.converteDdMmYyyyParaDateTime(dt_termino);
+                //DateTime dt1 = Global.converteDdMmYyyyParaDateTime(dt_inicio);
+                //DateTime dt2 = Global.converteDdMmYyyyParaDateTime(dt_termino);
+                DateTime dt1, dt2;
+                if (!string.IsNullOrEmpty(dt_inicio))
+                {
+                    dt1 = Global.converteDdMmYyyyParaDateTime(dt_inicio);
+                    dt2 = Global.converteDdMmYyyyParaDateTime(dt_termino);
+                }
+                else {
+                    dt1 = Global.converteDdMmYyyyParaDateTime(dt_nf_inicio);
+                    dt2 = Global.converteDdMmYyyyParaDateTime(dt_nf_termino);
+                }
+            
+
+
+                string periodoentrada = "";
+                if (!string.IsNullOrEmpty(dt_inicio))
+                    periodoentrada = dt_inicio;
+                if (!string.IsNullOrEmpty(dt_termino))
+                {
+                    if (!string.IsNullOrEmpty(periodoentrada))
+                        periodoentrada = "de " + periodoentrada + " a ";
+                    periodoentrada = periodoentrada + dt_termino;
+                }
+                if (periodoentrada == "")
+                    periodoentrada = "N.I";
 
                 if (!string.IsNullOrEmpty(fabricante))
                     fabricante = fabricante.Replace("_", ", ");
@@ -121,7 +145,8 @@ namespace ART3WebAPI.Models.Domains
                     ws.Cells["B2:M12"].Style.Font.Bold = true;
                     ws.Cells["B2"].Style.Font.Size = 12;
                     ws.Cells["B2"].Value = "Compras II";
-                    ws.Cells["B3"].Value = "Período: " + dt_inicio + " a " + dt_termino;
+                    //ws.Cells["B3"].Value = "Período: " + dt_inicio + " a " + dt_termino;
+                    ws.Cells["B3"].Value = "Período: " + periodoentrada;
                     ws.Cells["B4"].Value = "Fabricante(s): " + fabricante;
                     ws.Cells["B5"].Value = "Grupo(s) de produtos: " + grupo;
                     ws.Cells["B6"].Value = "Subgrupo(s) de produtos: " + subgrupo;

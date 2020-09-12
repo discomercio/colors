@@ -34,7 +34,7 @@ namespace ART3WebAPI.Models.Repository
             string dtTerminoFormatado;
             string s_sql_mes, s_where_temp, sqlString = "";
 
-            if (!string.IsNullOrEmpty(dt_nf_inicio))
+            if (!string.IsNullOrEmpty(dt_inicio.ToString()))
             {
                 dt1 = Global.converteDdMmYyyyParaDateTime(dt_inicio);
                 dt2 = Global.converteDdMmYyyyParaDateTime(dt_termino);
@@ -161,9 +161,11 @@ namespace ART3WebAPI.Models.Repository
                        " AND (entrada_especial = 0)" +
                        " AND (devolucao_status = 0) ";
 
-                        if (!string.IsNullOrEmpty(dt1Formatado.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada >= ", dt1Formatado) + ")");
+                        //if (!string.IsNullOrEmpty(dt1Formatado.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada >= ", dt1Formatado) + ")");
+                        if (!string.IsNullOrEmpty(dt_nf_inicio.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada >= ", dt1Formatado) + ")");
 
-                        if (!string.IsNullOrEmpty(dt2Formatado.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada < ", dt2Formatado) + ")");
+                        //if (!string.IsNullOrEmpty(dt2Formatado.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada < ", dt2Formatado) + ")");
+                        if (!string.IsNullOrEmpty(dt_nf_termino.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada < ", dt2Formatado) + ")");
 
                         s_where_temp = "";
                         if (!string.IsNullOrEmpty(fabricante))
@@ -247,9 +249,11 @@ namespace ART3WebAPI.Models.Repository
                        " AND (entrada_especial = 0)" +
                        " AND (devolucao_status = 0) ";
 
-                        if (!string.IsNullOrEmpty(dt1Formatado.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada >= ", dt1Formatado) + ")");
+                        //if (!string.IsNullOrEmpty(dt1Formatado.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada >= ", dt1Formatado) + ")");
+                        if (!string.IsNullOrEmpty(dt_nf_inicio.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada >= ", dt1Formatado) + ")");
 
-                        if (!string.IsNullOrEmpty(dt2Formatado.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada < ", dt2Formatado) + ")");
+                        //if (!string.IsNullOrEmpty(dt2Formatado.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada < ", dt2Formatado) + ")");
+                        if (!string.IsNullOrEmpty(dt_nf_termino.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada < ", dt2Formatado) + ")");
 
                         s_where_temp = "";
                         if (!string.IsNullOrEmpty(fabricante))
@@ -332,9 +336,11 @@ namespace ART3WebAPI.Models.Repository
                       " AND (entrada_especial = 0)" +
                       " AND (devolucao_status = 0) ";
 
-                        if (!string.IsNullOrEmpty(dt1Formatado.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada >= ", dt1Formatado) + ")");
+                        //if (!string.IsNullOrEmpty(dt1Formatado.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada >= ", dt1Formatado) + ")");
+                        if (!string.IsNullOrEmpty(dt_nf_inicio.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada >= ", dt1Formatado) + ")");
 
-                        if (!string.IsNullOrEmpty(dt2Formatado.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada < ", dt2Formatado) + ")");
+                        //if (!string.IsNullOrEmpty(dt2Formatado.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada < ", dt2Formatado) + ")");
+                        if (!string.IsNullOrEmpty(dt_nf_termino.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada < ", dt2Formatado) + ")");
 
                         s_where_temp = "";
                         if (!string.IsNullOrEmpty(fabricante))
