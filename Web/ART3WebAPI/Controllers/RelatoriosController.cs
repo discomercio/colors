@@ -231,8 +231,8 @@ namespace ART3WebAPI.Controllers
         public async Task<HttpResponseMessage> GetCompras2CSV(string usuario, string dt_inicio, string dt_termino, string fabricante, string produto, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string nf, string dt_nf_inicio, string dt_nf_termino, string visao, string detalhamento)
         {
 
-            if (string.IsNullOrEmpty(dt_inicio.ToString())) throw new Exception("Não foi informada a data inicial do período de vendas.");
-            if (string.IsNullOrEmpty(dt_termino.ToString())) throw new Exception("Não foi informada a data final do período de vendas.");
+            //if (string.IsNullOrEmpty(dt_inicio.ToString())) throw new Exception("Não foi informada a data inicial do período de vendas.");
+            //if (string.IsNullOrEmpty(dt_termino.ToString())) throw new Exception("Não foi informada a data final do período de vendas.");
 
 
 
@@ -253,8 +253,8 @@ namespace ART3WebAPI.Controllers
             try
             {
 
-                Global.setDefaultBD(usuario, "RelCompras2Filtro|c_dt_periodo_inicio", dt_inicio);
-                Global.setDefaultBD(usuario, "RelCompras2Filtro|c_dt_periodo_termino", dt_termino);
+                Global.setDefaultBD(usuario, "RelCompras2Filtro|c_dt_periodo_inicio", string.IsNullOrEmpty(dt_inicio) ? "" : dt_inicio);
+                Global.setDefaultBD(usuario, "RelCompras2Filtro|c_dt_periodo_termino", string.IsNullOrEmpty(dt_termino) ? "" : dt_termino);
                 Global.setDefaultBD(usuario, "RelCompras2Filtro|c_fabricante", string.IsNullOrEmpty(fabricante) ? "" : fabricante.Replace("_", ", "));
                 Global.setDefaultBD(usuario, "RelCompras2Filtro|c_grupo", string.IsNullOrEmpty(grupo) ? "" : grupo.Replace("_", ", "));
                 Global.setDefaultBD(usuario, "RelCompras2Filtro|c_subgrupo", string.IsNullOrEmpty(subgrupo) ? "" : subgrupo.Replace("_", ", "));

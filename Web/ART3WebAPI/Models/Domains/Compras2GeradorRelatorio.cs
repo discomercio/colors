@@ -43,7 +43,8 @@ namespace ART3WebAPI.Models.Domains
                     dt1 = Global.converteDdMmYyyyParaDateTime(dt_inicio);
                     dt2 = Global.converteDdMmYyyyParaDateTime(dt_termino);
                 }
-                else {
+                else
+                {
                     dt1 = Global.converteDdMmYyyyParaDateTime(dt_nf_inicio);
                     dt2 = Global.converteDdMmYyyyParaDateTime(dt_nf_termino);
                 }
