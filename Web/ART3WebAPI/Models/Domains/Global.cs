@@ -36,8 +36,8 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.22";
-				public const string Data = "07.AGO.2020";
+				public const string Numero = "2.23";
+				public const string Data = "12.SET.2020";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
 			#endregion

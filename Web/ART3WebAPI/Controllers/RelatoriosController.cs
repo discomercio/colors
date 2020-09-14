@@ -235,7 +235,6 @@ namespace ART3WebAPI.Controllers
             //if (string.IsNullOrEmpty(dt_termino.ToString())) throw new Exception("Não foi informada a data final do período de vendas.");
 
 
-
             DateTime data = DateTime.Now;
             string fileName = "Compras2_" + data.ToString("yyyyMMdd_HHmmss");
             fileName = fileName + ".xlsx";

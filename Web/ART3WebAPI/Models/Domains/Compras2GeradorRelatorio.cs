@@ -30,7 +30,14 @@ namespace ART3WebAPI.Models.Domains
                 {
                     if (detalhamento != "SINTETICO_NF")
                     {
-                        totalMeses = ((Global.converteDdMmYyyyParaDateTime(dt_termino).Year - Global.converteDdMmYyyyParaDateTime(dt_inicio).Year) * 12) + (Global.converteDdMmYyyyParaDateTime(dt_termino).Month - Global.converteDdMmYyyyParaDateTime(dt_inicio).Month) + 1; 
+                        if (!string.IsNullOrEmpty(dt_inicio))
+                        {
+                            totalMeses = ((Global.converteDdMmYyyyParaDateTime(dt_termino).Year - Global.converteDdMmYyyyParaDateTime(dt_inicio).Year) * 12) + (Global.converteDdMmYyyyParaDateTime(dt_termino).Month - Global.converteDdMmYyyyParaDateTime(dt_inicio).Month) + 1;
+                        }
+                        else
+                        {
+                            totalMeses = ((Global.converteDdMmYyyyParaDateTime(dt_nf_termino).Year - Global.converteDdMmYyyyParaDateTime(dt_nf_inicio).Year) * 12) + (Global.converteDdMmYyyyParaDateTime(dt_nf_termino).Month - Global.converteDdMmYyyyParaDateTime(dt_nf_inicio).Month) + 1;
+                        }
                     }
                 }
 
