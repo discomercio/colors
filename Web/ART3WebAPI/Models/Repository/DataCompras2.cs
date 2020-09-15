@@ -16,15 +16,6 @@ namespace ART3WebAPI.Models.Repository
             #region [ Declarações ]
             List<Compras> listaProduto = new List<Compras>();
             SqlConnection cn = new SqlConnection(BD.getConnectionString());
-            //DateTime dt1 = Global.converteDdMmYyyyParaDateTime(dt_inicio);
-            //DateTime dt2 = Global.converteDdMmYyyyParaDateTime(dt_termino);
-            //int totalMeses = ((dt2.Year - dt1.Year) * 12) + dt2.Month - dt1.Month;
-            //DateTime dtInicioDateType = Global.converteDdMmYyyyParaDateTime(dt_inicio);
-            //DateTime dtTerminoDateType = Global.converteDdMmYyyyParaDateTime(dt_termino);
-            //dtTerminoDateType = dtTerminoDateType.AddDays(1);
-            //string dtInicioFormatado = Global.sqlMontaDateTimeParaSqlDateTimeSomenteData(dtInicioDateType);
-            //string dtTerminoFormatado = Global.sqlMontaDateTimeParaSqlDateTimeSomenteData(dtTerminoDateType);
-            //string s_sql_mes, s_where_temp, sqlString = "";
             DateTime dt1;
             DateTime dt2;
             int totalMeses;
@@ -161,10 +152,8 @@ namespace ART3WebAPI.Models.Repository
                        " AND (entrada_especial = 0)" +
                        " AND (devolucao_status = 0) ";
 
-                        //if (!string.IsNullOrEmpty(dt1Formatado.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada >= ", dt1Formatado) + ")");
                         if (!string.IsNullOrEmpty(dt_nf_inicio)) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada >= ", dt1Formatado) + ")");
 
-                        //if (!string.IsNullOrEmpty(dt2Formatado.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada < ", dt2Formatado) + ")");
                         if (!string.IsNullOrEmpty(dt_nf_termino)) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada < ", dt2Formatado) + ")");
 
                         s_where_temp = "";
@@ -249,10 +238,8 @@ namespace ART3WebAPI.Models.Repository
                        " AND (entrada_especial = 0)" +
                        " AND (devolucao_status = 0) ";
 
-                        //if (!string.IsNullOrEmpty(dt1Formatado.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada >= ", dt1Formatado) + ")");
                         if (!string.IsNullOrEmpty(dt_nf_inicio)) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada >= ", dt1Formatado) + ")");
 
-                        //if (!string.IsNullOrEmpty(dt2Formatado.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada < ", dt2Formatado) + ")");
                         if (!string.IsNullOrEmpty(dt_nf_termino)) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada < ", dt2Formatado) + ")");
 
                         s_where_temp = "";
@@ -336,10 +323,8 @@ namespace ART3WebAPI.Models.Repository
                       " AND (entrada_especial = 0)" +
                       " AND (devolucao_status = 0) ";
 
-                        //if (!string.IsNullOrEmpty(dt1Formatado.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada >= ", dt1Formatado) + ")");
                         if (!string.IsNullOrEmpty(dt_nf_inicio)) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada >= ", dt1Formatado) + ")");
 
-                        //if (!string.IsNullOrEmpty(dt2Formatado.ToString())) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada < ", dt2Formatado) + ")");
                         if (!string.IsNullOrEmpty(dt_nf_termino)) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_entrada < ", dt2Formatado) + ")");
 
                         s_where_temp = "";

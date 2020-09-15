@@ -231,9 +231,6 @@ namespace ART3WebAPI.Controllers
         public async Task<HttpResponseMessage> GetCompras2CSV(string usuario, string dt_inicio, string dt_termino, string fabricante, string produto, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string nf, string dt_nf_inicio, string dt_nf_termino, string visao, string detalhamento)
         {
 
-            //if (string.IsNullOrEmpty(dt_inicio.ToString())) throw new Exception("Não foi informada a data inicial do período de vendas.");
-            //if (string.IsNullOrEmpty(dt_termino.ToString())) throw new Exception("Não foi informada a data final do período de vendas.");
-
 
             DateTime data = DateTime.Now;
             string fileName = "Compras2_" + data.ToString("yyyyMMdd_HHmmss");
