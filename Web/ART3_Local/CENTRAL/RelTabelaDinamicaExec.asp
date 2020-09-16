@@ -89,7 +89,7 @@
 '	CAMPOS DE SAÍDA SELECIONADOS
 	dim ckb_COL_DATA, ckb_COL_NF, ckb_COL_DT_EMISSAO_NF, ckb_COL_LOJA, ckb_COL_PEDIDO, ckb_COL_GRUPO_PEDIDO_ORIGEM, ckb_COL_VENDEDOR, ckb_COL_INDICADOR
 	dim ckb_COL_CPF_CNPJ_CLIENTE, ckb_COL_CONTRIBUINTE_ICMS, ckb_COL_NOME_CLIENTE, ckb_COL_RT, ckb_COL_ICMS_UF_DEST
-	dim ckb_COL_PRODUTO, ckb_COL_NAC_IMP, ckb_COL_DESCRICAO_PRODUTO, ckb_COL_VL_NF, ckb_COL_VL_UNITARIO, ckb_COL_VL_CUSTO_REAL_TOTAL, ckb_COL_VL_TOTAL, ckb_COL_QTDE
+	dim ckb_COL_PRODUTO, ckb_COL_NAC_IMP, ckb_COL_DESCRICAO_PRODUTO, ckb_COL_VL_NF, ckb_COL_VL_UNITARIO, ckb_COL_VL_CUSTO_REAL_TOTAL, ckb_COL_VL_TOTAL_NF, ckb_COL_VL_TOTAL, ckb_COL_QTDE
 	dim ckb_COL_VL_CUSTO_ULT_ENTRADA, ckb_COL_VL_CUSTO_REAL, ckb_COL_VL_LISTA, ckb_COL_GRUPO, ckb_COL_POTENCIA_BTU
 	dim ckb_COL_CICLO, ckb_COL_POSICAO_MERCADO, ckb_COL_MARCA, ckb_COL_TRANSPORTADORA
 	dim ckb_COL_CIDADE, ckb_COL_UF, ckb_COL_QTDE_PARCELAS, ckb_COL_MEIO_PAGAMENTO, ckb_COL_TEL, ckb_COL_EMAIL
@@ -115,6 +115,7 @@
 	ckb_COL_VL_NF = Trim(Request.Form("ckb_COL_VL_NF"))
 	ckb_COL_VL_UNITARIO = Trim(Request.Form("ckb_COL_VL_UNITARIO"))
 	ckb_COL_VL_CUSTO_REAL_TOTAL = Trim(Request.Form("ckb_COL_VL_CUSTO_REAL_TOTAL"))
+	ckb_COL_VL_TOTAL_NF = Trim(Request.Form("ckb_COL_VL_TOTAL_NF"))
 	ckb_COL_VL_TOTAL = Trim(Request.Form("ckb_COL_VL_TOTAL"))
 	ckb_COL_QTDE = Trim(Request.Form("ckb_COL_QTDE"))
 	ckb_COL_VL_CUSTO_ULT_ENTRADA = Trim(Request.Form("ckb_COL_VL_CUSTO_ULT_ENTRADA"))
@@ -185,6 +186,7 @@
 		if ckb_COL_VL_NF <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_NF" & "|"
 		if ckb_COL_VL_UNITARIO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_UNITARIO" & "|"
 		if ckb_COL_VL_CUSTO_REAL_TOTAL <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_CUSTO_REAL_TOTAL" & "|"
+		if ckb_COL_VL_TOTAL_NF <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_TOTAL_NF" & "|"
 		if ckb_COL_VL_TOTAL <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_TOTAL" & "|"
 		if ckb_COL_RT <> "" then s_campos_saida = s_campos_saida & "ckb_COL_RT" & "|"
 		if ckb_COL_ICMS_UF_DEST <> "" then s_campos_saida = s_campos_saida & "ckb_COL_ICMS_UF_DEST" & "|"
@@ -777,6 +779,7 @@ dim v
 	if ckb_COL_VL_NF <> "" then x_cab = x_cab & "VL NF;"
 	if ckb_COL_VL_UNITARIO <> "" then x_cab = x_cab & "VL UNITARIO;"
 	if ckb_COL_VL_CUSTO_REAL_TOTAL <> "" then x_cab = x_cab & "VL CUSTO TOTAL (REAL);"
+	if ckb_COL_VL_TOTAL_NF <> "" then x_cab = x_cab & "VL TOTAL NF;"
 	if ckb_COL_VL_TOTAL <> "" then x_cab = x_cab & "VL TOTAL;"
 	if ckb_COL_RT <> "" then x_cab = x_cab & "RT;"
 	if ckb_COL_ICMS_UF_DEST <> "" then x_cab = x_cab & "ICMS UF DESTINO (UNIT);"
@@ -861,13 +864,15 @@ dim v
 		'> CLIENTE: NOME
 			if ckb_COL_NOME_CLIENTE <> "" then
 				s = Trim("" & r("nome_cliente"))
-				s = substitui_caracteres(s, ";", ",")
+				s = Replace(s, ";", ",")
 				x = x & s & ";"
 				end if
 			
 		 '> CIDADE
 			if ckb_COL_CIDADE <> "" then
-				x = x & Trim("" & r("cidade")) & ";"
+				s = Trim("" & r("cidade"))
+				s = Replace(s, ";", ",")
+				x = x & s & ";"
 			end if
 	 
 		 '> UF
@@ -893,7 +898,9 @@ dim v
      
 		'> E-MAIL
 			if ckb_COL_EMAIL <> "" then
-				x = x & Trim("" & r("email")) & ";"
+				s = Trim("" & r("email"))
+				s = Replace(s, ";", ",")
+				x = x & s & ";"
 				end if        
 		
 		 '> VENDEDOR
@@ -918,12 +925,16 @@ dim v
 
 		'> INDICADOR: ENDEREÇO
 			if ckb_COL_INDICADOR_ENDERECO <> "" then
-				x = x & formata_endereco(Trim("" & r("indicador_endereco")), Trim("" & r("indicador_endereco_numero")), Trim("" & r("indicador_endereco_complemento")), Trim("" & r("indicador_bairro")), "", "", Trim("" & r("indicador_cep"))) & ";"
+				s = formata_endereco(Trim("" & r("indicador_endereco")), Trim("" & r("indicador_endereco_numero")), Trim("" & r("indicador_endereco_complemento")), Trim("" & r("indicador_bairro")), "", "", Trim("" & r("indicador_cep")))
+				s = Replace(s, ";", ",")
+				x = x & s & ";"
 				end if
 			
 		'> INDICADOR: CIDADE
 			if ckb_COL_INDICADOR_CIDADE <> "" then
-				x = x & Trim("" & r("indicador_cidade")) & ";"
+				s = Trim("" & r("indicador_cidade"))
+				s = Replace(s, ";", ",")
+				x = x & s & ";"
 			end if
 	 
 		 '> INDICADOR: UF
@@ -933,27 +944,37 @@ dim v
 
 		'> INDICADOR: E-MAIL 
 			if ckb_COL_INDICADOR_EMAILS <> "" then
-				x = x & Trim("" & r("indicador_email")) & ";"
+				s = Trim("" & r("indicador_email"))
+				s = Replace(s, ";", ",")
+				x = x & s & ";"
 				end if
 
 		'> INDICADOR: E-MAIL 2
 			if ckb_COL_INDICADOR_EMAILS <> "" then
-				x = x & Trim("" & r("indicador_email2")) & ";"
+				s = Trim("" & r("indicador_email2"))
+				s = Replace(s, ";", ",")
+				x = x & s & ";"
 				end if
 
 		'> INDICADOR: E-MAIL 3
 			if ckb_COL_INDICADOR_EMAILS <> "" then
-				x = x & Trim("" & r("indicador_email3")) & ";"
+				s = Trim("" & r("indicador_email3"))
+				s = Replace(s, ";", ",")
+				x = x & s & ";"
 				end if
 
 		'> NOME FABRICANTE
 			if ckb_COL_MARCA <> "" then
-				x = x & UCase(Trim("" & r("nome_fabricante"))) & ";"
+				s = UCase(Trim("" & r("nome_fabricante")))
+				s = Replace(s, ";", ",")
+				x = x & s & ";"
 				end if
 			
 		'> GRUPO
 			if ckb_COL_GRUPO <> "" then
-				x = x & Trim("" & r("grupo")) & ";"
+				s = Trim("" & r("grupo"))
+				s = Replace(s, ";", ",")
+				x = x & s & ";"
 				end if
 		
 		 '> BTU
@@ -998,7 +1019,7 @@ dim v
 		 '> DESCRIÇÃO DO PRODUTO
 			if ckb_COL_DESCRICAO_PRODUTO <> "" then
 				s = Trim("" & r("descricao"))
-				s = substitui_caracteres(s, ";", ",")
+				s = Replace(s, ";", ",")
 				x = x & s & ";"
 				end if
 	
@@ -1089,6 +1110,13 @@ dim v
 				x = x & s & ";"
 				end if
 		
+		'> VALOR TOTAL NF
+			if ckb_COL_VL_TOTAL_NF <> "" then
+			'	EXPORTAR VALOR UTILIZANDO SEPARADOR DECIMAL DEFINIDO
+				s = substitui_caracteres(bd_formata_moeda(CLng(s_qtde) * r("preco_NF")), ".", SEPARADOR_DECIMAL)
+				x = x & s & ";"
+				end if
+
 		'> VALOR TOTAL
 			if ckb_COL_VL_TOTAL <> "" then
 			'	EXPORTAR VALOR UTILIZANDO SEPARADOR DECIMAL DEFINIDO
