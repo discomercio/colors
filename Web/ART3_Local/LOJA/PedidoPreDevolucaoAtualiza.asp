@@ -119,10 +119,14 @@
 	deve_devolver = False
 
     dim id_pedido_chamado_depto
-    dim r_pedido
+    dim r_pedido, r_vendedor
 	if Not le_pedido(pedido_selecionado, r_pedido, msg_erro) then
 		alerta = msg_erro
 		end if
+
+    if alerta = "" then
+        call le_usuario(r_pedido.vendedor, r_vendedor, msg_erro)
+        end if
 
     if (r_pedido.st_forma_pagto_possui_parcela_cartao = 1) Or (r_pedido.st_forma_pagto_possui_parcela_cartao_maquineta = 1) then
         '2=Financeiro/Devolução (Pagamento em Cartão) -> para pedidos que tenham pagamento em cartão
@@ -309,19 +313,25 @@
                     rs("dt_hr_aprovado") = Now
                     delete_file_scheduled_date = DateAdd("m", 2, Date)
         
+                    dim strEmailDestinatarioAlerta
                     dim strEmailAdministrador
                     set strEmailAdministrador = get_registro_t_parametro("PEDIDO_DEVOLUCAO_EMAIL_ADMINISTRADOR_2")
-                    corpo_mensagem = "A pré-devolução referente o pedido " & pedido_selecionado & " foi aprovada por " & usuario & " em " & formata_data_hora(Now) & "."
-                    EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__PEDIDO_DEVOLUCAO), _
-                                                                            "", _
-                                                                            strEmailAdministrador.campo_texto, _
-                                                                            "", _
-                                                                            "", _
-                                                                            "Pré-devolução aprovada", _
-                                                                            corpo_mensagem, _
-                                                                            Now, _
-                                                                            id_email, _
-                                                                            msg_erro_grava_email
+                    '16/09/2020: a Gabriela Hernandes solicitou para enviar o email de alerta para o vendedor apenas
+                    'strEmailDestinatarioAlerta = Trim("" & strEmailAdministrador.campo_texto)
+                    strEmailDestinatarioAlerta = Trim("" & r_vendedor.email)
+                    if strEmailDestinatarioAlerta <> "" then
+                        corpo_mensagem = "A pré-devolução referente o pedido " & pedido_selecionado & " foi aprovada por " & usuario & " em " & formata_data_hora(Now) & "."
+                        EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__PEDIDO_DEVOLUCAO), _
+                                                                                "", _
+                                                                                strEmailDestinatarioAlerta, _
+                                                                                "", _
+                                                                                "", _
+                                                                                "Pré-devolução aprovada", _
+                                                                                corpo_mensagem, _
+                                                                                Now, _
+                                                                                id_email, _
+                                                                                msg_erro_grava_email
+                        end if
 
                 elseif rb_status = COD_ST_PEDIDO_DEVOLUCAO__REPROVADA then
                     rs("st_reprovado") = 1
