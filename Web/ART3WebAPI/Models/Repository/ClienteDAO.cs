@@ -178,6 +178,8 @@ namespace ART3WebAPI.Models.Repository
 				cliente.ddd_com_2 = BD.readToString(rowResultado["ddd_com_2"]);
 				cliente.tel_com_2 = BD.readToString(rowResultado["tel_com_2"]);
 				cliente.ramal_com_2 = BD.readToString(rowResultado["ramal_com_2"]);
+				cliente.sistema_responsavel_cadastro = BD.readToInt(rowResultado["sistema_responsavel_cadastro"]);
+				cliente.sistema_responsavel_atualizacao = BD.readToInt(rowResultado["sistema_responsavel_atualizacao"]);
 				#endregion
 			}
 			finally

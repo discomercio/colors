@@ -39,6 +39,8 @@ namespace ConsolidadorXlsEC
         }
 
         private SqlCommand _cmCommandPedidoRecebidoParaSim;
+
+        int _flagPedidoUsarMemorizacaoCompletaEnderecos;
         #endregion
 
         #region [ Construtor ]
@@ -124,6 +126,9 @@ namespace ConsolidadorXlsEC
         private string montaSqlConsulta()
         {
             #region [ Declarações ]
+            string strCidade;
+            string strUf;
+            string strNome;
             string strWhere;
             string strSql;
             #endregion
@@ -134,6 +139,19 @@ namespace ConsolidadorXlsEC
             #endregion
 
             #region [ Monta Select ]
+            if (_flagPedidoUsarMemorizacaoCompletaEnderecos == 0)
+            {
+                strCidade = " c.cidade";
+                strUf = " c.uf";
+                strNome = " c.nome_iniciais_em_maiusculas";
+            }
+            else
+            {
+                strCidade = " (CASE p.st_memorizacao_completa_enderecos WHEN 0 THEN c.cidade ELSE p.endereco_cidade END)";
+                strUf = " (CASE p.st_memorizacao_completa_enderecos WHEN 0 THEN c.uf ELSE p.endereco_uf END)";
+                strNome = " (CASE p.st_memorizacao_completa_enderecos WHEN 0 THEN c.nome_iniciais_em_maiusculas ELSE dbo.SqlClrUtilIniciaisEmMaiusculas(p.endereco_nome) END)";
+            }
+
             strSql = "SELECT" +
                         " p.transportadora_id," +
                         " p.pedido," +
@@ -142,9 +160,9 @@ namespace ConsolidadorXlsEC
                         " p.marketplace_codigo_origem," +
                         " p.loja," +
                         " p.MarketplacePedidoRecebidoRegistrarDataRecebido," +
-                        " c.cidade," +
-                        " c.uf," +
-                        " c.nome_iniciais_em_maiusculas," +
+                        strCidade + " AS cidade," +
+                        strUf + " AS uf," +
+                        strNome + " AS nome_iniciais_em_maiusculas," +
                         " Sum(tPI.qtde*tPI.preco_venda) AS vl_pedido," +
                         " (SELECT descricao FROM t_CODIGO_DESCRICAO WHERE grupo = 'PedidoECommerce_Origem' AND codigo = p.marketplace_codigo_origem) AS marketplace_codigo_origem_descricao," +
                         " (SELECT codigo_pai FROM t_CODIGO_DESCRICAO WHERE grupo = 'PedidoECommerce_Origem' AND codigo = p.marketplace_codigo_origem) AS marketplace_codigo_origem_pai" +
@@ -159,9 +177,9 @@ namespace ConsolidadorXlsEC
                        " ,p.marketplace_codigo_origem" +
                        " ,p.loja" +
                        " ,p.MarketplacePedidoRecebidoRegistrarDataRecebido" +
-                       " ,c.cidade" +
-                       " ,c.uf" +
-                       " ,c.nome_iniciais_em_maiusculas" +
+                       " ," + strCidade +
+                       " ," + strUf +
+                       " ," + strNome +
                     " ORDER BY" +
                         " p.transportadora_id," +
                         " p.pedido";
@@ -856,6 +874,8 @@ namespace ConsolidadorXlsEC
                 cbOrigemPedido.DisplayMember = "descricao";
                 cbOrigemPedido.SelectedIndex = -1;
                 #endregion
+
+                _flagPedidoUsarMemorizacaoCompletaEnderecos = FMain.contextoBD.AmbienteBase.geralDAO.getCampoInteiroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ID_PARAMETRO_FLAG_PEDIDO_MEMORIZACAOCOMPLETAENDERECOS, 0);
 
                 blnSucesso = true;
             }

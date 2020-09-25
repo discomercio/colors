@@ -520,6 +520,7 @@ namespace ART3WebAPI.Models.Entities
 		public string nomefantasia { get; set; }
 		public string cpf { get; set; }
 		public string address_id { get; set; }
+		public string street_detail { get; set; }
 		public List<KeyValuePair<string, string>> UnknownFields { get; set; } = new List<KeyValuePair<string, string>>();
 
 		#region [ FormataDados ]
@@ -603,6 +604,7 @@ namespace ART3WebAPI.Models.Entities
 		public string nomefantasia { get; set; }
 		public string cpf { get; set; }
 		public string address_id { get; set; }
+		public string street_detail { get; set; }
 		public List<KeyValuePair<string, string>> UnknownFields { get; set; } = new List<KeyValuePair<string, string>>();
 
 		#region [ FormataDados ]

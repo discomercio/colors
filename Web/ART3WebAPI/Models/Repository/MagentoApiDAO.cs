@@ -500,7 +500,8 @@ namespace ART3WebAPI.Models.Repository
 								"ie, " +
 								"cpfcnpj, " +
 								"empresa, " +
-								"nomefantasia" +
+								"nomefantasia, " +
+								"street_detail"+
 							")" +
 							" OUTPUT INSERTED.id" +
 							" VALUES " +
@@ -537,7 +538,8 @@ namespace ART3WebAPI.Models.Repository
 								"@ie, " +
 								"@cpfcnpj, " +
 								"@empresa, " +
-								"@nomefantasia" +
+								"@nomefantasia, " +
+								"@street_detail"+
 							")";
 					cmInsert = new SqlCommand();
 					cmInsert.Connection = cn;
@@ -575,6 +577,7 @@ namespace ART3WebAPI.Models.Repository
 					cmInsert.Parameters.Add("@cpfcnpj", SqlDbType.VarChar, 30);
 					cmInsert.Parameters.Add("@empresa", SqlDbType.VarChar, 200);
 					cmInsert.Parameters.Add("@nomefantasia", SqlDbType.VarChar, 200);
+					cmInsert.Parameters.Add("@street_detail", SqlDbType.VarChar, 200);
 					cmInsert.Prepare();
 					#endregion
 
@@ -620,6 +623,7 @@ namespace ART3WebAPI.Models.Repository
 							cmInsert.Parameters["@cpfcnpj"].Value = (endereco.cpfcnpj ?? "");
 							cmInsert.Parameters["@empresa"].Value = (endereco.empresa ?? "");
 							cmInsert.Parameters["@nomefantasia"].Value = (endereco.nomefantasia ?? "");
+							cmInsert.Parameters["@street_detail"].Value = (endereco.street_detail ?? "");
 							#endregion
 
 							#region [ Monta texto para o log em arquivo ]

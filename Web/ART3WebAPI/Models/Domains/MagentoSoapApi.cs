@@ -343,6 +343,9 @@ namespace ART3WebAPI.Models.Domains
 										case "address_id":
 											orderInfo.shipping_address.address_id = strValue;
 											break;
+										case "street_detail":
+											orderInfo.shipping_address.street_detail = strValue;
+											break;
 										default:
 											orderInfo.shipping_address.UnknownFields.Add(new KeyValuePair<string, string>(strKey, strValue));
 											break;
@@ -459,6 +462,9 @@ namespace ART3WebAPI.Models.Domains
 											break;
 										case "address_id":
 											orderInfo.billing_address.address_id = strValue;
+											break;
+										case "street_detail":
+											orderInfo.billing_address.street_detail = strValue;
 											break;
 										default:
 											orderInfo.billing_address.UnknownFields.Add(new KeyValuePair<string, string>(strKey, strValue));

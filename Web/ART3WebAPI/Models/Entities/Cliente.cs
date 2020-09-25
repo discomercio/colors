@@ -70,5 +70,7 @@ namespace ART3WebAPI.Models.Entities
 		public string ddd_com_2 { get; set; }
 		public string tel_com_2 { get; set; }
 		public string ramal_com_2 { get; set; }
+		public int sistema_responsavel_cadastro { get; set; }
+		public int sistema_responsavel_atualizacao { get; set; }
 	}
 }

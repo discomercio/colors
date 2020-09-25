@@ -12,6 +12,7 @@ using System.IO;
 using System.Xml;
 using System.Reflection;
 using System.Configuration;
+using System.Web.Services.Discovery;
 
 namespace ART3WebAPI.Models.Domains
 {
@@ -36,8 +37,8 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.21";
-				public const string Data = "21.MAI.2020";
+				public const string Numero = "2.23";
+				public const string Data = "15.SET.2020";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
 			#endregion
@@ -152,7 +153,12 @@ namespace ART3WebAPI.Models.Domains
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.22 - XX.XX.20XX - por XXX
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.23 - XX.XX.20XX - por XXX
+			 * v 2.23 - 15.09.2020 - por HHO
+			 *      Alteração na consulta de pedidos do Magento para identificar e salvar no banco de dados o
+			 *      campo 'street_detail' (ponto de referência). Além disso, realiza automaticamente o cadas-
+			 *      tramento do cliente, caso seja um cliente novo.
+			 *      Esta versão está sendo desenvolvida para ser implantada junto a memorização de endereços
+			 *      no pedido/pré-pedido.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.24 - XX.XX.20XX - por XXX
 			 * -----------------------------------------------------------------------------------------------
@@ -301,6 +307,7 @@ namespace ART3WebAPI.Models.Domains
 				public const int TAMANHO_RAIZ_CNPJ = 8;
 				public const String PREFIXO_BOLETO_NUM_CONTROLE_PARTICIPANTE = "TFBI";
 				public const String SQL_COLLATE_CASE_ACCENT = " COLLATE Latin1_General_CI_AI";
+				public const int TAM_MAX_NSU = 12;
 			}
 			#endregion
 
@@ -362,6 +369,29 @@ namespace ART3WebAPI.Models.Domains
 			{
 				public static readonly string ArClube = getConfigurationValue("LojaArclube");
 				public static readonly string Bonshop = getConfigurationValue("LojaBonshop");
+			}
+			#endregion
+
+			#region [ TipoPessoa ]
+			public static class TipoPessoa
+			{
+				public const string PJ = "PJ";
+				public const string PF = "PF";
+			}
+			#endregion
+
+			#region [ Sexo ]
+			public static class Sexo
+			{
+				public const string Masculino = "M";
+				public const string Feminino = "F";
+			}
+			#endregion
+
+			#region [ Nsu ]
+			public class Nsu
+			{
+				public const string NSU_CADASTRO_CLIENTES = "CADASTRO_CLIENTES";
 			}
 			#endregion
 		}
@@ -790,6 +820,64 @@ namespace ART3WebAPI.Models.Domains
 				if ((texto[i] >= '0') && (texto[i] <= '9')) d.Append(texto[i]);
 			}
 			return d.ToString();
+		}
+		#endregion
+
+		#region [ ecDadosDecodificaTelefoneFormatado ]
+		public static bool ecDadosDecodificaTelefoneFormatado(string telefoneFormatado, out string ddd, out string telefone)
+		{
+			#region [ Declarações ]
+			string sTelefoneFormatado;
+			string sTelAux;
+			string[] v;
+			#endregion
+
+			ddd = "";
+			telefone = "";
+
+			sTelefoneFormatado = (telefoneFormatado ?? "").Trim();
+
+			if (sTelefoneFormatado.Length < 8) return false;
+
+			sTelefoneFormatado = sTelefoneFormatado.Replace('(', ' ');
+			sTelefoneFormatado = sTelefoneFormatado.Replace(')', ' ');
+			sTelefoneFormatado = sTelefoneFormatado.Trim();
+
+			while(sTelefoneFormatado.Contains("  "))
+			{
+				sTelefoneFormatado = sTelefoneFormatado.Replace("  ", " ");
+			}
+
+			if (!sTelefoneFormatado.Contains(" "))
+			{
+				// NÃO ENCONTROU SEPARAÇÃO ENTRE DDD E TELEFONE
+				sTelAux = digitos(sTelefoneFormatado);
+				if (sTelAux.Length == 11)
+				{
+					// ASSUME QUE PROVAVELMENTE SE TRATA DE DDD + Nº DE 9 DÍGITOS
+					ddd = Texto.leftStr(sTelAux, 2);
+					telefone = Texto.rightStr(sTelAux, 9);
+				}
+				else if (sTelAux.Length == 10)
+				{
+					// ASSUME QUE PROVAVELMENTE SE TRATA DE DDD + Nº DE 8 DÍGITOS
+					ddd = Texto.leftStr(sTelAux, 2);
+					telefone = Texto.rightStr(sTelAux, 8);
+				}
+				else
+				{
+					// RETORNA O CONTEÚDO RECEBIDO SEM FAZER A SEPARAÇÃO ENTRE DDD E TELEFONE
+					telefone = (telefoneFormatado ?? "").Trim();
+				}
+			}
+			else
+			{
+				v = sTelefoneFormatado.Split(' ');
+				ddd = v[0].Trim();
+				telefone = v[1].Trim();
+			}
+
+			return true;
 		}
 		#endregion
 

@@ -168,6 +168,7 @@
     <Compile Include="Models\Domains\MagentoSoapApi.cs" />
     <Compile Include="Models\Domains\OcorrenciasGeradorRelatorio.cs" />
     <Compile Include="Models\Domains\RelatorioProdutoFlagBD.cs" />
+    <Compile Include="Models\Domains\Texto.cs" />
     <Compile Include="Models\Domains\WebApiException.cs" />
     <Compile Include="Models\Entities\Cliente.cs" />
     <Compile Include="Models\Entities\CodigoDescricao.cs" />

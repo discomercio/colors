@@ -29,8 +29,8 @@ namespace EtqWms
 			{
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "EtqWms";
-				public const string VERSAO_NUMERO = "1.11";
-				public const string VERSAO_DATA = "10.AGO.2020";
+				public const string VERSAO_NUMERO = "1.12";
+				public const string VERSAO_DATA = "31.AGO.2020";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Módulo Etiqueta (WMS)";
@@ -112,8 +112,11 @@ namespace EtqWms
 			 *		  volumes, ID da etiqueta (t_WMS_ETQ_N3_SEPARACAO_ZONA_PRODUTO.id),
 			 *		  número do volume (individual).
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.12 - XX.XX.20XX - por XXX
-			 *		  
+			 * v 1.12 - 31.08.2020 - por HHO
+			 *		  Ajustes para tratar a memorização do endereço de cobrança no pedido, pois, a partir de
+			 *		  agora, ao invés de obter os dados do endereço no cadastro do cliente (t_CLIENTE), deve-se
+			 *		  usar os dados que estão gravados no próprio pedido. O tratamento que já ocorria com o
+			 *		  endereço de entrega deve passar a ser feito p/ o endereço de cobrança/cadastro.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.13 - XX.XX.20XX - por XXX
 			 *		  
@@ -165,6 +168,13 @@ namespace EtqWms
 				public const string FmtDdMmYyyyHhMmSsComSeparador = FmtDia + "/" + FmtMes + "/" + FmtAno + " " + FmtHora + ":" + FmtMin + ":" + FmtSeg;
 				public const string FmtYyyyMmDdComSeparador = FmtAno + "-" + FmtMes + "-" + FmtDia;
 				public const string FmtYyyyMmDdHhMmSsComSeparador = FmtAno + "-" + FmtMes + "-" + FmtDia + " " + FmtHora + ":" + FmtMin + ":" + FmtSeg;
+			}
+			#endregion
+
+			#region [ ID_T_PARAMETRO ]
+			public static class ID_T_PARAMETRO
+			{
+				public const string ID_PARAMETRO_FLAG_PEDIDO_MEMORIZACAOCOMPLETAENDERECOS = "Flag_Pedido_MemorizacaoCompletaEnderecos";
 			}
 			#endregion
 
@@ -685,6 +695,161 @@ namespace EtqWms
 						 Cte.DataHora.FmtMes +
 						 Cte.DataHora.FmtAno;
 			if (DateTime.TryParseExact(digitos(strDdMmYyyy), strFormato, myCultureInfo, DateTimeStyles.NoCurrentDateDefault, out dtDataHoraResp)) return dtDataHoraResp;
+			return DateTime.MinValue;
+		}
+		#endregion
+
+		#region[ converteYyyyMmDdHhMmSsParaDateTime ]
+		/// <summary>
+		/// Converte o texto que representa uma data/hora para DateTime
+		/// </summary>
+		/// <param name="strYyyyMmDdHhMmSs">
+		/// Texto representando uma data/hora, com ou sem separadores, sendo que a parte da hora é opcional.
+		/// </param>
+		/// <returns>
+		/// Retorna a data/hora como DateTime, se não for possível fazer a conversão, retorna DateTime.MinValue
+		/// </returns>
+		public static DateTime converteYyyyMmDdHhMmSsParaDateTime(string strYyyyMmDdHhMmSs)
+		{
+			#region [ Declarações ]
+			char c;
+			string strDia = "";
+			string strMes = "";
+			string strAno = "";
+			string strHora = "";
+			string strMinuto = "";
+			string strSegundo = "";
+			string strFormato;
+			string strDataHoraAConverter;
+			DateTime dtDataHoraResp;
+			CultureInfo myCultureInfo = new CultureInfo("pt-BR");
+			#endregion
+
+			#region [ Ano ]
+			while (strYyyyMmDdHhMmSs.Length > 0)
+			{
+				c = strYyyyMmDdHhMmSs[0];
+				strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+				if (!isDigit(c)) break;
+				strAno += c;
+				if (strAno.Length == 4) break;
+			}
+			if (strAno.Length == 2)
+			{
+				if (converteInteiro(strAno) >= 80)
+					strAno = "19" + strAno;
+				else
+					strAno = "20" + strAno;
+			}
+			#endregion
+
+			#region [ Remove separador, se houver ]
+			if ((strYyyyMmDdHhMmSs.Length > 0) && (!isDigit(strYyyyMmDdHhMmSs[0]))) strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+			#endregion
+
+			#region [ Mês ]
+			while (strYyyyMmDdHhMmSs.Length > 0)
+			{
+				c = strYyyyMmDdHhMmSs[0];
+				strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+				if (!isDigit(c)) break;
+				strMes += c;
+				if (strMes.Length == 2) break;
+			}
+			while (strMes.Length < 2) strMes = '0' + strMes;
+			#endregion
+
+			#region [ Remove separador, se houver ]
+			if ((strYyyyMmDdHhMmSs.Length > 0) && (!isDigit(strYyyyMmDdHhMmSs[0]))) strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+			#endregion
+
+			#region [ Dia ]
+			while (strYyyyMmDdHhMmSs.Length > 0)
+			{
+				c = strYyyyMmDdHhMmSs[0];
+				strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+				if (!isDigit(c)) break;
+				strDia += c;
+				if (strDia.Length == 2) break;
+			}
+			while (strDia.Length < 2) strDia = '0' + strDia;
+			#endregion
+
+			#region [ Remove separador(es) entre a data e hora, se houver ]
+			while (strYyyyMmDdHhMmSs.Length > 0)
+			{
+				if (!isDigit(strYyyyMmDdHhMmSs[0]))
+					strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+				else
+					break;
+			}
+			#endregion
+
+			#region [ Hora ]
+			while (strYyyyMmDdHhMmSs.Length > 0)
+			{
+				c = strYyyyMmDdHhMmSs[0];
+				strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+				if (!isDigit(c)) break;
+				strHora += c;
+				if (strHora.Length == 2) break;
+			}
+			while (strHora.Length < 2) strHora = '0' + strHora;
+			#endregion
+
+			#region [ Remove separador, se houver ]
+			if ((strYyyyMmDdHhMmSs.Length > 0) && (!isDigit(strYyyyMmDdHhMmSs[0]))) strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+			#endregion
+
+			#region [ Minuto ]
+			while (strYyyyMmDdHhMmSs.Length > 0)
+			{
+				c = strYyyyMmDdHhMmSs[0];
+				strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+				if (!isDigit(c)) break;
+				strMinuto += c;
+				if (strMinuto.Length == 2) break;
+			}
+			while (strMinuto.Length < 2) strMinuto = '0' + strMinuto;
+			#endregion
+
+			#region [ Remove separador, se houver ]
+			if ((strYyyyMmDdHhMmSs.Length > 0) && (!isDigit(strYyyyMmDdHhMmSs[0]))) strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+			#endregion
+
+			#region [ Segundo ]
+			while (strYyyyMmDdHhMmSs.Length > 0)
+			{
+				c = strYyyyMmDdHhMmSs[0];
+				strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+				if (!isDigit(c)) break;
+				strSegundo += c;
+				if (strSegundo.Length == 2) break;
+			}
+			while (strSegundo.Length < 2) strSegundo = '0' + strSegundo;
+			#endregion
+
+			#region [ Monta máscara ]
+			strFormato = Cte.DataHora.FmtAno +
+						 Cte.DataHora.FmtMes +
+						 Cte.DataHora.FmtDia +
+						 ' ' +
+						 Cte.DataHora.FmtHora +
+						 Cte.DataHora.FmtMin +
+						 Cte.DataHora.FmtSeg;
+			#endregion
+
+			#region [ Monta data/hora normalizada ]
+			strDataHoraAConverter = strAno +
+									strMes +
+									strDia +
+									' ' +
+									strHora +
+									strMinuto +
+									strSegundo;
+			#endregion
+
+			if (DateTime.TryParseExact(strDataHoraAConverter, strFormato, myCultureInfo, DateTimeStyles.NoCurrentDateDefault, out dtDataHoraResp)) return dtDataHoraResp;
 			return DateTime.MinValue;
 		}
 		#endregion

@@ -123,6 +123,7 @@ namespace EtqWms
 			int intQtdePedidos = 0;
 			int intQtdeTotalVolumes = 0;
 			int intSequencia = 0;
+			int flagPedidoUsarMemorizacaoCompletaEnderecos;
 			bool blnAchou;
 			bool blnInconsistenciaEmits = false;
 			String strMsg;
@@ -184,6 +185,10 @@ namespace EtqWms
 				daAdapter = BD.criaSqlDataAdapter();
 				#endregion
 
+				#region [ Inicialização ]
+				flagPedidoUsarMemorizacaoCompletaEnderecos = ComumDAO.getCampoInteiroTabelaParametro(Global.Cte.ID_T_PARAMETRO.ID_PARAMETRO_FLAG_PEDIDO_MEMORIZACAOCOMPLETAENDERECOS, 0);
+				#endregion
+
 				#region [ Monta o SQL ]
 				// IMPORTANTE: as etiquetas devem estar ordenadas por Zona e Produto.
 				//		A) Zona: para poder separar as etiquetas facilmente p/ cada "separador" no depósito.
@@ -222,8 +227,18 @@ namespace EtqWms
 							" tN2.destino_cidade," +
 							" tN2.destino_uf," +
 							" tN2.destino_cep," +
-							" tPed.st_entrega," +
-							" tCli.uf AS origem_uf," +
+							" tPed.st_entrega,";
+
+				if (flagPedidoUsarMemorizacaoCompletaEnderecos == 0)
+				{
+					strSql += " tCli.uf AS origem_uf,";
+				}
+				else
+				{
+					strSql += " (CASE tPed.st_memorizacao_completa_enderecos WHEN 0 THEN tCli.uf ELSE tPed.endereco_uf END) AS origem_uf,";
+				}
+
+				strSql +=
 							" tPed.id_nfe_emitente" +
 						" FROM t_WMS_ETQ_N1_SEPARACAO_ZONA_RELATORIO tN1" +
 							" INNER JOIN t_WMS_ETQ_N2_SEPARACAO_ZONA_PEDIDO tN2 ON (tN1.id = tN2.id_wms_etq_n1)" +
