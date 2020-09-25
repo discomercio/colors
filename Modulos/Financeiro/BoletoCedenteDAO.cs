@@ -311,7 +311,8 @@ namespace Financeiro
 			boletoCedente.st_boleto_cedente_padrao = (byte)rowResultado["st_boleto_cedente_padrao"];
 			boletoCedente.apelido = !Convert.IsDBNull(rowResultado["apelido"]) ? rowResultado["apelido"].ToString() : "";
 			boletoCedente.loja_default_boleto_plano_contas = !Convert.IsDBNull(rowResultado["loja_default_boleto_plano_contas"]) ? rowResultado["loja_default_boleto_plano_contas"].ToString() : "";
-			boletoCedente.st_participante_serasa_reciprocidade = (byte)rowResultado["st_participante_serasa_reciprocidade"];
+			boletoCedente.cnpj= !Convert.IsDBNull(rowResultado["cnpj"]) ? rowResultado["cnpj"].ToString() : "";
+            boletoCedente.st_participante_serasa_reciprocidade = (byte)rowResultado["st_participante_serasa_reciprocidade"];
 			#endregion
 
 			return boletoCedente;

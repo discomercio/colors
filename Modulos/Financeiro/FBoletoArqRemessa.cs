@@ -509,10 +509,14 @@ namespace Financeiro
 			String strNomeCompletoArqRemessa;
 			String strPathBase = "";
 			String strPathCompleto = "";
-			LinhaHeaderArquivoRemessa linhaHeader;
-			LinhaTraillerArquivoRemessa linhaTrailler;
-			LinhaRegistroTipo1ArquivoRemessa linhaTipo1;
-			LinhaRegistroTipo2ArquivoRemessa linhaTipo2;
+            B237HeaderArqRemessa b237LinhaHeader;
+            B237TraillerArqRemessa b237LinhaTrailler;
+            B237RegTipo1ArqRemessa b237LinhaTipo1;
+            B237RegTipo2ArqRemessa b237LinhaTipo2;
+            B422HeaderArqRemessa b422LinhaHeader;
+            B422TraillerArqRemessa b422LinhaTrailler;
+            B422RegTipo1ArqRemessa b422LinhaTipo1;
+            B422RegTipo2ArqRemessa b422LinhaTipo2;
 			Encoding encode = Encoding.GetEncoding("Windows-1252");
 			StreamWriter sw;
 			FinLog finLog = new FinLog();
@@ -645,109 +649,229 @@ namespace Financeiro
 				#endregion
 
 				sw = new StreamWriter(strNomeCompletoArqRemessa, true, encode);
-				try
-				{
-					#region [ Monta Header ]
-					intNumSequencialRegistro++;
-					linhaHeader = new LinhaHeaderArquivoRemessa();
-					linhaHeader.codigoEmpresa.valor = _boletoCedenteSelecionado.codigo_empresa;
-					linhaHeader.nomeEmpresa.valor = _boletoCedenteSelecionado.nome_empresa;
-					linhaHeader.numeroBanco.valor = _boletoCedenteSelecionado.num_banco;
-					linhaHeader.nomeBanco.valor = _boletoCedenteSelecionado.nome_banco.ToUpper();
-					linhaHeader.dataGravacaoArquivo.valor = Global.digitos(Global.formataDataDdMmYyComSeparador(DateTime.Now));
-					linhaHeader.numSequencialRemessa.valor = intNumSequencialRemessa.ToString();
-					linhaHeader.numSequencialRegistro.valor = intNumSequencialRegistro.ToString();
-					sw.WriteLine(Global.filtraAcentuacao(linhaHeader.ToString()));
-					#endregion
+                try
+                {
+                    #region [ Monta Header ]
+                    intNumSequencialRegistro++;
 
-					#region [ Monta os registros do arquivo de remessa ]
-					foreach (DsDataSource.DtbFinBoletoRow rowBoleto in _dsConsulta.Tables["DtbFinBoleto"].Rows)
-					{
-						intTotalSerieBoletos++;
-						foreach (DsDataSource.DtbFinBoletoItemRow rowBoletoItem in rowBoleto.GetChildRows("DtbFinBoleto_DtbFinBoletoItem"))
-						{
-							intTotalParcelas++;
-							vlTotal += rowBoletoItem.valor;
+                    if (_boletoCedenteSelecionado.num_banco.Equals(Global.Cte.FIN.NumeroBanco.SAFRA))
+                    {
+                        #region [ Safra ]
+                        b422LinhaHeader = new B422HeaderArqRemessa();
+                        b422LinhaHeader.codigoEmpresa.valor = _boletoCedenteSelecionado.codigo_empresa;
+                        b422LinhaHeader.nomeEmpresa.valor = _boletoCedenteSelecionado.nome_empresa;
+                        b422LinhaHeader.numeroBanco.valor = _boletoCedenteSelecionado.num_banco;
+                        b422LinhaHeader.nomeBanco.valor = "SAFRA";
+                        b422LinhaHeader.dataGravacaoArquivo.valor = Global.digitos(Global.formataDataDdMmYyComSeparador(DateTime.Now));
+                        b422LinhaHeader.numSequencialArquivo.valor = intNumSequencialRemessa.ToString();
+                        b422LinhaHeader.numSequencialRegistro.valor = intNumSequencialRegistro.ToString();
+                        sw.WriteLine(Global.filtraAcentuacao(b422LinhaHeader.ToString()));
+                        #endregion
+                    }
+                    else
+                    {
+                        #region [ Bradesco ]
+                        b237LinhaHeader = new B237HeaderArqRemessa();
+                        b237LinhaHeader.codigoEmpresa.valor = _boletoCedenteSelecionado.codigo_empresa;
+                        b237LinhaHeader.nomeEmpresa.valor = _boletoCedenteSelecionado.nome_empresa;
+                        b237LinhaHeader.numeroBanco.valor = _boletoCedenteSelecionado.num_banco;
+                        b237LinhaHeader.nomeBanco.valor = _boletoCedenteSelecionado.nome_banco.ToUpper();
+                        b237LinhaHeader.dataGravacaoArquivo.valor = Global.digitos(Global.formataDataDdMmYyComSeparador(DateTime.Now));
+                        b237LinhaHeader.numSequencialRemessa.valor = intNumSequencialRemessa.ToString();
+                        b237LinhaHeader.numSequencialRegistro.valor = intNumSequencialRegistro.ToString();
+                        sw.WriteLine(Global.filtraAcentuacao(b237LinhaHeader.ToString()));
+                        #endregion
+                    }
+                    #endregion
 
-							#region [ Registro do tipo 1 ]
-							intNumSequencialRegistro++;
-							linhaTipo1 = new LinhaRegistroTipo1ArquivoRemessa();
-							linhaTipo1.identifCedenteCarteira.valor = rowBoleto.carteira;
-							linhaTipo1.identifCedenteAgencia.valor = rowBoleto.agencia;
-							linhaTipo1.identifCedenteCtaCorrente.valor = rowBoleto.conta;
-							linhaTipo1.identifCedenteDigitoCtaCorrente.valor = rowBoleto.digito_conta;
-							linhaTipo1.numControleParticipante.valor = rowBoletoItem.num_controle_participante;
-							if (rowBoleto.perc_multa > 0)
-							{
-								linhaTipo1.campoMulta.valor = "2";
-								linhaTipo1.percentualMulta.valor = Global.digitos(Global.formataPercentualCom2Decimais(rowBoleto.perc_multa));
-							}
-							if (rowBoletoItem.bonificacao_por_dia > 0)
-							{
-								linhaTipo1.descontoBonificacaoPorDia.valor = Global.digitos(Global.formataMoeda(rowBoletoItem.bonificacao_por_dia));
-							}
-							linhaTipo1.numDocumento.valor = rowBoletoItem.numero_documento.ToUpper();
-							linhaTipo1.dataVenctoTitulo.valor = Global.digitos(Global.formataDataDdMmYyComSeparador(rowBoletoItem.dt_vencto));
-							linhaTipo1.valorTitulo.valor = Global.digitos(Global.formataMoeda(rowBoletoItem.valor));
-							linhaTipo1.dataEmissaoTitulo.valor = Global.digitos(Global.formataDataDdMmYyComSeparador(DateTime.Now));
-							if (rowBoletoItem.st_instrucao_protesto == 1)
-							{
-								linhaTipo1.primeiraInstrucao.valor = rowBoleto.primeira_instrucao;
-								linhaTipo1.segundaInstrucao.valor = rowBoleto.segunda_instrucao;
-							}
-							else
-							{
-								linhaTipo1.primeiraInstrucao.valor = "00";
-								linhaTipo1.segundaInstrucao.valor = "00";
-							}
-							linhaTipo1.valorPorDiaAtraso.valor = Global.digitos(Global.formataMoeda(rowBoletoItem.valor_por_dia_atraso));
-							linhaTipo1.dataLimiteConcessaoDesconto.valor = "000000";
-							linhaTipo1.valorDesconto.valor = "0";
-							linhaTipo1.identificacaoTipoInscricaoSacado.valor = rowBoleto.tipo_sacado;
-							linhaTipo1.numInscricaoSacado.valor = rowBoleto.num_inscricao_sacado;
-							linhaTipo1.nomeSacado.valor = rowBoleto.nome_sacado.ToUpper();
-							linhaTipo1.enderecoCompleto.valor = rowBoleto.endereco_sacado.ToUpper();
-							linhaTipo1.primeiraMensagem.valor = rowBoletoItem.primeira_mensagem.ToUpper();
-							linhaTipo1.cep.valor = Texto.leftStr(Global.digitos(rowBoleto.cep_sacado), 5);
-							if (Global.digitos(rowBoleto.cep_sacado).Length == 8)
-								linhaTipo1.sufixoCep.valor = Texto.rightStr(Global.digitos(rowBoleto.cep_sacado), 3);
-							else
-								linhaTipo1.sufixoCep.valor = "000";
-							linhaTipo1.sacadorAvalistaOuSegundaMensagem.valor = rowBoleto.segunda_mensagem.ToUpper();
-							linhaTipo1.numSequencialRegistro.valor = intNumSequencialRegistro.ToString();
-							sw.WriteLine(Global.filtraAcentuacao(linhaTipo1.ToString()));
-							#endregion
+                    #region [ Monta os registros do arquivo de remessa ]
+                    foreach (DsDataSource.DtbFinBoletoRow rowBoleto in _dsConsulta.Tables["DtbFinBoleto"].Rows)
+                    {
+                        intTotalSerieBoletos++;
+                        foreach (DsDataSource.DtbFinBoletoItemRow rowBoletoItem in rowBoleto.GetChildRows("DtbFinBoleto_DtbFinBoletoItem"))
+                        {
+                            intTotalParcelas++;
+                            vlTotal += rowBoletoItem.valor;
 
-							#region [ Registro do tipo 2 ]
-							intNumSequencialRegistro++;
-							linhaTipo2 = new LinhaRegistroTipo2ArquivoRemessa();
-							linhaTipo2.mensagem_1.valor = rowBoleto.mensagem_1;
-							linhaTipo2.mensagem_2.valor = rowBoleto.mensagem_2;
-							linhaTipo2.mensagem_3.valor = rowBoleto.mensagem_3;
-							linhaTipo2.mensagem_4.valor = rowBoleto.mensagem_4;
-							linhaTipo2.carteira.valor = rowBoleto.carteira;
-							linhaTipo2.agencia.valor = rowBoleto.agencia;
-							linhaTipo2.contaCorrente.valor = rowBoleto.conta;
-							linhaTipo2.digitoContaCorrente.valor = rowBoleto.digito_conta;
-							linhaTipo2.numSequencialRegistro.valor = intNumSequencialRegistro.ToString();
-							sw.WriteLine(Global.filtraAcentuacao(linhaTipo2.ToString()));
-							#endregion
-						}
-					}
-					#endregion
+                            #region [ Registro do tipo 1 ]
+                            intNumSequencialRegistro++;
 
-					#region [ Monta Trailler ]
-					intNumSequencialRegistro++;
-					linhaTrailler = new LinhaTraillerArquivoRemessa();
-					linhaTrailler.numSequencialRegistro.valor = intNumSequencialRegistro.ToString();
-					sw.WriteLine(Global.filtraAcentuacao(linhaTrailler.ToString()));
-					#endregion
-				}
-				finally
-				{
-					sw.Flush();
-					sw.Close();
-				}
+                            if (_boletoCedenteSelecionado.num_banco.Equals(Global.Cte.FIN.NumeroBanco.SAFRA))
+                            {
+                                #region [ Safra ]
+                                b422LinhaTipo1 = new B422RegTipo1ArqRemessa();
+                                b422LinhaTipo1.tipoInscricaoEmpresa.valor = Global.Cte.FIN.BoletoSafra.TipoInscricaoEmpresa.CNPJ;
+                                b422LinhaTipo1.numInscricao.valor = Global.digitos(_boletoCedenteSelecionado.cnpj);
+                                b422LinhaTipo1.codEmpresa.valor = _boletoCedenteSelecionado.codigo_empresa;
+                                b422LinhaTipo1.numControleParticipante.valor = rowBoletoItem.num_controle_participante;
+                                // Código IOF Operações de Seguro: 0=Isento; 1=2%; 2=4%
+                                b422LinhaTipo1.codIOF.valor = "0";
+                                if ((rowBoletoItem.st_instrucao_protesto == 1) && (rowBoleto.primeira_instrucao.Equals("06")))
+                                {
+                                    // Como o sistema iniciou com o Boleto Bradesco, os campos do BD contém: primeira_instrucao = '06' (protestar); segunda_instrucao = nº dias p/ protesto
+                                    // No Safra, os campos para informar o protesto são: instrucao2 = '10' (protestar); instrucao3 = nº dias p/ protesto
+                                    b422LinhaTipo1.instrucao2.valor = "10";
+                                    b422LinhaTipo1.instrucao3.valor = rowBoleto.segunda_instrucao;
+                                }
+                                else
+                                {
+                                    b422LinhaTipo1.instrucao2.valor = "00";
+                                    b422LinhaTipo1.instrucao3.valor = "00";
+                                }
+
+                                b422LinhaTipo1.codCarteira.valor = Global.Cte.FIN.BoletoSafra.TipoCarteira.COBRANCA_SIMPLES;
+                                b422LinhaTipo1.numDocumento.valor = rowBoletoItem.numero_documento.ToUpper();
+                                b422LinhaTipo1.dataVenctoTitulo.valor = Global.digitos(Global.formataDataDdMmYyComSeparador(rowBoletoItem.dt_vencto));
+                                b422LinhaTipo1.valorTitulo.valor = Global.digitos(Global.formataMoeda(rowBoletoItem.valor));
+                                b422LinhaTipo1.bancoEncarregadoCobranca.valor = _boletoCedenteSelecionado.num_banco;
+                                b422LinhaTipo1.agenciaDepositaria.valor = _boletoCedenteSelecionado.agencia;
+                                b422LinhaTipo1.dataEmissaoTitulo.valor = Global.digitos(Global.formataDataDdMmYyComSeparador(DateTime.Now));
+
+                                // Códigos para 1ª instrução de cobrança:
+                                //    01 - NÃO RECEBER PRINCIPAL, SEM JUROS DE MORA
+                                //    02 - DEVOLVER, SE NÃO PAGO, ATÉ 15 DIAS APÓS O VENCIMENTO
+                                //    03 - DEVOLVER, SE NÃO PAGO, ATÉ 30 DIAS APÓS O VENCIMENTO
+                                //    07 - NÃO PROTESTAR
+                                //    08 - NÃO COBRAR JUROS DE MORA
+                                //    16 - MULTA (*)
+                                //      (*) Para tratamento de multa, formatar no campo “abatimento” (pos. 206 a 218), as seguintes informações:
+                                //      Posição 206 a 211 a data a partir da qual a multa deve ser cobrada (ddmmaa)
+                                //      Posição 212 a 215 o percentual referente à multa no formato 99v99.
+                                //      Posição 216 a 218 zeros
+                                b422LinhaTipo1.instrucao1.valor = "";
+                                b422LinhaTipo1.valorPorDiaAtraso.valor = Global.digitos(Global.formataMoeda(rowBoletoItem.valor_por_dia_atraso));
+                                b422LinhaTipo1.dataLimiteConcessaoDesconto.valor = "000000";
+                                b422LinhaTipo1.valorDesconto.valor = "0";
+                                b422LinhaTipo1.identificacaoTipoInscricaoSacado.valor = rowBoleto.tipo_sacado;
+                                b422LinhaTipo1.numInscricaoSacado.valor = rowBoleto.num_inscricao_sacado;
+                                b422LinhaTipo1.nomeSacado.valor = rowBoleto.nome_sacado.ToUpper();
+                                b422LinhaTipo1.enderecoCompleto.valor = rowBoleto.endereco_sacado.ToUpper();
+                                b422LinhaTipo1.enderecoBairro.valor = Texto.leftStr(rowBoleto.bairro_sacado, 10);
+                                b422LinhaTipo1.cep.valor = Texto.leftStr(Global.digitos(rowBoleto.cep_sacado), 5);
+                                if (Global.digitos(rowBoleto.cep_sacado).Length == 8)
+                                    b422LinhaTipo1.sufixoCep.valor = Texto.rightStr(Global.digitos(rowBoleto.cep_sacado), 3);
+                                else
+                                    b422LinhaTipo1.sufixoCep.valor = "000";
+                                b422LinhaTipo1.enderecoCidade.valor = Texto.leftStr(rowBoleto.cidade_sacado, 15);
+                                b422LinhaTipo1.enderecoUF.valor = rowBoleto.uf_sacado;
+                                b422LinhaTipo1.nomeSacadorAvalista.valor = rowBoletoItem.primeira_mensagem.ToUpper();
+                                b422LinhaTipo1.bancoEmitenteBoleto.valor = _boletoCedenteSelecionado.num_banco;
+                                b422LinhaTipo1.numSequencialArquivo.valor = intNumSequencialRemessa.ToString();
+                                b422LinhaTipo1.numSequencialRegistro.valor = intNumSequencialRegistro.ToString();
+                                sw.WriteLine(Global.filtraAcentuacao(b422LinhaTipo1.ToString()));
+                                #endregion
+                            }
+                            else
+                            {
+                                #region [ Bradesco ]
+                                b237LinhaTipo1 = new B237RegTipo1ArqRemessa();
+                                b237LinhaTipo1.identifCedenteCarteira.valor = rowBoleto.carteira;
+                                b237LinhaTipo1.identifCedenteAgencia.valor = rowBoleto.agencia;
+                                b237LinhaTipo1.identifCedenteCtaCorrente.valor = rowBoleto.conta;
+                                b237LinhaTipo1.identifCedenteDigitoCtaCorrente.valor = rowBoleto.digito_conta;
+                                b237LinhaTipo1.numControleParticipante.valor = rowBoletoItem.num_controle_participante;
+                                if (rowBoleto.perc_multa > 0)
+                                {
+                                    b237LinhaTipo1.campoMulta.valor = "2";
+                                    b237LinhaTipo1.percentualMulta.valor = Global.digitos(Global.formataPercentualCom2Decimais(rowBoleto.perc_multa));
+                                }
+                                if (rowBoletoItem.bonificacao_por_dia > 0)
+                                {
+                                    b237LinhaTipo1.descontoBonificacaoPorDia.valor = Global.digitos(Global.formataMoeda(rowBoletoItem.bonificacao_por_dia));
+                                }
+                                b237LinhaTipo1.numDocumento.valor = rowBoletoItem.numero_documento.ToUpper();
+                                b237LinhaTipo1.dataVenctoTitulo.valor = Global.digitos(Global.formataDataDdMmYyComSeparador(rowBoletoItem.dt_vencto));
+                                b237LinhaTipo1.valorTitulo.valor = Global.digitos(Global.formataMoeda(rowBoletoItem.valor));
+                                b237LinhaTipo1.dataEmissaoTitulo.valor = Global.digitos(Global.formataDataDdMmYyComSeparador(DateTime.Now));
+                                if (rowBoletoItem.st_instrucao_protesto == 1)
+                                {
+                                    b237LinhaTipo1.primeiraInstrucao.valor = rowBoleto.primeira_instrucao;
+                                    b237LinhaTipo1.segundaInstrucao.valor = rowBoleto.segunda_instrucao;
+                                }
+                                else
+                                {
+                                    b237LinhaTipo1.primeiraInstrucao.valor = "00";
+                                    b237LinhaTipo1.segundaInstrucao.valor = "00";
+                                }
+                                b237LinhaTipo1.valorPorDiaAtraso.valor = Global.digitos(Global.formataMoeda(rowBoletoItem.valor_por_dia_atraso));
+                                b237LinhaTipo1.dataLimiteConcessaoDesconto.valor = "000000";
+                                b237LinhaTipo1.valorDesconto.valor = "0";
+                                b237LinhaTipo1.identificacaoTipoInscricaoSacado.valor = rowBoleto.tipo_sacado;
+                                b237LinhaTipo1.numInscricaoSacado.valor = rowBoleto.num_inscricao_sacado;
+                                b237LinhaTipo1.nomeSacado.valor = rowBoleto.nome_sacado.ToUpper();
+                                b237LinhaTipo1.enderecoCompleto.valor = rowBoleto.endereco_sacado.ToUpper();
+                                b237LinhaTipo1.primeiraMensagem.valor = rowBoletoItem.primeira_mensagem.ToUpper();
+                                b237LinhaTipo1.cep.valor = Texto.leftStr(Global.digitos(rowBoleto.cep_sacado), 5);
+                                if (Global.digitos(rowBoleto.cep_sacado).Length == 8)
+                                    b237LinhaTipo1.sufixoCep.valor = Texto.rightStr(Global.digitos(rowBoleto.cep_sacado), 3);
+                                else
+                                    b237LinhaTipo1.sufixoCep.valor = "000";
+                                b237LinhaTipo1.sacadorAvalistaOuSegundaMensagem.valor = rowBoleto.segunda_mensagem.ToUpper();
+                                b237LinhaTipo1.numSequencialRegistro.valor = intNumSequencialRegistro.ToString();
+                                sw.WriteLine(Global.filtraAcentuacao(b237LinhaTipo1.ToString()));
+                                #endregion
+                            }
+                            #endregion
+
+                            #region [ Registro do tipo 2 ]
+                            intNumSequencialRegistro++;
+
+                            if (_boletoCedenteSelecionado.num_banco.Equals(Global.Cte.FIN.NumeroBanco.SAFRA))
+                            {
+                                #region [ Safra ]
+                                // TODO
+                                #endregion
+                            }
+                            else
+                            {
+                                #region [ Bradesco ]
+                                b237LinhaTipo2 = new B237RegTipo2ArqRemessa();
+                                b237LinhaTipo2.mensagem_1.valor = rowBoleto.mensagem_1;
+                                b237LinhaTipo2.mensagem_2.valor = rowBoleto.mensagem_2;
+                                b237LinhaTipo2.mensagem_3.valor = rowBoleto.mensagem_3;
+                                b237LinhaTipo2.mensagem_4.valor = rowBoleto.mensagem_4;
+                                b237LinhaTipo2.carteira.valor = rowBoleto.carteira;
+                                b237LinhaTipo2.agencia.valor = rowBoleto.agencia;
+                                b237LinhaTipo2.contaCorrente.valor = rowBoleto.conta;
+                                b237LinhaTipo2.digitoContaCorrente.valor = rowBoleto.digito_conta;
+                                b237LinhaTipo2.numSequencialRegistro.valor = intNumSequencialRegistro.ToString();
+                                sw.WriteLine(Global.filtraAcentuacao(b237LinhaTipo2.ToString()));
+                                #endregion
+                            }
+                            #endregion
+                        }
+                    }
+                    #endregion
+
+                    #region [ Monta Trailler ]
+                    intNumSequencialRegistro++;
+
+                    if (_boletoCedenteSelecionado.num_banco.Equals(Global.Cte.FIN.NumeroBanco.SAFRA))
+                    {
+                        #region [ Safra ]
+                        b422LinhaTrailler = new B422TraillerArqRemessa();
+                        b422LinhaTrailler.qtdeTitulos.valor = intTotalParcelas.ToString();
+                        b422LinhaTrailler.valorTotalTitulos.valor = Global.digitos(Global.formataMoeda(vlTotal));
+                        b422LinhaTrailler.numSequencialArquivo.valor = intNumSequencialRemessa.ToString();
+                        b422LinhaTrailler.numSequencialRegistro.valor = intNumSequencialRegistro.ToString();
+                        sw.WriteLine(Global.filtraAcentuacao(b422LinhaTrailler.ToString()));
+                        #endregion
+                    }
+                    else
+                    {
+                        #region [ Bradesco ]
+                        b237LinhaTrailler = new B237TraillerArqRemessa();
+                        b237LinhaTrailler.numSequencialRegistro.valor = intNumSequencialRegistro.ToString();
+                        sw.WriteLine(Global.filtraAcentuacao(b237LinhaTrailler.ToString()));
+                        #endregion
+                    }
+                    #endregion
+                }
+                finally
+                {
+                    sw.Flush();
+                    sw.Close();
+                }
 
 				#region [ Dados para o histórico de arquivos de remessa ]
 				boletoArqRemessa.qtde_serie_boletos = intTotalSerieBoletos;

@@ -347,11 +347,48 @@ namespace Financeiro
 	}
 	#endregion
 
-	#region [ BoletoItem ]
-	class BoletoItem
+	#region [ BoletoItemRateio ]
+	class BoletoItemRateio
+    {
+		#region [ Getters / Setters ]
+
+		private int _id_boleto_item;
+		public int id_boleto_item
+		{
+			get { return _id_boleto_item; }
+			set { _id_boleto_item = value; }
+		}
+
+		private String _pedido = "";
+		public String pedido
+		{
+			get { return _pedido; }
+			set { _pedido = value; }
+		}
+
+		private int _id_boleto;
+		public int id_boleto
+		{
+			get { return _id_boleto; }
+			set { _id_boleto = value; }
+		}
+
+		private decimal _valor;
+		public decimal valor
+		{
+			get { return _valor; }
+			set { _valor = value; }
+		}
+
+		#endregion
+	}
+    #endregion
+
+	#region [ B237BoletoItem ]
+	class B237BoletoItem
 	{
 		#region [ Construtor ]
-		public BoletoItem()
+		public B237BoletoItem()
 		{
 			listaBoletoItemRateio = new List<BoletoItemRateio>();
 		}
@@ -490,45 +527,151 @@ namespace Financeiro
 	}
 	#endregion
 
-	#region [ BoletoItemRateio ]
-	class BoletoItemRateio
-	{
-		#region [ Getters / Setters ]
+    #region [ B422BoletoItem ]
+    class B422BoletoItem
+    {
+        #region [ Construtor ]
+        public B422BoletoItem()
+        {
+            listaBoletoItemRateio = new List<BoletoItemRateio>();
+        }
+        #endregion
 
-		private int _id_boleto_item;
-		public int id_boleto_item
-		{
-			get { return _id_boleto_item; }
-			set { _id_boleto_item = value; }
-		}
+        #region [ Getters / Setters ]
 
-		private String _pedido = "";
-		public String pedido
-		{
-			get { return _pedido; }
-			set { _pedido = value; }
-		}
+        public List<BoletoItemRateio> listaBoletoItemRateio;
 
-		private int _id_boleto;
-		public int id_boleto
-		{
-			get { return _id_boleto; }
-			set { _id_boleto = value; }
-		}
+        private int _id;
+        public int id
+        {
+            get { return _id; }
+            set { _id = value; }
+        }
 
-		private decimal _valor;
-		public decimal valor
-		{
-			get { return _valor; }
-			set { _valor = value; }
-		}
+        private int _id_boleto;
+        public int id_boleto
+        {
+            get { return _id_boleto; }
+            set { _id_boleto = value; }
+        }
 
-		#endregion
-	}
-	#endregion
+        private byte _num_parcela;
+        public byte num_parcela
+        {
+            get { return _num_parcela; }
+            set { _num_parcela = value; }
+        }
 
-	#region [ BoletoArqRemessa ]
-	class BoletoArqRemessa
+        private short _status;
+        public short status
+        {
+            get { return _status; }
+            set { _status = value; }
+        }
+
+        private byte _tipo_vencimento;
+        public byte tipo_vencimento
+        {
+            get { return _tipo_vencimento; }
+            set { _tipo_vencimento = value; }
+        }
+
+        private DateTime _dt_vencto;
+        public DateTime dt_vencto
+        {
+            get { return _dt_vencto; }
+            set { _dt_vencto = value; }
+        }
+
+        private decimal _valor;
+        public decimal valor
+        {
+            get { return _valor; }
+            set { _valor = value; }
+        }
+
+        private decimal _bonificacao_por_dia;
+        public decimal bonificacao_por_dia
+        {
+            get { return _bonificacao_por_dia; }
+            set { _bonificacao_por_dia = value; }
+        }
+
+        private decimal _valor_por_dia_atraso;
+        public decimal valor_por_dia_atraso
+        {
+            get { return _valor_por_dia_atraso; }
+            set { _valor_por_dia_atraso = value; }
+        }
+
+        private DateTime _dt_limite_desconto;
+        public DateTime dt_limite_desconto
+        {
+            get { return _dt_limite_desconto; }
+            set { _dt_limite_desconto = value; }
+        }
+
+        private decimal _valor_desconto;
+        public decimal valor_desconto
+        {
+            get { return _valor_desconto; }
+            set { _valor_desconto = value; }
+        }
+
+        private String _numero_documento = "";
+        public String numero_documento
+        {
+            get { return _numero_documento; }
+            set { _numero_documento = value; }
+        }
+
+        private String _nosso_numero = "";
+        public String nosso_numero
+        {
+            get { return _nosso_numero; }
+            set { _nosso_numero = value; }
+        }
+
+        private String _digito_nosso_numero = "";
+        public String digito_nosso_numero
+        {
+            get { return _digito_nosso_numero; }
+            set { _digito_nosso_numero = value; }
+        }
+
+        private String _primeira_mensagem = "";
+        public String primeira_mensagem
+        {
+            get { return _primeira_mensagem; }
+            set { _primeira_mensagem = value; }
+        }
+
+        private String _num_controle_participante = "";
+        public String num_controle_participante
+        {
+            get { return _num_controle_participante; }
+            set { _num_controle_participante = value; }
+        }
+
+        private int _num_sequencial_registro;
+        public int num_sequencial_registro
+        {
+            get { return _num_sequencial_registro; }
+            set { _num_sequencial_registro = value; }
+        }
+
+        private byte _st_instrucao_protesto;
+        public byte st_instrucao_protesto
+        {
+            get { return _st_instrucao_protesto; }
+            set { _st_instrucao_protesto = value; }
+        }
+        #endregion
+    }
+    #endregion
+
+    #region [ BoletoArqRemessa ]
+    class BoletoArqRemessa
 	{
 		#region [ Getters / Setters ]
 
@@ -697,9 +840,9 @@ namespace Financeiro
 	}
 	#endregion
 
-	#region [ BoletoArqRetorno ]
-	class BoletoArqRetorno
-	{
+	#region [ B237BoletoArqRetorno ]
+	class B237BoletoArqRetorno
+    {
 		#region [ Getters / Setters ]
 
 		private int _id;
@@ -963,10 +1106,173 @@ namespace Financeiro
 
 		#endregion
 	}
-	#endregion
+    #endregion
 
-	#region [ BoletoPlanoContasDestino ]
-	class BoletoPlanoContasDestino
+    #region [ B422BoletoArqRetorno ]
+    class B422BoletoArqRetorno
+    {
+        #region [ Getters / Setters ]
+
+        private int _id;
+        public int id
+        {
+            get { return _id; }
+            set { _id = value; }
+        }
+
+        private int _id_boleto_cedente;
+        public int id_boleto_cedente
+        {
+            get { return _id_boleto_cedente; }
+            set { _id_boleto_cedente = value; }
+        }
+
+        private DateTime _dt_processamento;
+        public DateTime dt_processamento
+        {
+            get { return _dt_processamento; }
+            set { _dt_processamento = value; }
+        }
+
+        private DateTime _dt_hr_processamento;
+        public DateTime dt_hr_processamento
+        {
+            get { return _dt_hr_processamento; }
+            set { _dt_hr_processamento = value; }
+        }
+
+        private String _usuario_processamento;
+        public String usuario_processamento
+        {
+            get { return _usuario_processamento; }
+            set { _usuario_processamento = value; }
+        }
+
+        private int _qtde_registros;
+        public int qtde_registros
+        {
+            get { return _qtde_registros; }
+            set { _qtde_registros = value; }
+        }
+
+        private String _codigo_empresa = "";
+        public String codigo_empresa
+        {
+            get { return _codigo_empresa; }
+            set { _codigo_empresa = value; }
+        }
+
+        private String _nome_empresa = "";
+        public String nome_empresa
+        {
+            get { return _nome_empresa; }
+            set { _nome_empresa = value; }
+        }
+
+        private String _num_banco = "";
+        public String num_banco
+        {
+            get { return _num_banco; }
+            set { _num_banco = value; }
+        }
+
+        private String _nome_banco = "";
+        public String nome_banco
+        {
+            get { return _nome_banco; }
+            set { _nome_banco = value; }
+        }
+
+        private String _data_gravacao_arquivo = "";
+        public String data_gravacao_arquivo
+        {
+            get { return _data_gravacao_arquivo; }
+            set { _data_gravacao_arquivo = value; }
+        }
+
+        private String _numero_aviso_bancario = "";
+        public String numero_aviso_bancario
+        {
+            get { return _numero_aviso_bancario; }
+            set { _numero_aviso_bancario = value; }
+        }
+
+        private String _numero_aviso_bancario_cobr_vinculada = "";
+        public String numero_aviso_bancario_cobr_vinculada
+        {
+            get { return _numero_aviso_bancario_cobr_vinculada; }
+            set { _numero_aviso_bancario_cobr_vinculada = value; }
+        }
+
+        private String _qtdeTitulosEmCobranca = "";
+        public String qtdeTitulosEmCobranca
+        {
+            get { return _qtdeTitulosEmCobranca; }
+            set { _qtdeTitulosEmCobranca = value; }
+        }
+
+        private String _qtdeTitulosEmCobrancaVinculada = "";
+        public String qtdeTitulosEmCobrancaVinculada
+        {
+            get { return _qtdeTitulosEmCobrancaVinculada; }
+            set { _qtdeTitulosEmCobrancaVinculada = value; }
+        }
+
+        private String _valorTotalEmCobranca = "";
+        public String valorTotalEmCobranca
+        {
+            get { return _valorTotalEmCobranca; }
+            set { _valorTotalEmCobranca = value; }
+        }
+
+        private String _valorTotalEmCobrancaVinculada = "";
+        public String valorTotalEmCobrancaVinculada
+        {
+            get { return _valorTotalEmCobrancaVinculada; }
+            set { _valorTotalEmCobrancaVinculada = value; }
+        }
+
+        private int _duracao_proc_em_seg;
+        public int duracao_proc_em_seg
+        {
+            get { return _duracao_proc_em_seg; }
+            set { _duracao_proc_em_seg = value; }
+        }
+
+        private String _nome_arq_retorno = "";
+        public String nome_arq_retorno
+        {
+            get { return _nome_arq_retorno; }
+            set { _nome_arq_retorno = value; }
+        }
+
+        private String _caminho_arq_retorno = "";
+        public String caminho_arq_retorno
+        {
+            get { return _caminho_arq_retorno; }
+            set { _caminho_arq_retorno = value; }
+        }
+
+        private short _st_processamento;
+        public short st_processamento
+        {
+            get { return _st_processamento; }
+            set { _st_processamento = value; }
+        }
+
+        private String _msg_erro_processamento = "";
+        public String msg_erro_processamento
+        {
+            get { return _msg_erro_processamento; }
+            set { _msg_erro_processamento = value; }
+        }
+
+        #endregion
+    }
+    #endregion
+
+    #region [ BoletoPlanoContasDestino ]
+    class BoletoPlanoContasDestino
 	{
 		private byte _id_plano_contas_empresa;
 		public byte id_plano_contas_empresa

@@ -22,17 +22,26 @@ namespace Financeiro
 		private static SqlCommand cmBoletoItemMarcaCanceladoManual;
 		private static SqlCommand cmBoletoItemMarcaCanceladoManualByIdBoleto;
 		private static SqlCommand cmBoletoArqRemessaInsert;
-		private static SqlCommand cmBoletoArqRetornoInsert;
+		private static SqlCommand b237CmBoletoArqRetornoInsert;
+        private static SqlCommand b422CmBoletoArqRetornoInsert;
 		private static SqlCommand cmBoletoArqRetornoUpdate;
-		private static SqlCommand cmBoletoItemAtualizaOcorrencia02;
-		private static SqlCommand cmBoletoItemAtualizaOcorrencia06;
-		private static SqlCommand cmBoletoItemAtualizaOcorrencia09;
-		private static SqlCommand cmBoletoItemAtualizaOcorrencia10;
-		private static SqlCommand cmBoletoItemAtualizaOcorrencia12;
-		private static SqlCommand cmBoletoItemAtualizaOcorrencia13;
-		private static SqlCommand cmBoletoItemAtualizaOcorrencia14;
-		private static SqlCommand cmBoletoItemAtualizaOcorrencia15;
-		private static SqlCommand cmBoletoItemAtualizaOcorrencia16;
+		private static SqlCommand b237CmBoletoItemAtualizaOcorrencia02;
+        private static SqlCommand b422CmBoletoItemAtualizaOcorrencia02;
+		private static SqlCommand b237CmBoletoItemAtualizaOcorrencia06;
+        private static SqlCommand b422CmBoletoItemAtualizaOcorrencia06;
+		private static SqlCommand b237CmBoletoItemAtualizaOcorrencia09;
+        private static SqlCommand b422CmBoletoItemAtualizaOcorrencia09;
+        private static SqlCommand b237CmBoletoItemAtualizaOcorrencia10;
+        private static SqlCommand b422CmBoletoItemAtualizaOcorrencia10;
+        private static SqlCommand b237CmBoletoItemAtualizaOcorrencia12;
+        private static SqlCommand b422CmBoletoItemAtualizaOcorrencia12;
+        private static SqlCommand b237CmBoletoItemAtualizaOcorrencia13;
+        private static SqlCommand b422CmBoletoItemAtualizaOcorrencia13;
+        private static SqlCommand b237CmBoletoItemAtualizaOcorrencia14;
+        private static SqlCommand b422CmBoletoItemAtualizaOcorrencia14;
+        private static SqlCommand b237CmBoletoItemAtualizaOcorrencia15;
+        private static SqlCommand b422CmBoletoItemAtualizaOcorrencia15;
+        private static SqlCommand cmBoletoItemAtualizaOcorrencia16;
 		private static SqlCommand cmBoletoItemAtualizaOcorrencia17;
 		private static SqlCommand cmBoletoItemAtualizaOcorrencia19;
 		private static SqlCommand cmBoletoItemAtualizaOcorrencia22;
@@ -40,15 +49,17 @@ namespace Financeiro
 		private static SqlCommand cmBoletoItemAtualizaOcorrenciaValaComum;
 		private static SqlCommand cmBoletoItemAtualizaOcorrencia24;
 		private static SqlCommand cmBoletoItemAtualizaOcorrencia34;
-		private static SqlCommand cmBoletoMovimentoInsert;
-		private static SqlCommand cmBoletoOcorrenciaInsert;
-		private static SqlCommand cmBoletoCorrigeOcorrencia24CepIrregular;
+		private static SqlCommand b237CmBoletoMovimentoInsert;
+        private static SqlCommand b422CmBoletoMovimentoInsert;
+        private static SqlCommand b237CmBoletoOcorrenciaInsert;
+        private static SqlCommand b422CmBoletoOcorrenciaInsert;
+        private static SqlCommand cmBoletoCorrigeOcorrencia24CepIrregular;
 		private static SqlCommand cmBoletoOcorrenciaMarcaComoJaTratada;
 		private static SqlCommand cmBoletoOcorrenciasMarcaComoJaTratadasByIdBoleto;
-		#endregion
+        #endregion
 
-		#region [ inicializaConstrutorEstatico ]
-		public static void inicializaConstrutorEstatico()
+        #region [ inicializaConstrutorEstatico ]
+        public static void inicializaConstrutorEstatico()
 		{
 			// NOP
 			// 1) The static constructor for a class executes before any instance of the class is created.
@@ -442,7 +453,7 @@ namespace Financeiro
 			cmBoletoArqRemessaInsert.Prepare();
 			#endregion
 
-			#region [ cmBoletoArqRetornoInsert ]
+			#region [ b237CmBoletoArqRetornoInsert ]
 			strSql = "INSERT INTO t_FIN_BOLETO_ARQ_RETORNO (" +
 						"id, " +
 						"id_boleto_cedente, " +
@@ -520,47 +531,119 @@ namespace Financeiro
 						"@st_processamento, " +
 						"@msg_erro_processamento" +
 					")";
-			cmBoletoArqRetornoInsert = BD.criaSqlCommand();
-			cmBoletoArqRetornoInsert.CommandText = strSql;
-			cmBoletoArqRetornoInsert.Parameters.Add("@id", SqlDbType.Int);
-			cmBoletoArqRetornoInsert.Parameters.Add("@id_boleto_cedente", SqlDbType.SmallInt);
-			cmBoletoArqRetornoInsert.Parameters.Add("@usuario_processamento", SqlDbType.VarChar, 10);
-			cmBoletoArqRetornoInsert.Parameters.Add("@qtde_registros", SqlDbType.Int);
-			cmBoletoArqRetornoInsert.Parameters.Add("@codigo_empresa", SqlDbType.VarChar, 20);
-			cmBoletoArqRetornoInsert.Parameters.Add("@nome_empresa", SqlDbType.VarChar, 30);
-			cmBoletoArqRetornoInsert.Parameters.Add("@num_banco", SqlDbType.VarChar, 3);
-			cmBoletoArqRetornoInsert.Parameters.Add("@nome_banco", SqlDbType.VarChar, 15);
-			cmBoletoArqRetornoInsert.Parameters.Add("@data_gravacao_arquivo", SqlDbType.VarChar, 6);
-			cmBoletoArqRetornoInsert.Parameters.Add("@dt_gravacao_arquivo", SqlDbType.VarChar, 10);
-			cmBoletoArqRetornoInsert.Parameters.Add("@numero_aviso_bancario", SqlDbType.VarChar, 5);
-			cmBoletoArqRetornoInsert.Parameters.Add("@data_credito", SqlDbType.VarChar, 6);
-			cmBoletoArqRetornoInsert.Parameters.Add("@dt_credito", SqlDbType.VarChar, 10);
-			cmBoletoArqRetornoInsert.Parameters.Add("@qtdeTitulosEmCobranca", SqlDbType.VarChar, 8);
-			cmBoletoArqRetornoInsert.Parameters.Add("@valorTotalEmCobranca", SqlDbType.VarChar, 14);
-			cmBoletoArqRetornoInsert.Parameters.Add("@qtdeRegsOcorrencia02ConfirmacaoEntradas", SqlDbType.VarChar, 5);
-			cmBoletoArqRetornoInsert.Parameters.Add("@valorRegsOcorrencia02ConfirmacaoEntradas", SqlDbType.VarChar, 12);
-			cmBoletoArqRetornoInsert.Parameters.Add("@valorRegsOcorrencia06Liquidacao", SqlDbType.VarChar, 12);
-			cmBoletoArqRetornoInsert.Parameters.Add("@qtdeRegsOcorrencia06Liquidacao", SqlDbType.VarChar, 5);
-			cmBoletoArqRetornoInsert.Parameters.Add("@valorRegsOcorrencia06", SqlDbType.VarChar, 12);
-			cmBoletoArqRetornoInsert.Parameters.Add("@qtdeRegsOcorrencia09e10TitulosBaixados", SqlDbType.VarChar, 5);
-			cmBoletoArqRetornoInsert.Parameters.Add("@valorRegsOcorrencia09e10TitulosBaixados", SqlDbType.VarChar, 12);
-			cmBoletoArqRetornoInsert.Parameters.Add("@qtdeRegsOcorrencia13AbatimentoCancelado", SqlDbType.VarChar, 5);
-			cmBoletoArqRetornoInsert.Parameters.Add("@valorRegsOcorrencia13AbatimentoCancelado", SqlDbType.VarChar, 12);
-			cmBoletoArqRetornoInsert.Parameters.Add("@qtdeRegsOcorrencia14VenctoAlterado", SqlDbType.VarChar, 5);
-			cmBoletoArqRetornoInsert.Parameters.Add("@valorRegsOcorrencia14VenctoAlterado", SqlDbType.VarChar, 12);
-			cmBoletoArqRetornoInsert.Parameters.Add("@qtdeRegsOcorrencia12AbatimentoConcedido", SqlDbType.VarChar, 5);
-			cmBoletoArqRetornoInsert.Parameters.Add("@valorRegsOcorrencia12AbatimentoConcedido", SqlDbType.VarChar, 12);
-			cmBoletoArqRetornoInsert.Parameters.Add("@qtdeRegsOcorrencia19ConfirmacaoInstrucaoProtesto", SqlDbType.VarChar, 5);
-			cmBoletoArqRetornoInsert.Parameters.Add("@valorRegsOcorrencia19ConfirmacaoInstrucaoProtesto", SqlDbType.VarChar, 12);
-			cmBoletoArqRetornoInsert.Parameters.Add("@valorTotalRateiosEfetuados", SqlDbType.VarChar, 15);
-			cmBoletoArqRetornoInsert.Parameters.Add("@qtdeTotalRateiosEfetuados", SqlDbType.VarChar, 8);
-			cmBoletoArqRetornoInsert.Parameters.Add("@duracao_proc_em_seg", SqlDbType.Int);
-			cmBoletoArqRetornoInsert.Parameters.Add("@nome_arq_retorno", SqlDbType.VarChar, 40);
-			cmBoletoArqRetornoInsert.Parameters.Add("@caminho_arq_retorno", SqlDbType.VarChar, 1024);
-			cmBoletoArqRetornoInsert.Parameters.Add("@st_processamento", SqlDbType.SmallInt);
-			cmBoletoArqRetornoInsert.Parameters.Add("@msg_erro_processamento", SqlDbType.VarChar, 1024);
-			cmBoletoArqRetornoInsert.Prepare();
-			#endregion
+            b237CmBoletoArqRetornoInsert = BD.criaSqlCommand();
+            b237CmBoletoArqRetornoInsert.CommandText = strSql;
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@id", SqlDbType.Int);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@id_boleto_cedente", SqlDbType.SmallInt);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@usuario_processamento", SqlDbType.VarChar, 10);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@qtde_registros", SqlDbType.Int);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@codigo_empresa", SqlDbType.VarChar, 20);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@nome_empresa", SqlDbType.VarChar, 30);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@num_banco", SqlDbType.VarChar, 3);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@nome_banco", SqlDbType.VarChar, 15);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@data_gravacao_arquivo", SqlDbType.VarChar, 6);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@dt_gravacao_arquivo", SqlDbType.VarChar, 10);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@numero_aviso_bancario", SqlDbType.VarChar, 5);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@data_credito", SqlDbType.VarChar, 6);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@dt_credito", SqlDbType.VarChar, 10);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@qtdeTitulosEmCobranca", SqlDbType.VarChar, 8);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@valorTotalEmCobranca", SqlDbType.VarChar, 14);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@qtdeRegsOcorrencia02ConfirmacaoEntradas", SqlDbType.VarChar, 5);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@valorRegsOcorrencia02ConfirmacaoEntradas", SqlDbType.VarChar, 12);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@valorRegsOcorrencia06Liquidacao", SqlDbType.VarChar, 12);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@qtdeRegsOcorrencia06Liquidacao", SqlDbType.VarChar, 5);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@valorRegsOcorrencia06", SqlDbType.VarChar, 12);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@qtdeRegsOcorrencia09e10TitulosBaixados", SqlDbType.VarChar, 5);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@valorRegsOcorrencia09e10TitulosBaixados", SqlDbType.VarChar, 12);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@qtdeRegsOcorrencia13AbatimentoCancelado", SqlDbType.VarChar, 5);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@valorRegsOcorrencia13AbatimentoCancelado", SqlDbType.VarChar, 12);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@qtdeRegsOcorrencia14VenctoAlterado", SqlDbType.VarChar, 5);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@valorRegsOcorrencia14VenctoAlterado", SqlDbType.VarChar, 12);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@qtdeRegsOcorrencia12AbatimentoConcedido", SqlDbType.VarChar, 5);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@valorRegsOcorrencia12AbatimentoConcedido", SqlDbType.VarChar, 12);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@qtdeRegsOcorrencia19ConfirmacaoInstrucaoProtesto", SqlDbType.VarChar, 5);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@valorRegsOcorrencia19ConfirmacaoInstrucaoProtesto", SqlDbType.VarChar, 12);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@valorTotalRateiosEfetuados", SqlDbType.VarChar, 15);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@qtdeTotalRateiosEfetuados", SqlDbType.VarChar, 8);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@duracao_proc_em_seg", SqlDbType.Int);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@nome_arq_retorno", SqlDbType.VarChar, 40);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@caminho_arq_retorno", SqlDbType.VarChar, 1024);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@st_processamento", SqlDbType.SmallInt);
+            b237CmBoletoArqRetornoInsert.Parameters.Add("@msg_erro_processamento", SqlDbType.VarChar, 1024);
+            b237CmBoletoArqRetornoInsert.Prepare();
+            #endregion
+
+            #region [ b422CmBoletoArqRetornoInsert ]
+            strSql = "INSERT INTO t_FIN_BOLETO_ARQ_RETORNO (" +
+                        "id, " +
+                        "id_boleto_cedente, " +
+                        "usuario_processamento, " +
+                        "qtde_registros, " +
+                        "codigo_empresa, " +
+                        "nome_empresa, " +
+                        "num_banco, " +
+                        "nome_banco, " +
+                        "data_gravacao_arquivo, " +
+                        "dt_gravacao_arquivo, " +
+                        "numero_aviso_bancario, " +
+                        "numero_aviso_bancario_cobr_vinculada, " +
+                        "qtdeTitulosEmCobranca, " +
+                        "qtdeTitulosEmCobrancaVinculada, " +
+                        "valorTotalEmCobranca, " +
+                        "valorTotalEmCobrancaVinculada, " +
+                        "duracao_proc_em_seg, " +
+                        "nome_arq_retorno, " +
+                        "caminho_arq_retorno, " +
+                        "st_processamento, " +
+                        "msg_erro_processamento" +
+                    ") VALUES (" +
+                        "@id, " +
+                        "@id_boleto_cedente, " +
+                        "@usuario_processamento, " +
+                        "@qtde_registros, " +
+                        "@codigo_empresa, " +
+                        "@nome_empresa, " +
+                        "@num_banco, " +
+                        "@nome_banco, " +
+                        "@data_gravacao_arquivo, " +
+                        Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@dt_gravacao_arquivo") + ", " +
+                        "@numero_aviso_bancario, " +
+                        "@numero_aviso_bancario_cobr_vinculada, " +
+                        "@qtdeTitulosEmCobranca, " +
+                        "@qtdeTitulosEmCobrancaVinculada, " +
+                        "@valorTotalEmCobranca, " +
+                        "@valorTotalEmCobrancaVinculada, " +
+                        "@duracao_proc_em_seg, " +
+                        "@nome_arq_retorno, " +
+                        "@caminho_arq_retorno, " +
+                        "@st_processamento, " +
+                        "@msg_erro_processamento" +
+                    ")";
+            b422CmBoletoArqRetornoInsert = BD.criaSqlCommand();
+            b422CmBoletoArqRetornoInsert.CommandText = strSql;
+            b422CmBoletoArqRetornoInsert.Parameters.Add("@id", SqlDbType.Int);
+            b422CmBoletoArqRetornoInsert.Parameters.Add("@id_boleto_cedente", SqlDbType.SmallInt);
+            b422CmBoletoArqRetornoInsert.Parameters.Add("@usuario_processamento", SqlDbType.VarChar, 10);
+            b422CmBoletoArqRetornoInsert.Parameters.Add("@qtde_registros", SqlDbType.Int);
+            b422CmBoletoArqRetornoInsert.Parameters.Add("@codigo_empresa", SqlDbType.VarChar, 20);
+            b422CmBoletoArqRetornoInsert.Parameters.Add("@nome_empresa", SqlDbType.VarChar, 30);
+            b422CmBoletoArqRetornoInsert.Parameters.Add("@num_banco", SqlDbType.VarChar, 3);
+            b422CmBoletoArqRetornoInsert.Parameters.Add("@nome_banco", SqlDbType.VarChar, 15);
+            b422CmBoletoArqRetornoInsert.Parameters.Add("@data_gravacao_arquivo", SqlDbType.VarChar, 6);
+            b422CmBoletoArqRetornoInsert.Parameters.Add("@dt_gravacao_arquivo", SqlDbType.VarChar, 10);
+            b422CmBoletoArqRetornoInsert.Parameters.Add("@numero_aviso_bancario", SqlDbType.VarChar, 8);
+            b422CmBoletoArqRetornoInsert.Parameters.Add("@numero_aviso_bancario_cobr_vinculada", SqlDbType.VarChar, 8);
+            b422CmBoletoArqRetornoInsert.Parameters.Add("@qtdeTitulosEmCobranca", SqlDbType.VarChar, 8);
+            b422CmBoletoArqRetornoInsert.Parameters.Add("@qtdeTitulosEmCobrancaVinculada", SqlDbType.VarChar, 8);
+            b422CmBoletoArqRetornoInsert.Parameters.Add("@valorTotalEmCobranca", SqlDbType.VarChar, 14);
+            b422CmBoletoArqRetornoInsert.Parameters.Add("@valorTotalEmCobrancaVinculada", SqlDbType.VarChar, 14);
+            b422CmBoletoArqRetornoInsert.Parameters.Add("@duracao_proc_em_seg", SqlDbType.Int);
+            b422CmBoletoArqRetornoInsert.Parameters.Add("@nome_arq_retorno", SqlDbType.VarChar, 40);
+            b422CmBoletoArqRetornoInsert.Parameters.Add("@caminho_arq_retorno", SqlDbType.VarChar, 1024);
+            b422CmBoletoArqRetornoInsert.Parameters.Add("@st_processamento", SqlDbType.SmallInt);
+            b422CmBoletoArqRetornoInsert.Parameters.Add("@msg_erro_processamento", SqlDbType.VarChar, 1024);
+            b422CmBoletoArqRetornoInsert.Prepare();
+            #endregion
 
 			#region [ cmBoletoArqRetornoUpdate ]
 			strSql = "UPDATE t_FIN_BOLETO_ARQ_RETORNO SET " +
@@ -576,10 +659,10 @@ namespace Financeiro
 			cmBoletoArqRetornoUpdate.Parameters.Add("@duracao_proc_em_seg", SqlDbType.Int);
 			cmBoletoArqRetornoUpdate.Parameters.Add("@msg_erro_processamento", SqlDbType.VarChar, 1024);
 			cmBoletoArqRetornoUpdate.Prepare();
-			#endregion
+            #endregion
 
-			#region [ cmBoletoItemAtualizaOcorrencia02 ]
-			strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
+            #region [ b237CmBoletoItemAtualizaOcorrencia02 ]
+            strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
 						"status = " + Global.Cte.FIN.CodBoletoItemStatus.ENTRADA_CONFIRMADA.ToString() + ", " +
 						"nosso_numero = @nosso_numero, " +
 						"digito_nosso_numero = @digito_nosso_numero, " +
@@ -597,25 +680,73 @@ namespace Financeiro
 						"usuario_ult_atualizacao = @usuario_ult_atualizacao " +
 					"WHERE " +
 						"(id = @id)";
-			cmBoletoItemAtualizaOcorrencia02 = BD.criaSqlCommand();
-			cmBoletoItemAtualizaOcorrencia02.CommandText = strSql;
-			cmBoletoItemAtualizaOcorrencia02.Parameters.Add("@id", SqlDbType.Int);
-			cmBoletoItemAtualizaOcorrencia02.Parameters.Add("@nosso_numero", SqlDbType.VarChar, 11);
-			cmBoletoItemAtualizaOcorrencia02.Parameters.Add("@digito_nosso_numero", SqlDbType.VarChar, 1);
-			cmBoletoItemAtualizaOcorrencia02.Parameters.Add("@codigo_barras", SqlDbType.VarChar, 44);
-			cmBoletoItemAtualizaOcorrencia02.Parameters.Add("@linha_digitavel", SqlDbType.VarChar, 54);
-			cmBoletoItemAtualizaOcorrencia02.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
-			cmBoletoItemAtualizaOcorrencia02.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia02.Parameters.Add("@ult_motivo_ocorrencia_19", SqlDbType.VarChar, 1);
-			cmBoletoItemAtualizaOcorrencia02.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia02.Parameters.Add("@dt_entrada_confirmada", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia02.Parameters.Add("@vl_tarifa_registro", SqlDbType.Money);
-			cmBoletoItemAtualizaOcorrencia02.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia02.Prepare();
-			#endregion
+            b237CmBoletoItemAtualizaOcorrencia02 = BD.criaSqlCommand();
+            b237CmBoletoItemAtualizaOcorrencia02.CommandText = strSql;
+            b237CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@id", SqlDbType.Int);
+            b237CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@nosso_numero", SqlDbType.VarChar, 11);
+            b237CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@digito_nosso_numero", SqlDbType.VarChar, 1);
+            b237CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@codigo_barras", SqlDbType.VarChar, 44);
+            b237CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@linha_digitavel", SqlDbType.VarChar, 54);
+            b237CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
+            b237CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@ult_motivo_ocorrencia_19", SqlDbType.VarChar, 1);
+            b237CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@dt_entrada_confirmada", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@vl_tarifa_registro", SqlDbType.Money);
+            b237CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia02.Prepare();
+            #endregion
 
-			#region [ cmBoletoItemAtualizaOcorrencia06 ]
-			strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
+            #region [ b422CmBoletoItemAtualizaOcorrencia02 ]
+            strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
+                        "status = " + Global.Cte.FIN.CodBoletoItemStatus.ENTRADA_CONFIRMADA.ToString() + ", " +
+                        "nosso_numero = @nosso_numero, " +
+                        "digito_nosso_numero = @digito_nosso_numero, " +
+                        "codigo_barras = @codigo_barras, " +
+                        "linha_digitavel = @linha_digitavel, " +
+                        "ult_identificacao_ocorrencia = @ult_identificacao_ocorrencia, " +
+                        "ult_motivos_rejeicoes = @ult_motivos_rejeicoes, " +
+                        "ult_data_ocorrencia_banco = " + Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@ult_data_ocorrencia_banco") + ", " +
+                        "dt_entrada_confirmada = @dt_entrada_confirmada, " +
+                        "vl_tarifa_registro = @vl_tarifa_registro, " +
+                        "banco_cobrador = @banco_cobrador, " +
+                        "agencia_cobradora = @agencia_cobradora, " +
+                        "data_credito = @data_credito, " +
+                        "dt_credito = " + Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@dt_credito") + ", " +
+                        "beneficiario_transferido_ocorrencia_21 = @beneficiario_transferido_ocorrencia_21, " +
+                        "indicador_entrada_DDA = @indicador_entrada_DDA, " +
+                        "meio_liquidacao = @meio_liquidacao, " +
+                        "ult_data_carga_arq_retorno = " + Global.sqlMontaGetdateSomenteData() + ", " +
+                        "dt_ult_atualizacao = " + Global.sqlMontaGetdateSomenteData() + ", " +
+                        "dt_hr_ult_atualizacao = getdate(), " +
+                        "usuario_ult_atualizacao = @usuario_ult_atualizacao " +
+                    "WHERE " +
+                        "(id = @id)";
+            b422CmBoletoItemAtualizaOcorrencia02 = BD.criaSqlCommand();
+            b422CmBoletoItemAtualizaOcorrencia02.CommandText = strSql;
+            b422CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@id", SqlDbType.Int);
+            b422CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@nosso_numero", SqlDbType.VarChar, 11);
+            b422CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@digito_nosso_numero", SqlDbType.VarChar, 1);
+            b422CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@codigo_barras", SqlDbType.VarChar, 44);
+            b422CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@linha_digitavel", SqlDbType.VarChar, 54);
+            b422CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
+            b422CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@dt_entrada_confirmada", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@vl_tarifa_registro", SqlDbType.Money);
+            b422CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@banco_cobrador", SqlDbType.VarChar, 3);
+            b422CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@agencia_cobradora", SqlDbType.VarChar, 5);
+            b422CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@data_credito", SqlDbType.VarChar, 6);
+            b422CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@dt_credito", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@beneficiario_transferido_ocorrencia_21", SqlDbType.VarChar, 14);
+            b422CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@indicador_entrada_DDA", SqlDbType.VarChar, 1);
+            b422CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@meio_liquidacao", SqlDbType.VarChar, 2);
+            b422CmBoletoItemAtualizaOcorrencia02.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia02.Prepare();
+            #endregion
+
+            #region [ b237CmBoletoItemAtualizaOcorrencia06 ]
+            strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
 						"status = " + Global.Cte.FIN.CodBoletoItemStatus.BOLETO_PAGO.ToString() + ", " +
 						"ult_identificacao_ocorrencia = @ult_identificacao_ocorrencia, " +
 						"ult_motivos_rejeicoes = @ult_motivos_rejeicoes, " +
@@ -630,21 +761,51 @@ namespace Financeiro
 						"usuario_ult_atualizacao = @usuario_ult_atualizacao " +
 					"WHERE " +
 						"(id = @id)";
-			cmBoletoItemAtualizaOcorrencia06 = BD.criaSqlCommand();
-			cmBoletoItemAtualizaOcorrencia06.CommandText = strSql;
-			cmBoletoItemAtualizaOcorrencia06.Parameters.Add("@id", SqlDbType.Int);
-			cmBoletoItemAtualizaOcorrencia06.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
-			cmBoletoItemAtualizaOcorrencia06.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia06.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia06.Parameters.Add("@vl_abatimento_concedido", SqlDbType.Money);
-			cmBoletoItemAtualizaOcorrencia06.Parameters.Add("@vl_desconto_concedido", SqlDbType.Money);
-			cmBoletoItemAtualizaOcorrencia06.Parameters.Add("@st_boleto_ocorrencia_06", SqlDbType.TinyInt);
-			cmBoletoItemAtualizaOcorrencia06.Parameters.Add("@dt_ocorrencia_banco_boleto_ocorrencia_06", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia06.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia06.Prepare();
+            b237CmBoletoItemAtualizaOcorrencia06 = BD.criaSqlCommand();
+            b237CmBoletoItemAtualizaOcorrencia06.CommandText = strSql;
+            b237CmBoletoItemAtualizaOcorrencia06.Parameters.Add("@id", SqlDbType.Int);
+            b237CmBoletoItemAtualizaOcorrencia06.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
+            b237CmBoletoItemAtualizaOcorrencia06.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia06.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia06.Parameters.Add("@vl_abatimento_concedido", SqlDbType.Money);
+            b237CmBoletoItemAtualizaOcorrencia06.Parameters.Add("@vl_desconto_concedido", SqlDbType.Money);
+            b237CmBoletoItemAtualizaOcorrencia06.Parameters.Add("@st_boleto_ocorrencia_06", SqlDbType.TinyInt);
+            b237CmBoletoItemAtualizaOcorrencia06.Parameters.Add("@dt_ocorrencia_banco_boleto_ocorrencia_06", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia06.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia06.Prepare();
 			#endregion
 
-			#region [ cmBoletoItemAtualizaOcorrencia09 ]
+            #region [ b422CmBoletoItemAtualizaOcorrencia06 ]
+            strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
+                        "status = " + Global.Cte.FIN.CodBoletoItemStatus.BOLETO_PAGO.ToString() + ", " +
+                        "ult_identificacao_ocorrencia = @ult_identificacao_ocorrencia, " +
+                        "ult_motivos_rejeicoes = @ult_motivos_rejeicoes, " +
+                        "ult_data_ocorrencia_banco = " + Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@ult_data_ocorrencia_banco") + ", " +
+                        "vl_abatimento_concedido = @vl_abatimento_concedido, " +
+                        "vl_desconto_concedido = @vl_desconto_concedido, " +
+                        "ult_data_carga_arq_retorno = " + Global.sqlMontaGetdateSomenteData() + ", " +
+                        "st_boleto_ocorrencia_06 = @st_boleto_ocorrencia_06, " +
+                        "dt_ocorrencia_banco_boleto_ocorrencia_06 = " + Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@dt_ocorrencia_banco_boleto_ocorrencia_06") + ", " +
+                        "dt_ult_atualizacao = " + Global.sqlMontaGetdateSomenteData() + ", " +
+                        "dt_hr_ult_atualizacao = getdate(), " +
+                        "usuario_ult_atualizacao = @usuario_ult_atualizacao " +
+                    "WHERE " +
+                        "(id = @id)";
+            b422CmBoletoItemAtualizaOcorrencia06 = BD.criaSqlCommand();
+            b422CmBoletoItemAtualizaOcorrencia06.CommandText = strSql;
+            b422CmBoletoItemAtualizaOcorrencia06.Parameters.Add("@id", SqlDbType.Int);
+            b422CmBoletoItemAtualizaOcorrencia06.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
+            b422CmBoletoItemAtualizaOcorrencia06.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia06.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia06.Parameters.Add("@vl_abatimento_concedido", SqlDbType.Money);
+            b422CmBoletoItemAtualizaOcorrencia06.Parameters.Add("@vl_desconto_concedido", SqlDbType.Money);
+            b422CmBoletoItemAtualizaOcorrencia06.Parameters.Add("@st_boleto_ocorrencia_06", SqlDbType.TinyInt);
+            b422CmBoletoItemAtualizaOcorrencia06.Parameters.Add("@dt_ocorrencia_banco_boleto_ocorrencia_06", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia06.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia06.Prepare();
+            #endregion
+
+			#region [ b237CmBoletoItemAtualizaOcorrencia09 ]
 			strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
 						"status = " + Global.Cte.FIN.CodBoletoItemStatus.BOLETO_BAIXADO.ToString() + ", " +
 						"ult_identificacao_ocorrencia = @ult_identificacao_ocorrencia, " +
@@ -658,20 +819,46 @@ namespace Financeiro
 						"usuario_ult_atualizacao = @usuario_ult_atualizacao " +
 					"WHERE " +
 						"(id = @id)";
-			cmBoletoItemAtualizaOcorrencia09 = BD.criaSqlCommand();
-			cmBoletoItemAtualizaOcorrencia09.CommandText = strSql;
-			cmBoletoItemAtualizaOcorrencia09.Parameters.Add("@id", SqlDbType.Int);
-			cmBoletoItemAtualizaOcorrencia09.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
-			cmBoletoItemAtualizaOcorrencia09.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia09.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia09.Parameters.Add("@st_boleto_baixado", SqlDbType.TinyInt);
-			cmBoletoItemAtualizaOcorrencia09.Parameters.Add("@dt_ocorrencia_banco_boleto_baixado", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia09.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia09.Prepare();
-			#endregion
+            b237CmBoletoItemAtualizaOcorrencia09 = BD.criaSqlCommand();
+            b237CmBoletoItemAtualizaOcorrencia09.CommandText = strSql;
+            b237CmBoletoItemAtualizaOcorrencia09.Parameters.Add("@id", SqlDbType.Int);
+            b237CmBoletoItemAtualizaOcorrencia09.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
+            b237CmBoletoItemAtualizaOcorrencia09.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia09.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia09.Parameters.Add("@st_boleto_baixado", SqlDbType.TinyInt);
+            b237CmBoletoItemAtualizaOcorrencia09.Parameters.Add("@dt_ocorrencia_banco_boleto_baixado", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia09.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia09.Prepare();
+            #endregion
 
-			#region [ cmBoletoItemAtualizaOcorrencia10 ]
-			strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
+            #region [ b422CmBoletoItemAtualizaOcorrencia09 ]
+            strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
+                        "status = " + Global.Cte.FIN.CodBoletoItemStatus.BOLETO_BAIXADO.ToString() + ", " +
+                        "ult_identificacao_ocorrencia = @ult_identificacao_ocorrencia, " +
+                        "ult_motivos_rejeicoes = @ult_motivos_rejeicoes, " +
+                        "ult_data_ocorrencia_banco = " + Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@ult_data_ocorrencia_banco") + ", " +
+                        "ult_data_carga_arq_retorno = " + Global.sqlMontaGetdateSomenteData() + ", " +
+                        "st_boleto_baixado = @st_boleto_baixado, " +
+                        "dt_ocorrencia_banco_boleto_baixado = " + Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@dt_ocorrencia_banco_boleto_baixado") + ", " +
+                        "dt_ult_atualizacao = " + Global.sqlMontaGetdateSomenteData() + ", " +
+                        "dt_hr_ult_atualizacao = getdate(), " +
+                        "usuario_ult_atualizacao = @usuario_ult_atualizacao " +
+                    "WHERE " +
+                        "(id = @id)";
+            b422CmBoletoItemAtualizaOcorrencia09 = BD.criaSqlCommand();
+            b422CmBoletoItemAtualizaOcorrencia09.CommandText = strSql;
+            b422CmBoletoItemAtualizaOcorrencia09.Parameters.Add("@id", SqlDbType.Int);
+            b422CmBoletoItemAtualizaOcorrencia09.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
+            b422CmBoletoItemAtualizaOcorrencia09.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia09.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia09.Parameters.Add("@st_boleto_baixado", SqlDbType.TinyInt);
+            b422CmBoletoItemAtualizaOcorrencia09.Parameters.Add("@dt_ocorrencia_banco_boleto_baixado", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia09.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia09.Prepare();
+            #endregion
+
+            #region [ b237CmBoletoItemAtualizaOcorrencia10 ]
+            strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
 						"status = " + Global.Cte.FIN.CodBoletoItemStatus.BOLETO_BAIXADO.ToString() + ", " +
 						"ult_identificacao_ocorrencia = @ult_identificacao_ocorrencia, " +
 						"ult_motivos_rejeicoes = @ult_motivos_rejeicoes, " +
@@ -684,20 +871,46 @@ namespace Financeiro
 						"usuario_ult_atualizacao = @usuario_ult_atualizacao " +
 					"WHERE " +
 						"(id = @id)";
-			cmBoletoItemAtualizaOcorrencia10 = BD.criaSqlCommand();
-			cmBoletoItemAtualizaOcorrencia10.CommandText = strSql;
-			cmBoletoItemAtualizaOcorrencia10.Parameters.Add("@id", SqlDbType.Int);
-			cmBoletoItemAtualizaOcorrencia10.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
-			cmBoletoItemAtualizaOcorrencia10.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia10.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia10.Parameters.Add("@st_boleto_baixado", SqlDbType.TinyInt);
-			cmBoletoItemAtualizaOcorrencia10.Parameters.Add("@dt_ocorrencia_banco_boleto_baixado", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia10.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia10.Prepare();
-			#endregion
+            b237CmBoletoItemAtualizaOcorrencia10 = BD.criaSqlCommand();
+            b237CmBoletoItemAtualizaOcorrencia10.CommandText = strSql;
+            b237CmBoletoItemAtualizaOcorrencia10.Parameters.Add("@id", SqlDbType.Int);
+            b237CmBoletoItemAtualizaOcorrencia10.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
+            b237CmBoletoItemAtualizaOcorrencia10.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia10.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia10.Parameters.Add("@st_boleto_baixado", SqlDbType.TinyInt);
+            b237CmBoletoItemAtualizaOcorrencia10.Parameters.Add("@dt_ocorrencia_banco_boleto_baixado", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia10.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia10.Prepare();
+            #endregion
 
-			#region [ cmBoletoItemAtualizaOcorrencia12 ]
-			strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
+            #region [ b422CmBoletoItemAtualizaOcorrencia10 ]
+            strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
+                        "status = " + Global.Cte.FIN.CodBoletoItemStatus.BOLETO_BAIXADO.ToString() + ", " +
+                        "ult_identificacao_ocorrencia = @ult_identificacao_ocorrencia, " +
+                        "ult_motivos_rejeicoes = @ult_motivos_rejeicoes, " +
+                        "ult_data_ocorrencia_banco = " + Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@ult_data_ocorrencia_banco") + ", " +
+                        "ult_data_carga_arq_retorno = " + Global.sqlMontaGetdateSomenteData() + ", " +
+                        "st_boleto_baixado = @st_boleto_baixado, " +
+                        "dt_ocorrencia_banco_boleto_baixado = " + Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@dt_ocorrencia_banco_boleto_baixado") + ", " +
+                        "dt_ult_atualizacao = " + Global.sqlMontaGetdateSomenteData() + ", " +
+                        "dt_hr_ult_atualizacao = getdate(), " +
+                        "usuario_ult_atualizacao = @usuario_ult_atualizacao " +
+                    "WHERE " +
+                        "(id = @id)";
+            b422CmBoletoItemAtualizaOcorrencia10 = BD.criaSqlCommand();
+            b422CmBoletoItemAtualizaOcorrencia10.CommandText = strSql;
+            b422CmBoletoItemAtualizaOcorrencia10.Parameters.Add("@id", SqlDbType.Int);
+            b422CmBoletoItemAtualizaOcorrencia10.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
+            b422CmBoletoItemAtualizaOcorrencia10.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia10.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia10.Parameters.Add("@st_boleto_baixado", SqlDbType.TinyInt);
+            b422CmBoletoItemAtualizaOcorrencia10.Parameters.Add("@dt_ocorrencia_banco_boleto_baixado", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia10.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia10.Prepare();
+            #endregion
+
+            #region [ b237CmBoletoItemAtualizaOcorrencia12 ]
+            strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
 						"ult_identificacao_ocorrencia = @ult_identificacao_ocorrencia, " +
 						"ult_motivos_rejeicoes = @ult_motivos_rejeicoes, " +
 						"ult_data_ocorrencia_banco = " + Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@ult_data_ocorrencia_banco") + ", " +
@@ -708,19 +921,42 @@ namespace Financeiro
 						"usuario_ult_atualizacao = @usuario_ult_atualizacao " +
 					"WHERE " +
 						"(id = @id)";
-			cmBoletoItemAtualizaOcorrencia12 = BD.criaSqlCommand();
-			cmBoletoItemAtualizaOcorrencia12.CommandText = strSql;
-			cmBoletoItemAtualizaOcorrencia12.Parameters.Add("@id", SqlDbType.Int);
-			cmBoletoItemAtualizaOcorrencia12.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
-			cmBoletoItemAtualizaOcorrencia12.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia12.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia12.Parameters.Add("@vl_abatimento_concedido", SqlDbType.Money);
-			cmBoletoItemAtualizaOcorrencia12.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia12.Prepare();
-			#endregion
+            b237CmBoletoItemAtualizaOcorrencia12 = BD.criaSqlCommand();
+            b237CmBoletoItemAtualizaOcorrencia12.CommandText = strSql;
+            b237CmBoletoItemAtualizaOcorrencia12.Parameters.Add("@id", SqlDbType.Int);
+            b237CmBoletoItemAtualizaOcorrencia12.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
+            b237CmBoletoItemAtualizaOcorrencia12.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia12.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia12.Parameters.Add("@vl_abatimento_concedido", SqlDbType.Money);
+            b237CmBoletoItemAtualizaOcorrencia12.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia12.Prepare();
+            #endregion
 
-			#region [ cmBoletoItemAtualizaOcorrencia13 ]
-			strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
+            #region [ b422CmBoletoItemAtualizaOcorrencia12 ]
+            strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
+                        "ult_identificacao_ocorrencia = @ult_identificacao_ocorrencia, " +
+                        "ult_motivos_rejeicoes = @ult_motivos_rejeicoes, " +
+                        "ult_data_ocorrencia_banco = " + Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@ult_data_ocorrencia_banco") + ", " +
+                        "vl_abatimento_concedido = @vl_abatimento_concedido, " +
+                        "ult_data_carga_arq_retorno = " + Global.sqlMontaGetdateSomenteData() + ", " +
+                        "dt_ult_atualizacao = " + Global.sqlMontaGetdateSomenteData() + ", " +
+                        "dt_hr_ult_atualizacao = getdate(), " +
+                        "usuario_ult_atualizacao = @usuario_ult_atualizacao " +
+                    "WHERE " +
+                        "(id = @id)";
+            b422CmBoletoItemAtualizaOcorrencia12 = BD.criaSqlCommand();
+            b422CmBoletoItemAtualizaOcorrencia12.CommandText = strSql;
+            b422CmBoletoItemAtualizaOcorrencia12.Parameters.Add("@id", SqlDbType.Int);
+            b422CmBoletoItemAtualizaOcorrencia12.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
+            b422CmBoletoItemAtualizaOcorrencia12.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia12.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia12.Parameters.Add("@vl_abatimento_concedido", SqlDbType.Money);
+            b422CmBoletoItemAtualizaOcorrencia12.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia12.Prepare();
+            #endregion
+
+            #region [ b237CmBoletoItemAtualizaOcorrencia13 ]
+            strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
 						"ult_identificacao_ocorrencia = @ult_identificacao_ocorrencia, " +
 						"ult_motivos_rejeicoes = @ult_motivos_rejeicoes, " +
 						"ult_data_ocorrencia_banco = " + Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@ult_data_ocorrencia_banco") + ", " +
@@ -731,19 +967,42 @@ namespace Financeiro
 						"usuario_ult_atualizacao = @usuario_ult_atualizacao " +
 					"WHERE " +
 						"(id = @id)";
-			cmBoletoItemAtualizaOcorrencia13 = BD.criaSqlCommand();
-			cmBoletoItemAtualizaOcorrencia13.CommandText = strSql;
-			cmBoletoItemAtualizaOcorrencia13.Parameters.Add("@id", SqlDbType.Int);
-			cmBoletoItemAtualizaOcorrencia13.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
-			cmBoletoItemAtualizaOcorrencia13.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia13.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia13.Parameters.Add("@vl_abatimento_concedido", SqlDbType.Money);
-			cmBoletoItemAtualizaOcorrencia13.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia13.Prepare();
-			#endregion
+            b237CmBoletoItemAtualizaOcorrencia13 = BD.criaSqlCommand();
+            b237CmBoletoItemAtualizaOcorrencia13.CommandText = strSql;
+            b237CmBoletoItemAtualizaOcorrencia13.Parameters.Add("@id", SqlDbType.Int);
+            b237CmBoletoItemAtualizaOcorrencia13.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
+            b237CmBoletoItemAtualizaOcorrencia13.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia13.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia13.Parameters.Add("@vl_abatimento_concedido", SqlDbType.Money);
+            b237CmBoletoItemAtualizaOcorrencia13.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia13.Prepare();
+            #endregion
 
-			#region [ cmBoletoItemAtualizaOcorrencia14 ]
-			strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
+            #region [ b422CmBoletoItemAtualizaOcorrencia13 ]
+            strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
+                        "ult_identificacao_ocorrencia = @ult_identificacao_ocorrencia, " +
+                        "ult_motivos_rejeicoes = @ult_motivos_rejeicoes, " +
+                        "ult_data_ocorrencia_banco = " + Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@ult_data_ocorrencia_banco") + ", " +
+                        "vl_abatimento_concedido = @vl_abatimento_concedido, " +
+                        "ult_data_carga_arq_retorno = " + Global.sqlMontaGetdateSomenteData() + ", " +
+                        "dt_ult_atualizacao = " + Global.sqlMontaGetdateSomenteData() + ", " +
+                        "dt_hr_ult_atualizacao = getdate(), " +
+                        "usuario_ult_atualizacao = @usuario_ult_atualizacao " +
+                    "WHERE " +
+                        "(id = @id)";
+            b422CmBoletoItemAtualizaOcorrencia13 = BD.criaSqlCommand();
+            b422CmBoletoItemAtualizaOcorrencia13.CommandText = strSql;
+            b422CmBoletoItemAtualizaOcorrencia13.Parameters.Add("@id", SqlDbType.Int);
+            b422CmBoletoItemAtualizaOcorrencia13.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
+            b422CmBoletoItemAtualizaOcorrencia13.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia13.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia13.Parameters.Add("@vl_abatimento_concedido", SqlDbType.Money);
+            b422CmBoletoItemAtualizaOcorrencia13.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia13.Prepare();
+            #endregion
+
+            #region [ b237CmBoletoItemAtualizaOcorrencia14 ]
+            strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
 						"ult_identificacao_ocorrencia = @ult_identificacao_ocorrencia, " +
 						"ult_motivos_rejeicoes = @ult_motivos_rejeicoes, " +
 						"ult_data_ocorrencia_banco = " + Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@ult_data_ocorrencia_banco") + ", " +
@@ -754,19 +1013,42 @@ namespace Financeiro
 						"usuario_ult_atualizacao = @usuario_ult_atualizacao " +
 					"WHERE " +
 						"(id = @id)";
-			cmBoletoItemAtualizaOcorrencia14 = BD.criaSqlCommand();
-			cmBoletoItemAtualizaOcorrencia14.CommandText = strSql;
-			cmBoletoItemAtualizaOcorrencia14.Parameters.Add("@id", SqlDbType.Int);
-			cmBoletoItemAtualizaOcorrencia14.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
-			cmBoletoItemAtualizaOcorrencia14.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia14.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia14.Parameters.Add("@dt_vencto", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia14.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia14.Prepare();
-			#endregion
+            b237CmBoletoItemAtualizaOcorrencia14 = BD.criaSqlCommand();
+            b237CmBoletoItemAtualizaOcorrencia14.CommandText = strSql;
+            b237CmBoletoItemAtualizaOcorrencia14.Parameters.Add("@id", SqlDbType.Int);
+            b237CmBoletoItemAtualizaOcorrencia14.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
+            b237CmBoletoItemAtualizaOcorrencia14.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia14.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia14.Parameters.Add("@dt_vencto", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia14.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia14.Prepare();
+            #endregion
 
-			#region [ cmBoletoItemAtualizaOcorrencia15 ]
-			strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
+            #region [ b422CmBoletoItemAtualizaOcorrencia14 ]
+            strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
+                        "ult_identificacao_ocorrencia = @ult_identificacao_ocorrencia, " +
+                        "ult_motivos_rejeicoes = @ult_motivos_rejeicoes, " +
+                        "ult_data_ocorrencia_banco = " + Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@ult_data_ocorrencia_banco") + ", " +
+                        "dt_vencto = " + Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@dt_vencto") + ", " +
+                        "ult_data_carga_arq_retorno = " + Global.sqlMontaGetdateSomenteData() + ", " +
+                        "dt_ult_atualizacao = " + Global.sqlMontaGetdateSomenteData() + ", " +
+                        "dt_hr_ult_atualizacao = getdate(), " +
+                        "usuario_ult_atualizacao = @usuario_ult_atualizacao " +
+                    "WHERE " +
+                        "(id = @id)";
+            b422CmBoletoItemAtualizaOcorrencia14 = BD.criaSqlCommand();
+            b422CmBoletoItemAtualizaOcorrencia14.CommandText = strSql;
+            b422CmBoletoItemAtualizaOcorrencia14.Parameters.Add("@id", SqlDbType.Int);
+            b422CmBoletoItemAtualizaOcorrencia14.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
+            b422CmBoletoItemAtualizaOcorrencia14.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia14.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia14.Parameters.Add("@dt_vencto", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia14.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia14.Prepare();
+            #endregion
+
+            #region [ b237CmBoletoItemAtualizaOcorrencia15 ]
+            strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
 						"status = " + Global.Cte.FIN.CodBoletoItemStatus.BOLETO_PAGO_EM_OCORRENCIA_15.ToString() + ", " +
 						"ult_identificacao_ocorrencia = @ult_identificacao_ocorrencia, " +
 						"ult_motivos_rejeicoes = @ult_motivos_rejeicoes, " +
@@ -781,22 +1063,52 @@ namespace Financeiro
 						"usuario_ult_atualizacao = @usuario_ult_atualizacao " +
 					"WHERE " +
 						"(id = @id)";
-			cmBoletoItemAtualizaOcorrencia15 = BD.criaSqlCommand();
-			cmBoletoItemAtualizaOcorrencia15.CommandText = strSql;
-			cmBoletoItemAtualizaOcorrencia15.Parameters.Add("@id", SqlDbType.Int);
-			cmBoletoItemAtualizaOcorrencia15.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
-			cmBoletoItemAtualizaOcorrencia15.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia15.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia15.Parameters.Add("@vl_abatimento_concedido", SqlDbType.Money);
-			cmBoletoItemAtualizaOcorrencia15.Parameters.Add("@vl_desconto_concedido", SqlDbType.Money);
-			cmBoletoItemAtualizaOcorrencia15.Parameters.Add("@st_boleto_ocorrencia_15", SqlDbType.TinyInt);
-			cmBoletoItemAtualizaOcorrencia15.Parameters.Add("@dt_ocorrencia_banco_boleto_ocorrencia_15", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia15.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
-			cmBoletoItemAtualizaOcorrencia15.Prepare();
-			#endregion
+            b237CmBoletoItemAtualizaOcorrencia15 = BD.criaSqlCommand();
+            b237CmBoletoItemAtualizaOcorrencia15.CommandText = strSql;
+            b237CmBoletoItemAtualizaOcorrencia15.Parameters.Add("@id", SqlDbType.Int);
+            b237CmBoletoItemAtualizaOcorrencia15.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
+            b237CmBoletoItemAtualizaOcorrencia15.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia15.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia15.Parameters.Add("@vl_abatimento_concedido", SqlDbType.Money);
+            b237CmBoletoItemAtualizaOcorrencia15.Parameters.Add("@vl_desconto_concedido", SqlDbType.Money);
+            b237CmBoletoItemAtualizaOcorrencia15.Parameters.Add("@st_boleto_ocorrencia_15", SqlDbType.TinyInt);
+            b237CmBoletoItemAtualizaOcorrencia15.Parameters.Add("@dt_ocorrencia_banco_boleto_ocorrencia_15", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia15.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
+            b237CmBoletoItemAtualizaOcorrencia15.Prepare();
+            #endregion
 
-			#region [ cmBoletoItemAtualizaOcorrencia16 ]
-			strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
+            #region [ b422CmBoletoItemAtualizaOcorrencia15 ]
+            strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
+                        "status = " + Global.Cte.FIN.CodBoletoItemStatus.BOLETO_PAGO_EM_OCORRENCIA_15.ToString() + ", " +
+                        "ult_identificacao_ocorrencia = @ult_identificacao_ocorrencia, " +
+                        "ult_motivos_rejeicoes = @ult_motivos_rejeicoes, " +
+                        "ult_data_ocorrencia_banco = " + Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@ult_data_ocorrencia_banco") + ", " +
+                        "vl_abatimento_concedido = @vl_abatimento_concedido, " +
+                        "vl_desconto_concedido = @vl_desconto_concedido, " +
+                        "ult_data_carga_arq_retorno = " + Global.sqlMontaGetdateSomenteData() + ", " +
+                        "st_boleto_ocorrencia_15 = @st_boleto_ocorrencia_15, " +
+                        "dt_ocorrencia_banco_boleto_ocorrencia_15 = " + Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@dt_ocorrencia_banco_boleto_ocorrencia_15") + ", " +
+                        "dt_ult_atualizacao = " + Global.sqlMontaGetdateSomenteData() + ", " +
+                        "dt_hr_ult_atualizacao = getdate(), " +
+                        "usuario_ult_atualizacao = @usuario_ult_atualizacao " +
+                    "WHERE " +
+                        "(id = @id)";
+            b422CmBoletoItemAtualizaOcorrencia15 = BD.criaSqlCommand();
+            b422CmBoletoItemAtualizaOcorrencia15.CommandText = strSql;
+            b422CmBoletoItemAtualizaOcorrencia15.Parameters.Add("@id", SqlDbType.Int);
+            b422CmBoletoItemAtualizaOcorrencia15.Parameters.Add("@ult_identificacao_ocorrencia", SqlDbType.VarChar, 2);
+            b422CmBoletoItemAtualizaOcorrencia15.Parameters.Add("@ult_motivos_rejeicoes", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia15.Parameters.Add("@ult_data_ocorrencia_banco", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia15.Parameters.Add("@vl_abatimento_concedido", SqlDbType.Money);
+            b422CmBoletoItemAtualizaOcorrencia15.Parameters.Add("@vl_desconto_concedido", SqlDbType.Money);
+            b422CmBoletoItemAtualizaOcorrencia15.Parameters.Add("@st_boleto_ocorrencia_15", SqlDbType.TinyInt);
+            b422CmBoletoItemAtualizaOcorrencia15.Parameters.Add("@dt_ocorrencia_banco_boleto_ocorrencia_15", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia15.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
+            b422CmBoletoItemAtualizaOcorrencia15.Prepare();
+            #endregion
+
+            #region [ cmBoletoItemAtualizaOcorrencia16 ]
+            strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
 						"status = " + Global.Cte.FIN.CodBoletoItemStatus.BOLETO_PAGO_EM_CHEQUE.ToString() + ", " +
 						"ult_identificacao_ocorrencia = @ult_identificacao_ocorrencia, " +
 						"ult_motivos_rejeicoes = @ult_motivos_rejeicoes, " +
@@ -994,7 +1306,7 @@ namespace Financeiro
 			cmBoletoItemAtualizaOcorrencia34.Prepare();
 			#endregion
 
-			#region [ cmBoletoMovimentoInsert ]
+			#region [ b237CmBoletoMovimentoInsert ]
 			strSql = "INSERT INTO t_FIN_BOLETO_MOVIMENTO (" +
 						"id, " +
 						"id_arq_retorno, " +
@@ -1038,33 +1350,102 @@ namespace Financeiro
 						"@vl_juros_mora, " +
 						Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@dt_credito") +
 					")";
-			cmBoletoMovimentoInsert = BD.criaSqlCommand();
-			cmBoletoMovimentoInsert.CommandText = strSql;
-			cmBoletoMovimentoInsert.Parameters.Add("@id", SqlDbType.Int);
-			cmBoletoMovimentoInsert.Parameters.Add("@id_arq_retorno", SqlDbType.Int);
-			cmBoletoMovimentoInsert.Parameters.Add("@id_boleto", SqlDbType.Int);
-			cmBoletoMovimentoInsert.Parameters.Add("@id_boleto_item", SqlDbType.Int);
-			cmBoletoMovimentoInsert.Parameters.Add("@identificacao_ocorrencia", SqlDbType.VarChar, 2);
-			cmBoletoMovimentoInsert.Parameters.Add("@motivos_rejeicoes", SqlDbType.VarChar, 10);
-			cmBoletoMovimentoInsert.Parameters.Add("@data_ocorrencia_banco", SqlDbType.VarChar, 10);
-			cmBoletoMovimentoInsert.Parameters.Add("@numero_documento", SqlDbType.VarChar, 10);
-			cmBoletoMovimentoInsert.Parameters.Add("@nosso_numero", SqlDbType.VarChar, 11);
-			cmBoletoMovimentoInsert.Parameters.Add("@digito_nosso_numero", SqlDbType.VarChar, 1);
-			cmBoletoMovimentoInsert.Parameters.Add("@dt_vencto", SqlDbType.VarChar, 10);
-			cmBoletoMovimentoInsert.Parameters.Add("@vl_titulo", SqlDbType.Money);
-			cmBoletoMovimentoInsert.Parameters.Add("@vl_despesas_cobranca", SqlDbType.Money);
-			cmBoletoMovimentoInsert.Parameters.Add("@vl_outras_despesas", SqlDbType.Money);
-			cmBoletoMovimentoInsert.Parameters.Add("@vl_IOF", SqlDbType.Money);
-			cmBoletoMovimentoInsert.Parameters.Add("@vl_abatimento", SqlDbType.Money);
-			cmBoletoMovimentoInsert.Parameters.Add("@vl_desconto", SqlDbType.Money);
-			cmBoletoMovimentoInsert.Parameters.Add("@vl_pago", SqlDbType.Money);
-			cmBoletoMovimentoInsert.Parameters.Add("@vl_juros_mora", SqlDbType.Money);
-			cmBoletoMovimentoInsert.Parameters.Add("@dt_credito", SqlDbType.VarChar, 10);
-			cmBoletoMovimentoInsert.Prepare();
-			#endregion
+            b237CmBoletoMovimentoInsert = BD.criaSqlCommand();
+            b237CmBoletoMovimentoInsert.CommandText = strSql;
+            b237CmBoletoMovimentoInsert.Parameters.Add("@id", SqlDbType.Int);
+            b237CmBoletoMovimentoInsert.Parameters.Add("@id_arq_retorno", SqlDbType.Int);
+            b237CmBoletoMovimentoInsert.Parameters.Add("@id_boleto", SqlDbType.Int);
+            b237CmBoletoMovimentoInsert.Parameters.Add("@id_boleto_item", SqlDbType.Int);
+            b237CmBoletoMovimentoInsert.Parameters.Add("@identificacao_ocorrencia", SqlDbType.VarChar, 2);
+            b237CmBoletoMovimentoInsert.Parameters.Add("@motivos_rejeicoes", SqlDbType.VarChar, 10);
+            b237CmBoletoMovimentoInsert.Parameters.Add("@data_ocorrencia_banco", SqlDbType.VarChar, 10);
+            b237CmBoletoMovimentoInsert.Parameters.Add("@numero_documento", SqlDbType.VarChar, 10);
+            b237CmBoletoMovimentoInsert.Parameters.Add("@nosso_numero", SqlDbType.VarChar, 11);
+            b237CmBoletoMovimentoInsert.Parameters.Add("@digito_nosso_numero", SqlDbType.VarChar, 1);
+            b237CmBoletoMovimentoInsert.Parameters.Add("@dt_vencto", SqlDbType.VarChar, 10);
+            b237CmBoletoMovimentoInsert.Parameters.Add("@vl_titulo", SqlDbType.Money);
+            b237CmBoletoMovimentoInsert.Parameters.Add("@vl_despesas_cobranca", SqlDbType.Money);
+            b237CmBoletoMovimentoInsert.Parameters.Add("@vl_outras_despesas", SqlDbType.Money);
+            b237CmBoletoMovimentoInsert.Parameters.Add("@vl_IOF", SqlDbType.Money);
+            b237CmBoletoMovimentoInsert.Parameters.Add("@vl_abatimento", SqlDbType.Money);
+            b237CmBoletoMovimentoInsert.Parameters.Add("@vl_desconto", SqlDbType.Money);
+            b237CmBoletoMovimentoInsert.Parameters.Add("@vl_pago", SqlDbType.Money);
+            b237CmBoletoMovimentoInsert.Parameters.Add("@vl_juros_mora", SqlDbType.Money);
+            b237CmBoletoMovimentoInsert.Parameters.Add("@dt_credito", SqlDbType.VarChar, 10);
+            b237CmBoletoMovimentoInsert.Prepare();
+            #endregion
 
-			#region [ cmBoletoOcorrenciaInsert ]
-			strSql = "INSERT INTO t_FIN_BOLETO_OCORRENCIA (" +
+            #region [ b422CmBoletoMovimentoInsert ]
+            strSql = "INSERT INTO t_FIN_BOLETO_MOVIMENTO (" +
+                        "id, " +
+                        "id_arq_retorno, " +
+                        "id_boleto, " +
+                        "id_boleto_item, " +
+                        "identificacao_ocorrencia, " +
+                        "motivos_rejeicoes, " +
+                        "data_ocorrencia_banco, " +
+                        "numero_documento, " +
+                        "nosso_numero, " +
+                        "digito_nosso_numero, " +
+                        "dt_vencto, " +
+                        "vl_titulo, " +
+                        "vl_despesas_cobranca, " +
+                        "vl_outras_despesas, " +
+                        "vl_IOF, " +
+                        "vl_abatimento, " +
+                        "vl_desconto, " +
+                        "vl_pago, " +
+                        "vl_juros_mora, " +
+                        "dt_credito" +
+                    ") VALUES (" +
+                        "@id, " +
+                        "@id_arq_retorno, " +
+                        "@id_boleto, " +
+                        "@id_boleto_item, " +
+                        "@identificacao_ocorrencia, " +
+                        "@motivos_rejeicoes, " +
+                        Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@data_ocorrencia_banco") + ", " +
+                        "@numero_documento, " +
+                        "@nosso_numero, " +
+                        "@digito_nosso_numero, " +
+                        Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@dt_vencto") + ", " +
+                        "@vl_titulo, " +
+                        "@vl_despesas_cobranca, " +
+                        "@vl_outras_despesas, " +
+                        "@vl_IOF, " +
+                        "@vl_abatimento, " +
+                        "@vl_desconto, " +
+                        "@vl_pago, " +
+                        "@vl_juros_mora, " +
+                        Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@dt_credito") +
+                    ")";
+            b422CmBoletoMovimentoInsert = BD.criaSqlCommand();
+            b422CmBoletoMovimentoInsert.CommandText = strSql;
+            b422CmBoletoMovimentoInsert.Parameters.Add("@id", SqlDbType.Int);
+            b422CmBoletoMovimentoInsert.Parameters.Add("@id_arq_retorno", SqlDbType.Int);
+            b422CmBoletoMovimentoInsert.Parameters.Add("@id_boleto", SqlDbType.Int);
+            b422CmBoletoMovimentoInsert.Parameters.Add("@id_boleto_item", SqlDbType.Int);
+            b422CmBoletoMovimentoInsert.Parameters.Add("@identificacao_ocorrencia", SqlDbType.VarChar, 2);
+            b422CmBoletoMovimentoInsert.Parameters.Add("@motivos_rejeicoes", SqlDbType.VarChar, 10);
+            b422CmBoletoMovimentoInsert.Parameters.Add("@data_ocorrencia_banco", SqlDbType.VarChar, 10);
+            b422CmBoletoMovimentoInsert.Parameters.Add("@numero_documento", SqlDbType.VarChar, 15);
+            b422CmBoletoMovimentoInsert.Parameters.Add("@nosso_numero", SqlDbType.VarChar, 11);
+            b422CmBoletoMovimentoInsert.Parameters.Add("@digito_nosso_numero", SqlDbType.VarChar, 1);
+            b422CmBoletoMovimentoInsert.Parameters.Add("@dt_vencto", SqlDbType.VarChar, 10);
+            b422CmBoletoMovimentoInsert.Parameters.Add("@vl_titulo", SqlDbType.Money);
+            b422CmBoletoMovimentoInsert.Parameters.Add("@vl_despesas_cobranca", SqlDbType.Money);
+            b422CmBoletoMovimentoInsert.Parameters.Add("@vl_outras_despesas", SqlDbType.Money);
+            b422CmBoletoMovimentoInsert.Parameters.Add("@vl_IOF", SqlDbType.Money);
+            b422CmBoletoMovimentoInsert.Parameters.Add("@vl_abatimento", SqlDbType.Money);
+            b422CmBoletoMovimentoInsert.Parameters.Add("@vl_desconto", SqlDbType.Money);
+            b422CmBoletoMovimentoInsert.Parameters.Add("@vl_pago", SqlDbType.Money);
+            b422CmBoletoMovimentoInsert.Parameters.Add("@vl_juros_mora", SqlDbType.Money);
+            b422CmBoletoMovimentoInsert.Parameters.Add("@dt_credito", SqlDbType.VarChar, 10);
+            b422CmBoletoMovimentoInsert.Prepare();
+            #endregion
+
+            #region [ b237CmBoletoOcorrenciaInsert ]
+            strSql = "INSERT INTO t_FIN_BOLETO_OCORRENCIA (" +
 						"id, " +
 						"id_arq_retorno, " +
 						"id_boleto_cedente, " +
@@ -1101,30 +1482,87 @@ namespace Financeiro
 						"@obs_ocorrencia, " +
 						"@registro_arq_retorno" +
 					")";
-			cmBoletoOcorrenciaInsert = BD.criaSqlCommand();
-			cmBoletoOcorrenciaInsert.CommandText = strSql;
-			cmBoletoOcorrenciaInsert.Parameters.Add("@id", SqlDbType.Int);
-			cmBoletoOcorrenciaInsert.Parameters.Add("@id_arq_retorno", SqlDbType.Int);
-			cmBoletoOcorrenciaInsert.Parameters.Add("@id_boleto_cedente", SqlDbType.SmallInt);
-			cmBoletoOcorrenciaInsert.Parameters.Add("@id_boleto", SqlDbType.Int);
-			cmBoletoOcorrenciaInsert.Parameters.Add("@id_boleto_item", SqlDbType.Int);
-			cmBoletoOcorrenciaInsert.Parameters.Add("@st_divergencia_valor", SqlDbType.TinyInt);
-			cmBoletoOcorrenciaInsert.Parameters.Add("@numero_documento", SqlDbType.VarChar, 10);
-			cmBoletoOcorrenciaInsert.Parameters.Add("@nosso_numero", SqlDbType.VarChar, 11);
-			cmBoletoOcorrenciaInsert.Parameters.Add("@digito_nosso_numero", SqlDbType.VarChar, 1);
-			cmBoletoOcorrenciaInsert.Parameters.Add("@dt_vencto", SqlDbType.VarChar, 10);
-			cmBoletoOcorrenciaInsert.Parameters.Add("@vl_titulo", SqlDbType.Money);
-			cmBoletoOcorrenciaInsert.Parameters.Add("@identificacao_ocorrencia", SqlDbType.VarChar, 2);
-			cmBoletoOcorrenciaInsert.Parameters.Add("@motivos_rejeicoes", SqlDbType.VarChar, 10);
-			cmBoletoOcorrenciaInsert.Parameters.Add("@motivo_ocorrencia_19", SqlDbType.VarChar, 1);
-			cmBoletoOcorrenciaInsert.Parameters.Add("@data_ocorrencia_banco", SqlDbType.VarChar, 10);
-			cmBoletoOcorrenciaInsert.Parameters.Add("@obs_ocorrencia", SqlDbType.VarChar, 240);
-			cmBoletoOcorrenciaInsert.Parameters.Add("@registro_arq_retorno", SqlDbType.VarChar, 400);
-			cmBoletoOcorrenciaInsert.Prepare();
-			#endregion
+            b237CmBoletoOcorrenciaInsert = BD.criaSqlCommand();
+            b237CmBoletoOcorrenciaInsert.CommandText = strSql;
+            b237CmBoletoOcorrenciaInsert.Parameters.Add("@id", SqlDbType.Int);
+            b237CmBoletoOcorrenciaInsert.Parameters.Add("@id_arq_retorno", SqlDbType.Int);
+            b237CmBoletoOcorrenciaInsert.Parameters.Add("@id_boleto_cedente", SqlDbType.SmallInt);
+            b237CmBoletoOcorrenciaInsert.Parameters.Add("@id_boleto", SqlDbType.Int);
+            b237CmBoletoOcorrenciaInsert.Parameters.Add("@id_boleto_item", SqlDbType.Int);
+            b237CmBoletoOcorrenciaInsert.Parameters.Add("@st_divergencia_valor", SqlDbType.TinyInt);
+            b237CmBoletoOcorrenciaInsert.Parameters.Add("@numero_documento", SqlDbType.VarChar, 10);
+            b237CmBoletoOcorrenciaInsert.Parameters.Add("@nosso_numero", SqlDbType.VarChar, 11);
+            b237CmBoletoOcorrenciaInsert.Parameters.Add("@digito_nosso_numero", SqlDbType.VarChar, 1);
+            b237CmBoletoOcorrenciaInsert.Parameters.Add("@dt_vencto", SqlDbType.VarChar, 10);
+            b237CmBoletoOcorrenciaInsert.Parameters.Add("@vl_titulo", SqlDbType.Money);
+            b237CmBoletoOcorrenciaInsert.Parameters.Add("@identificacao_ocorrencia", SqlDbType.VarChar, 2);
+            b237CmBoletoOcorrenciaInsert.Parameters.Add("@motivos_rejeicoes", SqlDbType.VarChar, 10);
+            b237CmBoletoOcorrenciaInsert.Parameters.Add("@motivo_ocorrencia_19", SqlDbType.VarChar, 1);
+            b237CmBoletoOcorrenciaInsert.Parameters.Add("@data_ocorrencia_banco", SqlDbType.VarChar, 10);
+            b237CmBoletoOcorrenciaInsert.Parameters.Add("@obs_ocorrencia", SqlDbType.VarChar, 240);
+            b237CmBoletoOcorrenciaInsert.Parameters.Add("@registro_arq_retorno", SqlDbType.VarChar, 400);
+            b237CmBoletoOcorrenciaInsert.Prepare();
+            #endregion
 
-			#region [ cmBoletoCorrigeOcorrencia24CepIrregular ]
-			strSql = "UPDATE t_FIN_BOLETO SET " +
+            #region [ b422CmBoletoOcorrenciaInsert ]
+            strSql = "INSERT INTO t_FIN_BOLETO_OCORRENCIA (" +
+                        "id, " +
+                        "id_arq_retorno, " +
+                        "id_boleto_cedente, " +
+                        "id_boleto, " +
+                        "id_boleto_item, " +
+                        "st_divergencia_valor, " +
+                        "numero_documento, " +
+                        "nosso_numero, " +
+                        "digito_nosso_numero, " +
+                        "dt_vencto, " +
+                        "vl_titulo, " +
+                        "identificacao_ocorrencia, " +
+                        "motivos_rejeicoes, " +
+                        "data_ocorrencia_banco, " +
+                        "obs_ocorrencia, " +
+                        "registro_arq_retorno" +
+                    ") VALUES (" +
+                        "@id, " +
+                        "@id_arq_retorno, " +
+                        "@id_boleto_cedente, " +
+                        "@id_boleto, " +
+                        "@id_boleto_item, " +
+                        "@st_divergencia_valor, " +
+                        "@numero_documento, " +
+                        "@nosso_numero, " +
+                        "@digito_nosso_numero, " +
+                        Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@dt_vencto") + ", " +
+                        "@vl_titulo, " +
+                        "@identificacao_ocorrencia, " +
+                        "@motivos_rejeicoes, " +
+                        Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@data_ocorrencia_banco") + ", " +
+                        "@obs_ocorrencia, " +
+                        "@registro_arq_retorno" +
+                    ")";
+            b422CmBoletoOcorrenciaInsert = BD.criaSqlCommand();
+            b422CmBoletoOcorrenciaInsert.CommandText = strSql;
+            b422CmBoletoOcorrenciaInsert.Parameters.Add("@id", SqlDbType.Int);
+            b422CmBoletoOcorrenciaInsert.Parameters.Add("@id_arq_retorno", SqlDbType.Int);
+            b422CmBoletoOcorrenciaInsert.Parameters.Add("@id_boleto_cedente", SqlDbType.SmallInt);
+            b422CmBoletoOcorrenciaInsert.Parameters.Add("@id_boleto", SqlDbType.Int);
+            b422CmBoletoOcorrenciaInsert.Parameters.Add("@id_boleto_item", SqlDbType.Int);
+            b422CmBoletoOcorrenciaInsert.Parameters.Add("@st_divergencia_valor", SqlDbType.TinyInt);
+            b422CmBoletoOcorrenciaInsert.Parameters.Add("@numero_documento", SqlDbType.VarChar, 15);
+            b422CmBoletoOcorrenciaInsert.Parameters.Add("@nosso_numero", SqlDbType.VarChar, 11);
+            b422CmBoletoOcorrenciaInsert.Parameters.Add("@digito_nosso_numero", SqlDbType.VarChar, 1);
+            b422CmBoletoOcorrenciaInsert.Parameters.Add("@dt_vencto", SqlDbType.VarChar, 10);
+            b422CmBoletoOcorrenciaInsert.Parameters.Add("@vl_titulo", SqlDbType.Money);
+            b422CmBoletoOcorrenciaInsert.Parameters.Add("@identificacao_ocorrencia", SqlDbType.VarChar, 2);
+            b422CmBoletoOcorrenciaInsert.Parameters.Add("@motivos_rejeicoes", SqlDbType.VarChar, 10);
+            b422CmBoletoOcorrenciaInsert.Parameters.Add("@data_ocorrencia_banco", SqlDbType.VarChar, 10);
+            b422CmBoletoOcorrenciaInsert.Parameters.Add("@obs_ocorrencia", SqlDbType.VarChar, 240);
+            b422CmBoletoOcorrenciaInsert.Parameters.Add("@registro_arq_retorno", SqlDbType.VarChar, 400);
+            b422CmBoletoOcorrenciaInsert.Prepare();
+            #endregion
+
+            #region [ cmBoletoCorrigeOcorrencia24CepIrregular ]
+            strSql = "UPDATE t_FIN_BOLETO SET " +
 						"status = " + Global.Cte.FIN.CodBoletoStatus.INICIAL.ToString() + ", " +
 						"endereco_sacado = @endereco_sacado, " +
 						"bairro_sacado = @bairro_sacado, " +
@@ -1181,17 +1619,17 @@ namespace Financeiro
 			cmBoletoOcorrenciasMarcaComoJaTratadasByIdBoleto.Parameters.Add("@comentario_ocorrencia_tratada", SqlDbType.VarChar, 240);
 			cmBoletoOcorrenciasMarcaComoJaTratadasByIdBoleto.Parameters.Add("@usuario_ocorrencia_tratada", SqlDbType.VarChar, 10);
 			cmBoletoOcorrenciasMarcaComoJaTratadasByIdBoleto.Prepare();
-			#endregion
-		}
-		#endregion
+            #endregion
+        }
+        #endregion
 
-		#region [ obtemBoletoCedenteDefinidoParaLoja ]
-		/// <summary>
-		/// Obtém o cedente pré-definido no sistema para a loja informada no parâmetro. Se a loja não tiver sido explicitamente alocada p/ um determinado cedente, então retorna o cedente padrão.
-		/// </summary>
-		/// <param name="numeroLoja">Nº da loja p/ a qual se deseja obter o cedente</param>
-		/// <returns>Retorna o código de identificação do cedente</returns>
-		public static int obtemBoletoCedenteDefinidoParaLoja(int numeroLoja)
+        #region [ obtemBoletoCedenteDefinidoParaLoja ]
+        /// <summary>
+        /// Obtém o cedente pré-definido no sistema para a loja informada no parâmetro. Se a loja não tiver sido explicitamente alocada p/ um determinado cedente, então retorna o cedente padrão.
+        /// </summary>
+        /// <param name="numeroLoja">Nº da loja p/ a qual se deseja obter o cedente</param>
+        /// <returns>Retorna o código de identificação do cedente</returns>
+        public static int obtemBoletoCedenteDefinidoParaLoja(int numeroLoja)
 		{
 			#region [ Declarações ]
 			String strSql;
@@ -2187,368 +2625,6 @@ namespace Financeiro
 		}
 		#endregion
 
-		#region [ boletoMovimentoInsere ]
-		/// <summary>
-		/// Grava o registro na tabela de movimentações de boletos (t_FIN_BOLETO_MOVIMENTO).
-		/// IMPORTANTE: alguns campos podem estar vazios quando for o caso de ser um boleto
-		/// desconhecido ou não identificado (tipicamente, ocorrência 17 - liquidação após baixa
-		/// ou Título não registrado).
-		/// </summary>
-		/// <param name="usuario">Usuário que está realizando o processamento da carga do arquivo de retorno</param>
-		/// <param name="id_arq_retorno">Identificação do registro associado na tabela t_FIN_BOLETO_ARQ_RETORNO</param>
-		/// <param name="id_boleto">Identificação do registro da tabela t_FIN_BOLETO (pode estar zerado no caso de boleto não identificado)</param>
-		/// <param name="id_boleto_item">Identificação do registro da tabela t_FIN_BOLETO_ITEM (pode estar zerado no caso de boleto não identificado)</param>
-		/// <param name="identificacaoOcorrencia">Código de identificação da ocorrência</param>
-		/// <param name="motivosRejeicoes">Motivos das ocorrências</param>
-		/// <param name="dataOcorrencia">Data da ocorrência no banco</param>
-		/// <param name="numeroDocumento">Número do documento (pode estar zerado no caso de boleto não identificado)</param>
-		/// <param name="nossoNumero">Nosso número (sem dígito)</param>
-		/// <param name="digitoNossoNumero">Dígito do nosso número</param>
-		/// <param name="dataVencto">Data de vencimento do título</param>
-		/// <param name="valorTitulo">Valor do título</param>
-		/// <param name="valorDespesasCobranca">Despesas de cobrança para os códigos de ocorrência 02 (entrada confirmada) e 28 (débito de tarifas). Campo da posição 176 a 188 do registro tipo 1 do arquivo de retorno.</param>
-		/// <param name="valorOutrasDespesas">Outras despesas / Custas de protesto. Campo da posição 189 a 201 do registro tipo 1 do arquivo de retorno.</param>
-		/// <param name="valorIofDevido">IOF devido. Campo da posição 215 a 227 do registro tipo 1 do arquivo de retorno.</param>
-		/// <param name="valorAbatimentoConcedido">Abatimento concedido sobre o título. Campo da posição 228 a 240 do registro tipo 1 do arquivo de retorno.</param>
-		/// <param name="valorDescontoConcedido">Desconto concedido. Campo da posição 241 a 253 do registro tipo 1 do arquivo de retorno.</param>
-		/// <param name="valorPago">Valor total recebido. Campo da posição 254 a 266 do registro tipo 1 do arquivo de retorno.</param>
-		/// <param name="valorJurosMora">Juros de mora. Campo da posição 267 a 279 do registro tipo 1 do arquivo de retorno.</param>
-		/// <param name="dataCredito">Data do crédito. Campo da posição 296 a 301 do registro tipo 1 do arquivo de retorno.</param>
-		/// <param name="strMsgErro">No caso de erro, retorna a mensagem de erro</param>
-		/// <returns>
-		/// true: sucesso na gravação dos dados
-		/// false: falha na gravação dos dados
-		/// </returns>
-		public static bool boletoMovimentoInsere(String usuario,
-												 int id_arq_retorno,
-												 int id_boleto,
-												 int id_boleto_item,
-												 String identificacaoOcorrencia,
-												 String motivosRejeicoes,
-												 DateTime dataOcorrencia,
-												 String numeroDocumento,
-												 String nossoNumero,
-												 String digitoNossoNumero,
-												 DateTime dataVencto,
-												 decimal valorTitulo,
-												 decimal valorDespesasCobranca,
-												 decimal valorOutrasDespesas,
-												 decimal valorIofDevido,
-												 decimal valorAbatimentoConcedido,
-												 decimal valorDescontoConcedido,
-												 decimal valorPago,
-												 decimal valorJurosMora,
-												 DateTime dataCredito,
-												 ref String strMsgErro)
-		{
-			#region [ Declarações ]
-			bool blnSucesso = false;
-			bool blnGerouNsu;
-			int intRetorno;
-			int intNsuBoletoMovimento = 0;
-			String strOperacao = "Gravação dos dados de movimento de boletos";
-			#endregion
-
-			strMsgErro = "";
-			try
-			{
-				#region [ Consistência ]
-				if (id_arq_retorno <= 0)
-				{
-					strMsgErro = "Número de identificação do registro associado na tabela t_FIN_BOLETO_ARQ_RETORNO não foi informado!!";
-					return false;
-				}
-				#endregion
-
-				try
-				{
-					#region [ Gera o NSU para o registro ]
-					blnGerouNsu = BD.geraNsu(Global.Cte.FIN.NSU.T_FIN_BOLETO_MOVIMENTO, ref intNsuBoletoMovimento, ref strMsgErro);
-					if (!blnGerouNsu)
-					{
-						strMsgErro = "Falha ao tentar gerar o NSU para o registro de movimentação do boleto!!\n" + strMsgErro;
-						return false;
-					}
-					#endregion
-
-					#region [ Preenche o valor dos parâmetros ]
-					cmBoletoMovimentoInsert.Parameters["@id"].Value = intNsuBoletoMovimento;
-					cmBoletoMovimentoInsert.Parameters["@id_arq_retorno"].Value = id_arq_retorno;
-					cmBoletoMovimentoInsert.Parameters["@id_boleto"].Value = id_boleto;
-					cmBoletoMovimentoInsert.Parameters["@id_boleto_item"].Value = id_boleto_item;
-					cmBoletoMovimentoInsert.Parameters["@identificacao_ocorrencia"].Value = identificacaoOcorrencia;
-					cmBoletoMovimentoInsert.Parameters["@motivos_rejeicoes"].Value = motivosRejeicoes;
-					cmBoletoMovimentoInsert.Parameters["@data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrencia);
-					cmBoletoMovimentoInsert.Parameters["@numero_documento"].Value = numeroDocumento.Trim();
-					cmBoletoMovimentoInsert.Parameters["@nosso_numero"].Value = nossoNumero.Trim();
-					cmBoletoMovimentoInsert.Parameters["@digito_nosso_numero"].Value = digitoNossoNumero.Trim();
-					cmBoletoMovimentoInsert.Parameters["@dt_vencto"].Value = Global.formataDataYyyyMmDdComSeparador(dataVencto);
-					cmBoletoMovimentoInsert.Parameters["@vl_titulo"].Value = valorTitulo;
-					cmBoletoMovimentoInsert.Parameters["@vl_despesas_cobranca"].Value = valorDespesasCobranca;
-					cmBoletoMovimentoInsert.Parameters["@vl_outras_despesas"].Value = valorOutrasDespesas;
-					cmBoletoMovimentoInsert.Parameters["@vl_IOF"].Value = valorIofDevido;
-					cmBoletoMovimentoInsert.Parameters["@vl_abatimento"].Value = valorAbatimentoConcedido;
-					cmBoletoMovimentoInsert.Parameters["@vl_desconto"].Value = valorDescontoConcedido;
-					cmBoletoMovimentoInsert.Parameters["@vl_pago"].Value = valorPago;
-					cmBoletoMovimentoInsert.Parameters["@vl_juros_mora"].Value = valorJurosMora;
-					cmBoletoMovimentoInsert.Parameters["@dt_credito"].Value = Global.formataDataYyyyMmDdComSeparador(dataCredito);
-					#endregion
-
-					#region [ Tenta inserir o registro ]
-					strMsgErro = "";
-					try
-					{
-						intRetorno = BD.executaNonQuery(ref cmBoletoMovimentoInsert);
-					}
-					catch (Exception ex)
-					{
-						intRetorno = 0;
-						strMsgErro = ex.Message;
-						Global.gravaLogAtividade(strOperacao + " - Exception!!\n" + ex.ToString());
-					}
-					#endregion
-
-					#region [ Gravou o registro? ]
-					if (intRetorno == 0)
-					{
-						strMsgErro = "Falha ao tentar gravar o registro de movimentação do boleto!!\n" + strMsgErro;
-						return false;
-					}
-					#endregion
-
-					blnSucesso = true;
-				}
-				catch (Exception ex)
-				{
-					// Para o usuário, exibe uma mensagem mais sucinta
-					strMsgErro = ex.Message;
-					// No log em arquivo, grava o stack de erro completo
-					Global.gravaLogAtividade(strOperacao + " - Falha!!\n" + ex.ToString());
-					return false;
-				}
-
-				#region [ Processamento final de sucesso ou falha ]
-				if (blnSucesso)
-				{
-					return true;
-				}
-				else
-				{
-					strMsgErro = "Falha ao tentar inserir o registro de movimentação do boleto!!";
-					return false;
-				}
-				#endregion
-			}
-			catch (Exception ex)
-			{
-				// Para o usuário, exibe uma mensagem mais sucinta
-				strMsgErro = ex.Message;
-				// No log em arquivo, grava o stack de erro completo
-				Global.gravaLogAtividade(strOperacao + " - Falha!!\n" + ex.ToString());
-				return false;
-			}
-		}
-		#endregion
-
-		#region [ boletoOcorrenciaInsere ]
-		/// <summary>
-		/// Grava o registro na tabela de ocorrências de boletos (t_FIN_BOLETO_OCORRENCIA).
-		/// IMPORTANTE: alguns campos podem estar vazios quando for o caso de ser um boleto
-		/// desconhecido ou não identificado (tipicamente, ocorrência 17 - liquidação após baixa
-		/// ou Título não registrado).
-		/// São gravados como ocorrências os registros do arquivo de retorno que necessitam de
-		/// análise humana.
-		/// Podem ocorrer as seguintes situações:
-		///		1) Boletos já tratados pelo sistema, mas que precisam informar alguma situação
-		///		   especial para o usuário (ex: boleto pago com valor maior que o esperado).
-		///		2) Boletos com código de identificação de ocorrência desconhecido e/ou não tratado. 
-		///		   É a chamada "vala comum".
-		/// </summary>
-		/// <param name="usuario">Usuário que está realizando o processamento da carga do arquivo de retorno</param>
-		/// <param name="id_arq_retorno">Identificação do registro associado na tabela t_FIN_BOLETO_ARQ_RETORNO</param>
-		/// <param name="id_boleto">Identificação do registro da tabela t_FIN_BOLETO (pode estar zerado no caso de boleto não identificado)</param>
-		/// <param name="id_boleto_item">Identificação do registro da tabela t_FIN_BOLETO_ITEM (pode estar zerado no caso de boleto não identificado)</param>
-		/// <param name="numeroDocumento">Número do documento (pode estar zerado no caso de boleto não identificado)</param>
-		/// <param name="nossoNumero">Nosso número (sem dígito)</param>
-		/// <param name="digitoNossoNumero">Dígito do nosso número</param>
-		/// <param name="dataVencto">Data de vencimento do título</param>
-		/// <param name="valorTitulo">Valor do título</param>
-		/// <param name="identificacaoOcorrencia">Código de identificação da ocorrência</param>
-		/// <param name="motivosRejeicoes">Motivos das ocorrências</param>
-		/// <param name="motivoCodigoOcorrencia19">Motivo do código de ocorrência 19 (confirmação de instrução de protesto)</param>
-		/// <param name="dataOcorrencia">Data da ocorrência no banco</param>
-		/// <param name="obsOcorrencia">Observações e/ou detalhes sobre a ocorrência</param>
-		/// <param name="linhaTextoRegistroArquivo">Registro (linha) original do arquivo de retorno na íntegra</param>
-		/// <param name="strMsgErro">Retorna a mensagem de erro em caso de ocorrer erro</param>
-		/// <returns>
-		/// true: sucesso na gravação dos dados
-		/// false: falha na gravação dos dados
-		/// </returns>
-		public static bool boletoOcorrenciaInsere(String usuario,
-												 int id_arq_retorno,
-												 int id_boleto_cedente,
-												 int id_boleto,
-												 int id_boleto_item,
-												 byte st_divergencia_valor,
-												 String numeroDocumento,
-												 String nossoNumero,
-												 String digitoNossoNumero,
-												 DateTime dataVencto,
-												 decimal valorTitulo,
-												 String identificacaoOcorrencia,
-												 String motivosRejeicoes,
-												 String motivoCodigoOcorrencia19,
-												 DateTime dataOcorrencia,
-												 String obsOcorrencia,
-												 String linhaTextoRegistroArquivo,
-												 ref String strMsgErro)
-		{
-			#region [ Declarações ]
-			bool blnSucesso = false;
-			bool blnGerouNsu;
-			int intRetorno;
-			int intNsuBoletoOcorrencia = 0;
-			String strOperacao = "Gravação de novo registro de ocorrência para o boleto";
-			#endregion
-
-			strMsgErro = "";
-			try
-			{
-				#region [ Consistência ]
-				if (id_arq_retorno <= 0)
-				{
-					strMsgErro = "Número de identificação do registro associado na tabela t_FIN_BOLETO_ARQ_RETORNO não foi informado!!";
-					return false;
-				}
-				#endregion
-
-				try
-				{
-					#region [ Gera o NSU para o registro ]
-					blnGerouNsu = BD.geraNsu(Global.Cte.FIN.NSU.T_FIN_BOLETO_OCORRENCIA, ref intNsuBoletoOcorrencia, ref strMsgErro);
-					if (!blnGerouNsu)
-					{
-						strMsgErro = "Falha ao tentar gerar o NSU para o registro de ocorrência para o boleto!!\n" + strMsgErro;
-						return false;
-					}
-					#endregion
-
-					#region [ Preenche o valor dos parâmetros ]
-					cmBoletoOcorrenciaInsert.Parameters["@id"].Value = intNsuBoletoOcorrencia;
-					cmBoletoOcorrenciaInsert.Parameters["@id_arq_retorno"].Value = id_arq_retorno;
-					cmBoletoOcorrenciaInsert.Parameters["@id_boleto_cedente"].Value = id_boleto_cedente;
-					cmBoletoOcorrenciaInsert.Parameters["@id_boleto"].Value = id_boleto;
-					cmBoletoOcorrenciaInsert.Parameters["@id_boleto_item"].Value = id_boleto_item;
-					cmBoletoOcorrenciaInsert.Parameters["@st_divergencia_valor"].Value = st_divergencia_valor;
-					cmBoletoOcorrenciaInsert.Parameters["@numero_documento"].Value = numeroDocumento.Trim();
-					cmBoletoOcorrenciaInsert.Parameters["@nosso_numero"].Value = nossoNumero.Trim();
-					cmBoletoOcorrenciaInsert.Parameters["@digito_nosso_numero"].Value = digitoNossoNumero.Trim();
-					cmBoletoOcorrenciaInsert.Parameters["@dt_vencto"].Value = Global.formataDataYyyyMmDdComSeparador(dataVencto);
-					cmBoletoOcorrenciaInsert.Parameters["@vl_titulo"].Value = valorTitulo;
-					cmBoletoOcorrenciaInsert.Parameters["@identificacao_ocorrencia"].Value = identificacaoOcorrencia;
-					cmBoletoOcorrenciaInsert.Parameters["@motivos_rejeicoes"].Value = motivosRejeicoes;
-					cmBoletoOcorrenciaInsert.Parameters["@motivo_ocorrencia_19"].Value = motivoCodigoOcorrencia19;
-					cmBoletoOcorrenciaInsert.Parameters["@data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrencia);
-					cmBoletoOcorrenciaInsert.Parameters["@obs_ocorrencia"].Value = obsOcorrencia;
-					cmBoletoOcorrenciaInsert.Parameters["@registro_arq_retorno"].Value = linhaTextoRegistroArquivo;
-					#endregion
-
-					#region [ Tenta inserir o registro ]
-					strMsgErro = "";
-					try
-					{
-						intRetorno = BD.executaNonQuery(ref cmBoletoOcorrenciaInsert);
-					}
-					catch (Exception ex)
-					{
-						intRetorno = 0;
-						strMsgErro = ex.Message;
-						Global.gravaLogAtividade(strOperacao + " - Exception!!\n" + ex.ToString());
-					}
-					#endregion
-
-					#region [ Gravou o registro? ]
-					if (intRetorno == 0)
-					{
-						strMsgErro = "Falha ao tentar gravar o registro de ocorrência para o boleto!!\n" + strMsgErro;
-						return false;
-					}
-					#endregion
-
-					blnSucesso = true;
-				}
-				catch (Exception ex)
-				{
-					// Para o usuário, exibe uma mensagem mais sucinta
-					strMsgErro = ex.Message;
-					// No log em arquivo, grava o stack de erro completo
-					Global.gravaLogAtividade(strOperacao + " - Falha!!\n" + ex.ToString());
-					return false;
-				}
-
-				#region [ Processamento final de sucesso ou falha ]
-				if (blnSucesso)
-				{
-					return true;
-				}
-				else
-				{
-					strMsgErro = "Falha ao tentar inserir o registro de ocorrência para o boleto!!";
-					return false;
-				}
-				#endregion
-			}
-			catch (Exception ex)
-			{
-				// Para o usuário, exibe uma mensagem mais sucinta
-				strMsgErro = ex.Message;
-				// No log em arquivo, grava o stack de erro completo
-				Global.gravaLogAtividade(strOperacao + " - Falha!!\n" + ex.ToString());
-				return false;
-			}
-		}
-		#endregion
-
-		#region [ boletoOcorrenciaInsere ]
-		public static bool boletoOcorrenciaInsere(String usuario,
-												 int id_arq_retorno,
-												 int id_boleto_cedente,
-												 int id_boleto,
-												 int id_boleto_item,
-												 String numeroDocumento,
-												 String nossoNumero,
-												 String digitoNossoNumero,
-												 DateTime dataVencto,
-												 decimal valorTitulo,
-												 String identificacaoOcorrencia,
-												 String motivosRejeicoes,
-												 String motivoCodigoOcorrencia19,
-												 DateTime dataOcorrencia,
-												 String obsOcorrencia,
-												 String linhaTextoRegistroArquivo,
-												 ref String strMsgErro)
-		{
-			return boletoOcorrenciaInsere(usuario,
-											id_arq_retorno,
-											id_boleto_cedente,
-											id_boleto,
-											id_boleto_item,
-											Global.Cte.FIN.StCampoFlag.FLAG_DESLIGADO,
-											numeroDocumento,
-											nossoNumero,
-											digitoNossoNumero,
-											dataVencto,
-											valorTitulo,
-											identificacaoOcorrencia,
-											motivosRejeicoes,
-											motivoCodigoOcorrencia19,
-											dataOcorrencia,
-											obsOcorrencia,
-											linhaTextoRegistroArquivo,
-											ref strMsgErro);
-		}
-		#endregion
-
 		#region [ excluiBoletoEmStatusInicial ]
 		public static bool excluiBoletoEmStatusInicial(String usuario,
 													   int id_boleto,
@@ -3152,7 +3228,7 @@ namespace Financeiro
 		}
 		#endregion
 
-		#region [ boletoArqRetornoInsere ]
+		#region [ b237BoletoArqRetornoInsere ]
 		/// <summary>
 		/// Grava o registro em t_FIN_BOLETO_ARQ_RETORNO para manter o histórico dos arquivos de retorno carregados.
 		/// </summary>
@@ -3169,14 +3245,14 @@ namespace Financeiro
 		/// true: gravação bem sucedida.
 		/// false: falha na gravação.
 		/// </returns>
-		public static bool boletoArqRetornoInsere(String usuario,
-												  BoletoArqRetorno boletoArqRetorno,
+		public static bool b237BoletoArqRetornoInsere(String usuario,
+												  B237BoletoArqRetorno boletoArqRetorno,
 												  ref String strMsgErro)
 		{
 			#region [ Declarações ]
 			bool blnSucesso = false;
 			int intRetorno;
-			String strOperacao = "Gravação de histórico de arquivos de retorno";
+			String strOperacao = "Gravação de histórico de arquivos de retorno [Bradesco]";
 			#endregion
 
 			try
@@ -3196,50 +3272,50 @@ namespace Financeiro
 					#region [ Tenta gravar os dados ]
 
 					#region [ Preenche o valor dos parâmetros ]
-					cmBoletoArqRetornoInsert.Parameters["@id"].Value = boletoArqRetorno.id;
-					cmBoletoArqRetornoInsert.Parameters["@id_boleto_cedente"].Value = boletoArqRetorno.id_boleto_cedente;
-					cmBoletoArqRetornoInsert.Parameters["@usuario_processamento"].Value = usuario;
-					cmBoletoArqRetornoInsert.Parameters["@qtde_registros"].Value = boletoArqRetorno.qtde_registros;
-					cmBoletoArqRetornoInsert.Parameters["@codigo_empresa"].Value = boletoArqRetorno.codigo_empresa.Trim();
-					cmBoletoArqRetornoInsert.Parameters["@nome_empresa"].Value = boletoArqRetorno.nome_empresa.Trim();
-					cmBoletoArqRetornoInsert.Parameters["@num_banco"].Value = boletoArqRetorno.num_banco;
-					cmBoletoArqRetornoInsert.Parameters["@nome_banco"].Value = boletoArqRetorno.nome_banco.Trim();
-					cmBoletoArqRetornoInsert.Parameters["@data_gravacao_arquivo"].Value = boletoArqRetorno.data_gravacao_arquivo;
-					cmBoletoArqRetornoInsert.Parameters["@dt_gravacao_arquivo"].Value = Global.formataDataYyyyMmDdComSeparador(Global.converteDdMmYyParaDateTime(boletoArqRetorno.data_gravacao_arquivo));
-					cmBoletoArqRetornoInsert.Parameters["@numero_aviso_bancario"].Value = boletoArqRetorno.numero_aviso_bancario;
-					cmBoletoArqRetornoInsert.Parameters["@data_credito"].Value = boletoArqRetorno.data_credito;
-					cmBoletoArqRetornoInsert.Parameters["@dt_credito"].Value = Global.formataDataYyyyMmDdComSeparador(Global.converteDdMmYyParaDateTime(boletoArqRetorno.data_credito));
-					cmBoletoArqRetornoInsert.Parameters["@qtdeTitulosEmCobranca"].Value = boletoArqRetorno.qtdeTitulosEmCobranca;
-					cmBoletoArqRetornoInsert.Parameters["@valorTotalEmCobranca"].Value = boletoArqRetorno.valorTotalEmCobranca;
-					cmBoletoArqRetornoInsert.Parameters["@qtdeRegsOcorrencia02ConfirmacaoEntradas"].Value = boletoArqRetorno.qtdeRegsOcorrencia02ConfirmacaoEntradas;
-					cmBoletoArqRetornoInsert.Parameters["@valorRegsOcorrencia02ConfirmacaoEntradas"].Value = boletoArqRetorno.valorRegsOcorrencia02ConfirmacaoEntradas;
-					cmBoletoArqRetornoInsert.Parameters["@valorRegsOcorrencia06Liquidacao"].Value = boletoArqRetorno.valorRegsOcorrencia06Liquidacao;
-					cmBoletoArqRetornoInsert.Parameters["@qtdeRegsOcorrencia06Liquidacao"].Value = boletoArqRetorno.qtdeRegsOcorrencia06Liquidacao;
-					cmBoletoArqRetornoInsert.Parameters["@valorRegsOcorrencia06"].Value = boletoArqRetorno.valorRegsOcorrencia06;
-					cmBoletoArqRetornoInsert.Parameters["@qtdeRegsOcorrencia09e10TitulosBaixados"].Value = boletoArqRetorno.qtdeRegsOcorrencia09e10TitulosBaixados;
-					cmBoletoArqRetornoInsert.Parameters["@valorRegsOcorrencia09e10TitulosBaixados"].Value = boletoArqRetorno.valorRegsOcorrencia09e10TitulosBaixados;
-					cmBoletoArqRetornoInsert.Parameters["@qtdeRegsOcorrencia13AbatimentoCancelado"].Value = boletoArqRetorno.qtdeRegsOcorrencia13AbatimentoCancelado;
-					cmBoletoArqRetornoInsert.Parameters["@valorRegsOcorrencia13AbatimentoCancelado"].Value = boletoArqRetorno.valorRegsOcorrencia13AbatimentoCancelado;
-					cmBoletoArqRetornoInsert.Parameters["@qtdeRegsOcorrencia14VenctoAlterado"].Value = boletoArqRetorno.qtdeRegsOcorrencia14VenctoAlterado;
-					cmBoletoArqRetornoInsert.Parameters["@valorRegsOcorrencia14VenctoAlterado"].Value = boletoArqRetorno.valorRegsOcorrencia14VenctoAlterado;
-					cmBoletoArqRetornoInsert.Parameters["@qtdeRegsOcorrencia12AbatimentoConcedido"].Value = boletoArqRetorno.qtdeRegsOcorrencia12AbatimentoConcedido;
-					cmBoletoArqRetornoInsert.Parameters["@valorRegsOcorrencia12AbatimentoConcedido"].Value = boletoArqRetorno.valorRegsOcorrencia12AbatimentoConcedido;
-					cmBoletoArqRetornoInsert.Parameters["@qtdeRegsOcorrencia19ConfirmacaoInstrucaoProtesto"].Value = boletoArqRetorno.qtdeRegsOcorrencia19ConfirmacaoInstrucaoProtesto;
-					cmBoletoArqRetornoInsert.Parameters["@valorRegsOcorrencia19ConfirmacaoInstrucaoProtesto"].Value = boletoArqRetorno.valorRegsOcorrencia19ConfirmacaoInstrucaoProtesto;
-					cmBoletoArqRetornoInsert.Parameters["@valorTotalRateiosEfetuados"].Value = boletoArqRetorno.valorTotalRateiosEfetuados;
-					cmBoletoArqRetornoInsert.Parameters["@qtdeTotalRateiosEfetuados"].Value = boletoArqRetorno.qtdeTotalRateiosEfetuados;
-					cmBoletoArqRetornoInsert.Parameters["@duracao_proc_em_seg"].Value = boletoArqRetorno.duracao_proc_em_seg;
-					cmBoletoArqRetornoInsert.Parameters["@nome_arq_retorno"].Value = boletoArqRetorno.nome_arq_retorno;
-					cmBoletoArqRetornoInsert.Parameters["@caminho_arq_retorno"].Value = boletoArqRetorno.caminho_arq_retorno;
-					cmBoletoArqRetornoInsert.Parameters["@st_processamento"].Value = boletoArqRetorno.st_processamento;
-					cmBoletoArqRetornoInsert.Parameters["@msg_erro_processamento"].Value = boletoArqRetorno.msg_erro_processamento;
+					b237CmBoletoArqRetornoInsert.Parameters["@id"].Value = boletoArqRetorno.id;
+                    b237CmBoletoArqRetornoInsert.Parameters["@id_boleto_cedente"].Value = boletoArqRetorno.id_boleto_cedente;
+                    b237CmBoletoArqRetornoInsert.Parameters["@usuario_processamento"].Value = usuario;
+                    b237CmBoletoArqRetornoInsert.Parameters["@qtde_registros"].Value = boletoArqRetorno.qtde_registros;
+                    b237CmBoletoArqRetornoInsert.Parameters["@codigo_empresa"].Value = boletoArqRetorno.codigo_empresa.Trim();
+                    b237CmBoletoArqRetornoInsert.Parameters["@nome_empresa"].Value = boletoArqRetorno.nome_empresa.Trim();
+                    b237CmBoletoArqRetornoInsert.Parameters["@num_banco"].Value = boletoArqRetorno.num_banco;
+                    b237CmBoletoArqRetornoInsert.Parameters["@nome_banco"].Value = boletoArqRetorno.nome_banco.Trim();
+                    b237CmBoletoArqRetornoInsert.Parameters["@data_gravacao_arquivo"].Value = boletoArqRetorno.data_gravacao_arquivo;
+                    b237CmBoletoArqRetornoInsert.Parameters["@dt_gravacao_arquivo"].Value = Global.formataDataYyyyMmDdComSeparador(Global.converteDdMmYyParaDateTime(boletoArqRetorno.data_gravacao_arquivo));
+                    b237CmBoletoArqRetornoInsert.Parameters["@numero_aviso_bancario"].Value = boletoArqRetorno.numero_aviso_bancario;
+                    b237CmBoletoArqRetornoInsert.Parameters["@data_credito"].Value = boletoArqRetorno.data_credito;
+                    b237CmBoletoArqRetornoInsert.Parameters["@dt_credito"].Value = Global.formataDataYyyyMmDdComSeparador(Global.converteDdMmYyParaDateTime(boletoArqRetorno.data_credito));
+                    b237CmBoletoArqRetornoInsert.Parameters["@qtdeTitulosEmCobranca"].Value = boletoArqRetorno.qtdeTitulosEmCobranca;
+                    b237CmBoletoArqRetornoInsert.Parameters["@valorTotalEmCobranca"].Value = boletoArqRetorno.valorTotalEmCobranca;
+                    b237CmBoletoArqRetornoInsert.Parameters["@qtdeRegsOcorrencia02ConfirmacaoEntradas"].Value = boletoArqRetorno.qtdeRegsOcorrencia02ConfirmacaoEntradas;
+                    b237CmBoletoArqRetornoInsert.Parameters["@valorRegsOcorrencia02ConfirmacaoEntradas"].Value = boletoArqRetorno.valorRegsOcorrencia02ConfirmacaoEntradas;
+                    b237CmBoletoArqRetornoInsert.Parameters["@valorRegsOcorrencia06Liquidacao"].Value = boletoArqRetorno.valorRegsOcorrencia06Liquidacao;
+                    b237CmBoletoArqRetornoInsert.Parameters["@qtdeRegsOcorrencia06Liquidacao"].Value = boletoArqRetorno.qtdeRegsOcorrencia06Liquidacao;
+                    b237CmBoletoArqRetornoInsert.Parameters["@valorRegsOcorrencia06"].Value = boletoArqRetorno.valorRegsOcorrencia06;
+                    b237CmBoletoArqRetornoInsert.Parameters["@qtdeRegsOcorrencia09e10TitulosBaixados"].Value = boletoArqRetorno.qtdeRegsOcorrencia09e10TitulosBaixados;
+                    b237CmBoletoArqRetornoInsert.Parameters["@valorRegsOcorrencia09e10TitulosBaixados"].Value = boletoArqRetorno.valorRegsOcorrencia09e10TitulosBaixados;
+                    b237CmBoletoArqRetornoInsert.Parameters["@qtdeRegsOcorrencia13AbatimentoCancelado"].Value = boletoArqRetorno.qtdeRegsOcorrencia13AbatimentoCancelado;
+                    b237CmBoletoArqRetornoInsert.Parameters["@valorRegsOcorrencia13AbatimentoCancelado"].Value = boletoArqRetorno.valorRegsOcorrencia13AbatimentoCancelado;
+                    b237CmBoletoArqRetornoInsert.Parameters["@qtdeRegsOcorrencia14VenctoAlterado"].Value = boletoArqRetorno.qtdeRegsOcorrencia14VenctoAlterado;
+                    b237CmBoletoArqRetornoInsert.Parameters["@valorRegsOcorrencia14VenctoAlterado"].Value = boletoArqRetorno.valorRegsOcorrencia14VenctoAlterado;
+                    b237CmBoletoArqRetornoInsert.Parameters["@qtdeRegsOcorrencia12AbatimentoConcedido"].Value = boletoArqRetorno.qtdeRegsOcorrencia12AbatimentoConcedido;
+                    b237CmBoletoArqRetornoInsert.Parameters["@valorRegsOcorrencia12AbatimentoConcedido"].Value = boletoArqRetorno.valorRegsOcorrencia12AbatimentoConcedido;
+                    b237CmBoletoArqRetornoInsert.Parameters["@qtdeRegsOcorrencia19ConfirmacaoInstrucaoProtesto"].Value = boletoArqRetorno.qtdeRegsOcorrencia19ConfirmacaoInstrucaoProtesto;
+                    b237CmBoletoArqRetornoInsert.Parameters["@valorRegsOcorrencia19ConfirmacaoInstrucaoProtesto"].Value = boletoArqRetorno.valorRegsOcorrencia19ConfirmacaoInstrucaoProtesto;
+                    b237CmBoletoArqRetornoInsert.Parameters["@valorTotalRateiosEfetuados"].Value = boletoArqRetorno.valorTotalRateiosEfetuados;
+                    b237CmBoletoArqRetornoInsert.Parameters["@qtdeTotalRateiosEfetuados"].Value = boletoArqRetorno.qtdeTotalRateiosEfetuados;
+                    b237CmBoletoArqRetornoInsert.Parameters["@duracao_proc_em_seg"].Value = boletoArqRetorno.duracao_proc_em_seg;
+                    b237CmBoletoArqRetornoInsert.Parameters["@nome_arq_retorno"].Value = boletoArqRetorno.nome_arq_retorno;
+                    b237CmBoletoArqRetornoInsert.Parameters["@caminho_arq_retorno"].Value = boletoArqRetorno.caminho_arq_retorno;
+                    b237CmBoletoArqRetornoInsert.Parameters["@st_processamento"].Value = boletoArqRetorno.st_processamento;
+                    b237CmBoletoArqRetornoInsert.Parameters["@msg_erro_processamento"].Value = boletoArqRetorno.msg_erro_processamento;
 					#endregion
 
 					#region [ Tenta inserir o registro ]
 					strMsgErro = "";
 					try
 					{
-						intRetorno = BD.executaNonQuery(ref cmBoletoArqRetornoInsert);
+						intRetorno = BD.executaNonQuery(ref b237CmBoletoArqRetornoInsert);
 					}
 					catch (Exception ex)
 					{
@@ -3291,10 +3367,135 @@ namespace Financeiro
 				return false;
 			}
 		}
-		#endregion
+        #endregion
 
-		#region [ boletoArqRetornoAtualiza ]
-		public static bool boletoArqRetornoAtualiza(String usuario,
+        #region [ b422BoletoArqRetornoInsere ]
+        /// <summary>
+        /// Grava o registro em t_FIN_BOLETO_ARQ_RETORNO para manter o histórico dos arquivos de retorno carregados.
+        /// </summary>
+        /// <param name="usuario">
+        /// Usuário que carregou o arquivo de retorno.
+        /// </param>
+        /// <param name="boletoArqRetorno">
+        /// Objeto do tipo BoletoArqRetorno com os dados básicos do arquivo de retorno.
+        /// </param>
+        /// <param name="strMsgErro">
+        /// Em caso de erro, retorna mensagem com descrição.
+        /// </param>
+        /// <returns>
+        /// true: gravação bem sucedida.
+        /// false: falha na gravação.
+        /// </returns>
+        public static bool b422BoletoArqRetornoInsere(String usuario,
+                                                  B422BoletoArqRetorno boletoArqRetorno,
+                                                  ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            bool blnSucesso = false;
+            int intRetorno;
+            String strOperacao = "Gravação de histórico de arquivos de retorno [Safra]";
+            #endregion
+
+            try
+            {
+                strMsgErro = "";
+
+                #region [ Consistência ]
+                if (boletoArqRetorno.id <= 0)
+                {
+                    strMsgErro = "NSU não fornecido para o novo registro da tabela t_FIN_BOLETO_ARQ_RETORNO!!\n" + strMsgErro;
+                    return false;
+                }
+                #endregion
+
+                try
+                {
+                    #region [ Tenta gravar os dados ]
+
+                    #region [ Preenche o valor dos parâmetros ]
+                    b422CmBoletoArqRetornoInsert.Parameters["@id"].Value = boletoArqRetorno.id;
+                    b422CmBoletoArqRetornoInsert.Parameters["@id_boleto_cedente"].Value = boletoArqRetorno.id_boleto_cedente;
+                    b422CmBoletoArqRetornoInsert.Parameters["@usuario_processamento"].Value = usuario;
+                    b422CmBoletoArqRetornoInsert.Parameters["@qtde_registros"].Value = boletoArqRetorno.qtde_registros;
+                    b422CmBoletoArqRetornoInsert.Parameters["@codigo_empresa"].Value = boletoArqRetorno.codigo_empresa.Trim();
+                    b422CmBoletoArqRetornoInsert.Parameters["@nome_empresa"].Value = boletoArqRetorno.nome_empresa.Trim();
+                    b422CmBoletoArqRetornoInsert.Parameters["@num_banco"].Value = boletoArqRetorno.num_banco;
+                    b422CmBoletoArqRetornoInsert.Parameters["@nome_banco"].Value = boletoArqRetorno.nome_banco.Trim();
+                    b422CmBoletoArqRetornoInsert.Parameters["@data_gravacao_arquivo"].Value = boletoArqRetorno.data_gravacao_arquivo;
+                    b422CmBoletoArqRetornoInsert.Parameters["@dt_gravacao_arquivo"].Value = Global.formataDataYyyyMmDdComSeparador(Global.converteDdMmYyParaDateTime(boletoArqRetorno.data_gravacao_arquivo));
+                    b422CmBoletoArqRetornoInsert.Parameters["@numero_aviso_bancario"].Value = boletoArqRetorno.numero_aviso_bancario;
+                    b422CmBoletoArqRetornoInsert.Parameters["@numero_aviso_bancario_cobr_vinculada"].Value = boletoArqRetorno.numero_aviso_bancario_cobr_vinculada;
+                    b422CmBoletoArqRetornoInsert.Parameters["@qtdeTitulosEmCobranca"].Value = boletoArqRetorno.qtdeTitulosEmCobranca;
+                    b422CmBoletoArqRetornoInsert.Parameters["@qtdeTitulosEmCobrancaVinculada"].Value = boletoArqRetorno.qtdeTitulosEmCobrancaVinculada;
+                    b422CmBoletoArqRetornoInsert.Parameters["@valorTotalEmCobranca"].Value = boletoArqRetorno.valorTotalEmCobranca;
+                    b422CmBoletoArqRetornoInsert.Parameters["@valorTotalEmCobrancaVinculada"].Value = boletoArqRetorno.valorTotalEmCobrancaVinculada;
+                    b422CmBoletoArqRetornoInsert.Parameters["@duracao_proc_em_seg"].Value = boletoArqRetorno.duracao_proc_em_seg;
+                    b422CmBoletoArqRetornoInsert.Parameters["@nome_arq_retorno"].Value = boletoArqRetorno.nome_arq_retorno;
+                    b422CmBoletoArqRetornoInsert.Parameters["@caminho_arq_retorno"].Value = boletoArqRetorno.caminho_arq_retorno;
+                    b422CmBoletoArqRetornoInsert.Parameters["@st_processamento"].Value = boletoArqRetorno.st_processamento;
+                    b422CmBoletoArqRetornoInsert.Parameters["@msg_erro_processamento"].Value = boletoArqRetorno.msg_erro_processamento;
+                    #endregion
+
+                    #region [ Tenta inserir o registro ]
+                    strMsgErro = "";
+                    try
+                    {
+                        intRetorno = BD.executaNonQuery(ref b422CmBoletoArqRetornoInsert);
+                    }
+                    catch (Exception ex)
+                    {
+                        intRetorno = 0;
+                        strMsgErro = ex.Message;
+                        Global.gravaLogAtividade(strOperacao + " - Exception!!\n" + ex.ToString());
+                    }
+                    #endregion
+
+                    #region [ Gravou o registro? ]
+                    if (intRetorno == 0)
+                    {
+                        strMsgErro = "Falha ao tentar gravar o registro de histórico de arquivos de retorno!!\n" + strMsgErro;
+                        return false;
+                    }
+                    #endregion
+
+                    #endregion
+
+                    blnSucesso = true;
+                }
+                catch (Exception ex)
+                {
+                    // Para o usuário, exibe uma mensagem mais sucinta
+                    strMsgErro = ex.Message;
+                    // No log em arquivo, grava o stack de erro completo
+                    Global.gravaLogAtividade(strOperacao + " - Falha!!\n" + ex.ToString());
+                    return false;
+                }
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar gravar o registro do histórico de arquivos de retorno!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ boletoArqRetornoAtualiza ]
+        public static bool boletoArqRetornoAtualiza(String usuario,
 													int idArqRetorno,
 													short stProcessamento,
 													int duracaoProcessamentoEmSegundos,
@@ -3643,1364 +3844,6 @@ namespace Financeiro
 		}
 		#endregion
 
-		#region [ atualizaBoletoItemOcorrencia02EntradaConfirmada ]
-		public static bool atualizaBoletoItemOcorrencia02EntradaConfirmada(
-								String usuario,
-								int idBoletoItem,
-								String nossoNumero,
-								String digitoNossoNumero,
-								String identificacaoOcorrencia,
-								String motivosRejeicoes,
-								String motivoCodigoOcorrencia19,
-								DateTime dataOcorrenciaBanco,
-								String codigoBarras,
-								String linhaDigitavel,
-								decimal vlTarifaRegistro,
-								ref String strMsgErro)
-		{
-			#region [ Declarações ]
-			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 02 (entrada confirmada)";
-			bool blnSucesso = false;
-			int intRetorno;
-			#endregion
-
-			strMsgErro = "";
-			try
-			{
-				#region [ Preenche o valor dos parâmetros ]
-				cmBoletoItemAtualizaOcorrencia02.Parameters["@id"].Value = idBoletoItem;
-				cmBoletoItemAtualizaOcorrencia02.Parameters["@nosso_numero"].Value = nossoNumero;
-				cmBoletoItemAtualizaOcorrencia02.Parameters["@digito_nosso_numero"].Value = digitoNossoNumero;
-				cmBoletoItemAtualizaOcorrencia02.Parameters["@codigo_barras"].Value = codigoBarras;
-				cmBoletoItemAtualizaOcorrencia02.Parameters["@linha_digitavel"].Value = linhaDigitavel;
-				cmBoletoItemAtualizaOcorrencia02.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
-				cmBoletoItemAtualizaOcorrencia02.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
-				cmBoletoItemAtualizaOcorrencia02.Parameters["@ult_motivo_ocorrencia_19"].Value = motivoCodigoOcorrencia19;
-				cmBoletoItemAtualizaOcorrencia02.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia02.Parameters["@dt_entrada_confirmada"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia02.Parameters["@vl_tarifa_registro"].Value = vlTarifaRegistro;
-				cmBoletoItemAtualizaOcorrencia02.Parameters["@usuario_ult_atualizacao"].Value = usuario;
-				#endregion
-
-				#region [ Tenta alterar o registro ]
-				try
-				{
-					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia02);
-				}
-				catch (Exception ex)
-				{
-					intRetorno = 0;
-					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
-				}
-				if (intRetorno == 1)
-				{
-					blnSucesso = true;
-				}
-				else
-				{
-					blnSucesso = false;
-				}
-				#endregion
-
-				#region [ Processamento final de sucesso ou falha ]
-				if (blnSucesso)
-				{
-					return true;
-				}
-				else
-				{
-					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 02 (entrada confirmada)!!";
-					return false;
-				}
-				#endregion
-			}
-			catch (Exception ex)
-			{
-				// Para o usuário, exibe uma mensagem mais sucinta
-				strMsgErro = ex.Message;
-				// No log em arquivo, grava o stack de erro completo
-				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
-				return false;
-			}
-		}
-		#endregion
-
-		#region [ atualizaBoletoItemOcorrencia06LiquidacaoNormal ]
-		public static bool atualizaBoletoItemOcorrencia06LiquidacaoNormal(
-								String usuario,
-								int idBoletoItem,
-								String identificacaoOcorrencia,
-								String motivosRejeicoes,
-								DateTime dataOcorrenciaBanco,
-								decimal vlAbatimentoConcedido,
-								decimal vlDescontoConcedido,
-								ref String strMsgErro)
-		{
-			#region [ Declarações ]
-			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 06 (liquidação normal)";
-			bool blnSucesso = false;
-			int intRetorno;
-			#endregion
-
-			strMsgErro = "";
-			try
-			{
-				#region [ Preenche o valor dos parâmetros ]
-				cmBoletoItemAtualizaOcorrencia06.Parameters["@id"].Value = idBoletoItem;
-				cmBoletoItemAtualizaOcorrencia06.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
-				cmBoletoItemAtualizaOcorrencia06.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
-				cmBoletoItemAtualizaOcorrencia06.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia06.Parameters["@vl_abatimento_concedido"].Value = vlAbatimentoConcedido;
-				cmBoletoItemAtualizaOcorrencia06.Parameters["@vl_desconto_concedido"].Value = vlDescontoConcedido;
-				cmBoletoItemAtualizaOcorrencia06.Parameters["@st_boleto_ocorrencia_06"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
-				cmBoletoItemAtualizaOcorrencia06.Parameters["@dt_ocorrencia_banco_boleto_ocorrencia_06"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia06.Parameters["@usuario_ult_atualizacao"].Value = usuario;
-				#endregion
-
-				#region [ Tenta alterar o registro ]
-				try
-				{
-					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia06);
-				}
-				catch (Exception ex)
-				{
-					intRetorno = 0;
-					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
-				}
-				if (intRetorno == 1)
-				{
-					blnSucesso = true;
-				}
-				else
-				{
-					blnSucesso = false;
-				}
-				#endregion
-
-				#region [ Processamento final de sucesso ou falha ]
-				if (blnSucesso)
-				{
-					return true;
-				}
-				else
-				{
-					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 06 (liquidação normal)!!";
-					return false;
-				}
-				#endregion
-			}
-			catch (Exception ex)
-			{
-				// Para o usuário, exibe uma mensagem mais sucinta
-				strMsgErro = ex.Message;
-				// No log em arquivo, grava o stack de erro completo
-				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
-				return false;
-			}
-		}
-		#endregion
-
-		#region [ atualizaBoletoItemOcorrencia09BaixadoAutoViaArq ]
-		public static bool atualizaBoletoItemOcorrencia09BaixadoAutoViaArq(
-								String usuario,
-								int idBoletoItem,
-								String identificacaoOcorrencia,
-								String motivosRejeicoes,
-								DateTime dataOcorrenciaBanco,
-								ref String strMsgErro)
-		{
-			#region [ Declarações ]
-			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 09 (baixado automaticamente via arquivo)";
-			bool blnSucesso = false;
-			int intRetorno;
-			#endregion
-
-			strMsgErro = "";
-			try
-			{
-				#region [ Preenche o valor dos parâmetros ]
-				cmBoletoItemAtualizaOcorrencia09.Parameters["@id"].Value = idBoletoItem;
-				cmBoletoItemAtualizaOcorrencia09.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
-				cmBoletoItemAtualizaOcorrencia09.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
-				cmBoletoItemAtualizaOcorrencia09.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia09.Parameters["@st_boleto_baixado"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
-				cmBoletoItemAtualizaOcorrencia09.Parameters["@dt_ocorrencia_banco_boleto_baixado"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia09.Parameters["@usuario_ult_atualizacao"].Value = usuario;
-				#endregion
-
-				#region [ Tenta alterar o registro ]
-				try
-				{
-					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia09);
-				}
-				catch (Exception ex)
-				{
-					intRetorno = 0;
-					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
-				}
-				if (intRetorno == 1)
-				{
-					blnSucesso = true;
-				}
-				else
-				{
-					blnSucesso = false;
-				}
-				#endregion
-
-				#region [ Processamento final de sucesso ou falha ]
-				if (blnSucesso)
-				{
-					return true;
-				}
-				else
-				{
-					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 09 (baixado automaticamente via arquivo)!!";
-					return false;
-				}
-				#endregion
-			}
-			catch (Exception ex)
-			{
-				// Para o usuário, exibe uma mensagem mais sucinta
-				strMsgErro = ex.Message;
-				// No log em arquivo, grava o stack de erro completo
-				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
-				return false;
-			}
-		}
-		#endregion
-
-		#region [ atualizaBoletoItemOcorrencia10BaixadoConfInstrAgencia ]
-		public static bool atualizaBoletoItemOcorrencia10BaixadoConfInstrAgencia(
-								String usuario,
-								int idBoletoItem,
-								String identificacaoOcorrencia,
-								String motivosRejeicoes,
-								DateTime dataOcorrenciaBanco,
-								ref String strMsgErro)
-		{
-			#region [ Declarações ]
-			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 10 (baixado conforme instruções da agência)";
-			bool blnSucesso = false;
-			int intRetorno;
-			#endregion
-
-			strMsgErro = "";
-			try
-			{
-				#region [ Preenche o valor dos parâmetros ]
-				cmBoletoItemAtualizaOcorrencia10.Parameters["@id"].Value = idBoletoItem;
-				cmBoletoItemAtualizaOcorrencia10.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
-				cmBoletoItemAtualizaOcorrencia10.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
-				cmBoletoItemAtualizaOcorrencia10.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia10.Parameters["@st_boleto_baixado"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
-				cmBoletoItemAtualizaOcorrencia10.Parameters["@dt_ocorrencia_banco_boleto_baixado"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia10.Parameters["@usuario_ult_atualizacao"].Value = usuario;
-				#endregion
-
-				#region [ Tenta alterar o registro ]
-				try
-				{
-					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia10);
-				}
-				catch (Exception ex)
-				{
-					intRetorno = 0;
-					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
-				}
-				if (intRetorno == 1)
-				{
-					blnSucesso = true;
-				}
-				else
-				{
-					blnSucesso = false;
-				}
-				#endregion
-
-				#region [ Processamento final de sucesso ou falha ]
-				if (blnSucesso)
-				{
-					return true;
-				}
-				else
-				{
-					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 10 (baixado conforme instruções da agência)!!";
-					return false;
-				}
-				#endregion
-			}
-			catch (Exception ex)
-			{
-				// Para o usuário, exibe uma mensagem mais sucinta
-				strMsgErro = ex.Message;
-				// No log em arquivo, grava o stack de erro completo
-				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
-				return false;
-			}
-		}
-		#endregion
-
-		#region [ atualizaBoletoItemOcorrencia12AbatimentoConcedido ]
-		public static bool atualizaBoletoItemOcorrencia12AbatimentoConcedido(
-								String usuario,
-								int idBoletoItem,
-								String identificacaoOcorrencia,
-								String motivosRejeicoes,
-								DateTime dataOcorrenciaBanco,
-								decimal vlAbatimentoConcedido,
-								ref String strMsgErro)
-		{
-			#region [ Declarações ]
-			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 12 (abatimento concedido)";
-			bool blnSucesso = false;
-			int intRetorno;
-			#endregion
-
-			strMsgErro = "";
-			try
-			{
-				#region [ Preenche o valor dos parâmetros ]
-				cmBoletoItemAtualizaOcorrencia12.Parameters["@id"].Value = idBoletoItem;
-				cmBoletoItemAtualizaOcorrencia12.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
-				cmBoletoItemAtualizaOcorrencia12.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
-				cmBoletoItemAtualizaOcorrencia12.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia12.Parameters["@vl_abatimento_concedido"].Value = vlAbatimentoConcedido;
-				cmBoletoItemAtualizaOcorrencia12.Parameters["@usuario_ult_atualizacao"].Value = usuario;
-				#endregion
-
-				#region [ Tenta alterar o registro ]
-				try
-				{
-					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia12);
-				}
-				catch (Exception ex)
-				{
-					intRetorno = 0;
-					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
-				}
-				if (intRetorno == 1)
-				{
-					blnSucesso = true;
-				}
-				else
-				{
-					blnSucesso = false;
-				}
-				#endregion
-
-				#region [ Processamento final de sucesso ou falha ]
-				if (blnSucesso)
-				{
-					return true;
-				}
-				else
-				{
-					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 12 (abatimento concedido)!!";
-					return false;
-				}
-				#endregion
-			}
-			catch (Exception ex)
-			{
-				// Para o usuário, exibe uma mensagem mais sucinta
-				strMsgErro = ex.Message;
-				// No log em arquivo, grava o stack de erro completo
-				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
-				return false;
-			}
-		}
-		#endregion
-
-		#region [ atualizaBoletoItemOcorrencia13AbatimentoCancelado ]
-		public static bool atualizaBoletoItemOcorrencia13AbatimentoCancelado(
-								String usuario,
-								int idBoletoItem,
-								String identificacaoOcorrencia,
-								String motivosRejeicoes,
-								DateTime dataOcorrenciaBanco,
-								ref String strMsgErro)
-		{
-			#region [ Declarações ]
-			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 13 (abatimento cancelado)";
-			bool blnSucesso = false;
-			int intRetorno;
-			#endregion
-
-			strMsgErro = "";
-			try
-			{
-				#region [ Preenche o valor dos parâmetros ]
-				cmBoletoItemAtualizaOcorrencia13.Parameters["@id"].Value = idBoletoItem;
-				cmBoletoItemAtualizaOcorrencia13.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
-				cmBoletoItemAtualizaOcorrencia13.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
-				cmBoletoItemAtualizaOcorrencia13.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia13.Parameters["@vl_abatimento_concedido"].Value = 0m;
-				cmBoletoItemAtualizaOcorrencia13.Parameters["@usuario_ult_atualizacao"].Value = usuario;
-				#endregion
-
-				#region [ Tenta alterar o registro ]
-				try
-				{
-					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia13);
-				}
-				catch (Exception ex)
-				{
-					intRetorno = 0;
-					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
-				}
-				if (intRetorno == 1)
-				{
-					blnSucesso = true;
-				}
-				else
-				{
-					blnSucesso = false;
-				}
-				#endregion
-
-				#region [ Processamento final de sucesso ou falha ]
-				if (blnSucesso)
-				{
-					return true;
-				}
-				else
-				{
-					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 13 (abatimento cancelado)!!";
-					return false;
-				}
-				#endregion
-			}
-			catch (Exception ex)
-			{
-				// Para o usuário, exibe uma mensagem mais sucinta
-				strMsgErro = ex.Message;
-				// No log em arquivo, grava o stack de erro completo
-				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
-				return false;
-			}
-		}
-		#endregion
-
-		#region [ atualizaBoletoItemOcorrencia14VenctoAlterado ]
-		public static bool atualizaBoletoItemOcorrencia14VenctoAlterado(
-								String usuario,
-								int idBoletoItem,
-								String identificacaoOcorrencia,
-								String motivosRejeicoes,
-								DateTime dataOcorrenciaBanco,
-								DateTime dtNovoVencto,
-								ref String strMsgErro)
-		{
-			#region [ Declarações ]
-			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 14 (vencimento alterado)";
-			bool blnSucesso = false;
-			int intRetorno;
-			#endregion
-
-			strMsgErro = "";
-			try
-			{
-				#region [ Preenche o valor dos parâmetros ]
-				cmBoletoItemAtualizaOcorrencia14.Parameters["@id"].Value = idBoletoItem;
-				cmBoletoItemAtualizaOcorrencia14.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
-				cmBoletoItemAtualizaOcorrencia14.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
-				cmBoletoItemAtualizaOcorrencia14.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia14.Parameters["@dt_vencto"].Value = Global.formataDataYyyyMmDdComSeparador(dtNovoVencto);
-				cmBoletoItemAtualizaOcorrencia14.Parameters["@usuario_ult_atualizacao"].Value = usuario;
-				#endregion
-
-				#region [ Tenta alterar o registro ]
-				try
-				{
-					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia14);
-				}
-				catch (Exception ex)
-				{
-					intRetorno = 0;
-					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
-				}
-				if (intRetorno == 1)
-				{
-					blnSucesso = true;
-				}
-				else
-				{
-					blnSucesso = false;
-				}
-				#endregion
-
-				#region [ Processamento final de sucesso ou falha ]
-				if (blnSucesso)
-				{
-					return true;
-				}
-				else
-				{
-					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 14 (vencimento alterado)!!";
-					return false;
-				}
-				#endregion
-			}
-			catch (Exception ex)
-			{
-				// Para o usuário, exibe uma mensagem mais sucinta
-				strMsgErro = ex.Message;
-				// No log em arquivo, grava o stack de erro completo
-				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
-				return false;
-			}
-		}
-		#endregion
-
-		#region [ atualizaBoletoItemOcorrencia15LiquidacaoEmCartorio ]
-		public static bool atualizaBoletoItemOcorrencia15LiquidacaoEmCartorio(
-								String usuario,
-								int idBoletoItem,
-								String identificacaoOcorrencia,
-								String motivosRejeicoes,
-								DateTime dataOcorrenciaBanco,
-								decimal vlAbatimentoConcedido,
-								decimal vlDescontoConcedido,
-								ref String strMsgErro)
-		{
-			#region [ Declarações ]
-			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 15 (liquidação em cartório)";
-			bool blnSucesso = false;
-			int intRetorno;
-			#endregion
-
-			strMsgErro = "";
-			try
-			{
-				#region [ Preenche o valor dos parâmetros ]
-				cmBoletoItemAtualizaOcorrencia15.Parameters["@id"].Value = idBoletoItem;
-				cmBoletoItemAtualizaOcorrencia15.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
-				cmBoletoItemAtualizaOcorrencia15.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
-				cmBoletoItemAtualizaOcorrencia15.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia15.Parameters["@vl_abatimento_concedido"].Value = vlAbatimentoConcedido;
-				cmBoletoItemAtualizaOcorrencia15.Parameters["@vl_desconto_concedido"].Value = vlDescontoConcedido;
-				cmBoletoItemAtualizaOcorrencia15.Parameters["@st_boleto_ocorrencia_15"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
-				cmBoletoItemAtualizaOcorrencia15.Parameters["@dt_ocorrencia_banco_boleto_ocorrencia_15"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia15.Parameters["@usuario_ult_atualizacao"].Value = usuario;
-				#endregion
-
-				#region [ Tenta alterar o registro ]
-				try
-				{
-					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia15);
-				}
-				catch (Exception ex)
-				{
-					intRetorno = 0;
-					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
-				}
-				if (intRetorno == 1)
-				{
-					blnSucesso = true;
-				}
-				else
-				{
-					blnSucesso = false;
-				}
-				#endregion
-
-				#region [ Processamento final de sucesso ou falha ]
-				if (blnSucesso)
-				{
-					return true;
-				}
-				else
-				{
-					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 15 (liquidação em cartório)!!";
-					return false;
-				}
-				#endregion
-			}
-			catch (Exception ex)
-			{
-				// Para o usuário, exibe uma mensagem mais sucinta
-				strMsgErro = ex.Message;
-				// No log em arquivo, grava o stack de erro completo
-				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
-				return false;
-			}
-		}
-		#endregion
-
-		#region [ atualizaBoletoItemOcorrencia16TituloPagoEmCheque ]
-		public static bool atualizaBoletoItemOcorrencia16TituloPagoEmCheque(
-								String usuario,
-								int idBoletoItem,
-								String identificacaoOcorrencia,
-								String motivosRejeicoes,
-								DateTime dataOcorrenciaBanco,
-								ref String strMsgErro)
-		{
-			#region [ Declarações ]
-			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 16 (título pago em cheque)";
-			bool blnSucesso = false;
-			int intRetorno;
-			#endregion
-
-			strMsgErro = "";
-			try
-			{
-				#region [ Preenche o valor dos parâmetros ]
-				cmBoletoItemAtualizaOcorrencia16.Parameters["@id"].Value = idBoletoItem;
-				cmBoletoItemAtualizaOcorrencia16.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
-				cmBoletoItemAtualizaOcorrencia16.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
-				cmBoletoItemAtualizaOcorrencia16.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia16.Parameters["@st_boleto_pago_cheque"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
-				cmBoletoItemAtualizaOcorrencia16.Parameters["@dt_ocorrencia_banco_boleto_pago_cheque"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia16.Parameters["@usuario_ult_atualizacao"].Value = usuario;
-				#endregion
-
-				#region [ Tenta alterar o registro ]
-				try
-				{
-					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia16);
-				}
-				catch (Exception ex)
-				{
-					intRetorno = 0;
-					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
-				}
-				if (intRetorno == 1)
-				{
-					blnSucesso = true;
-				}
-				else
-				{
-					blnSucesso = false;
-				}
-				#endregion
-
-				#region [ Processamento final de sucesso ou falha ]
-				if (blnSucesso)
-				{
-					return true;
-				}
-				else
-				{
-					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 16 (título pago em cheque)!!";
-					return false;
-				}
-				#endregion
-			}
-			catch (Exception ex)
-			{
-				// Para o usuário, exibe uma mensagem mais sucinta
-				strMsgErro = ex.Message;
-				// No log em arquivo, grava o stack de erro completo
-				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
-				return false;
-			}
-		}
-		#endregion
-
-		#region [ atualizaBoletoItemOcorrencia17LiqAposBaixaOuTitNaoRegistrado ]
-		public static bool atualizaBoletoItemOcorrencia17LiqAposBaixaOuTitNaoRegistrado(
-								String usuario,
-								int idBoletoItem,
-								String identificacaoOcorrencia,
-								String motivosRejeicoes,
-								DateTime dataOcorrenciaBanco,
-								ref String strMsgErro)
-		{
-			#region [ Declarações ]
-			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 17 (liquidação após baixa ou título não registrado)";
-			bool blnSucesso = false;
-			int intRetorno;
-			#endregion
-
-			strMsgErro = "";
-			try
-			{
-				#region [ Preenche o valor dos parâmetros ]
-				cmBoletoItemAtualizaOcorrencia17.Parameters["@id"].Value = idBoletoItem;
-				cmBoletoItemAtualizaOcorrencia17.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
-				cmBoletoItemAtualizaOcorrencia17.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
-				cmBoletoItemAtualizaOcorrencia17.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia17.Parameters["@st_boleto_ocorrencia_17"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
-				cmBoletoItemAtualizaOcorrencia17.Parameters["@dt_ocorrencia_banco_boleto_ocorrencia_17"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia17.Parameters["@usuario_ult_atualizacao"].Value = usuario;
-				#endregion
-
-				#region [ Tenta alterar o registro ]
-				try
-				{
-					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia17);
-				}
-				catch (Exception ex)
-				{
-					intRetorno = 0;
-					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
-				}
-				if (intRetorno == 1)
-				{
-					blnSucesso = true;
-				}
-				else
-				{
-					blnSucesso = false;
-				}
-				#endregion
-
-				#region [ Processamento final de sucesso ou falha ]
-				if (blnSucesso)
-				{
-					return true;
-				}
-				else
-				{
-					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 17 (liquidação após baixa ou título não registrado)!!";
-					return false;
-				}
-				#endregion
-			}
-			catch (Exception ex)
-			{
-				// Para o usuário, exibe uma mensagem mais sucinta
-				strMsgErro = ex.Message;
-				// No log em arquivo, grava o stack de erro completo
-				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
-				return false;
-			}
-		}
-		#endregion
-
-		#region [ atualizaBoletoItemOcorrencia19ConfirmacaoRecebInstProtesto ]
-		public static bool atualizaBoletoItemOcorrencia19ConfirmacaoRecebInstProtesto(
-								String usuario,
-								int idBoletoItem,
-								String identificacaoOcorrencia,
-								String motivosRejeicoes,
-								String motivoCodigoOcorrencia19,
-								DateTime dataOcorrenciaBanco,
-								ref String strMsgErro)
-		{
-			#region [ Declarações ]
-			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 19 (confirmação receb. inst. de protesto)";
-			bool blnSucesso = false;
-			int intRetorno;
-			#endregion
-
-			strMsgErro = "";
-			try
-			{
-				#region [ Preenche o valor dos parâmetros ]
-				cmBoletoItemAtualizaOcorrencia19.Parameters["@id"].Value = idBoletoItem;
-				cmBoletoItemAtualizaOcorrencia19.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
-				cmBoletoItemAtualizaOcorrencia19.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
-				cmBoletoItemAtualizaOcorrencia19.Parameters["@ult_motivo_ocorrencia_19"].Value = motivoCodigoOcorrencia19;
-				cmBoletoItemAtualizaOcorrencia19.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia19.Parameters["@usuario_ult_atualizacao"].Value = usuario;
-				#endregion
-
-				#region [ Tenta alterar o registro ]
-				try
-				{
-					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia19);
-				}
-				catch (Exception ex)
-				{
-					intRetorno = 0;
-					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
-				}
-				if (intRetorno == 1)
-				{
-					blnSucesso = true;
-				}
-				else
-				{
-					blnSucesso = false;
-				}
-				#endregion
-
-				#region [ Processamento final de sucesso ou falha ]
-				if (blnSucesso)
-				{
-					return true;
-				}
-				else
-				{
-					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 19 (confirmação receb. inst. de protesto)!!";
-					return false;
-				}
-				#endregion
-			}
-			catch (Exception ex)
-			{
-				// Para o usuário, exibe uma mensagem mais sucinta
-				strMsgErro = ex.Message;
-				// No log em arquivo, grava o stack de erro completo
-				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
-				return false;
-			}
-		}
-		#endregion
-
-		#region [ atualizaBoletoItemOcorrencia22TituloComPagamentoCancelado ]
-		public static bool atualizaBoletoItemOcorrencia22TituloComPagamentoCancelado(
-								String usuario,
-								int idBoletoItem,
-								String identificacaoOcorrencia,
-								String motivosRejeicoes,
-								DateTime dataOcorrenciaBanco,
-								ref String strMsgErro)
-		{
-			#region [ Declarações ]
-			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 22 (título com pagamento cancelado)";
-			bool blnSucesso = false;
-			int intRetorno;
-			#endregion
-
-			strMsgErro = "";
-			try
-			{
-				#region [ Preenche o valor dos parâmetros ]
-				cmBoletoItemAtualizaOcorrencia22.Parameters["@id"].Value = idBoletoItem;
-				cmBoletoItemAtualizaOcorrencia22.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
-				cmBoletoItemAtualizaOcorrencia22.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
-				cmBoletoItemAtualizaOcorrencia22.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia22.Parameters["@st_boleto_pago_cheque"].Value = Global.Cte.FIN.StCampoFlag.FLAG_DESLIGADO;
-				cmBoletoItemAtualizaOcorrencia22.Parameters["@dt_ocorrencia_banco_boleto_pago_cheque"].Value = "";
-				cmBoletoItemAtualizaOcorrencia22.Parameters["@usuario_ult_atualizacao"].Value = usuario;
-				#endregion
-
-				#region [ Tenta alterar o registro ]
-				try
-				{
-					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia22);
-				}
-				catch (Exception ex)
-				{
-					intRetorno = 0;
-					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
-				}
-				if (intRetorno == 1)
-				{
-					blnSucesso = true;
-				}
-				else
-				{
-					blnSucesso = false;
-				}
-				#endregion
-
-				#region [ Processamento final de sucesso ou falha ]
-				if (blnSucesso)
-				{
-					return true;
-				}
-				else
-				{
-					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 22 (título com pagamento cancelado)!!";
-					return false;
-				}
-				#endregion
-			}
-			catch (Exception ex)
-			{
-				// Para o usuário, exibe uma mensagem mais sucinta
-				strMsgErro = ex.Message;
-				// No log em arquivo, grava o stack de erro completo
-				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
-				return false;
-			}
-		}
-		#endregion
-
-		#region [ atualizaBoletoItemOcorrencia23EntradaTituloEmCartorio ]
-		public static bool atualizaBoletoItemOcorrencia23EntradaTituloEmCartorio(
-								String usuario,
-								int idBoletoItem,
-								String identificacaoOcorrencia,
-								String motivosRejeicoes,
-								DateTime dataOcorrenciaBanco,
-								ref String strMsgErro)
-		{
-			#region [ Declarações ]
-			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 23 (entrada do título em cartório)";
-			bool blnSucesso = false;
-			int intRetorno;
-			#endregion
-
-			strMsgErro = "";
-			try
-			{
-				#region [ Preenche o valor dos parâmetros ]
-				cmBoletoItemAtualizaOcorrencia23.Parameters["@id"].Value = idBoletoItem;
-				cmBoletoItemAtualizaOcorrencia23.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
-				cmBoletoItemAtualizaOcorrencia23.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
-				cmBoletoItemAtualizaOcorrencia23.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia23.Parameters["@st_boleto_ocorrencia_23"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
-				cmBoletoItemAtualizaOcorrencia23.Parameters["@dt_ocorrencia_banco_boleto_ocorrencia_23"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia23.Parameters["@usuario_ult_atualizacao"].Value = usuario;
-				#endregion
-
-				#region [ Tenta alterar o registro ]
-				try
-				{
-					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia23);
-				}
-				catch (Exception ex)
-				{
-					intRetorno = 0;
-					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
-				}
-				if (intRetorno == 1)
-				{
-					blnSucesso = true;
-				}
-				else
-				{
-					blnSucesso = false;
-				}
-				#endregion
-
-				#region [ Processamento final de sucesso ou falha ]
-				if (blnSucesso)
-				{
-					return true;
-				}
-				else
-				{
-					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 23 (entrada do título em cartório)!!";
-					return false;
-				}
-				#endregion
-			}
-			catch (Exception ex)
-			{
-				// Para o usuário, exibe uma mensagem mais sucinta
-				strMsgErro = ex.Message;
-				// No log em arquivo, grava o stack de erro completo
-				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
-				return false;
-			}
-		}
-		#endregion
-
-		#region [ atualizaBoletoItemOcorrencia28DebitoTarifasCustas ]
-		public static bool atualizaBoletoItemOcorrencia28DebitoTarifasCustas(
-								String usuario,
-								int idBoletoItem,
-								String identificacaoOcorrencia,
-								String motivosRejeicoes,
-								DateTime dataOcorrenciaBanco,
-								LinhaRegistroTipo1ArquivoRetorno linhaRegistro,
-								ref String strMsgErro)
-		{
-			#region [ Declarações ]
-			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 28 (débito de tarifas/custas)";
-			bool blnSucesso = false;
-			int intRetorno;
-			String strClausulaSet = "";
-			String strSql;
-			SqlCommand cmCommand;
-			#endregion
-
-			strMsgErro = "";
-			try
-			{
-				#region [ Monta a cláusula SET do SQL da atualização ]
-				if (Global.existeMotivoOcorrencia(linhaRegistro.motivosRejeicoes.valor, "03"))
-				{
-					#region [ Tarifa de sustação (motivo 03) usando campo despesas de cobrança ]
-					if (strClausulaSet.Length > 0) strClausulaSet += ",";
-					strClausulaSet += " vl_tarifa_sustacao = " + Global.sqlFormataDecimal(Global.decodificaCampoMonetario(linhaRegistro.valorDespesasCobranca.valor));
-					#endregion
-				}
-				else if (Global.existeMotivoOcorrencia(linhaRegistro.motivosRejeicoes.valor, "04"))
-				{
-					#region [ Tarifa de protesto (motivo 04) usando campo despesas de cobrança ]
-					if (strClausulaSet.Length > 0) strClausulaSet += ",";
-					strClausulaSet += " vl_tarifa_protesto = " + Global.sqlFormataDecimal(Global.decodificaCampoMonetario(linhaRegistro.valorDespesasCobranca.valor));
-					#endregion
-				}
-
-				#region [ Custas de protesto (motivo 08) usando campo outras despesas ]
-				if (Global.existeMotivoOcorrencia(linhaRegistro.motivosRejeicoes.valor, "08"))
-				{
-					if (strClausulaSet.Length > 0) strClausulaSet += ",";
-					strClausulaSet += " vl_custas_protesto = " + Global.sqlFormataDecimal(Global.decodificaCampoMonetario(linhaRegistro.valorOutrasDespesas.valor));
-				}
-				#endregion
-
-				#endregion
-
-				#region [ Há atualizações para fazer? ]
-				if (strClausulaSet.Length == 0) return true;
-				#endregion
-
-				#region [ Completa a cláusula SET com o preenchimento dos campos complementares ]
-				if (strClausulaSet.Length > 0) strClausulaSet += ",";
-				strClausulaSet += " ult_identificacao_ocorrencia = '" + identificacaoOcorrencia + "'," +
-								  " ult_motivos_rejeicoes = '" + motivosRejeicoes + "'," +
-								  " ult_data_ocorrencia_banco = " + Global.sqlMontaDateTimeParaSqlDateTime(dataOcorrenciaBanco) + "," +
-								  " ult_data_carga_arq_retorno = " + Global.sqlMontaGetdateSomenteData() + "," +
-								  " dt_ult_atualizacao = " + Global.sqlMontaGetdateSomenteData() + "," +
-								  " dt_hr_ult_atualizacao = getdate()," +
-								  " usuario_ult_atualizacao = '" + usuario + "'";
-				#endregion
-
-				#region [ Monta o SQL ]
-				strSql = "UPDATE t_FIN_BOLETO_ITEM" +
-						 " SET " + strClausulaSet +
-						 " WHERE" +
-							" (id = " + idBoletoItem.ToString() + ")";
-				#endregion
-
-				#region [ Tenta alterar o registro ]
-				try
-				{
-					cmCommand = BD.criaSqlCommand();
-					cmCommand.CommandText = strSql;
-					intRetorno = BD.executaNonQuery(ref cmCommand);
-				}
-				catch (Exception ex)
-				{
-					intRetorno = 0;
-					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
-				}
-				if (intRetorno == 1)
-				{
-					blnSucesso = true;
-				}
-				else
-				{
-					blnSucesso = false;
-				}
-				#endregion
-
-				#region [ Processamento final de sucesso ou falha ]
-				if (blnSucesso)
-				{
-					return true;
-				}
-				else
-				{
-					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 28 (débito de tarifas/custas)!!";
-					return false;
-				}
-				#endregion
-			}
-			catch (Exception ex)
-			{
-				// Para o usuário, exibe uma mensagem mais sucinta
-				strMsgErro = ex.Message;
-				// No log em arquivo, grava o stack de erro completo
-				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
-				return false;
-			}
-		}
-		#endregion
-
-		#region [ atualizaBoletoItemOcorrencia34RetiradoCartorioManutencaoCarteira ]
-		public static bool atualizaBoletoItemOcorrencia34RetiradoCartorioManutencaoCarteira(
-								String usuario,
-								int idBoletoItem,
-								String identificacaoOcorrencia,
-								String motivosRejeicoes,
-								DateTime dataOcorrenciaBanco,
-								ref String strMsgErro)
-		{
-			#region [ Declarações ]
-			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 34 (retirado de cartório e manutenção carteira)";
-			bool blnSucesso = false;
-			int intRetorno;
-			#endregion
-
-			strMsgErro = "";
-			try
-			{
-				#region [ Preenche o valor dos parâmetros ]
-				cmBoletoItemAtualizaOcorrencia34.Parameters["@id"].Value = idBoletoItem;
-				cmBoletoItemAtualizaOcorrencia34.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
-				cmBoletoItemAtualizaOcorrencia34.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
-				cmBoletoItemAtualizaOcorrencia34.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia34.Parameters["@st_boleto_ocorrencia_34"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
-				cmBoletoItemAtualizaOcorrencia34.Parameters["@dt_ocorrencia_banco_boleto_ocorrencia_34"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia34.Parameters["@usuario_ult_atualizacao"].Value = usuario;
-				#endregion
-
-				#region [ Tenta alterar o registro ]
-				try
-				{
-					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia34);
-				}
-				catch (Exception ex)
-				{
-					intRetorno = 0;
-					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
-				}
-				if (intRetorno == 1)
-				{
-					blnSucesso = true;
-				}
-				else
-				{
-					blnSucesso = false;
-				}
-				#endregion
-
-				#region [ Processamento final de sucesso ou falha ]
-				if (blnSucesso)
-				{
-					return true;
-				}
-				else
-				{
-					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 34 (retirado de cartório e manutenção carteira)!!";
-					return false;
-				}
-				#endregion
-			}
-			catch (Exception ex)
-			{
-				// Para o usuário, exibe uma mensagem mais sucinta
-				strMsgErro = ex.Message;
-				// No log em arquivo, grava o stack de erro completo
-				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
-				return false;
-			}
-		}
-		#endregion
-
-		#region [ atualizaBoletoItemOcorrenciaValaComum ]
-		public static bool atualizaBoletoItemOcorrenciaValaComum(
-								String usuario,
-								int idBoletoItem,
-								String identificacaoOcorrencia,
-								String motivosRejeicoes,
-								String motivoCodigoOcorrencia19,
-								DateTime dataOcorrenciaBanco,
-								ref String strMsgErro)
-		{
-			#region [ Declarações ]
-			String strOperacao = "Atualiza o registro da parcela do boleto com tratamento de vala comum para a ocorrência " + identificacaoOcorrencia;
-			bool blnSucesso = false;
-			int intRetorno;
-			#endregion
-
-			strMsgErro = "";
-			try
-			{
-				#region [ Preenche o valor dos parâmetros ]
-				cmBoletoItemAtualizaOcorrenciaValaComum.Parameters["@id"].Value = idBoletoItem;
-				cmBoletoItemAtualizaOcorrenciaValaComum.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
-				cmBoletoItemAtualizaOcorrenciaValaComum.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
-				cmBoletoItemAtualizaOcorrenciaValaComum.Parameters["@ult_motivo_ocorrencia_19"].Value = motivoCodigoOcorrencia19;
-				cmBoletoItemAtualizaOcorrenciaValaComum.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrenciaValaComum.Parameters["@usuario_ult_atualizacao"].Value = usuario;
-				#endregion
-
-				#region [ Tenta alterar o registro ]
-				try
-				{
-					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrenciaValaComum);
-				}
-				catch (Exception ex)
-				{
-					intRetorno = 0;
-					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
-				}
-				if (intRetorno == 1)
-				{
-					blnSucesso = true;
-				}
-				else
-				{
-					blnSucesso = false;
-				}
-				#endregion
-
-				#region [ Processamento final de sucesso ou falha ]
-				if (blnSucesso)
-				{
-					return true;
-				}
-				else
-				{
-					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento de vala comum para a ocorrência " + identificacaoOcorrencia + "!!";
-					return false;
-				}
-				#endregion
-			}
-			catch (Exception ex)
-			{
-				// Para o usuário, exibe uma mensagem mais sucinta
-				strMsgErro = ex.Message;
-				// No log em arquivo, grava o stack de erro completo
-				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
-				return false;
-			}
-		}
-		#endregion
-
-		#region [ atualizaBoletoItemOcorrencia24CepIrregular ]
-		public static bool atualizaBoletoItemOcorrencia24CepIrregular(
-								String usuario,
-								int idBoletoItem,
-								String identificacaoOcorrencia,
-								String motivosRejeicoes,
-								String motivoCodigoOcorrencia19,
-								DateTime dataOcorrenciaBanco,
-								ref String strMsgErro)
-		{
-			#region [ Declarações ]
-			String strOperacao = "Atualiza o registro da parcela do boleto com os dados da última ocorrência (" + identificacaoOcorrencia + ")";
-			bool blnSucesso = false;
-			int intRetorno;
-			#endregion
-
-			strMsgErro = "";
-			try
-			{
-				#region [ Preenche o valor dos parâmetros ]
-				cmBoletoItemAtualizaOcorrencia24.Parameters["@id"].Value = idBoletoItem;
-				cmBoletoItemAtualizaOcorrencia24.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
-				cmBoletoItemAtualizaOcorrencia24.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
-				cmBoletoItemAtualizaOcorrencia24.Parameters["@ult_motivo_ocorrencia_19"].Value = motivoCodigoOcorrencia19;
-				cmBoletoItemAtualizaOcorrencia24.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
-				cmBoletoItemAtualizaOcorrencia24.Parameters["@usuario_ult_atualizacao"].Value = usuario;
-				#endregion
-
-				#region [ Tenta alterar o registro ]
-				try
-				{
-					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia24);
-				}
-				catch (Exception ex)
-				{
-					intRetorno = 0;
-					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
-				}
-				if (intRetorno == 1)
-				{
-					blnSucesso = true;
-				}
-				else
-				{
-					blnSucesso = false;
-				}
-				#endregion
-
-				#region [ Processamento final de sucesso ou falha ]
-				if (blnSucesso)
-				{
-					return true;
-				}
-				else
-				{
-					strMsgErro = "Falha ao tentar atualizar o boleto com os dados da última ocorrência (" + identificacaoOcorrencia + ")!!";
-					return false;
-				}
-				#endregion
-			}
-			catch (Exception ex)
-			{
-				// Para o usuário, exibe uma mensagem mais sucinta
-				strMsgErro = ex.Message;
-				// No log em arquivo, grava o stack de erro completo
-				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
-				return false;
-			}
-		}
-		#endregion
-
-		#region [ corrigeBoletoOcorrencia24CepIrregular ]
-		public static bool corrigeBoletoOcorrencia24CepIrregular(
-								String usuario,
-								int idBoleto,
-								String endereco,
-								String bairro,
-								String cep,
-								String cidade,
-								String uf,
-								ref String strMsgErro)
-		{
-			#region [ Declarações ]
-			String strOperacao = "Corrige o endereço do sacado devido à ocorrência 24 (CEP irregular) e reseta status para reenviar no arquivo de remessa";
-			int intRetorno;
-			String strSql;
-			SqlCommand cmComando;
-			#endregion
-
-			strMsgErro = "";
-			try
-			{
-				#region [ Preenche o valor dos parâmetros ]
-				cmBoletoCorrigeOcorrencia24CepIrregular.Parameters["@id"].Value = idBoleto;
-				cmBoletoCorrigeOcorrencia24CepIrregular.Parameters["@endereco_sacado"].Value = endereco;
-				cmBoletoCorrigeOcorrencia24CepIrregular.Parameters["@bairro_sacado"].Value = bairro;
-				cmBoletoCorrigeOcorrencia24CepIrregular.Parameters["@cep_sacado"].Value = Global.digitos(cep);
-				cmBoletoCorrigeOcorrencia24CepIrregular.Parameters["@cidade_sacado"].Value = cidade;
-				cmBoletoCorrigeOcorrencia24CepIrregular.Parameters["@uf_sacado"].Value = uf;
-				cmBoletoCorrigeOcorrencia24CepIrregular.Parameters["@usuario_ult_atualizacao"].Value = usuario;
-				#endregion
-
-				#region [ Tenta alterar os dados do endereço ]
-				try
-				{
-					intRetorno = BD.executaNonQuery(ref cmBoletoCorrigeOcorrencia24CepIrregular);
-				}
-				catch (Exception ex)
-				{
-					intRetorno = 0;
-					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
-				}
-				if (intRetorno != 1)
-				{
-					strMsgErro = "Falha ao tentar atualizar o endereço no registro do boleto durante o tratamento da ocorrência 24 (CEP irregular)!!";
-					return false;
-				}
-				#endregion
-
-				#region [ Tenta resetar o status dos registros das parcelas ]
-				cmComando = BD.criaSqlCommand();
-				strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
-							"status = " + Global.Cte.FIN.CodBoletoItemStatus.INICIAL.ToString() + ", " +
-							"dt_ult_atualizacao = " + Global.sqlMontaGetdateSomenteData() + ", " +
-							"dt_hr_ult_atualizacao = getdate(), " +
-							"usuario_ult_atualizacao = '" + usuario + "' " +
-						"WHERE " +
-							"(id_boleto = " + idBoleto.ToString() + ")" +
-							" AND (status = " + Global.Cte.FIN.CodBoletoItemStatus.BOLETO_REJEITADO_CEP_IRREGULAR.ToString() + ")";
-				cmComando.CommandText = strSql;
-
-				try
-				{
-					intRetorno = BD.executaNonQuery(ref cmComando);
-				}
-				catch (Exception ex)
-				{
-					intRetorno = 0;
-					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
-				}
-				if (intRetorno <= 0)
-				{
-					strMsgErro = "Falha ao tentar resetar o status dos registros das parcelas para reenviar no arquivo de remessa durante o tratamento da ocorrência 24 (CEP irregular): nenhuma parcela estava em situação que permitisse o reset!!";
-					return false;
-				}
-				#endregion
-
-				return true;
-			}
-			catch (Exception ex)
-			{
-				// Para o usuário, exibe uma mensagem mais sucinta
-				strMsgErro = ex.Message;
-				// No log em arquivo, grava o stack de erro completo
-				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
-				return false;
-			}
-		}
-		#endregion
-
 		#region [ marcaBoletoOcorrenciaComoJaTratada ]
 		public static bool marcaBoletoOcorrenciaComoJaTratada(
 								String usuario,
@@ -5129,8 +3972,3460 @@ namespace Financeiro
 				return false;
 			}
 		}
-		#endregion
+        #endregion
 
-		#endregion
-	}
+        #region [ BRADESCO: tratamento para cada tipo de ocorrência ]
+
+        #region [ b237BoletoMovimentoInsere ]
+        /// <summary>
+        /// Grava o registro na tabela de movimentações de boletos (t_FIN_BOLETO_MOVIMENTO).
+        /// IMPORTANTE: alguns campos podem estar vazios quando for o caso de ser um boleto
+        /// desconhecido ou não identificado (tipicamente, ocorrência 17 - liquidação após baixa
+        /// ou Título não registrado).
+        /// </summary>
+        /// <param name="usuario">Usuário que está realizando o processamento da carga do arquivo de retorno</param>
+        /// <param name="id_arq_retorno">Identificação do registro associado na tabela t_FIN_BOLETO_ARQ_RETORNO</param>
+        /// <param name="id_boleto">Identificação do registro da tabela t_FIN_BOLETO (pode estar zerado no caso de boleto não identificado)</param>
+        /// <param name="id_boleto_item">Identificação do registro da tabela t_FIN_BOLETO_ITEM (pode estar zerado no caso de boleto não identificado)</param>
+        /// <param name="identificacaoOcorrencia">Código de identificação da ocorrência</param>
+        /// <param name="motivosRejeicoes">Motivos das ocorrências</param>
+        /// <param name="dataOcorrencia">Data da ocorrência no banco</param>
+        /// <param name="numeroDocumento">Número do documento (pode estar zerado no caso de boleto não identificado)</param>
+        /// <param name="nossoNumero">Nosso número (sem dígito)</param>
+        /// <param name="digitoNossoNumero">Dígito do nosso número</param>
+        /// <param name="dataVencto">Data de vencimento do título</param>
+        /// <param name="valorTitulo">Valor do título</param>
+        /// <param name="valorDespesasCobranca">Despesas de cobrança para os códigos de ocorrência 02 (entrada confirmada) e 28 (débito de tarifas). Campo da posição 176 a 188 do registro tipo 1 do arquivo de retorno.</param>
+        /// <param name="valorOutrasDespesas">Outras despesas / Custas de protesto. Campo da posição 189 a 201 do registro tipo 1 do arquivo de retorno.</param>
+        /// <param name="valorIofDevido">IOF devido. Campo da posição 215 a 227 do registro tipo 1 do arquivo de retorno.</param>
+        /// <param name="valorAbatimentoConcedido">Abatimento concedido sobre o título. Campo da posição 228 a 240 do registro tipo 1 do arquivo de retorno.</param>
+        /// <param name="valorDescontoConcedido">Desconto concedido. Campo da posição 241 a 253 do registro tipo 1 do arquivo de retorno.</param>
+        /// <param name="valorPago">Valor total recebido. Campo da posição 254 a 266 do registro tipo 1 do arquivo de retorno.</param>
+        /// <param name="valorJurosMora">Juros de mora. Campo da posição 267 a 279 do registro tipo 1 do arquivo de retorno.</param>
+        /// <param name="dataCredito">Data do crédito. Campo da posição 296 a 301 do registro tipo 1 do arquivo de retorno.</param>
+        /// <param name="strMsgErro">No caso de erro, retorna a mensagem de erro</param>
+        /// <returns>
+        /// true: sucesso na gravação dos dados
+        /// false: falha na gravação dos dados
+        /// </returns>
+        public static bool b237BoletoMovimentoInsere(String usuario,
+                                                 int id_arq_retorno,
+                                                 int id_boleto,
+                                                 int id_boleto_item,
+                                                 String identificacaoOcorrencia,
+                                                 String motivosRejeicoes,
+                                                 DateTime dataOcorrencia,
+                                                 String numeroDocumento,
+                                                 String nossoNumero,
+                                                 String digitoNossoNumero,
+                                                 DateTime dataVencto,
+                                                 decimal valorTitulo,
+                                                 decimal valorDespesasCobranca,
+                                                 decimal valorOutrasDespesas,
+                                                 decimal valorIofDevido,
+                                                 decimal valorAbatimentoConcedido,
+                                                 decimal valorDescontoConcedido,
+                                                 decimal valorPago,
+                                                 decimal valorJurosMora,
+                                                 DateTime dataCredito,
+                                                 ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            bool blnSucesso = false;
+            bool blnGerouNsu;
+            int intRetorno;
+            int intNsuBoletoMovimento = 0;
+            String strOperacao = "Gravação dos dados de movimento de boletos [Bradesco]";
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Consistência ]
+                if (id_arq_retorno <= 0)
+                {
+                    strMsgErro = "Número de identificação do registro associado na tabela t_FIN_BOLETO_ARQ_RETORNO não foi informado!!";
+                    return false;
+                }
+                #endregion
+
+                try
+                {
+                    #region [ Gera o NSU para o registro ]
+                    blnGerouNsu = BD.geraNsu(Global.Cte.FIN.NSU.T_FIN_BOLETO_MOVIMENTO, ref intNsuBoletoMovimento, ref strMsgErro);
+                    if (!blnGerouNsu)
+                    {
+                        strMsgErro = "Falha ao tentar gerar o NSU para o registro de movimentação do boleto!!\n" + strMsgErro;
+                        return false;
+                    }
+                    #endregion
+
+                    #region [ Preenche o valor dos parâmetros ]
+                    b237CmBoletoMovimentoInsert.Parameters["@id"].Value = intNsuBoletoMovimento;
+                    b237CmBoletoMovimentoInsert.Parameters["@id_arq_retorno"].Value = id_arq_retorno;
+                    b237CmBoletoMovimentoInsert.Parameters["@id_boleto"].Value = id_boleto;
+                    b237CmBoletoMovimentoInsert.Parameters["@id_boleto_item"].Value = id_boleto_item;
+                    b237CmBoletoMovimentoInsert.Parameters["@identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                    b237CmBoletoMovimentoInsert.Parameters["@motivos_rejeicoes"].Value = motivosRejeicoes;
+                    b237CmBoletoMovimentoInsert.Parameters["@data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrencia);
+                    b237CmBoletoMovimentoInsert.Parameters["@numero_documento"].Value = numeroDocumento.Trim();
+                    b237CmBoletoMovimentoInsert.Parameters["@nosso_numero"].Value = nossoNumero.Trim();
+                    b237CmBoletoMovimentoInsert.Parameters["@digito_nosso_numero"].Value = digitoNossoNumero.Trim();
+                    b237CmBoletoMovimentoInsert.Parameters["@dt_vencto"].Value = Global.formataDataYyyyMmDdComSeparador(dataVencto);
+                    b237CmBoletoMovimentoInsert.Parameters["@vl_titulo"].Value = valorTitulo;
+                    b237CmBoletoMovimentoInsert.Parameters["@vl_despesas_cobranca"].Value = valorDespesasCobranca;
+                    b237CmBoletoMovimentoInsert.Parameters["@vl_outras_despesas"].Value = valorOutrasDespesas;
+                    b237CmBoletoMovimentoInsert.Parameters["@vl_IOF"].Value = valorIofDevido;
+                    b237CmBoletoMovimentoInsert.Parameters["@vl_abatimento"].Value = valorAbatimentoConcedido;
+                    b237CmBoletoMovimentoInsert.Parameters["@vl_desconto"].Value = valorDescontoConcedido;
+                    b237CmBoletoMovimentoInsert.Parameters["@vl_pago"].Value = valorPago;
+                    b237CmBoletoMovimentoInsert.Parameters["@vl_juros_mora"].Value = valorJurosMora;
+                    b237CmBoletoMovimentoInsert.Parameters["@dt_credito"].Value = Global.formataDataYyyyMmDdComSeparador(dataCredito);
+                    #endregion
+
+                    #region [ Tenta inserir o registro ]
+                    strMsgErro = "";
+                    try
+                    {
+                        intRetorno = BD.executaNonQuery(ref b237CmBoletoMovimentoInsert);
+                    }
+                    catch (Exception ex)
+                    {
+                        intRetorno = 0;
+                        strMsgErro = ex.Message;
+                        Global.gravaLogAtividade(strOperacao + " - Exception!!\n" + ex.ToString());
+                    }
+                    #endregion
+
+                    #region [ Gravou o registro? ]
+                    if (intRetorno == 0)
+                    {
+                        strMsgErro = "Falha ao tentar gravar o registro de movimentação do boleto!!\n" + strMsgErro;
+                        return false;
+                    }
+                    #endregion
+
+                    blnSucesso = true;
+                }
+                catch (Exception ex)
+                {
+                    // Para o usuário, exibe uma mensagem mais sucinta
+                    strMsgErro = ex.Message;
+                    // No log em arquivo, grava o stack de erro completo
+                    Global.gravaLogAtividade(strOperacao + " - Falha!!\n" + ex.ToString());
+                    return false;
+                }
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar inserir o registro de movimentação do boleto!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ b237BoletoOcorrenciaInsere ]
+        /// <summary>
+        /// Grava o registro na tabela de ocorrências de boletos (t_FIN_BOLETO_OCORRENCIA).
+        /// IMPORTANTE: alguns campos podem estar vazios quando for o caso de ser um boleto
+        /// desconhecido ou não identificado (tipicamente, ocorrência 17 - liquidação após baixa
+        /// ou Título não registrado).
+        /// São gravados como ocorrências os registros do arquivo de retorno que necessitam de
+        /// análise humana.
+        /// Podem ocorrer as seguintes situações:
+        ///		1) Boletos já tratados pelo sistema, mas que precisam informar alguma situação
+        ///		   especial para o usuário (ex: boleto pago com valor maior que o esperado).
+        ///		2) Boletos com código de identificação de ocorrência desconhecido e/ou não tratado. 
+        ///		   É a chamada "vala comum".
+        /// </summary>
+        /// <param name="usuario">Usuário que está realizando o processamento da carga do arquivo de retorno</param>
+        /// <param name="id_arq_retorno">Identificação do registro associado na tabela t_FIN_BOLETO_ARQ_RETORNO</param>
+        /// <param name="id_boleto">Identificação do registro da tabela t_FIN_BOLETO (pode estar zerado no caso de boleto não identificado)</param>
+        /// <param name="id_boleto_item">Identificação do registro da tabela t_FIN_BOLETO_ITEM (pode estar zerado no caso de boleto não identificado)</param>
+        /// <param name="numeroDocumento">Número do documento (pode estar zerado no caso de boleto não identificado)</param>
+        /// <param name="nossoNumero">Nosso número (sem dígito)</param>
+        /// <param name="digitoNossoNumero">Dígito do nosso número</param>
+        /// <param name="dataVencto">Data de vencimento do título</param>
+        /// <param name="valorTitulo">Valor do título</param>
+        /// <param name="identificacaoOcorrencia">Código de identificação da ocorrência</param>
+        /// <param name="motivosRejeicoes">Motivos das ocorrências</param>
+        /// <param name="motivoCodigoOcorrencia19">Motivo do código de ocorrência 19 (confirmação de instrução de protesto)</param>
+        /// <param name="dataOcorrencia">Data da ocorrência no banco</param>
+        /// <param name="obsOcorrencia">Observações e/ou detalhes sobre a ocorrência</param>
+        /// <param name="linhaTextoRegistroArquivo">Registro (linha) original do arquivo de retorno na íntegra</param>
+        /// <param name="strMsgErro">Retorna a mensagem de erro em caso de ocorrer erro</param>
+        /// <returns>
+        /// true: sucesso na gravação dos dados
+        /// false: falha na gravação dos dados
+        /// </returns>
+        public static bool b237BoletoOcorrenciaInsere(String usuario,
+                                                 int id_arq_retorno,
+                                                 int id_boleto_cedente,
+                                                 int id_boleto,
+                                                 int id_boleto_item,
+                                                 byte st_divergencia_valor,
+                                                 String numeroDocumento,
+                                                 String nossoNumero,
+                                                 String digitoNossoNumero,
+                                                 DateTime dataVencto,
+                                                 decimal valorTitulo,
+                                                 String identificacaoOcorrencia,
+                                                 String motivosRejeicoes,
+                                                 String motivoCodigoOcorrencia19,
+                                                 DateTime dataOcorrencia,
+                                                 String obsOcorrencia,
+                                                 String linhaTextoRegistroArquivo,
+                                                 ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            bool blnSucesso = false;
+            bool blnGerouNsu;
+            int intRetorno;
+            int intNsuBoletoOcorrencia = 0;
+            String strOperacao = "Gravação de novo registro de ocorrência para o boleto [Bradesco]";
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Consistência ]
+                if (id_arq_retorno <= 0)
+                {
+                    strMsgErro = "Número de identificação do registro associado na tabela t_FIN_BOLETO_ARQ_RETORNO não foi informado!!";
+                    return false;
+                }
+                #endregion
+
+                try
+                {
+                    #region [ Gera o NSU para o registro ]
+                    blnGerouNsu = BD.geraNsu(Global.Cte.FIN.NSU.T_FIN_BOLETO_OCORRENCIA, ref intNsuBoletoOcorrencia, ref strMsgErro);
+                    if (!blnGerouNsu)
+                    {
+                        strMsgErro = "Falha ao tentar gerar o NSU para o registro de ocorrência para o boleto!!\n" + strMsgErro;
+                        return false;
+                    }
+                    #endregion
+
+                    #region [ Preenche o valor dos parâmetros ]
+                    b237CmBoletoOcorrenciaInsert.Parameters["@id"].Value = intNsuBoletoOcorrencia;
+                    b237CmBoletoOcorrenciaInsert.Parameters["@id_arq_retorno"].Value = id_arq_retorno;
+                    b237CmBoletoOcorrenciaInsert.Parameters["@id_boleto_cedente"].Value = id_boleto_cedente;
+                    b237CmBoletoOcorrenciaInsert.Parameters["@id_boleto"].Value = id_boleto;
+                    b237CmBoletoOcorrenciaInsert.Parameters["@id_boleto_item"].Value = id_boleto_item;
+                    b237CmBoletoOcorrenciaInsert.Parameters["@st_divergencia_valor"].Value = st_divergencia_valor;
+                    b237CmBoletoOcorrenciaInsert.Parameters["@numero_documento"].Value = numeroDocumento.Trim();
+                    b237CmBoletoOcorrenciaInsert.Parameters["@nosso_numero"].Value = nossoNumero.Trim();
+                    b237CmBoletoOcorrenciaInsert.Parameters["@digito_nosso_numero"].Value = digitoNossoNumero.Trim();
+                    b237CmBoletoOcorrenciaInsert.Parameters["@dt_vencto"].Value = Global.formataDataYyyyMmDdComSeparador(dataVencto);
+                    b237CmBoletoOcorrenciaInsert.Parameters["@vl_titulo"].Value = valorTitulo;
+                    b237CmBoletoOcorrenciaInsert.Parameters["@identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                    b237CmBoletoOcorrenciaInsert.Parameters["@motivos_rejeicoes"].Value = motivosRejeicoes;
+                    b237CmBoletoOcorrenciaInsert.Parameters["@motivo_ocorrencia_19"].Value = motivoCodigoOcorrencia19;
+                    b237CmBoletoOcorrenciaInsert.Parameters["@data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrencia);
+                    b237CmBoletoOcorrenciaInsert.Parameters["@obs_ocorrencia"].Value = obsOcorrencia;
+                    b237CmBoletoOcorrenciaInsert.Parameters["@registro_arq_retorno"].Value = linhaTextoRegistroArquivo;
+                    #endregion
+
+                    #region [ Tenta inserir o registro ]
+                    strMsgErro = "";
+                    try
+                    {
+                        intRetorno = BD.executaNonQuery(ref b237CmBoletoOcorrenciaInsert);
+                    }
+                    catch (Exception ex)
+                    {
+                        intRetorno = 0;
+                        strMsgErro = ex.Message;
+                        Global.gravaLogAtividade(strOperacao + " - Exception!!\n" + ex.ToString());
+                    }
+                    #endregion
+
+                    #region [ Gravou o registro? ]
+                    if (intRetorno == 0)
+                    {
+                        strMsgErro = "Falha ao tentar gravar o registro de ocorrência para o boleto!!\n" + strMsgErro;
+                        return false;
+                    }
+                    #endregion
+
+                    blnSucesso = true;
+                }
+                catch (Exception ex)
+                {
+                    // Para o usuário, exibe uma mensagem mais sucinta
+                    strMsgErro = ex.Message;
+                    // No log em arquivo, grava o stack de erro completo
+                    Global.gravaLogAtividade(strOperacao + " - Falha!!\n" + ex.ToString());
+                    return false;
+                }
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar inserir o registro de ocorrência para o boleto!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ b237BoletoOcorrenciaInsere ]
+        public static bool b237BoletoOcorrenciaInsere(String usuario,
+                                                 int id_arq_retorno,
+                                                 int id_boleto_cedente,
+                                                 int id_boleto,
+                                                 int id_boleto_item,
+                                                 String numeroDocumento,
+                                                 String nossoNumero,
+                                                 String digitoNossoNumero,
+                                                 DateTime dataVencto,
+                                                 decimal valorTitulo,
+                                                 String identificacaoOcorrencia,
+                                                 String motivosRejeicoes,
+                                                 String motivoCodigoOcorrencia19,
+                                                 DateTime dataOcorrencia,
+                                                 String obsOcorrencia,
+                                                 String linhaTextoRegistroArquivo,
+                                                 ref String strMsgErro)
+        {
+            return b237BoletoOcorrenciaInsere(usuario,
+                                            id_arq_retorno,
+                                            id_boleto_cedente,
+                                            id_boleto,
+                                            id_boleto_item,
+                                            Global.Cte.FIN.StCampoFlag.FLAG_DESLIGADO,
+                                            numeroDocumento,
+                                            nossoNumero,
+                                            digitoNossoNumero,
+                                            dataVencto,
+                                            valorTitulo,
+                                            identificacaoOcorrencia,
+                                            motivosRejeicoes,
+                                            motivoCodigoOcorrencia19,
+                                            dataOcorrencia,
+                                            obsOcorrencia,
+                                            linhaTextoRegistroArquivo,
+                                            ref strMsgErro);
+        }
+        #endregion
+
+        #region [ b237AtualizaBoletoItemOcorrencia02EntradaConfirmada ]
+        public static bool b237AtualizaBoletoItemOcorrencia02EntradaConfirmada(
+								String usuario,
+								int idBoletoItem,
+								String nossoNumero,
+								String digitoNossoNumero,
+								String identificacaoOcorrencia,
+								String motivosRejeicoes,
+								String motivoCodigoOcorrencia19,
+								DateTime dataOcorrenciaBanco,
+								String codigoBarras,
+								String linhaDigitavel,
+								decimal vlTarifaRegistro,
+								ref String strMsgErro)
+		{
+			#region [ Declarações ]
+			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 02 (entrada confirmada) [Bradesco]";
+			bool blnSucesso = false;
+			int intRetorno;
+			#endregion
+
+			strMsgErro = "";
+			try
+			{
+				#region [ Preenche o valor dos parâmetros ]
+				b237CmBoletoItemAtualizaOcorrencia02.Parameters["@id"].Value = idBoletoItem;
+                b237CmBoletoItemAtualizaOcorrencia02.Parameters["@nosso_numero"].Value = nossoNumero;
+                b237CmBoletoItemAtualizaOcorrencia02.Parameters["@digito_nosso_numero"].Value = digitoNossoNumero;
+                b237CmBoletoItemAtualizaOcorrencia02.Parameters["@codigo_barras"].Value = codigoBarras;
+                b237CmBoletoItemAtualizaOcorrencia02.Parameters["@linha_digitavel"].Value = linhaDigitavel;
+                b237CmBoletoItemAtualizaOcorrencia02.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                b237CmBoletoItemAtualizaOcorrencia02.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+                b237CmBoletoItemAtualizaOcorrencia02.Parameters["@ult_motivo_ocorrencia_19"].Value = motivoCodigoOcorrencia19;
+                b237CmBoletoItemAtualizaOcorrencia02.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b237CmBoletoItemAtualizaOcorrencia02.Parameters["@dt_entrada_confirmada"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b237CmBoletoItemAtualizaOcorrencia02.Parameters["@vl_tarifa_registro"].Value = vlTarifaRegistro;
+                b237CmBoletoItemAtualizaOcorrencia02.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+				#endregion
+
+				#region [ Tenta alterar o registro ]
+				try
+				{
+					intRetorno = BD.executaNonQuery(ref b237CmBoletoItemAtualizaOcorrencia02);
+				}
+				catch (Exception ex)
+				{
+					intRetorno = 0;
+					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+				}
+				if (intRetorno == 1)
+				{
+					blnSucesso = true;
+				}
+				else
+				{
+					blnSucesso = false;
+				}
+				#endregion
+
+				#region [ Processamento final de sucesso ou falha ]
+				if (blnSucesso)
+				{
+					return true;
+				}
+				else
+				{
+					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 02 (entrada confirmada)!!";
+					return false;
+				}
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				// Para o usuário, exibe uma mensagem mais sucinta
+				strMsgErro = ex.Message;
+				// No log em arquivo, grava o stack de erro completo
+				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+				return false;
+			}
+		}
+        #endregion
+
+        #region [ b237AtualizaBoletoItemOcorrencia06LiquidacaoNormal ]
+        public static bool b237AtualizaBoletoItemOcorrencia06LiquidacaoNormal(
+								String usuario,
+								int idBoletoItem,
+								String identificacaoOcorrencia,
+								String motivosRejeicoes,
+								DateTime dataOcorrenciaBanco,
+								decimal vlAbatimentoConcedido,
+								decimal vlDescontoConcedido,
+								ref String strMsgErro)
+		{
+			#region [ Declarações ]
+			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 06 (liquidação normal) [Bradesco]";
+			bool blnSucesso = false;
+			int intRetorno;
+			#endregion
+
+			strMsgErro = "";
+			try
+			{
+                #region [ Preenche o valor dos parâmetros ]
+                b237CmBoletoItemAtualizaOcorrencia06.Parameters["@id"].Value = idBoletoItem;
+                b237CmBoletoItemAtualizaOcorrencia06.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                b237CmBoletoItemAtualizaOcorrencia06.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+                b237CmBoletoItemAtualizaOcorrencia06.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b237CmBoletoItemAtualizaOcorrencia06.Parameters["@vl_abatimento_concedido"].Value = vlAbatimentoConcedido;
+                b237CmBoletoItemAtualizaOcorrencia06.Parameters["@vl_desconto_concedido"].Value = vlDescontoConcedido;
+                b237CmBoletoItemAtualizaOcorrencia06.Parameters["@st_boleto_ocorrencia_06"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
+                b237CmBoletoItemAtualizaOcorrencia06.Parameters["@dt_ocorrencia_banco_boleto_ocorrencia_06"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b237CmBoletoItemAtualizaOcorrencia06.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+				#endregion
+
+				#region [ Tenta alterar o registro ]
+				try
+				{
+					intRetorno = BD.executaNonQuery(ref b237CmBoletoItemAtualizaOcorrencia06);
+				}
+				catch (Exception ex)
+				{
+					intRetorno = 0;
+					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+				}
+				if (intRetorno == 1)
+				{
+					blnSucesso = true;
+				}
+				else
+				{
+					blnSucesso = false;
+				}
+				#endregion
+
+				#region [ Processamento final de sucesso ou falha ]
+				if (blnSucesso)
+				{
+					return true;
+				}
+				else
+				{
+					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 06 (liquidação normal)!!";
+					return false;
+				}
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				// Para o usuário, exibe uma mensagem mais sucinta
+				strMsgErro = ex.Message;
+				// No log em arquivo, grava o stack de erro completo
+				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+				return false;
+			}
+		}
+        #endregion
+
+        #region [ b237AtualizaBoletoItemOcorrencia09BaixadoAutoViaArq ]
+        public static bool b237AtualizaBoletoItemOcorrencia09BaixadoAutoViaArq(
+								String usuario,
+								int idBoletoItem,
+								String identificacaoOcorrencia,
+								String motivosRejeicoes,
+								DateTime dataOcorrenciaBanco,
+								ref String strMsgErro)
+		{
+			#region [ Declarações ]
+			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 09 (baixado automaticamente via arquivo) [Bradesco]";
+			bool blnSucesso = false;
+			int intRetorno;
+			#endregion
+
+			strMsgErro = "";
+			try
+			{
+				#region [ Preenche o valor dos parâmetros ]
+				b237CmBoletoItemAtualizaOcorrencia09.Parameters["@id"].Value = idBoletoItem;
+                b237CmBoletoItemAtualizaOcorrencia09.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                b237CmBoletoItemAtualizaOcorrencia09.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+                b237CmBoletoItemAtualizaOcorrencia09.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b237CmBoletoItemAtualizaOcorrencia09.Parameters["@st_boleto_baixado"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
+                b237CmBoletoItemAtualizaOcorrencia09.Parameters["@dt_ocorrencia_banco_boleto_baixado"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b237CmBoletoItemAtualizaOcorrencia09.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+				#endregion
+
+				#region [ Tenta alterar o registro ]
+				try
+				{
+					intRetorno = BD.executaNonQuery(ref b237CmBoletoItemAtualizaOcorrencia09);
+				}
+				catch (Exception ex)
+				{
+					intRetorno = 0;
+					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+				}
+				if (intRetorno == 1)
+				{
+					blnSucesso = true;
+				}
+				else
+				{
+					blnSucesso = false;
+				}
+				#endregion
+
+				#region [ Processamento final de sucesso ou falha ]
+				if (blnSucesso)
+				{
+					return true;
+				}
+				else
+				{
+					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 09 (baixado automaticamente via arquivo)!!";
+					return false;
+				}
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				// Para o usuário, exibe uma mensagem mais sucinta
+				strMsgErro = ex.Message;
+				// No log em arquivo, grava o stack de erro completo
+				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+				return false;
+			}
+		}
+        #endregion
+
+        #region [ b237AtualizaBoletoItemOcorrencia10BaixadoConfInstrAgencia ]
+        public static bool b237AtualizaBoletoItemOcorrencia10BaixadoConfInstrAgencia(
+								String usuario,
+								int idBoletoItem,
+								String identificacaoOcorrencia,
+								String motivosRejeicoes,
+								DateTime dataOcorrenciaBanco,
+								ref String strMsgErro)
+		{
+			#region [ Declarações ]
+			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 10 (baixado conforme instruções da agência) [Bradesco]";
+			bool blnSucesso = false;
+			int intRetorno;
+			#endregion
+
+			strMsgErro = "";
+			try
+			{
+				#region [ Preenche o valor dos parâmetros ]
+				b237CmBoletoItemAtualizaOcorrencia10.Parameters["@id"].Value = idBoletoItem;
+                b237CmBoletoItemAtualizaOcorrencia10.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                b237CmBoletoItemAtualizaOcorrencia10.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+                b237CmBoletoItemAtualizaOcorrencia10.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b237CmBoletoItemAtualizaOcorrencia10.Parameters["@st_boleto_baixado"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
+                b237CmBoletoItemAtualizaOcorrencia10.Parameters["@dt_ocorrencia_banco_boleto_baixado"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b237CmBoletoItemAtualizaOcorrencia10.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+				#endregion
+
+				#region [ Tenta alterar o registro ]
+				try
+				{
+					intRetorno = BD.executaNonQuery(ref b237CmBoletoItemAtualizaOcorrencia10);
+				}
+				catch (Exception ex)
+				{
+					intRetorno = 0;
+					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+				}
+				if (intRetorno == 1)
+				{
+					blnSucesso = true;
+				}
+				else
+				{
+					blnSucesso = false;
+				}
+				#endregion
+
+				#region [ Processamento final de sucesso ou falha ]
+				if (blnSucesso)
+				{
+					return true;
+				}
+				else
+				{
+					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 10 (baixado conforme instruções da agência)!!";
+					return false;
+				}
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				// Para o usuário, exibe uma mensagem mais sucinta
+				strMsgErro = ex.Message;
+				// No log em arquivo, grava o stack de erro completo
+				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+				return false;
+			}
+		}
+        #endregion
+
+        #region [ b237AtualizaBoletoItemOcorrencia12AbatimentoConcedido ]
+        public static bool b237AtualizaBoletoItemOcorrencia12AbatimentoConcedido(
+								String usuario,
+								int idBoletoItem,
+								String identificacaoOcorrencia,
+								String motivosRejeicoes,
+								DateTime dataOcorrenciaBanco,
+								decimal vlAbatimentoConcedido,
+								ref String strMsgErro)
+		{
+			#region [ Declarações ]
+			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 12 (abatimento concedido) [Bradesco]";
+			bool blnSucesso = false;
+			int intRetorno;
+			#endregion
+
+			strMsgErro = "";
+			try
+			{
+				#region [ Preenche o valor dos parâmetros ]
+				b237CmBoletoItemAtualizaOcorrencia12.Parameters["@id"].Value = idBoletoItem;
+                b237CmBoletoItemAtualizaOcorrencia12.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                b237CmBoletoItemAtualizaOcorrencia12.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+                b237CmBoletoItemAtualizaOcorrencia12.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b237CmBoletoItemAtualizaOcorrencia12.Parameters["@vl_abatimento_concedido"].Value = vlAbatimentoConcedido;
+                b237CmBoletoItemAtualizaOcorrencia12.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+				#endregion
+
+				#region [ Tenta alterar o registro ]
+				try
+				{
+					intRetorno = BD.executaNonQuery(ref b237CmBoletoItemAtualizaOcorrencia12);
+				}
+				catch (Exception ex)
+				{
+					intRetorno = 0;
+					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+				}
+				if (intRetorno == 1)
+				{
+					blnSucesso = true;
+				}
+				else
+				{
+					blnSucesso = false;
+				}
+				#endregion
+
+				#region [ Processamento final de sucesso ou falha ]
+				if (blnSucesso)
+				{
+					return true;
+				}
+				else
+				{
+					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 12 (abatimento concedido)!!";
+					return false;
+				}
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				// Para o usuário, exibe uma mensagem mais sucinta
+				strMsgErro = ex.Message;
+				// No log em arquivo, grava o stack de erro completo
+				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+				return false;
+			}
+		}
+        #endregion
+
+        #region [ b237AtualizaBoletoItemOcorrencia13AbatimentoCancelado ]
+        public static bool b237AtualizaBoletoItemOcorrencia13AbatimentoCancelado(
+								String usuario,
+								int idBoletoItem,
+								String identificacaoOcorrencia,
+								String motivosRejeicoes,
+								DateTime dataOcorrenciaBanco,
+								ref String strMsgErro)
+		{
+			#region [ Declarações ]
+			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 13 (abatimento cancelado) [Bradesco]";
+			bool blnSucesso = false;
+			int intRetorno;
+			#endregion
+
+			strMsgErro = "";
+			try
+			{
+				#region [ Preenche o valor dos parâmetros ]
+				b237CmBoletoItemAtualizaOcorrencia13.Parameters["@id"].Value = idBoletoItem;
+                b237CmBoletoItemAtualizaOcorrencia13.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                b237CmBoletoItemAtualizaOcorrencia13.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+                b237CmBoletoItemAtualizaOcorrencia13.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b237CmBoletoItemAtualizaOcorrencia13.Parameters["@vl_abatimento_concedido"].Value = 0m;
+                b237CmBoletoItemAtualizaOcorrencia13.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+				#endregion
+
+				#region [ Tenta alterar o registro ]
+				try
+				{
+					intRetorno = BD.executaNonQuery(ref b237CmBoletoItemAtualizaOcorrencia13);
+				}
+				catch (Exception ex)
+				{
+					intRetorno = 0;
+					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+				}
+				if (intRetorno == 1)
+				{
+					blnSucesso = true;
+				}
+				else
+				{
+					blnSucesso = false;
+				}
+				#endregion
+
+				#region [ Processamento final de sucesso ou falha ]
+				if (blnSucesso)
+				{
+					return true;
+				}
+				else
+				{
+					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 13 (abatimento cancelado)!!";
+					return false;
+				}
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				// Para o usuário, exibe uma mensagem mais sucinta
+				strMsgErro = ex.Message;
+				// No log em arquivo, grava o stack de erro completo
+				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+				return false;
+			}
+		}
+        #endregion
+
+        #region [ b237AtualizaBoletoItemOcorrencia14VenctoAlterado ]
+        public static bool b237AtualizaBoletoItemOcorrencia14VenctoAlterado(
+								String usuario,
+								int idBoletoItem,
+								String identificacaoOcorrencia,
+								String motivosRejeicoes,
+								DateTime dataOcorrenciaBanco,
+								DateTime dtNovoVencto,
+								ref String strMsgErro)
+		{
+			#region [ Declarações ]
+			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 14 (vencimento alterado) [Bradesco]";
+			bool blnSucesso = false;
+			int intRetorno;
+			#endregion
+
+			strMsgErro = "";
+			try
+			{
+				#region [ Preenche o valor dos parâmetros ]
+				b237CmBoletoItemAtualizaOcorrencia14.Parameters["@id"].Value = idBoletoItem;
+                b237CmBoletoItemAtualizaOcorrencia14.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                b237CmBoletoItemAtualizaOcorrencia14.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+                b237CmBoletoItemAtualizaOcorrencia14.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b237CmBoletoItemAtualizaOcorrencia14.Parameters["@dt_vencto"].Value = Global.formataDataYyyyMmDdComSeparador(dtNovoVencto);
+                b237CmBoletoItemAtualizaOcorrencia14.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+				#endregion
+
+				#region [ Tenta alterar o registro ]
+				try
+				{
+					intRetorno = BD.executaNonQuery(ref b237CmBoletoItemAtualizaOcorrencia14);
+				}
+				catch (Exception ex)
+				{
+					intRetorno = 0;
+					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+				}
+				if (intRetorno == 1)
+				{
+					blnSucesso = true;
+				}
+				else
+				{
+					blnSucesso = false;
+				}
+				#endregion
+
+				#region [ Processamento final de sucesso ou falha ]
+				if (blnSucesso)
+				{
+					return true;
+				}
+				else
+				{
+					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 14 (vencimento alterado)!!";
+					return false;
+				}
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				// Para o usuário, exibe uma mensagem mais sucinta
+				strMsgErro = ex.Message;
+				// No log em arquivo, grava o stack de erro completo
+				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+				return false;
+			}
+		}
+        #endregion
+
+        #region [ b237AtualizaBoletoItemOcorrencia15LiquidacaoEmCartorio ]
+        public static bool b237AtualizaBoletoItemOcorrencia15LiquidacaoEmCartorio(
+								String usuario,
+								int idBoletoItem,
+								String identificacaoOcorrencia,
+								String motivosRejeicoes,
+								DateTime dataOcorrenciaBanco,
+								decimal vlAbatimentoConcedido,
+								decimal vlDescontoConcedido,
+								ref String strMsgErro)
+		{
+			#region [ Declarações ]
+			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 15 (liquidação em cartório) [Bradesco]";
+			bool blnSucesso = false;
+			int intRetorno;
+			#endregion
+
+			strMsgErro = "";
+			try
+			{
+				#region [ Preenche o valor dos parâmetros ]
+				b237CmBoletoItemAtualizaOcorrencia15.Parameters["@id"].Value = idBoletoItem;
+                b237CmBoletoItemAtualizaOcorrencia15.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                b237CmBoletoItemAtualizaOcorrencia15.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+                b237CmBoletoItemAtualizaOcorrencia15.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b237CmBoletoItemAtualizaOcorrencia15.Parameters["@vl_abatimento_concedido"].Value = vlAbatimentoConcedido;
+                b237CmBoletoItemAtualizaOcorrencia15.Parameters["@vl_desconto_concedido"].Value = vlDescontoConcedido;
+                b237CmBoletoItemAtualizaOcorrencia15.Parameters["@st_boleto_ocorrencia_15"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
+                b237CmBoletoItemAtualizaOcorrencia15.Parameters["@dt_ocorrencia_banco_boleto_ocorrencia_15"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b237CmBoletoItemAtualizaOcorrencia15.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+				#endregion
+
+				#region [ Tenta alterar o registro ]
+				try
+				{
+					intRetorno = BD.executaNonQuery(ref b237CmBoletoItemAtualizaOcorrencia15);
+				}
+				catch (Exception ex)
+				{
+					intRetorno = 0;
+					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+				}
+				if (intRetorno == 1)
+				{
+					blnSucesso = true;
+				}
+				else
+				{
+					blnSucesso = false;
+				}
+				#endregion
+
+				#region [ Processamento final de sucesso ou falha ]
+				if (blnSucesso)
+				{
+					return true;
+				}
+				else
+				{
+					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 15 (liquidação em cartório)!!";
+					return false;
+				}
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				// Para o usuário, exibe uma mensagem mais sucinta
+				strMsgErro = ex.Message;
+				// No log em arquivo, grava o stack de erro completo
+				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+				return false;
+			}
+		}
+        #endregion
+
+        #region [ b237AtualizaBoletoItemOcorrencia16TituloPagoEmCheque ]
+        public static bool b237AtualizaBoletoItemOcorrencia16TituloPagoEmCheque(
+								String usuario,
+								int idBoletoItem,
+								String identificacaoOcorrencia,
+								String motivosRejeicoes,
+								DateTime dataOcorrenciaBanco,
+								ref String strMsgErro)
+		{
+			#region [ Declarações ]
+			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 16 (título pago em cheque) [Bradesco]";
+			bool blnSucesso = false;
+			int intRetorno;
+			#endregion
+
+			strMsgErro = "";
+			try
+			{
+				#region [ Preenche o valor dos parâmetros ]
+				cmBoletoItemAtualizaOcorrencia16.Parameters["@id"].Value = idBoletoItem;
+				cmBoletoItemAtualizaOcorrencia16.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+				cmBoletoItemAtualizaOcorrencia16.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+				cmBoletoItemAtualizaOcorrencia16.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+				cmBoletoItemAtualizaOcorrencia16.Parameters["@st_boleto_pago_cheque"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
+				cmBoletoItemAtualizaOcorrencia16.Parameters["@dt_ocorrencia_banco_boleto_pago_cheque"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+				cmBoletoItemAtualizaOcorrencia16.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+				#endregion
+
+				#region [ Tenta alterar o registro ]
+				try
+				{
+					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia16);
+				}
+				catch (Exception ex)
+				{
+					intRetorno = 0;
+					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+				}
+				if (intRetorno == 1)
+				{
+					blnSucesso = true;
+				}
+				else
+				{
+					blnSucesso = false;
+				}
+				#endregion
+
+				#region [ Processamento final de sucesso ou falha ]
+				if (blnSucesso)
+				{
+					return true;
+				}
+				else
+				{
+					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 16 (título pago em cheque)!!";
+					return false;
+				}
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				// Para o usuário, exibe uma mensagem mais sucinta
+				strMsgErro = ex.Message;
+				// No log em arquivo, grava o stack de erro completo
+				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+				return false;
+			}
+		}
+        #endregion
+
+        #region [ b237AtualizaBoletoItemOcorrencia17LiqAposBaixaOuTitNaoRegistrado ]
+        public static bool b237AtualizaBoletoItemOcorrencia17LiqAposBaixaOuTitNaoRegistrado(
+								String usuario,
+								int idBoletoItem,
+								String identificacaoOcorrencia,
+								String motivosRejeicoes,
+								DateTime dataOcorrenciaBanco,
+								ref String strMsgErro)
+		{
+			#region [ Declarações ]
+			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 17 (liquidação após baixa ou título não registrado) [Bradesco]";
+			bool blnSucesso = false;
+			int intRetorno;
+			#endregion
+
+			strMsgErro = "";
+			try
+			{
+				#region [ Preenche o valor dos parâmetros ]
+				cmBoletoItemAtualizaOcorrencia17.Parameters["@id"].Value = idBoletoItem;
+				cmBoletoItemAtualizaOcorrencia17.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+				cmBoletoItemAtualizaOcorrencia17.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+				cmBoletoItemAtualizaOcorrencia17.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+				cmBoletoItemAtualizaOcorrencia17.Parameters["@st_boleto_ocorrencia_17"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
+				cmBoletoItemAtualizaOcorrencia17.Parameters["@dt_ocorrencia_banco_boleto_ocorrencia_17"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+				cmBoletoItemAtualizaOcorrencia17.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+				#endregion
+
+				#region [ Tenta alterar o registro ]
+				try
+				{
+					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia17);
+				}
+				catch (Exception ex)
+				{
+					intRetorno = 0;
+					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+				}
+				if (intRetorno == 1)
+				{
+					blnSucesso = true;
+				}
+				else
+				{
+					blnSucesso = false;
+				}
+				#endregion
+
+				#region [ Processamento final de sucesso ou falha ]
+				if (blnSucesso)
+				{
+					return true;
+				}
+				else
+				{
+					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 17 (liquidação após baixa ou título não registrado)!!";
+					return false;
+				}
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				// Para o usuário, exibe uma mensagem mais sucinta
+				strMsgErro = ex.Message;
+				// No log em arquivo, grava o stack de erro completo
+				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+				return false;
+			}
+		}
+        #endregion
+
+        #region [ b237AtualizaBoletoItemOcorrencia19ConfirmacaoRecebInstProtesto ]
+        public static bool b237AtualizaBoletoItemOcorrencia19ConfirmacaoRecebInstProtesto(
+								String usuario,
+								int idBoletoItem,
+								String identificacaoOcorrencia,
+								String motivosRejeicoes,
+								String motivoCodigoOcorrencia19,
+								DateTime dataOcorrenciaBanco,
+								ref String strMsgErro)
+		{
+			#region [ Declarações ]
+			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 19 (confirmação receb. inst. de protesto) [Bradesco]";
+			bool blnSucesso = false;
+			int intRetorno;
+			#endregion
+
+			strMsgErro = "";
+			try
+			{
+				#region [ Preenche o valor dos parâmetros ]
+				cmBoletoItemAtualizaOcorrencia19.Parameters["@id"].Value = idBoletoItem;
+				cmBoletoItemAtualizaOcorrencia19.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+				cmBoletoItemAtualizaOcorrencia19.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+				cmBoletoItemAtualizaOcorrencia19.Parameters["@ult_motivo_ocorrencia_19"].Value = motivoCodigoOcorrencia19;
+				cmBoletoItemAtualizaOcorrencia19.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+				cmBoletoItemAtualizaOcorrencia19.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+				#endregion
+
+				#region [ Tenta alterar o registro ]
+				try
+				{
+					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia19);
+				}
+				catch (Exception ex)
+				{
+					intRetorno = 0;
+					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+				}
+				if (intRetorno == 1)
+				{
+					blnSucesso = true;
+				}
+				else
+				{
+					blnSucesso = false;
+				}
+				#endregion
+
+				#region [ Processamento final de sucesso ou falha ]
+				if (blnSucesso)
+				{
+					return true;
+				}
+				else
+				{
+					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 19 (confirmação receb. inst. de protesto)!!";
+					return false;
+				}
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				// Para o usuário, exibe uma mensagem mais sucinta
+				strMsgErro = ex.Message;
+				// No log em arquivo, grava o stack de erro completo
+				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+				return false;
+			}
+		}
+        #endregion
+
+        #region [ b237AtualizaBoletoItemOcorrencia22TituloComPagamentoCancelado ]
+        public static bool b237AtualizaBoletoItemOcorrencia22TituloComPagamentoCancelado(
+								String usuario,
+								int idBoletoItem,
+								String identificacaoOcorrencia,
+								String motivosRejeicoes,
+								DateTime dataOcorrenciaBanco,
+								ref String strMsgErro)
+		{
+			#region [ Declarações ]
+			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 22 (título com pagamento cancelado) [Bradesco]";
+			bool blnSucesso = false;
+			int intRetorno;
+			#endregion
+
+			strMsgErro = "";
+			try
+			{
+				#region [ Preenche o valor dos parâmetros ]
+				cmBoletoItemAtualizaOcorrencia22.Parameters["@id"].Value = idBoletoItem;
+				cmBoletoItemAtualizaOcorrencia22.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+				cmBoletoItemAtualizaOcorrencia22.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+				cmBoletoItemAtualizaOcorrencia22.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+				cmBoletoItemAtualizaOcorrencia22.Parameters["@st_boleto_pago_cheque"].Value = Global.Cte.FIN.StCampoFlag.FLAG_DESLIGADO;
+				cmBoletoItemAtualizaOcorrencia22.Parameters["@dt_ocorrencia_banco_boleto_pago_cheque"].Value = "";
+				cmBoletoItemAtualizaOcorrencia22.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+				#endregion
+
+				#region [ Tenta alterar o registro ]
+				try
+				{
+					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia22);
+				}
+				catch (Exception ex)
+				{
+					intRetorno = 0;
+					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+				}
+				if (intRetorno == 1)
+				{
+					blnSucesso = true;
+				}
+				else
+				{
+					blnSucesso = false;
+				}
+				#endregion
+
+				#region [ Processamento final de sucesso ou falha ]
+				if (blnSucesso)
+				{
+					return true;
+				}
+				else
+				{
+					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 22 (título com pagamento cancelado)!!";
+					return false;
+				}
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				// Para o usuário, exibe uma mensagem mais sucinta
+				strMsgErro = ex.Message;
+				// No log em arquivo, grava o stack de erro completo
+				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+				return false;
+			}
+		}
+        #endregion
+
+        #region [ b237AtualizaBoletoItemOcorrencia23EntradaTituloEmCartorio ]
+        public static bool b237AtualizaBoletoItemOcorrencia23EntradaTituloEmCartorio(
+								String usuario,
+								int idBoletoItem,
+								String identificacaoOcorrencia,
+								String motivosRejeicoes,
+								DateTime dataOcorrenciaBanco,
+								ref String strMsgErro)
+		{
+			#region [ Declarações ]
+			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 23 (entrada do título em cartório) [Bradesco]";
+			bool blnSucesso = false;
+			int intRetorno;
+			#endregion
+
+			strMsgErro = "";
+			try
+			{
+				#region [ Preenche o valor dos parâmetros ]
+				cmBoletoItemAtualizaOcorrencia23.Parameters["@id"].Value = idBoletoItem;
+				cmBoletoItemAtualizaOcorrencia23.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+				cmBoletoItemAtualizaOcorrencia23.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+				cmBoletoItemAtualizaOcorrencia23.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+				cmBoletoItemAtualizaOcorrencia23.Parameters["@st_boleto_ocorrencia_23"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
+				cmBoletoItemAtualizaOcorrencia23.Parameters["@dt_ocorrencia_banco_boleto_ocorrencia_23"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+				cmBoletoItemAtualizaOcorrencia23.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+				#endregion
+
+				#region [ Tenta alterar o registro ]
+				try
+				{
+					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia23);
+				}
+				catch (Exception ex)
+				{
+					intRetorno = 0;
+					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+				}
+				if (intRetorno == 1)
+				{
+					blnSucesso = true;
+				}
+				else
+				{
+					blnSucesso = false;
+				}
+				#endregion
+
+				#region [ Processamento final de sucesso ou falha ]
+				if (blnSucesso)
+				{
+					return true;
+				}
+				else
+				{
+					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 23 (entrada do título em cartório)!!";
+					return false;
+				}
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				// Para o usuário, exibe uma mensagem mais sucinta
+				strMsgErro = ex.Message;
+				// No log em arquivo, grava o stack de erro completo
+				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+				return false;
+			}
+		}
+        #endregion
+
+        #region [ b237AtualizaBoletoItemOcorrencia28DebitoTarifasCustas ]
+        public static bool b237AtualizaBoletoItemOcorrencia28DebitoTarifasCustas(
+								String usuario,
+								int idBoletoItem,
+								String identificacaoOcorrencia,
+								String motivosRejeicoes,
+								DateTime dataOcorrenciaBanco,
+								B237RegTipo1ArqRetorno linhaRegistro,
+								ref String strMsgErro)
+		{
+			#region [ Declarações ]
+			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 28 (débito de tarifas/custas) [Bradesco]";
+			bool blnSucesso = false;
+			int intRetorno;
+			String strClausulaSet = "";
+			String strSql;
+			SqlCommand cmCommand;
+			#endregion
+
+			strMsgErro = "";
+			try
+			{
+				#region [ Monta a cláusula SET do SQL da atualização ]
+				if (Global.existeMotivoOcorrencia(linhaRegistro.motivosRejeicoes.valor, "03"))
+				{
+					#region [ Tarifa de sustação (motivo 03) usando campo despesas de cobrança ]
+					if (strClausulaSet.Length > 0) strClausulaSet += ",";
+					strClausulaSet += " vl_tarifa_sustacao = " + Global.sqlFormataDecimal(Global.decodificaCampoMonetario(linhaRegistro.valorDespesasCobranca.valor));
+					#endregion
+				}
+				else if (Global.existeMotivoOcorrencia(linhaRegistro.motivosRejeicoes.valor, "04"))
+				{
+					#region [ Tarifa de protesto (motivo 04) usando campo despesas de cobrança ]
+					if (strClausulaSet.Length > 0) strClausulaSet += ",";
+					strClausulaSet += " vl_tarifa_protesto = " + Global.sqlFormataDecimal(Global.decodificaCampoMonetario(linhaRegistro.valorDespesasCobranca.valor));
+					#endregion
+				}
+
+				#region [ Custas de protesto (motivo 08) usando campo outras despesas ]
+				if (Global.existeMotivoOcorrencia(linhaRegistro.motivosRejeicoes.valor, "08"))
+				{
+					if (strClausulaSet.Length > 0) strClausulaSet += ",";
+					strClausulaSet += " vl_custas_protesto = " + Global.sqlFormataDecimal(Global.decodificaCampoMonetario(linhaRegistro.valorOutrasDespesas.valor));
+				}
+				#endregion
+
+				#endregion
+
+				#region [ Há atualizações para fazer? ]
+				if (strClausulaSet.Length == 0) return true;
+				#endregion
+
+				#region [ Completa a cláusula SET com o preenchimento dos campos complementares ]
+				if (strClausulaSet.Length > 0) strClausulaSet += ",";
+				strClausulaSet += " ult_identificacao_ocorrencia = '" + identificacaoOcorrencia + "'," +
+								  " ult_motivos_rejeicoes = '" + motivosRejeicoes + "'," +
+								  " ult_data_ocorrencia_banco = " + Global.sqlMontaDateTimeParaSqlDateTime(dataOcorrenciaBanco) + "," +
+								  " ult_data_carga_arq_retorno = " + Global.sqlMontaGetdateSomenteData() + "," +
+								  " dt_ult_atualizacao = " + Global.sqlMontaGetdateSomenteData() + "," +
+								  " dt_hr_ult_atualizacao = getdate()," +
+								  " usuario_ult_atualizacao = '" + usuario + "'";
+				#endregion
+
+				#region [ Monta o SQL ]
+				strSql = "UPDATE t_FIN_BOLETO_ITEM" +
+						 " SET " + strClausulaSet +
+						 " WHERE" +
+							" (id = " + idBoletoItem.ToString() + ")";
+				#endregion
+
+				#region [ Tenta alterar o registro ]
+				try
+				{
+					cmCommand = BD.criaSqlCommand();
+					cmCommand.CommandText = strSql;
+					intRetorno = BD.executaNonQuery(ref cmCommand);
+				}
+				catch (Exception ex)
+				{
+					intRetorno = 0;
+					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+				}
+				if (intRetorno == 1)
+				{
+					blnSucesso = true;
+				}
+				else
+				{
+					blnSucesso = false;
+				}
+				#endregion
+
+				#region [ Processamento final de sucesso ou falha ]
+				if (blnSucesso)
+				{
+					return true;
+				}
+				else
+				{
+					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 28 (débito de tarifas/custas)!!";
+					return false;
+				}
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				// Para o usuário, exibe uma mensagem mais sucinta
+				strMsgErro = ex.Message;
+				// No log em arquivo, grava o stack de erro completo
+				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+				return false;
+			}
+		}
+        #endregion
+
+        #region [ b237AtualizaBoletoItemOcorrencia34RetiradoCartorioManutencaoCarteira ]
+        public static bool b237AtualizaBoletoItemOcorrencia34RetiradoCartorioManutencaoCarteira(
+								String usuario,
+								int idBoletoItem,
+								String identificacaoOcorrencia,
+								String motivosRejeicoes,
+								DateTime dataOcorrenciaBanco,
+								ref String strMsgErro)
+		{
+			#region [ Declarações ]
+			String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 34 (retirado de cartório e manutenção carteira) [Bradesco]";
+			bool blnSucesso = false;
+			int intRetorno;
+			#endregion
+
+			strMsgErro = "";
+			try
+			{
+				#region [ Preenche o valor dos parâmetros ]
+				cmBoletoItemAtualizaOcorrencia34.Parameters["@id"].Value = idBoletoItem;
+				cmBoletoItemAtualizaOcorrencia34.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+				cmBoletoItemAtualizaOcorrencia34.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+				cmBoletoItemAtualizaOcorrencia34.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+				cmBoletoItemAtualizaOcorrencia34.Parameters["@st_boleto_ocorrencia_34"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
+				cmBoletoItemAtualizaOcorrencia34.Parameters["@dt_ocorrencia_banco_boleto_ocorrencia_34"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+				cmBoletoItemAtualizaOcorrencia34.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+				#endregion
+
+				#region [ Tenta alterar o registro ]
+				try
+				{
+					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia34);
+				}
+				catch (Exception ex)
+				{
+					intRetorno = 0;
+					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+				}
+				if (intRetorno == 1)
+				{
+					blnSucesso = true;
+				}
+				else
+				{
+					blnSucesso = false;
+				}
+				#endregion
+
+				#region [ Processamento final de sucesso ou falha ]
+				if (blnSucesso)
+				{
+					return true;
+				}
+				else
+				{
+					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 34 (retirado de cartório e manutenção carteira)!!";
+					return false;
+				}
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				// Para o usuário, exibe uma mensagem mais sucinta
+				strMsgErro = ex.Message;
+				// No log em arquivo, grava o stack de erro completo
+				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+				return false;
+			}
+		}
+        #endregion
+
+        #region [ b237AtualizaBoletoItemOcorrenciaValaComum ]
+        public static bool b237AtualizaBoletoItemOcorrenciaValaComum(
+								String usuario,
+								int idBoletoItem,
+								String identificacaoOcorrencia,
+								String motivosRejeicoes,
+								String motivoCodigoOcorrencia19,
+								DateTime dataOcorrenciaBanco,
+								ref String strMsgErro)
+		{
+            #region [ Declarações ]
+            String strOperacao = "Atualiza o registro da parcela do boleto com tratamento de vala comum para a ocorrência " + identificacaoOcorrencia + " [Bradesco]";
+			bool blnSucesso = false;
+			int intRetorno;
+			#endregion
+
+			strMsgErro = "";
+			try
+			{
+				#region [ Preenche o valor dos parâmetros ]
+				cmBoletoItemAtualizaOcorrenciaValaComum.Parameters["@id"].Value = idBoletoItem;
+				cmBoletoItemAtualizaOcorrenciaValaComum.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+				cmBoletoItemAtualizaOcorrenciaValaComum.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+				cmBoletoItemAtualizaOcorrenciaValaComum.Parameters["@ult_motivo_ocorrencia_19"].Value = motivoCodigoOcorrencia19;
+				cmBoletoItemAtualizaOcorrenciaValaComum.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+				cmBoletoItemAtualizaOcorrenciaValaComum.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+				#endregion
+
+				#region [ Tenta alterar o registro ]
+				try
+				{
+					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrenciaValaComum);
+				}
+				catch (Exception ex)
+				{
+					intRetorno = 0;
+					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+				}
+				if (intRetorno == 1)
+				{
+					blnSucesso = true;
+				}
+				else
+				{
+					blnSucesso = false;
+				}
+				#endregion
+
+				#region [ Processamento final de sucesso ou falha ]
+				if (blnSucesso)
+				{
+					return true;
+				}
+				else
+				{
+					strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento de vala comum para a ocorrência " + identificacaoOcorrencia + "!!";
+					return false;
+				}
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				// Para o usuário, exibe uma mensagem mais sucinta
+				strMsgErro = ex.Message;
+				// No log em arquivo, grava o stack de erro completo
+				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+				return false;
+			}
+		}
+        #endregion
+
+        #region [ b237AtualizaBoletoItemOcorrencia24CepIrregular ]
+        public static bool b237AtualizaBoletoItemOcorrencia24CepIrregular(
+								String usuario,
+								int idBoletoItem,
+								String identificacaoOcorrencia,
+								String motivosRejeicoes,
+								String motivoCodigoOcorrencia19,
+								DateTime dataOcorrenciaBanco,
+								ref String strMsgErro)
+		{
+			#region [ Declarações ]
+			String strOperacao = "Atualiza o registro da parcela do boleto com os dados da última ocorrência (" + identificacaoOcorrencia + ") [Bradesco]";
+			bool blnSucesso = false;
+			int intRetorno;
+			#endregion
+
+			strMsgErro = "";
+			try
+			{
+				#region [ Preenche o valor dos parâmetros ]
+				cmBoletoItemAtualizaOcorrencia24.Parameters["@id"].Value = idBoletoItem;
+				cmBoletoItemAtualizaOcorrencia24.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+				cmBoletoItemAtualizaOcorrencia24.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+				cmBoletoItemAtualizaOcorrencia24.Parameters["@ult_motivo_ocorrencia_19"].Value = motivoCodigoOcorrencia19;
+				cmBoletoItemAtualizaOcorrencia24.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+				cmBoletoItemAtualizaOcorrencia24.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+				#endregion
+
+				#region [ Tenta alterar o registro ]
+				try
+				{
+					intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia24);
+				}
+				catch (Exception ex)
+				{
+					intRetorno = 0;
+					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+				}
+				if (intRetorno == 1)
+				{
+					blnSucesso = true;
+				}
+				else
+				{
+					blnSucesso = false;
+				}
+				#endregion
+
+				#region [ Processamento final de sucesso ou falha ]
+				if (blnSucesso)
+				{
+					return true;
+				}
+				else
+				{
+					strMsgErro = "Falha ao tentar atualizar o boleto com os dados da última ocorrência (" + identificacaoOcorrencia + ")!!";
+					return false;
+				}
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				// Para o usuário, exibe uma mensagem mais sucinta
+				strMsgErro = ex.Message;
+				// No log em arquivo, grava o stack de erro completo
+				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+				return false;
+			}
+		}
+        #endregion
+
+        #region [ b237CorrigeBoletoOcorrencia24CepIrregular ]
+        public static bool b237CorrigeBoletoOcorrencia24CepIrregular(
+								String usuario,
+								int idBoleto,
+								String endereco,
+								String bairro,
+								String cep,
+								String cidade,
+								String uf,
+								ref String strMsgErro)
+		{
+			#region [ Declarações ]
+			String strOperacao = "Corrige o endereço do sacado devido à ocorrência 24 (CEP irregular) e reseta status para reenviar no arquivo de remessa [Bradesco]";
+			int intRetorno;
+			String strSql;
+			SqlCommand cmComando;
+			#endregion
+
+			strMsgErro = "";
+			try
+			{
+				#region [ Preenche o valor dos parâmetros ]
+				cmBoletoCorrigeOcorrencia24CepIrregular.Parameters["@id"].Value = idBoleto;
+				cmBoletoCorrigeOcorrencia24CepIrregular.Parameters["@endereco_sacado"].Value = endereco;
+				cmBoletoCorrigeOcorrencia24CepIrregular.Parameters["@bairro_sacado"].Value = bairro;
+				cmBoletoCorrigeOcorrencia24CepIrregular.Parameters["@cep_sacado"].Value = Global.digitos(cep);
+				cmBoletoCorrigeOcorrencia24CepIrregular.Parameters["@cidade_sacado"].Value = cidade;
+				cmBoletoCorrigeOcorrencia24CepIrregular.Parameters["@uf_sacado"].Value = uf;
+				cmBoletoCorrigeOcorrencia24CepIrregular.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+				#endregion
+
+				#region [ Tenta alterar os dados do endereço ]
+				try
+				{
+					intRetorno = BD.executaNonQuery(ref cmBoletoCorrigeOcorrencia24CepIrregular);
+				}
+				catch (Exception ex)
+				{
+					intRetorno = 0;
+					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+				}
+				if (intRetorno != 1)
+				{
+					strMsgErro = "Falha ao tentar atualizar o endereço no registro do boleto durante o tratamento da ocorrência 24 (CEP irregular)!!";
+					return false;
+				}
+				#endregion
+
+				#region [ Tenta resetar o status dos registros das parcelas ]
+				cmComando = BD.criaSqlCommand();
+				strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
+							"status = " + Global.Cte.FIN.CodBoletoItemStatus.INICIAL.ToString() + ", " +
+							"dt_ult_atualizacao = " + Global.sqlMontaGetdateSomenteData() + ", " +
+							"dt_hr_ult_atualizacao = getdate(), " +
+							"usuario_ult_atualizacao = '" + usuario + "' " +
+						"WHERE " +
+							"(id_boleto = " + idBoleto.ToString() + ")" +
+							" AND (status = " + Global.Cte.FIN.CodBoletoItemStatus.BOLETO_REJEITADO_CEP_IRREGULAR.ToString() + ")";
+				cmComando.CommandText = strSql;
+
+				try
+				{
+					intRetorno = BD.executaNonQuery(ref cmComando);
+				}
+				catch (Exception ex)
+				{
+					intRetorno = 0;
+					Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+				}
+				if (intRetorno <= 0)
+				{
+					strMsgErro = "Falha ao tentar resetar o status dos registros das parcelas para reenviar no arquivo de remessa durante o tratamento da ocorrência 24 (CEP irregular): nenhuma parcela estava em situação que permitisse o reset!!";
+					return false;
+				}
+				#endregion
+
+				return true;
+			}
+			catch (Exception ex)
+			{
+				// Para o usuário, exibe uma mensagem mais sucinta
+				strMsgErro = ex.Message;
+				// No log em arquivo, grava o stack de erro completo
+				Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+				return false;
+			}
+		}
+        #endregion
+
+        #endregion
+
+        #region [ SAFRA: tratamento para cada tipo de ocorrência ]
+
+        #region [ b422BoletoMovimentoInsere ]
+        /// <summary>
+        /// Grava o registro na tabela de movimentações de boletos (t_FIN_BOLETO_MOVIMENTO).
+        /// IMPORTANTE: alguns campos podem estar vazios quando for o caso de ser um boleto
+        /// desconhecido ou não identificado (tipicamente, ocorrência 17 - liquidação após baixa
+        /// ou Título não registrado).
+        /// </summary>
+        /// <param name="usuario">Usuário que está realizando o processamento da carga do arquivo de retorno</param>
+        /// <param name="id_arq_retorno">Identificação do registro associado na tabela t_FIN_BOLETO_ARQ_RETORNO</param>
+        /// <param name="id_boleto">Identificação do registro da tabela t_FIN_BOLETO (pode estar zerado no caso de boleto não identificado)</param>
+        /// <param name="id_boleto_item">Identificação do registro da tabela t_FIN_BOLETO_ITEM (pode estar zerado no caso de boleto não identificado)</param>
+        /// <param name="identificacaoOcorrencia">Código de identificação da ocorrência</param>
+        /// <param name="codRejeicao">Código de motivo de rejeição</param>
+        /// <param name="dataOcorrencia">Data da ocorrência no banco</param>
+        /// <param name="numeroDocumento">Número do documento (pode estar zerado no caso de boleto não identificado)</param>
+        /// <param name="nossoNumero">Nosso número (sem dígito)</param>
+        /// <param name="digitoNossoNumero">Dígito do nosso número</param>
+        /// <param name="dataVencto">Data de vencimento do título</param>
+        /// <param name="valorTitulo">Valor do título</param>
+        /// <param name="valorDespesasCobranca">Despesas de cobrança para os códigos de ocorrência 02 (entrada confirmada) e 28 (débito de tarifas). Campo da posição 176 a 188 do registro tipo 1 do arquivo de retorno.</param>
+        /// <param name="valorOutrasDespesas">Outras despesas / Custas de protesto. Campo da posição 189 a 201 do registro tipo 1 do arquivo de retorno.</param>
+        /// <param name="valorIofDevido">IOF devido. Campo da posição 215 a 227 do registro tipo 1 do arquivo de retorno.</param>
+        /// <param name="valorAbatimentoConcedido">Abatimento concedido sobre o título. Campo da posição 228 a 240 do registro tipo 1 do arquivo de retorno.</param>
+        /// <param name="valorDescontoConcedido">Desconto concedido. Campo da posição 241 a 253 do registro tipo 1 do arquivo de retorno.</param>
+        /// <param name="valorPago">Valor total recebido. Campo da posição 254 a 266 do registro tipo 1 do arquivo de retorno.</param>
+        /// <param name="valorJurosMora">Juros de mora. Campo da posição 267 a 279 do registro tipo 1 do arquivo de retorno.</param>
+        /// <param name="dataCredito">Data do crédito. Campo da posição 296 a 301 do registro tipo 1 do arquivo de retorno.</param>
+        /// <param name="strMsgErro">No caso de erro, retorna a mensagem de erro</param>
+        /// <returns>
+        /// true: sucesso na gravação dos dados
+        /// false: falha na gravação dos dados
+        /// </returns>
+        public static bool b422BoletoMovimentoInsere(String usuario,
+                                                 int id_arq_retorno,
+                                                 int id_boleto,
+                                                 int id_boleto_item,
+                                                 String identificacaoOcorrencia,
+                                                 String codRejeicao,
+                                                 DateTime dataOcorrencia,
+                                                 String numeroDocumento,
+                                                 String nossoNumero,
+                                                 String digitoNossoNumero,
+                                                 DateTime dataVencto,
+                                                 decimal valorTitulo,
+                                                 decimal valorDespesasCobranca,
+                                                 decimal valorOutrasDespesas,
+                                                 decimal valorIofDevido,
+                                                 decimal valorAbatimentoConcedido,
+                                                 decimal valorDescontoConcedido,
+                                                 decimal valorPago,
+                                                 decimal valorJurosMora,
+                                                 DateTime dataCredito,
+                                                 ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            bool blnSucesso = false;
+            bool blnGerouNsu;
+            int intRetorno;
+            int intNsuBoletoMovimento = 0;
+            String strOperacao = "Gravação dos dados de movimento de boletos [Safra]";
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Consistência ]
+                if (id_arq_retorno <= 0)
+                {
+                    strMsgErro = "Número de identificação do registro associado na tabela t_FIN_BOLETO_ARQ_RETORNO não foi informado!!";
+                    return false;
+                }
+                #endregion
+
+                try
+                {
+                    #region [ Gera o NSU para o registro ]
+                    blnGerouNsu = BD.geraNsu(Global.Cte.FIN.NSU.T_FIN_BOLETO_MOVIMENTO, ref intNsuBoletoMovimento, ref strMsgErro);
+                    if (!blnGerouNsu)
+                    {
+                        strMsgErro = "Falha ao tentar gerar o NSU para o registro de movimentação do boleto!!\n" + strMsgErro;
+                        return false;
+                    }
+                    #endregion
+
+                    #region [ Preenche o valor dos parâmetros ]
+                    b422CmBoletoMovimentoInsert.Parameters["@id"].Value = intNsuBoletoMovimento;
+                    b422CmBoletoMovimentoInsert.Parameters["@id_arq_retorno"].Value = id_arq_retorno;
+                    b422CmBoletoMovimentoInsert.Parameters["@id_boleto"].Value = id_boleto;
+                    b422CmBoletoMovimentoInsert.Parameters["@id_boleto_item"].Value = id_boleto_item;
+                    b422CmBoletoMovimentoInsert.Parameters["@identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                    b422CmBoletoMovimentoInsert.Parameters["@motivos_rejeicoes"].Value = codRejeicao;
+                    b422CmBoletoMovimentoInsert.Parameters["@data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrencia);
+                    b422CmBoletoMovimentoInsert.Parameters["@numero_documento"].Value = numeroDocumento.Trim();
+                    b422CmBoletoMovimentoInsert.Parameters["@nosso_numero"].Value = nossoNumero.Trim();
+                    b422CmBoletoMovimentoInsert.Parameters["@digito_nosso_numero"].Value = digitoNossoNumero.Trim();
+                    b422CmBoletoMovimentoInsert.Parameters["@dt_vencto"].Value = Global.formataDataYyyyMmDdComSeparador(dataVencto);
+                    b422CmBoletoMovimentoInsert.Parameters["@vl_titulo"].Value = valorTitulo;
+                    b422CmBoletoMovimentoInsert.Parameters["@vl_despesas_cobranca"].Value = valorDespesasCobranca;
+                    b422CmBoletoMovimentoInsert.Parameters["@vl_outras_despesas"].Value = valorOutrasDespesas;
+                    b422CmBoletoMovimentoInsert.Parameters["@vl_IOF"].Value = valorIofDevido;
+                    b422CmBoletoMovimentoInsert.Parameters["@vl_abatimento"].Value = valorAbatimentoConcedido;
+                    b422CmBoletoMovimentoInsert.Parameters["@vl_desconto"].Value = valorDescontoConcedido;
+                    b422CmBoletoMovimentoInsert.Parameters["@vl_pago"].Value = valorPago;
+                    b422CmBoletoMovimentoInsert.Parameters["@vl_juros_mora"].Value = valorJurosMora;
+                    b422CmBoletoMovimentoInsert.Parameters["@dt_credito"].Value = Global.formataDataYyyyMmDdComSeparador(dataCredito);
+                    #endregion
+
+                    #region [ Tenta inserir o registro ]
+                    strMsgErro = "";
+                    try
+                    {
+                        intRetorno = BD.executaNonQuery(ref b422CmBoletoMovimentoInsert);
+                    }
+                    catch (Exception ex)
+                    {
+                        intRetorno = 0;
+                        strMsgErro = ex.Message;
+                        Global.gravaLogAtividade(strOperacao + " - Exception!!\n" + ex.ToString());
+                    }
+                    #endregion
+
+                    #region [ Gravou o registro? ]
+                    if (intRetorno == 0)
+                    {
+                        strMsgErro = "Falha ao tentar gravar o registro de movimentação do boleto!!\n" + strMsgErro;
+                        return false;
+                    }
+                    #endregion
+
+                    blnSucesso = true;
+                }
+                catch (Exception ex)
+                {
+                    // Para o usuário, exibe uma mensagem mais sucinta
+                    strMsgErro = ex.Message;
+                    // No log em arquivo, grava o stack de erro completo
+                    Global.gravaLogAtividade(strOperacao + " - Falha!!\n" + ex.ToString());
+                    return false;
+                }
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar inserir o registro de movimentação do boleto!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ b422BoletoOcorrenciaInsere ]
+        /// <summary>
+        /// Grava o registro na tabela de ocorrências de boletos (t_FIN_BOLETO_OCORRENCIA).
+        /// IMPORTANTE: alguns campos podem estar vazios quando for o caso de ser um boleto
+        /// desconhecido ou não identificado (tipicamente, ocorrência 17 - liquidação após baixa
+        /// ou Título não registrado).
+        /// São gravados como ocorrências os registros do arquivo de retorno que necessitam de
+        /// análise humana.
+        /// Podem ocorrer as seguintes situações:
+        ///		1) Boletos já tratados pelo sistema, mas que precisam informar alguma situação
+        ///		   especial para o usuário (ex: boleto pago com valor maior que o esperado).
+        ///		2) Boletos com código de identificação de ocorrência desconhecido e/ou não tratado. 
+        ///		   É a chamada "vala comum".
+        /// </summary>
+        /// <param name="usuario">Usuário que está realizando o processamento da carga do arquivo de retorno</param>
+        /// <param name="id_arq_retorno">Identificação do registro associado na tabela t_FIN_BOLETO_ARQ_RETORNO</param>
+        /// <param name="id_boleto">Identificação do registro da tabela t_FIN_BOLETO (pode estar zerado no caso de boleto não identificado)</param>
+        /// <param name="id_boleto_item">Identificação do registro da tabela t_FIN_BOLETO_ITEM (pode estar zerado no caso de boleto não identificado)</param>
+        /// <param name="numeroDocumento">Número do documento (pode estar zerado no caso de boleto não identificado)</param>
+        /// <param name="nossoNumero">Nosso número (sem dígito)</param>
+        /// <param name="digitoNossoNumero">Dígito do nosso número</param>
+        /// <param name="dataVencto">Data de vencimento do título</param>
+        /// <param name="valorTitulo">Valor do título</param>
+        /// <param name="identificacaoOcorrencia">Código de identificação da ocorrência</param>
+        /// <param name="codRejeicao">Código de motivo de rejeição</param>
+        /// <param name="dataOcorrencia">Data da ocorrência no banco</param>
+        /// <param name="obsOcorrencia">Observações e/ou detalhes sobre a ocorrência</param>
+        /// <param name="linhaTextoRegistroArquivo">Registro (linha) original do arquivo de retorno na íntegra</param>
+        /// <param name="strMsgErro">Retorna a mensagem de erro em caso de ocorrer erro</param>
+        /// <returns>
+        /// true: sucesso na gravação dos dados
+        /// false: falha na gravação dos dados
+        /// </returns>
+        public static bool b422BoletoOcorrenciaInsere(String usuario,
+                                                 int id_arq_retorno,
+                                                 int id_boleto_cedente,
+                                                 int id_boleto,
+                                                 int id_boleto_item,
+                                                 byte st_divergencia_valor,
+                                                 String numeroDocumento,
+                                                 String nossoNumero,
+                                                 String digitoNossoNumero,
+                                                 DateTime dataVencto,
+                                                 decimal valorTitulo,
+                                                 String identificacaoOcorrencia,
+                                                 String codRejeicao,
+                                                 DateTime dataOcorrencia,
+                                                 String obsOcorrencia,
+                                                 String linhaTextoRegistroArquivo,
+                                                 ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            bool blnSucesso = false;
+            bool blnGerouNsu;
+            int intRetorno;
+            int intNsuBoletoOcorrencia = 0;
+            String strOperacao = "Gravação de novo registro de ocorrência para o boleto [Safra]";
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Consistência ]
+                if (id_arq_retorno <= 0)
+                {
+                    strMsgErro = "Número de identificação do registro associado na tabela t_FIN_BOLETO_ARQ_RETORNO não foi informado!!";
+                    return false;
+                }
+                #endregion
+
+                try
+                {
+                    #region [ Gera o NSU para o registro ]
+                    blnGerouNsu = BD.geraNsu(Global.Cte.FIN.NSU.T_FIN_BOLETO_OCORRENCIA, ref intNsuBoletoOcorrencia, ref strMsgErro);
+                    if (!blnGerouNsu)
+                    {
+                        strMsgErro = "Falha ao tentar gerar o NSU para o registro de ocorrência para o boleto!!\n" + strMsgErro;
+                        return false;
+                    }
+                    #endregion
+
+                    #region [ Preenche o valor dos parâmetros ]
+                    b422CmBoletoOcorrenciaInsert.Parameters["@id"].Value = intNsuBoletoOcorrencia;
+                    b422CmBoletoOcorrenciaInsert.Parameters["@id_arq_retorno"].Value = id_arq_retorno;
+                    b422CmBoletoOcorrenciaInsert.Parameters["@id_boleto_cedente"].Value = id_boleto_cedente;
+                    b422CmBoletoOcorrenciaInsert.Parameters["@id_boleto"].Value = id_boleto;
+                    b422CmBoletoOcorrenciaInsert.Parameters["@id_boleto_item"].Value = id_boleto_item;
+                    b422CmBoletoOcorrenciaInsert.Parameters["@st_divergencia_valor"].Value = st_divergencia_valor;
+                    b422CmBoletoOcorrenciaInsert.Parameters["@numero_documento"].Value = numeroDocumento.Trim();
+                    b422CmBoletoOcorrenciaInsert.Parameters["@nosso_numero"].Value = nossoNumero.Trim();
+                    b422CmBoletoOcorrenciaInsert.Parameters["@digito_nosso_numero"].Value = digitoNossoNumero.Trim();
+                    b422CmBoletoOcorrenciaInsert.Parameters["@dt_vencto"].Value = Global.formataDataYyyyMmDdComSeparador(dataVencto);
+                    b422CmBoletoOcorrenciaInsert.Parameters["@vl_titulo"].Value = valorTitulo;
+                    b422CmBoletoOcorrenciaInsert.Parameters["@identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                    b422CmBoletoOcorrenciaInsert.Parameters["@motivos_rejeicoes"].Value = codRejeicao;
+                    b422CmBoletoOcorrenciaInsert.Parameters["@data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrencia);
+                    b422CmBoletoOcorrenciaInsert.Parameters["@obs_ocorrencia"].Value = obsOcorrencia;
+                    b422CmBoletoOcorrenciaInsert.Parameters["@registro_arq_retorno"].Value = linhaTextoRegistroArquivo;
+                    #endregion
+
+                    #region [ Tenta inserir o registro ]
+                    strMsgErro = "";
+                    try
+                    {
+                        intRetorno = BD.executaNonQuery(ref b422CmBoletoOcorrenciaInsert);
+                    }
+                    catch (Exception ex)
+                    {
+                        intRetorno = 0;
+                        strMsgErro = ex.Message;
+                        Global.gravaLogAtividade(strOperacao + " - Exception!!\n" + ex.ToString());
+                    }
+                    #endregion
+
+                    #region [ Gravou o registro? ]
+                    if (intRetorno == 0)
+                    {
+                        strMsgErro = "Falha ao tentar gravar o registro de ocorrência para o boleto!!\n" + strMsgErro;
+                        return false;
+                    }
+                    #endregion
+
+                    blnSucesso = true;
+                }
+                catch (Exception ex)
+                {
+                    // Para o usuário, exibe uma mensagem mais sucinta
+                    strMsgErro = ex.Message;
+                    // No log em arquivo, grava o stack de erro completo
+                    Global.gravaLogAtividade(strOperacao + " - Falha!!\n" + ex.ToString());
+                    return false;
+                }
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar inserir o registro de ocorrência para o boleto!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ b422BoletoOcorrenciaInsere ]
+        public static bool b422BoletoOcorrenciaInsere(String usuario,
+                                                 int id_arq_retorno,
+                                                 int id_boleto_cedente,
+                                                 int id_boleto,
+                                                 int id_boleto_item,
+                                                 String numeroDocumento,
+                                                 String nossoNumero,
+                                                 String digitoNossoNumero,
+                                                 DateTime dataVencto,
+                                                 decimal valorTitulo,
+                                                 String identificacaoOcorrencia,
+                                                 String codRejeicao,
+                                                 DateTime dataOcorrencia,
+                                                 String obsOcorrencia,
+                                                 String linhaTextoRegistroArquivo,
+                                                 ref String strMsgErro)
+        {
+            return b422BoletoOcorrenciaInsere(usuario,
+                                            id_arq_retorno,
+                                            id_boleto_cedente,
+                                            id_boleto,
+                                            id_boleto_item,
+                                            Global.Cte.FIN.StCampoFlag.FLAG_DESLIGADO,
+                                            numeroDocumento,
+                                            nossoNumero,
+                                            digitoNossoNumero,
+                                            dataVencto,
+                                            valorTitulo,
+                                            identificacaoOcorrencia,
+                                            codRejeicao,
+                                            dataOcorrencia,
+                                            obsOcorrencia,
+                                            linhaTextoRegistroArquivo,
+                                            ref strMsgErro);
+        }
+        #endregion
+
+        #region [ b422AtualizaBoletoItemOcorrencia02EntradaConfirmada ]
+        public static bool b422AtualizaBoletoItemOcorrencia02EntradaConfirmada(
+                                String usuario,
+                                int idBoletoItem,
+                                String nossoNumero,
+                                String digitoNossoNumero,
+                                String identificacaoOcorrencia,
+                                String codRejeicao,
+                                DateTime dataOcorrenciaBanco,
+                                String codigoBarras,
+                                String linhaDigitavel,
+                                decimal vlTarifaRegistro,
+                                String bancoCobrador,
+                                String agenciaCobradora,
+                                String dataCredito,
+                                String beneficiarioTransferidoOcorrencia21,
+                                String indicadorEntradaDDA,
+                                String meioLiquidacao,
+                                ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 02 (entrada confirmada) [Safra]";
+            bool blnSucesso = false;
+            int intRetorno;
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Preenche o valor dos parâmetros ]
+                b422CmBoletoItemAtualizaOcorrencia02.Parameters["@id"].Value = idBoletoItem;
+                b422CmBoletoItemAtualizaOcorrencia02.Parameters["@nosso_numero"].Value = nossoNumero;
+                b422CmBoletoItemAtualizaOcorrencia02.Parameters["@digito_nosso_numero"].Value = digitoNossoNumero;
+                b422CmBoletoItemAtualizaOcorrencia02.Parameters["@codigo_barras"].Value = codigoBarras;
+                b422CmBoletoItemAtualizaOcorrencia02.Parameters["@linha_digitavel"].Value = linhaDigitavel;
+                b422CmBoletoItemAtualizaOcorrencia02.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                b422CmBoletoItemAtualizaOcorrencia02.Parameters["@ult_motivos_rejeicoes"].Value = codRejeicao;
+                b422CmBoletoItemAtualizaOcorrencia02.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b422CmBoletoItemAtualizaOcorrencia02.Parameters["@dt_entrada_confirmada"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b422CmBoletoItemAtualizaOcorrencia02.Parameters["@vl_tarifa_registro"].Value = vlTarifaRegistro;
+                b422CmBoletoItemAtualizaOcorrencia02.Parameters["@banco_cobrador"].Value = bancoCobrador;
+                b422CmBoletoItemAtualizaOcorrencia02.Parameters["@agencia_cobradora"].Value = agenciaCobradora;
+                b422CmBoletoItemAtualizaOcorrencia02.Parameters["@data_credito"].Value = dataCredito;
+                b422CmBoletoItemAtualizaOcorrencia02.Parameters["@dt_credito"].Value = Global.formataDataYyyyMmDdComSeparador(Global.converteDdMmYyParaDateTime(dataCredito));
+                b422CmBoletoItemAtualizaOcorrencia02.Parameters["@beneficiario_transferido_ocorrencia_21"].Value = beneficiarioTransferidoOcorrencia21;
+                b422CmBoletoItemAtualizaOcorrencia02.Parameters["@indicador_entrada_DDA"].Value = indicadorEntradaDDA;
+                b422CmBoletoItemAtualizaOcorrencia02.Parameters["@meio_liquidacao"].Value = meioLiquidacao;
+                b422CmBoletoItemAtualizaOcorrencia02.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+                #endregion
+
+                #region [ Tenta alterar o registro ]
+                try
+                {
+                    intRetorno = BD.executaNonQuery(ref b422CmBoletoItemAtualizaOcorrencia02);
+                }
+                catch (Exception ex)
+                {
+                    intRetorno = 0;
+                    Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+                }
+                if (intRetorno == 1)
+                {
+                    blnSucesso = true;
+                }
+                else
+                {
+                    blnSucesso = false;
+                }
+                #endregion
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 02 (entrada confirmada)!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ b422AtualizaBoletoItemOcorrencia06LiquidacaoNormal ]
+        public static bool b422AtualizaBoletoItemOcorrencia06LiquidacaoNormal(
+                                String usuario,
+                                int idBoletoItem,
+                                String identificacaoOcorrencia,
+                                String codRejeicao,
+                                DateTime dataOcorrenciaBanco,
+                                decimal vlAbatimentoConcedido,
+                                decimal vlDescontoConcedido,
+                                ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 06 (liquidação normal) [Safra]";
+            bool blnSucesso = false;
+            int intRetorno;
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Preenche o valor dos parâmetros ]
+                b422CmBoletoItemAtualizaOcorrencia06.Parameters["@id"].Value = idBoletoItem;
+                b422CmBoletoItemAtualizaOcorrencia06.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                b422CmBoletoItemAtualizaOcorrencia06.Parameters["@ult_motivos_rejeicoes"].Value = codRejeicao;
+                b422CmBoletoItemAtualizaOcorrencia06.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b422CmBoletoItemAtualizaOcorrencia06.Parameters["@vl_abatimento_concedido"].Value = vlAbatimentoConcedido;
+                b422CmBoletoItemAtualizaOcorrencia06.Parameters["@vl_desconto_concedido"].Value = vlDescontoConcedido;
+                b422CmBoletoItemAtualizaOcorrencia06.Parameters["@st_boleto_ocorrencia_06"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
+                b422CmBoletoItemAtualizaOcorrencia06.Parameters["@dt_ocorrencia_banco_boleto_ocorrencia_06"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b422CmBoletoItemAtualizaOcorrencia06.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+                #endregion
+
+                #region [ Tenta alterar o registro ]
+                try
+                {
+                    intRetorno = BD.executaNonQuery(ref b422CmBoletoItemAtualizaOcorrencia06);
+                }
+                catch (Exception ex)
+                {
+                    intRetorno = 0;
+                    Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+                }
+                if (intRetorno == 1)
+                {
+                    blnSucesso = true;
+                }
+                else
+                {
+                    blnSucesso = false;
+                }
+                #endregion
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 06 (liquidação normal)!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ b422AtualizaBoletoItemOcorrencia09BaixadoAutomaticamente ]
+        public static bool b422AtualizaBoletoItemOcorrencia09BaixadoAutomaticamente(
+                                String usuario,
+                                int idBoletoItem,
+                                String identificacaoOcorrencia,
+                                String codRejeicao,
+                                DateTime dataOcorrenciaBanco,
+                                ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 09 (baixado automaticamente) [Safra]";
+            bool blnSucesso = false;
+            int intRetorno;
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Preenche o valor dos parâmetros ]
+                b422CmBoletoItemAtualizaOcorrencia09.Parameters["@id"].Value = idBoletoItem;
+                b422CmBoletoItemAtualizaOcorrencia09.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                b422CmBoletoItemAtualizaOcorrencia09.Parameters["@ult_motivos_rejeicoes"].Value = codRejeicao;
+                b422CmBoletoItemAtualizaOcorrencia09.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b422CmBoletoItemAtualizaOcorrencia09.Parameters["@st_boleto_baixado"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
+                b422CmBoletoItemAtualizaOcorrencia09.Parameters["@dt_ocorrencia_banco_boleto_baixado"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b422CmBoletoItemAtualizaOcorrencia09.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+                #endregion
+
+                #region [ Tenta alterar o registro ]
+                try
+                {
+                    intRetorno = BD.executaNonQuery(ref b422CmBoletoItemAtualizaOcorrencia09);
+                }
+                catch (Exception ex)
+                {
+                    intRetorno = 0;
+                    Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+                }
+                if (intRetorno == 1)
+                {
+                    blnSucesso = true;
+                }
+                else
+                {
+                    blnSucesso = false;
+                }
+                #endregion
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 09 (baixado automaticamente via arquivo)!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ b422AtualizaBoletoItemOcorrencia10BaixadoConfInstrucoes ]
+        public static bool b422AtualizaBoletoItemOcorrencia10BaixadoConfInstrucoes(
+                                String usuario,
+                                int idBoletoItem,
+                                String identificacaoOcorrencia,
+                                String codRejeicao,
+                                DateTime dataOcorrenciaBanco,
+                                ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 10 (baixado conforme instruções) [Safra]";
+            bool blnSucesso = false;
+            int intRetorno;
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Preenche o valor dos parâmetros ]
+                b422CmBoletoItemAtualizaOcorrencia10.Parameters["@id"].Value = idBoletoItem;
+                b422CmBoletoItemAtualizaOcorrencia10.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                b422CmBoletoItemAtualizaOcorrencia10.Parameters["@ult_motivos_rejeicoes"].Value = codRejeicao;
+                b422CmBoletoItemAtualizaOcorrencia10.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b422CmBoletoItemAtualizaOcorrencia10.Parameters["@st_boleto_baixado"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
+                b422CmBoletoItemAtualizaOcorrencia10.Parameters["@dt_ocorrencia_banco_boleto_baixado"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b422CmBoletoItemAtualizaOcorrencia10.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+                #endregion
+
+                #region [ Tenta alterar o registro ]
+                try
+                {
+                    intRetorno = BD.executaNonQuery(ref b422CmBoletoItemAtualizaOcorrencia10);
+                }
+                catch (Exception ex)
+                {
+                    intRetorno = 0;
+                    Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+                }
+                if (intRetorno == 1)
+                {
+                    blnSucesso = true;
+                }
+                else
+                {
+                    blnSucesso = false;
+                }
+                #endregion
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 10 (baixado conforme instruções)!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ b422AtualizaBoletoItemOcorrencia12AbatimentoConcedido ]
+        public static bool b422AtualizaBoletoItemOcorrencia12AbatimentoConcedido(
+                                String usuario,
+                                int idBoletoItem,
+                                String identificacaoOcorrencia,
+                                String codRejeicao,
+                                DateTime dataOcorrenciaBanco,
+                                decimal vlAbatimentoConcedido,
+                                ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 12 (abatimento concedido) [Safra]";
+            bool blnSucesso = false;
+            int intRetorno;
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Preenche o valor dos parâmetros ]
+                b422CmBoletoItemAtualizaOcorrencia12.Parameters["@id"].Value = idBoletoItem;
+                b422CmBoletoItemAtualizaOcorrencia12.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                b422CmBoletoItemAtualizaOcorrencia12.Parameters["@ult_motivos_rejeicoes"].Value = codRejeicao;
+                b422CmBoletoItemAtualizaOcorrencia12.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b422CmBoletoItemAtualizaOcorrencia12.Parameters["@vl_abatimento_concedido"].Value = vlAbatimentoConcedido;
+                b422CmBoletoItemAtualizaOcorrencia12.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+                #endregion
+
+                #region [ Tenta alterar o registro ]
+                try
+                {
+                    intRetorno = BD.executaNonQuery(ref b422CmBoletoItemAtualizaOcorrencia12);
+                }
+                catch (Exception ex)
+                {
+                    intRetorno = 0;
+                    Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+                }
+                if (intRetorno == 1)
+                {
+                    blnSucesso = true;
+                }
+                else
+                {
+                    blnSucesso = false;
+                }
+                #endregion
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 12 (abatimento concedido)!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ b422AtualizaBoletoItemOcorrencia13AbatimentoCancelado ]
+        public static bool b422AtualizaBoletoItemOcorrencia13AbatimentoCancelado(
+                                String usuario,
+                                int idBoletoItem,
+                                String identificacaoOcorrencia,
+                                String codRejeicao,
+                                DateTime dataOcorrenciaBanco,
+                                ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 13 (abatimento cancelado) [Safra]";
+            bool blnSucesso = false;
+            int intRetorno;
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Preenche o valor dos parâmetros ]
+                b422CmBoletoItemAtualizaOcorrencia13.Parameters["@id"].Value = idBoletoItem;
+                b422CmBoletoItemAtualizaOcorrencia13.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                b422CmBoletoItemAtualizaOcorrencia13.Parameters["@ult_motivos_rejeicoes"].Value = codRejeicao;
+                b422CmBoletoItemAtualizaOcorrencia13.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b422CmBoletoItemAtualizaOcorrencia13.Parameters["@vl_abatimento_concedido"].Value = 0m;
+                b422CmBoletoItemAtualizaOcorrencia13.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+                #endregion
+
+                #region [ Tenta alterar o registro ]
+                try
+                {
+                    intRetorno = BD.executaNonQuery(ref b422CmBoletoItemAtualizaOcorrencia13);
+                }
+                catch (Exception ex)
+                {
+                    intRetorno = 0;
+                    Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+                }
+                if (intRetorno == 1)
+                {
+                    blnSucesso = true;
+                }
+                else
+                {
+                    blnSucesso = false;
+                }
+                #endregion
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 13 (abatimento cancelado)!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ b422AtualizaBoletoItemOcorrencia14VenctoAlterado ]
+        public static bool b422AtualizaBoletoItemOcorrencia14VenctoAlterado(
+                                String usuario,
+                                int idBoletoItem,
+                                String identificacaoOcorrencia,
+                                String codRejeicao,
+                                DateTime dataOcorrenciaBanco,
+                                DateTime dtNovoVencto,
+                                ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 14 (vencimento alterado) [Safra]";
+            bool blnSucesso = false;
+            int intRetorno;
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Preenche o valor dos parâmetros ]
+                b422CmBoletoItemAtualizaOcorrencia14.Parameters["@id"].Value = idBoletoItem;
+                b422CmBoletoItemAtualizaOcorrencia14.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                b422CmBoletoItemAtualizaOcorrencia14.Parameters["@ult_motivos_rejeicoes"].Value = codRejeicao;
+                b422CmBoletoItemAtualizaOcorrencia14.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b422CmBoletoItemAtualizaOcorrencia14.Parameters["@dt_vencto"].Value = Global.formataDataYyyyMmDdComSeparador(dtNovoVencto);
+                b422CmBoletoItemAtualizaOcorrencia14.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+                #endregion
+
+                #region [ Tenta alterar o registro ]
+                try
+                {
+                    intRetorno = BD.executaNonQuery(ref b422CmBoletoItemAtualizaOcorrencia14);
+                }
+                catch (Exception ex)
+                {
+                    intRetorno = 0;
+                    Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+                }
+                if (intRetorno == 1)
+                {
+                    blnSucesso = true;
+                }
+                else
+                {
+                    blnSucesso = false;
+                }
+                #endregion
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 14 (vencimento alterado)!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ b422AtualizaBoletoItemOcorrencia15LiquidacaoEmCartorio ]
+        public static bool b422AtualizaBoletoItemOcorrencia15LiquidacaoEmCartorio(
+                                String usuario,
+                                int idBoletoItem,
+                                String identificacaoOcorrencia,
+                                String codRejeicao,
+                                DateTime dataOcorrenciaBanco,
+                                decimal vlAbatimentoConcedido,
+                                decimal vlDescontoConcedido,
+                                ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 15 (liquidação em cartório) [Safra]";
+            bool blnSucesso = false;
+            int intRetorno;
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Preenche o valor dos parâmetros ]
+                b422CmBoletoItemAtualizaOcorrencia15.Parameters["@id"].Value = idBoletoItem;
+                b422CmBoletoItemAtualizaOcorrencia15.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                b422CmBoletoItemAtualizaOcorrencia15.Parameters["@ult_motivos_rejeicoes"].Value = codRejeicao;
+                b422CmBoletoItemAtualizaOcorrencia15.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b422CmBoletoItemAtualizaOcorrencia15.Parameters["@vl_abatimento_concedido"].Value = vlAbatimentoConcedido;
+                b422CmBoletoItemAtualizaOcorrencia15.Parameters["@vl_desconto_concedido"].Value = vlDescontoConcedido;
+                b422CmBoletoItemAtualizaOcorrencia15.Parameters["@st_boleto_ocorrencia_15"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
+                b422CmBoletoItemAtualizaOcorrencia15.Parameters["@dt_ocorrencia_banco_boleto_ocorrencia_15"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                b422CmBoletoItemAtualizaOcorrencia15.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+                #endregion
+
+                #region [ Tenta alterar o registro ]
+                try
+                {
+                    intRetorno = BD.executaNonQuery(ref b422CmBoletoItemAtualizaOcorrencia15);
+                }
+                catch (Exception ex)
+                {
+                    intRetorno = 0;
+                    Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+                }
+                if (intRetorno == 1)
+                {
+                    blnSucesso = true;
+                }
+                else
+                {
+                    blnSucesso = false;
+                }
+                #endregion
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 15 (liquidação em cartório)!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ b422AtualizaBoletoItemOcorrencia16TituloPagoEmCheque ]
+        public static bool b422AtualizaBoletoItemOcorrencia16TituloPagoEmCheque(
+                                String usuario,
+                                int idBoletoItem,
+                                String identificacaoOcorrencia,
+                                String motivosRejeicoes,
+                                DateTime dataOcorrenciaBanco,
+                                ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 16 (título pago em cheque) [Safra]";
+            bool blnSucesso = false;
+            int intRetorno;
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Preenche o valor dos parâmetros ]
+                cmBoletoItemAtualizaOcorrencia16.Parameters["@id"].Value = idBoletoItem;
+                cmBoletoItemAtualizaOcorrencia16.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                cmBoletoItemAtualizaOcorrencia16.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+                cmBoletoItemAtualizaOcorrencia16.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                cmBoletoItemAtualizaOcorrencia16.Parameters["@st_boleto_pago_cheque"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
+                cmBoletoItemAtualizaOcorrencia16.Parameters["@dt_ocorrencia_banco_boleto_pago_cheque"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                cmBoletoItemAtualizaOcorrencia16.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+                #endregion
+
+                #region [ Tenta alterar o registro ]
+                try
+                {
+                    intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia16);
+                }
+                catch (Exception ex)
+                {
+                    intRetorno = 0;
+                    Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+                }
+                if (intRetorno == 1)
+                {
+                    blnSucesso = true;
+                }
+                else
+                {
+                    blnSucesso = false;
+                }
+                #endregion
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 16 (título pago em cheque)!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ b422AtualizaBoletoItemOcorrencia17LiqAposBaixaOuTitNaoRegistrado ]
+        public static bool b422AtualizaBoletoItemOcorrencia17LiqAposBaixaOuTitNaoRegistrado(
+                                String usuario,
+                                int idBoletoItem,
+                                String identificacaoOcorrencia,
+                                String motivosRejeicoes,
+                                DateTime dataOcorrenciaBanco,
+                                ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 17 (liquidação após baixa ou título não registrado) [Safra]";
+            bool blnSucesso = false;
+            int intRetorno;
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Preenche o valor dos parâmetros ]
+                cmBoletoItemAtualizaOcorrencia17.Parameters["@id"].Value = idBoletoItem;
+                cmBoletoItemAtualizaOcorrencia17.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                cmBoletoItemAtualizaOcorrencia17.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+                cmBoletoItemAtualizaOcorrencia17.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                cmBoletoItemAtualizaOcorrencia17.Parameters["@st_boleto_ocorrencia_17"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
+                cmBoletoItemAtualizaOcorrencia17.Parameters["@dt_ocorrencia_banco_boleto_ocorrencia_17"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                cmBoletoItemAtualizaOcorrencia17.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+                #endregion
+
+                #region [ Tenta alterar o registro ]
+                try
+                {
+                    intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia17);
+                }
+                catch (Exception ex)
+                {
+                    intRetorno = 0;
+                    Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+                }
+                if (intRetorno == 1)
+                {
+                    blnSucesso = true;
+                }
+                else
+                {
+                    blnSucesso = false;
+                }
+                #endregion
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 17 (liquidação após baixa ou título não registrado)!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ b422AtualizaBoletoItemOcorrencia19ConfirmacaoRecebInstProtesto ]
+        public static bool b422AtualizaBoletoItemOcorrencia19ConfirmacaoRecebInstProtesto(
+                                String usuario,
+                                int idBoletoItem,
+                                String identificacaoOcorrencia,
+                                String motivosRejeicoes,
+                                String motivoCodigoOcorrencia19,
+                                DateTime dataOcorrenciaBanco,
+                                ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 19 (confirmação receb. inst. de protesto) [Safra]";
+            bool blnSucesso = false;
+            int intRetorno;
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Preenche o valor dos parâmetros ]
+                cmBoletoItemAtualizaOcorrencia19.Parameters["@id"].Value = idBoletoItem;
+                cmBoletoItemAtualizaOcorrencia19.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                cmBoletoItemAtualizaOcorrencia19.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+                cmBoletoItemAtualizaOcorrencia19.Parameters["@ult_motivo_ocorrencia_19"].Value = motivoCodigoOcorrencia19;
+                cmBoletoItemAtualizaOcorrencia19.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                cmBoletoItemAtualizaOcorrencia19.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+                #endregion
+
+                #region [ Tenta alterar o registro ]
+                try
+                {
+                    intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia19);
+                }
+                catch (Exception ex)
+                {
+                    intRetorno = 0;
+                    Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+                }
+                if (intRetorno == 1)
+                {
+                    blnSucesso = true;
+                }
+                else
+                {
+                    blnSucesso = false;
+                }
+                #endregion
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 19 (confirmação receb. inst. de protesto)!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ b422AtualizaBoletoItemOcorrencia22TituloComPagamentoCancelado ]
+        public static bool b422AtualizaBoletoItemOcorrencia22TituloComPagamentoCancelado(
+                                String usuario,
+                                int idBoletoItem,
+                                String identificacaoOcorrencia,
+                                String motivosRejeicoes,
+                                DateTime dataOcorrenciaBanco,
+                                ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 22 (título com pagamento cancelado) [Safra]";
+            bool blnSucesso = false;
+            int intRetorno;
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Preenche o valor dos parâmetros ]
+                cmBoletoItemAtualizaOcorrencia22.Parameters["@id"].Value = idBoletoItem;
+                cmBoletoItemAtualizaOcorrencia22.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                cmBoletoItemAtualizaOcorrencia22.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+                cmBoletoItemAtualizaOcorrencia22.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                cmBoletoItemAtualizaOcorrencia22.Parameters["@st_boleto_pago_cheque"].Value = Global.Cte.FIN.StCampoFlag.FLAG_DESLIGADO;
+                cmBoletoItemAtualizaOcorrencia22.Parameters["@dt_ocorrencia_banco_boleto_pago_cheque"].Value = "";
+                cmBoletoItemAtualizaOcorrencia22.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+                #endregion
+
+                #region [ Tenta alterar o registro ]
+                try
+                {
+                    intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia22);
+                }
+                catch (Exception ex)
+                {
+                    intRetorno = 0;
+                    Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+                }
+                if (intRetorno == 1)
+                {
+                    blnSucesso = true;
+                }
+                else
+                {
+                    blnSucesso = false;
+                }
+                #endregion
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 22 (título com pagamento cancelado)!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ b422AtualizaBoletoItemOcorrencia23EntradaTituloEmCartorio ]
+        public static bool b422AtualizaBoletoItemOcorrencia23EntradaTituloEmCartorio(
+                                String usuario,
+                                int idBoletoItem,
+                                String identificacaoOcorrencia,
+                                String motivosRejeicoes,
+                                DateTime dataOcorrenciaBanco,
+                                ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 23 (entrada do título em cartório) [Safra]";
+            bool blnSucesso = false;
+            int intRetorno;
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Preenche o valor dos parâmetros ]
+                cmBoletoItemAtualizaOcorrencia23.Parameters["@id"].Value = idBoletoItem;
+                cmBoletoItemAtualizaOcorrencia23.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                cmBoletoItemAtualizaOcorrencia23.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+                cmBoletoItemAtualizaOcorrencia23.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                cmBoletoItemAtualizaOcorrencia23.Parameters["@st_boleto_ocorrencia_23"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
+                cmBoletoItemAtualizaOcorrencia23.Parameters["@dt_ocorrencia_banco_boleto_ocorrencia_23"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                cmBoletoItemAtualizaOcorrencia23.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+                #endregion
+
+                #region [ Tenta alterar o registro ]
+                try
+                {
+                    intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia23);
+                }
+                catch (Exception ex)
+                {
+                    intRetorno = 0;
+                    Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+                }
+                if (intRetorno == 1)
+                {
+                    blnSucesso = true;
+                }
+                else
+                {
+                    blnSucesso = false;
+                }
+                #endregion
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 23 (entrada do título em cartório)!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ b422AtualizaBoletoItemOcorrencia28DebitoTarifasCustas ]
+        public static bool b422AtualizaBoletoItemOcorrencia28DebitoTarifasCustas(
+                                String usuario,
+                                int idBoletoItem,
+                                String identificacaoOcorrencia,
+                                String motivosRejeicoes,
+                                DateTime dataOcorrenciaBanco,
+                                B422RegTipo1ArqRetorno linhaRegistro,
+                                ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 28 (débito de tarifas/custas) [Safra]";
+            bool blnSucesso = false;
+            int intRetorno;
+            String strClausulaSet = "";
+            String strSql;
+            SqlCommand cmCommand;
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Monta a cláusula SET do SQL da atualização ]
+                if (Global.existeMotivoOcorrencia(linhaRegistro.motivosRejeicoes.valor, "03"))
+                {
+                    #region [ Tarifa de sustação (motivo 03) usando campo despesas de cobrança ]
+                    if (strClausulaSet.Length > 0) strClausulaSet += ",";
+                    strClausulaSet += " vl_tarifa_sustacao = " + Global.sqlFormataDecimal(Global.decodificaCampoMonetario(linhaRegistro.valorDespesasCobranca.valor));
+                    #endregion
+                }
+                else if (Global.existeMotivoOcorrencia(linhaRegistro.motivosRejeicoes.valor, "04"))
+                {
+                    #region [ Tarifa de protesto (motivo 04) usando campo despesas de cobrança ]
+                    if (strClausulaSet.Length > 0) strClausulaSet += ",";
+                    strClausulaSet += " vl_tarifa_protesto = " + Global.sqlFormataDecimal(Global.decodificaCampoMonetario(linhaRegistro.valorDespesasCobranca.valor));
+                    #endregion
+                }
+
+                #region [ Custas de protesto (motivo 08) usando campo outras despesas ]
+                if (Global.existeMotivoOcorrencia(linhaRegistro.motivosRejeicoes.valor, "08"))
+                {
+                    if (strClausulaSet.Length > 0) strClausulaSet += ",";
+                    strClausulaSet += " vl_custas_protesto = " + Global.sqlFormataDecimal(Global.decodificaCampoMonetario(linhaRegistro.valorOutrasDespesas.valor));
+                }
+                #endregion
+
+                #endregion
+
+                #region [ Há atualizações para fazer? ]
+                if (strClausulaSet.Length == 0) return true;
+                #endregion
+
+                #region [ Completa a cláusula SET com o preenchimento dos campos complementares ]
+                if (strClausulaSet.Length > 0) strClausulaSet += ",";
+                strClausulaSet += " ult_identificacao_ocorrencia = '" + identificacaoOcorrencia + "'," +
+                                  " ult_motivos_rejeicoes = '" + motivosRejeicoes + "'," +
+                                  " ult_data_ocorrencia_banco = " + Global.sqlMontaDateTimeParaSqlDateTime(dataOcorrenciaBanco) + "," +
+                                  " ult_data_carga_arq_retorno = " + Global.sqlMontaGetdateSomenteData() + "," +
+                                  " dt_ult_atualizacao = " + Global.sqlMontaGetdateSomenteData() + "," +
+                                  " dt_hr_ult_atualizacao = getdate()," +
+                                  " usuario_ult_atualizacao = '" + usuario + "'";
+                #endregion
+
+                #region [ Monta o SQL ]
+                strSql = "UPDATE t_FIN_BOLETO_ITEM" +
+                         " SET " + strClausulaSet +
+                         " WHERE" +
+                            " (id = " + idBoletoItem.ToString() + ")";
+                #endregion
+
+                #region [ Tenta alterar o registro ]
+                try
+                {
+                    cmCommand = BD.criaSqlCommand();
+                    cmCommand.CommandText = strSql;
+                    intRetorno = BD.executaNonQuery(ref cmCommand);
+                }
+                catch (Exception ex)
+                {
+                    intRetorno = 0;
+                    Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+                }
+                if (intRetorno == 1)
+                {
+                    blnSucesso = true;
+                }
+                else
+                {
+                    blnSucesso = false;
+                }
+                #endregion
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 28 (débito de tarifas/custas)!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ b422AtualizaBoletoItemOcorrencia34RetiradoCartorioManutencaoCarteira ]
+        public static bool b422AtualizaBoletoItemOcorrencia34RetiradoCartorioManutencaoCarteira(
+                                String usuario,
+                                int idBoletoItem,
+                                String identificacaoOcorrencia,
+                                String motivosRejeicoes,
+                                DateTime dataOcorrenciaBanco,
+                                ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            String strOperacao = "Atualiza o registro da parcela do boleto devido a ocorrência 34 (retirado de cartório e manutenção carteira) [Safra]";
+            bool blnSucesso = false;
+            int intRetorno;
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Preenche o valor dos parâmetros ]
+                cmBoletoItemAtualizaOcorrencia34.Parameters["@id"].Value = idBoletoItem;
+                cmBoletoItemAtualizaOcorrencia34.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                cmBoletoItemAtualizaOcorrencia34.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+                cmBoletoItemAtualizaOcorrencia34.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                cmBoletoItemAtualizaOcorrencia34.Parameters["@st_boleto_ocorrencia_34"].Value = Global.Cte.FIN.StCampoFlag.FLAG_LIGADO;
+                cmBoletoItemAtualizaOcorrencia34.Parameters["@dt_ocorrencia_banco_boleto_ocorrencia_34"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                cmBoletoItemAtualizaOcorrencia34.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+                #endregion
+
+                #region [ Tenta alterar o registro ]
+                try
+                {
+                    intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia34);
+                }
+                catch (Exception ex)
+                {
+                    intRetorno = 0;
+                    Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+                }
+                if (intRetorno == 1)
+                {
+                    blnSucesso = true;
+                }
+                else
+                {
+                    blnSucesso = false;
+                }
+                #endregion
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento da ocorrência 34 (retirado de cartório e manutenção carteira)!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ b422AtualizaBoletoItemOcorrenciaValaComum ]
+        public static bool b422AtualizaBoletoItemOcorrenciaValaComum(
+                                String usuario,
+                                int idBoletoItem,
+                                String identificacaoOcorrencia,
+                                String codRejeicao,
+                                DateTime dataOcorrenciaBanco,
+                                ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            String strOperacao = "Atualiza o registro da parcela do boleto com tratamento de vala comum para a ocorrência " + identificacaoOcorrencia + " [Safra]";
+            bool blnSucesso = false;
+            int intRetorno;
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Preenche o valor dos parâmetros ]
+                cmBoletoItemAtualizaOcorrenciaValaComum.Parameters["@id"].Value = idBoletoItem;
+                cmBoletoItemAtualizaOcorrenciaValaComum.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                cmBoletoItemAtualizaOcorrenciaValaComum.Parameters["@ult_motivos_rejeicoes"].Value = codRejeicao;
+                cmBoletoItemAtualizaOcorrenciaValaComum.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                cmBoletoItemAtualizaOcorrenciaValaComum.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+                #endregion
+
+                #region [ Tenta alterar o registro ]
+                try
+                {
+                    intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrenciaValaComum);
+                }
+                catch (Exception ex)
+                {
+                    intRetorno = 0;
+                    Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+                }
+                if (intRetorno == 1)
+                {
+                    blnSucesso = true;
+                }
+                else
+                {
+                    blnSucesso = false;
+                }
+                #endregion
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar atualizar os dados do registro durante tratamento de vala comum para a ocorrência " + identificacaoOcorrencia + "!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ b422AtualizaBoletoItemOcorrencia24CepIrregular ]
+        public static bool b422AtualizaBoletoItemOcorrencia24CepIrregular(
+                                String usuario,
+                                int idBoletoItem,
+                                String identificacaoOcorrencia,
+                                String motivosRejeicoes,
+                                String motivoCodigoOcorrencia19,
+                                DateTime dataOcorrenciaBanco,
+                                ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            String strOperacao = "Atualiza o registro da parcela do boleto com os dados da última ocorrência (" + identificacaoOcorrencia + ") [Safra]";
+            bool blnSucesso = false;
+            int intRetorno;
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Preenche o valor dos parâmetros ]
+                cmBoletoItemAtualizaOcorrencia24.Parameters["@id"].Value = idBoletoItem;
+                cmBoletoItemAtualizaOcorrencia24.Parameters["@ult_identificacao_ocorrencia"].Value = identificacaoOcorrencia;
+                cmBoletoItemAtualizaOcorrencia24.Parameters["@ult_motivos_rejeicoes"].Value = motivosRejeicoes;
+                cmBoletoItemAtualizaOcorrencia24.Parameters["@ult_motivo_ocorrencia_19"].Value = motivoCodigoOcorrencia19;
+                cmBoletoItemAtualizaOcorrencia24.Parameters["@ult_data_ocorrencia_banco"].Value = Global.formataDataYyyyMmDdComSeparador(dataOcorrenciaBanco);
+                cmBoletoItemAtualizaOcorrencia24.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+                #endregion
+
+                #region [ Tenta alterar o registro ]
+                try
+                {
+                    intRetorno = BD.executaNonQuery(ref cmBoletoItemAtualizaOcorrencia24);
+                }
+                catch (Exception ex)
+                {
+                    intRetorno = 0;
+                    Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+                }
+                if (intRetorno == 1)
+                {
+                    blnSucesso = true;
+                }
+                else
+                {
+                    blnSucesso = false;
+                }
+                #endregion
+
+                #region [ Processamento final de sucesso ou falha ]
+                if (blnSucesso)
+                {
+                    return true;
+                }
+                else
+                {
+                    strMsgErro = "Falha ao tentar atualizar o boleto com os dados da última ocorrência (" + identificacaoOcorrencia + ")!!";
+                    return false;
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #region [ b422CorrigeBoletoOcorrencia24CepIrregular ]
+        public static bool b422CorrigeBoletoOcorrencia24CepIrregular(
+                                String usuario,
+                                int idBoleto,
+                                String endereco,
+                                String bairro,
+                                String cep,
+                                String cidade,
+                                String uf,
+                                ref String strMsgErro)
+        {
+            #region [ Declarações ]
+            String strOperacao = "Corrige o endereço do sacado devido à ocorrência 24 (CEP irregular) e reseta status para reenviar no arquivo de remessa [Safra]";
+            int intRetorno;
+            String strSql;
+            SqlCommand cmComando;
+            #endregion
+
+            strMsgErro = "";
+            try
+            {
+                #region [ Preenche o valor dos parâmetros ]
+                cmBoletoCorrigeOcorrencia24CepIrregular.Parameters["@id"].Value = idBoleto;
+                cmBoletoCorrigeOcorrencia24CepIrregular.Parameters["@endereco_sacado"].Value = endereco;
+                cmBoletoCorrigeOcorrencia24CepIrregular.Parameters["@bairro_sacado"].Value = bairro;
+                cmBoletoCorrigeOcorrencia24CepIrregular.Parameters["@cep_sacado"].Value = Global.digitos(cep);
+                cmBoletoCorrigeOcorrencia24CepIrregular.Parameters["@cidade_sacado"].Value = cidade;
+                cmBoletoCorrigeOcorrencia24CepIrregular.Parameters["@uf_sacado"].Value = uf;
+                cmBoletoCorrigeOcorrencia24CepIrregular.Parameters["@usuario_ult_atualizacao"].Value = usuario;
+                #endregion
+
+                #region [ Tenta alterar os dados do endereço ]
+                try
+                {
+                    intRetorno = BD.executaNonQuery(ref cmBoletoCorrigeOcorrencia24CepIrregular);
+                }
+                catch (Exception ex)
+                {
+                    intRetorno = 0;
+                    Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+                }
+                if (intRetorno != 1)
+                {
+                    strMsgErro = "Falha ao tentar atualizar o endereço no registro do boleto durante o tratamento da ocorrência 24 (CEP irregular)!!";
+                    return false;
+                }
+                #endregion
+
+                #region [ Tenta resetar o status dos registros das parcelas ]
+                cmComando = BD.criaSqlCommand();
+                strSql = "UPDATE t_FIN_BOLETO_ITEM SET " +
+                            "status = " + Global.Cte.FIN.CodBoletoItemStatus.INICIAL.ToString() + ", " +
+                            "dt_ult_atualizacao = " + Global.sqlMontaGetdateSomenteData() + ", " +
+                            "dt_hr_ult_atualizacao = getdate(), " +
+                            "usuario_ult_atualizacao = '" + usuario + "' " +
+                        "WHERE " +
+                            "(id_boleto = " + idBoleto.ToString() + ")" +
+                            " AND (status = " + Global.Cte.FIN.CodBoletoItemStatus.BOLETO_REJEITADO_CEP_IRREGULAR.ToString() + ")";
+                cmComando.CommandText = strSql;
+
+                try
+                {
+                    intRetorno = BD.executaNonQuery(ref cmComando);
+                }
+                catch (Exception ex)
+                {
+                    intRetorno = 0;
+                    Global.gravaLogAtividade(strOperacao + " - Tentativa resultou em exception!!\n" + ex.ToString());
+                }
+                if (intRetorno <= 0)
+                {
+                    strMsgErro = "Falha ao tentar resetar o status dos registros das parcelas para reenviar no arquivo de remessa durante o tratamento da ocorrência 24 (CEP irregular): nenhuma parcela estava em situação que permitisse o reset!!";
+                    return false;
+                }
+                #endregion
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Para o usuário, exibe uma mensagem mais sucinta
+                strMsgErro = ex.Message;
+                // No log em arquivo, grava o stack de erro completo
+                Global.gravaLogAtividade(strOperacao + " - Falha!!" + "\n" + ex.ToString());
+                return false;
+            }
+        }
+        #endregion
+
+        #endregion
+
+        #endregion
+    }
 }

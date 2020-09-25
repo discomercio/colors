@@ -804,6 +804,14 @@ namespace Financeiro
                 }
                 #endregion
 
+                #region [ NumeroBanco ]
+                public class NumeroBanco
+                {
+                    public const string BRADESCO = "237";
+                    public const string SAFRA = "422";
+                }
+                #endregion
+
                 #region [ CodBoletoTipoVinculo ]
                 public class CodBoletoTipoVinculo
                 {
@@ -848,6 +856,27 @@ namespace Financeiro
                     public const byte CONTRA_APRESENTACAO = 3;
                     public const byte VER_INSTRUCOES = 4;
                     public const byte ALTERADO_PARA_A_VISTA = 5;
+                }
+                #endregion
+
+                #region [ BoletoSafra ]
+                public class BoletoSafra
+                {
+                    #region [ TipoInscricaoEmpresa ]
+                    public class TipoInscricaoEmpresa
+                    {
+                        public const string CPF = "01";
+                        public const string CNPJ = "02";
+                    }
+                    #endregion
+
+                    #region [ TipoCarteira ]
+                    public class TipoCarteira
+                    {
+                        public const string COBRANCA_SIMPLES = "1";
+                        public const string COBRANCA_VINCULADA = "2";
+                    }
+                    #endregion
                 }
                 #endregion
 
@@ -1159,68 +1188,7 @@ namespace Financeiro
         }
         #endregion
 
-        #region[ barraInvertidaAdd ]
-        public static string barraInvertidaAdd(string path)
-        {
-            if (path == null) return "";
-            string strResp = path.TrimEnd();
-            if (strResp.Length == 0) return "";
-            if (strResp[strResp.Length - 1] == (char)92) return strResp;
-            return strResp + (char)92;
-        }
-        #endregion
-
-        #region[ barraInvertidaDel ]
-        public static string barraInvertidaDel(string path)
-        {
-            if (path == null) return "";
-            string strResp = path.TrimEnd();
-            while (true)
-            {
-                if (strResp.Length == 0) return "";
-                if (strResp[strResp.Length - 1] != (char)92) return strResp;
-                strResp = strResp.Substring(0, strResp.Length - 1).TrimEnd();
-            }
-        }
-        #endregion
-
-        #region [ calculaBoletoItemFlagInstrucaoProtesto ]
-        /// <summary>
-        /// No caso de uma série de boletos ser gerada com instrução de protesto, esta rotina calcula
-        /// se a parcela do boleto indicada deve ser gerada com instrução de protesto ou não.
-        /// Devido aos custos dos cartórios, foram definidas algumas regras de quais parcelas de uma série
-        /// de boletos serão geradas c/ a instrução de protesto e quais não.
-        /// </summary>
-        /// <param name="numeroParcela">Número da parcela do boleto</param>
-        /// <param name="totalParcelas">Quantidade total de parcelas da série de boletos</param>
-        /// <returns>
-        /// 0: sem instrução de protesto (valor que será usado p/ gravar no banco de dados)
-        /// 1: com instrução de protesto (valor que será usado p/ gravar no banco de dados)
-        /// </returns>
-        public static byte calculaBoletoItemFlagInstrucaoProtesto(byte numeroParcela, byte totalParcelas)
-        {
-            #region [ Regra ]
-            // Regra:
-            //	1 boleto: protesta
-            //	2 boletos: protesta o segundo
-            //	3 boletos: protesta o segundo e o terceiro
-            //	4 boletos: protesta o segundo e o quarto
-            //	5 boletos: protesta o segundo e o quinto
-            //	e assim por diante
-            #endregion
-
-            // A última parcela sempre tem instrução de protesto
-            // Se houver apenas 1 parcela, deverá ter instrução de protesto
-            if (numeroParcela == totalParcelas) return 1;
-
-            // A segunda parcela sempre tem instrução de protesto
-            if (numeroParcela == 2) return 1;
-
-            return 0;
-        }
-        #endregion
-
-        #region [ calculaDigitoVerificadorCodigoBarrasBradesco ]
+        #region [ b237CalculaDigitoVerificadorCodigoBarras ]
         /// <summary>
         /// Calcula o dígito verificador para o código de barras.
         /// O cálculo é feito através do módulo 11, com base de cálculo igual a 9.
@@ -1231,7 +1199,7 @@ namespace Financeiro
         /// <returns>
         /// Retorna o dígito verificador para o código de barras.
         /// </returns>
-        public static String calculaDigitoVerificadorCodigoBarrasBradesco(String numero)
+        public static String b237CalculaDigitoVerificadorCodigoBarras(String numero)
         {
             #region [ Declarações ]
             const int baseCalculo = 9;
@@ -1260,7 +1228,47 @@ namespace Financeiro
         }
         #endregion
 
-        #region [ calculaDigitoVerificadorLinhaDigitavelBradesco ]
+        #region [ b422CalculaDigitoVerificadorCodigoBarras ]
+        /// <summary>
+        /// Calcula o dígito verificador para o código de barras.
+        /// O cálculo é feito através do módulo 11, com base de cálculo igual a 9.
+        /// </summary>
+        /// <param name="numero">
+        /// Números que compõem o código de barras.
+        /// </param>
+        /// <returns>
+        /// Retorna o dígito verificador para o código de barras.
+        /// </returns>
+        public static String b422CalculaDigitoVerificadorCodigoBarras(String numero)
+        {
+            #region [ Declarações ]
+            const int baseCalculo = 9;
+            int intFator = 2;
+            int intSoma = 0;
+            int intNumeroAux;
+            int intDV;
+            String strNumero;
+            #endregion
+
+            if (numero == null) return "";
+            if (numero.Trim().Length == 0) return "";
+
+            strNumero = digitos(numero);
+
+            for (int i = (strNumero.Length - 1); i >= 0; i--)
+            {
+                intNumeroAux = (int)converteInteiro(strNumero[i].ToString());
+                intSoma += intNumeroAux * intFator;
+                if (intFator == baseCalculo) intFator = 2; else intFator++;
+            }
+
+            intDV = 11 - (intSoma % 11);
+            if ((intDV == 0) || (intDV == 1) || (intDV > 9)) intDV = 1;
+            return intDV.ToString();
+        }
+        #endregion
+
+        #region [ b237CalculaDigitoVerificadorLinhaDigitavel ]
         /// <summary>
         /// Calcula o dígito verificador para ser utilizado na linha digitável.
         /// O cálculo é feito através do módulo 10.
@@ -1271,7 +1279,7 @@ namespace Financeiro
         /// <returns>
         /// Retorna o dígito verificador para ser utilizado na linha digitável.
         /// </returns>
-        public static String calculaDigitoVerificadorLinhaDigitavelBradesco(String numero)
+        public static String b237CalculaDigitoVerificadorLinhaDigitavel(String numero)
         {
             #region [ Declarações ]
             int intSoma = 0;
@@ -1309,538 +1317,57 @@ namespace Financeiro
         }
         #endregion
 
-        #region [ calculaTimeSpanDias ]
+        #region [ b422CalculaDigitoVerificadorLinhaDigitavel ]
         /// <summary>
-        /// Calcula a quantidade de dias.
-        /// Exemplo de uso:
-        ///		calculaDateTimeDias(dtDataFinal - dtDataInicial);
-        /// </summary>
-        /// <param name="ts">
-        /// O parâmetro do tipo TimeSpan pode ser passado através de:
-        ///		1) Uma variável declarada como TimeSpan
-        ///		2) Através do resultado da operação "dtDataFinal - dtDataInicial", já que o parâmetro de
-        ///		   retorno das operações de adição/subtração entre dois operandos do tipo DateTime é um tipo TimeSpan
-        /// </param>
-        /// <returns>
-        /// Retorna a quantidade de dias.
-        /// </returns>
-        public static int calculaTimeSpanDias(TimeSpan ts)
-        {
-            return ts.Days;
-        }
-        #endregion
-
-        #region [ calculaTimeSpanHoras ]
-        /// <summary>
-        /// Calcula a quantidade de horas.
-        /// Exemplo de uso:
-        ///		calculaDateTimeHoras(dtDataFinal - dtDataInicial);
-        /// </summary>
-        /// <param name="ts">
-        /// O parâmetro do tipo TimeSpan pode ser passado através de:
-        ///		1) Uma variável declarada como TimeSpan
-        ///		2) Através do resultado da operação "dtDataFinal - dtDataInicial", já que o parâmetro de
-        ///		   retorno das operações de adição/subtração entre dois operandos do tipo DateTime é um tipo TimeSpan
-        /// </param>
-        /// <returns>
-        /// Retorna a quantidade de horas.
-        /// </returns>
-        public static int calculaTimeSpanHoras(TimeSpan ts)
-        {
-            return ts.Hours + (24 * ts.Days);
-        }
-        #endregion
-
-        #region [ calculaTimeSpanMiliSegundos ]
-        /// <summary>
-        /// Calcula a quantidade de milisegundos.
-        /// Exemplo de uso:
-        ///		calculaDateTimeMiliSegundos(dtDataFinal - dtDataInicial);
-        /// </summary>
-        /// <param name="ts">
-        /// O parâmetro do tipo TimeSpan pode ser passado através de:
-        ///		1) Uma variável declarada como TimeSpan
-        ///		2) Através do resultado da operação "dtDataFinal - dtDataInicial", já que o parâmetro de
-        ///		   retorno das operações de adição/subtração entre dois operandos do tipo DateTime é um tipo TimeSpan
-        /// </param>
-        /// <returns>
-        /// Retorna a quantidade milisegundos.
-        /// </returns>
-        public static int calculaTimeSpanMiliSegundos(TimeSpan ts)
-        {
-            return ts.Milliseconds + 1000 * (ts.Seconds + (60 * (ts.Minutes + (60 * (ts.Hours + (24 * ts.Days))))));
-        }
-        #endregion
-
-        #region [ calculaTimeSpanMinutos ]
-        /// <summary>
-        /// Calcula a quantidade de minutos.
-        /// Exemplo de uso:
-        ///		calculaDateTimeMinutos(dtDataFinal - dtDataInicial);
-        /// </summary>
-        /// <param name="ts">
-        /// O parâmetro do tipo TimeSpan pode ser passado através de:
-        ///		1) Uma variável declarada como TimeSpan
-        ///		2) Através do resultado da operação "dtDataFinal - dtDataInicial", já que o parâmetro de
-        ///		   retorno das operações de adição/subtração entre dois operandos do tipo DateTime é um tipo TimeSpan
-        /// </param>
-        /// <returns>
-        /// Retorna a quantidade minutos.
-        /// </returns>
-        public static int calculaTimeSpanMinutos(TimeSpan ts)
-        {
-            return ts.Minutes + (60 * (ts.Hours + (24 * ts.Days)));
-        }
-        #endregion
-
-        #region [ calculaTimeSpanSegundos ]
-        /// <summary>
-        /// Calcula a quantidade de segundos.
-        /// Exemplo de uso:
-        ///		calculaDateTimeSegundos(dtDataFinal - dtDataInicial);
-        /// </summary>
-        /// <param name="ts">
-        /// O parâmetro do tipo TimeSpan pode ser passado através de:
-        ///		1) Uma variável declarada como TimeSpan
-        ///		2) Através do resultado da operação "dtDataFinal - dtDataInicial", já que o parâmetro de
-        ///		   retorno das operações de adição/subtração entre dois operandos do tipo DateTime é um tipo TimeSpan
-        /// </param>
-        /// <returns>
-        /// Retorna a quantidade segundos.
-        /// </returns>
-        public static int calculaTimeSpanSegundos(TimeSpan ts)
-        {
-            return ts.Seconds + (60 * (ts.Minutes + (60 * (ts.Hours + (24 * ts.Days)))));
-        }
-        #endregion
-
-        #region [ converteColorFromHtml ]
-        public static Color? converteColorFromHtml(string htmlColor)
-        {
-            #region [ Declarações ]
-            Color cor;
-            #endregion
-
-            if (htmlColor == null) return null;
-            if (htmlColor.Trim().Length == 0) return null;
-
-            try
-            {
-                htmlColor = htmlColor.Trim();
-                if (!htmlColor.StartsWith("#")) htmlColor = "#" + htmlColor;
-                cor = ColorTranslator.FromHtml(htmlColor);
-                return cor;
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-
-        }
-        #endregion
-
-        #region[ converteDdMmYyParaDateTime ]
-        /// <summary>
-        /// Converte um texto no formato DDMMYY (ano c/ 2 dígitos) com ou sem separadores para o tipo DateTime.
-        /// O pivotamento do ano é feito com base de ano 80.
-        /// </summary>
-        /// <param name="strDdMmYy">Texto representando uma data no formato DDMMYY (ano com 2 dígitos) com ou sem separadores</param>
-        /// <returns>
-        /// Retorna a data representada no tipo DateTime
-        /// </returns>
-        public static DateTime converteDdMmYyParaDateTime(string strDdMmYy)
-        {
-            DateTime dtDataHoraResp;
-            CultureInfo myCultureInfo = new CultureInfo("pt-BR");
-            string strDdMmYyyy;
-            String strDdMm;
-            String strYyyy;
-            string strFormato;
-
-            strDdMm = Texto.leftStr(digitos(strDdMmYy), 4);
-
-            strYyyy = Texto.rightStr(digitos(strDdMmYy), 2);
-            if (converteInteiro(strYyyy) >= 80) strYyyy = "19" + strYyyy; else strYyyy = "20" + strYyyy;
-
-            strDdMmYyyy = strDdMm + strYyyy;
-
-            strFormato = Cte.DataHora.FmtDia +
-                         Cte.DataHora.FmtMes +
-                         Cte.DataHora.FmtAno;
-            if (DateTime.TryParseExact(digitos(strDdMmYyyy), strFormato, myCultureInfo, DateTimeStyles.NoCurrentDateDefault, out dtDataHoraResp)) return dtDataHoraResp;
-            return DateTime.MinValue;
-        }
-        #endregion
-
-        #region[ converteDdMmYyyyParaDateTime ]
-        public static DateTime converteDdMmYyyyParaDateTime(string strDdMmYyyy)
-        {
-            string strFormato;
-            DateTime dtDataHoraResp;
-            CultureInfo myCultureInfo = new CultureInfo("pt-BR");
-            strFormato = Cte.DataHora.FmtDia +
-                         Cte.DataHora.FmtMes +
-                         Cte.DataHora.FmtAno;
-            if (DateTime.TryParseExact(digitos(strDdMmYyyy), strFormato, myCultureInfo, DateTimeStyles.NoCurrentDateDefault, out dtDataHoraResp)) return dtDataHoraResp;
-            return DateTime.MinValue;
-        }
-        #endregion
-
-        #region[ converteYyyyMmDdParaDateTime ]
-        public static DateTime converteYyyyMmDdParaDateTime(string strYyyyMmDd)
-        {
-            string strYyyyMmDdAux;
-            string strDdMmYyyy;
-            string strFormato;
-            DateTime dtDataHoraResp;
-            CultureInfo myCultureInfo = new CultureInfo("pt-BR");
-            strYyyyMmDdAux = digitos(strYyyyMmDd);
-            if (strYyyyMmDdAux.Length == 0) return DateTime.MinValue;
-            strDdMmYyyy = strYyyyMmDdAux.Substring(6, 2) + strYyyyMmDdAux.Substring(4, 2) + strYyyyMmDdAux.Substring(0, 4);
-            strFormato = Cte.DataHora.FmtDia +
-                         Cte.DataHora.FmtMes +
-                         Cte.DataHora.FmtAno;
-            if (DateTime.TryParseExact(digitos(strDdMmYyyy), strFormato, myCultureInfo, DateTimeStyles.NoCurrentDateDefault, out dtDataHoraResp)) return dtDataHoraResp;
-            return DateTime.MinValue;
-        }
-        #endregion
-
-        #region[ converteYyyyMmDdHhMmSsParaDateTime ]
-        /// <summary>
-        /// Converte o texto que representa uma data/hora para DateTime
-        /// </summary>
-        /// <param name="strYyyyMmDdHhMmSs">
-        /// Texto representando uma data/hora, com ou sem separadores, sendo que a parte da hora é opcional.
-        /// </param>
-        /// <returns>
-        /// Retorna a data/hora como DateTime, se não for possível fazer a conversão, retorna DateTime.MinValue
-        /// </returns>
-        public static DateTime converteYyyyMmDdHhMmSsParaDateTime(string strYyyyMmDdHhMmSs)
-        {
-            #region [ Declarações ]
-            char c;
-            string strDia = "";
-            string strMes = "";
-            string strAno = "";
-            string strHora = "";
-            string strMinuto = "";
-            string strSegundo = "";
-            string strFormato;
-            string strDataHoraAConverter;
-            DateTime dtDataHoraResp;
-            CultureInfo myCultureInfo = new CultureInfo("pt-BR");
-            #endregion
-
-            #region [ Ano ]
-            while (strYyyyMmDdHhMmSs.Length > 0)
-            {
-                c = strYyyyMmDdHhMmSs[0];
-                strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
-                if (!isDigit(c)) break;
-                strAno += c;
-                if (strAno.Length == 4) break;
-            }
-            if (strAno.Length == 2)
-            {
-                if (converteInteiro(strAno) >= 80)
-                    strAno = "19" + strAno;
-                else
-                    strAno = "20" + strAno;
-            }
-            #endregion
-
-            #region [ Remove separador, se houver ]
-            if ((strYyyyMmDdHhMmSs.Length > 0) && (!isDigit(strYyyyMmDdHhMmSs[0]))) strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
-            #endregion
-
-            #region [ Mês ]
-            while (strYyyyMmDdHhMmSs.Length > 0)
-            {
-                c = strYyyyMmDdHhMmSs[0];
-                strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
-                if (!isDigit(c)) break;
-                strMes += c;
-                if (strMes.Length == 2) break;
-            }
-            while (strMes.Length < 2) strMes = '0' + strMes;
-            #endregion
-
-            #region [ Remove separador, se houver ]
-            if ((strYyyyMmDdHhMmSs.Length > 0) && (!isDigit(strYyyyMmDdHhMmSs[0]))) strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
-            #endregion
-
-            #region [ Dia ]
-            while (strYyyyMmDdHhMmSs.Length > 0)
-            {
-                c = strYyyyMmDdHhMmSs[0];
-                strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
-                if (!isDigit(c)) break;
-                strDia += c;
-                if (strDia.Length == 2) break;
-            }
-            while (strDia.Length < 2) strDia = '0' + strDia;
-            #endregion
-
-            #region [ Remove separador(es) entre a data e hora, se houver ]
-            while (strYyyyMmDdHhMmSs.Length > 0)
-            {
-                if (!isDigit(strYyyyMmDdHhMmSs[0]))
-                    strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
-                else
-                    break;
-            }
-            #endregion
-
-            #region [ Hora ]
-            while (strYyyyMmDdHhMmSs.Length > 0)
-            {
-                c = strYyyyMmDdHhMmSs[0];
-                strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
-                if (!isDigit(c)) break;
-                strHora += c;
-                if (strHora.Length == 2) break;
-            }
-            while (strHora.Length < 2) strHora = '0' + strHora;
-            #endregion
-
-            #region [ Remove separador, se houver ]
-            if ((strYyyyMmDdHhMmSs.Length > 0) && (!isDigit(strYyyyMmDdHhMmSs[0]))) strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
-            #endregion
-
-            #region [ Minuto ]
-            while (strYyyyMmDdHhMmSs.Length > 0)
-            {
-                c = strYyyyMmDdHhMmSs[0];
-                strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
-                if (!isDigit(c)) break;
-                strMinuto += c;
-                if (strMinuto.Length == 2) break;
-            }
-            while (strMinuto.Length < 2) strMinuto = '0' + strMinuto;
-            #endregion
-
-            #region [ Remove separador, se houver ]
-            if ((strYyyyMmDdHhMmSs.Length > 0) && (!isDigit(strYyyyMmDdHhMmSs[0]))) strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
-            #endregion
-
-            #region [ Segundo ]
-            while (strYyyyMmDdHhMmSs.Length > 0)
-            {
-                c = strYyyyMmDdHhMmSs[0];
-                strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
-                if (!isDigit(c)) break;
-                strSegundo += c;
-                if (strSegundo.Length == 2) break;
-            }
-            while (strSegundo.Length < 2) strSegundo = '0' + strSegundo;
-            #endregion
-
-            #region [ Monta máscara ]
-            strFormato = Cte.DataHora.FmtAno +
-                         Cte.DataHora.FmtMes +
-                         Cte.DataHora.FmtDia +
-                         ' ' +
-                         Cte.DataHora.FmtHora +
-                         Cte.DataHora.FmtMin +
-                         Cte.DataHora.FmtSeg;
-            #endregion
-
-            #region [ Monta data/hora normalizada ]
-            strDataHoraAConverter = strAno +
-                                    strMes +
-                                    strDia +
-                                    ' ' +
-                                    strHora +
-                                    strMinuto +
-                                    strSegundo;
-            #endregion
-
-            if (DateTime.TryParseExact(strDataHoraAConverter, strFormato, myCultureInfo, DateTimeStyles.NoCurrentDateDefault, out dtDataHoraResp)) return dtDataHoraResp;
-            return DateTime.MinValue;
-        }
-        #endregion
-
-        #region[ converteInteiro ]
-        /// <summary>
-        /// Converte o número representado pelo texto do parâmetro em um número do tipo inteiro
-        /// Se não conseguir realizar a conversão, será retornado zero
-        /// </summary>
-        /// <param name="valor">
-        /// Texto representando um número inteiro
-        /// </param>
-        /// <returns>
-        /// Retorna um número do tipo inteiro
-        /// </returns>
-        public static Int64 converteInteiro(string valor)
-        {
-            Int64 intResultado = 0;
-
-            if (valor == null) return 0;
-
-            string strValor = valor.Trim();
-            if (strValor.Length == 0) return 0;
-
-            try
-            {
-                intResultado = Int64.Parse(strValor);
-            }
-            catch (Exception)
-            {
-                intResultado = 0;
-            }
-
-            return intResultado;
-        }
-        #endregion
-
-        #region[ converteInteiro ]
-        /// <summary>
-        /// Converte o número representado pelo texto do parâmetro em um número do tipo inteiro
-        /// Se não conseguir realizar a conversão, será retornado zero
-        /// </summary>
-        /// <param name="valor">
-        /// Texto representando um número inteiro
-        /// </param>
-        /// <param name="valorDefault">
-        /// Valor que será retornado no caso da conversão falhar
-        /// </param>
-        /// <returns>
-        /// Retorna um número do tipo inteiro
-        /// </returns>
-        public static Int64 converteInteiro(string valor, Int64 valorDefault)
-        {
-            Int64 intResultado = 0;
-
-            if (valor == null) return valorDefault;
-
-            string strValor = valor.Trim();
-            if (strValor.Length == 0) return valorDefault;
-
-            try
-            {
-                intResultado = Int64.Parse(strValor);
-            }
-            catch (Exception)
-            {
-                intResultado = valorDefault;
-            }
-
-            return intResultado;
-        }
-        #endregion
-
-        #region [ converteNumeroDecimal ]
-        /// <summary>
-        /// Converte o número representado pelo texto do parâmetro em um número do tipo decimal
-        /// Se não conseguir realizar a conversão, será retornado zero
+        /// Calcula o dígito verificador para ser utilizado na linha digitável.
+        /// O cálculo é feito através do módulo 10.
         /// </summary>
         /// <param name="numero">
-        /// Texto representando um número decimal
+        /// Números para os quais se deseja calcular o dígito verificador.
         /// </param>
         /// <returns>
-        /// Retorna um número do tipo decimal
+        /// Retorna o dígito verificador para ser utilizado na linha digitável.
         /// </returns>
-        public static decimal converteNumeroDecimal(String numero)
+        public static String b422CalculaDigitoVerificadorLinhaDigitavel(String numero)
         {
             #region [ Declarações ]
-            int i;
-            char c_separador_decimal;
-            String s_numero_aux;
-            String s_inteiro = "";
-            String s_centavos = "";
-            int intSinal = 1;
-            decimal decFracionario;
-            decimal decInteiro;
-            decimal decResultado;
+            int intSoma = 0;
+            int intParImpar = 2;
+            int intNumAux1;
+            int intNumAux2;
+            int intDV;
+            String strNumero;
+            String strNumeroAux;
             #endregion
 
-            if (numero == null) return 0;
-            if (numero.Trim().Length == 0) return 0;
+            if (numero == null) return "";
+            if (numero.Trim().Length == 0) return "";
 
-            numero = numero.Trim();
-
-            if (numero.IndexOf('-') != -1) intSinal = -1;
-
-            c_separador_decimal = retornaSeparadorDecimal(numero);
-
-            #region [ Separa parte inteira e os centavos ]
-            s_numero_aux = numero.Replace(c_separador_decimal, 'V');
-            String[] v = s_numero_aux.Split('V');
-            for (i = 0; i < v.Length; i++)
+            strNumero = digitos(numero);
+            for (int i = (strNumero.Length - 1); i >= 0; i--)
             {
-                if (v[i] == null) v[i] = "";
+                intNumAux1 = (int)converteInteiro(strNumero[i].ToString());
+                intNumAux2 = intNumAux1 * (2 - (intParImpar % 2));
+                if (intNumAux2 >= 10)
+                {
+                    strNumeroAux = intNumAux2.ToString();
+                    intNumAux2 = (int)converteInteiro(strNumeroAux[0].ToString()) + (int)converteInteiro(strNumeroAux[1].ToString());
+                }
+                intSoma += intNumAux2;
+                intParImpar++;
             }
-            // Falha ao determinar o separador de decimal, então calcula como se não houvesse centavos
-            if (v.Length > 2)
-            {
-                s_inteiro = digitos(numero);
-            }
+
+            if ((intSoma % 10) == 0)
+                intDV = 0;
             else
-            {
-                if (v.Length >= 1) s_inteiro = digitos(v[0]);
-                if (v.Length >= 2) s_centavos = digitos(v[1]);
-            }
-            if (s_inteiro.Length == 0) s_inteiro = "0";
-            s_centavos = s_centavos.PadRight(2, '0');
-            #endregion
+                intDV = 10 - (intSoma % 10);
 
-            decInteiro = (decimal)converteInteiro(s_inteiro);
-            decFracionario = (decimal)converteInteiro(s_centavos) / (decimal)Math.Pow(10, s_centavos.Length);
-            decResultado = intSinal * (decInteiro + decFracionario);
-            return decResultado;
+            return intDV.ToString();
         }
         #endregion
 
-        #region [ decodificaCampoMonetario ]
-        /// <summary>
-        /// Converte para número decimal um campo monetário informado sem formatação e considerando 
-        /// que os 2 últimos dígitos são referentes aos centavos.
-        /// O sinal de negativo também é aceito e considerado na conversão.
-        /// </summary>
-        /// <param name="valor">
-        /// Campo monetário a ser convertido.
-        /// </param>
-        /// <returns>
-        /// Retorna o valor monetário convertido para número decimal.
-        /// </returns>
-        public static decimal decodificaCampoMonetario(String valor)
-        {
-            #region [ Declarações ]
-            String strSinal = "";
-            String strCentavos;
-            String strValorInteiro;
-            #endregion
-
-            #region [ Consistência ]
-            if (valor == null) return 0m;
-            if (valor.Trim().Length == 0) return 0m;
-            #endregion
-
-            if (valor.IndexOf('-') != -1)
-            {
-                strSinal = "-";
-                valor = valor.Replace("-", "");
-            }
-            valor = digitos(valor);
-            valor = valor.PadLeft(3, '0');
-            strCentavos = Texto.rightStr(valor, 2);
-            strValorInteiro = Texto.leftStr(valor, valor.Length - 2);
-            // Retira zeros à esquerda da parte inteira
-            while (strValorInteiro.Length > 0)
-            {
-                if (strValorInteiro[0] == '0')
-                    strValorInteiro = strValorInteiro.Substring(1);
-                else
-                    break;
-            }
-            if (strValorInteiro.Length == 0) strValorInteiro = "0";
-
-            return Decimal.Parse(strSinal + strValorInteiro + strCentavos) / 100m;
-        }
-        #endregion
-
-        #region [ decodificaIdentificacaoOcorrencia ]
-        public static String decodificaIdentificacaoOcorrencia(String identificacaoOcorrencia)
+        #region [ b237DecodificaIdentificacaoOcorrencia ]
+        public static String b237DecodificaIdentificacaoOcorrencia(String identificacaoOcorrencia)
         {
             #region [ Declarações ]
             String strResp = "";
@@ -1851,6 +1378,7 @@ namespace Financeiro
             if (identificacaoOcorrencia.Trim().Length == 0) return "";
             #endregion
 
+            #region [ Bradesco ]
             if (identificacaoOcorrencia.Equals("02"))
                 strResp = "Entrada Confirmada";
             else if (identificacaoOcorrencia.Equals("03"))
@@ -1911,12 +1439,90 @@ namespace Financeiro
                 strResp = "Acerto dos dados do rateio de Crédito";
             else if (identificacaoOcorrencia.Equals("69"))
                 strResp = "Cancelamento dos dados do rateio";
+            #endregion
 
             return strResp;
         }
         #endregion
 
-        #region [ decodificaMotivoOcorrencia ]
+        #region [ b422DecodificaIdentificacaoOcorrencia ]
+        public static String b422DecodificaIdentificacaoOcorrencia(String identificacaoOcorrencia)
+        {
+            #region [ Declarações ]
+            String strResp = "";
+            #endregion
+
+            #region [ Consistência ]
+            if (identificacaoOcorrencia == null) return "";
+            if (identificacaoOcorrencia.Trim().Length == 0) return "";
+            #endregion
+
+            #region [ Safra ]
+            if (identificacaoOcorrencia.Equals("02"))
+                strResp = "Entrada Confirmada";
+            else if (identificacaoOcorrencia.Equals("03"))
+                strResp = "Entrada Rejeitada";
+            else if (identificacaoOcorrencia.Equals("04"))
+                strResp = "Transferência de Carteira (entrada)";
+            else if (identificacaoOcorrencia.Equals("05"))
+                strResp = "Transferência de Carteira (baixa)";
+            else if (identificacaoOcorrencia.Equals("06"))
+                strResp = "Liquidação Normal";
+            else if (identificacaoOcorrencia.Equals("09"))
+                strResp = "Baixado Automaticamente";
+            else if (identificacaoOcorrencia.Equals("10"))
+                strResp = "Baixado Conforme Instruções";
+            else if (identificacaoOcorrencia.Equals("11"))
+                strResp = "Títulos em Ser (para arquivo mensal)";
+            else if (identificacaoOcorrencia.Equals("12"))
+                strResp = "Abatimento Concedido";
+            else if (identificacaoOcorrencia.Equals("13"))
+                strResp = "Abatimento Cancelado";
+            else if (identificacaoOcorrencia.Equals("14"))
+                strResp = "Vencimento Alterado";
+            else if (identificacaoOcorrencia.Equals("15"))
+                strResp = "Liquidação em Cartório";
+            else if (identificacaoOcorrencia.Equals("19"))
+                strResp = "Confirmação de Instrução de Protesto";
+            else if (identificacaoOcorrencia.Equals("20"))
+                strResp = "Confirmação de Sustar Protesto";
+            else if (identificacaoOcorrencia.Equals("21"))
+                strResp = "Transferência de Beneficiário";
+            else if (identificacaoOcorrencia.Equals("23"))
+                strResp = "Título Enviado a Cartório";
+            else if (identificacaoOcorrencia.Equals("40"))
+                strResp = "Baixa de Título Protestado";
+            else if (identificacaoOcorrencia.Equals("41"))
+                strResp = "Liquidação de Título Baixado";
+            else if (identificacaoOcorrencia.Equals("42"))
+                strResp = "Título Retirado do Cartório";
+            else if (identificacaoOcorrencia.Equals("43"))
+                strResp = "Despesa de Cartório";
+            else if (identificacaoOcorrencia.Equals("44"))
+                strResp = "Aceite do Título DDA pelo Pagador";
+            else if (identificacaoOcorrencia.Equals("45"))
+                strResp = "Não Aceite do Título DDA pelo Pagador";
+            else if (identificacaoOcorrencia.Equals("51"))
+                strResp = "Valor do Título Alterado";
+            else if (identificacaoOcorrencia.Equals("52"))
+                strResp = "Acerto de Data de Emissao";
+            else if (identificacaoOcorrencia.Equals("53"))
+                strResp = "Acerto de Cod Especie Docto";
+            else if (identificacaoOcorrencia.Equals("54"))
+                strResp = "Alteracao de Seu Numero";
+            else if (identificacaoOcorrencia.Equals("56"))
+                strResp = "Instrução Negativação Aceita";
+            else if (identificacaoOcorrencia.Equals("57"))
+                strResp = "Instrução Baixa de Negativação Aceita";
+            else if (identificacaoOcorrencia.Equals("58"))
+                strResp = "Instrução Não Negativar Aceita";
+            #endregion
+
+            return strResp;
+        }
+        #endregion
+
+        #region [ b237DecodificaMotivoOcorrencia ]
         /// <summary>
         /// Retorna a lista com a descrição do motivo da ocorrência.
         /// Cada identificação de ocorrência possui seu próprio conjunto de motivos.
@@ -1932,7 +1538,7 @@ namespace Financeiro
         /// <returns>
         /// Retorna uma lista com os códigos e as descrições da ocorrência.
         /// </returns>
-        public static List<TipoDescricaoMotivoOcorrencia> decodificaMotivoOcorrencia(String identificacaoOcorrencia, String motivosOcorrencia)
+        public static List<TipoDescricaoMotivoOcorrencia> b237DecodificaMotivoOcorrencia(String identificacaoOcorrencia, String motivosOcorrencia)
         {
             #region [ Declarações ]
             List<TipoDescricaoMotivoOcorrencia> listaRespostaMotivos = new List<TipoDescricaoMotivoOcorrencia>();
@@ -2583,8 +2189,8 @@ namespace Financeiro
         }
         #endregion
 
-        #region [ decodificaMotivoOcorrencia19 ]
-        public static String decodificaMotivoOcorrencia19(String motivoOcorrencia19)
+        #region [ b237DecodificaMotivoOcorrencia19 ]
+        public static String b237DecodificaMotivoOcorrencia19(String motivoOcorrencia19)
         {
             String strResp = "";
 
@@ -2599,6 +2205,1076 @@ namespace Financeiro
             #endregion
 
             return strResp;
+        }
+        #endregion
+
+        #region [ b422DecodificaMotivoRejeicao ]
+        public static string b422DecodificaMotivoRejeicao(string codMotivoRejeicao)
+        {
+            #region [ Declarações ]
+            string strResp = "";
+            #endregion
+
+            if (codMotivoRejeicao == null) return strResp;
+            if (codMotivoRejeicao.Trim().Length == 0) return strResp;
+
+            if (codMotivoRejeicao.Equals("001"))
+                strResp = "Moeda inválida";
+            else if (codMotivoRejeicao.Equals("002"))
+                strResp = "Moeda inválida para carteira";
+            else if (codMotivoRejeicao.Equals("007"))
+                strResp = "CEP não corresponde UF";
+            else if (codMotivoRejeicao.Equals("008"))
+                strResp = "Valor juros ao dia maior que 5% do valor do título";
+            else if (codMotivoRejeicao.Equals("009"))
+                strResp = "Uso exclusivo não numérico para cobranca Express";
+            else if (codMotivoRejeicao.Equals("010"))
+                strResp = "Impossibilidade de registro - contate o seu Gerente";
+            else if (codMotivoRejeicao.Equals("011"))
+                strResp = "Nosso número fora da faixa";
+            else if (codMotivoRejeicao.Equals("012"))
+                strResp = "CEP de cidade inexistente";
+            else if (codMotivoRejeicao.Equals("013"))
+                strResp = "CEP fora de faixa da cidade";
+            else if (codMotivoRejeicao.Equals("014"))
+                strResp = "UF inválido para CEP da cidade";
+            else if (codMotivoRejeicao.Equals("015"))
+                strResp = "CEP zerado";
+            else if (codMotivoRejeicao.Equals("016"))
+                strResp = "CEP não consta na tabela Safra";
+            else if (codMotivoRejeicao.Equals("017"))
+                strResp = "CEP não consta tabela Banco Correspondente";
+            else if (codMotivoRejeicao.Equals("019"))
+                strResp = "Protesto impraticável";
+            else if (codMotivoRejeicao.Equals("020"))
+                strResp = "Primeira instrução de cobrança invalida";
+            else if (codMotivoRejeicao.Equals("021"))
+                strResp = "Segunda instrução de cobrança inválida";
+            else if (codMotivoRejeicao.Equals("023"))
+                strResp = "Terceira instrução de cobrança inválida";
+            else if (codMotivoRejeicao.Equals("026"))
+                strResp = "Código de operação/ocorrência inválido";
+            else if (codMotivoRejeicao.Equals("027"))
+                strResp = "Operação inválida para o cliente";
+            else if (codMotivoRejeicao.Equals("028"))
+                strResp = "Nosso número não numérico ou zerado";
+            else if (codMotivoRejeicao.Equals("029"))
+                strResp = "Nosso número com dígito de controle errado/inconsistente";
+            else if (codMotivoRejeicao.Equals("030"))
+                strResp = "Valor do abatimento não numérico ou zerado";
+            else if (codMotivoRejeicao.Equals("031"))
+                strResp = "Seu número em branco";
+            else if (codMotivoRejeicao.Equals("032"))
+                strResp = "Código da carteira inválido";
+            else if (codMotivoRejeicao.Equals("036"))
+                strResp = "Data de emissão inválida";
+            else if (codMotivoRejeicao.Equals("037"))
+                strResp = "Data de vencimento inválida";
+            else if (codMotivoRejeicao.Equals("038"))
+                strResp = "Depositária inválida";
+            else if (codMotivoRejeicao.Equals("039"))
+                strResp = "Depositária inválida para o cliente";
+            else if (codMotivoRejeicao.Equals("040"))
+                strResp = "Depositária não cadastrada no banco";
+            else if (codMotivoRejeicao.Equals("041"))
+                strResp = "Código de aceite inválido";
+            else if (codMotivoRejeicao.Equals("042"))
+                strResp = "Espécie de título inválido";
+            else if (codMotivoRejeicao.Equals("043"))
+                strResp = "Instrução de cobrança inválida";
+            else if (codMotivoRejeicao.Equals("044"))
+                strResp = "Valor do título não numérico ou zerado";
+            else if (codMotivoRejeicao.Equals("046"))
+                strResp = "Valor de juros não numérico ou zerado";
+            else if (codMotivoRejeicao.Equals("047"))
+                strResp = "Data limite para desconto inválida";
+            else if (codMotivoRejeicao.Equals("048"))
+                strResp = "Valor do desconto inválido";
+            else if (codMotivoRejeicao.Equals("049"))
+                strResp = "Valor IOF. não numérico ou zerado (seguros)";
+            else if (codMotivoRejeicao.Equals("051"))
+                strResp = "Código de inscrição do sacado inválido";
+            else if (codMotivoRejeicao.Equals("053"))
+                strResp = "Número de inscrição do sacado não númerico ou dígito errado";
+            else if (codMotivoRejeicao.Equals("054"))
+                strResp = "Nome do sacado em branco";
+            else if (codMotivoRejeicao.Equals("055"))
+                strResp = "Endereço do sacado em branco";
+            else if (codMotivoRejeicao.Equals("056"))
+                strResp = "Cliente não cadastrado";
+            else if (codMotivoRejeicao.Equals("058"))
+                strResp = "Processo de cartório inválido";
+            else if (codMotivoRejeicao.Equals("059"))
+                strResp = "Estado do sacado inválido";
+            else if (codMotivoRejeicao.Equals("060"))
+                strResp = "CEP/Endereço divergem do correio";
+            else if (codMotivoRejeicao.Equals("061"))
+                strResp = "Instrução agendada para agência";
+            else if (codMotivoRejeicao.Equals("062"))
+                strResp = "Operação inválida para a carteira";
+            else if (codMotivoRejeicao.Equals("064"))
+                strResp = "Título inexistente (TFC)";
+            else if (codMotivoRejeicao.Equals("065"))
+                strResp = "Operação / Titulo já existente";
+            else if (codMotivoRejeicao.Equals("066"))
+                strResp = "Título já existe (TFC)";
+            else if (codMotivoRejeicao.Equals("067"))
+                strResp = "Data de vencimento inválida para protesto";
+            else if (codMotivoRejeicao.Equals("068"))
+                strResp = "CEP do sacado não consta na tabela";
+            else if (codMotivoRejeicao.Equals("069"))
+                strResp = "Praça não atendida pelo serviço cartório";
+            else if (codMotivoRejeicao.Equals("070"))
+                strResp = "Agência inválida";
+            else if (codMotivoRejeicao.Equals("072"))
+                strResp = "Título já existe (COB)";
+            else if (codMotivoRejeicao.Equals("074"))
+                strResp = "Título fora de seqüência";
+            else if (codMotivoRejeicao.Equals("078"))
+                strResp = "Título inexistente (COB)";
+            else if (codMotivoRejeicao.Equals("079"))
+                strResp = "Operação não concluída";
+            else if (codMotivoRejeicao.Equals("080"))
+                strResp = "Título já baixado";
+            else if (codMotivoRejeicao.Equals("083"))
+                strResp = "Prorrogação/Alteração de vencimento inválida";
+            else if (codMotivoRejeicao.Equals("085"))
+                strResp = "Operação inválida para a carteira";
+            else if (codMotivoRejeicao.Equals("086"))
+                strResp = "Abatimento maior que valor do título";
+            else if (codMotivoRejeicao.Equals("088"))
+                strResp = "Título recusado como garantia (sacado/novo/exclusivo/alçada comitê)";
+            else if (codMotivoRejeicao.Equals("089"))
+                strResp = "Alteração de data de protesto inválida";
+            else if (codMotivoRejeicao.Equals("094"))
+                strResp = "Entrada título cobrança direta inválida";
+            else if (codMotivoRejeicao.Equals("095"))
+                strResp = "Baixa título cobrança direta inválida";
+            else if (codMotivoRejeicao.Equals("096"))
+                strResp = "Valor do título inválido";
+            else if (codMotivoRejeicao.Equals("098"))
+                strResp = "PCB do TFC divergem da PCB do COB";
+            else if (codMotivoRejeicao.Equals("100"))
+                strResp = "Instrução não permitida - Tít com protesto (se título protestado não pode negativar)";
+            else if (codMotivoRejeicao.Equals("101"))
+                strResp = "Instrução incompatível - Não existe instrução de negativar para o título";
+            else if (codMotivoRejeicao.Equals("102"))
+                strResp = "Instrução não permitida - Prazo inválido para negativação (mínimo 2 dias corridos após o vencimento)";
+            else if (codMotivoRejeicao.Equals("103"))
+                strResp = "Instrução não permitida - Tít inexistente";
+
+            return strResp;
+        }
+        #endregion
+
+        #region [ b237MontaLinhaDigitavelECodigoBarras ]
+        /// <summary>
+        /// Calcula os dígitos do código de barras e da linha digitável.
+        /// </summary>
+        /// <param name="numeroBancoCedente">Identificação do banco</param>
+        /// <param name="agenciaCedente">Agência cedente sem o dígito verificador</param>
+        /// <param name="contaCorrenteCedente">Conta do cedente sem o dígito verificador</param>
+        /// <param name="carteira">Código da carteira</param>
+        /// <param name="nossoNumero">Nosso número sem o dígito verificador (11 posições)</param>
+        /// <param name="dtVencto">Data do vencimento da parcela</param>
+        /// <param name="valorParcela">Valor da parcela</param>
+        /// <param name="codigoBarras">Retorna os dígitos do código de barras</param>
+        /// <param name="linhaDigitavel">Retorna a linha digitável formatada</param>
+        /// <returns></returns>
+        public static bool b237MontaLinhaDigitavelECodigoBarras(
+                                            String numeroBancoCedente,
+                                            String agenciaCedente,
+                                            String contaCorrenteCedente,
+                                            String carteira,
+                                            String nossoNumero,
+                                            DateTime dtVencto,
+                                            decimal valorParcela,
+                                            ref String codigoBarras,
+                                            ref String linhaDigitavel
+                                            )
+        {
+            #region [ Declarações ]
+            int intFatorVencto;
+            String strFatorVencto;
+            String strCampoLivre = "";
+            String strBarra1 = "";
+            String strBarra2 = "";
+            String strBarra3 = "";
+            String strBarra4 = "";
+            String strValorParcela;
+            String strBarraAux;
+            String strCodigoBarrasDV;
+            String strCodigoBarras;
+            String strLinhaDigitavelCampo1 = "";
+            String strLinhaDigitavelCampo2 = "";
+            String strLinhaDigitavelCampo3 = "";
+            String strLinhaDigitavelCampo4 = "";
+            String strLinhaDigitavelCampo5 = "";
+            String strLinhaDigitavel;
+            String strLinhaDigitavelCampo1DV;
+            String strLinhaDigitavelCampo2DV;
+            String strLinhaDigitavelCampo3DV;
+            #endregion
+
+            #region [ Inicialização ]
+            codigoBarras = "";
+            linhaDigitavel = "";
+            #endregion
+
+            #region [ Consistências ]
+            if (numeroBancoCedente == null) return false;
+            if (numeroBancoCedente.Trim().Length == 0) return false;
+
+            if (agenciaCedente == null) return false;
+            if (agenciaCedente.Trim().Length == 0) return false;
+
+            if (contaCorrenteCedente == null) return false;
+            if (contaCorrenteCedente.Trim().Length == 0) return false;
+
+            if (carteira == null) return false;
+            if (carteira.Trim().Length == 0) return false;
+
+            if (nossoNumero == null) return false;
+            if (nossoNumero.Trim().Length == 0) return false;
+
+            if (dtVencto == null) return false;
+            if (dtVencto == DateTime.MinValue) return false;
+
+            if (valorParcela <= 0) return false;
+            #endregion
+
+            #region [ Montagem do campo livre ]
+            // As posições do campo livre ficam a critério de cada banco arrecadador, sendo que este
+            // é o padrão do Bradesco
+            strCampoLivre = Texto.rightStr(agenciaCedente, 4).PadLeft(4, '0');
+            strCampoLivre += Texto.rightStr(carteira, 2).PadLeft(2, '0');
+            strCampoLivre += Texto.rightStr(nossoNumero, 11).PadLeft(11, '0');
+            strCampoLivre += Texto.rightStr(contaCorrenteCedente, 7).PadLeft(7, '0');
+            strCampoLivre += '0'; // Fixo
+            #endregion
+
+            #region [ Fator de vencimento ]
+            intFatorVencto = calculaTimeSpanDias(dtVencto - new DateTime(1997, 10, 7));
+            strFatorVencto = intFatorVencto.ToString().PadLeft(4, '0');
+            #endregion
+
+            #region [ Valor da parcela ]
+            strValorParcela = digitos(formataMoeda(valorParcela)).PadLeft(10, '0');
+            #endregion
+
+            #region [ Montagem do código de barras ]
+            strBarra1 = Texto.rightStr(numeroBancoCedente, 3).PadLeft(3, '0');
+            strBarra1 += '9'; // Real=9, Outras=0
+
+            strBarra2 = strFatorVencto;
+            strBarra3 = strValorParcela;
+            strBarra4 = strCampoLivre;
+
+            strBarraAux = strBarra1 + strBarra2 + strBarra3 + strBarra4;
+            strCodigoBarrasDV = b237CalculaDigitoVerificadorCodigoBarras(strBarraAux);
+
+            strCodigoBarras = strBarra1 + strCodigoBarrasDV + strBarra2 + strBarra3 + strBarra4;
+            #endregion
+
+            #region [ Montagem da linha digitável ]
+
+            #region [ Campo 1 ]
+            strLinhaDigitavelCampo1 = Texto.rightStr(numeroBancoCedente, 3).PadLeft(3, '0');
+            strLinhaDigitavelCampo1 += '9'; // Real=9, Outras=0
+            strLinhaDigitavelCampo1 += Texto.leftStr(strCampoLivre, 5);
+            strLinhaDigitavelCampo1DV = b237CalculaDigitoVerificadorLinhaDigitavel(strLinhaDigitavelCampo1);
+            strLinhaDigitavelCampo1 += strLinhaDigitavelCampo1DV;
+            strLinhaDigitavelCampo1 = strLinhaDigitavelCampo1.Insert(5, ".");
+            #endregion
+
+            #region [ Campo 2 ]
+            strLinhaDigitavelCampo2 = strCampoLivre.Substring(5, 10);
+            strLinhaDigitavelCampo2DV = b237CalculaDigitoVerificadorLinhaDigitavel(strLinhaDigitavelCampo2);
+            strLinhaDigitavelCampo2 += strLinhaDigitavelCampo2DV;
+            strLinhaDigitavelCampo2 = strLinhaDigitavelCampo2.Insert(5, ".");
+            #endregion
+
+            #region [ Campo 3 ]
+            strLinhaDigitavelCampo3 = strCampoLivre.Substring(15, 10);
+            strLinhaDigitavelCampo3DV = b237CalculaDigitoVerificadorLinhaDigitavel(strLinhaDigitavelCampo3);
+            strLinhaDigitavelCampo3 += strLinhaDigitavelCampo3DV;
+            strLinhaDigitavelCampo3 = strLinhaDigitavelCampo3.Insert(5, ".");
+            #endregion
+
+            #region [ Campo 4 ]
+            strLinhaDigitavelCampo4 = strCodigoBarrasDV;
+            #endregion
+
+            #region [ Campo 5 ]
+            strLinhaDigitavelCampo5 = strFatorVencto + strValorParcela;
+            #endregion
+
+            strLinhaDigitavel = strLinhaDigitavelCampo1 +
+                                ' ' +
+                                strLinhaDigitavelCampo2 +
+                                ' ' +
+                                strLinhaDigitavelCampo3 +
+                                ' ' +
+                                strLinhaDigitavelCampo4 +
+                                ' ' +
+                                strLinhaDigitavelCampo5;
+            #endregion
+
+            codigoBarras = strCodigoBarras;
+            linhaDigitavel = strLinhaDigitavel;
+            return true;
+        }
+        #endregion
+
+        #region [ b422MontaLinhaDigitavelECodigoBarras ]
+        /// <summary>
+        /// Calcula os dígitos do código de barras e da linha digitável.
+        /// </summary>
+        /// <param name="numeroBancoCedente">Identificação do banco</param>
+        /// <param name="agenciaCedente">Agência cedente sem o dígito verificador</param>
+        /// <param name="contaCorrenteCedente">Conta do cedente sem o dígito verificador</param>
+        /// <param name="carteira">Código da carteira</param>
+        /// <param name="nossoNumero">Nosso número sem o dígito verificador (11 posições)</param>
+        /// <param name="dtVencto">Data do vencimento da parcela</param>
+        /// <param name="valorParcela">Valor da parcela</param>
+        /// <param name="codigoBarras">Retorna os dígitos do código de barras</param>
+        /// <param name="linhaDigitavel">Retorna a linha digitável formatada</param>
+        /// <returns></returns>
+        public static bool b422MontaLinhaDigitavelECodigoBarras(
+                                            String numeroBancoCedente,
+                                            String agenciaCedente,
+                                            String contaCorrenteCedente,
+                                            String carteira,
+                                            String nossoNumero,
+                                            DateTime dtVencto,
+                                            decimal valorParcela,
+                                            ref String codigoBarras,
+                                            ref String linhaDigitavel
+                                            )
+        {
+            #region [ Declarações ]
+            int intFatorVencto;
+            String strFatorVencto;
+            String strCampoLivre = "";
+            String strBarra1 = "";
+            String strBarra2 = "";
+            String strBarra3 = "";
+            String strBarra4 = "";
+            String strValorParcela;
+            String strBarraAux;
+            String strCodigoBarrasDV;
+            String strCodigoBarras;
+            String strLinhaDigitavelCampo1 = "";
+            String strLinhaDigitavelCampo2 = "";
+            String strLinhaDigitavelCampo3 = "";
+            String strLinhaDigitavelCampo4 = "";
+            String strLinhaDigitavelCampo5 = "";
+            String strLinhaDigitavel;
+            String strLinhaDigitavelCampo1DV;
+            String strLinhaDigitavelCampo2DV;
+            String strLinhaDigitavelCampo3DV;
+            #endregion
+
+            #region [ Inicialização ]
+            codigoBarras = "";
+            linhaDigitavel = "";
+            #endregion
+
+            #region [ Consistências ]
+            if (numeroBancoCedente == null) return false;
+            if (numeroBancoCedente.Trim().Length == 0) return false;
+
+            if (agenciaCedente == null) return false;
+            if (agenciaCedente.Trim().Length == 0) return false;
+
+            if (contaCorrenteCedente == null) return false;
+            if (contaCorrenteCedente.Trim().Length == 0) return false;
+
+            if (carteira == null) return false;
+            if (carteira.Trim().Length == 0) return false;
+
+            if (nossoNumero == null) return false;
+            if (nossoNumero.Trim().Length == 0) return false;
+
+            if (dtVencto == null) return false;
+            if (dtVencto == DateTime.MinValue) return false;
+
+            if (valorParcela <= 0) return false;
+            #endregion
+
+            #region [ Montagem do campo livre ]
+            // As posições do campo livre ficam a critério de cada banco arrecadador, sendo que este
+            // é o padrão do Safra
+            strCampoLivre = Texto.rightStr(agenciaCedente, 4).PadLeft(4, '0');
+            strCampoLivre += Texto.rightStr(carteira, 2).PadLeft(2, '0');
+            strCampoLivre += Texto.rightStr(nossoNumero, 11).PadLeft(11, '0');
+            strCampoLivre += Texto.rightStr(contaCorrenteCedente, 7).PadLeft(7, '0');
+            strCampoLivre += '0'; // Fixo
+            #endregion
+
+            #region [ Fator de vencimento ]
+            intFatorVencto = calculaTimeSpanDias(dtVencto - new DateTime(1997, 10, 7));
+            strFatorVencto = intFatorVencto.ToString().PadLeft(4, '0');
+            #endregion
+
+            #region [ Valor da parcela ]
+            strValorParcela = digitos(formataMoeda(valorParcela)).PadLeft(10, '0');
+            #endregion
+
+            #region [ Montagem do código de barras ]
+            strBarra1 = Texto.rightStr(numeroBancoCedente, 3).PadLeft(3, '0');
+            strBarra1 += '9'; // Real=9, Outras=0
+
+            strBarra2 = strFatorVencto;
+            strBarra3 = strValorParcela;
+            strBarra4 = strCampoLivre;
+
+            strBarraAux = strBarra1 + strBarra2 + strBarra3 + strBarra4;
+            strCodigoBarrasDV = b422CalculaDigitoVerificadorCodigoBarras(strBarraAux);
+
+            strCodigoBarras = strBarra1 + strCodigoBarrasDV + strBarra2 + strBarra3 + strBarra4;
+            #endregion
+
+            #region [ Montagem da linha digitável ]
+
+            #region [ Campo 1 ]
+            strLinhaDigitavelCampo1 = Texto.rightStr(numeroBancoCedente, 3).PadLeft(3, '0');
+            strLinhaDigitavelCampo1 += '9'; // Real=9, Outras=0
+            strLinhaDigitavelCampo1 += Texto.leftStr(strCampoLivre, 5);
+            strLinhaDigitavelCampo1DV = b422CalculaDigitoVerificadorLinhaDigitavel(strLinhaDigitavelCampo1);
+            strLinhaDigitavelCampo1 += strLinhaDigitavelCampo1DV;
+            strLinhaDigitavelCampo1 = strLinhaDigitavelCampo1.Insert(5, ".");
+            #endregion
+
+            #region [ Campo 2 ]
+            strLinhaDigitavelCampo2 = strCampoLivre.Substring(5, 10);
+            strLinhaDigitavelCampo2DV = b422CalculaDigitoVerificadorLinhaDigitavel(strLinhaDigitavelCampo2);
+            strLinhaDigitavelCampo2 += strLinhaDigitavelCampo2DV;
+            strLinhaDigitavelCampo2 = strLinhaDigitavelCampo2.Insert(5, ".");
+            #endregion
+
+            #region [ Campo 3 ]
+            strLinhaDigitavelCampo3 = strCampoLivre.Substring(15, 10);
+            strLinhaDigitavelCampo3DV = b422CalculaDigitoVerificadorLinhaDigitavel(strLinhaDigitavelCampo3);
+            strLinhaDigitavelCampo3 += strLinhaDigitavelCampo3DV;
+            strLinhaDigitavelCampo3 = strLinhaDigitavelCampo3.Insert(5, ".");
+            #endregion
+
+            #region [ Campo 4 ]
+            strLinhaDigitavelCampo4 = strCodigoBarrasDV;
+            #endregion
+
+            #region [ Campo 5 ]
+            strLinhaDigitavelCampo5 = strFatorVencto + strValorParcela;
+            #endregion
+
+            strLinhaDigitavel = strLinhaDigitavelCampo1 +
+                                ' ' +
+                                strLinhaDigitavelCampo2 +
+                                ' ' +
+                                strLinhaDigitavelCampo3 +
+                                ' ' +
+                                strLinhaDigitavelCampo4 +
+                                ' ' +
+                                strLinhaDigitavelCampo5;
+            #endregion
+
+            codigoBarras = strCodigoBarras;
+            linhaDigitavel = strLinhaDigitavel;
+            return true;
+        }
+        #endregion
+
+        #region[ barraInvertidaAdd ]
+        public static string barraInvertidaAdd(string path)
+        {
+            if (path == null) return "";
+            string strResp = path.TrimEnd();
+            if (strResp.Length == 0) return "";
+            if (strResp[strResp.Length - 1] == (char)92) return strResp;
+            return strResp + (char)92;
+        }
+        #endregion
+
+        #region[ barraInvertidaDel ]
+        public static string barraInvertidaDel(string path)
+        {
+            if (path == null) return "";
+            string strResp = path.TrimEnd();
+            while (true)
+            {
+                if (strResp.Length == 0) return "";
+                if (strResp[strResp.Length - 1] != (char)92) return strResp;
+                strResp = strResp.Substring(0, strResp.Length - 1).TrimEnd();
+            }
+        }
+        #endregion
+
+        #region [ calculaBoletoItemFlagInstrucaoProtesto ]
+        /// <summary>
+        /// No caso de uma série de boletos ser gerada com instrução de protesto, esta rotina calcula
+        /// se a parcela do boleto indicada deve ser gerada com instrução de protesto ou não.
+        /// Devido aos custos dos cartórios, foram definidas algumas regras de quais parcelas de uma série
+        /// de boletos serão geradas c/ a instrução de protesto e quais não.
+        /// </summary>
+        /// <param name="numeroParcela">Número da parcela do boleto</param>
+        /// <param name="totalParcelas">Quantidade total de parcelas da série de boletos</param>
+        /// <returns>
+        /// 0: sem instrução de protesto (valor que será usado p/ gravar no banco de dados)
+        /// 1: com instrução de protesto (valor que será usado p/ gravar no banco de dados)
+        /// </returns>
+        public static byte calculaBoletoItemFlagInstrucaoProtesto(byte numeroParcela, byte totalParcelas)
+        {
+            #region [ Regra ]
+            // Regra:
+            //	1 boleto: protesta
+            //	2 boletos: protesta o segundo
+            //	3 boletos: protesta o segundo e o terceiro
+            //	4 boletos: protesta o segundo e o quarto
+            //	5 boletos: protesta o segundo e o quinto
+            //	e assim por diante
+            #endregion
+
+            // A última parcela sempre tem instrução de protesto
+            // Se houver apenas 1 parcela, deverá ter instrução de protesto
+            if (numeroParcela == totalParcelas) return 1;
+
+            // A segunda parcela sempre tem instrução de protesto
+            if (numeroParcela == 2) return 1;
+
+            return 0;
+        }
+        #endregion
+
+        #region [ calculaTimeSpanDias ]
+        /// <summary>
+        /// Calcula a quantidade de dias.
+        /// Exemplo de uso:
+        ///		calculaDateTimeDias(dtDataFinal - dtDataInicial);
+        /// </summary>
+        /// <param name="ts">
+        /// O parâmetro do tipo TimeSpan pode ser passado através de:
+        ///		1) Uma variável declarada como TimeSpan
+        ///		2) Através do resultado da operação "dtDataFinal - dtDataInicial", já que o parâmetro de
+        ///		   retorno das operações de adição/subtração entre dois operandos do tipo DateTime é um tipo TimeSpan
+        /// </param>
+        /// <returns>
+        /// Retorna a quantidade de dias.
+        /// </returns>
+        public static int calculaTimeSpanDias(TimeSpan ts)
+        {
+            return ts.Days;
+        }
+        #endregion
+
+        #region [ calculaTimeSpanHoras ]
+        /// <summary>
+        /// Calcula a quantidade de horas.
+        /// Exemplo de uso:
+        ///		calculaDateTimeHoras(dtDataFinal - dtDataInicial);
+        /// </summary>
+        /// <param name="ts">
+        /// O parâmetro do tipo TimeSpan pode ser passado através de:
+        ///		1) Uma variável declarada como TimeSpan
+        ///		2) Através do resultado da operação "dtDataFinal - dtDataInicial", já que o parâmetro de
+        ///		   retorno das operações de adição/subtração entre dois operandos do tipo DateTime é um tipo TimeSpan
+        /// </param>
+        /// <returns>
+        /// Retorna a quantidade de horas.
+        /// </returns>
+        public static int calculaTimeSpanHoras(TimeSpan ts)
+        {
+            return ts.Hours + (24 * ts.Days);
+        }
+        #endregion
+
+        #region [ calculaTimeSpanMiliSegundos ]
+        /// <summary>
+        /// Calcula a quantidade de milisegundos.
+        /// Exemplo de uso:
+        ///		calculaDateTimeMiliSegundos(dtDataFinal - dtDataInicial);
+        /// </summary>
+        /// <param name="ts">
+        /// O parâmetro do tipo TimeSpan pode ser passado através de:
+        ///		1) Uma variável declarada como TimeSpan
+        ///		2) Através do resultado da operação "dtDataFinal - dtDataInicial", já que o parâmetro de
+        ///		   retorno das operações de adição/subtração entre dois operandos do tipo DateTime é um tipo TimeSpan
+        /// </param>
+        /// <returns>
+        /// Retorna a quantidade milisegundos.
+        /// </returns>
+        public static int calculaTimeSpanMiliSegundos(TimeSpan ts)
+        {
+            return ts.Milliseconds + 1000 * (ts.Seconds + (60 * (ts.Minutes + (60 * (ts.Hours + (24 * ts.Days))))));
+        }
+        #endregion
+
+        #region [ calculaTimeSpanMinutos ]
+        /// <summary>
+        /// Calcula a quantidade de minutos.
+        /// Exemplo de uso:
+        ///		calculaDateTimeMinutos(dtDataFinal - dtDataInicial);
+        /// </summary>
+        /// <param name="ts">
+        /// O parâmetro do tipo TimeSpan pode ser passado através de:
+        ///		1) Uma variável declarada como TimeSpan
+        ///		2) Através do resultado da operação "dtDataFinal - dtDataInicial", já que o parâmetro de
+        ///		   retorno das operações de adição/subtração entre dois operandos do tipo DateTime é um tipo TimeSpan
+        /// </param>
+        /// <returns>
+        /// Retorna a quantidade minutos.
+        /// </returns>
+        public static int calculaTimeSpanMinutos(TimeSpan ts)
+        {
+            return ts.Minutes + (60 * (ts.Hours + (24 * ts.Days)));
+        }
+        #endregion
+
+        #region [ calculaTimeSpanSegundos ]
+        /// <summary>
+        /// Calcula a quantidade de segundos.
+        /// Exemplo de uso:
+        ///		calculaDateTimeSegundos(dtDataFinal - dtDataInicial);
+        /// </summary>
+        /// <param name="ts">
+        /// O parâmetro do tipo TimeSpan pode ser passado através de:
+        ///		1) Uma variável declarada como TimeSpan
+        ///		2) Através do resultado da operação "dtDataFinal - dtDataInicial", já que o parâmetro de
+        ///		   retorno das operações de adição/subtração entre dois operandos do tipo DateTime é um tipo TimeSpan
+        /// </param>
+        /// <returns>
+        /// Retorna a quantidade segundos.
+        /// </returns>
+        public static int calculaTimeSpanSegundos(TimeSpan ts)
+        {
+            return ts.Seconds + (60 * (ts.Minutes + (60 * (ts.Hours + (24 * ts.Days)))));
+        }
+        #endregion
+
+        #region [ converteColorFromHtml ]
+        public static Color? converteColorFromHtml(string htmlColor)
+        {
+            #region [ Declarações ]
+            Color cor;
+            #endregion
+
+            if (htmlColor == null) return null;
+            if (htmlColor.Trim().Length == 0) return null;
+
+            try
+            {
+                htmlColor = htmlColor.Trim();
+                if (!htmlColor.StartsWith("#")) htmlColor = "#" + htmlColor;
+                cor = ColorTranslator.FromHtml(htmlColor);
+                return cor;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+
+        }
+        #endregion
+
+        #region[ converteDdMmYyParaDateTime ]
+        /// <summary>
+        /// Converte um texto no formato DDMMYY (ano c/ 2 dígitos) com ou sem separadores para o tipo DateTime.
+        /// O pivotamento do ano é feito com base de ano 80.
+        /// </summary>
+        /// <param name="strDdMmYy">Texto representando uma data no formato DDMMYY (ano com 2 dígitos) com ou sem separadores</param>
+        /// <returns>
+        /// Retorna a data representada no tipo DateTime
+        /// </returns>
+        public static DateTime converteDdMmYyParaDateTime(string strDdMmYy)
+        {
+            DateTime dtDataHoraResp;
+            CultureInfo myCultureInfo = new CultureInfo("pt-BR");
+            string strDdMmYyyy;
+            String strDdMm;
+            String strYyyy;
+            string strFormato;
+
+            if (digitos(strDdMmYy).Length == 0) return DateTime.MinValue;
+
+            strDdMm = Texto.leftStr(digitos(strDdMmYy), 4);
+
+            strYyyy = Texto.rightStr(digitos(strDdMmYy), 2);
+            if (converteInteiro(strYyyy) >= 80) strYyyy = "19" + strYyyy; else strYyyy = "20" + strYyyy;
+
+            strDdMmYyyy = strDdMm + strYyyy;
+
+            strFormato = Cte.DataHora.FmtDia +
+                         Cte.DataHora.FmtMes +
+                         Cte.DataHora.FmtAno;
+            if (DateTime.TryParseExact(digitos(strDdMmYyyy), strFormato, myCultureInfo, DateTimeStyles.NoCurrentDateDefault, out dtDataHoraResp)) return dtDataHoraResp;
+            return DateTime.MinValue;
+        }
+        #endregion
+
+        #region[ converteDdMmYyyyParaDateTime ]
+        public static DateTime converteDdMmYyyyParaDateTime(string strDdMmYyyy)
+        {
+            string strFormato;
+            DateTime dtDataHoraResp;
+            CultureInfo myCultureInfo = new CultureInfo("pt-BR");
+            strFormato = Cte.DataHora.FmtDia +
+                         Cte.DataHora.FmtMes +
+                         Cte.DataHora.FmtAno;
+            if (DateTime.TryParseExact(digitos(strDdMmYyyy), strFormato, myCultureInfo, DateTimeStyles.NoCurrentDateDefault, out dtDataHoraResp)) return dtDataHoraResp;
+            return DateTime.MinValue;
+        }
+        #endregion
+
+        #region[ converteYyyyMmDdParaDateTime ]
+        public static DateTime converteYyyyMmDdParaDateTime(string strYyyyMmDd)
+        {
+            string strYyyyMmDdAux;
+            string strDdMmYyyy;
+            string strFormato;
+            DateTime dtDataHoraResp;
+            CultureInfo myCultureInfo = new CultureInfo("pt-BR");
+            strYyyyMmDdAux = digitos(strYyyyMmDd);
+            if (strYyyyMmDdAux.Length == 0) return DateTime.MinValue;
+            strDdMmYyyy = strYyyyMmDdAux.Substring(6, 2) + strYyyyMmDdAux.Substring(4, 2) + strYyyyMmDdAux.Substring(0, 4);
+            strFormato = Cte.DataHora.FmtDia +
+                         Cte.DataHora.FmtMes +
+                         Cte.DataHora.FmtAno;
+            if (DateTime.TryParseExact(digitos(strDdMmYyyy), strFormato, myCultureInfo, DateTimeStyles.NoCurrentDateDefault, out dtDataHoraResp)) return dtDataHoraResp;
+            return DateTime.MinValue;
+        }
+        #endregion
+
+        #region[ converteYyyyMmDdHhMmSsParaDateTime ]
+        /// <summary>
+        /// Converte o texto que representa uma data/hora para DateTime
+        /// </summary>
+        /// <param name="strYyyyMmDdHhMmSs">
+        /// Texto representando uma data/hora, com ou sem separadores, sendo que a parte da hora é opcional.
+        /// </param>
+        /// <returns>
+        /// Retorna a data/hora como DateTime, se não for possível fazer a conversão, retorna DateTime.MinValue
+        /// </returns>
+        public static DateTime converteYyyyMmDdHhMmSsParaDateTime(string strYyyyMmDdHhMmSs)
+        {
+            #region [ Declarações ]
+            char c;
+            string strDia = "";
+            string strMes = "";
+            string strAno = "";
+            string strHora = "";
+            string strMinuto = "";
+            string strSegundo = "";
+            string strFormato;
+            string strDataHoraAConverter;
+            DateTime dtDataHoraResp;
+            CultureInfo myCultureInfo = new CultureInfo("pt-BR");
+            #endregion
+
+            #region [ Ano ]
+            while (strYyyyMmDdHhMmSs.Length > 0)
+            {
+                c = strYyyyMmDdHhMmSs[0];
+                strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+                if (!isDigit(c)) break;
+                strAno += c;
+                if (strAno.Length == 4) break;
+            }
+            if (strAno.Length == 2)
+            {
+                if (converteInteiro(strAno) >= 80)
+                    strAno = "19" + strAno;
+                else
+                    strAno = "20" + strAno;
+            }
+            #endregion
+
+            #region [ Remove separador, se houver ]
+            if ((strYyyyMmDdHhMmSs.Length > 0) && (!isDigit(strYyyyMmDdHhMmSs[0]))) strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+            #endregion
+
+            #region [ Mês ]
+            while (strYyyyMmDdHhMmSs.Length > 0)
+            {
+                c = strYyyyMmDdHhMmSs[0];
+                strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+                if (!isDigit(c)) break;
+                strMes += c;
+                if (strMes.Length == 2) break;
+            }
+            while (strMes.Length < 2) strMes = '0' + strMes;
+            #endregion
+
+            #region [ Remove separador, se houver ]
+            if ((strYyyyMmDdHhMmSs.Length > 0) && (!isDigit(strYyyyMmDdHhMmSs[0]))) strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+            #endregion
+
+            #region [ Dia ]
+            while (strYyyyMmDdHhMmSs.Length > 0)
+            {
+                c = strYyyyMmDdHhMmSs[0];
+                strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+                if (!isDigit(c)) break;
+                strDia += c;
+                if (strDia.Length == 2) break;
+            }
+            while (strDia.Length < 2) strDia = '0' + strDia;
+            #endregion
+
+            #region [ Remove separador(es) entre a data e hora, se houver ]
+            while (strYyyyMmDdHhMmSs.Length > 0)
+            {
+                if (!isDigit(strYyyyMmDdHhMmSs[0]))
+                    strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+                else
+                    break;
+            }
+            #endregion
+
+            #region [ Hora ]
+            while (strYyyyMmDdHhMmSs.Length > 0)
+            {
+                c = strYyyyMmDdHhMmSs[0];
+                strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+                if (!isDigit(c)) break;
+                strHora += c;
+                if (strHora.Length == 2) break;
+            }
+            while (strHora.Length < 2) strHora = '0' + strHora;
+            #endregion
+
+            #region [ Remove separador, se houver ]
+            if ((strYyyyMmDdHhMmSs.Length > 0) && (!isDigit(strYyyyMmDdHhMmSs[0]))) strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+            #endregion
+
+            #region [ Minuto ]
+            while (strYyyyMmDdHhMmSs.Length > 0)
+            {
+                c = strYyyyMmDdHhMmSs[0];
+                strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+                if (!isDigit(c)) break;
+                strMinuto += c;
+                if (strMinuto.Length == 2) break;
+            }
+            while (strMinuto.Length < 2) strMinuto = '0' + strMinuto;
+            #endregion
+
+            #region [ Remove separador, se houver ]
+            if ((strYyyyMmDdHhMmSs.Length > 0) && (!isDigit(strYyyyMmDdHhMmSs[0]))) strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+            #endregion
+
+            #region [ Segundo ]
+            while (strYyyyMmDdHhMmSs.Length > 0)
+            {
+                c = strYyyyMmDdHhMmSs[0];
+                strYyyyMmDdHhMmSs = strYyyyMmDdHhMmSs.Substring(1, strYyyyMmDdHhMmSs.Length - 1);
+                if (!isDigit(c)) break;
+                strSegundo += c;
+                if (strSegundo.Length == 2) break;
+            }
+            while (strSegundo.Length < 2) strSegundo = '0' + strSegundo;
+            #endregion
+
+            #region [ Monta máscara ]
+            strFormato = Cte.DataHora.FmtAno +
+                         Cte.DataHora.FmtMes +
+                         Cte.DataHora.FmtDia +
+                         ' ' +
+                         Cte.DataHora.FmtHora +
+                         Cte.DataHora.FmtMin +
+                         Cte.DataHora.FmtSeg;
+            #endregion
+
+            #region [ Monta data/hora normalizada ]
+            strDataHoraAConverter = strAno +
+                                    strMes +
+                                    strDia +
+                                    ' ' +
+                                    strHora +
+                                    strMinuto +
+                                    strSegundo;
+            #endregion
+
+            if (DateTime.TryParseExact(strDataHoraAConverter, strFormato, myCultureInfo, DateTimeStyles.NoCurrentDateDefault, out dtDataHoraResp)) return dtDataHoraResp;
+            return DateTime.MinValue;
+        }
+        #endregion
+
+        #region[ converteInteiro ]
+        /// <summary>
+        /// Converte o número representado pelo texto do parâmetro em um número do tipo inteiro
+        /// Se não conseguir realizar a conversão, será retornado zero
+        /// </summary>
+        /// <param name="valor">
+        /// Texto representando um número inteiro
+        /// </param>
+        /// <returns>
+        /// Retorna um número do tipo inteiro
+        /// </returns>
+        public static Int64 converteInteiro(string valor)
+        {
+            Int64 intResultado = 0;
+
+            if (valor == null) return 0;
+
+            string strValor = valor.Trim();
+            if (strValor.Length == 0) return 0;
+
+            try
+            {
+                intResultado = Int64.Parse(strValor);
+            }
+            catch (Exception)
+            {
+                intResultado = 0;
+            }
+
+            return intResultado;
+        }
+        #endregion
+
+        #region[ converteInteiro ]
+        /// <summary>
+        /// Converte o número representado pelo texto do parâmetro em um número do tipo inteiro
+        /// Se não conseguir realizar a conversão, será retornado zero
+        /// </summary>
+        /// <param name="valor">
+        /// Texto representando um número inteiro
+        /// </param>
+        /// <param name="valorDefault">
+        /// Valor que será retornado no caso da conversão falhar
+        /// </param>
+        /// <returns>
+        /// Retorna um número do tipo inteiro
+        /// </returns>
+        public static Int64 converteInteiro(string valor, Int64 valorDefault)
+        {
+            Int64 intResultado = 0;
+
+            if (valor == null) return valorDefault;
+
+            string strValor = valor.Trim();
+            if (strValor.Length == 0) return valorDefault;
+
+            try
+            {
+                intResultado = Int64.Parse(strValor);
+            }
+            catch (Exception)
+            {
+                intResultado = valorDefault;
+            }
+
+            return intResultado;
+        }
+        #endregion
+
+        #region [ converteNumeroDecimal ]
+        /// <summary>
+        /// Converte o número representado pelo texto do parâmetro em um número do tipo decimal
+        /// Se não conseguir realizar a conversão, será retornado zero
+        /// </summary>
+        /// <param name="numero">
+        /// Texto representando um número decimal
+        /// </param>
+        /// <returns>
+        /// Retorna um número do tipo decimal
+        /// </returns>
+        public static decimal converteNumeroDecimal(String numero)
+        {
+            #region [ Declarações ]
+            int i;
+            char c_separador_decimal;
+            String s_numero_aux;
+            String s_inteiro = "";
+            String s_centavos = "";
+            int intSinal = 1;
+            decimal decFracionario;
+            decimal decInteiro;
+            decimal decResultado;
+            #endregion
+
+            if (numero == null) return 0;
+            if (numero.Trim().Length == 0) return 0;
+
+            numero = numero.Trim();
+
+            if (numero.IndexOf('-') != -1) intSinal = -1;
+
+            c_separador_decimal = retornaSeparadorDecimal(numero);
+
+            #region [ Separa parte inteira e os centavos ]
+            s_numero_aux = numero.Replace(c_separador_decimal, 'V');
+            String[] v = s_numero_aux.Split('V');
+            for (i = 0; i < v.Length; i++)
+            {
+                if (v[i] == null) v[i] = "";
+            }
+            // Falha ao determinar o separador de decimal, então calcula como se não houvesse centavos
+            if (v.Length > 2)
+            {
+                s_inteiro = digitos(numero);
+            }
+            else
+            {
+                if (v.Length >= 1) s_inteiro = digitos(v[0]);
+                if (v.Length >= 2) s_centavos = digitos(v[1]);
+            }
+            if (s_inteiro.Length == 0) s_inteiro = "0";
+            s_centavos = s_centavos.PadRight(2, '0');
+            #endregion
+
+            decInteiro = (decimal)converteInteiro(s_inteiro);
+            decFracionario = (decimal)converteInteiro(s_centavos) / (decimal)Math.Pow(10, s_centavos.Length);
+            decResultado = intSinal * (decInteiro + decFracionario);
+            return decResultado;
+        }
+        #endregion
+
+        #region [ decodificaCampoMonetario ]
+        /// <summary>
+        /// Converte para número decimal um campo monetário informado sem formatação e considerando 
+        /// que os 2 últimos dígitos são referentes aos centavos.
+        /// O sinal de negativo também é aceito e considerado na conversão.
+        /// </summary>
+        /// <param name="valor">
+        /// Campo monetário a ser convertido.
+        /// </param>
+        /// <returns>
+        /// Retorna o valor monetário convertido para número decimal.
+        /// </returns>
+        public static decimal decodificaCampoMonetario(String valor)
+        {
+            #region [ Declarações ]
+            String strSinal = "";
+            String strCentavos;
+            String strValorInteiro;
+            #endregion
+
+            #region [ Consistência ]
+            if (valor == null) return 0m;
+            if (valor.Trim().Length == 0) return 0m;
+            #endregion
+
+            if (valor.IndexOf('-') != -1)
+            {
+                strSinal = "-";
+                valor = valor.Replace("-", "");
+            }
+            valor = digitos(valor);
+            valor = valor.PadLeft(3, '0');
+            strCentavos = Texto.rightStr(valor, 2);
+            strValorInteiro = Texto.leftStr(valor, valor.Length - 2);
+            // Retira zeros à esquerda da parte inteira
+            while (strValorInteiro.Length > 0)
+            {
+                if (strValorInteiro[0] == '0')
+                    strValorInteiro = strValorInteiro.Substring(1);
+                else
+                    break;
+            }
+            if (strValorInteiro.Length == 0) strValorInteiro = "0";
+
+            return Decimal.Parse(strSinal + strValorInteiro + strCentavos) / 100m;
         }
         #endregion
 
@@ -4313,165 +4989,6 @@ namespace Financeiro
             if ((strResposta.Length > 0) && (strDescricaoMotivoOcorrencia.Length > 0)) strResposta += "\n";
             strResposta += strDescricaoMotivoOcorrencia;
             return strResposta;
-        }
-        #endregion
-
-        #region [ montaLinhaDigitavelECodigoBarrasBradesco ]
-        /// <summary>
-        /// Calcula os dígitos do código de barras e da linha digitável.
-        /// </summary>
-        /// <param name="numeroBancoCedente">Identificação do banco</param>
-        /// <param name="agenciaCedente">Agência cedente sem o dígito verificador</param>
-        /// <param name="contaCorrenteCedente">Conta do cedente sem o dígito verificador</param>
-        /// <param name="carteira">Código da carteira</param>
-        /// <param name="nossoNumero">Nosso número sem o dígito verificador (11 posições)</param>
-        /// <param name="dtVencto">Data do vencimento da parcela</param>
-        /// <param name="valorParcela">Valor da parcela</param>
-        /// <param name="codigoBarras">Retorna os dígitos do código de barras</param>
-        /// <param name="linhaDigitavel">Retorna a linha digitável formatada</param>
-        /// <returns></returns>
-        public static bool montaLinhaDigitavelECodigoBarrasBradesco(
-                                            String numeroBancoCedente,
-                                            String agenciaCedente,
-                                            String contaCorrenteCedente,
-                                            String carteira,
-                                            String nossoNumero,
-                                            DateTime dtVencto,
-                                            decimal valorParcela,
-                                            ref String codigoBarras,
-                                            ref String linhaDigitavel
-                                            )
-        {
-            #region [ Declarações ]
-            int intFatorVencto;
-            String strFatorVencto;
-            String strCampoLivre = "";
-            String strBarra1 = "";
-            String strBarra2 = "";
-            String strBarra3 = "";
-            String strBarra4 = "";
-            String strValorParcela;
-            String strBarraAux;
-            String strCodigoBarrasDV;
-            String strCodigoBarras;
-            String strLinhaDigitavelCampo1 = "";
-            String strLinhaDigitavelCampo2 = "";
-            String strLinhaDigitavelCampo3 = "";
-            String strLinhaDigitavelCampo4 = "";
-            String strLinhaDigitavelCampo5 = "";
-            String strLinhaDigitavel;
-            String strLinhaDigitavelCampo1DV;
-            String strLinhaDigitavelCampo2DV;
-            String strLinhaDigitavelCampo3DV;
-            #endregion
-
-            #region [ Inicialização ]
-            codigoBarras = "";
-            linhaDigitavel = "";
-            #endregion
-
-            #region [ Consistências ]
-            if (numeroBancoCedente == null) return false;
-            if (numeroBancoCedente.Trim().Length == 0) return false;
-
-            if (agenciaCedente == null) return false;
-            if (agenciaCedente.Trim().Length == 0) return false;
-
-            if (contaCorrenteCedente == null) return false;
-            if (contaCorrenteCedente.Trim().Length == 0) return false;
-
-            if (carteira == null) return false;
-            if (carteira.Trim().Length == 0) return false;
-
-            if (nossoNumero == null) return false;
-            if (nossoNumero.Trim().Length == 0) return false;
-
-            if (dtVencto == null) return false;
-            if (dtVencto == DateTime.MinValue) return false;
-
-            if (valorParcela <= 0) return false;
-            #endregion
-
-            #region [ Montagem do campo livre ]
-            // As posições do campo livre ficam a critério de cada banco arrecadador, sendo que este
-            // é o padrão do Bradesco
-            strCampoLivre = Texto.rightStr(agenciaCedente, 4).PadLeft(4, '0');
-            strCampoLivre += Texto.rightStr(carteira, 2).PadLeft(2, '0');
-            strCampoLivre += Texto.rightStr(nossoNumero, 11).PadLeft(11, '0');
-            strCampoLivre += Texto.rightStr(contaCorrenteCedente, 7).PadLeft(7, '0');
-            strCampoLivre += '0'; // Fixo
-            #endregion
-
-            #region [ Fator de vencimento ]
-            intFatorVencto = calculaTimeSpanDias(dtVencto - new DateTime(1997, 10, 7));
-            strFatorVencto = intFatorVencto.ToString().PadLeft(4, '0');
-            #endregion
-
-            #region [ Valor da parcela ]
-            strValorParcela = digitos(formataMoeda(valorParcela)).PadLeft(10, '0');
-            #endregion
-
-            #region [ Montagem do código de barras ]
-            strBarra1 = Texto.rightStr(numeroBancoCedente, 3).PadLeft(3, '0');
-            strBarra1 += '9'; // Real=9, Outras=0
-
-            strBarra2 = strFatorVencto;
-            strBarra3 = strValorParcela;
-            strBarra4 = strCampoLivre;
-
-            strBarraAux = strBarra1 + strBarra2 + strBarra3 + strBarra4;
-            strCodigoBarrasDV = calculaDigitoVerificadorCodigoBarrasBradesco(strBarraAux);
-
-            strCodigoBarras = strBarra1 + strCodigoBarrasDV + strBarra2 + strBarra3 + strBarra4;
-            #endregion
-
-            #region [ Montagem da linha digitável ]
-
-            #region [ Campo 1 ]
-            strLinhaDigitavelCampo1 = Texto.rightStr(numeroBancoCedente, 3).PadLeft(3, '0');
-            strLinhaDigitavelCampo1 += '9'; // Real=9, Outras=0
-            strLinhaDigitavelCampo1 += Texto.leftStr(strCampoLivre, 5);
-            strLinhaDigitavelCampo1DV = calculaDigitoVerificadorLinhaDigitavelBradesco(strLinhaDigitavelCampo1);
-            strLinhaDigitavelCampo1 += strLinhaDigitavelCampo1DV;
-            strLinhaDigitavelCampo1 = strLinhaDigitavelCampo1.Insert(5, ".");
-            #endregion
-
-            #region [ Campo 2 ]
-            strLinhaDigitavelCampo2 = strCampoLivre.Substring(5, 10);
-            strLinhaDigitavelCampo2DV = calculaDigitoVerificadorLinhaDigitavelBradesco(strLinhaDigitavelCampo2);
-            strLinhaDigitavelCampo2 += strLinhaDigitavelCampo2DV;
-            strLinhaDigitavelCampo2 = strLinhaDigitavelCampo2.Insert(5, ".");
-            #endregion
-
-            #region [ Campo 3 ]
-            strLinhaDigitavelCampo3 = strCampoLivre.Substring(15, 10);
-            strLinhaDigitavelCampo3DV = calculaDigitoVerificadorLinhaDigitavelBradesco(strLinhaDigitavelCampo3);
-            strLinhaDigitavelCampo3 += strLinhaDigitavelCampo3DV;
-            strLinhaDigitavelCampo3 = strLinhaDigitavelCampo3.Insert(5, ".");
-            #endregion
-
-            #region [ Campo 4 ]
-            strLinhaDigitavelCampo4 = strCodigoBarrasDV;
-            #endregion
-
-            #region [ Campo 5 ]
-            strLinhaDigitavelCampo5 = strFatorVencto + strValorParcela;
-            #endregion
-
-            strLinhaDigitavel = strLinhaDigitavelCampo1 +
-                                ' ' +
-                                strLinhaDigitavelCampo2 +
-                                ' ' +
-                                strLinhaDigitavelCampo3 +
-                                ' ' +
-                                strLinhaDigitavelCampo4 +
-                                ' ' +
-                                strLinhaDigitavelCampo5;
-            #endregion
-
-            codigoBarras = strCodigoBarras;
-            linhaDigitavel = strLinhaDigitavel;
-            return true;
         }
         #endregion
 

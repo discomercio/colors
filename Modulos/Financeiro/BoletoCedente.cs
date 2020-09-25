@@ -256,7 +256,14 @@ namespace Financeiro
 			set { _loja_default_boleto_plano_contas = value; }
 		}
 
-		private byte _st_participante_serasa_reciprocidade;
+        private string _cnpj;
+        public string cnpj
+        {
+            get { return _cnpj; }
+            set { _cnpj = value; }
+        }
+
+        private byte _st_participante_serasa_reciprocidade;
 		public byte st_participante_serasa_reciprocidade
 		{
 			get { return _st_participante_serasa_reciprocidade; }
