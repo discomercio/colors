@@ -2301,6 +2301,14 @@ end function
 
 
 ' ------------------------------------------------------------------------
+'   FORMATA COEFICIENTE CALC PRECO VENDA
+function formata_coeficiente_calc_preco_venda(byval valor)
+	formata_coeficiente_calc_preco_venda=formata_numero(valor, MAX_DECIMAIS_COEFICIENTE_CALC_PRECO_VENDA)
+end function
+
+
+
+' ------------------------------------------------------------------------
 '   NUMERACAO_ALTERA_BASE
 function numeracao_altera_base(byval base_orig, byval base_dest, byval numero)
 '	DEFAULT	

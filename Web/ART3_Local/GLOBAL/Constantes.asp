@@ -38,9 +38,9 @@
 	Const URL_FILE__JQUERY_UI_CSS = "../Global/jquery-ui/jquery-ui.min.css?v=001"
 	Const URL_FILE__JQUERY_MY_GLOBAL = "../Global/jquery-my-global.js?v=002"
 	Const URL_FILE__JQUERY_MY_PLUGIN = "../Global/jquery-my-plugin.js?v=002"
-	Const URL_FILE__JQUERY_UI_MY_PLUGIN = "../Global/jquery-ui-my-plugin.js?v=002"
+	Const URL_FILE__JQUERY_UI_MY_PLUGIN = "../Global/jquery-ui-my-plugin.js?v=003"
 	Const URL_FILE__JQUERY_MASKMONEY = "../Global/jquery.maskMoney.min.js?v=001"
-	Const URL_FILE__GLOBAL_JS = "../Global/global.js?v=065"
+	Const URL_FILE__GLOBAL_JS = "../Global/global.js?v=066"
 	Const URL_FILE__SSL_JS = "../Global/SSL.js?v=004"
 	Const URL_FILE__CONST_JS = "../Global/const.js?v=001"
 	Const URL_FILE__CONSTXL_JS = "../Global/constXL.js?v=001"
@@ -772,6 +772,7 @@
   ' QUANTIDADE MÁXIMA DE REGISTROS COM OPÇÕES DE PARCELAMENTO P/ CADA FORNECEDOR
 	Const MAX_LINHAS_TABELA_CUSTO_FINANCEIRO_FORNECEDOR = 24
 	Const MAX_DECIMAIS_COEFICIENTE_CUSTO_FINANCEIRO_FORNECEDOR = 6
+	Const MAX_DECIMAIS_COEFICIENTE_CALC_PRECO_VENDA = 4
 	Const COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__COM_ENTRADA = "CE"
 	Const COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__SEM_ENTRADA = "SE"
 	Const COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__A_VISTA = "AV"

@@ -7,6 +7,7 @@ var COR_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__INEXISTENTE = "#EE80EE";
 var COR_AJAX_CONSULTA_DADOS_PRODUTO__INEXISTENTE = "#EE80EE";
 
 var MAX_DECIMAIS_COEFICIENTE_CUSTO_FINANCEIRO_FORNECEDOR = 6;
+var MAX_DECIMAIS_COEFICIENTE_CALC_PRECO_VENDA = 4;
 
 var COMISSAO_INDICADOR_PERC_DESCONTO_SEM_NF = 16;
 
@@ -922,6 +923,12 @@ function formata_perc_2dec(valor) {
 function formata_coeficiente_custo_financ_fornecedor(valor) {
 var s;
 	s=formata_numero(valor, MAX_DECIMAIS_COEFICIENTE_CUSTO_FINANCEIRO_FORNECEDOR);
+	return s;
+}
+
+function formata_coeficiente_calc_preco_venda(valor) {
+	var s;
+	s = formata_numero(valor, MAX_DECIMAIS_COEFICIENTE_CALC_PRECO_VENDA);
 	return s;
 }
 

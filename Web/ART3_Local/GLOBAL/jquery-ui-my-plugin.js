@@ -55,6 +55,22 @@
 			return this;
 		},
 
+		datepicker_padrao_peq: function () {
+			this.datepicker($.datepicker.regional['pt-BR'])
+				.datepicker("option", {
+					showOn: "button",
+					buttonImage: "../imagem/jquery/calendar3peq.gif",
+					changeMonth: true,
+					changeYear: true,
+					numberOfMonths: 1,
+					showCurrentAtPos: 0,
+					firstDay: 0,
+					dayNamesMin: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+					showButtonPanel: true
+				});
+			return this;
+		},
+
 		dialog_modal: function() {
 			this.dialog({
 				autoOpen: false,
