@@ -8,9 +8,9 @@
 
 <%
 
-'     =========================
-'	  ECProdutoCompostoMenu.asp
-'     =========================
+'     ===========================
+'	  Produto.asp
+'     ===========================
 '
 '
 '	  S E R V E R   S I D E   S C R I P T I N G
@@ -22,6 +22,9 @@
 '          SSS   EEE        RRR RRR     VVV VVV    III   DDD   DDD  OOO   OOO  RRR RRR
 '     SSS   SSS  EEE        RRR  RRR     VVVVV     III   DDD   DDD  OOO   OOO  RRR  RRR
 '      SSSSSSS   EEEEEEEEE  RRR   RRR     VVV     IIIII  DDDDDDDD    OOOOOOO   RRR   RRR
+'
+'
+'	REVISADO P/ IE10
 
 
 
@@ -36,15 +39,15 @@
 	
 '	OBTEM USUÁRIO
 	dim s, usuario, usuario_nome
-	usuario = trim(Session("usuario_atual"))
+	usuario = Trim(Session("usuario_atual"))
 	usuario_nome = Trim(Session("usuario_nome_atual"))
-	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
+	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO)
 
 '	VERIFICA PERMISSÃO DE ACESSO DO USUÁRIO
 	dim s_lista_operacoes_permitidas
 	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
 	
-	if Not operacao_permitida(OP_CEN_CAD_EC_PRODUTO_COMPOSTO, s_lista_operacoes_permitidas) then 
+	if Not operacao_permitida(OP_CEN_CADASTRO_PRODUTOS, s_lista_operacoes_permitidas) then 
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
@@ -63,10 +66,8 @@
 '     CCC        LLL         III   EEEEEE     NNN NNNNN     TTT    EEEEEE
 '     CCC        LLL         III   EEE        NNN  NNNN     TTT    EEE
 '     CCC   CCC  LLL   LLL   III   EEE        NNN   NNN     TTT    EEE
-'      CCCCCCC   LLLLLLLLL  IIIII  EEEEEEEEE  NNN   NNN     TTT    EEEEEEEEE 
+'      CCCCCCC   LLLLLLLLL  IIIII  EEEEEEEEE  NNN   NNN     TTT    EEEEEEEEE
 %>
-
-<%=DOCTYPE_LEGADO%>
 
 <html>
 
@@ -75,62 +76,61 @@
 	<title>CENTRAL ADMINISTRATIVA</title>
 	</head>
 
-<script src="../GLOBAL/global.js" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__GLOBAL_JS%>" language="JavaScript" type="text/javascript"></script>
 
-<script language="JavaScript">
+<script language="JavaScript" type="text/javascript">
 function fOPConcluir( f ){
-var s_dest,s_op,s_fabricante,s_produto;
+var s_dest, s_op, s_fabricante, s_produto;
 	
 	s_dest="";
 	s_op="";
-	s_fabricante="";
-	s_produto="";
+    s_fabricante = "";
+    s_produto = "";
 	
 	if (f.rb_op[0].checked) {
-		s_dest="ECProdutoCompostoNovo.asp";
+		s_dest="ProdutoEdita.asp";
 		s_op=OP_INCLUI;
-		s_fabricante=f.c_fabricante_inclui.value;
-		s_produto=f.c_produto_inclui.value;
-		if (trim(f.c_fabricante_inclui.value)=="") {
-			alert("Forneça o código do fabricante para o produto composto !!");
-			f.c_fabricante_inclui.focus();
+        s_fabricante = f.c_fabricante_novo.value;
+        s_produto = f.c_produto_novo.value;
+        if (trim(f.c_fabricante_novo.value)=="") {
+			alert("Informe o código do fabricante do novo produto!");
+            f.c_fabricante_novo.focus();
 			return false;
 			}
-		if (trim(f.c_produto_inclui.value)=="") {
-			alert("Forneça o código do produto para o produto composto !!");
-			f.c_produto_inclui.focus();
-			return false;
-			}
+        if (trim(f.c_produto_novo.value) == "") {
+            alert("Informe o código do novo produto!");
+            f.c_produto_novo.focus();
+            return false;
+        }
 		}
-		
+	
 	if (f.rb_op[1].checked) {
-		s_dest="ECProdutoCompostoEdita.asp";
+		s_dest="ProdutoEdita.asp";
 		s_op=OP_CONSULTA;
-		s_fabricante=f.c_fabricante_consulta.value;
-		s_produto=f.c_produto_consulta.value;
-		if (trim(f.c_fabricante_consulta.value)=="") {
-			alert("Informe o código do fabricante !!");
-			f.c_fabricante_consulta.focus();
+        s_fabricante = f.c_fabricante_cons.value;
+        s_produto = f.c_produto_cons.value;
+        if (trim(f.c_fabricante_cons.value)=="") {
+			alert("Informe o código do fabricante do produto a ser consultado!");
+            f.c_fabricante_cons.focus();
 			return false;
 			}
-		if (trim(f.c_produto_consulta.value)=="") {
-			alert("Informe o código do produto !!");
-			f.c_produto_consulta.focus();
-			return false;
-			}
+        if (trim(f.c_produto_cons.value) == "") {
+            alert("Informe o código do produto a ser consultado!!");
+            f.c_produto_cons.focus();
+            return false;
+        }
 		}
 		
 	if (f.rb_op[2].checked) {
-		s_dest="ECProdutoCompostoLista.asp";
+		s_dest="ProdutoLista.asp";
 		}
 
 	if (s_dest=="") {
-		alert("Escolha uma das opções !!");
+		alert("Escolha uma das opções!!");
 		return false;
 		}
 	
 	f.fabricante_selecionado.value=s_fabricante;
-	f.produto_selecionado.value=s_produto;
 	f.operacao_selecionada.value=s_op;
 	
 	f.action=s_dest;
@@ -152,17 +152,18 @@ var s_dest,s_op,s_fabricante,s_produto;
 	CCC   CCC  SSS   SSS  SSS   SSS
 	 CCCCCCC    SSSSSSS    SSSSSSS
 -->
-<link href="../global/e.css" Rel="stylesheet" Type="text/css">
+
+<link href="<%=URL_FILE__E_CSS%>" rel="stylesheet" type="text/css">
 
 
 
 <body onload="focus()">
 
-<!--  MENU SUPERIOR -->  
-<table width="100%" cellpadding="4" cellspacing="0" style="border-bottom:1px solid black">
+<!--  MENU SUPERIOR -->
+<table width="100%" cellPadding="4" CellSpacing="0" style="border-bottom:1px solid black">
 
 <tr>
-	<td align="right" valign="bottom"><span class="PEDIDO">CENTRAL&nbsp;&nbsp;ADMINISTRATIVA</span><br>
+	<td align="right" valign="bottom"><p class="PEDIDO">CENTRAL&nbsp;&nbsp;ADMINISTRATIVA<br>
 	<%	s = usuario_nome
 		if s = "" then s = usuario
 		s = x_saudacao & ", " & s
@@ -173,7 +174,7 @@ var s_dest,s_op,s_fabricante,s_produto;
 		<a href="resumo.asp<%= "?" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>" title="retorna para página inicial" class="LPagInicial">página inicial</a>&nbsp;&nbsp;&nbsp;
 		<a href="senha.asp<%= "?" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>" title="altera a senha atual do usuário" class="LAlteraSenha">altera senha</a>&nbsp;&nbsp;&nbsp;
 		<a href="sessaoencerra.asp<%= "?" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>" title="encerra a sessão do usuário" class="LSessaoEncerra">encerra</a>
-		</span></td>
+		</span></p></td>
 	</tr>
 
 </table>
@@ -184,13 +185,13 @@ var s_dest,s_op,s_fabricante,s_produto;
 <!--  ***********************************************************************************************  -->
 <!--  F O R M U L Á R I O                         												       -->
 <!--  ***********************************************************************************************  -->
-<form method="post" id="fOP" name="fOP">
+<form method="post" id="fOP" name="fOP" onsubmit="if (!fOPConcluir(fOP)) return false">
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
-<input type="hidden" name='fabricante_selecionado' value=''>
-<input type="hidden" name='produto_selecionado' value=''>
-<input type="hidden" name='operacao_selecionada' value=''>
+<input type="hidden" name='fabricante_selecionado' id="fabricante_selecionado" value='' />
+<input type="hidden" name='produto_selecionado' id="produto_selecionado" value='' />
+<input type="hidden" name='operacao_selecionada' id="operacao_selecionada" value='' />
 
-<span class="T">E-Commerce: Cadastro de Produto Composto</span>
+<span class="T">CADASTRO DE PRODUTOS</span>
 <div class="QFn" align="center">
 <table class="TFn">
 	<tr>
@@ -198,8 +199,8 @@ var s_dest,s_op,s_fabricante,s_produto;
 			<table cellspacing="0" cellpadding="0">
 				<tr align="left">
 					<td align="left" colspan="2">
-						<input type="radio" id="s1" name="rb_op" value="1" class="CBOX">
-						<span class="CBOX" style="cursor:default" onclick="fOP.rb_op[0].click();fOP.c_fabricante_inclui.focus();">Cadastrar Novo</span>
+						<input type="radio" id="rb_op" name="rb_op" value="1" class="CBOX" onclick="fOP.c_fabricante_novo.focus()">
+							<span class="CBOX" style="cursor:default" onclick="fOP.rb_op[0].click(); fOP.c_fabricante_novo.focus();">Cadastrar Novo</span>
 					</td>
 				</tr>
 				<tr>
@@ -213,7 +214,9 @@ var s_dest,s_op,s_fabricante,s_produto;
 									<span class="L">Fabricante&nbsp;</span>
 								</td>
 								<td align="left" style="padding-bottom:4px;">
-									<input name="c_fabricante_inclui" type="text" maxlength="3" style="width:40px;" onblur="this.value=normaliza_codigo(this.value,TAM_MIN_FABRICANTE);" onclick="fOP.rb_op[0].click()" onkeypress="this.click(); if (digitou_enter(true) && tem_info(this.value)) {this.value=normaliza_codigo(this.value,TAM_MIN_FABRICANTE); fOP.c_produto_inclui.focus();} filtra_fabricante();">
+									<input name="c_fabricante_novo" id="c_fabricante_novo" type="text" maxlength="3" style="width:40px;" onblur="this.value=normaliza_codigo(this.value,TAM_MIN_FABRICANTE);"
+										onclick="fOP.rb_op[0].click()"
+										onkeypress="this.click(); if (digitou_enter(true) && tem_info(this.value)) if (fOPConcluir(fOP)) fOP.submit(); filtra_numerico();">
 								</td>
 							</tr>
 							<tr>
@@ -221,7 +224,7 @@ var s_dest,s_op,s_fabricante,s_produto;
 									<span class="L">Produto&nbsp;</span>
 								</td>
 								<td align="left">
-									<input name="c_produto_inclui" type="text" maxlength="8" style="width:70px;" onblur="this.value=normaliza_produto(this.value);" onclick="fOP.rb_op[0].click()" onkeypress="this.click(); if (digitou_enter(true) && tem_info(this.value)) {this.value=normaliza_produto(this.value); fOPConcluir(fOP);} filtra_produto();">
+									<input name="c_produto_novo" type="text" maxlength="8" style="width:70px;" onblur="this.value=normaliza_produto(this.value);" onclick="fOP.rb_op[0].click()" onkeypress="this.click(); if (digitou_enter(true) && tem_info(this.value)) {this.value=normaliza_produto(this.value); fOPConcluir(fOP);} filtra_produto();">
 								</td>
 							</tr>
 						</table>
@@ -235,8 +238,8 @@ var s_dest,s_op,s_fabricante,s_produto;
 			<table cellspacing="0" cellpadding="0">
 				<tr align="left">
 					<td align="left" colspan="2">
-						<input type="radio" id="s1" name="rb_op" value="2" class="CBOX">
-						<span class="CBOX" style="cursor:default" onclick="fOP.rb_op[1].click();fOP.c_fabricante_consulta.focus();">Consultar</span>
+						<input type="radio" id="rb_op" name="rb_op" value="2" class="CBOX" onclick="fOP.c_fabricante_cons.focus()">
+							<span class="CBOX" style="cursor:default" onclick="fOP.rb_op[1].click(); fOP.c_fabricante_cons.focus();">Consultar</span>
 					</td>
 				</tr>
 				<tr>
@@ -250,7 +253,9 @@ var s_dest,s_op,s_fabricante,s_produto;
 									<span class="L">Fabricante&nbsp;</span>
 								</td>
 								<td align="left" style="padding-bottom:4px;">
-									<input name="c_fabricante_consulta" type="text" maxlength="3" style="width:40px;" onblur="this.value=normaliza_codigo(this.value,TAM_MIN_FABRICANTE);" onclick="fOP.rb_op[1].click()" onkeypress="this.click(); if (digitou_enter(true) && tem_info(this.value)) {this.value=normaliza_codigo(this.value,TAM_MIN_FABRICANTE); fOP.c_produto_consulta.focus();} filtra_fabricante();">
+									<input name="c_fabricante_cons" id="c_fabricante_cons" type="text" maxlength="3" style="width:40px;" onblur="this.value=normaliza_codigo(this.value,TAM_MIN_FABRICANTE);"
+										onclick="fOP.rb_op[1].click()"
+										onkeypress="this.click(); if (digitou_enter(true) && tem_info(this.value)) if (fOPConcluir(fOP)) fOP.submit(); filtra_numerico();">
 								</td>
 							</tr>
 							<tr>
@@ -258,7 +263,7 @@ var s_dest,s_op,s_fabricante,s_produto;
 									<span class="L">Produto&nbsp;</span>
 								</td>
 								<td align="left">
-									<input name="c_produto_consulta" type="text" maxlength="8" style="width:70px;" onblur="this.value=normaliza_produto(this.value);" onclick="fOP.rb_op[1].click()" onkeypress="this.click(); if (digitou_enter(true) && tem_info(this.value)) {this.value=normaliza_produto(this.value); fOPConcluir(fOP);} filtra_produto();">
+									<input name="c_produto_cons" type="text" maxlength="8" style="width:70px;" onblur="this.value=normaliza_produto(this.value);" onclick="fOP.rb_op[1].click()" onkeypress="this.click(); if (digitou_enter(true) && tem_info(this.value)) {this.value=normaliza_produto(this.value); fOPConcluir(fOP);} filtra_produto();">
 								</td>
 							</tr>
 						</table>
@@ -269,30 +274,25 @@ var s_dest,s_op,s_fabricante,s_produto;
 	</tr>
 	<tr align="left">
 		<td align="left" nowrap>
-			<input type="radio" id="s1" name="rb_op" value="3" class="CBOX"><span class="rbLink" onclick="fOP.rb_op[2].click(); fOPConcluir(fOP);">Consultar Lista</span>
-		</td>
-	</tr>
-</table>
+			<input type="radio" id="rb_op" name="rb_op" value="3" class="CBOX">
+				<span class="rbLink" onclick="fOP.rb_op[2].click(); fOPConcluir(fOP);">Consultar Lista</span>
+			</td>
+		</tr>
+	</table>
 
-<br />
-<span class="R" style="margin: 4 10 0 10">&nbsp;</span>
-<input name="bEXECUTAR" type="button" class="Botao" value="EXECUTAR" title="executa" onclick="fOPConcluir(fOP);">
-<p class="R" style="margin: 0 10 0 10">&nbsp;</p>
+	<span class="R" style="margin: 4 10 0 10">&nbsp;</span>
+	<input name="bEXECUTAR" type="button" class="Botao" value="EXECUTAR" title="executa" onclick="fOPConcluir(fOP);">
+	<p class="R" style="margin: 0 10 0 10">&nbsp;</p>
 
 </div>
 </form>
 
-<br />
-
 <p class="TracoBottom"></p>
 
-<table cellspacing="0">
+<table cellSpacing="0">
 <tr>
-	<td align="center">
-		<a href="MenuCadastro.asp<%= "?" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>" title="volta para a página anterior">
-			<img src="../botao/voltar.gif" width="176" height="55" border="0">
-		</a>
-	</td>
+	<td align="center"><a href="MenuCadastro.asp<%= "?" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>" title="volta para a página anterior">
+		<img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
 </tr>
 </table>
 

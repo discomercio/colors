@@ -134,7 +134,13 @@ var s, strCep, iop;
 	if (f.rb_op[iop].checked) {
 		s="fabricante.asp";
 		}
- 
+
+    // CADASTRO DE PRODUTOS (TABELA BÁSICA)
+    iop++;
+    if (f.rb_op[iop].checked) {
+        s = "Produto.asp";
+    }
+
  // CADASTRO DE TRANSPORTADORAS
 	iop++;
 	if (f.rb_op[iop].checked) {
@@ -424,6 +430,11 @@ var s, strCep, iop;
 			<input type="radio" id="rb_op" name="rb_op" value="<%=Cstr(idx)%>" class="CBOX" <%=s%>><span class="rbLink" onclick="fOP.rb_op[<%=Cstr(idx-1)%>].click(); if (fOP.rb_op[<%=Cstr(idx-1)%>].checked) fOP.bEXECUTAR.click();"
 				>Fabricantes</span><br>
 			
+			<%	idx=idx+1
+				if operacao_permitida(OP_CEN_CADASTRO_PRODUTOS, s_lista_operacoes_permitidas) then s="" else s=" disabled" %>
+			<input type="radio" id="rb_op" name="rb_op" value="<%=Cstr(idx)%>" class="CBOX" <%=s%>><span class="rbLink" onclick="fOP.rb_op[<%=Cstr(idx-1)%>].click(); if (fOP.rb_op[<%=Cstr(idx-1)%>].checked) fOP.bEXECUTAR.click();"
+				>Produtos</span><br>
+
 			<%	idx=idx+1
 				if operacao_permitida(OP_CEN_CADASTRO_TRANSPORTADORAS, s_lista_operacoes_permitidas) then s="" else s=" disabled" %>
 			<input type="radio" id="rb_op" name="rb_op" value="<%=Cstr(idx)%>" class="CBOX" <%=s%>><span class="rbLink" onclick="fOP.rb_op[<%=Cstr(idx-1)%>].click(); if (fOP.rb_op[<%=Cstr(idx-1)%>].checked) fOP.bEXECUTAR.click();"
