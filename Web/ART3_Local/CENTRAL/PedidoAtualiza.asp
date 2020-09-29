@@ -2415,7 +2415,6 @@
 		if alerta = "" then
 			if blnHaPedidoAprovadoComEntregaPendente then
 				''Envia alerta de que houve edição no cadastro de cliente que possui pedido com status de análise de crédito 'crédito ok' e com entrega pendente
-				dim rEmailDestinatario
 				corpo_mensagem = "" 
 				id_email = ""
 				msg_erro_grava_email = ""
