@@ -4,6 +4,7 @@
 <!-- #include file = "../global/constantes.asp" -->
 <!-- #include file = "../global/funcoes.asp"    -->
 <!-- #include file = "../global/bdd.asp" -->
+<!-- #include file = "../global/Global.asp"    -->
 
 <!-- #include file = "../global/TrataSessaoExpirada.asp"        -->
 
@@ -32,6 +33,18 @@
 
 	Server.ScriptTimeout = MAX_SERVER_SCRIPT_TIMEOUT_EM_SEG
 	
+	Const ST_NFE_CANCELADA = "CAN"
+	Const ST_NFE_AUTORIZADA = "AUT"
+
+	class cl_NFe_CHECK
+		dim pedido
+		dim st_pedido_emissao_nfe_ok
+		dim nfe_fatura
+		dim st_nfe_fatura
+		dim nfe_remessa
+		dim st_nfe_remessa
+		end class
+
 	dim usuario
 	usuario = Trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
@@ -152,6 +165,9 @@
 			rs.MoveNext
 			loop
 		
+		if rs.State <> 0 then rs.Close
+		set rs=nothing
+
 		if s_table_produtos_sem_zona <> "" then
 			s_table_produtos_sem_zona = "<table cellspacing='0' cellpadding='0'>" & chr(13) & _
 										"	<tr>" & chr(13) &_
@@ -176,6 +192,52 @@
 			end if
 		end if
 
+	'Localiza dados para a conexão com o BD de NFe
+	dim dbcNFe
+	dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptografadaBd
+	dim chave
+	dim senha_decodificada
+
+	if alerta = "" then
+		s = "SELECT" & _
+				" NFe_T1_servidor_BD," & _
+				" NFe_T1_nome_BD," & _
+				" NFe_T1_usuario_BD," & _
+				" NFe_T1_senha_BD" & _
+			" FROM t_NFe_EMITENTE" & _
+			" WHERE" & _
+				" (id = " & c_nfe_emitente & ")"
+		set rs = cn.Execute(s)
+		if rs.Eof then
+			alerta=texto_add_br(alerta)
+			alerta = alerta & "Não foram localizados os parâmetros de conexão ao BD de NFe (ID=" & c_nfe_emitente & ")"
+		else
+			strNfeT1ServidorBd = Trim("" & rs("NFe_T1_servidor_BD"))
+			strNfeT1NomeBd = Trim("" & rs("NFe_T1_nome_BD"))
+			strNfeT1UsuarioBd = Trim("" & rs("NFe_T1_usuario_BD"))
+			strNfeT1SenhaCriptografadaBd = Trim("" & rs("NFe_T1_senha_BD"))
+			
+			chave = gera_chave(FATOR_BD)
+			decodifica_dado strNfeT1SenhaCriptografadaBd, senha_decodificada, chave
+			end if
+		
+		if rs.State <> 0 then rs.Close
+		set rs=nothing
+		end if
+
+	if alerta = "" then
+		'Abre a conexão com o BD de NFe
+		s = "Provider=SQLOLEDB;" & _
+			"Data Source=" & strNfeT1ServidorBd & ";" & _
+			"Initial Catalog=" & strNfeT1NomeBd & ";" & _
+			"User ID=" & strNfeT1UsuarioBd & ";" & _
+			"Password=" & senha_decodificada & ";"
+		set dbcNFe = server.CreateObject("ADODB.Connection")
+		dbcNFe.ConnectionTimeout = 45
+		dbcNFe.CommandTimeout = 900
+		dbcNFe.ConnectionString = s
+		dbcNFe.Open
+		end if
 
 
 
@@ -184,6 +246,16 @@
 '
 '									F  U  N  Ç  Õ  E  S 
 ' _____________________________________________________________________________________________
+
+sub inicializa_cl_NFe_CHECK(byref o)
+	o.pedido = ""
+	o.st_pedido_emissao_nfe_ok = False
+	o.nfe_fatura = ""
+	o.st_nfe_fatura = ""
+	o.nfe_remessa = ""
+	o.st_nfe_remessa = ""
+end sub
+
 
 ' _____________________________________
 ' CONSULTA RELATORIO
@@ -202,10 +274,11 @@
 sub consulta_relatorio
 const COD_ZONA_ID__TODOS = 999999
 const COD_ZONA_CODIGO__TODOS = "***TODOS***"
-dim r
+dim r, tNFE
 dim s, s_sql, s_where, s_sql_lista_pedidos
-dim i, iZona, iRel, iStep, n_qtde_zona, n_reg
-dim vZona(), vRel()
+dim s_sql_nfe, s_where_nfe
+dim i, iZona, iRel, iStep, iNFe, idxNFe, n_qtde_zona, n_reg
+dim vZona(), vRel(), vNFe()
 dim cab_table, cab
 dim x
 dim s_tit_zona
@@ -214,6 +287,7 @@ dim s_pedido_aux, lista_pedidos, lista_pedidos_selecionados, strQtdePedidos
 dim qtde_pedidos, qtde_produtos, qtde_volumes
 dim n_qtde_max_pedidos
 dim rNfeEmitente
+dim blnPedidoComNFeInvalida
 
 '	VETOR QUE ARMAZENA TODOS OS REGISTROS (A ORDENAÇÃO DEVE SER FEITA NA CONSULTA SQL)
 	redim vRel(0)
@@ -225,6 +299,12 @@ dim rNfeEmitente
 	set vZona(0) = New cl_ZONA_DEPOSITO
 	vZona(0).zona_id = 0
 	
+'	VETOR USADO NA VERIFICAÇÃO DO STATUS DA NFe
+	redim vNFe(0)
+	set vNFe(0) = New cl_NFe_CHECK
+	inicializa_cl_NFe_CHECK vNFe(0)
+
+
 	s_sql = "SELECT" & _
 				" id," & _
 				" zona_codigo" & _
@@ -263,11 +343,19 @@ dim rNfeEmitente
 	lista_pedidos = ""
 
 	for iStep = 1 to 2
+	'	OBSERVANDO QUE:
+	'		obs_2 = Nº Nota Fiscal
+	'		obs_3 = NF Simples Remessa, quando houver
+	'		num_obs_2 = Computed column com o valor do campo 'obs_2' convertido para INT
+	'		num_obs_3 = Computed column com o valor do campo 'obs_3' convertido para INT
 		s_sql = "SELECT" & _
 					" t_PEDIDO.pedido," & _
 					" t_PEDIDO.data," & _
 					" t_PEDIDO.hora," & _
 					" t_PEDIDO.obs_2," & _
+					" t_PEDIDO.num_obs_2," & _
+					" t_PEDIDO.obs_3," & _
+					" t_PEDIDO.num_obs_3," & _
 					" t_PEDIDO.loja," & _
 					" t_PEDIDO.transportadora_id," & _
 					" t_PEDIDO.id_cliente," & _
@@ -283,17 +371,11 @@ dim rNfeEmitente
 					" t_PRODUTO.deposito_zona_id AS zona_id," & _
 					" t_WMS_DEPOSITO_MAP_ZONA.zona_codigo," & _
 					" (" & _
-						"SELECT" & _
-							" TOP 1 NFe_numero_NF" & _
-						" FROM t_NFe_EMISSAO tNE" & _
-						" WHERE" & _
-							" (tNE.pedido=t_PEDIDO.pedido)" & _
-							" AND (tipo_NF = '1')" & _
-							" AND (st_anulado = 0)" & _
-							" AND (codigo_retorno_NFe_T1 = 1)" & _
-						" ORDER BY" & _
-							" id DESC" & _
-					") AS numeroNFe," & _
+						"CASE" & _
+							" WHEN t_PEDIDO.num_obs_3 > 0 THEN t_PEDIDO.num_obs_3" & _
+							" WHEN t_PEDIDO.num_obs_2 > 0 THEN t_PEDIDO.num_obs_2" & _
+							" ELSE NULL" & _
+						" END) AS numeroNFe," & _
 					" (" & _
 						"SELECT" & _
 							" TOP 1 id_wms_etq_n1" & _
@@ -364,7 +446,7 @@ dim rNfeEmitente
 		s_sql = s_sql & " ORDER BY data, hora, pedido"
 	
 		set r = cn.execute(s_sql)
-		
+
 	'	NÃO HÁ LIMITAÇÃO DE QTDE MÁXIMA DE PEDIDOS
 		if c_qtde_max_pedidos = "" then
 			n_qtde_max_pedidos = 0
@@ -372,20 +454,129 @@ dim rNfeEmitente
 			n_qtde_max_pedidos = converte_numero(c_qtde_max_pedidos)
 			end if
 		
+	'	VERIFICA SE HÁ PEDIDOS COM NFe EM SITUAÇÃO DIFERENTE DE AUTORIZADA
 		if iStep = 1 then
 			do while Not r.Eof
-				s_pedido_aux = Trim("" & r("pedido"))
-				if Instr(lista_pedidos, "|" & s_pedido_aux & "|") = 0 then
-					n_total_pedidos_disponiveis = n_total_pedidos_disponiveis + 1
-					lista_pedidos = lista_pedidos & "|" & s_pedido_aux & "|"
-					if (n_total_pedidos_disponiveis <= n_qtde_max_pedidos) Or (n_qtde_max_pedidos = 0) then
-						if s_sql_lista_pedidos <> "" then s_sql_lista_pedidos = s_sql_lista_pedidos & ","
-						s_sql_lista_pedidos = s_sql_lista_pedidos & "'" & s_pedido_aux & "'"
+				'Verifica se o pedido já existe no vetor
+				idxNFe = -1
+				for iNFe=Lbound(vNFe) to Ubound(vNFe)
+					if vNFe(iNFe).pedido = Trim("" & r("pedido")) then
+						idxNFe = iNFe
+						exit for
 						end if
+					next
+
+				'Se o pedido ainda não está no vetor, armazena os dados
+				if idxNFe = -1 then
+					if vNFe(Ubound(vNFe)).pedido <> "" then
+						redim preserve vNFe(Ubound(vNFe)+1)
+						set vNFe(Ubound(vNFe)) = New cl_NFe_CHECK
+						inicializa_cl_NFe_CHECK vNFe(Ubound(vNFe))
+						end if
+					idxNFe = Ubound(vNFe)
+					vNFe(idxNFe).pedido = Trim("" & r("pedido"))
+					if r("num_obs_2") > 0 then vNFe(idxNFe).nfe_fatura = NFeFormataNumeroNF(r("num_obs_2"))
+					if r("num_obs_3") > 0 then vNFe(idxNFe).nfe_remessa = NFeFormataNumeroNF(r("num_obs_3"))
 					end if
+
 				r.MoveNext
 				loop
-			end if
+			
+			if r.State <> 0 then r.Close
+			set r=nothing
+
+			'MONTA A CONSULTA PARA O BD DE NFe DA TARGET ONE
+			s_where_nfe = ""
+			for iNFe = LBound(vNFe) to UBound(vNFe)
+				if vNFe(iNFe).pedido <> "" then
+					if vNFe(iNFe).nfe_fatura <> "" then
+						if s_where_nfe <> "" then s_where_nfe = s_where_nfe & ","
+						s_where_nfe = s_where_nfe & "'" & vNFe(iNFe).nfe_fatura & "'"
+						end if
+
+					if vNFe(iNFe).nfe_remessa <> "" then
+						if s_where_nfe <> "" then s_where_nfe = s_where_nfe & ","
+						s_where_nfe = s_where_nfe & "'" & vNFe(iNFe).nfe_remessa & "'"
+						end if
+					end if
+				next
+
+			if s_where_nfe <> "" then
+				s_where_nfe = " (Nfe IN (" & s_where_nfe & "))"
+				s_sql_nfe = "SELECT" & _
+								" Nfe," & _
+								" Serie," & _
+								" Convert(tinyint, Coalesce(CANCELADA,0)) AS CANCELADA," & _
+								" CodProcAtual" & _
+							" FROM NFE" & _
+							" WHERE" & _
+								s_where_nfe
+				set tNFE = dbcNFe.Execute(s_sql_nfe)
+				do while Not tNFE.Eof
+					idxNFe = -1
+					for iNFe=LBound(vNFe) to UBound(vNFe)
+						if Trim("" & tNFE("Nfe")) = vNFe(iNFe).nfe_fatura then
+							if Trim("" & tNFE("CANCELADA")) = "1" then
+								vNFe(iNFe).st_nfe_fatura = ST_NFE_CANCELADA
+							elseif Trim("" & tNFE("CodProcAtual")) = "100" then
+								vNFe(iNFe).st_nfe_fatura = ST_NFE_AUTORIZADA
+								end if
+							exit for
+						elseif Trim("" & tNFE("Nfe")) = vNFe(iNFe).nfe_remessa then
+							if Trim("" & tNFE("CANCELADA")) = "1" then
+								vNFe(iNFe).st_nfe_remessa = ST_NFE_CANCELADA
+							elseif Trim("" & tNFE("CodProcAtual")) = "100" then
+								vNFe(iNFe).st_nfe_remessa = ST_NFE_AUTORIZADA
+								end if
+							exit for
+							end if
+						next
+
+					tNFE.MoveNext
+					loop
+
+				if tNFE.State <> 0 then tNFE.Close
+				set tNFE=nothing
+				
+				'Consolida o status de emissão da NFe do pedido, lembrando que um pedido pode ter duas NFes (fatura e remessa)
+				for iNFe=LBound(vNFe) to UBound(vNFe)
+					if vNFe(iNFe).pedido <> "" then
+						blnPedidoComNFeInvalida = False
+						if vNFe(iNFe).nfe_fatura <> "" then
+							if vNFe(iNFe).st_nfe_fatura <> ST_NFE_AUTORIZADA then blnPedidoComNFeInvalida = True
+							end if
+						
+						if vNFe(iNFe).nfe_remessa <> "" then
+							if vNFe(iNFe).st_nfe_remessa <> ST_NFE_AUTORIZADA then blnPedidoComNFeInvalida = True
+							end if
+						
+						if blnPedidoComNFeInvalida then
+							vNFe(iNFe).st_pedido_emissao_nfe_ok = False
+						else
+							vNFe(iNFe).st_pedido_emissao_nfe_ok = True
+							end if
+						end if
+					next
+				end if 'if s_where_nfe <> ""
+
+			'Monta lista de pedidos que serão considerados para o relatório
+			for iNFe=LBound(vNFe) to UBound(vNFe)
+				if vNFe(iNFe).pedido <> "" then
+					if vNFe(iNFe).st_pedido_emissao_nfe_ok Or _
+						( (rb_nfe <> "EMITIDA") AND ((vNFe(iNFe).nfe_fatura="") AND (vNFe(iNFe).nfe_remessa="")) ) then
+						s_pedido_aux = Trim("" & vNFe(iNFe).pedido)
+						if Instr(lista_pedidos, "|" & s_pedido_aux & "|") = 0 then
+							n_total_pedidos_disponiveis = n_total_pedidos_disponiveis + 1
+							lista_pedidos = lista_pedidos & "|" & s_pedido_aux & "|"
+							if (n_total_pedidos_disponiveis <= n_qtde_max_pedidos) Or (n_qtde_max_pedidos = 0) then
+								if s_sql_lista_pedidos <> "" then s_sql_lista_pedidos = s_sql_lista_pedidos & ","
+								s_sql_lista_pedidos = s_sql_lista_pedidos & "'" & s_pedido_aux & "'"
+								end if
+							end if
+						end if
+					end if
+				next
+			end if 'if iStep = 1
 		next ' for iStep = 1 to 2
 	
 	
@@ -398,6 +589,7 @@ dim rNfeEmitente
 		
 		with vRel(Ubound(vRel))
 			.pedido = Trim("" & r("pedido"))
+			'Número da NFe sem formatação com zeros à esquerda
 			.obs_2 = Trim("" & r("obs_2"))
 			.loja = Trim("" & r("loja"))
 			.id_cliente = Trim("" & r("id_cliente"))
@@ -819,6 +1011,16 @@ P.Cd { font-size:10pt; }
 				"		<td align='right' valign='top' nowrap><span class='Nni'>Qtde Máxima de Pedidos:&nbsp;</span></td>" & chr(13) & _
 				"		<td align='left' valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
 				"	</tr>" & chr(13)
+
+
+'	CD
+	s = obtem_apelido_empresa_NFe_emitente(c_nfe_emitente)
+	s_filtro = s_filtro & _
+				"	<tr>" & chr(13) & _
+				"		<td align='right' valign='top' nowrap><span class='Nni'>CD:&nbsp;</span></td>" & chr(13) & _
+				"		<td align='left' valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
+				"	</tr>" & chr(13)
+
 '	EMISSÃO
 	s_filtro = s_filtro & _
 				"	<tr>" & chr(13) & _
@@ -893,6 +1095,11 @@ P.Cd { font-size:10pt; }
 
 <%
 '	FECHA CONEXAO COM O BANCO DE DADOS
+	if alerta = "" then
+		dbcNFe.Close
+		set dbcNFe = nothing
+		end if
+
 	cn.Close
 	set cn = nothing
 %>
