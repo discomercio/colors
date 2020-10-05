@@ -331,8 +331,12 @@ dim rNfeEmitente
 				" t_PRODUTO.descricao_html," & _
 				" t_PRODUTO.deposito_zona_id AS zona_id," & _
 				" t_WMS_DEPOSITO_MAP_ZONA.zona_codigo," & _
-				" t_PEDIDO.num_obs_2 AS numNFeFaturamento," & _
-				" t_PEDIDO.num_obs_3 AS numNFeRemessa," & _
+				" (" & _
+					"CASE" & _
+						" WHEN t_PEDIDO.num_obs_3 > 0 THEN t_PEDIDO.num_obs_3" & _
+						" WHEN t_PEDIDO.num_obs_2 > 0 THEN t_PEDIDO.num_obs_2" & _
+						" ELSE NULL" & _
+					" END) AS numeroNFe," & _
 				" (" & _
 					"SELECT " & _
 						" Sum(qtde*qtde_volumes)" & _
@@ -382,10 +386,10 @@ dim rNfeEmitente
 	s_where = ""
 	if rb_nfe = "EMITIDA" then
 		if s_where <> "" then s_where = s_where & " AND"
-		s_where = s_where & " ((numNFeFaturamento <> 0) OR (numNFeRemessa <> 0))"
+		s_where = s_where & " (numeroNFe IS NOT NULL)"
 	elseif rb_nfe = "NAO_EMITIDA" then
 		if s_where <> "" then s_where = s_where & " AND"
-		s_where = s_where & " ((numNFeFaturamento = 0) AND (numNFeRemessa = 0))"
+		s_where = s_where & " (numeroNFe IS NULL)"
 		end if
 	
 	if s_where <> "" then s_where = " WHERE" & s_where
@@ -421,14 +425,7 @@ dim rNfeEmitente
 			.descricao_html = Trim("" & r("descricao_html"))
 			.zona_id = r("zona_id")
 			.zona_codigo = Trim("" & r("zona_codigo"))
-			'Somente NF de Remessa, quando houver
-			if r("numNFeRemessa") > 0 then
-				.numeroNFe = Trim("" & r("numNFeRemessa"))
-			elseif r("numNFeFaturamento") > 0 then
-				.numeroNFe = Trim("" & r("numNFeFaturamento"))
-			else
-				.numeroNFe = ""
-				end if
+			.numeroNFe = Trim("" & r("numeroNFe"))
 			.qtde_volumes_pedido = r("qtde_volumes_pedido")
 			.nome_fabricante = Trim("" & r("nome_fabricante"))
 			if .nome_fabricante = "" then .nome_fabricante = Trim("" & r("razao_social_fabricante"))
@@ -1234,6 +1231,14 @@ P.Cd { font-size:10pt; }
 				"		<td align='right' valign='top' nowrap><span class='Nni'>NSU do Relatório:&nbsp;</span></td>" & chr(13) & _
 				"		<td align='left' valign='top' width='99%'><span id='spanFiltroNsuRelatorio' class='N'></span></td>" & chr(13) & _
 				"	</tr>" & chr(13)
+'	CD
+	s = obtem_apelido_empresa_NFe_emitente(c_nfe_emitente)
+	s_filtro = s_filtro & _
+				"	<tr>" & chr(13) & _
+				"		<td align='right' valign='top' nowrap><span class='Nni'>CD:&nbsp;</span></td>" & chr(13) & _
+				"		<td align='left' valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
+				"	</tr>" & chr(13)
+	
 '	EMISSÃO
 	s_filtro = s_filtro & _
 				"	<tr>" & chr(13) & _

@@ -2595,6 +2595,10 @@ function setarValorRadio(array, valor)
 <% if Not blnIndicadorEdicaoLiberada then %>
 <input type="hidden" name="c_indicador" id="c_indicador" value="<%=r_pedido.indicador%>" />
 <% end if %>
+<input type="hidden" name="c_transportadora_id_original" id="c_transportadora_id_original" value="<%=r_pedido.transportadora_id%>" />
+<input type="hidden" name="c_a_entregar_data_marcada_original" id="c_a_entregar_data_marcada_original" value="<%=formata_data(r_pedido.a_entregar_data_marcada)%>" />
+<input type="hidden" name="c_obs2_original" id="c_obs2_original" value="<%=r_pedido.obs_2%>" />
+<input type="hidden" name="c_obs3_original" id="c_obs3_original" value="<%=r_pedido.obs_3%>" />
 
 <!-- AJAX EM ANDAMENTO -->
 <div id="divAjaxRunning" style="display:none;"><img src="../Imagem/ajax_loader_gray_256.gif" class="AjaxImgLoader"/></div>
