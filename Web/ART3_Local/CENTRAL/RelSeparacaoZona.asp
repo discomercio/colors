@@ -322,17 +322,11 @@ dim rNfeEmitente
 				" t_PRODUTO.deposito_zona_id AS zona_id," & _
 				" t_WMS_DEPOSITO_MAP_ZONA.zona_codigo," & _
 				" (" & _
-					"SELECT" & _
-						" TOP 1 NFe_numero_NF" & _
-					" FROM t_NFe_EMISSAO tNE" & _
-					" WHERE" & _
-						" (tNE.pedido=t_PEDIDO.pedido)" & _
-						" AND (tipo_NF = '1')" & _
-						" AND (st_anulado = 0)" & _
-						" AND (codigo_retorno_NFe_T1 = 1)" & _
-					" ORDER BY" & _
-						" id DESC" & _
-				") AS numeroNFe," & _
+					"CASE" & _
+						" WHEN t_PEDIDO.num_obs_3 > 0 THEN t_PEDIDO.num_obs_3" & _
+						" WHEN t_PEDIDO.num_obs_2 > 0 THEN t_PEDIDO.num_obs_2" & _
+						" ELSE NULL" & _
+					" END) AS numeroNFe," & _
 				" (" & _
 					"SELECT " & _
 						" Sum(qtde*qtde_volumes)" & _
@@ -1213,6 +1207,14 @@ P.Cd { font-size:10pt; }
 				"		<td align='right' valign='top' nowrap><span class='Nni'>NSU do Relatório:&nbsp;</span></td>" & chr(13) & _
 				"		<td align='left' valign='top' width='99%'><span id='spanFiltroNsuRelatorio' class='N'></span></td>" & chr(13) & _
 				"	</tr>" & chr(13)
+'	CD
+	s = obtem_apelido_empresa_NFe_emitente(c_nfe_emitente)
+	s_filtro = s_filtro & _
+				"	<tr>" & chr(13) & _
+				"		<td align='right' valign='top' nowrap><span class='Nni'>CD:&nbsp;</span></td>" & chr(13) & _
+				"		<td align='left' valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
+				"	</tr>" & chr(13)
+	
 '	EMISSÃO
 	s_filtro = s_filtro & _
 				"	<tr>" & chr(13) & _

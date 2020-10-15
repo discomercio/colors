@@ -135,9 +135,9 @@
 	dim blnMarketplaceCodigoOrigemAlterado
 	blnMarketplaceCodigoOrigemAlterado = False
 
-	dim s_qtde_parcelas, s_forma_pagto, s_obs1, s_obs2, s_obs3, s_ped_bonshop, s_indicador, s_pedido_ac, s_pedido_mktplace, s_pedido_origem
+	dim s_qtde_parcelas, s_forma_pagto, s_obs1, s_obs2, s_obs2_original, s_obs3, s_obs3_original, s_ped_bonshop, s_indicador, s_pedido_ac, s_pedido_mktplace, s_pedido_origem
     dim s_nf_texto, s_num_pedido_compra
-	dim blnAEntregarStatusEdicaoLiberada, c_a_entregar_data_marcada
+	dim blnAEntregarStatusEdicaoLiberada, c_a_entregar_data_marcada, c_a_entregar_data_marcada_original
 	dim s_analise_credito, s_analise_credito_a, s_ac_pendente_vendas_motivo
 	dim s_etg_imediata, s_bem_uso_consumo, s_etg_imediata_original, c_data_previsao_entrega
 	dim blnUpdate, blnFlag, blnEditou
@@ -148,9 +148,12 @@
 
 	s_obs1=Trim(request("c_obs1"))
 	s_obs2=Trim(request("c_obs2"))
+	s_obs2_original=Trim(request("c_obs2_original"))
 	s_obs3=Trim(request("c_obs3"))
+	s_obs3_original=Trim(request("c_obs3_original"))
 	s_ped_bonshop=Trim(request("pedBonshop"))
 	c_a_entregar_data_marcada=Trim(request("c_a_entregar_data_marcada"))
+	c_a_entregar_data_marcada_original=Trim(request("c_a_entregar_data_marcada_original"))
 	s = Trim(Request.Form("blnAEntregarStatusEdicaoLiberada"))
 	blnAEntregarStatusEdicaoLiberada = CBool(s)
 	s_analise_credito=Trim(request("rb_analise_credito"))
@@ -238,10 +241,11 @@
 	EndEtg_uf = Trim(Request.Form("EndEtg_uf"))
 	EndEtg_cep = retorna_so_digitos(Trim(Request.Form("EndEtg_cep")))
     EndEtg_obs = Trim(Request.Form("EndEtg_obs"))
-	dim blnTransportadoraEdicaoLiberada, c_transportadora_id, c_transportadora_num_coleta, c_transportadora_contato
+	dim blnTransportadoraEdicaoLiberada, c_transportadora_id, c_transportadora_id_original, c_transportadora_num_coleta, c_transportadora_contato
 	s = Trim(Request.Form("blnTransportadoraEdicaoLiberada"))
 	blnTransportadoraEdicaoLiberada = CBool(s)
 	c_transportadora_id = Trim(Request.Form("c_transportadora_id"))
+	c_transportadora_id_original = Trim(Request.Form("c_transportadora_id_original"))
 	c_transportadora_num_coleta = Trim(Request.Form("c_transportadora_num_coleta"))
 	c_transportadora_contato = Trim(Request.Form("c_transportadora_contato"))
 	
@@ -1243,9 +1247,21 @@
                      rs("NFe_xPed") = s_num_pedido_compra
                 end if
 
-				if blnObs2EdicaoLiberada then rs("obs_2") = s_obs2
+				if blnObs2EdicaoLiberada then
+					'Usuário fez alteração do campo na página de edição?
+					'Obs: controle feito com o objetivo de evitar que alterações realizadas por outros processos enquanto o usuário estava na página de edição sejam sobrescritas
+					if s_obs2 <> s_obs2_original then
+						rs("obs_2") = s_obs2
+						end if
+					end if
 				
-				if blnObs3EdicaoLiberada then rs("obs_3") = s_obs3
+				if blnObs3EdicaoLiberada then
+					'Usuário fez alteração do campo na página de edição?
+					'Obs: controle feito com o objetivo de evitar que alterações realizadas por outros processos enquanto o usuário estava na página de edição sejam sobrescritas
+					if s_obs3 <> s_obs3_original then
+						rs("obs_3") = s_obs3
+						end if
+					end if
 				
 				if blnFormaPagtoEdicaoLiberada then rs("forma_pagto") = s_forma_pagto
 				
@@ -1292,27 +1308,31 @@
 					end if
 				
 				if blnAEntregarStatusEdicaoLiberada then
-					if IsDate(c_a_entregar_data_marcada) then
-						blnFlag = False
-						if Trim("" & rs("a_entregar_status")) <> "1" then blnFlag = True
-						rs("a_entregar_status")=1
-						if formata_data(rs("a_entregar_data_marcada")) <> formata_data(StrToDate(c_a_entregar_data_marcada)) then blnFlag = True
-						rs("a_entregar_data_marcada")=StrToDate(c_a_entregar_data_marcada)
-						if blnFlag then
-							rs("a_entregar_data")=Date
-							rs("a_entregar_hora")=retorna_so_digitos(formata_hora(Now))
-							rs("a_entregar_usuario")=usuario
-							end if
-					elseif rs("a_entregar_status")<>0 then
-						blnFlag = False
-						if Trim("" & rs("a_entregar_status")) <> "0" then blnFlag = True
-						rs("a_entregar_status")=0
-						if Trim("" & rs("a_entregar_data_marcada")) <> "" then blnFlag = True
-						rs("a_entregar_data_marcada")=Null
-						if blnFlag then
-							rs("a_entregar_data")=Date
-							rs("a_entregar_hora")=retorna_so_digitos(formata_hora(Now))
-							rs("a_entregar_usuario")=usuario
+					'Usuário fez alteração da data na página de edição?
+					'Obs: controle feito com o objetivo de evitar que alterações realizadas por outros processos enquanto o usuário estava na página de edição sejam sobrescritas
+					if c_a_entregar_data_marcada <> c_a_entregar_data_marcada_original then
+						if IsDate(c_a_entregar_data_marcada) then
+							blnFlag = False
+							if Trim("" & rs("a_entregar_status")) <> "1" then blnFlag = True
+							rs("a_entregar_status")=1
+							if formata_data(rs("a_entregar_data_marcada")) <> formata_data(StrToDate(c_a_entregar_data_marcada)) then blnFlag = True
+							rs("a_entregar_data_marcada")=StrToDate(c_a_entregar_data_marcada)
+							if blnFlag then
+								rs("a_entregar_data")=Date
+								rs("a_entregar_hora")=retorna_so_digitos(formata_hora(Now))
+								rs("a_entregar_usuario")=usuario
+								end if
+						elseif rs("a_entregar_status")<>0 then
+							blnFlag = False
+							if Trim("" & rs("a_entregar_status")) <> "0" then blnFlag = True
+							rs("a_entregar_status")=0
+							if Trim("" & rs("a_entregar_data_marcada")) <> "" then blnFlag = True
+							rs("a_entregar_data_marcada")=Null
+							if blnFlag then
+								rs("a_entregar_data")=Date
+								rs("a_entregar_hora")=retorna_so_digitos(formata_hora(Now))
+								rs("a_entregar_usuario")=usuario
+								end if
 							end if
 						end if
 					end if
@@ -1342,23 +1362,27 @@
 				
 				'Editável?
 				if blnTransportadoraEdicaoLiberada then
-					blnEditouTransp = False
-					if UCase(Trim("" & rs("transportadora_id"))) <> UCase(c_transportadora_id) then blnEditouTransp = True
-					if UCase(Trim("" & rs("transportadora_num_coleta"))) <> UCase(c_transportadora_num_coleta) then blnEditouTransp = True
-					if UCase(Trim("" & rs("transportadora_contato"))) <> UCase(c_transportadora_contato) then blnEditouTransp = True
-					if blnEditouTransp then
-						if UCase(Trim("" & rs("transportadora_id"))) <> UCase(c_transportadora_id) then
-						'	LIMPA DADOS DA SELEÇÃO AUTOMÁTICA DE TRANSPORTADORA BASEADO NO CEP
-						'	MANTÉM OS DADOS ANTERIORES (SE HOUVER) P/ FINS DE HISTÓRICO/LOG DOS SEGUINTES CAMPOS:
-						'	transportadora_selecao_auto_cep, transportadora_selecao_auto_tipo_endereco e transportadora_selecao_auto_transportadora
-							rs("transportadora_selecao_auto_status") = TRANSPORTADORA_SELECAO_AUTO_STATUS_FLAG_N
-							rs("transportadora_selecao_auto_data_hora") = Now
+					'Usuário fez alteração de transportadora na página de edição?
+					'Obs: controle feito com o objetivo de evitar que alterações realizadas por outros processos enquanto o usuário estava na página de edição sejam sobrescritas
+					if c_transportadora_id <> c_transportadora_id_original then
+						blnEditouTransp = False
+						if UCase(Trim("" & rs("transportadora_id"))) <> UCase(c_transportadora_id) then blnEditouTransp = True
+						if UCase(Trim("" & rs("transportadora_num_coleta"))) <> UCase(c_transportadora_num_coleta) then blnEditouTransp = True
+						if UCase(Trim("" & rs("transportadora_contato"))) <> UCase(c_transportadora_contato) then blnEditouTransp = True
+						if blnEditouTransp then
+							if UCase(Trim("" & rs("transportadora_id"))) <> UCase(c_transportadora_id) then
+							'	LIMPA DADOS DA SELEÇÃO AUTOMÁTICA DE TRANSPORTADORA BASEADO NO CEP
+							'	MANTÉM OS DADOS ANTERIORES (SE HOUVER) P/ FINS DE HISTÓRICO/LOG DOS SEGUINTES CAMPOS:
+							'	transportadora_selecao_auto_cep, transportadora_selecao_auto_tipo_endereco e transportadora_selecao_auto_transportadora
+								rs("transportadora_selecao_auto_status") = TRANSPORTADORA_SELECAO_AUTO_STATUS_FLAG_N
+								rs("transportadora_selecao_auto_data_hora") = Now
+								end if
+							rs("transportadora_id") = c_transportadora_id
+							rs("transportadora_num_coleta") = c_transportadora_num_coleta
+							rs("transportadora_contato") = c_transportadora_contato
+							rs("transportadora_data")=Now
+							rs("transportadora_usuario")=usuario
 							end if
-						rs("transportadora_id") = c_transportadora_id
-						rs("transportadora_num_coleta") = c_transportadora_num_coleta
-						rs("transportadora_contato") = c_transportadora_contato
-						rs("transportadora_data")=Now
-						rs("transportadora_usuario")=usuario
 						end if
 					end if
 				
