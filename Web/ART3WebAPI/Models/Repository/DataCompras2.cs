@@ -57,7 +57,7 @@ namespace ART3WebAPI.Models.Repository
                     " s_mes.documento," +
                     " s_mes.fabricante," +
                     " Sum(qtde) AS qtde_total," +
-                    " Sum(qtde* s_mes.preco_fabricante) AS valor_total";
+                    " Sum(qtde* s_mes.vl_custo2) AS valor_total";
 
             }
             #endregion
