@@ -5708,6 +5708,36 @@ end Function
 
 
 ' ------------------------------------------------------------------------
+'   isEnderecoMagentoIgual
+function isEnderecoMagentoIgual(ByVal end_logradouro_1, _
+								ByVal end_numero_1, _
+								ByVal end_complemento_1, _
+								ByVal end_bairro_1, _
+								ByVal end_cidade_1, _
+								ByVal end_uf_1, _
+								ByVal end_cep_1, _
+								ByVal end_logradouro_2, _
+								ByVal end_numero_2, _
+								ByVal end_complemento_2, _
+								ByVal end_bairro_2, _
+								ByVal end_cidade_2, _
+								ByVal end_uf_2, _
+								ByVal end_cep_2)
+	isEnderecoMagentoIgual = False
+
+	if Ucase(Trim("" & end_logradouro_1)) <> Ucase(Trim("" & end_logradouro_2)) then exit function
+	if Ucase(Trim("" & end_numero_1)) <> Ucase(Trim("" & end_numero_2)) then exit function
+	if Ucase(Trim("" & end_complemento_1)) <> Ucase(Trim("" & end_complemento_2)) then exit function
+	if Ucase(Trim("" & end_bairro_1)) <> Ucase(Trim("" & end_bairro_2)) then exit function
+	if Ucase(Trim("" & end_cidade_1)) <> Ucase(Trim("" & end_cidade_2)) then exit function
+	if Ucase(Trim("" & end_uf_1)) <> Ucase(Trim("" & end_uf_2)) then exit function
+	if retorna_so_digitos(Trim("" & end_cep_1)) <> retorna_so_digitos(Trim("" & end_cep_2)) then exit function
+
+	isEnderecoMagentoIgual=True
+end function
+
+
+' ------------------------------------------------------------------------
 '   xml_monta_campo
 '
 function xml_monta_campo(Byval conteudo, Byval tag_name, Byval qtde_tabs)

@@ -50,6 +50,9 @@
 	dim cn, tMAP_XML, tOI
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim blnFlagCadSemiAutoPedMagentoCadAutoClienteNovo
+	blnFlagCadSemiAutoPedMagentoCadAutoClienteNovo = isActivatedFlagCadSemiAutoPedMagentoCadAutoClienteNovo
+
 	set r_cliente = New cl_CLIENTE
 	if Not x_cliente_bd(cliente_selecionado, r_cliente) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
 	
@@ -96,6 +99,18 @@
 	EndEtg_produtor_rural_status = Trim(Request.Form("EndEtg_produtor_rural_status"))
 	EndEtg_ie = Trim(Request.Form("EndEtg_ie"))
 	EndEtg_rg = Trim(Request.Form("EndEtg_rg"))
+
+	dim c_FlagCadSemiAutoPedMagento_FluxoOtimizado, requested_rb_indicacao, requested_c_indicador, requested_rb_RA
+	c_FlagCadSemiAutoPedMagento_FluxoOtimizado = ""
+	requested_rb_indicacao = ""
+	requested_c_indicador = ""
+	requested_rb_RA = ""
+	if blnFlagCadSemiAutoPedMagentoCadAutoClienteNovo then
+		c_FlagCadSemiAutoPedMagento_FluxoOtimizado = Trim(Request.Form("c_FlagCadSemiAutoPedMagento_FluxoOtimizado"))
+		requested_rb_indicacao = Trim(Request.Form("rb_indicacao"))
+		requested_c_indicador = Trim(Request.Form("c_indicador"))
+		requested_rb_RA = Trim(Request.Form("rb_RA"))
+		end if
 
 	dim alerta
 	alerta = ""
@@ -1708,6 +1723,23 @@ var s, i, b, ha_item, idx, blnIndicacaoOk, strMsgErro;
 		<td align="left" class="MC"><span class="C"><%=formata_perc(CDbl(percCommissionValue) - CDbl(percCommissionDiscount))%>%</span></td>
 	</tr>
 	</table>
+
+<% elseif (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO) And blnFlagCadSemiAutoPedMagentoCadAutoClienteNovo And (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1") then %>
+	<input type="hidden" name="rb_indicacao" id="rb_indicacao" value="<%=requested_rb_indicacao%>" />
+	<input type="hidden" name="c_indicador" id="c_indicador" value="<%=requested_c_indicador%>" />
+	<input type="hidden" name="rb_RA" id="rb_RA" value="<%=requested_rb_RA%>" />
+
+	<table style="width:300px;" cellpadding="2" cellspacing="0" border="0">
+	<tr>
+		<td align="right"><span class="C">VL Frete:</span></td>
+		<td align="left"><span class="C"><%=formata_moeda(tMAP_XML("shipping_amount"))%></span></td>
+	</tr>
+	<tr>
+		<td align="right"><span class="C">Indicador:</span></td>
+		<td align="left"><span class="C"><%=requested_c_indicador%></span></td>
+	</tr>
+	</table>
+
 <% elseif operacao_permitida(OP_LJA_EXIBIR_CAMPOS_COM_SEM_INDICACAO_AO_CADASTRAR_NOVO_PEDIDO, s_lista_operacoes_permitidas) then %>
 <table class="Q" style="width:375px;" cellspacing="0">
   <tr>

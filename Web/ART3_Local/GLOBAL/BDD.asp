@@ -6154,6 +6154,18 @@ end function
 
 
 ' ________________________________________________________
+' isActivatedFlagCadSemiAutoPedMagentoCadAutoClienteNovo
+'
+function isActivatedFlagCadSemiAutoPedMagentoCadAutoClienteNovo
+dim rFCSAPMCACN
+	isActivatedFlagCadSemiAutoPedMagentoCadAutoClienteNovo = False
+	set rFCSAPMCACN = get_registro_t_parametro(ID_PARAMETRO_FLAG_CAD_SEMI_AUTO_PED_MAGENTO_CADASTRAR_AUTOMATICAMENTE_CLIENTE_NOVO)
+	if Trim("" & rFCSAPMCACN.campo_inteiro) = "1" then isActivatedFlagCadSemiAutoPedMagentoCadAutoClienteNovo = True
+	set rFCSAPMCACN = Nothing
+end function
+
+
+' ________________________________________________________
 ' getParametroPercDesagioRALiquida
 '
 function getParametroPercDesagioRALiquida
