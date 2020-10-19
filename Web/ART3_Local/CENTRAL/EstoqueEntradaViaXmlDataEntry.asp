@@ -53,7 +53,7 @@
 		end if
 
 	dim s, i, iQtdeItens, iQtdeLinhas
-	dim c_nfe_qtde_itens, c_nfe_numero_nf, c_nfe_numero_nf2, c_nfe_emitente_cnpj, c_nfe_destinatario_cnpj, c_nfe_emitente_nome, c_nfe_emitente_nome_fantasia, c_nfe_dt_hr_emissao
+	dim c_nfe_qtde_itens, c_nfe_numero_nf, c_nfe_numero_nf2, c_nfe_emitente_cnpj, c_nfe_destinatario_cnpj, c_nfe_emitente_nome, c_nfe_emitente_nome_fantasia, c_nfe_dt_hr_emissao, c_nfe_dt_hr_emissao2
     dim s_nfe_numero_nf
     dim rb_op_upload, c_op_upload
     dim arquivo_nfe, arquivo_nfe2
@@ -67,6 +67,7 @@
 	c_nfe_emitente_nome = Trim(Request("c_nfe_emitente_nome"))
 	c_nfe_emitente_nome_fantasia = Trim(Request("c_nfe_emitente_nome_fantasia"))
 	c_nfe_dt_hr_emissao = Trim(Request("c_nfe_dt_hr_emissao"))
+	c_nfe_dt_hr_emissao2 = Trim(Request("c_nfe_dt_hr_emissao2"))
     arquivo_nfe = Trim(Request.Form("arquivo_nfe"))
     arquivo_nfe2 = Trim(Request.Form("arquivo_nfe2"))
     
@@ -170,7 +171,7 @@
 
 	dim vDtHr, vDt, vHr
 	if alerta = "" then
-		s_nfe_dt_hr_emissao = ""
+		s_nfe_dt_hr_emissao = c_nfe_dt_hr_emissao
 		if c_nfe_dt_hr_emissao <> "" then
 			vDtHr = Split(c_nfe_dt_hr_emissao, "T")
 			vDt = Split(vDtHr(LBound(vDtHr)), "-")
@@ -1058,6 +1059,7 @@ function fESTOQConfirma(f) {
 	var iQtdeLinhas = '<%=iQtdeLinhas%>';
 	var iQtdeLinhasPreenchidas;
 
+
 	s_id = "#c_id_nfe_emitente";
 	if ($(s_id).val() == "") {
 		alert("Selecione o CD!");
@@ -1080,7 +1082,7 @@ function fESTOQConfirma(f) {
 	}
 
 	iQtdeLinhasPreenchidas = 0;
-	for (var i = 1; i <= iQtdeLinhas; i++) {
+    for (var i = 1; i <= iQtdeLinhas; i++) {
 		s_id = "#c_erp_codigo_" + i.toString();
 		s_aux = "#ckb_importa_" + i.toString();
 		if (($(s_aux).is(":checked")) && ($(s_id).val() == "")) {
@@ -1351,6 +1353,7 @@ select
 <!--<input type="hidden" name="c_nfe_emitente_nome" id="c_nfe_emitente_nome" />-->
 <input type="hidden" name="c_nfe_emitente_nome_fantasia" id="c_nfe_emitente_nome_fantasia" />
 <input type="hidden" name="c_dt_hr_emissao" id="c_dt_hr_emissao" value="<%=c_nfe_dt_hr_emissao%>"/>
+<input type="hidden" name="c_dt_hr_emissao2" id="c_dt_hr_emissao2" value="<%=c_nfe_dt_hr_emissao2%>"/>
 <!--<input type="hidden" name="rb_op_upload" id="rb_op_upload" value="<%=rb_op_upload%>"/>-->
 <input type="hidden" name="c_op_upload" id="c_op_upload" value="<%=c_op_upload%>"/>
 <input type="hidden" name="arquivo_nfe" id="arquivo_nfe" value="<%=arquivo_nfe%>"/>
@@ -1423,7 +1426,7 @@ select
 	<td class="MDB" style="border-left:0pt;" align="left"><span class="PLTe">Documento</span>
 		<br><input name="c_documento" id="c_documento" class="PLLe TxtErpDocumento TxtEditavel" maxlength="30" value="<%=s_nfe_numero_nf%>" onkeypress="if (digitou_enter(true)) $('#c_erp_codigo_1').focus(); filtra_nome_identificador();" onblur="this.value=trim(this.value);"></td>
 	<td class="MDB" style="border-left:0pt;" align="left"><span class="PLTe">Emissão</span>
-		<br /><input name="c_nfe_dt_hr_emissao" id="c_nfe_dt_hr_emissao" class="PLLe TxtNfeDtHrEmissao" readonly tabindex="-1" value="<%=s_nfe_dt_hr_emissao%>" />
+		<br /><input name="c_nfe_dt_emissao" id="c_nfe_dt_emissao" class="PLLe TxtNfeDtHrEmissao" readonly tabindex="-1" value="<%=s_nfe_dt_hr_emissao%>" />
 	</td>
 	</tr>
 

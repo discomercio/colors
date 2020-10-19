@@ -49,10 +49,10 @@
 		end if
 
 	dim alerta
-	dim s, c_fabricante, c_produto, c_dt_inicio, c_dt_termino, rb_detalhe
+	dim s, c_fabricante, c_produto, c_dt_inicio, c_dt_termino, c_dt_nf_inicio, c_dt_nf_termino, rb_detalhe
 	dim cod_fabricante, cod_produto
-	dim s_nome_fabricante, s_nome_produto, s_nome_produto_html,c_grupo,c_potencia_BTU,c_ciclo,c_posicao_mercado,v_fabricantes,cont
-    dim s_where_temp,v_grupos
+	dim s_nome_fabricante, s_nome_produto, s_nome_produto_html,c_grupo,c_subgrupo,c_potencia_BTU,c_ciclo,c_posicao_mercado,v_fabricantes,cont
+    dim s_where_temp,v_grupos,v_subgrupos
 
 	c_produto = UCase(Trim(Request.Form("c_produto")))
 	rb_detalhe = Trim(Request.Form("rb_detalhe"))
@@ -60,9 +60,12 @@
 	c_dt_termino = Trim(Request.Form("c_dt_termino"))
 	c_fabricante = Trim(Request.Form("c_fabricante"))
 	c_grupo = Ucase(Trim(Request.Form("c_grupo")))
+    c_subgrupo = Ucase(Trim(Request.Form("c_subgrupo")))
 	c_potencia_BTU = Trim(Request.Form("c_potencia_BTU"))
 	c_ciclo = Trim(Request.Form("c_ciclo"))
 	c_posicao_mercado = Trim(Request.Form("c_posicao_mercado"))
+	c_dt_nf_inicio = Trim(Request.Form("c_dt_nf_inicio"))
+	c_dt_nf_termino = Trim(Request.Form("c_dt_nf_termino"))
 
 	alerta = ""
 	if (c_produto<>"") And (Not IsEAN(c_produto)) then
@@ -131,19 +134,19 @@
 			end if
 		end if
 		
-	if alerta = "" then
-		if c_dt_inicio = "" then
-			alerta="A data de início do período não foi informada."
-		elseif Not IsDate(c_dt_inicio) then
-			alerta="A data de início do período é inválida (" & c_dt_inicio & ")."
-		elseif c_dt_termino = "" then
-			alerta="A data de término do período não foi informada."
-		elseif Not IsDate(c_dt_termino) then
-			alerta="A data de término do período é inválida (" & c_dt_termino & ")."
-		elseif CDate(c_dt_inicio) > CDate(c_dt_termino) then
-			alerta="A data de início é posterior à data de término."
-			end if
-		end if
+'	if alerta = "" then
+'		if c_dt_inicio = "" then
+'			alerta="A data de início do período não foi informada."
+'		elseif Not IsDate(c_dt_inicio) then
+'			alerta="A data de início do período é inválida (" & c_dt_inicio & ")."
+'		elseif c_dt_termino = "" then
+'			alerta="A data de término do período não foi informada."
+'		elseif Not IsDate(c_dt_termino) then
+'			alerta="A data de término do período é inválida (" & c_dt_termino & ")."
+'		elseif CDate(c_dt_inicio) > CDate(c_dt_termino) then
+'			alerta="A data de início é posterior à data de término."
+'			end if
+'		end if
 
 	if alerta = "" then
 	'	Período de consulta está restrito por perfil de acesso?
@@ -184,15 +187,30 @@
 			end if
 		end if
 
+	if alerta = "" then
+        if (c_dt_nf_inicio <> "") And Not IsDate(c_dt_nf_inicio) then
+			alerta="Emissão NF Entrada: a data de início do período é inválida (" & c_dt_nf_inicio & ")."
+		elseif (c_dt_nf_termino <> "") And Not IsDate(c_dt_nf_termino) then
+			alerta="Emissão NF Entrada: a data de término do período é inválida (" & c_dt_nf_termino & ")."
+		elseif (c_dt_nf_inicio <> "") And (c_dt_nf_termino <> "") Then 
+            if (CDate(c_dt_nf_inicio) > CDate(c_dt_nf_termino)) Then
+			    alerta="Emissão NF Entrada: a data de início é posterior à data de término."
+                end if
+			end if
+		end if
+
     if alerta = "" then
 		call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_inicio", c_dt_inicio)
 		call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_termino", c_dt_termino)
 		call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_fabricante", c_fabricante)
 		call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_grupo", c_grupo)
+        call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_subgrupo", c_subgrupo)
 		call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_potencia_BTU", c_potencia_BTU)
 		call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_ciclo", c_ciclo)
 		call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_posicao_mercado", c_posicao_mercado)
         call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|rb_detalhe", rb_detalhe)
+		call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_nf_inicio", c_dt_nf_inicio)
+		call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_nf_termino", c_dt_nf_termino)
 		end if
 
 
@@ -213,8 +231,8 @@ dim valor_total, s_sql, cab, n_reg, x
 				" e.fabricante," & _
 				" Sum(qtde* i.vl_custo2) AS valor" & _
 			" FROM t_ESTOQUE e " & _
-            "INNER JOIN t_ESTOQUE_ITEM i ON (e.id_estoque=i.id_estoque)" & _
-            "INNER JOIN t_PRODUTO p ON (  i.fabricante = p.fabricante ) AND (i.produto= p.produto)" & _
+            " INNER JOIN t_ESTOQUE_ITEM i ON (e.id_estoque=i.id_estoque)" & _
+            " INNER JOIN t_PRODUTO p ON (  i.fabricante = p.fabricante ) AND (i.produto= p.produto)" & _
 			" WHERE" & _
 				" (kit=0)" & _
 				" AND (entrada_especial=0)" & _
@@ -251,6 +269,18 @@ dim valor_total, s_sql, cab, n_reg, x
 	s_sql = s_sql & "(" & s_where_temp & ")"
 		end if
 
+	s_where_temp = ""
+	if c_subgrupo <> "" then
+	v_subgrupos = split(c_subgrupo, ", ")
+	for cont = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+	    if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		s_where_temp = s_where_temp & _
+			" (subgrupo = '" & v_subgrupos(cont) & "')"
+	next
+	s_sql = s_sql & "AND "
+	s_sql = s_sql & "(" & s_where_temp & ")"
+		end if
+
 	if Trim(cod_produto) <> "" then
 		s_sql = s_sql & " AND (i.produto = '" & cod_produto & "')"
 		end if
@@ -267,6 +297,14 @@ dim valor_total, s_sql, cab, n_reg, x
         s_sql = s_sql & " AND (posicao_mercado = '" & c_posicao_mercado & "')"
         end if
 		
+	if (c_dt_nf_inicio <> "") And IsDate(c_dt_nf_inicio) then
+		s_sql = s_sql & " AND (data_emissao_NF_entrada >= " & bd_formata_data(StrToDate(c_dt_nf_inicio)) & ")"
+		end if
+		
+	if (c_dt_nf_termino <> "") And IsDate(c_dt_nf_termino) then
+		s_sql = s_sql & " AND (data_emissao_NF_entrada  < " & bd_formata_data(StrToDate(c_dt_nf_termino)+1) & ")"
+		end if
+
 	s_sql = s_sql & " GROUP BY e.fabricante" & _
 					" ORDER BY e.fabricante"
 
@@ -373,13 +411,25 @@ dim strFabricanteAnterior, strFabricante, strProduto, intQtdeFabricantes
 	s_sql =  s_sql & "(" & s_where_temp & ")"
     end if
 
-     s_where_temp = ""
+    s_where_temp = ""
 	if c_grupo <> "" then
 	v_grupos = split(c_grupo, ", ")
 	for cont = Lbound(v_grupos) to Ubound(v_grupos)
 	    if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
 		s_where_temp = s_where_temp & _
 			" (grupo = '" & v_grupos(cont) & "')"
+	next
+	s_sql = s_sql & "AND "
+	s_sql = s_sql & "(" & s_where_temp & ")"
+		end if
+
+	s_where_temp = ""
+	if c_subgrupo <> "" then
+	v_subgrupos = split(c_subgrupo, ", ")
+	for cont = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+	    if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		s_where_temp = s_where_temp & _
+			" (subgrupo = '" & v_subgrupos(cont) & "')"
 	next
 	s_sql = s_sql & "AND "
 	s_sql = s_sql & "(" & s_where_temp & ")"
@@ -401,6 +451,14 @@ dim strFabricanteAnterior, strFabricante, strProduto, intQtdeFabricantes
         s_sql = s_sql & " AND (posicao_mercado = '" & c_posicao_mercado & "')"
         end if
 		
+	if (c_dt_nf_inicio <> "") And IsDate(c_dt_nf_inicio) then
+		s_sql = s_sql & " AND (data_emissao_NF_entrada >= " & bd_formata_data(StrToDate(c_dt_nf_inicio)) & ")"
+		end if
+		
+	if (c_dt_nf_termino <> "") And IsDate(c_dt_nf_termino) then
+		s_sql = s_sql & " AND (data_emissao_NF_entrada  < " & bd_formata_data(StrToDate(c_dt_nf_termino)+1) & ")"
+		end if
+
 	s_sql = s_sql & " GROUP BY i.fabricante, i.produto" & _
 					" ORDER BY i.fabricante, i.produto"
 
@@ -571,13 +629,25 @@ dim strFabricanteAnterior, strFabricante, strProduto, intQtdeFabricantes
 	s_sql =  s_sql & "(" & s_where_temp & ")"
     end if
 
-     s_where_temp = ""
+    s_where_temp = ""
 	if c_grupo <> "" then
 	v_grupos = split(c_grupo, ", ")
 	for cont = Lbound(v_grupos) to Ubound(v_grupos)
 	    if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
 		s_where_temp = s_where_temp & _
 			" (grupo = '" & v_grupos(cont) & "')"
+	next
+	s_sql = s_sql & "AND "
+	s_sql = s_sql & "(" & s_where_temp & ")"
+		end if
+
+	s_where_temp = ""
+	if c_subgrupo <> "" then
+	v_subgrupos = split(c_subgrupo, ", ")
+	for cont = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+	    if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		s_where_temp = s_where_temp & _
+			" (subgrupo = '" & v_subgrupos(cont) & "')"
 	next
 	s_sql = s_sql & "AND "
 	s_sql = s_sql & "(" & s_where_temp & ")"
@@ -599,6 +669,14 @@ dim strFabricanteAnterior, strFabricante, strProduto, intQtdeFabricantes
         s_sql = s_sql & " AND (posicao_mercado = '" & c_posicao_mercado & "')"
         end if
 		
+	if (c_dt_nf_inicio <> "") And IsDate(c_dt_nf_inicio) then
+		s_sql = s_sql & " AND (data_emissao_NF_entrada >= " & bd_formata_data(StrToDate(c_dt_nf_inicio)) & ")"
+		end if
+		
+	if (c_dt_nf_termino <> "") And IsDate(c_dt_nf_termino) then
+		s_sql = s_sql & " AND (data_emissao_NF_entrada  < " & bd_formata_data(StrToDate(c_dt_nf_termino)+1) & ")"
+		end if
+
 	s_sql = s_sql & " GROUP BY i.fabricante, i.produto" & _
 					" ORDER BY i.fabricante, i.produto"
 
@@ -782,13 +860,25 @@ dim strFabricanteAnterior, strFabricante, strProduto, intQtdeFabricantes
 	s_sql =  s_sql & "(" & s_where_temp & ")"
     end if
 
-     s_where_temp = ""
+    s_where_temp = ""
 	if c_grupo <> "" then
 	v_grupos = split(c_grupo, ", ")
 	for cont = Lbound(v_grupos) to Ubound(v_grupos)
 	    if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
 		s_where_temp = s_where_temp & _
 			" (grupo = '" & v_grupos(cont) & "')"
+	next
+	s_sql = s_sql & "AND "
+	s_sql = s_sql & "(" & s_where_temp & ")"
+		end if
+
+	s_where_temp = ""
+	if c_subgrupo <> "" then
+	v_subgrupos = split(c_subgrupo, ", ")
+	for cont = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+	    if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		s_where_temp = s_where_temp & _
+			" (subgrupo = '" & v_subgrupos(cont) & "')"
 	next
 	s_sql = s_sql & "AND "
 	s_sql = s_sql & "(" & s_where_temp & ")"
@@ -810,6 +900,14 @@ dim strFabricanteAnterior, strFabricante, strProduto, intQtdeFabricantes
         s_sql = s_sql & " AND (posicao_mercado = '" & c_posicao_mercado & "')"
         end if
 		
+	if (c_dt_nf_inicio <> "") And IsDate(c_dt_nf_inicio) then
+		s_sql = s_sql & " AND (data_emissao_NF_entrada >= " & bd_formata_data(StrToDate(c_dt_nf_inicio)) & ")"
+		end if
+		
+	if (c_dt_nf_termino <> "") And IsDate(c_dt_nf_termino) then
+		s_sql = s_sql & " AND (data_emissao_NF_entrada  < " & bd_formata_data(StrToDate(c_dt_nf_termino)+1) & ")"
+		end if
+
 	s_sql = s_sql & " GROUP BY i.fabricante, i.produto, i.vl_custo2" & _
 					" ORDER BY i.fabricante, i.produto, i.vl_custo2"
 
@@ -1057,6 +1155,8 @@ P.F { font-size:11pt; }
 <input type="hidden" name="c_produto" id="c_produto" value="<%=cod_produto%>">
 <input type="hidden" name="c_dt_inicio" id="c_dt_inicio" value="<%=c_dt_inicio%>">
 <input type="hidden" name="c_dt_termino" id="c_dt_termino" value="<%=c_dt_termino%>">
+<input type="hidden" name="c_dt_nf_inicio" id="c_dt_nf_inicio" value="<%=c_dt_nf_inicio%>">
+<input type="hidden" name="c_dt_nf_termino" id="c_dt_nf_termino" value="<%=c_dt_nf_termino%>">
 
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->
 <table width="649" cellPadding="4" CellSpacing="0" style="border-bottom:1px solid black">
@@ -1118,6 +1218,14 @@ P.F { font-size:11pt; }
     </tr>
 <%end if %>
 
+<!--  SUBGRUPO  -->
+<%if c_subgrupo <> "" then %>
+    <tr bgColor="#FFFFFF">
+	    <td class="MDBE" NOWRAP><span class="PLTe">Subgrupo</span>
+		    <br><p class="C" style="width:230px;cursor:default;"><%=c_subgrupo%></p></td>
+    </tr>
+<%end if %>
+
 <%if c_potencia_BTU <> "" then %>
     <tr bgColor="#FFFFFF">
 	    <td class="MDBE" NOWRAP><span class="PLTe">Potência BTU/H</span>
@@ -1139,6 +1247,17 @@ P.F { font-size:11pt; }
     </tr>
 <%end if %>
 
+<!--  EMISSÃO NF ENTRADA  -->
+	<tr bgColor="#FFFFFF">
+	<td class="MDBE" NOWRAP><span class="PLTe">Emissão NF Entrada</span>
+		<%	s = c_dt_nf_inicio
+			if (s<>"") And (c_dt_nf_termino<>"") then s = s & " a " 
+            s = s & c_dt_nf_termino 
+			if s = "" then s = "N.I."
+		%>
+		<br><p class="C" style="width:230px;cursor:default;"><%=s%></p></td>
+	</tr>
+	
 <!--  TIPO DE DETALHAMENTO  -->
 	<tr bgColor="#FFFFFF">
 		<% select case rb_detalhe

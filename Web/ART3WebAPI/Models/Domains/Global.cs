@@ -42,10 +42,10 @@ namespace ART3WebAPI.Models.Domains
 				public const string Data = "15.SET.2020";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
-			#endregion
+            #endregion
 
-			#region [ Comentário sobre as versões ]
-			/*================================================================================================
+            #region [ Comentário sobre as versões ]
+            /*================================================================================================
 			 * v 2.00 - 08.09.2017 - por TRR
 			 *		Ajuste no relatório Farol para aceitar lista de lojas no filtro.
 			 * -----------------------------------------------------------------------------------------------
@@ -152,7 +152,9 @@ namespace ART3WebAPI.Models.Domains
 			 *      Implementação da consulta por período de entrega no relatório Farol Resumido em
 			 *      FarolV3Controller.GetXLSReport().
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.22 - XX.XX.20XX - por XXX
+			 * v 2.22 - 12.09.2020 - por LHGX
+			 *      Implementação dos filtros por subgrupo e por data de emissão da nf de entrada no
+			 *      relatório Compras II.              
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.23 - 15.09.2020 - por HHO
 			 *      Alteração na consulta de pedidos do Magento para identificar e salvar no banco de dados o
@@ -179,10 +181,10 @@ namespace ART3WebAPI.Models.Domains
 			 * v 2.XX - XX.XX.20XX - por XXX
 			* ===============================================================================================
 			*/
-			#endregion
+            #endregion
 
-			#region [ Usuario ]
-			public static class Usuario
+            #region [ Usuario ]
+            public static class Usuario
 			{
 				public const string ID_USUARIO_SISTEMA = "SISTEMA";
 			}

@@ -456,19 +456,23 @@
 	'	=================================
 		if alerta = "" then
             ' envia e-mail para o operador das devoluções
-            dim strEmailAdministrador
-            set strEmailAdministrador = get_registro_t_parametro("PEDIDO_DEVOLUCAO_EMAIL_ADMINISTRADOR")
-            corpo_mensagem = "Foi cadastrada uma nova pré-devolução no pedido " & pedido_selecionado & "."
-            EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__PEDIDO_DEVOLUCAO), _
-                                                                    "", _
-                                                                    strEmailAdministrador.campo_texto, _
-                                                                    "", _
-                                                                    "", _
-                                                                    "Novo cadastro de pré-devolução", _
-                                                                    corpo_mensagem, _
-                                                                    Now, _
-                                                                    id_email, _
-                                                                    msg_erro_grava_email
+            if isLojaBonshop(loja) Or isLojaVrf(loja) then
+                dim strEmailAdministrador
+                set strEmailAdministrador = get_registro_t_parametro("PEDIDO_DEVOLUCAO_EMAIL_ADMINISTRADOR")
+                if Trim("" & strEmailAdministrador.campo_texto) <> "" then
+                    corpo_mensagem = "Foi cadastrada uma nova pré-devolução no pedido " & pedido_selecionado & "."
+                    EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__PEDIDO_DEVOLUCAO), _
+                                                                            "", _
+                                                                            strEmailAdministrador.campo_texto, _
+                                                                            "", _
+                                                                            "", _
+                                                                            "Novo cadastro de pré-devolução", _
+                                                                            corpo_mensagem, _
+                                                                            Now, _
+                                                                            id_email, _
+                                                                            msg_erro_grava_email
+                    end if
+                end if
 
 			s_log_aux = log_via_vetor_monta_inclusao(vLog)
 			s_log = "Cadastro de pré-devolução:" & s_log
