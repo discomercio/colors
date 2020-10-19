@@ -7,8 +7,8 @@ Option Explicit
 '                          IMPRESSÃO DE NOTA FISCAL
 '                       _______________________________
 ' 
-'                           EDIÇÃO = 071
-'                           DATA   = 01.NOV.2018
+'                           EDIÇÃO = 072
+'                           DATA   = 19.OUT.2020
 '                       _______________________________
 ' 
 ' 
@@ -740,9 +740,10 @@ Option Explicit
 '|          |      | - Ajustes sobre o UFS_INSCRICAO_VIRTUAL.CFG, para que     |
 '|          |      |   a definição das UF's seja feita por emitente            |
 '|__________|______|___________________________________________________________|
-'|XX.XX.XXXX| XXXX |V X.XX                                                     |
-'|          |      |                                                           |
-'|          |      |                                                           |
+'|19.10.2020| LHGX |V 2.14                                                     |
+'|          |      | - Zerar valor da base de cálculo do ICMS e utilizar       |
+'|          |      |   CST's específicas para a nota de remessa da operação    |
+'|          |      |   triangular                                              |
 '|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
@@ -759,8 +760,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.13"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  10/02/2020"
+Global Const m_id_versao = "2.14"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  19/10/2020"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"

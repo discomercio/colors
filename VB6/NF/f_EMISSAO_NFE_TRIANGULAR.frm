@@ -14647,7 +14647,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     End If
                 
                 vl_ICMS = 0
-                vl_BC_ICMS = .valor_total
+                'no caso da nota de remessa, o valor deve ser zero
+                vl_BC_ICMS = 0
             
                 vl_ICMSDeson = 0
                 
@@ -14673,7 +14674,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 
             '   TAG ICMS
             '   ~~~~~~~~
-                strNFeCst = Trim$(right$(.cst, 2))
+                'para a nota de remessa da operação triangular, OUTROS (CST="90") / ORIENTAÇÃO CONTABILIDADE
+                strNFeCst = "90"
                 vNFeImgItem(UBound(vNFeImgItem)).ICMS__CST = strNFeCst
                 strNFeTagIcms = strNFeTagIcms & vbTab & NFeFormataCampo("CST", vNFeImgItem(UBound(vNFeImgItem)).ICMS__CST)
                                 
@@ -14767,8 +14769,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     vNFeImgItem(UBound(vNFeImgItem)).ICMS__vICMSST = NFeFormataMoeda2Dec(vl_ICMS_ST)
                     strNFeTagIcms = strNFeTagIcms & vbTab & NFeFormataCampo("vICMSST", vNFeImgItem(UBound(vNFeImgItem)).ICMS__vICMSST)
                     
-            '   ICMS (CST=40,41,50): ISENTA, NÃO TRIBUTADA OU SUSPENSÃO (40=ISENTA, 41=NÃO TRIBUTADA, 50=SUSPENSÃO)
-                ElseIf (strNFeCst = "40") Or (strNFeCst = "41") Or (strNFeCst = "50") Then
+            '   ICMS (CST=40,41,50,90): ISENTA, NÃO TRIBUTADA, SUSPENSÃO, OUTROS (40=ISENTA, 41=NÃO TRIBUTADA, 50=SUSPENSÃO, 90=OUTROS)
+                ElseIf (strNFeCst = "40") Or (strNFeCst = "41") Or (strNFeCst = "50") Or (strNFeCst = "90") Then
                 '   NOP: DEMAIS CAMPOS SÃO OPCIONAIS E NÃO SE APLICAM
                     vl_ICMS = 0
                     vl_BC_ICMS = 0
@@ -14819,50 +14821,18 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 vl_PIS = 0
                 vl_BC_PIS = 0
                 
-                strZerarPisCst = Trim$(left$(cb_zerar_PIS, 2))
-                
-                If strZerarPisCst = "" Then
-                    vl_BC_PIS = .valor_total
-                    perc_PIS = PERC_PIS_ALIQUOTA_NORMAL
-                    vl_PIS = vl_BC_PIS * (perc_PIS / 100)
-                    vl_PIS = CCur(Format$(vl_PIS, FORMATO_MOEDA))
-                    vNFeImgItem(UBound(vNFeImgItem)).PIS__CST = "01"
-                    strNFeTagPis = vbTab & NFeFormataCampo("CST", vNFeImgItem(UBound(vNFeImgItem)).PIS__CST)
-                    vNFeImgItem(UBound(vNFeImgItem)).PIS__vBC = NFeFormataMoeda2Dec(vl_BC_PIS)
-                    strNFeTagPis = strNFeTagPis & vbTab & NFeFormataCampo("vBC", vNFeImgItem(UBound(vNFeImgItem)).PIS__vBC)
-                    vNFeImgItem(UBound(vNFeImgItem)).PIS__pPIS = NFeFormataPercentual2Dec(perc_PIS)
-                    strNFeTagPis = strNFeTagPis & vbTab & NFeFormataCampo("pPIS", vNFeImgItem(UBound(vNFeImgItem)).PIS__pPIS)
-                    vNFeImgItem(UBound(vNFeImgItem)).PIS__vPIS = NFeFormataMoeda2Dec(vl_PIS)
-                    strNFeTagPis = strNFeTagPis & vbTab & NFeFormataCampo("vPIS", vNFeImgItem(UBound(vNFeImgItem)).PIS__vPIS)
-                Else
-                    vNFeImgItem(UBound(vNFeImgItem)).PIS__CST = strZerarPisCst
-                    strNFeTagPis = vbTab & NFeFormataCampo("CST", vNFeImgItem(UBound(vNFeImgItem)).PIS__CST)
-                    End If
+                'para a nota de remessa da operação triangular, sem incidência (CST="08") / ORIENTAÇÃO CONTABILIDADE
+                vNFeImgItem(UBound(vNFeImgItem)).PIS__CST = "08"
+                strNFeTagPis = vbTab & NFeFormataCampo("CST", vNFeImgItem(UBound(vNFeImgItem)).PIS__CST)
             
             '   TAG COFINS
             '   ~~~~~~~~~~
                 vl_COFINS = 0
                 vl_BC_COFINS = 0
                 
-                strZerarCofinsCst = Trim$(left$(cb_zerar_COFINS, 2))
-                
-                If strZerarCofinsCst = "" Then
-                    vl_BC_COFINS = .valor_total
-                    perc_COFINS = PERC_COFINS_ALIQUOTA_NORMAL
-                    vl_COFINS = vl_BC_COFINS * (perc_COFINS / 100)
-                    vl_COFINS = CCur(Format$(vl_COFINS, FORMATO_MOEDA))
-                    vNFeImgItem(UBound(vNFeImgItem)).COFINS__CST = "01"
-                    strNFeTagCofins = vbTab & NFeFormataCampo("CST", vNFeImgItem(UBound(vNFeImgItem)).COFINS__CST)
-                    vNFeImgItem(UBound(vNFeImgItem)).COFINS__vBC = NFeFormataMoeda2Dec(vl_BC_COFINS)
-                    strNFeTagCofins = strNFeTagCofins & vbTab & NFeFormataCampo("vBC", vNFeImgItem(UBound(vNFeImgItem)).COFINS__vBC)
-                    vNFeImgItem(UBound(vNFeImgItem)).COFINS__pCOFINS = NFeFormataPercentual2Dec(perc_COFINS)
-                    strNFeTagCofins = strNFeTagCofins & vbTab & NFeFormataCampo("pCOFINS", vNFeImgItem(UBound(vNFeImgItem)).COFINS__pCOFINS)
-                    vNFeImgItem(UBound(vNFeImgItem)).COFINS__vCOFINS = NFeFormataMoeda2Dec(vl_COFINS)
-                    strNFeTagCofins = strNFeTagCofins & vbTab & NFeFormataCampo("vCOFINS", vNFeImgItem(UBound(vNFeImgItem)).COFINS__vCOFINS)
-                Else
-                    vNFeImgItem(UBound(vNFeImgItem)).COFINS__CST = strZerarCofinsCst
-                    strNFeTagCofins = vbTab & NFeFormataCampo("CST", vNFeImgItem(UBound(vNFeImgItem)).COFINS__CST)
-                    End If
+                'para a nota de remessa da operação triangular, sem incidência (CST="08") / ORIENTAÇÃO CONTABILIDADE
+                vNFeImgItem(UBound(vNFeImgItem)).COFINS__CST = "08"
+                strNFeTagCofins = vbTab & NFeFormataCampo("CST", vNFeImgItem(UBound(vNFeImgItem)).COFINS__CST)
                 
             '   TAG ICMSUFDest
             '   ~~~~~~~~~~~~~~
