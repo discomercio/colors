@@ -51,6 +51,7 @@ namespace ART3WebAPI.Controllers
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "MagentoApiController.GetPedido()";
 			bool blnInserted = false;
+			int intParametroFlagCadSemiAutoPedMagentoCadastrarAutomaticamenteClienteNovo;
 			string msg;
 			string msg_erro;
 			string sXml = null;
@@ -66,7 +67,6 @@ namespace ART3WebAPI.Controllers
 			string sNumPedidoMktpIdentificado;
 			string sNumPedidoMktpCompletoIdentificado;
 			string sOrigemMktpIdentificado;
-			string id_cliente;
 			string sDDD;
 			string sTelefone;
 			Usuario usuarioBD;
@@ -84,7 +84,6 @@ namespace ART3WebAPI.Controllers
 			HttpResponseMessage result;
 			List<CodigoDescricao> listaCodigoDescricao;
 			string[] v;
-			SqlConnection cn;
 			#endregion
 
 			#region [ Inicialização ]
@@ -145,6 +144,7 @@ namespace ART3WebAPI.Controllers
 						{
 							msg = "Falha ao tentar decodificar o XML de resposta da API do Magento!";
 							if (msg_erro.Length > 0) msg += "\n" + msg_erro;
+							Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
 							throw new Exception(msg);
 						}
 						#endregion
@@ -166,6 +166,7 @@ namespace ART3WebAPI.Controllers
 				{
 					msg = "Falha ao tentar recuperar os parâmetros de login da API do Magento para a loja " + loja + "!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
+					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 
@@ -174,6 +175,7 @@ namespace ART3WebAPI.Controllers
 				{
 					msg = "Falha ao tentar recuperar os parâmetros de login da API do Magento: a URL da API não está cadastrada para a loja " + loja + "!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
+					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 
@@ -181,6 +183,7 @@ namespace ART3WebAPI.Controllers
 				{
 					msg = "Falha ao tentar recuperar os parâmetros de login da API do Magento: o usuário para login não está cadastrado para a loja " + loja + "!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
+					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 
@@ -188,6 +191,7 @@ namespace ART3WebAPI.Controllers
 				{
 					msg = "Falha ao tentar recuperar os parâmetros de login da API do Magento: a senha para login não está cadastrada para a loja " + loja + "!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
+					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 				#endregion
@@ -203,6 +207,7 @@ namespace ART3WebAPI.Controllers
 				{
 					msg = "Falha desconhecida ao tentar recuperar os dados do pedido Magento " + numeroPedidoMagento + "!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
+					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 				#endregion
@@ -213,6 +218,7 @@ namespace ART3WebAPI.Controllers
 				{
 					msg = "Falha ao tentar decodificar o XML de resposta da API do Magento!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
+					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 				#endregion
@@ -275,180 +281,170 @@ namespace ART3WebAPI.Controllers
 					#region [ Cliente novo: cadastra automaticamente ]
 					if (cliente == null)
 					{
-						cn = new SqlConnection(BD.getConnectionString());
-						cn.Open();
-						try // finally: BD.fechaConexao(ref cn);
+						#region [ Verifica o parâmetro que define se o cliente deve ser cadastrado automaticamente ]
+						intParametroFlagCadSemiAutoPedMagentoCadastrarAutomaticamenteClienteNovo = GeralDAO.getCampoInteiroTabelaParametro(Global.Cte.Parametros.ID_T_PARAMETRO.FLAG_CAD_SEMI_AUTO_PED_MAGENTO_CADASTRAR_AUTOMATICAMENTE_CLIENTE_NOVO);
+						#endregion
+
+						if (intParametroFlagCadSemiAutoPedMagentoCadastrarAutomaticamenteClienteNovo == 1)
 						{
-							cliente = new Cliente();
-							if (!GeralDAO.geraNsuUsandoTabelaControle(ref cn, Global.Cte.Nsu.NSU_CADASTRO_CLIENTES, out id_cliente, out msg_erro))
+							try
 							{
-								if (msg_erro.Length > 0) msg_erro = "\n" + msg_erro;
-								msg_erro = "Falha ao tentar gerar o identificador do registro para o cadastro de novo cliente!" +
-											msg_erro;
-								throw new Exception(msg_erro);
-							}
+								cliente = new Cliente();
 
-							cliente.id = id_cliente;
+								#region [ Preenche dados para cadastro do cliente ]
+								cliente.cnpj_cpf = cpfCnpjIdentificado;
+								cliente.tipo = (Global.digitos(cpfCnpjIdentificado).Length == 11 ? Global.Cte.TipoPessoa.PF : Global.Cte.TipoPessoa.PJ);
+								if ((salesOrder.magentoSalesOrderInfo.billing_address.ie ?? "").Length > 0) cliente.ie = Global.digitos(salesOrder.magentoSalesOrderInfo.billing_address.ie);
+								cliente.nome = Global.ecDadosFormataNome(salesOrder.magentoSalesOrderInfo.customer_firstname, salesOrder.magentoSalesOrderInfo.customer_middlename, salesOrder.magentoSalesOrderInfo.customer_lastname, 60);
 
-							#region [ Preenche dados para cadastro do cliente ]
-							cliente.cnpj_cpf = cpfCnpjIdentificado;
-							cliente.tipo = (Global.digitos(cpfCnpjIdentificado).Length == 11 ? Global.Cte.TipoPessoa.PF : Global.Cte.TipoPessoa.PJ);
-							if ((salesOrder.magentoSalesOrderInfo.billing_address.ie ?? "").Length > 0) cliente.ie = Global.digitos(salesOrder.magentoSalesOrderInfo.billing_address.ie);
-
-							cliente.nome = (salesOrder.magentoSalesOrderInfo.customer_firstname ?? "").Trim();
-							if ((salesOrder.magentoSalesOrderInfo.customer_middlename ?? "").Length > 0)
-							{
-								if (cliente.nome.Trim().Length > 0) cliente.nome += " ";
-								cliente.nome += salesOrder.magentoSalesOrderInfo.customer_middlename.Trim();
-							}
-							if ((salesOrder.magentoSalesOrderInfo.customer_lastname ?? "").Length > 0)
-							{
-								if (cliente.nome.Trim().Length > 0) cliente.nome += " ";
-								cliente.nome += salesOrder.magentoSalesOrderInfo.customer_lastname.Trim();
-							}
-
-							if ((salesOrder.magentoSalesOrderInfo.customer_gender ?? "").Length > 0)
-							{
-								if (salesOrder.magentoSalesOrderInfo.customer_gender.Trim().Equals("1"))
+								if ((salesOrder.magentoSalesOrderInfo.customer_gender ?? "").Length > 0)
 								{
-									cliente.sexo = Global.Cte.Sexo.Masculino;
+									if (salesOrder.magentoSalesOrderInfo.customer_gender.Trim().Equals("1"))
+									{
+										cliente.sexo = Global.Cte.Sexo.Masculino;
+									}
+									else if (salesOrder.magentoSalesOrderInfo.customer_gender.Trim().Equals("2"))
+									{
+										cliente.sexo = Global.Cte.Sexo.Feminino;
+									}
 								}
-								else if (salesOrder.magentoSalesOrderInfo.customer_gender.Trim().Equals("2"))
-								{
-									cliente.sexo = Global.Cte.Sexo.Feminino;
-								}
-							}
 
-							#region [ Endereço ]
-							if (cliente.tipo.Equals(Global.Cte.TipoPessoa.PF))
-							{
-								#region [ Cliente PF ]
-								// Cliente PF: usa o endereço de entrega como sendo o único endereço do cliente
-								v = (salesOrder.magentoSalesOrderInfo.shipping_address.street ?? "").Split('\n');
-								if (v.Length >= 1) cliente.endereco = v[0].Trim();
-								if (v.Length >= 2) cliente.endereco_numero = v[1].Trim();
-								if (v.Length >= 3) cliente.endereco_complemento = v[2].Trim();
-								if (v.Length >= 4) cliente.bairro = v[3].Trim();
-								cliente.cidade = (salesOrder.magentoSalesOrderInfo.shipping_address.city ?? "").Trim();
-								if (Global.isUfOk(salesOrder.magentoSalesOrderInfo.shipping_address.region))
+								#region [ Endereço ]
+								if (cliente.tipo.Equals(Global.Cte.TipoPessoa.PF))
 								{
-									cliente.uf = salesOrder.magentoSalesOrderInfo.shipping_address.region.Trim();
+									#region [ Cliente PF ]
+									// Cliente PF: usa o endereço de entrega como sendo o único endereço do cliente
+									v = (salesOrder.magentoSalesOrderInfo.shipping_address.street ?? "").Split('\n');
+									if (v.Length >= 1) cliente.endereco = v[0].Trim();
+									if (v.Length >= 2) cliente.endereco_numero = v[1].Trim();
+									if (v.Length >= 3) cliente.endereco_complemento = v[2].Trim();
+									if (v.Length >= 4) cliente.bairro = v[3].Trim();
+									cliente.cidade = (salesOrder.magentoSalesOrderInfo.shipping_address.city ?? "").Trim();
+									if (Global.isUfOk(salesOrder.magentoSalesOrderInfo.shipping_address.region))
+									{
+										cliente.uf = salesOrder.magentoSalesOrderInfo.shipping_address.region.Trim();
+									}
+									else
+									{
+										cliente.uf = Global.decodificaUfExtensoParaSigla((salesOrder.magentoSalesOrderInfo.shipping_address.region ?? ""));
+									}
+									cliente.cep = Global.digitos((salesOrder.magentoSalesOrderInfo.shipping_address.postcode ?? ""));
+									#endregion
 								}
 								else
 								{
-									cliente.uf = Global.decodificaUfExtensoParaSigla((salesOrder.magentoSalesOrderInfo.shipping_address.region ?? ""));
+									#region [ Cliente PJ ]
+									v = (salesOrder.magentoSalesOrderInfo.billing_address.street ?? "").Split('\n');
+									if (v.Length >= 1) cliente.endereco = v[0].Trim();
+									if (v.Length >= 2) cliente.endereco_numero = v[1].Trim();
+									if (v.Length >= 3) cliente.endereco_complemento = v[2].Trim();
+									if (v.Length >= 4) cliente.bairro = v[3].Trim();
+									cliente.cidade = (salesOrder.magentoSalesOrderInfo.billing_address.city ?? "").Trim();
+									if (Global.isUfOk(salesOrder.magentoSalesOrderInfo.billing_address.region))
+									{
+										cliente.uf = salesOrder.magentoSalesOrderInfo.billing_address.region.Trim();
+									}
+									else
+									{
+										cliente.uf = Global.decodificaUfExtensoParaSigla((salesOrder.magentoSalesOrderInfo.billing_address.region ?? ""));
+									}
+									cliente.cep = Global.digitos((salesOrder.magentoSalesOrderInfo.billing_address.postcode ?? ""));
+									#endregion
 								}
-								cliente.cep = Global.digitos((salesOrder.magentoSalesOrderInfo.shipping_address.postcode ?? ""));
 								#endregion
-							}
-							else
-							{
-								#region [ Cliente PJ ]
-								v = (salesOrder.magentoSalesOrderInfo.billing_address.street ?? "").Split('\n');
-								if (v.Length >= 1) cliente.endereco = v[0].Trim();
-								if (v.Length >= 2) cliente.endereco_numero = v[1].Trim();
-								if (v.Length >= 3) cliente.endereco_complemento = v[2].Trim();
-								if (v.Length >= 4) cliente.bairro = v[3].Trim();
-								cliente.cidade = (salesOrder.magentoSalesOrderInfo.billing_address.city ?? "").Trim();
-								if (Global.isUfOk(salesOrder.magentoSalesOrderInfo.billing_address.region))
+
+								#region [ Telefone ]
+								if (cliente.tipo.Equals(Global.Cte.TipoPessoa.PF))
 								{
-									cliente.uf = salesOrder.magentoSalesOrderInfo.billing_address.region.Trim();
+									#region [ Telefones para PF ]
+									if ((salesOrder.magentoSalesOrderInfo.shipping_address.telephone ?? "").Length > 0)
+									{
+										if (Global.ecDadosDecodificaTelefoneFormatado((salesOrder.magentoSalesOrderInfo.shipping_address.telephone ?? ""), out sDDD, out sTelefone))
+										{
+											cliente.ddd_res = Global.digitos(sDDD);
+											cliente.tel_res = Global.digitos(sTelefone);
+										}
+									}
+
+									if ((salesOrder.magentoSalesOrderInfo.shipping_address.celular ?? "").Length > 0)
+									{
+										if (Global.ecDadosDecodificaTelefoneFormatado((salesOrder.magentoSalesOrderInfo.shipping_address.celular ?? ""), out sDDD, out sTelefone))
+										{
+											cliente.ddd_cel = Global.digitos(sDDD);
+											cliente.tel_cel = Global.digitos(sTelefone);
+										}
+									}
+
+									if ((salesOrder.magentoSalesOrderInfo.shipping_address.fax ?? "").Length > 0)
+									{
+										if (Global.ecDadosDecodificaTelefoneFormatado((salesOrder.magentoSalesOrderInfo.shipping_address.fax ?? ""), out sDDD, out sTelefone))
+										{
+											cliente.ddd_com = Global.digitos(sDDD);
+											cliente.tel_com = Global.digitos(sTelefone);
+										}
+									}
+									#endregion
 								}
 								else
 								{
-									cliente.uf = Global.decodificaUfExtensoParaSigla((salesOrder.magentoSalesOrderInfo.billing_address.region ?? ""));
+									#region [ Telefones para PJ ]
+									if ((salesOrder.magentoSalesOrderInfo.billing_address.telephone ?? "").Length > 0)
+									{
+										if (Global.ecDadosDecodificaTelefoneFormatado((salesOrder.magentoSalesOrderInfo.billing_address.telephone ?? ""), out sDDD, out sTelefone))
+										{
+											cliente.ddd_com = Global.digitos(sDDD);
+											cliente.tel_com = Global.digitos(sTelefone);
+										}
+									}
+
+									if ((salesOrder.magentoSalesOrderInfo.billing_address.celular ?? "").Length > 0)
+									{
+										if (Global.ecDadosDecodificaTelefoneFormatado((salesOrder.magentoSalesOrderInfo.billing_address.celular ?? ""), out sDDD, out sTelefone))
+										{
+											cliente.ddd_com_2 = Global.digitos(sDDD);
+											cliente.tel_com_2 = Global.digitos(sTelefone);
+										}
+									}
+
+									if ((cliente.tel_com_2.Trim().Length == 0) && ((salesOrder.magentoSalesOrderInfo.billing_address.fax ?? "").Length > 0))
+									{
+										if (Global.ecDadosDecodificaTelefoneFormatado((salesOrder.magentoSalesOrderInfo.billing_address.fax ?? ""), out sDDD, out sTelefone))
+										{
+											cliente.ddd_com_2 = Global.digitos(sDDD);
+											cliente.tel_com_2 = Global.digitos(sTelefone);
+										}
+									}
+									#endregion
 								}
-								cliente.cep = Global.digitos((salesOrder.magentoSalesOrderInfo.billing_address.postcode ?? ""));
+								#endregion
+
+								if ((salesOrder.magentoSalesOrderInfo.customer_dob ?? "").Length > 0) cliente.dt_nasc = Global.converteYyyyMmDdHhMmSsParaDateTime(salesOrder.magentoSalesOrderInfo.customer_dob.Trim());
+								cliente.email = salesOrder.magentoSalesOrderInfo.customer_email;
+
+								if (cliente.tipo.Equals(Global.Cte.TipoPessoa.PF)) cliente.produtor_rural_status = Global.Cte.ProdutorRural.COD_ST_CLIENTE_PRODUTOR_RURAL_NAO;
+
+								cliente.sistema_responsavel_cadastro = Global.Cte.SistemaResponsavelCadastro.COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP_WEBAPI;
+								cliente.sistema_responsavel_atualizacao = Global.Cte.SistemaResponsavelCadastro.COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP_WEBAPI;
+								#endregion
+
+								#region [ Grava cliente no banco de dados ]
+								if (!ClienteDAO.insere(cliente, loja, usuario, out msg_erro))
+								{
+									msg = "Falha ao tentar cadastrar o cliente no banco de dados do sistema!";
+									if (msg_erro.Length > 0) msg += "\n" + msg_erro;
+									Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+									throw new Exception(msg);
+								}
 								#endregion
 							}
-							#endregion
-
-							#region [ Telefone ]
-							if (cliente.tipo.Equals(Global.Cte.TipoPessoa.PF))
+							catch (Exception ex)
 							{
-								#region [ Telefones para PF ]
-								if ((salesOrder.magentoSalesOrderInfo.shipping_address.telephone ?? "").Length > 0)
-								{
-									if (Global.ecDadosDecodificaTelefoneFormatado((salesOrder.magentoSalesOrderInfo.shipping_address.telephone ?? ""), out sDDD, out sTelefone))
-									{
-										cliente.ddd_res = sDDD;
-										cliente.tel_res = sTelefone;
-									}
-								}
-
-								if ((salesOrder.magentoSalesOrderInfo.shipping_address.celular ?? "").Length > 0)
-								{
-									if (Global.ecDadosDecodificaTelefoneFormatado((salesOrder.magentoSalesOrderInfo.shipping_address.celular ?? ""), out sDDD, out sTelefone))
-									{
-										cliente.ddd_cel = sDDD;
-										cliente.tel_cel = sTelefone;
-									}
-								}
-
-								if ((salesOrder.magentoSalesOrderInfo.shipping_address.fax ?? "").Length > 0)
-								{
-									if (Global.ecDadosDecodificaTelefoneFormatado((salesOrder.magentoSalesOrderInfo.shipping_address.fax ?? ""), out sDDD, out sTelefone))
-									{
-										cliente.ddd_com = sDDD;
-										cliente.tel_com = sTelefone;
-									}
-								}
-								#endregion
+								msg = NOME_DESTA_ROTINA + " - Exception: " + ex.ToString();
+								Global.gravaLogAtividade(msg);
+								throw new Exception(msg);
 							}
-							else
-							{
-								#region [ Telefones para PJ ]
-								if ((salesOrder.magentoSalesOrderInfo.billing_address.telephone ?? "").Length > 0)
-								{
-									if (Global.ecDadosDecodificaTelefoneFormatado((salesOrder.magentoSalesOrderInfo.billing_address.telephone ?? ""), out sDDD, out sTelefone))
-									{
-										cliente.ddd_com = sDDD;
-										cliente.tel_com = sTelefone;
-									}
-								}
-
-								if ((salesOrder.magentoSalesOrderInfo.billing_address.celular ?? "").Length > 0)
-								{
-									if (Global.ecDadosDecodificaTelefoneFormatado((salesOrder.magentoSalesOrderInfo.billing_address.celular ?? ""), out sDDD, out sTelefone))
-									{
-										cliente.ddd_com_2 = sDDD;
-										cliente.tel_com_2 = sTelefone;
-									}
-								}
-
-								if ((cliente.tel_com_2.Trim().Length == 0) && ((salesOrder.magentoSalesOrderInfo.billing_address.fax ?? "").Length > 0))
-								{
-									if (Global.ecDadosDecodificaTelefoneFormatado((salesOrder.magentoSalesOrderInfo.billing_address.fax ?? ""), out sDDD, out sTelefone))
-									{
-										cliente.ddd_com_2 = sDDD;
-										cliente.tel_com_2 = sTelefone;
-									}
-								}
-								#endregion
-							}
-							#endregion
-
-
-							if ((salesOrder.magentoSalesOrderInfo.customer_dob ?? "").Length > 0) cliente.dt_nasc = Global.converteYyyyMmDdHhMmSsParaDateTime(salesOrder.magentoSalesOrderInfo.customer_dob.Trim());
-
-
-							// TODO - SISTEMA RESPONSÁVEL CADASTRO
-
-							#endregion
-
-							// TODO
-						}
-						catch (Exception ex)
-						{
-							msg = NOME_DESTA_ROTINA + " - Exception: " + ex.ToString();
-							Global.gravaLogAtividade(msg);
-							throw new Exception(msg);
-						}
-						finally
-						{
-							BD.fechaConexao(ref cn);
-						}
-					}
+						} // if (intParametroFlagCadSemiAutoPedMagentoCadastrarAutomaticamenteClienteNovo == 1)
+					} // if (cliente == null)
 					#endregion
 
 					if (cliente != null)
@@ -683,6 +679,7 @@ namespace ART3WebAPI.Controllers
 				{
 					msg = "Falha ao tentar gravar no BD os dados do pedido Magento!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
+					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 				#endregion
@@ -740,6 +737,7 @@ namespace ART3WebAPI.Controllers
 				{
 					msg = "Falha ao tentar gravar no BD os dados do endereço de cobrança!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
+					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 				#endregion
@@ -792,6 +790,7 @@ namespace ART3WebAPI.Controllers
 				{
 					msg = "Falha ao tentar gravar no BD os dados do endereço de entrega!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
+					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 				#endregion
@@ -822,6 +821,7 @@ namespace ART3WebAPI.Controllers
 					{
 						msg = "Falha ao tentar gravar no BD os dados do item do pedido (sku=" + decodeItem.sku + ")!";
 						if (msg_erro.Length > 0) msg += "\n" + msg_erro;
+						Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
 						throw new Exception(msg);
 					}
 				}
@@ -844,6 +844,7 @@ namespace ART3WebAPI.Controllers
 					{
 						msg = "Falha ao tentar gravar no BD os dados do status history do pedido (created_at=" + decodeStatusHistory.created_at + ")!";
 						if (msg_erro.Length > 0) msg += "\n" + msg_erro;
+						Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
 						throw new Exception(msg);
 					}
 				}
