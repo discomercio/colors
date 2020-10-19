@@ -94,6 +94,7 @@
 	
     dim c_perc_agio
     dim s_entrada_tipo
+    dim c_nfe_dt_hr_emissao
 	
 	dim r_estoque, v_item_bd, v_item
 	dim s, i, n
@@ -124,6 +125,7 @@
 	if alerta = "" then
 		s_nome_fabricante = fabricante_descricao(r_estoque.fabricante)
         c_perc_agio = formata_numero(r_estoque.perc_agio, 4)
+        c_nfe_dt_hr_emissao = formata_data(r_estoque.data_emissao_NF_entrada)
         if r_estoque.entrada_tipo = 1 then
             s_entrada_tipo = "Via XML"
         else
@@ -387,10 +389,18 @@ var b;
 			if (s<>"") And (s_nome_fabricante<>"") then s = s & " - " & s_nome_fabricante %>
 		<br><input name="c_fabricante_aux" id="c_fabricante_aux" readonly tabindex=-1 class="PLLe" style="width:460px;margin-left:2pt;"
 				value="<%=s%>"></td></tr>
-<!--  DOCUMENTO  -->
-	<tr bgcolor="#FFFFFF"><td colspan="2" class="MDBE" align="left" nowrap><span class="PLTe">Documento</span>
+<!--  DOCUMENTO / DATA EMISSÃO -->
+	<tr bgcolor="#FFFFFF">
+        <td class="MDBE" width="50%" align="left" nowrap><span class="PLTe">Documento</span>
 		<br><input name="c_documento" id="c_documento" readonly tabindex=-1 class="PLLe" style="width:270px;margin-left:2pt;"
-			value="<%=r_estoque.documento%>"></td></tr>
+			value="<%=r_estoque.documento%>">
+        </td>
+        <td class="MDB" width="50%" align="left" nowrap>
+            <span class="PLTe">Emissão</span>
+		<br /><input name="c_nfe_dt_hr_emissao" id="c_nfe_dt_hr_emissao" readonly tabindex=-1  class="PLLe" style="margin-left:2pt;"
+            value="<%=c_nfe_dt_hr_emissao%>">
+	    </td>
+	</tr>
 <!-- ÁGIO / TIPO ENTRADA  -->
 	<tr bgcolor="#FFFFFF">
         <td class="MDBE" width="50%" align="left" nowrap><span class="PLTe">% Ágio</span>

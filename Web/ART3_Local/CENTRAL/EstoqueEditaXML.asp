@@ -71,6 +71,7 @@
 	dim s_nome_nfe_emitente
     dim s_vl_diferenca, s_total_diferenca, m_vl_diferenca, m_total_diferenca, m_total_geral_diferenca
     dim s_aliq_ipi, s_vl_ipi, s_aliq_icms, s_vl_frete
+    dim c_nfe_dt_hr_emissao
 	
 '	CONECTA AO BANCO DE DADOS
 '	=========================
@@ -161,6 +162,8 @@
 			s_nome_nfe_emitente = Trim("" & rs("razao_social"))
 			end if
 		end if
+
+    c_nfe_dt_hr_emissao = Trim(Request("c_nfe_dt_hr_emissao"))
 
 	dim blnValorEditavel, sAnoMesEstoque, sAnoMesHoje, s_valor_readonly
 	blnValorEditavel = False
@@ -525,9 +528,16 @@ function fESTOQConfirma( f ) {
 		<br><input name="c_fabricante_aux" id="c_fabricante_aux" readonly tabindex=-1 class="PLLe" style="width:460px;margin-left:2pt;"
 				value="<%=s%>"></td></tr>
 <!--  DOCUMENTO  -->
-	<tr bgcolor="#FFFFFF"><td colspan="2" class="MDBE" align="left" nowrap><span class="PLTe">Documento</span>
+	<tr bgcolor="#FFFFFF">
+        <td class="MDBE" width="50%" align="left" nowrap><span class="PLTe">Documento</span>
 		<br><input name="c_documento" id="c_documento" maxlength="30" class="PLLe" style="width:270px;margin-left:2pt;color:darkblue;"
-			value="<%=r_estoque.documento%>"></td></tr>
+			value="<%=r_estoque.documento%>">
+        </td>
+        <td class="MDB" width="50%" align="left" nowrap><span class="PLTe">Emissão</span>
+		<br /><input name="c_nfe_dt_hr_emissao" id="c_nfe_dt_hr_emissao" readonly tabindex=-1  class="PLLe" style="margin-left:2pt;"
+            value="<%=c_nfe_dt_hr_emissao%>">
+	    </td>
+	</tr>
 <!-- ÁGIO / TIPO ENTRADA  -->
 	<tr bgcolor="#FFFFFF">
         <td class="MDBE" width="50%" align="left" nowrap><span class="PLTe">% Ágio</span>

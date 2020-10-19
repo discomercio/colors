@@ -2259,6 +2259,7 @@
 		dim obs
         dim entrada_tipo
         dim perc_agio
+        dim data_emissao_NF_entrada
 		end class
 
     class cl_ESTOQUE_TRANSFERENCIA_ITEM
