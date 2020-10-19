@@ -54,6 +54,7 @@
 
 	dim s, i, iQtdeItens
 	dim c_nfe_qtde_itens, c_nfe_numero_nf, c_nfe_emitente_cnpj, c_nfe_destinatario_cnpj, c_nfe_emitente_nome, c_nfe_emitente_nome_fantasia
+    dim c_nfe_dt_hr_emissao, c_nfe_dt_hr_emissao2
     dim c_perc_agio, c_total_nf, c_nfe_vl_total_geral
     dim arquivo_nfe, arquivo_nfe2
     dim c_op_upload
@@ -72,6 +73,8 @@
 	c_nfe_destinatario_cnpj = retorna_so_digitos(Trim(Request("c_nfe_destinatario_cnpj")))
 	c_nfe_emitente_nome = Trim(Request("c_nfe_emitente_nome"))
 	c_nfe_emitente_nome_fantasia = Trim(Request("c_nfe_emitente_nome_fantasia"))
+    c_nfe_dt_hr_emissao = Trim(Request("c_dt_hr_emissao"))
+    c_nfe_dt_hr_emissao2 = Trim(Request("c_dt_hr_emissao2"))
     
     c_perc_agio = Trim(Request.Form("c_perc_agio"))
     c_total_nf = Trim(Request.Form("c_total_nf"))
@@ -202,6 +205,7 @@
 	dim vDtHr, vDt, vHr
 	if alerta = "" then
 		s_nfe_dt_hr_emissao = Trim(Request("c_dt_hr_emissao"))
+        's_nfe_dt_hr_emissao = c_nfe_dt_hr_emissao
 		if s_nfe_dt_hr_emissao <> "" then
 		'if false then
 			vDtHr = Split(s_nfe_dt_hr_emissao, "T")
@@ -210,7 +214,7 @@
 			end if
 		end if
 
-	dim s_visibilidade
+    dim s_visibilidade
 	dim s_ckb_importa
 	dim s_prod_ean
 	dim s_prod_cod
@@ -885,6 +889,8 @@ select
 <input type="hidden" name="iQtdeItens" id="iQtdeItens" value="<%=iQtdeItens%>" />
 <input type="hidden" name="arquivo_nfe" id="arquivo_nfe" value="<%=arquivo_nfe%>"/>
 <input type="hidden" name="arquivo_nfe2" id="arquivo_nfe2" value="<%=arquivo_nfe2%>"/>
+<input type="hidden" name="c_dt_hr_emissao" id="c_dt_hr_emissao" value="<%=c_nfe_dt_hr_emissao%>"/>
+<input type="hidden" name="c_dt_hr_emissao2" id="c_dt_hr_emissao2" value="<%=c_nfe_dt_hr_emissao2%>"/>
 
 <input type="hidden" name="c_xml_ide__cNF_1" id="c_xml_ide__cNF_1"  value="<%=c_xml_ide__cNF_1%>" />
 <input type="hidden" name="c_xml_ide__serie_1" id="c_xml_ide__serie_1" value="<%=c_xml_ide__serie_1%>" />
@@ -952,7 +958,7 @@ select
 	<td class="MDB" style="border-left:0pt;" align="left"><span class="PLTe">Documento</span>
 		<br><input name="c_documento" id="c_documento" class="PLLe TxtErpDocumento TxtEditavel" maxlength="30" value="<%=c_nfe_numero_nf%>" onkeypress="if (digitou_enter(true)) $('#c_erp_codigo_1').focus(); filtra_nome_identificador();" onblur="this.value=trim(this.value);"></td>
 	<td class="MDB" style="border-left:0pt;" align="left"><span class="PLTe">Emissão</span>
-		<br /><input name="c_nfe_dt_hr_emissao" id="c_nfe_dt_hr_emissao" class="PLLe TxtNfeDtHrEmissao" readonly tabindex="-1" value="<%=s_nfe_dt_hr_emissao%>" />
+		<br /><input name="c_nfe_dt_emissao" id="c_nfe_dt_emissao" class="PLLe TxtNfeDtHrEmissao" readonly tabindex="-1" value="<%=s_nfe_dt_hr_emissao%>" />
 	</td>
 	</tr>
 

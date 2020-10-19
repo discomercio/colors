@@ -55,7 +55,7 @@
 
 	dim alerta
 	dim s, s_aux, s_fabricante, s_nome_fabricante, s_produto, s_nome_produto, s_nome_produto_html, s_cadastrado_por
-	dim s_entrada_de, s_entrada_ate, ckb_especial, ckb_saldo, ckb_compras, ckb_kit, ckb_devolucao
+	dim s_entrada_de, s_entrada_ate, ckb_especial, ckb_saldo, ckb_compras, ckb_kit, ckb_devolucao, s_nf_entrada_de, s_nf_entrada_ate
 	dim rb_saida
     dim c_empresa
 
@@ -70,6 +70,8 @@
 	ckb_compras = Trim(Request.Form("ckb_compras"))
 	ckb_kit = Trim(Request.Form("ckb_kit"))
 	ckb_devolucao = Trim(Request.Form("ckb_devolucao"))
+	s_nf_entrada_de = Trim(Request.Form("c_nf_entrada_de"))
+	s_nf_entrada_ate = Trim(Request.Form("c_nf_entrada_ate"))
 	rb_saida = Ucase(Trim(Request.Form("rb_saida")))
 	c_empresa = Trim(Request.Form("c_empresa"))
 
@@ -226,6 +228,18 @@
 				Response.Write "<br>"
 				end if
 
+			s = ""
+			s_aux = s_nf_entrada_de
+			if s_aux = "" then s_aux = "N.I."
+			s = s & s_aux & " e "
+			s_aux = s_nf_entrada_ate
+			if s_aux = "" then s_aux = "N.I."
+			s = s & s_aux
+			if (s<>"") then
+				Response.Write "Data de NF entrada entre " & s
+				Response.Write "<br>"
+				end if
+
 			s = "Emissão: " & formata_data_hora(Now)
 			Response.Write s
 			Response.Write "<br><br>"
@@ -242,11 +256,12 @@
 '
 Sub executa_consulta ()
 dim s, h, x, s_sql, s_where, s_where_tipo_or, s_where_tipo_and, n_reg, rs, s_link_open, s_link_close, s_nowrap
-dim w_dt_entrada, w_documento, w_empresa, w_fabricante, w_produto, w_qtde, w_saldo, w_vl_unitario, w_vl_referencia, w_operador
+dim w_dt_entrada, w_documento, w_dt_nf_entrada, w_empresa, w_fabricante, w_produto, w_qtde, w_saldo, w_vl_unitario, w_vl_referencia, w_operador
 
 	if blnSaidaExcel then
 		w_dt_entrada = 90
 		w_documento = 100
+		w_dt_nf_entrada = 90
 		w_empresa = 100
 		w_fabricante = 150
 		w_produto = 250
@@ -258,6 +273,7 @@ dim w_dt_entrada, w_documento, w_empresa, w_fabricante, w_produto, w_qtde, w_sal
 	else
 		w_dt_entrada = 50
 		w_documento = 80
+        w_dt_nf_entrada = 50
 		w_empresa = 70
 		w_fabricante = 110
 		w_produto = 200
@@ -274,6 +290,7 @@ dim w_dt_entrada, w_documento, w_empresa, w_fabricante, w_produto, w_qtde, w_sal
 			"<TR style='background:azure'>" & _
 			chr(13) & "	<TD style='width:" & w_dt_entrada & "px;' align='center'><P class='R' style='font-weight:bold;'>Entrada</P></TD>" & _
 			chr(13) & "	<TD style='width:" & w_documento & "px;' NOWRAP><P class='R' style='font-weight:bold;margin-right:2pt;'>Documento</P></TD>" & _
+			chr(13) & "	<TD style='width:" & w_dt_nf_entrada & "px;' align='center'><P class='R' style='font-weight:bold;'>Data NF</P></TD>" & _
 			chr(13) & "	<TD style='width:" & w_empresa & "px;'><P class='R' style='font-weight:bold;'>Empresa</P></TD>" & _
 			chr(13) & "	<TD style='width:" & w_fabricante & "px;'><P class='R' style='font-weight:bold;'>Fabricante</P></TD>" & _
 			chr(13) & "	<TD style='width:" & w_produto & "px;'><P class='R' style='font-weight:bold;'>Produto</P></TD>" & _
@@ -288,6 +305,7 @@ dim w_dt_entrada, w_documento, w_empresa, w_fabricante, w_produto, w_qtde, w_sal
 			"<TR style='background:azure'>" & _
 			chr(13) & "	<TD align='center' valign='bottom' class='MD MB' style='width:" & w_dt_entrada & "px;'><P class='R' style='font-weight:bold;'>entrada</P></TD>" & _
 			chr(13) & "	<TD valign='bottom' class='MD MB' style='width:" & w_documento & "px;' NOWRAP><P class='R' style='font-weight:bold;margin-right:2pt;'>documento</P></TD>" & _
+			chr(13) & "	<TD align='center' valign='bottom' class='MD MB' style='width:" & w_dt_nf_entrada & "px;' NOWRAP><P class='R' style='font-weight:bold;margin-right:2pt;'>data nf</P></TD>" & _
 			chr(13) & "	<TD valign='bottom' class='MD MB' style='width:" & w_empresa & "px;'><P class='R' style='font-weight:bold;'>empresa</P></TD>" & _
 			chr(13) & "	<TD valign='bottom' class='MD MB' style='width:" & w_fabricante & "px;'><P class='R' style='font-weight:bold;'>fabricante</P></TD>" & _
 			chr(13) & "	<TD valign='bottom' class='MD MB' style='width:" & w_produto & "px;'><P class='R' style='font-weight:bold;'>produto</P></TD>" & _
@@ -308,8 +326,9 @@ dim w_dt_entrada, w_documento, w_empresa, w_fabricante, w_produto, w_qtde, w_sal
 			" t_ESTOQUE_ITEM.qtde, t_ESTOQUE_ITEM.qtde_utilizada," & _
 			" t_PRODUTO.descricao," & _
 			" t_PRODUTO.descricao_html," & _
-			" t_FABRICANTE.razao_social, t_FABRICANTE.nome" & _
-			" FROM t_ESTOQUE INNER JOIN t_ESTOQUE_ITEM ON (t_ESTOQUE.id_estoque=t_ESTOQUE_ITEM.id_estoque)" & _
+			" t_FABRICANTE.razao_social, t_FABRICANTE.nome," & _
+			" t_ESTOQUE.data_emissao_NF_entrada" & _
+            " FROM t_ESTOQUE INNER JOIN t_ESTOQUE_ITEM ON (t_ESTOQUE.id_estoque=t_ESTOQUE_ITEM.id_estoque)" & _
 			" LEFT JOIN t_PRODUTO ON ((t_ESTOQUE_ITEM.fabricante=t_PRODUTO.fabricante) AND (t_ESTOQUE_ITEM.produto=t_PRODUTO.produto))" & _
 			" LEFT JOIN t_FABRICANTE ON (t_ESTOQUE.fabricante=t_FABRICANTE.fabricante)" & _
 			" LEFT JOIN t_NFe_EMITENTE ON (t_ESTOQUE.id_nfe_emitente=t_NFe_EMITENTE.id)"
@@ -405,10 +424,21 @@ dim w_dt_entrada, w_documento, w_empresa, w_fabricante, w_produto, w_qtde, w_sal
 		s_where = s_where & " ((t_ESTOQUE_ITEM.qtde - t_ESTOQUE_ITEM.qtde_utilizada) = 0)"
 		end if
 
+	if s_nf_entrada_de <> "" then
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (t_ESTOQUE.data_emissao_NF_entrada >= " & bd_formata_data(StrToDate(s_nf_entrada_de)) & ")"
+		end if
+	
+	if s_nf_entrada_ate <> "" then
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (t_ESTOQUE.data_emissao_NF_entrada <= " & bd_formata_data(StrToDate(s_nf_entrada_ate)) & ")"
+		end if
+
 	if s_where <> "" then s_where = " WHERE" & s_where
 	s_sql = s_sql & s_where
 	s_sql = s_sql & " ORDER BY t_ESTOQUE.data_entrada, t_ESTOQUE.id_estoque, t_ESTOQUE.documento, t_ESTOQUE.fabricante, t_ESTOQUE_ITEM.sequencia"
 	
+
 '	EXECUTA CONSULTA
 	set rs = cn.Execute( s_sql )
 	
@@ -441,6 +471,14 @@ dim w_dt_entrada, w_documento, w_empresa, w_fabricante, w_produto, w_qtde, w_sal
 			if s = "" then s = "&nbsp;"
 			end if
 		x = x & chr(13) & "	<TD valign='middle' class='MDB'" & s_nowrap & " style='width:" & w_documento & "px;'><P class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s_link_open & s & s_link_close & "</P></TD>"
+
+	'	DATA NF
+		'if blnSaidaExcel then s_nowrap = " NOWRAP" else s_nowrap = ""
+		's = Trim("" & rs("documento"))
+		'if Not blnSaidaExcel then
+		'	if s = "" then s = "&nbsp;"
+		'	end if
+		x = x & chr(13) & "	<TD valign='middle' class='MDB'" & s_nowrap & " style='width:" & w_dt_nf_entrada & "px;'><P class='Cn'>" & s_link_open & formata_data(rs("data_emissao_NF_entrada")) & s_link_close & "</P></TD>"
 
 	'	EMPRESA
 		if blnSaidaExcel then s_nowrap = " NOWRAP" else s_nowrap = ""
