@@ -37,17 +37,10 @@ HelpContextID="0"
 CompatibleMode="0"
 MajorVer=2
 MinorVer=14
-<<<<<<< HEAD
-RevisionVer=2
+RevisionVer=6
 AutoIncrementVer=1
 ServerSupportFiles=0
 VersionComments="2.14 - 19.OUT.2020"
-=======
-RevisionVer=28
-AutoIncrementVer=1
-ServerSupportFiles=0
-VersionComments="2.14 - 24.ABR.2020"
->>>>>>> develop
 VersionCompanyName=" "
 CompilationType=0
 OptimizationType=0

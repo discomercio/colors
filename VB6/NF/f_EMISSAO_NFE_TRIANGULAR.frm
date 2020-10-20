@@ -8418,7 +8418,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 Dim blnOperacaoNaoTriangular As Boolean
 
@@ -15253,8 +15253,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 
             '   TAG ICMS
             '   ~~~~~~~~
-                'para a nota de remessa da operação triangular, OUTROS (CST="90") / ORIENTAÇÃO CONTABILIDADE
-                strNFeCst = "90"
+                'para a nota de remessa da operação triangular, não tributada (CST="41") / ORIENTAÇÃO CONTABILIDADE
+                strNFeCst = "41"
                 vNFeImgItem(UBound(vNFeImgItem)).ICMS__CST = strNFeCst
                 strNFeTagIcms = strNFeTagIcms & vbTab & NFeFormataCampo("CST", vNFeImgItem(UBound(vNFeImgItem)).ICMS__CST)
                                 

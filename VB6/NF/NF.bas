@@ -740,16 +740,10 @@ Option Explicit
 '|          |      | - Ajustes sobre o UFS_INSCRICAO_VIRTUAL.CFG, para que     |
 '|          |      |   a definição das UF's seja feita por emitente            |
 '|__________|______|___________________________________________________________|
-<<<<<<< HEAD
 '|19.10.2020| LHGX |V 2.14                                                     |
 '|          |      | - Zerar valor da base de cálculo do ICMS e utilizar       |
 '|          |      |   CST's específicas para a nota de remessa da operação    |
 '|          |      |   triangular                                              |
-=======
-'|24.04.2020| LHGX |V 2.14                                                     |
-'|          |      | - Implementação da memorização do endereço do cliente     |
-'|          |      |   na t_PEDIDO                                             |
->>>>>>> develop
 '|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
@@ -767,11 +761,7 @@ Option Explicit
 
 
 Global Const m_id_versao = "2.14"
-<<<<<<< HEAD
 Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  19/10/2020"
-=======
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  24/04/2020"
->>>>>>> develop
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"
