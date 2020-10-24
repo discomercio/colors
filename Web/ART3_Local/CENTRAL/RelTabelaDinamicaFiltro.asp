@@ -394,7 +394,7 @@ function marcarDesmarcarFinanceiro() {
 }
 
 function marcarTodos() {
-    $(":checkbox").each(function() {
+    $(".CKB_CADASTRO, .CKB_COMERCIAL, .CKB_FINANCEIRO").each(function() {
         if (!$(this).is(":checked")) {
             $(this).trigger('click');
         }
@@ -402,7 +402,7 @@ function marcarTodos() {
 }
 
 function desmarcarTodos() {
-    $(":checkbox").each(function() {
+    $(".CKB_CADASTRO, .CKB_COMERCIAL, .CKB_FINANCEIRO").each(function() {
         if ($(this).is(":checked")) {
             $(this).trigger('click');
         }
