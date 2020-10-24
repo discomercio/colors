@@ -32,6 +32,8 @@
 	On Error GoTo 0
 	Err.Clear
 	
+	Server.ScriptTimeout = MAX_SERVER_SCRIPT_TIMEOUT_EM_SEG
+	
 	const MSO_NUMBER_FORMAT_PERC = "\#\#0\.0%"
 	const MSO_NUMBER_FORMAT_INTEIRO = "\#\#\#\,\#\#\#\,\#\#0"
 	const MSO_NUMBER_FORMAT_MOEDA = "\#\#\#\,\#\#\#\,\#\#0\.00"
@@ -468,8 +470,17 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 	s_sql = "SELECT" & _
 				" 'VENDA_NORMAL' AS operacao," & _
 				" t_PEDIDO.data_hora," & _
-				" t_PEDIDO.entregue_data AS faturamento_data," & _
-				" Convert(DATETIME, t_NFe_IMAGEM_NORMALIZADO.ide__dEmi, 121) AS dt_emissao," & _
+				" t_PEDIDO.entregue_data AS faturamento_data,"
+
+	if ckb_COL_ICMS_UF_DEST <> "" then
+		s_sql = s_sql & _
+				" Convert(DATETIME, t_NFe_IMAGEM_NORMALIZADO.ide__dEmi, 121) AS dt_emissao,"
+	else
+		s_sql = s_sql & _
+				" (SELECT TOP 1 Convert(datetime, ide__dEmi, 121) FROM t_NFe_IMAGEM WHERE (t_NFe_IMAGEM.NFe_numero_NF = t_PEDIDO.num_obs_2) AND (t_NFe_IMAGEM.id_nfe_emitente = t_PEDIDO.id_nfe_emitente) AND (t_NFe_IMAGEM.ide__tpNF = '1') AND (t_NFe_IMAGEM.st_anulado = 0) AND (t_NFe_IMAGEM.codigo_retorno_NFe_T1 = 1) ORDER BY id DESC) AS dt_emissao,"
+		end if
+
+	s_sql = s_sql & _
 				" t_PEDIDO.id_nfe_emitente," & _
 				" t_PEDIDO.num_obs_2 AS numero_NF," & _
 				" t_PEDIDO.obs_2," & _
@@ -488,7 +499,7 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 				" t_CLIENTE.produtor_rural_status," & _
 				" t_PEDIDO__BASE.perc_RT,"
 
-	if ckb_COL_VL_CUSTO_REAL <> "" then
+	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_VL_CUSTO_REAL_TOTAL <> "") then
 		s_sql = s_sql & _
 				" t_ESTOQUE_MOVIMENTO.qtde,"
 	else
@@ -553,14 +564,16 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 		s_where_aux = " AND (codigo_tipo_frete NOT IN " & s_where_lista_codigo_frete_devolucao & ")"
 		end if
 
-	s_sql = s_sql & _
-                " (SELECT Coalesce(SUM(vl_frete),0) AS vl_frete FROM t_PEDIDO_FRETE WHERE (t_PEDIDO_FRETE.pedido=t_PEDIDO.pedido)" & s_where_aux & ") AS vl_frete," & _
-				" (SELECT Coalesce(SUM(qtde * preco_venda),0) AS vl_total_produtos_calc_frete FROM t_PEDIDO_ITEM WHERE (t_PEDIDO_ITEM.pedido = t_PEDIDO.pedido)) AS vl_total_produtos_calc_frete,"
-	
+	if ckb_COL_FRETE <> "" then
+		s_sql = s_sql & _
+					" (SELECT Coalesce(SUM(vl_frete),0) AS vl_frete FROM t_PEDIDO_FRETE WHERE (t_PEDIDO_FRETE.pedido=t_PEDIDO.pedido)" & s_where_aux & ") AS vl_frete," & _
+					" (SELECT Coalesce(SUM(qtde * preco_venda),0) AS vl_total_produtos_calc_frete FROM t_PEDIDO_ITEM WHERE (t_PEDIDO_ITEM.pedido = t_PEDIDO.pedido)) AS vl_total_produtos_calc_frete,"
+		end if
+
 	s_sql = s_sql & _
 				" (SELECT TOP 1 vl_custo2 FROM t_ESTOQUE tE INNER JOIN t_ESTOQUE_ITEM tEI ON (tE.id_estoque = tEI.id_estoque) WHERE (tE.devolucao_status = 0) AND (tEI.fabricante = t_PEDIDO_ITEM.fabricante) AND (tEI.produto = t_PEDIDO_ITEM.produto) ORDER BY tEI.id_estoque DESC) AS vl_custo2_ult_entrada"
 
-	if ckb_COL_VL_CUSTO_REAL <> "" then
+	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_VL_CUSTO_REAL_TOTAL <> "") then
 		s_sql = s_sql & _
 				", (t_ESTOQUE_ITEM.vl_custo2) AS vl_custo2_real"
 		end if
@@ -580,7 +593,7 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 				" INNER JOIN t_FABRICANTE ON (t_PRODUTO.fabricante = t_FABRICANTE.fabricante)" & _
 				" INNER JOIN t_CLIENTE ON (t_PEDIDO.id_cliente = t_CLIENTE.id)"
 
-	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_NAC_IMP <> "") then
+	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_VL_CUSTO_REAL_TOTAL <> "") Or (ckb_COL_NAC_IMP <> "") then
 		s_sql = s_sql & _
 				" INNER JOIN t_ESTOQUE_MOVIMENTO ON ((t_ESTOQUE_MOVIMENTO.pedido=t_PEDIDO_ITEM.pedido)AND(t_ESTOQUE_MOVIMENTO.fabricante=t_PEDIDO_ITEM.fabricante)AND(t_ESTOQUE_MOVIMENTO.produto=t_PEDIDO_ITEM.produto))" & _
 				" INNER JOIN t_ESTOQUE_ITEM ON ((t_ESTOQUE_MOVIMENTO.id_estoque=t_ESTOQUE_ITEM.id_estoque)AND(t_ESTOQUE_MOVIMENTO.fabricante=t_ESTOQUE_ITEM.fabricante)AND(t_ESTOQUE_MOVIMENTO.produto=t_ESTOQUE_ITEM.produto))"
@@ -593,37 +606,39 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 	' Na tabela t_NFe_IMAGEM_ITEM também pode haver mais de um registro para o mesmo código de produto, isso pode ocorrer quando o pedido consumiu produtos de estoques diferentes e caso esses produtos tenham
 	' alguns dados diferentes entre si, como códigos de CST, por exemplo.
 	' Para que essas derived tables tenham apenas um registro por NFe ou produto, é usada a técnica em que se obtém o ID mais recente de um grupo de registros similares.
-	s_sql = s_sql & _
-			" LEFT JOIN (" & _
-				"SELECT" & _
-					" t_NFE_IMAGEM.*" & _
-				" FROM t_NFe_IMAGEM INNER JOIN (" & _
+	if ckb_COL_ICMS_UF_DEST <> "" then
+		s_sql = s_sql & _
+				" LEFT JOIN (" & _
 					"SELECT" & _
-						" id_nfe_emitente, NFe_serie_NF, NFe_numero_NF, Max(id) AS id" & _
-					" FROM t_NFe_IMAGEM" & _
+						" t_NFE_IMAGEM.*" & _
+					" FROM t_NFe_IMAGEM INNER JOIN (" & _
+						"SELECT" & _
+							" id_nfe_emitente, NFe_serie_NF, NFe_numero_NF, Max(id) AS id" & _
+						" FROM t_NFe_IMAGEM" & _
+						" WHERE" & _
+							" (t_NFe_IMAGEM.ide__tpNF = '1')" & _
+							" AND (t_NFe_IMAGEM.st_anulado = 0)" & _
+							" AND (t_NFe_IMAGEM.codigo_retorno_NFe_T1 = 1)" & _
+						" GROUP BY" & _
+							" id_nfe_emitente, NFe_serie_NF, NFe_numero_NF" & _
+						") t_NFe_IMAGEM_max_id" & _
+						" ON (t_NFe_IMAGEM_max_id.id = t_NFe_IMAGEM.id) AND (t_NFe_IMAGEM_max_id.id_nfe_emitente = t_NFe_IMAGEM.id_nfe_emitente)" & _
 					" WHERE" & _
-						" (t_NFe_IMAGEM.ide__tpNF = '1')" & _
-						" AND (t_NFe_IMAGEM.st_anulado = 0)" & _
-						" AND (t_NFe_IMAGEM.codigo_retorno_NFe_T1 = 1)" & _
-					" GROUP BY" & _
-						" id_nfe_emitente, NFe_serie_NF, NFe_numero_NF" & _
-					") t_NFe_IMAGEM_max_id" & _
-					" ON (t_NFe_IMAGEM_max_id.id = t_NFe_IMAGEM.id) AND (t_NFe_IMAGEM_max_id.id_nfe_emitente = t_NFe_IMAGEM.id_nfe_emitente)" & _
-				" WHERE" & _
-					" (t_NFe_IMAGEM.ide__tpNF = '1') AND (t_NFe_IMAGEM.st_anulado = 0) AND (t_NFe_IMAGEM.codigo_retorno_NFe_T1 = 1)" & _
-			") t_NFe_IMAGEM_NORMALIZADO ON (t_NFe_IMAGEM_NORMALIZADO.id_nfe_emitente = t_PEDIDO.id_nfe_emitente) AND (t_NFe_IMAGEM_NORMALIZADO.NFe_numero_NF = t_PEDIDO.num_obs_2)"
+						" (t_NFe_IMAGEM.ide__tpNF = '1') AND (t_NFe_IMAGEM.st_anulado = 0) AND (t_NFe_IMAGEM.codigo_retorno_NFe_T1 = 1)" & _
+				") t_NFe_IMAGEM_NORMALIZADO ON (t_NFe_IMAGEM_NORMALIZADO.id_nfe_emitente = t_PEDIDO.id_nfe_emitente) AND (t_NFe_IMAGEM_NORMALIZADO.NFe_numero_NF = t_PEDIDO.num_obs_2)"
 
-	s_sql = s_sql & _
-			" LEFT JOIN (" & _
-				"SELECT" & _
-					" t_NFe_IMAGEM_ITEM.*" & _
-				" FROM t_NFe_IMAGEM_ITEM INNER JOIN (" & _
+		s_sql = s_sql & _
+				" LEFT JOIN (" & _
 					"SELECT" & _
-						" id_nfe_imagem, fabricante, produto, Max(id) AS id" & _
-					" FROM t_NFe_IMAGEM_ITEM" & _
-					" GROUP BY id_nfe_imagem, fabricante, produto" & _
-					") t_NFe_IMAGEM_ITEM_max_id ON (t_NFe_IMAGEM_ITEM_max_id.id = t_NFe_IMAGEM_ITEM.id)" & _
-				") t_NFe_IMAGEM_ITEM_NORMALIZADO ON (t_NFe_IMAGEM_NORMALIZADO.id = t_NFe_IMAGEM_ITEM_NORMALIZADO.id_nfe_imagem) AND (t_NFe_IMAGEM_ITEM_NORMALIZADO.fabricante = t_PEDIDO_ITEM.fabricante) AND (t_NFe_IMAGEM_ITEM_NORMALIZADO.produto = t_PEDIDO_ITEM.produto)"
+						" t_NFe_IMAGEM_ITEM.*" & _
+					" FROM t_NFe_IMAGEM_ITEM INNER JOIN (" & _
+						"SELECT" & _
+							" id_nfe_imagem, fabricante, produto, Max(id) AS id" & _
+						" FROM t_NFe_IMAGEM_ITEM" & _
+						" GROUP BY id_nfe_imagem, fabricante, produto" & _
+						") t_NFe_IMAGEM_ITEM_max_id ON (t_NFe_IMAGEM_ITEM_max_id.id = t_NFe_IMAGEM_ITEM.id)" & _
+					") t_NFe_IMAGEM_ITEM_NORMALIZADO ON (t_NFe_IMAGEM_NORMALIZADO.id = t_NFe_IMAGEM_ITEM_NORMALIZADO.id_nfe_imagem) AND (t_NFe_IMAGEM_ITEM_NORMALIZADO.fabricante = t_PEDIDO_ITEM.fabricante) AND (t_NFe_IMAGEM_ITEM_NORMALIZADO.produto = t_PEDIDO_ITEM.produto)"
+		end if 'if ckb_COL_ICMS_UF_DEST <> ""
 
 	s_sql = s_sql & _
 			" LEFT JOIN t_CODIGO_DESCRICAO tPedidoOrigemDescricao ON (tPedidoOrigemDescricao.grupo = 'PedidoECommerce_Origem') AND (tPedidoOrigemDescricao.codigo = t_PEDIDO.marketplace_codigo_origem)" & _
@@ -633,7 +648,7 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 			" WHERE" & _
 				" (t_PEDIDO.st_entrega = '" & ST_ENTREGA_ENTREGUE & "')"
 
-	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_NAC_IMP <> "") then
+	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_VL_CUSTO_REAL_TOTAL <> "") Or (ckb_COL_NAC_IMP <> "") then
 		s_sql = s_sql & _
 				" AND (t_ESTOQUE_MOVIMENTO.anulado_status=0)" & _
 				" AND (t_ESTOQUE_MOVIMENTO.estoque='" & ID_ESTOQUE_ENTREGUE & "')"
@@ -673,7 +688,7 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 				" t_CLIENTE.produtor_rural_status," & _
 				" t_PEDIDO__BASE.perc_RT,"
 
-	if ckb_COL_VL_CUSTO_REAL <> "" then
+	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_VL_CUSTO_REAL_TOTAL <> "") then
 		s_sql = s_sql & _
 				" -t_ESTOQUE_ITEM.qtde,"
 	else
@@ -738,14 +753,16 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 		s_where_aux = " AND (codigo_tipo_frete IN " & s_where_lista_codigo_frete_devolucao & ")"
 		end if
 
-	s_sql = s_sql & _
-                " (SELECT Coalesce(SUM(vl_frete),0) AS vl_frete FROM t_PEDIDO_FRETE WHERE (t_PEDIDO_FRETE.pedido=t_PEDIDO.pedido)" & s_where_aux & ") AS vl_frete," & _
-				" (SELECT Coalesce(SUM(qtde * preco_venda),0) AS vl_total_produtos_calc_frete FROM t_PEDIDO_ITEM_DEVOLVIDO WHERE (t_PEDIDO_ITEM_DEVOLVIDO.pedido = t_PEDIDO.pedido)) AS vl_total_produtos_calc_frete,"
-	
+	if ckb_COL_FRETE <> "" then
+		s_sql = s_sql & _
+					" (SELECT Coalesce(SUM(vl_frete),0) AS vl_frete FROM t_PEDIDO_FRETE WHERE (t_PEDIDO_FRETE.pedido=t_PEDIDO.pedido)" & s_where_aux & ") AS vl_frete," & _
+					" (SELECT Coalesce(SUM(qtde * preco_venda),0) AS vl_total_produtos_calc_frete FROM t_PEDIDO_ITEM_DEVOLVIDO WHERE (t_PEDIDO_ITEM_DEVOLVIDO.pedido = t_PEDIDO.pedido)) AS vl_total_produtos_calc_frete,"
+		end if
+
 	s_sql = s_sql & _
 				" (SELECT TOP 1 vl_custo2 FROM t_ESTOQUE tE INNER JOIN t_ESTOQUE_ITEM tEI ON (tE.id_estoque = tEI.id_estoque) WHERE (tE.devolucao_status = 0) AND (tEI.fabricante = t_PEDIDO_ITEM_DEVOLVIDO.fabricante) AND (tEI.produto = t_PEDIDO_ITEM_DEVOLVIDO.produto) ORDER BY tEI.id_estoque DESC) AS vl_custo2_ult_entrada"
 
-	if ckb_COL_VL_CUSTO_REAL <> "" then
+	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_VL_CUSTO_REAL_TOTAL <> "") then
 		s_sql = s_sql & _
 				", (t_ESTOQUE_ITEM.vl_custo2) AS vl_custo2_real"
 		end if
@@ -765,7 +782,7 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 				" INNER JOIN t_FABRICANTE ON (t_PRODUTO.fabricante = t_FABRICANTE.fabricante)" & _
 				" INNER JOIN t_CLIENTE ON (t_PEDIDO.id_cliente = t_CLIENTE.id)"
 
-	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_NAC_IMP <> "") then
+	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_VL_CUSTO_REAL_TOTAL <> "") Or (ckb_COL_NAC_IMP <> "") then
 		s_sql = s_sql & _
 				" INNER JOIN t_ESTOQUE ON (t_PEDIDO_ITEM_DEVOLVIDO.id=t_ESTOQUE.devolucao_id_item_devolvido)" & _
 				" INNER JOIN t_ESTOQUE_ITEM ON ((t_ESTOQUE.id_estoque=t_ESTOQUE_ITEM.id_estoque)AND(t_PEDIDO_ITEM_DEVOLVIDO.fabricante=t_ESTOQUE_ITEM.fabricante)AND(t_PEDIDO_ITEM_DEVOLVIDO.produto=t_ESTOQUE_ITEM.produto))"
