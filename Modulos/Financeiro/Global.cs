@@ -28,8 +28,8 @@ namespace Financeiro
             {
                 public const string NOME_OWNER = "Artven";
                 public const string NOME_SISTEMA = "Financeiro";
-                public const string VERSAO_NUMERO = "1.36";
-                public const string VERSAO_DATA = "14.NOV.2019";
+                public const string VERSAO_NUMERO = "1.37";
+                public const string VERSAO_DATA = "27.OUT.2020";
                 public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
                 public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
                 public const string M_DESCRICAO = "Módulo para execução de rotinas financeiras";
@@ -464,8 +464,8 @@ namespace Financeiro
 			 * v 1.36 - 14.11.2019 - por LHGX
 			 *		  Correção de bug (JOIN com t_NFE_EMITENTE_NUMERACAO)
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.37 - XX.XX.20XX - por XXX
-			 *		  
+			 * v 1.37 - 27.10.2020 - por HHO
+			 *		  Ajustes para permitir envio de e-mail em conexão criptografada por SSL/TLS.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.38 - XX.XX.20XX - por XXX
 			 *		  
@@ -1066,6 +1066,7 @@ namespace Financeiro
             public static int fin_servidor_smtp_porta;
             public static String fin_usuario_smtp;
             public static String fin_senha_smtp;
+            public static byte fin_smtp_enable_ssl;
             #endregion
 
             #region [ Defaults ]
