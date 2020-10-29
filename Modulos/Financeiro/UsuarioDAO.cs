@@ -134,14 +134,24 @@ namespace Financeiro
 			get { return _fin_display_name_remetente; }
 			set { _fin_display_name_remetente = value; }
 		}
-		#endregion
+        #endregion
 
-		#endregion
+        #region [ fin_smtp_enable_ssl ]
+        private byte _fin_smtp_enable_ssl;
 
-		#endregion
+        public byte fin_smtp_enable_ssl
+		{
+            get { return _fin_smtp_enable_ssl; }
+            set { _fin_smtp_enable_ssl = value; }
+        }
+        #endregion
 
-		#region [ inicializaConstrutorEstatico ]
-		public static void inicializaConstrutorEstatico()
+        #endregion
+
+        #endregion
+
+        #region [ inicializaConstrutorEstatico ]
+        public static void inicializaConstrutorEstatico()
 		{
 			// NOP
 			// 1) The static constructor for a class executes before any instance of the class is created.
@@ -234,6 +244,11 @@ namespace Financeiro
 						_fin_senha_smtp = "";
 					else
 						_fin_senha_smtp = drUsuario["fin_senha_smtp"].ToString();
+
+					if (drUsuario["fin_smtp_enable_ssl"] == DBNull.Value)
+						_fin_smtp_enable_ssl = 0;
+					else
+						_fin_smtp_enable_ssl = BD.readToByte(drUsuario["fin_smtp_enable_ssl"]);
 				}
 				else
 				{
@@ -298,7 +313,8 @@ namespace Financeiro
 						"fin_servidor_smtp = @fin_servidor_smtp, " +
 						"fin_servidor_smtp_porta = @fin_servidor_smtp_porta, " +
 						"fin_usuario_smtp = @fin_usuario_smtp, " +
-						"fin_senha_smtp = @fin_senha_smtp " +
+						"fin_senha_smtp = @fin_senha_smtp, " +
+						"fin_smtp_enable_ssl = @fin_smtp_enable_ssl " +
 					"WHERE " +
 						"(usuario = @usuario)";
 			cmUsuarioAtualizaFinEmail = BD.criaSqlCommand();
@@ -310,6 +326,7 @@ namespace Financeiro
 			cmUsuarioAtualizaFinEmail.Parameters.Add("@fin_servidor_smtp_porta", SqlDbType.Int);
 			cmUsuarioAtualizaFinEmail.Parameters.Add("@fin_usuario_smtp", SqlDbType.VarChar, 80);
 			cmUsuarioAtualizaFinEmail.Parameters.Add("@fin_senha_smtp", SqlDbType.VarChar, 80);
+			cmUsuarioAtualizaFinEmail.Parameters.Add("@fin_smtp_enable_ssl", SqlDbType.TinyInt);
 			cmUsuarioAtualizaFinEmail.Prepare();
 			#endregion
 		}
@@ -328,6 +345,7 @@ namespace Financeiro
 		/// <param name="fin_servidor_smtp_porta">Porta do servidor SMTP</param>
 		/// <param name="fin_usuario_smtp">Usuário para fazer a autenticação no servidor SMTP</param>
 		/// <param name="fin_senha_smtp">Senha para fazer a autenticação no servidor SMTP</param>
+		/// <param name="fin_smtp_enable_ssl">Flag que indica se a conexão deve ser feita usando criptografia SSL ou não: 0 = Não; 1 = Sim</param>
 		/// <param name="strMsgErro">No caso de erro, retorna a mensagem de erro</param>
 		/// <returns>
 		/// true: sucesso na atualização dos dados
@@ -341,6 +359,7 @@ namespace Financeiro
 											int fin_servidor_smtp_porta,
 											String fin_usuario_smtp,
 											String fin_senha_smtp,
+											byte fin_smtp_enable_ssl,
 											ref String strMsgErro)
 		{
 			#region [ Declarações ]
@@ -365,6 +384,7 @@ namespace Financeiro
 				cmUsuarioAtualizaFinEmail.Parameters["@fin_servidor_smtp_porta"].Value = fin_servidor_smtp_porta;
 				cmUsuarioAtualizaFinEmail.Parameters["@fin_usuario_smtp"].Value = fin_usuario_smtp;
 				cmUsuarioAtualizaFinEmail.Parameters["@fin_senha_smtp"].Value = strSenhaCriptografada;
+				cmUsuarioAtualizaFinEmail.Parameters["@fin_smtp_enable_ssl"].Value = fin_smtp_enable_ssl;
 				#endregion
 
 				#region [ Tenta alterar o registro ]

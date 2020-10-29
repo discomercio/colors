@@ -1263,6 +1263,7 @@ namespace Financeiro
 							Global.Usuario.fin_servidor_smtp_endereco = usuarioDAO.fin_servidor_smtp;
 							Global.Usuario.fin_servidor_smtp_porta = usuarioDAO.fin_servidor_smtp_porta;
 							Global.Usuario.fin_usuario_smtp = usuarioDAO.fin_usuario_smtp;
+							Global.Usuario.fin_smtp_enable_ssl = usuarioDAO.fin_smtp_enable_ssl;
 							// Descriptografa a senha
 							Global.Usuario.fin_senha_smtp = Criptografia.Descriptografa(usuarioDAO.fin_senha_smtp);
 							#endregion

@@ -477,6 +477,7 @@ namespace Financeiro
 				smtpCliente.Host = Global.Usuario.fin_servidor_smtp_endereco;
 				if (Global.Usuario.fin_servidor_smtp_porta > 0) smtpCliente.Port = Global.Usuario.fin_servidor_smtp_porta;
 				smtpCliente.Credentials = new System.Net.NetworkCredential(Global.Usuario.fin_usuario_smtp, Global.Usuario.fin_senha_smtp);
+				if (Global.Usuario.fin_smtp_enable_ssl != 0) smtpCliente.EnableSsl = true;
 
 				info(ModoExibicaoMensagemRodape.EmExecucao, "transmitindo o e-mail");
 				smtpCliente.Send(mailMensagem);
