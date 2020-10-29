@@ -60,6 +60,9 @@
 	c_custoFinancFornecTipoParcelamento = Trim(Request.Form("c_custoFinancFornecTipoParcelamento"))
 	c_custoFinancFornecQtdeParcelas = Trim(Request.Form("c_custoFinancFornecQtdeParcelas"))
 	
+	dim c_FlagCadSemiAutoPedMagento_FluxoOtimizado, s_checked
+	c_FlagCadSemiAutoPedMagento_FluxoOtimizado = Trim(Request.Form("c_FlagCadSemiAutoPedMagento_FluxoOtimizado"))
+
 	dim rb_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento
 	dim EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep,EndEtg_obs
 	dim EndEtg_email, EndEtg_email_xml, EndEtg_nome, EndEtg_ddd_res, EndEtg_tel_res, EndEtg_ddd_com, EndEtg_tel_com, EndEtg_ramal_com
@@ -2734,7 +2737,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 <input type="hidden" name="EndEtg_produtor_rural_status" id="EndEtg_produtor_rural_status" value="<%=EndEtg_produtor_rural_status%>" />
 <input type="hidden" name="EndEtg_ie" id="EndEtg_ie" value="<%=EndEtg_ie%>" />
 <input type="hidden" name="EndEtg_rg" id="EndEtg_rg" value="<%=EndEtg_rg%>" />
-
+<input type="hidden" name="c_FlagCadSemiAutoPedMagento_FluxoOtimizado" id="c_FlagCadSemiAutoPedMagento_FluxoOtimizado" value="<%=c_FlagCadSemiAutoPedMagento_FluxoOtimizado%>" />
 
 <!-- AJAX EM ANDAMENTO -->
 <div id="divAjaxRunning" style="display:none;"><img src="../Imagem/ajax_loader_gray_256.gif" class="AjaxImgLoader"/></div>
@@ -3065,10 +3068,14 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		</td>
         <%end if %>
 		<td class="MB MD" align="left" nowrap><p class="Rf">Entrega Imediata</p>
+			<% s_checked = ""
+				if (Cstr(loja)=NUMERO_LOJA_ECOMMERCE_AR_CLUBE) And (Len(retorna_so_digitos(c_mag_cpf_cnpj_identificado))=14) then s_checked = " checked" %>
+			<input type="radio" id="rb_etg_imediata" name="rb_etg_imediata"
+				value="<%=COD_ETG_IMEDIATA_NAO%>" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fPED.rb_etg_imediata[0].click();">Não</span>
+			<% s_checked = ""
+				if (Cstr(loja)=NUMERO_LOJA_ECOMMERCE_AR_CLUBE) And (Len(retorna_so_digitos(c_mag_cpf_cnpj_identificado))=11) then s_checked = " checked" %>
 			<input type="radio" id="rb_etg_imediata" name="rb_etg_imediata" 
-				value="<%=COD_ETG_IMEDIATA_NAO%>"><span class="C" style="cursor:default" onclick="fPED.rb_etg_imediata[0].click();">Não</span>
-			<input type="radio" id="rb_etg_imediata" name="rb_etg_imediata" 
-				value="<%=COD_ETG_IMEDIATA_SIM%>" <%if Cstr(loja)=NUMERO_LOJA_ECOMMERCE_AR_CLUBE then Response.write " checked"%>><span class="C" style="cursor:default" onclick="fPED.rb_etg_imediata[1].click();">Sim</span>
+				value="<%=COD_ETG_IMEDIATA_SIM%>" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fPED.rb_etg_imediata[1].click();">Sim</span>
 		</td>
 		<td class="MB" align="left" nowrap><p class="Rf">Bem de Uso/Consumo&nbsp;</p>
 			<input type="radio" id="rb_bem_uso_consumo" name="rb_bem_uso_consumo" 

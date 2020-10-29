@@ -1316,6 +1316,10 @@ var s, i, b, ha_item, idx, blnIndicacaoOk, strMsgErro;
 	else if (f.c_MagentoPedidoComIndicador.value=="S") {
 		blnIndicacaoOk=true;
 	}
+	else if (f.c_FlagCadSemiAutoPedMagento_FluxoOtimizado.value == "1")
+	{
+        blnIndicacaoOk = true;
+    }
 	else {
 		idx=-1;
 		blnIndicacaoOk=false;
@@ -1561,6 +1565,7 @@ var s, i, b, ha_item, idx, blnIndicacaoOk, strMsgErro;
 <input type="hidden" name="EndEtg_produtor_rural_status" id="EndEtg_produtor_rural_status" value="<%=EndEtg_produtor_rural_status%>" />
 <input type="hidden" name="EndEtg_ie" id="EndEtg_ie" value="<%=EndEtg_ie%>" />
 <input type="hidden" name="EndEtg_rg" id="EndEtg_rg" value="<%=EndEtg_rg%>" />
+<input type="hidden" name="c_FlagCadSemiAutoPedMagento_FluxoOtimizado" id="c_FlagCadSemiAutoPedMagento_FluxoOtimizado" value="<%=c_FlagCadSemiAutoPedMagento_FluxoOtimizado%>" />
 
 
 <!-- AJAX EM ANDAMENTO -->

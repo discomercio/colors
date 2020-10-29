@@ -219,7 +219,7 @@
 	blnEnderecosIguais = False
 	blnFlagCadSemiAutoPedMagento_FluxoOtimizado = False
 	tipoCliente = ""
-	rb_end_entrega = ""
+	rb_end_entrega = "N"
 	EndEtg_endereco = ""
 	EndEtg_endereco_numero = ""
 	EndEtg_endereco_complemento = ""
@@ -290,8 +290,10 @@
 				 end if
 			
 			if tipoCliente = ID_PJ then
-				if (Not blnErroIbgeEndCob) And (Not blnErroIbgeEndEtg) then blnFlagCadSemiAutoPedMagento_FluxoOtimizado = True
+				'DEVIDO À AUSÊNCIA DE INFORMAÇÃO NO MAGENTO SOBRE O CLIENTE PJ SER CONTRIBUINTE DE ICMS E NÚMERO DE IE, O FLUXO É SEMPRE DIRECIONADO PARA O CADASTRO DE CLIENTES PARA REVISÃO MANUAL
+				'*DESATIVADO* if (Not blnErroIbgeEndCob) And (Not blnErroIbgeEndEtg) then blnFlagCadSemiAutoPedMagento_FluxoOtimizado = True
 			else
+				'CLIENTES PF CUJO CADASTRO É CRIADO COM DADOS DO MAGENTO: ASSUME-SE QUE NUNCA SÃO PRODUTORES RURAIS DEVIDO AO NÚMERO EXTREMAMENTE BAIXO DE CASOS
 				if (Not blnErroIbgeEndEtg) then blnFlagCadSemiAutoPedMagento_FluxoOtimizado = True
 				end if
 
@@ -665,11 +667,19 @@ function fPNEC2Confirma(f) {
 <input type="hidden" name="rb_indicacao" id="rb_indicacao" value="<%=rb_indicacao%>" />
 <input type="hidden" name="c_indicador" id="c_indicador" value="<%=c_indicador%>" />
 <input type="hidden" name="rb_RA" id="rb_RA" value="<%=rb_RA%>" />
+<!-- LISTA DE PRODUTOS -->
+<% for iv=LBound(v_map_item) to Ubound(v_map_item) 
+		if Trim(v_map_item(iv).sku) <> "" then %>
+<input type="hidden" name="c_fabricante" value="" />
+<input type="hidden" name="c_produto" value="<%=v_map_item(iv).sku%>" />
+<input type="hidden" name="c_qtde" value="<%=Cstr(v_map_item(iv).qty_ordered)%>" />
+<%			end if
+		next
+%>
 <!-- FORÇA A CRIAÇÃO DO ARRAY MESMO QUANDO HÁ SOMENTE 1 PRODUTO -->
 <input type="hidden" name="c_fabricante" value="" />
 <input type="hidden" name="c_produto" value="" />
 <input type="hidden" name="c_qtde" value="" />
-
 <% end if %>
 
 
