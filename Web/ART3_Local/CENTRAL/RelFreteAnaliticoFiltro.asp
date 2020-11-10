@@ -483,6 +483,16 @@ function exibe_botao_confirmar() {
 			</select>
 			</td></tr>
 			
+<!--  EMPRESA  -->
+	<tr bgColor="#FFFFFF">
+		<td class="MDBE" NOWRAP><span class="PLTe">EMPRESA</span>
+		<br>
+			<select id="c_empresa" name="c_empresa" style="margin:1px 10px 6px 10px;min-width:100px;" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;">
+			<% =apelido_empresa_nfe_emitente_monta_itens_select(Null) %>
+			</select>
+		</td>
+	</tr>
+
 <!--  STATUS DO FRETE  -->
 	<tr bgColor="#FFFFFF">
 		<td class="MDBE" align="left" NOWRAP><span class="PLTe">STATUS DO FRETE</span>

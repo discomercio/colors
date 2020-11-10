@@ -56,6 +56,7 @@
 	dim c_transportadora, c_fabricante, c_loja, c_vendedor, c_indicador, c_uf, c_tipo_frete
 	dim s_nome_vendedor, s_nome_indicador, s_nome_loja, s_nome_fabricante, s_nome_transportadora
 	dim rb_frete_status, rb_tipo_saida, codigo_tipo_frete, rb_tipo_nf
+	dim c_empresa
 
 	alerta = ""
 
@@ -73,6 +74,7 @@
 	c_indicador = Ucase(Trim(Request.Form("c_indicador")))
 	c_uf = Ucase(Trim(Request.Form("c_uf")))
     c_tipo_frete = Trim(Request.Form("c_tipo_frete"))
+	c_empresa = Trim(Request.Form("c_empresa"))
 
 	if alerta = "" then
 		s_nome_fabricante = ""
@@ -345,6 +347,22 @@ dim s, s_aux, s_filtro
 				   "<span class='N'>" & s & "</span></td></tr>"
 		end if
 	
+	s = c_empresa
+	if s = "" then 
+		s = "todas"
+	else
+		s = obtem_apelido_empresa_NFe_emitente(c_empresa)
+		end if
+
+	if blnSaidaExcel then
+		if s_filtro <> "" then s_filtro = s_filtro & "<br>"
+		s_filtro = s_filtro & "<span class='N'>Empresa:&nbsp;" & s & "</span>"
+	else
+		s_filtro = s_filtro & "<tr><td align='right' valign='top' NOWRAP>" & _
+				   "<span class='N'>Empresa:&nbsp;</span></td><td align='left' valign='top'>" & _
+				   "<span class='N'>" & s & "</span></td></tr>"
+		end if
+
 	s = rb_frete_status
 	if s = "" then 
 		s = "Ambos"
@@ -497,6 +515,12 @@ dim qtde_Pedido,lista_pedidos_total_geral,strPercPrecoVendaSomado,vlTotalPercPre
 			")"
 		end if
 	
+'	FILTRO: CD
+	 if c_empresa <> "" then
+        if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (p.id_nfe_emitente = " & c_empresa & ")"
+		end if
+
 '	FILTRO: STATUS DO FRETE
 	if rb_frete_status <> "" then
 		if s_where_externo <> "" then s_where_externo = s_where_externo & " AND"
@@ -1353,6 +1377,7 @@ function fRELConcluir(s_id){
 <input type="hidden" name="c_uf" id="c_uf" value="<%=c_uf%>">
 <input type="hidden" name="rb_frete_status" id="rb_frete_status" value="<%=rb_frete_status%>">
 <input type="hidden" name="rb_tipo_nf" id="rb_tipo_nf" value="<%=rb_tipo_nf%>" />
+<input type="hidden" name="c_empresa" id="c_empresa" value="<%=c_empresa%>" />
 
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->
 <table width="836" cellPadding="4" CellSpacing="0" style="border-bottom:1px solid black">
