@@ -33,7 +33,7 @@
 	Err.Clear
 
 	dim msg_erro
-	dim usuario, loja, cliente_selecionado, midia_selecionada, indicador_original, tipo_cliente
+	dim usuario, loja, cliente_selecionado, midia_selecionada, indicador_original
 	usuario = Trim(Session("usuario_atual"))
 	loja = Trim(Session("loja_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
@@ -283,16 +283,97 @@
 			end if
 		end if
 
-	dim rb_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento
+'	LOCALIZA DADOS DO CLIENTE
+	midia_selecionada = ""
+	indicador_original = ""
+	if cliente_selecionado <> "" then
+		s = "SELECT * FROM t_CLIENTE WHERE (id='" & cliente_selecionado & "')"
+		set t_CLIENTE = cn.execute(s)
+		if Not t_CLIENTE.Eof then
+			midia_selecionada = Trim("" & t_CLIENTE("midia"))
+			indicador_original = Trim("" & t_CLIENTE("indicador"))
+			end if
+		end if
+
+	dim c_FlagCadSemiAutoPedMagento_FluxoOtimizado
+	c_FlagCadSemiAutoPedMagento_FluxoOtimizado = Trim(Request.Form("c_FlagCadSemiAutoPedMagento_FluxoOtimizado"))
+
+	dim EndCob_endereco, EndCob_endereco_numero, EndCob_endereco_complemento, EndCob_endereco_ponto_referencia, EndCob_bairro, EndCob_cidade, EndCob_uf, EndCob_cep
+	dim EndCob_email, EndCob_email_xml, EndCob_nome, EndCob_tipo_pessoa
+	dim EndCob_ddd_res, EndCob_tel_res, EndCob_ddd_com, EndCob_tel_com, EndCob_ramal_com, EndCob_ddd_com_2, EndCob_tel_com_2, EndCob_ramal_com_2, EndCob_ddd_cel, EndCob_tel_cel
+	dim EndCob_cnpj_cpf, EndCob_contribuinte_icms_status, EndCob_produtor_rural_status, EndCob_ie, EndCob_rg, EndCob_contato
+	dim rb_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_endereco_ponto_referencia
 	dim EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep,EndEtg_obs
 	dim EndEtg_email, EndEtg_email_xml, EndEtg_nome, EndEtg_ddd_res, EndEtg_tel_res, EndEtg_ddd_com, EndEtg_tel_com, EndEtg_ramal_com
 	dim EndEtg_ddd_cel, EndEtg_tel_cel, EndEtg_ddd_com_2, EndEtg_tel_com_2, EndEtg_ramal_com_2
 	dim EndEtg_tipo_pessoa, EndEtg_cnpj_cpf, EndEtg_contribuinte_icms_status, EndEtg_produtor_rural_status
 	dim EndEtg_ie, EndEtg_rg
+
+	if c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1" then
+		EndCob_endereco = Trim(Request.Form("EndCob_endereco"))
+		EndCob_endereco_numero = Trim(Request.Form("EndCob_endereco_numero"))
+		EndCob_endereco_complemento = Trim(Request.Form("EndCob_endereco_complemento"))
+		EndCob_endereco_ponto_referencia = Trim(Request.Form("EndCob_endereco_ponto_referencia"))
+		EndCob_bairro = Trim(Request.Form("EndCob_bairro"))
+		EndCob_cidade = Trim(Request.Form("EndCob_cidade"))
+		EndCob_uf = Trim(Request.Form("EndCob_uf"))
+		EndCob_cep = Trim(Request.Form("EndCob_cep"))
+		EndCob_email = Trim(Request.Form("EndCob_email"))
+		EndCob_email_xml = Trim(Request.Form("EndCob_email_xml"))
+		EndCob_nome = Trim(Request.Form("EndCob_nome"))
+		EndCob_tipo_pessoa = Trim(Request.Form("EndCob_tipo_pessoa"))
+		EndCob_ddd_res = Trim(Request.Form("EndCob_ddd_res"))
+		EndCob_tel_res = Trim(Request.Form("EndCob_tel_res"))
+		EndCob_ddd_com = Trim(Request.Form("EndCob_ddd_com"))
+		EndCob_tel_com = Trim(Request.Form("EndCob_tel_com"))
+		EndCob_ramal_com = Trim(Request.Form("EndCob_ramal_com"))
+		EndCob_ddd_com_2 = Trim(Request.Form("EndCob_ddd_com_2"))
+		EndCob_tel_com_2 = Trim(Request.Form("EndCob_tel_com_2"))
+		EndCob_ramal_com_2 = Trim(Request.Form("EndCob_ramal_com_2"))
+		EndCob_ddd_cel = Trim(Request.Form("EndCob_ddd_cel"))
+		EndCob_tel_cel = Trim(Request.Form("EndCob_tel_cel"))
+		EndCob_cnpj_cpf = Trim(Request.Form("EndCob_cnpj_cpf"))
+		EndCob_contribuinte_icms_status = Trim(Request.Form("EndCob_contribuinte_icms_status"))
+		EndCob_produtor_rural_status = Trim(Request.Form("EndCob_produtor_rural_status"))
+		EndCob_ie = Trim(Request.Form("EndCob_ie"))
+		EndCob_rg = Trim(Request.Form("EndCob_rg"))
+		EndCob_contato = Trim("" & t_CLIENTE("contato"))
+	else
+		EndCob_endereco = Trim("" & t_CLIENTE("endereco"))
+		EndCob_endereco_numero = Trim("" & t_CLIENTE("endereco_numero"))
+		EndCob_endereco_complemento = Trim("" & t_CLIENTE("endereco_complemento"))
+		EndCob_endereco_ponto_referencia = ""
+		EndCob_bairro = Trim("" & t_CLIENTE("bairro"))
+		EndCob_cidade = Trim("" & t_CLIENTE("cidade"))
+		EndCob_uf = Trim("" & t_CLIENTE("uf"))
+		EndCob_cep = Trim("" & t_CLIENTE("cep"))
+		EndCob_email = Trim("" & t_CLIENTE("email"))
+		EndCob_email_xml = Trim("" & t_CLIENTE("email_xml"))
+		EndCob_nome = Trim("" & t_CLIENTE("nome"))
+		EndCob_tipo_pessoa = Trim("" & t_CLIENTE("tipo"))
+		EndCob_ddd_res = Trim("" & t_CLIENTE("ddd_res"))
+		EndCob_tel_res = Trim("" & t_CLIENTE("tel_res"))
+		EndCob_ddd_com = Trim("" & t_CLIENTE("ddd_com"))
+		EndCob_tel_com = Trim("" & t_CLIENTE("tel_com"))
+		EndCob_ramal_com = Trim("" & t_CLIENTE("ramal_com"))
+		EndCob_ddd_com_2 = Trim("" & t_CLIENTE("ddd_com_2"))
+		EndCob_tel_com_2 = Trim("" & t_CLIENTE("tel_com_2"))
+		EndCob_ramal_com_2 = Trim("" & t_CLIENTE("ramal_com_2"))
+		EndCob_ddd_cel = Trim("" & t_CLIENTE("ddd_cel"))
+		EndCob_tel_cel = Trim("" & t_CLIENTE("tel_cel"))
+		EndCob_cnpj_cpf = Trim("" & t_CLIENTE("cnpj_cpf"))
+		EndCob_contribuinte_icms_status = t_CLIENTE("contribuinte_icms_status")
+		EndCob_produtor_rural_status = t_CLIENTE("produtor_rural_status")
+		EndCob_ie = Trim("" & t_CLIENTE("ie"))
+		EndCob_rg = Trim("" & t_CLIENTE("rg"))
+		EndCob_contato = Trim("" & t_CLIENTE("contato"))
+		end if
+
 	rb_end_entrega = Trim(Request.Form("rb_end_entrega"))
 	EndEtg_endereco = Trim(Request.Form("EndEtg_endereco"))
 	EndEtg_endereco_numero = Trim(Request.Form("EndEtg_endereco_numero"))
 	EndEtg_endereco_complemento = Trim(Request.Form("EndEtg_endereco_complemento"))
+	EndEtg_endereco_ponto_referencia = Trim(Request.Form("EndEtg_endereco_ponto_referencia"))
 	EndEtg_bairro = Trim(Request.Form("EndEtg_bairro"))
 	EndEtg_cidade = Trim(Request.Form("EndEtg_cidade"))
 	EndEtg_uf = Trim(Request.Form("EndEtg_uf"))
@@ -357,21 +438,7 @@
 		venda_externa=1
 		end if
 	
-'	LOCALIZA DADOS DO CLIENTE
-	midia_selecionada = ""
-	indicador_original = ""
-	tipo_cliente = ""
-	if cliente_selecionado <> "" then
-		s = "SELECT * FROM t_CLIENTE WHERE (id='" & cliente_selecionado & "')"
-		set t_CLIENTE = cn.execute(s)
-		if Not t_CLIENTE.Eof then
-			midia_selecionada = Trim("" & t_CLIENTE("midia"))
-			indicador_original = Trim("" & t_CLIENTE("indicador"))
-			tipo_cliente = Trim("" & t_CLIENTE("tipo"))
-			if Trim("" & t_CLIENTE("cep")) = "" then alerta = "É necessário preencher o CEP no cadastro do cliente."
-			end if
-		end if
-	
+'	PARÂMETROS DE COMISSÃO E DESCONTO
 	dim rCD
 	set rCD = obtem_perc_max_comissao_e_desconto_por_loja(loja)
 
@@ -547,7 +614,7 @@
 	dim perc_comissao_e_desconto_a_utilizar
 	dim s_pg, blnPreferencial
 	dim vlNivel1, vlNivel2
-	if tipo_cliente = ID_PJ then
+	if EndCob_tipo_pessoa = ID_PJ then
 		perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_pj
 	else
 		perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto
@@ -560,7 +627,7 @@
 				for i=Lbound(vMPN2) to Ubound(vMPN2)
 				'	O meio de pagamento selecionado é um dos preferenciais
 					if Trim("" & s_pg) = Trim("" & vMPN2(i)) then
-						if tipo_cliente = ID_PJ then
+						if EndCob_tipo_pessoa = ID_PJ then
 							perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2_pj
 						else
 							perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2
@@ -575,7 +642,7 @@
 				for i=Lbound(vMPN2) to Ubound(vMPN2)
 				'	O meio de pagamento selecionado é um dos preferenciais
 					if Trim("" & s_pg) = Trim("" & vMPN2(i)) then
-						if tipo_cliente = ID_PJ then
+						if EndCob_tipo_pessoa = ID_PJ then
 							perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2_pj
 						else
 							perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2
@@ -590,7 +657,7 @@
 				for i=Lbound(vMPN2) to Ubound(vMPN2)
 				'	O meio de pagamento selecionado é um dos preferenciais
 					if Trim("" & s_pg) = Trim("" & vMPN2(i)) then
-						if tipo_cliente = ID_PJ then
+						if EndCob_tipo_pessoa = ID_PJ then
 							perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2_pj
 						else
 							perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2
@@ -605,7 +672,7 @@
 				for i=Lbound(vMPN2) to Ubound(vMPN2)
 				'	O meio de pagamento selecionado é um dos preferenciais
 					if Trim("" & s_pg) = Trim("" & vMPN2(i)) then
-						if tipo_cliente = ID_PJ then
+						if EndCob_tipo_pessoa = ID_PJ then
 							perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2_pj
 						else
 							perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2
@@ -655,7 +722,7 @@
 		
 		'	O montante a pagar por meio de pagamento preferencial é maior que 50% do total?
 			if vlNivel2 > (vl_total/2) then
-				if tipo_cliente = ID_PJ then
+				if EndCob_tipo_pessoa = ID_PJ then
 					perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2_pj
 				else
 					perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2
@@ -703,7 +770,7 @@
 			
 		'	O montante a pagar por meio de pagamento preferencial é maior que 50% do total?
 			if vlNivel2 > (vl_total/2) then
-				if tipo_cliente = ID_PJ then
+				if EndCob_tipo_pessoa = ID_PJ then
 					perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2_pj
 				else
 					perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2
@@ -865,10 +932,6 @@
 				end if
 			next
 		end if
-		
-	dim r_cliente
-	set r_cliente = New cl_CLIENTE
-	call x_cliente_bd(cliente_selecionado, r_cliente)
 
 	'TRATAMENTO PARA CADASTRAMENTO DE PEDIDOS DO SITE MAGENTO DA BONSHOP
 	dim c_mag_installer_document, percCommissionValue, percCommissionDiscount, vlMagentoShippingAmount
@@ -947,7 +1010,7 @@
 '	LÓGICA P/ CONSUMO DO ESTOQUE
 	dim tipo_pessoa
 	dim descricao_tipo_pessoa
-	tipo_pessoa = multi_cd_regra_determina_tipo_pessoa(r_cliente.tipo, r_cliente.contribuinte_icms_status, r_cliente.produtor_rural_status)
+	tipo_pessoa = multi_cd_regra_determina_tipo_pessoa(EndCob_tipo_pessoa, EndCob_contribuinte_icms_status, EndCob_produtor_rural_status)
 	descricao_tipo_pessoa = descricao_multi_CD_regra_tipo_pessoa(tipo_pessoa)
 
 	dim id_nfe_emitente_selecao_manual
@@ -980,7 +1043,7 @@
 			next
 		
 		'RECUPERA AS REGRAS DE CONSUMO DO ESTOQUE ASSOCIADAS AOS PRODUTOS
-		if Not obtemCtrlEstoqueProdutoRegra(r_cliente.uf, r_cliente.tipo, r_cliente.contribuinte_icms_status, r_cliente.produtor_rural_status, vProdRegra, msg_erro) then
+		if Not obtemCtrlEstoqueProdutoRegra(EndCob_uf, EndCob_tipo_pessoa, EndCob_contribuinte_icms_status, EndCob_produtor_rural_status, vProdRegra, msg_erro) then
 			alerta = "Falha ao tentar obter a(s) regra(s) de consumo do estoque"
 			if msg_erro <> "" then
 				alerta=texto_add_br(alerta)
@@ -999,7 +1062,7 @@
 						alerta=alerta & vProdRegra(iRegra).msg_erro
 					else
 						alerta=texto_add_br(alerta)
-						alerta=alerta & "Falha desconhecida na leitura da regra de consumo do estoque para o produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " (UF: '" & r_cliente.uf & "', tipo de pessoa: '" & descricao_tipo_pessoa & "')"
+						alerta=alerta & "Falha desconhecida na leitura da regra de consumo do estoque para o produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " (UF: '" & EndCob_uf & "', tipo de pessoa: '" & descricao_tipo_pessoa & "')"
 						end if
 					end if
 				end if
@@ -1018,13 +1081,13 @@
 					alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " está desativada"
 				elseif vProdRegra(iRegra).regra.regraUF.st_inativo = 1 then
 					alerta=texto_add_br(alerta)
-					alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " está bloqueada para a UF '" & r_cliente.uf & "'"
+					alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " está bloqueada para a UF '" & EndCob_uf & "'"
 				elseif vProdRegra(iRegra).regra.regraUF.regraPessoa.st_inativo = 1 then
 					alerta=texto_add_br(alerta)
-					alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " está bloqueada para clientes '" & descricao_tipo_pessoa & "' da UF '" & r_cliente.uf & "'"
+					alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " está bloqueada para clientes '" & descricao_tipo_pessoa & "' da UF '" & EndCob_uf & "'"
 				elseif converte_numero(vProdRegra(iRegra).regra.regraUF.regraPessoa.spe_id_nfe_emitente) = 0 then
 					alerta=texto_add_br(alerta)
-					alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " não especifica nenhum CD para aguardar produtos sem presença no estoque para clientes '" & descricao_tipo_pessoa & "' da UF '" & r_cliente.uf & "'"
+					alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " não especifica nenhum CD para aguardar produtos sem presença no estoque para clientes '" & descricao_tipo_pessoa & "' da UF '" & EndCob_uf & "'"
 				else
 					qtde_CD_ativo = 0
 					for iCD=LBound(vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD) to UBound(vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD)
@@ -1037,7 +1100,7 @@
 					'A SELEÇÃO MANUAL DE CD PERMITE O USO DE CD DESATIVADO
 					if (qtde_CD_ativo = 0) And (id_nfe_emitente_selecao_manual = 0) then
 						alerta=texto_add_br(alerta)
-						alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " não especifica nenhum CD ativo para clientes '" & descricao_tipo_pessoa & "' da UF '" & r_cliente.uf & "'"
+						alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " não especifica nenhum CD ativo para clientes '" & descricao_tipo_pessoa & "' da UF '" & EndCob_uf & "'"
 						end if
 					end if
 				end if
@@ -1387,11 +1450,142 @@
 			end if
 		end if
 	
-'	CEP
+'	CONSISTÊNCIAS
 	if alerta = "" then
-		if rb_end_entrega = "S" then
-			if EndEtg_cep = "" then
-				alerta = "Informe o CEP do endereço de entrega."
+		if c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1" then
+			'CPF/CNPJ
+			if Not cnpj_cpf_ok(EndCob_cnpj_cpf) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "CPF/CNPJ informado é inválido!"
+				end if
+			'NOME
+			if EndCob_nome = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Nome do cliente não informado!"
+				end if
+			'TIPO DE PESSOA
+			if EndCob_tipo_pessoa = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Tipo de pessoa não informado!"
+				end if
+			'INSCRIÇÃO ESTADUAL
+			if ((EndCob_tipo_pessoa = ID_PJ) And (EndCob_contribuinte_icms_status = COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM)) _
+				Or _
+				((EndCob_tipo_pessoa = ID_PJ) And ((EndCob_contribuinte_icms_status = COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) And (EndCob_ie <> ""))) _
+				Or _
+				((EndCob_tipo_pessoa = ID_PF) And (EndCob_produtor_rural_status = COD_ST_CLIENTE_PRODUTOR_RURAL_SIM)) then
+				if Not isInscricaoEstadualValida(EndCob_ie, EndCob_uf) then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "Número de IE (inscrição estadual) informado é inválido (IE: " & EndCob_ie & ", UF: " & EndCob_uf & ")!" & _
+									"<br />" & "Certifique-se de que a UF do endereço corresponde à UF responsável pelo registro da IE."
+					end if
+				end if
+			'ENDEREÇO
+			if EndCob_endereco = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Endereço (logradouro) não informado!"
+				end if
+			if Len(EndCob_endereco) > CLng(MAX_TAMANHO_CAMPO_ENDERECO) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Endereço (logradouro) excede o tamanho máximo permitido:<br />Tamanho atual: " & Cstr(Len(EndCob_endereco)) & " caracteres<br />Tamanho máximo: " & Cstr(MAX_TAMANHO_CAMPO_ENDERECO) & " caracteres"
+				end if
+			'NÚMERO DO ENDEREÇO
+			if EndCob_endereco_numero = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Número do endereço não informado!"
+				end if
+			'CIDADE
+			if EndCob_cidade = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Cidade do endereço não informada!"
+				end if
+			'UF
+			if EndCob_uf = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "UF do endereço não informada!"
+				end if
+			'CEP
+			if EndCob_cep = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "CEP não informado!"
+				end if
+		else 'bloco else: if c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1"
+			'CPF/CNPJ
+			if Not cnpj_cpf_ok(EndCob_cnpj_cpf) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "CPF/CNPJ do cadastro do cliente é inválido!"
+				end if
+			'NOME
+			if EndCob_nome = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "É necessário preencher o nome no cadastro do cliente!"
+				end if
+			'TIPO DE PESSOA
+			if EndCob_tipo_pessoa = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "É necessário preencher o tipo de pessoa no cadastro do cliente!"
+				end if
+			'INSCRIÇÃO ESTADUAL
+			if ((EndCob_tipo_pessoa = ID_PJ) And (EndCob_contribuinte_icms_status = COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM)) _
+				Or _
+				((EndCob_tipo_pessoa = ID_PJ) And ((EndCob_contribuinte_icms_status = COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) And (EndCob_ie <> ""))) _
+				Or _
+				((EndCob_tipo_pessoa = ID_PF) And (EndCob_produtor_rural_status = COD_ST_CLIENTE_PRODUTOR_RURAL_SIM)) then
+				if Not isInscricaoEstadualValida(EndCob_ie, EndCob_uf) then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "Número de IE (inscrição estadual) no cadastro do cliente é inválido (IE: " & EndCob_ie & ", UF: " & EndCob_uf & ")!" & _
+									"<br />" & "Certifique-se de que a UF do endereço corresponde à UF responsável pelo registro da IE."
+					end if
+				end if
+			'ENDEREÇO
+			if EndCob_endereco = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "É necessário preencher o endereço (logradouro) no cadastro do cliente!"
+				end if
+			if Len(EndCob_endereco) > CLng(MAX_TAMANHO_CAMPO_ENDERECO) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Endereço (logradouro) do cadastro do cliente excede o tamanho máximo permitido:<br />Tamanho atual: " & Cstr(Len(EndCob_endereco)) & " caracteres<br />Tamanho máximo: " & Cstr(MAX_TAMANHO_CAMPO_ENDERECO) & " caracteres"
+				end if
+			'NÚMERO DO ENDEREÇO
+			if EndCob_endereco_numero = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "É necessário preencher o número do endereço no cadastro do cliente!"
+				end if
+			'CIDADE
+			if EndCob_cidade = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "É necessário preencher a cidade no cadastro do cliente!"
+				end if
+			'UF
+			if EndCob_uf = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "É necessário preencher a UF no cadastro do cliente!"
+				end if
+			'CEP
+			if EndCob_cep = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "É necessário preencher o CEP no cadastro do cliente!"
+				end if
+			end if 'if c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1"
+		end if
+
+'	ENDEREÇO DE ENTREGA
+	if alerta = "" then
+		if rb_end_entrega = "S" then 
+			if (EndEtg_endereco<>"") Or (EndEtg_bairro<>"") Or (EndEtg_cidade<>"") Or (EndEtg_uf<>"") Or (EndEtg_cep<>"") then
+				if EndEtg_endereco="" then
+					alerta="PREENCHA O ENDEREÇO DE ENTREGA."
+				elseif Len(EndEtg_endereco) > CLng(MAX_TAMANHO_CAMPO_ENDERECO) then
+					alerta="ENDEREÇO DE ENTREGA EXCEDE O TAMANHO MÁXIMO PERMITIDO:<br>TAMANHO ATUAL: " & Cstr(Len(EndEtg_endereco)) & " CARACTERES<br>TAMANHO MÁXIMO: " & Cstr(MAX_TAMANHO_CAMPO_ENDERECO) & " CARACTERES"
+				elseif EndEtg_endereco_numero="" then
+					alerta="PREENCHA O NÚMERO DO ENDEREÇO DE ENTREGA."
+				elseif EndEtg_cidade="" then
+					alerta="PREENCHA A CIDADE DO ENDEREÇO DE ENTREGA."
+				elseif EndEtg_uf="" then
+					alerta="PREENCHA A UF DO ENDEREÇO DE ENTREGA."
+				elseif EndEtg_cep="" then
+					alerta="PREENCHA O CEP DO ENDEREÇO DE ENTREGA."
+					end if
 				end if
 			end if
 		end if
@@ -1418,32 +1612,12 @@
 					end if
 				end if
 		else
-			if Trim("" & t_CLIENTE("cep")) <> "" then
-				sTranspSelAutoTransportadoraId = obtem_transportadora_pelo_cep(retorna_so_digitos(Trim("" & t_CLIENTE("cep"))))
+			if EndCob_cep <> "" then
+				sTranspSelAutoTransportadoraId = obtem_transportadora_pelo_cep(retorna_so_digitos(EndCob_cep))
 				if sTranspSelAutoTransportadoraId <> "" then
-					sTranspSelAutoCep = retorna_so_digitos(Trim("" & t_CLIENTE("cep")))
+					sTranspSelAutoCep = retorna_so_digitos(EndCob_cep)
 					iTranspSelAutoTipoEndereco = TRANSPORTADORA_SELECAO_AUTO_TIPO_ENDERECO_CLIENTE
 					iTranspSelAutoStatus = TRANSPORTADORA_SELECAO_AUTO_STATUS_FLAG_S
-					end if
-				end if
-			end if
-		end if
-
-	if alerta = "" then
-		if rb_end_entrega = "S" then 
-			if (EndEtg_endereco<>"") Or (EndEtg_bairro<>"") Or (EndEtg_cidade<>"") Or (EndEtg_uf<>"") Or (EndEtg_cep<>"") then
-				if EndEtg_endereco="" then
-					alerta="PREENCHA O ENDEREÇO DE ENTREGA."
-				elseif Len(EndEtg_endereco) > CLng(MAX_TAMANHO_CAMPO_ENDERECO) then
-					alerta="ENDEREÇO DE ENTREGA EXCEDE O TAMANHO MÁXIMO PERMITIDO:<br>TAMANHO ATUAL: " & Cstr(Len(EndEtg_endereco)) & " CARACTERES<br>TAMANHO MÁXIMO: " & Cstr(MAX_TAMANHO_CAMPO_ENDERECO) & " CARACTERES"
-				elseif EndEtg_endereco_numero="" then
-					alerta="PREENCHA O NÚMERO DO ENDEREÇO DE ENTREGA."
-				elseif EndEtg_cidade="" then
-					alerta="PREENCHA A CIDADE DO ENDEREÇO DE ENTREGA."
-				elseif EndEtg_uf="" then
-					alerta="PREENCHA A UF DO ENDEREÇO DE ENTREGA."
-				elseif EndEtg_cep="" then
-					alerta="PREENCHA O CEP DO ENDEREÇO DE ENTREGA."
 					end if
 				end if
 			end if
@@ -1489,10 +1663,9 @@
 						" tU.nome AS nome_vendedor," & _
 						" tP.usuario_cadastro," & _
 						" tUC.nome AS nome_usuario_cadastro," & _
-						" tC.cnpj_cpf," & _
-						" tC.nome AS nome_cliente" & _
+						" tP.endereco_cnpj_cpf AS cnpj_cpf," & _
+						" tP.endereco_nome AS nome_cliente" & _
 					" FROM t_PEDIDO tP" & _
-						" INNER JOIN t_CLIENTE tC ON (tP.id_cliente = tC.id)" & _
 						" LEFT JOIN t_USUARIO tU ON (tP.vendedor = tU.usuario)" & _
 						" LEFT JOIN t_USUARIO tUC ON (tP.usuario_cadastro = tUC.usuario)" & _
 					" WHERE" & _
@@ -1635,10 +1808,9 @@
 						" tP.data_hora," & _
 						" tP.vendedor," & _
 						" tU.nome AS nome_vendedor," & _
-						" tC.cnpj_cpf," & _
-						" tC.nome AS nome_cliente" & _
+						" tP.endereco_cnpj_cpf AS cnpj_cpf," & _
+						" tP.endereco_nome AS nome_cliente" & _
 					" FROM t_PEDIDO tP" & _
-						" INNER JOIN t_CLIENTE tC ON (tP.id_cliente = tC.id)" & _
 						" LEFT JOIN t_USUARIO tU ON (tP.vendedor = tU.usuario)" & _
 					" WHERE" & _
 						" (tP.st_entrega <> '" & ST_ENTREGA_CANCELADO & "')" & _
@@ -1693,10 +1865,9 @@
 						" tP.data_hora," & _
 						" tP.vendedor," & _
 						" tU.nome AS nome_vendedor," & _
-						" tC.cnpj_cpf," & _
-						" tC.nome AS nome_cliente" & _
+						" tP.endereco_cnpj_cpf AS cnpj_cpf," & _
+						" tP.endereco_nome AS nome_cliente" & _
 					" FROM t_PEDIDO tP" & _
-						" INNER JOIN t_CLIENTE tC ON (tP.id_cliente = tC.id)" & _
 						" LEFT JOIN t_USUARIO tU ON (tP.vendedor = tU.usuario)" & _
 					" WHERE" & _
 						" (tP.st_entrega <> '" & ST_ENTREGA_CANCELADO & "')" & _
@@ -1950,11 +2121,20 @@
 
 				if rb_end_entrega = "S" then
 					rs("st_end_entrega") = 1
-					rs("EndEtg_endereco") = EndEtg_endereco
-					rs("EndEtg_endereco_numero") = EndEtg_endereco_numero
-					rs("EndEtg_endereco_complemento") = EndEtg_endereco_complemento
-					rs("EndEtg_bairro") = EndEtg_bairro
-					rs("EndEtg_cidade") = EndEtg_cidade
+					if (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1") Or (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "9") then
+						rs("EndEtg_endereco") = Left(EndEtg_endereco, MAX_TAMANHO_CAMPO_ENDERECO)
+						rs("EndEtg_endereco_numero") = Left(EndEtg_endereco_numero, MAX_TAMANHO_CAMPO_ENDERECO_NUMERO)
+						rs("EndEtg_endereco_complemento") = Left(EndEtg_endereco_complemento, MAX_TAMANHO_CAMPO_ENDERECO_COMPLEMENTO)
+						rs("EndEtg_bairro") = Left(EndEtg_bairro, MAX_TAMANHO_CAMPO_ENDERECO_BAIRRO)
+						rs("EndEtg_cidade") = Left(EndEtg_cidade, MAX_TAMANHO_CAMPO_ENDERECO_CIDADE)
+					else
+						rs("EndEtg_endereco") = EndEtg_endereco
+						rs("EndEtg_endereco_numero") = EndEtg_endereco_numero
+						rs("EndEtg_endereco_complemento") = EndEtg_endereco_complemento
+						rs("EndEtg_bairro") = EndEtg_bairro
+						rs("EndEtg_cidade") = EndEtg_cidade
+						end if
+
 					rs("EndEtg_uf") = EndEtg_uf
 					rs("EndEtg_cep") = EndEtg_cep
 					rs("EndEtg_cod_justificativa") = EndEtg_obs
@@ -2011,36 +2191,46 @@
 					end if
 		
 				rs("endereco_memorizado_status") = 1
-				rs("endereco_logradouro") = Trim("" & t_CLIENTE("endereco"))
-				rs("endereco_bairro") = Trim("" & t_CLIENTE("bairro"))
-				rs("endereco_cidade") = Trim("" & t_CLIENTE("cidade"))
-				rs("endereco_uf") = Trim("" & t_CLIENTE("uf"))
-				rs("endereco_cep") = Trim("" & t_CLIENTE("cep"))
-				rs("endereco_numero") = Trim("" & t_CLIENTE("endereco_numero"))
-				rs("endereco_complemento") = Trim("" & t_CLIENTE("endereco_complemento"))
+				
+				if (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1") Or (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "9") then
+					rs("endereco_logradouro") = Left(EndCob_endereco, MAX_TAMANHO_CAMPO_ENDERECO)
+					rs("endereco_numero") = Left(EndCob_endereco_numero, MAX_TAMANHO_CAMPO_ENDERECO_NUMERO)
+					rs("endereco_complemento") = Left(EndCob_endereco_complemento, MAX_TAMANHO_CAMPO_ENDERECO_COMPLEMENTO)
+					rs("endereco_bairro") = Left(EndCob_bairro, MAX_TAMANHO_CAMPO_ENDERECO_BAIRRO)
+					rs("endereco_cidade") = Left(EndCob_cidade, MAX_TAMANHO_CAMPO_ENDERECO_CIDADE)
+				else
+					rs("endereco_logradouro") = EndCob_endereco
+					rs("endereco_numero") = EndCob_endereco_numero
+					rs("endereco_complemento") = EndCob_endereco_complemento
+					rs("endereco_bairro") = EndCob_bairro
+					rs("endereco_cidade") = EndCob_cidade
+					end if
+
+				rs("endereco_uf") = EndCob_uf
+				rs("endereco_cep") = EndCob_cep
 
 				if blnUsarMemorizacaoCompletaEnderecos then
 					rs("st_memorizacao_completa_enderecos") = 1
-					rs("endereco_email") = Trim("" & t_CLIENTE("email"))
-					rs("endereco_email_xml") = Trim("" & t_CLIENTE("email_xml"))
-					rs("endereco_nome") = Trim("" & t_CLIENTE("nome"))
-					rs("endereco_ddd_res") = Trim("" & t_CLIENTE("ddd_res"))
-					rs("endereco_tel_res") = Trim("" & t_CLIENTE("tel_res"))
-					rs("endereco_ddd_com") = Trim("" & t_CLIENTE("ddd_com"))
-					rs("endereco_tel_com") = Trim("" & t_CLIENTE("tel_com"))
-					rs("endereco_ramal_com") = Trim("" & t_CLIENTE("ramal_com"))
-					rs("endereco_ddd_cel") = Trim("" & t_CLIENTE("ddd_cel"))
-					rs("endereco_tel_cel") = Trim("" & t_CLIENTE("tel_cel"))
-					rs("endereco_ddd_com_2") = Trim("" & t_CLIENTE("ddd_com_2"))
-					rs("endereco_tel_com_2") = Trim("" & t_CLIENTE("tel_com_2"))
-					rs("endereco_ramal_com_2") = Trim("" & t_CLIENTE("ramal_com_2"))
-					rs("endereco_tipo_pessoa") = Trim("" & t_CLIENTE("tipo"))
-					rs("endereco_cnpj_cpf") = Trim("" & t_CLIENTE("cnpj_cpf"))
-					rs("endereco_contribuinte_icms_status") = t_CLIENTE("contribuinte_icms_status")
-					rs("endereco_produtor_rural_status") = t_CLIENTE("produtor_rural_status")
-					rs("endereco_ie") = Trim("" & t_CLIENTE("ie"))
-					rs("endereco_rg") = Trim("" & t_CLIENTE("rg"))
-					rs("endereco_contato") = Trim("" & t_CLIENTE("contato"))
+					rs("endereco_email") = EndCob_email
+					rs("endereco_email_xml") = EndCob_email_xml
+					rs("endereco_nome") = EndCob_nome
+					rs("endereco_ddd_res") = EndCob_ddd_res
+					rs("endereco_tel_res") = EndCob_tel_res
+					rs("endereco_ddd_com") = EndCob_ddd_com
+					rs("endereco_tel_com") = EndCob_tel_com
+					rs("endereco_ramal_com") = EndCob_ramal_com
+					rs("endereco_ddd_cel") = EndCob_ddd_cel
+					rs("endereco_tel_cel") = EndCob_tel_cel
+					rs("endereco_ddd_com_2") = EndCob_ddd_com_2
+					rs("endereco_tel_com_2") = EndCob_tel_com_2
+					rs("endereco_ramal_com_2") = EndCob_ramal_com_2
+					rs("endereco_tipo_pessoa") = EndCob_tipo_pessoa
+					rs("endereco_cnpj_cpf") = EndCob_cnpj_cpf
+					rs("endereco_contribuinte_icms_status") = converte_numero(EndCob_contribuinte_icms_status)
+					rs("endereco_produtor_rural_status") = converte_numero(EndCob_produtor_rural_status)
+					rs("endereco_ie") = EndCob_ie
+					rs("endereco_rg") = EndCob_rg
+					rs("endereco_contato") = EndCob_contato
 					end if
 
 				if (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO) OR ( (Cstr(loja) = Cstr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE)) And (Trim(s_pedido_ac) <> "") ) then
@@ -2287,9 +2477,8 @@
 					'	ENDEREÇO DO CADASTRO
 					'	====================
 					'	1) VERIFICA SE O ENDEREÇO USADO É O DO PARCEIRO
-					'	  estamos verificando contra o endereço da t_CLIENTE porque o pedido acabou de ser criado com esses dados
 						if c_indicador <> "" then
-							if isEnderecoIgual(Trim("" & t_CLIENTE("endereco")), Trim("" & t_CLIENTE("endereco_numero")), Trim("" & t_CLIENTE("cep")), r_orcamentista_e_indicador.endereco, r_orcamentista_e_indicador.endereco_numero, r_orcamentista_e_indicador.cep) then
+							if isEnderecoIgual(EndCob_endereco, EndCob_endereco_numero, EndCob_cep, r_orcamentista_e_indicador.endereco, r_orcamentista_e_indicador.endereco_numero, r_orcamentista_e_indicador.cep) then
 								blnAnEnderecoCadClienteUsaEndParceiro = True
 								blnAnalisarEndereco = True
 					
@@ -2304,13 +2493,13 @@
 									rs("pedido") = id_pedido
 									rs("id_cliente") = cliente_selecionado
 									rs("tipo_endereco") = COD_PEDIDO_AN_ENDERECO__CAD_CLIENTE
-									rs("endereco_logradouro") = Trim("" & t_CLIENTE("endereco"))
-									rs("endereco_bairro") = Trim("" & t_CLIENTE("bairro"))
-									rs("endereco_cidade") = Trim("" & t_CLIENTE("cidade"))
-									rs("endereco_uf") = Trim("" & t_CLIENTE("uf"))
-									rs("endereco_cep") = Trim("" & t_CLIENTE("cep"))
-									rs("endereco_numero") = Trim("" & t_CLIENTE("endereco_numero"))
-									rs("endereco_complemento") = Trim("" & t_CLIENTE("endereco_complemento"))
+									rs("endereco_logradouro") = Left(EndCob_endereco, MAX_TAMANHO_CAMPO_ENDERECO)
+									rs("endereco_numero") = Left(EndCob_endereco_numero, MAX_TAMANHO_CAMPO_ENDERECO_NUMERO)
+									rs("endereco_complemento") = Left(EndCob_endereco_complemento, MAX_TAMANHO_CAMPO_ENDERECO_COMPLEMENTO)
+									rs("endereco_bairro") = Left(EndCob_bairro, MAX_TAMANHO_CAMPO_ENDERECO_BAIRRO)
+									rs("endereco_cidade") = Left(EndCob_cidade, MAX_TAMANHO_CAMPO_ENDERECO_CIDADE)
+									rs("endereco_uf") = EndCob_uf
+									rs("endereco_cep") = EndCob_cep
 									rs("usuario_cadastro") = usuario
 									rs.Update
 									end if ' if Not fin_gera_nsu()
@@ -2329,13 +2518,13 @@
 											rs("pedido") = ""
 											rs("id_cliente") = ""
 											rs("tipo_endereco") = COD_PEDIDO_AN_ENDERECO__END_PARCEIRO
-											rs("endereco_logradouro") = .endereco
-											rs("endereco_bairro") = .bairro
-											rs("endereco_cidade") = .cidade
+											rs("endereco_logradouro") = Left(.endereco, MAX_TAMANHO_CAMPO_ENDERECO)
+											rs("endereco_numero") = Left(.endereco_numero, MAX_TAMANHO_CAMPO_ENDERECO_NUMERO)
+											rs("endereco_complemento") = Left(.endereco_complemento, MAX_TAMANHO_CAMPO_ENDERECO_COMPLEMENTO)
+											rs("endereco_bairro") = Left(.bairro, MAX_TAMANHO_CAMPO_ENDERECO_BAIRRO)
+											rs("endereco_cidade") = Left(.cidade, MAX_TAMANHO_CAMPO_ENDERECO_CIDADE)
 											rs("endereco_uf") = .uf
 											rs("endereco_cep") = .cep
-											rs("endereco_numero") = .endereco_numero
-											rs("endereco_complemento") = .endereco_complemento
 											end with
 										rs.Update
 										end if ' if Not fin_gera_nsu()
@@ -2369,7 +2558,7 @@
 										" FROM t_PEDIDO" & _
 										" WHERE" & _
 											" (id_cliente <> '" & cliente_selecionado & "')" & _
-											" AND (endereco_cep = '" & retorna_so_digitos(Trim("" & t_CLIENTE("cep"))) & "')" & _
+											" AND (endereco_cep = '" & retorna_so_digitos(EndCob_cep) & "')" & _
 										" UNION " & _
 										"SELECT" & _
 											" '" & COD_PEDIDO_AN_ENDERECO__END_ENTREGA & "' AS tipo_endereco," & _
@@ -2387,14 +2576,14 @@
 										" WHERE" & _
 											" (st_end_entrega = 1)" & _
 											" AND (id_cliente <> '" & cliente_selecionado & "')" & _
-											" AND (EndEtg_cep = '" & retorna_so_digitos(Trim("" & t_CLIENTE("cep"))) & "')" & _
+											" AND (EndEtg_cep = '" & retorna_so_digitos(EndCob_cep) & "')" & _
 									") t" & _
 								" ORDER BY" & _
 									" data_hora DESC"
 							if rs.State <> 0 then rs.Close
 							rs.Open s, cn
 							do while Not rs.Eof
-								if isEnderecoIgual(Trim("" & t_CLIENTE("endereco")), Trim("" & t_CLIENTE("endereco_numero")), Trim("" & t_CLIENTE("cep")), Trim("" & rs("endereco_logradouro")), Trim("" & rs("endereco_numero")), Trim("" & rs("endereco_cep"))) then
+								if isEnderecoIgual(EndCob_endereco, EndCob_endereco_numero, EndCob_cep, Trim("" & rs("endereco_logradouro")), Trim("" & rs("endereco_numero")), Trim("" & rs("endereco_cep"))) then
 									if Trim("" & vAnEndConfrontacao(Ubound(vAnEndConfrontacao)).pedido) <> "" then
 										redim preserve vAnEndConfrontacao(UBound(vAnEndConfrontacao)+1)
 										set vAnEndConfrontacao(UBound(vAnEndConfrontacao)) = new cl_ANALISE_ENDERECO_CONFRONTACAO
@@ -2442,13 +2631,13 @@
 											rs("pedido") = id_pedido
 											rs("id_cliente") = cliente_selecionado
 											rs("tipo_endereco") = COD_PEDIDO_AN_ENDERECO__CAD_CLIENTE
-											rs("endereco_logradouro") = Trim("" & t_CLIENTE("endereco"))
-											rs("endereco_bairro") = Trim("" & t_CLIENTE("bairro"))
-											rs("endereco_cidade") = Trim("" & t_CLIENTE("cidade"))
-											rs("endereco_uf") = Trim("" & t_CLIENTE("uf"))
-											rs("endereco_cep") = Trim("" & t_CLIENTE("cep"))
-											rs("endereco_numero") = Trim("" & t_CLIENTE("endereco_numero"))
-											rs("endereco_complemento") = Trim("" & t_CLIENTE("endereco_complemento"))
+											rs("endereco_logradouro") = Left(EndCob_endereco, MAX_TAMANHO_CAMPO_ENDERECO)
+											rs("endereco_numero") = Left(EndCob_endereco_numero, MAX_TAMANHO_CAMPO_ENDERECO_NUMERO)
+											rs("endereco_complemento") = Left(EndCob_endereco_complemento, MAX_TAMANHO_CAMPO_ENDERECO_COMPLEMENTO)
+											rs("endereco_bairro") = Left(EndCob_bairro, MAX_TAMANHO_CAMPO_ENDERECO_BAIRRO)
+											rs("endereco_cidade") = Left(EndCob_cidade, MAX_TAMANHO_CAMPO_ENDERECO_CIDADE)
+											rs("endereco_uf") = EndCob_uf
+											rs("endereco_cep") = retorna_so_digitos(EndCob_cep)
 											rs("usuario_cadastro") = usuario
 											rs.Update
 											end if 'if Not blnGravouRegPai
@@ -2467,13 +2656,13 @@
 										rs("pedido") = .pedido
 										rs("id_cliente") = .id_cliente
 										rs("tipo_endereco") = .tipo_endereco
-										rs("endereco_logradouro") = .endereco_logradouro
-										rs("endereco_bairro") = .endereco_bairro
-										rs("endereco_cidade") = .endereco_cidade
+										rs("endereco_logradouro") = Left(.endereco_logradouro, MAX_TAMANHO_CAMPO_ENDERECO)
+										rs("endereco_numero") = Left(.endereco_numero, MAX_TAMANHO_CAMPO_ENDERECO_NUMERO)
+										rs("endereco_complemento") = Left(.endereco_complemento, MAX_TAMANHO_CAMPO_ENDERECO_COMPLEMENTO)
+										rs("endereco_bairro") = Left(.endereco_bairro, MAX_TAMANHO_CAMPO_ENDERECO_BAIRRO)
+										rs("endereco_cidade") = Left(.endereco_cidade, MAX_TAMANHO_CAMPO_ENDERECO_CIDADE)
 										rs("endereco_uf") = .endereco_uf
 										rs("endereco_cep") = .endereco_cep
-										rs("endereco_numero") = .endereco_numero
-										rs("endereco_complemento") = .endereco_complemento
 										rs.Update
 										end if 'if Trim("" & .pedido) <> ""
 									end with
@@ -2502,13 +2691,13 @@
 										rs("pedido") = id_pedido
 										rs("id_cliente") = cliente_selecionado
 										rs("tipo_endereco") = COD_PEDIDO_AN_ENDERECO__END_ENTREGA
-										rs("endereco_logradouro") = EndEtg_endereco
-										rs("endereco_bairro") = EndEtg_bairro
-										rs("endereco_cidade") = EndEtg_cidade
+										rs("endereco_logradouro") = Left(EndEtg_endereco, MAX_TAMANHO_CAMPO_ENDERECO)
+										rs("endereco_numero") = Left(EndEtg_endereco_numero, MAX_TAMANHO_CAMPO_ENDERECO_NUMERO)
+										rs("endereco_complemento") = Left(EndEtg_endereco_complemento, MAX_TAMANHO_CAMPO_ENDERECO_COMPLEMENTO)
+										rs("endereco_bairro") = Left(EndEtg_bairro, MAX_TAMANHO_CAMPO_ENDERECO_BAIRRO)
+										rs("endereco_cidade") = Left(EndEtg_cidade, MAX_TAMANHO_CAMPO_ENDERECO_CIDADE)
 										rs("endereco_uf") = EndEtg_uf
 										rs("endereco_cep") = EndEtg_cep
-										rs("endereco_numero") = EndEtg_endereco_numero
-										rs("endereco_complemento") = EndEtg_endereco_complemento
 										rs("usuario_cadastro") = usuario
 										rs.Update
 										end if ' if Not fin_gera_nsu()
@@ -2527,13 +2716,13 @@
 												rs("pedido") = ""
 												rs("id_cliente") = ""
 												rs("tipo_endereco") = COD_PEDIDO_AN_ENDERECO__END_PARCEIRO
-												rs("endereco_logradouro") = .endereco
-												rs("endereco_bairro") = .bairro
-												rs("endereco_cidade") = .cidade
+												rs("endereco_logradouro") = Left(.endereco, MAX_TAMANHO_CAMPO_ENDERECO)
+												rs("endereco_numero") = Left(.endereco_numero, MAX_TAMANHO_CAMPO_ENDERECO_NUMERO)
+												rs("endereco_complemento") = Left(.endereco_complemento, MAX_TAMANHO_CAMPO_ENDERECO_COMPLEMENTO)
+												rs("endereco_bairro") = Left(.bairro, MAX_TAMANHO_CAMPO_ENDERECO_BAIRRO)
+												rs("endereco_cidade") = Left(.cidade, MAX_TAMANHO_CAMPO_ENDERECO_CIDADE)
 												rs("endereco_uf") = .uf
 												rs("endereco_cep") = .cep
-												rs("endereco_numero") = .endereco_numero
-												rs("endereco_complemento") = .endereco_complemento
 												end with
 											rs.Update
 											end if ' if Not fin_gera_nsu()
@@ -2639,13 +2828,13 @@
 													rs("pedido") = id_pedido
 													rs("id_cliente") = cliente_selecionado
 													rs("tipo_endereco") = COD_PEDIDO_AN_ENDERECO__END_ENTREGA
-													rs("endereco_logradouro") = EndEtg_endereco
-													rs("endereco_bairro") = EndEtg_bairro
-													rs("endereco_cidade") = EndEtg_cidade
+													rs("endereco_logradouro") = Left(EndEtg_endereco, MAX_TAMANHO_CAMPO_ENDERECO)
+													rs("endereco_numero") = Left(EndEtg_endereco_numero, MAX_TAMANHO_CAMPO_ENDERECO_NUMERO)
+													rs("endereco_complemento") = Left(EndEtg_endereco_complemento, MAX_TAMANHO_CAMPO_ENDERECO_COMPLEMENTO)
+													rs("endereco_bairro") = Left(EndEtg_bairro, MAX_TAMANHO_CAMPO_ENDERECO_BAIRRO)
+													rs("endereco_cidade") = Left(EndEtg_cidade, MAX_TAMANHO_CAMPO_ENDERECO_CIDADE)
 													rs("endereco_uf") = EndEtg_uf
 													rs("endereco_cep") = EndEtg_cep
-													rs("endereco_numero") = EndEtg_endereco_numero
-													rs("endereco_complemento") = EndEtg_endereco_complemento
 													rs("usuario_cadastro") = usuario
 													rs.Update
 													end if 'if Not blnGravouRegPai
@@ -2664,13 +2853,13 @@
 												rs("pedido") = .pedido
 												rs("id_cliente") = .id_cliente
 												rs("tipo_endereco") = .tipo_endereco
-												rs("endereco_logradouro") = .endereco_logradouro
-												rs("endereco_bairro") = .endereco_bairro
-												rs("endereco_cidade") = .endereco_cidade
+												rs("endereco_logradouro") = Left(.endereco_logradouro, MAX_TAMANHO_CAMPO_ENDERECO)
+												rs("endereco_numero") = Left(.endereco_numero, MAX_TAMANHO_CAMPO_ENDERECO_NUMERO)
+												rs("endereco_complemento") = Left(.endereco_complemento, MAX_TAMANHO_CAMPO_ENDERECO_COMPLEMENTO)
+												rs("endereco_bairro") = Left(.endereco_bairro, MAX_TAMANHO_CAMPO_ENDERECO_BAIRRO)
+												rs("endereco_cidade") = Left(.endereco_cidade, MAX_TAMANHO_CAMPO_ENDERECO_CIDADE)
 												rs("endereco_uf") = .endereco_uf
 												rs("endereco_cep") = .endereco_cep
-												rs("endereco_numero") = .endereco_numero
-												rs("endereco_complemento") = .endereco_complemento
 												rs.Update
 												end if 'if Trim("" & .pedido) <> ""
 											end with
@@ -2762,30 +2951,30 @@
 				s_log = s_log & "; custoFinancFornecTipoParcelamento=" & formata_texto_log(rs("custoFinancFornecTipoParcelamento"))
 				s_log = s_log & "; custoFinancFornecQtdeParcelas=" & formata_texto_log(rs("custoFinancFornecQtdeParcelas"))
 		
-				s_log = s_log & "; Endereço cobrança=" & formata_endereco(Trim("" & t_CLIENTE("endereco")), Trim("" & t_CLIENTE("endereco_numero")), Trim("" & t_CLIENTE("endereco_complemento")), Trim("" & t_CLIENTE("bairro")), Trim("" & t_CLIENTE("cidade")), Trim("" & t_CLIENTE("uf")), Trim("" & t_CLIENTE("cep")))
+				s_log = s_log & "; Endereço cobrança=" & formata_endereco(EndCob_endereco, EndCob_endereco_numero, EndCob_endereco_complemento, EndCob_bairro, EndCob_cidade, EndCob_uf, EndCob_cep)
 				if blnUsarMemorizacaoCompletaEnderecos then
 					s_log = s_log & _
 							" (" & _
-							"email=" & Trim("" & t_CLIENTE("email")) & _
-							", email_xml=" & Trim("" & t_CLIENTE("email_xml")) & _
-							", nome=" & Trim("" & t_CLIENTE("nome")) & _
-							", ddd_res=" & Trim("" & t_CLIENTE("ddd_res")) & _
-							", tel_res=" & Trim("" & t_CLIENTE("tel_res")) & _
-							", ddd_com=" & Trim("" & t_CLIENTE("ddd_com")) & _
-							", tel_com=" & Trim("" & t_CLIENTE("tel_com")) & _
-							", ramal_com=" & Trim("" & t_CLIENTE("ramal_com")) & _
-							", ddd_cel=" & Trim("" & t_CLIENTE("ddd_cel")) & _
-							", tel_cel=" & Trim("" & t_CLIENTE("tel_cel")) & _
-							", ddd_com_2=" & Trim("" & t_CLIENTE("ddd_com_2")) & _
-							", tel_com_2=" & Trim("" & t_CLIENTE("tel_com_2")) & _
-							", ramal_com_2=" & Trim("" & t_CLIENTE("ramal_com_2")) & _
-							", tipo_pessoa=" & Trim("" & t_CLIENTE("tipo")) & _
-							", cnpj_cpf=" & Trim("" & t_CLIENTE("cnpj_cpf")) & _
-							", contribuinte_icms_status=" & t_CLIENTE("contribuinte_icms_status") & _
-							", produtor_rural_status=" & t_CLIENTE("produtor_rural_status") & _
-							", ie=" & Trim("" & t_CLIENTE("ie")) & _
-							", rg=" & Trim("" & t_CLIENTE("rg")) & _
-							", contato=" & Trim("" & t_CLIENTE("contato")) & _
+							"email=" & EndCob_email & _
+							", email_xml=" & EndCob_email_xml & _
+							", nome=" & EndCob_nome & _
+							", ddd_res=" & EndCob_ddd_res & _
+							", tel_res=" & EndCob_tel_res & _
+							", ddd_com=" & EndCob_ddd_com & _
+							", tel_com=" & EndCob_tel_com & _
+							", ramal_com=" & EndCob_ramal_com & _
+							", ddd_cel=" & EndCob_ddd_cel & _
+							", tel_cel=" & EndCob_tel_cel & _
+							", ddd_com_2=" & EndCob_ddd_com_2 & _
+							", tel_com_2=" & EndCob_tel_com_2 & _
+							", ramal_com_2=" & EndCob_ramal_com_2 & _
+							", tipo_pessoa=" & EndCob_tipo_pessoa & _
+							", cnpj_cpf=" & EndCob_cnpj_cpf & _
+							", contribuinte_icms_status=" & EndCob_contribuinte_icms_status & _
+							", produtor_rural_status=" & EndCob_produtor_rural_status & _
+							", ie=" & EndCob_ie & _
+							", rg=" & EndCob_rg & _
+							", contato=" & EndCob_contato & _
 							")"
 					end if
 

@@ -961,7 +961,7 @@
 
 <script type="text/javascript">
 	$(function () {
-	<% if r_cliente.tipo = ID_PF then %>
+	<% if cliente__tipo = ID_PF then %>
 		<% if Cstr(r_orcamento.tipo_parcelamento) <> COD_FORMA_PAGTO_PARCELA_UNICA then %>
 			$(".TR_FP_PU").hide();
 		<% end if %>

@@ -3169,7 +3169,7 @@ if cliente__tipo = ID_PF then
 		    <td colspan="2" class="MB" align="left"><p class="Rf">ENDEREÇO</p><input id="endereco__endereco" name="endereco__endereco" class="TA" maxlength="60" style="width:635px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fPED.endereco__numero.focus(); filtra_nome_identificador();" value="<%=cliente__endereco%>" <%=strAtributosDadosCadastrais%> ></td>
 	    </tr>
 	    <tr>
-		    <td class="MDB" align="left"><p class="Rf">Nº</p><input id="endereco__numero" name="endereco__numero" class="TA" maxlength="20" style="width:310px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fPED.endereco__complemento.focus(); filtra_nome_identificador();" value="<%=cliente__endereco_numero%>" <%=strAtributosDadosCadastrais%> ></td>
+		    <td class="MDB" align="left"><p class="Rf">Nº</p><input id="endereco__numero" name="endereco__numero" class="TA" maxlength="<%=MAX_TAMANHO_CAMPO_ENDERECO_NUMERO%>" style="width:310px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fPED.endereco__complemento.focus(); filtra_nome_identificador();" value="<%=cliente__endereco_numero%>" <%=strAtributosDadosCadastrais%> ></td>
 		    <td class="MB" align="left"><p class="Rf">COMPLEMENTO</p><input id="endereco__complemento" name="endereco__complemento" class="TA" maxlength="60" style="width:310px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fPED.endereco__bairro.focus(); filtra_nome_identificador();" value="<%=cliente__endereco_complemento%>" <%=strAtributosDadosCadastrais%> ></td>
 	    </tr>
 	    <tr>
@@ -3483,7 +3483,7 @@ if cliente__tipo = ID_PF then
 		    <td colspan="2" class="MB" align="left"><p class="Rf"><%=s%></p><input id="EndEtg_endereco" name="EndEtg_endereco" class="TA" maxlength="60" style="width:635px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fPED.EndEtg_endereco_numero.focus(); filtra_nome_identificador();" value="<%=r_pedido.EndEtg_endereco%>"></td>
 	    </tr>
 	    <tr>
-		    <td class="MDB" align="left"><p class="Rf">Nº</p><input id="EndEtg_endereco_numero" name="EndEtg_endereco_numero" class="TA" maxlength="20" style="width:310px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fPED.EndEtg_endereco_complemento.focus(); filtra_nome_identificador();" value="<%=r_pedido.EndEtg_endereco_numero%>"></td>
+		    <td class="MDB" align="left"><p class="Rf">Nº</p><input id="EndEtg_endereco_numero" name="EndEtg_endereco_numero" class="TA" maxlength="<%=MAX_TAMANHO_CAMPO_ENDERECO_NUMERO%>" style="width:310px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fPED.EndEtg_endereco_complemento.focus(); filtra_nome_identificador();" value="<%=r_pedido.EndEtg_endereco_numero%>"></td>
 		    <td class="MB" align="left"><p class="Rf">COMPLEMENTO</p><input id="EndEtg_endereco_complemento" name="EndEtg_endereco_complemento" class="TA" maxlength="60" style="width:310px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fPED.EndEtg_bairro.focus(); filtra_nome_identificador();" value="<%=r_pedido.EndEtg_endereco_complemento%>"></td>
 	    </tr>
 	    <tr>

@@ -65,9 +65,6 @@
 		Response.Redirect("aviso.asp?id=" & ERR_CAD_CLIENTE_ENDERECO_EXCEDE_TAMANHO_MAXIMO)
 		end if
 		
-	dim c_FlagCadSemiAutoPedMagento_FluxoOtimizado
-	c_FlagCadSemiAutoPedMagento_FluxoOtimizado = Trim(Request.Form("c_FlagCadSemiAutoPedMagento_FluxoOtimizado"))
-
 	dim rb_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento
 	dim EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep,EndEtg_obs
 	dim EndEtg_email, EndEtg_email_xml, EndEtg_nome, EndEtg_ddd_res, EndEtg_tel_res, EndEtg_ddd_com, EndEtg_tel_com, EndEtg_ramal_com
@@ -109,17 +106,26 @@
 	dim s_produto, s_qtde
 	dim s_nome_cliente, c_mag_cpf_cnpj_identificado
 	dim operacao_origem, c_numero_magento, operationControlTicket, sessionToken, id_magento_api_pedido_xml
+	dim c_FlagCadSemiAutoPedMagento_FluxoOtimizado, rb_indicacao, rb_RA, c_indicador
 	operacao_origem = Trim(Request("operacao_origem"))
 	c_numero_magento = ""
 	operationControlTicket = ""
 	sessionToken = ""
 	id_magento_api_pedido_xml = ""
 	c_mag_cpf_cnpj_identificado = ""
+	c_FlagCadSemiAutoPedMagento_FluxoOtimizado = ""
+	rb_indicacao = ""
+	rb_RA = ""
+	c_indicador = ""
 	if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then
 		c_numero_magento = Trim(Request("c_numero_magento"))
 		operationControlTicket = Trim(Request("operationControlTicket"))
 		sessionToken = Trim(Request("sessionToken"))
 		id_magento_api_pedido_xml = Trim(Request("id_magento_api_pedido_xml"))
+		c_FlagCadSemiAutoPedMagento_FluxoOtimizado = Trim(Request.Form("c_FlagCadSemiAutoPedMagento_FluxoOtimizado"))
+		rb_indicacao = Trim(Request.Form("rb_indicacao"))
+		rb_RA = Trim(Request.Form("rb_RA"))
+		c_indicador = Trim(Request.Form("c_indicador"))
 		end if
 	
 	if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then
@@ -696,6 +702,12 @@ var i, b, ha_item;
 <input type="hidden" name="c_numero_magento" id="c_numero_magento" value="<%=c_numero_magento%>" />
 <input type="hidden" name="operationControlTicket" id="operationControlTicket" value="<%=operationControlTicket%>" />
 <input type="hidden" name="sessionToken" id="sessionToken" value="<%=sessionToken%>" />
+<% if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then %>
+<input type="hidden" name="c_FlagCadSemiAutoPedMagento_FluxoOtimizado" id="c_FlagCadSemiAutoPedMagento_FluxoOtimizado" value="<%=c_FlagCadSemiAutoPedMagento_FluxoOtimizado%>" />
+<input type="hidden" name="rb_indicacao" id="rb_indicacao" value="<%=rb_indicacao%>" />
+<input type="hidden" name="c_indicador" id="c_indicador" value="<%=c_indicador%>" />
+<input type="hidden" name="rb_RA" id="rb_RA" value="<%=rb_RA%>" />
+<% end if %>
 
 <!--  CAMPOS ADICIONAIS DO ENDERECO DE ENTREGA  -->
 <input type="hidden" name="EndEtg_email" id="EndEtg_email" value="<%=EndEtg_email%>" />

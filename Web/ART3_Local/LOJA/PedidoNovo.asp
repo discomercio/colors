@@ -65,16 +65,92 @@
 	dim blnLojaHabilitadaProdCompostoECommerce
 	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
 
-	dim rb_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento
+	dim c_FlagCadSemiAutoPedMagento_FluxoOtimizado, requested_rb_indicacao, requested_c_indicador, requested_rb_RA
+	c_FlagCadSemiAutoPedMagento_FluxoOtimizado = ""
+	requested_rb_indicacao = ""
+	requested_c_indicador = ""
+	requested_rb_RA = ""
+	if blnFlagCadSemiAutoPedMagentoCadAutoClienteNovo then
+		c_FlagCadSemiAutoPedMagento_FluxoOtimizado = Trim(Request.Form("c_FlagCadSemiAutoPedMagento_FluxoOtimizado"))
+		requested_rb_indicacao = Trim(Request.Form("rb_indicacao"))
+		requested_c_indicador = Trim(Request.Form("c_indicador"))
+		requested_rb_RA = Trim(Request.Form("rb_RA"))
+		end if
+
+	dim EndCob_endereco, EndCob_endereco_numero, EndCob_endereco_complemento, EndCob_endereco_ponto_referencia, EndCob_bairro, EndCob_cidade, EndCob_uf, EndCob_cep
+	dim EndCob_email, EndCob_email_xml, EndCob_nome, EndCob_tipo_pessoa
+	dim EndCob_ddd_res, EndCob_tel_res, EndCob_ddd_com, EndCob_tel_com, EndCob_ramal_com, EndCob_ddd_com_2, EndCob_tel_com_2, EndCob_ramal_com_2, EndCob_ddd_cel, EndCob_tel_cel
+	dim EndCob_cnpj_cpf, EndCob_contribuinte_icms_status, EndCob_produtor_rural_status, EndCob_ie, EndCob_rg
+	dim rb_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_endereco_ponto_referencia
 	dim EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep,EndEtg_obs
 	dim EndEtg_email, EndEtg_email_xml, EndEtg_nome, EndEtg_ddd_res, EndEtg_tel_res, EndEtg_ddd_com, EndEtg_tel_com, EndEtg_ramal_com
 	dim EndEtg_ddd_cel, EndEtg_tel_cel, EndEtg_ddd_com_2, EndEtg_tel_com_2, EndEtg_ramal_com_2
 	dim EndEtg_tipo_pessoa, EndEtg_cnpj_cpf, EndEtg_contribuinte_icms_status, EndEtg_produtor_rural_status
 	dim EndEtg_ie, EndEtg_rg
+	
+	if c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1" then
+		EndCob_endereco = Trim(Request.Form("EndCob_endereco"))
+		EndCob_endereco_numero = Trim(Request.Form("EndCob_endereco_numero"))
+		EndCob_endereco_complemento = Trim(Request.Form("EndCob_endereco_complemento"))
+		EndCob_endereco_ponto_referencia = Trim(Request.Form("EndCob_endereco_ponto_referencia"))
+		EndCob_bairro = Trim(Request.Form("EndCob_bairro"))
+		EndCob_cidade = Trim(Request.Form("EndCob_cidade"))
+		EndCob_uf = Trim(Request.Form("EndCob_uf"))
+		EndCob_cep = Trim(Request.Form("EndCob_cep"))
+		EndCob_email = Trim(Request.Form("EndCob_email"))
+		EndCob_email_xml = Trim(Request.Form("EndCob_email_xml"))
+		EndCob_nome = Trim(Request.Form("EndCob_nome"))
+		EndCob_tipo_pessoa = Trim(Request.Form("EndCob_tipo_pessoa"))
+		EndCob_ddd_res = Trim(Request.Form("EndCob_ddd_res"))
+		EndCob_tel_res = Trim(Request.Form("EndCob_tel_res"))
+		EndCob_ddd_com = Trim(Request.Form("EndCob_ddd_com"))
+		EndCob_tel_com = Trim(Request.Form("EndCob_tel_com"))
+		EndCob_ramal_com = Trim(Request.Form("EndCob_ramal_com"))
+		EndCob_ddd_com_2 = Trim(Request.Form("EndCob_ddd_com_2"))
+		EndCob_tel_com_2 = Trim(Request.Form("EndCob_tel_com_2"))
+		EndCob_ramal_com_2 = Trim(Request.Form("EndCob_ramal_com_2"))
+		EndCob_ddd_cel = Trim(Request.Form("EndCob_ddd_cel"))
+		EndCob_tel_cel = Trim(Request.Form("EndCob_tel_cel"))
+		EndCob_cnpj_cpf = Trim(Request.Form("EndCob_cnpj_cpf"))
+		EndCob_contribuinte_icms_status = Trim(Request.Form("EndCob_contribuinte_icms_status"))
+		EndCob_produtor_rural_status = Trim(Request.Form("EndCob_produtor_rural_status"))
+		EndCob_ie = Trim(Request.Form("EndCob_ie"))
+		EndCob_rg = Trim(Request.Form("EndCob_rg"))
+	else
+		EndCob_endereco = ""
+		EndCob_endereco_numero = ""
+		EndCob_endereco_complemento = ""
+		EndCob_endereco_ponto_referencia = ""
+		EndCob_bairro = ""
+		EndCob_cidade = ""
+		EndCob_uf = ""
+		EndCob_cep = ""
+		EndCob_email = ""
+		EndCob_email_xml = ""
+		EndCob_nome = ""
+		EndCob_tipo_pessoa = ""
+		EndCob_ddd_res = ""
+		EndCob_tel_res = ""
+		EndCob_ddd_com = ""
+		EndCob_tel_com = ""
+		EndCob_ramal_com = ""
+		EndCob_ddd_com_2 = ""
+		EndCob_tel_com_2 = ""
+		EndCob_ramal_com_2 = ""
+		EndCob_ddd_cel = ""
+		EndCob_tel_cel = ""
+		EndCob_cnpj_cpf = ""
+		EndCob_contribuinte_icms_status = ""
+		EndCob_produtor_rural_status = ""
+		EndCob_ie = ""
+		EndCob_rg = ""
+		end if
+
 	rb_end_entrega = Trim(Request.Form("rb_end_entrega"))
 	EndEtg_endereco = Trim(Request.Form("EndEtg_endereco"))
 	EndEtg_endereco_numero = Trim(Request.Form("EndEtg_endereco_numero"))
 	EndEtg_endereco_complemento = Trim(Request.Form("EndEtg_endereco_complemento"))
+	EndEtg_endereco_ponto_referencia = Trim(Request.Form("EndEtg_endereco_ponto_referencia"))
 	EndEtg_bairro = Trim(Request.Form("EndEtg_bairro"))
 	EndEtg_cidade = Trim(Request.Form("EndEtg_cidade"))
 	EndEtg_uf = Trim(Request.Form("EndEtg_uf"))
@@ -99,18 +175,6 @@
 	EndEtg_produtor_rural_status = Trim(Request.Form("EndEtg_produtor_rural_status"))
 	EndEtg_ie = Trim(Request.Form("EndEtg_ie"))
 	EndEtg_rg = Trim(Request.Form("EndEtg_rg"))
-
-	dim c_FlagCadSemiAutoPedMagento_FluxoOtimizado, requested_rb_indicacao, requested_c_indicador, requested_rb_RA
-	c_FlagCadSemiAutoPedMagento_FluxoOtimizado = ""
-	requested_rb_indicacao = ""
-	requested_c_indicador = ""
-	requested_rb_RA = ""
-	if blnFlagCadSemiAutoPedMagentoCadAutoClienteNovo then
-		c_FlagCadSemiAutoPedMagento_FluxoOtimizado = Trim(Request.Form("c_FlagCadSemiAutoPedMagento_FluxoOtimizado"))
-		requested_rb_indicacao = Trim(Request.Form("rb_indicacao"))
-		requested_c_indicador = Trim(Request.Form("c_indicador"))
-		requested_rb_RA = Trim(Request.Form("rb_RA"))
-		end if
 
 	dim alerta
 	alerta = ""
@@ -845,6 +909,10 @@ end function
 		if (loja == "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>") {
 			$(".trRT").hide();
 		}
+
+		<% if (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1") Or (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "9") then %>
+        setTimeout('fPED.submit()', 0);
+		<% end if %>
 	});
 
 	//Every resize of window
@@ -1316,7 +1384,7 @@ var s, i, b, ha_item, idx, blnIndicacaoOk, strMsgErro;
 	else if (f.c_MagentoPedidoComIndicador.value=="S") {
 		blnIndicacaoOk=true;
 	}
-	else if (f.c_FlagCadSemiAutoPedMagento_FluxoOtimizado.value == "1")
+    else if ((f.c_FlagCadSemiAutoPedMagento_FluxoOtimizado.value == "1") || (f.c_FlagCadSemiAutoPedMagento_FluxoOtimizado.value == "9"))
 	{
         blnIndicacaoOk = true;
     }
@@ -1498,7 +1566,11 @@ var s, i, b, ha_item, idx, blnIndicacaoOk, strMsgErro;
 
 
 <% else %>
-<body onload="trata_indicador_onchange(); if (trim(fPED.c_fabricante[0].value)=='') fPED.c_fabricante[0].focus();">
+<body 
+<% if Not ((c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1") Or (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "9")) then %>
+onload="trata_indicador_onchange(); if (trim(fPED.c_fabricante[0].value)=='') fPED.c_fabricante[0].focus();"
+<% end if %>
+>
 <center>
 
 <form id="fPED" name="fPED" method="post" action="PedidoNovoConsiste.asp">
@@ -1546,6 +1618,7 @@ var s, i, b, ha_item, idx, blnIndicacaoOk, strMsgErro;
 <input type="hidden" name="sessionToken" id="sessionToken" value="<%=sessionToken%>" />
 
 <!--  CAMPOS ADICIONAIS DO ENDERECO DE ENTREGA  -->
+<input type="hidden" name="EndEtg_endereco_ponto_referencia" id="EndEtg_endereco_ponto_referencia" value="<%=EndEtg_endereco_ponto_referencia%>" />
 <input type="hidden" name="EndEtg_email" id="EndEtg_email" value="<%=EndEtg_email%>" />
 <input type="hidden" name="EndEtg_email_xml" id="EndEtg_email_xml" value="<%=EndEtg_email_xml%>" />
 <input type="hidden" name="EndEtg_nome" id="EndEtg_nome" value="<%=EndEtg_nome%>" />
@@ -1566,6 +1639,36 @@ var s, i, b, ha_item, idx, blnIndicacaoOk, strMsgErro;
 <input type="hidden" name="EndEtg_ie" id="EndEtg_ie" value="<%=EndEtg_ie%>" />
 <input type="hidden" name="EndEtg_rg" id="EndEtg_rg" value="<%=EndEtg_rg%>" />
 <input type="hidden" name="c_FlagCadSemiAutoPedMagento_FluxoOtimizado" id="c_FlagCadSemiAutoPedMagento_FluxoOtimizado" value="<%=c_FlagCadSemiAutoPedMagento_FluxoOtimizado%>" />
+
+<% if c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1" then %>
+<input type="hidden" name="EndCob_endereco" id="EndCob_endereco" value="<%=EndCob_endereco%>" />
+<input type="hidden" name="EndCob_endereco_numero" id="EndCob_endereco_numero" value="<%=EndCob_endereco_numero%>" />
+<input type="hidden" name="EndCob_endereco_complemento" id="EndCob_endereco_complemento" value="<%=EndCob_endereco_complemento%>" />
+<input type="hidden" name="EndCob_endereco_ponto_referencia" id="EndCob_endereco_ponto_referencia" value="<%=EndCob_endereco_ponto_referencia%>" />
+<input type="hidden" name="EndCob_bairro" id="EndCob_bairro" value="<%=EndCob_bairro%>" />
+<input type="hidden" name="EndCob_cidade" id="EndCob_cidade" value="<%=EndCob_cidade%>" />
+<input type="hidden" name="EndCob_uf" id="EndCob_uf" value="<%=EndCob_uf %>" />
+<input type="hidden" name="EndCob_cep" id="EndCob_cep" value="<%=EndCob_cep%>" />
+<input type="hidden" name="EndCob_email" id="EndCob_email" value="<%=EndCob_email%>" />
+<input type="hidden" name="EndCob_email_xml" id="EndCob_email_xml" value="<%=EndCob_email_xml%>" />
+<input type="hidden" name="EndCob_nome" id="EndCob_nome" value="<%=EndCob_nome%>" />
+<input type="hidden" name="EndCob_tipo_pessoa" id="EndCob_tipo_pessoa" value="<%=EndCob_tipo_pessoa%>" />
+<input type="hidden" name="EndCob_ddd_res" id="EndCob_ddd_res" value="<%=EndCob_ddd_res%>" />
+<input type="hidden" name="EndCob_tel_res" id="EndCob_tel_res" value="<%=EndCob_tel_res%>" />
+<input type="hidden" name="EndCob_ddd_com" id="EndCob_ddd_com" value="<%=EndCob_ddd_com%>" />
+<input type="hidden" name="EndCob_tel_com" id="EndCob_tel_com" value="<%=EndCob_tel_com%>" />
+<input type="hidden" name="EndCob_ramal_com" id="EndCob_ramal_com" value="<%=EndCob_ramal_com%>" />
+<input type="hidden" name="EndCob_ddd_com_2" id="EndCob_ddd_com_2" value="<%=EndCob_ddd_com_2%>" />
+<input type="hidden" name="EndCob_tel_com_2" id="EndCob_tel_com_2" value="<%=EndCob_tel_com_2%>" />
+<input type="hidden" name="EndCob_ramal_com_2" id="EndCob_ramal_com_2" value="<%=EndCob_ramal_com_2%>" />
+<input type="hidden" name="EndCob_ddd_cel" id="EndCob_ddd_cel" value="<%=EndCob_ddd_cel%>" />
+<input type="hidden" name="EndCob_tel_cel" id="EndCob_tel_cel" value="<%=EndCob_tel_cel%>" />
+<input type="hidden" name="EndCob_cnpj_cpf" id="EndCob_cnpj_cpf" value="<%=EndCob_cnpj_cpf%>" />
+<input type="hidden" name="EndCob_contribuinte_icms_status" id="EndCob_contribuinte_icms_status" value="<%=EndCob_contribuinte_icms_status%>" />
+<input type="hidden" name="EndCob_produtor_rural_status" id="EndCob_produtor_rural_status" value="<%=EndCob_produtor_rural_status%>" />
+<input type="hidden" name="EndCob_ie" id="EndCob_ie" value="<%=EndCob_ie%>" />
+<input type="hidden" name="EndCob_rg" id="EndCob_rg" value="<%=EndCob_rg%>" />
+<% end if %>
 
 
 <!-- AJAX EM ANDAMENTO -->
@@ -1729,7 +1832,7 @@ var s, i, b, ha_item, idx, blnIndicacaoOk, strMsgErro;
 	</tr>
 	</table>
 
-<% elseif (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO) And blnFlagCadSemiAutoPedMagentoCadAutoClienteNovo And (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1") then %>
+<% elseif (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO) And blnFlagCadSemiAutoPedMagentoCadAutoClienteNovo And ((c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1") Or (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "9")) then %>
 	<input type="hidden" name="rb_indicacao" id="rb_indicacao" value="<%=requested_rb_indicacao%>" />
 	<input type="hidden" name="c_indicador" id="c_indicador" value="<%=requested_c_indicador%>" />
 	<input type="hidden" name="rb_RA" id="rb_RA" value="<%=requested_rb_RA%>" />
