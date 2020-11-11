@@ -438,8 +438,6 @@
 		alerta="CNPJ/CPF NÃO FORNECIDO."
 	elseif Not cnpj_cpf_ok(cnpj_cpf_selecionado) then
 		alerta="CNPJ/CPF INVÁLIDO."
-	elseif eh_cpf And (Not sexo_ok(s_sexo)) then
-		alerta="INDIQUE QUAL O SEXO."
 	elseif s_nome = "" then
 		if eh_cpf then
 			alerta="PREENCHA O NOME DO CLIENTE."
@@ -494,6 +492,14 @@
 '		alerta="INDIQUE A FORMA PELA QUAL CONHECEU A BONSHOP." 
 	elseif (s_contribuinte_icms = COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) And (s_ie="") then
 		alerta="SE CLIENTE É CONTRIBUINTE DO ICMS A INSCRIÇÃO ESTADUAL DEVE SER PREENCHIDA."
+		end if
+
+	if alerta = "" then
+		if CStr(loja) <> CStr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) then
+			if eh_cpf And (Not sexo_ok(s_sexo)) then
+				alerta="INDIQUE QUAL O SEXO."
+				end if
+			end if
 		end if
 
 	if alerta = "" then

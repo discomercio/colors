@@ -1098,7 +1098,7 @@ function fPNEC2Confirma(f) {
 	<% end if %>
 	<tr>
 		<td class="MB ME MD TdEndLbl"><span class="PLTd">Aviso</span></td>
-		<td class="MB MD TdEndMsg"><span class="C">Devido à necessidade de corrigir o nome do município, o fluxo de cadastramento será alterado para seguir para a página de edição do cliente</span></td>
+		<td class="MB MD TdEndMsg"><span class="C">Devido à necessidade de corrigir o nome do município, o fluxo de cadastramento será direcionado para a página de edição do cliente</span></td>
 	</tr>
 </table>
 <% end if %>

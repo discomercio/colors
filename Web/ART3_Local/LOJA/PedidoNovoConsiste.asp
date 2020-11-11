@@ -2869,17 +2869,30 @@ var perc_max_comissao_e_desconto_a_utilizar;
 	</tr>
 	<% elseif (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1") Or (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "9") then %>
 	<tr>
+		<td class="MB ME MD TdCliLbl"><span class="PLTd">Indicador</span></td>
+		<td class="MB MD TdCliCel">
+			<span class="C"><%=c_indicador%></span>
+		</td>
+	</tr>
+	<tr>
 		<td class="MB ME MD TdCliLbl"><span class="PLTd">VL Frete</span></td>
 		<td class="MB MD TdCliCel">
 			<span class="C"><%=formata_moeda(tMAP_XML("shipping_amount"))%></span>
 		</td>
 	</tr>
 	<tr>
-		<td class="MB ME MD TdCliLbl"><span class="PLTd">Indicador</span></td>
+		<td class="MB ME MD TdCliLbl"><span class="PLTd">VL Itens c/ Desc</span></td>
 		<td class="MB MD TdCliCel">
-			<span class="C"><%=c_indicador%></span>
+			<span class="C"><%=formata_moeda(converte_numero(tMAP_XML("grand_total"))-converte_numero(tMAP_XML("shipping_amount")))%></span>
 		</td>
 	</tr>
+	<tr>
+		<td class="MB ME MD TdCliLbl"><span class="PLTd">VL Total</span></td>
+		<td class="MB MD TdCliCel">
+			<span class="C"><%=formata_moeda(tMAP_XML("grand_total"))%></span>
+		</td>
+	</tr>
+
 	<% end if %>
 </table>
 <% end if %>
@@ -3169,23 +3182,23 @@ var perc_max_comissao_e_desconto_a_utilizar;
 					'Texto do complemento do endereço será truncado
 					if Len(EndEtg_endereco_complemento) > MAX_TAMANHO_CAMPO_ENDERECO_COMPLEMENTO then
 						if s_value <> "" then s_value = s_value & vbCrLf
-						s_value = s_value & EndEtg_endereco_complemento
+						s_value = s_value & "Complemento do endereço: " & EndEtg_endereco_complemento
 						end if
 					'Texto do ponto de referência é diferente do texto do complemento do endereço
-					if Ucase(Trim(EndEtg_endereco_complemento)) <> Ucase(Trim(EndEtg_endereco_ponto_referencia)) then
+					if (Ucase(Trim(EndEtg_endereco_complemento)) <> Ucase(Trim(EndEtg_endereco_ponto_referencia))) And (Trim(EndEtg_endereco_ponto_referencia) <> "") then
 						if s_value <> "" then s_value = s_value & vbCrLf
-						s_value = s_value & EndEtg_endereco_ponto_referencia
+						s_value = s_value & "Ponto de referência: " & EndEtg_endereco_ponto_referencia
 						end if
 				else
 					'Texto do complemento do endereço será truncado
 					if Len(EndCob_endereco_complemento) > MAX_TAMANHO_CAMPO_ENDERECO_COMPLEMENTO then
 						if s_value <> "" then s_value = s_value & vbCrLf
-						s_value = s_value & EndCob_endereco_complemento
+						s_value = s_value & "Complemento do endereço: " & EndCob_endereco_complemento
 						end if
 					'Texto do ponto de referência é diferente do texto do complemento do endereço
-					if Ucase(Trim(EndCob_endereco_complemento)) <> Ucase(Trim(EndCob_endereco_ponto_referencia)) then
+					if (Ucase(Trim(EndCob_endereco_complemento)) <> Ucase(Trim(EndCob_endereco_ponto_referencia))) And (Trim(EndCob_endereco_ponto_referencia) <> "") then
 						if s_value <> "" then s_value = s_value & vbCrLf
-						s_value = s_value & EndCob_endereco_ponto_referencia
+						s_value = s_value & "Ponto de referência: " & EndCob_endereco_ponto_referencia
 						end if
 					end if
 				end if
@@ -3213,12 +3226,10 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		</td>
         <%end if %>
 		<td class="MB MD" align="left" nowrap><p class="Rf">Entrega Imediata</p>
-			<% s_checked = ""
-				if (Cstr(loja)=NUMERO_LOJA_ECOMMERCE_AR_CLUBE) And (Len(retorna_so_digitos(c_mag_cpf_cnpj_identificado))=14) then s_checked = " checked" %>
 			<input type="radio" id="rb_etg_imediata" name="rb_etg_imediata"
-				value="<%=COD_ETG_IMEDIATA_NAO%>" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fPED.rb_etg_imediata[0].click();">Não</span>
+				value="<%=COD_ETG_IMEDIATA_NAO%>" /><span class="C" style="cursor:default" onclick="fPED.rb_etg_imediata[0].click();">Não</span>
 			<% s_checked = ""
-				if (Cstr(loja)=NUMERO_LOJA_ECOMMERCE_AR_CLUBE) And (Len(retorna_so_digitos(c_mag_cpf_cnpj_identificado))=11) then s_checked = " checked" %>
+				if Cstr(loja)=NUMERO_LOJA_ECOMMERCE_AR_CLUBE then s_checked = " checked" %>
 			<input type="radio" id="rb_etg_imediata" name="rb_etg_imediata" 
 				value="<%=COD_ETG_IMEDIATA_SIM%>" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fPED.rb_etg_imediata[1].click();">Sim</span>
 		</td>

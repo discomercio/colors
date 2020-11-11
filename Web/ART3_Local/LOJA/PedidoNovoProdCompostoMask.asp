@@ -388,6 +388,10 @@
 			}
 		}
 	<% end if %>
+
+	<% if (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1") Or(c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "9") then %>
+        setTimeout('fPED.submit()', 0);
+	<% end if %>
 	});
 
 	//Dynamically assign height
