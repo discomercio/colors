@@ -495,7 +495,7 @@
 		end if
 
 	if alerta = "" then
-		if CStr(loja) <> CStr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) then
+		if False then
 			if eh_cpf And (Not sexo_ok(s_sexo)) then
 				alerta="INDIQUE QUAL O SEXO."
 				end if

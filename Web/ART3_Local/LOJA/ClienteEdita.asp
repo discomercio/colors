@@ -1212,7 +1212,7 @@ end function
         }
 
 		if (eh_cpf) {
-			<% if CStr(loja) <> CStr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) then %>
+			<% if False then %>
             s = trim(f.sexo.value);
             if ((s == "") || (!sexo_ok(s))) {
                 alert('Indique qual o sexo!!');

@@ -534,7 +534,7 @@
 			" WHERE (id_cliente='" & cliente_selecionado & "') AND (data=" & bd_formata_data(Date) & ")" & _
 			" AND (loja='" & loja & "') AND (vendedor='" & usuario & "')" & _
 			" AND (data >= " & bd_monta_data(Date) & ")" & _
-			" AND (hora >= '" & formata_hora_hhnnss(Now-converte_min_to_dec(10))& "')" & _
+			" AND (hora >= '" & formata_hora_hhnnss(Now-converte_min_to_dec(5))& "')" & _
 			" AND (st_entrega<>'" & ST_ENTREGA_CANCELADO & "')" & _
 			" ORDER BY t_PEDIDO_ITEM.pedido, sequencia"
 		set rs = cn.execute(s)

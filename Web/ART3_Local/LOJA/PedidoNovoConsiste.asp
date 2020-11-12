@@ -49,7 +49,7 @@
 
 '	CONECTA AO BANCO DE DADOS
 '	=========================
-	dim cn, rs, tMAP_XML, tOI, t_CLIENTE
+	dim cn, rs, tMAP_XML, tMAP_END_COB, tMAP_END_ETG, tOI, t_CLIENTE
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	If Not cria_recordset_otimista(t_CLIENTE, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
@@ -89,7 +89,7 @@
 	dim c_FlagCadSemiAutoPedMagento_FluxoOtimizado, s_checked
 	c_FlagCadSemiAutoPedMagento_FluxoOtimizado = Trim(Request.Form("c_FlagCadSemiAutoPedMagento_FluxoOtimizado"))
 
-	dim EndCob_endereco, EndCob_endereco_numero, EndCob_endereco_complemento, EndCob_endereco_ponto_referencia, EndCob_bairro, EndCob_cidade, EndCob_uf, EndCob_cep
+	dim EndCob_endereco, EndCob_endereco_numero, EndCob_endereco_complemento, EndCob_endereco_complemento_original_magento, EndCob_endereco_ponto_referencia, EndCob_bairro, EndCob_cidade, EndCob_uf, EndCob_cep
 	dim EndCob_email, EndCob_email_xml, EndCob_nome, EndCob_tipo_pessoa
 	dim EndCob_ddd_res, EndCob_tel_res, EndCob_ddd_com, EndCob_tel_com, EndCob_ramal_com, EndCob_ddd_com_2, EndCob_tel_com_2, EndCob_ramal_com_2, EndCob_ddd_cel, EndCob_tel_cel
 	dim EndCob_cnpj_cpf, EndCob_contribuinte_icms_status, EndCob_produtor_rural_status, EndCob_ie, EndCob_rg, EndCob_contato
@@ -99,96 +99,6 @@
 	dim EndEtg_ddd_cel, EndEtg_tel_cel, EndEtg_ddd_com_2, EndEtg_tel_com_2, EndEtg_ramal_com_2
 	dim EndEtg_tipo_pessoa, EndEtg_cnpj_cpf, EndEtg_contribuinte_icms_status, EndEtg_produtor_rural_status
 	dim EndEtg_ie, EndEtg_rg
-
-	if c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1" then
-		EndCob_endereco = Trim(Request.Form("EndCob_endereco"))
-		EndCob_endereco_numero = Trim(Request.Form("EndCob_endereco_numero"))
-		EndCob_endereco_complemento = Trim(Request.Form("EndCob_endereco_complemento"))
-		EndCob_endereco_ponto_referencia = Trim(Request.Form("EndCob_endereco_ponto_referencia"))
-		EndCob_bairro = Trim(Request.Form("EndCob_bairro"))
-		EndCob_cidade = Trim(Request.Form("EndCob_cidade"))
-		EndCob_uf = Trim(Request.Form("EndCob_uf"))
-		EndCob_cep = Trim(Request.Form("EndCob_cep"))
-		EndCob_email = Trim(Request.Form("EndCob_email"))
-		EndCob_email_xml = Trim(Request.Form("EndCob_email_xml"))
-		EndCob_nome = Trim(Request.Form("EndCob_nome"))
-		EndCob_tipo_pessoa = Trim(Request.Form("EndCob_tipo_pessoa"))
-		EndCob_ddd_res = Trim(Request.Form("EndCob_ddd_res"))
-		EndCob_tel_res = Trim(Request.Form("EndCob_tel_res"))
-		EndCob_ddd_com = Trim(Request.Form("EndCob_ddd_com"))
-		EndCob_tel_com = Trim(Request.Form("EndCob_tel_com"))
-		EndCob_ramal_com = Trim(Request.Form("EndCob_ramal_com"))
-		EndCob_ddd_com_2 = Trim(Request.Form("EndCob_ddd_com_2"))
-		EndCob_tel_com_2 = Trim(Request.Form("EndCob_tel_com_2"))
-		EndCob_ramal_com_2 = Trim(Request.Form("EndCob_ramal_com_2"))
-		EndCob_ddd_cel = Trim(Request.Form("EndCob_ddd_cel"))
-		EndCob_tel_cel = Trim(Request.Form("EndCob_tel_cel"))
-		EndCob_cnpj_cpf = Trim(Request.Form("EndCob_cnpj_cpf"))
-		EndCob_contribuinte_icms_status = Trim(Request.Form("EndCob_contribuinte_icms_status"))
-		EndCob_produtor_rural_status = Trim(Request.Form("EndCob_produtor_rural_status"))
-		EndCob_ie = Trim(Request.Form("EndCob_ie"))
-		EndCob_rg = Trim(Request.Form("EndCob_rg"))
-		EndCob_contato = Trim("" & t_CLIENTE("contato"))
-	else
-		EndCob_endereco = Trim("" & t_CLIENTE("endereco"))
-		EndCob_endereco_numero = Trim("" & t_CLIENTE("endereco_numero"))
-		EndCob_endereco_complemento = Trim("" & t_CLIENTE("endereco_complemento"))
-		EndCob_endereco_ponto_referencia = ""
-		EndCob_bairro = Trim("" & t_CLIENTE("bairro"))
-		EndCob_cidade = Trim("" & t_CLIENTE("cidade"))
-		EndCob_uf = Trim("" & t_CLIENTE("uf"))
-		EndCob_cep = Trim("" & t_CLIENTE("cep"))
-		EndCob_email = Trim("" & t_CLIENTE("email"))
-		EndCob_email_xml = Trim("" & t_CLIENTE("email_xml"))
-		EndCob_nome = Trim("" & t_CLIENTE("nome"))
-		EndCob_tipo_pessoa = Trim("" & t_CLIENTE("tipo"))
-		EndCob_ddd_res = Trim("" & t_CLIENTE("ddd_res"))
-		EndCob_tel_res = Trim("" & t_CLIENTE("tel_res"))
-		EndCob_ddd_com = Trim("" & t_CLIENTE("ddd_com"))
-		EndCob_tel_com = Trim("" & t_CLIENTE("tel_com"))
-		EndCob_ramal_com = Trim("" & t_CLIENTE("ramal_com"))
-		EndCob_ddd_com_2 = Trim("" & t_CLIENTE("ddd_com_2"))
-		EndCob_tel_com_2 = Trim("" & t_CLIENTE("tel_com_2"))
-		EndCob_ramal_com_2 = Trim("" & t_CLIENTE("ramal_com_2"))
-		EndCob_ddd_cel = Trim("" & t_CLIENTE("ddd_cel"))
-		EndCob_tel_cel = Trim("" & t_CLIENTE("tel_cel"))
-		EndCob_cnpj_cpf = Trim("" & t_CLIENTE("cnpj_cpf"))
-		EndCob_contribuinte_icms_status = t_CLIENTE("contribuinte_icms_status")
-		EndCob_produtor_rural_status = t_CLIENTE("produtor_rural_status")
-		EndCob_ie = Trim("" & t_CLIENTE("ie"))
-		EndCob_rg = Trim("" & t_CLIENTE("rg"))
-		EndCob_contato = Trim("" & t_CLIENTE("contato"))
-		end if
-
-	rb_end_entrega = Trim(Request.Form("rb_end_entrega"))
-	EndEtg_endereco = Trim(Request.Form("EndEtg_endereco"))
-	EndEtg_endereco_numero = Trim(Request.Form("EndEtg_endereco_numero"))
-	EndEtg_endereco_complemento = Trim(Request.Form("EndEtg_endereco_complemento"))
-	EndEtg_endereco_ponto_referencia = Trim(Request.Form("EndEtg_endereco_ponto_referencia"))
-	EndEtg_bairro = Trim(Request.Form("EndEtg_bairro"))
-	EndEtg_cidade = Trim(Request.Form("EndEtg_cidade"))
-	EndEtg_uf = Trim(Request.Form("EndEtg_uf"))
-	EndEtg_cep = Trim(Request.Form("EndEtg_cep"))
-	EndEtg_obs = Trim(Request.Form("EndEtg_obs"))
-	EndEtg_email = Trim(Request.Form("EndEtg_email"))
-	EndEtg_email_xml = Trim(Request.Form("EndEtg_email_xml"))
-	EndEtg_nome = Trim(Request.Form("EndEtg_nome"))
-	EndEtg_ddd_res = Trim(Request.Form("EndEtg_ddd_res"))
-	EndEtg_tel_res = Trim(Request.Form("EndEtg_tel_res"))
-	EndEtg_ddd_com = Trim(Request.Form("EndEtg_ddd_com"))
-	EndEtg_tel_com = Trim(Request.Form("EndEtg_tel_com"))
-	EndEtg_ramal_com = Trim(Request.Form("EndEtg_ramal_com"))
-	EndEtg_ddd_cel = Trim(Request.Form("EndEtg_ddd_cel"))
-	EndEtg_tel_cel = Trim(Request.Form("EndEtg_tel_cel"))
-	EndEtg_ddd_com_2 = Trim(Request.Form("EndEtg_ddd_com_2"))
-	EndEtg_tel_com_2 = Trim(Request.Form("EndEtg_tel_com_2"))
-	EndEtg_ramal_com_2 = Trim(Request.Form("EndEtg_ramal_com_2"))
-	EndEtg_tipo_pessoa = Trim(Request.Form("EndEtg_tipo_pessoa"))
-	EndEtg_cnpj_cpf = Trim(Request.Form("EndEtg_cnpj_cpf"))
-	EndEtg_contribuinte_icms_status = Trim(Request.Form("EndEtg_contribuinte_icms_status"))
-	EndEtg_produtor_rural_status = Trim(Request.Form("EndEtg_produtor_rural_status"))
-	EndEtg_ie = Trim(Request.Form("EndEtg_ie"))
-	EndEtg_rg = Trim(Request.Form("EndEtg_rg"))
 
 	dim s_fabricante, s_produto, s_descricao, s_descricao_html, s_qtde, s_readonly, s_vl_NF_readonly, s_vl_NF
 	dim s_preco_lista, s_vl_TotalItem, m_TotalItem, m_TotalDestePedido, m_TotalItemComRA
@@ -287,6 +197,8 @@
 		id_magento_api_pedido_xml = Trim(Request("id_magento_api_pedido_xml"))
 		
 		If Not cria_recordset_otimista(tMAP_XML, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+		If Not cria_recordset_otimista(tMAP_END_COB, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+		If Not cria_recordset_otimista(tMAP_END_ETG, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
 		set rParametro = get_registro_t_parametro(ID_PARAMETRO_MagentoPedidoComIndicadorListaLojaErp)
 		sListaLojaMagentoPedidoComIndicador = Trim("" & rParametro.campo_texto)
@@ -357,8 +269,148 @@
 						end if
 					end if
 				end if 'if tMAP_XML.Eof
+			
+			if alerta = "" then
+				s = "SELECT " & _
+						"*" & _
+					" FROM t_MAGENTO_API_PEDIDO_XML_DECODE_ENDERECO" & _
+					" WHERE" & _
+						" (id_magento_api_pedido_xml = " & tMAP_XML("id") & ")" & _
+						" AND (tipo_endereco = 'COB')"
+				if tMAP_END_COB.State <> 0 then tMAP_END_COB.Close
+				tMAP_END_COB.open s, cn
+				if tMAP_END_COB.Eof then
+					alerta = "Falha ao tentar localizar no banco de dados o registro do endereço de cobrança do pedido Magento nº " & c_numero_magento & " (operationControlTicket = " & operationControlTicket & ")"
+					end if
+				end if
+
+			if alerta = "" then
+				s = "SELECT " & _
+						"*" & _
+					" FROM t_MAGENTO_API_PEDIDO_XML_DECODE_ENDERECO" & _
+					" WHERE" & _
+						" (id_magento_api_pedido_xml = " & tMAP_XML("id") & ")" & _
+						" AND (tipo_endereco = 'ETG')"
+				if tMAP_END_ETG.State <> 0 then tMAP_END_ETG.Close
+				tMAP_END_ETG.open s, cn
+				if tMAP_END_ETG.Eof then
+					alerta = "Falha ao tentar localizar no banco de dados o registro do endereço de entrega do pedido Magento nº " & c_numero_magento & " (operationControlTicket = " & operationControlTicket & ")"
+					end if
+				end if
 			end if 'if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO
 		end if 'if alerta = ""
+
+	if c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1" then
+		EndCob_endereco = Trim(Request.Form("EndCob_endereco"))
+		EndCob_endereco_numero = Trim(Request.Form("EndCob_endereco_numero"))
+		EndCob_endereco_complemento = Trim(Request.Form("EndCob_endereco_complemento"))
+		EndCob_endereco_ponto_referencia = Trim(Request.Form("EndCob_endereco_ponto_referencia"))
+		EndCob_bairro = Trim(Request.Form("EndCob_bairro"))
+		EndCob_cidade = Trim(Request.Form("EndCob_cidade"))
+		EndCob_uf = Trim(Request.Form("EndCob_uf"))
+		EndCob_cep = Trim(Request.Form("EndCob_cep"))
+		EndCob_email = Trim(Request.Form("EndCob_email"))
+		EndCob_email_xml = Trim(Request.Form("EndCob_email_xml"))
+		EndCob_nome = Trim(Request.Form("EndCob_nome"))
+		EndCob_tipo_pessoa = Trim(Request.Form("EndCob_tipo_pessoa"))
+		EndCob_ddd_res = Trim(Request.Form("EndCob_ddd_res"))
+		EndCob_tel_res = Trim(Request.Form("EndCob_tel_res"))
+		EndCob_ddd_com = Trim(Request.Form("EndCob_ddd_com"))
+		EndCob_tel_com = Trim(Request.Form("EndCob_tel_com"))
+		EndCob_ramal_com = Trim(Request.Form("EndCob_ramal_com"))
+		EndCob_ddd_com_2 = Trim(Request.Form("EndCob_ddd_com_2"))
+		EndCob_tel_com_2 = Trim(Request.Form("EndCob_tel_com_2"))
+		EndCob_ramal_com_2 = Trim(Request.Form("EndCob_ramal_com_2"))
+		EndCob_ddd_cel = Trim(Request.Form("EndCob_ddd_cel"))
+		EndCob_tel_cel = Trim(Request.Form("EndCob_tel_cel"))
+		EndCob_cnpj_cpf = Trim(Request.Form("EndCob_cnpj_cpf"))
+		EndCob_contribuinte_icms_status = Trim(Request.Form("EndCob_contribuinte_icms_status"))
+		EndCob_produtor_rural_status = Trim(Request.Form("EndCob_produtor_rural_status"))
+		EndCob_ie = Trim(Request.Form("EndCob_ie"))
+		EndCob_rg = Trim(Request.Form("EndCob_rg"))
+		EndCob_contato = Trim("" & t_CLIENTE("contato"))
+	else
+		EndCob_endereco = Trim("" & t_CLIENTE("endereco"))
+		EndCob_endereco_numero = Trim("" & t_CLIENTE("endereco_numero"))
+		EndCob_endereco_complemento = Trim("" & t_CLIENTE("endereco_complemento"))
+		EndCob_endereco_ponto_referencia = ""
+		EndCob_bairro = Trim("" & t_CLIENTE("bairro"))
+		EndCob_cidade = Trim("" & t_CLIENTE("cidade"))
+		EndCob_uf = Trim("" & t_CLIENTE("uf"))
+		EndCob_cep = Trim("" & t_CLIENTE("cep"))
+		EndCob_email = Trim("" & t_CLIENTE("email"))
+		EndCob_email_xml = Trim("" & t_CLIENTE("email_xml"))
+		EndCob_nome = Trim("" & t_CLIENTE("nome"))
+		EndCob_tipo_pessoa = Trim("" & t_CLIENTE("tipo"))
+		EndCob_ddd_res = Trim("" & t_CLIENTE("ddd_res"))
+		EndCob_tel_res = Trim("" & t_CLIENTE("tel_res"))
+		EndCob_ddd_com = Trim("" & t_CLIENTE("ddd_com"))
+		EndCob_tel_com = Trim("" & t_CLIENTE("tel_com"))
+		EndCob_ramal_com = Trim("" & t_CLIENTE("ramal_com"))
+		EndCob_ddd_com_2 = Trim("" & t_CLIENTE("ddd_com_2"))
+		EndCob_tel_com_2 = Trim("" & t_CLIENTE("tel_com_2"))
+		EndCob_ramal_com_2 = Trim("" & t_CLIENTE("ramal_com_2"))
+		EndCob_ddd_cel = Trim("" & t_CLIENTE("ddd_cel"))
+		EndCob_tel_cel = Trim("" & t_CLIENTE("tel_cel"))
+		EndCob_cnpj_cpf = Trim("" & t_CLIENTE("cnpj_cpf"))
+		EndCob_contribuinte_icms_status = t_CLIENTE("contribuinte_icms_status")
+		EndCob_produtor_rural_status = t_CLIENTE("produtor_rural_status")
+		EndCob_ie = Trim("" & t_CLIENTE("ie"))
+		EndCob_rg = Trim("" & t_CLIENTE("rg"))
+		EndCob_contato = Trim("" & t_CLIENTE("contato"))
+		
+		'QUANDO O FLUXO PASSA PELA TELA DE CADASTRO DO CLIENTE, REALIZA TRATAMENTO ADICIONAL P/ CONSIDERAR OS CAMPOS ORIGINAIS DO MAGENTO DE COMPLEMENTO E PONTO DE REFERÊNCIA
+		if c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "9" then
+			if EndCob_tipo_pessoa = ID_PF then
+				EndCob_endereco_ponto_referencia = Trim("" & tMAP_END_ETG("street_detail"))
+				EndCob_endereco_complemento_original_magento = Trim("" & tMAP_END_ETG("endereco_complemento"))
+				'O COMPLEMENTO DO ENDEREÇO FOI TRUNCADO?
+				if (Len(EndCob_endereco_complemento) < Len(EndCob_endereco_complemento_original_magento)) And _
+					(Ucase(EndCob_endereco_complemento) = Ucase(Left(EndCob_endereco_complemento_original_magento, Len(EndCob_endereco_complemento)))) then
+					EndCob_endereco_complemento = EndCob_endereco_complemento_original_magento
+					end if
+				end if
+			end if
+		end if
+
+	rb_end_entrega = Trim(Request.Form("rb_end_entrega"))
+	EndEtg_endereco = Trim(Request.Form("EndEtg_endereco"))
+	EndEtg_endereco_numero = Trim(Request.Form("EndEtg_endereco_numero"))
+	EndEtg_endereco_complemento = Trim(Request.Form("EndEtg_endereco_complemento"))
+	EndEtg_endereco_ponto_referencia = Trim(Request.Form("EndEtg_endereco_ponto_referencia"))
+	EndEtg_bairro = Trim(Request.Form("EndEtg_bairro"))
+	EndEtg_cidade = Trim(Request.Form("EndEtg_cidade"))
+	EndEtg_uf = Trim(Request.Form("EndEtg_uf"))
+	EndEtg_cep = Trim(Request.Form("EndEtg_cep"))
+	EndEtg_obs = Trim(Request.Form("EndEtg_obs"))
+	EndEtg_email = Trim(Request.Form("EndEtg_email"))
+	EndEtg_email_xml = Trim(Request.Form("EndEtg_email_xml"))
+	EndEtg_nome = Trim(Request.Form("EndEtg_nome"))
+	EndEtg_ddd_res = Trim(Request.Form("EndEtg_ddd_res"))
+	EndEtg_tel_res = Trim(Request.Form("EndEtg_tel_res"))
+	EndEtg_ddd_com = Trim(Request.Form("EndEtg_ddd_com"))
+	EndEtg_tel_com = Trim(Request.Form("EndEtg_tel_com"))
+	EndEtg_ramal_com = Trim(Request.Form("EndEtg_ramal_com"))
+	EndEtg_ddd_cel = Trim(Request.Form("EndEtg_ddd_cel"))
+	EndEtg_tel_cel = Trim(Request.Form("EndEtg_tel_cel"))
+	EndEtg_ddd_com_2 = Trim(Request.Form("EndEtg_ddd_com_2"))
+	EndEtg_tel_com_2 = Trim(Request.Form("EndEtg_tel_com_2"))
+	EndEtg_ramal_com_2 = Trim(Request.Form("EndEtg_ramal_com_2"))
+	EndEtg_tipo_pessoa = Trim(Request.Form("EndEtg_tipo_pessoa"))
+	EndEtg_cnpj_cpf = Trim(Request.Form("EndEtg_cnpj_cpf"))
+	EndEtg_contribuinte_icms_status = Trim(Request.Form("EndEtg_contribuinte_icms_status"))
+	EndEtg_produtor_rural_status = Trim(Request.Form("EndEtg_produtor_rural_status"))
+	EndEtg_ie = Trim(Request.Form("EndEtg_ie"))
+	EndEtg_rg = Trim(Request.Form("EndEtg_rg"))
+
+	'QUANDO O FLUXO PASSA PELA TELA DE CADASTRO DO CLIENTE, REALIZA TRATAMENTO ADICIONAL P/ CONSIDERAR OS CAMPOS ORIGINAIS DO MAGENTO DE COMPLEMENTO E PONTO DE REFERÊNCIA
+	if c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "9" then
+		if (EndCob_tipo_pessoa = ID_PJ) And (rb_end_entrega = "S") then
+			if (EndEtg_endereco_ponto_referencia = "") And (Trim("" & tMAP_END_ETG("street_detail")) <> "") then
+				EndEtg_endereco_ponto_referencia = Trim("" & tMAP_END_ETG("street_detail"))
+				end if
+			end if
+		end if
 
 	dim s_loja_indicou, s_nome_loja_indicou
 	if Session("vendedor_externo") then
@@ -3637,6 +3689,12 @@ var perc_max_comissao_e_desconto_a_utilizar;
 <%
 '	FECHA CONEXAO COM O BANCO DE DADOS
 	if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then
+		if tMAP_END_COB.State <> 0 then tMAP_END_COB.Close
+		set tMAP_END_COB = nothing
+
+		if tMAP_END_ETG.State <> 0 then tMAP_END_ETG.Close
+		set tMAP_END_ETG = nothing
+		
 		if tMAP_XML.State <> 0 then tMAP_XML.Close
 		set tMAP_XML = nothing
 		end if
