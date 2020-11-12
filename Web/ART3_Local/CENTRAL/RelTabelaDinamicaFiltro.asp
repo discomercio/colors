@@ -755,7 +755,7 @@ function exibe_botao_confirmar() {
 		<table width="100%" cellpadding="2" cellspacing="2">
 			<tr>	
 			    <td rowspan="2" class="tdColSaida" align="left" valign="top" style="margin-left:2px; margin-right:2px">	
-			        <fieldset style="height:432px; border: solid 1px #555; padding: auto"><legend><input id="cadastro" type="checkbox" onclick="marcarDesmarcarCadastro()"/><label for="cadastro">Cadastro</label></legend>	   
+			        <fieldset style="height:452px; border: solid 1px #555; padding: auto"><legend><input id="cadastro" type="checkbox" onclick="marcarDesmarcarCadastro()"/><label for="cadastro">Cadastro</label></legend>	   
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_DATA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 				
@@ -782,6 +782,11 @@ function exibe_botao_confirmar() {
 					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_PEDIDO" name="ckb_COL_PEDIDO"
 						        value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_PEDIDO.click();">Pedido</span><br />
 				
+				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_PEDIDO_MARKETPLACE|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_PEDIDO_MARKETPLACE" name="ckb_COL_PEDIDO_MARKETPLACE"
+						        value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_PEDIDO_MARKETPLACE.click();">Pedido Marketplace</span><br />
+
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_GRUPO_PEDIDO_ORIGEM|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_GRUPO_PEDIDO_ORIGEM" name="ckb_COL_GRUPO_PEDIDO_ORIGEM"
@@ -972,6 +977,11 @@ function exibe_botao_confirmar() {
 					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_TOTAL|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_TOTAL" name="ckb_COL_VL_TOTAL"
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_TOTAL.click();">VL Total</span><br />
+
+				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_RA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+                	        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_RA" name="ckb_COL_VL_RA"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_RA.click();">VL RA</span><br />
 
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_RT|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
