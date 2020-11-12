@@ -63,6 +63,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	dim c_dt_faturamento_inicio, c_dt_faturamento_termino
 	dim c_fabricante, c_grupo, c_potencia_BTU, c_ciclo, c_posicao_mercado, c_grupo_pedido_origem
@@ -497,11 +500,6 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 				" t_PEDIDO.transportadora_id," & _
 				" t_PEDIDO__BASE.vendedor," & _
 				" t_PEDIDO__BASE.indicador," & _
-				" t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente," & _
-                " t_CLIENTE.tipo AS tipo_cliente," & _
-				" t_CLIENTE.cnpj_cpf," & _
-				" t_CLIENTE.contribuinte_icms_status," & _
-				" t_CLIENTE.produtor_rural_status," & _
 				" t_PEDIDO__BASE.perc_RT,"
 
 	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_VL_CUSTO_REAL_TOTAL <> "") then
@@ -531,7 +529,35 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 				" t_PRODUTO.potencia_BTU," & _
 				" t_PRODUTO.ciclo," & _
 				" t_PRODUTO.posicao_mercado," & _
-				" t_FABRICANTE.nome AS nome_fabricante," & _
+				" t_FABRICANTE.nome AS nome_fabricante,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_nome AS nome_cliente," & _
+                " t_PEDIDO.endereco_tipo_pessoa AS tipo_cliente," & _
+				" t_PEDIDO.endereco_cnpj_cpf AS cnpj_cpf," & _
+				" t_PEDIDO.endereco_contribuinte_icms_status AS contribuinte_icms_status," & _
+				" t_PEDIDO.endereco_produtor_rural_status AS produtor_rural_status," & _
+				" t_PEDIDO.endereco_cidade AS cidade," & _
+				" t_PEDIDO.endereco_uf AS uf," & _
+                " t_PEDIDO.endereco_ddd_res AS ddd_res," & _
+                " t_PEDIDO.endereco_tel_res AS tel_res," & _
+                " t_PEDIDO.endereco_ddd_cel AS ddd_cel," & _
+                " t_PEDIDO.endereco_tel_cel AS tel_cel," & _
+                " t_PEDIDO.endereco_ddd_com AS ddd_com," & _
+                " t_PEDIDO.endereco_tel_com AS tel_com," & _
+                " t_PEDIDO.endereco_ddd_com_2 AS ddd_com_2," & _
+                " t_PEDIDO.endereco_tel_com_2 AS tel_com_2," & _
+                " t_PEDIDO.endereco_ramal_com AS ramal_com," & _
+                " t_PEDIDO.endereco_ramal_com_2 AS ramal_com_2," & _
+                " t_PEDIDO.endereco_email AS email,"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente," & _
+                " t_CLIENTE.tipo AS tipo_cliente," & _
+				" t_CLIENTE.cnpj_cpf," & _
+				" t_CLIENTE.contribuinte_icms_status," & _
+				" t_CLIENTE.produtor_rural_status," & _
 				" t_CLIENTE.cidade AS cidade," & _
 				" t_CLIENTE.uf AS uf," & _
                 " t_CLIENTE.ddd_res," & _
@@ -544,7 +570,10 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
                 " t_CLIENTE.tel_com_2," & _
                 " t_CLIENTE.ramal_com," & _
                 " t_CLIENTE.ramal_com_2," & _
-                " t_CLIENTE.email," & _
+                " t_CLIENTE.email,"
+		end if
+
+	s_sql = s_sql & _
                 " t_ORCAMENTISTA_E_INDICADOR.cnpj_cpf AS indicador_cnpj_cpf," & _
                 " t_ORCAMENTISTA_E_INDICADOR.endereco AS indicador_endereco," & _
                 " t_ORCAMENTISTA_E_INDICADOR.endereco_numero AS indicador_endereco_numero," & _
@@ -687,11 +716,6 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 				" t_PEDIDO.transportadora_id," & _
 				" t_PEDIDO__BASE.vendedor," & _
 				" t_PEDIDO__BASE.indicador," & _
-				" t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente," & _
-                " t_CLIENTE.tipo AS tipo_cliente," & _
-				" t_CLIENTE.cnpj_cpf," & _
-				" t_CLIENTE.contribuinte_icms_status," & _
-				" t_CLIENTE.produtor_rural_status," & _
 				" t_PEDIDO__BASE.perc_RT,"
 
 	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_VL_CUSTO_REAL_TOTAL <> "") then
@@ -721,20 +745,51 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 				" t_PRODUTO.potencia_BTU," & _
 				" t_PRODUTO.ciclo," & _
 				" t_PRODUTO.posicao_mercado," & _
-				" t_FABRICANTE.nome AS nome_fabricante," & _
+				" t_FABRICANTE.nome AS nome_fabricante,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_nome AS nome_cliente," & _
+                " t_PEDIDO.endereco_tipo_pessoa AS tipo_cliente," & _
+				" t_PEDIDO.endereco_cnpj_cpf AS cnpj_cpf," & _
+				" t_PEDIDO.endereco_contribuinte_icms_status AS contribuinte_icms_status," & _
+				" t_PEDIDO.endereco_produtor_rural_status AS produtor_rural_status," & _
+				" t_PEDIDO.endereco_cidade AS cidade," & _
+				" t_PEDIDO.endereco_uf AS uf," & _
+				" t_PEDIDO.endereco_ddd_res AS ddd_res," & _
+				" t_PEDIDO.endereco_tel_res AS tel_res," & _
+				" t_PEDIDO.endereco_ddd_cel AS ddd_cel," & _
+				" t_PEDIDO.endereco_tel_cel AS tel_cel," & _
+				" t_PEDIDO.endereco_ddd_com AS ddd_com," & _
+				" t_PEDIDO.endereco_tel_com AS tel_com," & _
+				" t_PEDIDO.endereco_ddd_com_2 AS ddd_com_2," & _
+				" t_PEDIDO.endereco_tel_com_2 AS tel_com_2," & _
+				" t_PEDIDO.endereco_ramal_com AS ramal_com," & _
+				" t_PEDIDO.endereco_ramal_com_2 AS ramal_com_2," & _
+				" t_PEDIDO.endereco_email AS email,"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente," & _
+				" t_CLIENTE.tipo AS tipo_cliente," & _
+				" t_CLIENTE.cnpj_cpf," & _
+				" t_CLIENTE.contribuinte_icms_status," & _
+				" t_CLIENTE.produtor_rural_status," & _
 				" t_CLIENTE.cidade AS cidade," & _
 				" t_CLIENTE.uf AS uf," & _
-                " t_CLIENTE.ddd_res," & _
-                " t_CLIENTE.tel_res," & _
-                " t_CLIENTE.ddd_cel," & _
-                " t_CLIENTE.tel_cel," & _
-                " t_CLIENTE.ddd_com," & _
-                " t_CLIENTE.tel_com," & _
-                " t_CLIENTE.ddd_com_2," & _
-                " t_CLIENTE.tel_com_2," & _
-                " t_CLIENTE.ramal_com," & _
-                " t_CLIENTE.ramal_com_2," & _
-                " t_CLIENTE.email," & _
+				" t_CLIENTE.ddd_res," & _
+				" t_CLIENTE.tel_res," & _
+				" t_CLIENTE.ddd_cel," & _
+				" t_CLIENTE.tel_cel," & _
+				" t_CLIENTE.ddd_com," & _
+				" t_CLIENTE.tel_com," & _
+				" t_CLIENTE.ddd_com_2," & _
+				" t_CLIENTE.tel_com_2," & _
+				" t_CLIENTE.ramal_com," & _
+				" t_CLIENTE.ramal_com_2," & _
+				" t_CLIENTE.email,"
+		end if
+
+	s_sql = s_sql & _
                 " t_ORCAMENTISTA_E_INDICADOR.cnpj_cpf AS indicador_cnpj_cpf," & _
                 " t_ORCAMENTISTA_E_INDICADOR.endereco AS indicador_endereco," & _
                 " t_ORCAMENTISTA_E_INDICADOR.endereco_numero AS indicador_endereco_numero," & _
