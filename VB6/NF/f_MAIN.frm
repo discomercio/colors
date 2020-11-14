@@ -4146,7 +4146,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' VETORES
 Dim v() As String
@@ -4466,7 +4466,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' VETORES
 Dim v() As String
@@ -4784,7 +4784,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 Dim blnOperacaoNaoTriangular As Boolean
 
@@ -11536,8 +11536,7 @@ Dim s_erro As String
     strIE = ""
     If pedido <> "" Then
         'verificar se os dados do cliente devem vir da memorização no pedido
-        'If param_pedidomemorizacaoenderecos.campo_inteiro = 1 Then
-        If False Then
+        If param_pedidomemorizacaoenderecos.campo_inteiro = 1 Then
             If obtem_info_pedido_memorizada(pedido, s_resp, s_end_entrega, s_end_entrega_uf, s_end_cliente_uf, s_NFe_texto_constar, strIE, s_erro) Then
                 c_info_pedido = s_resp
                 c_dados_adicionais = s_NFe_texto_constar
