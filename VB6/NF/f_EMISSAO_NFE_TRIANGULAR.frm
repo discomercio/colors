@@ -6397,9 +6397,9 @@ Dim s_NFe_texto_constar As String
         c_rg_dest = endereco_recebedor__rg
     ElseIf param_pedidomemorizacaoenderecos.campo_inteiro = 1 Then
         'se ainda não existe nota de venda emitida e existe memorização de endereço, usar os dados da t_PEDIDO
-        c_cnpj_cpf_dest = cnpj_cpf_formata(endereco_comprador__cnpj_cpf)
-        c_nome_dest = endereco_comprador__nome
-        c_rg_dest = endereco_comprador__rg
+        c_cnpj_cpf_dest = cnpj_cpf_formata(endereco_recebedor__cnpj_cpf)
+        c_nome_dest = endereco_recebedor__nome
+        c_rg_dest = endereco_recebedor__rg
     Else
         'no caso de pessoa jurídica, a opção será pesquisar/preencher os dados do recebedor
         chk_InfoComprador.Value = 0
@@ -7086,6 +7086,9 @@ Dim t_DESTINATARIO As ADODB.Recordset
     endereco_comprador__cep = ""
     endereco_comprador__cidade = ""
     endereco_comprador__uf = ""
+    endereco_recebedor__nome = ""
+    endereco_recebedor__cnpj_cpf = ""
+    endereco_recebedor__rg = ""
     endereco_recebedor__logradouro = ""
     endereco_recebedor__numero = ""
     endereco_recebedor__complemento = ""
@@ -7093,6 +7096,7 @@ Dim t_DESTINATARIO As ADODB.Recordset
     endereco_recebedor__cep = ""
     endereco_recebedor__cidade = ""
     endereco_recebedor__uf = ""
+    'c_cnpj_cpf_dest
     s_endereco = ""
     s_nome = ""
     s_cnpj_cpf = ""
@@ -7106,7 +7110,8 @@ Dim t_DESTINATARIO As ADODB.Recordset
     pedido_a = ""
     s_erro = ""
     s = "SELECT" & _
-            " pedido, st_entrega, id_cliente, obs_1, st_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep, NFe_texto_constar" & _
+            " pedido, st_entrega, id_cliente, obs_1, st_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep, NFe_texto_constar, " & _
+            " EndEtg_nome as nome, EndEtg_cnpj_cpf as cnpj_cpf, EndEtg_tipo_pessoa as tipo_pessoa, EndEtg_ie as ie, EndEtg_rg as rg " & _
         " FROM t_PEDIDO" & _
         " WHERE" & _
             " (pedido = '" & Trim$(pedido) & "')"
@@ -7141,30 +7146,7 @@ Dim t_DESTINATARIO As ADODB.Recordset
             " endereco_rg as rg, " & _
             " endereco_contato as contato " & _
         " FROM t_PEDIDO" & _
-        " WHERE (pedido = '" & Trim$(pedido) & "')" & " AND (endereco_tipo_pessoa = '" & ID_PJ & "')"
-    s = s & " UNION" & _
-        " SELECT" & _
-            " pedido, id_cliente, st_memorizacao_completa_enderecos, endereco_uf as uf, endereco_cnpj_cpf as cnpj_cpf, " & _
-            " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_logradouro else EndEtg_endereco end as endereco, " & _
-            " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_bairro else EndEtg_bairro end as bairro, " & _
-            " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_cidade else EndEtg_cidade end as cidade, " & _
-            " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_cep else EndEtg_cep end as cep, " & _
-            " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_numero else EndEtg_endereco_numero end as endereco_numero, " & _
-            " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_complemento else EndEtg_endereco_complemento end as endereco_complemento, " & _
-            " endereco_email as email, endereco_email_xml as email_xml, " & _
-            " endereco_nome as nome, " & _
-            " endereco_ddd_res as ddd_res, endereco_tel_res as tel_res, " & _
-            " endereco_ddd_com as ddd_com, endereco_tel_com as tel_com, endereco_ramal_com as ramal_com, " & _
-            " endereco_ddd_cel as ddd_cel, endereco_tel_cel as tel_cel, " & _
-            " endereco_ddd_com_2 as ddd_com_2, endereco_tel_com_2 as tel_com_2, endereco_ramal_com_2 as ramal_com_2, " & _
-            " endereco_tipo_pessoa as tipo, " & _
-            " endereco_contribuinte_icms_status as contribuinte_icms_status, " & _
-            " endereco_produtor_rural_status as produtor_rural_status, " & _
-            " endereco_ie as ie, " & _
-            " endereco_rg as rg, " & _
-            " endereco_contato as contato " & _
-        " FROM t_PEDIDO" & _
-        " WHERE (pedido = '" & Trim$(pedido) & "')" & " AND (endereco_tipo_pessoa = '" & ID_PF & "')"
+        " WHERE (pedido = '" & Trim$(pedido) & "')"
     t_DESTINATARIO.Open s, dbc, , , adCmdText
     If t_DESTINATARIO.EOF Then
         strMsgErro = "Problemas na localização do endereço memorizado no pedido " & Trim$(pedido) & "!!"
@@ -7175,6 +7157,13 @@ Dim t_DESTINATARIO As ADODB.Recordset
     strEndClienteUf = UCase$(Trim$("" & t_DESTINATARIO("uf")))
     
     '   ENDEREÇO DE ENTREGA
+        endereco_recebedor__nome = UCase$(Trim("" & t_PEDIDO("nome")))
+        endereco_recebedor__cnpj_cpf = Trim("" & t_PEDIDO("cnpj_cpf"))
+        If Trim("" & t_PEDIDO("tipo_pessoa")) = "PJ" Then
+            endereco_recebedor__rg = Trim("" & t_PEDIDO("ie"))
+        Else
+            endereco_recebedor__rg = Trim("" & t_PEDIDO("rg"))
+            End If
         endereco_recebedor__logradouro = UCase$(Trim("" & t_PEDIDO("EndEtg_endereco")))
         endereco_recebedor__numero = UCase$(Trim("" & t_PEDIDO("EndEtg_endereco_numero")))
         endereco_recebedor__complemento = UCase$(Trim("" & t_PEDIDO("EndEtg_endereco_complemento")))
@@ -15251,7 +15240,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 
             '   TAG ICMS
             '   ~~~~~~~~
-                strNFeCst = Trim$(right$(.cst, 2))
+                'para a nota de remessa da operação triangular, não tributada (CST="41") / ORIENTAÇÃO CONTABILIDADE
+                strNFeCst = "41"
                 vNFeImgItem(UBound(vNFeImgItem)).ICMS__CST = strNFeCst
                 strNFeTagIcms = strNFeTagIcms & vbTab & NFeFormataCampo("CST", vNFeImgItem(UBound(vNFeImgItem)).ICMS__CST)
                                 

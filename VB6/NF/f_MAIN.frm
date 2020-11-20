@@ -11586,6 +11586,7 @@ Dim strUsuario As String
 Dim s_erro As String
 Dim s_cliente_uf As String
 Dim s_entrega_uf As String
+Dim s_tipo_pessoa As String
 ' BANCO DE DADOS
 Dim t As ADODB.Recordset
 
@@ -11614,30 +11615,57 @@ Dim t As ADODB.Recordset
         Do While True
             strPedido = ""
             intQtdeTentativas = intQtdeTentativas + 1
+            If param_pedidomemorizacaoenderecos.campo_inteiro = 1 Then
+                s = "SELECT TOP 10" & _
+                        " tPNES.id," & _
+                        " tPNES.pedido," & _
+                        " tP.st_end_entrega," & _
+                        " tP.EndEtg_uf," & _
+                        " tP.endereco_tipo_pessoa as tipo_pessoa," & _
+                        " tP.endereco_uf AS cli_uf" & _
+                    " FROM t_PEDIDO_NFe_EMISSAO_SOLICITADA tPNES" & _
+                        " INNER JOIN t_PEDIDO tP ON (tP.pedido=tPNES.pedido)" & _
+                    " WHERE" & _
+                        " (nfe_emitida_status = " & COD_NFE_EMISSAO_SOLICITADA__PENDENTE & ")" & _
+                        " AND (Len(Coalesce(tP.transportadora_id,'')) > 0)" & _
+                        " AND (tP.st_entrega <> '" & Trim(CStr(ST_ENTREGA_CANCELADO)) & "')" & _
+                        " AND (tP.id_nfe_emitente = " & usuario.emit_id & ")" & _
+                        " AND (" & _
+                            "(ult_requisicao_fila_data_hora IS NULL)" & _
+                            " OR " & _
+                            "(DateDiff(ss, ult_requisicao_fila_data_hora, getdate()) >= " & MAX_TIMEOUT_REGISTRO_REQUISITADO_FILA_EM_SEG & ")" & _
+                            ")"
+                            
+                s = s & _
+                    " ORDER BY" & _
+                        " id"
             
-            s = "SELECT TOP 10" & _
-                    " tPNES.id," & _
-                    " tPNES.pedido," & _
-                    " tP.st_end_entrega," & _
-                    " tP.EndEtg_uf," & _
-                    " tC.uf AS cli_uf" & _
-                " FROM t_PEDIDO_NFe_EMISSAO_SOLICITADA tPNES" & _
-                    " INNER JOIN t_PEDIDO tP ON (tP.pedido=tPNES.pedido)" & _
-                    " INNER JOIN t_CLIENTE tC ON (tP.id_cliente=tC.id)" & _
-                " WHERE" & _
-                    " (nfe_emitida_status = " & COD_NFE_EMISSAO_SOLICITADA__PENDENTE & ")" & _
-                    " AND (Len(Coalesce(tP.transportadora_id,'')) > 0)" & _
-                    " AND (tP.st_entrega <> '" & Trim(CStr(ST_ENTREGA_CANCELADO)) & "')" & _
-                    " AND (tP.id_nfe_emitente = " & usuario.emit_id & ")" & _
-                    " AND (" & _
-                        "(ult_requisicao_fila_data_hora IS NULL)" & _
-                        " OR " & _
-                        "(DateDiff(ss, ult_requisicao_fila_data_hora, getdate()) >= " & MAX_TIMEOUT_REGISTRO_REQUISITADO_FILA_EM_SEG & ")" & _
-                        ")"
-                        
-            s = s & _
-                " ORDER BY" & _
-                    " id"
+            Else
+                s = "SELECT TOP 10" & _
+                        " tPNES.id," & _
+                        " tPNES.pedido," & _
+                        " tP.st_end_entrega," & _
+                        " tP.EndEtg_uf," & _
+                        " tC.tipo as tipo_pessoa," & _
+                        " tC.uf AS cli_uf" & _
+                    " FROM t_PEDIDO_NFe_EMISSAO_SOLICITADA tPNES" & _
+                        " INNER JOIN t_PEDIDO tP ON (tP.pedido=tPNES.pedido)" & _
+                        " INNER JOIN t_CLIENTE tC ON (tP.id_cliente=tC.id)" & _
+                    " WHERE" & _
+                        " (nfe_emitida_status = " & COD_NFE_EMISSAO_SOLICITADA__PENDENTE & ")" & _
+                        " AND (Len(Coalesce(tP.transportadora_id,'')) > 0)" & _
+                        " AND (tP.st_entrega <> '" & Trim(CStr(ST_ENTREGA_CANCELADO)) & "')" & _
+                        " AND (tP.id_nfe_emitente = " & usuario.emit_id & ")" & _
+                        " AND (" & _
+                            "(ult_requisicao_fila_data_hora IS NULL)" & _
+                            " OR " & _
+                            "(DateDiff(ss, ult_requisicao_fila_data_hora, getdate()) >= " & MAX_TIMEOUT_REGISTRO_REQUISITADO_FILA_EM_SEG & ")" & _
+                            ")"
+                            
+                s = s & _
+                    " ORDER BY" & _
+                        " id"
+                End If
             If t.State <> adStateClosed Then t.Close
             t.Open s, dbc, , , adCmdText
             If t.EOF Then Exit Do
@@ -11646,6 +11674,7 @@ Dim t As ADODB.Recordset
             int_st_end_entrega = CLng(t("st_end_entrega"))
             s_entrega_uf = Trim$("" & t("EndEtg_uf"))
             s_cliente_uf = Trim$("" & t("cli_uf"))
+            s_tipo_pessoa = Trim$("" & t("tipo_pessoa"))
             s = "UPDATE t_PEDIDO_NFe_EMISSAO_SOLICITADA SET" & _
                     " ult_requisicao_fila_data_hora = getdate()," & _
                     " ult_requisicao_fila_usuario = '" & usuario.id & "'" & _
@@ -11673,6 +11702,7 @@ Dim t As ADODB.Recordset
         '- a UF de entrega deve ser diferente da UF do cliente
         If blnNotaTriangularAtiva And _
            (strPedido <> "") And _
+           (s_tipo_pessoa = "PJ") And _
            (int_st_end_entrega <> 0) And _
            (s_entrega_uf <> "") And _
            (s_cliente_uf <> s_entrega_uf) Then
