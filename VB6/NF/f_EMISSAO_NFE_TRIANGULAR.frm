@@ -6903,14 +6903,14 @@ Dim t_DESTINATARIO As ADODB.Recordset
 
     
     s_end_linha_1 = s_endereco
-    If (s_end_linha_1 <> "") And (endereco_recebedor__bairro <> "") Then s_end_linha_1 = s_end_linha_1 & "  -  "
-    s_end_linha_1 = s_end_linha_1 & endereco_recebedor__bairro
+    If (s_end_linha_1 <> "") And (endereco_comprador__bairro <> "") Then s_end_linha_1 = s_end_linha_1 & "  -  "
+    s_end_linha_1 = s_end_linha_1 & endereco_comprador__bairro
     
     s_end_linha_2 = endereco_recebedor__cidade
-    If (s_end_linha_2 <> "") And (endereco_recebedor__uf <> "") Then s_end_linha_2 = s_end_linha_2 & "  -  "
-    s_end_linha_2 = s_end_linha_2 & endereco_recebedor__uf
-    If (s_end_linha_2 <> "") And (endereco_recebedor__cep <> "") Then s_end_linha_2 = s_end_linha_2 & "  -  "
-    s_end_linha_2 = s_end_linha_2 & endereco_recebedor__cep
+    If (s_end_linha_2 <> "") And (endereco_comprador__uf <> "") Then s_end_linha_2 = s_end_linha_2 & "  -  "
+    s_end_linha_2 = s_end_linha_2 & endereco_comprador__uf
+    If (s_end_linha_2 <> "") And (endereco_comprador__cep <> "") Then s_end_linha_2 = s_end_linha_2 & "  -  "
+    s_end_linha_2 = s_end_linha_2 & endereco_comprador__cep
         
     s_end_linha_3 = ""
     If UCase$(Trim$("" & t_DESTINATARIO("tipo"))) = ID_PF Then
@@ -7279,14 +7279,14 @@ Dim t_DESTINATARIO As ADODB.Recordset
 
     
     s_end_linha_1 = s_endereco
-    If (s_end_linha_1 <> "") And (endereco_recebedor__bairro <> "") Then s_end_linha_1 = s_end_linha_1 & "  -  "
-    s_end_linha_1 = s_end_linha_1 & endereco_recebedor__bairro
+    If (s_end_linha_1 <> "") And (endereco_comprador__bairro <> "") Then s_end_linha_1 = s_end_linha_1 & "  -  "
+    s_end_linha_1 = s_end_linha_1 & endereco_comprador__bairro
     
-    s_end_linha_2 = endereco_recebedor__cidade
-    If (s_end_linha_2 <> "") And (endereco_recebedor__uf <> "") Then s_end_linha_2 = s_end_linha_2 & "  -  "
-    s_end_linha_2 = s_end_linha_2 & endereco_recebedor__uf
-    If (s_end_linha_2 <> "") And (endereco_recebedor__cep <> "") Then s_end_linha_2 = s_end_linha_2 & "  -  "
-    s_end_linha_2 = s_end_linha_2 & endereco_recebedor__cep
+    s_end_linha_2 = endereco_comprador__cidade
+    If (s_end_linha_2 <> "") And (endereco_comprador__uf <> "") Then s_end_linha_2 = s_end_linha_2 & "  -  "
+    s_end_linha_2 = s_end_linha_2 & endereco_comprador__uf
+    If (s_end_linha_2 <> "") And (endereco_comprador__cep <> "") Then s_end_linha_2 = s_end_linha_2 & "  -  "
+    s_end_linha_2 = s_end_linha_2 & endereco_comprador__cep
         
     s_end_linha_3 = ""
     If UCase$(Trim$("" & t_DESTINATARIO("tipo"))) = ID_PF Then
@@ -8183,7 +8183,7 @@ Dim s_num_remessa As String
         s = "MERCADORIA SERA ENTREGUE POR CONTA E ORDEM A: " & vbCrLf
         s = s & c_nome_dest & vbCrLf
         s = s & IIf(Len(retorna_so_digitos(c_cnpj_cpf_dest)) = 14, "CNPJ: ", "CPF: ") & c_cnpj_cpf_dest
-        If Trim$(c_rg_dest) <> "" Then s = s & " / RG: " & c_rg_dest
+        If Trim$(c_rg_dest) <> "" Then s = s & " / IE/RG: " & c_rg_dest
         s = s & vbCrLf
         s = s & formata_endereco(l_end_recebedor_logradouro, l_end_recebedor_numero, l_end_recebedor_complemento, l_end_recebedor_bairro, l_end_recebedor_cidade, l_end_recebedor_uf, l_end_recebedor_cep) & vbCrLf
         s = s & "ATRAVES DA NOSSA NOTA FISCAL DE REMESSA No " & s_num_remessa & " EMITIDA EM " & Format$(Date, FORMATO_DATA) & vbCrLf

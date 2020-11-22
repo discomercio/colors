@@ -3430,7 +3430,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-Option Explicit
+    Option Explicit
 
 Dim modulo_inicializacao_ok As Boolean
 Dim pedido_anterior As String
@@ -5940,7 +5940,9 @@ Dim t_DESTINATARIO As ADODB.Recordset
         " WHERE (pedido = '" & Trim$(pedido) & "')" & " AND (endereco_tipo_pessoa = '" & ID_PJ & "')"
     s = s & " UNION" & _
         " SELECT" & _
-            " pedido, id_cliente, st_memorizacao_completa_enderecos, endereco_uf as uf, endereco_cnpj_cpf as cnpj_cpf, " & _
+            " pedido, id_cliente, st_memorizacao_completa_enderecos, " & _
+            " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_uf else EndEtg_uf end as uf, " & _
+            " endereco_cnpj_cpf as cnpj_cpf, " & _
             " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_logradouro else EndEtg_endereco end as endereco, " & _
             " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_bairro else EndEtg_bairro end as bairro, " & _
             " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_cidade else EndEtg_cidade end as cidade, " & _
@@ -7900,6 +7902,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             End If
         If t_DESTINATARIO("st_memorizacao_completa_enderecos") > 0 Then blnExisteMemorizacaoEndereco = True
         strEndEtgUf = UCase$(Trim$("" & t_DESTINATARIO("uf_end_nota")))
+        strEndClienteUf = UCase$(Trim$("" & t_DESTINATARIO("uf_end_nota")))
         End If
         
     'SEGUNDO CASO: A MEMORIZAÇÃO DO ENDEREÇO DO CLIENTE NA TABELA DE PEDIDOS NÃO ESTÁ OK
@@ -7915,9 +7918,9 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             aguarde INFO_NORMAL, m_id
             Exit Sub
             End If
+        strEndClienteUf = UCase$(Trim$("" & t_DESTINATARIO("uf")))
         End If
         
-    strEndClienteUf = UCase$(Trim$("" & t_DESTINATARIO("uf")))
     
 '   CONFIRMA ALÍQUOTA DO ICMS
 '    If usuario.emit_uf = "ES" Then
@@ -7960,7 +7963,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
 '            Case Else: strIcms = ""
 '            End Select
 '        End If
-    If obtem_aliquota_ICMS(usuario.emit_uf, UCase$(Trim$("" & t_DESTINATARIO("uf"))), aliquota_icms_interestadual) Then
+    If obtem_aliquota_ICMS(usuario.emit_uf, strEndClienteUf, aliquota_icms_interestadual) Then
         strIcms = Trim$(CStr(aliquota_icms_interestadual))
     Else
         strIcms = ""
@@ -7968,7 +7971,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     
     If (strIcms <> "") And (cb_icms <> "") Then
         If (CSng(strIcms) <> CSng(cb_icms)) Then
-            s = "O destinatário é do estado de " & UCase$(Trim$("" & t_DESTINATARIO("uf"))) & " cuja alíquota de ICMS é de " & strIcms & "%" & _
+            s = "O destinatário é do estado de " & strEndClienteUf & " cuja alíquota de ICMS é de " & strIcms & "%" & _
                 vbCrLf & "Confirma a emissão da NFe usando a alíquota de " & cb_icms & "%?"
             If Not confirma(s) Then
                 GoSub NFE_EMITE_FECHA_TABELAS
