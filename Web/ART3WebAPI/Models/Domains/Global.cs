@@ -205,6 +205,7 @@ namespace ART3WebAPI.Models.Domains
 					public const string UPLOAD_FILE_SAVE_FILE_CONTENT_IN_DB_MAX_SIZE_IN_BYTES = "WebAPI_UploadFile_SaveFileContentInDb_MaxSizeInBytes";
 					public const string UPLOAD_FILE_SAVE_FILE_CONTENT_IN_DB_AS_TEXT_MAX_SIZE_IN_CHARS = "WebAPI_UploadFile_SaveFileContentInDbAsText_MaxSizeInChars";
 					public const string FLAG_CAD_SEMI_AUTO_PED_MAGENTO_CADASTRAR_AUTOMATICAMENTE_CLIENTE_NOVO = "CadSemiAutomaticoPedidoMagento_FlagWebApiCadastrarAutomaticamenteClienteNovo";
+					public const string FLAG_PEDIDO_MEMORIZACAO_COMPLETA_ENDERECOS = "Flag_Pedido_MemorizacaoCompletaEnderecos";
 				}
 			}
 			#endregion
