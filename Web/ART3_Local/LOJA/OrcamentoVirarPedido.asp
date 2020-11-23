@@ -710,11 +710,15 @@
 			end if
 
 	'	I.E. É VÁLIDA?
-		if (cliente__contribuinte_icms_status = COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
+		if ( (cliente__tipo = ID_PF) And (Cstr(cliente__produtor_rural_status) = Cstr(COD_ST_CLIENTE_PRODUTOR_RURAL_SIM)) ) _
+			Or _
+			( (cliente__tipo = ID_PJ) And (Cstr(cliente__contribuinte_icms_status) = Cstr(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM)) ) _
+			Or _
+			( (cliente__tipo = ID_PJ) And (Cstr(cliente__contribuinte_icms_status) = Cstr(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO)) And (cliente__ie <> "") ) then
 			if Not isInscricaoEstadualValida(cliente__ie, cliente__uf) then
 				if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
 				alerta=alerta & "Corrija a IE (Inscrição Estadual) com um número válido!!" & _
-						"<br>" & "Certifique-se de que a UF informada corresponde à UF responsável pelo registro da IE no cadastro do cliente."
+						"<br>" & "Certifique-se de que a UF informada corresponde à UF responsável pelo registro da IE."
 				end if
 			end if
 
@@ -775,47 +779,25 @@
 				if msg_erro <> "" then
 					alerta = alerta & msg_erro
 				else
-					alerta = alerta & "Município '" & r_orcamento.EndEtg_cidade & "' não consta na relação de municípios do IBGE para a UF de '" & r_orcamento.EndEtg_uf & "'!!"
+					alerta = alerta & "Endereço de entrega: município '" & r_orcamento.EndEtg_cidade & "' não consta na relação de municípios do IBGE para a UF de '" & r_orcamento.EndEtg_uf & "'!!"
 					if s_lista_sugerida_municipios <> "" then
 						alerta = alerta & "<br>" & _
 										  "Localize o município na lista abaixo e verifique se a grafia está correta!!"
-						v_lista_sugerida_municipios = Split(s_lista_sugerida_municipios, chr(13))
-						iNumeracaoLista=0
-						for iCounterLista=LBound(v_lista_sugerida_municipios) to UBound(v_lista_sugerida_municipios)
-							if Trim("" & v_lista_sugerida_municipios(iCounterLista)) <> "" then
-								iNumeracaoLista=iNumeracaoLista+1
-								s_tabela_municipios_IBGE = s_tabela_municipios_IBGE & _
-													"	<tr>" & chr(13) & _
-													"		<td align='right'>" & chr(13) & _
-													"			<span class='N'>&nbsp;" & Cstr(iNumeracaoLista) & "." & "</span>" & chr(13) & _
-													"		</td>" & chr(13) & _
-													"		<td align='left'>" & chr(13) & _
-													"			<span class='N'>" & Trim("" & v_lista_sugerida_municipios(iCounterLista)) & "</span>" & chr(13) & _
-													"		</td>" & chr(13) & _
-													"	</tr>" & chr(13)
-								end if
-							next
-
-						if s_tabela_municipios_IBGE <> "" then
-							s_tabela_municipios_IBGE = _
-									"<table cellspacing='0' cellpadding='1'>" & chr(13) & _
-									"	<tr>" & chr(13) & _
-									"		<td align='center'>" & chr(13) & _
-									"			<p class='N'>" & "Relação de municípios de '" & r_orcamento.EndEtg_uf & "' que se iniciam com a letra '" & Ucase(left(r_orcamento.EndEtg_cidade,1)) & "'" & "</p>" & chr(13) & _
-									"		</td>" & chr(13) & _
-									"	</tr>" & chr(13) & _
-									"	<tr>" & chr(13) & _
-									"		<td align='center'>" & chr(13) &_
-									"			<table cellspacing='0' border='1'>" & chr(13) & _
-													s_tabela_municipios_IBGE & _
-									"			</table>" & chr(13) & _
-									"		</td>" & chr(13) & _
-									"	</tr>" & chr(13) & _
-									"</table>" & chr(13)
-							end if
 						end if
 					end if
 				end if 'if Not consiste_municipio_IBGE_ok()
+			
+			if ( (r_orcamento.EndEtg_tipo_pessoa = ID_PF) And (Cstr(r_orcamento.EndEtg_produtor_rural_status) = Cstr(COD_ST_CLIENTE_PRODUTOR_RURAL_SIM)) ) _
+				Or _
+				( (r_orcamento.EndEtg_tipo_pessoa = ID_PJ) And (Cstr(r_orcamento.EndEtg_contribuinte_icms_status) = Cstr(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM)) ) _
+				Or _
+				( (r_orcamento.EndEtg_tipo_pessoa = ID_PJ) And (Cstr(r_orcamento.EndEtg_contribuinte_icms_status) = Cstr(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO)) And (r_orcamento.EndEtg_ie <> "") ) then
+				if Not isInscricaoEstadualValida(r_orcamento.EndEtg_ie, r_orcamento.EndEtg_uf) then
+					if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
+					alerta=alerta & "Endereço de entrega: corrija a IE (Inscrição Estadual) com um número válido!" & _
+							"<br>" & "Certifique-se de que a UF informada corresponde à UF responsável pelo registro da IE."
+					end if
+				end if
 			end if 'if CLng(r_orcamento.st_end_entrega) <> 0
 		end if 'if alerta = ""
 

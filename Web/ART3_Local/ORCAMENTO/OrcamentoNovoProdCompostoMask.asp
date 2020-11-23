@@ -52,12 +52,6 @@
 	set r_cliente = New cl_CLIENTE
 	if Not x_cliente_bd(cliente_selecionado, r_cliente) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
 	
-	if Trim(r_cliente.endereco_numero) = "" then
-		Response.Redirect("aviso.asp?id=" & ERR_CAD_CLIENTE_ENDERECO_NUMERO_NAO_PREENCHIDO)
-	elseif Len(Trim(r_cliente.endereco)) > CLng(MAX_TAMANHO_CAMPO_ENDERECO) then
-		Response.Redirect("aviso.asp?id=" & ERR_CAD_CLIENTE_ENDERECO_EXCEDE_TAMANHO_MAXIMO)
-		end if
-		
 	dim rb_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento
 	dim EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep,EndEtg_obs
 	dim EndEtg_email, EndEtg_email_xml, EndEtg_nome, EndEtg_ddd_res, EndEtg_tel_res, EndEtg_ddd_com, EndEtg_tel_com, EndEtg_ramal_com
@@ -129,7 +123,13 @@
 
 	dim alerta
 	alerta = ""
-	
+
+	if Trim(orcamento_endereco_numero) = "" then
+		Response.Redirect("aviso.asp?id=" & ERR_CAD_CLIENTE_ENDERECO_NUMERO_NAO_PREENCHIDO)
+	elseif Len(Trim(orcamento_endereco_logradouro)) > CLng(MAX_TAMANHO_CAMPO_ENDERECO) then
+		Response.Redirect("aviso.asp?id=" & ERR_CAD_CLIENTE_ENDERECO_EXCEDE_TAMANHO_MAXIMO)
+		end if
+		
 '	CONSISTÊNCIAS P/ EMISSÃO DE NFe
 	dim s_lista_sugerida_municipios
 	dim v_lista_sugerida_municipios
@@ -138,20 +138,20 @@
 	s_tabela_municipios_IBGE = ""
 	if alerta = "" then
 	'	DDD VÁLIDO?
-		if Not ddd_ok(r_cliente.ddd_res) then
+		if Not ddd_ok(orcamento_endereco_ddd_res) then
 			if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
 			alerta = alerta & "DDD do telefone residencial é inválido!!"
 			end if
 			
-		if Not ddd_ok(r_cliente.ddd_com) then
+		if Not ddd_ok(orcamento_endereco_ddd_com) then
 			if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
 			alerta = alerta & "DDD do telefone comercial é inválido!!"
 			end if
 			
 	'	I.E. É VÁLIDA?
-		if r_cliente.tipo = ID_PJ then
-            if r_cliente.ie <> "" then
-			    if Not isInscricaoEstadualValida(r_cliente.ie, r_cliente.uf) then
+		if orcamento_endereco_tipo_pessoa = ID_PJ then
+            if orcamento_endereco_ie <> "" then
+			    if Not isInscricaoEstadualValida(orcamento_endereco_ie, orcamento_endereco_uf) then
 				    if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
 				    alerta=alerta & "Corrija a IE (Inscrição Estadual) com um número válido!!" & _
 						    "<br>" & "Certifique-se de que a UF informada corresponde à UF responsável pelo registro da IE."
@@ -160,12 +160,12 @@
 		end if
 
 	'	MUNICÍPIO DE ACORDO C/ TABELA DO IBGE?
-		if Not consiste_municipio_IBGE_ok(r_cliente.cidade, r_cliente.uf, s_lista_sugerida_municipios, msg_erro) then
+		if Not consiste_municipio_IBGE_ok(orcamento_endereco_cidade, orcamento_endereco_uf, s_lista_sugerida_municipios, msg_erro) then
 			if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
 			if msg_erro <> "" then
 				alerta = alerta & msg_erro
 			else
-				alerta = alerta & "Município '" & r_cliente.cidade & "' não consta na relação de municípios do IBGE para a UF de '" & r_cliente.uf & "'!!"
+				alerta = alerta & "Município '" & orcamento_endereco_cidade & "' não consta na relação de municípios do IBGE para a UF de '" & orcamento_endereco_uf & "'!!"
 				if s_lista_sugerida_municipios <> "" then
 					alerta = alerta & "<br>" & _
 									  "Localize o município na lista abaixo e verifique se a grafia está correta!!"
@@ -191,7 +191,7 @@
 								"<table cellspacing='0' cellpadding='1'>" & chr(13) & _
 								"	<tr>" & chr(13) & _
 								"		<td align='center'>" & chr(13) & _
-								"			<p class='N'>" & "Relação de municípios de '" & r_cliente.uf & "' que se iniciam com a letra '" & Ucase(left(r_cliente.cidade,1)) & "'" & "</p>" & chr(13) & _
+								"			<p class='N'>" & "Relação de municípios de '" & orcamento_endereco_uf & "' que se iniciam com a letra '" & Ucase(left(orcamento_endereco_cidade,1)) & "'" & "</p>" & chr(13) & _
 								"		</td>" & chr(13) & _
 								"	</tr>" & chr(13) & _
 								"	<tr>" & chr(13) & _
@@ -210,13 +210,20 @@
 
 	if alerta = "" then
 		if rb_end_entrega = "S" then
+			if EndEtg_ie <> "" then
+				if Not isInscricaoEstadualValida(EndEtg_ie, EndEtg_uf) then
+					alerta="Endereço de entrega: preencha a IE (Inscrição Estadual) com um número válido!!" & _
+							"<br>" & "Certifique-se de que a UF do endereço de entrega corresponde à UF responsável pelo registro da IE."
+					end if
+				end if
+
 		'	MUNICÍPIO DE ACORDO C/ TABELA DO IBGE?
 			if Not consiste_municipio_IBGE_ok(EndEtg_cidade, EndEtg_uf, s_lista_sugerida_municipios, msg_erro) then
 				if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
 				if msg_erro <> "" then
 					alerta = alerta & msg_erro
 				else
-					alerta = alerta & "Município '" & EndEtg_cidade & "' não consta na relação de municípios do IBGE para a UF de '" & EndEtg_uf & "'!!"
+					alerta = alerta & "Município '" & EndEtg_cidade & "' não consta na relação de municípios do IBGE para a UF de '" & EndEtg_uf & "'!"
 					if s_lista_sugerida_municipios <> "" then
 						alerta = alerta & "<br>" & _
 										  "Localize o município na lista abaixo e verifique se a grafia está correta!!"

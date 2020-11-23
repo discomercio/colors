@@ -56,12 +56,6 @@
 	set r_cliente = New cl_CLIENTE
 	if Not x_cliente_bd(cliente_selecionado, r_cliente) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
 	
-	if Trim(r_cliente.endereco_numero) = "" then
-		Response.Redirect("aviso.asp?id=" & ERR_CAD_CLIENTE_ENDERECO_NUMERO_NAO_PREENCHIDO)
-	elseif Len(Trim(r_cliente.endereco)) > CLng(MAX_TAMANHO_CAMPO_ENDERECO) then
-		Response.Redirect("aviso.asp?id=" & ERR_CAD_CLIENTE_ENDERECO_EXCEDE_TAMANHO_MAXIMO)
-		end if
-	
 	dim blnLojaHabilitadaProdCompostoECommerce
 	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
 
@@ -117,33 +111,33 @@
 		EndCob_ie = Trim(Request.Form("EndCob_ie"))
 		EndCob_rg = Trim(Request.Form("EndCob_rg"))
 	else
-		EndCob_endereco = ""
-		EndCob_endereco_numero = ""
-		EndCob_endereco_complemento = ""
+		EndCob_endereco = r_cliente.endereco
+		EndCob_endereco_numero = r_cliente.endereco_numero
+		EndCob_endereco_complemento = r_cliente.endereco_complemento
 		EndCob_endereco_ponto_referencia = ""
-		EndCob_bairro = ""
-		EndCob_cidade = ""
-		EndCob_uf = ""
-		EndCob_cep = ""
-		EndCob_email = ""
-		EndCob_email_xml = ""
-		EndCob_nome = ""
-		EndCob_tipo_pessoa = ""
-		EndCob_ddd_res = ""
-		EndCob_tel_res = ""
-		EndCob_ddd_com = ""
-		EndCob_tel_com = ""
-		EndCob_ramal_com = ""
-		EndCob_ddd_com_2 = ""
-		EndCob_tel_com_2 = ""
-		EndCob_ramal_com_2 = ""
-		EndCob_ddd_cel = ""
-		EndCob_tel_cel = ""
-		EndCob_cnpj_cpf = ""
-		EndCob_contribuinte_icms_status = ""
-		EndCob_produtor_rural_status = ""
-		EndCob_ie = ""
-		EndCob_rg = ""
+		EndCob_bairro = r_cliente.bairro
+		EndCob_cidade = r_cliente.cidade
+		EndCob_uf = r_cliente.uf
+		EndCob_cep = r_cliente.cep
+		EndCob_email = r_cliente.email
+		EndCob_email_xml = r_cliente.email_xml
+		EndCob_nome = r_cliente.nome
+		EndCob_tipo_pessoa = r_cliente.tipo
+		EndCob_ddd_res = r_cliente.ddd_res
+		EndCob_tel_res = r_cliente.tel_res
+		EndCob_ddd_com = r_cliente.ddd_com
+		EndCob_tel_com = r_cliente.tel_com
+		EndCob_ramal_com = r_cliente.ramal_com
+		EndCob_ddd_com_2 = r_cliente.ddd_com_2
+		EndCob_tel_com_2 = r_cliente.tel_com_2
+		EndCob_ramal_com_2 = r_cliente.ramal_com_2
+		EndCob_ddd_cel = r_cliente.ddd_cel
+		EndCob_tel_cel = r_cliente.tel_cel
+		EndCob_cnpj_cpf = r_cliente.cnpj_cpf
+		EndCob_contribuinte_icms_status = r_cliente.contribuinte_icms_status
+		EndCob_produtor_rural_status = r_cliente.produtor_rural_status
+		EndCob_ie = r_cliente.ie
+		EndCob_rg = r_cliente.rg
 		end if
 
 	rb_end_entrega = Trim(Request.Form("rb_end_entrega"))
@@ -179,6 +173,12 @@
 	dim alerta
 	alerta = ""
 	
+	if Trim(EndCob_endereco_numero) = "" then
+		Response.Redirect("aviso.asp?id=" & ERR_CAD_CLIENTE_ENDERECO_NUMERO_NAO_PREENCHIDO)
+	elseif Len(Trim(EndCob_endereco)) > CLng(MAX_TAMANHO_CAMPO_ENDERECO) then
+		Response.Redirect("aviso.asp?id=" & ERR_CAD_CLIENTE_ENDERECO_EXCEDE_TAMANHO_MAXIMO)
+		end if
+
 	dim s_nome_cliente, c_mag_cpf_cnpj_identificado, c_mag_installer_document
 	dim operacao_origem, c_numero_magento, operationControlTicket, sessionToken, id_magento_api_pedido_xml
 	operacao_origem = Trim(Request("operacao_origem"))
@@ -281,10 +281,10 @@
 			end if 'if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO
 		end if 'if alerta = ""
 
-	if Trim("" & r_cliente.cep) <> "" then
-		if Len(retorna_so_digitos(Trim("" & r_cliente.cep))) < 8 then
+	if Trim("" & EndCob_cep) <> "" then
+		if Len(retorna_so_digitos(Trim("" & EndCob_cep))) < 8 then
 			alerta=texto_add_br(alerta)
-			alerta=alerta & "O CEP do cadastro do cliente está incompleto (CEP: " & Trim("" & r_cliente.cep) & ")"
+			alerta=alerta & "O CEP do cadastro do cliente está incompleto (CEP: " & Trim("" & EndCob_cep) & ")"
 			end if
 		end if
 
@@ -310,20 +310,22 @@
 	dim s_tabela_municipios_IBGE
 	s_tabela_municipios_IBGE = ""
 	if alerta = "" then
-	'	DDD VÁLIDO?
-		if Not ddd_ok(r_cliente.ddd_res) then
-			if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
-			alerta = alerta & "DDD do telefone residencial é inválido!!"
-			end if
+		if c_FlagCadSemiAutoPedMagento_FluxoOtimizado <> "1" then
+		'	DDD VÁLIDO?
+			if Not ddd_ok(EndCob_ddd_res) then
+				if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
+				alerta = alerta & "DDD do telefone residencial é inválido!!"
+				end if
 			
-		if Not ddd_ok(r_cliente.ddd_com) then
-			if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
-			alerta = alerta & "DDD do telefone comercial é inválido!!"
+			if Not ddd_ok(EndCob_ddd_com) then
+				if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
+				alerta = alerta & "DDD do telefone comercial é inválido!!"
+				end if
 			end if
-			
+
 	'	I.E. É VÁLIDA?
-		if (r_cliente.contribuinte_icms_status = COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
-			if Not isInscricaoEstadualValida(r_cliente.ie, r_cliente.uf) then
+		if (EndCob_contribuinte_icms_status = COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
+			if Not isInscricaoEstadualValida(EndCob_ie, EndCob_uf) then
 				if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
 				alerta=alerta & "Corrija a IE (Inscrição Estadual) com um número válido!!" & _
 						"<br>" & "Certifique-se de que a UF informada corresponde à UF responsável pelo registro da IE."
@@ -331,12 +333,12 @@
 			end if
 
 	'	MUNICÍPIO DE ACORDO C/ TABELA DO IBGE?
-		if Not consiste_municipio_IBGE_ok(r_cliente.cidade, r_cliente.uf, s_lista_sugerida_municipios, msg_erro) then
+		if Not consiste_municipio_IBGE_ok(EndCob_cidade, EndCob_uf, s_lista_sugerida_municipios, msg_erro) then
 			if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
 			if msg_erro <> "" then
 				alerta = alerta & msg_erro
 			else
-				alerta = alerta & "Município '" & r_cliente.cidade & "' não consta na relação de municípios do IBGE para a UF de '" & r_cliente.uf & "'!!"
+				alerta = alerta & "Município '" & EndCob_cidade & "' não consta na relação de municípios do IBGE para a UF de '" & EndCob_uf & "'!!"
 				if s_lista_sugerida_municipios <> "" then
 					alerta = alerta & "<br>" & _
 									  "Localize o município na lista abaixo e verifique se a grafia está correta!!"
@@ -362,7 +364,7 @@
 								"<table cellspacing='0' cellpadding='1'>" & chr(13) & _
 								"	<tr>" & chr(13) & _
 								"		<td align='center'>" & chr(13) & _
-								"			<p class='N'>" & "Relação de municípios de '" & r_cliente.uf & "' que se iniciam com a letra '" & Ucase(left(r_cliente.cidade,1)) & "'" & "</p>" & chr(13) & _
+								"			<p class='N'>" & "Relação de municípios de '" & EndCob_uf & "' que se iniciam com a letra '" & Ucase(left(EndCob_cidade,1)) & "'" & "</p>" & chr(13) & _
 								"		</td>" & chr(13) & _
 								"	</tr>" & chr(13) & _
 								"	<tr>" & chr(13) & _

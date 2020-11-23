@@ -38,6 +38,7 @@
 	dim s_tipo, s_op_descricao, s_pedido
 	dim s_loja, s_nome_loja
 	dim v_aux, s_cod_estoque_origem, s_fluxo
+	dim s_value
 	
 '	CONECTA AO BANCO DE DADOS
 '	=========================
@@ -45,6 +46,9 @@
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 '	OBTÉM DADOS DO FORMULÁRIO
 	url_back = Trim(Request("url_back"))
 	s_id_nfe_emitente = Trim(Request.Form("c_id_nfe_emitente"))
@@ -177,9 +181,17 @@
 			alerta=texto_add_br(alerta)
 			alerta=alerta & "Falha ao obter os dados do cliente (id=" & r_pedido.id_cliente & ")."
 		else
-			s_nome_contato = Trim(r_cliente.contato)
-			if s_nome_contato <> "" then 
-				s_nome_contato = "  (contato: " & s_nome_contato & ")"
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				s_nome_contato = Trim(r_pedido.endereco_contato)
+				if s_nome_contato = "" then s_nome_contato = Trim(r_cliente.contato)
+				if s_nome_contato <> "" then 
+					s_nome_contato = "  (contato: " & s_nome_contato & ")"
+					end if
+			else
+				s_nome_contato = Trim(r_cliente.contato)
+				if s_nome_contato <> "" then 
+					s_nome_contato = "  (contato: " & s_nome_contato & ")"
+					end if
 				end if
 			end if
 		
@@ -598,14 +610,27 @@ var i,blnTemItem,blnTemInfo;
 	<tr bgColor="#FFFFFF">
 	<td class="MDBE" NOWRAP align="right"><span class="PLTe" style="vertical-align:middle;">Cliente</span></td>
 	<td class="MDB" colspan="4">
+	<% if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then 
+			s_value = r_pedido.endereco_nome & s_nome_contato
+		else
+			s_value = r_cliente.nome & s_nome_contato
+			end if
+	%>
+
 		<input name="c_nome_cliente" id="c_nome_cliente" READONLY tabindex=-1 class="PLLe" style="width:460px;margin-left:2pt;" 
-				value="<%=r_cliente.nome & s_nome_contato%>"></td>
+				value="<%=s_value%>"></td>
 	</tr>
 <!--  ENDEREÇO  -->
 	<%
-	with r_cliente
-		s = formata_endereco(.endereco, .endereco_numero, .endereco_complemento, .bairro, .cidade, .uf, .cep)
-		end with
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		with r_pedido
+			s = formata_endereco(.endereco_logradouro, .endereco_numero, .endereco_complemento, .endereco_bairro, .endereco_cidade, .endereco_uf, .endereco_cep)
+			end with
+	else
+		with r_cliente
+			s = formata_endereco(.endereco, .endereco_numero, .endereco_complemento, .bairro, .cidade, .uf, .cep)
+			end with
+		end if
 	%>
 	<tr bgColor="#FFFFFF">
 	<td class="MDBE" NOWRAP align="right" valign="top"><span class="PLTe" style="vertical-align:middle;">Endereço</span></td>
@@ -614,25 +639,46 @@ var i,blnTemItem,blnTemInfo;
 	</tr>
 <% if r_cliente.tipo = ID_PF then %>
 <!--  TELEFONE  -->
+	<%
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s_value = formata_ddd_telefone_ramal(r_pedido.endereco_ddd_res, r_pedido.endereco_tel_res, "")
+		else
+			s_value = formata_ddd_telefone_ramal(r_cliente.ddd_res, r_cliente.tel_res, "")
+			end if
+	%>
 	<tr bgColor="#FFFFFF">
 	<td class="MDBE" NOWRAP align="right"><span class="PLTe" style="vertical-align:middle;">Tel Res</span></td>
 	<td class="MDB" colspan="4">
 		<input name="c_tel_res" id="c_tel_res" READONLY tabindex=-1 class="PLLe" style="width:460px;margin-left:2pt;" 
-				value="<%=formata_ddd_telefone_ramal(r_cliente.ddd_res, r_cliente.tel_res, "")%>"></td>
+				value="<%=s_value%>"></td>
 	</tr>
+	<%
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s_value = formata_ddd_telefone_ramal(r_pedido.endereco_ddd_com, r_pedido.endereco_tel_com, r_pedido.endereco_ramal_com)
+		else
+			s_value = formata_ddd_telefone_ramal(r_cliente.ddd_com, r_cliente.tel_com, r_cliente.ramal_com)
+			end if
+	%>
 	<tr bgColor="#FFFFFF">
 	<td class="MDBE" NOWRAP align="right"><span class="PLTe" style="vertical-align:middle;">Tel Com</span></td>
 	<td class="MDB" colspan="4">
 		<input name="c_tel_com" id="c_tel_com" READONLY tabindex=-1 class="PLLe" style="width:460px;margin-left:2pt;" 
-				value="<%=formata_ddd_telefone_ramal(r_cliente.ddd_com, r_cliente.tel_com, r_cliente.ramal_com)%>"></td>
+				value="<%=s_value%>"></td>
 	</tr>
 <% else %>
 <!--  TELEFONE  -->
+	<%
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s_value = formata_ddd_telefone_ramal(r_pedido.endereco_ddd_com, r_pedido.endereco_tel_com, r_pedido.endereco_ramal_com)
+		else
+			s_value = formata_ddd_telefone_ramal(r_cliente.ddd_com, r_cliente.tel_com, r_cliente.ramal_com)
+			end if
+	%>
 	<tr bgColor="#FFFFFF">
 	<td class="MDBE" NOWRAP align="right"><span class="PLTe" style="vertical-align:middle;">Telefone</span></td>
 	<td class="MDB" colspan="4">
 		<input name="c_telefone" id="c_telefone" READONLY tabindex=-1 class="PLLe" style="width:460px;margin-left:2pt;" 
-				value="<%=formata_ddd_telefone_ramal(r_cliente.ddd_com, r_cliente.tel_com, r_cliente.ramal_com)%>"></td>
+				value="<%=s_value%>"></td>
 	</tr>
 <%end if%>
 <!--  INDICADOR  -->

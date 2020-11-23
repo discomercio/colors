@@ -62,6 +62,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim n_total_pedidos_selecionados, n_total_pedidos_disponiveis
 	n_total_pedidos_selecionados = 0
 	n_total_pedidos_disponiveis = 0
@@ -358,8 +361,17 @@ dim blnPedidoComNFeInvalida
 					" t_PEDIDO.num_obs_3," & _
 					" t_PEDIDO.loja," & _
 					" t_PEDIDO.transportadora_id," & _
-					" t_PEDIDO.id_cliente," & _
-					" t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente," & _
+					" t_PEDIDO.id_cliente,"
+
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s_sql = s_sql & _
+						" dbo.SqlClrUtilIniciaisEmMaiusculas(t_PEDIDO.endereco_nome) AS nome_cliente,"
+		else
+			s_sql = s_sql & _
+						" t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente,"
+			end if
+
+		s_sql = s_sql & _
 					" t_FABRICANTE.nome AS nome_fabricante," & _
 					" t_FABRICANTE.razao_social AS razao_social_fabricante," & _
 					" t_PEDIDO_ITEM.fabricante," & _

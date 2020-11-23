@@ -777,19 +777,38 @@
                         end if
 
                     end if
-
-		        if alerta = "" and EndEtg_ie <> "" then
-			        if Not isInscricaoEstadualValida(EndEtg_ie, EndEtg_uf) then
-				        alerta="Endereço de entrega: preencha a IE (Inscrição Estadual) com um número válido!!" & _
-						        "<br>" & "Certifique-se de que a UF do endereço de entrega corresponde à UF responsável pelo registro da IE."
-				        end if
-			        end if
-
                 end if
-
 			end if
 		end if
 		
+	if alerta = "" then
+		if ( (orcamento_endereco_tipo_pessoa = ID_PF) And (Cstr(orcamento_endereco_produtor_rural_status) = Cstr(COD_ST_CLIENTE_PRODUTOR_RURAL_SIM)) ) _
+			Or _
+			( (orcamento_endereco_tipo_pessoa = ID_PJ) And (Cstr(orcamento_endereco_contribuinte_icms_status) = Cstr(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM)) ) _
+			Or _
+			( (orcamento_endereco_tipo_pessoa = ID_PJ) And (Cstr(orcamento_endereco_contribuinte_icms_status) = Cstr(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO)) And (Trim(orcamento_endereco_ie) <> "") ) then
+			if Not isInscricaoEstadualValida(orcamento_endereco_ie, orcamento_endereco_uf) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Preencha a IE (Inscrição Estadual) com um número válido!!" & _
+						"<br>" & "Certifique-se de que a UF informada corresponde à UF responsável pelo registro da IE."
+				end if
+			end if
+
+		if rb_end_entrega = "S" then
+			if ( (EndEtg_tipo_pessoa = ID_PF) And (Cstr(EndEtg_produtor_rural_status) = Cstr(COD_ST_CLIENTE_PRODUTOR_RURAL_SIM)) ) _
+				Or _
+			   ( (EndEtg_tipo_pessoa = ID_PJ) And (Cstr(EndEtg_contribuinte_icms_status) = Cstr(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM)) ) _
+			   Or _
+			   ( (EndEtg_tipo_pessoa = ID_PJ) And (Cstr(EndEtg_contribuinte_icms_status) = Cstr(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO)) And (Trim(EndEtg_ie) <> "") ) then
+				if Not isInscricaoEstadualValida(EndEtg_ie, EndEtg_uf) then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "Endereço de entrega: preencha a IE (Inscrição Estadual) com um número válido!!" & _
+							"<br>" & "Certifique-se de que a UF do endereço de entrega corresponde à UF responsável pelo registro da IE."
+					end if
+				end if
+			end if
+		end if
+
 '	CADASTRA O ORÇAMENTO
 	if alerta="" then
 		dim id_orcamento, id_orcamento_temp, s_log, msg_erro

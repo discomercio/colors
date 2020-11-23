@@ -67,6 +67,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	dim s, s_aux, s_filtro, lista_loja, s_filtro_loja, v_loja, v, i, flag_ok
 	dim c_dt_inicio, c_dt_termino, c_loja, c_fabricante, c_produto, c_grupo, c_vendedor, c_indicador, c_pedido
@@ -359,7 +362,11 @@ dim vOrdGrupo
 '	CRITÉRIO: TIPO DE CLIENTE
 	s = ""
 	if rb_tipo_cliente <> "" then
-		s = " (t_CLIENTE.tipo = '" & rb_tipo_cliente & "')"
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s = " (t_PEDIDO.endereco_tipo_pessoa = '" & rb_tipo_cliente & "')"
+		else
+			s = " (t_CLIENTE.tipo = '" & rb_tipo_cliente & "')"
+			end if
 		end if
 		
 	if s <> "" then 
@@ -378,7 +385,11 @@ dim vOrdGrupo
 				 s = s & "'" & Trim("" & v_uf_pesq(i)) & "'"
 				 end if
 			next
-		s = " (t_CLIENTE.uf IN (" & s & "))"
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s = " (t_PEDIDO.endereco_uf IN (" & s & "))"
+		else
+			s = " (t_CLIENTE.uf IN (" & s & "))"
+			end if
 		end if
 		
 	if s <> "" then 
@@ -390,7 +401,11 @@ dim vOrdGrupo
     s = ""
     if c_cliente_cnpj_cpf <> "" then
 		if s_where <> "" then s_where = s_where & " AND"
-		s_where = s_where & " (t_CLIENTE.cnpj_cpf = '" & retorna_so_digitos(c_cliente_cnpj_cpf) & "')"
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s_where = s_where & " (t_PEDIDO.endereco_cnpj_cpf = '" & retorna_so_digitos(c_cliente_cnpj_cpf) & "')"
+		else
+			s_where = s_where & " (t_CLIENTE.cnpj_cpf = '" & retorna_so_digitos(c_cliente_cnpj_cpf) & "')"
+			end if
 		end if
 
 	if s <> "" then 

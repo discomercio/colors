@@ -1076,8 +1076,8 @@
                 log_endereco sLogVetor1, sLogVetor2, "CEP", r_pedido.endereco_cep, endereco__cep
 
                 sLogEmail = sLogEmail & log_via_vetor_monta_alteracao(sLogVetor1, sLogVetor2)
-    			sLogEmail = sLogEmail & ";;Endereço novo: " & endereco__endereco & "," & endereco__numero & " " & endereco__complemento & " - " & endereco__bairro  & " - " & endereco__cidade & "/" & endereco__uf & " " & endereco__cep
-    			sLogEmail = sLogEmail & ";Endereço anterior: " & r_pedido.endereco_logradouro & "," & r_pedido.endereco_numero & " " & r_pedido.endereco_complemento & " - " & r_pedido.endereco_bairro  & " - " & r_pedido.endereco_cidade & "/" & r_pedido.endereco_uf & " " & r_pedido.endereco_cep
+    			sLogEmail = sLogEmail & ";;Endereço novo: " & endereco__endereco & ", " & endereco__numero & " " & endereco__complemento & " - " & endereco__bairro  & " - " & endereco__cidade & "/" & endereco__uf & " " & cep_formata(endereco__cep)
+    			sLogEmail = sLogEmail & ";Endereço anterior: " & r_pedido.endereco_logradouro & ", " & r_pedido.endereco_numero & " " & r_pedido.endereco_complemento & " - " & r_pedido.endereco_bairro  & " - " & r_pedido.endereco_cidade & "/" & r_pedido.endereco_uf & " " & cep_formata(r_pedido.endereco_cep)
 
 			end if
 		end if
@@ -2449,7 +2449,7 @@
 									vbCrLf & _
 										cnpj_cpf_formata(r_cliente.cnpj_cpf) & " - " & r_cliente.nome  & _
 										vbCrLf & _
-										"A alteração foi realizada para o pedido:'" & r_pedido.pedido & "' que possui o status de análise de crédito 'Crédito OK' e com entrega pendente." & _
+										"A alteração foi realizada para o pedido: '" & r_pedido.pedido & "' que possui o status de análise de crédito 'Crédito OK' e com entrega pendente." & _
 										vbCrLf & _
 									
 										"Informações detalhadas sobre as alterações:" & vbCrLf & _

@@ -121,6 +121,9 @@
 	dim cn, tN1, tN2
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim s_log, s_log_aux
 	if alerta = "" then
 	'	~~~~~~~~~~~~~
@@ -302,26 +305,35 @@ function fConfirma( f ) {
 				" ped.EndEtg_bairro," & _
 				" ped.EndEtg_cidade," & _
 				" ped.EndEtg_uf," & _
-				" ped.EndEtg_cep," & _
+				" ped.EndEtg_cep,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" ped.endereco_logradouro AS endereco," & _
+				" ped.endereco_numero AS endereco_numero," & _
+				" ped.endereco_complemento AS endereco_complemento," & _
+				" ped.endereco_bairro AS bairro," & _
+				" ped.endereco_cidade AS cidade," & _
+				" ped.endereco_uf AS uf," & _
+				" ped.endereco_cep AS cep,"
+	else
+		s_sql = s_sql & _
 				" cli.endereco," & _
 				" cli.endereco_numero," & _
 				" cli.endereco_complemento," & _
 				" cli.bairro," & _
 				" cli.cidade," & _
 				" cli.uf," & _
-				" cli.cep," & _
+				" cli.cep,"
+		end if
+
+	s_sql = s_sql & _
 				" (" & _
-					"SELECT" & _
-						" TOP 1 NFe_numero_NF" & _
-					" FROM t_NFe_EMISSAO tNE" & _
-					" WHERE" & _
-						" (tNE.pedido=ped.pedido)" & _
-						" AND (tipo_NF = '1')" & _
-						" AND (st_anulado = 0)" & _
-						" AND (codigo_retorno_NFe_T1 = 1)" & _
-					" ORDER BY" & _
-						" id DESC" & _
-				") AS numeroNFe" & _
+					"CASE" & _
+						" WHEN ped.num_obs_3 > 0 THEN ped.num_obs_3" & _
+						" WHEN ped.num_obs_2 > 0 THEN ped.num_obs_2" & _
+						" ELSE NULL" & _
+				" END) AS numeroNFe" & _
 			s_from & _
 			s_where & _
 			" ORDER BY" & _

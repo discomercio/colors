@@ -49,6 +49,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim url_back, strUrlBotaoVoltar
 	url_back = Trim(Request("url_back"))
 	if url_back <> "" then
@@ -261,10 +264,21 @@ dim s_link_rastreio
 				" p.loja," & _
 				" p.st_end_entrega," & _
 				" p.EndEtg_cidade," & _
-				" p.EndEtg_uf," & _
+				" p.EndEtg_uf,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" p.endereco_cidade AS cidade," & _
+				" p.endereco_uf AS uf," & _
+				" dbo.SqlClrUtilIniciaisEmMaiusculas(p.endereco_nome) AS nome_iniciais_em_maiusculas"
+	else
+		s_sql = s_sql & _
 				" c.cidade," & _
 				" c.uf," & _
-				" c.nome_iniciais_em_maiusculas" & _
+				" c.nome_iniciais_em_maiusculas"
+		end if
+
+	s_sql = s_sql & _
 			" FROM t_PEDIDO p INNER JOIN t_CLIENTE c ON (p.id_cliente=c.id)" & _
 			" WHERE " & _
 				s_where & _

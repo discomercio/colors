@@ -1738,6 +1738,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.endereco_produtor_rural_status = 0
 			.endereco_ie = ""
 			.endereco_rg = ""
+			.endereco_contato = ""
 
 			.endereco_memorizado_status		= rs("endereco_memorizado_status")
 			if CLng(.endereco_memorizado_status) <> 0 then
@@ -1769,6 +1770,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.endereco_produtor_rural_status = rs("endereco_produtor_rural_status")
 					.endereco_ie = Trim("" & rs("endereco_ie"))
 					.endereco_rg = Trim("" & rs("endereco_rg"))
+					.endereco_contato = Trim("" & rs("endereco_contato"))
 					end if
 				end if
 

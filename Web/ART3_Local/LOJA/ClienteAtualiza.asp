@@ -96,7 +96,8 @@
 	dim pagina_retorno
 	dim strScript
 	dim s_tel_com_2, s_ddd_com_2, s_tel_cel, s_ddd_cel, s_ramal_com_2
-	
+	dim s_cliente_tipo
+
 	operacao_selecionada=request("operacao_selecionada")
 	cliente_selecionado=retorna_so_digitos(trim(request("cliente_selecionado")))
 	cnpj_cpf_selecionado=retorna_so_digitos(trim(request("cnpj_cpf_selecionado")))
@@ -138,7 +139,9 @@
 	s_tel_cel=retorna_so_digitos(Trim(request("tel_cel")))
 	s_ddd_cel=retorna_so_digitos(Trim(request("ddd_cel")))
 	s_ramal_com_2=retorna_so_digitos(Trim(request("ramal_com_2")))
-	
+	eh_cpf=(len(cnpj_cpf_selecionado)=11)
+	if eh_cpf then s_cliente_tipo=ID_PF else s_cliente_tipo=ID_PJ
+
 	pagina_retorno = Trim(request("pagina_retorno"))
 	if pagina_retorno <> "" then
 		if Instr(pagina_retorno, "?") > 0 then
@@ -314,8 +317,6 @@
 	
 	erro_consistencia=false
 	erro_fatal=false
-	
-	eh_cpf=(len(cnpj_cpf_selecionado)=11)
 
 '	DADOS DO SÓCIO MAJORITÁRIO
 	dim blnCadSocioMaj, blnConsistir, blnConsistirDadosBancarios
@@ -515,7 +516,11 @@
 	s_tabela_municipios_IBGE = ""
 	if alerta = "" then
 	'	I.E. É VÁLIDA?
-		if s_ie <> "" then
+		if ( (s_cliente_tipo = ID_PF) And (Cstr(s_produtor_rural) = Cstr(COD_ST_CLIENTE_PRODUTOR_RURAL_SIM)) ) _
+			Or _
+			( (s_cliente_tipo = ID_PJ) And (Cstr(s_contribuinte_icms) = Cstr(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM)) ) _
+			Or _
+			( (s_cliente_tipo = ID_PJ) And (Cstr(s_contribuinte_icms) = Cstr(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO)) And (s_ie <> "") ) then
 			if Not isInscricaoEstadualValida(s_ie, s_uf) then
 				alerta="Preencha a IE (Inscrição Estadual) com um número válido!!" & _
 						"<br>" & "Certifique-se de que a UF informada corresponde à UF responsável pelo registro da IE."
@@ -984,8 +989,7 @@
 				s_cep_novo = s_cep
 				
 				r("cnpj_cpf")=cnpj_cpf_selecionado
-				if eh_cpf then s=ID_PF else s=ID_PJ
-				r("tipo")=s
+				r("tipo")=s_cliente_tipo
 				r("ie")=s_ie
 				r("rg")=s_rg
 				s_nome_original = Trim("" & r("nome"))
