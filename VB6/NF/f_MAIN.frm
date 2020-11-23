@@ -5880,7 +5880,7 @@ Dim t_DESTINATARIO As ADODB.Recordset
             strEndEntregaUf = UCase$(Trim("" & t_PEDIDO("EndEtg_uf")))
             If s_end_entrega <> "" Then s_end_entrega = vbCrLf & "ENTREGA: " & s_end_entrega
             End If
-    
+            
         If UCase$(Trim$("" & t_PEDIDO("st_entrega"))) = ST_ENTREGA_CANCELADO Then
             If s_erro <> "" Then s_erro = s_erro & vbCrLf
             s_erro = s_erro & "Pedido " & Trim$(pedido) & " está cancelado !!"
@@ -5969,6 +5969,18 @@ Dim t_DESTINATARIO As ADODB.Recordset
         GoSub OIPM_FECHA_TABELAS
         aguarde INFO_NORMAL, m_id
         Exit Function
+        End If
+
+
+    '   (SÓ INFORMAR O ENDEREÇO DE ENTREGA SE FOR DIFERENTE DO ENDEREÇO DA NOTA)
+    If (UCase$(Trim$("" & t_DESTINATARIO("endereco"))) = UCase$(Trim("" & t_PEDIDO("EndEtg_endereco")))) And _
+        (UCase$(Trim$("" & t_DESTINATARIO("endereco_numero"))) = UCase$(Trim("" & t_PEDIDO("EndEtg_endereco_numero")))) And _
+        (UCase$(Trim$("" & t_DESTINATARIO("endereco_complemento"))) = UCase$(Trim("" & t_PEDIDO("EndEtg_endereco_complemento")))) And _
+        (UCase$(Trim$("" & t_DESTINATARIO("bairro"))) = UCase$(Trim("" & t_PEDIDO("EndEtg_bairro")))) And _
+        (UCase$(Trim$("" & t_DESTINATARIO("cidade"))) = UCase$(Trim("" & t_PEDIDO("EndEtg_cidade")))) Then
+        
+        s_end_entrega = ""
+        
         End If
 
 
@@ -9634,39 +9646,47 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 End If
         Else
         '   NO MOMENTO, A SEFAZ ACEITA ENDEREÇO DE ENTREGA DIFERENTE DO ENDEREÇO DE CADASTRO SOMENTE P/ PJ
-            If cnpj_cpf_ok(strDestinatarioCnpjCpf) Then
-                strNFeTagEndEntrega = "entrega;" & vbCrLf
-    
-                If (Len(strDestinatarioCnpjCpf) = 14) Then
-                    rNFeImg.entrega__CNPJ = strDestinatarioCnpjCpf
-                    strNFeTagEndEntrega = strNFeTagEndEntrega & vbTab & NFeFormataCampo("CNPJ", rNFeImg.entrega__CNPJ)
-                Else
-                    rNFeImg.entrega__CPF = strDestinatarioCnpjCpf
-                    strNFeTagEndEntrega = strNFeTagEndEntrega & vbTab & NFeFormataCampo("CPF", rNFeImg.entrega__CPF)
-                    End If
+        '   (SÓ INFORMAR O ENDEREÇO DE ENTREGA SE FOR DIFERENTE DO ENDEREÇO DO CLIENTE)
+            If (rNFeImg.dest__xLgr <> strEndEtgEndereco) And _
+                (rNFeImg.dest__nro <> strEndEtgEnderecoNumero) And _
+                (rNFeImg.dest__xCpl <> strEndEtgEnderecoComplemento) And _
+                (rNFeImg.dest__xBairro <> strEndEtgBairro) And _
+                (rNFeImg.dest__xMun <> strEndEtgCidade) Then
+
+                If cnpj_cpf_ok(strDestinatarioCnpjCpf) Then
+                    strNFeTagEndEntrega = "entrega;" & vbCrLf
+        
+                    If (Len(strDestinatarioCnpjCpf) = 14) Then
+                        rNFeImg.entrega__CNPJ = strDestinatarioCnpjCpf
+                        strNFeTagEndEntrega = strNFeTagEndEntrega & vbTab & NFeFormataCampo("CNPJ", rNFeImg.entrega__CNPJ)
+                    Else
+                        rNFeImg.entrega__CPF = strDestinatarioCnpjCpf
+                        strNFeTagEndEntrega = strNFeTagEndEntrega & vbTab & NFeFormataCampo("CPF", rNFeImg.entrega__CPF)
+                        End If
+                        
+                    rNFeImg.entrega__xLgr = strEndEtgEndereco
+                    rNFeImg.entrega__nro = strEndEtgEnderecoNumero
+                    rNFeImg.entrega__xCpl = strEndEtgEnderecoComplemento
+                    rNFeImg.entrega__xBairro = strEndEtgBairro
+                    rNFeImg.entrega__cMun = strEndEtgCidade & "/" & strEndEtgUf
+                    rNFeImg.entrega__xMun = strEndEtgCidade
+                    rNFeImg.entrega__UF = strEndEtgUf
                     
-                rNFeImg.entrega__xLgr = strEndEtgEndereco
-                rNFeImg.entrega__nro = strEndEtgEnderecoNumero
-                rNFeImg.entrega__xCpl = strEndEtgEnderecoComplemento
-                rNFeImg.entrega__xBairro = strEndEtgBairro
-                rNFeImg.entrega__cMun = strEndEtgCidade & "/" & strEndEtgUf
-                rNFeImg.entrega__xMun = strEndEtgCidade
-                rNFeImg.entrega__UF = strEndEtgUf
-                
-                strNFeTagEndEntrega = strNFeTagEndEntrega & _
-                                      vbTab & NFeFormataCampo("xLgr", rNFeImg.entrega__xLgr) & _
-                                      vbTab & NFeFormataCampo("nro", rNFeImg.entrega__nro)
-                                      
-                If Len(rNFeImg.entrega__xCpl) > 0 Then
                     strNFeTagEndEntrega = strNFeTagEndEntrega & _
-                                      vbTab & NFeFormataCampo("xCpl", rNFeImg.entrega__xCpl)
+                                          vbTab & NFeFormataCampo("xLgr", rNFeImg.entrega__xLgr) & _
+                                          vbTab & NFeFormataCampo("nro", rNFeImg.entrega__nro)
+                                          
+                    If Len(rNFeImg.entrega__xCpl) > 0 Then
+                        strNFeTagEndEntrega = strNFeTagEndEntrega & _
+                                          vbTab & NFeFormataCampo("xCpl", rNFeImg.entrega__xCpl)
+                        End If
+                    
+                    strNFeTagEndEntrega = strNFeTagEndEntrega & _
+                                          vbTab & NFeFormataCampo("xBairro", rNFeImg.entrega__xBairro) & _
+                                          vbTab & NFeFormataCampo("cMun", rNFeImg.entrega__cMun) & _
+                                          vbTab & NFeFormataCampo("xMun", rNFeImg.entrega__xMun) & _
+                                          vbTab & NFeFormataCampo("UF", rNFeImg.entrega__UF)
                     End If
-                
-                strNFeTagEndEntrega = strNFeTagEndEntrega & _
-                                      vbTab & NFeFormataCampo("xBairro", rNFeImg.entrega__xBairro) & _
-                                      vbTab & NFeFormataCampo("cMun", rNFeImg.entrega__cMun) & _
-                                      vbTab & NFeFormataCampo("xMun", rNFeImg.entrega__xMun) & _
-                                      vbTab & NFeFormataCampo("UF", rNFeImg.entrega__UF)
                 End If
             End If
         End If
