@@ -48,7 +48,7 @@ namespace ART3WebAPI.Controllers
 
                 statusResponse = "OK";
 
-                LogDAO.insere(usuario, s_log, strMsgErro);
+                LogDAO.insere(usuario, s_log, out strMsgErro);
 
             }
             catch (Exception e)
@@ -118,7 +118,7 @@ namespace ART3WebAPI.Controllers
                 {
                     await ART3WebAPI.Models.Domains.EstOcorrenciasGeradorRelatorio.GenerateXLS(relEstOcorrenciasList, filePath, dt_inicio, dt_termino, motivo_ocorrencia, tp_ocorrencia, transportadora, vendedor, indicador, UF, loja);
                     statusResponse = "OK";
-                    LogDAO.insere(usuario, s_log, strMsgErro);
+                    LogDAO.insere(usuario, s_log, out strMsgErro);
                 }
                 else
                 {
@@ -186,7 +186,7 @@ namespace ART3WebAPI.Controllers
                 {
                     await ART3WebAPI.Models.Domains.OcorrenciasGeradorRelatorio.GenerateXLS(relOcorrenciasList, filePath, oc_status, loja, transportadora);
                     statusResponse = "OK";
-                    LogDAO.insere(usuario, s_log, strMsgErro);
+                    LogDAO.insere(usuario, s_log, out strMsgErro);
                 }
                 else
                 {
@@ -267,7 +267,7 @@ namespace ART3WebAPI.Controllers
                 {
                     await ART3WebAPI.Models.Domains.Compras2GeradorRelatorio.GenerateXLS(relCompras2List, filePath, dt_inicio, dt_termino, fabricante, produto, grupo, subgrupo, btu, ciclo, pos_mercado, nf, dt_nf_inicio, dt_nf_termino, visao, detalhamento);
                     statusResponse = "OK";
-                    LogDAO.insere(usuario, s_log, strMsgErro);
+                    LogDAO.insere(usuario, s_log, out strMsgErro);
                 }
                 else
                 {
@@ -347,7 +347,7 @@ namespace ART3WebAPI.Controllers
                 {
                     await DevolucaoProdutos2GeradorRelatorio.GeraXLS(DevolProd2Lista, filePath, dt_devolucao_inicio, dt_devolucao_termino, fabricante, produto, pedido, vendedor, indicador, captador, lojas);
                     statusResponse = "OK";
-                    LogDAO.insere(usuario, s_log, strMsgErro);
+                    LogDAO.insere(usuario, s_log, out strMsgErro);
                 }
                 else
                 {

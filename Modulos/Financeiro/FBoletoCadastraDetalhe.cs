@@ -56,6 +56,7 @@ namespace Financeiro
 
 		BoletoPreCadastrado boletoPreCadastradoSelecionado;
 		Cliente clienteSelecionado;
+		BoletoCliente boletoCliente;
 		BoletoCedente boletoCedenteSelecionado;
 
 		ToolStripMenuItem menuBoleto;
@@ -466,15 +467,19 @@ namespace Financeiro
 			String strEndereco;
 			#endregion
 
-			strEndereco = clienteSelecionado.endereco;
-			if (clienteSelecionado.endereco_numero.Length > 0) strEndereco += ", " + clienteSelecionado.endereco_numero;
-			if (clienteSelecionado.endereco_complemento.Length > 0) strEndereco += " " + clienteSelecionado.endereco_complemento;
+			if (boletoCliente != null)
+			{
+				strEndereco = boletoCliente.endereco_logradouro;
+				if (boletoCliente.endereco_numero.Length > 0) strEndereco += ", " + boletoCliente.endereco_numero;
+				if (boletoCliente.endereco_complemento.Length > 0) strEndereco += " " + boletoCliente.endereco_complemento;
 
-			if (!clienteSelecionado.nome.ToUpper().Equals(boletoEditado.nome_sacado)) return true;
-			if (!strEndereco.ToUpper().Equals(boletoEditado.endereco_sacado)) return true;
-			if (!clienteSelecionado.cnpj_cpf.Equals(boletoEditado.num_inscricao_sacado)) return true;
-			if (!clienteSelecionado.cep.Equals(boletoEditado.cep_sacado)) return true;
-			if (!clienteSelecionado.email.Equals(boletoEditado.email_sacado)) return true;
+				if (!boletoCliente.nome.ToUpper().Equals(boletoEditado.nome_sacado)) return true;
+				if (!strEndereco.ToUpper().Equals(boletoEditado.endereco_sacado)) return true;
+				if (!boletoCliente.cnpj_cpf.Equals(boletoEditado.num_inscricao_sacado)) return true;
+				if (!boletoCliente.endereco_cep.Equals(boletoEditado.cep_sacado)) return true;
+				if (!boletoCliente.email.Equals(boletoEditado.email_sacado)) return true;
+			}
+
 			if (boletoCedenteSelecionado != null)
 			{
 				if (!boletoCedenteSelecionado.segunda_mensagem_padrao.Equals(boletoEditado.segunda_mensagem)) return true;
@@ -1193,15 +1198,15 @@ namespace Financeiro
 
 			if (!confirma("Restaura o endereço original?")) return;
 
-			strEndereco = clienteSelecionado.endereco;
-			if (clienteSelecionado.endereco_numero.Length > 0) strEndereco += ", " + clienteSelecionado.endereco_numero;
-			if (clienteSelecionado.endereco_complemento.Length > 0) strEndereco += " " + clienteSelecionado.endereco_complemento;
+			strEndereco = boletoCliente.endereco_logradouro;
+			if (boletoCliente.endereco_numero.Length > 0) strEndereco += ", " + boletoCliente.endereco_numero;
+			if (boletoCliente.endereco_complemento.Length > 0) strEndereco += " " + boletoCliente.endereco_complemento;
 
 			txtEndereco.Text = strEndereco.ToUpper();
-			txtCep.Text = Global.formataCep(clienteSelecionado.cep);
-			txtBairro.Text = clienteSelecionado.bairro.ToUpper();
-			txtCidade.Text = clienteSelecionado.cidade.ToUpper();
-			txtUF.Text = clienteSelecionado.uf.ToUpper();
+			txtCep.Text = Global.formataCep(boletoCliente.endereco_cep);
+			txtBairro.Text = boletoCliente.endereco_bairro.ToUpper();
+			txtCidade.Text = boletoCliente.endereco_cidade.ToUpper();
+			txtUF.Text = boletoCliente.endereco_uf.ToUpper();
 		}
 		#endregion
 
@@ -1691,18 +1696,64 @@ namespace Financeiro
 					#endregion
 
 					#region [ Dados do cliente ]
-					strEndereco = clienteSelecionado.endereco;
-					if (clienteSelecionado.endereco_numero.Length > 0) strEndereco += ", " + clienteSelecionado.endereco_numero;
-					if (clienteSelecionado.endereco_complemento.Length > 0) strEndereco += " " + clienteSelecionado.endereco_complemento;
 
-					txtClienteNome.Text = clienteSelecionado.nome.ToUpper();
-					txtClienteCnpjCpf.Text = Global.formataCnpjCpf(clienteSelecionado.cnpj_cpf);
-					txtEndereco.Text = strEndereco.ToUpper();
-					txtCep.Text = Global.formataCep(clienteSelecionado.cep);
-					txtBairro.Text = clienteSelecionado.bairro.ToUpper();
-					txtCidade.Text = clienteSelecionado.cidade.ToUpper();
-					txtUF.Text = clienteSelecionado.uf.ToUpper();
-					txtEmail.Text = clienteSelecionado.email.ToLower();
+					#region [ Prioridade em usar dados do endereço memorizado no pedido, se houver ]
+					foreach (Pedido p in _listaPedidos)
+					{
+						if (p.st_memorizacao_completa_enderecos != 0)
+						{
+							boletoCliente = new BoletoCliente();
+							boletoCliente.nome = p.endereco_nome.ToUpper();
+							boletoCliente.cnpj_cpf = p.endereco_cnpj_cpf;
+							boletoCliente.email = p.endereco_email.ToLower();
+							boletoCliente.endereco_logradouro = p.endereco_logradouro;
+							boletoCliente.endereco_numero = p.endereco_numero;
+							boletoCliente.endereco_complemento = p.endereco_complemento;
+							boletoCliente.endereco_cep = p.endereco_cep;
+							boletoCliente.endereco_bairro = p.endereco_bairro.ToUpper();
+							boletoCliente.endereco_cidade = p.endereco_cidade.ToUpper();
+							boletoCliente.endereco_uf = p.endereco_uf.ToUpper();
+
+							break;
+						}
+					}
+					#endregion
+
+					#region [ Se não houver dados do endereço memorizado no pedido, usa dados do cadastro do cliente ]
+					if (boletoCliente == null)
+					{
+						boletoCliente = new BoletoCliente();
+						boletoCliente.nome = clienteSelecionado.nome.ToUpper();
+						boletoCliente.cnpj_cpf = clienteSelecionado.cnpj_cpf;
+						boletoCliente.email = clienteSelecionado.email.ToLower();
+						boletoCliente.endereco_logradouro = clienteSelecionado.endereco;
+						boletoCliente.endereco_numero = clienteSelecionado.endereco_numero;
+						boletoCliente.endereco_complemento = clienteSelecionado.endereco_complemento;
+						boletoCliente.endereco_cep = clienteSelecionado.cep;
+						boletoCliente.endereco_bairro = clienteSelecionado.bairro.ToUpper();
+						boletoCliente.endereco_cidade = clienteSelecionado.cidade.ToUpper();
+						boletoCliente.endereco_uf = clienteSelecionado.uf.ToUpper();
+					}
+					#endregion
+
+					#region [ Exibe os dados ]
+					if (boletoCliente != null)
+					{
+						strEndereco = boletoCliente.endereco_logradouro;
+						if (boletoCliente.endereco_numero.Length > 0) strEndereco += ", " + boletoCliente.endereco_numero;
+						if (boletoCliente.endereco_complemento.Length > 0) strEndereco += " " + boletoCliente.endereco_complemento;
+
+						txtClienteNome.Text = boletoCliente.nome;
+						txtClienteCnpjCpf.Text = Global.formataCnpjCpf(boletoCliente.cnpj_cpf);
+						txtEndereco.Text = strEndereco.ToUpper();
+						txtCep.Text = Global.formataCep(boletoCliente.endereco_cep);
+						txtBairro.Text = boletoCliente.endereco_bairro;
+						txtCidade.Text = boletoCliente.endereco_cidade;
+						txtUF.Text = boletoCliente.endereco_uf;
+						txtEmail.Text = boletoCliente.email;
+					}
+					#endregion
+
 					#endregion
 
 					#region [ Dados das parcelas impressas na NF ]

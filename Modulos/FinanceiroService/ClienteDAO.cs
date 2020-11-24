@@ -39,6 +39,70 @@ namespace FinanceiroService
 		}
 		#endregion
 
+		#region [ carregaDadosClienteFromDataRow ]
+		public static Cliente carregaDadosClienteFromDataRow(DataRow rowDadosCliente)
+		{
+			#region [ Declarações ]
+			Cliente cliente = new Cliente();
+			#endregion
+
+			cliente.id = rowDadosCliente["id"].ToString();
+			cliente.cnpj_cpf = !Convert.IsDBNull(rowDadosCliente["cnpj_cpf"]) ? rowDadosCliente["cnpj_cpf"].ToString() : "";
+			cliente.tipo = !Convert.IsDBNull(rowDadosCliente["tipo"]) ? rowDadosCliente["tipo"].ToString() : "";
+			cliente.ie = !Convert.IsDBNull(rowDadosCliente["ie"]) ? rowDadosCliente["ie"].ToString() : "";
+			cliente.rg = !Convert.IsDBNull(rowDadosCliente["rg"]) ? rowDadosCliente["rg"].ToString() : "";
+			cliente.nome = !Convert.IsDBNull(rowDadosCliente["nome"]) ? rowDadosCliente["nome"].ToString() : "";
+			cliente.sexo = !Convert.IsDBNull(rowDadosCliente["sexo"]) ? rowDadosCliente["sexo"].ToString() : "";
+			cliente.endereco = !Convert.IsDBNull(rowDadosCliente["endereco"]) ? rowDadosCliente["endereco"].ToString() : "";
+			cliente.endereco_numero = !Convert.IsDBNull(rowDadosCliente["endereco_numero"]) ? rowDadosCliente["endereco_numero"].ToString() : "";
+			cliente.endereco_complemento = !Convert.IsDBNull(rowDadosCliente["endereco_complemento"]) ? rowDadosCliente["endereco_complemento"].ToString() : "";
+			cliente.bairro = !Convert.IsDBNull(rowDadosCliente["bairro"]) ? rowDadosCliente["bairro"].ToString() : "";
+			cliente.cidade = !Convert.IsDBNull(rowDadosCliente["cidade"]) ? rowDadosCliente["cidade"].ToString() : "";
+			cliente.uf = !Convert.IsDBNull(rowDadosCliente["uf"]) ? rowDadosCliente["uf"].ToString() : "";
+			cliente.cep = !Convert.IsDBNull(rowDadosCliente["cep"]) ? rowDadosCliente["cep"].ToString() : "";
+			cliente.ddd_res = !Convert.IsDBNull(rowDadosCliente["ddd_res"]) ? rowDadosCliente["ddd_res"].ToString() : "";
+			cliente.tel_res = !Convert.IsDBNull(rowDadosCliente["tel_res"]) ? rowDadosCliente["tel_res"].ToString() : "";
+			cliente.ddd_com = !Convert.IsDBNull(rowDadosCliente["ddd_com"]) ? rowDadosCliente["ddd_com"].ToString() : "";
+			cliente.tel_com = !Convert.IsDBNull(rowDadosCliente["tel_com"]) ? rowDadosCliente["tel_com"].ToString() : "";
+			cliente.ramal_com = !Convert.IsDBNull(rowDadosCliente["ramal_com"]) ? rowDadosCliente["ramal_com"].ToString() : "";
+			cliente.contato = !Convert.IsDBNull(rowDadosCliente["contato"]) ? rowDadosCliente["contato"].ToString() : "";
+			cliente.dt_nasc = !Convert.IsDBNull(rowDadosCliente["dt_nasc"]) ? (DateTime)rowDadosCliente["dt_nasc"] : DateTime.MinValue;
+			cliente.filiacao = !Convert.IsDBNull(rowDadosCliente["filiacao"]) ? rowDadosCliente["filiacao"].ToString() : "";
+			cliente.obs_crediticias = !Convert.IsDBNull(rowDadosCliente["obs_crediticias"]) ? rowDadosCliente["obs_crediticias"].ToString() : "";
+			cliente.midia = !Convert.IsDBNull(rowDadosCliente["midia"]) ? rowDadosCliente["midia"].ToString() : "";
+			cliente.email = !Convert.IsDBNull(rowDadosCliente["email"]) ? rowDadosCliente["email"].ToString() : "";
+			cliente.email_opcoes = !Convert.IsDBNull(rowDadosCliente["email_opcoes"]) ? rowDadosCliente["email_opcoes"].ToString() : "";
+			cliente.dt_cadastro = !Convert.IsDBNull(rowDadosCliente["dt_cadastro"]) ? (DateTime)rowDadosCliente["dt_cadastro"] : DateTime.MinValue;
+			cliente.dt_ult_atualizacao = !Convert.IsDBNull(rowDadosCliente["dt_ult_atualizacao"]) ? (DateTime)rowDadosCliente["dt_ult_atualizacao"] : DateTime.MinValue;
+			cliente.socMaj_Nome = !Convert.IsDBNull(rowDadosCliente["SocMaj_Nome"]) ? rowDadosCliente["SocMaj_Nome"].ToString() : "";
+			cliente.socMaj_CPF = !Convert.IsDBNull(rowDadosCliente["SocMaj_CPF"]) ? rowDadosCliente["SocMaj_CPF"].ToString() : "";
+			cliente.socMaj_banco = !Convert.IsDBNull(rowDadosCliente["SocMaj_banco"]) ? rowDadosCliente["SocMaj_banco"].ToString() : "";
+			cliente.socMaj_agencia = !Convert.IsDBNull(rowDadosCliente["SocMaj_agencia"]) ? rowDadosCliente["SocMaj_agencia"].ToString() : "";
+			cliente.socMaj_conta = !Convert.IsDBNull(rowDadosCliente["SocMaj_conta"]) ? rowDadosCliente["SocMaj_conta"].ToString() : "";
+			cliente.socMaj_ddd = !Convert.IsDBNull(rowDadosCliente["SocMaj_ddd"]) ? rowDadosCliente["SocMaj_ddd"].ToString() : "";
+			cliente.socMaj_telefone = !Convert.IsDBNull(rowDadosCliente["SocMaj_telefone"]) ? rowDadosCliente["SocMaj_telefone"].ToString() : "";
+			cliente.socMaj_contato = !Convert.IsDBNull(rowDadosCliente["SocMaj_contato"]) ? rowDadosCliente["SocMaj_contato"].ToString() : "";
+			cliente.usuario_cadastro = !Convert.IsDBNull(rowDadosCliente["usuario_cadastro"]) ? rowDadosCliente["usuario_cadastro"].ToString() : "";
+			cliente.usuario_ult_atualizacao = !Convert.IsDBNull(rowDadosCliente["usuario_ult_atualizacao"]) ? rowDadosCliente["usuario_ult_atualizacao"].ToString() : "";
+			cliente.indicador = !Convert.IsDBNull(rowDadosCliente["indicador"]) ? rowDadosCliente["indicador"].ToString() : "";
+			cliente.spc_negativado_status = BD.readToByte(rowDadosCliente["spc_negativado_status"]);
+			cliente.spc_negativado_data_negativacao = !Convert.IsDBNull(rowDadosCliente["spc_negativado_data_negativacao"]) ? (DateTime)rowDadosCliente["spc_negativado_data_negativacao"] : DateTime.MinValue;
+			cliente.spc_negativado_data = !Convert.IsDBNull(rowDadosCliente["spc_negativado_data"]) ? (DateTime)rowDadosCliente["spc_negativado_data"] : DateTime.MinValue;
+			cliente.spc_negativado_data_hora = !Convert.IsDBNull(rowDadosCliente["spc_negativado_data_hora"]) ? (DateTime)rowDadosCliente["spc_negativado_data_hora"] : DateTime.MinValue;
+			cliente.spc_negativado_usuario = BD.readToString(rowDadosCliente["spc_negativado_usuario"]);
+			cliente.contribuinte_icms_status = BD.readToByte(rowDadosCliente["contribuinte_icms_status"]);
+			cliente.produtor_rural_status = BD.readToByte(rowDadosCliente["produtor_rural_status"]);
+			cliente.email_xml = BD.readToString(rowDadosCliente["email_xml"]);
+			cliente.ddd_cel = BD.readToString(rowDadosCliente["ddd_cel"]);
+			cliente.tel_cel = BD.readToString(rowDadosCliente["tel_cel"]);
+			cliente.ddd_com_2 = BD.readToString(rowDadosCliente["ddd_com_2"]);
+			cliente.tel_com_2 = BD.readToString(rowDadosCliente["tel_com_2"]);
+			cliente.ramal_com_2 = BD.readToString(rowDadosCliente["ramal_com_2"]);
+
+			return cliente;
+		}
+		#endregion
+
 		#region [ getCliente ]
 		/// <summary>
 		/// Retorna um objeto Cliente contendo os dados lidos do BD
@@ -53,11 +117,10 @@ namespace FinanceiroService
 		{
 			#region [ Declarações ]
 			String strSql;
-			Cliente cliente = new Cliente();
+			Cliente cliente;
 			SqlCommand cmCommand;
 			SqlDataAdapter daDataAdapter;
 			DataTable dtbResultado = new DataTable();
-			DataRow rowResultado;
 			#endregion
 
 			#region [ Consistências ]
@@ -83,60 +146,7 @@ namespace FinanceiroService
 
 			if (dtbResultado.Rows.Count == 0) throw new Exception("Registro id=" + id.ToString() + " não localizado na tabela t_CLIENTE!!");
 
-			rowResultado = dtbResultado.Rows[0];
-
-			cliente.id = rowResultado["id"].ToString();
-			cliente.cnpj_cpf = !Convert.IsDBNull(rowResultado["cnpj_cpf"]) ? rowResultado["cnpj_cpf"].ToString() : "";
-			cliente.tipo = !Convert.IsDBNull(rowResultado["tipo"]) ? rowResultado["tipo"].ToString() : "";
-			cliente.ie = !Convert.IsDBNull(rowResultado["ie"]) ? rowResultado["ie"].ToString() : "";
-			cliente.rg = !Convert.IsDBNull(rowResultado["rg"]) ? rowResultado["rg"].ToString() : "";
-			cliente.nome = !Convert.IsDBNull(rowResultado["nome"]) ? rowResultado["nome"].ToString() : "";
-			cliente.sexo = !Convert.IsDBNull(rowResultado["sexo"]) ? rowResultado["sexo"].ToString() : "";
-			cliente.endereco = !Convert.IsDBNull(rowResultado["endereco"]) ? rowResultado["endereco"].ToString() : "";
-			cliente.endereco_numero = !Convert.IsDBNull(rowResultado["endereco_numero"]) ? rowResultado["endereco_numero"].ToString() : "";
-			cliente.endereco_complemento = !Convert.IsDBNull(rowResultado["endereco_complemento"]) ? rowResultado["endereco_complemento"].ToString() : "";
-			cliente.bairro = !Convert.IsDBNull(rowResultado["bairro"]) ? rowResultado["bairro"].ToString() : "";
-			cliente.cidade = !Convert.IsDBNull(rowResultado["cidade"]) ? rowResultado["cidade"].ToString() : "";
-			cliente.uf = !Convert.IsDBNull(rowResultado["uf"]) ? rowResultado["uf"].ToString() : "";
-			cliente.cep = !Convert.IsDBNull(rowResultado["cep"]) ? rowResultado["cep"].ToString() : "";
-			cliente.ddd_res = !Convert.IsDBNull(rowResultado["ddd_res"]) ? rowResultado["ddd_res"].ToString() : "";
-			cliente.tel_res = !Convert.IsDBNull(rowResultado["tel_res"]) ? rowResultado["tel_res"].ToString() : "";
-			cliente.ddd_com = !Convert.IsDBNull(rowResultado["ddd_com"]) ? rowResultado["ddd_com"].ToString() : "";
-			cliente.tel_com = !Convert.IsDBNull(rowResultado["tel_com"]) ? rowResultado["tel_com"].ToString() : "";
-			cliente.ramal_com = !Convert.IsDBNull(rowResultado["ramal_com"]) ? rowResultado["ramal_com"].ToString() : "";
-			cliente.contato = !Convert.IsDBNull(rowResultado["contato"]) ? rowResultado["contato"].ToString() : "";
-			cliente.dt_nasc = !Convert.IsDBNull(rowResultado["dt_nasc"]) ? (DateTime)rowResultado["dt_nasc"] : DateTime.MinValue;
-			cliente.filiacao = !Convert.IsDBNull(rowResultado["filiacao"]) ? rowResultado["filiacao"].ToString() : "";
-			cliente.obs_crediticias = !Convert.IsDBNull(rowResultado["obs_crediticias"]) ? rowResultado["obs_crediticias"].ToString() : "";
-			cliente.midia = !Convert.IsDBNull(rowResultado["midia"]) ? rowResultado["midia"].ToString() : "";
-			cliente.email = !Convert.IsDBNull(rowResultado["email"]) ? rowResultado["email"].ToString() : "";
-			cliente.email_opcoes = !Convert.IsDBNull(rowResultado["email_opcoes"]) ? rowResultado["email_opcoes"].ToString() : "";
-			cliente.dt_cadastro = !Convert.IsDBNull(rowResultado["dt_cadastro"]) ? (DateTime)rowResultado["dt_cadastro"] : DateTime.MinValue;
-			cliente.dt_ult_atualizacao = !Convert.IsDBNull(rowResultado["dt_ult_atualizacao"]) ? (DateTime)rowResultado["dt_ult_atualizacao"] : DateTime.MinValue;
-			cliente.socMaj_Nome = !Convert.IsDBNull(rowResultado["SocMaj_Nome"]) ? rowResultado["SocMaj_Nome"].ToString() : "";
-			cliente.socMaj_CPF = !Convert.IsDBNull(rowResultado["SocMaj_CPF"]) ? rowResultado["SocMaj_CPF"].ToString() : "";
-			cliente.socMaj_banco = !Convert.IsDBNull(rowResultado["SocMaj_banco"]) ? rowResultado["SocMaj_banco"].ToString() : "";
-			cliente.socMaj_agencia = !Convert.IsDBNull(rowResultado["SocMaj_agencia"]) ? rowResultado["SocMaj_agencia"].ToString() : "";
-			cliente.socMaj_conta = !Convert.IsDBNull(rowResultado["SocMaj_conta"]) ? rowResultado["SocMaj_conta"].ToString() : "";
-			cliente.socMaj_ddd = !Convert.IsDBNull(rowResultado["SocMaj_ddd"]) ? rowResultado["SocMaj_ddd"].ToString() : "";
-			cliente.socMaj_telefone = !Convert.IsDBNull(rowResultado["SocMaj_telefone"]) ? rowResultado["SocMaj_telefone"].ToString() : "";
-			cliente.socMaj_contato = !Convert.IsDBNull(rowResultado["SocMaj_contato"]) ? rowResultado["SocMaj_contato"].ToString() : "";
-			cliente.usuario_cadastro = !Convert.IsDBNull(rowResultado["usuario_cadastro"]) ? rowResultado["usuario_cadastro"].ToString() : "";
-			cliente.usuario_ult_atualizacao = !Convert.IsDBNull(rowResultado["usuario_ult_atualizacao"]) ? rowResultado["usuario_ult_atualizacao"].ToString() : "";
-			cliente.indicador = !Convert.IsDBNull(rowResultado["indicador"]) ? rowResultado["indicador"].ToString() : "";
-			cliente.spc_negativado_status = BD.readToByte(rowResultado["spc_negativado_status"]);
-			cliente.spc_negativado_data_negativacao = !Convert.IsDBNull(rowResultado["spc_negativado_data_negativacao"]) ? (DateTime)rowResultado["spc_negativado_data_negativacao"] : DateTime.MinValue;
-			cliente.spc_negativado_data = !Convert.IsDBNull(rowResultado["spc_negativado_data"]) ? (DateTime)rowResultado["spc_negativado_data"] : DateTime.MinValue;
-			cliente.spc_negativado_data_hora = !Convert.IsDBNull(rowResultado["spc_negativado_data_hora"]) ? (DateTime)rowResultado["spc_negativado_data_hora"] : DateTime.MinValue;
-			cliente.spc_negativado_usuario = BD.readToString(rowResultado["spc_negativado_usuario"]);
-			cliente.contribuinte_icms_status = BD.readToByte(rowResultado["contribuinte_icms_status"]);
-			cliente.produtor_rural_status = BD.readToByte(rowResultado["produtor_rural_status"]);
-			cliente.email_xml = BD.readToString(rowResultado["email_xml"]);
-			cliente.ddd_cel = BD.readToString(rowResultado["ddd_cel"]);
-			cliente.tel_cel = BD.readToString(rowResultado["tel_cel"]);
-			cliente.ddd_com_2 = BD.readToString(rowResultado["ddd_com_2"]);
-			cliente.tel_com_2 = BD.readToString(rowResultado["tel_com_2"]);
-			cliente.ramal_com_2 = BD.readToString(rowResultado["ramal_com_2"]);
+			cliente = carregaDadosClienteFromDataRow(dtbResultado.Rows[0]);
 			#endregion
 
 			return cliente;
@@ -157,11 +167,10 @@ namespace FinanceiroService
 		{
 			#region [ Declarações ]
 			String strSql;
-			Cliente cliente = new Cliente();
+			Cliente cliente;
 			SqlCommand cmCommand;
 			SqlDataAdapter daDataAdapter;
 			DataTable dtbResultado = new DataTable();
-			DataRow rowResultado;
 			#endregion
 
 			#region [ Consistências ]
@@ -188,47 +197,7 @@ namespace FinanceiroService
 
 			if (dtbResultado.Rows.Count == 0) return null;
 
-			rowResultado = dtbResultado.Rows[0];
-
-			cliente.id = rowResultado["id"].ToString();
-			cliente.cnpj_cpf = !Convert.IsDBNull(rowResultado["cnpj_cpf"]) ? rowResultado["cnpj_cpf"].ToString() : "";
-			cliente.tipo = !Convert.IsDBNull(rowResultado["tipo"]) ? rowResultado["tipo"].ToString() : "";
-			cliente.ie = !Convert.IsDBNull(rowResultado["ie"]) ? rowResultado["ie"].ToString() : "";
-			cliente.rg = !Convert.IsDBNull(rowResultado["rg"]) ? rowResultado["rg"].ToString() : "";
-			cliente.nome = !Convert.IsDBNull(rowResultado["nome"]) ? rowResultado["nome"].ToString() : "";
-			cliente.sexo = !Convert.IsDBNull(rowResultado["sexo"]) ? rowResultado["sexo"].ToString() : "";
-			cliente.endereco = !Convert.IsDBNull(rowResultado["endereco"]) ? rowResultado["endereco"].ToString() : "";
-			cliente.endereco_numero = !Convert.IsDBNull(rowResultado["endereco_numero"]) ? rowResultado["endereco_numero"].ToString() : "";
-			cliente.endereco_complemento = !Convert.IsDBNull(rowResultado["endereco_complemento"]) ? rowResultado["endereco_complemento"].ToString() : "";
-			cliente.bairro = !Convert.IsDBNull(rowResultado["bairro"]) ? rowResultado["bairro"].ToString() : "";
-			cliente.cidade = !Convert.IsDBNull(rowResultado["cidade"]) ? rowResultado["cidade"].ToString() : "";
-			cliente.uf = !Convert.IsDBNull(rowResultado["uf"]) ? rowResultado["uf"].ToString() : "";
-			cliente.cep = !Convert.IsDBNull(rowResultado["cep"]) ? rowResultado["cep"].ToString() : "";
-			cliente.ddd_res = !Convert.IsDBNull(rowResultado["ddd_res"]) ? rowResultado["ddd_res"].ToString() : "";
-			cliente.tel_res = !Convert.IsDBNull(rowResultado["tel_res"]) ? rowResultado["tel_res"].ToString() : "";
-			cliente.ddd_com = !Convert.IsDBNull(rowResultado["ddd_com"]) ? rowResultado["ddd_com"].ToString() : "";
-			cliente.tel_com = !Convert.IsDBNull(rowResultado["tel_com"]) ? rowResultado["tel_com"].ToString() : "";
-			cliente.ramal_com = !Convert.IsDBNull(rowResultado["ramal_com"]) ? rowResultado["ramal_com"].ToString() : "";
-			cliente.contato = !Convert.IsDBNull(rowResultado["contato"]) ? rowResultado["contato"].ToString() : "";
-			cliente.dt_nasc = !Convert.IsDBNull(rowResultado["dt_nasc"]) ? (DateTime)rowResultado["dt_nasc"] : DateTime.MinValue;
-			cliente.filiacao = !Convert.IsDBNull(rowResultado["filiacao"]) ? rowResultado["filiacao"].ToString() : "";
-			cliente.obs_crediticias = !Convert.IsDBNull(rowResultado["obs_crediticias"]) ? rowResultado["obs_crediticias"].ToString() : "";
-			cliente.midia = !Convert.IsDBNull(rowResultado["midia"]) ? rowResultado["midia"].ToString() : "";
-			cliente.email = !Convert.IsDBNull(rowResultado["email"]) ? rowResultado["email"].ToString() : "";
-			cliente.email_opcoes = !Convert.IsDBNull(rowResultado["email_opcoes"]) ? rowResultado["email_opcoes"].ToString() : "";
-			cliente.dt_cadastro = !Convert.IsDBNull(rowResultado["dt_cadastro"]) ? (DateTime)rowResultado["dt_cadastro"] : DateTime.MinValue;
-			cliente.dt_ult_atualizacao = !Convert.IsDBNull(rowResultado["dt_ult_atualizacao"]) ? (DateTime)rowResultado["dt_ult_atualizacao"] : DateTime.MinValue;
-			cliente.socMaj_Nome = !Convert.IsDBNull(rowResultado["SocMaj_Nome"]) ? rowResultado["SocMaj_Nome"].ToString() : "";
-			cliente.socMaj_CPF = !Convert.IsDBNull(rowResultado["SocMaj_CPF"]) ? rowResultado["SocMaj_CPF"].ToString() : "";
-			cliente.socMaj_banco = !Convert.IsDBNull(rowResultado["SocMaj_banco"]) ? rowResultado["SocMaj_banco"].ToString() : "";
-			cliente.socMaj_agencia = !Convert.IsDBNull(rowResultado["SocMaj_agencia"]) ? rowResultado["SocMaj_agencia"].ToString() : "";
-			cliente.socMaj_conta = !Convert.IsDBNull(rowResultado["SocMaj_conta"]) ? rowResultado["SocMaj_conta"].ToString() : "";
-			cliente.socMaj_ddd = !Convert.IsDBNull(rowResultado["SocMaj_ddd"]) ? rowResultado["SocMaj_ddd"].ToString() : "";
-			cliente.socMaj_telefone = !Convert.IsDBNull(rowResultado["SocMaj_telefone"]) ? rowResultado["SocMaj_telefone"].ToString() : "";
-			cliente.socMaj_contato = !Convert.IsDBNull(rowResultado["SocMaj_contato"]) ? rowResultado["SocMaj_contato"].ToString() : "";
-			cliente.usuario_cadastro = !Convert.IsDBNull(rowResultado["usuario_cadastro"]) ? rowResultado["usuario_cadastro"].ToString() : "";
-			cliente.usuario_ult_atualizacao = !Convert.IsDBNull(rowResultado["usuario_ult_atualizacao"]) ? rowResultado["usuario_ult_atualizacao"].ToString() : "";
-			cliente.indicador = !Convert.IsDBNull(rowResultado["indicador"]) ? rowResultado["indicador"].ToString() : "";
+			cliente = carregaDadosClienteFromDataRow(dtbResultado.Rows[0]);
 			#endregion
 
 			return cliente;

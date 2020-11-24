@@ -6,6 +6,7 @@ using ART3WebAPI.Models.Entities;
 using System.Data;
 using System.Data.SqlClient;
 using ART3WebAPI.Models.Domains;
+using System.Threading;
 
 namespace ART3WebAPI.Models.Repository
 {
@@ -179,8 +180,8 @@ namespace ART3WebAPI.Models.Repository
 			codigoDescricao.parametro_campo_data = BD.readToDateTime(rowDados["parametro_campo_data"]);
 			codigoDescricao.parametro_campo_texto = BD.readToString(rowDados["parametro_campo_texto"]);
 			codigoDescricao.parametro_2_campo_texto = BD.readToString(rowDados["parametro_2_campo_texto"]);
-            codigoDescricao.parametro_3_campo_texto = BD.readToString(rowDados["parametro_3_campo_texto"]);
-            codigoDescricao.descricao_parametro = BD.readToString(rowDados["descricao_parametro"]);
+			codigoDescricao.parametro_3_campo_texto = BD.readToString(rowDados["parametro_3_campo_texto"]);
+			codigoDescricao.descricao_parametro = BD.readToString(rowDados["descricao_parametro"]);
 
 			return codigoDescricao;
 		}
@@ -786,6 +787,449 @@ namespace ART3WebAPI.Models.Repository
 			catch (Exception ex)
 			{
 				Global.gravaLogAtividade("Falha ao gravar em t_PARAMETRO.campo_texto no registro '" + nomeParametro + "'\n" + ex.ToString());
+				return false;
+			}
+		}
+		#endregion
+
+		#region [ atualizaTabelaControleNsu ]
+		private static bool atualizaTabelaControleNsu(String id_nsu,
+													String nsu_novo,
+													String nsu_atual,
+													out String strMsgErro)
+		{
+			#region [ Declarações ]
+			const string NOME_DESTA_ROTINA = "GeralDAO.atualizaTabelaControleNsu()";
+			bool blnSucesso = false;
+			int intRetorno;
+			string strSql;
+			SqlConnection cn;
+			SqlCommand cmUpdateTabelaControleNsu;
+			#endregion
+
+			strMsgErro = "";
+			try
+			{
+				#region [ Consistências ]
+				if (id_nsu == null)
+				{
+					strMsgErro = "Não foi informado o identificador do NSU!!";
+					return false;
+				}
+
+				if (id_nsu.ToString().Trim().Length == 0)
+				{
+					strMsgErro = "Não foi fornecido o identificador do NSU!!";
+					return false;
+				}
+
+				if (nsu_novo == null)
+				{
+					strMsgErro = "Não foi informado o valor do novo NSU!!";
+					return false;
+				}
+
+				if (nsu_novo.ToString().Trim().Length == 0)
+				{
+					strMsgErro = "Não foi fornecido o valor do novo NSU!!";
+					return false;
+				}
+
+				if (nsu_atual == null)
+				{
+					strMsgErro = "Não foi informado o valor do NSU atual!!";
+					return false;
+				}
+				#endregion
+
+				#region [ Prepara acesso ao BD ]
+				cn = new SqlConnection(BD.getConnectionString());
+				cn.Open();
+
+				// Caso o relógio do servidor seja alterado p/ datas futuras e passadas, evita que o campo 'ano_letra_seq' seja incrementado várias vezes através
+				// do controle que impede o campo 'dt_ult_atualizacao' de receber uma data menor do que aquela que ele já possui
+				strSql = "UPDATE t_CONTROLE SET " +
+							"nsu = @nsu_novo, " +
+							"dt_ult_atualizacao = CASE WHEN dt_ult_atualizacao > " + Global.sqlMontaGetdateSomenteData() + " THEN dt_ult_atualizacao ELSE " + Global.sqlMontaGetdateSomenteData() + " END" +
+						" WHERE" +
+							" (id_nsu = @id_nsu)" +
+							" AND (nsu = @nsu_atual)";
+				cmUpdateTabelaControleNsu = new SqlCommand();
+				cmUpdateTabelaControleNsu.Connection = cn;
+				cmUpdateTabelaControleNsu.CommandText = strSql;
+				cmUpdateTabelaControleNsu.Parameters.Add("@id_nsu", SqlDbType.VarChar, 80);
+				cmUpdateTabelaControleNsu.Parameters.Add("@nsu_novo", SqlDbType.VarChar, 12);
+				cmUpdateTabelaControleNsu.Parameters.Add("@nsu_atual", SqlDbType.VarChar, 12);
+				cmUpdateTabelaControleNsu.Prepare();
+				#endregion
+
+				try // finally: BD.fechaConexao(ref cn);
+				{
+					#region [ Preenche o valor dos parâmetros ]
+					cmUpdateTabelaControleNsu.Parameters["@id_nsu"].Value = id_nsu;
+					cmUpdateTabelaControleNsu.Parameters["@nsu_novo"].Value = nsu_novo;
+					cmUpdateTabelaControleNsu.Parameters["@nsu_atual"].Value = nsu_atual;
+					#endregion
+
+					#region [ Tenta alterar o registro ]
+					try
+					{
+						intRetorno = cmUpdateTabelaControleNsu.ExecuteNonQuery();
+					}
+					catch (Exception ex)
+					{
+						intRetorno = 0;
+						strMsgErro = NOME_DESTA_ROTINA + " - Tentativa resultou em exception!!\n" + ex.ToString();
+						Global.gravaLogAtividade(strMsgErro);
+					}
+
+					if (intRetorno == 1)
+					{
+						blnSucesso = true;
+					}
+					else
+					{
+						blnSucesso = false;
+					}
+					#endregion
+				}
+				finally
+				{
+					BD.fechaConexao(ref cn);
+				}
+
+				#region [ Processamento final de sucesso ou falha ]
+				if (blnSucesso)
+				{
+					return true;
+				}
+				else
+				{
+					if (strMsgErro.Length > 0) strMsgErro = "\n" + strMsgErro;
+					strMsgErro = "Falha ao tentar atualizar o registro da tabela de controle (id_nsu=" + id_nsu + ")!!" + strMsgErro;
+					return false;
+				}
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				strMsgErro = NOME_DESTA_ROTINA + "\n" + ex.ToString();
+				Global.gravaLogAtividade(strMsgErro);
+				return false;
+			}
+		}
+		#endregion
+
+		#region [ atualizaTabelaControleNsuComLetraSeq ]
+		private static bool atualizaTabelaControleNsuComLetraSeq(String id_nsu,
+													String nsu_novo,
+													String nsu_atual,
+													String ano_letra_seq_novo,
+													out String strMsgErro)
+		{
+			#region [ Declarações ]
+			const string NOME_DESTA_ROTINA = "GeralDAO.atualizaTabelaControleNsuComLetraSeq()";
+			bool blnSucesso = false;
+			int intRetorno;
+			string strSql;
+			SqlConnection cn;
+			SqlCommand cmUpdateTabelaControleNsuComLetraSeq;
+			#endregion
+
+			strMsgErro = "";
+			try
+			{
+				#region [ Consistências ]
+				if (id_nsu == null)
+				{
+					strMsgErro = "Não foi informado o identificador do NSU!!";
+					return false;
+				}
+
+				if (id_nsu.ToString().Trim().Length == 0)
+				{
+					strMsgErro = "Não foi fornecido o identificador do NSU!!";
+					return false;
+				}
+
+				if (nsu_novo == null)
+				{
+					strMsgErro = "Não foi informado o valor do novo NSU!!";
+					return false;
+				}
+
+				if (nsu_novo.ToString().Trim().Length == 0)
+				{
+					strMsgErro = "Não foi fornecido o valor do novo NSU!!";
+					return false;
+				}
+
+				if (nsu_atual == null)
+				{
+					strMsgErro = "Não foi informado o valor do NSU atual!!";
+					return false;
+				}
+				#endregion
+
+				#region [ Prepara acesso ao BD ]
+				cn = new SqlConnection(BD.getConnectionString());
+				cn.Open();
+
+				// Caso o relógio do servidor seja alterado p/ datas futuras e passadas, evita que o campo 'ano_letra_seq' seja incrementado várias vezes através
+				// do controle que impede o campo 'dt_ult_atualizacao' de receber uma data menor do que aquela que ele já possui
+				strSql = "UPDATE t_CONTROLE SET " +
+							"nsu = @nsu_novo, " +
+							"ano_letra_seq = @ano_letra_seq_novo, " +
+							"dt_ult_atualizacao = CASE WHEN dt_ult_atualizacao > " + Global.sqlMontaGetdateSomenteData() + " THEN dt_ult_atualizacao ELSE " + Global.sqlMontaGetdateSomenteData() + " END" +
+						" WHERE" +
+							" (id_nsu = @id_nsu)" +
+							" AND (nsu = @nsu_atual)";
+				cmUpdateTabelaControleNsuComLetraSeq = new SqlCommand();
+				cmUpdateTabelaControleNsuComLetraSeq.Connection = cn;
+				cmUpdateTabelaControleNsuComLetraSeq.CommandText = strSql;
+				cmUpdateTabelaControleNsuComLetraSeq.Parameters.Add("@id_nsu", SqlDbType.VarChar, 80);
+				cmUpdateTabelaControleNsuComLetraSeq.Parameters.Add("@nsu_novo", SqlDbType.VarChar, 12);
+				cmUpdateTabelaControleNsuComLetraSeq.Parameters.Add("@nsu_atual", SqlDbType.VarChar, 12);
+				cmUpdateTabelaControleNsuComLetraSeq.Parameters.Add("@ano_letra_seq_novo", SqlDbType.VarChar, 1);
+				cmUpdateTabelaControleNsuComLetraSeq.Prepare();
+				#endregion
+
+				try // finally: BD.fechaConexao(ref cn);
+				{
+					#region [ Preenche o valor dos parâmetros ]
+					cmUpdateTabelaControleNsuComLetraSeq.Parameters["@id_nsu"].Value = id_nsu;
+					cmUpdateTabelaControleNsuComLetraSeq.Parameters["@nsu_novo"].Value = nsu_novo;
+					cmUpdateTabelaControleNsuComLetraSeq.Parameters["@nsu_atual"].Value = nsu_atual;
+					cmUpdateTabelaControleNsuComLetraSeq.Parameters["@ano_letra_seq_novo"].Value = ano_letra_seq_novo;
+					#endregion
+
+					#region [ Tenta alterar o registro ]
+					try
+					{
+						intRetorno = cmUpdateTabelaControleNsuComLetraSeq.ExecuteNonQuery();
+					}
+					catch (Exception ex)
+					{
+						intRetorno = 0;
+						strMsgErro = NOME_DESTA_ROTINA + " - Tentativa resultou em exception!!\n" + ex.ToString();
+						Global.gravaLogAtividade(strMsgErro);
+					}
+
+					if (intRetorno == 1)
+					{
+						blnSucesso = true;
+					}
+					else
+					{
+						blnSucesso = false;
+					}
+					#endregion
+				}
+				finally
+				{
+					BD.fechaConexao(ref cn);
+				}
+
+				#region [ Processamento final de sucesso ou falha ]
+				if (blnSucesso)
+				{
+					return true;
+				}
+				else
+				{
+					if (strMsgErro.Length > 0) strMsgErro = "\n" + strMsgErro;
+					strMsgErro = "Falha ao tentar atualizar o registro da tabela de controle (id_nsu=" + id_nsu + ")!!" + strMsgErro;
+					return false;
+				}
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				strMsgErro = NOME_DESTA_ROTINA + "\n" + ex.ToString();
+				Global.gravaLogAtividade(strMsgErro);
+				return false;
+			}
+		}
+		#endregion
+
+		#region [ geraNsuUsandoTabelaControle ]
+		public static bool geraNsuUsandoTabelaControle(ref SqlConnection cn, String id_nsu, out String nsu_novo, out String strMsgErro)
+		{
+			#region [ Declarações ]
+			const string NOME_DESTA_ROTINA = "GeralDAO.geraNsuUsandoTabelaControle()";
+			const int MAX_TENTATIVAS = 10;
+			int intQtdeTentativas = 0;
+			bool blnRetorno;
+			#endregion
+
+			nsu_novo = "";
+			strMsgErro = "";
+
+			try
+			{
+				while (true)
+				{
+					intQtdeTentativas++;
+
+					blnRetorno = executaGeraNsuUsandoTabelaControle(ref cn, id_nsu, out nsu_novo, out strMsgErro);
+					if (blnRetorno) return true;
+
+					if (intQtdeTentativas > MAX_TENTATIVAS)
+					{
+						if (strMsgErro.Length > 0) strMsgErro = "\n" + strMsgErro;
+						strMsgErro = "Falha ao tentar gerar o NSU após " + MAX_TENTATIVAS.ToString() + "!!" + strMsgErro;
+						return false;
+					}
+
+					Thread.Sleep(100);
+				}
+			}
+			catch (Exception ex)
+			{
+				strMsgErro = NOME_DESTA_ROTINA + "\n" + ex.ToString();
+				Global.gravaLogAtividade(strMsgErro);
+				return false;
+			}
+		}
+		#endregion
+
+		#region [ executaGeraNsuUsandoTabelaControle ]
+		private static bool executaGeraNsuUsandoTabelaControle(ref SqlConnection cn, String id_nsu, out String nsu_novo, out String strMsgErro)
+		{
+			#region [ Declarações ]
+			const string NOME_DESTA_ROTINA = "GeralDAO.executaGeraNsuUsandoTabelaControle()";
+			int n_nsu;
+			bool blnAbriuConexao = false;
+			String strNsuNovo;
+			String strNsuAtual = "";
+			String strLetraSeqNovo;
+			String strSql;
+			SqlCommand cmCommand;
+			SqlDataAdapter daAdapter;
+			DataTable dtbConsulta = new DataTable();
+			DataRow rowConsulta;
+			#endregion
+
+			nsu_novo = "";
+			strMsgErro = "";
+			try
+			{
+				#region [ Cria objetos de BD ]
+				if (cn == null)
+				{
+					cn = new SqlConnection(BD.getConnectionString());
+					cn.Open();
+					blnAbriuConexao = true;
+				}
+
+				cmCommand = new SqlCommand();
+				cmCommand.Connection = cn;
+				daAdapter = new SqlDataAdapter();
+				daAdapter.SelectCommand = cmCommand;
+				daAdapter.MissingSchemaAction = MissingSchemaAction.Add;
+				#endregion
+
+				try // finally: BD.fechaConexao(ref cn);
+				{
+					#region [ Consistências ]
+					if (id_nsu == null)
+					{
+						strMsgErro = "Não foi informado o NSU a ser gerado!!";
+						return false;
+					}
+
+					if (id_nsu.ToString().Trim().Length == 0)
+					{
+						strMsgErro = "Não foi especificado o NSU a ser gerado!!";
+						return false;
+					}
+					#endregion
+
+					strMsgErro = "";
+					n_nsu = -1;
+
+					strSql = "SELECT * FROM t_CONTROLE WHERE (id_nsu = '" + id_nsu + "')";
+
+					#region [ Executa a consulta no BD ]
+					cmCommand.CommandText = strSql;
+					daAdapter.Fill(dtbConsulta);
+					#endregion
+
+					#region [ Ainda não existe registro de controle para gerar este NSU? ]
+					if (dtbConsulta.Rows.Count == 0)
+					{
+						strMsgErro = "Não existe registro na tabela de controle para poder gerar este NSU!!";
+						return false;
+					}
+					#endregion
+
+					rowConsulta = dtbConsulta.Rows[0];
+					if (!Convert.IsDBNull(rowConsulta["nsu"]))
+					{
+						strNsuAtual = BD.readToString(rowConsulta["nsu"]);
+						if (strNsuAtual.Trim().Length > 0)
+						{
+							n_nsu = (int)Global.converteInteiro(strNsuAtual);
+							if (BD.readToInt(rowConsulta["seq_anual"]) != 0)
+							{
+								// Caso o relógio do servidor seja alterado p/ datas futuras e passadas, evita que o campo 'ano_letra_seq' seja incrementado várias vezes
+								if (DateTime.Today.Year > BD.readToDateTime(rowConsulta["dt_ult_atualizacao"]).Year)
+								{
+									// Se mudou o ano, reinicia a contagem do NSU
+									strNsuNovo = "".PadLeft(Global.Cte.Etc.TAM_MAX_NSU, '0');
+									n_nsu = 0;
+									if (BD.readToString(rowConsulta["ano_letra_seq"]).Trim().Length > 0)
+									{
+										strLetraSeqNovo = BD.readToString(rowConsulta["ano_letra_seq"]);
+										strLetraSeqNovo = Texto.chr((short)(Texto.asc(strLetraSeqNovo[0]) + BD.readToInt(rowConsulta["ano_letra_step"]))).ToString();
+										if (!atualizaTabelaControleNsuComLetraSeq(id_nsu, strNsuNovo, strNsuAtual, strLetraSeqNovo, out strMsgErro))
+										{
+											if (strMsgErro.Length > 0) strMsgErro = "\n" + strMsgErro;
+											strMsgErro = "Falha ao tentar atualizar o registro da tabela de controle (id_nsu=" + id_nsu + ")!!" + strMsgErro;
+											return false;
+										}
+									}
+									else
+									{
+										if (!atualizaTabelaControleNsu(id_nsu, strNsuNovo, strNsuAtual, out strMsgErro))
+										{
+											if (strMsgErro.Length > 0) strMsgErro = "\n" + strMsgErro;
+											strMsgErro = "Falha ao tentar atualizar o registro da tabela de controle (id_nsu=" + id_nsu + ")!!" + strMsgErro;
+											return false;
+										}
+									}
+								}
+							}
+						}
+					}
+
+					if (n_nsu < 0)
+					{
+						strMsgErro = "O NSU gerado é inválido!!";
+						return false;
+					}
+
+					n_nsu++;
+					strNsuNovo = n_nsu.ToString().PadLeft(Global.Cte.Etc.TAM_MAX_NSU, '0');
+					if (!atualizaTabelaControleNsu(id_nsu, strNsuNovo, strNsuAtual, out strMsgErro))
+					{
+						if (strMsgErro.Length > 0) strMsgErro = "\n" + strMsgErro;
+						strMsgErro = "Falha ao tentar atualizar a tabela de controle (id_nsu=" + id_nsu + ")!!" + strMsgErro;
+						return false;
+					}
+				}
+				finally
+				{
+					if (blnAbriuConexao) BD.fechaConexao(ref cn);
+				}
+
+				nsu_novo = strNsuNovo;
+				return true;
+			}
+			catch (Exception ex)
+			{
+				strMsgErro = NOME_DESTA_ROTINA + "\n" + ex.ToString();
+				Global.gravaLogAtividade(strMsgErro);
 				return false;
 			}
 		}

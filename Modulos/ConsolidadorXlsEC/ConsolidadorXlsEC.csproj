@@ -68,6 +68,7 @@
     <Compile Include="FIntegracaoMarketplace.Designer.cs">
       <DependentUpon>FIntegracaoMarketplace.cs</DependentUpon>
     </Compile>
+    <Compile Include="GeralDAO.cs" />
     <Compile Include="ProdutoConferePreco.cs" />
     <Compile Include="ContextoBD.cs" />
     <Compile Include="Cripto.cs" />

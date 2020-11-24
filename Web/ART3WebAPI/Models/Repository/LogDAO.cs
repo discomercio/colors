@@ -4,7 +4,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Text;
 using System.Threading;
-
+using ART3WebAPI.Models.Domains;
 #endregion
 
 namespace ART3WebAPI.Models.Repository
@@ -54,9 +54,12 @@ namespace ART3WebAPI.Models.Repository
         /// true: gravação efetuada com sucesso
         /// false: falha na gravação
         /// </returns>
-        public static bool insere(String usuario, Entities.Log log, String strMsgErro)
+        public static bool insere(String usuario, Entities.Log log, out String strMsgErro)
         {
+            const string NOME_DESTA_ROTINA = "LogDAO.insere()";
             String strSql;
+
+            strMsgErro = "";
 
             SqlConnection cn = new SqlConnection(BD.getConnectionString());
             cn.Open();
@@ -160,11 +163,13 @@ namespace ART3WebAPI.Models.Repository
                     #region [ Processamento final de sucesso ou falha ]
                     if (blnSucesso)
                     {
+                        Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - Log gravado com sucesso no BD:\n" + sbLog.ToString());
                         return true;
                     }
                     else
                     {
                         strMsgErro = "Falha ao gravar no banco de dados o log após " + intQtdeTentativas.ToString() + " tentativas!!";
+                        Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + strMsgErro);
                         return false;
                     }
                     #endregion
@@ -173,6 +178,7 @@ namespace ART3WebAPI.Models.Repository
                 {
                     // Para o usuário, exibe uma mensagem mais sucinta
                     strMsgErro = ex.Message;
+                    Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - Exception: " + strMsgErro);
                     return false;
                 }
             }

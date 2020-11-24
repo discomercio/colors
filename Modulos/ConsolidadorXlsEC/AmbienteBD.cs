@@ -22,6 +22,7 @@ namespace ConsolidadorXlsEC
 		#region [ Atributos ]
 		public BancoDados BD;
 		public LogDAO logDAO;
+		public GeralDAO geralDAO;
 		public PedidoDAO pedidoDAO;
 		public UsuarioDAO usuarioDAO;
 		public ProdutoDAO produtoDAO;
@@ -163,6 +164,7 @@ namespace ConsolidadorXlsEC
 				Global.gravaLogAtividade("Inicialização dos objetos DAO do banco de dados '" + NomeBancoDados + "' (Servidor: " + EnderecoServidor + ")");
 
 				logDAO = new LogDAO(ref BD);
+				geralDAO = new GeralDAO(ref BD);
 				pedidoDAO = new PedidoDAO(ref BD);
 				usuarioDAO = new UsuarioDAO(ref BD);
 				produtoDAO = new ProdutoDAO(ref BD);
