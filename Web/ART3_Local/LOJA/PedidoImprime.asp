@@ -73,12 +73,17 @@
 			next
 		end if
 
-	dim s_aux, s2, s3, r_loja, r_cliente, s_cor, s_falta, v_pedido, s_script
+	dim s_aux, s2, r_loja, r_cliente, s_cor, s_falta, v_pedido, s_script
 	dim v_disp
 	dim vl_TotalFamiliaPrecoVenda, vl_TotalFamiliaPrecoNF, vl_TotalFamiliaPago, vl_TotalFamiliaDevolucaoPrecoVenda, vl_TotalFamiliaDevolucaoPrecoNF
 	dim vl_saldo_a_pagar, s_vl_saldo_a_pagar, st_pagto
 	dim v_item_devolvido, s_devolucoes
 	dim v_pedido_perda, s_perdas, vl_total_perdas
+    dim cliente__tipo, cliente__cnpj_cpf, cliente__rg, cliente__ie, cliente__nome
+    dim cliente__endereco, cliente__endereco_numero, cliente__endereco_complemento, cliente__bairro, cliente__cidade, cliente__uf, cliente__cep
+    dim cliente__tel_res, cliente__ddd_res, cliente__tel_com, cliente__ddd_com, cliente__ramal_com, cliente__tel_cel, cliente__ddd_cel
+    dim cliente__tel_com_2, cliente__ddd_com_2, cliente__ramal_com_2, cliente__email, cliente__email_xml, cliente__produtor_rural_status, cliente__contribuinte_icms_status
+
 	s_devolucoes = ""
 	s_perdas = ""
 	vl_total_perdas = 0
@@ -142,6 +147,65 @@
 		
 		set r_cliente = New cl_CLIENTE
 		if Not x_cliente_bd(r_pedido.id_cliente, r_cliente) then Response.Redirect("aviso.asp?id=" & ERR_CLIENTE_NAO_CADASTRADO)
+
+
+        'le as variáveis da origem certa: ou do pedido ou do cliente, todas comecam com cliente__
+        cliente__tipo = r_cliente.tipo
+        cliente__cnpj_cpf = r_cliente.cnpj_cpf
+	    cliente__rg = r_cliente.rg
+        cliente__ie = r_cliente.ie
+        cliente__nome = r_cliente.nome
+        cliente__endereco = r_cliente.endereco
+        cliente__endereco_numero = r_cliente.endereco_numero
+        cliente__endereco_complemento = r_cliente.endereco_complemento
+        cliente__bairro = r_cliente.bairro
+        cliente__cidade = r_cliente.cidade
+        cliente__uf = r_cliente.uf
+        cliente__cep = r_cliente.cep
+        cliente__tel_res = r_cliente.tel_res
+        cliente__ddd_res = r_cliente.ddd_res
+        cliente__tel_com = r_cliente.tel_com
+        cliente__ddd_com = r_cliente.ddd_com
+        cliente__ramal_com = r_cliente.ramal_com
+        cliente__tel_cel = r_cliente.tel_cel
+        cliente__ddd_cel = r_cliente.ddd_cel
+        cliente__tel_com_2 = r_cliente.tel_com_2
+        cliente__ddd_com_2 = r_cliente.ddd_com_2
+        cliente__ramal_com_2 = r_cliente.ramal_com_2
+        cliente__email = r_cliente.email
+		cliente__email_xml = r_cliente.email_xml
+		cliente__produtor_rural_status = r_cliente.produtor_rural_status
+		cliente__contribuinte_icms_status = r_cliente.contribuinte_icms_status
+
+        if isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos and r_pedido.st_memorizacao_completa_enderecos <> 0 then 
+            cliente__tipo = r_pedido.endereco_tipo_pessoa
+            cliente__cnpj_cpf = r_pedido.endereco_cnpj_cpf
+	        cliente__rg = r_pedido.endereco_rg
+            cliente__ie = r_pedido.endereco_ie
+            cliente__nome = r_pedido.endereco_nome
+            cliente__endereco = r_pedido.endereco_logradouro
+            cliente__endereco_numero = r_pedido.endereco_numero
+            cliente__endereco_complemento = r_pedido.endereco_complemento
+            cliente__bairro = r_pedido.endereco_bairro
+            cliente__cidade = r_pedido.endereco_cidade
+            cliente__uf = r_pedido.endereco_uf
+            cliente__cep = r_pedido.endereco_cep
+            cliente__tel_res = r_pedido.endereco_tel_res
+            cliente__ddd_res = r_pedido.endereco_ddd_res
+            cliente__tel_com = r_pedido.endereco_tel_com
+            cliente__ddd_com = r_pedido.endereco_ddd_com
+            cliente__ramal_com = r_pedido.endereco_ramal_com
+            cliente__tel_cel = r_pedido.endereco_tel_cel
+            cliente__ddd_cel = r_pedido.endereco_ddd_cel
+            cliente__tel_com_2 = r_pedido.endereco_tel_com_2
+            cliente__ddd_com_2 = r_pedido.endereco_ddd_com_2
+            cliente__ramal_com_2 = r_pedido.endereco_ramal_com_2
+            cliente__email = r_pedido.endereco_email
+			cliente__email_xml = r_pedido.endereco_email_xml
+			cliente__produtor_rural_status = r_pedido.endereco_produtor_rural_status
+			cliente__contribuinte_icms_status = r_pedido.endereco_contribuinte_icms_status
+            end if
+
 		end if
 
 
@@ -346,7 +410,7 @@ s_script = "<script language='JavaScript'>" & chr(13) & _
 	"printer.imprime_campo(cx, cy, cw, '" & r_pedido.vendedor & "');" & chr(13)
 
 '>	CLIENTE - NOME
-	s = iniciais_em_maiusculas(r_cliente.nome)
+	s = iniciais_em_maiusculas(cliente__nome)
 	s_script = s_script & _
 	"cx=margemx+offx;" & chr(13) & _
 	"cy=margemy+53-offy-printer.texto_altura('X');" & chr(13) & _
@@ -354,16 +418,16 @@ s_script = "<script language='JavaScript'>" & chr(13) & _
 	"printer.imprime_campo(cx, cy, cw, '" & s & "');" & chr(13)
 
 '	CLIENTE - CNPJ/CPF
-	s = cnpj_cpf_formata(r_cliente.cnpj_cpf)
+	s = cnpj_cpf_formata(cliente__cnpj_cpf)
 	s_script = s_script & _
 	"cx=margemx+offx+148;" & chr(13) & _
 	"cw=margemx+200-cx-1;" & chr(13) & _
 	"printer.imprime_campo(cx, cy, cw, '" & s & "');" & chr(13)
 
 '>	CLIENTE - ENDEREÇO
-	s = iniciais_em_maiusculas(r_cliente.endereco)
-	if r_cliente.endereco_numero <> "" then s = s & ", " & r_cliente.endereco_numero
-	if r_cliente.endereco_complemento <> "" then s = s & " " & r_cliente.endereco_complemento
+	s = iniciais_em_maiusculas(cliente__endereco)
+	if cliente__endereco_numero <> "" then s = s & ", " & cliente__endereco_numero
+	if cliente__endereco_complemento <> "" then s = s & " " & cliente__endereco_complemento
 	s_script = s_script & _
 	"cx=margemx+offx;" & chr(13) & _
 	"cy=margemy+66-offy-printer.texto_altura('X');" & chr(13) & _
@@ -371,20 +435,20 @@ s_script = "<script language='JavaScript'>" & chr(13) & _
 	"printer.imprime_campo(cx, cy, cw, '" & s & "');" & chr(13)
 
 '	CLIENTE - BAIRRO
-	s = iniciais_em_maiusculas(r_cliente.bairro)
+	s = iniciais_em_maiusculas(cliente__bairro)
 	s_script = s_script & _
 	"cx=margemx+offx+126;" & chr(13) & _
 	"cw=margemx+170-cx-1;" & chr(13) & _
 	"printer.imprime_campo(cx, cy, cw, '" & s & "');" & chr(13)
 
 '	CLIENTE - CEP
-	s = cep_formata(r_cliente.cep)
+	s = cep_formata(cliente__cep)
 	s_script = s_script & _
 	"cx=margemx+170+(30-printer.texto_largura('" & s & "'))/2;" & chr(13) & _
 	"printer.imprime(cx, cy, '" & s & "');" & chr(13)
 
 '>	CLIENTE - MUNICÍPIO
-	s = iniciais_em_maiusculas(r_cliente.cidade)
+	s = iniciais_em_maiusculas(cliente__cidade)
 	s_script = s_script & _
 	"cx=margemx+offx;" & chr(13) & _
 	"cy=margemy+78-offy-printer.texto_altura('X');" & chr(13) & _
@@ -393,23 +457,21 @@ s_script = "<script language='JavaScript'>" & chr(13) & _
 
 '	CLIENTE - TELEFONE
 	s = ""
-	with r_cliente
-		if Trim(.tel_res) <> "" then
-			s = telefone_formata(Trim(.tel_res))
-			s_aux=Trim(.ddd_res)
-			if s_aux<>"" then s = "(" & s_aux & ") " & s
-			end if
+	if Trim(cliente__tel_res) <> "" then
+		s = telefone_formata(Trim(cliente__tel_res))
+		s_aux=Trim(cliente__ddd_res)
+		if s_aux<>"" then s = "(" & s_aux & ") " & s
+		end if
 		
-		if s = "" then
-			if Trim(.tel_com) <> "" then
-				s = telefone_formata(Trim(.tel_com))
-				s_aux = Trim(.ddd_com)
-				if s_aux<>"" then s = "(" & s_aux & ") " & s
-				s_aux = Trim(.ramal_com)
-				if s_aux<>"" then s = s & "  (R. " & s_aux & ")"
-				end if
+	if s = "" then
+		if Trim(cliente__tel_com) <> "" then
+			s = telefone_formata(Trim(cliente__tel_com))
+			s_aux = Trim(cliente__ddd_com)
+			if s_aux<>"" then s = "(" & s_aux & ") " & s
+			s_aux = Trim(cliente__ramal_com)
+			if s_aux<>"" then s = s & "  (R. " & s_aux & ")"
 			end if
-		end with
+		end if
 		
 	s_script = s_script & _
 	"cx=margemx+offx+67;" & chr(13) & _
@@ -417,16 +479,16 @@ s_script = "<script language='JavaScript'>" & chr(13) & _
 	"printer.imprime_campo(cx, cy, cw, '" & s & "');" & chr(13)
 	
 '	CLIENTE - UF
-	s = Ucase(r_cliente.uf)
+	s = Ucase(cliente__uf)
 	s_script = s_script & _
 	"cx=margemx+126+(22-printer.texto_largura('" & s & "'))/2;" & chr(13) & _
 	"printer.imprime(cx, cy, '" & s & "');" & chr(13)
 
 '	CLIENTE - RG/IE
-	if r_cliente.tipo = ID_PF then
-		s = r_cliente.rg
+	if cliente__tipo = ID_PF then
+		s = cliente__rg
 	else
-		s = r_cliente.ie
+		s = cliente__ie
 		end if
 	s_script = s_script & _
 	"cx=margemx+offx+148;" & chr(13) & _
@@ -601,19 +663,17 @@ s_script = s_script & _
 <table width="649" class="Q" cellSpacing="0">
 	<tr>
 <%	s = ""
-	with r_cliente
-		if Trim(.nome) <> "" then
-			s = Trim(.nome)
-			end if
-		end with
+	if Trim(cliente__nome) <> "" then
+		s = Trim(cliente__nome)
+		end if
 	
-	if r_cliente.tipo = ID_PF then s_aux="NOME DO CLIENTE" else s_aux="RAZÃO SOCIAL DO CLIENTE"
+	if cliente__tipo = ID_PF then s_aux="NOME DO CLIENTE" else s_aux="RAZÃO SOCIAL DO CLIENTE"
 %>
 	<td class="MD"><p class="Rf"><%=s_aux%></p><p class="C"><%=s%>&nbsp;</p></td>
 		
 		
-<%	if r_cliente.tipo = ID_PF then s_aux="CPF" else s_aux="CNPJ"
-	s = cnpj_cpf_formata(r_cliente.cnpj_cpf) 
+<%	if cliente__tipo = ID_PF then s_aux="CPF" else s_aux="CNPJ"
+	s = cnpj_cpf_formata(cliente__cnpj_cpf) 
 %>
 		<td width="145"><p class="Rf"><%=s_aux%></p><p class="C"><%=s%>&nbsp;</p></td>
 	</tr>
@@ -622,9 +682,8 @@ s_script = s_script & _
 <!--  ENDEREÇO DO CLIENTE  -->
 <table width="649" class="QS" cellSpacing="0">
 	<tr>
-<%	with r_cliente
-		s = formata_endereco(.endereco, .endereco_numero, .endereco_complemento, .bairro, .cidade, .uf, .cep)
-		end with
+<%	
+	s = formata_endereco(cliente__endereco, cliente__endereco_numero, cliente__endereco_complemento, cliente__bairro, cliente__cidade, cliente__uf, cliente__cep)
 %>		
 		<td><p class="Rf">ENDEREÇO</p><p class="C"><%=s%>&nbsp;</p></td>
 	</tr>
@@ -634,54 +693,74 @@ s_script = s_script & _
 <table width="649" class="QS" cellSpacing="0">
 	<tr>
 <%	s = ""
-	with r_cliente
-		if Trim(.tel_res) <> "" then
-			s = telefone_formata(Trim(.tel_res))
-			s_aux=Trim(.ddd_res)
-			if s_aux<>"" then s = "(" & s_aux & ") " & s
-			end if
-		end with
+	if Trim(cliente__tel_res) <> "" then
+		s = telefone_formata(Trim(cliente__tel_res))
+		s_aux=Trim(cliente__ddd_res)
+		if s_aux<>"" then s = "(" & s_aux & ") " & s
+		end if
 	
 	s2 = ""
-	with r_cliente
-		if Trim(.tel_com) <> "" then
-			s2 = telefone_formata(Trim(.tel_com))
-			s_aux = Trim(.ddd_com)
-			if s_aux<>"" then s2 = "(" & s_aux & ") " & s2
-			s_aux = Trim(.ramal_com)
-			if s_aux<>"" then s2 = s2 & "  (R. " & s_aux & ")"
-			end if
-		end with
+	if Trim(cliente__tel_com) <> "" then
+		s2 = telefone_formata(Trim(cliente__tel_com))
+		s_aux = Trim(cliente__ddd_com)
+		if s_aux<>"" then s2 = "(" & s_aux & ") " & s2
+		s_aux = Trim(cliente__ramal_com)
+		if s_aux<>"" then s2 = s2 & "  (R. " & s_aux & ")"
+		end if
 
-	s3 = ""
-	with r_cliente
-		if .tipo = ID_PF then s3 = Trim(.rg) else s3 = Trim(.ie)
-		end with
 %>
 
-<% if r_cliente.tipo = ID_PF then %>
-	<td class="MD" width="33%"><p class="Rf">TELEFONE RESIDENCIAL</p><p class="C"><%=s%>&nbsp;</p></td>
-	<td class="MD" width="33%"><p class="Rf">TELEFONE COMERCIAL</p><p class="C"><%=s2%>&nbsp;</p></td>
-	<td><p class="Rf">RG</p><p class="C"><%=s3%>&nbsp;</p></td>
+<% if cliente__tipo = ID_PF then %>
+	<td class="MD" width="25%"><p class="Rf">TELEFONE RESIDENCIAL</p><p class="C"><%=s%>&nbsp;</p></td>
+	<td class="MD" width="25%"><p class="Rf">TELEFONE COMERCIAL</p><p class="C"><%=s2%>&nbsp;</p></td>
+	<td class="MD" width="25%"><p class="Rf">RG</p><p class="C"><%=Trim(cliente__rg)%>&nbsp;</p></td>
+    <% 
+	s_aux = ""
+	if converte_numero(Trim(cliente__produtor_rural_status)) = converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_SIM) then
+        s = converte_numero(cliente__contribuinte_icms_status)
+        if s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) then
+            s_aux = "Sim (Não contribuinte)"
+        elseif s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
+            s_aux = "Sim (IE: " & cliente__ie & ")"
+        elseif s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO) then
+            s_aux = "Sim (Isento)"
+        end if
+    elseif cliente__produtor_rural_status = converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_NAO) then
+        s_aux = "Não"
+    end if
+    %>
+	<td align="left" width="25%"><p class="Rf">PRODUTOR RURAL</p><p class="C"><%=s_aux%>&nbsp;</p></td>
 <% else %>
-	<td class="MD" width="50%"><p class="Rf">TELEFONE</p><p class="C"><%=s2%>&nbsp;</p></td>
-	<td><p class="Rf">IE</p><p class="C"><%=s3%>&nbsp;</p></td>
-<% end if %>
+	<td class="MD" width="33%"><p class="Rf">TELEFONE</p><p class="C"><%=s2%>&nbsp;</p></td>
+	<td width="33%" class="MD" align="left"><p class="Rf">IE</p><p class="C"><%=Trim(cliente__ie)%>&nbsp;</p></td>
+    <% 
+		s_aux = ""
+		s = converte_numero(cliente__contribuinte_icms_status)
+        if s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) then
+            s_aux = "Não"
+        elseif s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
+            s_aux = "Sim"
+        elseif s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO) then
+            s_aux = "Isento"
+        end if            
+    %>
+	<td width="33%" align="left"><p class="Rf">CONTRIBUINTE ICMS</p><p class="C"><%=s_aux%>&nbsp;</p></td>
 
+<% end if %>
 	</tr>
 </table>
 
 <!--  E-MAIL DO CLIENTE  -->
 <table width="649" class="QS" cellSpacing="0">
 	<tr>
-		<td><p class="Rf">E-MAIL</p><p class="C"><%=Trim(r_cliente.email)%>&nbsp;</p></td>
+		<td align="left" class="MD" width="50%"><p class="Rf">E-MAIL</p><p class="C"><%=Trim(cliente__email)%>&nbsp;</p></td>
+		<td align="left" width="50%"><p class="Rf">E-MAIL (XML)</p><p class="C"><%=Trim(cliente__email_xml)%>&nbsp;</p></td>
 	</tr>
 </table>
 
 <!--  ENDEREÇO DE ENTREGA  -->
-<%	with r_pedido
-		s = formata_endereco(.EndEtg_endereco, .EndEtg_endereco_numero, .EndEtg_endereco_complemento, .EndEtg_bairro, .EndEtg_cidade, .EndEtg_uf, .EndEtg_cep)
-		end with
+<%	
+	s = pedido_formata_endereco_entrega(r_pedido, r_cliente)
 %>		
 <table width="649" class="QS" cellspacing="0" style="table-layout:fixed">
 	<tr>

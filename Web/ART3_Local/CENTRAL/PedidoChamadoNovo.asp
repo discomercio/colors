@@ -66,6 +66,10 @@
     ddd_2 = ""
     tel_1 = ""
     tel_2 = ""
+    contato = ""
+
+	dim blnUsarMemorizacaoCompletaEnderecos
+	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 
 ' _____________________________________________________________________________________________
 '
@@ -76,47 +80,94 @@
 ' OBTEM_DDD_TELEFONE_CLIENTE
 function obtem_ddd_telefone_cliente(ByRef ddd_1, ByRef ddd_2, ByRef tel_1, ByRef tel_2, ByRef contato)
 dim s, r
-    
-    s = "SELECT * FROM t_CLIENTE WHERE (id = '" & c_id_cliente & "')"
+dim blnTelefoneLidoDoPedido, r_pedido, msg_erro
 
-    set r = cn.Execute(s)
+    'vamos ler os dados do pedido?
+    blnTelefoneLidoDoPedido = false
+    if blnUsarMemorizacaoCompletaEnderecos then
+    	if Not le_pedido(pedido_selecionado, r_pedido, msg_erro) then exit function
+        if r_pedido.st_memorizacao_completa_enderecos <> 0 then
+            blnTelefoneLidoDoPedido = true
+            contato = r_pedido.endereco_nome
 
-    contato = Trim("" & r("nome"))
+            if r_pedido.endereco_ddd_cel<>"" then
+                ddd_1 = r_pedido.endereco_ddd_cel
+                tel_1 = r_pedido.endereco_tel_cel
+            end if
+            if r_pedido.endereco_ddd_res<>"" then
+                if ddd_1 = "" then
+                    ddd_1 = r_pedido.endereco_ddd_res
+                    tel_1 = r_pedido.endereco_tel_res
+                else
+                    ddd_2 = r_pedido.endereco_ddd_res
+                    tel_2 = r_pedido.endereco_tel_res
+                end if
+            end if
+            if r_pedido.endereco_ddd_com<>"" And ddd_2 = "" then
+                if ddd_1 = "" then
+                    ddd_1 = r_pedido.endereco_ddd_com
+                    tel_1 = r_pedido.endereco_tel_com
+                else
+                    ddd_2 = r_pedido.endereco_ddd_com
+                    tel_2 = r_pedido.endereco_tel_com
+                end if
+            end if
+            if r_pedido.endereco_ddd_com_2<>"" And ddd_2 = "" then
+                if ddd_1 = "" then
+                    ddd_1 = r_pedido.endereco_ddd_com_2
+                    tel_1 = r_pedido.endereco_tel_com_2
+                else
+                    ddd_2 = r_pedido.endereco_ddd_com_2
+                    tel_2 = r_pedido.endereco_tel_com_2
+                end if
+            end if
 
-    if Trim("" & r("ddd_cel"))<>"" then
-        ddd_1 = r("ddd_cel")
-        tel_1 = r("tel_cel")
-    end if
-    if Trim("" & r("ddd_res"))<>"" then
-        if ddd_1 = "" then
-            ddd_1 = r("ddd_res")
-            tel_1 = r("tel_res")
-        else
-            ddd_2 = r("ddd_res")
-            tel_2 = r("tel_res")
         end if
     end if
-    if Trim("" & r("ddd_com"))<>"" And ddd_2 = "" then
-        if ddd_1 = "" then
-            ddd_1 = r("ddd_com")
-            tel_1 = r("tel_com")
-        else
-            ddd_2 = r("ddd_com")
-            tel_2 = r("tel_com")
-        end if
-    end if
-    if Trim("" & r("ddd_com_2"))<>"" And ddd_2 = "" then
-        if ddd_1 = "" then
-            ddd_1 = r("ddd_com_2")
-            tel_1 = r("tel_com_2")
-        else
-            ddd_2 = r("ddd_com_2")
-            tel_2 = r("tel_com_2")
-        end if
-    end if
 
-    r.Close
-	set r=nothing
+    'formato de pedido antigo, vamos ler do cliente
+    if not blnTelefoneLidoDoPedido then
+        s = "SELECT * FROM t_CLIENTE WHERE (id = '" & c_id_cliente & "')"
+
+        set r = cn.Execute(s)
+
+        contato = Trim("" & r("nome"))
+
+        if Trim("" & r("ddd_cel"))<>"" then
+            ddd_1 = r("ddd_cel")
+            tel_1 = r("tel_cel")
+        end if
+        if Trim("" & r("ddd_res"))<>"" then
+            if ddd_1 = "" then
+                ddd_1 = r("ddd_res")
+                tel_1 = r("tel_res")
+            else
+                ddd_2 = r("ddd_res")
+                tel_2 = r("tel_res")
+            end if
+        end if
+        if Trim("" & r("ddd_com"))<>"" And ddd_2 = "" then
+            if ddd_1 = "" then
+                ddd_1 = r("ddd_com")
+                tel_1 = r("tel_com")
+            else
+                ddd_2 = r("ddd_com")
+                tel_2 = r("tel_com")
+            end if
+        end if
+        if Trim("" & r("ddd_com_2"))<>"" And ddd_2 = "" then
+            if ddd_1 = "" then
+                ddd_1 = r("ddd_com_2")
+                tel_1 = r("tel_com_2")
+            else
+                ddd_2 = r("ddd_com_2")
+                tel_2 = r("tel_com_2")
+            end if
+        end if
+
+        r.Close
+	    set r=nothing
+    end if
 
 end function
 

@@ -157,12 +157,19 @@ namespace Financeiro
 		#region [ getCampoInteiroTabelaParametro ]
 		public static int getCampoInteiroTabelaParametro(String nomeParametro)
 		{
+			return getCampoInteiroTabelaParametro(nomeParametro, 0);
+		}
+
+		public static int getCampoInteiroTabelaParametro(String nomeParametro, int valorDefault)
+		{
 			#region [ Declarações ]
 			String strSql;
 			Object objResultado;
-			int intResultado = 0;
+			int intResultado;
 			SqlCommand cmCommand;
 			#endregion
+
+			intResultado = valorDefault;
 
 			strSql = "SELECT " +
 						"campo_inteiro" +

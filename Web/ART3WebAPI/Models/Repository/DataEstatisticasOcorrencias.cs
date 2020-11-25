@@ -22,8 +22,9 @@ namespace ART3WebAPI.Models.Repository
             string dtInicioFormatado = Global.sqlMontaDateTimeParaSqlDateTimeSomenteData(dtInicioDateType);
             string dtTerminoFormatado = Global.sqlMontaDateTimeParaSqlDateTimeSomenteData(dtTerminoDateType);
             string s_where_temp, sqlString, s;
+            int intParametroFlagPedidoMemorizacaoCompletaEnderecos;
 
-            
+            intParametroFlagPedidoMemorizacaoCompletaEnderecos = GeralDAO.getCampoInteiroTabelaParametro(Global.Cte.Parametros.ID_T_PARAMETRO.FLAG_PEDIDO_MEMORIZACAO_COMPLETA_ENDERECOS);
 
             #region [s_where e Consulta]
             s_where_temp = "";
@@ -65,12 +66,24 @@ namespace ART3WebAPI.Models.Repository
             }
             if (!string.IsNullOrEmpty(UF))
             {
-                s_where_temp = s_where_temp + " AND " +
-                        "(" +
-                            "((tP.st_end_entrega <> 0) And (tP.EndEtg_uf = '" + UF + "'))" +
-                            " OR " +
-                            "((tP.st_end_entrega = 0) And (tC.uf = '" + UF + "'))" +
-                        ")";
+                if (intParametroFlagPedidoMemorizacaoCompletaEnderecos == 1)
+                {
+                    s_where_temp = s_where_temp + " AND " +
+                            "(" +
+                                "((tP.st_end_entrega <> 0) And (tP.EndEtg_uf = '" + UF + "'))" +
+                                " OR " +
+                                "((tP.st_end_entrega = 0) And (tP.endereco_uf = '" + UF + "'))" +
+                            ")";
+                }
+                else
+                {
+                    s_where_temp = s_where_temp + " AND " +
+                            "(" +
+                                "((tP.st_end_entrega <> 0) And (tP.EndEtg_uf = '" + UF + "'))" +
+                                " OR " +
+                                "((tP.st_end_entrega = 0) And (tC.uf = '" + UF + "'))" +
+                            ")";
+                }
             }
             string s_where_loja = "";
             if (!string.IsNullOrEmpty(loja))
@@ -117,19 +130,27 @@ namespace ART3WebAPI.Models.Repository
 
             sqlString = "SELECT" +
                             " tPO.id," +
-                            " tPO.pedido," +                        
+                            " tPO.pedido," +
                             " tPO.usuario_cadastro," +
                             " tPO.dt_cadastro," +
                             " tPO.dt_hr_cadastro," +
                             " tPO.contato," +
-
                             " tPO.texto_ocorrencia," +
                             " tPO.tipo_ocorrencia," +
                             " tPO.cod_motivo_abertura," +
                             " tPO.texto_finalizacao," +
-                            " tP.transportadora_id," +
-                            " tC.nome_iniciais_em_maiusculas AS nome_cliente, " +
-                            " (" +
+                            " tP.transportadora_id,";
+
+            if (intParametroFlagPedidoMemorizacaoCompletaEnderecos == 1)
+            {
+                sqlString += " dbo.SqlClrUtilIniciaisEmMaiusculas(tP.endereco_nome) AS nome_cliente, ";
+            }
+            else
+            {
+                sqlString += " tC.nome_iniciais_em_maiusculas AS nome_cliente, ";
+            }
+
+            sqlString += " (" +
                                 "SELECT" +
                                     " TOP 1 NFe_numero_NF" +
                                 " FROM t_NFe_EMISSAO tNE" +

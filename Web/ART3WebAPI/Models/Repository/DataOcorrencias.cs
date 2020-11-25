@@ -19,61 +19,78 @@ namespace ART3WebAPI.Models.Repository
             
             //string s_where_temp, sqlString, s;
             string sqlString;
+            int intParametroFlagPedidoMemorizacaoCompletaEnderecos;
 
+            intParametroFlagPedidoMemorizacaoCompletaEnderecos = GeralDAO.getCampoInteiroTabelaParametro(Global.Cte.Parametros.ID_T_PARAMETRO.FLAG_PEDIDO_MEMORIZACAO_COMPLETA_ENDERECOS);
 
 
             #region [s_where e Consulta]
 
             sqlString = "SELECT" +
-						" tPO.id," +
-						" tPO.pedido," +
-						" tPO.usuario_cadastro," +
-						" tPO.dt_cadastro," +
-						" tPO.dt_hr_cadastro," +
-						" tPO.contato," +
-						" tPO.ddd_1," +
-						" tPO.tel_1," +
-						" tPO.ddd_2," +
-						" tPO.tel_2," +
+                        " tPO.id," +
+                        " tPO.pedido," +
+                        " tPO.usuario_cadastro," +
+                        " tPO.dt_cadastro," +
+                        " tPO.dt_hr_cadastro," +
+                        " tPO.contato," +
+                        " tPO.ddd_1," +
+                        " tPO.tel_1," +
+                        " tPO.ddd_2," +
+                        " tPO.tel_2," +
                         "'('+ tPO.ddd_1+')'+tPO.tel_1 AS telefone," +
                         " tPO.texto_ocorrencia," +
                         " tPO.tipo_ocorrencia," +
                         " tPO.cod_motivo_abertura," +
                         " tP.loja," +
-						" tP.loja AS pedido_loja," +
-						" tP.transportadora_id," +
-						" tC.nome_iniciais_em_maiusculas AS nome_cliente, tCD.codigo, tCD.descricao," +
-						" tEmit.apelido as CD, " +
+                        " tP.loja AS pedido_loja," +
+                        " tP.transportadora_id," +
+                        " tEmit.apelido as CD," +
+                        " tCD.codigo, tCD.descricao,";
+
+            if (intParametroFlagPedidoMemorizacaoCompletaEnderecos == 1)
+            {
+                sqlString +=
+                        " dbo.SqlClrUtilIniciaisEmMaiusculas(tP.endereco_nome) AS nome_cliente," +
+                        " CASE WHEN tP.st_end_entrega <> 0 THEN tP.EndEtg_uf ELSE tP.endereco_uf END AS UF, " +
+                        " CASE WHEN tP.st_end_entrega <> 0 THEN tP.EndEtg_cidade ELSE tP.endereco_cidade END AS Cidade, ";
+            }
+            else
+            {
+                sqlString +=
+                        " tC.nome_iniciais_em_maiusculas AS nome_cliente," +
                         " CASE WHEN tP.st_end_entrega <> 0 THEN tP.EndEtg_uf ELSE tC.uf END AS UF, " +
-                        " CASE WHEN tP.st_end_entrega <> 0 THEN tP.EndEtg_cidade ELSE tC.cidade END AS Cidade, " +
-						" (" +
-							"SELECT" +
-								" TOP 1 NFe_numero_NF" +
-							" FROM t_NFe_EMISSAO tNE" +
-							" WHERE" +
-								" (tNE.pedido=tPO.pedido)" +
-								" AND (tipo_NF = '1')" +
-								" AND (st_anulado = 0)" +
-								" AND (codigo_retorno_NFe_T1 = 1)" +
-							" ORDER BY" +
-								" id DESC" +
-						") AS numeroNFe," +
-						" (" +
-							"SELECT" +
-								" Count(*)" +
-							" FROM t_PEDIDO_OCORRENCIA_MENSAGEM" +
-							" WHERE" +
-								" (id_ocorrencia=tPO.id)" +
-								" AND (fluxo_mensagem='" + Global.Cte.COD_FLUXO_MENSAGEM_OCORRENCIAS_EM_PEDIDOS__CENTRAL_PARA_LOJA + "')" +
-						") AS qtde_msg_central," +
-						" (" +
-							" SELECT Count(*)" +
-							   " FROM t_PEDIDO_OCORRENCIA_MENSAGEM INNER JOIN t_PEDIDO_OCORRENCIA ON (t_PEDIDO_OCORRENCIA_MENSAGEM.id_ocorrencia=t_PEDIDO_OCORRENCIA.id)" +
-							   " INNER JOIN t_PEDIDO ON (t_PEDIDO_OCORRENCIA.pedido=t_PEDIDO.pedido)" + 
-							   " WHERE (id_ocorrencia = tPO.id)" +
-							   " AND (t_PEDIDO.loja = '" + Global.Cte.Loja.ArClube + "')" + 
-						") AS qtde_msg," +
-						" CASE WHEN (" +
+                        " CASE WHEN tP.st_end_entrega <> 0 THEN tP.EndEtg_cidade ELSE tC.cidade END AS Cidade, ";
+            }
+
+            sqlString +=
+                        " (" +
+                            "SELECT" +
+                                " TOP 1 NFe_numero_NF" +
+                            " FROM t_NFe_EMISSAO tNE" +
+                            " WHERE" +
+                                " (tNE.pedido=tPO.pedido)" +
+                                " AND (tipo_NF = '1')" +
+                                " AND (st_anulado = 0)" +
+                                " AND (codigo_retorno_NFe_T1 = 1)" +
+                            " ORDER BY" +
+                                " id DESC" +
+                        ") AS numeroNFe," +
+                        " (" +
+                            "SELECT" +
+                                " Count(*)" +
+                            " FROM t_PEDIDO_OCORRENCIA_MENSAGEM" +
+                            " WHERE" +
+                                " (id_ocorrencia=tPO.id)" +
+                                " AND (fluxo_mensagem='" + Global.Cte.COD_FLUXO_MENSAGEM_OCORRENCIAS_EM_PEDIDOS__CENTRAL_PARA_LOJA + "')" +
+                        ") AS qtde_msg_central," +
+                        " (" +
+                            " SELECT Count(*)" +
+                               " FROM t_PEDIDO_OCORRENCIA_MENSAGEM INNER JOIN t_PEDIDO_OCORRENCIA ON (t_PEDIDO_OCORRENCIA_MENSAGEM.id_ocorrencia=t_PEDIDO_OCORRENCIA.id)" +
+                               " INNER JOIN t_PEDIDO ON (t_PEDIDO_OCORRENCIA.pedido=t_PEDIDO.pedido)" +
+                               " WHERE (id_ocorrencia = tPO.id)" +
+                               " AND (t_PEDIDO.loja = '" + Global.Cte.Loja.ArClube + "')" +
+                        ") AS qtde_msg," +
+                        " CASE WHEN (" +
                                      " (" +
                                         "SELECT" +
                                             " Count(*)" +
@@ -90,13 +107,13 @@ namespace ART3WebAPI.Models.Repository
                                            " AND (t_PEDIDO.loja = '" + Global.Cte.Loja.ArClube + "')" +
                                     ") = 0" +
                         ") THEN 'Aberta' ELSE 'Em Andamento' END AS status_ocorrencia" +
-				   " FROM t_PEDIDO_OCORRENCIA tPO" +
-						" INNER JOIN t_PEDIDO tP ON (tPO.pedido=tP.pedido)" +
-						" INNER JOIN t_CLIENTE tC ON (tP.id_cliente=tC.id)" +
-						" INNER JOIN t_NFe_EMITENTE tEmit ON (tP.id_nfe_emitente=tEmit.id)" +
-						" LEFT JOIN t_CODIGO_DESCRICAO tCD ON (tPO.cod_motivo_abertura=tCD.codigo) AND (tCD.grupo='" + Global.Cte.GRUPO_T_CODIGO_DESCRICAO__OCORRENCIAS_EM_PEDIDOS__MOTIVO_ABERTURA + "')" +
-				   " WHERE" +
-						" (finalizado_status = 0)";
+                   " FROM t_PEDIDO_OCORRENCIA tPO" +
+                        " INNER JOIN t_PEDIDO tP ON (tPO.pedido=tP.pedido)" +
+                        " INNER JOIN t_CLIENTE tC ON (tP.id_cliente=tC.id)" +
+                        " INNER JOIN t_NFe_EMITENTE tEmit ON (tP.id_nfe_emitente=tEmit.id)" +
+                        " LEFT JOIN t_CODIGO_DESCRICAO tCD ON (tPO.cod_motivo_abertura=tCD.codigo) AND (tCD.grupo='" + Global.Cte.GRUPO_T_CODIGO_DESCRICAO__OCORRENCIAS_EM_PEDIDOS__MOTIVO_ABERTURA + "')" +
+                   " WHERE" +
+                        " (finalizado_status = 0)";
 						
 						
 					if ((!string.IsNullOrEmpty(transportadora)) && (transportadora != "0"))

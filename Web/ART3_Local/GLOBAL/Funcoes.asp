@@ -3770,6 +3770,136 @@ end function
 
 
 ' ------------------------------------------------------------------------
+'   FORMATA ENDERECO DE ENTREGA DE UM PEDIDO
+'   Formata os campos do endereço em um texto formatado.
+function pedido_formata_endereco_entrega(r_pedido, r_cliente)
+dim s_cabecalho, s_aux, s_tel_aux_1, s_tel_aux_2, s_telefones, s_endereco, s_email
+    with r_pedido
+		s_endereco = formata_endereco(.EndEtg_endereco, .EndEtg_endereco_numero, .EndEtg_endereco_complemento, .EndEtg_bairro, .EndEtg_cidade, .EndEtg_uf, .EndEtg_cep)
+		end with
+	
+    pedido_formata_endereco_entrega=s_endereco
+
+    'tem endereço de entrega diferente?
+    if r_pedido.st_end_entrega = 0 then exit function
+
+    'se a memorização não estiver ativa ou o registro foi criado no formato antigo, paramos por aqui
+    if not isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos or r_pedido.st_memorizacao_completa_enderecos = 0 then exit function
+
+    'PF, somente e-mails adicionais
+    if r_cliente.tipo = ID_PF then 
+		'EndEtg_email e EndEtg_email_xml 
+		s_email = ""
+		if Trim("" & r_pedido.EndEtg_email) <> "" or Trim("" & r_pedido.EndEtg_email_xml) <> ""  then
+			s_email = "<br>"
+			if Trim("" & r_pedido.EndEtg_email) <> "" then
+				s_email = s_email & "E-mail: " & r_pedido.EndEtg_email & " "
+				end if
+			if Trim("" & r_pedido.EndEtg_email_xml) <> "" then
+				s_email = s_email & "E-mail (XML): " & r_pedido.EndEtg_email_xml & " "
+				end if
+			end if
+
+        pedido_formata_endereco_entrega = s_endereco + s_email
+		exit function
+		end if
+
+    'memorização ativa, colocamos os campos adicionais
+    if r_pedido.EndEtg_tipo_pessoa = ID_PF then
+        'Nome, CPF, Produto rural, ICMS, IE
+        'Exemplo: Teste de Nome Para Entrega - CPF: 089.617.758/04 - Produtor rural: Sim (IE: 244.355.757.113)
+        s_cabecalho = r_pedido.EndEtg_nome + "<br>CPF: " + cnpj_cpf_formata(r_pedido.EndEtg_cnpj_cpf)
+        s_aux = ""
+        if r_pedido.EndEtg_produtor_rural_status = converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_SIM) then
+                if r_pedido.EndEtg_contribuinte_icms_status = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) then
+                    s_aux = "Sim (Não contribuinte)"
+                elseif r_pedido.EndEtg_contribuinte_icms_status = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
+                    s_aux = "Sim (IE: " & r_pedido.EndEtg_ie & ")"
+                elseif r_pedido.EndEtg_contribuinte_icms_status = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO) then
+                    s_aux = "Sim (Isento)"
+                end if
+            elseif r_pedido.EndEtg_produtor_rural_status = converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_NAO) then
+                s_aux = "Não"
+            end if
+        if s_aux <> "" then s_cabecalho = s_cabecalho  + " - Produtor rural: " + s_aux 
+        s_cabecalho = s_cabecalho  + "<br>"
+
+        'telefones, formato: 
+        'Telefone (11) 1234-1234 - Celular (99) 90090-0099 
+        s_tel_aux_1 = formata_ddd_telefone_ramal(r_pedido.EndEtg_ddd_res, r_pedido.EndEtg_tel_res, "")
+        s_tel_aux_2 = formata_ddd_telefone_ramal(r_pedido.EndEtg_ddd_cel, r_pedido.EndEtg_tel_cel, "")
+
+        s_telefones = ""
+        if s_tel_aux_1 <> "" or s_tel_aux_2 <> "" then s_telefones = "<br>"
+        if s_tel_aux_1 <> "" then 
+            s_telefones = s_telefones + "Telefone " + s_tel_aux_1
+            if s_tel_aux_2 <> "" then s_telefones = s_telefones + " - "
+            end if
+        
+        if s_tel_aux_2 <> "" then s_telefones = s_telefones + "Celular " + s_tel_aux_2
+    
+		'EndEtg_email e EndEtg_email_xml 
+		s_email = ""
+		if Trim("" & r_pedido.EndEtg_email) <> "" or Trim("" & r_pedido.EndEtg_email_xml) <> ""  then
+			s_email = "<br>"
+			if Trim("" & r_pedido.EndEtg_email) <> "" then
+				s_email = s_email & "E-mail: " & r_pedido.EndEtg_email & " "
+				end if
+			if Trim("" & r_pedido.EndEtg_email_xml) <> "" then
+				s_email = s_email & "E-mail (XML): " & r_pedido.EndEtg_email_xml & " "
+				end if
+			end if
+
+        pedido_formata_endereco_entrega = s_cabecalho + s_endereco + s_telefones + s_email
+        exit function
+        end if
+
+    'o endereço de entrega é de PJ
+    'Nome, CNPJ, ICMS, IE
+    'Nome de teste de outra empresa - CNPJ: 01.051.970/0001-89 - Contribuinte ICMS: Sim (IE: 244.355.757.113)
+    s_cabecalho = r_pedido.EndEtg_nome + "<br>CNPJ: " + cnpj_cpf_formata(r_pedido.EndEtg_cnpj_cpf)
+    s_aux = ""
+    if r_pedido.EndEtg_contribuinte_icms_status = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) then
+        s_aux = "Não"
+    elseif r_pedido.EndEtg_contribuinte_icms_status = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
+        s_aux = "Sim (IE: " & r_pedido.EndEtg_ie & ")"
+    elseif r_pedido.EndEtg_contribuinte_icms_status = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO) then
+        s_aux = "Isento"
+    end if
+    if s_aux <> "" then s_cabecalho = s_cabecalho  + " - Contribuinte ICMS: " + s_aux 
+    s_cabecalho = s_cabecalho  + "<br>"
+
+    'Telefone (11) 1234-1234 - Celular (99) 90090-0099 
+    s_tel_aux_1 = formata_ddd_telefone_ramal(r_pedido.EndEtg_ddd_com, r_pedido.EndEtg_tel_com, r_pedido.EndEtg_ramal_com)
+    s_tel_aux_2 = formata_ddd_telefone_ramal(r_pedido.EndEtg_ddd_com_2, r_pedido.EndEtg_tel_com_2, r_pedido.EndEtg_ramal_com_2)
+
+    s_telefones = ""
+    if s_tel_aux_1 <> "" or s_tel_aux_2 <> "" then s_telefones = "<br>Telefone "
+    if s_tel_aux_1 <> "" then 
+        s_telefones = s_telefones + s_tel_aux_1
+        if s_tel_aux_2 <> "" then s_telefones = s_telefones + " - "
+        end if
+        
+    if s_tel_aux_2 <> "" then s_telefones = s_telefones + s_tel_aux_2
+
+	'EndEtg_email e EndEtg_email_xml 
+	s_email = ""
+	if Trim("" & r_pedido.EndEtg_email) <> "" or Trim("" & r_pedido.EndEtg_email_xml) <> ""  then
+		s_email = "<br>"
+		if Trim("" & r_pedido.EndEtg_email) <> "" then
+			s_email = s_email & "E-mail: " & r_pedido.EndEtg_email & " "
+			end if
+		if Trim("" & r_pedido.EndEtg_email_xml) <> "" then
+			s_email = s_email & "E-mail (XML): " & r_pedido.EndEtg_email_xml & " "
+			end if
+		end if
+
+    pedido_formata_endereco_entrega = s_cabecalho + s_endereco + s_telefones + s_email
+
+end function
+
+
+' ------------------------------------------------------------------------
 '   FORMATA DDD TELEFONE RAMAL
 '   Formata os campos de telefone.
 function formata_ddd_telefone_ramal(ddd, telefone, ramal)
@@ -5575,6 +5705,36 @@ dim n_end_numero_1, n_end_numero_2
 	
 	isEnderecoIgual = True
 end Function
+
+
+' ------------------------------------------------------------------------
+'   isEnderecoMagentoIgual
+function isEnderecoMagentoIgual(ByVal end_logradouro_1, _
+								ByVal end_numero_1, _
+								ByVal end_complemento_1, _
+								ByVal end_bairro_1, _
+								ByVal end_cidade_1, _
+								ByVal end_uf_1, _
+								ByVal end_cep_1, _
+								ByVal end_logradouro_2, _
+								ByVal end_numero_2, _
+								ByVal end_complemento_2, _
+								ByVal end_bairro_2, _
+								ByVal end_cidade_2, _
+								ByVal end_uf_2, _
+								ByVal end_cep_2)
+	isEnderecoMagentoIgual = False
+
+	if Ucase(Trim("" & end_logradouro_1)) <> Ucase(Trim("" & end_logradouro_2)) then exit function
+	if Ucase(Trim("" & end_numero_1)) <> Ucase(Trim("" & end_numero_2)) then exit function
+	if Ucase(Trim("" & end_complemento_1)) <> Ucase(Trim("" & end_complemento_2)) then exit function
+	if Ucase(Trim("" & end_bairro_1)) <> Ucase(Trim("" & end_bairro_2)) then exit function
+	if Ucase(Trim("" & end_cidade_1)) <> Ucase(Trim("" & end_cidade_2)) then exit function
+	if Ucase(Trim("" & end_uf_1)) <> Ucase(Trim("" & end_uf_2)) then exit function
+	if retorna_so_digitos(Trim("" & end_cep_1)) <> retorna_so_digitos(Trim("" & end_cep_2)) then exit function
+
+	isEnderecoMagentoIgual=True
+end function
 
 
 ' ------------------------------------------------------------------------

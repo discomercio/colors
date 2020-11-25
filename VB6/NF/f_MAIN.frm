@@ -3430,7 +3430,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-Option Explicit
+    Option Explicit
 
 Dim modulo_inicializacao_ok As Boolean
 Dim pedido_anterior As String
@@ -4146,7 +4146,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' VETORES
 Dim v() As String
@@ -4466,7 +4466,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' VETORES
 Dim v() As String
@@ -4784,7 +4784,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 Dim blnOperacaoNaoTriangular As Boolean
 
@@ -5880,7 +5880,7 @@ Dim t_DESTINATARIO As ADODB.Recordset
             strEndEntregaUf = UCase$(Trim("" & t_PEDIDO("EndEtg_uf")))
             If s_end_entrega <> "" Then s_end_entrega = vbCrLf & "ENTREGA: " & s_end_entrega
             End If
-    
+            
         If UCase$(Trim$("" & t_PEDIDO("st_entrega"))) = ST_ENTREGA_CANCELADO Then
             If s_erro <> "" Then s_erro = s_erro & vbCrLf
             s_erro = s_erro & "Pedido " & Trim$(pedido) & " está cancelado !!"
@@ -5940,7 +5940,9 @@ Dim t_DESTINATARIO As ADODB.Recordset
         " WHERE (pedido = '" & Trim$(pedido) & "')" & " AND (endereco_tipo_pessoa = '" & ID_PJ & "')"
     s = s & " UNION" & _
         " SELECT" & _
-            " pedido, id_cliente, st_memorizacao_completa_enderecos, endereco_uf as uf, endereco_cnpj_cpf as cnpj_cpf, " & _
+            " pedido, id_cliente, st_memorizacao_completa_enderecos, " & _
+            " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_uf else EndEtg_uf end as uf, " & _
+            " endereco_cnpj_cpf as cnpj_cpf, " & _
             " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_logradouro else EndEtg_endereco end as endereco, " & _
             " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_bairro else EndEtg_bairro end as bairro, " & _
             " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_cidade else EndEtg_cidade end as cidade, " & _
@@ -5967,6 +5969,18 @@ Dim t_DESTINATARIO As ADODB.Recordset
         GoSub OIPM_FECHA_TABELAS
         aguarde INFO_NORMAL, m_id
         Exit Function
+        End If
+
+
+    '   (SÓ INFORMAR O ENDEREÇO DE ENTREGA SE FOR DIFERENTE DO ENDEREÇO DA NOTA)
+    If (UCase$(Trim$("" & t_DESTINATARIO("endereco"))) = UCase$(Trim("" & t_PEDIDO("EndEtg_endereco")))) And _
+        (UCase$(Trim$("" & t_DESTINATARIO("endereco_numero"))) = UCase$(Trim("" & t_PEDIDO("EndEtg_endereco_numero")))) And _
+        (UCase$(Trim$("" & t_DESTINATARIO("endereco_complemento"))) = UCase$(Trim("" & t_PEDIDO("EndEtg_endereco_complemento")))) And _
+        (UCase$(Trim$("" & t_DESTINATARIO("bairro"))) = UCase$(Trim("" & t_PEDIDO("EndEtg_bairro")))) And _
+        (UCase$(Trim$("" & t_DESTINATARIO("cidade"))) = UCase$(Trim("" & t_PEDIDO("EndEtg_cidade")))) Then
+        
+        s_end_entrega = ""
+        
         End If
 
 
@@ -7900,6 +7914,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             End If
         If t_DESTINATARIO("st_memorizacao_completa_enderecos") > 0 Then blnExisteMemorizacaoEndereco = True
         strEndEtgUf = UCase$(Trim$("" & t_DESTINATARIO("uf_end_nota")))
+        strEndClienteUf = UCase$(Trim$("" & t_DESTINATARIO("uf_end_nota")))
         End If
         
     'SEGUNDO CASO: A MEMORIZAÇÃO DO ENDEREÇO DO CLIENTE NA TABELA DE PEDIDOS NÃO ESTÁ OK
@@ -7915,9 +7930,9 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             aguarde INFO_NORMAL, m_id
             Exit Sub
             End If
+        strEndClienteUf = UCase$(Trim$("" & t_DESTINATARIO("uf")))
         End If
         
-    strEndClienteUf = UCase$(Trim$("" & t_DESTINATARIO("uf")))
     
 '   CONFIRMA ALÍQUOTA DO ICMS
 '    If usuario.emit_uf = "ES" Then
@@ -7960,7 +7975,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
 '            Case Else: strIcms = ""
 '            End Select
 '        End If
-    If obtem_aliquota_ICMS(usuario.emit_uf, UCase$(Trim$("" & t_DESTINATARIO("uf"))), aliquota_icms_interestadual) Then
+    If obtem_aliquota_ICMS(usuario.emit_uf, strEndClienteUf, aliquota_icms_interestadual) Then
         strIcms = Trim$(CStr(aliquota_icms_interestadual))
     Else
         strIcms = ""
@@ -7968,7 +7983,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     
     If (strIcms <> "") And (cb_icms <> "") Then
         If (CSng(strIcms) <> CSng(cb_icms)) Then
-            s = "O destinatário é do estado de " & UCase$(Trim$("" & t_DESTINATARIO("uf"))) & " cuja alíquota de ICMS é de " & strIcms & "%" & _
+            s = "O destinatário é do estado de " & strEndClienteUf & " cuja alíquota de ICMS é de " & strIcms & "%" & _
                 vbCrLf & "Confirma a emissão da NFe usando a alíquota de " & cb_icms & "%?"
             If Not confirma(s) Then
                 GoSub NFE_EMITE_FECHA_TABELAS
@@ -9631,39 +9646,47 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 End If
         Else
         '   NO MOMENTO, A SEFAZ ACEITA ENDEREÇO DE ENTREGA DIFERENTE DO ENDEREÇO DE CADASTRO SOMENTE P/ PJ
-            If cnpj_cpf_ok(strDestinatarioCnpjCpf) Then
-                strNFeTagEndEntrega = "entrega;" & vbCrLf
-    
-                If (Len(strDestinatarioCnpjCpf) = 14) Then
-                    rNFeImg.entrega__CNPJ = strDestinatarioCnpjCpf
-                    strNFeTagEndEntrega = strNFeTagEndEntrega & vbTab & NFeFormataCampo("CNPJ", rNFeImg.entrega__CNPJ)
-                Else
-                    rNFeImg.entrega__CPF = strDestinatarioCnpjCpf
-                    strNFeTagEndEntrega = strNFeTagEndEntrega & vbTab & NFeFormataCampo("CPF", rNFeImg.entrega__CPF)
-                    End If
+        '   (SÓ INFORMAR O ENDEREÇO DE ENTREGA SE FOR DIFERENTE DO ENDEREÇO DO CLIENTE)
+            If (rNFeImg.dest__xLgr <> strEndEtgEndereco) And _
+                (rNFeImg.dest__nro <> strEndEtgEnderecoNumero) And _
+                (rNFeImg.dest__xCpl <> strEndEtgEnderecoComplemento) And _
+                (rNFeImg.dest__xBairro <> strEndEtgBairro) And _
+                (rNFeImg.dest__xMun <> strEndEtgCidade) Then
+
+                If cnpj_cpf_ok(strDestinatarioCnpjCpf) Then
+                    strNFeTagEndEntrega = "entrega;" & vbCrLf
+        
+                    If (Len(strDestinatarioCnpjCpf) = 14) Then
+                        rNFeImg.entrega__CNPJ = strDestinatarioCnpjCpf
+                        strNFeTagEndEntrega = strNFeTagEndEntrega & vbTab & NFeFormataCampo("CNPJ", rNFeImg.entrega__CNPJ)
+                    Else
+                        rNFeImg.entrega__CPF = strDestinatarioCnpjCpf
+                        strNFeTagEndEntrega = strNFeTagEndEntrega & vbTab & NFeFormataCampo("CPF", rNFeImg.entrega__CPF)
+                        End If
+                        
+                    rNFeImg.entrega__xLgr = strEndEtgEndereco
+                    rNFeImg.entrega__nro = strEndEtgEnderecoNumero
+                    rNFeImg.entrega__xCpl = strEndEtgEnderecoComplemento
+                    rNFeImg.entrega__xBairro = strEndEtgBairro
+                    rNFeImg.entrega__cMun = strEndEtgCidade & "/" & strEndEtgUf
+                    rNFeImg.entrega__xMun = strEndEtgCidade
+                    rNFeImg.entrega__UF = strEndEtgUf
                     
-                rNFeImg.entrega__xLgr = strEndEtgEndereco
-                rNFeImg.entrega__nro = strEndEtgEnderecoNumero
-                rNFeImg.entrega__xCpl = strEndEtgEnderecoComplemento
-                rNFeImg.entrega__xBairro = strEndEtgBairro
-                rNFeImg.entrega__cMun = strEndEtgCidade & "/" & strEndEtgUf
-                rNFeImg.entrega__xMun = strEndEtgCidade
-                rNFeImg.entrega__UF = strEndEtgUf
-                
-                strNFeTagEndEntrega = strNFeTagEndEntrega & _
-                                      vbTab & NFeFormataCampo("xLgr", rNFeImg.entrega__xLgr) & _
-                                      vbTab & NFeFormataCampo("nro", rNFeImg.entrega__nro)
-                                      
-                If Len(rNFeImg.entrega__xCpl) > 0 Then
                     strNFeTagEndEntrega = strNFeTagEndEntrega & _
-                                      vbTab & NFeFormataCampo("xCpl", rNFeImg.entrega__xCpl)
+                                          vbTab & NFeFormataCampo("xLgr", rNFeImg.entrega__xLgr) & _
+                                          vbTab & NFeFormataCampo("nro", rNFeImg.entrega__nro)
+                                          
+                    If Len(rNFeImg.entrega__xCpl) > 0 Then
+                        strNFeTagEndEntrega = strNFeTagEndEntrega & _
+                                          vbTab & NFeFormataCampo("xCpl", rNFeImg.entrega__xCpl)
+                        End If
+                    
+                    strNFeTagEndEntrega = strNFeTagEndEntrega & _
+                                          vbTab & NFeFormataCampo("xBairro", rNFeImg.entrega__xBairro) & _
+                                          vbTab & NFeFormataCampo("cMun", rNFeImg.entrega__cMun) & _
+                                          vbTab & NFeFormataCampo("xMun", rNFeImg.entrega__xMun) & _
+                                          vbTab & NFeFormataCampo("UF", rNFeImg.entrega__UF)
                     End If
-                
-                strNFeTagEndEntrega = strNFeTagEndEntrega & _
-                                      vbTab & NFeFormataCampo("xBairro", rNFeImg.entrega__xBairro) & _
-                                      vbTab & NFeFormataCampo("cMun", rNFeImg.entrega__cMun) & _
-                                      vbTab & NFeFormataCampo("xMun", rNFeImg.entrega__xMun) & _
-                                      vbTab & NFeFormataCampo("UF", rNFeImg.entrega__UF)
                 End If
             End If
         End If
@@ -11536,8 +11559,7 @@ Dim s_erro As String
     strIE = ""
     If pedido <> "" Then
         'verificar se os dados do cliente devem vir da memorização no pedido
-        'If param_pedidomemorizacaoenderecos.campo_inteiro = 1 Then
-        If False Then
+        If param_pedidomemorizacaoenderecos.campo_inteiro = 1 Then
             If obtem_info_pedido_memorizada(pedido, s_resp, s_end_entrega, s_end_entrega_uf, s_end_cliente_uf, s_NFe_texto_constar, strIE, s_erro) Then
                 c_info_pedido = s_resp
                 c_dados_adicionais = s_NFe_texto_constar
@@ -11587,6 +11609,7 @@ Dim strUsuario As String
 Dim s_erro As String
 Dim s_cliente_uf As String
 Dim s_entrega_uf As String
+Dim s_tipo_pessoa As String
 ' BANCO DE DADOS
 Dim t As ADODB.Recordset
 
@@ -11615,30 +11638,57 @@ Dim t As ADODB.Recordset
         Do While True
             strPedido = ""
             intQtdeTentativas = intQtdeTentativas + 1
+            If param_pedidomemorizacaoenderecos.campo_inteiro = 1 Then
+                s = "SELECT TOP 10" & _
+                        " tPNES.id," & _
+                        " tPNES.pedido," & _
+                        " tP.st_end_entrega," & _
+                        " tP.EndEtg_uf," & _
+                        " tP.endereco_tipo_pessoa as tipo_pessoa," & _
+                        " tP.endereco_uf AS cli_uf" & _
+                    " FROM t_PEDIDO_NFe_EMISSAO_SOLICITADA tPNES" & _
+                        " INNER JOIN t_PEDIDO tP ON (tP.pedido=tPNES.pedido)" & _
+                    " WHERE" & _
+                        " (nfe_emitida_status = " & COD_NFE_EMISSAO_SOLICITADA__PENDENTE & ")" & _
+                        " AND (Len(Coalesce(tP.transportadora_id,'')) > 0)" & _
+                        " AND (tP.st_entrega <> '" & Trim(CStr(ST_ENTREGA_CANCELADO)) & "')" & _
+                        " AND (tP.id_nfe_emitente = " & usuario.emit_id & ")" & _
+                        " AND (" & _
+                            "(ult_requisicao_fila_data_hora IS NULL)" & _
+                            " OR " & _
+                            "(DateDiff(ss, ult_requisicao_fila_data_hora, getdate()) >= " & MAX_TIMEOUT_REGISTRO_REQUISITADO_FILA_EM_SEG & ")" & _
+                            ")"
+                            
+                s = s & _
+                    " ORDER BY" & _
+                        " id"
             
-            s = "SELECT TOP 10" & _
-                    " tPNES.id," & _
-                    " tPNES.pedido," & _
-                    " tP.st_end_entrega," & _
-                    " tP.EndEtg_uf," & _
-                    " tC.uf AS cli_uf" & _
-                " FROM t_PEDIDO_NFe_EMISSAO_SOLICITADA tPNES" & _
-                    " INNER JOIN t_PEDIDO tP ON (tP.pedido=tPNES.pedido)" & _
-                    " INNER JOIN t_CLIENTE tC ON (tP.id_cliente=tC.id)" & _
-                " WHERE" & _
-                    " (nfe_emitida_status = " & COD_NFE_EMISSAO_SOLICITADA__PENDENTE & ")" & _
-                    " AND (Len(Coalesce(tP.transportadora_id,'')) > 0)" & _
-                    " AND (tP.st_entrega <> '" & Trim(CStr(ST_ENTREGA_CANCELADO)) & "')" & _
-                    " AND (tP.id_nfe_emitente = " & usuario.emit_id & ")" & _
-                    " AND (" & _
-                        "(ult_requisicao_fila_data_hora IS NULL)" & _
-                        " OR " & _
-                        "(DateDiff(ss, ult_requisicao_fila_data_hora, getdate()) >= " & MAX_TIMEOUT_REGISTRO_REQUISITADO_FILA_EM_SEG & ")" & _
-                        ")"
-                        
-            s = s & _
-                " ORDER BY" & _
-                    " id"
+            Else
+                s = "SELECT TOP 10" & _
+                        " tPNES.id," & _
+                        " tPNES.pedido," & _
+                        " tP.st_end_entrega," & _
+                        " tP.EndEtg_uf," & _
+                        " tC.tipo as tipo_pessoa," & _
+                        " tC.uf AS cli_uf" & _
+                    " FROM t_PEDIDO_NFe_EMISSAO_SOLICITADA tPNES" & _
+                        " INNER JOIN t_PEDIDO tP ON (tP.pedido=tPNES.pedido)" & _
+                        " INNER JOIN t_CLIENTE tC ON (tP.id_cliente=tC.id)" & _
+                    " WHERE" & _
+                        " (nfe_emitida_status = " & COD_NFE_EMISSAO_SOLICITADA__PENDENTE & ")" & _
+                        " AND (Len(Coalesce(tP.transportadora_id,'')) > 0)" & _
+                        " AND (tP.st_entrega <> '" & Trim(CStr(ST_ENTREGA_CANCELADO)) & "')" & _
+                        " AND (tP.id_nfe_emitente = " & usuario.emit_id & ")" & _
+                        " AND (" & _
+                            "(ult_requisicao_fila_data_hora IS NULL)" & _
+                            " OR " & _
+                            "(DateDiff(ss, ult_requisicao_fila_data_hora, getdate()) >= " & MAX_TIMEOUT_REGISTRO_REQUISITADO_FILA_EM_SEG & ")" & _
+                            ")"
+                            
+                s = s & _
+                    " ORDER BY" & _
+                        " id"
+                End If
             If t.State <> adStateClosed Then t.Close
             t.Open s, dbc, , , adCmdText
             If t.EOF Then Exit Do
@@ -11647,6 +11697,7 @@ Dim t As ADODB.Recordset
             int_st_end_entrega = CLng(t("st_end_entrega"))
             s_entrega_uf = Trim$("" & t("EndEtg_uf"))
             s_cliente_uf = Trim$("" & t("cli_uf"))
+            s_tipo_pessoa = Trim$("" & t("tipo_pessoa"))
             s = "UPDATE t_PEDIDO_NFe_EMISSAO_SOLICITADA SET" & _
                     " ult_requisicao_fila_data_hora = getdate()," & _
                     " ult_requisicao_fila_usuario = '" & usuario.id & "'" & _
@@ -11674,6 +11725,7 @@ Dim t As ADODB.Recordset
         '- a UF de entrega deve ser diferente da UF do cliente
         If blnNotaTriangularAtiva And _
            (strPedido <> "") And _
+           (s_tipo_pessoa = "PJ") And _
            (int_st_end_entrega <> 0) And _
            (s_entrega_uf <> "") And _
            (s_cliente_uf <> s_entrega_uf) Then

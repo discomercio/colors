@@ -53,6 +53,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim s_filtro, intQtdeTransacoes
 	intQtdeTransacoes = 0
 
@@ -205,9 +208,19 @@ dim v, i
 	s_sql = "SELECT" & _
 				" t_PEDIDO_PAGTO_BRASPAG.*," & _
 				" tPPB_PAG.id AS id_pedido_pagto_braspag_pag," & _
-				" tPPB_AF.id AS id_pedido_pagto_braspag_af," & _
+				" tPPB_AF.id AS id_pedido_pagto_braspag_af,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_cnpj_cpf AS cnpj_cpf," & _
+				" dbo.SqlClrUtilIniciaisEmMaiusculas(t_PEDIDO.endereco_nome) AS cliente_nome,"
+	else
+		s_sql = s_sql & _
 				" t_CLIENTE.cnpj_cpf," & _
-				" t_CLIENTE.nome_iniciais_em_maiusculas AS cliente_nome," & _
+				" t_CLIENTE.nome_iniciais_em_maiusculas AS cliente_nome,"
+		end if
+
+	s_sql = s_sql & _
 				" t_PEDIDO.numero_loja," & _
 				" tPPB_PAG.Req_PaymentDataCollection_PaymentPlan AS PAG_Req_PaymentDataCollection_PaymentPlan," & _
 				" tPPB_PAG.Req_PaymentDataCollection_NumberOfPayments AS PAG_Req_PaymentDataCollection_NumberOfPayments," & _

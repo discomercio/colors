@@ -59,6 +59,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	alerta = ""
 
@@ -304,7 +307,11 @@ dim vPedAtrasado, iPedAtrasado, s_row_pedidos_atrasados, qtde_pedidos_row, s_per
 		strSqlCampoSaida = "t_PEDIDO__BASE__X.indicador"
 	elseif rb_saida = COD_SAIDA_REL_UF then
 		bln_t_CLIENTE = True
-		strSqlCampoSaida = "t_CLIENTE__X.uf"
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			strSqlCampoSaida = "t_PEDIDO__X.endereco_uf AS uf"
+		else
+			strSqlCampoSaida = "t_CLIENTE__X.uf"
+			end if
 	elseif rb_saida = COD_SAIDA_REL_ANALISTA_CREDITO then
 		strSqlCampoSaida = "t_PEDIDO__BASE__X.analise_credito_usuario"
 		end if
@@ -338,7 +345,11 @@ dim vPedAtrasado, iPedAtrasado, s_row_pedidos_atrasados, qtde_pedidos_row, s_per
 	if rb_tipo_cliente <> "" then
 		bln_t_CLIENTE = True
 		if s_where <> "" then s_where = s_where & " AND"
-		s_where = s_where & " (t_CLIENTE__X.tipo = '" & rb_tipo_cliente & "')"
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s_where = s_where & " (t_PEDIDO__X.endereco_tipo_pessoa = '" & rb_tipo_cliente & "')"
+		else
+			s_where = s_where & " (t_CLIENTE__X.tipo = '" & rb_tipo_cliente & "')"
+			end if
 		end if
 	
 '	UF
@@ -347,23 +358,43 @@ dim vPedAtrasado, iPedAtrasado, s_row_pedidos_atrasados, qtde_pedidos_row, s_per
 		if rb_saida = COD_SAIDA_REL_VENDEDOR then
 			bln_t_CLIENTE = True
 			if s_where <> "" then s_where = s_where & " AND"
-			s_where = s_where & " (t_CLIENTE__X.uf = '" & c_uf & "')"
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				s_where = s_where & " (t_PEDIDO__X.endereco_uf = '" & c_uf & "')"
+			else
+				s_where = s_where & " (t_CLIENTE__X.uf = '" & c_uf & "')"
+				end if
 		elseif rb_saida = COD_SAIDA_REL_INDICADOR then
 			bln_t_CLIENTE = True
 			if s_where <> "" then s_where = s_where & " AND"
-			s_where = s_where & " (t_CLIENTE__X.uf = '" & c_uf & "')"
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				s_where = s_where & " (t_PEDIDO__X.endereco_uf = '" & c_uf & "')"
+			else
+				s_where = s_where & " (t_CLIENTE__X.uf = '" & c_uf & "')"
+				end if
 		elseif rb_saida = COD_SAIDA_REL_INDICADORES_DO_VENDEDOR then
 			bln_t_CLIENTE = True
 			if s_where <> "" then s_where = s_where & " AND"
-			s_where = s_where & " (t_CLIENTE__X.uf = '" & c_uf & "')"
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				s_where = s_where & " (t_PEDIDO__X.endereco_uf = '" & c_uf & "')"
+			else
+				s_where = s_where & " (t_CLIENTE__X.uf = '" & c_uf & "')"
+				end if
 		elseif rb_saida = COD_SAIDA_REL_UF then
 			bln_t_CLIENTE = True
 			if s_where <> "" then s_where = s_where & " AND"
-			s_where = s_where & " (t_CLIENTE__X.uf = '" & c_uf & "')"
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				s_where = s_where & " (t_PEDIDO__X.endereco_uf = '" & c_uf & "')"
+			else
+				s_where = s_where & " (t_CLIENTE__X.uf = '" & c_uf & "')"
+				end if
 		elseif rb_saida = COD_SAIDA_REL_ANALISTA_CREDITO then
 			bln_t_CLIENTE = True
 			if s_where <> "" then s_where = s_where & " AND"
-			s_where = s_where & " (t_CLIENTE__X.uf = '" & c_uf & "')"
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				s_where = s_where & " (t_PEDIDO__X.endereco_uf = '" & c_uf & "')"
+			else
+				s_where = s_where & " (t_CLIENTE__X.uf = '" & c_uf & "')"
+				end if
 			end if
 		end if
 	
@@ -529,20 +560,20 @@ dim vPedAtrasado, iPedAtrasado, s_row_pedidos_atrasados, qtde_pedidos_row, s_per
 			" WHERE" & _
 				"(" & s_where_boleto & ")" & _
 			" GROUP BY " & _
-				strSqlCampoSaida & "," & _
+				replace(strSqlCampoSaida, " AS uf", "") & "," & _
 				" t_PEDIDO__X.pedido" & _
 			" ORDER BY " & _
-				strSqlCampoSaida & "," & _
+				replace(strSqlCampoSaida, " AS uf", "") & "," & _
 				" t_PEDIDO__X.pedido"
 	
 	s_sql_NF = s_sql_NF & _
 			" WHERE" & _
 				"(" & s_where_NF & ")" & _
 			" GROUP BY " & _
-				strSqlCampoSaida & "," & _
+				replace(strSqlCampoSaida, " AS uf", "") & "," & _
 				" t_PEDIDO__X.pedido" & _
 			" ORDER BY " & _
-				strSqlCampoSaida & "," & _
+				replace(strSqlCampoSaida, " AS uf", "") & "," & _
 				" t_PEDIDO__X.pedido"
 	
 '	CABEÇALHO

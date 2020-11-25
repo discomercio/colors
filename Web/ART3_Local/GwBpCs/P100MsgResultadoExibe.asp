@@ -64,6 +64,10 @@
 	If Not cria_recordset_otimista(t_PAG, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	If Not cria_recordset_otimista(t_PAG_PAYMENT, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
+	dim s_cliente_nome, s_cliente_email, s_cliente_bairro, s_cliente_cidade, s_cliente_uf, s_cliente_cep
 	dim strMsgErroRecordsetNotFound
 	dim s_cor
 	dim blnTransacaoOk
@@ -94,9 +98,27 @@
 	dim s_endereco
 	s_endereco = ""
 	if alerta = "" then
-		s_endereco = iniciais_em_maiusculas(r_cliente.endereco)
-		if Trim(r_cliente.endereco_numero) <> "" then s_endereco = s_endereco & ", " & Trim(r_cliente.endereco_numero)
-		if Trim(r_cliente.endereco_complemento) <> "" then s_endereco = s_endereco & " " & Trim(r_cliente.endereco_complemento)
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s_endereco = iniciais_em_maiusculas(r_pedido.endereco_logradouro)
+			if Trim(r_pedido.endereco_numero) <> "" then s_endereco = s_endereco & ", " & Trim(r_pedido.endereco_numero)
+			if Trim(r_pedido.endereco_complemento) <> "" then s_endereco = s_endereco & " " & Trim(r_pedido.endereco_complemento)
+			s_cliente_nome = r_pedido.endereco_nome
+			s_cliente_email = r_pedido.endereco_email
+			s_cliente_bairro = r_pedido.endereco_bairro
+			s_cliente_cidade = r_pedido.endereco_cidade
+			s_cliente_uf = r_pedido.endereco_uf
+			s_cliente_cep = r_pedido.endereco_cep
+		else
+			s_endereco = iniciais_em_maiusculas(r_cliente.endereco)
+			if Trim(r_cliente.endereco_numero) <> "" then s_endereco = s_endereco & ", " & Trim(r_cliente.endereco_numero)
+			if Trim(r_cliente.endereco_complemento) <> "" then s_endereco = s_endereco & " " & Trim(r_cliente.endereco_complemento)
+			s_cliente_nome = r_cliente.nome
+			s_cliente_email = r_cliente.email
+			s_cliente_bairro = r_cliente.bairro
+			s_cliente_cidade = r_cliente.cidade
+			s_cliente_uf = r_cliente.uf
+			s_cliente_cep = r_cliente.cep
+			end if
 		end if
 	
 	dim strMsgResultado, strRecibo, strReciboTela, strReciboBd
@@ -329,19 +351,19 @@
 			"	</tr>" & chr(13) & _
 			"	<tr id='trNomeCli'>" & chr(13) & _
 			"		<td class='tdTitR'>Cliente:&nbsp;</td>" & chr(13) & _
-			"		<td class='tdDadosL'>" & iniciais_em_maiusculas(r_cliente.nome) & "</td>" & chr(13) & _
+			"		<td class='tdDadosL'>" & iniciais_em_maiusculas(s_cliente_nome) & "</td>" & chr(13) & _
 			"	</tr>" & chr(13) & _
 			"	<tr id='trEmailCli'>" & chr(13) & _
 			"		<td class='tdTitR'>E-Mail:&nbsp;</td>" & chr(13) & _
-			"		<td class='tdDadosL'>" & LCase(r_cliente.email) & "</td>" & chr(13) & _
+			"		<td class='tdDadosL'>" & LCase(s_cliente_email) & "</td>" & chr(13) & _
 			"	</tr>" & chr(13) & _
 			"	<tr id='trEndCli'>" & chr(13) & _
 			"		<td class='tdTitR' valign='top'>Endereço:&nbsp;</td>" & chr(13) & _
 			"		<td class='tdDadosL'>" & _
 						s_endereco & "<br />" & _
-						iniciais_em_maiusculas(r_cliente.bairro) & "<br />" & _
-						iniciais_em_maiusculas(r_cliente.cidade) & " - " & UCase(r_cliente.uf) & "<br />" & _
-						cep_formata(r_cliente.cep) & _
+						iniciais_em_maiusculas(s_cliente_bairro) & "<br />" & _
+						iniciais_em_maiusculas(s_cliente_cidade) & " - " & UCase(s_cliente_uf) & "<br />" & _
+						cep_formata(s_cliente_cep) & _
 					"</td>" & chr(13) & _
 			"	</tr>" & chr(13) & _
 			"	<tr id='trSpTabProd'>" & chr(13) & _

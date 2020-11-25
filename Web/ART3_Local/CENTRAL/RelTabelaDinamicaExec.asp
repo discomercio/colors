@@ -63,6 +63,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	dim c_dt_faturamento_inicio, c_dt_faturamento_termino
 	dim c_fabricante, c_grupo, c_potencia_BTU, c_ciclo, c_posicao_mercado, c_grupo_pedido_origem
@@ -92,8 +95,8 @@
 	ckb_COMPATIBILIDADE = Trim(Request.Form("ckb_COMPATIBILIDADE"))
 
 '	CAMPOS DE SAÍDA SELECIONADOS
-	dim ckb_COL_DATA, ckb_COL_NF, ckb_COL_DT_EMISSAO_NF, ckb_COL_LOJA, ckb_COL_PEDIDO, ckb_COL_GRUPO_PEDIDO_ORIGEM, ckb_COL_VENDEDOR, ckb_COL_INDICADOR
-	dim ckb_COL_CPF_CNPJ_CLIENTE, ckb_COL_CONTRIBUINTE_ICMS, ckb_COL_NOME_CLIENTE, ckb_COL_RT, ckb_COL_ICMS_UF_DEST
+	dim ckb_COL_DATA, ckb_COL_NF, ckb_COL_DT_EMISSAO_NF, ckb_COL_LOJA, ckb_COL_PEDIDO, ckb_COL_PEDIDO_MARKETPLACE, ckb_COL_GRUPO_PEDIDO_ORIGEM, ckb_COL_VENDEDOR, ckb_COL_INDICADOR
+	dim ckb_COL_CPF_CNPJ_CLIENTE, ckb_COL_CONTRIBUINTE_ICMS, ckb_COL_NOME_CLIENTE, ckb_COL_VL_RA, ckb_COL_RT, ckb_COL_ICMS_UF_DEST
 	dim ckb_COL_PRODUTO, ckb_COL_NAC_IMP, ckb_COL_DESCRICAO_PRODUTO, ckb_COL_VL_NF, ckb_COL_VL_UNITARIO, ckb_COL_VL_CUSTO_REAL_TOTAL, ckb_COL_VL_TOTAL_NF, ckb_COL_VL_TOTAL, ckb_COL_QTDE
 	dim ckb_COL_VL_CUSTO_ULT_ENTRADA, ckb_COL_VL_CUSTO_REAL, ckb_COL_VL_LISTA, ckb_COL_GRUPO, ckb_COL_POTENCIA_BTU
 	dim ckb_COL_CICLO, ckb_COL_POSICAO_MERCADO, ckb_COL_MARCA, ckb_COL_TRANSPORTADORA
@@ -106,12 +109,14 @@
 	ckb_COL_DT_EMISSAO_NF = Trim(Request.Form("ckb_COL_DT_EMISSAO_NF"))
 	ckb_COL_LOJA = Trim(Request.Form("ckb_COL_LOJA"))
 	ckb_COL_PEDIDO = Trim(Request.Form("ckb_COL_PEDIDO"))
+	ckb_COL_PEDIDO_MARKETPLACE = Trim(Request.Form("ckb_COL_PEDIDO_MARKETPLACE"))
 	ckb_COL_GRUPO_PEDIDO_ORIGEM = Trim(Request.Form("ckb_COL_GRUPO_PEDIDO_ORIGEM"))
 	ckb_COL_VENDEDOR = Trim(Request.Form("ckb_COL_VENDEDOR"))
 	ckb_COL_INDICADOR = Trim(Request.Form("ckb_COL_INDICADOR"))
 	ckb_COL_CPF_CNPJ_CLIENTE = Trim(Request.Form("ckb_COL_CPF_CNPJ_CLIENTE"))
 	ckb_COL_CONTRIBUINTE_ICMS = Trim(Request.Form("ckb_COL_CONTRIBUINTE_ICMS"))
 	ckb_COL_NOME_CLIENTE = Trim(Request.Form("ckb_COL_NOME_CLIENTE"))
+	ckb_COL_VL_RA = Trim(Request.Form("ckb_COL_VL_RA"))
 	ckb_COL_RT = Trim(Request.Form("ckb_COL_RT"))
 	ckb_COL_ICMS_UF_DEST = Trim(Request.Form("ckb_COL_ICMS_UF_DEST"))
 	ckb_COL_PRODUTO = Trim(Request.Form("ckb_COL_PRODUTO"))
@@ -157,6 +162,7 @@
 		if ckb_COL_DT_EMISSAO_NF <> "" then s_campos_saida = s_campos_saida & "ckb_COL_DT_EMISSAO_NF" & "|"
 		if ckb_COL_LOJA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_LOJA" & "|"
 		if ckb_COL_PEDIDO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_PEDIDO" & "|"
+		if ckb_COL_PEDIDO_MARKETPLACE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_PEDIDO_MARKETPLACE" & "|"
 		if ckb_COL_GRUPO_PEDIDO_ORIGEM <> "" then s_campos_saida = s_campos_saida & "ckb_COL_GRUPO_PEDIDO_ORIGEM" & "|"
 		if ckb_COL_CPF_CNPJ_CLIENTE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_CPF_CNPJ_CLIENTE" & "|"
 		if ckb_COL_CONTRIBUINTE_ICMS <> "" then s_campos_saida = s_campos_saida & "ckb_COL_CONTRIBUINTE_ICMS" & "|"
@@ -194,6 +200,7 @@
 		if ckb_COL_VL_CUSTO_REAL_TOTAL <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_CUSTO_REAL_TOTAL" & "|"
 		if ckb_COL_VL_TOTAL_NF <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_TOTAL_NF" & "|"
 		if ckb_COL_VL_TOTAL <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_TOTAL" & "|"
+		if ckb_COL_VL_RA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_RA" & "|"
 		if ckb_COL_RT <> "" then s_campos_saida = s_campos_saida & "ckb_COL_RT" & "|"
 		if ckb_COL_ICMS_UF_DEST <> "" then s_campos_saida = s_campos_saida & "ckb_COL_ICMS_UF_DEST" & "|"
 		if ckb_COL_QTDE_PARCELAS <> "" then s_campos_saida = s_campos_saida & "ckb_COL_QTDE_PARCELAS" & "|"
@@ -274,7 +281,7 @@ end function
 sub consulta_executa
 const SEPARADOR_DECIMAL = ","
 dim s, s_sql, s_cst, x, x_cab, s_where, s_where_aux, s_where_temp, s_where_venda, s_where_devolucao, s_where_loja, s_where_lista_codigo_frete_devolucao
-dim perc_RT, vl_RT, vl_preco_venda, n_reg, n_reg_total, n_reg_total_passo1
+dim perc_RT, vl_RA, vl_RT, vl_preco_venda, vl_preco_NF, n_reg, n_reg_total, n_reg_total_passo1
 dim tipo_parc
 dim s_qtde, item_peso, item_cubagem, item_qtde
 dim s_vICMSUFDest, vl_vICMSUFDest, s_vICMSUFDest_unitario, vl_vICMSUFDest_unitario, s_det__qCom, n_det__qCom, vl_frete_proporcional
@@ -486,17 +493,13 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 				" t_PEDIDO.obs_2," & _
 				" t_PEDIDO.loja," & _
 				" t_PEDIDO.pedido," & _
+				" t_PEDIDO.pedido_bs_x_marketplace," & _
 				" t_PEDIDO.marketplace_codigo_origem," & _
 				" tGrupoPedidoOrigemDescricao.descricao AS GrupoPedidoOrigemDescricao," & _
 				" tPedidoOrigemDescricao.descricao AS PedidoOrigemDescricao," & _
 				" t_PEDIDO.transportadora_id," & _
 				" t_PEDIDO__BASE.vendedor," & _
 				" t_PEDIDO__BASE.indicador," & _
-				" t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente," & _
-                " t_CLIENTE.tipo AS tipo_cliente," & _
-				" t_CLIENTE.cnpj_cpf," & _
-				" t_CLIENTE.contribuinte_icms_status," & _
-				" t_CLIENTE.produtor_rural_status," & _
 				" t_PEDIDO__BASE.perc_RT,"
 
 	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_VL_CUSTO_REAL_TOTAL <> "") then
@@ -526,7 +529,35 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 				" t_PRODUTO.potencia_BTU," & _
 				" t_PRODUTO.ciclo," & _
 				" t_PRODUTO.posicao_mercado," & _
-				" t_FABRICANTE.nome AS nome_fabricante," & _
+				" t_FABRICANTE.nome AS nome_fabricante,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_nome AS nome_cliente," & _
+                " t_PEDIDO.endereco_tipo_pessoa AS tipo_cliente," & _
+				" t_PEDIDO.endereco_cnpj_cpf AS cnpj_cpf," & _
+				" t_PEDIDO.endereco_contribuinte_icms_status AS contribuinte_icms_status," & _
+				" t_PEDIDO.endereco_produtor_rural_status AS produtor_rural_status," & _
+				" t_PEDIDO.endereco_cidade AS cidade," & _
+				" t_PEDIDO.endereco_uf AS uf," & _
+                " t_PEDIDO.endereco_ddd_res AS ddd_res," & _
+                " t_PEDIDO.endereco_tel_res AS tel_res," & _
+                " t_PEDIDO.endereco_ddd_cel AS ddd_cel," & _
+                " t_PEDIDO.endereco_tel_cel AS tel_cel," & _
+                " t_PEDIDO.endereco_ddd_com AS ddd_com," & _
+                " t_PEDIDO.endereco_tel_com AS tel_com," & _
+                " t_PEDIDO.endereco_ddd_com_2 AS ddd_com_2," & _
+                " t_PEDIDO.endereco_tel_com_2 AS tel_com_2," & _
+                " t_PEDIDO.endereco_ramal_com AS ramal_com," & _
+                " t_PEDIDO.endereco_ramal_com_2 AS ramal_com_2," & _
+                " t_PEDIDO.endereco_email AS email,"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente," & _
+                " t_CLIENTE.tipo AS tipo_cliente," & _
+				" t_CLIENTE.cnpj_cpf," & _
+				" t_CLIENTE.contribuinte_icms_status," & _
+				" t_CLIENTE.produtor_rural_status," & _
 				" t_CLIENTE.cidade AS cidade," & _
 				" t_CLIENTE.uf AS uf," & _
                 " t_CLIENTE.ddd_res," & _
@@ -539,7 +570,10 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
                 " t_CLIENTE.tel_com_2," & _
                 " t_CLIENTE.ramal_com," & _
                 " t_CLIENTE.ramal_com_2," & _
-                " t_CLIENTE.email," & _
+                " t_CLIENTE.email,"
+		end if
+
+	s_sql = s_sql & _
                 " t_ORCAMENTISTA_E_INDICADOR.cnpj_cpf AS indicador_cnpj_cpf," & _
                 " t_ORCAMENTISTA_E_INDICADOR.endereco AS indicador_endereco," & _
                 " t_ORCAMENTISTA_E_INDICADOR.endereco_numero AS indicador_endereco_numero," & _
@@ -675,17 +709,13 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 				" t_PEDIDO.obs_2," & _
 				" t_PEDIDO__BASE.loja," & _
 				" t_PEDIDO_ITEM_DEVOLVIDO.pedido," & _
+				" t_PEDIDO.pedido_bs_x_marketplace," & _
 				" t_PEDIDO.marketplace_codigo_origem," & _
 				" tGrupoPedidoOrigemDescricao.descricao AS GrupoPedidoOrigemDescricao," & _
 				" tPedidoOrigemDescricao.descricao AS PedidoOrigemDescricao," & _
 				" t_PEDIDO.transportadora_id," & _
 				" t_PEDIDO__BASE.vendedor," & _
 				" t_PEDIDO__BASE.indicador," & _
-				" t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente," & _
-                " t_CLIENTE.tipo AS tipo_cliente," & _
-				" t_CLIENTE.cnpj_cpf," & _
-				" t_CLIENTE.contribuinte_icms_status," & _
-				" t_CLIENTE.produtor_rural_status," & _
 				" t_PEDIDO__BASE.perc_RT,"
 
 	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_VL_CUSTO_REAL_TOTAL <> "") then
@@ -715,20 +745,51 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 				" t_PRODUTO.potencia_BTU," & _
 				" t_PRODUTO.ciclo," & _
 				" t_PRODUTO.posicao_mercado," & _
-				" t_FABRICANTE.nome AS nome_fabricante," & _
+				" t_FABRICANTE.nome AS nome_fabricante,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_nome AS nome_cliente," & _
+                " t_PEDIDO.endereco_tipo_pessoa AS tipo_cliente," & _
+				" t_PEDIDO.endereco_cnpj_cpf AS cnpj_cpf," & _
+				" t_PEDIDO.endereco_contribuinte_icms_status AS contribuinte_icms_status," & _
+				" t_PEDIDO.endereco_produtor_rural_status AS produtor_rural_status," & _
+				" t_PEDIDO.endereco_cidade AS cidade," & _
+				" t_PEDIDO.endereco_uf AS uf," & _
+				" t_PEDIDO.endereco_ddd_res AS ddd_res," & _
+				" t_PEDIDO.endereco_tel_res AS tel_res," & _
+				" t_PEDIDO.endereco_ddd_cel AS ddd_cel," & _
+				" t_PEDIDO.endereco_tel_cel AS tel_cel," & _
+				" t_PEDIDO.endereco_ddd_com AS ddd_com," & _
+				" t_PEDIDO.endereco_tel_com AS tel_com," & _
+				" t_PEDIDO.endereco_ddd_com_2 AS ddd_com_2," & _
+				" t_PEDIDO.endereco_tel_com_2 AS tel_com_2," & _
+				" t_PEDIDO.endereco_ramal_com AS ramal_com," & _
+				" t_PEDIDO.endereco_ramal_com_2 AS ramal_com_2," & _
+				" t_PEDIDO.endereco_email AS email,"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente," & _
+				" t_CLIENTE.tipo AS tipo_cliente," & _
+				" t_CLIENTE.cnpj_cpf," & _
+				" t_CLIENTE.contribuinte_icms_status," & _
+				" t_CLIENTE.produtor_rural_status," & _
 				" t_CLIENTE.cidade AS cidade," & _
 				" t_CLIENTE.uf AS uf," & _
-                " t_CLIENTE.ddd_res," & _
-                " t_CLIENTE.tel_res," & _
-                " t_CLIENTE.ddd_cel," & _
-                " t_CLIENTE.tel_cel," & _
-                " t_CLIENTE.ddd_com," & _
-                " t_CLIENTE.tel_com," & _
-                " t_CLIENTE.ddd_com_2," & _
-                " t_CLIENTE.tel_com_2," & _
-                " t_CLIENTE.ramal_com," & _
-                " t_CLIENTE.ramal_com_2," & _
-                " t_CLIENTE.email," & _
+				" t_CLIENTE.ddd_res," & _
+				" t_CLIENTE.tel_res," & _
+				" t_CLIENTE.ddd_cel," & _
+				" t_CLIENTE.tel_cel," & _
+				" t_CLIENTE.ddd_com," & _
+				" t_CLIENTE.tel_com," & _
+				" t_CLIENTE.ddd_com_2," & _
+				" t_CLIENTE.tel_com_2," & _
+				" t_CLIENTE.ramal_com," & _
+				" t_CLIENTE.ramal_com_2," & _
+				" t_CLIENTE.email,"
+		end if
+
+	s_sql = s_sql & _
                 " t_ORCAMENTISTA_E_INDICADOR.cnpj_cpf AS indicador_cnpj_cpf," & _
                 " t_ORCAMENTISTA_E_INDICADOR.endereco AS indicador_endereco," & _
                 " t_ORCAMENTISTA_E_INDICADOR.endereco_numero AS indicador_endereco_numero," & _
@@ -901,6 +962,7 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 	if ckb_COL_DT_EMISSAO_NF <> "" then x_cab = x_cab & "EMISSAO NF;"
 	if ckb_COL_LOJA <> "" then x_cab = x_cab & "LOJA;"
 	if ckb_COL_PEDIDO <> "" then x_cab = x_cab & "PEDIDO;"
+	if ckb_COL_PEDIDO_MARKETPLACE <> "" then x_cab = x_cab & "PEDIDO MARKETPLACE;"
 	if ckb_COL_GRUPO_PEDIDO_ORIGEM <> "" then x_cab = x_cab & "ORIGEM PEDIDO (GRUPO);"
 	if ckb_COL_CPF_CNPJ_CLIENTE <> "" then x_cab = x_cab & "CPF/CNPJ;"
 	if ckb_COL_CONTRIBUINTE_ICMS <> "" then x_cab = x_cab & "Contrib ICMS;"
@@ -938,6 +1000,7 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 	if ckb_COL_VL_CUSTO_REAL_TOTAL <> "" then x_cab = x_cab & "VL CUSTO TOTAL (REAL);"
 	if ckb_COL_VL_TOTAL_NF <> "" then x_cab = x_cab & "VL TOTAL NF;"
 	if ckb_COL_VL_TOTAL <> "" then x_cab = x_cab & "VL TOTAL;"
+	if ckb_COL_VL_RA <> "" then x_cab = x_cab & "VL RA;"
 	if ckb_COL_RT <> "" then x_cab = x_cab & "RT;"
 	if ckb_COL_ICMS_UF_DEST <> "" then x_cab = x_cab & "ICMS UF DESTINO (UNIT);"
 	if ckb_COL_QTDE_PARCELAS <> "" then x_cab = x_cab & "QTDE PARCELAS;"
@@ -1012,6 +1075,19 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 				x = x & Trim("" & r("pedido")) & ";"
 				end if
 			
+		 '> PEDIDO MARKETPLACE
+			if ckb_COL_PEDIDO_MARKETPLACE <> "" then
+				'FORÇA PARA O EXCEL TRATAR COMO TEXTO E NÃO NÚMERO
+				s = ""
+				if ckb_COMPATIBILIDADE <> "" then
+					s = chr(34) & "=" & chr(34) & chr(34) & Trim("" & r("pedido_bs_x_marketplace")) & chr(34) & chr(34) & chr(34)
+				else
+					s = "=" & chr(34) & Trim("" & r("pedido_bs_x_marketplace")) & chr(34)
+					end if
+				
+				x = x & s & ";"
+				end if
+
 		 '> ORIGEM DO PEDIDO (GRUPO)
 			if ckb_COL_GRUPO_PEDIDO_ORIGEM <> "" then
 				x = x & Trim("" & r("GrupoPedidoOrigemDescricao")) & ";"
@@ -1292,6 +1368,16 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 			if ckb_COL_VL_TOTAL <> "" then
 			'	EXPORTAR VALOR UTILIZANDO SEPARADOR DECIMAL DEFINIDO
 				s = substitui_caracteres(bd_formata_moeda(CLng(s_qtde) * r("preco_venda")), ".", SEPARADOR_DECIMAL)
+				x = x & s & ";"
+				end if
+
+		 '> VL RA
+			if ckb_COL_VL_RA <> "" then
+				vl_preco_venda = converte_numero(formata_moeda(r("preco_venda")))
+				vl_preco_NF = converte_numero(formata_moeda(r("preco_NF")))
+				'CALCULA VALOR DA RA, MANTENDO O SINAL (POSITIVO/NEGATIVO)
+				vl_RA = CLng(s_qtde) * (vl_preco_NF - vl_preco_venda)
+				s = substitui_caracteres(bd_formata_moeda(vl_RA), ".", SEPARADOR_DECIMAL)
 				x = x & s & ";"
 				end if
 

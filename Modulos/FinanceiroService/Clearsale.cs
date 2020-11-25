@@ -543,6 +543,7 @@ namespace FinanceiroService
 					#endregion
 
 					#region [ Campo: Order/Email ]
+					strValue = "";
 					if (dtbPagPayment != null)
 					{
 						if (dtbPagPayment.Rows.Count > 0)
@@ -550,9 +551,20 @@ namespace FinanceiroService
 							strValue = BD.readToString(dtbPagPayment.Rows[0]["checkout_email"]);
 						}
 					}
-					else
+
+					if (strValue.Trim().Length == 0)
+					{
+						if (pedido.st_memorizacao_completa_enderecos != 0)
+						{
+							strValue = pedido.endereco_email;
+							if (strValue.Trim().Length == 0) strValue = pedido.endereco_email_xml;
+						}
+					}
+
+					if (strValue.Trim().Length == 0)
 					{
 						strValue = cliente.email;
+						if (strValue.Trim().Length == 0) strValue = cliente.email_xml;
 					}
 					sbXml.Append(xmlMontaCampo(strValue, "Email"));
 					clearsaleAF.req_Order_Email = strValue;
@@ -643,13 +655,27 @@ namespace FinanceiroService
 
 					#region [ Campo: Order/BillingData/LegalDocument2 ]
 					strValue = "";
-					if (cliente.tipo.Equals(Global.Cte.TipoPessoa.PF))
+					if (pedido.st_memorizacao_completa_enderecos != 0)
 					{
-						strValue = cliente.rg;
+						if (pedido.endereco_tipo_pessoa.Equals(Global.Cte.TipoPessoa.PF))
+						{
+							strValue = pedido.endereco_rg;
+						}
+						else
+						{
+							if (pedido.endereco_contribuinte_icms_status == Global.Cte.StClienteContribuinteIcmsStatus.CONTRIBUINTE_ICMS_SIM) strValue = pedido.endereco_ie;  // contribuinte_icms_status = 2 -> Contribuinte de ICMS
+						}
 					}
 					else
 					{
-						if (cliente.contribuinte_icms_status == 2) strValue = cliente.ie;  // contribuinte_icms_status = 2 -> Contribuinte de ICMS
+						if (cliente.tipo.Equals(Global.Cte.TipoPessoa.PF))
+						{
+							strValue = cliente.rg;
+						}
+						else
+						{
+							if (cliente.contribuinte_icms_status == Global.Cte.StClienteContribuinteIcmsStatus.CONTRIBUINTE_ICMS_SIM) strValue = cliente.ie;  // contribuinte_icms_status = 2 -> Contribuinte de ICMS
+						}
 					}
 
 					if (strValue.Length > 0)
@@ -660,7 +686,15 @@ namespace FinanceiroService
 					#endregion
 
 					#region [ Campo: Order/BillingData/Name ]
-					strValue = Global.filtraAmpersand(cliente.nome);
+					strValue = "";
+					if (pedido.st_memorizacao_completa_enderecos != 0)
+					{
+						strValue = Global.filtraAmpersand(pedido.endereco_nome);
+					}
+					else
+					{
+						strValue = Global.filtraAmpersand(cliente.nome);
+					}
 					sbXml.Append(xmlMontaCampo(strValue, "Name"));
 					clearsaleAF.req_Order_BillingData_Name = strValue;
 					#endregion
@@ -685,7 +719,19 @@ namespace FinanceiroService
 					#endregion
 
 					#region [ Cammpo: Order/BillingData/Email ]
-					strValue = cliente.email;
+					strValue = "";
+					if (pedido.st_memorizacao_completa_enderecos != 0)
+					{
+						strValue = pedido.endereco_email;
+						if (strValue.Trim().Length == 0) strValue = pedido.endereco_email_xml;
+						if (strValue.Trim().Length == 0) strValue = cliente.email;
+						if (strValue.Trim().Length == 0) strValue = cliente.email_xml;
+					}
+					else
+					{
+						strValue = cliente.email;
+						if (strValue.Trim().Length == 0) strValue = cliente.email_xml;
+					}
 					sbXml.Append(xmlMontaCampo(strValue, "Email"));
 					clearsaleAF.req_Order_BillingData_Email = strValue;
 					#endregion
@@ -707,46 +753,109 @@ namespace FinanceiroService
 					sbXml.Append("<Address>");
 
 					#region [ Campo: Order/BillingData/Address/Street ]
-					strValue = Global.filtraAmpersand(cliente.endereco);
+					strValue = "";
+					if (pedido.st_memorizacao_completa_enderecos != 0)
+					{
+						strValue = Global.filtraAmpersand(pedido.endereco_logradouro);
+					}
+					else
+					{
+						strValue = Global.filtraAmpersand(cliente.endereco);
+					}
 					sbXml.Append(xmlMontaCampo(strValue, "Street"));
 					clearsaleAF.req_Order_BillingData_Address_Street = strValue;
 					#endregion
 
 					#region [ Campo: Order/BillingData/Address/Number ]
-					strValue = Global.filtraAmpersand(cliente.endereco_numero);
+					strValue = "";
+					if (pedido.st_memorizacao_completa_enderecos != 0)
+					{
+						strValue = Global.filtraAmpersand(pedido.endereco_numero);
+					}
+					else
+					{
+						strValue = Global.filtraAmpersand(cliente.endereco_numero);
+					}
 					sbXml.Append(xmlMontaCampo(strValue, "Number"));
 					clearsaleAF.req_Order_BillingData_Address_Number = strValue;
 					#endregion
 
 					#region [ Campo: Order/BillingData/Address/Comp ]
-					if (cliente.endereco_complemento.Length > 0)
+					strValue = "";
+					if (pedido.st_memorizacao_completa_enderecos != 0)
 					{
-						strValue = Global.filtraAmpersand(cliente.endereco_complemento);
+						if (pedido.endereco_complemento.Length > 0)
+						{
+							strValue = Global.filtraAmpersand(pedido.endereco_complemento);
+						}
+					}
+					else
+					{
+						if (cliente.endereco_complemento.Length > 0)
+						{
+							strValue = Global.filtraAmpersand(cliente.endereco_complemento);
+						}
+					}
+
+					if (strValue.Trim().Length > 0)
+					{
 						sbXml.Append(xmlMontaCampo(strValue, "Comp"));
 						clearsaleAF.req_Order_BillingData_Address_Comp = strValue;
 					}
 					#endregion
 
 					#region [ Campo: Order/BillingData/Address/County ]
-					strValue = Global.filtraAmpersand(cliente.bairro);
+					strValue = "";
+					if (pedido.st_memorizacao_completa_enderecos != 0)
+					{
+						strValue = Global.filtraAmpersand(pedido.endereco_bairro);
+					}
+					else
+					{
+						strValue = Global.filtraAmpersand(cliente.bairro);
+					}
 					sbXml.Append(xmlMontaCampo(strValue, "County"));
 					clearsaleAF.req_Order_BillingData_Address_County = strValue;
 					#endregion
 
 					#region [ Campo: Order/BillingData/Address/City ]
-					strValue = Global.filtraAmpersand(cliente.cidade);
+					strValue = "";
+					if (pedido.st_memorizacao_completa_enderecos != 0)
+					{
+						strValue = Global.filtraAmpersand(pedido.endereco_cidade);
+					}
+					else
+					{
+						strValue = Global.filtraAmpersand(cliente.cidade);
+					}
 					sbXml.Append(xmlMontaCampo(strValue, "City"));
 					clearsaleAF.req_Order_BillingData_Address_City = strValue;
 					#endregion
 
 					#region [ Campo: Order/BillingData/Address/State ]
-					strValue = cliente.uf;
+					strValue = "";
+					if (pedido.st_memorizacao_completa_enderecos != 0)
+					{
+						strValue = pedido.endereco_uf;
+					}
+					else
+					{
+						strValue = cliente.uf;
+					}
 					sbXml.Append(xmlMontaCampo(strValue, "State"));
 					clearsaleAF.req_Order_BillingData_Address_State = strValue;
 					#endregion
 
 					#region [ Campo: Order/BillingData/Address/ZipCode ]
-					strValue = cliente.cep;
+					strValue = "";
+					if (pedido.st_memorizacao_completa_enderecos != 0)
+					{
+						strValue = pedido.endereco_cep;
+					}
+					else
+					{
+						strValue = cliente.cep;
+					}
 					sbXml.Append(xmlMontaCampo(strValue, "ZipCode"));
 					clearsaleAF.req_Order_BillingData_Address_ZipCode = strValue;
 					#endregion
@@ -765,105 +874,227 @@ namespace FinanceiroService
 					//		4 = Cobrança
 					//		5 = Temporário
 					//		6 = Celular
-					if (cliente.tel_cel.Length > 0)
+					if (pedido.st_memorizacao_completa_enderecos != 0)
 					{
-						afPhone = new ClearsaleAFPhone();
-						afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_BillingData_Phones.GetValue();
-						sbXml.Append("<Phone>");
-
-						strValue = "6";
-						sbXml.Append(xmlMontaCampo(strValue, "Type"));
-						afPhone.af_Type = strValue;
-
-						strValue = cliente.ddd_cel;
-						sbXml.Append(xmlMontaCampo(strValue, "DDD"));
-						afPhone.af_DDD = strValue;
-
-						strValue = cliente.tel_cel;
-						sbXml.Append(xmlMontaCampo(strValue, "Number"));
-						afPhone.af_Number = strValue;
-
-						sbXml.Append("</Phone>");
-						clearsaleAF.Order_BillingData_Phones.Add(afPhone);
-					}
-
-					if (cliente.tel_res.Length > 0)
-					{
-						afPhone = new ClearsaleAFPhone();
-						afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_BillingData_Phones.GetValue();
-						sbXml.Append("<Phone>");
-
-						strValue = "1";
-						sbXml.Append(xmlMontaCampo(strValue, "Type"));
-						afPhone.af_Type = strValue;
-
-						strValue = cliente.ddd_res;
-						sbXml.Append(xmlMontaCampo(strValue, "DDD"));
-						afPhone.af_DDD = strValue;
-
-						strValue = cliente.tel_res;
-						sbXml.Append(xmlMontaCampo(strValue, "Number"));
-						afPhone.af_Number = strValue;
-
-						sbXml.Append("</Phone>");
-						clearsaleAF.Order_BillingData_Phones.Add(afPhone);
-					}
-
-					if (cliente.tel_com.Length > 0)
-					{
-						afPhone = new ClearsaleAFPhone();
-						afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_BillingData_Phones.GetValue();
-						sbXml.Append("<Phone>");
-
-						strValue = "2";
-						sbXml.Append(xmlMontaCampo(strValue, "Type"));
-						afPhone.af_Type = strValue;
-
-						strValue = cliente.ddd_com;
-						sbXml.Append(xmlMontaCampo(strValue, "DDD"));
-						afPhone.af_DDD = strValue;
-
-						strValue = cliente.tel_com;
-						sbXml.Append(xmlMontaCampo(strValue, "Number"));
-						afPhone.af_Number = strValue;
-
-						if (cliente.ramal_com.Length > 0)
+						#region [ Celular ]
+						if (pedido.endereco_tel_cel.Length > 0)
 						{
-							strValue = cliente.ramal_com;
-							sbXml.Append(xmlMontaCampo(strValue, "Extension"));
-							afPhone.af_Extension = strValue;
+							afPhone = new ClearsaleAFPhone();
+							afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_BillingData_Phones.GetValue();
+							sbXml.Append("<Phone>");
+
+							strValue = "6";
+							sbXml.Append(xmlMontaCampo(strValue, "Type"));
+							afPhone.af_Type = strValue;
+
+							strValue = pedido.endereco_ddd_cel;
+							sbXml.Append(xmlMontaCampo(strValue, "DDD"));
+							afPhone.af_DDD = strValue;
+
+							strValue = pedido.endereco_tel_cel;
+							sbXml.Append(xmlMontaCampo(strValue, "Number"));
+							afPhone.af_Number = strValue;
+
+							sbXml.Append("</Phone>");
+							clearsaleAF.Order_BillingData_Phones.Add(afPhone);
 						}
-						sbXml.Append("</Phone>");
-						clearsaleAF.Order_BillingData_Phones.Add(afPhone);
-					}
+						#endregion
 
-					if (cliente.tel_com_2.Length > 0)
-					{
-						afPhone = new ClearsaleAFPhone();
-						afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_BillingData_Phones.GetValue();
-						sbXml.Append("<Phone>");
-
-						strValue = "2";
-						sbXml.Append(xmlMontaCampo(strValue, "Type"));
-						afPhone.af_Type = strValue;
-
-						strValue = cliente.ddd_com_2;
-						sbXml.Append(xmlMontaCampo(strValue, "DDD"));
-						afPhone.af_DDD = strValue;
-
-						strValue = cliente.tel_com_2;
-						sbXml.Append(xmlMontaCampo(strValue, "Number"));
-						afPhone.af_Number = strValue;
-
-						if (cliente.ramal_com_2.Length > 0)
+						#region [ Tel Residencial ]
+						if (pedido.endereco_tel_res.Length > 0)
 						{
-							strValue = cliente.ramal_com_2;
-							sbXml.Append(xmlMontaCampo(strValue, "Extension"));
-							afPhone.af_Extension = strValue;
-						}
+							afPhone = new ClearsaleAFPhone();
+							afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_BillingData_Phones.GetValue();
+							sbXml.Append("<Phone>");
 
-						sbXml.Append("</Phone>");
-						clearsaleAF.Order_BillingData_Phones.Add(afPhone);
+							strValue = "1";
+							sbXml.Append(xmlMontaCampo(strValue, "Type"));
+							afPhone.af_Type = strValue;
+
+							strValue = pedido.endereco_ddd_res;
+							sbXml.Append(xmlMontaCampo(strValue, "DDD"));
+							afPhone.af_DDD = strValue;
+
+							strValue = pedido.endereco_tel_res;
+							sbXml.Append(xmlMontaCampo(strValue, "Number"));
+							afPhone.af_Number = strValue;
+
+							sbXml.Append("</Phone>");
+							clearsaleAF.Order_BillingData_Phones.Add(afPhone);
+						}
+						#endregion
+
+						#region [ Tel Comercial ]
+						if (pedido.endereco_tel_com.Length > 0)
+						{
+							afPhone = new ClearsaleAFPhone();
+							afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_BillingData_Phones.GetValue();
+							sbXml.Append("<Phone>");
+
+							strValue = "2";
+							sbXml.Append(xmlMontaCampo(strValue, "Type"));
+							afPhone.af_Type = strValue;
+
+							strValue = pedido.endereco_ddd_com;
+							sbXml.Append(xmlMontaCampo(strValue, "DDD"));
+							afPhone.af_DDD = strValue;
+
+							strValue = pedido.endereco_tel_com;
+							sbXml.Append(xmlMontaCampo(strValue, "Number"));
+							afPhone.af_Number = strValue;
+
+							if (pedido.endereco_ramal_com.Length > 0)
+							{
+								strValue = pedido.endereco_ramal_com;
+								sbXml.Append(xmlMontaCampo(strValue, "Extension"));
+								afPhone.af_Extension = strValue;
+							}
+							sbXml.Append("</Phone>");
+							clearsaleAF.Order_BillingData_Phones.Add(afPhone);
+						}
+						#endregion
+
+						#region [ Tel Comercial 2 ]
+						if (pedido.endereco_tel_com_2.Length > 0)
+						{
+							afPhone = new ClearsaleAFPhone();
+							afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_BillingData_Phones.GetValue();
+							sbXml.Append("<Phone>");
+
+							strValue = "2";
+							sbXml.Append(xmlMontaCampo(strValue, "Type"));
+							afPhone.af_Type = strValue;
+
+							strValue = pedido.endereco_ddd_com_2;
+							sbXml.Append(xmlMontaCampo(strValue, "DDD"));
+							afPhone.af_DDD = strValue;
+
+							strValue = pedido.endereco_tel_com_2;
+							sbXml.Append(xmlMontaCampo(strValue, "Number"));
+							afPhone.af_Number = strValue;
+
+							if (pedido.endereco_ramal_com_2.Length > 0)
+							{
+								strValue = pedido.endereco_ramal_com_2;
+								sbXml.Append(xmlMontaCampo(strValue, "Extension"));
+								afPhone.af_Extension = strValue;
+							}
+
+							sbXml.Append("</Phone>");
+							clearsaleAF.Order_BillingData_Phones.Add(afPhone);
+						}
+						#endregion
+					}
+					else
+					{
+						#region [ Celular ]
+						if (cliente.tel_cel.Length > 0)
+						{
+							afPhone = new ClearsaleAFPhone();
+							afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_BillingData_Phones.GetValue();
+							sbXml.Append("<Phone>");
+
+							strValue = "6";
+							sbXml.Append(xmlMontaCampo(strValue, "Type"));
+							afPhone.af_Type = strValue;
+
+							strValue = cliente.ddd_cel;
+							sbXml.Append(xmlMontaCampo(strValue, "DDD"));
+							afPhone.af_DDD = strValue;
+
+							strValue = cliente.tel_cel;
+							sbXml.Append(xmlMontaCampo(strValue, "Number"));
+							afPhone.af_Number = strValue;
+
+							sbXml.Append("</Phone>");
+							clearsaleAF.Order_BillingData_Phones.Add(afPhone);
+						}
+						#endregion
+
+						#region [ Tel Residencial ]
+						if (cliente.tel_res.Length > 0)
+						{
+							afPhone = new ClearsaleAFPhone();
+							afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_BillingData_Phones.GetValue();
+							sbXml.Append("<Phone>");
+
+							strValue = "1";
+							sbXml.Append(xmlMontaCampo(strValue, "Type"));
+							afPhone.af_Type = strValue;
+
+							strValue = cliente.ddd_res;
+							sbXml.Append(xmlMontaCampo(strValue, "DDD"));
+							afPhone.af_DDD = strValue;
+
+							strValue = cliente.tel_res;
+							sbXml.Append(xmlMontaCampo(strValue, "Number"));
+							afPhone.af_Number = strValue;
+
+							sbXml.Append("</Phone>");
+							clearsaleAF.Order_BillingData_Phones.Add(afPhone);
+						}
+						#endregion
+
+						#region [ Tel Comercial ]
+						if (cliente.tel_com.Length > 0)
+						{
+							afPhone = new ClearsaleAFPhone();
+							afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_BillingData_Phones.GetValue();
+							sbXml.Append("<Phone>");
+
+							strValue = "2";
+							sbXml.Append(xmlMontaCampo(strValue, "Type"));
+							afPhone.af_Type = strValue;
+
+							strValue = cliente.ddd_com;
+							sbXml.Append(xmlMontaCampo(strValue, "DDD"));
+							afPhone.af_DDD = strValue;
+
+							strValue = cliente.tel_com;
+							sbXml.Append(xmlMontaCampo(strValue, "Number"));
+							afPhone.af_Number = strValue;
+
+							if (cliente.ramal_com.Length > 0)
+							{
+								strValue = cliente.ramal_com;
+								sbXml.Append(xmlMontaCampo(strValue, "Extension"));
+								afPhone.af_Extension = strValue;
+							}
+							sbXml.Append("</Phone>");
+							clearsaleAF.Order_BillingData_Phones.Add(afPhone);
+						}
+						#endregion
+
+						#region [ Tel Comercial 2 ]
+						if (cliente.tel_com_2.Length > 0)
+						{
+							afPhone = new ClearsaleAFPhone();
+							afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_BillingData_Phones.GetValue();
+							sbXml.Append("<Phone>");
+
+							strValue = "2";
+							sbXml.Append(xmlMontaCampo(strValue, "Type"));
+							afPhone.af_Type = strValue;
+
+							strValue = cliente.ddd_com_2;
+							sbXml.Append(xmlMontaCampo(strValue, "DDD"));
+							afPhone.af_DDD = strValue;
+
+							strValue = cliente.tel_com_2;
+							sbXml.Append(xmlMontaCampo(strValue, "Number"));
+							afPhone.af_Number = strValue;
+
+							if (cliente.ramal_com_2.Length > 0)
+							{
+								strValue = cliente.ramal_com_2;
+								sbXml.Append(xmlMontaCampo(strValue, "Extension"));
+								afPhone.af_Extension = strValue;
+							}
+
+							sbXml.Append("</Phone>");
+							clearsaleAF.Order_BillingData_Phones.Add(afPhone);
+						}
+						#endregion
 					}
 
 					sbXml.Append("</Phones>");
@@ -882,26 +1113,78 @@ namespace FinanceiroService
 					#endregion
 
 					#region [ Campo: Order/ShippingData/Type ]
-					strValue = (cliente.tipo.Equals(Global.Cte.TipoPessoa.PF) ? "1" : "2");  // 1=Pessoa Física 2=Pessoa Jurídica
+					strValue = "";
+					if (pedido.st_memorizacao_completa_enderecos != 0)
+					{
+						if ((pedido.st_end_entrega != 0) && (pedido.endEtg_tipo_pessoa.Length > 0))
+						{
+							strValue = (pedido.endEtg_tipo_pessoa.Equals(Global.Cte.TipoPessoa.PF) ? "1" : "2");  // 1=Pessoa Física 2=Pessoa Jurídica
+						}
+						else
+						{
+							strValue = (pedido.endereco_tipo_pessoa.Equals(Global.Cte.TipoPessoa.PF) ? "1" : "2");  // 1=Pessoa Física 2=Pessoa Jurídica
+						}
+					}
+					else
+					{
+						strValue = (cliente.tipo.Equals(Global.Cte.TipoPessoa.PF) ? "1" : "2");  // 1=Pessoa Física 2=Pessoa Jurídica
+					}
 					sbXml.Append(xmlMontaCampo(strValue, "Type"));
 					clearsaleAF.req_Order_ShippingData_Type = strValue;
 					#endregion
 
 					#region [ Campo: Order/ShippingData/LegalDocument1 ]
-					strValue = cliente.cnpj_cpf;
+					strValue = "";
+					if (pedido.st_memorizacao_completa_enderecos != 0)
+					{
+						if ((pedido.st_end_entrega != 0) && (pedido.endEtg_cnpj_cpf.Trim().Length > 0))
+						{
+							strValue = pedido.endEtg_cnpj_cpf;
+						}
+						else
+						{
+							strValue = pedido.endereco_cnpj_cpf;
+						}
+					}
+					else
+					{
+						strValue = cliente.cnpj_cpf;
+					}
 					sbXml.Append(xmlMontaCampo(cliente.cnpj_cpf, "LegalDocument1"));
 					clearsaleAF.req_Order_ShippingData_LegalDocument1 = strValue;
 					#endregion
 
 					#region [ Campo: Order/ShippingData/LegalDocument2 ]
 					strValue = "";
-					if (cliente.tipo.Equals(Global.Cte.TipoPessoa.PF))
+					if (pedido.st_memorizacao_completa_enderecos != 0)
 					{
-						strValue = cliente.rg;
+						if ((pedido.st_end_entrega != 0) && (pedido.endEtg_tipo_pessoa.Equals(Global.Cte.TipoPessoa.PF)))
+						{
+							strValue = pedido.endEtg_rg;
+						}
+						else if ((pedido.st_end_entrega != 0) && (pedido.endEtg_tipo_pessoa.Equals(Global.Cte.TipoPessoa.PJ)))
+						{
+							if (pedido.endEtg_contribuinte_icms_status == Global.Cte.StClienteContribuinteIcmsStatus.CONTRIBUINTE_ICMS_SIM) strValue = pedido.endEtg_ie;
+						}
+						else if ((pedido.st_end_entrega == 0) && (pedido.endereco_tipo_pessoa.Equals(Global.Cte.TipoPessoa.PF)))
+						{
+							strValue = pedido.endereco_rg;
+						}
+						else if ((pedido.st_end_entrega == 0) && (pedido.endereco_tipo_pessoa.Equals(Global.Cte.TipoPessoa.PJ)))
+						{
+							if (pedido.endereco_contribuinte_icms_status == Global.Cte.StClienteContribuinteIcmsStatus.CONTRIBUINTE_ICMS_SIM) strValue = pedido.endereco_ie;
+						}
 					}
 					else
 					{
-						if (cliente.contribuinte_icms_status == 2) strValue = cliente.ie;  // contribuinte_icms_status = 2 -> Contribuinte de ICMS
+						if (cliente.tipo.Equals(Global.Cte.TipoPessoa.PF))
+						{
+							strValue = cliente.rg;
+						}
+						else
+						{
+							if (cliente.contribuinte_icms_status == Global.Cte.StClienteContribuinteIcmsStatus.CONTRIBUINTE_ICMS_SIM) strValue = cliente.ie;  // contribuinte_icms_status = 2 -> Contribuinte de ICMS
+						}
 					}
 
 					if (strValue.Length > 0)
@@ -912,7 +1195,22 @@ namespace FinanceiroService
 					#endregion
 
 					#region [ Campo: Order/ShippingData/Name ]
-					strValue = Global.filtraAmpersand(cliente.nome);
+					strValue = "";
+					if (pedido.st_memorizacao_completa_enderecos != 0)
+					{
+						if ((pedido.st_end_entrega != 0) && (pedido.endEtg_nome.Trim().Length > 0))
+						{
+							strValue = Global.filtraAmpersand(pedido.endEtg_nome);
+						}
+						else
+						{
+							strValue = Global.filtraAmpersand(pedido.endereco_nome);
+						}
+					}
+					else
+					{
+						strValue = Global.filtraAmpersand(cliente.nome);
+					}
 					sbXml.Append(xmlMontaCampo(strValue, "Name"));
 					clearsaleAF.req_Order_ShippingData_Name = strValue;
 					#endregion
@@ -937,7 +1235,28 @@ namespace FinanceiroService
 					#endregion
 
 					#region [ Cammpo: Order/ShippingData/Email ]
-					strValue = cliente.email;
+					strValue = "";
+					if (pedido.st_memorizacao_completa_enderecos != 0)
+					{
+						if ((pedido.st_end_entrega != 0) && ((pedido.endEtg_email.Trim().Length > 0) || (pedido.endEtg_email_xml.Trim().Length > 0)))
+						{
+							strValue = pedido.endEtg_email;
+							if (strValue.Trim().Length == 0) strValue = pedido.endEtg_email_xml;
+						}
+						else
+						{
+							strValue = pedido.endereco_email;
+							if (strValue.Trim().Length == 0) strValue = pedido.endereco_email_xml;
+						}
+
+						if (strValue.Trim().Length == 0) strValue = cliente.email;
+						if (strValue.Trim().Length == 0) strValue = cliente.email_xml;
+					}
+					else
+					{
+						strValue = cliente.email;
+						if (strValue.Trim().Length == 0) strValue = cliente.email_xml;
+					}
 					sbXml.Append(xmlMontaCampo(strValue, "Email"));
 					clearsaleAF.req_Order_ShippingData_Email = strValue;
 					#endregion
@@ -960,6 +1279,8 @@ namespace FinanceiroService
 
 					if (pedido.st_end_entrega != 0)
 					{
+						#region [ Usa os dados do endereço de entrega que consta no pedido ]
+
 						#region [ Campo: Order/ShippingData/Address/Street ]
 						strValue = Global.filtraAmpersand(pedido.endEtg_endereco);
 						sbXml.Append(xmlMontaCampo(strValue, "Street"));
@@ -1004,53 +1325,113 @@ namespace FinanceiroService
 						sbXml.Append(xmlMontaCampo(strValue, "ZipCode"));
 						clearsaleAF.req_Order_ShippingData_Address_ZipCode = strValue;
 						#endregion
+
+						#endregion
 					}
 					else
 					{
-						#region [ Campo: Order/ShippingData/Address/Street ]
-						strValue = Global.filtraAmpersand(cliente.endereco);
-						sbXml.Append(xmlMontaCampo(strValue, "Street"));
-						clearsaleAF.req_Order_ShippingData_Address_Street = strValue;
-						#endregion
-
-						#region [ Campo: Order/ShippingData/Address/Number ]
-						strValue = Global.filtraAmpersand(cliente.endereco_numero);
-						sbXml.Append(xmlMontaCampo(strValue, "Number"));
-						clearsaleAF.req_Order_ShippingData_Address_Number = strValue;
-						#endregion
-
-						#region [ Campo: Order/ShippingData/Address/Comp ]
-						if (cliente.endereco_complemento.Length > 0)
+						if (pedido.st_memorizacao_completa_enderecos != 0)
 						{
-							strValue = Global.filtraAmpersand(cliente.endereco_complemento);
-							sbXml.Append(xmlMontaCampo(strValue, "Comp"));
-							clearsaleAF.req_Order_ShippingData_Address_Comp = strValue;
+							#region [ A entrega será no próprio endereço de cadastro do cliente: usa o endereço de cobrança memorizado no pedido ]
+
+							#region [ Campo: Order/ShippingData/Address/Street ]
+							strValue = Global.filtraAmpersand(pedido.endereco_logradouro);
+							sbXml.Append(xmlMontaCampo(strValue, "Street"));
+							clearsaleAF.req_Order_ShippingData_Address_Street = strValue;
+							#endregion
+
+							#region [ Campo: Order/ShippingData/Address/Number ]
+							strValue = Global.filtraAmpersand(pedido.endereco_numero);
+							sbXml.Append(xmlMontaCampo(strValue, "Number"));
+							clearsaleAF.req_Order_ShippingData_Address_Number = strValue;
+							#endregion
+
+							#region [ Campo: Order/ShippingData/Address/Comp ]
+							if (pedido.endereco_complemento.Length > 0)
+							{
+								strValue = Global.filtraAmpersand(pedido.endereco_complemento);
+								sbXml.Append(xmlMontaCampo(strValue, "Comp"));
+								clearsaleAF.req_Order_ShippingData_Address_Comp = strValue;
+							}
+							#endregion
+
+							#region [ Campo: Order/ShippingData/Address/County ]
+							strValue = Global.filtraAmpersand(pedido.endereco_bairro);
+							sbXml.Append(xmlMontaCampo(strValue, "County"));
+							clearsaleAF.req_Order_ShippingData_Address_County = strValue;
+							#endregion
+
+							#region [ Campo: Order/ShippingData/Address/City ]
+							strValue = Global.filtraAmpersand(pedido.endereco_cidade);
+							sbXml.Append(xmlMontaCampo(strValue, "City"));
+							clearsaleAF.req_Order_ShippingData_Address_City = strValue;
+							#endregion
+
+							#region [ Campo: Order/ShippingData/Address/State ]
+							strValue = pedido.endereco_uf;
+							sbXml.Append(xmlMontaCampo(strValue, "State"));
+							clearsaleAF.req_Order_ShippingData_Address_State = strValue;
+							#endregion
+
+							#region [ Campo: Order/ShippingData/Address/ZipCode ]
+							strValue = pedido.endereco_cep;
+							sbXml.Append(xmlMontaCampo(strValue, "ZipCode"));
+							clearsaleAF.req_Order_ShippingData_Address_ZipCode = strValue;
+							#endregion
+
+							#endregion
 						}
-						#endregion
+						else
+						{
+							#region [ A entrega será no próprio endereço de cadastro do cliente: usa o endereço de cobrança do cadastro do cliente ]
 
-						#region [ Campo: Order/ShippingData/Address/County ]
-						strValue = Global.filtraAmpersand(cliente.bairro);
-						sbXml.Append(xmlMontaCampo(strValue, "County"));
-						clearsaleAF.req_Order_ShippingData_Address_County = strValue;
-						#endregion
+							#region [ Campo: Order/ShippingData/Address/Street ]
+							strValue = Global.filtraAmpersand(cliente.endereco);
+							sbXml.Append(xmlMontaCampo(strValue, "Street"));
+							clearsaleAF.req_Order_ShippingData_Address_Street = strValue;
+							#endregion
 
-						#region [ Campo: Order/ShippingData/Address/City ]
-						strValue = Global.filtraAmpersand(cliente.cidade);
-						sbXml.Append(xmlMontaCampo(strValue, "City"));
-						clearsaleAF.req_Order_ShippingData_Address_City = strValue;
-						#endregion
+							#region [ Campo: Order/ShippingData/Address/Number ]
+							strValue = Global.filtraAmpersand(cliente.endereco_numero);
+							sbXml.Append(xmlMontaCampo(strValue, "Number"));
+							clearsaleAF.req_Order_ShippingData_Address_Number = strValue;
+							#endregion
 
-						#region [ Campo: Order/ShippingData/Address/State ]
-						strValue = cliente.uf;
-						sbXml.Append(xmlMontaCampo(strValue, "State"));
-						clearsaleAF.req_Order_ShippingData_Address_State = strValue;
-						#endregion
+							#region [ Campo: Order/ShippingData/Address/Comp ]
+							if (cliente.endereco_complemento.Length > 0)
+							{
+								strValue = Global.filtraAmpersand(cliente.endereco_complemento);
+								sbXml.Append(xmlMontaCampo(strValue, "Comp"));
+								clearsaleAF.req_Order_ShippingData_Address_Comp = strValue;
+							}
+							#endregion
 
-						#region [ Campo: Order/ShippingData/Address/ZipCode ]
-						strValue = cliente.cep;
-						sbXml.Append(xmlMontaCampo(strValue, "ZipCode"));
-						clearsaleAF.req_Order_ShippingData_Address_ZipCode = strValue;
-						#endregion
+							#region [ Campo: Order/ShippingData/Address/County ]
+							strValue = Global.filtraAmpersand(cliente.bairro);
+							sbXml.Append(xmlMontaCampo(strValue, "County"));
+							clearsaleAF.req_Order_ShippingData_Address_County = strValue;
+							#endregion
+
+							#region [ Campo: Order/ShippingData/Address/City ]
+							strValue = Global.filtraAmpersand(cliente.cidade);
+							sbXml.Append(xmlMontaCampo(strValue, "City"));
+							clearsaleAF.req_Order_ShippingData_Address_City = strValue;
+							#endregion
+
+							#region [ Campo: Order/ShippingData/Address/State ]
+							strValue = cliente.uf;
+							sbXml.Append(xmlMontaCampo(strValue, "State"));
+							clearsaleAF.req_Order_ShippingData_Address_State = strValue;
+							#endregion
+
+							#region [ Campo: Order/ShippingData/Address/ZipCode ]
+							strValue = cliente.cep;
+							sbXml.Append(xmlMontaCampo(strValue, "ZipCode"));
+							clearsaleAF.req_Order_ShippingData_Address_ZipCode = strValue;
+							#endregion
+
+							#endregion
+						}
 					}
 
 					sbXml.Append("</Address>");
@@ -1067,106 +1448,340 @@ namespace FinanceiroService
 					//		4 = Cobrança
 					//		5 = Temporário
 					//		6 = Celular
-					if (cliente.tel_cel.Length > 0)
+
+					if (pedido.st_memorizacao_completa_enderecos != 0)
 					{
-						afPhone = new ClearsaleAFPhone();
-						afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_ShippingData_Phones.GetValue();
-						sbXml.Append("<Phone>");
-
-						strValue = "6";
-						sbXml.Append(xmlMontaCampo(strValue, "Type"));
-						afPhone.af_Type = strValue;
-
-						strValue = cliente.ddd_cel;
-						sbXml.Append(xmlMontaCampo(strValue, "DDD"));
-						afPhone.af_DDD = strValue;
-
-						strValue = cliente.tel_cel;
-						sbXml.Append(xmlMontaCampo(strValue, "Number"));
-						afPhone.af_Number = strValue;
-
-						sbXml.Append("</Phone>");
-						clearsaleAF.Order_ShippingData_Phones.Add(afPhone);
-					}
-
-					if (cliente.tel_res.Length > 0)
-					{
-						afPhone = new ClearsaleAFPhone();
-						afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_ShippingData_Phones.GetValue();
-						sbXml.Append("<Phone>");
-
-						strValue = "1";
-						sbXml.Append(xmlMontaCampo(strValue, "Type"));
-						afPhone.af_Type = strValue;
-
-						strValue = cliente.ddd_res;
-						sbXml.Append(xmlMontaCampo(strValue, "DDD"));
-						afPhone.af_DDD = strValue;
-
-						strValue = cliente.tel_res;
-						sbXml.Append(xmlMontaCampo(strValue, "Number"));
-						afPhone.af_Number = strValue;
-
-						sbXml.Append("</Phone>");
-						clearsaleAF.Order_ShippingData_Phones.Add(afPhone);
-					}
-
-					if (cliente.tel_com.Length > 0)
-					{
-						afPhone = new ClearsaleAFPhone();
-						afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_ShippingData_Phones.GetValue();
-						sbXml.Append("<Phone>");
-
-						strValue = "2";
-						sbXml.Append(xmlMontaCampo(strValue, "Type"));
-						afPhone.af_Type = strValue;
-
-						strValue = cliente.ddd_com;
-						sbXml.Append(xmlMontaCampo(strValue, "DDD"));
-						afPhone.af_DDD = strValue;
-
-						strValue = cliente.tel_com;
-						sbXml.Append(xmlMontaCampo(strValue, "Number"));
-						afPhone.af_Number = strValue;
-
-						if (cliente.ramal_com.Length > 0)
+						#region [ Tel Celular ]
+						if ((pedido.st_end_entrega != 0) && (pedido.endEtg_tel_cel.Trim().Length > 0))
 						{
-							strValue = cliente.ramal_com;
-							sbXml.Append(xmlMontaCampo(strValue, "Extension"));
-							afPhone.af_Extension = strValue;
+							afPhone = new ClearsaleAFPhone();
+							afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_ShippingData_Phones.GetValue();
+							sbXml.Append("<Phone>");
+
+							strValue = "6";
+							sbXml.Append(xmlMontaCampo(strValue, "Type"));
+							afPhone.af_Type = strValue;
+
+							strValue = pedido.endEtg_ddd_cel;
+							sbXml.Append(xmlMontaCampo(strValue, "DDD"));
+							afPhone.af_DDD = strValue;
+
+							strValue = pedido.endEtg_tel_cel;
+							sbXml.Append(xmlMontaCampo(strValue, "Number"));
+							afPhone.af_Number = strValue;
+
+							sbXml.Append("</Phone>");
+							clearsaleAF.Order_ShippingData_Phones.Add(afPhone);
 						}
-
-						sbXml.Append("</Phone>");
-						clearsaleAF.Order_ShippingData_Phones.Add(afPhone);
-					}
-
-					if (cliente.tel_com_2.Length > 0)
-					{
-						afPhone = new ClearsaleAFPhone();
-						afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_ShippingData_Phones.GetValue();
-						sbXml.Append("<Phone>");
-
-						strValue = "2";
-						sbXml.Append(xmlMontaCampo(strValue, "Type"));
-						afPhone.af_Type = strValue;
-
-						strValue = cliente.ddd_com_2;
-						sbXml.Append(xmlMontaCampo(strValue, "DDD"));
-						afPhone.af_DDD = strValue;
-
-						strValue = cliente.tel_com_2;
-						sbXml.Append(xmlMontaCampo(strValue, "Number"));
-						afPhone.af_Number = strValue;
-
-						if (cliente.ramal_com_2.Length > 0)
+						else
 						{
-							strValue = cliente.ramal_com_2;
-							sbXml.Append(xmlMontaCampo(strValue, "Extension"));
-							afPhone.af_Extension = strValue;
-						}
+							if (pedido.endereco_tel_cel.Trim().Length > 0)
+							{
+								afPhone = new ClearsaleAFPhone();
+								afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_ShippingData_Phones.GetValue();
+								sbXml.Append("<Phone>");
 
-						sbXml.Append("</Phone>");
-						clearsaleAF.Order_ShippingData_Phones.Add(afPhone);
+								strValue = "6";
+								sbXml.Append(xmlMontaCampo(strValue, "Type"));
+								afPhone.af_Type = strValue;
+
+								strValue = pedido.endereco_ddd_cel;
+								sbXml.Append(xmlMontaCampo(strValue, "DDD"));
+								afPhone.af_DDD = strValue;
+
+								strValue = pedido.endereco_tel_cel;
+								sbXml.Append(xmlMontaCampo(strValue, "Number"));
+								afPhone.af_Number = strValue;
+
+								sbXml.Append("</Phone>");
+								clearsaleAF.Order_ShippingData_Phones.Add(afPhone);
+							}
+						}
+						#endregion
+
+						#region [ Tel Residencial ]
+						if ((pedido.st_end_entrega != 0) && (pedido.endEtg_tel_res.Trim().Length > 0))
+						{
+							afPhone = new ClearsaleAFPhone();
+							afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_ShippingData_Phones.GetValue();
+							sbXml.Append("<Phone>");
+
+							strValue = "1";
+							sbXml.Append(xmlMontaCampo(strValue, "Type"));
+							afPhone.af_Type = strValue;
+
+							strValue = pedido.endEtg_ddd_res;
+							sbXml.Append(xmlMontaCampo(strValue, "DDD"));
+							afPhone.af_DDD = strValue;
+
+							strValue = pedido.endEtg_tel_res;
+							sbXml.Append(xmlMontaCampo(strValue, "Number"));
+							afPhone.af_Number = strValue;
+
+							sbXml.Append("</Phone>");
+							clearsaleAF.Order_ShippingData_Phones.Add(afPhone);
+						}
+						else
+						{
+							if (pedido.endereco_tel_res.Length > 0)
+							{
+								afPhone = new ClearsaleAFPhone();
+								afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_ShippingData_Phones.GetValue();
+								sbXml.Append("<Phone>");
+
+								strValue = "1";
+								sbXml.Append(xmlMontaCampo(strValue, "Type"));
+								afPhone.af_Type = strValue;
+
+								strValue = pedido.endereco_ddd_res;
+								sbXml.Append(xmlMontaCampo(strValue, "DDD"));
+								afPhone.af_DDD = strValue;
+
+								strValue = pedido.endereco_tel_res;
+								sbXml.Append(xmlMontaCampo(strValue, "Number"));
+								afPhone.af_Number = strValue;
+
+								sbXml.Append("</Phone>");
+								clearsaleAF.Order_ShippingData_Phones.Add(afPhone);
+							}
+						}
+						#endregion
+
+						#region [ Telefone Comercial ]
+						if ((pedido.st_end_entrega != 0) && (pedido.endEtg_tel_com.Trim().Length > 0))
+						{
+							afPhone = new ClearsaleAFPhone();
+							afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_ShippingData_Phones.GetValue();
+							sbXml.Append("<Phone>");
+
+							strValue = "2";
+							sbXml.Append(xmlMontaCampo(strValue, "Type"));
+							afPhone.af_Type = strValue;
+
+							strValue = pedido.endEtg_ddd_com;
+							sbXml.Append(xmlMontaCampo(strValue, "DDD"));
+							afPhone.af_DDD = strValue;
+
+							strValue = pedido.endEtg_tel_com;
+							sbXml.Append(xmlMontaCampo(strValue, "Number"));
+							afPhone.af_Number = strValue;
+
+							if (pedido.endEtg_ramal_com.Length > 0)
+							{
+								strValue = pedido.endEtg_ramal_com;
+								sbXml.Append(xmlMontaCampo(strValue, "Extension"));
+								afPhone.af_Extension = strValue;
+							}
+
+							sbXml.Append("</Phone>");
+							clearsaleAF.Order_ShippingData_Phones.Add(afPhone);
+						}
+						else
+						{
+							if (pedido.endereco_tel_com.Length > 0)
+							{
+								afPhone = new ClearsaleAFPhone();
+								afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_ShippingData_Phones.GetValue();
+								sbXml.Append("<Phone>");
+
+								strValue = "2";
+								sbXml.Append(xmlMontaCampo(strValue, "Type"));
+								afPhone.af_Type = strValue;
+
+								strValue = pedido.endereco_ddd_com;
+								sbXml.Append(xmlMontaCampo(strValue, "DDD"));
+								afPhone.af_DDD = strValue;
+
+								strValue = pedido.endereco_tel_com;
+								sbXml.Append(xmlMontaCampo(strValue, "Number"));
+								afPhone.af_Number = strValue;
+
+								if (pedido.endereco_ramal_com.Length > 0)
+								{
+									strValue = pedido.endereco_ramal_com;
+									sbXml.Append(xmlMontaCampo(strValue, "Extension"));
+									afPhone.af_Extension = strValue;
+								}
+
+								sbXml.Append("</Phone>");
+								clearsaleAF.Order_ShippingData_Phones.Add(afPhone);
+							}
+						}
+						#endregion
+
+						#region [ Tel Comercial 2 ]
+						if ((pedido.st_end_entrega != 0) && (pedido.endEtg_tel_com_2.Trim().Length > 0))
+						{
+							afPhone = new ClearsaleAFPhone();
+							afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_ShippingData_Phones.GetValue();
+							sbXml.Append("<Phone>");
+
+							strValue = "2";
+							sbXml.Append(xmlMontaCampo(strValue, "Type"));
+							afPhone.af_Type = strValue;
+
+							strValue = pedido.endEtg_ddd_com_2;
+							sbXml.Append(xmlMontaCampo(strValue, "DDD"));
+							afPhone.af_DDD = strValue;
+
+							strValue = pedido.endEtg_tel_com_2;
+							sbXml.Append(xmlMontaCampo(strValue, "Number"));
+							afPhone.af_Number = strValue;
+
+							if (pedido.endEtg_ramal_com_2.Length > 0)
+							{
+								strValue = pedido.endEtg_ramal_com_2;
+								sbXml.Append(xmlMontaCampo(strValue, "Extension"));
+								afPhone.af_Extension = strValue;
+							}
+
+							sbXml.Append("</Phone>");
+							clearsaleAF.Order_ShippingData_Phones.Add(afPhone);
+						}
+						else
+						{
+							if (pedido.endereco_tel_com_2.Trim().Length > 0)
+							{
+								afPhone = new ClearsaleAFPhone();
+								afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_ShippingData_Phones.GetValue();
+								sbXml.Append("<Phone>");
+
+								strValue = "2";
+								sbXml.Append(xmlMontaCampo(strValue, "Type"));
+								afPhone.af_Type = strValue;
+
+								strValue = pedido.endereco_ddd_com_2;
+								sbXml.Append(xmlMontaCampo(strValue, "DDD"));
+								afPhone.af_DDD = strValue;
+
+								strValue = pedido.endereco_tel_com_2;
+								sbXml.Append(xmlMontaCampo(strValue, "Number"));
+								afPhone.af_Number = strValue;
+
+								if (pedido.endereco_ramal_com_2.Length > 0)
+								{
+									strValue = pedido.endereco_ramal_com_2;
+									sbXml.Append(xmlMontaCampo(strValue, "Extension"));
+									afPhone.af_Extension = strValue;
+								}
+
+								sbXml.Append("</Phone>");
+								clearsaleAF.Order_ShippingData_Phones.Add(afPhone);
+							}
+						}
+						#endregion
+					}
+					else
+					{
+						#region [ Tel Celular ]
+						if (cliente.tel_cel.Length > 0)
+						{
+							afPhone = new ClearsaleAFPhone();
+							afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_ShippingData_Phones.GetValue();
+							sbXml.Append("<Phone>");
+
+							strValue = "6";
+							sbXml.Append(xmlMontaCampo(strValue, "Type"));
+							afPhone.af_Type = strValue;
+
+							strValue = cliente.ddd_cel;
+							sbXml.Append(xmlMontaCampo(strValue, "DDD"));
+							afPhone.af_DDD = strValue;
+
+							strValue = cliente.tel_cel;
+							sbXml.Append(xmlMontaCampo(strValue, "Number"));
+							afPhone.af_Number = strValue;
+
+							sbXml.Append("</Phone>");
+							clearsaleAF.Order_ShippingData_Phones.Add(afPhone);
+						}
+						#endregion
+
+						#region [ Tel Residencial ]
+						if (cliente.tel_res.Length > 0)
+						{
+							afPhone = new ClearsaleAFPhone();
+							afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_ShippingData_Phones.GetValue();
+							sbXml.Append("<Phone>");
+
+							strValue = "1";
+							sbXml.Append(xmlMontaCampo(strValue, "Type"));
+							afPhone.af_Type = strValue;
+
+							strValue = cliente.ddd_res;
+							sbXml.Append(xmlMontaCampo(strValue, "DDD"));
+							afPhone.af_DDD = strValue;
+
+							strValue = cliente.tel_res;
+							sbXml.Append(xmlMontaCampo(strValue, "Number"));
+							afPhone.af_Number = strValue;
+
+							sbXml.Append("</Phone>");
+							clearsaleAF.Order_ShippingData_Phones.Add(afPhone);
+						}
+						#endregion
+
+						#region [ Tel Comercial ]
+						if (cliente.tel_com.Length > 0)
+						{
+							afPhone = new ClearsaleAFPhone();
+							afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_ShippingData_Phones.GetValue();
+							sbXml.Append("<Phone>");
+
+							strValue = "2";
+							sbXml.Append(xmlMontaCampo(strValue, "Type"));
+							afPhone.af_Type = strValue;
+
+							strValue = cliente.ddd_com;
+							sbXml.Append(xmlMontaCampo(strValue, "DDD"));
+							afPhone.af_DDD = strValue;
+
+							strValue = cliente.tel_com;
+							sbXml.Append(xmlMontaCampo(strValue, "Number"));
+							afPhone.af_Number = strValue;
+
+							if (cliente.ramal_com.Length > 0)
+							{
+								strValue = cliente.ramal_com;
+								sbXml.Append(xmlMontaCampo(strValue, "Extension"));
+								afPhone.af_Extension = strValue;
+							}
+
+							sbXml.Append("</Phone>");
+							clearsaleAF.Order_ShippingData_Phones.Add(afPhone);
+						}
+						#endregion
+
+						#region [ Tel Comercial 2 ]
+						if (cliente.tel_com_2.Length > 0)
+						{
+							afPhone = new ClearsaleAFPhone();
+							afPhone.idBlocoXml = Global.Cte.Clearsale.T_PAGTO_GW_AF_PHONE_IdBlocoXml.Order_ShippingData_Phones.GetValue();
+							sbXml.Append("<Phone>");
+
+							strValue = "2";
+							sbXml.Append(xmlMontaCampo(strValue, "Type"));
+							afPhone.af_Type = strValue;
+
+							strValue = cliente.ddd_com_2;
+							sbXml.Append(xmlMontaCampo(strValue, "DDD"));
+							afPhone.af_DDD = strValue;
+
+							strValue = cliente.tel_com_2;
+							sbXml.Append(xmlMontaCampo(strValue, "Number"));
+							afPhone.af_Number = strValue;
+
+							if (cliente.ramal_com_2.Length > 0)
+							{
+								strValue = cliente.ramal_com_2;
+								sbXml.Append(xmlMontaCampo(strValue, "Extension"));
+								afPhone.af_Extension = strValue;
+							}
+
+							sbXml.Append("</Phone>");
+							clearsaleAF.Order_ShippingData_Phones.Add(afPhone);
+						}
+						#endregion
 					}
 
 					sbXml.Append("</Phones>");

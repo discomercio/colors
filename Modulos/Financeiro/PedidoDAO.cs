@@ -75,6 +75,7 @@ namespace Financeiro
 		public static Pedido getPedido(String numeroPedido)
 		{
 			#region [ Declarações ]
+			int flagPedidoUsarMemorizacaoCompletaEnderecos;
 			String strSql;
 			String numeroPedidoBase;
 			decimal razaoValorPedidoFilhote = 0m;
@@ -103,6 +104,7 @@ namespace Financeiro
 			#region [ Inicialização ]
 			numeroPedido = numeroPedido.Trim();
 			numeroPedidoBase = Global.retornaNumeroPedidoBase(numeroPedido);
+			flagPedidoUsarMemorizacaoCompletaEnderecos = ComumDAO.getCampoInteiroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ID_PARAMETRO_FLAG_PEDIDO_MEMORIZACAOCOMPLETAENDERECOS, 0);
 			#endregion
 
 			#region [ Pesquisa pedido ]
@@ -218,17 +220,91 @@ namespace Financeiro
 			pedido.qtde_parcelas_desagio_RA = BD.readToShort(rowResultado["qtde_parcelas_desagio_RA"]);
 			pedido.transportadora_num_coleta = BD.readToString(rowResultado["transportadora_num_coleta"]);
 			pedido.transportadora_contato = BD.readToString(rowResultado["transportadora_contato"]);
+
+			pedido.endereco_memorizado_status = BD.readToByte(rowResultado["endereco_memorizado_status"]);
+			if (pedido.endereco_memorizado_status != 0)
+			{
+				pedido.endereco_logradouro = BD.readToString(rowResultado["endereco_logradouro"]);
+				pedido.endereco_numero = BD.readToString(rowResultado["endereco_numero"]);
+				pedido.endereco_complemento = BD.readToString(rowResultado["endereco_complemento"]);
+				pedido.endereco_bairro = BD.readToString(rowResultado["endereco_bairro"]);
+				pedido.endereco_cidade = BD.readToString(rowResultado["endereco_cidade"]);
+				pedido.endereco_uf = BD.readToString(rowResultado["endereco_uf"]);
+				pedido.endereco_cep = BD.readToString(rowResultado["endereco_cep"]);
+
+				if (flagPedidoUsarMemorizacaoCompletaEnderecos != 0)
+				{
+					pedido.st_memorizacao_completa_enderecos = BD.readToByte(rowResultado["st_memorizacao_completa_enderecos"]);
+					if (pedido.st_memorizacao_completa_enderecos != 0)
+					{
+						pedido.endereco_email = BD.readToString(rowResultado["endereco_email"]);
+						pedido.endereco_email_xml = BD.readToString(rowResultado["endereco_email_xml"]);
+						pedido.endereco_nome = BD.readToString(rowResultado["endereco_nome"]);
+						pedido.endereco_ddd_res = BD.readToString(rowResultado["endereco_ddd_res"]);
+						pedido.endereco_tel_res = BD.readToString(rowResultado["endereco_tel_res"]);
+						pedido.endereco_ddd_com = BD.readToString(rowResultado["endereco_ddd_com"]);
+						pedido.endereco_tel_com = BD.readToString(rowResultado["endereco_tel_com"]);
+						pedido.endereco_ramal_com = BD.readToString(rowResultado["endereco_ramal_com"]);
+						pedido.endereco_ddd_cel = BD.readToString(rowResultado["endereco_ddd_cel"]);
+						pedido.endereco_tel_cel = BD.readToString(rowResultado["endereco_tel_cel"]);
+						pedido.endereco_ddd_com_2 = BD.readToString(rowResultado["endereco_ddd_com_2"]);
+						pedido.endereco_tel_com_2 = BD.readToString(rowResultado["endereco_tel_com_2"]);
+						pedido.endereco_ramal_com_2 = BD.readToString(rowResultado["endereco_ramal_com_2"]);
+						pedido.endereco_tipo_pessoa = BD.readToString(rowResultado["endereco_tipo_pessoa"]);
+						pedido.endereco_cnpj_cpf = BD.readToString(rowResultado["endereco_cnpj_cpf"]);
+						pedido.endereco_contribuinte_icms_status = BD.readToByte(rowResultado["endereco_contribuinte_icms_status"]);
+						pedido.endereco_produtor_rural_status = BD.readToByte(rowResultado["endereco_produtor_rural_status"]);
+						pedido.endereco_ie = BD.readToString(rowResultado["endereco_ie"]);
+						pedido.endereco_rg = BD.readToString(rowResultado["endereco_rg"]);
+						pedido.endereco_contato = BD.readToString(rowResultado["endereco_contato"]);
+					}
+				}
+			}
+
 			pedido.st_end_entrega = BD.readToShort(rowResultado["st_end_entrega"]);
-			pedido.endEtg_endereco = BD.readToString(rowResultado["EndEtg_endereco"]);
-			pedido.endEtg_endereco_numero = BD.readToString(rowResultado["EndEtg_endereco_numero"]);
-			pedido.endEtg_endereco_complemento = BD.readToString(rowResultado["EndEtg_endereco_complemento"]);
-			pedido.endEtg_bairro = BD.readToString(rowResultado["EndEtg_bairro"]);
-			pedido.endEtg_cidade = BD.readToString(rowResultado["EndEtg_cidade"]);
-			pedido.endEtg_uf = BD.readToString(rowResultado["EndEtg_uf"]);
-			pedido.endEtg_cep = BD.readToString(rowResultado["EndEtg_cep"]);
+			if (pedido.st_end_entrega != 0)
+			{
+				pedido.endEtg_endereco = BD.readToString(rowResultado["EndEtg_endereco"]);
+				pedido.endEtg_endereco_numero = BD.readToString(rowResultado["EndEtg_endereco_numero"]);
+				pedido.endEtg_endereco_complemento = BD.readToString(rowResultado["EndEtg_endereco_complemento"]);
+				pedido.endEtg_bairro = BD.readToString(rowResultado["EndEtg_bairro"]);
+				pedido.endEtg_cidade = BD.readToString(rowResultado["EndEtg_cidade"]);
+				pedido.endEtg_uf = BD.readToString(rowResultado["EndEtg_uf"]);
+				pedido.endEtg_cep = BD.readToString(rowResultado["EndEtg_cep"]);
+
+				if (flagPedidoUsarMemorizacaoCompletaEnderecos != 0)
+				{
+					if (pedido.st_memorizacao_completa_enderecos != 0)
+					{
+						pedido.endEtg_email = BD.readToString(rowResultado["EndEtg_email"]);
+						pedido.endEtg_email_xml = BD.readToString(rowResultado["EndEtg_email_xml"]);
+						pedido.endEtg_nome = BD.readToString(rowResultado["EndEtg_nome"]);
+						pedido.endEtg_ddd_res = BD.readToString(rowResultado["EndEtg_ddd_res"]);
+						pedido.endEtg_tel_res = BD.readToString(rowResultado["EndEtg_tel_res"]);
+						pedido.endEtg_ddd_com = BD.readToString(rowResultado["EndEtg_ddd_com"]);
+						pedido.endEtg_tel_com = BD.readToString(rowResultado["EndEtg_tel_com"]);
+						pedido.endEtg_ramal_com = BD.readToString(rowResultado["EndEtg_ramal_com"]);
+						pedido.endEtg_ddd_cel = BD.readToString(rowResultado["EndEtg_ddd_cel"]);
+						pedido.endEtg_tel_cel = BD.readToString(rowResultado["EndEtg_tel_cel"]);
+						pedido.endEtg_ddd_com_2 = BD.readToString(rowResultado["EndEtg_ddd_com_2"]);
+						pedido.endEtg_tel_com_2 = BD.readToString(rowResultado["EndEtg_tel_com_2"]);
+						pedido.endEtg_ramal_com_2 = BD.readToString(rowResultado["EndEtg_ramal_com_2"]);
+						pedido.endEtg_tipo_pessoa = BD.readToString(rowResultado["EndEtg_tipo_pessoa"]);
+						pedido.endEtg_cnpj_cpf = BD.readToString(rowResultado["EndEtg_cnpj_cpf"]);
+						pedido.endEtg_contribuinte_icms_status = BD.readToByte(rowResultado["EndEtg_contribuinte_icms_status"]);
+						pedido.endEtg_produtor_rural_status = BD.readToByte(rowResultado["EndEtg_produtor_rural_status"]);
+						pedido.endEtg_ie = BD.readToString(rowResultado["EndEtg_ie"]);
+						pedido.endEtg_rg = BD.readToString(rowResultado["EndEtg_rg"]);
+					}
+				}
+			}
+
 			pedido.st_etg_imediata = BD.readToShort(rowResultado["st_etg_imediata"]);
 			pedido.etg_imediata_data = BD.readToDateTime(rowResultado["etg_imediata_data"]);
 			pedido.etg_imediata_usuario = BD.readToString(rowResultado["etg_imediata_usuario"]);
+			pedido.PrevisaoEntregaData = BD.readToDateTime(rowResultado["PrevisaoEntregaData"]);
+			pedido.PrevisaoEntregaUsuarioUltAtualiz = BD.readToString(rowResultado["PrevisaoEntregaUsuarioUltAtualiz"]);
+			pedido.PrevisaoEntregaDtHrUltAtualiz = BD.readToDateTime(rowResultado["PrevisaoEntregaDtHrUltAtualiz"]);
 			pedido.frete_status = BD.readToShort(rowResultado["frete_status"]);
 			pedido.frete_valor = BD.readToDecimal(rowResultado["frete_valor"]);
 			pedido.frete_data = BD.readToDateTime(rowResultado["frete_data"]);
