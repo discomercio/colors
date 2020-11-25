@@ -645,3 +645,9 @@ function limpaCampoSelectSubgrupo() {
 </center>
 </body>
 </html>
+
+<%
+'	FECHA CONEXAO COM O BANCO DE DADOS
+	cn.Close
+	set cn = nothing
+%>
