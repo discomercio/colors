@@ -28,8 +28,8 @@ namespace ConsolidadorXlsEC
 			{
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "ConsolidadorXlsEC";
-				public const string VERSAO_NUMERO = "1.12";
-				public const string VERSAO_DATA = "31.AGO.2020";
+				public const string VERSAO_NUMERO = "1.13";
+				public const string VERSAO_DATA = "25.NOV.2020";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Módulo para processos do e-commerce";
@@ -106,8 +106,8 @@ namespace ConsolidadorXlsEC
 			 *		  usar os dados que estão gravados no próprio pedido. O tratamento que já ocorria com o
 			 *		  endereço de entrega deve passar a ser feito p/ o endereço de cobrança/cadastro.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.13 - XX.XX.20XX - por XXX
-			 *		  
+			 * v 1.13 - 25.11.2020 - por HHO
+			 *		  Inclusão da Amazon como origem de pedido aceito no painel de integração Marketplace.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.14 - XX.XX.20XX - por XXX
 			 *		  
