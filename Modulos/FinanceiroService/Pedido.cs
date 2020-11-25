@@ -5,1656 +5,615 @@ using System.Text;
 
 namespace FinanceiroService
 {
-	#region [ Pedido ]
-	class Pedido
-	{
-		#region [ Construtor ]
-		public Pedido()
-		{
-			listaPedidoItem = new List<PedidoItem>();
-			listaPedidoItemDevolvido = new List<PedidoItemDevolvido>();
-		}
-		#endregion
-
-		#region [ Getters/Setters ]
-
-		public List<PedidoItem> listaPedidoItem;
-		public List<PedidoItemDevolvido> listaPedidoItemDevolvido;
-
-		private String _pedido;
-		public String pedido
-		{
-			get { return _pedido; }
-			set { _pedido = value; }
-		}
-
-		private String _loja;
-		public String loja
-		{
-			get { return _loja; }
-			set { _loja = value; }
-		}
-
-		private String _loja_razao_social;
-		public String loja_razao_social
-		{
-			get { return _loja_razao_social; }
-			set { _loja_razao_social = value; }
-		}
-
-		private String _loja_nome;
-		public String loja_nome
-		{
-			get { return _loja_nome; }
-			set { _loja_nome = value; }
-		}
-
-		private DateTime _data;
-		public DateTime data
-		{
-			get { return _data; }
-			set { _data = value; }
-		}
-
-		private String _hora;
-		public String hora
-		{
-			get { return _hora; }
-			set { _hora = value; }
-		}
-
-		private DateTime _data_hora;
-		public DateTime data_hora
-		{
-			get { return _data_hora; }
-			set { _data_hora = value; }
-		}
-
-		private String _id_cliente;
-		public String id_cliente
-		{
-			get { return _id_cliente; }
-			set { _id_cliente = value; }
-		}
-
-		private String _midia;
-		public String midia
-		{
-			get { return _midia; }
-			set { _midia = value; }
-		}
-
-		private String _servicos;
-		public String servicos
-		{
-			get { return _servicos; }
-			set { _servicos = value; }
-		}
-
-		private decimal _vl_servicos;
-		public decimal vl_servicos
-		{
-			get { return _vl_servicos; }
-			set { _vl_servicos = value; }
-		}
-
-		private String _vendedor;
-		public String vendedor
-		{
-			get { return _vendedor; }
-			set { _vendedor = value; }
-		}
-
-		private String _vendedor_nome;
-		public String vendedor_nome
-		{
-			get { return _vendedor_nome; }
-			set { _vendedor_nome = value; }
-		}
-
-		private String _st_entrega;
-		public String st_entrega
-		{
-			get { return _st_entrega; }
-			set { _st_entrega = value; }
-		}
-
-		private DateTime _entregue_data;
-		public DateTime entregue_data
-		{
-			get { return _entregue_data; }
-			set { _entregue_data = value; }
-		}
-
-		private String _entregue_usuario;
-		public String entregue_usuario
-		{
-			get { return _entregue_usuario; }
-			set { _entregue_usuario = value; }
-		}
-
-		private DateTime _cancelado_data;
-		public DateTime cancelado_data
-		{
-			get { return _cancelado_data; }
-			set { _cancelado_data = value; }
-		}
-
-		private String _cancelado_usuario;
-		public String cancelado_usuario
-		{
-			get { return _cancelado_usuario; }
-			set { _cancelado_usuario = value; }
-		}
-
-		private String _st_pagto;
-		public String st_pagto
-		{
-			get { return _st_pagto; }
-			set { _st_pagto = value; }
-		}
-
-		private String _st_recebido;
-		public String st_recebido
-		{
-			get { return _st_recebido; }
-			set { _st_recebido = value; }
-		}
-
-		private String _obs_1;
-		public String obs_1
-		{
-			get { return _obs_1; }
-			set { _obs_1 = value; }
-		}
-
-		private String _obs_2;
-		public String obs_2
-		{
-			get { return _obs_2; }
-			set { _obs_2 = value; }
-		}
-
-		private short _qtde_parcelas;
-		public short qtde_parcelas
-		{
-			get { return _qtde_parcelas; }
-			set { _qtde_parcelas = value; }
-		}
-
-		private String _forma_pagto;
-		public String forma_pagto
-		{
-			get { return _forma_pagto; }
-			set { _forma_pagto = value; }
-		}
-
-		private decimal _vl_total_familia;
-		public decimal vl_total_familia
-		{
-			get { return _vl_total_familia; }
-			set { _vl_total_familia = value; }
-		}
-
-		private decimal _vl_pago_familia;
-		public decimal vl_pago_familia
-		{
-			get { return _vl_pago_familia; }
-			set { _vl_pago_familia = value; }
-		}
-
-		private short _split_status;
-		public short split_status
-		{
-			get { return _split_status; }
-			set { _split_status = value; }
-		}
-
-		private DateTime _split_data;
-		public DateTime split_data
-		{
-			get { return _split_data; }
-			set { _split_data = value; }
-		}
-
-		private String _split_hora;
-		public String split_hora
-		{
-			get { return _split_hora; }
-			set { _split_hora = value; }
-		}
-
-		private String _split_usuario;
-		public String split_usuario
-		{
-			get { return _split_usuario; }
-			set { _split_usuario = value; }
-		}
-
-		private short _a_entregar_status;
-		public short a_entregar_status
-		{
-			get { return _a_entregar_status; }
-			set { _a_entregar_status = value; }
-		}
-
-		private DateTime _a_entregar_data_marcada;
-		public DateTime a_entregar_data_marcada
-		{
-			get { return _a_entregar_data_marcada; }
-			set { _a_entregar_data_marcada = value; }
-		}
-
-		private DateTime _a_entregar_data;
-		public DateTime a_entregar_data
-		{
-			get { return _a_entregar_data; }
-			set { _a_entregar_data = value; }
-		}
-
-		private String _a_entregar_hora;
-		public String a_entregar_hora
-		{
-			get { return _a_entregar_hora; }
-			set { _a_entregar_hora = value; }
-		}
-
-		private String _a_entregar_usuario;
-		public String a_entregar_usuario
-		{
-			get { return _a_entregar_usuario; }
-			set { _a_entregar_usuario = value; }
-		}
-
-		private String _loja_indicou;
-		public String loja_indicou
-		{
-			get { return _loja_indicou; }
-			set { _loja_indicou = value; }
-		}
-
-		private double _comissao_loja_indicou;
-		public double comissao_loja_indicou
-		{
-			get { return _comissao_loja_indicou; }
-			set { _comissao_loja_indicou = value; }
-		}
-
-		private short _venda_externa;
-		public short venda_externa
-		{
-			get { return _venda_externa; }
-			set { _venda_externa = value; }
-		}
-
-		private decimal _vl_frete;
-		public decimal vl_frete
-		{
-			get { return _vl_frete; }
-			set { _vl_frete = value; }
-		}
-
-		private String _transportadora_id;
-		public String transportadora_id
-		{
-			get { return _transportadora_id; }
-			set { _transportadora_id = value; }
-		}
-
-		private DateTime _transportadora_data;
-		public DateTime transportadora_data
-		{
-			get { return _transportadora_data; }
-			set { _transportadora_data = value; }
-		}
-
-		private String _transportadora_usuario;
-		public String transportadora_usuario
-		{
-			get { return _transportadora_usuario; }
-			set { _transportadora_usuario = value; }
-		}
-
-		private short _analise_credito;
-		public short analise_credito
-		{
-			get { return _analise_credito; }
-			set { _analise_credito = value; }
-		}
-
-		private DateTime _analise_credito_data;
-		public DateTime analise_credito_data
-		{
-			get { return _analise_credito_data; }
-			set { _analise_credito_data = value; }
-		}
-
-		private String _analise_credito_usuario;
-		public String analise_credito_usuario
-		{
-			get { return _analise_credito_usuario; }
-			set { _analise_credito_usuario = value; }
-		}
-
-		private short _tipo_parcelamento;
-		public short tipo_parcelamento
-		{
-			get { return _tipo_parcelamento; }
-			set { _tipo_parcelamento = value; }
-		}
-
-		private short _av_forma_pagto;
-		public short av_forma_pagto
-		{
-			get { return _av_forma_pagto; }
-			set { _av_forma_pagto = value; }
-		}
-
-		private short _pc_qtde_parcelas;
-		public short pc_qtde_parcelas
-		{
-			get { return _pc_qtde_parcelas; }
-			set { _pc_qtde_parcelas = value; }
-		}
-
-		private decimal _pc_valor_parcela;
-		public decimal pc_valor_parcela
-		{
-			get { return _pc_valor_parcela; }
-			set { _pc_valor_parcela = value; }
-		}
-
-		private short _pc_maquineta_qtde_parcelas;
-		public short pc_maquineta_qtde_parcelas
-		{
-			get { return _pc_maquineta_qtde_parcelas; }
-			set { _pc_maquineta_qtde_parcelas = value; }
-		}
-
-		private decimal _pc_maquineta_valor_parcela;
-		public decimal pc_maquineta_valor_parcela
-		{
-			get { return _pc_maquineta_valor_parcela; }
-			set { _pc_maquineta_valor_parcela = value; }
-		}
-
-		private short _pce_forma_pagto_entrada;
-		public short pce_forma_pagto_entrada
-		{
-			get { return _pce_forma_pagto_entrada; }
-			set { _pce_forma_pagto_entrada = value; }
-		}
-
-		private short _pce_forma_pagto_prestacao;
-		public short pce_forma_pagto_prestacao
-		{
-			get { return _pce_forma_pagto_prestacao; }
-			set { _pce_forma_pagto_prestacao = value; }
-		}
-
-		private decimal _pce_entrada_valor;
-		public decimal pce_entrada_valor
-		{
-			get { return _pce_entrada_valor; }
-			set { _pce_entrada_valor = value; }
-		}
-
-		private short _pce_prestacao_qtde;
-		public short pce_prestacao_qtde
-		{
-			get { return _pce_prestacao_qtde; }
-			set { _pce_prestacao_qtde = value; }
-		}
-
-		private decimal _pce_prestacao_valor;
-		public decimal pce_prestacao_valor
-		{
-			get { return _pce_prestacao_valor; }
-			set { _pce_prestacao_valor = value; }
-		}
-
-		private short _pce_prestacao_periodo;
-		public short pce_prestacao_periodo
-		{
-			get { return _pce_prestacao_periodo; }
-			set { _pce_prestacao_periodo = value; }
-		}
-
-		private short _pse_forma_pagto_prim_prest;
-		public short pse_forma_pagto_prim_prest
-		{
-			get { return _pse_forma_pagto_prim_prest; }
-			set { _pse_forma_pagto_prim_prest = value; }
-		}
-
-		private short _pse_forma_pagto_demais_prest;
-		public short pse_forma_pagto_demais_prest
-		{
-			get { return _pse_forma_pagto_demais_prest; }
-			set { _pse_forma_pagto_demais_prest = value; }
-		}
-
-		private decimal _pse_prim_prest_valor;
-		public decimal pse_prim_prest_valor
-		{
-			get { return _pse_prim_prest_valor; }
-			set { _pse_prim_prest_valor = value; }
-		}
-
-		private short _pse_prim_prest_apos;
-		public short pse_prim_prest_apos
-		{
-			get { return _pse_prim_prest_apos; }
-			set { _pse_prim_prest_apos = value; }
-		}
-
-		private short _pse_demais_prest_qtde;
-		public short pse_demais_prest_qtde
-		{
-			get { return _pse_demais_prest_qtde; }
-			set { _pse_demais_prest_qtde = value; }
-		}
-
-		private decimal _pse_demais_prest_valor;
-		public decimal pse_demais_prest_valor
-		{
-			get { return _pse_demais_prest_valor; }
-			set { _pse_demais_prest_valor = value; }
-		}
-
-		private short _pse_demais_prest_periodo;
-		public short pse_demais_prest_periodo
-		{
-			get { return _pse_demais_prest_periodo; }
-			set { _pse_demais_prest_periodo = value; }
-		}
-
-		private short _pu_forma_pagto;
-		public short pu_forma_pagto
-		{
-			get { return _pu_forma_pagto; }
-			set { _pu_forma_pagto = value; }
-		}
-
-		private decimal _pu_valor;
-		public decimal pu_valor
-		{
-			get { return _pu_valor; }
-			set { _pu_valor = value; }
-		}
-
-		private short _pu_vencto_apos;
-		public short pu_vencto_apos
-		{
-			get { return _pu_vencto_apos; }
-			set { _pu_vencto_apos = value; }
-		}
-
-		private String _indicador;
-		public String indicador
-		{
-			get { return _indicador; }
-			set { _indicador = value; }
-		}
-
-		private String _indicador_desempenho_nota;
-		public String indicador_desempenho_nota
-		{
-			get { return _indicador_desempenho_nota; }
-			set { _indicador_desempenho_nota = value; }
-		}
-
-		private decimal _vl_total_NF;
-		public decimal vl_total_NF
-		{
-			get { return _vl_total_NF; }
-			set { _vl_total_NF = value; }
-		}
-
-		private decimal _vl_total_RA;
-		public decimal vl_total_RA
-		{
-			get { return _vl_total_RA; }
-			set { _vl_total_RA = value; }
-		}
-
-		private double _perc_RT;
-		public double perc_RT
-		{
-			get { return _perc_RT; }
-			set { _perc_RT = value; }
-		}
-
-		private short _st_orc_virou_pedido;
-		public short st_orc_virou_pedido
-		{
-			get { return _st_orc_virou_pedido; }
-			set { _st_orc_virou_pedido = value; }
-		}
-
-		private String _orcamento;
-		public String orcamento
-		{
-			get { return _orcamento; }
-			set { _orcamento = value; }
-		}
-
-		private String _orcamentista;
-		public String orcamentista
-		{
-			get { return _orcamentista; }
-			set { _orcamentista = value; }
-		}
-
-		private short _comissao_paga;
-		public short comissao_paga
-		{
-			get { return _comissao_paga; }
-			set { _comissao_paga = value; }
-		}
-
-		private String _comissao_paga_ult_op;
-		public String comissao_paga_ult_op
-		{
-			get { return _comissao_paga_ult_op; }
-			set { _comissao_paga_ult_op = value; }
-		}
-
-		private DateTime _comissao_paga_data;
-		public DateTime comissao_paga_data
-		{
-			get { return _comissao_paga_data; }
-			set { _comissao_paga_data = value; }
-		}
-
-		private String _comissao_paga_usuario;
-		public String comissao_paga_usuario
-		{
-			get { return _comissao_paga_usuario; }
-			set { _comissao_paga_usuario = value; }
-		}
-
-		private double _perc_desagio_RA;
-		public double perc_desagio_RA
-		{
-			get { return _perc_desagio_RA; }
-			set { _perc_desagio_RA = value; }
-		}
-
-		private double _perc_limite_RA_sem_desagio;
-		public double perc_limite_RA_sem_desagio
-		{
-			get { return _perc_limite_RA_sem_desagio; }
-			set { _perc_limite_RA_sem_desagio = value; }
-		}
-
-		private decimal _vl_total_RA_liquido;
-		public decimal vl_total_RA_liquido
-		{
-			get { return _vl_total_RA_liquido; }
-			set { _vl_total_RA_liquido = value; }
-		}
-
-		private short _st_tem_desagio_RA;
-		public short st_tem_desagio_RA
-		{
-			get { return _st_tem_desagio_RA; }
-			set { _st_tem_desagio_RA = value; }
-		}
-
-		private short _qtde_parcelas_desagio_RA;
-		public short qtde_parcelas_desagio_RA
-		{
-			get { return _qtde_parcelas_desagio_RA; }
-			set { _qtde_parcelas_desagio_RA = value; }
-		}
-
-		private String _transportadora_num_coleta;
-		public String transportadora_num_coleta
-		{
-			get { return _transportadora_num_coleta; }
-			set { _transportadora_num_coleta = value; }
-		}
-
-		private String _transportadora_contato;
-		public String transportadora_contato
-		{
-			get { return _transportadora_contato; }
-			set { _transportadora_contato = value; }
-		}
-
-		private short _st_end_entrega;
-		public short st_end_entrega
-		{
-			get { return _st_end_entrega; }
-			set { _st_end_entrega = value; }
-		}
-
-		private String _EndEtg_endereco;
-		public String endEtg_endereco
-		{
-			get { return _EndEtg_endereco; }
-			set { _EndEtg_endereco = value; }
-		}
-
-		private String _EndEtg_endereco_numero;
-		public String endEtg_endereco_numero
-		{
-			get { return _EndEtg_endereco_numero; }
-			set { _EndEtg_endereco_numero = value; }
-		}
-
-		private String _EndEtg_endereco_complemento;
-		public String endEtg_endereco_complemento
-		{
-			get { return _EndEtg_endereco_complemento; }
-			set { _EndEtg_endereco_complemento = value; }
-		}
-
-		private String _EndEtg_bairro;
-		public String endEtg_bairro
-		{
-			get { return _EndEtg_bairro; }
-			set { _EndEtg_bairro = value; }
-		}
-
-		private String _EndEtg_cidade;
-		public String endEtg_cidade
-		{
-			get { return _EndEtg_cidade; }
-			set { _EndEtg_cidade = value; }
-		}
-
-		private String _EndEtg_uf;
-		public String endEtg_uf
-		{
-			get { return _EndEtg_uf; }
-			set { _EndEtg_uf = value; }
-		}
-
-		private String _EndEtg_cep;
-		public String endEtg_cep
-		{
-			get { return _EndEtg_cep; }
-			set { _EndEtg_cep = value; }
-		}
-
-		private short _st_etg_imediata;
-		public short st_etg_imediata
-		{
-			get { return _st_etg_imediata; }
-			set { _st_etg_imediata = value; }
-		}
-
-		private DateTime _etg_imediata_data;
-		public DateTime etg_imediata_data
-		{
-			get { return _etg_imediata_data; }
-			set { _etg_imediata_data = value; }
-		}
-
-		private String _etg_imediata_usuario;
-		public String etg_imediata_usuario
-		{
-			get { return _etg_imediata_usuario; }
-			set { _etg_imediata_usuario = value; }
-		}
-
-		private short _frete_status;
-		public short frete_status
-		{
-			get { return _frete_status; }
-			set { _frete_status = value; }
-		}
-
-		private decimal _frete_valor;
-		public decimal frete_valor
-		{
-			get { return _frete_valor; }
-			set { _frete_valor = value; }
-		}
-
-		private DateTime _frete_data;
-		public DateTime frete_data
-		{
-			get { return _frete_data; }
-			set { _frete_data = value; }
-		}
-
-		private String _frete_usuario;
-		public String frete_usuario
-		{
-			get { return _frete_usuario; }
-			set { _frete_usuario = value; }
-		}
-
-		private short _StBemUsoConsumo;
-		public short stBemUsoConsumo
-		{
-			get { return _StBemUsoConsumo; }
-			set { _StBemUsoConsumo = value; }
-		}
-
-		private short _PedidoRecebidoStatus;
-		public short pedidoRecebidoStatus
-		{
-			get { return _PedidoRecebidoStatus; }
-			set { _PedidoRecebidoStatus = value; }
-		}
-
-		private DateTime _PedidoRecebidoData;
-		public DateTime pedidoRecebidoData
-		{
-			get { return _PedidoRecebidoData; }
-			set { _PedidoRecebidoData = value; }
-		}
-
-		private String _PedidoRecebidoUsuarioUltAtualiz;
-		public String pedidoRecebidoUsuarioUltAtualiz
-		{
-			get { return _PedidoRecebidoUsuarioUltAtualiz; }
-			set { _PedidoRecebidoUsuarioUltAtualiz = value; }
-		}
-
-		private DateTime _PedidoRecebidoDtHrUltAtualiz;
-		public DateTime pedidoRecebidoDtHrUltAtualiz
-		{
-			get { return _PedidoRecebidoDtHrUltAtualiz; }
-			set { _PedidoRecebidoDtHrUltAtualiz = value; }
-		}
-
-		private short _InstaladorInstalaStatus;
-		public short instaladorInstalaStatus
-		{
-			get { return _InstaladorInstalaStatus; }
-			set { _InstaladorInstalaStatus = value; }
-		}
-
-		private String _InstaladorInstalaUsuarioUltAtualiz;
-		public String instaladorInstalaUsuarioUltAtualiz
-		{
-			get { return _InstaladorInstalaUsuarioUltAtualiz; }
-			set { _InstaladorInstalaUsuarioUltAtualiz = value; }
-		}
-
-		private DateTime _InstaladorInstalaDtHrUltAtualiz;
-		public DateTime instaladorInstalaDtHrUltAtualiz
-		{
-			get { return _InstaladorInstalaDtHrUltAtualiz; }
-			set { _InstaladorInstalaDtHrUltAtualiz = value; }
-		}
-
-		private String _custoFinancFornecTipoParcelamento;
-		public String custoFinancFornecTipoParcelamento
-		{
-			get { return _custoFinancFornecTipoParcelamento; }
-			set { _custoFinancFornecTipoParcelamento = value; }
-		}
-
-		private short _custoFinancFornecQtdeParcelas;
-		public short custoFinancFornecQtdeParcelas
-		{
-			get { return _custoFinancFornecQtdeParcelas; }
-			set { _custoFinancFornecQtdeParcelas = value; }
-		}
-
-		private int _tamanho_num_pedido;
-		public int tamanho_num_pedido
-		{
-			get { return _tamanho_num_pedido; }
-			set { _tamanho_num_pedido = value; }
-		}
-
-		private string _pedido_base;
-		public string pedido_base
-		{
-			get { return _pedido_base; }
-			set { _pedido_base = value; }
-		}
-
-		private byte _st_forma_pagto_somente_cartao;
-		public byte st_forma_pagto_somente_cartao
-		{
-			get { return _st_forma_pagto_somente_cartao; }
-			set { _st_forma_pagto_somente_cartao = value; }
-		}
-
-		private int _id_nfe_emitente;
-		public int id_nfe_emitente
-		{
-			get { return _id_nfe_emitente; }
-			set { _id_nfe_emitente = value; }
-		}
-
-		private byte _st_auto_split;
-		public byte st_auto_split
-		{
-			get { return _st_auto_split; }
-			set { _st_auto_split = value; }
-		}
-
-		#region [ Campos calculados ]
-		private decimal _vlTotalPrecoNfDestePedido;
-		public decimal vlTotalPrecoNfDestePedido
-		{
-			get { return _vlTotalPrecoNfDestePedido; }
-			set { _vlTotalPrecoNfDestePedido = value; }
-		}
-
-		private decimal _vlTotalBoletoDestePedido;
-		public decimal vlTotalBoletoDestePedido
-		{
-			get { return _vlTotalBoletoDestePedido; }
-			set { _vlTotalBoletoDestePedido = value; }
-		}
-
-		private decimal _vlTotalFormaPagtoDestePedido;
-		public decimal vlTotalFormaPagtoDestePedido
-		{
-			get { return _vlTotalFormaPagtoDestePedido; }
-			set { _vlTotalFormaPagtoDestePedido = value; }
-		}
-
-		private decimal _vlTotalPrecoVendaDestePedido;
-		public decimal vlTotalPrecoVendaDestePedido
-		{
-			get { return _vlTotalPrecoVendaDestePedido; }
-			set { _vlTotalPrecoVendaDestePedido = value; }
-		}
-
-		private decimal _vlTotalFamiliaPago;
-		public decimal vlTotalFamiliaPago
-		{
-			get { return _vlTotalFamiliaPago; }
-			set { _vlTotalFamiliaPago = value; }
-		}
-
-		private decimal _vlTotalFamiliaPrecoVenda;
-		public decimal vlTotalFamiliaPrecoVenda
-		{
-			get { return _vlTotalFamiliaPrecoVenda; }
-			set { _vlTotalFamiliaPrecoVenda = value; }
-		}
-
-		private decimal _vlTotalFamiliaPrecoNF;
-		public decimal vlTotalFamiliaPrecoNF
-		{
-			get { return _vlTotalFamiliaPrecoNF; }
-			set { _vlTotalFamiliaPrecoNF = value; }
-		}
-
-		private decimal _vlTotalFamiliaDevolucaoPrecoVenda;
-		public decimal vlTotalFamiliaDevolucaoPrecoVenda
-		{
-			get { return _vlTotalFamiliaDevolucaoPrecoVenda; }
-			set { _vlTotalFamiliaDevolucaoPrecoVenda = value; }
-		}
-
-		private decimal _vlTotalFamiliaDevolucaoPrecoNF;
-		public decimal vlTotalFamiliaDevolucaoPrecoNF
-		{
-			get { return _vlTotalFamiliaDevolucaoPrecoNF; }
-			set { _vlTotalFamiliaDevolucaoPrecoNF = value; }
-		}
-
-		private decimal _vlPagtoEmCartao;
-		public decimal vlPagtoEmCartao
-		{
-			get { return _vlPagtoEmCartao; }
-			set { _vlPagtoEmCartao = value; }
-		}
-		#endregion
-
-		#endregion
-	}
-	#endregion
-
-	#region [ PedidoItem ]
-	class PedidoItem
-	{
-		#region [ Getters/Setters ]
-
-		private String _pedido;
-		public String pedido
-		{
-			get { return _pedido; }
-			set { _pedido = value; }
-		}
-
-		private String _fabricante;
-		public String fabricante
-		{
-			get { return _fabricante; }
-			set { _fabricante = value; }
-		}
-
-		private String _produto;
-		public String produto
-		{
-			get { return _produto; }
-			set { _produto = value; }
-		}
-
-		private short _qtde;
-		public short qtde
-		{
-			get { return _qtde; }
-			set { _qtde = value; }
-		}
-
-		private double _desc_dado;
-		public double desc_dado
-		{
-			get { return _desc_dado; }
-			set { _desc_dado = value; }
-		}
-
-		private decimal _preco_venda;
-		public decimal preco_venda
-		{
-			get { return _preco_venda; }
-			set { _preco_venda = value; }
-		}
-
-		private decimal _preco_fabricante;
-		public decimal preco_fabricante
-		{
-			get { return _preco_fabricante; }
-			set { _preco_fabricante = value; }
-		}
-
-		private decimal _preco_lista;
-		public decimal preco_lista
-		{
-			get { return _preco_lista; }
-			set { _preco_lista = value; }
-		}
-
-		private double _margem;
-		public double margem
-		{
-			get { return _margem; }
-			set { _margem = value; }
-		}
-
-		private double _desc_max;
-		public double desc_max
-		{
-			get { return _desc_max; }
-			set { _desc_max = value; }
-		}
-
-		private double _comissao;
-		public double comissao
-		{
-			get { return _comissao; }
-			set { _comissao = value; }
-		}
-
-		private String _descricao;
-		public String descricao
-		{
-			get { return _descricao; }
-			set { _descricao = value; }
-		}
-
-		private String _ean;
-		public String ean
-		{
-			get { return _ean; }
-			set { _ean = value; }
-		}
-
-		private String _grupo;
-		public String grupo
-		{
-			get { return _grupo; }
-			set { _grupo = value; }
-		}
-
-		private double _peso;
-		public double peso
-		{
-			get { return _peso; }
-			set { _peso = value; }
-		}
-
-		private short _qtde_volumes;
-		public short qtde_volumes
-		{
-			get { return _qtde_volumes; }
-			set { _qtde_volumes = value; }
-		}
-
-		private short _abaixo_min_status;
-		public short abaixo_min_status
-		{
-			get { return _abaixo_min_status; }
-			set { _abaixo_min_status = value; }
-		}
-
-		private String _abaixo_min_autorizacao;
-		public String abaixo_min_autorizacao
-		{
-			get { return _abaixo_min_autorizacao; }
-			set { _abaixo_min_autorizacao = value; }
-		}
-
-		private String _abaixo_min_autorizador;
-		public String abaixo_min_autorizador
-		{
-			get { return _abaixo_min_autorizador; }
-			set { _abaixo_min_autorizador = value; }
-		}
-
-		private short _sequencia;
-		public short sequencia
-		{
-			get { return _sequencia; }
-			set { _sequencia = value; }
-		}
-
-		private double _markup_fabricante;
-		public double markup_fabricante
-		{
-			get { return _markup_fabricante; }
-			set { _markup_fabricante = value; }
-		}
-
-		private decimal _preco_NF;
-		public decimal preco_NF
-		{
-			get { return _preco_NF; }
-			set { _preco_NF = value; }
-		}
-
-		private String _abaixo_min_superv_autorizador;
-		public String abaixo_min_superv_autorizador
-		{
-			get { return _abaixo_min_superv_autorizador; }
-			set { _abaixo_min_superv_autorizador = value; }
-		}
-
-		private decimal _vl_custo2;
-		public decimal vl_custo2
-		{
-			get { return _vl_custo2; }
-			set { _vl_custo2 = value; }
-		}
-
-		private String _descricao_html;
-		public String descricao_html
-		{
-			get { return _descricao_html; }
-			set { _descricao_html = value; }
-		}
-
-		private double _custoFinancFornecCoeficiente;
-		public double custoFinancFornecCoeficiente
-		{
-			get { return _custoFinancFornecCoeficiente; }
-			set { _custoFinancFornecCoeficiente = value; }
-		}
-
-		private decimal _custoFinancFornecPrecoListaBase;
-		public decimal custoFinancFornecPrecoListaBase
-		{
-			get { return _custoFinancFornecPrecoListaBase; }
-			set { _custoFinancFornecPrecoListaBase = value; }
-		}
-
-		#endregion
-	}
-	#endregion
-
-	#region [ PedidoItemDevolvido ]
-	class PedidoItemDevolvido
-	{
-		#region [ Getters/Setters ]
-
-		private String _id;
-		public String id
-		{
-			get { return _id; }
-			set { _id = value; }
-		}
-
-		private DateTime _devolucao_data;
-		public DateTime devolucao_data
-		{
-			get { return _devolucao_data; }
-			set { _devolucao_data = value; }
-		}
-
-		private String _devolucao_hora;
-		public String devolucao_hora
-		{
-			get { return _devolucao_hora; }
-			set { _devolucao_hora = value; }
-		}
-
-		private String _devolucao_usuario;
-		public String devolucao_usuario
-		{
-			get { return _devolucao_usuario; }
-			set { _devolucao_usuario = value; }
-		}
-
-		private String _pedido;
-		public String pedido
-		{
-			get { return _pedido; }
-			set { _pedido = value; }
-		}
-
-		private String _fabricante;
-		public String fabricante
-		{
-			get { return _fabricante; }
-			set { _fabricante = value; }
-		}
-
-		private String _produto;
-		public String produto
-		{
-			get { return _produto; }
-			set { _produto = value; }
-		}
-
-		private short _qtde;
-		public short qtde
-		{
-			get { return _qtde; }
-			set { _qtde = value; }
-		}
-
-		private double _desc_dado;
-		public double desc_dado
-		{
-			get { return _desc_dado; }
-			set { _desc_dado = value; }
-		}
-
-		private decimal _preco_venda;
-		public decimal preco_venda
-		{
-			get { return _preco_venda; }
-			set { _preco_venda = value; }
-		}
-
-		private decimal _preco_fabricante;
-		public decimal preco_fabricante
-		{
-			get { return _preco_fabricante; }
-			set { _preco_fabricante = value; }
-		}
-
-		private decimal _preco_lista;
-		public decimal preco_lista
-		{
-			get { return _preco_lista; }
-			set { _preco_lista = value; }
-		}
-
-		private double _margem;
-		public double margem
-		{
-			get { return _margem; }
-			set { _margem = value; }
-		}
-
-		private double _desc_max;
-		public double desc_max
-		{
-			get { return _desc_max; }
-			set { _desc_max = value; }
-		}
-
-		private double _comissao;
-		public double comissao
-		{
-			get { return _comissao; }
-			set { _comissao = value; }
-		}
-
-		private String _descricao;
-		public String descricao
-		{
-			get { return _descricao; }
-			set { _descricao = value; }
-		}
-
-		private String _ean;
-		public String ean
-		{
-			get { return _ean; }
-			set { _ean = value; }
-		}
-
-		private String _grupo;
-		public String grupo
-		{
-			get { return _grupo; }
-			set { _grupo = value; }
-		}
-
-		private double _peso;
-		public double peso
-		{
-			get { return _peso; }
-			set { _peso = value; }
-		}
-
-		private short _qtde_volumes;
-		public short qtde_volumes
-		{
-			get { return _qtde_volumes; }
-			set { _qtde_volumes = value; }
-		}
-
-		private short _abaixo_min_status;
-		public short abaixo_min_status
-		{
-			get { return _abaixo_min_status; }
-			set { _abaixo_min_status = value; }
-		}
-
-		private String _abaixo_min_autorizacao;
-		public String abaixo_min_autorizacao
-		{
-			get { return _abaixo_min_autorizacao; }
-			set { _abaixo_min_autorizacao = value; }
-		}
-
-		private String _abaixo_min_autorizador;
-		public String abaixo_min_autorizador
-		{
-			get { return _abaixo_min_autorizador; }
-			set { _abaixo_min_autorizador = value; }
-		}
-
-		private double _markup_fabricante;
-		public double markup_fabricante
-		{
-			get { return _markup_fabricante; }
-			set { _markup_fabricante = value; }
-		}
-
-		private String _motivo;
-		public String motivo
-		{
-			get { return _motivo; }
-			set { _motivo = value; }
-		}
-
-		private decimal _preco_NF;
-		public decimal preco_NF
-		{
-			get { return _preco_NF; }
-			set { _preco_NF = value; }
-		}
-
-		private short _comissao_descontada;
-		public short comissao_descontada
-		{
-			get { return _comissao_descontada; }
-			set { _comissao_descontada = value; }
-		}
-
-		private String _comissao_descontada_ult_op;
-		public String comissao_descontada_ult_op
-		{
-			get { return _comissao_descontada_ult_op; }
-			set { _comissao_descontada_ult_op = value; }
-		}
-
-		private DateTime _comissao_descontada_data;
-		public DateTime comissao_descontada_data
-		{
-			get { return _comissao_descontada_data; }
-			set { _comissao_descontada_data = value; }
-		}
-
-		private String _comissao_descontada_usuario;
-		public String comissao_descontada_usuario
-		{
-			get { return _comissao_descontada_usuario; }
-			set { _comissao_descontada_usuario = value; }
-		}
-
-		private String _abaixo_min_superv_autorizador;
-		public String abaixo_min_superv_autorizador
-		{
-			get { return _abaixo_min_superv_autorizador; }
-			set { _abaixo_min_superv_autorizador = value; }
-		}
-
-		private decimal _vl_custo2;
-		public decimal vl_custo2
-		{
-			get { return _vl_custo2; }
-			set { _vl_custo2 = value; }
-		}
-
-		private String _descricao_html;
-		public String descricao_html
-		{
-			get { return _descricao_html; }
-			set { _descricao_html = value; }
-		}
-
-		private double _custoFinancFornecCoeficiente;
-		public double custoFinancFornecCoeficiente
-		{
-			get { return _custoFinancFornecCoeficiente; }
-			set { _custoFinancFornecCoeficiente = value; }
-		}
-
-		private decimal _custoFinancFornecPrecoListaBase;
-		public decimal custoFinancFornecPrecoListaBase
-		{
-			get { return _custoFinancFornecPrecoListaBase; }
-			set { _custoFinancFornecPrecoListaBase = value; }
-		}
-
-		#endregion
-	}
-	#endregion
-
-	#region [ PedidoPagamento ]
-	class PedidoPagamento
-	{
-		private string _id;
-		public string id
-		{
-			get { return _id; }
-			set { _id = value; }
-		}
-
-		private string _pedido;
-		public string pedido
-		{
-			get { return _pedido; }
-			set { _pedido = value; }
-		}
-
-		private DateTime _data;
-		public DateTime data
-		{
-			get { return _data; }
-			set { _data = value; }
-		}
-
-		private string _hora;
-		public string hora
-		{
-			get { return _hora; }
-			set { _hora = value; }
-		}
-
-		private decimal _valor;
-		public decimal valor
-		{
-			get { return _valor; }
-			set { _valor = value; }
-		}
-
-		private string _tipo_pagto;
-		public string tipo_pagto
-		{
-			get { return _tipo_pagto; }
-			set { _tipo_pagto = value; }
-		}
-
-		private string _usuario;
-		public string usuario
-		{
-			get { return _usuario; }
-			set { _usuario = value; }
-		}
-
-		private int _id_pedido_pagto_cielo;
-		public int id_pedido_pagto_cielo
-		{
-			get { return _id_pedido_pagto_cielo; }
-			set { _id_pedido_pagto_cielo = value; }
-		}
-
-		private int _id_pedido_pagto_braspag;
-		public int id_pedido_pagto_braspag
-		{
-			get { return _id_pedido_pagto_braspag; }
-			set { _id_pedido_pagto_braspag = value; }
-		}
-
-		private int _id_pagto_gw_pag_payment;
-		public int id_pagto_gw_pag_payment
-		{
-			get { return _id_pagto_gw_pag_payment; }
-			set { _id_pagto_gw_pag_payment = value; }
-		}
-
-		private int _id_braspag_webhook_complementar;
-		public int id_braspag_webhook_complementar
-		{
-			get { return _id_braspag_webhook_complementar; }
-			set { _id_braspag_webhook_complementar = value; }
-		}
-	}
-	#endregion
-
-	#region [ PedidoHistPagto ]
-	class PedidoHistPagto
-	{
-		private int _id;
-		public int id
-		{
-			get { return _id; }
-			set { _id = value; }
-		}
-
-		private string _pedido;
-		public string pedido
-		{
-			get { return _pedido; }
-			set { _pedido = value; }
-		}
-
-		private byte _status;
-		public byte status
-		{
-			get { return _status; }
-			set { _status = value; }
-		}
-
-		private int _id_fluxo_caixa;
-		public int id_fluxo_caixa
-		{
-			get { return _id_fluxo_caixa; }
-			set { _id_fluxo_caixa = value; }
-		}
-
-		private int _ctrl_pagto_id_parcela;
-		public int ctrl_pagto_id_parcela
-		{
-			get { return _ctrl_pagto_id_parcela; }
-			set { _ctrl_pagto_id_parcela = value; }
-		}
-
-		private byte _ctrl_pagto_modulo;
-		public byte ctrl_pagto_modulo
-		{
-			get { return _ctrl_pagto_modulo; }
-			set { _ctrl_pagto_modulo = value; }
-		}
-
-		private DateTime _dt_vencto;
-		public DateTime dt_vencto
-		{
-			get { return _dt_vencto; }
-			set { _dt_vencto = value; }
-		}
-
-		private decimal _valor_total;
-		public decimal valor_total
-		{
-			get { return _valor_total; }
-			set { _valor_total = value; }
-		}
-
-		private decimal _valor_rateado;
-		public decimal valor_rateado
-		{
-			get { return _valor_rateado; }
-			set { _valor_rateado = value; }
-		}
-
-		private decimal _valor_pago;
-		public decimal valor_pago
-		{
-			get { return _valor_pago; }
-			set { _valor_pago = value; }
-		}
-
-		private string _descricao;
-		public string descricao
-		{
-			get { return _descricao; }
-			set { _descricao = value; }
-		}
-
-		private DateTime _dt_credito;
-		public DateTime dt_credito
-		{
-			get { return _dt_credito; }
-			set { _dt_credito = value; }
-		}
-
-		private DateTime _dt_cadastro;
-		public DateTime dt_cadastro
-		{
-			get { return _dt_cadastro; }
-			set { _dt_cadastro = value; }
-		}
-
-		private string _usuario_cadastro;
-		public string usuario_cadastro
-		{
-			get { return _usuario_cadastro; }
-			set { _usuario_cadastro = value; }
-		}
-
-		private DateTime _dt_ult_atualizacao;
-		public DateTime dt_ult_atualizacao
-		{
-			get { return _dt_ult_atualizacao; }
-			set { _dt_ult_atualizacao = value; }
-		}
-
-		private string _usuario_ult_atualizacao;
-		public string usuario_ult_atualizacao
-		{
-			get { return _usuario_ult_atualizacao; }
-			set { _usuario_ult_atualizacao = value; }
-		}
-
-		private decimal _vl_abatimento_concedido;
-		public decimal vl_abatimento_concedido
-		{
-			get { return _vl_abatimento_concedido; }
-			set { _vl_abatimento_concedido = value; }
-		}
-
-		private byte _st_boleto_pago_cheque;
-		public byte st_boleto_pago_cheque
-		{
-			get { return _st_boleto_pago_cheque; }
-			set { _st_boleto_pago_cheque = value; }
-		}
-
-		private DateTime _dt_ocorrencia_banco_boleto_pago_cheque;
-		public DateTime dt_ocorrencia_banco_boleto_pago_cheque
-		{
-			get { return _dt_ocorrencia_banco_boleto_pago_cheque; }
-			set { _dt_ocorrencia_banco_boleto_pago_cheque = value; }
-		}
-
-		private byte _st_boleto_ocorrencia_17;
-		public byte st_boleto_ocorrencia_17
-		{
-			get { return _st_boleto_ocorrencia_17; }
-			set { _st_boleto_ocorrencia_17 = value; }
-		}
-
-		private DateTime _dt_ocorrencia_banco_boleto_ocorrencia_17;
-		public DateTime dt_ocorrencia_banco_boleto_ocorrencia_17
-		{
-			get { return _dt_ocorrencia_banco_boleto_ocorrencia_17; }
-			set { _dt_ocorrencia_banco_boleto_ocorrencia_17 = value; }
-		}
-
-		private byte _st_boleto_ocorrencia_15;
-		public byte st_boleto_ocorrencia_15
-		{
-			get { return _st_boleto_ocorrencia_15; }
-			set { _st_boleto_ocorrencia_15 = value; }
-		}
-
-		private DateTime _dt_ocorrencia_banco_boleto_ocorrencia_15;
-		public DateTime dt_ocorrencia_banco_boleto_ocorrencia_15
-		{
-			get { return _dt_ocorrencia_banco_boleto_ocorrencia_15; }
-			set { _dt_ocorrencia_banco_boleto_ocorrencia_15 = value; }
-		}
-
-		private byte _st_boleto_ocorrencia_23;
-		public byte st_boleto_ocorrencia_23
-		{
-			get { return _st_boleto_ocorrencia_23; }
-			set { _st_boleto_ocorrencia_23 = value; }
-		}
-
-		private DateTime _dt_ocorrencia_banco_boleto_ocorrencia_23;
-		public DateTime dt_ocorrencia_banco_boleto_ocorrencia_23
-		{
-			get { return _dt_ocorrencia_banco_boleto_ocorrencia_23; }
-			set { _dt_ocorrencia_banco_boleto_ocorrencia_23 = value; }
-		}
-
-		private byte _st_boleto_ocorrencia_34;
-		public byte st_boleto_ocorrencia_34
-		{
-			get { return _st_boleto_ocorrencia_34; }
-			set { _st_boleto_ocorrencia_34 = value; }
-		}
-
-		private DateTime _dt_ocorrencia_banco_boleto_ocorrencia_34;
-		public DateTime dt_ocorrencia_banco_boleto_ocorrencia_34
-		{
-			get { return _dt_ocorrencia_banco_boleto_ocorrencia_34; }
-			set { _dt_ocorrencia_banco_boleto_ocorrencia_34 = value; }
-		}
-
-		private byte _st_boleto_baixado;
-		public byte st_boleto_baixado
-		{
-			get { return _st_boleto_baixado; }
-			set { _st_boleto_baixado = value; }
-		}
-
-		private DateTime _dt_ocorrencia_banco_boleto_baixado;
-		public DateTime dt_ocorrencia_banco_boleto_baixado
-		{
-			get { return _dt_ocorrencia_banco_boleto_baixado; }
-			set { _dt_ocorrencia_banco_boleto_baixado = value; }
-		}
-
-		private DateTime _dt_operacao;
-		public DateTime dt_operacao
-		{
-			get { return _dt_operacao; }
-			set { _dt_operacao = value; }
-		}
-	}
-	#endregion
+    #region [ Pedido ]
+    class Pedido
+    {
+        #region [ Construtor ]
+        public Pedido()
+        {
+            listaPedidoItem = new List<PedidoItem>();
+            listaPedidoItemDevolvido = new List<PedidoItemDevolvido>();
+        }
+        #endregion
+
+        #region [ Getters/Setters ]
+
+        public List<PedidoItem> listaPedidoItem;
+        public List<PedidoItemDevolvido> listaPedidoItemDevolvido;
+
+        public String pedido { get; set; }
+
+        public String loja { get; set; }
+
+        public String loja_razao_social { get; set; }
+
+        public String loja_nome { get; set; }
+
+        public DateTime data { get; set; }
+
+        public String hora { get; set; }
+
+        public DateTime data_hora { get; set; }
+
+        public String id_cliente { get; set; }
+
+        public String midia { get; set; }
+
+        public String servicos { get; set; }
+
+        public decimal vl_servicos { get; set; }
+
+        public String vendedor { get; set; }
+
+        public String vendedor_nome { get; set; }
+
+        public String st_entrega { get; set; }
+
+        public DateTime entregue_data { get; set; }
+
+        public String entregue_usuario { get; set; }
+
+        public DateTime cancelado_data { get; set; }
+
+        public String cancelado_usuario { get; set; }
+
+        public String st_pagto { get; set; }
+
+        public String st_recebido { get; set; }
+
+        public String obs_1 { get; set; }
+
+        public String obs_2 { get; set; }
+
+        public String obs_3 { get; set; }
+
+        public short qtde_parcelas { get; set; }
+
+        public String forma_pagto { get; set; }
+
+        public decimal vl_total_familia { get; set; }
+
+        public decimal vl_pago_familia { get; set; }
+
+        public short split_status { get; set; }
+
+        public DateTime split_data { get; set; }
+
+        public String split_hora { get; set; }
+
+        public String split_usuario { get; set; }
+
+        public short a_entregar_status { get; set; }
+
+        public DateTime a_entregar_data_marcada { get; set; }
+
+        public DateTime a_entregar_data { get; set; }
+
+        public String a_entregar_hora { get; set; }
+
+        public String a_entregar_usuario { get; set; }
+
+        public String loja_indicou { get; set; }
+
+        public double comissao_loja_indicou { get; set; }
+
+        public short venda_externa { get; set; }
+
+        public decimal vl_frete { get; set; }
+
+        public String transportadora_id { get; set; }
+
+        public DateTime transportadora_data { get; set; }
+
+        public String transportadora_usuario { get; set; }
+
+        public short analise_credito { get; set; }
+
+        public DateTime analise_credito_data { get; set; }
+
+        public String analise_credito_usuario { get; set; }
+
+        public short tipo_parcelamento { get; set; }
+
+        public short av_forma_pagto { get; set; }
+
+        public short pc_qtde_parcelas { get; set; }
+
+        public decimal pc_valor_parcela { get; set; }
+
+        public short pc_maquineta_qtde_parcelas { get; set; }
+
+        public decimal pc_maquineta_valor_parcela { get; set; }
+
+        public short pce_forma_pagto_entrada { get; set; }
+
+        public short pce_forma_pagto_prestacao { get; set; }
+
+        public decimal pce_entrada_valor { get; set; }
+
+        public short pce_prestacao_qtde { get; set; }
+
+        public decimal pce_prestacao_valor { get; set; }
+
+        public short pce_prestacao_periodo { get; set; }
+
+        public short pse_forma_pagto_prim_prest { get; set; }
+
+        public short pse_forma_pagto_demais_prest { get; set; }
+
+        public decimal pse_prim_prest_valor { get; set; }
+
+        public short pse_prim_prest_apos { get; set; }
+
+        public short pse_demais_prest_qtde { get; set; }
+
+        public decimal pse_demais_prest_valor { get; set; }
+
+        public short pse_demais_prest_periodo { get; set; }
+
+        public short pu_forma_pagto { get; set; }
+
+        public decimal pu_valor { get; set; }
+
+        public short pu_vencto_apos { get; set; }
+
+        public String indicador { get; set; }
+
+        public String indicador_desempenho_nota { get; set; }
+
+        public decimal vl_total_NF { get; set; }
+
+        public decimal vl_total_RA { get; set; }
+
+        public double perc_RT { get; set; }
+
+        public short st_orc_virou_pedido { get; set; }
+
+        public String orcamento { get; set; }
+
+        public String orcamentista { get; set; }
+
+        public short comissao_paga { get; set; }
+
+        public String comissao_paga_ult_op { get; set; }
+
+        public DateTime comissao_paga_data { get; set; }
+
+        public String comissao_paga_usuario { get; set; }
+
+        public double perc_desagio_RA { get; set; }
+
+        public double perc_limite_RA_sem_desagio { get; set; }
+
+        public decimal vl_total_RA_liquido { get; set; }
+
+        public short st_tem_desagio_RA { get; set; }
+
+        public short qtde_parcelas_desagio_RA { get; set; }
+
+        public String transportadora_num_coleta { get; set; }
+
+        public String transportadora_contato { get; set; }
+
+        public byte st_memorizacao_completa_enderecos { get; set; } = 0;
+
+        public byte endereco_memorizado_status { get; set; } = 0;
+
+        public string endereco_logradouro { get; set; } = "";
+
+        public string endereco_bairro { get; set; } = "";
+
+        public string endereco_cidade { get; set; } = "";
+
+        public string endereco_uf { get; set; } = "";
+
+        public string endereco_cep { get; set; } = "";
+
+        public string endereco_numero { get; set; } = "";
+
+        public string endereco_complemento { get; set; } = "";
+
+        public string endereco_email { get; set; } = "";
+
+        public string endereco_email_xml { get; set; } = "";
+
+        public string endereco_nome { get; set; } = "";
+
+        public string endereco_ddd_res { get; set; } = "";
+
+        public string endereco_tel_res { get; set; } = "";
+
+        public string endereco_ddd_com { get; set; } = "";
+
+        public string endereco_tel_com { get; set; } = "";
+
+        public string endereco_ramal_com { get; set; } = "";
+
+        public string endereco_ddd_cel { get; set; } = "";
+
+        public string endereco_tel_cel { get; set; } = "";
+
+        public string endereco_ddd_com_2 { get; set; } = "";
+
+        public string endereco_tel_com_2 { get; set; } = "";
+
+        public string endereco_ramal_com_2 { get; set; } = "";
+
+        public string endereco_tipo_pessoa { get; set; } = "";
+
+        public string endereco_cnpj_cpf { get; set; } = "";
+
+        public byte endereco_contribuinte_icms_status { get; set; } = 0;
+
+        public byte endereco_produtor_rural_status { get; set; } = 0;
+
+        public string endereco_ie { get; set; } = "";
+
+        public string endereco_rg { get; set; } = "";
+
+        public string endereco_contato { get; set; } = "";
+
+        public short st_end_entrega { get; set; }
+
+        public String endEtg_endereco { get; set; } = "";
+
+        public String endEtg_endereco_numero { get; set; } = "";
+
+        public String endEtg_endereco_complemento { get; set; } = "";
+
+        public String endEtg_bairro { get; set; } = "";
+
+        public String endEtg_cidade { get; set; } = "";
+
+        public String endEtg_uf { get; set; } = "";
+
+        public String endEtg_cep { get; set; } = "";
+
+        public string endEtg_email { get; set; } = "";
+
+        public string endEtg_email_xml { get; set; } = "";
+
+        public string endEtg_nome { get; set; } = "";
+
+        public string endEtg_ddd_res { get; set; } = "";
+
+        public string endEtg_tel_res { get; set; } = "";
+
+        public string endEtg_ddd_com { get; set; } = "";
+
+        public string endEtg_tel_com { get; set; } = "";
+
+        public string endEtg_ramal_com { get; set; } = "";
+
+        public string endEtg_ddd_cel { get; set; } = "";
+
+        public string endEtg_tel_cel { get; set; } = "";
+
+        public string endEtg_ddd_com_2 { get; set; } = "";
+
+        public string endEtg_tel_com_2 { get; set; } = "";
+
+        public string endEtg_ramal_com_2 { get; set; } = "";
+
+        public string endEtg_tipo_pessoa { get; set; } = "";
+
+        public string endEtg_cnpj_cpf { get; set; } = "";
+
+        public byte endEtg_contribuinte_icms_status { get; set; } = 0;
+
+        public byte endEtg_produtor_rural_status { get; set; } = 0;
+
+        public string endEtg_ie { get; set; } = "";
+
+        public string endEtg_rg { get; set; } = "";
+
+        public short st_etg_imediata { get; set; }
+
+        public DateTime etg_imediata_data { get; set; }
+
+        public String etg_imediata_usuario { get; set; }
+
+        public DateTime PrevisaoEntregaData { get; set; }
+
+        public string PrevisaoEntregaUsuarioUltAtualiz { get; set; }
+
+        public DateTime PrevisaoEntregaDtHrUltAtualiz { get; set; }
+
+        public short frete_status { get; set; }
+
+        public decimal frete_valor { get; set; }
+
+        public DateTime frete_data { get; set; }
+
+        public String frete_usuario { get; set; }
+
+        public short stBemUsoConsumo { get; set; }
+
+        public short pedidoRecebidoStatus { get; set; }
+
+        public DateTime pedidoRecebidoData { get; set; }
+
+        public String pedidoRecebidoUsuarioUltAtualiz { get; set; }
+
+        public DateTime pedidoRecebidoDtHrUltAtualiz { get; set; }
+
+        public short instaladorInstalaStatus { get; set; }
+
+        public String instaladorInstalaUsuarioUltAtualiz { get; set; }
+
+        public DateTime instaladorInstalaDtHrUltAtualiz { get; set; }
+
+        public String custoFinancFornecTipoParcelamento { get; set; }
+
+        public short custoFinancFornecQtdeParcelas { get; set; }
+
+        public int tamanho_num_pedido { get; set; }
+
+        public string pedido_base { get; set; }
+
+        public byte st_forma_pagto_somente_cartao { get; set; }
+
+        public int id_nfe_emitente { get; set; }
+
+        public byte st_auto_split { get; set; }
+
+        #region [ Campos calculados ]
+        public decimal vlTotalPrecoNfDestePedido { get; set; }
+
+        public decimal vlTotalBoletoDestePedido { get; set; }
+
+        public decimal vlTotalFormaPagtoDestePedido { get; set; }
+
+        public decimal vlTotalPrecoVendaDestePedido { get; set; }
+
+        public decimal vlTotalFamiliaPago { get; set; }
+
+        public decimal vlTotalFamiliaPrecoVenda { get; set; }
+
+        public decimal vlTotalFamiliaPrecoNF { get; set; }
+
+        public decimal vlTotalFamiliaDevolucaoPrecoVenda { get; set; }
+
+        public decimal vlTotalFamiliaDevolucaoPrecoNF { get; set; }
+
+        public decimal vlPagtoEmCartao { get; set; }
+        #endregion
+
+        #endregion
+    }
+    #endregion
+
+    #region [ PedidoItem ]
+    class PedidoItem
+    {
+        #region [ Getters/Setters ]
+
+        public String pedido { get; set; }
+
+        public String fabricante { get; set; }
+
+        public String produto { get; set; }
+
+        public short qtde { get; set; }
+
+        public double desc_dado { get; set; }
+
+        public decimal preco_venda { get; set; }
+
+        public decimal preco_fabricante { get; set; }
+
+        public decimal preco_lista { get; set; }
+
+        public double margem { get; set; }
+
+        public double desc_max { get; set; }
+
+        public double comissao { get; set; }
+
+        public String descricao { get; set; }
+
+        public String ean { get; set; }
+
+        public String grupo { get; set; }
+
+        public double peso { get; set; }
+
+        public short qtde_volumes { get; set; }
+
+        public short abaixo_min_status { get; set; }
+
+        public String abaixo_min_autorizacao { get; set; }
+
+        public String abaixo_min_autorizador { get; set; }
+
+        public short sequencia { get; set; }
+
+        public double markup_fabricante { get; set; }
+
+        public decimal preco_NF { get; set; }
+
+        public String abaixo_min_superv_autorizador { get; set; }
+
+        public decimal vl_custo2 { get; set; }
+
+        public String descricao_html { get; set; }
+
+        public double custoFinancFornecCoeficiente { get; set; }
+
+        public decimal custoFinancFornecPrecoListaBase { get; set; }
+
+        #endregion
+    }
+    #endregion
+
+    #region [ PedidoItemDevolvido ]
+    class PedidoItemDevolvido
+    {
+        #region [ Getters/Setters ]
+
+        public String id { get; set; }
+
+        public DateTime devolucao_data { get; set; }
+
+        public String devolucao_hora { get; set; }
+
+        public String devolucao_usuario { get; set; }
+
+        public String pedido { get; set; }
+
+        public String fabricante { get; set; }
+
+        public String produto { get; set; }
+
+        public short qtde { get; set; }
+
+        public double desc_dado { get; set; }
+
+        public decimal preco_venda { get; set; }
+
+        public decimal preco_fabricante { get; set; }
+
+        public decimal preco_lista { get; set; }
+
+        public double margem { get; set; }
+
+        public double desc_max { get; set; }
+
+        public double comissao { get; set; }
+
+        public String descricao { get; set; }
+
+        public String ean { get; set; }
+
+        public String grupo { get; set; }
+
+        public double peso { get; set; }
+
+        public short qtde_volumes { get; set; }
+
+        public short abaixo_min_status { get; set; }
+
+        public String abaixo_min_autorizacao { get; set; }
+
+        public String abaixo_min_autorizador { get; set; }
+
+        public double markup_fabricante { get; set; }
+
+        public String motivo { get; set; }
+
+        public decimal preco_NF { get; set; }
+
+        public short comissao_descontada { get; set; }
+
+        public String comissao_descontada_ult_op { get; set; }
+
+        public DateTime comissao_descontada_data { get; set; }
+
+        public String comissao_descontada_usuario { get; set; }
+
+        public String abaixo_min_superv_autorizador { get; set; }
+
+        public decimal vl_custo2 { get; set; }
+
+        public String descricao_html { get; set; }
+
+        public double custoFinancFornecCoeficiente { get; set; }
+
+        public decimal custoFinancFornecPrecoListaBase { get; set; }
+
+        #endregion
+    }
+    #endregion
+
+    #region [ PedidoPagamento ]
+    class PedidoPagamento
+    {
+        public string id { get; set; }
+
+        public string pedido { get; set; }
+
+        public DateTime data { get; set; }
+
+        public string hora { get; set; }
+
+        public decimal valor { get; set; }
+
+        public string tipo_pagto { get; set; }
+
+        public string usuario { get; set; }
+
+        public int id_pedido_pagto_cielo { get; set; }
+
+        public int id_pedido_pagto_braspag { get; set; }
+
+        public int id_pagto_gw_pag_payment { get; set; }
+
+        public int id_braspag_webhook_complementar { get; set; }
+    }
+    #endregion
+
+    #region [ PedidoHistPagto ]
+    class PedidoHistPagto
+    {
+        public int id { get; set; }
+
+        public string pedido { get; set; }
+
+        public byte status { get; set; }
+
+        public int id_fluxo_caixa { get; set; }
+
+        public int ctrl_pagto_id_parcela { get; set; }
+
+        public byte ctrl_pagto_modulo { get; set; }
+
+        public DateTime dt_vencto { get; set; }
+
+        public decimal valor_total { get; set; }
+
+        public decimal valor_rateado { get; set; }
+
+        public decimal valor_pago { get; set; }
+
+        public string descricao { get; set; }
+
+        public DateTime dt_credito { get; set; }
+
+        public DateTime dt_cadastro { get; set; }
+
+        public string usuario_cadastro { get; set; }
+
+        public DateTime dt_ult_atualizacao { get; set; }
+
+        public string usuario_ult_atualizacao { get; set; }
+
+        public decimal vl_abatimento_concedido { get; set; }
+
+        public byte st_boleto_pago_cheque { get; set; }
+
+        public DateTime dt_ocorrencia_banco_boleto_pago_cheque { get; set; }
+
+        public byte st_boleto_ocorrencia_17 { get; set; }
+
+        public DateTime dt_ocorrencia_banco_boleto_ocorrencia_17 { get; set; }
+
+        public byte st_boleto_ocorrencia_15 { get; set; }
+
+        public DateTime dt_ocorrencia_banco_boleto_ocorrencia_15 { get; set; }
+
+        public byte st_boleto_ocorrencia_23 { get; set; }
+
+        public DateTime dt_ocorrencia_banco_boleto_ocorrencia_23 { get; set; }
+
+        public byte st_boleto_ocorrencia_34 { get; set; }
+
+        public DateTime dt_ocorrencia_banco_boleto_ocorrencia_34 { get; set; }
+
+        public byte st_boleto_baixado { get; set; }
+
+        public DateTime dt_ocorrencia_banco_boleto_baixado { get; set; }
+
+        public DateTime dt_operacao { get; set; }
+    }
+    #endregion
 }

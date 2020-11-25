@@ -49,6 +49,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 	
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim s_filtro, intQtdeChamados
 	dim s, s_aux, rb_status, origem, rb_posicao, c_motivo_abertura
     dim c_dt_cad_chamado_inicio, c_dt_cad_chamado_termino
@@ -163,8 +166,18 @@ dim s_disabled
             " tPC.finalizado_status," & _
             " tPC.cod_motivo_finalizacao," & _
             " tPC.texto_finalizacao," & _
-			" tP.transportadora_id," & _
-			" tC.nome_iniciais_em_maiusculas AS nome_cliente, tCD.codigo, tCD.descricao," & _
+			" tP.transportadora_id,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+			" dbo.SqlClrUtilIniciaisEmMaiusculas(tP.endereco_nome) AS nome_cliente,"
+	else
+		s_sql = s_sql & _
+			" tC.nome_iniciais_em_maiusculas AS nome_cliente,"
+		end if
+
+	s_sql = s_sql & _
+			" tCD.codigo, tCD.descricao," & _
             " tPCD.descricao AS depto," & _
             " tPCD.id AS cod_depto," & _
             " tPCD.usuario_responsavel," & _
@@ -211,7 +224,7 @@ dim s_disabled
 
 	if IsDate(c_dt_cad_chamado_termino) then
 		s_sql = s_sql & _
-				" AND (tPC.dt_cadastro < " & bd_formata_data(StrToDate(c_dt_cad_chamado_termino)) & ")"
+				" AND (tPC.dt_cadastro < " & bd_formata_data(StrToDate(c_dt_cad_chamado_termino)+1) & ")"
 	end if
 
     if c_motivo_abertura <> "" then

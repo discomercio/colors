@@ -1738,6 +1738,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.endereco_produtor_rural_status = 0
 			.endereco_ie = ""
 			.endereco_rg = ""
+			.endereco_contato = ""
 
 			.endereco_memorizado_status		= rs("endereco_memorizado_status")
 			if CLng(.endereco_memorizado_status) <> 0 then
@@ -1769,6 +1770,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.endereco_produtor_rural_status = rs("endereco_produtor_rural_status")
 					.endereco_ie = Trim("" & rs("endereco_ie"))
 					.endereco_rg = Trim("" & rs("endereco_rg"))
+					.endereco_contato = Trim("" & rs("endereco_contato"))
 					end if
 				end if
 
@@ -2723,26 +2725,27 @@ dim rs
 		exit function
 	else
 		with r_estoque
-			.id_estoque				= Trim("" & rs("id_estoque"))
-			.data_entrada			= rs("data_entrada")
-			.hora_entrada			= Trim("" & rs("hora_entrada"))
-			.fabricante				= Trim("" & rs("fabricante"))
-			.documento				= Trim("" & rs("documento"))
-			.usuario				= Trim("" & rs("usuario"))
-			.data_ult_movimento		= rs("data_ult_movimento")
-			.kit					= rs("kit")
-			.entrada_especial		= rs("entrada_especial")
-			.devolucao_status		= rs("devolucao_status")
-			.devolucao_data			= rs("devolucao_data")
-			.devolucao_hora			= Trim("" & rs("devolucao_hora"))
-			.devolucao_usuario		= Trim("" & rs("devolucao_usuario"))
-			.devolucao_loja			= Trim("" & rs("devolucao_loja"))
-			.devolucao_pedido		= Trim("" & rs("devolucao_pedido"))
-			.devolucao_id_estoque	= Trim("" & rs("devolucao_id_estoque"))
-			.obs					= Trim("" & rs("obs"))
-			.id_nfe_emitente		= rs("id_nfe_emitente")
-            .entrada_tipo           = Trim("" & rs("entrada_tipo"))
-            .perc_agio      		= rs("perc_agio")
+			.id_estoque				 		= Trim("" & rs("id_estoque"))
+			.data_entrada			 		= rs("data_entrada")
+			.hora_entrada		 			= Trim("" & rs("hora_entrada"))
+			.fabricante			 			= Trim("" & rs("fabricante"))
+			.documento				 		= Trim("" & rs("documento"))
+			.usuario				 		= Trim("" & rs("usuario"))
+			.data_ult_movimento		 		= rs("data_ult_movimento")
+			.kit					 		= rs("kit")
+			.entrada_especial	 			= rs("entrada_especial")
+			.devolucao_status 				= rs("devolucao_status")
+			.devolucao_data		 			= rs("devolucao_data")
+			.devolucao_hora		 			= Trim("" & rs("devolucao_hora"))
+			.devolucao_usuario	 			= Trim("" & rs("devolucao_usuario"))
+			.devolucao_loja 				= Trim("" & rs("devolucao_loja"))
+			.devolucao_pedido           	= Trim("" & rs("devolucao_pedido"))
+			.devolucao_id_estoque          	= Trim("" & rs("devolucao_id_estoque"))
+			.obs				           	= Trim("" & rs("obs"))
+			.id_nfe_emitente           		= rs("id_nfe_emitente")
+            .entrada_tipo                   = Trim("" & rs("entrada_tipo"))
+            .perc_agio      		        = rs("perc_agio")
+            .data_emissao_NF_entrada   		= rs("data_emissao_NF_entrada")
 			end with
 		end if	
 
@@ -3602,6 +3605,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.endereco_produtor_rural_status = 0
 			.endereco_ie = ""
 			.endereco_rg = ""
+			.endereco_contato = ""
 
 			'O orçamento não armazenava o endereço de cobrança anteriormente da forma como ocorria no pedido
 			if blnUsarMemorizacaoCompletaEnderecos then
@@ -3633,6 +3637,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.endereco_produtor_rural_status = rs("endereco_produtor_rural_status")
 					.endereco_ie = Trim("" & rs("endereco_ie"))
 					.endereco_rg = Trim("" & rs("endereco_rg"))
+					.endereco_contato = Trim("" & rs("endereco_contato"))
 					end if
 				end if
 
@@ -6148,6 +6153,18 @@ dim rFPUECM
 	set rFPUECM = get_registro_t_parametro(ID_PARAMETRO_Flag_Pedido_MemorizacaoCompletaEnderecos)
 	if Trim("" & rFPUECM.campo_inteiro) = "1" then isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = True
 	set rFPUECM = Nothing
+end function
+
+
+' ________________________________________________________
+' isActivatedFlagCadSemiAutoPedMagentoCadAutoClienteNovo
+'
+function isActivatedFlagCadSemiAutoPedMagentoCadAutoClienteNovo
+dim rFCSAPMCACN
+	isActivatedFlagCadSemiAutoPedMagentoCadAutoClienteNovo = False
+	set rFCSAPMCACN = get_registro_t_parametro(ID_PARAMETRO_FLAG_CAD_SEMI_AUTO_PED_MAGENTO_CADASTRAR_AUTOMATICAMENTE_CLIENTE_NOVO)
+	if Trim("" & rFCSAPMCACN.campo_inteiro) = "1" then isActivatedFlagCadSemiAutoPedMagentoCadAutoClienteNovo = True
+	set rFCSAPMCACN = Nothing
 end function
 
 

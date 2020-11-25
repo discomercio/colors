@@ -78,7 +78,7 @@ namespace ART3WebAPI.Controllers
 
                 statusResponse = "OK";
 
-                LogDAO.insere(usuario, s_log, strMsgErro);
+                LogDAO.insere(usuario, s_log, out strMsgErro);
 
             }
             catch (Exception e)
@@ -174,7 +174,7 @@ namespace ART3WebAPI.Controllers
 
                 statusResponse = "OK";
 
-                LogDAO.insere(usuario, s_log, strMsgErro);
+                LogDAO.insere(usuario, s_log, out strMsgErro);
 
             }
             catch (Exception e)

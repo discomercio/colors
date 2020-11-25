@@ -471,43 +471,132 @@ function fORCVirarPedido( f ) {
 <!--  CLIENTE   -->
 <table width="649" class="Q" cellspacing="0">
 	<tr>
-<%	s = ""
+<%	
+    s = ""
 	set r_cliente = New cl_CLIENTE
 	if x_cliente_bd(r_orcamento.id_cliente, r_cliente) then
-	%>
 	
-	<%	if r_cliente.tipo = ID_PF then s_aux="CPF" else s_aux="CNPJ"
-	s = cnpj_cpf_formata(r_cliente.cnpj_cpf) 
+    'le as variáveis da origem certa: ou do pedido ou do cliente, todas comecam com cliente__
+    dim cliente__tipo, cliente__cnpj_cpf, cliente__rg, cliente__ie, cliente__nome
+    dim cliente__endereco, cliente__endereco_numero, cliente__endereco_complemento, cliente__bairro, cliente__cidade, cliente__uf, cliente__cep
+    dim cliente__tel_res, cliente__ddd_res, cliente__tel_com, cliente__ddd_com, cliente__ramal_com, cliente__tel_cel, cliente__ddd_cel
+    dim cliente__tel_com_2, cliente__ddd_com_2, cliente__ramal_com_2, cliente__email, cliente__email_xml, cliente__produtor_rural_status, cliente__contribuinte_icms_status
+
+    cliente__tipo = r_cliente.tipo
+    cliente__cnpj_cpf = r_cliente.cnpj_cpf
+	cliente__rg = r_cliente.rg
+    cliente__ie = r_cliente.ie
+    cliente__nome = r_cliente.nome
+    cliente__endereco = r_cliente.endereco
+    cliente__endereco_numero = r_cliente.endereco_numero
+    cliente__endereco_complemento = r_cliente.endereco_complemento
+    cliente__bairro = r_cliente.bairro
+    cliente__cidade = r_cliente.cidade
+    cliente__uf = r_cliente.uf
+    cliente__cep = r_cliente.cep
+    cliente__tel_res = r_cliente.tel_res
+    cliente__ddd_res = r_cliente.ddd_res
+    cliente__tel_com = r_cliente.tel_com
+    cliente__ddd_com = r_cliente.ddd_com
+    cliente__ramal_com = r_cliente.ramal_com
+    cliente__tel_cel = r_cliente.tel_cel
+    cliente__ddd_cel = r_cliente.ddd_cel
+    cliente__tel_com_2 = r_cliente.tel_com_2
+    cliente__ddd_com_2 = r_cliente.ddd_com_2
+    cliente__ramal_com_2 = r_cliente.ramal_com_2
+    cliente__email = r_cliente.email
+    cliente__email_xml = r_cliente.email_xml
+	cliente__produtor_rural_status = r_cliente.produtor_rural_status
+	cliente__contribuinte_icms_status = r_cliente.contribuinte_icms_status
+
+    if isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos and r_orcamento.st_memorizacao_completa_enderecos <> 0 then 
+        cliente__tipo = r_orcamento.endereco_tipo_pessoa
+        cliente__cnpj_cpf = r_orcamento.endereco_cnpj_cpf
+	    cliente__rg = r_orcamento.endereco_rg
+        cliente__ie = r_orcamento.endereco_ie
+        cliente__nome = r_orcamento.endereco_nome
+        cliente__endereco = r_orcamento.endereco_logradouro
+        cliente__endereco_numero = r_orcamento.endereco_numero
+        cliente__endereco_complemento = r_orcamento.endereco_complemento
+        cliente__bairro = r_orcamento.endereco_bairro
+        cliente__cidade = r_orcamento.endereco_cidade
+        cliente__uf = r_orcamento.endereco_uf
+        cliente__cep = r_orcamento.endereco_cep
+        cliente__tel_res = r_orcamento.endereco_tel_res
+        cliente__ddd_res = r_orcamento.endereco_ddd_res
+        cliente__tel_com = r_orcamento.endereco_tel_com
+        cliente__ddd_com = r_orcamento.endereco_ddd_com
+        cliente__ramal_com = r_orcamento.endereco_ramal_com
+        cliente__tel_cel = r_orcamento.endereco_tel_cel
+        cliente__ddd_cel = r_orcamento.endereco_ddd_cel
+        cliente__tel_com_2 = r_orcamento.endereco_tel_com_2
+        cliente__ddd_com_2 = r_orcamento.endereco_ddd_com_2
+        cliente__ramal_com_2 = r_orcamento.endereco_ramal_com_2
+        cliente__email = r_orcamento.endereco_email
+        cliente__email_xml = r_orcamento.endereco_email_xml
+		cliente__produtor_rural_status = r_orcamento.endereco_produtor_rural_status
+		cliente__contribuinte_icms_status = r_orcamento.endereco_contribuinte_icms_status
+        end if
+%>	
+<%	if cliente__tipo = ID_PF then s_aux="CPF" else s_aux="CNPJ"
+	s = cnpj_cpf_formata(cliente__cnpj_cpf) 
 %>
-		<td width="50%" class="MD" align="left"><p class="Rf"><%=s_aux%></p>
+        <td width="33%" class="MD" align="left"><p class="Rf"><%=s_aux%></p>
 		<% if operacao_permitida(OP_LJA_EDITA_CLIENTE_DADOS_CADASTRAIS, s_lista_operacoes_permitidas) then %>
 			<a href='javascript:fCLIEdita();' title='clique para editar o cadastro do cliente'><p class="C"><%=s%>&nbsp;</p></a>
 		<% else %>
 			<a href='javascript:fCLIConsulta();' title='clique para consultar o cadastro do cliente'><p class="C"><%=s%>&nbsp;</p></a>
 		<% end if %>
 		</td>
-		<%
-		with r_cliente
-		if .tipo = ID_PF then s = Trim(.rg) else s = Trim(.ie)
-	end with
-			if r_cliente.tipo = ID_PF then 
-%>
-	<td align="left" class="MD"><p class="Rf">RG</p><p class="C"><%=s%>&nbsp;</p></td>
-<% else %>
-	<td align="left" class="MD"><p class="Rf">IE</p><p class="C"><%=s%>&nbsp;</p></td>
-<% end if %>
-<td align="center" valign="middle" style="width:22px;"><a href='javascript:fCLIConsultaView(<%=chr(34) & r_cliente.id & chr(34) & "," & chr(34) & usuario & chr(34)%>);' title="clique para visualizar o cadastro do cliente"><img id="imgClienteConsultaView" src="../imagem/doc_preview_22.png" /></a></td>
+
+
+
+		<% if cliente__tipo = ID_PF then %>
+			<td align="left" width="33%" class="MD"><p class="Rf">RG</p><p class="C"><%=Trim(cliente__rg)%>&nbsp;</p></td>
+			<% 
+			s_aux = ""
+			if converte_numero(Trim(cliente__produtor_rural_status)) = converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_SIM) then
+				s = converte_numero(cliente__contribuinte_icms_status)
+				if s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) then
+					s_aux = "Sim (Não contribuinte)"
+				elseif s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
+					s_aux = "Sim (IE: " & cliente__ie & ")"
+				elseif s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO) then
+					s_aux = "Sim (Isento)"
+				end if
+			elseif cliente__produtor_rural_status = converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_NAO) then
+				s_aux = "Não"
+			end if
+			%>
+			<td align="left" width="33%" class="MD"><p class="Rf">PRODUTOR RURAL</p><p class="C"><%=s_aux%>&nbsp;</p></td>
+		<% else %>
+
+			<td width="33%" class="MD" align="left"><p class="Rf">IE</p><p class="C"><%=Trim(cliente__ie)%>&nbsp;</p></td>
+			<% 
+				s_aux = ""
+				s = converte_numero(cliente__contribuinte_icms_status)
+				if s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) then
+					s_aux = "Não"
+				elseif s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
+					s_aux = "Sim"
+				elseif s = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO) then
+					s_aux = "Isento"
+				end if            
+			%>
+			<td width="33%" align="left" class="MD"><p class="Rf">CONTRIBUINTE ICMS</p><p class="C"><%=s_aux%>&nbsp;</p></td>
+
+		<% end if %>
+
+			<td align="center" valign="middle" style="width:22px;" class="MB"><a href='javascript:fCLIConsultaView(<%=chr(34) & r_cliente.id & chr(34) & "," & chr(34) & usuario & chr(34)%>);' title="clique para visualizar o cadastro do cliente"><img id="imgClienteConsultaView" src="../imagem/doc_preview_22.png" /></a></td>
 		</tr>
 		<tr>
-	<%
-		with r_cliente
-			if Trim(.nome) <> "" then
-				s = Trim(.nome)
+<%
+			if Trim(cliente__nome) <> "" then
+				s = Trim(cliente__nome)
 				end if
-			end with
 		end if
 	
-	if r_cliente.tipo = ID_PF then s_aux="NOME DO CLIENTE" else s_aux="RAZÃO SOCIAL DO CLIENTE"
+	if cliente__tipo = ID_PF then s_aux="NOME DO CLIENTE" else s_aux="RAZÃO SOCIAL DO CLIENTE"
 %>
 	<td class="MC" align="left" colspan="3"><p class="Rf"><%=s_aux%></p>
 	<% if operacao_permitida(OP_LJA_EDITA_CLIENTE_DADOS_CADASTRAIS, s_lista_operacoes_permitidas) then %>
@@ -525,9 +614,8 @@ function fORCVirarPedido( f ) {
 <!--  ENDEREÇO DO CLIENTE  -->
 <table width="649" class="QS" cellspacing="0">
 	<tr>
-<%	with r_cliente
-		s = formata_endereco(.endereco, .endereco_numero, .endereco_complemento, .bairro, .cidade, .uf, .cep)
-		end with
+<%	
+	s = formata_endereco(cliente__endereco, cliente__endereco_numero, cliente__endereco_complemento, cliente__bairro, cliente__cidade, cliente__uf, cliente__cep)
 %>		
 		<td align="left"><p class="Rf">ENDEREÇO</p><p class="C"><%=s%>&nbsp;</p></td>
 	</tr>
@@ -537,44 +625,36 @@ function fORCVirarPedido( f ) {
 <table width="649" class="QS" cellspacing="0">
 	<tr>
 <%	s = ""
-	with r_cliente
-		if Trim(.tel_res) <> "" then
-			s = telefone_formata(Trim(.tel_res))
-			s_aux=Trim(.ddd_res)
-			if s_aux<>"" then s = "(" & s_aux & ") " & s
-			end if
-		end with
+	if Trim(cliente__tel_res) <> "" then
+		s = telefone_formata(Trim(cliente__tel_res))
+		s_aux=Trim(cliente__ddd_res)
+		if s_aux<>"" then s = "(" & s_aux & ") " & s
+		end if
 	
 	s2 = ""
-	with r_cliente
-		if Trim(.tel_com) <> "" then
-			s2 = telefone_formata(Trim(.tel_com))
-			s_aux = Trim(.ddd_com)
-			if s_aux<>"" then s2 = "(" & s_aux & ") " & s2
-			s_aux = Trim(.ramal_com)
-			if s_aux<>"" then s2 = s2 & "  (R. " & s_aux & ")"
-			end if
-		end with
-	with r_cliente
-		if Trim(.tel_cel) <> "" then
-			s3 = telefone_formata(Trim(.tel_cel))
-			s_aux = Trim(.ddd_cel)
-			if s_aux<>"" then s3 = "(" & s_aux & ") " & s3
-			end if
-		end with
-	with r_cliente
-		if Trim(.tel_com_2) <> "" then
-			s4 = telefone_formata(Trim(.tel_com_2))
-			s_aux = Trim(.ddd_com_2)
-			if s_aux<>"" then s4 = "(" & s_aux & ") " & s4
-			s_aux = Trim(.ramal_com_2)
-			if s_aux<>"" then s4 = s4 & "  (R. " & s_aux & ")"
-			end if
-		end with
+	if Trim(cliente__tel_com) <> "" then
+		s2 = telefone_formata(Trim(cliente__tel_com))
+		s_aux = Trim(cliente__ddd_com)
+		if s_aux<>"" then s2 = "(" & s_aux & ") " & s2
+		s_aux = Trim(cliente__ramal_com)
+		if s_aux<>"" then s2 = s2 & "  (R. " & s_aux & ")"
+		end if
+	if Trim(cliente__tel_cel) <> "" then
+		s3 = telefone_formata(Trim(cliente__tel_cel))
+		s_aux = Trim(cliente__ddd_cel)
+		if s_aux<>"" then s3 = "(" & s_aux & ") " & s3
+		end if
+	if Trim(cliente__tel_com_2) <> "" then
+		s4 = telefone_formata(Trim(cliente__tel_com_2))
+		s_aux = Trim(cliente__ddd_com_2)
+		if s_aux<>"" then s4 = "(" & s_aux & ") " & s4
+		s_aux = Trim(cliente__ramal_com_2)
+		if s_aux<>"" then s4 = s4 & "  (R. " & s_aux & ")"
+		end if
 	
 %>
 
-<% if r_cliente.tipo = ID_PF then %>
+<% if cliente__tipo = ID_PF then %>
 	<td class="MD" width="33%" align="left"><p class="Rf">TELEFONE RESIDENCIAL</p><p class="C"><%=s%>&nbsp;</p></td>
 	<td class="MD" width="33%" align="left"><p class="Rf">TELEFONE COMERCIAL</p><p class="C"><%=s2%>&nbsp;</p></td>
 		<td align="left"><p class="Rf">CELULAR</p><p class="C"><%=s3%>&nbsp;</p></td>
@@ -592,14 +672,14 @@ function fORCVirarPedido( f ) {
 <!--  E-MAIL DO CLIENTE  -->
 <table width="649" class="QS" cellspacing="0" >
 	<tr>
-		<td align="left"><p class="Rf">E-MAIL</p><p class="C"><%=Trim(r_cliente.email)%>&nbsp;</p></td>
+		<td align="left" class="MD" width="50%"><p class="Rf">E-MAIL</p><p class="C"><%=Trim(cliente__email)%>&nbsp;</p></td>
+		<td align="left" width="50%"><p class="Rf">E-MAIL (XML)</p><p class="C"><%=Trim(cliente__email_xml)%>&nbsp;</p></td>
 	</tr>
 </table>
 
 <!--  ENDEREÇO DE ENTREGA  -->
-<%	with r_orcamento
-		s = formata_endereco(.EndEtg_endereco, .EndEtg_endereco_numero, .EndEtg_endereco_complemento, .EndEtg_bairro, .EndEtg_cidade, .EndEtg_uf, .EndEtg_cep)
-		end with
+<%
+	s = pedido_formata_endereco_entrega(r_orcamento, r_cliente)
 %>		
 <table width="649" class="QS" cellspacing="0" style="table-layout:fixed">
 	<tr>

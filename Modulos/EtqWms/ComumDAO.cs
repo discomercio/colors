@@ -122,6 +122,312 @@ namespace EtqWms
 		}
 		#endregion
 
+		#region [ getCampoDataTabelaParametro ]
+		public static DateTime getCampoDataTabelaParametro(String nomeParametro)
+		{
+			#region [ Declarações ]
+			String strSql;
+			Object objResultado;
+			String strResultado;
+			DateTime dtHrResultado = DateTime.MinValue;
+			SqlCommand cmCommand;
+			#endregion
+
+			strSql = "SELECT " +
+						Global.sqlMontaDateTimeParaYyyyMmDdHhMmSsComSeparador("campo_data") +
+					" FROM t_PARAMETRO" +
+					" WHERE" +
+						" (id = '" + nomeParametro + "')";
+			cmCommand = BD.criaSqlCommand();
+			cmCommand.CommandText = strSql;
+			objResultado = cmCommand.ExecuteScalar();
+			if (objResultado != null)
+			{
+				strResultado = objResultado.ToString();
+				if ((strResultado != null) && (strResultado.Length > 0)) dtHrResultado = Global.converteYyyyMmDdHhMmSsParaDateTime(strResultado);
+			}
+			return dtHrResultado;
+		}
+		#endregion
+
+		#region [ getCampoInteiroTabelaParametro ]
+		public static int getCampoInteiroTabelaParametro(String nomeParametro)
+		{
+			return getCampoInteiroTabelaParametro(nomeParametro, 0);
+		}
+
+		public static int getCampoInteiroTabelaParametro(String nomeParametro, int valorDefault)
+		{
+			#region [ Declarações ]
+			String strSql;
+			Object objResultado;
+			int intResultado;
+			SqlCommand cmCommand;
+			#endregion
+
+			intResultado = valorDefault;
+
+			strSql = "SELECT " +
+						"campo_inteiro" +
+					" FROM t_PARAMETRO" +
+					" WHERE" +
+						" (id = '" + nomeParametro + "')";
+			cmCommand = BD.criaSqlCommand();
+			cmCommand.CommandText = strSql;
+			objResultado = cmCommand.ExecuteScalar();
+			if (objResultado != null)
+			{
+				intResultado = BD.readToInt(objResultado);
+			}
+			return intResultado;
+		}
+		#endregion
+
+		#region [ getCampoTextoTabelaParametro ]
+		public static String getCampoTextoTabelaParametro(String nomeParametro)
+		{
+			return getCampoTextoTabelaParametro(nomeParametro, "");
+		}
+
+		public static String getCampoTextoTabelaParametro(String nomeParametro, String valorDefault)
+		{
+			#region [ Declarações ]
+			String strSql;
+			Object objResultado;
+			String strResultado;
+			SqlCommand cmCommand;
+			#endregion
+
+			strResultado = valorDefault;
+
+			strSql = "SELECT " +
+						"campo_texto" +
+					" FROM t_PARAMETRO" +
+					" WHERE" +
+						" (id = '" + nomeParametro + "')";
+			cmCommand = BD.criaSqlCommand();
+			cmCommand.CommandText = strSql;
+			objResultado = cmCommand.ExecuteScalar();
+			if (objResultado != null)
+			{
+				strResultado = BD.readToString(objResultado);
+			}
+			return strResultado;
+		}
+		#endregion
+
+		#region [ setCampoDataTabelaParametro ]
+		public static bool setCampoDataTabelaParametro(String nomeParametro, DateTime dtHrValorParametro)
+		{
+			#region [ Declarações ]
+			String strSql;
+			String strValorParametro;
+			SqlCommand cmCommand;
+			int intQtdeCount;
+			int intQtdeUpdated;
+			#endregion
+
+			try
+			{
+				cmCommand = BD.criaSqlCommand();
+
+				#region [ Registro existe? ]
+				strSql = "SELECT" +
+							" Count(*)" +
+						" FROM t_PARAMETRO" +
+						" WHERE" +
+							" (id = '" + nomeParametro + "')";
+				cmCommand.CommandText = strSql;
+				intQtdeCount = (int)cmCommand.ExecuteScalar();
+				#endregion
+
+				#region [ Prepara o valor do parâmetro p/ o SQL ]
+				if (dtHrValorParametro == DateTime.MinValue)
+				{
+					strValorParametro = "NULL";
+				}
+				else
+				{
+					strValorParametro = Global.sqlMontaDateTimeParaSqlDateTime(dtHrValorParametro);
+				}
+				#endregion
+
+				#region [ Grava o novo valor do parâmetro ]
+				if (intQtdeCount == 1)
+				{
+					strSql = "UPDATE" +
+								" t_PARAMETRO" +
+							" SET" +
+								" campo_data = " + strValorParametro +
+								", dt_hr_ult_atualizacao = getdate()" +
+							" WHERE" +
+								" (id = '" + nomeParametro + "')";
+				}
+				else
+				{
+					strSql = "INSERT INTO t_PARAMETRO (" +
+								"id, " +
+								"campo_data, " +
+								"dt_hr_ult_atualizacao" +
+							") VALUES (" +
+								"'" + nomeParametro + "', " +
+								strValorParametro + ", " +
+								"getdate()" +
+							")";
+				}
+				cmCommand.CommandText = strSql;
+				intQtdeUpdated = BD.executaNonQuery(ref cmCommand);
+				#endregion
+
+				#region [ Sucesso ou falha? ]
+				if (intQtdeUpdated == 1)
+					return true;
+				else
+					return false;
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				Global.gravaLogAtividade("Falha ao gravar em t_PARAMETRO.campo_data no registro '" + nomeParametro + "'\n" + ex.ToString());
+				return false;
+			}
+		}
+		#endregion
+
+		#region [ setCampoInteiroTabelaParametro ]
+		public static bool setCampoInteiroTabelaParametro(String nomeParametro, int valorParametro)
+		{
+			#region [ Declarações ]
+			String strSql;
+			SqlCommand cmCommand;
+			int intQtdeCount;
+			int intQtdeUpdated;
+			#endregion
+
+			try
+			{
+				cmCommand = BD.criaSqlCommand();
+
+				#region [ Registro existe? ]
+				strSql = "SELECT" +
+							" Count(*)" +
+						" FROM t_PARAMETRO" +
+						" WHERE" +
+							" (id = '" + nomeParametro + "')";
+				cmCommand.CommandText = strSql;
+				intQtdeCount = (int)cmCommand.ExecuteScalar();
+				#endregion
+
+				#region [ Grava o novo valor do parâmetro ]
+				if (intQtdeCount == 1)
+				{
+					strSql = "UPDATE" +
+								" t_PARAMETRO" +
+							" SET" +
+								" campo_inteiro = " + valorParametro.ToString() +
+								", dt_hr_ult_atualizacao = getdate()" +
+							" WHERE" +
+								" (id = '" + nomeParametro + "')";
+				}
+				else
+				{
+					strSql = "INSERT INTO t_PARAMETRO (" +
+								"id, " +
+								"campo_inteiro, " +
+								"dt_hr_ult_atualizacao" +
+							") VALUES (" +
+								"'" + nomeParametro + "', " +
+								valorParametro.ToString() + ", " +
+								"getdate()" +
+							")";
+				}
+				cmCommand.CommandText = strSql;
+				intQtdeUpdated = BD.executaNonQuery(ref cmCommand);
+				#endregion
+
+				#region [ Sucesso ou falha? ]
+				if (intQtdeUpdated == 1)
+					return true;
+				else
+					return false;
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				Global.gravaLogAtividade("Falha ao gravar em t_PARAMETRO.campo_inteiro no registro '" + nomeParametro + "'\n" + ex.ToString());
+				return false;
+			}
+		}
+		#endregion
+
+		#region [ setCampoTextoTabelaParametro ]
+		public static bool setCampoTextoTabelaParametro(String nomeParametro, String valorParametro)
+		{
+			#region [ Declarações ]
+			String strSql;
+			SqlCommand cmCommand;
+			int intQtdeCount;
+			int intQtdeUpdated;
+			#endregion
+
+			try
+			{
+				cmCommand = BD.criaSqlCommand();
+
+				#region [ Registro existe? ]
+				strSql = "SELECT" +
+							" Count(*)" +
+						" FROM t_PARAMETRO" +
+						" WHERE" +
+							" (id = '" + nomeParametro + "')";
+				cmCommand.CommandText = strSql;
+				intQtdeCount = (int)cmCommand.ExecuteScalar();
+				#endregion
+
+				#region [ Grava o novo valor do parâmetro ]
+				if (intQtdeCount == 1)
+				{
+					strSql = "UPDATE" +
+								" t_PARAMETRO" +
+							" SET" +
+								" campo_texto = @campo_texto," +
+								" dt_hr_ult_atualizacao = getdate()" +
+							" WHERE" +
+								" (id = '" + nomeParametro + "')";
+				}
+				else
+				{
+					strSql = "INSERT INTO t_PARAMETRO (" +
+								"id, " +
+								"campo_texto, " +
+								"dt_hr_ult_atualizacao" +
+							") VALUES (" +
+								"'" + nomeParametro + "', " +
+								"@campo_texto, " +
+								"getdate()" +
+							")";
+				}
+				cmCommand.CommandText = strSql;
+				cmCommand.Parameters.Add("@campo_texto", SqlDbType.VarChar, 1024);
+				cmCommand.Parameters["@campo_texto"].Value = valorParametro;
+				intQtdeUpdated = BD.executaNonQuery(ref cmCommand);
+				#endregion
+
+				#region [ Sucesso ou falha? ]
+				if (intQtdeUpdated == 1)
+					return true;
+				else
+					return false;
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				Global.gravaLogAtividade("Falha ao gravar em t_PARAMETRO.campo_texto no registro '" + nomeParametro + "'\n" + ex.ToString());
+				return false;
+			}
+		}
+		#endregion
+
 		#region [ getWmsEtqN1SepZonaRel ]
 		public static WmsEtqN1SepZonaRel getWmsEtqN1SepZonaRel(int id)
 		{

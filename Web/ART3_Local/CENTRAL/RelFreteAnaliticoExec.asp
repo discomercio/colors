@@ -50,6 +50,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	dim s, s_aux
 	dim c_dt_entregue_inicio, c_dt_entregue_termino
@@ -507,12 +510,21 @@ dim qtde_Pedido,lista_pedidos_total_geral,strPercPrecoVendaSomado,vlTotalPercPre
 '	FILTRO: UF
 	if c_uf <> "" then
 		if s_where <> "" then s_where = s_where & " AND"
-		s_where = s_where & _
-			" (" & _
-				"((p.st_end_entrega <> 0) And (p.EndEtg_uf = '" & c_uf & "'))" & _
-				" OR " & _
-				"((p.st_end_entrega = 0) And (c.uf = '" & c_uf & "'))" & _
-			")"
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s_where = s_where & _
+				" (" & _
+					"((p.st_end_entrega <> 0) And (p.EndEtg_uf = '" & c_uf & "'))" & _
+					" OR " & _
+					"((p.st_end_entrega = 0) And (p.endereco_uf = '" & c_uf & "'))" & _
+				")"
+		else
+			s_where = s_where & _
+				" (" & _
+					"((p.st_end_entrega <> 0) And (p.EndEtg_uf = '" & c_uf & "'))" & _
+					" OR " & _
+					"((p.st_end_entrega = 0) And (c.uf = '" & c_uf & "'))" & _
+				")"
+			end if
 		end if
 	
 '	FILTRO: CD
@@ -567,9 +579,19 @@ dim qtde_Pedido,lista_pedidos_total_geral,strPercPrecoVendaSomado,vlTotalPercPre
                 s_sql = s_sql + ") as qtde_pedido," & _  
 				"p.st_end_entrega, " & _
 				"p.EndEtg_cidade, " & _
-				"p.EndEtg_uf, " & _
+				"p.EndEtg_uf, "
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				"p.endereco_cidade AS cidade, " & _
+				"p.endereco_uf AS uf, "
+	else
+		s_sql = s_sql & _
 				"c.cidade, " & _
-				"c.uf, " & _
+				"c.uf, "
+		end if
+
+	s_sql = s_sql & _
 				"Coalesce(pf.vl_frete, 0) as vl_frete, " & _
 	            "pf.codigo_tipo_frete, " & _
                 "tCD.descricao, " & _

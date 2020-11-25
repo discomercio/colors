@@ -78,6 +78,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	dim s, s_aux, s_filtro, lista_loja, s_filtro_loja, v_loja, v, i, flag_ok
 	dim c_dt_entregue_inicio, c_dt_entregue_termino, c_dt_cadastro_inicio, c_dt_cadastro_termino
@@ -480,12 +483,20 @@ dim vCodAux, vDescAux
 
 	if c_cnpj_cpf <> "" then
 		if s_where <> "" then s_where = s_where & " AND"
-		s_where = s_where & " (t_CLIENTE.cnpj_cpf = '" & c_cnpj_cpf & "')"
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s_where = s_where & " (t_PEDIDO.endereco_cnpj_cpf = '" & c_cnpj_cpf & "')"
+		else
+			s_where = s_where & " (t_CLIENTE.cnpj_cpf = '" & c_cnpj_cpf & "')"
+			end if
 		end if
 	
 	if rb_tipo_cliente <> "" then
 		if s_where <> "" then s_where = s_where & " AND"
-		s_where = s_where & " (t_CLIENTE.tipo = '" & rb_tipo_cliente & "')"
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s_where = s_where & " (t_PEDIDO.endereco_tipo_pessoa = '" & rb_tipo_cliente & "')"
+		else
+			s_where = s_where & " (t_CLIENTE.tipo = '" & rb_tipo_cliente & "')"
+			end if
 		end if
 	
 	if rb_tipo_cliente <> ID_PF then
@@ -507,13 +518,21 @@ dim vCodAux, vDescAux
 				end if
 
 			if s_where <> "" then s_where = s_where & " AND"
-			s_where = s_where & " ((t_CLIENTE.tipo = '" & ID_PJ & "') AND (t_CLIENTE.contribuinte_icms_status IN (" & s_where_aux & ")))"
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				s_where = s_where & " ((t_PEDIDO.endereco_tipo_pessoa = '" & ID_PJ & "') AND (t_PEDIDO.endereco_contribuinte_icms_status IN (" & s_where_aux & ")))"
+			else
+				s_where = s_where & " ((t_CLIENTE.tipo = '" & ID_PJ & "') AND (t_CLIENTE.contribuinte_icms_status IN (" & s_where_aux & ")))"
+				end if
 			end if
 		end if
 
     if c_uf_saida <> "" then 
 			if s_where <> "" then s_where = s_where & " AND"
-			s_where = s_where & " (t_CLIENTE.uf = '" + c_uf_saida + "')"
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				s_where = s_where & " (t_PEDIDO.endereco_uf = '" + c_uf_saida + "')"
+			else
+				s_where = s_where & " (t_CLIENTE.uf = '" + c_uf_saida + "')"
+				end if
 			end if
 
      if c_empresa <> "" then
@@ -524,19 +543,31 @@ dim vCodAux, vDescAux
 	if (rb_saida = COD_SAIDA_REL_CIDADE_UF) then
 		if c_loc_uf <> "" then 
 			if s_where <> "" then s_where = s_where & " AND"
-			s_where = s_where & " (t_CLIENTE.uf = '" + c_loc_uf + "')"
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				s_where = s_where & " (t_PEDIDO.endereco_uf = '" + c_loc_uf + "')"
+			else
+				s_where = s_where & " (t_CLIENTE.uf = '" + c_loc_uf + "')"
+				end if
 			end if
 		
 		if c_loc_digitada <> "" then
 			if s_where <> "" then s_where = s_where & " AND"
-			s_where = s_where & " (t_CLIENTE.cidade LIKE '" + c_loc_digitada + "%')"
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				s_where = s_where & " (t_PEDIDO.endereco_cidade LIKE '" + c_loc_digitada + "%')"
+			else
+				s_where = s_where & " (t_CLIENTE.cidade LIKE '" + c_loc_digitada + "%')"
+				end if
 		else
 			s_where_loc = ""
 			if c_loc_escolhidas <> "" then
 				v_loc_escolhidas =split(c_loc_escolhidas, ", ")
 				for i = LBound(v_loc_escolhidas) to UBound(v_loc_escolhidas)
 					if s_where_loc <> "" then s_where_loc = s_where_loc & " OR"
-					s_where_loc = s_where_loc & " (t_CLIENTE.cidade = '" & trim(replace(v_loc_escolhidas(i), "'", "''")) & "' COLLATE Latin1_General_CI_AI)"
+					if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+						s_where_loc = s_where_loc & " (t_PEDIDO.endereco_cidade = '" & trim(replace(v_loc_escolhidas(i), "'", "''")) & "' COLLATE Latin1_General_CI_AI)"
+					else
+						s_where_loc = s_where_loc & " (t_CLIENTE.cidade = '" & trim(replace(v_loc_escolhidas(i), "'", "''")) & "' COLLATE Latin1_General_CI_AI)"
+						end if
 					next
 				if s_where_loc <> "" then
 						s_where_loc = " AND (" & s_where_loc & ") "
@@ -762,7 +793,11 @@ dim vCodAux, vDescAux
 			strSqlCampoSaidaNameOnly = "indicador, " & _
 										"uf"
 		elseif rb_saida = COD_SAIDA_REL_UF then
-			strSqlCampoSaida = "t_CLIENTE.uf"
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				strSqlCampoSaida = "t_PEDIDO.endereco_uf AS uf"
+			else
+				strSqlCampoSaida = "t_CLIENTE.uf"
+				end if
 			strSqlCampoSaidaNameOnly = "uf"
 		elseif rb_saida = COD_SAIDA_REL_INDICADOR_UF then
 			strSqlCampoSaida =	"t_ORCAMENTISTA_E_INDICADOR.uf, " & _
@@ -770,8 +805,13 @@ dim vCodAux, vDescAux
 			strSqlCampoSaidaNameOnly = "uf, " & _
 										"indicador"
 		elseif rb_saida = COD_SAIDA_REL_CIDADE_UF then
-			strSqlCampoSaida =	"t_CLIENTE.uf, " & _
-								"t_CLIENTE.cidade COLLATE Latin1_General_CI_AI AS cidade"
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				strSqlCampoSaida =	"t_PEDIDO.endereco_uf AS uf, " & _
+									"t_PEDIDO.endereco_cidade COLLATE Latin1_General_CI_AI AS cidade"
+			else
+				strSqlCampoSaida =	"t_CLIENTE.uf, " & _
+									"t_CLIENTE.cidade COLLATE Latin1_General_CI_AI AS cidade"
+				end if
 			strSqlCampoSaidaNameOnly = "uf, " & _
 										"cidade COLLATE Latin1_General_CI_AI  AS cidade"
         elseif rb_saida = COD_SAIDA_REL_ORIGEM_PEDIDO then
@@ -807,7 +847,7 @@ dim vCodAux, vDescAux
 			strSqlCampoSaidaNameOnly = ""
 			end if
 		
-		if strSqlCampoGroupByOrderBy = "" then strSqlCampoGroupByOrderBy = replace(replace(replace(strSqlCampoSaida, "AS grupo_descricao", ""), "AS cidade", ""), "AS subgrupo_descricao", "")
+		if strSqlCampoGroupByOrderBy = "" then strSqlCampoGroupByOrderBy = replace(replace(replace(replace(strSqlCampoSaida, "AS grupo_descricao", ""), "AS cidade", ""), "AS subgrupo_descricao", ""), "AS uf", "")
 		if strSqlCampoGroupByOrderByNameOnly = "" then strSqlCampoGroupByOrderByNameOnly = replace(strSqlCampoSaidaNameOnly, "AS cidade", "")
 
 		s = s_where
@@ -996,13 +1036,22 @@ dim vCodAux, vDescAux
 			strSqlCampoSaida =	"t_PEDIDO__BASE.indicador, " & _
 								"t_ORCAMENTISTA_E_INDICADOR.uf"
 		elseif rb_saida = COD_SAIDA_REL_UF then
-			strSqlCampoSaida = "t_CLIENTE.uf"
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				strSqlCampoSaida = "t_PEDIDO.endereco_uf AS uf"
+			else
+				strSqlCampoSaida = "t_CLIENTE.uf"
+				end if
 		elseif rb_saida = COD_SAIDA_REL_INDICADOR_UF then
 			strSqlCampoSaida =	"t_ORCAMENTISTA_E_INDICADOR.uf, " & _
 								"t_PEDIDO__BASE.indicador"
 		elseif rb_saida = COD_SAIDA_REL_CIDADE_UF then
-			strSqlCampoSaida =	"t_CLIENTE.uf, " & _
-								"t_CLIENTE.cidade COLLATE Latin1_General_CI_AI"
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				strSqlCampoSaida =	"t_PEDIDO.endereco_uf AS uf, " & _
+									"t_PEDIDO.endereco_cidade COLLATE Latin1_General_CI_AI AS cidade"
+			else
+				strSqlCampoSaida =	"t_CLIENTE.uf, " & _
+									"t_CLIENTE.cidade COLLATE Latin1_General_CI_AI"
+				end if
         elseif rb_saida = COD_SAIDA_REL_ORIGEM_PEDIDO then
 		'	QUANDO NÃO HOUVER CÓDIGO DA ORIGEM DA PEDIDO, AGRUPA PELA LOJA
             strSqlCampoSaida = "t_CODIGO_DESCRICAO.codigo_pai, " & _
@@ -1023,7 +1072,7 @@ dim vCodAux, vDescAux
 			strSqlCampoSaida = ""
 			end if
 		
-		if strSqlCampoGroupByOrderBy = "" then strSqlCampoGroupByOrderBy = replace(replace(strSqlCampoSaida, "AS grupo_descricao", ""), "AS subgrupo_descricao", "")
+		if strSqlCampoGroupByOrderBy = "" then strSqlCampoGroupByOrderBy = replace(replace(replace(replace(strSqlCampoSaida, "AS grupo_descricao", ""), "AS subgrupo_descricao", ""), "AS uf", ""), "AS cidade", "")
 
 	'	A) LEMBRE-SE DE INCLUIR A RESTRIÇÃO "anulado_status=0" P/ SELECIONAR APENAS 
 	'	OS MOVIMENTOS VÁLIDOS, POIS "anulado_status<>0" INDICAM MOVIMENTOS QUE 

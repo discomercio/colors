@@ -279,6 +279,7 @@
 				rs("endereco_produtor_rural_status") = sx("endereco_produtor_rural_status")
 				rs("endereco_ie") = sx("endereco_ie")
 				rs("endereco_rg") = sx("endereco_rg")
+				rs("endereco_contato") = sx("endereco_contato")
 				end if
 
 			rs("StBemUsoConsumo") = sx("StBemUsoConsumo")
