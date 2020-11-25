@@ -41,6 +41,14 @@
 '	   E são convertidos através da funções:
 '	   strDataHora = Cstr(CDbl(Now))
 '	   dteDataHora = CDate(strDataHora)
+'
+' Alteração em 28/10/2020, para integrar o site em MVC da loja com o ASP.
+'	Ao chamar o ASP, o site em MVC passa o parâmetro OrigemSolicitacao=LojaMvc
+'	Neste caso, o ASP deve usar a loja indicada na URL; se a loja da sessão for
+'	diferente da solicitada, deve recriar a sessão a partir do SessionCtrlInfo. 
+'	Se recriar a sessão (porque a sessão na existe ou porque é outra loja), 
+'	não deve fazer o log de sessão restaurada.
+'
 ' ======================================================================================
 
 dim str__SessionCtrlInfo
@@ -63,7 +71,15 @@ dim bln__SessionCtrlRestaurarSessao
 dim cn__SessionCtrl
 dim rs__SessionCtrl, rs2__SessionCtrl
 
-if Trim(Session("usuario_atual")) = "" then
+dim bln_OrigemSolicitacaoLojaMvc
+
+bln_OrigemSolicitacaoLojaMvc = false
+if Trim(Request("OrigemSolicitacao")) = "LojaMvc" then
+	bln_OrigemSolicitacaoLojaMvc = true
+	end if
+
+
+if Trim(Session("usuario_atual")) = "" or bln_OrigemSolicitacaoLojaMvc then
 	str__SessionCtrlInfo = Trim(Request("SessionCtrlInfo"))
 	if str__SessionCtrlInfo = "" then str__SessionCtrlInfo = Trim(Session("SessionCtrlInfo"))
 	
@@ -142,12 +158,23 @@ if Trim(Session("usuario_atual")) = "" then
 		
 		if str__SessionCtrlCampoModulo = SESSION_CTRL_MODULO_LOJA then
 			if str__SessionCtrlCampoLoja = "" then bln__SessionCtrlRestaurarSessao = False
+
+			'se a sessão já existe então entramos aqui porque bln_OrigemSolicitacaoLojaMvc
+			'quando ela já existe, só forçamos a recriar a sessão se foi solicitada outra loja.
+			'note que ele usa a loja passada na URL, e não o campo t_USUARIO.SessionCtrlLoja (mais abaixo)
+			'O que é passado na URL pode estar diferente do banco, e queremos garantir que seja o que 
+			'a LojaMvc esteja mostrando na tela.
+			if Trim(Session("usuario_atual")) = str__SessionCtrlCampoUsuario and bln_OrigemSolicitacaoLojaMvc and Trim(Session("loja_atual")) = str__SessionCtrlCampoLoja then
+				bln__SessionCtrlRestaurarSessao = False
+				end if
+
 			end if
-		
+
 		if bdd_conecta(cn__SessionCtrl) then 
 			
 			if bln__SessionCtrlRestaurarSessao then
 				'Verifica se o tempo de sessão inativa realmente já foi excedido
+				'Caso seja bln_OrigemSolicitacaoLojaMvc, nunca irá ocorrer porque a LojaMvc sempre manda a data da última atividade como agora
 				if (CDbl(Now) - CDbl(str__SessionCtrlCampoDtHrUltAtividade)) > (SESSION_CTRL_TIMEOUT_SESSAO_MIN * (1/(24*60)))then
 					bln__SessionCtrlRestaurarSessao = False
 					'Limpa o campo ticket p/ assegurar que a sessão está expirada e também
@@ -204,21 +231,23 @@ if Trim(Session("usuario_atual")) = "" then
 							end if
 							
 						'Log da sessão restaurada
-						str__SessionCtrlSQL = "INSERT INTO t_SESSAO_RESTAURADA (" & _
-													"Usuario, " & _
-													"DataHora, " & _
-													"Modulo, " & _
-													"Loja, " & _
-													"DtHrInicioSessao" & _
-												") VALUES (" & _
-													"'" & QuotedStr(str__SessionCtrlCampoUsuario) & "', " & _
-													bd_formata_data_hora(Now) & ", " & _
-													"'" & str__SessionCtrlCampoModulo & "', " & _
-													"'" & str__SessionCtrlCampoLoja & "', " & _
-													bd_formata_data_hora(rs__SessionCtrl("SessionCtrlDtHrLogon")) & _
-												")"
-						cn__SessionCtrl.Execute(str__SessionCtrlSQL)
-						end if
+						if not bln_OrigemSolicitacaoLojaMvc then
+							str__SessionCtrlSQL = "INSERT INTO t_SESSAO_RESTAURADA (" & _
+														"Usuario, " & _
+														"DataHora, " & _
+														"Modulo, " & _
+														"Loja, " & _
+														"DtHrInicioSessao" & _
+													") VALUES (" & _
+														"'" & QuotedStr(str__SessionCtrlCampoUsuario) & "', " & _
+														bd_formata_data_hora(Now) & ", " & _
+														"'" & str__SessionCtrlCampoModulo & "', " & _
+														"'" & str__SessionCtrlCampoLoja & "', " & _
+														bd_formata_data_hora(rs__SessionCtrl("SessionCtrlDtHrLogon")) & _
+													")"
+							cn__SessionCtrl.Execute(str__SessionCtrlSQL)
+							end if	'if not bln_OrigemSolicitacaoLojaMvc
+						end if	'if bln__SessionCtrlRestaurarSessao then ' Recria a sessão!!!
 					end if  'if Not rs__SessionCtrl.Eof
 				
 				rs__SessionCtrl.Close
@@ -231,5 +260,5 @@ if Trim(Session("usuario_atual")) = "" then
 
 		end if  'if (str__SessionCtrlInfo <> "")
 
-	end if  'if (Trim(Session("usuario_atual")) = "")
+	end if  'if Trim(Session("usuario_atual")) = "" or bln_OrigemSolicitacaoLojaMvc
 %>
