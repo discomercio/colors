@@ -148,6 +148,41 @@ dim x, r, strResp, ha_default, strSql, v, i
 end function
 
 
+'----------------------------------------------------------------------------------------------
+' SUBGRUPOS MONTA ITENS SELECT
+function subgrupos_monta_itens_select(byval id_default)
+dim x, r, strSql, strResp, ha_default, sDescricao
+	id_default = Trim("" & id_default)
+	ha_default=False
+	strSql = "SELECT DISTINCT tP.subgrupo, tPS.descricao FROM t_PRODUTO tP LEFT JOIN t_PRODUTO_SUBGRUPO tPS ON (tP.subgrupo = tPS.codigo) WHERE LEN(Coalesce(tP.subgrupo,'')) > 0 ORDER by tP.subgrupo"
+	set r = cn.Execute(strSql)
+	strResp = ""
+	do while Not r.eof 
+		x = UCase(Trim("" & r("subgrupo")))
+		sDescricao = Trim("" & r("descricao"))
+		if (id_default<>"") And (id_default=x) then
+			strResp = strResp & "<OPTION SELECTED"
+			ha_default=True
+		else
+			strResp = strResp & "<OPTION"
+			end if
+		strResp = strResp & " VALUE='" & x & "'>"
+		strResp = strResp & x
+		if sDescricao <> "" then strResp = strResp & " &nbsp;(" & sDescricao & ")"
+		strResp = strResp & "</OPTION>" & chr(13)
+		r.MoveNext
+		loop
+
+'	if Not ha_default then
+'		strResp = "<OPTION SELECTED VALUE=''>&nbsp;</OPTION>" & chr(13) & strResp
+'		end if
+		
+	subgrupos_monta_itens_select = strResp
+	r.close
+	set r=nothing
+end function
+
+
 
 ' ____________________________________________________________________________
 ' POTENCIA BTU MONTA ITENS SELECT
@@ -306,6 +341,9 @@ end function
         $("#c_dt_inicio").hUtilUI('datepicker_filtro_inicial');
         $("#c_dt_termino").hUtilUI('datepicker_filtro_final');
 
+        $("#c_dt_nf_inicio").hUtilUI('datepicker_filtro_inicial');
+        $("#c_dt_nf_termino").hUtilUI('datepicker_filtro_final');
+
         $("#divMsgAguardeObtendoDados").css('filter', 'alpha(opacity=50)');
     });
 
@@ -316,17 +354,17 @@ var s_de, s_ate;
 var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 
 //  PERÍODO
-	if (trim(f.c_dt_inicio.value)=="") {
-		alert("Informe a data inicial do período!!");
-		f.c_dt_inicio.focus();
-		return;
-		}
+	//if (trim(f.c_dt_inicio.value)=="") {
+	//	alert("Informe a data inicial do período!!");
+	//	f.c_dt_inicio.focus();
+	//	return;
+	//	}
 	
-	if (trim(f.c_dt_termino.value)=="") {
-		alert("Informe a data final do período!!");
-		f.c_dt_termino.focus();
-		return;
-		}
+	//if (trim(f.c_dt_termino.value)=="") {
+	//	alert("Informe a data final do período!!");
+	//	f.c_dt_termino.focus();
+	//	return;
+	//	}
 		
 	if (trim(f.c_dt_inicio.value)!="") {
 		if (!isDate(f.c_dt_inicio)) {
@@ -387,6 +425,44 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 			}
 		}
 
+//  DATA NF ENTRADA
+    if (trim(f.c_dt_nf_inicio.value) != "") {
+        if (!isDate(f.c_dt_nf_inicio)) {
+            alert("Data inválida!!");
+            f.c_dt_nf_inicio.focus();
+            return;
+        }
+    }
+
+    if (trim(f.c_dt_nf_termino.value) != "") {
+        if (!isDate(f.c_dt_nf_termino)) {
+            alert("Data inválida!!");
+            f.c_dt_nf_termino.focus();
+            return;
+        }
+    }
+
+    s_de = trim(f.c_dt_nf_inicio.value);
+    s_ate = trim(f.c_dt_nf_termino.value);
+    if ((s_de != "") && (s_ate != "")) {
+        s_de = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_de));
+        s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
+        if (s_de > s_ate) {
+            alert("Emissão NF Entrada: data de término é menor que a data de início!!");
+            f.c_dt_nf_termino.focus();
+            return;
+        }
+    }
+
+
+//  UMA DAS DATAS (PERÍODO OU NF ENTRADA) DEVE ESTAR PREENCHIDA
+    if ((trim(f.c_dt_inicio.value) == "") && (trim(f.c_dt_termino.value) == "") && (trim(f.c_dt_nf_inicio.value) == "") && (trim(f.c_dt_nf_termino.value) == "")) {
+		alert("Pelo menos uma faixa de datas (período ou data nf entrada) deve estar preenchida!!");
+		f.c_dt_inicio.focus();
+		return;
+		}
+
+
 	b=false;
 	for (i=0; i<f.rb_detalhe.length; i++) {
 		if (f.rb_detalhe[i].checked) {
@@ -410,6 +486,9 @@ function limpaCampoSelectFabricante() {
 function limpaCampoSelectProduto() {
     $("#c_grupo").children().prop('selected', false);
 }
+function limpaCampoSelectSubgrupo() {
+    $("#c_subgrupo").children().prop('selected', false);
+}
 function limpaCampoSelect(c) {
     c.options[0].selected = true;
 }
@@ -417,14 +496,14 @@ function limpaCampoSelect(c) {
     <script type="text/javascript">
         function geraArquivoXLS(f) {
             var serverVariableUrl, strUrl, xmlHttp;
-            var i, dt_inicio, dt_termino, fabricante, grupo, valorVisao;
+            var i, dt_inicio, dt_termino, fabricante, grupo, subgrupo, dt_nf_inicio, dt_nf_termino, valorVisao;
             var s_de, s_ate, s_hoje, b;
 
-            if (trim(f.c_dt_inicio.value) == "") {
-                alert("Informe a data de início do período de vendas!!");
-                f.c_dt_inicio.focus();
-                return;
-            }
+            //if (trim(f.c_dt_inicio.value) == "") {
+            //    alert("Informe a data de início do período de vendas!!");
+            //    f.c_dt_inicio.focus();
+            //    return;
+            //}
 
             if (!isDate(f.c_dt_inicio)) {
                 alert("Data inválida!!");
@@ -432,11 +511,11 @@ function limpaCampoSelect(c) {
                 return;
             }
 
-            if (trim(f.c_dt_termino.value) == "") {
-                alert("Informe a data de término do período de vendas!!");
-                f.c_dt_termino.focus();
-                return;
-            }
+            //if (trim(f.c_dt_termino.value) == "") {
+            //    alert("Informe a data de término do período de vendas!!");
+            //    f.c_dt_termino.focus();
+            //    return;
+            //}
 
             if (!isDate(f.c_dt_termino)) {
                 alert("Data inválida!!");
@@ -467,6 +546,38 @@ function limpaCampoSelect(c) {
                 }
             }
 
+            if (!isDate(f.c_dt_nf_inicio)) {
+                alert("Data inválida!!");
+                f.c_dt_nf_inicio.focus();
+                return;
+            }
+
+            if (!isDate(f.c_dt_nf_termino)) {
+                alert("Data inválida!!");
+                f.c_dt_nf_termino.focus();
+                return;
+            }
+
+            s_de = trim(f.c_dt_nf_inicio.value);
+            s_ate = trim(f.c_dt_nf_termino.value);
+            if ((s_de != "") && (s_ate != "")) {
+                s_de = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_de));
+                s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
+                if (s_de > s_ate) {
+                    alert("Emissão NF Entrada: data de término é menor que a data de início!!");
+                    f.c_dt_nf_termino.focus();
+                    return;
+                }
+            }
+
+            //  UMA DAS DATAS (PERÍODO OU NF ENTRADA) DEVE ESTAR PREENCHIDA
+            if ((trim(f.c_dt_inicio.value) == "") && (trim(f.c_dt_termino.value) == "") && (trim(f.c_dt_nf_inicio.value) == "") && (trim(f.c_dt_nf_termino.value) == "")) {
+                alert("Pelo menos uma faixa de datas (período ou data nf entrada) deve estar preenchida!!");
+                f.c_dt_inicio.focus();
+                return;
+            }
+
+
             var detalhamento = document.getElementsByName('rb_detalhe');
             var detalhamentoValor;
             i = 0;
@@ -479,8 +590,11 @@ function limpaCampoSelect(c) {
 
             fabricante = "";
             grupo = "";
+            subgrupo = "";
             dt_inicio = f.c_dt_inicio.value;
             dt_termino = f.c_dt_termino.value;
+            dt_nf_inicio = f.c_dt_nf_inicio.value;
+            dt_nf_termino = f.c_dt_nf_termino.value;
 
             for (i = 0; i < f.c_fabricante.length; i++) {
                 if (f.c_fabricante[i].selected == true) {
@@ -492,6 +606,12 @@ function limpaCampoSelect(c) {
                 if (f.c_grupo[i].selected == true) {
                     if (grupo != "") grupo += "_";
                     grupo += f.c_grupo[i].value;
+                }
+            }
+            for (i = 0; i < f.c_subgrupo.length; i++) {
+                if (f.c_subgrupo[i].selected == true) {
+                    if (subgrupo != "") subgrupo += "_";
+                    subgrupo += f.c_subgrupo[i].value;
                 }
             }
             b = false;
@@ -527,10 +647,13 @@ function limpaCampoSelect(c) {
             strUrl = strUrl + '&fabricante=' + fabricante;
             strUrl = strUrl + '&produto=' + f.c_produto.value;
             strUrl = strUrl + '&grupo=' + grupo;
+            strUrl = strUrl + '&subgrupo=' + subgrupo;
             strUrl = strUrl + '&btu=' + f.c_potencia_BTU.value;
             strUrl = strUrl + '&ciclo=' + f.c_ciclo.value;
             strUrl = strUrl + '&pos_mercado=' + f.c_posicao_mercado.value;
             strUrl = strUrl + '&nf=' + f.c_nf.value;
+            strUrl = strUrl + '&dt_nf_inicio=' + dt_nf_inicio;
+            strUrl = strUrl + '&dt_nf_termino=' + dt_nf_termino;
             strUrl = strUrl + '&visao=' + "ANALITICA";
             strUrl = strUrl + '&detalhamento=' + detalhamentoValor;
 
@@ -694,6 +817,29 @@ function limpaCampoSelect(c) {
 		</table>
 	</td>
 	</tr>
+
+    <!--  SUBGRUPO  -->
+	<tr bgcolor="#FFFFFF">
+	<td class="ME MD MB" align="left" nowrap>
+		<span class="PLTe">SUBGRUPO</span>
+		<br>
+		<table cellpadding="0" cellspacing="0">
+		<tr>
+		<td>
+			<select id="c_subgrupo" name="c_subgrupo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="10" style="min-width:250px;margin:1px 10px 6px 10px;" multiple>
+			<% =subgrupos_monta_itens_select(get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_subgrupo")) %>
+			</select>
+		</td>
+		<td style="width:1px;"></td>
+		<td align="left" valign="top">
+			<a name="bLimparSubGrupo" id="bLimparSubGrupo" href="javascript:limpaCampoSelectSubgrupo()" title="limpa o filtro 'Subgrupo'">
+						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+		</td>
+		</tr>
+		</table>
+	</td>
+	</tr>
+
 	<!-- BTU/h -->
 	<tr bgcolor="#FFFFFF">
 	<td class="ME MD MB" align="left" nowrap>
@@ -762,6 +908,20 @@ function limpaCampoSelect(c) {
 	<td class="ME MD MB" align="left"><span class="PLTe">Nº Nota Fiscal</span>
 		<br><input name="c_nf" id="c_nf" class="PLLe" maxlength="30" style="margin-left:2pt;width:150px;" onblur="this.value=ucase(trim(this.value));"></td>
 	</tr>
+<!--  DATA DE EMISSÃO DA NOTA FISCAL DE ENTRADA  -->
+	<tr bgColor="#FFFFFF">
+	<td class="ME MD MB" colspan="2" NOWRAP>
+		<table cellSpacing="2" cellPadding="0"><tr bgColor="#FFFFFF"><td>
+		<span class="PLTe" style="cursor:default">DATA NF ENTRADA</span>
+		<br>
+            <input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_nf_inicio" id="c_dt_nf_inicio" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de início inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_nf_termino.focus(); filtra_data();"
+					value='<%=get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_nf_inicio")%>'
+					/>&nbsp;<span class="PLLc" style="color:#808080;">&nbsp;&nbsp;&nbsp;até&nbsp;</span>&nbsp;<input class="PLLc" maxlength="10" style="width:70px; " name="c_dt_nf_termino" id="c_dt_nf_termino" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de término inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.rb_detalhe.focus(); filtra_data();"
+					value='<%=get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_nf_termino")%>'
+					/>
+			</td></tr>
+		</table>
+		</td></tr>
 <!--  TIPO DE DETALHAMENTO  -->
 	<tr bgColor="#FFFFFF">
 	<td colspan="2" class="MDBE" NOWRAP><span class="PLTe">TIPO DE DETALHAMENTO</span>

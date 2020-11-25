@@ -94,109 +94,100 @@
 %>
 
 <script language="JavaScript" type="text/javascript">
-$(function () {
-	$(".TdFab").hide();
-	document.getElementById("img_collapse_fabricante").src = document.getElementById("img_collapse_fabricante").src.replace("CollapseLeft_20px.png", "CollapseRight_20px.png");
-});
+    $(function () {
+        $(".TdFab").hide();
+        document.getElementById("img_collapse_fabricante").src = document.getElementById("img_collapse_fabricante").src.replace("CollapseLeft_20px.png", "CollapseRight_20px.png");
+    });
 
-function toggleColFabricante()
-{
-	if ($(".TdFab").first().is(":visible"))
-	{
-		$(".TdFab").hide();
-		document.getElementById("img_collapse_fabricante").src = document.getElementById("img_collapse_fabricante").src.replace("CollapseLeft_20px.png", "CollapseRight_20px.png");
-	}
-	else
-	{
-		$(".TdFab").show();
-		document.getElementById("img_collapse_fabricante").src = document.getElementById("img_collapse_fabricante").src.replace("CollapseRight_20px.png", "CollapseLeft_20px.png");
-	}
-}
+    function toggleColFabricante() {
+        if ($(".TdFab").first().is(":visible")) {
+            $(".TdFab").hide();
+            document.getElementById("img_collapse_fabricante").src = document.getElementById("img_collapse_fabricante").src.replace("CollapseLeft_20px.png", "CollapseRight_20px.png");
+        }
+        else {
+            $(".TdFab").show();
+            document.getElementById("img_collapse_fabricante").src = document.getElementById("img_collapse_fabricante").src.replace("CollapseRight_20px.png", "CollapseLeft_20px.png");
+        }
+    }
 
-function calcula_tamanho_restante() {
-	var f, s;
-	f = fOP;
-	s = "" + f.c_obs.value;
-	f.c_tamanho_restante.value = MAX_TAM_T_ESTOQUE_CAMPO_OBS - s.length;
-}
+    function calcula_tamanho_restante() {
+        var f, s;
+        f = fOP;
+        s = "" + f.c_obs.value;
+        f.c_tamanho_restante.value = MAX_TAM_T_ESTOQUE_CAMPO_OBS - s.length;
+    }
 
-function cancela_onpaste() {
-	return false;
-}
+    function cancela_onpaste() {
+        return false;
+    }
 
-function fOpConfirma( f ) {
-    var i, b, ha_item;
+    function fOpConfirma(f) {
+        var i, b, ha_item;
 
-    alert("Em desenvolvimento!")
-    return;
+        if (trim(f.c_nfe_emitente_origem.value) == "") {
+            alert("Selecione o CD de origem da transferência!!");
+            f.c_nfe_emitente_origem.focus();
+            return;
+        }
 
-	if (trim(f.c_nfe_emitente_origem.value) == "")
-	{
-		alert("Selecione o CD de origem da transferência!!");
-		f.c_nfe_emitente_origem.focus();
-		return;
-	}
+        if (trim(f.c_nfe_emitente_destino.value) == "") {
+            alert("Selecione o CD de destino da transferência!!");
+            f.c_nfe_emitente_destino.focus();
+            return;
+        }
 
-	if (trim(f.c_nfe_emitente_destino.value) == "")
-	{
-		alert("Selecione o CD de destino da transferência!!");
-		f.c_nfe_emitente_destino.focus();
-		return;
-	}
+        if (trim(f.c_nfe_emitente_origem.value) == trim(f.c_nfe_emitente_destino.value)) {
+            alert("O CD de destino da transferência não pode ser o mesmo da origem!!");
+            f.c_nfe_emitente_destino.focus();
+            return;
+        }
 
-	if (trim(f.c_nfe_emitente_origem.value) == trim(f.c_nfe_emitente_destino.value))
-	{
-		alert("O CD de destino da transferência não pode ser o mesmo da origem!!");
-		f.c_nfe_emitente_destino.focus();
-		return;
-	}
+        ha_item = false;
+        for (i = 0; i < f.c_produto.length; i++) {
+            b = false;
+            if (trim(f.c_fabricante[i].value) != "") b = true;
+            if (trim(f.c_produto[i].value) != "") b = true;
+            if (trim(f.c_qtde[i].value) != "") b = true;
 
-	ha_item=false;
-	for (i=0; i < f.c_produto.length; i++) {
-		b = false;
-		if (trim(f.c_fabricante[i].value)!="") b=true;
-		if (trim(f.c_produto[i].value)!="") b=true;
-		if (trim(f.c_qtde[i].value)!="") b=true;
-		
-		if (b) {
-			ha_item=true;
-			if (trim(f.c_produto[i].value)=="") {
-				alert("Informe o código do produto!!");
-				f.c_produto[i].focus();
-				return;
-				}
-			if (trim(f.c_qtde[i].value)=="") {
-				alert("Informe a quantidade!!");
-				f.c_qtde[i].focus();
-				return;
-				}
-			if (parseInt(f.c_qtde[i].value)<=0) {
-				alert("Quantidade inválida!!");
-				f.c_qtde[i].select();
-				f.c_qtde[i].focus();
-				return;
-				}
-			}
-		}
+            if (b) {
+                ha_item = true;
+                if (trim(f.c_produto[i].value) == "") {
+                    alert("Informe o código do produto!!");
+                    f.c_produto[i].focus();
+                    return;
+                }
+                if (trim(f.c_qtde[i].value) == "") {
+                    alert("Informe a quantidade!!");
+                    f.c_qtde[i].focus();
+                    return;
+                }
+                if (parseInt(f.c_qtde[i].value) <= 0) {
+                    alert("Quantidade inválida!!");
+                    f.c_qtde[i].select();
+                    f.c_qtde[i].focus();
+                    return;
+                }
+            }
+        }
 
-	if (!ha_item) {
-		alert("Não há produtos na lista!!");
-		f.c_produto[0].focus();
-		return;
-		}
-	
-	//s = "" + f.c_obs.value;
-	//if (s.length > MAX_TAM_T_ESTOQUE_CAMPO_OBS) {
-	//	alert('Conteúdo de "Observações" excede em ' + (s.length-MAX_TAM_T_ESTOQUE_CAMPO_OBS) + ' caracteres o tamanho máximo de ' + MAX_TAM_T_ESTOQUE_CAMPO_OBS + '!!');
-	//	f.c_obs.focus();
-	//	return;
-	//	}
-	
-	dCONFIRMA.style.visibility="hidden";
-	window.status = "Aguarde ...";
-	
-	f.submit();
-}
+        if (!ha_item) {
+            alert("Não há produtos na lista!!");
+            f.c_produto[0].focus();
+            return;
+        }
+
+        //s = "" + f.c_obs.value;
+        //if (s.length > MAX_TAM_T_ESTOQUE_CAMPO_OBS) {
+        //	alert('Conteúdo de "Observações" excede em ' + (s.length-MAX_TAM_T_ESTOQUE_CAMPO_OBS) + ' caracteres o tamanho máximo de ' + MAX_TAM_T_ESTOQUE_CAMPO_OBS + '!!');
+        //	f.c_obs.focus();
+        //	return;
+        //	}
+
+        dCONFIRMA.style.visibility = "hidden";
+        window.status = "Aguarde ...";
+
+        f.submit();
+    }
 
 </script>
 
@@ -302,7 +293,7 @@ function fOpConfirma( f ) {
 	<td class="MB" align="left"><span class="PLTe">Produto</span></td>
 	<td class="MB" align="left"><span class="PLTd">Qtde</span></td>
 	</tr>
-<% for i=1 to MAX_PRODUTOS_ENTRADA_ESTOQUE %>
+<% for i=1 to MAX_ITENS %>
 	<tr>
 	<td class="MD" align="left">
 		<input name="c_linha" id="c_linha" readonly tabindex=-1 class="PLLe" maxlength="2" style="width:30px;text-align:right;color:#808080;" 

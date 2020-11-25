@@ -39,6 +39,9 @@
 	dim cn
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	alerta = ""
 
@@ -92,7 +95,17 @@ dim w_cliente, w_valor
 	s_from = " FROM t_ORCAMENTO INNER JOIN t_CLIENTE ON (t_ORCAMENTO.id_cliente=t_CLIENTE.id)"
 
 	s_sql = "SELECT t_ORCAMENTO.loja, CONVERT(smallint,t_ORCAMENTO.loja) AS numero_loja," & _
-			" t_ORCAMENTO.data, t_ORCAMENTO.orcamento, t_ORCAMENTO.vl_total, t_CLIENTE.nome_iniciais_em_maiusculas" & _
+			" t_ORCAMENTO.data, t_ORCAMENTO.orcamento, t_ORCAMENTO.vl_total,"
+	
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" dbo.SqlClrUtilIniciaisEmMaiusculas(t_ORCAMENTO.endereco_nome) AS nome_iniciais_em_maiusculas"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome_iniciais_em_maiusculas"
+		end if
+
+	s_sql = s_sql & _
 			s_from & _
 			s_where
 

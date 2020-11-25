@@ -118,8 +118,27 @@
 	alerta = ""
 	deve_devolver = False
 
+    dim id_pedido_chamado_depto
+    dim r_pedido, r_vendedor
+	if Not le_pedido(pedido_selecionado, r_pedido, msg_erro) then
+		alerta = msg_erro
+		end if
+
+    if alerta = "" then
+        call le_usuario(r_pedido.vendedor, r_vendedor, msg_erro)
+        end if
+
+    if (r_pedido.st_forma_pagto_possui_parcela_cartao = 1) Or (r_pedido.st_forma_pagto_possui_parcela_cartao_maquineta = 1) then
+        '2=Financeiro/Devolução (Pagamento em Cartão) -> para pedidos que tenham pagamento em cartão
+        id_pedido_chamado_depto = 3
+    else
+        '2=Financeiro/Devolução -> para pedidos que não tenham pagamento em cartão
+        id_pedido_chamado_depto = 2
+        end if
+
     if c_procedimento = "" then
-        alerta = "Procedimento não foi informado."
+        alerta = texto_add_br(alerta)
+        alerta = alerta & "Procedimento não foi informado."
         end if
     if c_local_coleta = "" then
         alerta = texto_add_br(alerta)
@@ -294,19 +313,25 @@
                     rs("dt_hr_aprovado") = Now
                     delete_file_scheduled_date = DateAdd("m", 2, Date)
         
+                    dim strEmailDestinatarioAlerta
                     dim strEmailAdministrador
                     set strEmailAdministrador = get_registro_t_parametro("PEDIDO_DEVOLUCAO_EMAIL_ADMINISTRADOR_2")
-                    corpo_mensagem = "A pré-devolução referente o pedido " & pedido_selecionado & " foi aprovada por " & usuario & " em " & formata_data_hora(Now) & "."
-                    EmailSndSvcGravaMensagemParaEnvio EMAILSNDSVC_REMETENTE__PEDIDO_DEVOLUCAO, _
-                                                                            "", _
-                                                                            strEmailAdministrador.campo_texto, _
-                                                                            "", _
-                                                                            "", _
-                                                                            "Pré-devolução aprovada", _
-                                                                            corpo_mensagem, _
-                                                                            Now, _
-                                                                            id_email, _
-                                                                            msg_erro_grava_email
+                    '16/09/2020: a Gabriela Hernandes solicitou para enviar o email de alerta para o vendedor apenas
+                    'strEmailDestinatarioAlerta = Trim("" & strEmailAdministrador.campo_texto)
+                    strEmailDestinatarioAlerta = Trim("" & r_vendedor.email)
+                    if strEmailDestinatarioAlerta <> "" then
+                        corpo_mensagem = "A pré-devolução referente o pedido " & pedido_selecionado & " foi aprovada por " & usuario & " em " & formata_data_hora(Now) & "."
+                        EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__PEDIDO_DEVOLUCAO), _
+                                                                                "", _
+                                                                                strEmailDestinatarioAlerta, _
+                                                                                "", _
+                                                                                "", _
+                                                                                "Pré-devolução aprovada", _
+                                                                                corpo_mensagem, _
+                                                                                Now, _
+                                                                                id_email, _
+                                                                                msg_erro_grava_email
+                        end if
 
                 elseif rb_status = COD_ST_PEDIDO_DEVOLUCAO__REPROVADA then
                     rs("st_reprovado") = 1
@@ -675,7 +700,7 @@
                             rs("cod_motivo_abertura")=cod_motivo_abertura_chamado
                             rs("texto_chamado")=texto_chamado
                             rs("nivel_acesso")=COD_NIVEL_ACESSO_CHAMADO_PEDIDO__RESTRITO
-                            rs("id_depto")=2 '2=Financeiro/Devolução
+                            rs("id_depto")=id_pedido_chamado_depto
                             rs("contato")=usuario
                             rs.Update
                             if Err <> 0 then
@@ -690,7 +715,7 @@
                                     " descricao AS descricao_depto," & _
                                     " Coalesce((SELECT email FROM t_USUARIO WHERE usuario=tPCD.usuario_responsavel), '') AS email" & _ 
                                 " FROM t_PEDIDO_CHAMADO_DEPTO tPCD" & _
-                                " WHERE (id = 2)" '2=Financeiro/Devolução
+                                " WHERE (id = " & Cstr(id_pedido_chamado_depto) & ")"
                             if rs.State <> 0 then rs.Close
                             rs.Open s, cn
                             if Not rs.Eof then
@@ -708,7 +733,7 @@
                                 s_destinatario = Trim("" & rs("email"))
 
                                 if s_destinatario <> "" then
-                                EmailSndSvcGravaMensagemParaEnvio EMAILSNDSVC_REMETENTE__CHAMADOS_EM_PEDIDOS, _
+                                EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__CHAMADOS_EM_PEDIDOS), _
                                                                     s_remetente, _
                                                                     s_destinatario, _
                                                                     "", _
@@ -772,7 +797,7 @@
                             rs("cod_motivo_abertura")=cod_motivo_abertura_chamado
                             rs("texto_chamado")=texto_chamado 
                             rs("nivel_acesso")=COD_NIVEL_ACESSO_CHAMADO_PEDIDO__RESTRITO
-                            rs("id_depto")=2
+                            rs("id_depto")=id_pedido_chamado_depto
                             rs("contato")=usuario
                             rs.Update
                             if Err <> 0 then
@@ -787,7 +812,7 @@
                                     " descricao AS descricao_depto," & _
                                     " Coalesce((SELECT email FROM t_USUARIO WHERE usuario=tPCD.usuario_responsavel), '') AS email" & _ 
                                 " FROM t_PEDIDO_CHAMADO_DEPTO tPCD" & _
-                                " WHERE (id = 2)"
+                                " WHERE (id = " & Cstr(id_pedido_chamado_depto) & ")"
                             if rs.State <> 0 then rs.Close
                             rs.Open s, cn
                             if Not rs.Eof then
@@ -805,7 +830,7 @@
                                 s_destinatario = Trim("" & rs("email"))
 
                                 if s_destinatario <> "" then
-                                EmailSndSvcGravaMensagemParaEnvio EMAILSNDSVC_REMETENTE__CHAMADOS_EM_PEDIDOS, _
+                                EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__CHAMADOS_EM_PEDIDOS), _
                                                                     s_remetente, _
                                                                     s_destinatario, _
                                                                     "", _

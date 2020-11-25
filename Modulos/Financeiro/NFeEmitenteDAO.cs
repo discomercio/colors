@@ -39,10 +39,13 @@ namespace Financeiro
 
 			#region [ Dados do emitente ]
 			strSql = "SELECT " +
-						"*" +
-					" FROM t_NFe_EMITENTE" +
-					" WHERE" +
-						" (id = " + id.ToString() + ")";
+						"e.*, " +
+                        "n.NFe_Numero_NF, " +
+                        "n.NFe_Serie_NF " +
+                    " FROM t_NFe_EMITENTE e" +
+                    " INNER JOIN t_NFe_EMITENTE_NUMERACAO n ON e.cnpj = n.cnpj" +
+                    " WHERE" +
+						" (e.id = " + id.ToString() + ")";
 			cmCommand.CommandText = strSql;
 			daDataAdapter.SelectCommand = cmCommand;
 			daDataAdapter.MissingSchemaAction = MissingSchemaAction.Add;

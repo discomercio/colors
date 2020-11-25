@@ -45,6 +45,9 @@
 	dim cn, rs, sx
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim blnUsarMemorizacaoCompletaEnderecos
+	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim total_estoque_sem_presenca, total_estoque_vendido
 	dim i, n, v_split, alerta, deve_splitar, id_pedido_filhote, s_log, msg_erro
 	redim v_split(0)
@@ -190,11 +193,36 @@
 			rs("EndEtg_uf") = sx("EndEtg_uf")
 			rs("EndEtg_cep") = sx("EndEtg_cep")
 			rs("EndEtg_cod_justificativa") = sx("EndEtg_cod_justificativa")
+			if blnUsarMemorizacaoCompletaEnderecos then
+				rs("EndEtg_email") = sx("EndEtg_email")
+				rs("EndEtg_email_xml") = sx("EndEtg_email_xml")
+				rs("EndEtg_nome") = sx("EndEtg_nome")
+				rs("EndEtg_ddd_res") = sx("EndEtg_ddd_res")
+				rs("EndEtg_tel_res") = sx("EndEtg_tel_res")
+				rs("EndEtg_ddd_com") = sx("EndEtg_ddd_com")
+				rs("EndEtg_tel_com") = sx("EndEtg_tel_com")
+				rs("EndEtg_ramal_com") = sx("EndEtg_ramal_com")
+				rs("EndEtg_ddd_cel") = sx("EndEtg_ddd_cel")
+				rs("EndEtg_tel_cel") = sx("EndEtg_tel_cel")
+				rs("EndEtg_ddd_com_2") = sx("EndEtg_ddd_com_2")
+				rs("EndEtg_tel_com_2") = sx("EndEtg_tel_com_2")
+				rs("EndEtg_ramal_com_2") = sx("EndEtg_ramal_com_2")
+				rs("EndEtg_tipo_pessoa") = sx("EndEtg_tipo_pessoa")
+				rs("EndEtg_cnpj_cpf") = sx("EndEtg_cnpj_cpf")
+				rs("EndEtg_contribuinte_icms_status") = sx("EndEtg_contribuinte_icms_status")
+				rs("EndEtg_produtor_rural_status") = sx("EndEtg_produtor_rural_status")
+				rs("EndEtg_ie") = sx("EndEtg_ie")
+				rs("EndEtg_rg") = sx("EndEtg_rg")
+				end if
 
 			rs("st_etg_imediata") = sx("st_etg_imediata")
 			rs("etg_imediata_data") = sx("etg_imediata_data")
 			rs("etg_imediata_usuario") = sx("etg_imediata_usuario")
 			
+			rs("pedido_bs_x_ac") = sx("pedido_bs_x_ac")
+			rs("pedido_bs_x_marketplace") = sx("pedido_bs_x_marketplace")
+			rs("marketplace_codigo_origem") = sx("marketplace_codigo_origem")
+
 			rs("GarantiaIndicadorStatus") = sx("GarantiaIndicadorStatus")
 			rs("GarantiaIndicadorUsuarioUltAtualiz") = sx("GarantiaIndicadorUsuarioUltAtualiz")
 			rs("GarantiaIndicadorDtHrUltAtualiz") = sx("GarantiaIndicadorDtHrUltAtualiz")
@@ -220,6 +248,7 @@
 			rs("usuario_cadastro") = sx("usuario_cadastro")
 			
 			rs("plataforma_origem_pedido") = sx("plataforma_origem_pedido")
+
 			rs("endereco_memorizado_status") = sx("endereco_memorizado_status")
 			rs("endereco_logradouro") = sx("endereco_logradouro")
 			rs("endereco_numero") = sx("endereco_numero")
@@ -229,10 +258,37 @@
 			rs("endereco_uf") = sx("endereco_uf")
 			rs("endereco_cep") = sx("endereco_cep")
 
+			if blnUsarMemorizacaoCompletaEnderecos then
+				rs("st_memorizacao_completa_enderecos") = sx("st_memorizacao_completa_enderecos")
+				rs("endereco_email") = sx("endereco_email")
+				rs("endereco_email_xml") = sx("endereco_email_xml")
+				rs("endereco_nome") = sx("endereco_nome")
+				rs("endereco_ddd_res") = sx("endereco_ddd_res")
+				rs("endereco_tel_res") = sx("endereco_tel_res")
+				rs("endereco_ddd_com") = sx("endereco_ddd_com")
+				rs("endereco_tel_com") = sx("endereco_tel_com")
+				rs("endereco_ramal_com") = sx("endereco_ramal_com")
+				rs("endereco_ddd_cel") = sx("endereco_ddd_cel")
+				rs("endereco_tel_cel") = sx("endereco_tel_cel")
+				rs("endereco_ddd_com_2") = sx("endereco_ddd_com_2")
+				rs("endereco_tel_com_2") = sx("endereco_tel_com_2")
+				rs("endereco_ramal_com_2") = sx("endereco_ramal_com_2")
+				rs("endereco_tipo_pessoa") = sx("endereco_tipo_pessoa")
+				rs("endereco_cnpj_cpf") = sx("endereco_cnpj_cpf")
+				rs("endereco_contribuinte_icms_status") = sx("endereco_contribuinte_icms_status")
+				rs("endereco_produtor_rural_status") = sx("endereco_produtor_rural_status")
+				rs("endereco_ie") = sx("endereco_ie")
+				rs("endereco_rg") = sx("endereco_rg")
+				rs("endereco_contato") = sx("endereco_contato")
+				end if
+
 			rs("StBemUsoConsumo") = sx("StBemUsoConsumo")
 			rs("InstaladorInstalaStatus") = sx("InstaladorInstalaStatus")
 			rs("InstaladorInstalaUsuarioUltAtualiz") = sx("InstaladorInstalaUsuarioUltAtualiz")
 			rs("InstaladorInstalaDtHrUltAtualiz") = sx("InstaladorInstalaDtHrUltAtualiz")
+
+			rs("sistema_responsavel_cadastro") = sx("sistema_responsavel_cadastro")
+			rs("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
 			
 			rs.Update
 			if Err <> 0 then

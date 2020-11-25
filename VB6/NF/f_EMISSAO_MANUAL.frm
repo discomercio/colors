@@ -4406,7 +4406,7 @@ Dim aliquota_icms As Single
 '   LOCAL DE DESTINO DA OPERAÇÃO
 '   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 '   DEFAULT
-    s = "1 -"
+    s = "2 -"
     For i = 0 To cb_loc_dest.ListCount - 1
         If left$(cb_loc_dest.List(i), Len(s)) = s Then
             cb_loc_dest.ListIndex = i
@@ -4417,7 +4417,7 @@ Dim aliquota_icms As Single
 '   NATUREZA DA OPERAÇÃO
 '   ~~~~~~~~~~~~~~~~~~~~
 '   DEFAULT
-    s = "5.102"
+    s = "6.108"
     For i = 0 To cb_natureza.ListCount - 1
         If left$(cb_natureza.List(i), Len(s)) = s Then
             cb_natureza.ListIndex = i
@@ -4796,7 +4796,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' BANCO DE DADOS
 Dim t_FIN_BOLETO_CEDENTE As ADODB.Recordset
@@ -5035,7 +5035,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' BANCO DE DADOS
 Dim t_NFE_EMITENTE As ADODB.Recordset
@@ -8327,11 +8327,17 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         
     '   INFORMAÇÕES SOBRE PARTILHA DO ICMS
         If PARTILHA_ICMS_ATIVA Then
-            If (vl_total_ICMSUFDest > 0) Then
-                If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
-                strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "Valores totais do ICMS Interestadual: partilha da UF Destino " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFDest)
-                If (vl_total_FCPUFDest > 0) Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & " + FCP " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_FCPUFDest)
-                strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "; partilha da UF Origem " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFRemet) & "."
+            'DIFAL- suprimir texto em notas de entrada/devolução
+            If (rNFeImg.ide__tpNF <> "0") And _
+                (strNFeCodFinalidade <> "3") And _
+                (strNFeCodFinalidade <> "4") And _
+                   Not tem_instricao_virtual(usuario.emit_id, rNFeImg.dest__UF) Then
+                If (vl_total_ICMSUFDest > 0) Then
+                    If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
+                    strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "Valores totais do ICMS Interestadual: partilha da UF Destino " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFDest)
+                    If (vl_total_FCPUFDest > 0) Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & " + FCP " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_FCPUFDest)
+                    strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "; partilha da UF Origem " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFRemet) & "."
+                    End If
                 End If
             End If
         End If 'If (strNFeCodFinalidade <> NFE_FINALIDADE_NFE_COMPLEMENTAR)

@@ -94,8 +94,8 @@ dim x, r, strResp
 	set r = cn.Execute("SELECT * FROM t_CODIGO_DESCRICAO WHERE grupo='Pedido_TipoFrete' AND st_inativo=0")
 	strResp = ""
 	do while Not r.eof 
-        if Trim(r("codigo")) = COD_TIPO_FRETE__DEVOLUCAO then r.MoveNext 
-        if Trim(r("codigo")) = COD_TIPO_FRETE__REENTREGA then r.MoveNext
+        ' 08/01/2020: OPÇÃO 'Devolução' DEVE PASSAR A SER EXIBIDA    if Trim(r("codigo")) = COD_TIPO_FRETE__DEVOLUCAO then r.MoveNext
+        ' 08/01/2020: OPÇÃO 'Reentrega' DEVE PASSAR A SER EXIBIDA    if Trim(r("codigo")) = COD_TIPO_FRETE__REENTREGA then r.MoveNext
 		x = Trim("" & r("codigo"))
 		if (id_default=x) then
 			strResp = strResp & "<option selected"

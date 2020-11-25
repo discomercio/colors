@@ -319,6 +319,7 @@ Private Type TIPO_T_PRODUTO
     descricao_html As String
     ean As String
     grupo As String
+    subgrupo As String
     preco_fabricante As Currency
     vl_custo2 As Currency
     estoque_critico As Long
@@ -1995,26 +1996,27 @@ Dim oDescricao As Object
         '   C = DESCRIÇÃO
         '   D = EAN
         '   E = GRUPO
-        '   F = POTÊNCIA (Btu/h)
-        '   G = CICLO (F/QF)
-        '   H = PREÇO FABRICANTE
-        '   I = PESO (KG)
-        '   J = QTDE VOLUMES
-        '   K = CUBAGEM
-        '   L = NCM
-        '   M = CST
-        '   N = POSIÇÃO MERCADO (BÁSICO/PREMIUM)
-        '   O = PERCENTUAL MVA ST
-        '   P = CUSTO2
-        '   Q = ALERTAS
-        '   R = ESTOQUE CRÍTICO
-        '   S = DESCONTINUADO
+        '   F = SUBGRUPO
+        '   G = POTÊNCIA (Btu/h)
+        '   H = CICLO (F/QF)
+        '   I = PREÇO FABRICANTE
+        '   J = PESO (KG)
+        '   K = QTDE VOLUMES
+        '   L = CUBAGEM
+        '   M = NCM
+        '   N = CST
+        '   O = POSIÇÃO MERCADO (BÁSICO/PREMIUM)
+        '   P = PERCENTUAL MVA ST
+        '   Q = CUSTO2
+        '   R = ALERTAS
+        '   S = ESTOQUE CRÍTICO
+        '   T = DESCONTINUADO
             strPrimeiraColunaPlanilha = "A"
-            strUltimaColunaPlanilha = "S"
+            strUltimaColunaPlanilha = "T"
             strColunaDescricao = "C"
             Set oRANGE = oWS.Range(strPrimeiraColunaPlanilha & CStr(ilinha) & ":" & strUltimaColunaPlanilha & CStr(ilinha))
             matriz = oRANGE.Value
-            
+                        
             With rp
                 icol = LBound(matriz, 2) - 1
                 
@@ -2130,69 +2132,73 @@ Dim oDescricao As Object
                     icol = icol + 1
                     .grupo = UCase$(Trim$("" & matriz(LBound(matriz, 1), icol)))
                     
-                '   COL "F" = POTÊNCIA (BTU/H)
+                '   COL "F" = SUBGRUPO
+                    icol = icol + 1
+                    .subgrupo = UCase$(Trim$("" & matriz(LBound(matriz, 1), icol)))
+                    
+                '   COL "G" = POTÊNCIA (BTU/H)
                     icol = icol + 1
                     q = matriz(LBound(matriz, 1), icol)
                     If IsNumeric(q) Then .potencia_BTU = CLng(q) Else .potencia_BTU = 0
                     
-                '   COL "G" = CICLO (F/QF)
+                '   COL "H" = CICLO (F/QF)
                     icol = icol + 1
                     .ciclo = UCase$(Trim$("" & matriz(LBound(matriz, 1), icol)))
                     
-                '   COL "H" = PREÇO FABRICANTE
+                '   COL "I" = PREÇO FABRICANTE
                     icol = icol + 1
                     q = matriz(LBound(matriz, 1), icol)
                     If IsNumeric(q) Then .preco_fabricante = CCur(q) Else .preco_fabricante = 0
                                 
-                '   COL "I" = PESO (KG)
+                '   COL "J" = PESO (KG)
                     icol = icol + 1
                     q = matriz(LBound(matriz, 1), icol)
                     If IsNumeric(q) Then .peso = CDbl(q) Else .peso = 0
                     
-                '   COL "J" = QTDE VOLUMES
+                '   COL "K" = QTDE VOLUMES
                     icol = icol + 1
                     q = matriz(LBound(matriz, 1), icol)
                     If IsNumeric(q) Then .qtde_volumes = CLng(q) Else .qtde_volumes = 0
                     
-                '   COL "K" = CUBAGEM
+                '   COL "L" = CUBAGEM
                     icol = icol + 1
                     q = matriz(LBound(matriz, 1), icol)
                     If IsNumeric(q) Then .cubagem = CDbl(q) Else .cubagem = 0
                     
-                '   COL "L" = NCM
+                '   COL "M" = NCM
                     icol = icol + 1
                     .ncm = Trim$("" & matriz(LBound(matriz, 1), icol))
                     
-                '   COL "M" = CST
+                '   COL "N" = CST
                 '   LEMBRANDO QUE NESTE CAMPO ESTÃO CONCATENADOS OS CÓDIGOS 'ORIG' E 'CST'
                     icol = icol + 1
                     .cst = Trim$("" & matriz(LBound(matriz, 1), icol))
                     
-                '   COL "N" = POSIÇÃO MERCADO (BÁSICO/PREMIUM)
+                '   COL "O" = POSIÇÃO MERCADO (BÁSICO/PREMIUM)
                     icol = icol + 1
                     .posicao_mercado = UCase$(Trim$("" & matriz(LBound(matriz, 1), icol)))
                     
-                '   COL "O" = PERCENTUAL MVA ST
+                '   COL "P" = PERCENTUAL MVA ST
                     icol = icol + 1
                     q = matriz(LBound(matriz, 1), icol)
                     If IsNumeric(q) Then .perc_MVA_ST = CDbl(q) Else .perc_MVA_ST = 0
                     .perc_MVA_ST = .perc_MVA_ST * 100
                     
-                '   COL "P" = CUSTO2
+                '   COL "Q" = CUSTO2
                     icol = icol + 1
                     q = matriz(LBound(matriz, 1), icol)
                     If IsNumeric(q) Then .vl_custo2 = CCur(q) Else .vl_custo2 = 0
                     
-                '   COL "Q" = ALERTAS
+                '   COL "R" = ALERTAS
                     icol = icol + 1
                     .alertas = Trim$("" & matriz(LBound(matriz, 1), icol))
                                 
-                '   COL "R" = ESTOQUE CRÍTICO
+                '   COL "S" = ESTOQUE CRÍTICO
                     icol = icol + 1
                     q = matriz(LBound(matriz, 1), icol)
                     If IsNumeric(q) Then .estoque_critico = CLng(q) Else .estoque_critico = 0
                     
-                '   COL "S" = DESCONTINUADO
+                '   COL "T" = DESCONTINUADO
                     icol = icol + 1
                     .descontinuado = Trim$("" & matriz(LBound(matriz, 1), icol))
                                         
@@ -2249,9 +2255,15 @@ Dim oDescricao As Object
                         GoTo TPC_ABORTA_PROCESSAMENTO
                         End If
                         
-                    If (Len(.grupo) > 2) Then
+                    If (Len(.grupo) > 4) Then
                         msg_erro = "Planilha " & oWS.Name & ", linha " & CStr(ilinha) & _
                                   vbCrLf & "Produto " & .produto & " especifica grupo (" & .grupo & ") que excede o tamanho máximo!!"
+                        GoTo TPC_ABORTA_PROCESSAMENTO
+                        End If
+                        
+                    If (Len(.subgrupo) > 10) Then
+                        msg_erro = "Planilha " & oWS.Name & ", linha " & CStr(ilinha) & _
+                                  vbCrLf & "Produto " & .produto & " especifica subgrupo (" & .subgrupo & ") que excede o tamanho máximo!!"
                         GoTo TPC_ABORTA_PROCESSAMENTO
                         End If
                         
@@ -2311,6 +2323,7 @@ Dim oDescricao As Object
                     rs("descricao_html") = .descricao_html
                     rs("ean") = .ean
                     rs("grupo") = .grupo
+                    rs("subgrupo") = .subgrupo
                     rs("preco_fabricante") = .preco_fabricante
                     rs("vl_custo2") = .vl_custo2
                     rs("estoque_critico") = .estoque_critico

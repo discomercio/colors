@@ -59,6 +59,8 @@
 	dim opcao_consulta
 	opcao_consulta=UCase(Trim(request("op")))
 
+	dim filtro_loja
+	filtro_loja = Trim(Request("filtro_loja"))
 
 
 
@@ -77,26 +79,31 @@ dim r
 	cab="<table class='Q' cellspacing=0 style='border-top:0;border-right:0;border-bottom:0'>" & chr(13)
 	cab=cab & "<tr style='background: #FFF0E0'>"
 	cab=cab & "<td align='left' class='MD MB MC' valign='top' style='min-width:30px;'></td>"
-	cab=cab & "<td width='90' class='MD MB MC' align='left' valign='bottom' nowrap><span class='R' style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='OrcamentistaEIndicadorLista.asp?ord=1" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Identificação</span></td>"
-	cab=cab & "<td width='210' class='MD MB MC' align='left' valign='bottom'><span class='R' style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='OrcamentistaEIndicadorLista.asp?ord=2" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Nome</span></td>"
-	cab=cab & "<td width='105' class='MD MB MC' align='left' valign='bottom'><span class='R' style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='OrcamentistaEIndicadorLista.asp?ord=8" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">CPF/CNPJ</span></td>"
+	cab=cab & "<td width='90' class='MD MB MC' align='left' valign='bottom' nowrap><span class='R' style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='OrcamentistaEIndicadorLista.asp?ord=1" & s_op & "&filtro_loja=" & filtro_loja & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Identificação</span></td>"
+	cab=cab & "<td width='210' class='MD MB MC' align='left' valign='bottom'><span class='R' style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='OrcamentistaEIndicadorLista.asp?ord=2" & s_op & "&filtro_loja=" & filtro_loja & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Nome</span></td>"
+	cab=cab & "<td width='105' class='MD MB MC' align='left' valign='bottom'><span class='R' style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='OrcamentistaEIndicadorLista.asp?ord=8" & s_op & "&filtro_loja=" & filtro_loja & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">CPF/CNPJ</span></td>"
 	cab=cab & "<td width='95' class='MD MB MC' align='left' valign='bottom'><span class='R'>Telefone</span></td>"
-    cab=cab & "<td width='150' class='MD MB MC' valign='bottom'><p class='R'style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='OrcamentistaEIndicadorLista.asp?ord=3" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ");'" & ">Cidade</p></td>"
-	cab=cab & "<td width='35' class='MD MB MC' align='right' valign='bottom' nowrap><span class='Rd' style='font-weight:bold; cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='OrcamentistaEIndicadorLista.asp?ord=4" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Loja</span></td>"
-	cab=cab & "<td width='90' class='MD MB MC' align='left' valign='bottom' nowrap><span class='R' style='font-weight:bold; cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='OrcamentistaEIndicadorLista.asp?ord=5" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Vendedor</span></td>"
-	cab=cab & "<td width='50' class='MD MB MC' align='left' valign='bottom' nowrap><span class='R' style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='OrcamentistaEIndicadorLista.asp?ord=6" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Acesso Sistema</span></td>"
-	cab=cab & "<td width='45' class='MB MC MD' align='left' valign='bottom' nowrap><span class='R' style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='OrcamentistaEIndicadorLista.asp?ord=7" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Status</span></td>"
+    cab=cab & "<td width='150' class='MD MB MC' valign='bottom'><p class='R'style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='OrcamentistaEIndicadorLista.asp?ord=3" & s_op & "&filtro_loja=" & filtro_loja & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ");'" & ">Cidade</p></td>"
+	cab=cab & "<td width='35' class='MD MB MC' align='right' valign='bottom' nowrap><span class='Rd' style='font-weight:bold; cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='OrcamentistaEIndicadorLista.asp?ord=4" & s_op & "&filtro_loja=" & filtro_loja & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Loja</span></td>"
+	cab=cab & "<td width='90' class='MD MB MC' align='left' valign='bottom' nowrap><span class='R' style='font-weight:bold; cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='OrcamentistaEIndicadorLista.asp?ord=5" & s_op & "&filtro_loja=" & filtro_loja & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Vendedor</span></td>"
+	cab=cab & "<td width='50' class='MD MB MC' align='left' valign='bottom' nowrap><span class='R' style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='OrcamentistaEIndicadorLista.asp?ord=6" & s_op & "&filtro_loja=" & filtro_loja & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Acesso Sistema</span></td>"
+	cab=cab & "<td width='45' class='MB MC MD' align='left' valign='bottom' nowrap><span class='R' style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='OrcamentistaEIndicadorLista.asp?ord=7" & s_op & "&filtro_loja=" & filtro_loja & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Status</span></td>"
 	cab=cab & "</tr>" & chr(13)
 
 	consulta = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR"
 
 	s_where = ""
 	if opcao_consulta = "A" then
-		s_where = "status = 'A'"
+		s_where = "(status = 'A')"
 	elseif opcao_consulta = "I" then
-		s_where = "status = 'I'"
+		s_where = "(status = 'I')"
 		end if
 	
+	if filtro_loja <> "" then
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (loja = '" & filtro_loja & "')"
+		end if
+
 	if s_where <> "" then s_where = " WHERE " & s_where
 	consulta = consulta & s_where
 	

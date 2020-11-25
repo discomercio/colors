@@ -724,6 +724,30 @@ Option Explicit
 '|          |      | - Inclusão da forma de pagamento "Cartão com Maquineta"   |
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
+'|04.09.2019| LHGX |V 2.10                                                     |
+'|          |      | - Criação da tabela t_NFe_EMITENTE_NUMERACAO              |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|18.11.2019| LHGX |V 2.11                                                     |
+'|          |      | - Correção de bug (Emitir NFe com Número Manual)          |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|24.01.2020| LHGX |V 2.12                                                     |
+'|          |      | - Criação do arquivo UFS_INSCRICAO_VIRTUAL.CFG, para que  |
+'|          |      |   o texto sobre DIFAL/Partilha não seja impresso na NF    |
+'|__________|______|___________________________________________________________|
+'|10.02.2020| LHGX |V 2.13                                                     |
+'|          |      | - Ajustes sobre o UFS_INSCRICAO_VIRTUAL.CFG, para que     |
+'|          |      |   a definição das UF's seja feita por emitente            |
+'|__________|______|___________________________________________________________|
+'|24.04.2020| LHGX |V 2.14                                                     |
+'|          |      | - Implementação da memorização do endereço do cliente     |
+'|          |      |   na t_PEDIDO                                             |
+'|__________|______|___________________________________________________________|
+'|14.11.2020| LHGX |V 2.15                                                     |
+'|          |      | - Ajuste para trazer as informações memorizadas no        |
+'|          |      |   pedido no quadro Informações do Pedido                  |
+'|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
 '|          |      |                                                           |
@@ -735,8 +759,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.09"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  02/07/2019"
+Global Const m_id_versao = "2.15"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  14/11/2020"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"
@@ -1191,6 +1215,11 @@ Type RECT
     bottom As Long
     End Type
 
+Global vCFOPsSemPartilha() As TIPO_LISTA_CFOP
+
+Global vCUFsInscricaoVirtual() As TIPO_DUAS_COLUNAS
+    
+
 Declare Function DrawText Lib "user32" Alias "DrawTextA" (ByVal hdc As Long, ByVal lpStr As String, ByVal nCount As Long, lpRect As RECT, ByVal wFormat As Long) As Long
 Declare Function SetMapMode Lib "gdi32" (ByVal hdc As Long, ByVal nMapMode As Long) As Long
   
@@ -1288,7 +1317,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -1610,7 +1639,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -1966,7 +1995,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -2283,7 +2312,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -2871,6 +2900,23 @@ Function cfop_eh_de_remessa(ByVal cod_cfop As String) As Boolean
         Next
     
     cfop_eh_de_remessa = ok
+    
+End Function
+
+Function tem_instricao_virtual(ByVal id_emitente, s_uf As String) As Boolean
+    
+    Dim ok As Boolean
+    Dim i As Integer
+    
+    ok = False
+    For i = LBound(vCUFsInscricaoVirtual) To UBound(vCUFsInscricaoVirtual)
+        If vCUFsInscricaoVirtual(i).c1 = id_emitente And vCUFsInscricaoVirtual(i).c2 = s_uf Then
+            ok = True
+            Exit For
+            End If
+        Next
+    
+    tem_instricao_virtual = ok
     
 End Function
 
@@ -4306,8 +4352,6 @@ Exit Function
 
 
 
-
-
 '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 LARCFOP_TRATA_ERRO_ARQUIVO:
 '=========================
@@ -4340,6 +4384,80 @@ LARCFOP_TRATA_ERRO:
     
     
 End Function
+
+Function le_UFs_INSCRICAO_VIRTUAL(ByRef v_ID_UF() As TIPO_DUAS_COLUNAS, ByRef msg_erro As String) As Boolean
+' ------------------------------------------------------------------------
+'   LÊ TABELA COM A LISTA DE UFs PARA OS QUAIS NÃO SERÁ EMITIDA A INFORMAÇÃO SOBRE PARTILHA DO ICMS
+
+Dim t_INSCRICAO_VIRTUAL_EMITENTE As ADODB.Recordset
+Dim s As String
+
+    On Error GoTo LUIV_TRATA_ERRO
+    
+'   t_INSCRICAO_VIRTUAL_EMITENTE
+    Set t_INSCRICAO_VIRTUAL_EMITENTE = New ADODB.Recordset
+    With t_INSCRICAO_VIRTUAL_EMITENTE
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
+
+    
+    
+    le_UFs_INSCRICAO_VIRTUAL = False
+    msg_erro = ""
+    ReDim v_ID_UF(0)
+    v_ID_UF(UBound(v_ID_UF)).c1 = 0
+    v_ID_UF(UBound(v_ID_UF)).c2 = ""
+    
+    On Error GoTo LUIV_TRATA_ERRO
+        
+    s = "SELECT *" & _
+        " FROM t_INSCRICAO_VIRTUAL_EMITENTE"
+    If t_INSCRICAO_VIRTUAL_EMITENTE.State <> adStateClosed Then t_INSCRICAO_VIRTUAL_EMITENTE.Close
+    t_INSCRICAO_VIRTUAL_EMITENTE.Open s, dbc, , , adCmdText
+    
+    Do While Not t_INSCRICAO_VIRTUAL_EMITENTE.EOF
+        
+        If Trim$(v_ID_UF(UBound(v_ID_UF)).c1) <> 0 Then
+            ReDim Preserve v_ID_UF(UBound(v_ID_UF) + 1)
+            End If
+        v_ID_UF(UBound(v_ID_UF)).c1 = t_INSCRICAO_VIRTUAL_EMITENTE("id_nfe_emitente")
+        v_ID_UF(UBound(v_ID_UF)).c2 = Trim("" & t_INSCRICAO_VIRTUAL_EMITENTE("uf"))
+        
+        t_INSCRICAO_VIRTUAL_EMITENTE.MoveNext
+        
+        Loop
+        
+    GoSub LUIV_FECHA_TABELAS
+    
+    le_UFs_INSCRICAO_VIRTUAL = True
+    
+    
+    Exit Function
+    
+'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+LUIV_FECHA_TABELAS:
+'===================
+'   RECORDSETS
+    bd_desaloca_recordset t_INSCRICAO_VIRTUAL_EMITENTE, True
+        
+    Return
+
+
+'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+LUIV_TRATA_ERRO:
+'=================
+    msg_erro = CStr(Err) & ": " & Error$(Err)
+    Err.Clear
+    
+    GoSub LUIV_FECHA_TABELAS
+    
+    Exit Function
+    
+    
+End Function
+
 
 Function normaliza_codigo(ByVal codigo As String, ByVal tamanho_default As Long) As String
 ' ------------------------------------------------------------------------

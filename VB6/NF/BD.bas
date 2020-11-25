@@ -1568,11 +1568,12 @@ Dim t As ADODB.Recordset
         intQtdeTentativas = intQtdeTentativas + 1
     
         s = "SELECT" & _
-                " NFe_serie_NF," & _
-                " NFe_numero_NF" & _
-            " FROM t_NFE_EMITENTE" & _
+                " n.NFe_serie_NF," & _
+                " n.NFe_numero_NF" & _
+            " FROM t_NFE_EMITENTE e" & _
+            " INNER JOIN t_NFE_EMITENTE_NUMERACAO n ON e.cnpj = n.cnpj" & _
             " WHERE" & _
-                " (id = " & CStr(id_nfe_emitente) & ")"
+                " (e.id = " & CStr(id_nfe_emitente) & ")"
         If t.State <> adStateClosed Then t.Close
         t.Open s, dbc, , , adCmdText
         If t.EOF Then
@@ -1591,12 +1592,14 @@ Dim t As ADODB.Recordset
             Exit Function
             End If
             
-        s = "UPDATE t_NFE_EMITENTE SET" & _
-                " NFe_numero_NF = " & CStr(lngProximoNumeroNF) & _
+        s = "UPDATE n SET" & _
+                " n.NFe_numero_NF = " & CStr(lngProximoNumeroNF) & _
+            " FROM t_NFe_EMITENTE e" & _
+            " INNER JOIN t_NFE_EMITENTE_NUMERACAO n ON e.cnpj = n.cnpj" & _
             " WHERE" & _
-                " (id = " & CStr(id_nfe_emitente) & ")" & _
-                " AND (NFe_serie_NF = " & CStr(lngSerieNF) & ")" & _
-                " AND (NFe_numero_NF = " & CStr(lngUltimoNumeroNF) & ")"
+                " (e.id = " & CStr(id_nfe_emitente) & ")" & _
+                " AND (n.NFe_serie_NF = " & CStr(lngSerieNF) & ")" & _
+                " AND (n.NFe_numero_NF = " & CStr(lngUltimoNumeroNF) & ")"
         Call dbc.Execute(s, lngRecordsAffected)
         If lngRecordsAffected = 1 Then
             blnSucesso = True
@@ -1663,11 +1666,12 @@ Dim t As ADODB.Recordset
     t.LockType = BD_POLITICA_LOCKING
     
     s = "SELECT" & _
-            " NFe_serie_NF," & _
-            " NFe_numero_NF" & _
-        " FROM t_NFE_EMITENTE" & _
+            " n.NFe_serie_NF," & _
+            " n.NFe_numero_NF" & _
+        " FROM t_NFE_EMITENTE e" & _
+        " INNER JOIN t_NFE_EMITENTE_NUMERACAO n ON e.cnpj = n.cnpj" & _
         " WHERE" & _
-            " (id = " & CStr(id_nfe_emitente) & ")"
+            " (e.id = " & CStr(id_nfe_emitente) & ")"
     If t.State <> adStateClosed Then t.Close
     t.Open s, dbc, , , adCmdText
     If t.EOF Then

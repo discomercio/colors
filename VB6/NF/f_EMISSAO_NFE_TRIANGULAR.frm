@@ -5669,7 +5669,7 @@ Dim aliquota_icms As Single
 '   NATUREZA DA OPERAÇÃO - COMPRADOR
 '   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 '   DEFAULT
-    s = "6.102"
+    s = "6.108"
     For i = 0 To cb_natureza.ListCount - 1
         If left$(cb_natureza.List(i), Len(s)) = s Then
             cb_natureza.ListIndex = i
@@ -5777,12 +5777,12 @@ Dim aliquota_icms As Single
 
 '   REABILITANDO CONTROLES DESABILITADOS EM CASO DE EMISSÃO DE NOTA DE REMESSA
 '   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    chk_InfoComprador.Enabled = True
-    c_cnpj_cpf_dest.Enabled = True
-    c_nome_dest.Enabled = True
-    c_rg_dest.Enabled = True
+    chk_InfoComprador.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
+    c_cnpj_cpf_dest.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
+    c_nome_dest.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
+    c_rg_dest.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
     cb_natureza_recebedor.Enabled = True
-    b_editar_endereco.Enabled = True
+    b_editar_endereco.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
     c_dados_adicionais_venda.Locked = False
     
 '   INFO CONTRIBUINTE
@@ -6282,6 +6282,7 @@ Dim s_retorno_venda As String
 Dim s_retorno_remessa As String
 Dim strLogPedido As String
 Dim strLogComplemento As String
+Dim s_NFe_texto_constar As String
 
     On Error GoTo PPDT_TRATA_ERRO
     
@@ -6290,13 +6291,28 @@ Dim strLogComplemento As String
     If pedido_anterior = Trim$(pedido) Then Exit Sub
     pedido_anterior = Trim$(pedido)
     
-    If Not obtem_info_pedido_triangular(pedido, s_resp, s_end_entrega, s_end_entrega_uf, s_end_cliente_uf, s_erro) Then
-        If s_erro <> "" Then
-            aviso_erro s_erro
-            c_pedido = ""
-            pedido_anterior = ""
-            c_pedido.SetFocus
-            Exit Sub
+    If pedido <> "" Then
+        'verificar se os dados do cliente devem vir da memorização no pedido
+        If param_pedidomemorizacaoenderecos.campo_inteiro = 1 Then
+            If Not obtem_info_pedido_triangular_memorizada(pedido, s_resp, s_end_entrega, s_end_entrega_uf, s_NFe_texto_constar, s_end_cliente_uf, s_erro) Then
+                If s_erro <> "" Then
+                    aviso_erro s_erro
+                    c_pedido = ""
+                    pedido_anterior = ""
+                    c_pedido.SetFocus
+                    Exit Sub
+                    End If
+                End If
+        Else
+            If Not obtem_info_pedido_triangular(pedido, s_resp, s_end_entrega, s_end_entrega_uf, s_NFe_texto_constar, s_end_cliente_uf, s_erro) Then
+                If s_erro <> "" Then
+                    aviso_erro s_erro
+                    c_pedido = ""
+                    pedido_anterior = ""
+                    c_pedido.SetFocus
+                    Exit Sub
+                    End If
+                End If
             End If
         End If
     
@@ -6379,6 +6395,11 @@ Dim strLogComplemento As String
         c_cnpj_cpf_dest = cnpj_cpf_formata(endereco_recebedor__cnpj_cpf)
         c_nome_dest = endereco_recebedor__nome
         c_rg_dest = endereco_recebedor__rg
+    ElseIf param_pedidomemorizacaoenderecos.campo_inteiro = 1 Then
+        'se ainda não existe nota de venda emitida e existe memorização de endereço, usar os dados da t_PEDIDO
+        c_cnpj_cpf_dest = cnpj_cpf_formata(endereco_recebedor__cnpj_cpf)
+        c_nome_dest = endereco_recebedor__nome
+        c_rg_dest = endereco_recebedor__rg
     Else
         'no caso de pessoa jurídica, a opção será pesquisar/preencher os dados do recebedor
         chk_InfoComprador.Value = 0
@@ -6418,12 +6439,12 @@ Dim strLogComplemento As String
     b_imprime_venda.Enabled = True
     b_imprime_remessa.Enabled = False
     b_cancela_triangular.Enabled = True
-    chk_InfoComprador.Enabled = True
-    c_cnpj_cpf_dest.Enabled = True
-    c_nome_dest.Enabled = True
-    c_rg_dest.Enabled = True
+    chk_InfoComprador.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
+    c_cnpj_cpf_dest.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
+    c_nome_dest.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
+    c_rg_dest.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
     cb_natureza_recebedor.Enabled = True
-    b_editar_endereco.Enabled = True
+    b_editar_endereco.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
     c_dados_adicionais_venda.Locked = False
     c_dados_adicionais_remessa.Locked = False
     
@@ -6467,12 +6488,12 @@ Dim strLogComplemento As String
                         Next
                     End If
             Else
-                chk_InfoComprador.Enabled = True
-                c_cnpj_cpf_dest.Enabled = True
-                c_nome_dest.Enabled = True
-                c_rg_dest.Enabled = True
+                chk_InfoComprador.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
+                c_cnpj_cpf_dest.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
+                c_nome_dest.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
+                c_rg_dest.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
                 cb_natureza_recebedor.Enabled = True
-                b_editar_endereco.Enabled = True
+                b_editar_endereco.Enabled = param_pedidomemorizacaoenderecos.campo_inteiro = 0
                 c_dados_adicionais_venda.Locked = False
                 c_dados_adicionais_remessa.Locked = False
                 pn_aviso_operacao_concluida.Visible = False
@@ -6632,7 +6653,7 @@ PPDT_TRATA_ERRO:
 
 End Sub
 
-Function obtem_info_pedido_triangular(ByVal pedido As String, ByRef strResposta As String, ByRef strEndEntregaFormatado As String, ByRef strEndEntregaUf As String, ByRef strEndClienteUf As String, ByRef strMsgErro As String) As Boolean
+Function obtem_info_pedido_triangular(ByVal pedido As String, ByRef strResposta As String, ByRef strEndEntregaFormatado As String, ByRef strEndEntregaUf As String, ByRef strTextoConstar As String, ByRef strEndClienteUf As String, ByRef strMsgErro As String) As Boolean
 ' CONSTANTES
 Const NomeDestaRotina = "obtem_info_pedido_triangular()"
 ' STRINGS
@@ -6660,6 +6681,7 @@ Dim strRamal As String
 Dim strSufixoRes As String
 Dim strSufixoCom As String
 Dim strInfoIE As String
+Dim strNFeTextoConstar As String
 
 ' BANCO DE DADOS
 Dim t_PEDIDO As ADODB.Recordset
@@ -6740,7 +6762,7 @@ Dim t_DESTINATARIO As ADODB.Recordset
     pedido_a = ""
     s_erro = ""
     s = "SELECT" & _
-            " pedido, st_entrega, id_cliente, obs_1, st_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep" & _
+            " pedido, st_entrega, id_cliente, obs_1, st_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep, NFe_texto_constar" & _
         " FROM t_PEDIDO" & _
         " WHERE" & _
             " (pedido = '" & Trim$(pedido) & "')"
@@ -6750,6 +6772,8 @@ Dim t_DESTINATARIO As ADODB.Recordset
         If s_erro <> "" Then s_erro = s_erro & vbCrLf
         s_erro = s_erro & "Pedido " & Trim$(pedido) & " não está cadastrado !!"
     Else
+'   TEXTO A CONSTAR NA NOTA FISCAL
+    strNFeTextoConstar = Trim("" & t_PEDIDO("NFe_texto_constar"))
     
 '   OBTÉM DADOS DO DESTINATÁRIO DA NOTA DE VENDA
     s_id_cliente = Trim$("" & t_PEDIDO("id_cliente"))
@@ -6879,14 +6903,14 @@ Dim t_DESTINATARIO As ADODB.Recordset
 
     
     s_end_linha_1 = s_endereco
-    If (s_end_linha_1 <> "") And (endereco_recebedor__bairro <> "") Then s_end_linha_1 = s_end_linha_1 & "  -  "
-    s_end_linha_1 = s_end_linha_1 & endereco_recebedor__bairro
+    If (s_end_linha_1 <> "") And (endereco_comprador__bairro <> "") Then s_end_linha_1 = s_end_linha_1 & "  -  "
+    s_end_linha_1 = s_end_linha_1 & endereco_comprador__bairro
     
     s_end_linha_2 = endereco_recebedor__cidade
-    If (s_end_linha_2 <> "") And (endereco_recebedor__uf <> "") Then s_end_linha_2 = s_end_linha_2 & "  -  "
-    s_end_linha_2 = s_end_linha_2 & endereco_recebedor__uf
-    If (s_end_linha_2 <> "") And (endereco_recebedor__cep <> "") Then s_end_linha_2 = s_end_linha_2 & "  -  "
-    s_end_linha_2 = s_end_linha_2 & endereco_recebedor__cep
+    If (s_end_linha_2 <> "") And (endereco_comprador__uf <> "") Then s_end_linha_2 = s_end_linha_2 & "  -  "
+    s_end_linha_2 = s_end_linha_2 & endereco_comprador__uf
+    If (s_end_linha_2 <> "") And (endereco_comprador__cep <> "") Then s_end_linha_2 = s_end_linha_2 & "  -  "
+    s_end_linha_2 = s_end_linha_2 & endereco_comprador__cep
         
     s_end_linha_3 = ""
     If UCase$(Trim$("" & t_DESTINATARIO("tipo"))) = ID_PF Then
@@ -6972,6 +6996,383 @@ OIPT_FECHA_TABELAS:
     Return
     
 End Function
+
+Function obtem_info_pedido_triangular_memorizada(ByVal pedido As String, ByRef strResposta As String, ByRef strEndEntregaFormatado As String, ByRef strEndEntregaUf As String, ByRef strTextoConstar As String, ByRef strEndClienteUf As String, ByRef strMsgErro As String) As Boolean
+' CONSTANTES
+Const NomeDestaRotina = "obtem_info_pedido_triangular_memorizada()"
+' STRINGS
+Dim s As String
+Dim s_aux As String
+Dim s_erro As String
+Dim s_nome As String
+Dim s_cnpj_cpf As String
+Dim s_ie_rg As String
+Dim s_obs_1 As String
+Dim s_info As String
+Dim s_endereco As String
+Dim s_end_linha_1 As String
+Dim s_end_linha_2 As String
+Dim s_end_linha_3 As String
+Dim s_end_entrega As String
+Dim pedido_a As String
+Dim s_id_cliente As String
+Dim strDDD As String
+Dim strTelRes As String
+Dim strTelCel As String
+Dim strTelCom As String
+Dim strTelCom2 As String
+Dim strRamal As String
+Dim strSufixoRes As String
+Dim strSufixoCom As String
+Dim strInfoIE As String
+Dim strNFeTextoConstar As String
+
+' BANCO DE DADOS
+Dim t_PEDIDO As ADODB.Recordset
+Dim t_PEDIDO_ITEM As ADODB.Recordset
+Dim t_DESTINATARIO As ADODB.Recordset
+
+    On Error GoTo OIPTM_TRATA_ERRO
+    
+    obtem_info_pedido_triangular_memorizada = False
+    strMsgErro = ""
+    strResposta = ""
+    strEndEntregaFormatado = ""
+    strEndEntregaUf = ""
+    strEndClienteUf = ""
+    l_IE = ""
+    
+    pedido = Trim$("" & pedido)
+    pedido = normaliza_num_pedido(pedido)
+    
+    If pedido = "" Then
+        strMsgErro = "Não foi informado o número do pedido!"
+        Exit Function
+        End If
+        
+    aguarde INFO_EXECUTANDO, "consultando banco de dados"
+    
+  ' T_PEDIDO
+    Set t_PEDIDO = New ADODB.Recordset
+    With t_PEDIDO
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
+        
+  ' T_PEDIDO_ITEM
+    Set t_PEDIDO_ITEM = New ADODB.Recordset
+    With t_PEDIDO_ITEM
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
+        
+  ' T_DESTINATARIO (PODE SER T_CLIENTE OU T_LOJA)
+    Set t_DESTINATARIO = New ADODB.Recordset
+    With t_DESTINATARIO
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
+        
+    endereco_comprador__nome = ""
+    endereco_comprador__cnpj_cpf = ""
+    endereco_comprador__rg = ""
+    endereco_comprador__logradouro = ""
+    endereco_comprador__numero = ""
+    endereco_comprador__complemento = ""
+    endereco_comprador__bairro = ""
+    endereco_comprador__cep = ""
+    endereco_comprador__cidade = ""
+    endereco_comprador__uf = ""
+    endereco_recebedor__nome = ""
+    endereco_recebedor__cnpj_cpf = ""
+    endereco_recebedor__rg = ""
+    endereco_recebedor__logradouro = ""
+    endereco_recebedor__numero = ""
+    endereco_recebedor__complemento = ""
+    endereco_recebedor__bairro = ""
+    endereco_recebedor__cep = ""
+    endereco_recebedor__cidade = ""
+    endereco_recebedor__uf = ""
+    'c_cnpj_cpf_dest
+    s_endereco = ""
+    s_nome = ""
+    s_cnpj_cpf = ""
+    s_ie_rg = ""
+    s_obs_1 = ""
+    s_end_entrega = ""
+        
+
+'   VERIFICA O PEDIDO
+    s_id_cliente = ""
+    pedido_a = ""
+    s_erro = ""
+    s = "SELECT" & _
+            " pedido, st_entrega, id_cliente, obs_1, st_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep, NFe_texto_constar, " & _
+            " EndEtg_nome as nome, EndEtg_cnpj_cpf as cnpj_cpf, EndEtg_tipo_pessoa as tipo_pessoa, EndEtg_ie as ie, EndEtg_rg as rg " & _
+        " FROM t_PEDIDO" & _
+        " WHERE" & _
+            " (pedido = '" & Trim$(pedido) & "')"
+    If t_PEDIDO.State <> adStateClosed Then t_PEDIDO.Close
+    t_PEDIDO.Open s, dbc, , , adCmdText
+    If t_PEDIDO.EOF Then
+        If s_erro <> "" Then s_erro = s_erro & vbCrLf
+        s_erro = s_erro & "Pedido " & Trim$(pedido) & " não está cadastrado !!"
+    Else
+'   TEXTO A CONSTAR NA NOTA FISCAL
+    strNFeTextoConstar = Trim("" & t_PEDIDO("NFe_texto_constar"))
+    
+'   OBTÉM DADOS DO DESTINATÁRIO DA NOTA DE VENDA
+    s = "SELECT" & _
+            " pedido, id_cliente, st_memorizacao_completa_enderecos, endereco_uf as uf, endereco_cnpj_cpf as cnpj_cpf, " & _
+            " endereco_logradouro as endereco, " & _
+            " endereco_bairro as bairro, " & _
+            " endereco_cidade as cidade, " & _
+            " endereco_cep as cep, " & _
+            " endereco_numero, " & _
+            " endereco_complemento, " & _
+            " endereco_email as email, endereco_email_xml as email_xml, " & _
+            " endereco_nome as nome, " & _
+            " endereco_ddd_res as ddd_res, endereco_tel_res as tel_res, " & _
+            " endereco_ddd_com as ddd_com, endereco_tel_com as tel_com, endereco_ramal_com as ramal_com, " & _
+            " endereco_ddd_cel as ddd_cel, endereco_tel_cel as tel_cel, " & _
+            " endereco_ddd_com_2 as ddd_com_2, endereco_tel_com_2 as tel_com_2, endereco_ramal_com_2 as ramal_com_2, " & _
+            " endereco_tipo_pessoa as tipo, " & _
+            " endereco_contribuinte_icms_status as contribuinte_icms_status, " & _
+            " endereco_produtor_rural_status as produtor_rural_status, " & _
+            " endereco_ie as ie, " & _
+            " endereco_rg as rg, " & _
+            " endereco_contato as contato " & _
+        " FROM t_PEDIDO" & _
+        " WHERE (pedido = '" & Trim$(pedido) & "')"
+    t_DESTINATARIO.Open s, dbc, , , adCmdText
+    If t_DESTINATARIO.EOF Then
+        strMsgErro = "Problemas na localização do endereço memorizado no pedido " & Trim$(pedido) & "!!"
+        GoSub OIPTM_FECHA_TABELAS
+        aguarde INFO_NORMAL, m_id
+        Exit Function
+        End If
+    strEndClienteUf = UCase$(Trim$("" & t_DESTINATARIO("uf")))
+    
+    '   ENDEREÇO DE ENTREGA
+        endereco_recebedor__nome = UCase$(Trim("" & t_PEDIDO("nome")))
+        endereco_recebedor__cnpj_cpf = Trim("" & t_PEDIDO("cnpj_cpf"))
+        If Trim("" & t_PEDIDO("tipo_pessoa")) = "PJ" Then
+            endereco_recebedor__rg = Trim("" & t_PEDIDO("ie"))
+        Else
+            endereco_recebedor__rg = Trim("" & t_PEDIDO("rg"))
+            End If
+        endereco_recebedor__logradouro = UCase$(Trim("" & t_PEDIDO("EndEtg_endereco")))
+        endereco_recebedor__numero = UCase$(Trim("" & t_PEDIDO("EndEtg_endereco_numero")))
+        endereco_recebedor__complemento = UCase$(Trim("" & t_PEDIDO("EndEtg_endereco_complemento")))
+        endereco_recebedor__bairro = UCase$(Trim("" & t_PEDIDO("EndEtg_bairro")))
+        endereco_recebedor__cep = cep_formata(retorna_so_digitos(Trim("" & t_PEDIDO("EndEtg_cep"))))
+        endereco_recebedor__cidade = UCase$(Trim("" & t_PEDIDO("EndEtg_cidade")))
+        endereco_recebedor__uf = UCase$(Trim("" & t_PEDIDO("EndEtg_uf")))
+        If (CLng(t_PEDIDO("st_end_entrega")) <> 0) And (endereco_recebedor__uf <> strEndClienteUf) Then
+            s_end_entrega = formata_endereco(endereco_recebedor__logradouro, endereco_recebedor__numero, endereco_recebedor__complemento, endereco_recebedor__bairro, endereco_recebedor__cidade, endereco_recebedor__uf, endereco_recebedor__cep)
+            strEndEntregaFormatado = s_end_entrega
+            strEndEntregaUf = UCase$(Trim("" & t_PEDIDO("EndEtg_uf")))
+            If s_end_entrega <> "" Then s_end_entrega = vbCrLf & "ENTREGA: " & s_end_entrega
+        Else
+            If s_erro <> "" Then s_erro = s_erro & vbCrLf
+            s_erro = s_erro & "Operação triangular interestadual não caracterizada!!"
+            End If
+    
+        If UCase$(Trim$("" & t_PEDIDO("st_entrega"))) = ST_ENTREGA_CANCELADO Then
+            If s_erro <> "" Then s_erro = s_erro & vbCrLf
+            s_erro = s_erro & "Pedido " & Trim$(pedido) & " está cancelado !!"
+            End If
+            
+        If Trim$("" & t_PEDIDO("obs_1")) <> "" Then
+            If s_obs_1 <> "" Then s_obs_1 = s_obs_1 & vbCrLf
+            s = Trim$("" & t_PEDIDO("obs_1"))
+            s = substitui_caracteres(s, vbCr, " ")
+            s = substitui_caracteres(s, vbLf, " ")
+            s_obs_1 = s_obs_1 & s
+            End If
+        End If
+    
+    s = "SELECT pedido, fabricante, produto FROM t_PEDIDO_ITEM WHERE (pedido='" & Trim$(pedido) & "')"
+    If t_PEDIDO_ITEM.State <> adStateClosed Then t_PEDIDO_ITEM.Close
+    t_PEDIDO_ITEM.Open s, dbc, , , adCmdText
+    If t_PEDIDO_ITEM.EOF Then
+        If s_erro <> "" Then s_erro = s_erro & vbCrLf
+        s_erro = s_erro & "Não foi encontrado nenhum produto relacionado ao pedido " & Trim$(pedido) & "!!"
+        End If
+        
+'   ENCONTROU ERRO ?
+    If s_erro <> "" Then
+        strMsgErro = s_erro
+        GoSub OIPTM_FECHA_TABELAS
+        aguarde INFO_NORMAL, m_id
+        Exit Function
+        End If
+        
+'   PREENCHE DADOS DO DESTINATÁRIO DA NOTA DE VENDA
+    endereco_comprador__nome = UCase$(Trim$("" & t_DESTINATARIO("nome")))
+    endereco_comprador__logradouro = UCase$(Trim$("" & t_DESTINATARIO("endereco")))
+    endereco_comprador__numero = UCase$(Trim$("" & t_DESTINATARIO("endereco_numero")))
+    endereco_comprador__complemento = UCase$(Trim$("" & t_DESTINATARIO("endereco_complemento")))
+    s_endereco = endereco_comprador__logradouro
+    If endereco_comprador__numero <> "" Then s_endereco = s_endereco & ", " & endereco_comprador__numero
+    If endereco_comprador__complemento <> "" Then s_endereco = s_endereco & " " & endereco_comprador__complemento
+
+'   BAIRRO
+    endereco_comprador__bairro = UCase$(Trim$("" & t_DESTINATARIO("bairro")))
+
+'   CEP
+    endereco_comprador__cep = cep_formata(retorna_so_digitos(Trim$("" & t_DESTINATARIO("cep"))))
+
+'   CIDADE
+    endereco_comprador__cidade = UCase$(Trim$("" & t_DESTINATARIO("cidade")))
+
+'   UF
+    endereco_comprador__uf = UCase$(Trim$("" & t_DESTINATARIO("uf")))
+
+'   NOME/RAZÃO SOCIAL DO CLIENTE
+    s_nome = UCase$(Trim$("" & t_DESTINATARIO("nome")))
+
+'   CNPJ/CPF
+    s_cnpj_cpf = Trim$("" & t_DESTINATARIO("cnpj_cpf"))
+    endereco_comprador__cnpj_cpf = s_cnpj_cpf
+
+'   INSCRIÇÃO ESTADUAL
+    If UCase$(Trim$("" & t_DESTINATARIO("tipo"))) = ID_PJ Then
+        s_ie_rg = UCase$(Trim$("" & t_DESTINATARIO("ie")))
+    Else
+        s_ie_rg = UCase$(Trim$("" & t_DESTINATARIO("rg")))
+        End If
+    endereco_comprador__rg = s_ie_rg
+        
+    'preencher os campos de telefone
+    strTelCel = telefone_formata_2(retorna_so_digitos(Trim$("" & t_DESTINATARIO("tel_cel"))))
+    strTelRes = telefone_formata_2(retorna_so_digitos(Trim$("" & t_DESTINATARIO("tel_res"))))
+    strTelCom = telefone_formata_2(retorna_so_digitos(Trim$("" & t_DESTINATARIO("tel_com"))))
+    strTelCom2 = telefone_formata_2(retorna_so_digitos(Trim$("" & t_DESTINATARIO("tel_com_2"))))
+    If strTelCel <> "" Then
+        strDDD = retorna_so_digitos(Trim$("" & t_DESTINATARIO("ddd_cel")))
+        If (Len(strDDD) = 3) And (left$(strDDD, 1) = "0") Then strDDD = right$(strDDD, 2)
+        If (Len(strDDD) = 2) Then strTelCel = "(" & strDDD & ")" & strTelCel
+        End If
+    If strTelRes <> "" Then
+        strDDD = retorna_so_digitos(Trim$("" & t_DESTINATARIO("ddd_res")))
+        If (Len(strDDD) = 3) And (left$(strDDD, 1) = "0") Then strDDD = right$(strDDD, 2)
+        If (Len(strDDD) = 2) Then strTelRes = "(" & strDDD & ")" & strTelRes
+        End If
+    If strTelCom <> "" Then
+        strDDD = retorna_so_digitos(Trim$("" & t_DESTINATARIO("ddd_com")))
+        If (Len(strDDD) = 3) And (left$(strDDD, 1) = "0") Then strDDD = right$(strDDD, 2)
+        strRamal = retorna_so_digitos(Trim$("" & t_DESTINATARIO("ramal_com")))
+        If (Len(strDDD) = 2) Then strTelCom = "(" & strDDD & ") " & strTelCom
+        If (strRamal <> "") And (converte_para_single(strRamal) <> 0) Then strTelCom = strTelCom & " R: " & strRamal
+        End If
+    If strTelCom2 <> "" Then
+        strDDD = retorna_so_digitos(Trim$("" & t_DESTINATARIO("ddd_com_2")))
+        If (Len(strDDD) = 3) And (left$(strDDD, 1) = "0") Then strDDD = right$(strDDD, 2)
+        strRamal = retorna_so_digitos(Trim$("" & t_DESTINATARIO("ramal_com_2")))
+        If (Len(strDDD) = 2) Then strTelCom2 = "(" & strDDD & ") " & strTelCom2
+        If (strRamal <> "") And (converte_para_single(strRamal) <> 0) Then strTelCom2 = strTelCom2 & " R: " & strRamal
+        End If
+
+    
+    s_end_linha_1 = s_endereco
+    If (s_end_linha_1 <> "") And (endereco_comprador__bairro <> "") Then s_end_linha_1 = s_end_linha_1 & "  -  "
+    s_end_linha_1 = s_end_linha_1 & endereco_comprador__bairro
+    
+    s_end_linha_2 = endereco_comprador__cidade
+    If (s_end_linha_2 <> "") And (endereco_comprador__uf <> "") Then s_end_linha_2 = s_end_linha_2 & "  -  "
+    s_end_linha_2 = s_end_linha_2 & endereco_comprador__uf
+    If (s_end_linha_2 <> "") And (endereco_comprador__cep <> "") Then s_end_linha_2 = s_end_linha_2 & "  -  "
+    s_end_linha_2 = s_end_linha_2 & endereco_comprador__cep
+        
+    s_end_linha_3 = ""
+    If UCase$(Trim$("" & t_DESTINATARIO("tipo"))) = ID_PF Then
+        strSufixoRes = "Tel Res: "
+        strSufixoCom = "Tel Com: "
+    Else
+        strSufixoRes = "Tel: "
+        strSufixoCom = "Tel: "
+        End If
+    If (strTelCel <> "") And (strTelRes <> "") Then s_end_linha_3 = strSufixoRes & strTelRes
+    If ((strTelCel <> "") Or (strTelRes <> "")) And (strTelCom <> "") Then
+        If s_end_linha_3 <> "" Then s_end_linha_3 = s_end_linha_3 & " / "
+        s_end_linha_3 = s_end_linha_3 & strSufixoCom & strTelCom
+        End If
+    If ((strTelCel <> "") Or (strTelRes <> "") Or (strTelCom <> "")) And (strTelCom2 <> "") Then
+        If s_end_linha_3 <> "" Then s_end_linha_3 = s_end_linha_3 & " / "
+        s_end_linha_3 = s_end_linha_3 & strSufixoCom & strTelCom2
+        End If
+
+        
+    If (s_end_linha_1 <> "") And ((s_end_linha_2 <> "") Or (s_end_linha_3 <> "")) Then s_end_linha_1 = s_end_linha_1 & vbCrLf
+    If (s_end_linha_2 <> "") And (s_end_linha_3 <> "") Then s_end_linha_2 = s_end_linha_2 & vbCrLf
+    
+    s_info = s_nome & vbCrLf
+    
+    If s_cnpj_cpf <> "" Then s_info = s_info & "CNPJ/CPF: " & cnpj_cpf_formata(s_cnpj_cpf) & vbCrLf
+    If s_ie_rg <> "" Then s_info = s_info & "IE/RG: " & s_ie_rg & vbCrLf
+            
+    s_info = s_info & _
+             s_end_linha_1 & s_end_linha_2 & s_end_linha_3 & _
+             s_end_entrega & vbCrLf & vbCrLf & _
+             "OBSERVAÇÕES I" & vbCrLf & _
+             s_obs_1
+
+    
+'   INFORMAÇÃO SE É CONTRIBUINTE DE ICMS
+    If UCase$(Trim$("" & t_DESTINATARIO("tipo"))) = ID_PJ Then
+        Select Case t_DESTINATARIO("contribuinte_icms_status")
+            Case COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO: strInfoIE = "NC"
+            Case COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM: strInfoIE = "C"
+            Case COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO: strInfoIE = "I"
+            Case Else: strInfoIE = ""
+            End Select
+    Else
+        Select Case t_DESTINATARIO("produtor_rural_status")
+            Case COD_ST_CLIENTE_PRODUTOR_RURAL_SIM: strInfoIE = "PR"
+            Case Else: strInfoIE = ""
+            End Select
+        End If
+    l_IE.Caption = strInfoIE
+    
+    GoSub OIPTM_FECHA_TABELAS
+    
+    aguarde INFO_NORMAL, m_id
+
+    strResposta = s_info
+    obtem_info_pedido_triangular_memorizada = True
+    
+Exit Function
+
+
+
+'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+OIPTM_TRATA_ERRO:
+'==============
+    s = CStr(Err) & ": " & Error$(Err) & _
+        vbCrLf & _
+        "Rotina: " & Me.Name & " - " & NomeDestaRotina
+    GoSub OIPTM_FECHA_TABELAS
+    aguarde INFO_NORMAL, m_id
+    strMsgErro = s
+    Exit Function
+    
+
+
+'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+OIPTM_FECHA_TABELAS:
+'=================
+  ' RECORDSETS
+    bd_desaloca_recordset t_PEDIDO, True
+    bd_desaloca_recordset t_PEDIDO_ITEM, True
+    bd_desaloca_recordset t_DESTINATARIO, True
+    Return
+    
+End Function
+
 
 
 Sub formulario_exibe_itens_pedido_triangular(ByVal pedido_selecionado As String)
@@ -7410,11 +7811,12 @@ Dim strSql As String
             End With
     
         strSql = "SELECT" & _
-                    " NFe_serie_NF," & _
-                    " NFe_numero_NF" & _
-                " FROM t_NFE_EMITENTE" & _
+                    " n.NFe_serie_NF," & _
+                    " n.NFe_numero_NF" & _
+                " FROM t_NFE_EMITENTE e" & _
+                " INNER JOIN t_NFE_EMITENTE_NUMERACAO n ON e.cnpj = n.cnpj" & _
                 " WHERE" & _
-                    " (id=" & usuario.emit_id & ")"
+                    " (e.id=" & usuario.emit_id & ")"
         If t.State <> adStateClosed Then t.Close
         t.Open strSql, dbc, , , adCmdText
         If Not t.EOF Then
@@ -7781,7 +8183,7 @@ Dim s_num_remessa As String
         s = "MERCADORIA SERA ENTREGUE POR CONTA E ORDEM A: " & vbCrLf
         s = s & c_nome_dest & vbCrLf
         s = s & IIf(Len(retorna_so_digitos(c_cnpj_cpf_dest)) = 14, "CNPJ: ", "CPF: ") & c_cnpj_cpf_dest
-        If Trim$(c_rg_dest) <> "" Then s = s & " / RG: " & c_rg_dest
+        If Trim$(c_rg_dest) <> "" Then s = s & " / IE/RG: " & c_rg_dest
         s = s & vbCrLf
         s = s & formata_endereco(l_end_recebedor_logradouro, l_end_recebedor_numero, l_end_recebedor_complemento, l_end_recebedor_bairro, l_end_recebedor_cidade, l_end_recebedor_uf, l_end_recebedor_cep) & vbCrLf
         s = s & "ATRAVES DA NOSSA NOTA FISCAL DE REMESSA No " & s_num_remessa & " EMITIDA EM " & Format$(Date, FORMATO_DATA) & vbCrLf
@@ -8004,7 +8406,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 Dim blnOperacaoNaoTriangular As Boolean
 
@@ -8676,6 +9078,7 @@ Dim blnHaProdutoCstIcms60 As Boolean
 Dim blnErro As Boolean
 Dim blnExibirTotalTributos As Boolean
 Dim blnHaProdutoSemDadosIbpt As Boolean
+Dim blnExisteMemorizacaoEndereco As Boolean
 
 ' CONTADORES
 Dim i As Integer
@@ -10057,16 +10460,96 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             End If
         End If
             
+''   OBTÉM DADOS DO DESTINATÁRIO DA NOTA
+'    s = "SELECT * FROM t_CLIENTE WHERE (id='" & Trim$("" & t_PEDIDO("id_cliente")) & "')"
+'    t_DESTINATARIO.Open s, dbc, , , adCmdText
+'    If t_DESTINATARIO.EOF Then
+'        s = "Cliente com nº registro " & Trim$("" & t_PEDIDO("id_cliente")) & " não foi encontrado!!"
+'        aviso_erro s
+'        GoSub NFE_EMITE_FECHA_TABELAS
+'        aguarde INFO_NORMAL, m_id
+'        Exit Sub
+'        End If
+        
 '   OBTÉM DADOS DO DESTINATÁRIO DA NOTA
-    s = "SELECT * FROM t_CLIENTE WHERE (id='" & Trim$("" & t_PEDIDO("id_cliente")) & "')"
-    t_DESTINATARIO.Open s, dbc, , , adCmdText
-    If t_DESTINATARIO.EOF Then
-        s = "Cliente com nº registro " & Trim$("" & t_PEDIDO("id_cliente")) & " não foi encontrado!!"
-        aviso_erro s
-        GoSub NFE_EMITE_FECHA_TABELAS
-        aguarde INFO_NORMAL, m_id
-        Exit Sub
+    'PRIMEIRO CASO: A MEMORIZAÇÃO DO ENDEREÇO DO CLIENTE NA TABELA DE PEDIDOS ESTÁ OK
+    blnExisteMemorizacaoEndereco = False
+    If param_pedidomemorizacaoenderecos.campo_inteiro = 1 Then
+        s = "SELECT" & _
+                " pedido, id_cliente, st_memorizacao_completa_enderecos, endereco_uf as uf, endereco_cnpj_cpf as cnpj_cpf, " & _
+                " endereco_logradouro as endereco, endereco_bairro as bairro, endereco_cidade as cidade, endereco_cep as cep, endereco_numero, endereco_complemento, " & _
+                " endereco_logradouro as endereco_end_nota, " & _
+                " endereco_bairro as bairro_end_nota, " & _
+                " endereco_cidade as cidade_end_nota, " & _
+                " endereco_cep as cep_end_nota, " & _
+                " endereco_numero as numero_end_nota, " & _
+                " endereco_complemento as complemento_end_nota, " & _
+                " endereco_uf as uf_end_nota, " & _
+                " endereco_email as email, endereco_email_xml as email_xml, " & _
+                " endereco_nome as nome, " & _
+                " endereco_ddd_res as ddd_res, endereco_tel_res as tel_res, " & _
+                " endereco_ddd_com as ddd_com, endereco_tel_com as tel_com, endereco_ramal_com as ramal_com, " & _
+                " endereco_ddd_cel as ddd_cel, endereco_tel_cel as tel_cel, " & _
+                " endereco_ddd_com_2 as ddd_com_2, endereco_tel_com_2 as tel_com_2, endereco_ramal_com_2 as ramal_com_2, " & _
+                " endereco_tipo_pessoa as tipo, " & _
+                " endereco_contribuinte_icms_status as contribuinte_icms_status, " & _
+                " endereco_produtor_rural_status as produtor_rural_status, " & _
+                " endereco_ie as ie, " & _
+                " endereco_rg as rg, " & _
+                " endereco_contato as contato " & _
+            " FROM t_PEDIDO" & _
+            " WHERE (pedido = '" & Trim$("" & t_PEDIDO("pedido")) & "')" & " AND (endereco_tipo_pessoa = '" & ID_PJ & "')"
+        s = s & " UNION" & _
+            " SELECT" & _
+                " pedido, id_cliente, st_memorizacao_completa_enderecos, endereco_uf as uf, endereco_cnpj_cpf as cnpj_cpf, " & _
+                " endereco_logradouro as endereco, endereco_bairro as bairro, endereco_cidade as cidade, endereco_cep as cep, endereco_numero, endereco_complemento, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_logradouro else EndEtg_endereco end as endereco_end_nota, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_bairro else EndEtg_bairro end as bairro_end_nota, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_cidade else EndEtg_cidade end as cidade_end_nota, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_cep else EndEtg_cep end as cep_end_nota, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_numero else EndEtg_endereco_numero end as numero_end_nota, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_complemento else EndEtg_endereco_complemento end as complemento_end_nota, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_uf else EndEtg_uf end as uf_end_nota, " & _
+                " endereco_email as email, endereco_email_xml as email_xml, " & _
+                " endereco_nome as nome, " & _
+                " endereco_ddd_res as ddd_res, endereco_tel_res as tel_res, " & _
+                " endereco_ddd_com as ddd_com, endereco_tel_com as tel_com, endereco_ramal_com as ramal_com, " & _
+                " endereco_ddd_cel as ddd_cel, endereco_tel_cel as tel_cel, " & _
+                " endereco_ddd_com_2 as ddd_com_2, endereco_tel_com_2 as tel_com_2, endereco_ramal_com_2 as ramal_com_2, " & _
+                " endereco_tipo_pessoa as tipo, " & _
+                " endereco_contribuinte_icms_status as contribuinte_icms_status, " & _
+                " endereco_produtor_rural_status as produtor_rural_status, " & _
+                " endereco_ie as ie, " & _
+                " endereco_rg as rg, " & _
+                " endereco_contato as contato " & _
+            " FROM t_PEDIDO" & _
+            " WHERE (pedido = '" & Trim$("" & t_PEDIDO("pedido")) & "')" & " AND (endereco_tipo_pessoa = '" & ID_PF & "')"
+        t_DESTINATARIO.Open s, dbc, , , adCmdText
+        If t_DESTINATARIO.EOF Then
+            s = "Problemas na localização do endereço memorizado no pedido " & Trim$("" & t_PEDIDO("pedido")) & "!!"
+            aviso_erro s
+            GoSub NFE_EMITE_FECHA_TABELAS
+            aguarde INFO_NORMAL, m_id
+            Exit Sub
+            End If
+        If t_DESTINATARIO("st_memorizacao_completa_enderecos") > 0 Then blnExisteMemorizacaoEndereco = True
         End If
+        
+    'SEGUNDO CASO: A MEMORIZAÇÃO DO ENDEREÇO DO CLIENTE NA TABELA DE PEDIDOS NÃO ESTÁ OK
+    If Not blnExisteMemorizacaoEndereco Then
+        If t_DESTINATARIO.State <> adStateClosed Then t_DESTINATARIO.Close
+    '   (se não houver memorização no pedido)
+        s = "SELECT * FROM t_CLIENTE WHERE (id='" & Trim$("" & t_PEDIDO("id_cliente")) & "')"
+        t_DESTINATARIO.Open s, dbc, , , adCmdText
+        If t_DESTINATARIO.EOF Then
+            s = "Cliente com nº registro " & Trim$("" & t_PEDIDO("id_cliente")) & " não foi encontrado!!"
+            aviso_erro s
+            GoSub NFE_EMITE_FECHA_TABELAS
+            aguarde INFO_NORMAL, m_id
+            Exit Sub
+            End If
+        End If
+        
         
     strEndClienteUf = UCase$(Trim$("" & t_DESTINATARIO("uf")))
     
@@ -10416,7 +10899,11 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("xNome", rNFeImg.dest__xNome)
     
 '   LOGRADOURO
-    strCampo = Trim("" & t_DESTINATARIO("endereco"))
+    If blnExisteMemorizacaoEndereco Then
+        strCampo = Trim("" & t_DESTINATARIO("endereco_end_nota"))
+    Else
+        strCampo = Trim("" & t_DESTINATARIO("endereco"))
+        End If
     If strCampo = "" Then
         s_erro = "O endereço do cliente não está preenchido no cadastro!!"
         GoTo NFE_EMITE_ENCERRA_POR_ERRO_CONSISTENCIA
@@ -11713,11 +12200,17 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     
 '   INFORMAÇÕES SOBRE PARTILHA DO ICMS
     If PARTILHA_ICMS_ATIVA Then
-        If (vl_total_ICMSUFDest > 0) Then
-            If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
-            strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "Valores totais do ICMS Interestadual: partilha da UF Destino " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFDest)
-            If (vl_total_FCPUFDest > 0) Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & " + FCP " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_FCPUFDest)
-            strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "; partilha da UF Origem " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFRemet) & "."
+        'DIFAL- suprimir texto em notas de entrada/devolução
+        If (rNFeImg.ide__tpNF <> "0") And _
+            (strNFeCodFinalidade <> "3") And _
+            (strNFeCodFinalidade <> "4") And _
+                Not tem_instricao_virtual(usuario.emit_id, rNFeImg.dest__UF) Then
+            If (vl_total_ICMSUFDest > 0) Then
+                If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
+                strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "Valores totais do ICMS Interestadual: partilha da UF Destino " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFDest)
+                If (vl_total_FCPUFDest > 0) Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & " + FCP " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_FCPUFDest)
+                strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "; partilha da UF Origem " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFRemet) & "."
+                End If
             End If
         End If
 
@@ -12122,11 +12615,13 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
 '   SE HOUVE BLOQUEIO DE ESPERA, ATUALIZAR O Nº NA t_NFE_EMITENTE
 '   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     If blnEsperaNFTriangular Then
-        s = "UPDATE t_NFE_EMITENTE SET" & _
-                " NFe_numero_NF = " & strSerieNfTriangular & _
+        s = "UPDATE n SET" & _
+                " n.NFe_numero_NF = " & strSerieNfTriangular & _
+            " FROM t_NFE_EMITENTE e" & _
+            " INNER JOIN t_NFE_EMITENTE_NUMERACAO n ON e.cnpj = n.cnpj" & _
             " WHERE" & _
-                " (id = " & CStr(intIdNfeEmitente) & ")" & _
-                " AND (NFe_serie_NF = " & CStr(strSerieNf) & ")"
+                " (e.id = " & CStr(intIdNfeEmitente) & ")" & _
+                " AND (n.NFe_serie_NF = " & CStr(strSerieNf) & ")"
         Call dbc.Execute(s, lngAffectedRecords)
         If lngAffectedRecords <> 1 Then
             s = "Falha ao atualizar a numeração sequencial para o emitente atual!!" & vbCrLf & s
@@ -12448,6 +12943,7 @@ Dim blnHaProdutoCstIcms60 As Boolean
 Dim blnErro As Boolean
 Dim blnExibirTotalTributos As Boolean
 Dim blnHaProdutoSemDadosIbpt As Boolean
+Dim blnExisteMemorizacaoEndereco As Boolean
 
 ' CONTADORES
 Dim i As Integer
@@ -13831,16 +14327,96 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             End If
         End If
             
+''   OBTÉM DADOS DO DESTINATÁRIO DA NOTA
+'    s = "SELECT * FROM t_CLIENTE WHERE (id='" & Trim$("" & t_PEDIDO("id_cliente")) & "')"
+'    t_DESTINATARIO.Open s, dbc, , , adCmdText
+'    If t_DESTINATARIO.EOF Then
+'        s = "Cliente com nº registro " & Trim$("" & t_PEDIDO("id_cliente")) & " não foi encontrado!!"
+'        aviso_erro s
+'        GoSub NFE_EMITE_REMESSA_FECHA_TABELAS
+'        aguarde INFO_NORMAL, m_id
+'        Exit Sub
+'        End If
+        
 '   OBTÉM DADOS DO DESTINATÁRIO DA NOTA
-    s = "SELECT * FROM t_CLIENTE WHERE (id='" & Trim$("" & t_PEDIDO("id_cliente")) & "')"
-    t_DESTINATARIO.Open s, dbc, , , adCmdText
-    If t_DESTINATARIO.EOF Then
-        s = "Cliente com nº registro " & Trim$("" & t_PEDIDO("id_cliente")) & " não foi encontrado!!"
-        aviso_erro s
-        GoSub NFE_EMITE_REMESSA_FECHA_TABELAS
-        aguarde INFO_NORMAL, m_id
-        Exit Sub
+    'PRIMEIRO CASO: A MEMORIZAÇÃO DO ENDEREÇO DO CLIENTE NA TABELA DE PEDIDOS ESTÁ OK
+    blnExisteMemorizacaoEndereco = False
+    If param_pedidomemorizacaoenderecos.campo_inteiro = 1 Then
+        s = "SELECT" & _
+                " pedido, id_cliente, st_memorizacao_completa_enderecos, endereco_uf as uf, endereco_cnpj_cpf as cnpj_cpf, " & _
+                " endereco_logradouro as endereco, endereco_bairro as bairro, endereco_cidade as cidade, endereco_cep as cep, endereco_numero, endereco_complemento, " & _
+                " endereco_logradouro as endereco_end_nota, " & _
+                " endereco_bairro as bairro_end_nota, " & _
+                " endereco_cidade as cidade_end_nota, " & _
+                " endereco_cep as cep_end_nota, " & _
+                " endereco_numero as numero_end_nota, " & _
+                " endereco_complemento as complemento_end_nota, " & _
+                " endereco_uf as uf_end_nota, " & _
+                " endereco_email as email, endereco_email_xml as email_xml, " & _
+                " endereco_nome as nome, " & _
+                " endereco_ddd_res as ddd_res, endereco_tel_res as tel_res, " & _
+                " endereco_ddd_com as ddd_com, endereco_tel_com as tel_com, endereco_ramal_com as ramal_com, " & _
+                " endereco_ddd_cel as ddd_cel, endereco_tel_cel as tel_cel, " & _
+                " endereco_ddd_com_2 as ddd_com_2, endereco_tel_com_2 as tel_com_2, endereco_ramal_com_2 as ramal_com_2, " & _
+                " endereco_tipo_pessoa as tipo, " & _
+                " endereco_contribuinte_icms_status as contribuinte_icms_status, " & _
+                " endereco_produtor_rural_status as produtor_rural_status, " & _
+                " endereco_ie as ie, " & _
+                " endereco_rg as rg, " & _
+                " endereco_contato as contato " & _
+            " FROM t_PEDIDO" & _
+            " WHERE (pedido = '" & Trim$("" & t_PEDIDO("pedido")) & "')" & " AND (endereco_tipo_pessoa = '" & ID_PJ & "')"
+        s = s & " UNION" & _
+            " SELECT" & _
+                " pedido, id_cliente, st_memorizacao_completa_enderecos, endereco_uf as uf, endereco_cnpj_cpf as cnpj_cpf, " & _
+                " endereco_logradouro as endereco, endereco_bairro as bairro, endereco_cidade as cidade, endereco_cep as cep, endereco_numero, endereco_complemento, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_logradouro else EndEtg_endereco end as endereco_end_nota, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_bairro else EndEtg_bairro end as bairro_end_nota, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_cidade else EndEtg_cidade end as cidade_end_nota, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_cep else EndEtg_cep end as cep_end_nota, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_numero else EndEtg_endereco_numero end as numero_end_nota, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_complemento else EndEtg_endereco_complemento end as complemento_end_nota, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_uf else EndEtg_uf end as uf_end_nota, " & _
+                " endereco_email as email, endereco_email_xml as email_xml, " & _
+                " endereco_nome as nome, " & _
+                " endereco_ddd_res as ddd_res, endereco_tel_res as tel_res, " & _
+                " endereco_ddd_com as ddd_com, endereco_tel_com as tel_com, endereco_ramal_com as ramal_com, " & _
+                " endereco_ddd_cel as ddd_cel, endereco_tel_cel as tel_cel, " & _
+                " endereco_ddd_com_2 as ddd_com_2, endereco_tel_com_2 as tel_com_2, endereco_ramal_com_2 as ramal_com_2, " & _
+                " endereco_tipo_pessoa as tipo, " & _
+                " endereco_contribuinte_icms_status as contribuinte_icms_status, " & _
+                " endereco_produtor_rural_status as produtor_rural_status, " & _
+                " endereco_ie as ie, " & _
+                " endereco_rg as rg, " & _
+                " endereco_contato as contato " & _
+            " FROM t_PEDIDO" & _
+            " WHERE (pedido = '" & Trim$("" & t_PEDIDO("pedido")) & "')" & " AND (endereco_tipo_pessoa = '" & ID_PF & "')"
+        t_DESTINATARIO.Open s, dbc, , , adCmdText
+        If t_DESTINATARIO.EOF Then
+            s = "Problemas na localização do endereço memorizado no pedido " & Trim$("" & t_PEDIDO("pedido")) & "!!"
+            aviso_erro s
+            GoSub NFE_EMITE_REMESSA_FECHA_TABELAS
+            aguarde INFO_NORMAL, m_id
+            Exit Sub
+            End If
+        If t_DESTINATARIO("st_memorizacao_completa_enderecos") > 0 Then blnExisteMemorizacaoEndereco = True
         End If
+        
+    'SEGUNDO CASO: A MEMORIZAÇÃO DO ENDEREÇO DO CLIENTE NA TABELA DE PEDIDOS NÃO ESTÁ OK
+    If Not blnExisteMemorizacaoEndereco Then
+        If t_DESTINATARIO.State <> adStateClosed Then t_DESTINATARIO.Close
+    '   (se não houver memorização no pedido)
+        s = "SELECT * FROM t_CLIENTE WHERE (id='" & Trim$("" & t_PEDIDO("id_cliente")) & "')"
+        t_DESTINATARIO.Open s, dbc, , , adCmdText
+        If t_DESTINATARIO.EOF Then
+            s = "Cliente com nº registro " & Trim$("" & t_PEDIDO("id_cliente")) & " não foi encontrado!!"
+            aviso_erro s
+            GoSub NFE_EMITE_REMESSA_FECHA_TABELAS
+            aguarde INFO_NORMAL, m_id
+            Exit Sub
+            End If
+        End If
+        
         
     strEndClienteUf = UCase$(Trim$("" & t_DESTINATARIO("uf")))
     
@@ -14664,7 +15240,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 
             '   TAG ICMS
             '   ~~~~~~~~
-                strNFeCst = Trim$(right$(.cst, 2))
+                'para a nota de remessa da operação triangular, não tributada (CST="41") / ORIENTAÇÃO CONTABILIDADE
+                strNFeCst = "41"
                 vNFeImgItem(UBound(vNFeImgItem)).ICMS__CST = strNFeCst
                 strNFeTagIcms = strNFeTagIcms & vbTab & NFeFormataCampo("CST", vNFeImgItem(UBound(vNFeImgItem)).ICMS__CST)
                                 
@@ -15388,11 +15965,17 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     
 '   INFORMAÇÕES SOBRE PARTILHA DO ICMS
     If PARTILHA_ICMS_ATIVA Then
-        If (vl_total_ICMSUFDest > 0) Then
-            If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
-            strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "Valores totais do ICMS Interestadual: partilha da UF Destino " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFDest)
-            If (vl_total_FCPUFDest > 0) Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & " + FCP " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_FCPUFDest)
-            strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "; partilha da UF Origem " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFRemet) & "."
+        'DIFAL- suprimir texto em notas de entrada/devolução
+        If (rNFeImg.ide__tpNF <> "0") And _
+            (strNFeCodFinalidade <> "3") And _
+            (strNFeCodFinalidade <> "4") And _
+                Not tem_instricao_virtual(usuario.emit_id, rNFeImg.dest__UF) Then
+            If (vl_total_ICMSUFDest > 0) Then
+                If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
+                strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "Valores totais do ICMS Interestadual: partilha da UF Destino " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFDest)
+                If (vl_total_FCPUFDest > 0) Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & " + FCP " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_FCPUFDest)
+                strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "; partilha da UF Origem " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFRemet) & "."
+                End If
             End If
         End If
 

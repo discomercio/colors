@@ -75,13 +75,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AmbienteBD.cs" />
+    <Compile Include="AnotarPedidoRecebidoClienteDAO.cs" />
     <Compile Include="BancoDados.cs" />
     <Compile Include="BD.cs" />
+    <Compile Include="Cliente.cs" />
+    <Compile Include="ClienteDAO.cs" />
     <Compile Include="ComboDAO.cs" />
     <Compile Include="ContextoBD.cs" />
     <Compile Include="Cripto.cs" />
     <Compile Include="CriptoHex.cs" />
     <Compile Include="ExcelAutomation.cs" />
+    <Compile Include="FAnotarPedidoRecebidoCliente.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FAnotarPedidoRecebidoCliente.Designer.cs">
+      <DependentUpon>FAnotarPedidoRecebidoCliente.cs</DependentUpon>
+    </Compile>
     <Compile Include="FAtualizaPlanilhaEstoque.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -123,6 +132,8 @@
     <Compile Include="IbptDadosDAO.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="LogDAO.cs" />
+    <Compile Include="NFeDAO.cs" />
+    <Compile Include="NFeImagem.cs" />
     <Compile Include="PainelSobre.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -138,8 +149,12 @@
     <Compile Include="ProdutoDAO.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RastreioPedidoRecebidoCliente.cs" />
     <Compile Include="Texto.cs" />
     <Compile Include="UsuarioDAO.cs" />
+    <EmbeddedResource Include="FAnotarPedidoRecebidoCliente.resx">
+      <DependentUpon>FAnotarPedidoRecebidoCliente.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FAtualizaPlanilhaEstoque.resx">
       <DependentUpon>FAtualizaPlanilhaEstoque.cs</DependentUpon>
     </EmbeddedResource>

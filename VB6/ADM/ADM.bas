@@ -252,7 +252,8 @@ Option Explicit
 '|          |      |teres no campo EAN (GTIN-8, GTIN-12, GTIN-13 ou GTIN-14,   |
 '|          |      |antigos códigos EAN, UPC e DUN-14).                        |
 '|__________|______|___________________________________________________________|
-'|          |      |                                                           |
+'|23.03.2020|LHGX  |V1.29 Inclusão de tratamento para a nova coluna Subgrupo   |
+'|          |      |na planilha de importação                                  |
 '|__________|______|___________________________________________________________|
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
@@ -269,8 +270,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "1.28"
-Global Const m_id = "Módulo de Administração e Manutenção - v" & m_id_versao & " - 10.OUT.2018"
+Global Const m_id_versao = "1.29"
+Global Const m_id = "Módulo de Administração e Manutenção - v" & m_id_versao & " - 23.NOV.2020"
 
 
 

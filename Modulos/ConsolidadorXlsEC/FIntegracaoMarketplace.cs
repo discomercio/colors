@@ -17,8 +17,9 @@ namespace ConsolidadorXlsEC
     {
         #region [ Constantes ]
         public const string PEDIDO_MAGENTO_STATUS_VALIDOS = "|despachado|rastreio_ic|";
-        public const string ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_SKYHUB = "|B2W|Zoom|Magazine Luiza|Carrefour|";
+        public const string ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_SKYHUB = "|B2W|Zoom|Magazine Luiza|Carrefour|CNOVA|";
         public const string ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_INTEGRACOMMERCE = "";
+        public const string ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_ANYMARKET = "|Leroy Merlin|";
         public const string COD_ST_PEDIDO_RECEBIDO_NAO = "0";
         public const string COD_ST_PEDIDO_RECEBIDO_SIM = "1";
         public const string COD_ST_PEDIDO_RECEBIDO_NAO_DEFINIDO = "10";
@@ -38,6 +39,8 @@ namespace ConsolidadorXlsEC
         }
 
         private SqlCommand _cmCommandPedidoRecebidoParaSim;
+
+        int _flagPedidoUsarMemorizacaoCompletaEnderecos;
         #endregion
 
         #region [ Construtor ]
@@ -123,6 +126,9 @@ namespace ConsolidadorXlsEC
         private string montaSqlConsulta()
         {
             #region [ Declarações ]
+            string strCidade;
+            string strUf;
+            string strNome;
             string strWhere;
             string strSql;
             #endregion
@@ -133,6 +139,19 @@ namespace ConsolidadorXlsEC
             #endregion
 
             #region [ Monta Select ]
+            if (_flagPedidoUsarMemorizacaoCompletaEnderecos == 0)
+            {
+                strCidade = " c.cidade";
+                strUf = " c.uf";
+                strNome = " c.nome_iniciais_em_maiusculas";
+            }
+            else
+            {
+                strCidade = " (CASE p.st_memorizacao_completa_enderecos WHEN 0 THEN c.cidade ELSE p.endereco_cidade END)";
+                strUf = " (CASE p.st_memorizacao_completa_enderecos WHEN 0 THEN c.uf ELSE p.endereco_uf END)";
+                strNome = " (CASE p.st_memorizacao_completa_enderecos WHEN 0 THEN c.nome_iniciais_em_maiusculas ELSE dbo.SqlClrUtilIniciaisEmMaiusculas(p.endereco_nome) END)";
+            }
+
             strSql = "SELECT" +
                         " p.transportadora_id," +
                         " p.pedido," +
@@ -141,9 +160,9 @@ namespace ConsolidadorXlsEC
                         " p.marketplace_codigo_origem," +
                         " p.loja," +
                         " p.MarketplacePedidoRecebidoRegistrarDataRecebido," +
-                        " c.cidade," +
-                        " c.uf," +
-                        " c.nome_iniciais_em_maiusculas," +
+                        strCidade + " AS cidade," +
+                        strUf + " AS uf," +
+                        strNome + " AS nome_iniciais_em_maiusculas," +
                         " Sum(tPI.qtde*tPI.preco_venda) AS vl_pedido," +
                         " (SELECT descricao FROM t_CODIGO_DESCRICAO WHERE grupo = 'PedidoECommerce_Origem' AND codigo = p.marketplace_codigo_origem) AS marketplace_codigo_origem_descricao," +
                         " (SELECT codigo_pai FROM t_CODIGO_DESCRICAO WHERE grupo = 'PedidoECommerce_Origem' AND codigo = p.marketplace_codigo_origem) AS marketplace_codigo_origem_pai" +
@@ -158,9 +177,9 @@ namespace ConsolidadorXlsEC
                        " ,p.marketplace_codigo_origem" +
                        " ,p.loja" +
                        " ,p.MarketplacePedidoRecebidoRegistrarDataRecebido" +
-                       " ,c.cidade" +
-                       " ,c.uf" +
-                       " ,c.nome_iniciais_em_maiusculas" +
+                       " ," + strCidade +
+                       " ," + strUf +
+                       " ," + strNome +
                     " ORDER BY" +
                         " p.transportadora_id," +
                         " p.pedido";
@@ -324,10 +343,12 @@ namespace ConsolidadorXlsEC
                     strOrigemPedidoAux = "|" + strOrigemPedidoAux + "|";
 
                     if ((ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_SKYHUB.ToUpper().IndexOf(strOrigemPedidoAux.ToUpper()) == -1) &&
-                        ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_INTEGRACOMMERCE.ToUpper().IndexOf(strOrigemPedidoAux.ToUpper()) == -1)
+                        (ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_INTEGRACOMMERCE.ToUpper().IndexOf(strOrigemPedidoAux.ToUpper()) == -1) &&
+                        (ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_ANYMARKET.ToUpper().IndexOf(strOrigemPedidoAux.ToUpper()) == -1))
                     {
-                        avisoErro("Não é possível selecionar pedidos que não sejam SkyHub (" + ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_SKYHUB.Trim('|').Replace("|", ", ") + ") ou IntegraCommerce "+
-                            "(" + ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_INTEGRACOMMERCE.Trim('|').Replace(" | ", ", ") + ") !!");
+                        avisoErro("Não é possível selecionar pedidos que não sejam SkyHub (" + ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_SKYHUB.Trim('|').Replace("|", ", ") + ") ou IntegraCommerce " +
+                            "(" + ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_INTEGRACOMMERCE.Trim('|').Replace(" | ", ", ") +
+                            ") ou AnyMarket (" + ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_ANYMARKET.Trim('|').Replace(" | ", ", ") + ")!");
                         row.DefaultCellStyle.BackColor = Color.LightSalmon;
                         return;
                     }
@@ -458,13 +479,20 @@ namespace ConsolidadorXlsEC
                         strComment = "";
                         #endregion
                     }
-
                     else if (ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_INTEGRACOMMERCE.ToUpper().IndexOf(strOrigemPedidoAux.ToUpper()) != -1)
                     {
                         #region [ Tratamento dos pedidos Integra Commerce ]
                         strIncrementId = row.Cells[colGrdDadosNumMagento.Name].Value.ToString();
                         strStatus = "delivered";
                         strComment = Global.formataDataDdMmYyyyComSeparador(Convert.ToDateTime(row.Cells[colGrdDadosRecebido.Name].Value));
+                        #endregion
+                    }
+                    else if (ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_ANYMARKET.ToUpper().IndexOf(strOrigemPedidoAux.ToUpper()) != -1)
+                    {
+                        #region [ Tratamento dos pedidos AnyMarket ]
+                        strIncrementId = row.Cells[colGrdDadosNumMagento.Name].Value.ToString();
+                        strStatus = "complete";
+                        strComment = "";
                         #endregion
                     }
                     else
@@ -773,7 +801,6 @@ namespace ConsolidadorXlsEC
         {
             #region [ Declarações ]
             bool blnRetorno = false;
-            string strSql;
             #endregion
 
             msg_erro = "";
@@ -847,6 +874,8 @@ namespace ConsolidadorXlsEC
                 cbOrigemPedido.DisplayMember = "descricao";
                 cbOrigemPedido.SelectedIndex = -1;
                 #endregion
+
+                _flagPedidoUsarMemorizacaoCompletaEnderecos = FMain.contextoBD.AmbienteBase.geralDAO.getCampoInteiroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ID_PARAMETRO_FLAG_PEDIDO_MEMORIZACAOCOMPLETAENDERECOS, 0);
 
                 blnSucesso = true;
             }

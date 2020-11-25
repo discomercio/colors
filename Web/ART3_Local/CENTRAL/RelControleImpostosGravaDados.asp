@@ -40,13 +40,13 @@
 	alerta=""
 
 '	OBTÉM FILTROS
-	dim c_transportadora, c_dt_coleta, c_dt_coleta_inicio, c_dt_coleta_termino, ckb_exibir_verificados, c_nfe_emitente, c_uf
+	dim c_transportadora, c_dt_coleta, c_dt_coleta_inicio, c_dt_coleta_termino, rb_tipo_consulta, c_nfe_emitente, c_uf
 
 	c_transportadora = Trim(Request.Form("c_transportadora"))
 	c_dt_coleta = Trim(Request.Form("c_dt_coleta"))
 	c_dt_coleta_inicio = Trim(Request.Form("c_dt_coleta_inicio"))
 	c_dt_coleta_termino = Trim(Request.Form("c_dt_coleta_termino"))
-	ckb_exibir_verificados = Trim(Request.Form("ckb_exibir_verificados"))
+	rb_tipo_consulta = Trim(Request.Form("rb_tipo_consulta"))
 	c_nfe_emitente = Trim(Request.Form("c_nfe_emitente"))
     c_uf = Trim(Request.Form("c_uf"))
 
@@ -143,15 +143,21 @@
 					alerta=texto_add_br(alerta)
 					alerta=alerta & "NFe n° " & v_nota_verificada_num(i) & " não foi encontrada."
 				else
-					rs("controle_impostos_status")=CInt(COD_CONTROLE_IMPOSTOS_STATUS__OK)
-					rs("controle_impostos_data")=Date
-					rs("controle_impostos_data_hora")=Now
-					rs("controle_impostos_usuario")=usuario
-					rs.Update
-					if Err <> 0 then 
-						alerta=texto_add_br(alerta)
-						alerta=alerta & Cstr(Err) & ": " & Err.Description
-						end if
+                '   VERIFICA SE OUTRO USUÁRIO ALTEROU O STATUS
+                    if rs("controle_impostos_status")=CInt(COD_CONTROLE_IMPOSTOS_STATUS__OK) then
+                        alerta=texto_add_br(alerta)
+                        alerta=alerta & "Status do controle de impostos do pedido " & v_nota_verificada_pedido(i) & " foi alterado por outro usuário (" & Trim("" & rs("controle_impostos_usuario")) & " às " & formata_data_hora_sem_seg(rs("controle_impostos_data_hora")) & ")"
+                    else
+					    rs("controle_impostos_status")=CInt(COD_CONTROLE_IMPOSTOS_STATUS__OK)
+					    rs("controle_impostos_data")=Date
+					    rs("controle_impostos_data_hora")=Now
+					    rs("controle_impostos_usuario")=usuario
+					    rs.Update
+					    if Err <> 0 then 
+						    alerta=texto_add_br(alerta)
+						    alerta=alerta & Cstr(Err) & ": " & Err.Description
+						    end if
+                        end if
 						
 					s_log = ""
 					if alerta = "" then
@@ -168,9 +174,6 @@
 
 					end if
 				end if
-				
-		'	SE HOUVE ERRO, CANCELA O LAÇO
-			if alerta <> "" then exit for
 			next
 
 '		if alerta = "" then
@@ -180,6 +183,16 @@
 '				end if
 '			end if
 		
+    '   LIMPA LOCKS
+        s = "UPDATE t_CTRL_RELATORIO_USUARIO_X_PEDIDO SET" & _
+                " locked = 0," & _
+                " cod_motivo_lock_released = " & CTRL_RELATORIO_CodMotivoLockReleased_OperacaoFinalizada & "," & _
+                " dt_hr_lock_released = getdate()" & _
+            " WHERE" & _
+                " (usuario = '" & QuotedStr(usuario) & "')" & _
+                " AND (id_relatorio = " & ID_CTRL_RELATORIO_RelControleImpostos & ")" & _
+                " AND (locked = 1)"
+        cn.Execute(s)
 
 	'	FINALIZA TRANSAÇÃO
 	'	==================
@@ -195,6 +208,10 @@
 			cn.RollbackTrans
 		'	~~~~~~~~~~~~~~~~
 			end if
+
+        if alerta <> "" then
+            grava_log usuario, "", "", "", OP_LOG_NFE_CTRL_IMPOSTOS, alerta
+            end if
 		end if
 %>
 
@@ -284,7 +301,7 @@ function fRetornar(f) {
 <input type="hidden" name="c_dt_coleta" id="c_dt_coleta" value="<%=c_dt_coleta%>" />
 <input type="hidden" name="c_dt_coleta_inicio" id="c_dt_coleta_inicio" value="<%=c_dt_coleta_inicio%>" />
 <input type="hidden" name="c_dt_coleta_termino" id="c_dt_coleta_termino" value="<%=c_dt_coleta_termino%>" />
-<input type="hidden" name="ckb_exibir_verificados" id="ckb_exibir_verificados" value="<%=ckb_exibir_verificados%>" />
+<input type="hidden" name="rb_tipo_consulta" id="rb_tipo_consulta" value="<%=rb_tipo_consulta%>" />
 <input type="hidden" name="c_nfe_emitente" id="c_nfe_emitente" value="<%=c_nfe_emitente%>" />
 <input type="hidden" name="c_uf" id="c_uf" value="<%=c_uf%>" />
 

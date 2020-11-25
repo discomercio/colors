@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ART3WebAPI.Models.Entities;
 using System;
+using ART3WebAPI.Controllers;
 
 namespace ART3WebAPI.Models.Domains
 {
@@ -17,32 +18,37 @@ namespace ART3WebAPI.Models.Domains
         private const int LIN_CABECALHO = 13;
         private const int LIN_PERCENTUAL = 12;
         private const int COL_FABRICANTE = 2;
-        private const int COL_PRODUTO = 3;
-        private const int COL_DESCRICAO = 4;
-        private const int COL_GRUPO = 5;
-        private const int COL_BTU = 6;
-        private const int COL_CICLO = 7;
-        private const int COL_POSICAO_MERCADO = 8;
-        private const int COL_VENDA_HISTORICO = 8;
-        private const int COL_VENDA_PREVISAO = 9;
-        private const int COL_ESTOQUE = 10;
-        private const int COL_COMPRADO = 11;
-        private const int COL_SALDO = 12;
-        private const int COL_CUSTO = 13;
-        private const int COL_IDEIA = 14;
-        private const int COL_VALOR = 15;
+        private const int COL_PRODUTO = COL_FABRICANTE + 1;
+        private const int COL_DESCRICAO = COL_PRODUTO + 1;
+        private const int COL_GRUPO = COL_DESCRICAO + 1;
+        private const int COL_SUBGRUPO = COL_GRUPO + 1;
+        private const int COL_BTU = COL_SUBGRUPO + 1;
+        private const int COL_CICLO = COL_BTU + 1;
+        private const int COL_POSICAO_MERCADO = COL_CICLO + 1;
+        private const int COL_VENDA_HISTORICO = COL_POSICAO_MERCADO + 1;
+        private const int COL_VENDA_PREVISAO = COL_VENDA_HISTORICO + 1;
+        private const int COL_ESTOQUE = COL_VENDA_PREVISAO + 1;
+        private const int COL_COMPRADO = COL_ESTOQUE + 1;
+        private const int COL_SALDO = COL_COMPRADO + 1;
+        private const int COL_CUSTO = COL_SALDO + 1;
+        private const int COL_IDEIA = COL_CUSTO + 1;
+        private const int COL_VALOR = COL_IDEIA + 1;
         #endregion
 
         #region [ GenerateXLS versão 2 ]
-        public static Task GenerateXLS(List<Farol> datasource, string filePath, string dt_inicio, string dt_termino, string fabricante, string grupo, string btu, string ciclo, string pos_mercado, string perc_est_cresc, string loja, string visao)
+        public static Task GenerateXLS(List<Farol> datasource, string filePath, string dt_inicio, string dt_termino, string fabricante, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string perc_est_cresc, string loja, string visao)
         {
             return Task.Run(() =>
             {
+                #region [ Declarações ]
                 string totalVenda = "";
                 string totalProjecao = "";
                 int cont = 0;
                 int totalMeses = 0;
                 int totalMesesProjecao = 0;
+                int lineAux;
+                #endregion
+
                 if (visao.Equals("ANALITICA"))
                 {
 					totalMeses = ((Global.converteDdMmYyyyParaDateTime(dt_termino).Year - Global.converteDdMmYyyyParaDateTime(dt_inicio).Year) * 12) + (Global.converteDdMmYyyyParaDateTime(dt_termino).Month - Global.converteDdMmYyyyParaDateTime(dt_inicio).Month) + 1;
@@ -58,9 +64,13 @@ namespace ART3WebAPI.Models.Domains
                 else
                     fabricante = "N.I";
                 if (!string.IsNullOrEmpty(grupo))
-                    grupo = grupo.Replace("_", ", ");
+                    grupo = grupo.Replace("|", ", ");
                 else
                     grupo = "N.I";
+                if (!string.IsNullOrEmpty(subgrupo))
+                    subgrupo = subgrupo.Replace("|", ", ");
+                else
+                    subgrupo = "N.I";
                 if (string.IsNullOrEmpty(btu))
                     btu = "N.I";
                 if (string.IsNullOrEmpty(ciclo))
@@ -89,6 +99,7 @@ namespace ART3WebAPI.Models.Domains
                     ws.Column(COL_PRODUTO).Width = 9;
                     ws.Column(COL_DESCRICAO).Width = 51;
                     ws.Column(COL_GRUPO).Width = 7;
+                    ws.Column(COL_SUBGRUPO).Width = 10;
                     ws.Column(COL_BTU).Width = 11;
                     ws.Column(COL_CICLO).Width = 7;                   
                     ws.Column(COL_VENDA_HISTORICO + totalMeses + totalMesesProjecao).Width = 9;
@@ -104,20 +115,22 @@ namespace ART3WebAPI.Models.Domains
                     #endregion                    
 
                     #region [ Filtro ]
-                    ws.Cells["B2:M12"].Style.Font.Bold = true;
-                    ws.Cells["B2"].Style.Font.Size = 12;
-                    ws.Cells["B2"].Value = "Farol Resumido";
-                    ws.Cells["B3"].Value = "Período de vendas: " + dt_inicio + " a " + dt_termino;
-                    ws.Cells["B4"].Value = "Fabricante(s): " + fabricante;
-                    ws.Cells["B5"].Value = "Grupo(s) de produtos: " + grupo;
-                    ws.Cells["B6"].Value = "BTU/h: " + btu;
-                    ws.Cells["B7"].Value = "Ciclo: " + ciclo;
-                    ws.Cells["B8"].Value = "Posição Mercado:" + pos_mercado;
-                    ws.Cells["B9"].Value = "Loja: " + loja;
-                    ws.Cells["B10"].Value = "Visão: " + visao;
-                    ws.Cells["B11"].Value = "Emissão: " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
-                    ws.Cells["H12"].Value = "Percentual estimado de crescimento (%): ";
-                    ws.Cells["H12:I12"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+                    lineAux = 2;
+                    ws.Cells["B" + lineAux.ToString()].Style.Font.Size = 12;
+                    ws.Cells["B" + lineAux.ToString()].Value = "Farol Resumido";
+                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "Período de vendas: " + dt_inicio + " a " + dt_termino;
+                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "Fabricante(s): " + fabricante;
+                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "Grupo(s) de produtos: " + grupo;
+                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "Subgrupo(s) de produtos: " + subgrupo;
+                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "BTU/h: " + btu;
+                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "Ciclo: " + ciclo;
+                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "Posição Mercado:" + pos_mercado;
+                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "Loja: " + loja;
+                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "Visão: " + visao;
+                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "Emissão: " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+                    lineAux++; ws.Cells["H" + lineAux.ToString()].Value = "Percentual estimado de crescimento (%): ";
+                    ws.Cells["B2:M" + lineAux.ToString()].Style.Font.Bold = true;
+                    ws.Cells["H" + lineAux.ToString() + ":I" + lineAux.ToString()].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
 
                     if (visao.Equals("ANALITICA"))
                     {
@@ -158,6 +171,7 @@ namespace ART3WebAPI.Models.Domains
                     ws.Cells[LIN_CABECALHO, COL_PRODUTO].Value = "Produto";
                     ws.Cells[LIN_CABECALHO, COL_DESCRICAO].Value = "Descrição";
                     ws.Cells[LIN_CABECALHO, COL_GRUPO].Value = "Grupo";
+                    ws.Cells[LIN_CABECALHO, COL_SUBGRUPO].Value = "Subgrupo";
                     ws.Cells[LIN_CABECALHO, COL_BTU].Value = "BTU/h";
                     ws.Cells[LIN_CABECALHO, COL_CICLO].Value = "Ciclo";
 
@@ -222,6 +236,7 @@ namespace ART3WebAPI.Models.Domains
                     ws.Cells[LIN_CABECALHO, COL_PRODUTO].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
                     ws.Cells[LIN_CABECALHO, COL_DESCRICAO].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
                     ws.Cells[LIN_CABECALHO, COL_GRUPO].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    ws.Cells[LIN_CABECALHO, COL_SUBGRUPO].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                     ws.Cells[LIN_CABECALHO, COL_BTU].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
                     ws.Cells[LIN_CABECALHO, COL_CICLO].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                     ws.Cells[LIN_CABECALHO, COL_VENDA_HISTORICO + totalMeses + totalMesesProjecao].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
@@ -249,8 +264,9 @@ namespace ART3WebAPI.Models.Domains
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_DESCRICAO].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_GRUPO].Value = datasource.ElementAt(i).Grupo;
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_GRUPO].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                        if (datasource.ElementAt(i).Potencia_BTU != 0)
-                        ws.Cells[i + LIN_INICIO_REGISTROS, COL_BTU].Value = datasource.ElementAt(i).Potencia_BTU;
+                        ws.Cells[i + LIN_INICIO_REGISTROS, COL_SUBGRUPO].Value = datasource.ElementAt(i).Subgrupo;
+                        ws.Cells[i + LIN_INICIO_REGISTROS, COL_SUBGRUPO].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        if (datasource.ElementAt(i).Potencia_BTU != 0) ws.Cells[i + LIN_INICIO_REGISTROS, COL_BTU].Value = datasource.ElementAt(i).Potencia_BTU;
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_BTU].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_BTU].Style.Numberformat.Format = "##,###";
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_CICLO].Value = datasource.ElementAt(i).Ciclo;
@@ -351,15 +367,20 @@ namespace ART3WebAPI.Models.Domains
         #endregion
 
         #region[ GenerateXLS versão 3 ]
-        public static Task GenerateXLSv3(List<Farol> datasource, string filePath, string dt_inicio, string dt_termino, string fabricante, string grupo, string btu, string ciclo, string pos_mercado, string perc_est_cresc, string loja, string visao)
+        public static Task GenerateXLSv3(List<Farol> datasource, string filePath, string opcao_periodo, string dt_inicio, string dt_termino, string fabricante, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string perc_est_cresc, string loja, string visao)
         {
             return Task.Run(() =>
             {
+                #region [ Declarações ]
+                string sAux;
                 string totalVenda = "";
                 string totalProjecao = "";
                 int cont = 0;
                 int totalMeses = 0;
                 int totalMesesProjecao = 0;
+                int lineAux;
+                #endregion
+
                 if (visao.Equals("ANALITICA"))
                 {
                     totalMeses = ((Global.converteDdMmYyyyParaDateTime(dt_termino).Year - Global.converteDdMmYyyyParaDateTime(dt_inicio).Year) * 12) + (Global.converteDdMmYyyyParaDateTime(dt_termino).Month - Global.converteDdMmYyyyParaDateTime(dt_inicio).Month) + 1;
@@ -375,9 +396,13 @@ namespace ART3WebAPI.Models.Domains
                 else
                     fabricante = "N.I";
                 if (!string.IsNullOrEmpty(grupo))
-                    grupo = grupo.Replace("_", ", ");
+                    grupo = grupo.Replace("|", ", ");
                 else
                     grupo = "N.I";
+                if (!string.IsNullOrEmpty(subgrupo))
+                    subgrupo = subgrupo.Replace("|", ", ");
+                else
+                    subgrupo = "N.I";
                 if (string.IsNullOrEmpty(btu))
                     btu = "N.I";
                 if (string.IsNullOrEmpty(ciclo))
@@ -406,6 +431,7 @@ namespace ART3WebAPI.Models.Domains
                     ws.Column(COL_PRODUTO).Width = 9;
                     ws.Column(COL_DESCRICAO).Width = 51;
                     ws.Column(COL_GRUPO).Width = 7;
+                    ws.Column(COL_SUBGRUPO).Width = 10;
                     ws.Column(COL_BTU).Width = 11;
                     ws.Column(COL_CICLO).Width = 7;
                     ws.Column(COL_VENDA_HISTORICO + totalMeses + totalMesesProjecao).Width = 9;
@@ -421,20 +447,34 @@ namespace ART3WebAPI.Models.Domains
                     #endregion                    
 
                     #region [ Filtro ]
-                    ws.Cells["B2:M12"].Style.Font.Bold = true;
-                    ws.Cells["B2"].Style.Font.Size = 12;
-                    ws.Cells["B2"].Value = "Farol Resumido (v3)";
-                    ws.Cells["B3"].Value = "Período de vendas: " + dt_inicio + " a " + dt_termino;
-                    ws.Cells["B4"].Value = "Fabricante(s): " + fabricante;
-                    ws.Cells["B5"].Value = "Grupo(s) de produtos: " + grupo;
-                    ws.Cells["B6"].Value = "BTU/h: " + btu;
-                    ws.Cells["B7"].Value = "Ciclo: " + ciclo;
-                    ws.Cells["B8"].Value = "Posição Mercado:" + pos_mercado;
-                    ws.Cells["B9"].Value = "Loja: " + loja;
-                    ws.Cells["B10"].Value = "Visão: " + visao;
-                    ws.Cells["B11"].Value = "Emissão: " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
-                    ws.Cells["H12"].Value = "Percentual estimado de crescimento (%): ";
-                    ws.Cells["H12:I12"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+                    lineAux = 2;
+                    ws.Cells["B" + lineAux.ToString()].Style.Font.Size = 12;
+                    ws.Cells["B" + lineAux.ToString()].Value = "Farol Resumido (v3)";
+                    if (opcao_periodo.Equals(FarolV3Controller.COD_CONSULTA_POR_PERIODO_CADASTRO))
+                    {
+                        sAux = "Período de vendas: ";
+                    }
+                    else if (opcao_periodo.Equals(FarolV3Controller.COD_CONSULTA_POR_PERIODO_ENTREGA))
+                    {
+                        sAux = "Período de entrega: ";
+                    }
+                    else
+                    {
+                        sAux = "";
+                    }
+                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = sAux + dt_inicio + " a " + dt_termino;
+                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "Fabricante(s): " + fabricante;
+                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "Grupo(s) de produtos: " + grupo;
+                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "Subgrupo(s) de produtos: " + subgrupo;
+                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "BTU/h: " + btu;
+                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "Ciclo: " + ciclo;
+                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "Posição Mercado:" + pos_mercado;
+                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "Loja: " + loja;
+                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "Visão: " + visao;
+                    lineAux++; ws.Cells["B" + lineAux.ToString()].Value = "Emissão: " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+                    lineAux++; ws.Cells["H" + lineAux.ToString()].Value = "Percentual estimado de crescimento (%): ";
+                    ws.Cells["B2:M" + lineAux.ToString()].Style.Font.Bold = true;
+                    ws.Cells["H" + lineAux.ToString() + ":I" + lineAux.ToString()].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
 
                     if (visao.Equals("ANALITICA"))
                     {
@@ -455,8 +495,6 @@ namespace ART3WebAPI.Models.Domains
                         ws.Cells["I12"].Style.Font.Bold = true;
                         ws.Cells["I12"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
                     }
-
-
                     #endregion
 
                     #region [ Cabeçalho ]
@@ -475,6 +513,7 @@ namespace ART3WebAPI.Models.Domains
                     ws.Cells[LIN_CABECALHO, COL_PRODUTO].Value = "Produto";
                     ws.Cells[LIN_CABECALHO, COL_DESCRICAO].Value = "Descrição";
                     ws.Cells[LIN_CABECALHO, COL_GRUPO].Value = "Grupo";
+                    ws.Cells[LIN_CABECALHO, COL_SUBGRUPO].Value = "Subgrupo";
                     ws.Cells[LIN_CABECALHO, COL_BTU].Value = "BTU/h";
                     ws.Cells[LIN_CABECALHO, COL_CICLO].Value = "Ciclo";
 
@@ -527,7 +566,6 @@ namespace ART3WebAPI.Models.Domains
                         }
 
                         cont++;
-
                     }
 
                     ws.Cells[LIN_CABECALHO, COL_VENDA_HISTORICO + totalMeses + totalMesesProjecao].Value = "Total";
@@ -542,6 +580,7 @@ namespace ART3WebAPI.Models.Domains
                     ws.Cells[LIN_CABECALHO, COL_PRODUTO].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
                     ws.Cells[LIN_CABECALHO, COL_DESCRICAO].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
                     ws.Cells[LIN_CABECALHO, COL_GRUPO].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    ws.Cells[LIN_CABECALHO, COL_SUBGRUPO].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                     ws.Cells[LIN_CABECALHO, COL_BTU].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
                     ws.Cells[LIN_CABECALHO, COL_CICLO].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                     ws.Cells[LIN_CABECALHO, COL_VENDA_HISTORICO + totalMeses + totalMesesProjecao].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
@@ -572,8 +611,9 @@ namespace ART3WebAPI.Models.Domains
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_DESCRICAO].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_GRUPO].Value = datasource.ElementAt(i).Grupo;
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_GRUPO].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                        if (datasource.ElementAt(i).Potencia_BTU != 0)
-                            ws.Cells[i + LIN_INICIO_REGISTROS, COL_BTU].Value = datasource.ElementAt(i).Potencia_BTU;
+                        ws.Cells[i + LIN_INICIO_REGISTROS, COL_SUBGRUPO].Value = datasource.ElementAt(i).Subgrupo;
+                        ws.Cells[i + LIN_INICIO_REGISTROS, COL_SUBGRUPO].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        if (datasource.ElementAt(i).Potencia_BTU != 0) ws.Cells[i + LIN_INICIO_REGISTROS, COL_BTU].Value = datasource.ElementAt(i).Potencia_BTU;
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_BTU].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_BTU].Style.Numberformat.Format = "##,###";
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_CICLO].Value = datasource.ElementAt(i).Ciclo;

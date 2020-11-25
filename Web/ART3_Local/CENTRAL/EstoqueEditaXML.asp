@@ -51,6 +51,7 @@
         dim aliq_ipi
         dim vl_ipi
         dim aliq_icms
+        dim vl_frete
 		end class
 
 
@@ -69,7 +70,8 @@
 	dim s_ncm, s_cst
 	dim s_nome_nfe_emitente
     dim s_vl_diferenca, s_total_diferenca, m_vl_diferenca, m_total_diferenca, m_total_geral_diferenca
-    dim s_aliq_ipi, s_vl_ipi, s_aliq_icms
+    dim s_aliq_ipi, s_vl_ipi, s_aliq_icms, s_vl_frete
+    dim c_nfe_dt_hr_emissao
 	
 '	CONECTA AO BANCO DE DADOS
 '	=========================
@@ -127,6 +129,7 @@
             v_item(i).aliq_ipi              = v_item_bd(i).aliq_ipi
             v_item(i).vl_ipi                = v_item_bd(i).vl_ipi
             v_item(i).aliq_icms             = v_item_bd(i).aliq_icms
+            v_item(i).vl_frete              = v_item_bd(i).vl_frete
 			next
 		
 		for i = Lbound(v_item) to Ubound(v_item)
@@ -159,6 +162,8 @@
 			s_nome_nfe_emitente = Trim("" & rs("razao_social"))
 			end if
 		end if
+
+    c_nfe_dt_hr_emissao = Trim(Request("c_nfe_dt_hr_emissao"))
 
 	dim blnValorEditavel, sAnoMesEstoque, sAnoMesHoje, s_valor_readonly
 	blnValorEditavel = False
@@ -523,9 +528,16 @@ function fESTOQConfirma( f ) {
 		<br><input name="c_fabricante_aux" id="c_fabricante_aux" readonly tabindex=-1 class="PLLe" style="width:460px;margin-left:2pt;"
 				value="<%=s%>"></td></tr>
 <!--  DOCUMENTO  -->
-	<tr bgcolor="#FFFFFF"><td colspan="2" class="MDBE" align="left" nowrap><span class="PLTe">Documento</span>
+	<tr bgcolor="#FFFFFF">
+        <td class="MDBE" width="50%" align="left" nowrap><span class="PLTe">Documento</span>
 		<br><input name="c_documento" id="c_documento" maxlength="30" class="PLLe" style="width:270px;margin-left:2pt;color:darkblue;"
-			value="<%=r_estoque.documento%>"></td></tr>
+			value="<%=r_estoque.documento%>">
+        </td>
+        <td class="MDB" width="50%" align="left" nowrap><span class="PLTe">Emissão</span>
+		<br /><input name="c_nfe_dt_hr_emissao" id="c_nfe_dt_hr_emissao" readonly tabindex=-1  class="PLLe" style="margin-left:2pt;"
+            value="<%=c_nfe_dt_hr_emissao%>">
+	    </td>
+	</tr>
 <!-- ÁGIO / TIPO ENTRADA  -->
 	<tr bgcolor="#FFFFFF">
         <td class="MDBE" width="50%" align="left" nowrap><span class="PLTe">% Ágio</span>
@@ -585,6 +597,7 @@ function fESTOQConfirma( f ) {
 	<td class="MB TdNfeAliqIpi" align="left" style="vertical-align:bottom;"><span class="PLTe">A.IPI</span></td>
 	<td class="MB TdNfeVlIpi" align="left" style="vertical-align:bottom;"><span class="PLTe">VL IPI</span></td>
 	<td class="MB TdNfeAliqIcms" align="left" style="vertical-align:bottom;"><span class="PLTe">A.ICMS</span></td>
+	<td class="MB TdNfeVlIpi" align="left" style="vertical-align:bottom;"><span class="PLTe">VL Frete</span></td>
 	<td class="MB TdNfeVlTotal" align="left" style="vertical-align:bottom;"><span class="PLTe">VL TOTAL</span></td>
 	</tr>
 	</thead>
@@ -621,7 +634,8 @@ function fESTOQConfirma( f ) {
                 s_vl_ipi = formata_moeda(.vl_ipi)
                 's_aliq_icms = formata_moeda(.aliq_icms)
                 s_aliq_icms = formata_numero(.aliq_icms, 0)
-      			m_vl_diferenca = .vl_custo2 - .preco_fabricante
+      			s_vl_frete = formata_moeda(.vl_frete)
+                m_vl_diferenca = .vl_custo2 - .preco_fabricante
 				s_vl_diferenca = formata_moeda(m_vl_diferenca)
 				m_total_diferenca = .qtde * m_vl_diferenca
 				s_total_diferenca = formata_moeda(m_total_diferenca)
@@ -686,6 +700,10 @@ function fESTOQConfirma( f ) {
 			value="<%=s_aliq_icms%>">
 	    </td>
 	<td class="MDB" align="right">
+		<input name="c_vl_frete" id="c_vl_ipi" readonly tabindex=-1 class="PLLd" style="width:70px;"
+			value="<%=s_vl_frete%>">
+	    </td>
+	<td class="MDB" align="right">
 		<input name="c_vl_total_custo2" id="c_vl_total_custo2" readonly tabindex=-1 class="PLLd" style="width:70px;"
 			value="<%=s_vl_total_custo2%>" />
 		</td>
@@ -695,11 +713,12 @@ function fESTOQConfirma( f ) {
 	
 	<tfoot>
 	<tr>
-	<td colspan="10" class="MD" id="tdPreTotalGeralFabricante">&nbsp;</td>
+	<td colspan="11" class="MD" id="tdPreTotalGeralFabricante">&nbsp;</td>
 
     <td class="MD" align="left"><p class="Cd">Total NF</p></td>
 	<td class="MDB" align="right"><input name="c_total_nf" id="c_total_nf" class="PLLd" style="width:62px;color:black;" 
 		value='<%=formata_moeda(m_total_geral)%>'></td>
+	<td>&nbsp;</td>
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>

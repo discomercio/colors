@@ -29,8 +29,8 @@ namespace FinanceiroService
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "Financeiro Service";
 				public static readonly string ID_SISTEMA_EVENTLOG = GetConfigurationValue("ServiceName");
-				public const string VERSAO_NUMERO = "1.31";
-				public const string VERSAO_DATA = "16.JUL.2019";
+				public const string VERSAO_NUMERO = "1.33";
+				public const string VERSAO_DATA = "14.AGO.2020";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Serviço do Windows para execução automática de rotinas financeiras";
@@ -251,9 +251,14 @@ namespace FinanceiroService
 			 * v 1.31 - 16.07.2019 - por HHO
 			 *		Implementação de tratamento para o novo meio de pagamento 'cartão (maquineta)'.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.32 - XX.XX.20XX - por XXX
+			 * v 1.32 - 24.09.2019 - por HHO
+             *      Ajustes para realização da limpeza automática da tabela t_CTRL_RELATORIO_USUARIO_X_PEDIDO
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.33 - XX.XX.20XX - por XXX
+			 * v 1.33 - 14.08.2020 - por HHO
+			 *      Ajustes para tratar a memorização do endereço de cobrança no pedido, pois, a partir de
+			 *      agora, ao invés de obter os dados do endereço no cadastro do cliente (t_CLIENTE), deve-se
+			 *      usar os dados que estão gravados no próprio pedido. O tratamento que já ocorria com o
+			 *      endereço de entrega deve passar a ser feito p/ o endereço de cobrança/cadastro.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.34 - XX.XX.20XX - por XXX
 			 * -----------------------------------------------------------------------------------------------
@@ -330,6 +335,7 @@ namespace FinanceiroService
 					public const string FLAG_HABILITACAO_UPLOAD_FILE_MANUTENCAO_ARQUIVOS = "FinSvc_FlagHabilitacao_UploadFile_ManutencaoArquivos";
 					public const string UPLOAD_FILE_MANUTENCAO_ARQUIVOS_HORARIO = "FinSvc_UploadFile_ManutencaoArquivos_Horario";
 					public const string DT_HR_ULT_UPLOAD_FILE_MANUTENCAO_ARQUIVOS = "FinSvc_DtHrUltUploadFileManutencaoArquivos";
+					public const string ID_PARAMETRO_FLAG_PEDIDO_MEMORIZACAOCOMPLETAENDERECOS = "Flag_Pedido_MemorizacaoCompletaEnderecos";
 				}
 				#endregion
 
@@ -1484,7 +1490,8 @@ namespace FinanceiroService
 					public const int T_EMAILSNDSVC_LOG_ERRO__CORTE_EM_DIAS = 12 * 31;
 					public const int T_MAGENTO_API_PEDIDO_XML__INFO_UTILIZADA__CORTE_EM_DIAS = 36 * 31;
 					public const int T_MAGENTO_API_PEDIDO_XML__INFO_DESCARTADA__CORTE_EM_DIAS = 1 * 31;
-				}
+                    public const int T_CTRL_RELATORIO_USUARIO_X_PEDIDO__CORTE_EM_DIAS = 1 * 31;
+                }
 				#endregion
 			}
 			#endregion
@@ -1730,6 +1737,25 @@ namespace FinanceiroService
 				public const short COD_ST_PEDIDO_RECEBIDO_NAO = 0;
 				public const short COD_ST_PEDIDO_RECEBIDO_SIM = 1;
 				public const short COD_ST_PEDIDO_RECEBIDO_NAO_DEFINIDO = 10;
+			}
+			#endregion
+
+			#region [ Código de Status de Cliente Contribuinte de ICMS ]
+			public class StClienteContribuinteIcmsStatus
+			{
+				public const byte CONTRIBUINTE_ICMS_INICIAL = 0;
+				public const byte CONTRIBUINTE_ICMS_NAO = 1;
+				public const byte CONTRIBUINTE_ICMS_SIM = 2;
+				public const byte CONTRIBUINTE_ICMS_ISENTO = 3;
+			}
+			#endregion
+
+			#region [ Código de Status de Cliente Proudtor Rural ]
+			public class StClienteProdutorRural
+			{
+				public const byte PRODUTOR_RURAL_INICIAL = 0;
+				public const byte PRODUTOR_RURAL_NAO = 1;
+				public const byte PRODUTOR_RURAL_SIM = 2;
 			}
 			#endregion
 

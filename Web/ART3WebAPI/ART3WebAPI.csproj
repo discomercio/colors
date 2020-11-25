@@ -21,12 +21,13 @@
     <IISExpressUseClassicPipelineMode />
     <UseGlobalApplicationHostFile />
     <TargetFrameworkProfile />
+    <Use64BitIISExpress />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -34,10 +35,11 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Antlr3.Runtime">
@@ -122,6 +124,7 @@
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <None Include="Properties\PublishProfiles\ART3WebAPI.pubxml" />
+    <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />
@@ -164,7 +167,9 @@
     <Compile Include="Models\Domains\FarolGeradorRelatorio.cs" />
     <Compile Include="Models\Domains\Global.cs" />
     <Compile Include="Models\Domains\MagentoSoapApi.cs" />
+    <Compile Include="Models\Domains\OcorrenciasGeradorRelatorio.cs" />
     <Compile Include="Models\Domains\RelatorioProdutoFlagBD.cs" />
+    <Compile Include="Models\Domains\Texto.cs" />
     <Compile Include="Models\Domains\WebApiException.cs" />
     <Compile Include="Models\Entities\Cliente.cs" />
     <Compile Include="Models\Entities\CodigoDescricao.cs" />
@@ -178,6 +183,7 @@
     <Compile Include="Models\Entities\MagentoSoapApiEntities.cs" />
     <Compile Include="Models\Entities\Ocorrencias.cs" />
     <Compile Include="Models\Entities\Compras.cs" />
+    <Compile Include="Models\Entities\OcorrenciasStatus.cs" />
     <Compile Include="Models\Entities\OrcamentistaIndicador.cs" />
     <Compile Include="Models\Entities\Pedido.cs" />
     <Compile Include="Models\Entities\Produto.cs" />
@@ -193,6 +199,7 @@
     <Compile Include="Models\Repository\DataDevolucaoProdutos2.cs" />
     <Compile Include="Models\Repository\DataEstatisticasOcorrencias.cs" />
     <Compile Include="Models\Repository\DataFarol.cs" />
+    <Compile Include="Models\Repository\DataOcorrencias.cs" />
     <Compile Include="Models\Repository\GeralDAO.cs" />
     <Compile Include="Models\Repository\LogDAO.cs" />
     <Compile Include="Models\Repository\MagentoApiDAO.cs" />

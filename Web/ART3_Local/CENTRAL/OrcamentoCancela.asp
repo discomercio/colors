@@ -70,6 +70,7 @@
 			rs("st_orcamento") = ST_ORCAMENTO_CANCELADO
 			rs("cancelado_data") = Date
 			rs("cancelado_usuario") = usuario
+			rs("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
 			rs.Update
 			if Err <> 0 then
 			'	~~~~~~~~~~~~~~~~

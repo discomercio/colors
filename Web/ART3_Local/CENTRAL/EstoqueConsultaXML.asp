@@ -51,6 +51,7 @@
         dim aliq_ipi
         dim vl_ipi
         dim aliq_icms
+        dim vl_frete
 		end class
 
 
@@ -93,6 +94,7 @@
 	
     dim c_perc_agio
     dim s_entrada_tipo
+    dim c_nfe_dt_hr_emissao
 	
 	dim r_estoque, v_item_bd, v_item
 	dim s, i, n
@@ -101,7 +103,7 @@
 	dim s_vl_BC_ICMS_ST, s_vl_ICMS_ST, s_ncm, s_cst
 	dim s_nome_nfe_emitente
 	dim s_vl_diferenca, s_total_diferenca, m_vl_diferenca, m_total_diferenca, m_total_geral_diferenca
-    dim s_aliq_ipi, s_vl_ipi, s_aliq_icms
+    dim s_aliq_ipi, s_vl_ipi, s_aliq_icms, s_vl_frete
 	
 '	CONECTA AO BANCO DE DADOS
 '	=========================
@@ -123,6 +125,7 @@
 	if alerta = "" then
 		s_nome_fabricante = fabricante_descricao(r_estoque.fabricante)
         c_perc_agio = formata_numero(r_estoque.perc_agio, 4)
+        c_nfe_dt_hr_emissao = formata_data(r_estoque.data_emissao_NF_entrada)
         if r_estoque.entrada_tipo = 1 then
             s_entrada_tipo = "Via XML"
         else
@@ -150,6 +153,7 @@
             v_item(i).aliq_ipi              = v_item_bd(i).aliq_ipi
             v_item(i).vl_ipi                = v_item_bd(i).vl_ipi
             v_item(i).aliq_icms             = v_item_bd(i).aliq_icms
+            v_item(i).vl_frete              = v_item_bd(i).vl_frete
 			next
 		
 		for i = Lbound(v_item) to Ubound(v_item)
@@ -385,10 +389,18 @@ var b;
 			if (s<>"") And (s_nome_fabricante<>"") then s = s & " - " & s_nome_fabricante %>
 		<br><input name="c_fabricante_aux" id="c_fabricante_aux" readonly tabindex=-1 class="PLLe" style="width:460px;margin-left:2pt;"
 				value="<%=s%>"></td></tr>
-<!--  DOCUMENTO  -->
-	<tr bgcolor="#FFFFFF"><td colspan="2" class="MDBE" align="left" nowrap><span class="PLTe">Documento</span>
+<!--  DOCUMENTO / DATA EMISSÃO -->
+	<tr bgcolor="#FFFFFF">
+        <td class="MDBE" width="50%" align="left" nowrap><span class="PLTe">Documento</span>
 		<br><input name="c_documento" id="c_documento" readonly tabindex=-1 class="PLLe" style="width:270px;margin-left:2pt;"
-			value="<%=r_estoque.documento%>"></td></tr>
+			value="<%=r_estoque.documento%>">
+        </td>
+        <td class="MDB" width="50%" align="left" nowrap>
+            <span class="PLTe">Emissão</span>
+		<br /><input name="c_nfe_dt_hr_emissao" id="c_nfe_dt_hr_emissao" readonly tabindex=-1  class="PLLe" style="margin-left:2pt;"
+            value="<%=c_nfe_dt_hr_emissao%>">
+	    </td>
+	</tr>
 <!-- ÁGIO / TIPO ENTRADA  -->
 	<tr bgcolor="#FFFFFF">
         <td class="MDBE" width="50%" align="left" nowrap><span class="PLTe">% Ágio</span>
@@ -446,6 +458,7 @@ var b;
 	<td class="MB TdNfeAliqIpi" align="left" style="vertical-align:bottom;"><span class="PLTe">A.IPI</span></td>
 	<td class="MB TdNfeVlIpi" align="left" style="vertical-align:bottom;"><span class="PLTe">VL IPI</span></td>
 	<td class="MB TdNfeAliqIcms" align="left" style="vertical-align:bottom;"><span class="PLTe">A.ICMS</span></td>
+	<td class="MB TdNfeVlIpi" align="left" style="vertical-align:bottom;"><span class="PLTe">VL Frete</span></td>
 	<td class="MB TdNfeVlTotal" align="left" style="vertical-align:bottom;"><span class="PLTe">VL TOTAL</span></td>
 	</tr>
 	</thead>
@@ -486,6 +499,7 @@ var b;
                 s_vl_ipi = formata_moeda(.vl_ipi)
                 's_aliq_icms = formata_moeda(.aliq_icms)
                 s_aliq_icms = formata_numero(.aliq_icms, 0)
+                s_vl_frete = formata_moeda(.vl_frete)
 				end with
 		else
 			exit for
@@ -539,6 +553,9 @@ var b;
 		<input name="c_nfe_aliq_icms" id="c_nfe_aliq_icms" readonly tabindex=-1 class="PLLd" style="width:70px;"
 			value="<%=s_aliq_icms%>"></td>
 	<td class="MDB" align="right">
+		<input name="c_nfe_vl_frete" id="c_nfe_vl_frete" readonly tabindex=-1 class="PLLd" style="width:70px;"
+			value="<%=s_vl_frete%>"></td>
+	<td class="MDB" align="right">
 		<input name="c_vl_total_custo2" id="c_vl_total_custo2" readonly tabindex=-1 class="PLLd" style="width:70px;"
 			value="<%=s_vl_total_custo2%>"></td>
 	</tr>
@@ -547,10 +564,11 @@ var b;
 	
 	<tfoot>
 	<tr>
-	<td colspan="10" id="tdPreTotalGeralFabricante">&nbsp;</td>
+	<td colspan="11" id="tdPreTotalGeralFabricante">&nbsp;</td>
 	<td class="MDBE" align="left"><p class="Cd">Total NF</p></td>
 	<td class="MDB" align="right" id="tdTotalGeralFabricante"><input name="c_total_geral" id="c_total_geral" class="PLLd" style="width:70px;" 
 		value='<%=formata_moeda(m_total_geral)%>' readonly tabindex=-1></td>
+	<td>&nbsp;</td>
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>

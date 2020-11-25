@@ -50,7 +50,7 @@
 		end if
 	
 	dim s_filtro, intQtdeOcorrencias
-	dim s, rb_status, origem, c_loja
+	dim s, rb_status, origem, c_loja, c_transportadora, s_nome_transportadora
 	origem = ucase(Trim(request("origem")))
 	intQtdeOcorrencias = 0
 
@@ -58,9 +58,11 @@
 	'	PARÂMETRO VEM PELA QUERYSTRING
 		rb_status = Trim(Request("rb_status"))
 		c_loja = retorna_so_digitos(Trim(Request("c_loja")))
+		c_transportadora = Trim(Request("c_transportadora"))
 	else
 		rb_status = Trim(Request.Form("rb_status"))
 		c_loja = retorna_so_digitos(Trim(Request.Form("c_loja")))
+		c_transportadora = Trim(Request.Form("c_transportadora"))
 		end if
 
 	dim alerta
@@ -73,6 +75,21 @@
 			rs.open s, cn
 			if rs.Eof then
 				alerta = "LOJA Nº " & c_loja & " NÃO ESTÁ CADASTRADA."
+				end if
+			end if
+		end if
+
+	if alerta = "" then
+		s_nome_transportadora = ""
+		if c_transportadora <> "" then
+			s = "SELECT nome FROM t_TRANSPORTADORA WHERE (id='" & c_transportadora & "')"
+			if rs.State <> 0 then rs.Close
+			rs.open s, cn
+			if rs.Eof then 
+				alerta=texto_add_br(alerta)
+				alerta = "TRANSPORTADORA " & c_transportadora & " NÃO ESTÁ CADASTRADA."
+			else
+				s_nome_transportadora = iniciais_em_maiusculas(Trim("" & rs("nome")))
 				end if
 			end if
 		end if
@@ -162,6 +179,11 @@ dim s_link_rastreio
 	
 	if c_loja <> "" then
 		s_sql = s_sql & " AND (tP.numero_loja = " & c_loja & ")"
+		end if
+
+	if c_transportadora <> "" then
+		s_sql = s_sql & _
+					" AND (tP.transportadora_id = '" & c_transportadora & "')"
 		end if
 
 	if rb_status = "ABERTA" then
@@ -772,6 +794,7 @@ html
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
 <input type="hidden" name="rb_status" id="rb_status" value="<%=rb_status%>">
 <input type="hidden" name="c_loja" id="c_loja" value="<%=c_loja%>">
+<input type="hidden" name="c_transportadora" id="c_transportadora" value="<%=c_transportadora%>" />
 
 
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->
@@ -816,6 +839,16 @@ html
 				"<p class='N'>" & s & "</p></td>" & chr(13) & _
 				"	</tr>" & chr(13)
 
+	s = c_transportadora
+	if s = "" then 
+		s = "todas"
+	else
+		if (s_nome_transportadora <> "") And (s_nome_transportadora <> c_transportadora) then s = s & "  (" & s_nome_transportadora & ")"
+		end if
+	s_filtro = s_filtro & "<tr><td align='right' valign='top' NOWRAP>" & _
+				"<p class='N'>Transportadora:&nbsp;</p></td><td valign='top'>" & _
+				"<p class='N'>" & s & "</p></td></tr>"
+
 	s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
 					"		<td align='right' valign='top' NOWRAP>" & _
@@ -843,7 +876,7 @@ html
 <tr>
 	<td><a name="bVOLTAR" id="bVOLTAR"
 		<% if origem="A" then %>
-			href="resumo.asp<%= "?" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>"
+			href="RelPedidoOcorrenciaFiltro.asp<%= "?" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>"
 		<% else %>
 			href="javascript:history.back()"
 		<% end if %>

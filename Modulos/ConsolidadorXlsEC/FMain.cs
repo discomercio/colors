@@ -181,6 +181,7 @@ namespace ConsolidadorXlsEC
 			PedidoDAO.inicializaConstrutorEstatico();
 			UsuarioDAO.inicializaConstrutorEstatico();
 			LogDAO.inicializaConstrutorEstatico();
+			GeralDAO.inicializaConstrutorEstatico();
 			ProdutoDAO.inicializaConstrutorEstatico();
             ComboDAO.inicializaConstrutorEstatico();
 		}

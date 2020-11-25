@@ -271,11 +271,27 @@
         PRAZO_EXIBICAO_CANCEL_AUTO_PEDIDO = 2
     end if
 
+	dim nPrazoAcessoRelPedidosIndicadoresLoja
+	nPrazoAcessoRelPedidosIndicadoresLoja = getParametroPrazoAcessoRelPedidosIndicadoresLoja
+
 	s_sessionToken = ""
 	s = "SELECT Convert(varchar(36), SessionTokenModuloLoja) AS SessionTokenModuloLoja FROM t_USUARIO WHERE (usuario = '" & usuario & "')"
     if rs.State <> 0 then rs.Close
     rs.Open s,cn
 	if Not rs.Eof then s_sessionToken = Trim("" & rs("SessionTokenModuloLoja"))
+
+'   LIMPA EVENTUAIS LOCKS REMANESCENTES NOS RELATÓRIOS
+    s = "UPDATE tCRUP SET" & _
+            " locked = 0," & _
+            " cod_motivo_lock_released = " & CTRL_RELATORIO_CodMotivoLockReleased_AcessadaTelaInicialLoja & "," & _
+            " dt_hr_lock_released = getdate()" & _
+        " FROM t_CTRL_RELATORIO_USUARIO_X_PEDIDO tCRUP INNER JOIN t_CTRL_RELATORIO tCR ON (tCRUP.id_relatorio = tCR.id)" & _
+        " WHERE" & _
+            " (tCR.modulo = 'LOJA')" & _
+            " AND (tCRUP.usuario = '" & QuotedStr(Trim(Session("usuario_atual"))) & "')" & _
+            " AND (locked = 1)"
+    cn.Execute(s)
+
 
 
 
@@ -368,7 +384,6 @@ strWhereBase = " (t1.st_entrega <> '" & ST_ENTREGA_ENTREGUE & "')" & _
 								" AND (t1.st_entrega <> '" & ST_ENTREGA_A_ENTREGAR & "')" & _
 								" AND (Coalesce(tPedBase.st_pagto, '') <> '" & ST_PAGTO_PAGO & "')" & _
 								" AND (Coalesce(tPedBase.st_pagto, '') <> '" & ST_PAGTO_PARCIAL & "')" & _
-								" AND (tPedBase.loja NOT IN ('" & NUMERO_LOJA_VRF2 & "','" & NUMERO_LOJA_VRF3 & "','" & NUMERO_LOJA_VRF4 & "'))" & _
                                 " AND (tPedBase.loja = '" & loja & "')"
 
 if Not operacao_permitida(OP_LJA_CONSULTA_UNIVERSAL_PEDIDO_ORCAMENTO, s_lista_operacoes_permitidas) then
@@ -1464,7 +1479,7 @@ function fPesqPrePedido(orcamento) {
 			"		}" & chr(13) & _
 			"" & chr(13)
     end if
-    if Day(Date) <= PRAZO_ACESSO_REL_PEDIDOS_INDICADORES_LOJA then
+    if Day(Date) <= nPrazoAcessoRelPedidosIndicadoresLoja then
         if operacao_permitida(OP_LJA_REL_COMISSAO_INDICADORES, s_lista_operacoes_permitidas) then
     strScript = strScript & _
 			" // Relatorio pedidos indicadores (Preview)" & chr(13) & _
@@ -2379,7 +2394,7 @@ if operacao_permitida(OP_LJA_CONSULTA_PEDIDO, s_lista_operacoes_permitidas) Or _
 	</tr>
 	<% end if %>
 
-	<% if (loja = NUMERO_LOJA_BONSHOP) And operacao_permitida(OP_LJA_CADASTRA_NOVO_PEDIDO_EC_INDICADOR_SEMI_AUTOMATICO, s_lista_operacoes_permitidas) then %>
+	<% if isLojaBonshop(loja) And operacao_permitida(OP_LJA_CADASTRA_NOVO_PEDIDO_EC_INDICADOR_SEMI_AUTOMATICO, s_lista_operacoes_permitidas) then %>
     <!--  C O N S U L T A   P E D I D O   P E L O   N Ú M E R O   M A G E N T O -->
 	<tr class="DefaultBkg">
 		<td width="40%" align="left">
@@ -2825,7 +2840,7 @@ if operacao_permitida(OP_LJA_EDITA_CAD_ORCAMENTISTAS_E_INDICADORES, s_lista_oper
     	<%	'RELATÓRIO DE PEDIDOS INDICADORES (Preview)
 
 		 if operacao_permitida(OP_LJA_REL_COMISSAO_INDICADORES, s_lista_operacoes_permitidas) then
-            if Day(Date) <= PRAZO_ACESSO_REL_PEDIDOS_INDICADORES_LOJA then
+            if Day(Date) <= nPrazoAcessoRelPedidosIndicadoresLoja then
 			idx=idx+1
 			Response.Write s_separacao
 			s_separacao = "<br>" 

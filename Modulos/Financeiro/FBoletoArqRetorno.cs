@@ -1508,6 +1508,18 @@ namespace Financeiro
 			}
 			#endregion
 
+			#region [ Boletos AV não são enviados ]
+			// Os boletos AV frequentemente são pagos poucos dias após a emissão do boleto e isso cria uma situação em que o cadastramento do boleto e a confirmação do pagamento
+			// possam ser enviados no mesmo arquivo de remessa para o Serasa. Quando essa situação ocorre, o Serasa trata o cadastramento do boleto, mas não trata a confirmação
+			// do pagamento, fazendo com que o título fique pendente e precise ser tratado através da conciliação. Por isso a Lilian decidiu não enviar os boletos AV.
+			// Os boletos AV são identificados através da letra 'A' no início do número do documento.
+			if (blnTituloMovimentoCadastrar && rowBoletoItem.numero_documento.Trim().ToUpper().StartsWith("A"))
+			{
+				strMotivoNaoGravarDadosSerasa = "O título não será enviado por se tratar de um boleto AV (documento: " + rowBoletoItem.numero_documento + ")";
+				return false;
+			}
+			#endregion
+
 			#region [ Títulos emitidos p/ o CNPJ da própria empresa não podem ser enviados ]
 			strListaCnpjEmpresa = ComumDAO.getCampoStringTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.SERASA_RECIPROCIDADE_CNPJ_IGNORADOS);
 			vCnpj = strListaCnpjEmpresa.Split('|');

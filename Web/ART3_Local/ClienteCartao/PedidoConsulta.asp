@@ -62,9 +62,67 @@
 		Response.Redirect("aviso.asp?id=" & ERR_PEDIDO_INVALIDO)
 		end if
 
+    dim r_cliente
 	set r_cliente = New cl_CLIENTE
 	if Not x_cliente_bd(r_pedido.id_cliente, r_cliente) then Response.Redirect("aviso.asp?id=" & ERR_CLIENTE_NAO_CADASTRADO)
 	if r_cliente.cnpj_cpf <> cnpj_cpf_selecionado then Response.Redirect("aviso.asp?id=" & ERR_PEDIDO_INVALIDO)
+
+    'le as variáveis da origem certa: ou do pedido ou do cliente, todas comecam com cliente__
+    dim cliente__tipo, cliente__cnpj_cpf, cliente__rg, cliente__ie, cliente__nome
+    dim cliente__endereco, cliente__endereco_numero, cliente__endereco_complemento, cliente__bairro, cliente__cidade, cliente__uf, cliente__cep
+    dim cliente__tel_res, cliente__ddd_res, cliente__tel_com, cliente__ddd_com, cliente__ramal_com, cliente__tel_cel, cliente__ddd_cel
+    dim cliente__tel_com_2, cliente__ddd_com_2, cliente__ramal_com_2, cliente__email
+
+    cliente__tipo = r_cliente.tipo
+    cliente__cnpj_cpf = r_cliente.cnpj_cpf
+	cliente__rg = r_cliente.rg
+    cliente__ie = r_cliente.ie
+    cliente__nome = r_cliente.nome
+    cliente__endereco = r_cliente.endereco
+    cliente__endereco_numero = r_cliente.endereco_numero
+    cliente__endereco_complemento = r_cliente.endereco_complemento
+    cliente__bairro = r_cliente.bairro
+    cliente__cidade = r_cliente.cidade
+    cliente__uf = r_cliente.uf
+    cliente__cep = r_cliente.cep
+    cliente__tel_res = r_cliente.tel_res
+    cliente__ddd_res = r_cliente.ddd_res
+    cliente__tel_com = r_cliente.tel_com
+    cliente__ddd_com = r_cliente.ddd_com
+    cliente__ramal_com = r_cliente.ramal_com
+    cliente__tel_cel = r_cliente.tel_cel
+    cliente__ddd_cel = r_cliente.ddd_cel
+    cliente__tel_com_2 = r_cliente.tel_com_2
+    cliente__ddd_com_2 = r_cliente.ddd_com_2
+    cliente__ramal_com_2 = r_cliente.ramal_com_2
+    cliente__email = r_cliente.email
+
+    if isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos and r_pedido.st_memorizacao_completa_enderecos <> 0 then 
+        cliente__tipo = r_pedido.endereco_tipo_pessoa
+        cliente__cnpj_cpf = r_pedido.endereco_cnpj_cpf
+	    cliente__rg = r_pedido.endereco_rg
+        cliente__ie = r_pedido.endereco_ie
+        cliente__nome = r_pedido.endereco_nome
+        cliente__endereco = r_pedido.endereco_logradouro
+        cliente__endereco_numero = r_pedido.endereco_numero
+        cliente__endereco_complemento = r_pedido.endereco_complemento
+        cliente__bairro = r_pedido.endereco_bairro
+        cliente__cidade = r_pedido.endereco_cidade
+        cliente__uf = r_pedido.endereco_uf
+        cliente__cep = r_pedido.endereco_cep
+        cliente__tel_res = r_pedido.endereco_tel_res
+        cliente__ddd_res = r_pedido.endereco_ddd_res
+        cliente__tel_com = r_pedido.endereco_tel_com
+        cliente__ddd_com = r_pedido.endereco_ddd_com
+        cliente__ramal_com = r_pedido.endereco_ramal_com
+        cliente__tel_cel = r_pedido.endereco_tel_cel
+        cliente__ddd_cel = r_pedido.endereco_ddd_cel
+        cliente__tel_com_2 = r_pedido.endereco_tel_com_2
+        cliente__ddd_com_2 = r_pedido.endereco_ddd_com_2
+        cliente__ramal_com_2 = r_pedido.endereco_ramal_com_2
+        cliente__email = r_pedido.endereco_email
+        end if
+
 
 	usuario = BRASPAG_USUARIO_CLIENTE
 	loja = r_pedido.loja
@@ -76,7 +134,7 @@
 	dim s_vl_TotalItemComRA, m_TotalItemComRA
 	dim s_preco_NF, m_TotalFamiliaParcelaRA
 	
-	dim s_aux, s2, s3, r_loja, r_cliente, s_cor, v_pedido, v_pedido_detalhe_split
+	dim s_aux, s2, s3, r_loja, s_cor, v_pedido, v_pedido_detalhe_split
 	dim vl_TotalFamiliaPrecoVenda, vl_TotalFamiliaPrecoNF, vl_TotalFamiliaPago, vl_TotalFamiliaDevolucaoPrecoVenda, vl_TotalFamiliaDevolucaoPrecoNF
 	dim vl_saldo_a_pagar, s_vl_saldo_a_pagar, st_pagto
 	dim v_item_devolvido, s_devolucoes
@@ -390,21 +448,19 @@ body::before
 <table width="649" class="Q" cellspacing="0">
 	<tr>
 <%	s = ""
-	with r_cliente
-		if Trim(.nome) <> "" then
-			s = Trim(.nome)
-			end if
-		end with
+	if Trim(cliente__nome) <> "" then
+		s = Trim(cliente__nome)
+		end if
 	
-	if r_cliente.tipo = ID_PF then s_aux="NOME DO CLIENTE" else s_aux="RAZÃO SOCIAL DO CLIENTE"
+	if cliente__tipo = ID_PF then s_aux="NOME DO CLIENTE" else s_aux="RAZÃO SOCIAL DO CLIENTE"
 %>
 	<td class="MD" align="left"><p class="Rf"><%=s_aux%></p>
 		<p class="C"><%=s%>&nbsp;</p>
 		</td>
 		
 		
-<%	if r_cliente.tipo = ID_PF then s_aux="CPF" else s_aux="CNPJ"
-	s = cnpj_cpf_formata(r_cliente.cnpj_cpf) 
+<%	if cliente__tipo = ID_PF then s_aux="CPF" else s_aux="CNPJ"
+	s = cnpj_cpf_formata(cliente__cnpj_cpf) 
 %>
 		<td width="145" align="left"><p class="Rf"><%=s_aux%></p>
 			<p class="C"><%=s%>&nbsp;</p>
@@ -415,9 +471,8 @@ body::before
 <!--  ENDEREÇO DO CLIENTE  -->
 <table width="649" class="QS" cellspacing="0">
 	<tr>
-<%	with r_cliente
-		s = formata_endereco(.endereco, .endereco_numero, .endereco_complemento, .bairro, .cidade, .uf, .cep)
-		end with
+<%	
+	s = formata_endereco(cliente__endereco, cliente__endereco_numero, cliente__endereco_complemento, cliente__bairro, cliente__cidade, cliente__uf, cliente__cep)
 %>		
 		<td align="left"><p class="Rf">ENDEREÇO</p><p class="C"><%=s%>&nbsp;</p></td>
 	</tr>
@@ -427,32 +482,25 @@ body::before
 <table width="649" class="QS" cellspacing="0">
 	<tr>
 <%	s = ""
-	with r_cliente
-		if Trim(.tel_res) <> "" then
-			s = telefone_formata(Trim(.tel_res))
-			s_aux=Trim(.ddd_res)
-			if s_aux<>"" then s = "(" & s_aux & ") " & s
-			end if
-		end with
+	if Trim(cliente__tel_res) <> "" then
+		s = telefone_formata(Trim(cliente__tel_res))
+		s_aux=Trim(cliente__ddd_res)
+		if s_aux<>"" then s = "(" & s_aux & ") " & s
+		end if
 	
 	s2 = ""
-	with r_cliente
-		if Trim(.tel_com) <> "" then
-			s2 = telefone_formata(Trim(.tel_com))
-			s_aux = Trim(.ddd_com)
-			if s_aux<>"" then s2 = "(" & s_aux & ") " & s2
-			s_aux = Trim(.ramal_com)
-			if s_aux<>"" then s2 = s2 & "  (R. " & s_aux & ")"
-			end if
-		end with
-
+	if Trim(cliente__tel_com) <> "" then
+		s2 = telefone_formata(Trim(cliente__tel_com))
+		s_aux = Trim(cliente__ddd_com)
+		if s_aux<>"" then s2 = "(" & s_aux & ") " & s2
+		s_aux = Trim(cliente__ramal_com)
+		if s_aux<>"" then s2 = s2 & "  (R. " & s_aux & ")"
+		end if
 	s3 = ""
-	with r_cliente
-		if .tipo = ID_PF then s3 = Trim(.rg) else s3 = Trim(.ie)
-		end with
-%>		
+	if cliente__tipo = ID_PF then s3 = Trim(cliente__rg) else s3 = Trim(cliente__ie)
+%>
 
-<% if r_cliente.tipo = ID_PF then %>
+<% if cliente__tipo = ID_PF then %>
 	<td class="MD" width="33%" align="left"><p class="Rf">TELEFONE RESIDENCIAL</p><p class="C"><%=s%>&nbsp;</p></td>
 	<td class="MD" width="33%" align="left"><p class="Rf">TELEFONE COMERCIAL</p><p class="C"><%=s2%>&nbsp;</p></td>
 	<td align="left"><p class="Rf">RG</p><p class="C"><%=s3%>&nbsp;</p></td>
@@ -467,14 +515,13 @@ body::before
 <!--  E-MAIL DO CLIENTE  -->
 <table width="649" class="QS" cellspacing="0">
 	<tr>
-		<td align="left"><p class="Rf">E-MAIL</p><p class="C"><%=Trim(r_cliente.email)%>&nbsp;</p></td>
+		<td align="left"><p class="Rf">E-MAIL</p><p class="C"><%=Trim(cliente__email)%>&nbsp;</p></td>
 	</tr>
 </table>
 
 <!--  ENDEREÇO DE ENTREGA  -->
-<%	with r_pedido
-		s = formata_endereco(.EndEtg_endereco, .EndEtg_endereco_numero, .EndEtg_endereco_complemento, .EndEtg_bairro, .EndEtg_cidade, .EndEtg_uf, .EndEtg_cep)
-		end with
+<%	
+	s = pedido_formata_endereco_entrega(r_pedido, r_cliente)
 %>		
 <table width="649" class="QS" cellspacing="0">
 	<tr>

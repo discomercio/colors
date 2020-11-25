@@ -103,6 +103,8 @@
 	$(function() {
 		$("#c_entrada_de").hUtilUI('datepicker_filtro_inicial');
 		$("#c_entrada_ate").hUtilUI('datepicker_filtro_final');
+        $("#c_nf_entrada_de").hUtilUI('datepicker_filtro_inicial');
+        $("#c_nf_entrada_ate").hUtilUI('datepicker_filtro_final');
 	});
 </script>
 
@@ -313,6 +315,13 @@ function exibe_botao_confirmar() {
 		<br><input type="radio" class="rbOpt" tabindex="-1" id="ckb_saldo" name="ckb_saldo" value="SEM_SALDO"
 		><span class="C lblOpt" style="cursor:default;margin-right:10pt;" onclick="fESTOQ.ckb_saldo[2].click();">Somente Produtos Sem Saldo Disponível</span>
 	</td>
+	</tr>
+
+<!--  PERÍODO DA EMISSÃO DA NF DE ENTRADA  -->
+	<tr bgColor="#FFFFFF">
+	<td colspan="2" class="MDBE" align="left" valign="bottom" nowrap><span class="PLTe">Data NF Entrada Entre</span>
+		<br><input name="c_nf_entrada_de" id="c_nf_entrada_de" class="PLLc" maxlength="10" style="margin-left:2pt;width:80px;" onkeypress="if (digitou_enter(true)) fESTOQ.c_nf_entrada_ate.focus(); filtra_data();" onblur="this.value=trim(this.value); if (!isDate(this)) {alert('Data inválida!!'); this.focus();}"
+			><span class="PLTe" style="vertical-align:baseline;">&nbsp;&nbsp;e&nbsp;</span><input name="c_nf_entrada_ate" id="c_nf_entrada_ate" class="PLLc" maxlength="10" style="margin-left:2pt;width:80px;" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); filtra_data();" onblur="this.value=trim(this.value); if (!isDate(this)) {alert('Data inválida!!'); this.focus();}"></td>
 	</tr>
 
 <!--  SAÍDA DO RELATÓRIO  -->

@@ -247,6 +247,63 @@ dim x, r, strResp, ha_default, strSql
 	r.close
 	set r=nothing
 end function
+
+'----------------------------------------------------------------------------------------------
+' grupo_origem_pedido_monta_itens_select
+function grupo_origem_pedido_monta_itens_select(byval id_default)
+dim x, r, strResp
+	id_default = Trim("" & id_default)
+
+	set r = cn.Execute("SELECT * FROM t_CODIGO_DESCRICAO WHERE (grupo='PedidoECommerce_Origem_Grupo') AND (st_inativo=0) ORDER BY descricao")
+	strResp = ""
+	do while Not r.eof 
+		x = Trim("" & r("codigo"))
+		if (id_default=x) then
+			strResp = strResp & "<option selected"
+		else
+			strResp = strResp & "<option"
+			end if
+		strResp = strResp & " value='" & x & "'>"
+		strResp = strResp & Trim("" & r("descricao"))
+		strResp = strResp & "</option>" & chr(13)
+		r.MoveNext
+		loop
+	
+    'strResp = "<option value=''>&nbsp;</option>" & strResp
+
+	grupo_origem_pedido_monta_itens_select = strResp
+	r.close
+	set r=nothing
+end function
+
+' __________________________________________________
+' origem_pedido_monta_itens_select
+'
+function origem_pedido_monta_itens_select(byval id_default)
+dim x, r, strResp
+	id_default = Trim("" & id_default)
+
+	set r = cn.Execute("SELECT * FROM t_CODIGO_DESCRICAO WHERE (grupo='PedidoECommerce_Origem') AND (st_inativo=0) ORDER BY descricao")
+	strResp = ""
+	do while Not r.eof 
+		x = Trim("" & r("codigo"))
+		if (id_default=x) then
+			strResp = strResp & "<option selected"
+		else
+			strResp = strResp & "<option"
+			end if
+		strResp = strResp & " value='" & x & "'>"
+		strResp = strResp & Trim("" & r("descricao"))
+		strResp = strResp & "</option>" & chr(13)
+		r.MoveNext
+		loop
+	
+    'strResp = "<option value=''>&nbsp;</option>" & strResp
+
+	origem_pedido_monta_itens_select = strResp
+	r.close
+	set r=nothing
+end function
 %>
 
 
@@ -292,6 +349,12 @@ end function
 		$("input[type=radio]").hUtil('fix_radios');
 		$("#c_dt_faturamento_inicio").hUtilUI('datepicker_filtro_inicial');
 		$("#c_dt_faturamento_termino").hUtilUI('datepicker_filtro_final');
+
+        $("#c_grupo_pedido_origem").change(function () {
+            $("#spnCounterGrupoOrigemPedido").text($("#c_grupo_pedido_origem :selected").length);
+        });
+
+        $("#spnCounterGrupoOrigemPedido").text($("#c_grupo_pedido_origem :selected").length);
 	});
 </script>
 
@@ -331,7 +394,7 @@ function marcarDesmarcarFinanceiro() {
 }
 
 function marcarTodos() {
-    $(":checkbox").each(function() {
+    $(".CKB_CADASTRO, .CKB_COMERCIAL, .CKB_FINANCEIRO").each(function() {
         if (!$(this).is(":checked")) {
             $(this).trigger('click');
         }
@@ -339,7 +402,7 @@ function marcarTodos() {
 }
 
 function desmarcarTodos() {
-    $(":checkbox").each(function() {
+    $(".CKB_CADASTRO, .CKB_COMERCIAL, .CKB_FINANCEIRO").each(function() {
         if ($(this).is(":checked")) {
             $(this).trigger('click');
         }
@@ -415,6 +478,17 @@ function exibe_botao_confirmar() {
 	dCONFIRMA.style.visibility = "";
 	window.status = "";
 }
+</script>
+
+<script type="text/javascript">
+    function limpaCampoSelectGrupoOrigemPedido() {
+        $("#c_grupo_pedido_origem").children().prop('selected', false);
+        $("#spnCounterGrupoOrigemPedido").text($("#c_grupo_pedido_origem :selected").length);
+    }
+    function limpaCampoSelectOrigemPedido() {
+        $("#c_pedido_origem").children().prop('selected', false);
+        $("#spnCounterOrigemPedido").text($("#c_pedido_origem :selected").length);
+    }
 </script>
 
 
@@ -631,6 +705,23 @@ function exibe_botao_confirmar() {
 	</td>
 	</tr>
 
+<!-- ORIGEM DO PEDIDO (GRUPO) -->
+    <tr bgcolor="#FFFFFF">
+		<td class="MDBE" align="left" nowrap><span class="PLTe">ORIGEM DO PEDIDO (GRUPO)</span>
+		<br>
+		<table cellspacing="0" cellpadding="0"><tr bgcolor="#FFFFFF"><td align="left">            
+			<select id="c_grupo_pedido_origem" name="c_grupo_pedido_origem" style="margin:1px 3px 6px 10px;width: 200px" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="5" multiple>
+			<% =grupo_origem_pedido_monta_itens_select(Null) %>
+			</select>
+			</td>
+        <td align="left" valign="top">
+			<a href="javascript:limpaCampoSelectGrupoOrigemPedido()" title="limpa o filtro 'Origem do Pedido (Grupo)'">
+						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterGrupoOrigemPedido"></span>)
+		</td></tr></table>
+        </td></tr>
+
 <!--  AGRUPAMENTO  -->
 	<tr bgcolor="#FFFFFF">
 	<td class="MDBE" align="left" nowrap>
@@ -642,6 +733,20 @@ function exibe_botao_confirmar() {
 	</td>
 	</tr>
 
+<!--  COMPATIBILIDADE DO EXCEL  -->
+	<tr bgcolor="#FFFFFF">
+	<td class="MDBE" align="left" nowrap>
+		
+				<span class="PLTe">COMPATIBILIDADE DO EXCEL</span>
+				<br />
+				<% s_checked = ""
+					if get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|ckb_COMPATIBILIDADE") = "ON" then s_checked = " checked"
+				%>
+				<input type="checkbox" tabindex="-1" id="ckb_COMPATIBILIDADE" name="ckb_COMPATIBILIDADE"
+						value="ON" <%=s_checked%> style="margin-left:30px;margin-bottom: 5px;margin-top: 5px;" /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COMPATIBILIDADE.click();">Compatibilidade com versões anteriores do Excel</span><br />
+	</td>
+	</tr>
+
 <!--  CAMPOS DE SAÍDA  -->
 	<tr bgcolor="#FFFFFF">
 	<td class="MDBE" align="left" nowrap>
@@ -650,7 +755,7 @@ function exibe_botao_confirmar() {
 		<table width="100%" cellpadding="2" cellspacing="2">
 			<tr>	
 			    <td rowspan="2" class="tdColSaida" align="left" valign="top" style="margin-left:2px; margin-right:2px">	
-			        <fieldset style="height:400px; border: solid 1px #555; padding: auto"><legend><input id="cadastro" type="checkbox" onclick="marcarDesmarcarCadastro()"/><label for="cadastro">Cadastro</label></legend>	   
+			        <fieldset style="height:452px; border: solid 1px #555; padding: auto"><legend><input id="cadastro" type="checkbox" onclick="marcarDesmarcarCadastro()"/><label for="cadastro">Cadastro</label></legend>	   
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_DATA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 				
@@ -668,15 +773,35 @@ function exibe_botao_confirmar() {
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_DT_EMISSAO_NF.click();">Data Emissão NF</span><br />
 
 				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_LOJA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_LOJA" name="ckb_COL_LOJA"
+						        value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_LOJA.click();">Loja</span><br />
+
+				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_PEDIDO|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_PEDIDO" name="ckb_COL_PEDIDO"
-						        value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_PEDIDO.click();">Pedido</span><br />		
+						        value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_PEDIDO.click();">Pedido</span><br />
 				
+				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_PEDIDO_MARKETPLACE|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_PEDIDO_MARKETPLACE" name="ckb_COL_PEDIDO_MARKETPLACE"
+						        value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_PEDIDO_MARKETPLACE.click();">Pedido Marketplace</span><br />
+
+				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_GRUPO_PEDIDO_ORIGEM|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_GRUPO_PEDIDO_ORIGEM" name="ckb_COL_GRUPO_PEDIDO_ORIGEM"
+						        value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_GRUPO_PEDIDO_ORIGEM.click();">Origem do Pedido (Grupo)</span><br />
+
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_CPF_CNPJ_CLIENTE|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_CPF_CNPJ_CLIENTE" name="ckb_COL_CPF_CNPJ_CLIENTE"
 						value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_CPF_CNPJ_CLIENTE.click();">CPF/CNPJ Cliente</span><br />
-				
+
+				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_CONTRIBUINTE_ICMS|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_CONTRIBUINTE_ICMS" name="ckb_COL_CONTRIBUINTE_ICMS"
+						value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_CONTRIBUINTE_ICMS.click();">Contribuinte ICMS</span><br />
+
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_NOME_CLIENTE|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_NOME_CLIENTE" name="ckb_COL_NOME_CLIENTE"
@@ -773,6 +898,11 @@ function exibe_botao_confirmar() {
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_PRODUTO.click();">Produto</span><br />
 						
 				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_NAC_IMP|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_COMERCIAL" tabindex="-1" id="ckb_COL_NAC_IMP" name="ckb_COL_NAC_IMP"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_NAC_IMP.click();">Nacional/Importado</span><br />
+
+				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_DESCRICAO_PRODUTO|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_COMERCIAL" tabindex="-1" id="ckb_COL_DESCRICAO_PRODUTO" name="ckb_COL_DESCRICAO_PRODUTO"
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_DESCRICAO_PRODUTO.click();">Descrição Produto</span><br />
@@ -809,25 +939,60 @@ function exibe_botao_confirmar() {
 				    <fieldset style="border: solid 1px #555;padding: auto"><legend><input id="financeiro" type="checkbox" onclick="marcarDesmarcarFinanceiro()" /><label for="financeiro">Financeiro</label></legend>
 				    
 				        <%	s_checked = ""
-					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_CUSTO|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
-					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_CUSTO" name="ckb_COL_VL_CUSTO"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_CUSTO.click();">VL Custo</span><br />
+					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_CUSTO_ULT_ENTRADA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_CUSTO_ULT_ENTRADA" name="ckb_COL_VL_CUSTO_ULT_ENTRADA"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_CUSTO_ULT_ENTRADA.click();">VL Custo (Últ Entrada)</span><br />
 						
+				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_CUSTO_REAL|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_CUSTO_REAL" name="ckb_COL_VL_CUSTO_REAL"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_CUSTO_REAL.click();">VL Custo (Real)</span><br />
+
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_LISTA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 			    	        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_LISTA" name="ckb_COL_VL_LISTA"
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_LISTA.click();">VL Lista</span><br />
 						
 				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_NF|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_NF" name="ckb_COL_VL_NF"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_NF.click();">VL NF</span><br />
+
+				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_UNITARIO|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_UNITARIO" name="ckb_COL_VL_UNITARIO"
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_UNITARIO.click();">VL Unitário</span><br />
 						
 				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_CUSTO_REAL_TOTAL|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_CUSTO_REAL_TOTAL" name="ckb_COL_VL_CUSTO_REAL_TOTAL"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_CUSTO_REAL_TOTAL.click();">VL Custo Total (Real)</span><br />
+
+				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_TOTAL_NF|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_TOTAL_NF" name="ckb_COL_VL_TOTAL_NF"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_TOTAL_NF.click();">VL Total NF</span><br />
+
+				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_TOTAL|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_TOTAL" name="ckb_COL_VL_TOTAL"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_TOTAL.click();">VL Total</span><br />
+
+				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_RA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+                	        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_RA" name="ckb_COL_VL_RA"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_RA.click();">VL RA</span><br />
+
+				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_RT|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
                 	        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_RT" name="ckb_COL_RT"
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_RT.click();">RT</span><br />
 						
+				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_ICMS_UF_DEST|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+                	        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_ICMS_UF_DEST" name="ckb_COL_ICMS_UF_DEST"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_ICMS_UF_DEST.click();">ICMS UF Destino</span><br />
+
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_QTDE_PARCELAS|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_QTDE_PARCELAS" name="ckb_COL_QTDE_PARCELAS"
@@ -837,6 +1002,11 @@ function exibe_botao_confirmar() {
 					        if (InStr(s_campos_saida_default, "|ckb_COL_MEIO_PAGAMENTO|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_MEIO_PAGAMENTO" name="ckb_COL_MEIO_PAGAMENTO"
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_MEIO_PAGAMENTO.click();">Meio de Pagamento</span><br />
+
+				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_CHAVE_NFE|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_CHAVE_NFE" name="ckb_COL_CHAVE_NFE"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_CHAVE_NFE.click();">Chave de Acesso NFe</span><br />
 
 					</fieldset>
 				</td>

@@ -233,7 +233,7 @@
 			s = ""
 			if cod_fabricante <> ""  then 
 				s = cod_fabricante
-				if (s<>"") And (s_nome_fabricante<>"") and Ubound(v_fabricantes) < 1 then s = s & " - " & s_nome_fabricante
+'				if (s<>"") And (s_nome_fabricante<>"") and Ubound(v_fabricantes) < 1 then s = s & " - " & s_nome_fabricante
 				end if
 			if s <> "" then
 				Response.Write "Fabricante: " & s

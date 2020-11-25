@@ -55,6 +55,8 @@
 	dim c_fabricante, c_produto, c_pedido
 	dim c_vendedor, c_indicador, c_captador, s_nome_vendedor,c_empresa
 	dim c_lista_loja, s_lista_loja, v_loja, v, i
+	dim c_uf, c_transportadora, s_nome_transportadora
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 
 	alerta = ""
 
@@ -70,6 +72,9 @@
 		c_indicador = Request("c_indicador")
 		c_captador = Request("c_captador")
 		c_lista_loja = Request("c_lista_loja")
+		c_uf = Request("c_uf")
+		c_transportadora = Request("c_transportadora")
+		c_empresa = Request("c_empresa")
 	else
 		c_fabricante = retorna_so_digitos(Trim(Request.Form("c_fabricante")))
 		c_produto = Ucase(Trim(Request.Form("c_produto")))
@@ -78,11 +83,13 @@
 		c_indicador = Ucase(Trim(Request.Form("c_indicador")))
 		c_captador = Ucase(Trim(Request.Form("c_captador")))
 		c_lista_loja = Trim(Request.Form("c_lista_loja"))
+		c_uf = Trim(Request.Form("c_uf"))
+		c_transportadora = Trim(Request.Form("c_transportadora"))
+		c_empresa = Trim(Request.Form("c_empresa"))
 		end if
 
 	s_lista_loja = substitui_caracteres(c_lista_loja,chr(10),"")
 	v_loja = split(s_lista_loja,chr(13),-1)
-    c_empresa = Trim(Request.Form("c_empresa"))
 
 	if alerta = "" then
 		if c_fabricante <> "" then
@@ -159,6 +166,27 @@
 			end if
 		end if
 
+'	Transportadora
+	if alerta = "" then
+		s_nome_transportadora = ""
+		if c_transportadora <> "" then
+			s = "SELECT nome, razao_social FROM t_TRANSPORTADORA WHERE (id='" & c_transportadora & "')"
+			if rs.State <> 0 then rs.Close
+			rs.open s, cn
+			if rs.Eof then 
+				alerta=texto_add_br(alerta)
+				alerta = "TRANSPORTADORA " & c_transportadora & " NÃO ESTÁ CADASTRADA."
+			else
+				s_nome_transportadora = Ucase(Trim("" & rs("nome")))
+				if s_nome_transportadora = "" then s_nome_transportadora = Ucase(Trim("" & rs("razao_social")))
+				end if
+			end if
+		end if
+
+	if alerta = "" then
+		' PARÂMETRO QUE INDICA SE A MEMORIZAÇÃO COMPLETA DE ENDEREÇOS ESTÁ ATIVADA NO SISTEMA
+		blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+		end if
 
 
 
@@ -235,10 +263,35 @@ dim intNumProdutos, intQtdeTotal, intQtdeSubTotal
 		s_where = s_where & " (t_ORCAMENTISTA_E_INDICADOR.captador = '" & c_captador & "')"
 		end if
 
+'	EMPRESA
     if c_empresa <> "" then
         if s_where <> "" then s_where = s_where & " AND"
 		s_where = s_where & " (t_ESTOQUE.id_nfe_emitente = " & c_empresa & ")"			
 	end if
+
+'	UF
+	if c_uf <> "" then
+		if s_where <> "" then s_where = s_where & " AND"
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s_where = s_where & " (" & _
+						"((t_PEDIDO.st_end_entrega = 0) AND (t_PEDIDO.endereco_uf = '" & c_uf & "'))" & _
+						" OR " & _
+						"((t_PEDIDO.st_end_entrega = 1) AND (t_PEDIDO.EndEtg_uf = '" & c_uf & "'))" & _
+						")"
+		else
+			s_where = s_where & " (" & _
+						"((t_PEDIDO.st_end_entrega = 0) AND (t_CLIENTE.uf = '" & c_uf & "'))" & _
+						" OR " & _
+						"((t_PEDIDO.st_end_entrega = 1) AND (t_PEDIDO.EndEtg_uf = '" & c_uf & "'))" & _
+						")"
+			end if
+		end if
+
+'	TRANSPORTADORA
+	if c_transportadora <> "" then
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (t_PEDIDO.transportadora_id = '" & c_transportadora & "')"
+		end if
 
 '	LOJAS
 	s_where_loja = ""
@@ -839,6 +892,9 @@ var c, i, n, blnAchou;
 <input type="hidden" name="c_indicador" id="c_indicador" value="<%=c_indicador%>">
 <input type="hidden" name="c_captador" id="c_captador" value="<%=c_captador%>">
 <input type="hidden" name="c_lista_loja" id="c_lista_loja" value="<%=c_lista_loja%>">
+<input type="hidden" name="c_empresa" id="c_empresa" value="<%=c_empresa%>" />
+<input type="hidden" name="c_uf" id="c_uf" value="<%=c_uf%>" />
+<input type="hidden" name="c_transportadora" id="c_transportadora" value="<%=c_transportadora%>" />
 
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->
 <table width="830" cellPadding="4" CellSpacing="0" style="border-bottom:1px solid black">
@@ -932,6 +988,22 @@ var c, i, n, blnAchou;
 			   "<p class='N'>Empresa:&nbsp;</p></td><td valign='top'>" & _
 			   "<p class='N'>" & s & "</p></td></tr>"
 	
+    s = c_uf
+	if s = "" then s = "todas"
+	s_filtro = s_filtro & "<tr><td align='right' valign='top' NOWRAP>" & _
+			   "<p class='N'>UF:&nbsp;</p></td><td valign='top'>" & _
+			   "<p class='N'>" & s & "</p></td></tr>"
+
+    s = c_transportadora
+	if s = "" then 
+		s = "todas"
+	else
+		s = s & " (" & s_nome_transportadora & ")"
+		end if
+	s_filtro = s_filtro & "<tr><td align='right' valign='top' NOWRAP>" & _
+			   "<p class='N'>Transportadora:&nbsp;</p></td><td valign='top'>" & _
+			   "<p class='N'>" & s & "</p></td></tr>"
+
 '	LISTA DE LOJAS
 	s_filtro_loja = ""
 	for i = Lbound(v_loja) to Ubound(v_loja)

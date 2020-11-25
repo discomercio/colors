@@ -182,11 +182,11 @@
 		'	~~~~~~~~~~~~~~
 			if Err=0 then 
                 ' envia e-mail para o administrador das ocorrências
-                if (loja = NUMERO_LOJA_BONSHOP) Or isLojaVrf(loja) then
+                if isLojaBonshop(loja) Or isLojaVrf(loja) then
                     dim strEmailAdministrador, id_email, msg_erro_grava_email, corpo_mensagem
                     set strEmailAdministrador = get_registro_t_parametro("PEDIDO_OCORRENCIA_EMAIL_ADMINISTRADOR")
                     corpo_mensagem = "Foi cadastrada uma nova ocorrência no pedido " & pedido_selecionado & "."
-                    EmailSndSvcGravaMensagemParaEnvio EMAILSNDSVC_REMETENTE__SENTINELA_SISTEMA, _
+                    EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__SENTINELA_SISTEMA), _
                                                                             "", _
                                                                             strEmailAdministrador.campo_texto, _
                                                                             "", _

@@ -49,24 +49,47 @@
 	dim cn,rs
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	s = "SELECT " & _
 			" tN1.id AS id_wms_etq_n1," & _
 			" tN2.id AS id_wms_etq_n2," & _
 			" tN3.id AS id_wms_etq_n3," & _
 			" tN2.obs_2," & _
 			" tN2.obs_3," & _
-			" tN2.transportadora_id," & _
+			" tN2.transportadora_id,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s = s & _
+			" tPed.endereco_cnpj_cpf AS cnpj_cpf_cliente," & _
+			" dbo.SqlClrUtilIniciaisEmMaiusculas(tPed.endereco_nome) AS nome_cliente,"
+	else
+		s = s & _
 			" tCli.cnpj_cpf AS cnpj_cpf_cliente," & _
-			" tCli.nome_iniciais_em_maiusculas AS nome_cliente," & _
+			" tCli.nome_iniciais_em_maiusculas AS nome_cliente,"
+		end if
+
+	s = s & _
 			" tProd.descricao," & _
 			" tProd.descricao_html" & _
 		" FROM t_WMS_ETQ_N3_SEPARACAO_ZONA_PRODUTO tN3" & _
 			" INNER JOIN t_WMS_ETQ_N2_SEPARACAO_ZONA_PEDIDO tN2 ON (tN3.id_wms_etq_n2=tN2.id)" & _
-			" INNER JOIN t_WMS_ETQ_N1_SEPARACAO_ZONA_RELATORIO tN1 ON (tN2.id_wms_etq_n1=tN1.id)" & _
-			" INNER JOIN t_CLIENTE tCli ON (tN2.id_cliente = tCli.id)" & _
+			" INNER JOIN t_WMS_ETQ_N1_SEPARACAO_ZONA_RELATORIO tN1 ON (tN2.id_wms_etq_n1=tN1.id)"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s = s & _
+			" INNER JOIN t_PEDIDO tPed ON (tN2.pedido = tPed.pedido)"
+	else
+		s = s & _
+			" INNER JOIN t_CLIENTE tCli ON (tN2.id_cliente = tCli.id)"
+		end if
+
+	s = s & _
 			" INNER JOIN t_PRODUTO tProd ON ((tN3.fabricante = tProd.fabricante) AND (tN3.produto = tProd.produto))" & _
 		" WHERE" & _
 			" (tN3.id = " & c_id_wms_etq_n3 & ")"
+
 	set rs = cn.Execute(s)
 	if Err <> 0 then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
 	

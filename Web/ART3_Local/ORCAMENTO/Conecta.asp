@@ -345,7 +345,7 @@ body::before {
 </center>
 </body>
 <% else %>
-<body onload="focus();">
+<body onload="fID_BS.usuario.focus();">
 <div class="wrapper">
 <center>
 <!--  L O G O N  -->

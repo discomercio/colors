@@ -261,6 +261,7 @@ namespace PrnDANFE
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "executaPesquisa()";
+			int flagPedidoUsarMemorizacaoCompletaEnderecos;
 			String strSql;
 			String strFrom;
 			String strWhere = "";
@@ -362,6 +363,10 @@ namespace PrnDANFE
 				daAdapter = BD.criaSqlDataAdapter();
 				#endregion
 
+				#region [ Inicialização ]
+				flagPedidoUsarMemorizacaoCompletaEnderecos = ParametroDAO.getCampoInteiroTabelaParametro(Global.Cte.ID_T_PARAMETRO.ID_PARAMETRO_FLAG_PEDIDO_MEMORIZACAOCOMPLETAENDERECOS, 0);
+				#endregion
+
 				#region [ Monta o SQL ]
 				strSql = "SELECT" +
 				" t_PEDIDO.pedido," +
@@ -375,14 +380,32 @@ namespace PrnDANFE
 				" t_PEDIDO.EndEtg_bairro," +
 				" t_PEDIDO.EndEtg_cidade," +
 				" t_PEDIDO.EndEtg_uf," +
-				" t_PEDIDO.EndEtg_cep," +
-				" t_CLIENTE.endereco," +
-				" t_CLIENTE.endereco_numero," +
-				" t_CLIENTE.endereco_complemento," +
-				" t_CLIENTE.bairro," +
-				" t_CLIENTE.cidade," +
-				" t_CLIENTE.uf," +
-				" t_CLIENTE.cep," +
+				" t_PEDIDO.EndEtg_cep,";
+
+				if (flagPedidoUsarMemorizacaoCompletaEnderecos == 0)
+				{
+					strSql +=
+					" t_CLIENTE.endereco," +
+					" t_CLIENTE.endereco_numero," +
+					" t_CLIENTE.endereco_complemento," +
+					" t_CLIENTE.bairro," +
+					" t_CLIENTE.cidade," +
+					" t_CLIENTE.uf," +
+					" t_CLIENTE.cep,";
+				}
+				else
+				{
+					strSql +=
+					" (CASE t_PEDIDO.st_memorizacao_completa_enderecos WHEN 0 THEN t_CLIENTE.endereco ELSE t_PEDIDO.endereco_logradouro END) AS endereco," +
+					" (CASE t_PEDIDO.st_memorizacao_completa_enderecos WHEN 0 THEN t_CLIENTE.endereco_numero ELSE t_PEDIDO.endereco_numero END) AS endereco_numero," +
+					" (CASE t_PEDIDO.st_memorizacao_completa_enderecos WHEN 0 THEN t_CLIENTE.endereco_complemento ELSE t_PEDIDO.endereco_complemento END) AS endereco_complemento," +
+					" (CASE t_PEDIDO.st_memorizacao_completa_enderecos WHEN 0 THEN t_CLIENTE.bairro ELSE t_PEDIDO.endereco_bairro END) AS bairro," +
+					" (CASE t_PEDIDO.st_memorizacao_completa_enderecos WHEN 0 THEN t_CLIENTE.cidade ELSE t_PEDIDO.endereco_cidade END) AS cidade," +
+					" (CASE t_PEDIDO.st_memorizacao_completa_enderecos WHEN 0 THEN t_CLIENTE.uf ELSE t_PEDIDO.endereco_uf END) AS uf," +
+					" (CASE t_PEDIDO.st_memorizacao_completa_enderecos WHEN 0 THEN t_CLIENTE.cep ELSE t_PEDIDO.endereco_cep END) AS cep,";
+				}
+
+				strSql +=
 				" (" +
 					"SELECT" +
 						" Count(*)" +

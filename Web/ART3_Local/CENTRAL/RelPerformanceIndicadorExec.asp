@@ -54,6 +54,7 @@
 	dim c_vendedor, c_indicador
 	dim s_nome_vendedor, s_nome_indicador, s_filtro, s, s_aux
 	dim qtMeses
+    dim i, c_fabricante, v_fabricante
 
 	alerta = ""
 	
@@ -64,6 +65,7 @@
 
 	c_indicador = Ucase(Trim(Request.Form("c_indicador")))
 	c_vendedor = Ucase(Trim(Request.Form("c_vendedor")))
+    c_fabricante = Trim(Request.Form("c_fabricante"))
 	
 	if alerta = "" then
 		s_nome_vendedor = ""
@@ -161,6 +163,9 @@
 		qtMeses = DateDiff("m", dtPeriodoInicial, dtPeriodoFinal) + 1
 		end if
 
+    if alerta = "" then
+        call set_default_valor_texto_bd(usuario, "RelPerformanceIndicadorFiltro|c_fabricante", c_fabricante)
+        end if
 
 
 
@@ -479,10 +484,10 @@ end function
 ' CONSULTA EXECUTA
 '
 sub consulta_executa
-
+const PLACEHOLDER_TABELA_FILTRO_FABRICANTE = "__PLACEHOLDER_TAB_FILTRO_FABRICANTE__"
 dim r
 dim s_mes, s_ano
-dim s_where, s_where_venda, s_where_devolucao, s_where_loja
+dim s_where, s_where_venda, s_where_devolucao, s_where_fabricante
 dim s_sql, n_reg_BD, x
 dim strSqlCampoSaida
 dim perc_desconto
@@ -494,7 +499,7 @@ dim vl_venda, vl_lista, vl_total_indicador, vl_lista_indicador
 dim intIdxVetor
 dim i_mes, n_reg
 dim i, intLargColIndicador, intLargColMonetario, intLargColPerc, intLargVendedor
-dim s_cor
+dim s_cor, s_lista
 dim dtAux, dtInicio, dtTermino, dtInicioAnoAnterior, dtTerminoAnoAnterior
 
 '	SELECTs INTERNOS
@@ -511,6 +516,23 @@ dim dtAux, dtInicio, dtTermino, dtInicioAnoAnterior, dtTerminoAnoAnterior
 		if s_where <> "" then s_where = s_where & " AND"
 		s_where = s_where & " (t_PEDIDO__BASE.indicador = '" & c_indicador & "')"
 		end if
+
+    'FABRICANTE(S)
+    s_where_fabricante = ""
+    if c_fabricante <> "" then
+        v_fabricante = Split(c_fabricante, ", ")
+        s_lista = ""
+        for i=LBound(v_fabricante) to UBound(v_fabricante)
+            if Trim("" & v_fabricante(i)) <> "" then
+                if s_lista <> "" then s_lista = s_lista & ", "
+                s_lista = s_lista & "'" & Trim("" & v_fabricante(i)) & "'"
+            end if
+        next
+
+        if s_lista <> "" then
+            s_where_fabricante = " (" & PLACEHOLDER_TABELA_FILTRO_FABRICANTE & ".fabricante IN (" & s_lista & "))"
+            end if
+        end if
 
 
 '	CRITÉRIOS PARA PEDIDOS DE VENDA NORMAIS
@@ -537,7 +559,12 @@ dim dtAux, dtInicio, dtTermino, dtInicioAnoAnterior, dtTerminoAnoAnterior
 							"(t_PEDIDO.entregue_data < " & bd_formata_data(dtTerminoAnoAnterior) & ")" & _
 						")" & _
 					")"
-	
+
+	if s_where_fabricante <> "" then
+        if s_where_venda <> "" then s_where_venda = s_where_venda & " AND "
+        s_where_venda = s_where_venda & Replace(s_where_fabricante, PLACEHOLDER_TABELA_FILTRO_FABRICANTE, "t_ESTOQUE_MOVIMENTO")
+        end if
+
 '	CRITÉRIOS PARA DEVOLUÇÕES
 	s_where_devolucao = ""
 	
@@ -557,6 +584,11 @@ dim dtAux, dtInicio, dtTermino, dtInicioAnoAnterior, dtTerminoAnoAnterior
 								"(t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data < " & bd_formata_data(dtTerminoAnoAnterior) & ")" & _
 							")" & _
 						")"
+
+    if s_where_fabricante <> "" then
+        if s_where_devolucao <> "" then s_where_devolucao = s_where_devolucao & " AND "
+        s_where_devolucao = s_where_devolucao & Replace(s_where_fabricante, PLACEHOLDER_TABELA_FILTRO_FABRICANTE, "t_PEDIDO_ITEM_DEVOLVIDO")
+        end if
 
 '	MONTA SQL DE CONSULTA
 	
@@ -1137,6 +1169,22 @@ window.status='Aguarde, executando a consulta ...';
 		end if
 	s_filtro = s_filtro & "<tr><td align='right' valign='top' NOWRAP>" & _
 			   "<p class='N'>Indicador:&nbsp;</p></td><td valign='top'>" & _
+			   "<p class='N'>" & s & "</p></td></tr>"
+
+    s = c_fabricante
+    if s = "" then
+        s = "todos"
+    else
+        v_fabricante = split(c_fabricante, ", ")
+        s = ""
+        for i = Lbound(v_fabricante) to Ubound(v_fabricante)
+            if s <> "" then s = s & ", "
+		    s = s & x_fabricante(v_fabricante(i))
+        next
+        end if
+
+	s_filtro = s_filtro & "<tr><td align='right' valign='top' NOWRAP>" & _
+			   "<p class='N'>Fabricante(s):&nbsp;</p></td><td valign='top'>" & _
 			   "<p class='N'>" & s & "</p></td></tr>"
 
 	s_filtro = s_filtro & "<tr><td align='right' valign='top' NOWRAP>" & _
