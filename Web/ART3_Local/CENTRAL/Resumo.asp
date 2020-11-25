@@ -3874,8 +3874,13 @@ if (operacao_permitida(OP_CEN_PAGTO_PARCIAL, s_lista_operacoes_permitidas) Or _
 			s_separacao = "<br>" 
 			if (qtde_total_rel = 1) then s=" checked" else s=""
 	%>
+	<%	s_saida_default = get_default_valor_texto_bd(usuario, "RelFreteAnalitico|c_carrega_indicadores_estatico") %>
+	<%	s_checked = ""
+		if (InStr(s_saida_default, "ON") <> 0) then s_checked = " checked" %>
 			<input type="radio" id="rb_rel" name="rb_rel" value="<%=Cstr(idx)%>" class="CBOX" <%=s%>><span class="rbLink" onclick="fREL.rb_rel[<%=Cstr(idx)%>].click(); if (fREL.rb_rel[<%=Cstr(idx)%>].checked) fREL.bEXECUTAR.click();"
 				>Relatório de Frete (Analítico)</span>
+				<input type="checkbox" name="ckb_rel_frete_analit_carrega_indicadores" id="ckb_rel_frete_analit_carrega_indicadores" value="ON" <%=s_checked %> />
+				<img src="../IMAGEM/exclamacao_14x14.png" id="rel_frete_analit_exclamacao" style="cursor:pointer" title="Marque esta opção para que as listas de seleção no filtro sejam exibidas no modo estático" />
 	<% end if %>
 	
 	<%	' RELATÓRIO DE FRETE (SINTÉTICO)
@@ -3885,8 +3890,13 @@ if (operacao_permitida(OP_CEN_PAGTO_PARCIAL, s_lista_operacoes_permitidas) Or _
 			s_separacao = "<br>" 
 			if (qtde_total_rel = 1) then s=" checked" else s=""
 	%>
+	<%	s_saida_default = get_default_valor_texto_bd(usuario, "RelFreteSintetico|c_carrega_indicadores_estatico") %>
+	<%	s_checked = ""
+		if (InStr(s_saida_default, "ON") <> 0) then s_checked = " checked" %>
 			<input type="radio" id="rb_rel" name="rb_rel" value="<%=Cstr(idx)%>" class="CBOX" <%=s%>><span class="rbLink" onclick="fREL.rb_rel[<%=Cstr(idx)%>].click(); if (fREL.rb_rel[<%=Cstr(idx)%>].checked) fREL.bEXECUTAR.click();"
 				>Relatório de Frete (Sintético)</span>
+				<input type="checkbox" name="ckb_rel_frete_sint_carrega_indicadores" id="ckb_rel_frete_sint_carrega_indicadores" value="ON" <%=s_checked %> />
+				<img src="../IMAGEM/exclamacao_14x14.png" id="rel_frete_sint_exclamacao" style="cursor:pointer" title="Marque esta opção para que as listas de seleção no filtro sejam exibidas no modo estático" />
 	<% end if %>
 	
 	<%	' RELATÓRIO DE PEDIDOS NÃO RECEBIDOS

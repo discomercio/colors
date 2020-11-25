@@ -55,6 +55,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim url_back, strUrlBotaoVoltar
 	url_back = Trim(Request("url_back"))
 	if url_back <> "" then
@@ -401,7 +404,23 @@ total_valor = 0
 				" t_PEDIDO.danfe_a_imprimir_status," & _
                 " t_PEDIDO.indicador," & _
 				" t_PEDIDO__BASE.analise_credito," & _
-				" t_PEDIDO__BASE.analise_credito_data," & _
+				" t_PEDIDO__BASE.analise_credito_data,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_logradouro AS endereco," & _
+				" t_PEDIDO.endereco_numero AS endereco_numero," & _
+				" t_PEDIDO.endereco_complemento AS endereco_complemento," & _
+				" t_PEDIDO.endereco_bairro AS bairro," & _
+				" t_PEDIDO.endereco_cidade AS cidade," & _
+				" t_PEDIDO.endereco_uf AS uf," & _
+				" t_PEDIDO.endereco_cep AS cep," & _
+                " t_PEDIDO.endereco_tipo_pessoa AS tipo," & _
+	            " t_PEDIDO.endereco_ie AS ie," & _
+	            " t_PEDIDO.endereco_contribuinte_icms_status AS contribuinte_icms_status," & _
+	            " t_PEDIDO.endereco_produtor_rural_status AS produtor_rural_status,"
+	else
+		s_sql = s_sql & _
 				" t_CLIENTE.endereco," & _
 				" t_CLIENTE.endereco_numero," & _
 				" t_CLIENTE.endereco_complemento," & _
@@ -412,7 +431,10 @@ total_valor = 0
                 " t_CLIENTE.tipo," & _
 	            " t_CLIENTE.ie," & _
 	            " t_CLIENTE.contribuinte_icms_status," & _
-	            " t_CLIENTE.produtor_rural_status," & _
+	            " t_CLIENTE.produtor_rural_status,"
+		end if
+
+	s_sql = s_sql & _
 				" (" & _
 					"SELECT" & _
 						" Count(*)" & _
@@ -426,17 +448,11 @@ total_valor = 0
 							")" & _
 				") AS qtde_solicitacao_emissao_nfe," & _
 				" (" & _
-					"SELECT" & _
-						" TOP 1 NFe_numero_NF" & _
-					" FROM t_NFe_EMISSAO tNE" & _
-					" WHERE" & _
-						" (tNE.pedido=t_PEDIDO.pedido)" & _
-						" AND (tipo_NF = '1')" & _
-						" AND (st_anulado = 0)" & _
-						" AND (codigo_retorno_NFe_T1 = 1)" & _
-					" ORDER BY" & _
-						" id DESC" & _
-				") AS numeroNFe" & _
+					"CASE" & _
+						" WHEN t_PEDIDO.num_obs_3 > 0 THEN t_PEDIDO.num_obs_3" & _
+						" WHEN t_PEDIDO.num_obs_2 > 0 THEN t_PEDIDO.num_obs_2" & _
+						" ELSE NULL" & _
+				" END) AS numeroNFe" & _
 			s_from & _
 			s_where
 	

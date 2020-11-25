@@ -244,6 +244,14 @@ namespace ADM2
 			pedido.custoFinancFornecTipoParcelamento = BD.readToString(rowResultado["custoFinancFornecTipoParcelamento"]);
 			pedido.custoFinancFornecQtdeParcelas = BD.readToShort(rowResultado["custoFinancFornecQtdeParcelas"]);
 			pedido.id_nfe_emitente = BD.readToInt(rowResultado["id_nfe_emitente"]);
+			pedido.marketplace_codigo_origem = BD.readToString(rowResultado["marketplace_codigo_origem"]);
+			pedido.MarketplacePedidoRecebidoRegistrarStatus = BD.readToByte(rowResultado["MarketplacePedidoRecebidoRegistrarStatus"]);
+			pedido.MarketplacePedidoRecebidoRegistrarDataRecebido = BD.readToDateTime(rowResultado["MarketplacePedidoRecebidoRegistrarDataRecebido"]);
+			pedido.MarketplacePedidoRecebidoRegistrarDataHora = BD.readToDateTime(rowResultado["MarketplacePedidoRecebidoRegistrarDataHora"]);
+			pedido.MarketplacePedidoRecebidoRegistrarUsuario = BD.readToString(rowResultado["MarketplacePedidoRecebidoRegistrarUsuario"]);
+			pedido.MarketplacePedidoRecebidoRegistradoStatus = BD.readToByte(rowResultado["MarketplacePedidoRecebidoRegistradoStatus"]);
+			pedido.MarketplacePedidoRecebidoRegistradoDataHora = BD.readToDateTime(rowResultado["MarketplacePedidoRecebidoRegistradoDataHora"]);
+			pedido.MarketplacePedidoRecebidoRegistradoUsuario = BD.readToString(rowResultado["MarketplacePedidoRecebidoRegistradoUsuario"]);
 			#endregion
 
 			#endregion
@@ -608,6 +616,202 @@ namespace ADM2
 			#endregion
 
 			return pedido;
+		}
+		#endregion
+
+		#region [ getPedidoByNF ]
+		/// <summary>
+		/// Localiza e retorna o pedido através do número da NF
+		/// </summary>
+		/// <param name="cnpjEmitente">CNPJ do emitente da NF</param>
+		/// <param name="serieNF">Número da série da NF</param>
+		/// <param name="numeroNF">Número da NF</param>
+		/// <returns></returns>
+		public List<Pedido> getPedidoByNF(string cnpjEmitente, int serieNF, int numeroNF)
+		{
+			#region [ Declarações ]
+			const int MAX_TAMANHO_OBS_2 = 10;
+			int iStep = 0;
+			bool blnAchou;
+			String strSql;
+			String strPedido;
+			String strListaIdNfeEmitente = "";
+			String strNfZeroPadding;
+			String strListaNF = "";
+			SqlCommand cmCommand;
+			SqlDataAdapter daDataAdapter;
+			DataTable dtbResultado = new DataTable();
+			DataRow rowResultado;
+			Pedido pedido;
+			List<Pedido> listaPedidos = new List<Pedido>();
+			PedidoDAO pedidoDAO = new PedidoDAO(ref _bd);
+			#endregion
+
+			#region [ Consistências ]
+			if (cnpjEmitente == null) throw new Exception("CNPJ do emitente da NF a ser pesquisada não foi fornecido!");
+			if (cnpjEmitente.Length == 0) throw new Exception("CNPJ do emitente da NF a ser pesquisada não foi informado!");
+			if (serieNF <= 0) throw new Exception("Nº da série da NF a ser pesquisada não foi informado!");
+			if (numeroNF <= 0) throw new Exception("Nº da NF a ser pesquisada não foi informado!");
+			#endregion
+
+			#region [ Prepara acesso ao BD ]
+			cmCommand = _bd.criaSqlCommand();
+			daDataAdapter = _bd.criaSqlDataAdapter();
+			#endregion
+
+			#region [ Identifica o emitente da NF ]
+
+			#region [ Monta Select ]
+			strSql = "SELECT" +
+						"*" +
+					" FROM t_NFe_EMITENTE" +
+					" WHERE" +
+						" (cnpj = '" + Global.digitos(cnpjEmitente) + "')" +
+					" ORDER BY" +
+						" id";
+			#endregion
+
+			#region [ Executa a consulta ]
+			cmCommand.CommandText = strSql;
+			daDataAdapter.SelectCommand = cmCommand;
+			daDataAdapter.MissingSchemaAction = MissingSchemaAction.Add;
+			daDataAdapter.Fill(dtbResultado);
+			#endregion
+
+			#region [ Trata o resultado ]
+			if (dtbResultado.Rows.Count == 0) throw new Exception("O CNPJ " + Global.formataCnpjCpf(cnpjEmitente) + " NÃO foi localizado como emitente de NFe no sistema!");
+
+			for (int i = 0; i < dtbResultado.Rows.Count; i++)
+			{
+				rowResultado = dtbResultado.Rows[i];
+				if (strListaIdNfeEmitente.Length > 0) strListaIdNfeEmitente += ", ";
+				strListaIdNfeEmitente += BD.readToInt(rowResultado["id"]).ToString();
+			}
+			#endregion
+
+			#endregion
+
+			#region [ Pesquisa NF em t_NFe_EMISSAO ]
+
+			#region [ Monta Select ]
+			strSql = "SELECT" +
+						" *" +
+					" FROM t_NFe_EMISSAO" +
+					" WHERE" +
+						" (st_anulado = 0)" +
+						" AND (codigo_retorno_NFe_T1 = 1)" +
+						" AND (id_nfe_emitente IN (" + strListaIdNfeEmitente + "))" +
+						" AND (NFe_Serie_NF = " + serieNF.ToString() + ")" +
+						" AND (NFe_numero_NF = " + numeroNF.ToString() + ")" +
+					" ORDER BY" +
+						" id DESC";
+			#endregion
+
+			#region [ Executa a consulta ]
+			cmCommand.CommandText = strSql;
+			dtbResultado.Reset();
+			daDataAdapter.Fill(dtbResultado);
+			#endregion
+
+			#region [ Trata o resultado ]
+			for (int i = 0; i < dtbResultado.Rows.Count; i++)
+			{
+				rowResultado = dtbResultado.Rows[i];
+				strPedido = BD.readToString(rowResultado["pedido"]);
+				if (strPedido.Trim().Length > 0)
+				{
+					try
+					{
+						pedido = pedidoDAO.getPedido(strPedido);
+					}
+					catch (Exception)
+					{
+						pedido = null;
+					}
+
+					if (pedido != null) listaPedidos.Add(pedido);
+				}
+			}
+			#endregion
+
+			#endregion
+
+			#region [ Pesquisa NF em t_PEDIDO (campos 'obs_2' e 'obs_3' ]
+
+			// Os campos 'obs_2' e 'obs_3' são usados para armazenar os números de NFe emitidos para o pedido, sendo:
+			//		'obs_2': número da NFe de fatura
+			//		'obs_3': número da NFe de remessa, quando houver
+			// Esses campos podem ser preenchidos tanto automaticamente pelo sistema durante a emissão da NFe quanto serem editados manualmente.
+			// E como esses campos armazenam em formato texto, a consulta será feita de forma a tentar maximizar a capacidade de pesquisa p/ os
+			// casos em que foram cadastrados zeros à esquerda
+			strListaNF = "'" + numeroNF.ToString() + "'";
+			while (true)
+			{
+				iStep++;
+				strNfZeroPadding = (new String('0', iStep)) + numeroNF.ToString();
+				if (strListaNF.Length > 0) strListaNF += ", ";
+				strListaNF += "'" + strNfZeroPadding + "'";
+				if (strNfZeroPadding.Length >= MAX_TAMANHO_OBS_2) break;
+			}
+
+			#region [ Monta Select ]
+			strSql = "SELECT" +
+						" pedido" +
+					" FROM t_PEDIDO" +
+					" WHERE" +
+						" (id_nfe_emitente IN (" + strListaIdNfeEmitente + "))" +
+						" AND (data >= " + Global.sqlMontaDateTimeParaSqlDateTime(DateTime.Today.AddMonths(-12)) + ")" +
+						" AND " +
+							"(" +
+								"(obs_2 IN (" + strListaNF + "))" +
+								" OR " +
+								"(obs_3 IN (" + strListaNF + "))" +
+							")" +
+					" ORDER BY" +
+						" data DESC";
+			#endregion
+
+			#region [ Executa a consulta ]
+			cmCommand.CommandText = strSql;
+			dtbResultado.Reset();
+			daDataAdapter.Fill(dtbResultado);
+			#endregion
+
+			#region [ Trata o resultado ]
+			for (int i = 0; i < dtbResultado.Rows.Count; i++)
+			{
+				rowResultado = dtbResultado.Rows[i];
+				strPedido = BD.readToString(rowResultado["pedido"]);
+				try
+				{
+					pedido = pedidoDAO.getPedido(strPedido);
+				}
+				catch (Exception)
+				{
+					pedido = null;
+				}
+
+				if (pedido != null)
+				{
+					#region [ Adiciona o pedido na lista somente se ainda não estiver ]
+					blnAchou = false;
+					for (int j = 0; j < listaPedidos.Count; j++)
+					{
+						if (listaPedidos[j].pedido.Equals(pedido.pedido))
+						{
+							blnAchou = true;
+							break;
+						}
+					}
+					if (!blnAchou) listaPedidos.Add(pedido);
+					#endregion
+				}
+			}
+			#endregion
+
+			#endregion
+
+			return listaPedidos;
 		}
 		#endregion
 

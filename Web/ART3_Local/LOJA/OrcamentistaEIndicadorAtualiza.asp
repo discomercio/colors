@@ -784,6 +784,7 @@
 					r("dt_cadastro") = Date
 					r("usuario_cadastro") = usuario
 					r("senha") = gera_senha_aleatoria
+					r("sistema_responsavel_cadastro") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
 				else
 					criou_novo_reg = False
 					log_via_vetor_carrega_do_recordset r, vLog1, campos_a_omitir
@@ -848,6 +849,8 @@
 				
 				if rb_estabelecimento <> "" then r("tipo_estabelecimento") = CLng(rb_estabelecimento)
 				
+				r("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
+
 				r.Update
 
 				If Err = 0 then 

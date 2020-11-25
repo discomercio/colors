@@ -848,6 +848,62 @@ namespace ADM2
 			get { return _id_nfe_emitente; }
 			set { _id_nfe_emitente = value; }
 		}
+
+		private string _marketplace_codigo_origem;
+		public string marketplace_codigo_origem
+		{
+			get { return _marketplace_codigo_origem; }
+			set { _marketplace_codigo_origem = value; }
+		}
+
+		private byte _MarketplacePedidoRecebidoRegistrarStatus;
+		public byte MarketplacePedidoRecebidoRegistrarStatus
+		{
+			get { return _MarketplacePedidoRecebidoRegistrarStatus; }
+			set { _MarketplacePedidoRecebidoRegistrarStatus = value; }
+		}
+
+		private DateTime _MarketplacePedidoRecebidoRegistrarDataRecebido;
+		public DateTime MarketplacePedidoRecebidoRegistrarDataRecebido
+		{
+			get { return _MarketplacePedidoRecebidoRegistrarDataRecebido; }
+			set { _MarketplacePedidoRecebidoRegistrarDataRecebido = value; }
+		}
+
+		private DateTime _MarketplacePedidoRecebidoRegistrarDataHora;
+		public DateTime MarketplacePedidoRecebidoRegistrarDataHora
+		{
+			get { return _MarketplacePedidoRecebidoRegistrarDataHora; }
+			set { _MarketplacePedidoRecebidoRegistrarDataHora = value; }
+		}
+
+		private string _MarketplacePedidoRecebidoRegistrarUsuario;
+		public string MarketplacePedidoRecebidoRegistrarUsuario
+		{
+			get { return _MarketplacePedidoRecebidoRegistrarUsuario; }
+			set { _MarketplacePedidoRecebidoRegistrarUsuario = value; }
+		}
+
+		private byte _MarketplacePedidoRecebidoRegistradoStatus;
+		public byte MarketplacePedidoRecebidoRegistradoStatus
+		{
+			get { return _MarketplacePedidoRecebidoRegistradoStatus; }
+			set { _MarketplacePedidoRecebidoRegistradoStatus = value; }
+		}
+
+		private DateTime _MarketplacePedidoRecebidoRegistradoDataHora;
+		public DateTime MarketplacePedidoRecebidoRegistradoDataHora
+		{
+			get { return _MarketplacePedidoRecebidoRegistradoDataHora; }
+			set { _MarketplacePedidoRecebidoRegistradoDataHora = value; }
+		}
+
+		private string _MarketplacePedidoRecebidoRegistradoUsuario;
+		public string MarketplacePedidoRecebidoRegistradoUsuario
+		{
+			get { return _MarketplacePedidoRecebidoRegistradoUsuario; }
+			set { _MarketplacePedidoRecebidoRegistradoUsuario = value; }
+		}
 		#endregion
 	}
 

@@ -45,7 +45,7 @@
 		end if
 
 	dim s, s_aux, strScript, msg_erro
-	dim c_dt_periodo_inicio, c_dt_periodo_termino, c_perc_est_cresc, perc_est_cresc, c_fabricante, c_grupo, c_potencia_BTU, c_ciclo, c_posicao_mercado
+	dim c_dt_periodo_inicio, c_dt_periodo_termino, c_perc_est_cresc, perc_est_cresc, c_fabricante, c_grupo, c_subgrupo, c_potencia_BTU, c_ciclo, c_posicao_mercado
 	
 	
 '	OBTÉM DADOS DO FORMULÁRIO
@@ -53,6 +53,7 @@
 	c_dt_periodo_termino = Trim(Request.Form("c_dt_periodo_termino"))
 	c_fabricante = Trim(Request.Form("c_fabricante"))
 	c_grupo = Ucase(Trim(Request.Form("c_grupo")))
+	c_subgrupo = Ucase(Trim(Request.Form("c_subgrupo")))
 	c_potencia_BTU = Trim(Request.Form("c_potencia_BTU"))
 	c_ciclo = Trim(Request.Form("c_ciclo"))
 	c_posicao_mercado = Trim(Request.Form("c_posicao_mercado"))
@@ -86,7 +87,7 @@
 		end if
 	
 	dim s_nome_fabricante
-	dim s_where_temp, v_fabricantes, cont, v_grupos
+	dim s_where_temp, v_fabricantes, cont, v_grupos, v_subgrupos
 	s_nome_fabricante = ""
 	s_where_temp = ""
 	v_fabricantes = ""
@@ -115,6 +116,7 @@
 		call set_default_valor_texto_bd(usuario, "RelFarolResumidoFiltro|c_perc_est_cresc", c_perc_est_cresc)
 		call set_default_valor_texto_bd(usuario, "RelFarolResumidoFiltro|c_fabricante", c_fabricante)
 		call set_default_valor_texto_bd(usuario, "RelFarolResumidoFiltro|c_grupo", c_grupo)
+		call set_default_valor_texto_bd(usuario, "RelFarolResumidoFiltro|c_subgrupo", c_subgrupo)
 		call set_default_valor_texto_bd(usuario, "RelFarolResumidoFiltro|c_potencia_BTU", c_potencia_BTU)
 		call set_default_valor_texto_bd(usuario, "RelFarolResumidoFiltro|c_ciclo", c_ciclo)
 		call set_default_valor_texto_bd(usuario, "RelFarolResumidoFiltro|c_posicao_mercado", c_posicao_mercado)
@@ -135,6 +137,9 @@
 		s_aux = c_grupo
 		if s_aux = "" then s_aux = "N.I."
 		s_log_aux = s_log_aux & "; Grupo de produtos = " & s_aux
+		s_aux = c_subgrupo
+		if s_aux = "" then s_aux = "N.I."
+		s_log_aux = s_log_aux & "; Subgrupo de produtos = " & s_aux
 		s_aux = c_potencia_BTU
 		if s_aux = "" then s_aux = "N.I."
 		s_log_aux = s_log_aux & "; BTU/h = " & s_aux
@@ -385,6 +390,7 @@ var c;
 			" descricao," & _
 			" descricao_html," & _
 			" grupo," & _
+			" subgrupo," & _
 			" potencia_BTU," & _
 			" ciclo," & _
 			" posicao_mercado," & _
@@ -400,6 +406,7 @@ var c;
 				" t_PRODUTO.descricao," & _
 				" t_PRODUTO.descricao_html," & _
 				" Coalesce(t_PRODUTO.grupo, '') AS grupo," & _
+				" Coalesce(t_PRODUTO.subgrupo, '') AS subgrupo," & _
 				" Coalesce(t_PRODUTO.potencia_BTU, '') AS potencia_BTU," & _
 				" Coalesce(t_PRODUTO.ciclo, '') AS ciclo," & _
 				" Coalesce(t_PRODUTO.posicao_mercado, '') AS posicao_mercado," & _
@@ -416,18 +423,31 @@ var c;
 			") tREL" & _
 		" WHERE" & _
 			" (UPPER(descontinuado) <> 'S') "
+
 	s_where_temp = ""
 	if c_grupo <> "" then
-	v_grupos = split(c_grupo, ", ")
-	for cont = Lbound(v_grupos) to Ubound(v_grupos)
-	    if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
-		s_where_temp = s_where_temp & _
-			" (grupo = '" & v_grupos(cont) & "')"
-	next
-	s_sql = s_sql & "AND "
-	s_sql = s_sql & "(" & s_where_temp & ")"
+		v_grupos = split(c_grupo, ", ")
+		for cont = Lbound(v_grupos) to Ubound(v_grupos)
+			if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+			s_where_temp = s_where_temp & _
+				" (grupo = '" & v_grupos(cont) & "')"
+		next
+		s_sql = s_sql & "AND "
+		s_sql = s_sql & "(" & s_where_temp & ")"
 		end if
 	
+	s_where_temp = ""
+	if c_subgrupo <> "" then
+		v_subgrupos = split(c_subgrupo, ", ")
+		for cont = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+			if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+			s_where_temp = s_where_temp & _
+				" (subgrupo = '" & v_subgrupos(cont) & "')"
+		next
+		s_sql = s_sql & "AND "
+		s_sql = s_sql & "(" & s_where_temp & ")"
+		end if
+
 	if c_potencia_BTU <> "" then
 		s_sql = s_sql & _
 			" AND (potencia_BTU = " & c_potencia_BTU & ")"
@@ -475,12 +495,12 @@ var c;
 	"var xlMargemEsq=1;" & chr(13) & _
 	"var xlOffSetArray=2;" & chr(13) & _
 	"var xlNumLinha, xlNumLinhaAux, xlDadosMinIndex, xlDadosMaxIndex;" & chr(13) & _
-	"var xlFabricante, xlProduto, xlDescricao, xlGrupo, xlPotenciaBTU, xlCiclo, xlPosicaoMercado, xlQtdeVendida, xlQtdeEstimadaAVender, xlQtdeEstoqueVenda, xlQtdeComprada, xlQtdeSaldo;" & chr(13) & _
+	"var xlFabricante, xlProduto, xlDescricao, xlGrupo, xlSubgrupo, xlPotenciaBTU, xlCiclo, xlPosicaoMercado, xlQtdeVendida, xlQtdeEstimadaAVender, xlQtdeEstoqueVenda, xlQtdeComprada, xlQtdeSaldo;" & chr(13) & _
 	"var xlCellPercEstCresc;" & chr(13) & _
 	"var oXL, oWB, oWS, oRange, oBorders, oFont, oStyle;" & chr(13) & _
 	"var i_dados_inicio = 0;" & chr(13) & _
 	"var i_dados_fim = 0;" & chr(13) & _
-	"function montaLinha(fabricante, produto, descricao, descricao_html, grupo, potencia_BTU, ciclo, posicao_mercado, qtde_vendida, qtde_estoque_venda, qtde_comprada) {" & chr(13) &_
+	"function montaLinha(fabricante, produto, descricao, descricao_html, grupo, subgrupo, potencia_BTU, ciclo, posicao_mercado, qtde_vendida, qtde_estoque_venda, qtde_comprada) {" & chr(13) &_
 	"var i, s;" & chr(13) & _
 	"	xlNumLinha++;" & chr(13) & _
 	"	oRange=oWS.Range(excel_converte_numeracao_digito_para_letra(xlFabricante) + xlNumLinha.toString());" & chr(13) & _
@@ -491,6 +511,8 @@ var c;
 	"	oRange.Value=descricao;" & chr(13) & _
 	"	oRange=oWS.Range(excel_converte_numeracao_digito_para_letra(xlGrupo) + xlNumLinha.toString());" & chr(13) & _
 	"	oRange.Value=grupo;" & chr(13) & _
+	"	oRange=oWS.Range(excel_converte_numeracao_digito_para_letra(xlSubgrupo) + xlNumLinha.toString());" & chr(13) & _
+	"	oRange.Value=subgrupo;" & chr(13) & _
 	"	if (potencia_BTU != 0) {" & chr(13) & _
 	"		oRange=oWS.Range(excel_converte_numeracao_digito_para_letra(xlPotenciaBTU) + xlNumLinha.toString());" & chr(13) & _
 	"		oRange.Value=potencia_BTU;" & chr(13) & _
@@ -596,7 +618,8 @@ var c;
 	"	xlProduto=xlFabricante+1;" & chr(13) & _
 	"	xlDescricao=xlProduto+1;" & chr(13) & _
 	"	xlGrupo=xlDescricao+1;" & chr(13) & _
-	"	xlPotenciaBTU=xlGrupo+1;" & chr(13) & _
+	"	xlSubgrupo=xlGrupo+1;" & chr(13) & _
+	"	xlPotenciaBTU=xlSubgrupo+1;" & chr(13) & _
 	"	xlCiclo=xlPotenciaBTU+1;" & chr(13) & _
 	"	xlPosicaoMercado=xlCiclo+1;" & chr(13) & _
 	"	xlQtdeVendida=xlPosicaoMercado+1;" & chr(13) & _
@@ -626,6 +649,10 @@ var c;
 	"	oWS.Columns(xlGrupo).WrapText=false;" & chr(13) & _
 	"	oWS.Columns(xlGrupo).HorizontalAlignment=xlCenter;" & chr(13) & _
 	"	oWS.Columns(xlGrupo).ColumnWidth=6;" & chr(13) & _
+	"	oWS.Columns(xlSubgrupo).NumberFormat='@';" & chr(13) & _
+	"	oWS.Columns(xlSubgrupo).WrapText=false;" & chr(13) & _
+	"	oWS.Columns(xlSubgrupo).HorizontalAlignment=xlCenter;" & chr(13) & _
+	"	oWS.Columns(xlSubgrupo).ColumnWidth=10;" & chr(13) & _
 	"	oWS.Columns(xlPotenciaBTU).NumberFormat='General';" & chr(13) & _
 	"	oWS.Columns(xlPotenciaBTU).HorizontalAlignment=xlRight;" & chr(13) & _
 	"	oWS.Columns(xlPotenciaBTU).WrapText=false;" & chr(13) & _
@@ -721,6 +748,19 @@ var c;
 	"	oFont.Size=xlFS_CABECALHO-2;" & chr(13) & _
 	"	oFont.Bold=true;" & chr(13) & _
 	"	oRange.Value='Grupo de produtos: " & s & "';" & chr(13)
+
+	s = c_subgrupo
+	if s = "" then s = "N.I."
+	strScript = strScript & _
+	"	xlNumLinha++;" & chr(13) & _
+	"	xlNumLinhaAux=excel_converte_numeracao_digito_para_letra(xlFabricante);" & chr(13) & _
+	"	oRange=oWS.Range(xlNumLinhaAux + xlNumLinha);" & chr(13) & _
+	"	oRange.WrapText=false;" & chr(13) & _
+	"	oFont=oRange.Font;" & chr(13) & _
+	"	oFont.Name=xlFN_LISTAGEM;" & chr(13) & _
+	"	oFont.Size=xlFS_CABECALHO-2;" & chr(13) & _
+	"	oFont.Bold=true;" & chr(13) & _
+	"	oRange.Value='Subgrupo de produtos: " & s & "';" & chr(13)
 	
 	s = c_potencia_BTU
 	if s = "" then s = "N.I." else s = formata_inteiro(s)
@@ -826,6 +866,8 @@ var c;
 	"	oRange.Value='Descrição';" & chr(13) & _
 	"	oRange=oWS.Range(excel_converte_numeracao_digito_para_letra(xlGrupo) + xlNumLinha.toString());" & chr(13) & _
 	"	oRange.Value='Grupo';" & chr(13) & _
+	"	oRange=oWS.Range(excel_converte_numeracao_digito_para_letra(xlSubgrupo) + xlNumLinha.toString());" & chr(13) & _
+	"	oRange.Value='Subgrupo';" & chr(13) & _
 	"	oRange=oWS.Range(excel_converte_numeracao_digito_para_letra(xlPotenciaBTU) + xlNumLinha.toString());" & chr(13) & _
 	"	oRange.Value='BTU/h';" & chr(13) & _
 	"	oRange=oWS.Range(excel_converte_numeracao_digito_para_letra(xlCiclo) + xlNumLinha.toString());" & chr(13) & _
@@ -864,6 +906,12 @@ var c;
 	"	oBorders.Weight=xlThin;" & chr(13) & _
 	"	oBorders.ColorIndex=xlAutomatic;" & chr(13) & _
 	"	xlNumLinhaAux=excel_converte_numeracao_digito_para_letra(xlGrupo) + xlNumLinha.toString();" & chr(13) & _
+	"	oRange=oWS.Range(xlNumLinhaAux);" & chr(13) & _
+	"	oBorders=oRange.Borders(xlEdgeLeft);" & chr(13) & _
+	"	oBorders.LineStyle=xlContinuous;" & chr(13) & _
+	"	oBorders.Weight=xlThin;" & chr(13) & _
+	"	oBorders.ColorIndex=xlAutomatic;" & chr(13) & _
+	"	xlNumLinhaAux=excel_converte_numeracao_digito_para_letra(xlSubgrupo) + xlNumLinha.toString();" & chr(13) & _
 	"	oRange=oWS.Range(xlNumLinhaAux);" & chr(13) & _
 	"	oBorders=oRange.Borders(xlEdgeLeft);" & chr(13) & _
 	"	oBorders.LineStyle=xlContinuous;" & chr(13) & _
@@ -978,7 +1026,7 @@ var c;
 		n_reg_total = n_reg_total + 1
 		
 		strScript = strScript & _
-			"	montaLinha('" & Trim("" & r("fabricante")) & "','" & Trim("" & r("produto")) & "','" & substitui_caracteres(Trim("" & r("descricao")), "'", "\'") & "','" & substitui_caracteres(Trim("" & r("descricao_html")), "'", "\'") & "','" & Trim("" & r("grupo")) & "', " & Trim("" & r("potencia_BTU")) & ",'" & Trim("" & r("ciclo")) & "','" & Trim("" & r("posicao_mercado")) & "', " & Cstr(r("qtde_vendida") - r("qtde_devolvida")) & ", " & Cstr(r("qtde_estoque_venda")) & ", " & Cstr(r("farol_qtde_comprada")) & ");" & chr(13)
+			"	montaLinha('" & Trim("" & r("fabricante")) & "','" & Trim("" & r("produto")) & "','" & substitui_caracteres(Trim("" & r("descricao")), "'", "\'") & "','" & substitui_caracteres(Trim("" & r("descricao_html")), "'", "\'") & "','" & Trim("" & r("grupo")) & "','" & Trim("" & r("subgrupo")) & "', "  & Trim("" & r("potencia_BTU")) & ",'" & Trim("" & r("ciclo")) & "','" & Trim("" & r("posicao_mercado")) & "', " & Cstr(r("qtde_vendida") - r("qtde_devolvida")) & ", " & Cstr(r("qtde_estoque_venda")) & ", " & Cstr(r("farol_qtde_comprada")) & ");" & chr(13)
 		
 		if n_reg = 1 then
 			strScript = strScript & _
@@ -1015,6 +1063,12 @@ var c;
 	"	oBorders.Weight=xlThin;" & chr(13) & _
 	"	oBorders.ColorIndex=xlAutomatic;" & chr(13) & _
 	"	xlNumLinhaAux=excel_converte_numeracao_digito_para_letra(xlGrupo) + i_dados_inicio.toString() + ':' + excel_converte_numeracao_digito_para_letra(xlGrupo) + i_dados_fim.toString();" & chr(13) & _
+	"	oRange=oWS.Range(xlNumLinhaAux);" & chr(13) & _
+	"	oBorders=oRange.Borders(xlEdgeLeft);" & chr(13) & _
+	"	oBorders.LineStyle=xlContinuous;" & chr(13) & _
+	"	oBorders.Weight=xlThin;" & chr(13) & _
+	"	oBorders.ColorIndex=xlAutomatic;" & chr(13) & _
+	"	xlNumLinhaAux=excel_converte_numeracao_digito_para_letra(xlSubgrupo) + i_dados_inicio.toString() + ':' + excel_converte_numeracao_digito_para_letra(xlSubgrupo) + i_dados_fim.toString();" & chr(13) & _
 	"	oRange=oWS.Range(xlNumLinhaAux);" & chr(13) & _
 	"	oBorders=oRange.Borders(xlEdgeLeft);" & chr(13) & _
 	"	oBorders.LineStyle=xlContinuous;" & chr(13) & _

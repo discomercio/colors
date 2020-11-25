@@ -340,7 +340,7 @@ namespace ART3WebAPI.Models.Repository
 							log.usuario = storedFileInfo.usuario_cadastro;
 							log.operacao = "UploadFile";
 							log.complemento = sbLog.ToString();
-							LogDAO.insere(storedFileInfo.usuario_cadastro, log, msg_erro_aux);
+							LogDAO.insere(storedFileInfo.usuario_cadastro, log, out msg_erro_aux);
 						}
 						#endregion
 
@@ -555,7 +555,7 @@ namespace ART3WebAPI.Models.Repository
 							log.usuario = Global.Cte.Usuario.ID_USUARIO_SISTEMA;
 							log.operacao = "UpFileModFolderName";
 							log.complemento = sbLog.ToString();
-							LogDAO.insere(Global.Cte.Usuario.ID_USUARIO_SISTEMA, log, msg_erro_aux);
+							LogDAO.insere(Global.Cte.Usuario.ID_USUARIO_SISTEMA, log, out msg_erro_aux);
 						}
 						#endregion
 

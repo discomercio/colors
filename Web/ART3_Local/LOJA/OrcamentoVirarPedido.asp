@@ -59,6 +59,9 @@
 	dim cn, rs
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim blnLojaHabilitadaProdCompostoECommerce
+	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
+
 	dim s_fabricante, s_produto, s_descricao, s_descricao_html, s_qtde, s_preco_lista, s_vl_NF, s_vl_TotalItem
 	dim s_desc_dado, s_vl_unitario
 	dim s_readonly, s_vl_NF_readonly
@@ -101,12 +104,45 @@
 			end if
 		end if
 	
+	dim blnUsarMemorizacaoCompletaEnderecos
+	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim r_cliente
 	set r_cliente = New cl_CLIENTE
 	if alerta = "" then
 		if Not x_cliente_bd(r_orcamento.id_cliente, r_cliente) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
 		end if
 	
+    dim cliente__tipo, cliente__contribuinte_icms_status, cliente__produtor_rural_status, cliente__uf, cliente__endereco
+    dim cliente__endereco_numero, cliente__ddd_res, cliente__ddd_com, cliente__ie, cliente__cidade, cliente__cnpj_cpf
+
+    'le as variáveis da origem certa: ou do orçamento ou do cliente, todas comecam com cliente__
+    cliente__tipo = r_cliente.tipo
+    cliente__contribuinte_icms_status = r_cliente.contribuinte_icms_status
+    cliente__produtor_rural_status = r_cliente.produtor_rural_status
+    cliente__uf = r_cliente.uf
+    cliente__endereco = r_cliente.endereco
+    cliente__endereco_numero = r_cliente.endereco_numero
+    cliente__ddd_res = r_cliente.ddd_res
+    cliente__ddd_com = r_cliente.ddd_com
+    cliente__ie = r_cliente.ie
+    cliente__cidade = r_cliente.cidade
+    cliente__cnpj_cpf = r_cliente.cnpj_cpf
+
+    if blnUsarMemorizacaoCompletaEnderecos and r_orcamento.st_memorizacao_completa_enderecos <> 0 then 
+        cliente__tipo = r_orcamento.endereco_tipo_pessoa
+        cliente__contribuinte_icms_status = r_orcamento.endereco_contribuinte_icms_status
+        cliente__produtor_rural_status = r_orcamento.endereco_produtor_rural_status
+        cliente__uf = r_orcamento.endereco_uf
+        cliente__endereco = r_orcamento.endereco_logradouro
+        cliente__endereco_numero = r_orcamento.endereco_numero
+        cliente__ddd_res = r_orcamento.endereco_ddd_res
+        cliente__ddd_com = r_orcamento.endereco_ddd_com
+        cliente__ie = r_orcamento.endereco_ie
+        cliente__cidade = r_orcamento.endereco_cidade
+        cliente__cnpj_cpf = r_orcamento.endereco_cnpj_cpf
+        end if
+
 	dim blnTemRA
 	blnTemRA = False
 	if alerta = "" then
@@ -241,6 +277,7 @@
 						.descricao_html = Trim("" & rs("descricao_html"))
 						.ean = Trim("" & rs("ean"))
 						.grupo = Trim("" & rs("grupo"))
+                        .subgrupo = Trim("" & rs("subgrupo"))
 						.peso = rs("peso")
 						.qtde_volumes = Trim("" & rs("qtde_volumes"))
 						.cubagem = rs("cubagem")
@@ -288,7 +325,7 @@
 '	LÓGICA P/ CONSUMO DO ESTOQUE (REGRA DEFINIDA POR PRODUTO)
 	dim tipo_pessoa
 	dim descricao_tipo_pessoa
-	tipo_pessoa = multi_cd_regra_determina_tipo_pessoa(r_cliente.tipo, r_cliente.contribuinte_icms_status, r_cliente.produtor_rural_status)
+	tipo_pessoa = multi_cd_regra_determina_tipo_pessoa(cliente__tipo, cliente__contribuinte_icms_status, cliente__produtor_rural_status)
 	descricao_tipo_pessoa = descricao_multi_CD_regra_tipo_pessoa(tipo_pessoa)
 
 	dim id_nfe_emitente_selecao_manual
@@ -319,7 +356,7 @@
 			next
 		
 		'RECUPERA AS REGRAS DE CONSUMO DO ESTOQUE ASSOCIADAS AOS PRODUTOS
-		if Not obtemCtrlEstoqueProdutoRegra(r_cliente.uf, r_cliente.tipo, r_cliente.contribuinte_icms_status, r_cliente.produtor_rural_status, vProdRegra, msg_erro) then
+		if Not obtemCtrlEstoqueProdutoRegra(cliente__uf, cliente__tipo, cliente__contribuinte_icms_status, cliente__produtor_rural_status, vProdRegra, msg_erro) then
 			alerta = "Falha ao tentar obter a(s) regra(s) de consumo do estoque"
 			if msg_erro <> "" then
 				alerta=texto_add_br(alerta)
@@ -338,7 +375,7 @@
 						alerta=alerta & vProdRegra(iRegra).msg_erro
 					else
 						alerta=texto_add_br(alerta)
-						alerta=alerta & "Falha desconhecida na leitura da regra de consumo do estoque para o produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " (UF: '" & r_cliente.uf & "', tipo de pessoa: '" & descricao_tipo_pessoa & "')"
+						alerta=alerta & "Falha desconhecida na leitura da regra de consumo do estoque para o produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " (UF: '" & cliente__uf & "', tipo de pessoa: '" & descricao_tipo_pessoa & "')"
 						end if
 					end if
 				end if
@@ -357,13 +394,13 @@
 					alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " está desativada"
 				elseif vProdRegra(iRegra).regra.regraUF.st_inativo = 1 then
 					alerta=texto_add_br(alerta)
-					alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " está bloqueada para a UF '" & r_cliente.uf & "'"
+					alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " está bloqueada para a UF '" & cliente__uf & "'"
 				elseif vProdRegra(iRegra).regra.regraUF.regraPessoa.st_inativo = 1 then
 					alerta=texto_add_br(alerta)
-					alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " está bloqueada para clientes '" & descricao_tipo_pessoa & "' da UF '" & r_cliente.uf & "'"
+					alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " está bloqueada para clientes '" & descricao_tipo_pessoa & "' da UF '" & cliente__uf & "'"
 				elseif converte_numero(vProdRegra(iRegra).regra.regraUF.regraPessoa.spe_id_nfe_emitente) = 0 then
 					alerta=texto_add_br(alerta)
-					alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " não especifica nenhum CD para aguardar produtos sem presença no estoque para clientes '" & descricao_tipo_pessoa & "' da UF '" & r_cliente.uf & "'"
+					alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " não especifica nenhum CD para aguardar produtos sem presença no estoque para clientes '" & descricao_tipo_pessoa & "' da UF '" & cliente__uf & "'"
 				else
 					qtde_CD_ativo = 0
 					for iCD=LBound(vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD) to UBound(vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD)
@@ -375,7 +412,7 @@
 						next
 					if qtde_CD_ativo = 0 then
 						alerta=texto_add_br(alerta)
-						alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " não especifica nenhum CD ativo para clientes '" & descricao_tipo_pessoa & "' da UF '" & r_cliente.uf & "'"
+						alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " não especifica nenhum CD ativo para clientes '" & descricao_tipo_pessoa & "' da UF '" & cliente__uf & "'"
 						end if
 					end if
 				end if
@@ -637,10 +674,10 @@
 		end if
 
 	if alerta = "" then
-		if Len(Trim(r_cliente.endereco)) > CLng(MAX_TAMANHO_CAMPO_ENDERECO) then
-			alerta = "Endereço no cadastro do cliente excede o tamanho máximo permitido:<br>Tamanho atual: " & Cstr(Len(r_cliente.endereco)) & " caracteres<br>Tamanho máximo: " & Cstr(MAX_TAMANHO_CAMPO_ENDERECO) & " caracteres"
-		elseif Trim(r_cliente.endereco_numero) = "" then
-			alerta = "O endereço no cadastro do cliente deve ser corrigido, separando as informações do número e complemento nos campos adequados."
+		if Len(Trim(cliente__endereco)) > CLng(MAX_TAMANHO_CAMPO_ENDERECO) then
+			alerta = "Endereço no cadastro do cliente ou no pré-pedido excede o tamanho máximo permitido:<br>Tamanho atual: " & Cstr(Len(cliente__endereco)) & " caracteres<br>Tamanho máximo: " & Cstr(MAX_TAMANHO_CAMPO_ENDERECO) & " caracteres"
+		elseif Trim(cliente__endereco_numero) = "" then
+			alerta = "O endereço no cadastro do cliente ou no pré-pedido deve ser corrigido, separando as informações do número e complemento nos campos adequados."
 			end if
 		end if
 
@@ -662,19 +699,23 @@
 	s_tabela_municipios_IBGE = ""
 	if alerta = "" then
 	'	DDD VÁLIDO?
-		if Not ddd_ok(r_cliente.ddd_res) then
+		if Not ddd_ok(cliente__ddd_res) then
 			if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
 			alerta = alerta & "DDD do telefone residencial é inválido!!"
 			end if
 			
-		if Not ddd_ok(r_cliente.ddd_com) then
+		if Not ddd_ok(cliente__ddd_com) then
 			if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
 			alerta = alerta & "DDD do telefone comercial é inválido!!"
 			end if
 
 	'	I.E. É VÁLIDA?
-		if (r_cliente.contribuinte_icms_status = COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
-			if Not isInscricaoEstadualValida(r_cliente.ie, r_cliente.uf) then
+		if ( (cliente__tipo = ID_PF) And (Cstr(cliente__produtor_rural_status) = Cstr(COD_ST_CLIENTE_PRODUTOR_RURAL_SIM)) ) _
+			Or _
+			( (cliente__tipo = ID_PJ) And (Cstr(cliente__contribuinte_icms_status) = Cstr(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM)) ) _
+			Or _
+			( (cliente__tipo = ID_PJ) And (Cstr(cliente__contribuinte_icms_status) = Cstr(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO)) And (cliente__ie <> "") ) then
+			if Not isInscricaoEstadualValida(cliente__ie, cliente__uf) then
 				if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
 				alerta=alerta & "Corrija a IE (Inscrição Estadual) com um número válido!!" & _
 						"<br>" & "Certifique-se de que a UF informada corresponde à UF responsável pelo registro da IE."
@@ -682,12 +723,12 @@
 			end if
 
 	'	MUNICÍPIO DE ACORDO C/ TABELA DO IBGE?
-		if Not consiste_municipio_IBGE_ok(r_cliente.cidade, r_cliente.uf, s_lista_sugerida_municipios, msg_erro) then
+		if Not consiste_municipio_IBGE_ok(cliente__cidade, cliente__uf, s_lista_sugerida_municipios, msg_erro) then
 			if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
 			if msg_erro <> "" then
 				alerta = alerta & msg_erro
 			else
-				alerta = alerta & "Município '" & r_cliente.cidade & "' não consta na relação de municípios do IBGE para a UF de '" & r_cliente.uf & "'!!"
+				alerta = alerta & "Município '" & cliente__cidade & "' não consta na relação de municípios do IBGE para a UF de '" & cliente__uf & "'!!"
 				if s_lista_sugerida_municipios <> "" then
 					alerta = alerta & "<br>" & _
 									  "Localize o município na lista abaixo e verifique se a grafia está correta!!"
@@ -713,7 +754,7 @@
 								"<table cellspacing='0' cellpadding='1'>" & chr(13) & _
 								"	<tr>" & chr(13) & _
 								"		<td align='center'>" & chr(13) & _
-								"			<p class='N'>" & "Relação de municípios de '" & r_cliente.uf & "' que se iniciam com a letra '" & Ucase(left(r_cliente.cidade,1)) & "'" & "</p>" & chr(13) & _
+								"			<p class='N'>" & "Relação de municípios de '" & cliente__uf & "' que se iniciam com a letra '" & Ucase(left(cliente__cidade,1)) & "'" & "</p>" & chr(13) & _
 								"		</td>" & chr(13) & _
 								"	</tr>" & chr(13) & _
 								"	<tr>" & chr(13) & _
@@ -738,47 +779,25 @@
 				if msg_erro <> "" then
 					alerta = alerta & msg_erro
 				else
-					alerta = alerta & "Município '" & r_orcamento.EndEtg_cidade & "' não consta na relação de municípios do IBGE para a UF de '" & r_orcamento.EndEtg_uf & "'!!"
+					alerta = alerta & "Endereço de entrega: município '" & r_orcamento.EndEtg_cidade & "' não consta na relação de municípios do IBGE para a UF de '" & r_orcamento.EndEtg_uf & "'!!"
 					if s_lista_sugerida_municipios <> "" then
 						alerta = alerta & "<br>" & _
 										  "Localize o município na lista abaixo e verifique se a grafia está correta!!"
-						v_lista_sugerida_municipios = Split(s_lista_sugerida_municipios, chr(13))
-						iNumeracaoLista=0
-						for iCounterLista=LBound(v_lista_sugerida_municipios) to UBound(v_lista_sugerida_municipios)
-							if Trim("" & v_lista_sugerida_municipios(iCounterLista)) <> "" then
-								iNumeracaoLista=iNumeracaoLista+1
-								s_tabela_municipios_IBGE = s_tabela_municipios_IBGE & _
-													"	<tr>" & chr(13) & _
-													"		<td align='right'>" & chr(13) & _
-													"			<span class='N'>&nbsp;" & Cstr(iNumeracaoLista) & "." & "</span>" & chr(13) & _
-													"		</td>" & chr(13) & _
-													"		<td align='left'>" & chr(13) & _
-													"			<span class='N'>" & Trim("" & v_lista_sugerida_municipios(iCounterLista)) & "</span>" & chr(13) & _
-													"		</td>" & chr(13) & _
-													"	</tr>" & chr(13)
-								end if
-							next
-
-						if s_tabela_municipios_IBGE <> "" then
-							s_tabela_municipios_IBGE = _
-									"<table cellspacing='0' cellpadding='1'>" & chr(13) & _
-									"	<tr>" & chr(13) & _
-									"		<td align='center'>" & chr(13) & _
-									"			<p class='N'>" & "Relação de municípios de '" & r_orcamento.EndEtg_uf & "' que se iniciam com a letra '" & Ucase(left(r_orcamento.EndEtg_cidade,1)) & "'" & "</p>" & chr(13) & _
-									"		</td>" & chr(13) & _
-									"	</tr>" & chr(13) & _
-									"	<tr>" & chr(13) & _
-									"		<td align='center'>" & chr(13) &_
-									"			<table cellspacing='0' border='1'>" & chr(13) & _
-													s_tabela_municipios_IBGE & _
-									"			</table>" & chr(13) & _
-									"		</td>" & chr(13) & _
-									"	</tr>" & chr(13) & _
-									"</table>" & chr(13)
-							end if
 						end if
 					end if
 				end if 'if Not consiste_municipio_IBGE_ok()
+			
+			if ( (r_orcamento.EndEtg_tipo_pessoa = ID_PF) And (Cstr(r_orcamento.EndEtg_produtor_rural_status) = Cstr(COD_ST_CLIENTE_PRODUTOR_RURAL_SIM)) ) _
+				Or _
+				( (r_orcamento.EndEtg_tipo_pessoa = ID_PJ) And (Cstr(r_orcamento.EndEtg_contribuinte_icms_status) = Cstr(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM)) ) _
+				Or _
+				( (r_orcamento.EndEtg_tipo_pessoa = ID_PJ) And (Cstr(r_orcamento.EndEtg_contribuinte_icms_status) = Cstr(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO)) And (r_orcamento.EndEtg_ie <> "") ) then
+				if Not isInscricaoEstadualValida(r_orcamento.EndEtg_ie, r_orcamento.EndEtg_uf) then
+					if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
+					alerta=alerta & "Endereço de entrega: corrija a IE (Inscrição Estadual) com um número válido!" & _
+							"<br>" & "Certifique-se de que a UF informada corresponde à UF responsável pelo registro da IE."
+					end if
+				end if
 			end if 'if CLng(r_orcamento.st_end_entrega) <> 0
 		end if 'if alerta = ""
 
@@ -869,7 +888,7 @@
 		strScriptJS = strScriptJS & "var bloquear_cadastramento_quando_produto_indiponivel = false;" & chr(13)
 		end if
 
-	if isLojaHabilitadaProdCompostoECommerce(loja) then
+	if blnLojaHabilitadaProdCompostoECommerce then
 		strScriptJS = strScriptJS & "var formata_perc_desconto = formata_perc_2dec;" & chr(13)
 	else
 		strScriptJS = strScriptJS & "var formata_perc_desconto = formata_perc_desc;" & chr(13)
@@ -907,7 +926,15 @@
 
 
 
+<% if False then 'APENAS P/ HABILITAR O INTELLISENSE DURANTE O DESENVOLVIMENTO!! %>
+<script src="../Global/jquery.js" language="JavaScript" type="text/javascript"></script>
+<% end if %>
+
 <script src="<%=URL_FILE__JQUERY%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI_I18N%>" Language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__GLOBAL_JS%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__AJAX_JS%>" language="JavaScript" type="text/javascript"></script>
 
@@ -915,22 +942,29 @@
 <%=strScriptJS_MPN2%>
 
 <script type="text/javascript">
-	$(function() {
-	<% if r_cliente.tipo = ID_PF then %>
+	$(function () {
+	<% if cliente__tipo = ID_PF then %>
 		<% if Cstr(r_orcamento.tipo_parcelamento) <> COD_FORMA_PAGTO_PARCELA_UNICA then %>
-		$(".TR_FP_PU").hide();
+			$(".TR_FP_PU").hide();
 		<% end if %>
 		<% if Cstr(r_orcamento.tipo_parcelamento) <> COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then %>
-		$(".TR_FP_PSE").hide();
+				$(".TR_FP_PSE").hide();
 		<% end if %>
 	<% end if %>
-	<% if r_cliente.tipo = ID_PJ then %>
+	<% if cliente__tipo = ID_PJ then %>
 		<% if Cstr(r_orcamento.tipo_parcelamento) <> COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then %>
-		$(".TR_FP_PSE").hide();
+			$(".TR_FP_PSE").hide();
 		<% end if %>
 	<% end if %>
-		$("#divAjaxRunning").css('filter', 'alpha(opacity=60)'); // TRANSPARÊNCIA NO IE8
+				$("#divAjaxRunning").css('filter', 'alpha(opacity=60)'); // TRANSPARÊNCIA NO IE8
 		$(".tdGarInd").hide();
+
+		$("#c_data_previsao_entrega").hUtilUI('datepicker_padrao');
+		$("input[name = 'rb_etg_imediata']").change(function () {
+			configuraCampoDataPrevisaoEntrega();
+		});
+
+		configuraCampoDataPrevisaoEntrega();
 	});
 
 	//Every resize of window
@@ -948,6 +982,20 @@
 		var newTop = $(window).scrollTop() + "px";
 		$("#divAjaxRunning").css("top", newTop);
 	}
+
+    function configuraCampoDataPrevisaoEntrega() {
+        if ($("input[name='rb_etg_imediata']:checked").val() == '<%=COD_ETG_IMEDIATA_NAO%>') {
+            $("#c_data_previsao_entrega").prop("readonly", false);
+            $("#c_data_previsao_entrega").prop("disabled", false);
+            $("#c_data_previsao_entrega").datepicker("enable");
+        }
+        else {
+            $("#c_data_previsao_entrega").val("");
+            $("#c_data_previsao_entrega").prop("readonly", true);
+            $("#c_data_previsao_entrega").prop("disabled", true);
+            $("#c_data_previsao_entrega").datepicker("disable");
+        }
+    }
 </script>
 
 <script language="JavaScript" type="text/javascript">
@@ -2151,6 +2199,26 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		return;
 		}
 
+    if (f.rb_etg_imediata[0].checked) {
+        if (trim(f.c_data_previsao_entrega.value) == "") {
+            alert("Informe a data de previsão de entrega!");
+            f.c_data_previsao_entrega.focus();
+            return;
+        }
+
+        if (!isDate(f.c_data_previsao_entrega)) {
+            alert("Data de previsão de entrega é inválida!");
+            f.c_data_previsao_entrega.focus();
+            return;
+        }
+
+        if (retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(f.c_data_previsao_entrega.value)) <= retorna_so_digitos(formata_ddmmyyyy_yyyymmdd('<%=formata_data(Date)%>'))) {
+            alert("Data de previsão de entrega deve ser uma data futura!");
+            f.c_data_previsao_entrega.focus();
+            return;
+        }
+    }
+
 	blnFlag=false;
 	for (i=0; i < f.rb_bem_uso_consumo.length; i++) {
 		if (f.rb_bem_uso_consumo[i].checked) blnFlag=true;
@@ -2274,6 +2342,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 -->
 
 <link href="<%=URL_FILE__E_CSS%>" Rel="stylesheet" Type="text/css">
+<link href="<%=URL_FILE__JQUERY_UI_CSS%>" rel="stylesheet" type="text/css">
 <link href="<%=URL_FILE__EPRINTER_CSS%>" Rel="stylesheet" Type="text/css" media="print">
 
 <style type="text/css">
@@ -2348,8 +2417,8 @@ var perc_max_comissao_e_desconto_a_utilizar;
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
 <input type="hidden" name="orcamento_selecionado" id="orcamento_selecionado" value='<%=orcamento_selecionado%>'>
 <input type="hidden" name="cliente_selecionado" id="cliente_selecionado" value='<%=r_orcamento.id_cliente%>'>
-<input type="hidden" name="c_cnpj_cpf" id="c_cnpj_cpf" value='<%=r_cliente.cnpj_cpf%>'>
-<input type="hidden" name="c_tipo_cliente" id="c_tipo_cliente" value='<%=r_cliente.tipo%>'>
+<input type="hidden" name="c_cnpj_cpf" id="c_cnpj_cpf" value='<%=cliente__cnpj_cpf%>'>
+<input type="hidden" name="c_tipo_cliente" id="c_tipo_cliente" value='<%=cliente__tipo%>'>
 <% if erro_produto_indisponivel then s="S" else s="" %>
 <input type="hidden" name="opcao_venda_sem_estoque" id="opcao_venda_sem_estoque" value='<%=s%>'>
 
@@ -2482,7 +2551,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 			if .desc_dado=0 then
 				s_desc_dado=""
 			else
-				if isLojaHabilitadaProdCompostoECommerce(loja) then
+				if blnLojaHabilitadaProdCompostoECommerce then
 					s_desc_dado=formata_perc(.desc_dado)
 				else
 					s_desc_dado=formata_perc_desc(.desc_dado)
@@ -2550,7 +2619,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 	</td>
 	<td class="MDB" align="right">
 		<input name="c_desc" id="c_desc" class="PLLd" style="width:36px;" value='<%=s_desc_dado%>'
-		<% if isLojaHabilitadaProdCompostoECommerce(loja) then %>
+		<% if blnLojaHabilitadaProdCompostoECommerce then %>
 			<%=s_readonly%>
 			onkeypress="if (digitou_enter(true)){fPED.c_vl_unitario[<%=Cstr(i-1)%>].focus();} filtra_percentual();"
 			onblur="this.value=formata_perc_desconto(this.value); calcula_desconto(<%=Cstr(i-1)%>); trata_edicao_RA(<%=Cstr(i-1)%>); recalcula_total_linha(<%=Cstr(i)%>); recalcula_RA(); recalcula_RA_Liquido();"
@@ -2560,7 +2629,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 			/>
 	</td>
 	<td class="MDB" align="right">
-		<% if isLojaHabilitadaProdCompostoECommerce(loja) then s_campo_focus="c_desc" else s_campo_focus="c_vl_unitario"%>
+		<% if blnLojaHabilitadaProdCompostoECommerce then s_campo_focus="c_desc" else s_campo_focus="c_vl_unitario"%>
 		<input name="c_vl_unitario" id="c_vl_unitario" class="PLLd" style="width:62px;"
 			onkeypress="if (digitou_enter(true)) {if ((<%=Cstr(i)%>==fPED.c_vl_unitario.length)||(trim(fPED.c_produto[<%=Cstr(i)%>].value)=='')) fPED.c_obs1.focus(); else <% if (r_orcamento.permite_RA_status = 1) Or blnTemRA then Response.Write "fPED.c_vl_NF" else Response.Write "fPED." & s_campo_focus%>[<%=Cstr(i)%>].focus();} filtra_moeda_positivo();"
 			onblur="this.value=formata_moeda(this.value); trata_edicao_RA(<%=Cstr(i-1)%>); recalcula_total_linha(<%=Cstr(i)%>); recalcula_RA(); recalcula_RA_Liquido(); recalcula_parcelas();"
@@ -2657,9 +2726,14 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		</td>
 	</tr>
     <tr>
-        <td class="MB" align="left" colspan="4" nowrap><p class="Rf">xPed</p>
-			<input name="c_num_pedido_compra" id="c_num_pedido_compra" class="PLLe" maxlength="15" style="width:100px;margin-left:2pt;" onkeypress="filtra_nome_identificador();" onblur="this.value=trim(this.value);"
+        <td class="MB MD" align="left" nowrap><p class="Rf">xPed</p>
+			<input name="c_num_pedido_compra" id="c_num_pedido_compra" class="PLLe" maxlength="15" style="width:100px;padding-top:10px;margin-left:2pt;" onkeypress="filtra_nome_identificador();" onblur="this.value=trim(this.value);"
 				value=''>
+		</td>
+		<td class="MB" colspan="4" align="left">
+			<p class="Rf">Previsão de Entrega</p>
+			<input type="text" class="PLLc" name="c_data_previsao_entrega" id="c_data_previsao_entrega" maxlength="10" style="width:90px;" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="filtra_data();"
+				value="<%=formata_data(r_orcamento.PrevisaoEntregaData)%>" />
 		</td>
     </tr>
 	<tr>
@@ -2722,9 +2796,9 @@ var perc_max_comissao_e_desconto_a_utilizar;
 				<td align="left">
 				  <select id="op_av_forma_pagto" name="op_av_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();">
 					<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_A_VISTA then 
-						   Response.Write forma_pagto_liberada_av_monta_itens_select_incluindo_default(r_orcamento.av_forma_pagto, r_orcamento.orcamentista, r_cliente.tipo)
+						   Response.Write forma_pagto_liberada_av_monta_itens_select_incluindo_default(r_orcamento.av_forma_pagto, r_orcamento.orcamentista, cliente__tipo)
 					   else
-						   Response.Write forma_pagto_liberada_av_monta_itens_select(Null, r_orcamento.orcamentista, r_cliente.tipo)
+						   Response.Write forma_pagto_liberada_av_monta_itens_select(Null, r_orcamento.orcamentista, cliente__tipo)
 						   end if
 					%>
 				  </select>
@@ -2750,9 +2824,9 @@ var perc_max_comissao_e_desconto_a_utilizar;
 				<td align="left">
 				  <select id="op_pu_forma_pagto" name="op_pu_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();">
 					<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELA_UNICA then
-						   Response.Write forma_pagto_liberada_da_parcela_unica_monta_itens_select_incluindo_default(r_orcamento.pu_forma_pagto, r_orcamento.orcamentista, r_cliente.tipo)
+						   Response.Write forma_pagto_liberada_da_parcela_unica_monta_itens_select_incluindo_default(r_orcamento.pu_forma_pagto, r_orcamento.orcamentista, cliente__tipo)
 					   else
-						   Response.Write forma_pagto_liberada_da_parcela_unica_monta_itens_select(Null, r_orcamento.orcamentista, r_cliente.tipo)
+						   Response.Write forma_pagto_liberada_da_parcela_unica_monta_itens_select(Null, r_orcamento.orcamentista, cliente__tipo)
 					   end if
 					%>
 				  </select>
@@ -2779,7 +2853,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		  </td>
 		</tr>
 		<!--  PARCELADO NO CARTÃO (INTERNET)  -->
-		<% if (Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO) Or (Not is_restricao_ativa_forma_pagto(r_orcamento.orcamentista, ID_FORMA_PAGTO_CARTAO, r_cliente.tipo)) then %>
+		<% if (Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO) Or (Not is_restricao_ativa_forma_pagto(r_orcamento.orcamentista, ID_FORMA_PAGTO_CARTAO, cliente__tipo)) then %>
 		<tr>
 		<% else %>
 		<tr style="display:none;">
@@ -2820,7 +2894,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		  </td>
 		</tr>
 		<!--  PARCELADO NO CARTÃO (MAQUINETA)  -->
-		<% if (Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA) Or (Not is_restricao_ativa_forma_pagto(r_orcamento.orcamentista, ID_FORMA_PAGTO_CARTAO_MAQUINETA, r_cliente.tipo)) then %>
+		<% if (Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA) Or (Not is_restricao_ativa_forma_pagto(r_orcamento.orcamentista, ID_FORMA_PAGTO_CARTAO_MAQUINETA, cliente__tipo)) then %>
 		<tr>
 		<% else %>
 		<tr style="display:none;">
@@ -2880,9 +2954,9 @@ var perc_max_comissao_e_desconto_a_utilizar;
 				<td align="left">
 				  <select id="op_pce_entrada_forma_pagto" name="op_pce_entrada_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();">
 					<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
-						   Response.Write forma_pagto_liberada_da_entrada_monta_itens_select_incluindo_default(r_orcamento.pce_forma_pagto_entrada, r_orcamento.orcamentista, r_cliente.tipo)
+						   Response.Write forma_pagto_liberada_da_entrada_monta_itens_select_incluindo_default(r_orcamento.pce_forma_pagto_entrada, r_orcamento.orcamentista, cliente__tipo)
 					   else
-						   Response.Write forma_pagto_liberada_da_entrada_monta_itens_select(Null, r_orcamento.orcamentista, r_cliente.tipo)
+						   Response.Write forma_pagto_liberada_da_entrada_monta_itens_select(Null, r_orcamento.orcamentista, cliente__tipo)
 					   end if
 					%>
 				  </select>
@@ -2903,9 +2977,9 @@ var perc_max_comissao_e_desconto_a_utilizar;
 				<td align="left">
 				  <select id="op_pce_prestacao_forma_pagto" name="op_pce_prestacao_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();">
 					<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
-						   Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select_incluindo_default(r_orcamento.pce_forma_pagto_prestacao, r_orcamento.orcamentista, r_cliente.tipo)
+						   Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select_incluindo_default(r_orcamento.pce_forma_pagto_prestacao, r_orcamento.orcamentista, cliente__tipo)
 					   else
-						   Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select(Null, r_orcamento.orcamentista, r_cliente.tipo)
+						   Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select(Null, r_orcamento.orcamentista, cliente__tipo)
 					   end if
 					%>
 				  </select>
@@ -2963,9 +3037,9 @@ var perc_max_comissao_e_desconto_a_utilizar;
 				<td align="left">
 				  <select id="op_pse_prim_prest_forma_pagto" name="op_pse_prim_prest_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();">
 					<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
-						   Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select_incluindo_default(r_orcamento.pse_forma_pagto_prim_prest, r_orcamento.orcamentista, r_cliente.tipo)
+						   Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select_incluindo_default(r_orcamento.pse_forma_pagto_prim_prest, r_orcamento.orcamentista, cliente__tipo)
 					   else
-						   Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select(Null, r_orcamento.orcamentista, r_cliente.tipo)
+						   Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select(Null, r_orcamento.orcamentista, cliente__tipo)
 					   end if
 					%>
 				  </select>
@@ -2994,9 +3068,9 @@ var perc_max_comissao_e_desconto_a_utilizar;
 				<td align="left">
 				  <select id="op_pse_demais_prest_forma_pagto" name="op_pse_demais_prest_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();">
 					<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
-						   Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select_incluindo_default(r_orcamento.pse_forma_pagto_demais_prest, r_orcamento.orcamentista, r_cliente.tipo)
+						   Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select_incluindo_default(r_orcamento.pse_forma_pagto_demais_prest, r_orcamento.orcamentista, cliente__tipo)
 					   else
-						   Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select(Null, r_orcamento.orcamentista, r_cliente.tipo)
+						   Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select(Null, r_orcamento.orcamentista, cliente__tipo)
 					   end if
 					%>
 				  </select>

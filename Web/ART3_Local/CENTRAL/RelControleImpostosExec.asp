@@ -134,6 +134,7 @@ dim ChaveAcesso
 dim qtdePedidosExibida, qtdePedidosPendentesExibida, maxQtdePedidosPendentesResultado, tempoTimeoutEmMin, blnPedidoBloqueado
 dim qtdeTotalPedidosATratar, intRecordsAffected
 dim vLocked, idxLocked, qtdePedidoBloqueado
+dim linkXmlNFe
 
     total_fcp = 0
     total_icms_destino = 0
@@ -327,7 +328,7 @@ dim vLocked, idxLocked, qtdePedidoBloqueado
         if r("controle_impostos_status") = CInt(COD_CONTROLE_IMPOSTOS_STATUS__OK) then
             blnExibirLinha = True
         else
-		    if IsNFeCompletamenteEmitida(rNfeEmitente.id, s_serie_nfe, s_num_nfe, ChaveAcesso) then
+		    if IsNFeCompletamenteEmitidaMontaLinkXmlNFe(rNfeEmitente.id, s_serie_nfe, s_num_nfe, "<img src='../botao/xml_orange_22_x_22.png' border='0'>", ChaveAcesso, linkXmlNFe) then
                 qtdeTotalPedidosATratar = qtdeTotalPedidosATratar + 1
 
                 s = "SELECT " & _
@@ -476,7 +477,16 @@ dim vLocked, idxLocked, qtdePedidoBloqueado
 			if s = "" then s = "&nbsp;"
 			s_row = s_row & _
 					"		<td align='center' valign='top' class='MC MD'>" & chr(13) & _
-					"			<input type='text' class='PLLd TxtClip' readonly style='width:130px' name='c_chave_acesso' onclick='this.select();' value='" & s & "' />" & chr(13) & _
+					"			<table border='0' cellspacing='0' cellpadding='0'>" & chr(13) & _
+					"				<tr>" & chr(13) & _
+					"					<td>" & chr(13) & _
+											"<input type='text' class='PLLd TxtClip' readonly style='width:130px' name='c_chave_acesso' onclick='this.select();' value='" & s & "' />" & _
+										"</td>" & chr(13) & _
+					"					<td>" & _
+										linkXmlNFe & _
+										"</td>" & chr(13) & _
+					"				</tr>" & chr(13) & _
+					"			</table>" & chr(13) & _
 					"		</td>" & chr(13)
 
         '   CNPJ/CPF
@@ -550,7 +560,7 @@ dim vLocked, idxLocked, qtdePedidoBloqueado
 
 			if s = "S" then s_row = s_row & " checked disabled"
 
-			s_row = s_row & chr(13)
+			s_row = s_row & " />" & chr(13)
 
 			s_row = s_row & _
 				"		</td>" & chr(13)

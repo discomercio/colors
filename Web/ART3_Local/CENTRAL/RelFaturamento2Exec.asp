@@ -68,6 +68,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	dim s, s_aux, s_filtro, lista_loja, s_filtro_loja, v_loja, v, i, flag_ok
 	dim c_dt_inicio, c_dt_termino, c_loja, c_fabricante, c_produto, c_grupo, c_vendedor, c_indicador, c_pedido
@@ -444,7 +447,11 @@ dim v_total_custo_financ, v_sub_total_custo_financ
 '	CRITÉRIO: TIPO DE CLIENTE
 	s = ""
 	if rb_tipo_cliente <> "" then
-		s = " (t_CLIENTE.tipo = '" & rb_tipo_cliente & "')"
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s = " (t_PEDIDO.endereco_tipo_pessoa = '" & rb_tipo_cliente & "')"
+		else
+			s = " (t_CLIENTE.tipo = '" & rb_tipo_cliente & "')"
+			end if
 		end if
 		
 	if s <> "" then 
@@ -455,7 +462,11 @@ dim v_total_custo_financ, v_sub_total_custo_financ
 '	CRITÉRIO: UF DO CLIENTE
 	s = ""
 	if c_uf_pesq <> "" then
-		s = " (t_CLIENTE.uf = '" & c_uf_pesq & "')"
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s = " (t_PEDIDO.endereco_uf = '" & c_uf_pesq & "')"
+		else
+			s = " (t_CLIENTE.uf = '" & c_uf_pesq & "')"
+			end if
 		end if
 		
 	if s <> "" then 
@@ -1373,7 +1384,11 @@ dim v_total_custo_financ_loja, v_sub_total_custo_financ_loja
 '	CRITÉRIO: TIPO DE CLIENTE
 	s = ""
 	if rb_tipo_cliente <> "" then
-		s = " (t_CLIENTE.tipo = '" & rb_tipo_cliente & "')"
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s = " (t_PEDIDO.endereco_tipo_pessoa = '" & rb_tipo_cliente & "')"
+		else
+			s = " (t_CLIENTE.tipo = '" & rb_tipo_cliente & "')"
+			end if
 		end if
 		
 	if s <> "" then 
@@ -1384,7 +1399,11 @@ dim v_total_custo_financ_loja, v_sub_total_custo_financ_loja
 '	CRITÉRIO: UF DO CLIENTE
 	s = ""
 	if c_uf_pesq <> "" then
-		s = " (t_CLIENTE.uf = '" & c_uf_pesq & "')"
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s = " (t_PEDIDO.endereco_uf = '" & c_uf_pesq & "')"
+		else
+			s = " (t_CLIENTE.uf = '" & c_uf_pesq & "')"
+			end if
 		end if
 		
 	if s <> "" then 

@@ -40,6 +40,13 @@
 	dim s_lista_operacoes_permitidas
 	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
 
+	dim s_rb_tipo_nf
+
+	' PREENCHIMENTO DA LISTA DE INDICADORES: GRAVA ÚLTIMA OPÇÃO DE CONSULTA NO BD
+	dim lst_indicadores_carrega
+	lst_indicadores_carrega = Request.Form("ckb_rel_frete_analit_carrega_indicadores")
+	call set_default_valor_texto_bd(usuario, "RelFreteAnalitico|c_carrega_indicadores_estatico", lst_indicadores_carrega)
+
 	dim intIdx
 	dim dtMinDtInicialFiltroPeriodo, intMaxDiasDtInicialFiltroPeriodo
 	dim strMinDtInicialFiltroPeriodoYYYYMMDD, strMinDtInicialFiltroPeriodoDDMMYYYY
@@ -52,6 +59,11 @@
 		strMinDtInicialFiltroPeriodoYYYYMMDD = ""
 		strMinDtInicialFiltroPeriodoDDMMYYYY = ""
 		end if
+
+
+
+
+
 
 ' _____________________________________________
 ' TIPO_FRETE_MONTA_ITENS_SELECT
@@ -118,11 +130,45 @@ end function
 <script src="<%=URL_FILE__JQUERY_UI_I18N%>" Language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__JQUERY_UI_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__GLOBAL_JS%>" Language="JavaScript" Type="text/javascript"></script>
+<script src="<%=URL_FILE__AJAX_JS%>" language="JavaScript" type="text/javascript"></script>
 
 <script type="text/javascript">
     $(function() {
+
+	<% if lst_indicadores_carrega = "" then %>
+
+            $("#divMsgAguardeObtendoDados").css('filter', 'alpha(opacity=50)');
+
+        if (fFILTRO.c_hidden_reload.value == 1) {
+            if (('localStorage' in window) && window['localStorage'] !== null) {
+                if ('c_indicador' in localStorage) {
+                    $("#c_indicador").html(localStorage.getItem('c_indicador'));
+                    $("#c_indicador").prop('selectedIndex', fFILTRO.c_hidden_indice_indicador.value);
+                }
+            }
+        }
+        
+     <% end if %>
+
         $("#c_dt_entregue_inicio").hUtilUI('datepicker_filtro_inicial');
         $("#c_dt_entregue_termino").hUtilUI('datepicker_filtro_final');
+
+        //Every resize of window
+        $(window).resize(function () {
+            sizeDivAjaxRunning();
+        });
+
+        //Every scroll of window
+        $(window).scroll(function () {
+            sizeDivAjaxRunning();
+        });
+
+        //Dynamically assign height
+        function sizeDivAjaxRunning() {
+            var newTop = $(window).scrollTop() + "px";
+            $("#divMsgAguardeObtendoDados").css("top", newTop);
+        }
+        $(document).tooltip();
     });
 </script>
 
@@ -198,7 +244,20 @@ var i;
 	window.status = "Aguarde ...";
 	
 	if (f.rb_tipo_saida[1].checked) setTimeout('exibe_botao_confirmar()', 15000);
-	
+
+    <% if lst_indicadores_carrega = "" then %>
+	    if (('localStorage' in window) && window['localStorage'] !== null) {
+        var d = $("#c_indicador").html();
+        localStorage.setItem('c_indicador', d);
+    }
+	<% end if %>
+
+        fFILTRO.c_hidden_reload.value = 1;
+    fFILTRO.c_hidden_indice_indicador.value = $("#c_indicador option:selected").index();
+    fFILTRO.ultimoVendedor.value = fFILTRO.c_vendedor.value;
+
+    f.c_FormFieldValues.value = formToString($("#fFILTRO"));
+
 	f.submit();
 }
 
@@ -208,6 +267,93 @@ function exibe_botao_confirmar() {
 }
 </script>
 
+<script type="text/javascript">
+
+    function LimpaListaIndicadores() {
+        var f, oOption;
+        f = fFILTRO;
+        $("#c_indicador").empty();
+        $(".aviso").css('display', 'none');
+
+        //  Cria um item vazio
+        oOption = document.createElement("OPTION");
+        f.c_indicador.add(oOption);
+        oOption.innerText = "                                                                                 ";
+        oOption.value = "";
+        oOption.selected = true;
+    }
+
+    function TrataRespostaAjaxListaIndicadores() {
+        var f, i, strApelido, strNome, strResp, xmlDoc, oOption, oNodes;
+        f = fFILTRO;
+        if (objAjaxListaIndicadores.readyState == AJAX_REQUEST_IS_COMPLETE) {
+            strResp = objAjaxListaIndicadores.responseText;
+            if (strResp == "") {
+                window.status = "Concluído";
+                divMsgAguardeObtendoDados.style.visibility = "hidden";
+                $(".aviso").css('display', 'inline');
+                return;
+            }
+
+            if (strResp != "") {
+                $(".aviso").css('display', 'none');
+                try {
+                    xmlDoc = objAjaxListaIndicadores.responseXML.documentElement;
+                    for (i = 0; i < xmlDoc.getElementsByTagName("registro").length; i++) {
+                        oOption = document.createElement("OPTION");
+                        f.c_indicador.options.add(oOption);
+
+                        oNodes = xmlDoc.getElementsByTagName("apelido")[i];
+                        if (oNodes.childNodes.length > 0) strApelido = oNodes.childNodes[0].nodeValue; else strApelido = "";
+                        if (strApelido == null) strApelido = "";
+                        oOption.value = strApelido;
+
+                        oNodes = xmlDoc.getElementsByTagName("razao_social_nome")[i];
+                        if (oNodes.childNodes.length > 0) strNome = oNodes.childNodes[0].nodeValue; else strNome = "";
+                        if (strNome == null) strNome = "";
+
+                        oOption.value = strApelido;
+                        oOption.innerText = strApelido + " - " + strNome;
+                    }
+                }
+                catch (e) {
+                    alert("Falha na consulta de indicadores!!" + "\n" + e.description);
+                }
+            }
+            window.status = "Concluído";
+            divMsgAguardeObtendoDados.style.visibility = "hidden";
+        }
+    }
+
+    function CarregaListaIndicadores() {
+        var f, strUrl;
+        f = fFILTRO;
+        if (fFILTRO.ultimoVendedor.value == trim(fFILTRO.c_vendedor.value)) {
+            return;
+        }
+        objAjaxListaIndicadores = GetXmlHttpObject();
+        if (objAjaxListaIndicadores == null) {
+            alert("O browser NÃO possui suporte ao AJAX!!");
+            return;
+        }
+
+        //  Limpa lista de Indicadores
+        LimpaListaIndicadores();
+        divMsgAguardeObtendoDados.style.visibility = "";
+
+        strUrl = "../Global/AjaxListaIndicadoresLojaPesqBD.asp?";
+        //  Prevents server from using a cached file
+        strUrl = strUrl + "sid=" + Math.random() + Math.random();
+        if (trim(fFILTRO.c_vendedor.value) != "") {
+            strUrl = strUrl + "&vendedor=" + fFILTRO.c_vendedor.value;
+        }
+        fFILTRO.ultimoVendedor.value = fFILTRO.c_vendedor.value;
+        objAjaxListaIndicadores.onreadystatechange = TrataRespostaAjaxListaIndicadores;
+        objAjaxListaIndicadores.open("GET", strUrl, true);
+        objAjaxListaIndicadores.send(null);
+
+    }
+</script>
 
 
 
@@ -228,10 +374,20 @@ function exibe_botao_confirmar() {
 <body onload="fFILTRO.c_dt_entregue_inicio.focus();">
 <center>
 
+<!-- MENSAGEM: "Aguarde, obtendo dados" -->
+
+	<div id="divMsgAguardeObtendoDados" name="divMsgAguardeObtendoDados" style="background-image: url('../Imagem/ajax_loader_gray_256.gif');background-repeat:no-repeat;background-position: center center;position:absolute;bottom:0px;left:0px;width:100%;height:100%;z-index:9;border: 1pt solid #C0C0C0;background-color: black;opacity: 0.6;visibility:hidden;vertical-align: middle">
+
+	</div>
+
 <form id="fFILTRO" name="fFILTRO" method="post" action="RelFreteAnaliticoExec.asp">
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
 <input type="hidden" name="c_MinDtInicialFiltroPeriodoYYYYMMDD" id="c_MinDtInicialFiltroPeriodoYYYYMMDD" value='<%=strMinDtInicialFiltroPeriodoYYYYMMDD%>'>
 <input type="hidden" name="c_MinDtInicialFiltroPeriodoDDMMYYYY" id="c_MinDtInicialFiltroPeriodoDDMMYYYY" value='<%=strMinDtInicialFiltroPeriodoDDMMYYYY%>'>
+<input type="hidden" name="c_FormFieldValues" id="c_FormFieldValues" value="" />
+<input type="hidden" id="ultimoVendedor" name="ultimoVendedor" value="x-x-x-x-x-x" />
+<input type="hidden" name="c_hidden_reload" id="c_hidden_reload" value="0" />
+<input type="hidden" name="c_hidden_indice_indicador" id="c_hidden_indice_indicador" value="" />
 
 
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->
@@ -301,15 +457,20 @@ function exibe_botao_confirmar() {
 	<tr bgColor="#FFFFFF">
 	<td class="MDBE" align="left" NOWRAP><span class="PLTe">VENDEDOR</span>
 	<br>
-		<input maxlength="10" class="PLLe" style="width:150px;" name="c_vendedor" id="c_vendedor" onblur="this.value=trim(this.value);" onkeypress="if (digitou_enter(true)) fFILTRO.c_indicador.focus(); filtra_nome_identificador();">
+		<select id="c_vendedor" name="c_vendedor" style="margin-right:10px;" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" <% if lst_indicadores_carrega = "" then %>onchange="LimpaListaIndicadores()" <% end if %>>
+		<% =vendedores_monta_itens_select(Null) %>
+		</select>
 		</td></tr>
 
 <!--  INDICADOR  -->
 	<tr bgColor="#FFFFFF">
-		<td class="MDBE" align="left" NOWRAP><span class="PLTe">INDICADOR</span>
+		<td class="MDBE" align="left" NOWRAP><span class="PLTe"><% if lst_indicadores_carrega = "" then %><img id="exclamacao" src="../IMAGEM/exclamacao_14x14.png" title="Reduza o tempo de carregamento da lista de indicadores, filtrando por vendedor." style="cursor:pointer;" />&nbsp;<% end if %>INDICADOR</span>
 		<br>
-			<select id="c_indicador" name="c_indicador" style="margin:1px 10px 6px 10px;" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;">
-			<% =indicadores_monta_itens_select(Null) %>
+			<select id="c_indicador" name="c_indicador" style="margin:1px 10px 6px 10px;min-width:600px;" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" <% if lst_indicadores_carrega = "" then %> onfocus="CarregaListaIndicadores();" <% end if %>>
+			    <option selected value=''>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
+			<% if lst_indicadores_carrega <> "" then
+					Response.Write indicadores_monta_itens_select(Null)
+				end if%>
 			</select>
 			</td></tr>
 
@@ -322,6 +483,16 @@ function exibe_botao_confirmar() {
 			</select>
 			</td></tr>
 			
+<!--  EMPRESA  -->
+	<tr bgColor="#FFFFFF">
+		<td class="MDBE" NOWRAP><span class="PLTe">EMPRESA</span>
+		<br>
+			<select id="c_empresa" name="c_empresa" style="margin:1px 10px 6px 10px;min-width:100px;" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;">
+			<% =apelido_empresa_nfe_emitente_monta_itens_select(Null) %>
+			</select>
+		</td>
+	</tr>
+
 <!--  STATUS DO FRETE  -->
 	<tr bgColor="#FFFFFF">
 		<td class="MDBE" align="left" NOWRAP><span class="PLTe">STATUS DO FRETE</span>
@@ -339,6 +510,22 @@ function exibe_botao_confirmar() {
 			<% intIdx=intIdx+1 %>
 			<span style="cursor:default" class="rbLink" onclick="fFILTRO.rb_frete_status[<%=Cstr(intIdx)%>].click();">Ambos</span>
 			</td></tr>
+
+<!--  TIPO DE NF NO RESULTADO  -->
+	<%	s_rb_tipo_nf = get_default_valor_texto_bd(usuario, "RelFreteAnalitico|rb_tipo_nf") %>
+	<tr bgColor="#FFFFFF">
+		<td class="MDBE" align="left" NOWRAP><span class="PLTe">TIPO DE NF</span>
+		<br>
+			<% intIdx=-1 %>
+			<input type="radio" id="rb_tipo_nf_fatura_remessa" name="rb_tipo_nf" value="0" <%if (s_rb_tipo_nf = "0") Or (s_rb_tipo_nf = "") then Response.Write " checked"%> class="CBOX" style="margin-left:20px;">
+			<% intIdx=intIdx+1 %>
+			<span style="cursor:default" class="rbLink" onclick="fFILTRO.rb_tipo_nf[<%=Cstr(intIdx)%>].click();">NF de Fatura e de Remessa</span>
+			<br>
+			<input type="radio" id="rb_tipo_nf_remessa" name="rb_tipo_nf" value="1" <%if s_rb_tipo_nf = "1" then Response.Write " checked"%> class="CBOX" style="margin-left:20px;">
+			<% intIdx=intIdx+1 %>
+			<span style="cursor:default" class="rbLink" onclick="fFILTRO.rb_tipo_nf[<%=Cstr(intIdx)%>].click();">Somente NF de Remessa, quando houver</span>
+			</td></tr>
+
 <!--  SAÍDA DO RELATÓRIO  -->
 	<tr bgColor="#FFFFFF">
 		<td class="MDBE" align="left" NOWRAP><span class="PLTe">SAÍDA DO RELATÓRIO</span>

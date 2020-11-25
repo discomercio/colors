@@ -248,7 +248,7 @@ var data;
 <table class="Qx" cellspacing="0">
 <!--  PERÍODO  -->
 	<tr bgcolor="#FFFFFF">
-	<td class="MC ME MD" align="left" nowrap><span class="PLTe">PERÍODO</span></td></tr>
+	<td class="MC ME MD" align="left" nowrap><span class="PLTe">PERÍODO DE COLETA</span></td></tr>
 	<tr bgcolor="#FFFFFF"><td class="MDBE" align="left">
 		<table style="margin: 4px 8px 4px 8px;" cellspacing="0" cellpadding="0"><tr bgcolor="#FFFFFF"><td align="left">
 		<input size="12" class="Cc" maxlength="10" name="c_dt_coleta_inicio" id="c_dt_coleta_inicio" onblur="if (!isDate(this)) {alert('Data de início inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)&&tem_info(this.value)&&isDate(this)) fFILTRO.c_dt_coleta_termino.focus(); filtra_data();"
@@ -257,7 +257,7 @@ var data;
 		</table>
 		</td>
 	</tr>
-<!--  PEDIDOS CANCELADOS  -->
+<!--  PEDIDOS CANCELADOS/DEVOLUÇÃO  -->
 	<tr bgcolor="#FFFFFF">
 	<td class="ME MD" align="left" nowrap><span class="PLTe">PEDIDOS</span></td></tr>
 	<tr bgcolor="#FFFFFF"><td class="MDBE" align="left">
@@ -275,6 +275,27 @@ var data;
 		</table>
 		</td>
 	</tr>
+
+<!--  OPÇÕES P/ INCLUIR/EXCLUIR OS PEDIDOS JÁ VERIFICADOS  -->
+	<tr bgcolor="#FFFFFF">
+	<td class="ME MD" align="left" nowrap><span class="PLTe">TIPO DE CONSULTA</span></td></tr>
+	<tr bgcolor="#FFFFFF"><td class="MDBE" align="left">
+		<input type="radio" tabindex="-1" name="rb_tipo_consulta" id="rb_tipo_consulta_somente_nao_verificados" style="margin:6pt 2pt 0pt 9pt;"
+			value="<%=COD_CONTROLE_IMPOSTOS_STATUS__INICIAL%>"
+            /><span class="C" style="cursor:default" 
+			onclick="fFILTRO.rb_tipo_consulta[0].click();">Somente NÃO Baixados</span>
+		<br />
+        <input type="radio" tabindex="-1" name="rb_tipo_consulta" id="rb_tipo_consulta_somente_ja_verificados" style="margin:2pt 2pt 0pt 9pt;"
+			value="<%=COD_CONTROLE_IMPOSTOS_STATUS__OK%>"
+            /><span class="C" style="cursor:default" 
+			onclick="fFILTRO.rb_tipo_consulta[1].click();">Somente JÁ Baixados</span>
+		<br />
+        <input type="radio" tabindex="-1" name="rb_tipo_consulta" id="rb_tipo_consulta_todos" style="margin:2pt 2pt 8pt 9pt;"
+			value="TODOS"
+            checked
+			/><span class="C" style="cursor:default" 
+			onclick="fFILTRO.rb_tipo_consulta[2].click();">Todos</span>
+	</td></tr>
 
 <!--  TRANSPORTADORA  -->
 	<tr bgcolor="#FFFFFF">
@@ -300,12 +321,15 @@ var data;
 	<td class="MB ME MD" align="left">
 	<table class="Qx" cellspacing="0" cellpadding="0">
 	<tr bgcolor="#FFFFFF">
-		<td align="left" nowrap>
+		<td align="left" class="MD" width="60%" nowrap>
 			<span class="PLTe">CD</span>
+		</td>
+		<td align="left" width="40%">
+			<span class="PLTe">Consultar por CNPJ do CD</span>
 		</td>
 	</tr>
 	<tr bgcolor="#FFFFFF">
-		<td align="left">
+		<td align="left" class="MD">
 			<table style="margin: 4px 8px 4px 8px;" cellspacing="0" cellpadding="0">
 				<tr bgcolor="#FFFFFF">
 				<td align="left">
@@ -315,6 +339,15 @@ var data;
 				</td>
 				</tr>
 			</table>
+		</td>
+		<td align="left">
+			<input type="radio" tabindex="-1" name="rb_nfe_emitente_consultar_cnpj" id="rb_nfe_emitente_consultar_cnpj_nao" value="CONSULTAR_NAO" style="margin:6pt 2pt 0pt 9pt;"
+				/>
+				<span class="C" style="cursor:default" onclick="fFILTRO.rb_nfe_emitente_consultar_cnpj[0].click();">Não</span>
+			<br />
+			<input type="radio" tabindex="-1" name="rb_nfe_emitente_consultar_cnpj" id="rb_nfe_emitente_consultar_cnpj_sim" value="CONSULTAR_SIM" style="margin:2pt 2pt 0pt 9pt;"
+				checked />
+				<span class="C" style="cursor:default" onclick="fFILTRO.rb_nfe_emitente_consultar_cnpj[1].click();">Sim</span>
 		</td>
 	</tr>
 	</table>

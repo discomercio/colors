@@ -38,9 +38,8 @@
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
 
 '	CONECTA COM O BANCO DE DADOS
-	dim cn, rs,msg_erro
+	dim cn, msg_erro
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
-	If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
 	dim s_lista_operacoes_permitidas
 	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
@@ -61,7 +60,7 @@
 	
 	dim alerta
 	dim s, s_aux, s_filtro
-	dim c_transportadora, s_nome_transportadora, c_dt_coleta_inicio, c_dt_coleta_termino, c_uf, c_nfe_emitente
+	dim c_transportadora, s_nome_transportadora, c_dt_coleta_inicio, c_dt_coleta_termino, c_uf, c_nfe_emitente, rb_tipo_consulta, rb_nfe_emitente_consultar_cnpj
 	dim ckb_pedidos_cancelados, ckb_pedidos_com_devolucao
 
 	alerta = ""
@@ -73,6 +72,8 @@
 	c_nfe_emitente = Trim(Request.Form("c_nfe_emitente"))
 	ckb_pedidos_cancelados = Trim(Request.Form("ckb_pedidos_cancelados"))
 	ckb_pedidos_com_devolucao = Trim(Request.Form("ckb_pedidos_com_devolucao"))
+	rb_tipo_consulta = Trim(Request.Form("rb_tipo_consulta"))
+	rb_nfe_emitente_consultar_cnpj = Trim(Request.Form("rb_nfe_emitente_consultar_cnpj"))
 	
 	s_nome_transportadora = ""
 	if c_transportadora <> "" then s_nome_transportadora = x_transportadora(c_transportadora)
@@ -148,10 +149,19 @@ vl_icms_destino_uf_proporcional = 0
 	s_where = " AND (t_NFE_IMAGEM.ide__idDest = '2') " & _
 			" AND (t_NFE_IMAGEM.ide__tpNF = '1') " & _
 			" AND (t_NFE_EMISSAO.st_anulado = 0) " & _
-			" AND (t_NFE_EMISSAO.codigo_retorno_NFe_T1 = 1) " & _
-			" AND (t_NFE_EMISSAO.controle_impostos_status = " & COD_CONTROLE_IMPOSTOS_STATUS__OK & ")"
+			" AND (t_NFE_EMISSAO.codigo_retorno_NFe_T1 = 1) "
 
-				
+	if rb_tipo_consulta = "TODOS" then
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (t_NFE_EMISSAO.controle_impostos_status IN (" & COD_CONTROLE_IMPOSTOS_STATUS__INICIAL & "," & COD_CONTROLE_IMPOSTOS_STATUS__OK & "))"
+    elseif rb_tipo_consulta = Cstr(COD_CONTROLE_IMPOSTOS_STATUS__INICIAL) then
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (t_NFE_EMISSAO.controle_impostos_status = " & COD_CONTROLE_IMPOSTOS_STATUS__INICIAL & ")"
+	elseif rb_tipo_consulta = Cstr(COD_CONTROLE_IMPOSTOS_STATUS__OK) then
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (t_NFE_EMISSAO.controle_impostos_status = " & COD_CONTROLE_IMPOSTOS_STATUS__OK & ")"
+		end if
+
 '	CRITÉRIO: TRANSPORTADORA
 	if c_transportadora <> "" then
 		s = " (transportadora_id = '" & c_transportadora & "')"
@@ -183,7 +193,22 @@ vl_icms_destino_uf_proporcional = 0
 	
 '	OWNER DO PEDIDO
 	if s_where <> "" then s_where = s_where & " AND"
-	s_where = s_where & " (t_NFE_EMISSAO.id_nfe_emitente = " & rNfeEmitente.id & ")"
+	if rb_nfe_emitente_consultar_cnpj = "CONSULTAR_SIM" then
+		s = "SELECT id FROM t_NFE_EMITENTE WHERE (cnpj = '" & retorna_so_digitos(rNfeEmitente.cnpj) & "') ORDER BY id"
+		set r = cn.execute(s)
+		s = ""
+		do while Not r.Eof
+			if s <> "" then s = s & ", "
+			s = s & Trim("" & r("id"))
+			r.MoveNext
+			loop
+		if r.State <> 0 then r.Close
+		if s <> "" then
+			s_where = s_where & " (t_NFE_EMISSAO.id_nfe_emitente IN (" & s & "))"
+			end if
+	else
+		s_where = s_where & " (t_NFE_EMISSAO.id_nfe_emitente = " & rNfeEmitente.id & ")"
+		end if
 
 '	PEDIDOS CANCELADOS OU PEDIDOS COM DEVOLUÇÃO
 	s_where_pedido_grupo_1 = ""
@@ -293,6 +318,7 @@ vl_icms_destino_uf_proporcional = 0
 		  "		<td class='MC MD' style='width:70px' align='center' valign='bottom' nowrap><span class='R'>Nº NF</span></td>" & chr(13) & _
 		  "		<td class='MC MD' style='width:180px' align='left' valign='bottom' nowrap><span class='R'>Transportadora</span></td>" & chr(13) & _
 		  "		<td class='MC MD' style='width:30px' align='center' valign='bottom' nowrap><span class='R'>Data Coleta</span></td>" & chr(13) & _
+		  "		<td class='MC MD' style='width:30px' align='center' valign='bottom' nowrap><span class='R'>Guia </br> OK</span></td>" & chr(13) & _
 		  "		<td class='MC MD' style='width:30px' align='right' valign='bottom' nowrap><span class='R'>FCP</span></td>" & chr(13) & _
 		  "		<td class='MC MD' style='width:70px' align='right' valign='bottom' nowrap><span class='R'>ICMS UF </br> Destino</span></td>" & chr(13) & _
 		  "		<td class='MC MD' style='width:70px' align='right' valign='bottom' nowrap><span class='R'>ICMS UF </br> Origem</span></td>" & chr(13)
@@ -329,7 +355,7 @@ vl_icms_destino_uf_proporcional = 0
 			if (s_uf <> s_uf_anterior) And (s_uf_anterior = "") then
 				  ' SE FOR A PRIMEIRA ITERAÇÃO, INCLUIR CABEÇALHO
 					x = x & cab_table 
-					colSpan = 7
+					colSpan = 8
 					if (ckb_pedidos_cancelados <> "") OR (ckb_pedidos_com_devolucao <> "") then colSpan = colSpan + 3
 					x = x & "	<tr style='background: #FFFFDD'>" & chr(13) & _
 							"       <td class='MDTE' nowrap colspan='" & CStr(colSpan) & "' align='left'><span class='C'>" & _
@@ -338,7 +364,7 @@ vl_icms_destino_uf_proporcional = 0
 					x = x & cab
 			    end if
 			if (s_uf <> s_uf_anterior) And (s_uf_anterior <> "") then
-				colSpan = 4
+				colSpan = 5
 				'SE MUDOU UF, MOSTRA SUBTOTAL
 				x = x & "	<tr style='background: #FFFFDD'>" & chr(13) & _
 						"       <td class='MTBE' nowrap colspan='" & CStr(colSpan) & "' align='right'><span class='C'>" & _
@@ -358,7 +384,7 @@ vl_icms_destino_uf_proporcional = 0
 						"	</tr>" & chr(13)
 						
 				' MOSTRA O TOTAL DE REGISTROS
-				colSpan = 7
+				colSpan = 8
 				if (ckb_pedidos_cancelados <> "") OR (ckb_pedidos_com_devolucao <> "") then colSpan = colSpan + 3
 				x = x & "	<tr style='background: #FFFFDD'>" & chr(13) & _
 						"       <td class='MDBE' nowrap colspan='" & CStr(colSpan) & "' align='right'><span class='C'>" & _
@@ -370,7 +396,7 @@ vl_icms_destino_uf_proporcional = 0
 				x = x & "<br>" & chr(13)
 
 			  ' CABEÇALHO
-				colSpan = 7
+				colSpan = 8
 				if (ckb_pedidos_cancelados <> "") OR (ckb_pedidos_com_devolucao <> "") then colSpan = colSpan + 3
 				x = x & cab_table 
 				x = x & "	<tr style='background: #FFFFDD'>" & chr(13) & _
@@ -445,6 +471,20 @@ vl_icms_destino_uf_proporcional = 0
 					"		<td align='center' valign='top' class='MC MD'>" & chr(13) & _
 					"			<span class='C'" & s_html_color & ">" & s & "</span>" & chr(13) & _
 					"		</td>" & chr(13)
+
+		'	GUIA OK
+			if r("controle_impostos_status") = CInt(COD_CONTROLE_IMPOSTOS_STATUS__OK) then s = "S" else s = "N"
+			s_row = s_row & _
+				"		<td align='center' valign='top' class='MC MD' style='padding:0px;'>" & chr(13)
+			s_row = s_row & _
+			"			<input type='checkbox' name='ckb_controle_impostos' id='ckb_controle_impostos' value='" & Trim("" & r("id")) & "|" & s_num_nfe & "|"  & s_pedido & "|" & s & "'"
+
+			if s = "S" then s_row = s_row & " checked"
+
+			s_row = s_row & " disabled />" & chr(13)
+
+			s_row = s_row & _
+				"		</td>" & chr(13)
 
 		'	FCP
 			valor = converte_numero(Trim("" & r("total__vFCPUFDest")))
@@ -546,7 +586,7 @@ vl_icms_destino_uf_proporcional = 0
 		loop
 	
 	'	ÚLTIMO SUBTOTAL NO RELATÓRIO
-	colSpan = 4
+	colSpan = 5
 	x = x & "	<tr style='background: #FFFFDD'>" & chr(13) & _
 			"       <td class='MTBE' nowrap colspan='" & CStr(colSpan) & "' align='right'><span class='C'>" & _
 			"TOTAL UF:   </span></td>" & chr(13) & _
@@ -565,7 +605,7 @@ vl_icms_destino_uf_proporcional = 0
 			"	</tr>" & chr(13)
 
 	'	MOSTRA O TOTAL DE REGISTROS
-	colSpan = 7
+	colSpan = 8
 	if (ckb_pedidos_cancelados <> "") OR (ckb_pedidos_com_devolucao <> "") then colSpan = colSpan + 3
 	x = x & "	<tr style='background: #FFFFDD'>" & chr(13) & _
 			"       <td class='MDBE' nowrap colspan='" & CStr(colSpan) & "' align='right'><span class='C'>" & _
@@ -578,7 +618,7 @@ vl_icms_destino_uf_proporcional = 0
 	x = x & "<br>" & chr(13)
 
 	'	TOTAL NO RELATÓRIO
-	colSpan = 7
+	colSpan = 8
 	if (ckb_pedidos_cancelados <> "") OR (ckb_pedidos_com_devolucao <> "") then colSpan = colSpan + 3
 	x = x & cab_table 
 	x = x & "	<tr style='background: #FFFFDD'>" & chr(13) & _
@@ -587,7 +627,7 @@ vl_icms_destino_uf_proporcional = 0
 			"	</tr>" & chr(13)
 	x = x & cab
 
-	colSpan = 4
+	colSpan = 5
 	x = x & "	<tr style='background: #FFFFDD'>" & chr(13) & _
 			"       <td class='MTBE' nowrap colspan='" & CStr(colSpan) & "' align='right'><span class='C'>" & _
 			"TOTAL :   </span></td>" & chr(13) & _
@@ -606,7 +646,7 @@ vl_icms_destino_uf_proporcional = 0
 			"	</tr>" & chr(13)
 
 	' TOTAL GERAL DE REGISTROS
-	colSpan = 7
+	colSpan = 8
 	if (ckb_pedidos_cancelados <> "") OR (ckb_pedidos_com_devolucao <> "") then colSpan = colSpan + 3
 	x = x & "	<tr style='background: #FFFFDD'>" & chr(13) & _
 			"       <td class='MDBE' nowrap colspan='" & CStr(colSpan) & "' align='right'><span class='C'>" & _
@@ -614,7 +654,7 @@ vl_icms_destino_uf_proporcional = 0
 			"	</tr>" & chr(13)
 
   ' MOSTRA AVISO DE QUE NÃO HÁ DADOS!!
-	colSpan = 11
+	colSpan = 12
 	if (ckb_pedidos_cancelados <> "") OR (ckb_pedidos_com_devolucao <> "") then colSpan = colSpan + 3
 	if n_reg_geral = 0 then
 		x = cab_table & cab
@@ -751,6 +791,7 @@ function fRELConcluir( id_pedido ){
 <input type="hidden" name="c_nfe_emitente" id="c_nfe_emitente" value="<%=c_nfe_emitente%>" />
 <input type="hidden" name="ckb_pedidos_cancelados" id="ckb_pedidos_cancelados" value="<%=ckb_pedidos_cancelados%>" />
 <input type="hidden" name="ckb_pedidos_com_devolucao" id="ckb_pedidos_com_devolucao" value="<%=ckb_pedidos_com_devolucao%>" />
+<input type="hidden" name="rb_tipo_consulta" id="rb_tipo_consulta" value="<%=rb_tipo_consulta%>" />
 <!--  ASSEGURA CRIAÇÃO DE UM ARRAY DE CAMPOS, MESMO QUANDO HOUVER SOMENTE 1 LINHA!! -->
 
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->
@@ -787,6 +828,18 @@ function fRELConcluir( id_pedido ){
 				"<span class='N'>Pedidos:&nbsp;</span></td><td align='left' valign='top'>" & _
 				"<span class='N'>" & s & "</span></td></tr>"
 
+    s = rb_tipo_consulta
+    if (s = Cstr(COD_CONTROLE_IMPOSTOS_STATUS__INICIAL)) then
+        s = "Somente NÃO Baixados"
+    elseif (s = Cstr(COD_CONTROLE_IMPOSTOS_STATUS__OK)) then
+        s = "Somente JÁ Baixados"
+    elseif (s = "TODOS") then
+        s = "Todos"
+        end if
+	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
+				"<span class='N'>Tipo de Consulta:&nbsp;</span></td><td align='left' valign='top'>" & _
+				"<span class='N'>" & s & "</span></td></tr>"
+
 	s = c_transportadora
 	if s = "" then 
 		s = "todas"
@@ -807,6 +860,15 @@ function fRELConcluir( id_pedido ){
 	if s = "" then s = "todos"
 	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
 				"<span class='N'>CD:&nbsp;</span></td><td align='left' valign='top'>" & _
+				"<span class='N'>" & s & "</span></td></tr>"
+
+	if rb_nfe_emitente_consultar_cnpj = "CONSULTAR_SIM" then
+		s = "Sim"
+	else
+		s = "Não"
+		end if
+	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
+				"<span class='N'>Consultar por CNPJ do CD:&nbsp;</span></td><td align='left' valign='top'>" & _
 				"<span class='N'>" & s & "</span></td></tr>"
 
 	s = c_dt_coleta_inicio
@@ -855,9 +917,6 @@ function fRELConcluir( id_pedido ){
 
 
 <%
-	if rs.State <> 0 then rs.Close
-	set rs = nothing
-
 '	FECHA CONEXAO COM O BANCO DE DADOS
 	cn.Close
 	set cn = nothing

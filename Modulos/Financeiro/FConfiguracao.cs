@@ -142,6 +142,7 @@ namespace Financeiro
 											(int)Global.converteInteiro(txtServidorSmtpPorta.Text.Trim()),
 											txtUsuarioSmtp.Text.Trim(),
 											txtSenhaSmtp.Text.Trim(),
+											(byte)(ckbEnableSSL.Checked ? 1 : 0),
 											ref strMsgErro))
 			{
 				avisoErro("Falha ao tentar atualizar o banco de dados!!\n" + strMsgErro);
@@ -155,6 +156,7 @@ namespace Financeiro
 			Global.Usuario.fin_servidor_smtp_porta = (int)Global.converteInteiro(txtServidorSmtpPorta.Text);
 			Global.Usuario.fin_usuario_smtp = txtUsuarioSmtp.Text.Trim();
 			Global.Usuario.fin_senha_smtp = txtSenhaSmtp.Text.Trim();
+			Global.Usuario.fin_smtp_enable_ssl = (byte)(ckbEnableSSL.Checked ? 1 : 0);
 			#endregion
 
 			SystemSounds.Exclamation.Play();
@@ -207,6 +209,7 @@ namespace Financeiro
 					txtServidorSmtpPorta.Text = Global.Usuario.fin_servidor_smtp_porta.ToString();
 					txtUsuarioSmtp.Text = Global.Usuario.fin_usuario_smtp;
 					txtSenhaSmtp.Text = Global.Usuario.fin_senha_smtp;
+					ckbEnableSSL.Checked = (Global.Usuario.fin_smtp_enable_ssl != 0 ? true : false);
 					#endregion
 
 					#region [ Posiciona foco ]

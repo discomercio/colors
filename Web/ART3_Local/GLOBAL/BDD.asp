@@ -1738,6 +1738,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.endereco_produtor_rural_status = 0
 			.endereco_ie = ""
 			.endereco_rg = ""
+			.endereco_contato = ""
 
 			.endereco_memorizado_status		= rs("endereco_memorizado_status")
 			if CLng(.endereco_memorizado_status) <> 0 then
@@ -1769,6 +1770,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.endereco_produtor_rural_status = rs("endereco_produtor_rural_status")
 					.endereco_ie = Trim("" & rs("endereco_ie"))
 					.endereco_rg = Trim("" & rs("endereco_rg"))
+					.endereco_contato = Trim("" & rs("endereco_contato"))
 					end if
 				end if
 
@@ -1839,6 +1841,9 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.st_etg_imediata			= rs("st_etg_imediata")
 			.etg_imediata_data			= rs("etg_imediata_data")
 			.etg_imediata_usuario		= Trim("" & rs("etg_imediata_usuario"))
+			.PrevisaoEntregaData = rs("PrevisaoEntregaData")
+			.PrevisaoEntregaUsuarioUltAtualiz = Trim("" & rs("PrevisaoEntregaUsuarioUltAtualiz"))
+			.PrevisaoEntregaDtHrUltAtualiz = rs("PrevisaoEntregaDtHrUltAtualiz")
 			.frete_status				= rs("frete_status")
 			.frete_valor				= rs("frete_valor")
 			.frete_data					= rs("frete_data")
@@ -1872,6 +1877,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
             .NFe_xPed = Trim("" & rs("NFe_xPed"))
 			.st_auto_split = rs("st_auto_split")
             .st_forma_pagto_possui_parcela_cartao = rs("st_forma_pagto_possui_parcela_cartao")
+			.st_forma_pagto_possui_parcela_cartao_maquineta = rs("st_forma_pagto_possui_parcela_cartao_maquineta")
 			.usuario_cadastro = Trim("" & rs("usuario_cadastro"))
 			.plataforma_origem_pedido = rs("plataforma_origem_pedido")
 			end with
@@ -1930,6 +1936,8 @@ dim blnUsarMemorizacaoCompletaEnderecos
 				.pse_demais_prest_qtde		= rs("pse_demais_prest_qtde")
 				.pse_demais_prest_valor		= rs("pse_demais_prest_valor")
 				.pse_demais_prest_periodo	= rs("pse_demais_prest_periodo")
+	            .st_forma_pagto_possui_parcela_cartao = rs("st_forma_pagto_possui_parcela_cartao")
+	            .st_forma_pagto_possui_parcela_cartao_maquineta = rs("st_forma_pagto_possui_parcela_cartao_maquineta")
 				.custoFinancFornecTipoParcelamento	= Trim("" & rs("custoFinancFornecTipoParcelamento"))
 				.custoFinancFornecQtdeParcelas 		= rs("custoFinancFornecQtdeParcelas")
 				.indicador					= Trim("" & rs("indicador"))
@@ -2031,6 +2039,7 @@ dim rs
 				.descricao_html			= Trim("" & rs("descricao_html"))
 				.ean					= Trim("" & rs("ean"))
 				.grupo					= Trim("" & rs("grupo"))
+                .subgrupo				= Trim("" & rs("subgrupo"))
 				.peso					= rs("peso")
 				.qtde_volumes			= rs("qtde_volumes")
 				.abaixo_min_status		= rs("abaixo_min_status")
@@ -2152,6 +2161,7 @@ dim rs, rsi
 					.descricao_html			= Trim("" & rsi("descricao_html"))
 					.ean					= Trim("" & rsi("ean"))
 					.grupo					= Trim("" & rsi("grupo"))
+                    .subgrupo				= Trim("" & rsi("subgrupo"))
 					.peso					= rsi("peso")
 					.qtde_volumes			= rsi("qtde_volumes")
 					.abaixo_min_status		= rsi("abaixo_min_status")
@@ -2715,26 +2725,27 @@ dim rs
 		exit function
 	else
 		with r_estoque
-			.id_estoque				= Trim("" & rs("id_estoque"))
-			.data_entrada			= rs("data_entrada")
-			.hora_entrada			= Trim("" & rs("hora_entrada"))
-			.fabricante				= Trim("" & rs("fabricante"))
-			.documento				= Trim("" & rs("documento"))
-			.usuario				= Trim("" & rs("usuario"))
-			.data_ult_movimento		= rs("data_ult_movimento")
-			.kit					= rs("kit")
-			.entrada_especial		= rs("entrada_especial")
-			.devolucao_status		= rs("devolucao_status")
-			.devolucao_data			= rs("devolucao_data")
-			.devolucao_hora			= Trim("" & rs("devolucao_hora"))
-			.devolucao_usuario		= Trim("" & rs("devolucao_usuario"))
-			.devolucao_loja			= Trim("" & rs("devolucao_loja"))
-			.devolucao_pedido		= Trim("" & rs("devolucao_pedido"))
-			.devolucao_id_estoque	= Trim("" & rs("devolucao_id_estoque"))
-			.obs					= Trim("" & rs("obs"))
-			.id_nfe_emitente		= rs("id_nfe_emitente")
-            .entrada_tipo           = Trim("" & rs("entrada_tipo"))
-            .perc_agio      		= rs("perc_agio")
+			.id_estoque				 		= Trim("" & rs("id_estoque"))
+			.data_entrada			 		= rs("data_entrada")
+			.hora_entrada		 			= Trim("" & rs("hora_entrada"))
+			.fabricante			 			= Trim("" & rs("fabricante"))
+			.documento				 		= Trim("" & rs("documento"))
+			.usuario				 		= Trim("" & rs("usuario"))
+			.data_ult_movimento		 		= rs("data_ult_movimento")
+			.kit					 		= rs("kit")
+			.entrada_especial	 			= rs("entrada_especial")
+			.devolucao_status 				= rs("devolucao_status")
+			.devolucao_data		 			= rs("devolucao_data")
+			.devolucao_hora		 			= Trim("" & rs("devolucao_hora"))
+			.devolucao_usuario	 			= Trim("" & rs("devolucao_usuario"))
+			.devolucao_loja 				= Trim("" & rs("devolucao_loja"))
+			.devolucao_pedido           	= Trim("" & rs("devolucao_pedido"))
+			.devolucao_id_estoque          	= Trim("" & rs("devolucao_id_estoque"))
+			.obs				           	= Trim("" & rs("obs"))
+			.id_nfe_emitente           		= rs("id_nfe_emitente")
+            .entrada_tipo                   = Trim("" & rs("entrada_tipo"))
+            .perc_agio      		        = rs("perc_agio")
+            .data_emissao_NF_entrada   		= rs("data_emissao_NF_entrada")
 			end with
 		end if	
 
@@ -3243,6 +3254,7 @@ dim rs
 			.descricao_html			= Trim("" & rs("descricao_html"))
 			.ean					= Trim("" & rs("ean"))
 			.grupo					= Trim("" & rs("grupo"))
+            .subgrupo				= Trim("" & rs("subgrupo"))
 			.peso					= rs("peso")
 			.qtde_volumes			= rs("qtde_volumes")
 			.abaixo_min_status		= rs("abaixo_min_status")
@@ -3331,6 +3343,7 @@ dim rs
 			.descricao_html			= Trim("" & rs("descricao_html"))
 			.ean					= Trim("" & rs("ean"))
 			.grupo					= Trim("" & rs("grupo"))
+            .subgrupo				= Trim("" & rs("subgrupo"))
 			.peso					= rs("peso")
 			.qtde_volumes			= rs("qtde_volumes")
 			.abaixo_min_status		= rs("abaixo_min_status")
@@ -3592,11 +3605,12 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.endereco_produtor_rural_status = 0
 			.endereco_ie = ""
 			.endereco_rg = ""
+			.endereco_contato = ""
 
 			'O orçamento não armazenava o endereço de cobrança anteriormente da forma como ocorria no pedido
 			if blnUsarMemorizacaoCompletaEnderecos then
-				.endereco_memorizado_status		= rs("endereco_memorizado_status")
-				if CLng(.endereco_memorizado_status) <> 0 then
+				.st_memorizacao_completa_enderecos = rs("st_memorizacao_completa_enderecos")
+				if CLng(.st_memorizacao_completa_enderecos) <> 0 then
 					.endereco_logradouro			= Trim("" & rs("endereco_logradouro"))
 					.endereco_numero				= Trim("" & rs("endereco_numero"))
 					.endereco_complemento			= Trim("" & rs("endereco_complemento"))
@@ -3604,28 +3618,26 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.endereco_cidade				= Trim("" & rs("endereco_cidade"))
 					.endereco_uf					= Trim("" & rs("endereco_uf"))
 					.endereco_cep					= Trim("" & rs("endereco_cep"))
-					if blnUsarMemorizacaoCompletaEnderecos then
-						.st_memorizacao_completa_enderecos = rs("st_memorizacao_completa_enderecos")
-						.endereco_email = Trim("" & rs("endereco_email"))
-						.endereco_email_xml = Trim("" & rs("endereco_email_xml"))
-						.endereco_nome = Trim("" & rs("endereco_nome"))
-						.endereco_ddd_res = Trim("" & rs("endereco_ddd_res"))
-						.endereco_tel_res = Trim("" & rs("endereco_tel_res"))
-						.endereco_ddd_com = Trim("" & rs("endereco_ddd_com"))
-						.endereco_tel_com = Trim("" & rs("endereco_tel_com"))
-						.endereco_ramal_com = Trim("" & rs("endereco_ramal_com"))
-						.endereco_ddd_cel = Trim("" & rs("endereco_ddd_cel"))
-						.endereco_tel_cel = Trim("" & rs("endereco_tel_cel"))
-						.endereco_ddd_com_2 = Trim("" & rs("endereco_ddd_com_2"))
-						.endereco_tel_com_2 = Trim("" & rs("endereco_tel_com_2"))
-						.endereco_ramal_com_2 = Trim("" & rs("endereco_ramal_com_2"))
-						.endereco_tipo_pessoa = Trim("" & rs("endereco_tipo_pessoa"))
-						.endereco_cnpj_cpf = Trim("" & rs("endereco_cnpj_cpf"))
-						.endereco_contribuinte_icms_status = rs("endereco_contribuinte_icms_status")
-						.endereco_produtor_rural_status = rs("endereco_produtor_rural_status")
-						.endereco_ie = Trim("" & rs("endereco_ie"))
-						.endereco_rg = Trim("" & rs("endereco_rg"))
-						end if
+					.endereco_email = Trim("" & rs("endereco_email"))
+					.endereco_email_xml = Trim("" & rs("endereco_email_xml"))
+					.endereco_nome = Trim("" & rs("endereco_nome"))
+					.endereco_ddd_res = Trim("" & rs("endereco_ddd_res"))
+					.endereco_tel_res = Trim("" & rs("endereco_tel_res"))
+					.endereco_ddd_com = Trim("" & rs("endereco_ddd_com"))
+					.endereco_tel_com = Trim("" & rs("endereco_tel_com"))
+					.endereco_ramal_com = Trim("" & rs("endereco_ramal_com"))
+					.endereco_ddd_cel = Trim("" & rs("endereco_ddd_cel"))
+					.endereco_tel_cel = Trim("" & rs("endereco_tel_cel"))
+					.endereco_ddd_com_2 = Trim("" & rs("endereco_ddd_com_2"))
+					.endereco_tel_com_2 = Trim("" & rs("endereco_tel_com_2"))
+					.endereco_ramal_com_2 = Trim("" & rs("endereco_ramal_com_2"))
+					.endereco_tipo_pessoa = Trim("" & rs("endereco_tipo_pessoa"))
+					.endereco_cnpj_cpf = Trim("" & rs("endereco_cnpj_cpf"))
+					.endereco_contribuinte_icms_status = rs("endereco_contribuinte_icms_status")
+					.endereco_produtor_rural_status = rs("endereco_produtor_rural_status")
+					.endereco_ie = Trim("" & rs("endereco_ie"))
+					.endereco_rg = Trim("" & rs("endereco_rg"))
+					.endereco_contato = Trim("" & rs("endereco_contato"))
 					end if
 				end if
 
@@ -3664,7 +3676,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 				.EndEtg_cidade				= Trim("" & rs("EndEtg_cidade"))
 				.EndEtg_uf					= Trim("" & rs("EndEtg_uf"))
 				.EndEtg_cep					= Trim("" & rs("EndEtg_cep"))
-				if blnUsarMemorizacaoCompletaEnderecos then
+				if blnUsarMemorizacaoCompletaEnderecos and CLng(.st_memorizacao_completa_enderecos) <> 0 then
 					.EndEtg_email = Trim("" & rs("EndEtg_email"))
 					.EndEtg_email_xml = Trim("" & rs("EndEtg_email_xml"))
 					.EndEtg_nome = Trim("" & rs("EndEtg_nome"))
@@ -3690,6 +3702,9 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.st_etg_imediata			= rs("st_etg_imediata")
 			.etg_imediata_data			= rs("etg_imediata_data")
 			.etg_imediata_usuario		= Trim("" & rs("etg_imediata_usuario"))
+			.PrevisaoEntregaData = rs("PrevisaoEntregaData")
+			.PrevisaoEntregaUsuarioUltAtualiz = Trim("" & rs("PrevisaoEntregaUsuarioUltAtualiz"))
+			.PrevisaoEntregaDtHrUltAtualiz = rs("PrevisaoEntregaDtHrUltAtualiz")
 			.StBemUsoConsumo			= rs("StBemUsoConsumo")
 			.InstaladorInstalaStatus	= rs("InstaladorInstalaStatus")
 			.InstaladorInstalaUsuarioUltAtualiz = Trim("" & rs("InstaladorInstalaUsuarioUltAtualiz"))
@@ -3766,6 +3781,7 @@ dim rs
 				.obs					= Trim("" & rs("obs"))
 				.ean					= Trim("" & rs("ean"))
 				.grupo					= Trim("" & rs("grupo"))
+                .subgrupo				= Trim("" & rs("subgrupo"))
 				.peso					= rs("peso")
 				.qtde_volumes			= rs("qtde_volumes")
 				.abaixo_min_status		= rs("abaixo_min_status")
@@ -6137,5 +6153,276 @@ dim rFPUECM
 	set rFPUECM = get_registro_t_parametro(ID_PARAMETRO_Flag_Pedido_MemorizacaoCompletaEnderecos)
 	if Trim("" & rFPUECM.campo_inteiro) = "1" then isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = True
 	set rFPUECM = Nothing
+end function
+
+
+' ________________________________________________________
+' isActivatedFlagCadSemiAutoPedMagentoCadAutoClienteNovo
+'
+function isActivatedFlagCadSemiAutoPedMagentoCadAutoClienteNovo
+dim rFCSAPMCACN
+	isActivatedFlagCadSemiAutoPedMagentoCadAutoClienteNovo = False
+	set rFCSAPMCACN = get_registro_t_parametro(ID_PARAMETRO_FLAG_CAD_SEMI_AUTO_PED_MAGENTO_CADASTRAR_AUTOMATICAMENTE_CLIENTE_NOVO)
+	if Trim("" & rFCSAPMCACN.campo_inteiro) = "1" then isActivatedFlagCadSemiAutoPedMagentoCadAutoClienteNovo = True
+	set rFCSAPMCACN = Nothing
+end function
+
+
+' ________________________________________________________
+' getParametroPercDesagioRALiquida
+'
+function getParametroPercDesagioRALiquida
+dim rP
+	getParametroPercDesagioRALiquida = 0
+	set rP = get_registro_t_parametro(ID_PARAMETRO_PERC_DESAGIO_RA_LIQUIDA)
+	if Trim("" & rP.campo_real) <> "" then getParametroPercDesagioRALiquida = rP.campo_real
+	set rP = Nothing
+end function
+
+
+' ________________________________________________________
+' getParametroPrazoAcessoRelPedidosIndicadoresLoja
+'
+function getParametroPrazoAcessoRelPedidosIndicadoresLoja
+dim rP
+	getParametroPrazoAcessoRelPedidosIndicadoresLoja = 0
+	set rP = get_registro_t_parametro(ID_PARAMETRO_PRAZO_ACESSO_REL_PEDIDOS_INDICADORES_LOJA)
+	if Trim("" & rP.campo_inteiro) <> "" then getParametroPrazoAcessoRelPedidosIndicadoresLoja = rP.campo_inteiro
+	set rP = Nothing
+end function
+
+
+' ___________________________________
+' isLojaVrf
+'
+function isLojaVrf(byval loja)
+dim s, tLAux
+	isLojaVrf = False
+
+	loja  = Trim("" & loja)
+	
+	s = "SELECT * FROM t_LOJA WHERE (loja = '" & loja & "') AND (unidade_negocio = '" & COD_UNIDADE_NEGOCIO_LOJA__VRF & "')"
+	set tLAux = cn.Execute(s)
+	if Not tLAux.Eof then
+		isLojaVrf = True
+		tLAux.Close
+		set tLAux = nothing
+		end if
+end function
+
+
+' ___________________________________
+' isLojaBonshop
+'
+function isLojaBonshop(byval loja)
+dim s, tLAux
+	isLojaBonshop = False
+
+	loja  = Trim("" & loja)
+	
+	s = "SELECT * FROM t_LOJA WHERE (loja = '" & loja & "') AND (unidade_negocio = '" & COD_UNIDADE_NEGOCIO_LOJA__BS & "')"
+	set tLAux = cn.Execute(s)
+	if Not tLAux.Eof then
+		isLojaBonshop = True
+		tLAux.Close
+		set tLAux = nothing
+		end if
+end function
+
+
+' ___________________________________
+' isLojaGarantia
+'
+function isLojaGarantia(byval loja)
+dim s, tLAux
+	isLojaGarantia = False
+
+	loja  = Trim("" & loja)
+	
+	s = "SELECT * FROM t_LOJA WHERE (loja = '" & loja & "') AND (unidade_negocio = '" & COD_UNIDADE_NEGOCIO_LOJA__GARANTIA & "')"
+	set tLAux = cn.Execute(s)
+	if Not tLAux.Eof then
+		isLojaGarantia = True
+		tLAux.Close
+		set tLAux = nothing
+		end if
+end function
+
+
+' ------------------------------------------------------------------------
+'   isLojaHabilitadaProdCompostoECommerce
+'
+function isLojaHabilitadaProdCompostoECommerce(byval loja)
+dim blnLojaHabilitada
+	isLojaHabilitadaProdCompostoECommerce = False
+	loja = Trim("" & loja)
+	blnLojaHabilitada = False
+	if loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
+		blnLojaHabilitada = True
+	elseif isLojaBonshop(loja) then
+		blnLojaHabilitada = True
+	elseif isLojaVrf(loja) then
+		blnLojaHabilitada = True
+	elseif loja = NUMERO_LOJA_MARCELO_ARTVEN then
+		blnLojaHabilitada = True
+		end if
+
+	if blnLojaHabilitada = True then isLojaHabilitadaProdCompostoECommerce = True
+end function
+
+
+' ------------------------------------------------------------------------
+'   le_usuario
+'
+function le_usuario(byval id_usuario, byref r_usuario, byref msg_erro)
+dim s
+dim rs
+
+	le_usuario = False
+	msg_erro = ""
+	id_usuario = Trim("" & id_usuario)
+	set r_usuario = New cl_USUARIO
+	s="SELECT * FROM t_USUARIO WHERE (usuario = '" & id_usuario & "')"
+	set rs=cn.Execute(s)
+	if Err <> 0 then
+		msg_erro=Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+
+	if rs.EOF then
+		msg_erro="Usuário " & id_usuario & " não está cadastrado."
+	else
+		with r_usuario
+			.usuario = Trim("" & rs("usuario"))
+			.nivel = Trim("" & rs("nivel"))
+			.loja = Trim("" & rs("loja"))
+			.senha = Trim("" & rs("senha"))
+			.nome = Trim("" & rs("nome"))
+			.datastamp = Trim("" & rs("datastamp"))
+			.bloqueado = rs("bloqueado")
+			.dt_cadastro = rs("dt_cadastro")
+			.dt_ult_atualizacao = rs("dt_ult_atualizacao")
+			.dt_ult_alteracao_senha = rs("dt_ult_alteracao_senha")
+			.dt_ult_acesso = rs("dt_ult_acesso")
+			.vendedor_externo = rs("vendedor_externo")
+			.vendedor_loja = rs("vendedor_loja")
+			.SessionCtrlTicket = Trim("" & rs("SessionCtrlTicket"))
+			.SessionCtrlLoja = Trim("" & rs("SessionCtrlLoja"))
+			.SessionCtrlModulo = Trim("" & rs("SessionCtrlModulo"))
+			.SessionCtrlDtHrLogon = rs("SessionCtrlDtHrLogon")
+			.fin_email_remetente = Trim("" & rs("fin_email_remetente"))
+			.fin_servidor_smtp = Trim("" & rs("fin_servidor_smtp"))
+			.fin_usuario_smtp = Trim("" & rs("fin_usuario_smtp"))
+			.fin_senha_smtp = Trim("" & rs("fin_senha_smtp"))
+			.fin_display_name_remetente = Trim("" & rs("fin_display_name_remetente"))
+			.nome_iniciais_em_maiusculas = Trim("" & rs("nome_iniciais_em_maiusculas"))
+			.fin_servidor_smtp_porta = rs("fin_servidor_smtp_porta")
+			.email = Trim("" & rs("email"))
+			.SessionTokenModuloCentral = Trim("" & rs("SessionTokenModuloCentral"))
+			.DtHrSessionTokenModuloCentral = rs("DtHrSessionTokenModuloCentral")
+			.SessionTokenModuloLoja = Trim("" & rs("SessionTokenModuloLoja"))
+			.DtHrSessionTokenModuloLoja = rs("DtHrSessionTokenModuloLoja")
+			end with
+		end if
+
+	if Err <> 0 then
+		msg_erro=Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+
+	if rs.State <> 0 then rs.Close
+
+	with r_usuario
+		.nivel_acesso_bloco_notas_pedido = COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__NAO_DEFINIDO
+		.nivel_acesso_chamado = COD_NIVEL_ACESSO_CHAMADO_PEDIDO__NAO_DEFINIDO
+		
+		s="SELECT Coalesce(Max(nivel_acesso_bloco_notas_pedido), " & Cstr(COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__NAO_DEFINIDO) & ") AS max_nivel_acesso_bloco_notas_pedido FROM t_PERFIL INNER JOIN t_PERFIL_X_USUARIO ON t_PERFIL.id=t_PERFIL_X_USUARIO.id_perfil WHERE (usuario = '" & id_usuario & "')"
+		if rs.State <> 0 then rs.Close
+		set rs=cn.Execute(s)
+		if Err <> 0 then
+			msg_erro=Cstr(Err) & ": " & Err.Description
+			exit function
+			end if
+
+		if Not rs.Eof then
+			.nivel_acesso_bloco_notas_pedido = rs("max_nivel_acesso_bloco_notas_pedido")
+			end if
+		
+		s="SELECT Coalesce(Max(nivel_acesso_chamado), " & Cstr(COD_NIVEL_ACESSO_CHAMADO_PEDIDO__NAO_DEFINIDO) & ") AS max_nivel_acesso_chamado FROM t_PERFIL INNER JOIN t_PERFIL_X_USUARIO ON t_PERFIL.id=t_PERFIL_X_USUARIO.id_perfil WHERE (usuario = '" & id_usuario & "')"
+		if rs.State <> 0 then rs.Close
+		set rs=cn.Execute(s)
+		if Err <> 0 then
+			msg_erro=Cstr(Err) & ": " & Err.Description
+			exit function
+			end if
+
+		if Not rs.Eof then
+			.nivel_acesso_chamado = rs("max_nivel_acesso_chamado")
+			end if
+		end with
+
+	if Err <> 0 then
+		msg_erro=Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+
+	if rs.State <> 0 then rs.Close
+
+	if msg_erro = "" then le_usuario = True
+end function
+
+
+' ________________________________________________________
+' getParametroFromCampoTexto
+'
+function getParametroFromCampoTexto(ByVal id_registro)
+dim rP
+	set rP = get_registro_t_parametro(id_registro)
+	getParametroFromCampoTexto = rP.campo_texto
+	set rP = Nothing
+end function
+
+
+' ________________________________________________________
+' getParametroFromCampoInteiro
+'
+function getParametroFromCampoInteiro(ByVal id_registro)
+dim rP
+	set rP = get_registro_t_parametro(id_registro)
+	getParametroFromCampoInteiro = rP.campo_inteiro
+	set rP = Nothing
+end function
+
+
+' ________________________________________________________
+' getParametroFromCampoReal
+'
+function getParametroFromCampoReal(ByVal id_registro)
+dim rP
+	set rP = get_registro_t_parametro(id_registro)
+	getParametroFromCampoReal = rP.campo_real
+	set rP = Nothing
+end function
+
+
+' ________________________________________________________
+' getParametroFromCampoMonetario
+'
+function getParametroFromCampoMonetario(ByVal id_registro)
+dim rP
+	set rP = get_registro_t_parametro(id_registro)
+	getParametroFromCampoMonetario = rP.campo_monetario
+	set rP = Nothing
+end function
+
+
+' ________________________________________________________
+' getParametroFromCampoData
+'
+function getParametroFromCampoData(ByVal id_registro)
+dim rP
+	set rP = get_registro_t_parametro(id_registro)
+	getParametroFromCampoData = rP.campo_data
+	set rP = Nothing
 end function
 %>

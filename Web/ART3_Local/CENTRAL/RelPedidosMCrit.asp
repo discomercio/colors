@@ -57,9 +57,10 @@
 		strMinDtInicialFiltroPeriodoDDMMYYYY = ""
 		end if
 
-
 	dim url_origem
 	url_origem = Trim(Request("url_origem"))
+
+	dim s_memoria
 
 	' PREENCHIMENTO DA LISTA DE INDICADORES: GRAVA ÚLTIMA OPÇÃO DE CONSULTA NO BD
 	dim lst_indicadores_carrega
@@ -209,7 +210,7 @@ function grupo_origem_pedido_monta_itens_select(byval id_default)
 dim x, r, strResp
 	id_default = Trim("" & id_default)
 
-	set r = cn.Execute("SELECT * FROM t_CODIGO_DESCRICAO WHERE grupo='PedidoECommerce_Origem_Grupo' AND st_inativo=0")
+	set r = cn.Execute("SELECT * FROM t_CODIGO_DESCRICAO WHERE (grupo='PedidoECommerce_Origem_Grupo') AND (st_inativo=0) ORDER BY ordenacao")
 	strResp = ""
 	do while Not r.eof 
 		x = Trim("" & r("codigo"))
@@ -238,7 +239,7 @@ function origem_pedido_monta_itens_select(byval id_default)
 dim x, r, strResp
 	id_default = Trim("" & id_default)
 
-	set r = cn.Execute("SELECT * FROM t_CODIGO_DESCRICAO WHERE grupo='PedidoECommerce_Origem' AND st_inativo=0")
+	set r = cn.Execute("SELECT * FROM t_CODIGO_DESCRICAO WHERE (grupo='PedidoECommerce_Origem') AND (st_inativo=0) ORDER BY ordenacao")
 	strResp = ""
 	do while Not r.eof 
 		x = Trim("" & r("codigo"))
@@ -337,6 +338,9 @@ end function
 		$("#c_dt_entrega_inicio").hUtilUI('datepicker_filtro_inicial');
 		$("#c_dt_entrega_termino").hUtilUI('datepicker_filtro_final');
 	<% end if%>
+
+        $("#c_dt_previsao_entrega_inicio").hUtilUI('datepicker_filtro_inicial');
+        $("#c_dt_previsao_entrega_termino").hUtilUI('datepicker_filtro_final');
 	
 		//Every resize of window
 	    $(window).resize(function() {
@@ -407,7 +411,11 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 			if (!consiste_periodo(f.c_dt_entrega_inicio, f.c_dt_entrega_termino)) return;
 			}
 		}
-		
+
+	if (f.ckb_entrega_imediata_nao.checked) {
+        if (!consiste_periodo(f.c_dt_previsao_entrega_inicio, f.c_dt_previsao_entrega_termino)) return;
+    }
+
 	if (f.ckb_produto.checked) {
 		if (trim(f.c_produto.value)!="") {
 			if (!isEAN(f.c_produto.value)) {
@@ -812,6 +820,11 @@ function exibe_botao_confirmar() {
 			value="<%=ST_ENTREGA_CANCELADO%>"><span class="C" style="cursor:default" 
 			onclick="fFILTRO.ckb_st_entrega_exceto_cancelados.click();">Exceto Cancelados</span>
 		</td></tr>
+	<tr bgcolor="#FFFFFF"><td align="left">
+		<input type="checkbox" tabindex="-1" id="ckb_st_entrega_exceto_entregues" name="ckb_st_entrega_exceto_entregues"
+			value="<%=ST_ENTREGA_ENTREGUE%>"><span class="C" style="cursor:default" 
+			onclick="fFILTRO.ckb_st_entrega_exceto_entregues.click();">Exceto Entregues</span>
+		</td></tr>
 	</table>
 </td></tr>
 
@@ -908,7 +921,7 @@ function exibe_botao_confirmar() {
 <tr bgcolor="#FFFFFF">
 <td class="MDBE" align="left" nowrap><span class="PLTe">ENTREGA IMEDIATA</span>
 	<br>
-	<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;">
+	<table cellspacing="0" cellpadding="0" width="100%" style="margin-bottom:10px;">
 	<tr bgcolor="#FFFFFF"><td align="left">
 		<input type="checkbox" tabindex="-1" id="ckb_entrega_imediata_sim" name="ckb_entrega_imediata_sim"
 			value="<%=COD_ETG_IMEDIATA_SIM%>"><span class="C" style="cursor:default" 
@@ -918,6 +931,10 @@ function exibe_botao_confirmar() {
 		<input type="checkbox" tabindex="-1" id="ckb_entrega_imediata_nao" name="ckb_entrega_imediata_nao"
 			value="<%=COD_ETG_IMEDIATA_NAO%>"><span class="C" style="cursor:default" 
 			onclick="fFILTRO.ckb_entrega_imediata_nao.click();">Não</span>
+			<span style="width:50px;">&nbsp;</span>
+			<span class="C" style="cursor:default;" onclick="fFILTRO.ckb_entrega_imediata_nao.click();">Previsão de Entrega entre</span>
+			<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_previsao_entrega_inicio" id="c_dt_previsao_entrega_inicio" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_previsao_entrega_termino.focus(); else fFILTRO.ckb_entrega_imediata_nao.checked=true; filtra_data();" onclick="fFILTRO.ckb_entrega_imediata_nao.checked = true;" onchange="fFILTRO.ckb_entrega_imediata_nao.checked=true;"
+			/>&nbsp;<span class="C">e</span>&nbsp;<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_previsao_entrega_termino" id="c_dt_previsao_entrega_termino" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_entrega_imediata_nao.checked=true; filtra_data();" onclick="fFILTRO.ckb_entrega_imediata_nao.checked = true;" onchange="fFILTRO.ckb_entrega_imediata_nao.checked=true;" />
 		</td></tr>
 	</table>
 </td></tr>
@@ -936,6 +953,12 @@ function exibe_botao_confirmar() {
 		<input type="checkbox" tabindex="-1" id="ckb_obs2_nao_preenchido" name="ckb_obs2_nao_preenchido"
 			value="ON"><span class="C" style="cursor:default" 
 			onclick="fFILTRO.ckb_obs2_nao_preenchido.click();">OBS II não preenchido</span>
+		</td></tr>
+	<tr bgcolor="#FFFFFF"><td align="left">
+		<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_nao_exibir_rastreio") %>
+		<input type="checkbox" tabindex="-1" id="ckb_nao_exibir_rastreio" name="ckb_nao_exibir_rastreio"
+			value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+			onclick="fFILTRO.ckb_nao_exibir_rastreio.click();">Não exibir link de rastreamento</span>
 		</td></tr>
 	</table>
 </td></tr>
@@ -1170,6 +1193,38 @@ function exibe_botao_confirmar() {
 			<span class="aviso">Vendedor selecionado não possui indicadores.</span>&nbsp;
 		</td>
 	</tr>
+	</table>
+</td></tr>
+
+<!--  COLUNAS OPCIONAIS  -->
+<tr bgcolor="#FFFFFF">
+<td class="MDBE" align="left" nowrap><span class="PLTe">CAMPOS OPCIONAIS</span>
+	<br>
+	<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;">
+	<tr bgcolor="#FFFFFF"><td align="left">
+		<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_vendedor") %>
+		<input type="checkbox" tabindex="-1" id="ckb_exibir_vendedor" name="ckb_exibir_vendedor"
+			value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+			onclick="fFILTRO.ckb_exibir_vendedor.click();">Vendedor</span>
+		</td></tr>
+	<tr bgcolor="#FFFFFF"><td align="left">
+		<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_parceiro") %>
+		<input type="checkbox" tabindex="-1" id="ckb_exibir_parceiro" name="ckb_exibir_parceiro"
+			value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+			onclick="fFILTRO.ckb_exibir_parceiro.click();">Parceiro</span>
+		</td></tr>
+	<tr bgcolor="#FFFFFF"><td align="left">
+		<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_uf") %>
+		<input type="checkbox" tabindex="-1" id="ckb_exibir_uf" name="ckb_exibir_uf"
+			value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+			onclick="fFILTRO.ckb_exibir_uf.click();">UF</span>
+		</td></tr>
+	<tr bgcolor="#FFFFFF"><td align="left">
+		<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_data_previsao_entrega") %>
+		<input type="checkbox" tabindex="-1" id="ckb_exibir_data_previsao_entrega" name="ckb_exibir_data_previsao_entrega"
+			value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+			onclick="fFILTRO.ckb_exibir_data_previsao_entrega.click();">Previsão de Entrega</span>
+		</td></tr>
 	</table>
 </td></tr>
 

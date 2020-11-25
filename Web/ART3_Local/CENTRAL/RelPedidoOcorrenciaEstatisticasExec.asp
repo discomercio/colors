@@ -49,6 +49,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 	
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	dim s, s_aux
 	dim c_dt_cad_ocorrencia_inicio, c_dt_cad_ocorrencia_termino, c_tipo_ocorrencia, c_motivo_abertura
@@ -170,8 +173,17 @@ dim qtde_ocorrencia_aberta, qtde_ocorrencia_em_andamento, qtde_ocorrencia_finali
 			" tPO.tipo_ocorrencia," & _
             " tPO.cod_motivo_abertura," & _
 			" tPO.texto_finalizacao," & _
-			" tP.transportadora_id," & _
-			" tC.nome_iniciais_em_maiusculas AS nome_cliente, " & _
+			" tP.transportadora_id,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" dbo.SqlClrUtilIniciaisEmMaiusculas(tP.endereco_nome) AS nome_cliente, "
+	else
+		s_sql = s_sql & _
+				" tC.nome_iniciais_em_maiusculas AS nome_cliente, "
+		end if
+
+	s_sql = s_sql & _
 			" (" & _
 				"SELECT" & _
 					" TOP 1 NFe_numero_NF" & _
@@ -234,13 +246,23 @@ dim qtde_ocorrencia_aberta, qtde_ocorrencia_em_andamento, qtde_ocorrencia_finali
 		end if
 	
 	if c_uf <> "" then
-		s_sql = s_sql & _
-					" AND " & _
-					"(" & _
-						"((tP.st_end_entrega <> 0) And (tP.EndEtg_uf = '" & c_uf & "'))" & _
-						" OR " & _
-						"((tP.st_end_entrega = 0) And (tC.uf = '" & c_uf & "'))" & _
-					")"
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s_sql = s_sql & _
+						" AND " & _
+						"(" & _
+							"((tP.st_end_entrega <> 0) And (tP.EndEtg_uf = '" & c_uf & "'))" & _
+							" OR " & _
+							"((tP.st_end_entrega = 0) And (tP.endereco_uf = '" & c_uf & "'))" & _
+						")"
+		else
+			s_sql = s_sql & _
+						" AND " & _
+						"(" & _
+							"((tP.st_end_entrega <> 0) And (tP.EndEtg_uf = '" & c_uf & "'))" & _
+							" OR " & _
+							"((tP.st_end_entrega = 0) And (tC.uf = '" & c_uf & "'))" & _
+						")"
+			end if
 		end if
 	
 '	LOJA(S)

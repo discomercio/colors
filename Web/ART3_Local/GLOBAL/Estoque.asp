@@ -1456,7 +1456,7 @@ dim strComplemento
 	With r_estoque
 		s_sql = "INSERT INTO t_ESTOQUE" & _
 				" (id_estoque, data_entrada, hora_entrada, fabricante, documento," & _
-				" usuario, data_ult_movimento, kit, entrada_especial, obs, id_nfe_emitente, perc_agio, entrada_tipo " & _
+				" usuario, data_ult_movimento, kit, entrada_especial, obs, id_nfe_emitente, perc_agio, entrada_tipo, data_emissao_NF_entrada " & _
 			") VALUES (" & _
 				"'" & id_estoque & "'" & _
 				"," & bd_formata_data(.data_entrada) & _
@@ -1471,6 +1471,7 @@ dim strComplemento
 				"," & Cstr(.id_nfe_emitente) & _
                 "," & bd_formata_numero(.perc_agio) & _
                 "," & "1" & _
+                "," & bd_formata_data(.data_emissao_NF_entrada) & _
 				")"
 		cn.Execute(s_sql)
 		if Err <> 0 then
@@ -3561,20 +3562,18 @@ dim s_chave
 
 	do while Not rs.Eof
 	'	ARMAZENA AS ENTRADAS NO ESTOQUE CANDIDATAS À SAÍDA DE PRODUTOS
-		If v_estoque(UBound(v_estoque)) <> "" Then
+		'alteração: o teste de elemento em branco deve ser feito APENAS para v_estoque, pois v_documento pode ter um valor em branco no registro
+        '(correção de bug detectado pelo Adailton em 15/01/2020
+        If v_estoque(UBound(v_estoque)) <> "" Then
 			ReDim Preserve v_estoque(UBound(v_estoque) + 1)
 			v_estoque(UBound(v_estoque)) = ""
-			End If
-		v_estoque(UBound(v_estoque)) = Trim("" & rs("id_estoque"))
-		If v_documento(UBound(v_documento)) <> "" Then
-			ReDim Preserve v_documento(UBound(v_documento) + 1)
+            ReDim Preserve v_documento(UBound(v_documento) + 1)
 			v_documento(UBound(v_documento)) = ""
-			End If
-		v_documento(UBound(v_documento)) = Trim("" & rs("documento"))
-        If v_entrada_tipo(UBound(v_entrada_tipo)) <> "" Then
 			ReDim Preserve v_entrada_tipo(UBound(v_entrada_tipo) + 1)
 			v_entrada_tipo(UBound(v_entrada_tipo)) = ""
 			End If
+		v_estoque(UBound(v_estoque)) = Trim("" & rs("id_estoque"))
+		v_documento(UBound(v_documento)) = Trim("" & rs("documento"))
 		v_entrada_tipo(UBound(v_entrada_tipo)) = rs("entrada_tipo")
 		qtde_disponivel = qtde_disponivel + CLng(rs("saldo"))
 		rs.movenext

@@ -51,6 +51,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 	
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	dim s, s_aux
 	dim c_dt_periodo_inicio, c_dt_periodo_termino, c_motivo_finalizacao, c_motivo_abertura
@@ -173,8 +176,17 @@ dim qtde_chamado_aberto, qtde_chamado_em_andamento, qtde_chamado_finalizado
 			" tPC.cod_motivo_finalizacao," & _
             " tPC.cod_motivo_abertura," & _
 			" tPC.texto_finalizacao," & _
-			" tP.transportadora_id," & _
-			" tC.nome_iniciais_em_maiusculas AS nome_cliente, " & _
+			" tP.transportadora_id,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" dbo.SqlClrUtilIniciaisEmMaiusculas(tP.endereco_nome) AS nome_cliente, "
+	else
+		s_sql = s_sql & _
+				" tC.nome_iniciais_em_maiusculas AS nome_cliente, "
+		end if
+
+	s_sql = s_sql & _
             " tPCD.descricao AS depto," & _
 			" (" & _
 				"SELECT" & _
@@ -248,13 +260,23 @@ dim qtde_chamado_aberto, qtde_chamado_em_andamento, qtde_chamado_finalizado
 		end if
 	
 	if c_uf <> "" then
-		s_sql = s_sql & _
-					" AND " & _
-					"(" & _
-						"((tP.st_end_entrega <> 0) And (tP.EndEtg_uf = '" & c_uf & "'))" & _
-						" OR " & _
-						"((tP.st_end_entrega = 0) And (tC.uf = '" & c_uf & "'))" & _
-					")"
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s_sql = s_sql & _
+						" AND " & _
+						"(" & _
+							"((tP.st_end_entrega <> 0) And (tP.EndEtg_uf = '" & c_uf & "'))" & _
+							" OR " & _
+							"((tP.st_end_entrega = 0) And (tP.endereco_uf = '" & c_uf & "'))" & _
+						")"
+		else
+			s_sql = s_sql & _
+						" AND " & _
+						"(" & _
+							"((tP.st_end_entrega <> 0) And (tP.EndEtg_uf = '" & c_uf & "'))" & _
+							" OR " & _
+							"((tP.st_end_entrega = 0) And (tC.uf = '" & c_uf & "'))" & _
+						")"
+			end if
 		end if
 	
 	s_sql = "SELECT * FROM (" & s_sql & ") t ORDER BY dt_hr_cadastro, id"

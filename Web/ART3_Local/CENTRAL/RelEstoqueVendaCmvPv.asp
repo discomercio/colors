@@ -87,7 +87,7 @@ dim v
 		         end if
 		   	 next
 		strResp = strResp & " value='" & x & "'>"
-		strResp = strResp & Trim("" & r("fabricante")) & " - " & Trim("" & r("nome")) & "&nbsp;&nbsp;"
+		strResp = strResp & Trim("" & r("fabricante")) & " &nbsp;(" & Trim("" & r("nome")) & ")"
 		strResp = strResp & "</option>" & chr(13)
 		r.MoveNext	
  	loop
@@ -111,6 +111,7 @@ dim x, r, strResp, ha_default, strSql, v, i
 			" FROM t_PRODUTO_GRUPO" & _
 			" WHERE" & _
 				" (Coalesce(codigo,'') <> '')" & _
+				" AND (inativo = 0)" & _
 			" ORDER BY" & _
 				" Coalesce(codigo,'')"
 	set r = cn.Execute(strSql)
@@ -125,7 +126,7 @@ dim x, r, strResp, ha_default, strSql, v, i
 		         end if
 		   	 next
 		strResp = strResp & " value='" & x & "'>"
-		strResp = strResp & Trim("" & r("codigo")) & "&nbsp;-&nbsp;" & Trim("" & r("descricao"))
+		strResp = strResp & Trim("" & r("codigo")) & " &nbsp;(" & Trim("" & r("descricao")) & ")"
 		strResp = strResp & "</option>" & chr(13)
 		r.MoveNext	
  	loop
@@ -134,6 +135,39 @@ dim x, r, strResp, ha_default, strSql, v, i
 	r.close
 	set r=nothing
 end function
+
+
+'----------------------------------------------------------------------------------------------
+' T_PRODUTO SUBGRUPO MONTA ITENS SELECT
+function t_produto_subgrupo_monta_itens_select(byval id_default)
+dim x, r, strSql, strResp, ha_default, v, i, sDescricao
+	id_default = Trim("" & id_default)
+	v = split(id_default, ", ")
+	ha_default=False
+	strSql = "SELECT DISTINCT tP.subgrupo, tPS.descricao FROM t_PRODUTO tP LEFT JOIN t_PRODUTO_SUBGRUPO tPS ON (tP.subgrupo = tPS.codigo) WHERE LEN(Coalesce(tP.subgrupo,'')) > 0 ORDER by tP.subgrupo"
+	set r = cn.Execute(strSql)
+	strResp = ""
+	do while Not r.eof 
+		x = UCase(Trim("" & r("subgrupo")))
+		sDescricao = Trim("" & r("descricao"))
+		strResp = strResp & "<option "
+		for i=LBound(v) to UBound(v) 
+			if (id_default<>"") And (v(i)=x) then
+				strResp = strResp & "selected"
+				end if
+			next
+		strResp = strResp & " VALUE='" & x & "'>"
+		strResp = strResp & x
+		if sDescricao <> "" then strResp = strResp & " &nbsp;(" & sDescricao & ")"
+		strResp = strResp & "</OPTION>" & chr(13)
+		r.MoveNext
+		loop
+	
+	t_produto_subgrupo_monta_itens_select = strResp
+	r.close
+	set r=nothing
+end function
+
 
 ' ____________________________________________________________________________
 ' POTENCIA BTU MONTA ITENS SELECT
@@ -171,7 +205,6 @@ dim x, r, strResp, ha_default, strSql
 	r.close
 	set r=nothing
 end function
-
 
 
 ' ____________________________________________________________________________
@@ -268,6 +301,7 @@ end function
 %>
 
 
+<%=DOCTYPE_LEGADO%>
 
 <html>
 
@@ -284,6 +318,25 @@ end function
 <script src="<%=URL_FILE__GLOBAL_JS%>" language="JavaScript" type="text/javascript"></script>
 
 <script language="JavaScript" type="text/javascript">
+
+	$(function () {
+        $("#c_fabricante_multiplo").change(function () {
+            $("#spnCounterFabricante").text($("#c_fabricante_multiplo :selected").length);
+        });
+
+		$("#c_grupo").change(function () {
+            $("#spnCounterGrupo").text($("#c_grupo :selected").length);
+        });
+
+        $("#c_subgrupo").change(function () {
+            $("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
+        });
+
+        $("#spnCounterFabricante").text($("#c_fabricante_multiplo :selected").length);
+        $("#spnCounterGrupo").text($("#c_grupo :selected").length);
+        $("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
+	});
+
 function fESTOQConsulta( f ) {
 var i, b;
 	b=false;
@@ -319,9 +372,15 @@ function limpaCampoSelect(c) {
 }
 function limpaCampoSelectFabricante() {
     $("#c_fabricante_multiplo").children().prop("selected", false);
+    $("#spnCounterFabricante").text($("#c_fabricante_multiplo :selected").length);
 }
 function limpaCampoSelectProduto() {
     $("#c_grupo").children().prop("selected", false);
+    $("#spnCounterGrupo").text($("#c_grupo :selected").length);
+}
+function limpaCampoSelectSubgrupo() {
+    $("#c_subgrupo").children().prop('selected', false);
+    $("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
 }
 </script>
 
@@ -401,11 +460,11 @@ function limpaCampoSelectProduto() {
 			if operacao_permitida(OP_CEN_REL_ESTOQUE_VISAO_COMPLETA_CMVPV, s_lista_operacoes_permitidas) then s=""
 			if operacao_permitida(OP_CEN_REL_ESTOQUE_VISAO_BASICA_CMVPV, s_lista_operacoes_permitidas) And (Not operacao_permitida(OP_CEN_REL_ESTOQUE_VISAO_COMPLETA_CMVPV, s_lista_operacoes_permitidas)) then s=" checked"
 		%>
-		<br><input type="radio" <%=s%> tabindex="-1" id="rb_detalhe" name="rb_detalhe" value="SINTETICO" <% if get_default_valor_texto_bd(usuario, "RelEstoqueVendaCmvPvCentral|rb_detalhe") = "SINTETICO" then Response.Write " checked" %>>
+		<br><input type="radio" <%=s%> tabindex="-1" id="rb_detalhe" name="rb_detalhe" value="SINTETICO" <% if get_default_valor_texto_bd(usuario, "CENTRAL/RelEstoqueVendaCmvPv|rb_detalhe") = "SINTETICO" then Response.Write " checked" %>>
 			<span class="C" style="cursor:default" onclick="fESTOQ.rb_detalhe[0].click();">Sintético (sem custos)</span>
 			
 		<%	if operacao_permitida(OP_CEN_REL_ESTOQUE2, s_lista_operacoes_permitidas) Or operacao_permitida(OP_CEN_REL_ESTOQUE_VISAO_COMPLETA_CMVPV, s_lista_operacoes_permitidas) then s="" else s=" disabled" %>
-		<br><input type="radio" <%=s%> tabindex="-1" id="rb_detalhe" name="rb_detalhe" value="INTERMEDIARIO" <% if get_default_valor_texto_bd(usuario, "RelEstoqueVendaCmvPvCentral|rb_detalhe") = "INTERMEDIARIO" then Response.Write " checked" %>>
+		<br><input type="radio" <%=s%> tabindex="-1" id="rb_detalhe" name="rb_detalhe" value="INTERMEDIARIO" <% if get_default_valor_texto_bd(usuario, "CENTRAL/RelEstoqueVendaCmvPv|rb_detalhe") = "INTERMEDIARIO" then Response.Write " checked" %>>
 			<span class="C" style="cursor:default" onclick="fESTOQ.rb_detalhe[1].click();">Intermediário (custos médios)</span>
 	</td>
 	</tr>
@@ -426,14 +485,16 @@ function limpaCampoSelectProduto() {
 		<table cellpadding="0" cellspacing="0">
 		<tr>
 		<td>
-			<select id="c_fabricante_multiplo" name="c_fabricante_multiplo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="5"style="width:200px" multiple>
-			<% =fabricante_monta_itens_select(Null) %>
+			<select id="c_fabricante_multiplo" name="c_fabricante_multiplo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="5"style="width:250px" multiple>
+			<% =fabricante_monta_itens_select(get_default_valor_texto_bd(usuario, "CENTRAL/RelEstoqueVendaCmvPv|c_fabricante_multiplo")) %>
 			</select>
 		</td>
 		<td style="width:1px;"></td>
 		<td align="left" valign="top">
 			<a name="bLimparFabricante" id="bLimparFabricante" href="javascript:limpaCampoSelectFabricante()" title="limpa o filtro 'Fabricante'">
 						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterFabricante"></span>)
 		</td>
 		</tr>
 		</table>
@@ -448,13 +509,38 @@ function limpaCampoSelectProduto() {
 		<tr>
 		<td>
 			<select id="c_grupo" name="c_grupo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="5"style="width:200px" multiple>
-			<% =t_produto_grupo_monta_itens_select(Null) %>
+			<% =t_produto_grupo_monta_itens_select(get_default_valor_texto_bd(usuario, "CENTRAL/RelEstoqueVendaCmvPv|c_grupo")) %>
 			</select>
 		</td>
 		<td style="width:1px;"></td>
 		<td align="left" valign="top">
 			<a name="bLimparGrupo" id="bLimparGrupo" href="javascript:limpaCampoSelectProduto()" title="limpa o filtro 'Grupo de Produtos'">
 						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterGrupo"></span>)
+		</td>
+		</tr>
+		</table>
+	</td>
+	</tr>
+	<!-- SUBGRUPO DE PRODUTOS -->
+	<tr bgcolor="#FFFFFF">
+	<td class="ME MD MB" colspan="2" align="left" nowrap>
+		<span class="PLTe">Subgrupo de Produtos</span>
+		<br>
+		<table cellpadding="0" cellspacing="0">
+		<tr>
+		<td>
+			<select id="c_subgrupo" name="c_subgrupo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="6" style="min-width:250px" multiple>
+			<% =t_produto_subgrupo_monta_itens_select(get_default_valor_texto_bd(usuario, "CENTRAL/RelEstoqueVendaCmvPv|c_subgrupo")) %>
+			</select>
+		</td>
+		<td style="width:1px;"></td>
+		<td align="left" valign="top">
+			<a name="bLimparSubgrupo" id="bLimparSubgrupo" href="javascript:limpaCampoSelectSubgrupo()" title="limpa o filtro 'Subgrupo de Produtos'">
+						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterSubgrupo"></span>)
 		</td>
 		</tr>
 		</table>
@@ -527,10 +613,10 @@ function limpaCampoSelectProduto() {
 <!--  OPÇÕES DE CONSULTA  -->
     <tr bgcolor="#FFFFFF">
 	<td colspan="2" class="MDBE" nowrap><span class="PLTe">Opções de Consulta</span>
-		<br><input type="radio"  style="margin-left:20px;" tabindex="-1" id="rb_exportacao" name="rb_exportacao" value="Normais"<% if get_default_valor_texto_bd(usuario, "RelEstoqueVendaCmvPvCentral|rb_exportacao") = "Normais" then Response.Write " checked" %>>
+		<br><input type="radio"  style="margin-left:20px;" tabindex="-1" id="rb_exportacao" name="rb_exportacao" value="Normais"<% if get_default_valor_texto_bd(usuario, "CENTRAL/RelEstoqueVendaCmvPv|rb_exportacao") = "Normais" then Response.Write " checked" %>>
 			<span class="C" style="cursor:default" onclick="fESTOQ.rb_exportacao[0].click();" >Códigos normais</span>			
         	
-		<br><input type="radio" style="margin-left:20px;" tabindex="-1" id="rb_exportacao" name="rb_exportacao" value="Compostos" <% if get_default_valor_texto_bd(usuario, "RelEstoqueVendaCmvPvCentral|rb_exportacao") = "Compostos" then Response.Write " checked" %>>
+		<br><input type="radio" style="margin-left:20px;" tabindex="-1" id="rb_exportacao" name="rb_exportacao" value="Compostos" <% if get_default_valor_texto_bd(usuario, "CENTRAL/RelEstoqueVendaCmvPv|rb_exportacao") = "Compostos" then Response.Write " checked" %>>
 			<span class="C" style="cursor:default" onclick="fESTOQ.rb_exportacao[1].click();">Códigos unificados</span>
 	</td>
 	</tr>

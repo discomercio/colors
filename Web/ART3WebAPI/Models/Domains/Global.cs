@@ -12,6 +12,8 @@ using System.IO;
 using System.Xml;
 using System.Reflection;
 using System.Configuration;
+using System.Web.Services.Discovery;
+using System.Xml.Serialization;
 
 namespace ART3WebAPI.Models.Domains
 {
@@ -36,8 +38,8 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.18";
-				public const string Data = "30.OUT.2019";
+				public const string Numero = "2.23";
+				public const string Data = "15.SET.2020";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
             #endregion
@@ -140,9 +142,43 @@ namespace ART3WebAPI.Models.Domains
              *      Desenvolvimento de tratamento em MagentoApiController para pedidos do marketplace Leroy
              *      Merlin.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.00 - XX.XX.20XX - por XXX
+			 * v 2.19 - 21.01.2020 - por LHGX
+             *      Desenvolvimento do download XLS do relatório de ocorrências.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.00 - XX.XX.20XX - por XXX
+			 * v 2.20 - 08.04.2020 - por HHO
+			 *      Implementação do filtro para o campo 'subgrupo' no relatório Farol Resumido.
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.21 - 21.05.2020 - por HHO
+			 *      Implementação da consulta por período de entrega no relatório Farol Resumido em
+			 *      FarolV3Controller.GetXLSReport().
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.22 - 12.09.2020 - por LHGX
+			 *      Implementação dos filtros por subgrupo e por data de emissão da nf de entrada no
+			 *      relatório Compras II.              
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.23 - 15.09.2020 - por HHO
+			 *      Alteração na consulta de pedidos do Magento para identificar e salvar no banco de dados o
+			 *      campo 'street_detail' (ponto de referência).
+			 *      Alteração para cadastrar automaticamente no sistema um cliente novo que tenha sido infor-
+			 *      mado em um pedido Magento.
+			 *      Esta versão está sendo desenvolvida para ser implantada junto a memorização de endereços
+			 *      no pedido/pré-pedido.
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.24 - XX.XX.20XX - por XXX
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.25 - XX.XX.20XX - por XXX
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.26 - XX.XX.20XX - por XXX
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.27 - XX.XX.20XX - por XXX
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.28 - XX.XX.20XX - por XXX
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.29 - XX.XX.20XX - por XXX
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.30 - XX.XX.20XX - por XXX
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.XX - XX.XX.20XX - por XXX
 			* ===============================================================================================
 			*/
             #endregion
@@ -168,6 +204,8 @@ namespace ART3WebAPI.Models.Domains
 					public const string FLAG_HABILITACAO_UPLOAD_FILE_BACKUP_RECENT_FILES = "WebAPI_UploadFile_FlagHabilitacao_BackupRecentFiles";
 					public const string UPLOAD_FILE_SAVE_FILE_CONTENT_IN_DB_MAX_SIZE_IN_BYTES = "WebAPI_UploadFile_SaveFileContentInDb_MaxSizeInBytes";
 					public const string UPLOAD_FILE_SAVE_FILE_CONTENT_IN_DB_AS_TEXT_MAX_SIZE_IN_CHARS = "WebAPI_UploadFile_SaveFileContentInDbAsText_MaxSizeInChars";
+					public const string FLAG_CAD_SEMI_AUTO_PED_MAGENTO_CADASTRAR_AUTOMATICAMENTE_CLIENTE_NOVO = "CadSemiAutomaticoPedidoMagento_FlagWebApiCadastrarAutomaticamenteClienteNovo";
+					public const string FLAG_PEDIDO_MEMORIZACAO_COMPLETA_ENDERECOS = "Flag_Pedido_MemorizacaoCompletaEnderecos";
 				}
 			}
 			#endregion
@@ -275,11 +313,31 @@ namespace ART3WebAPI.Models.Domains
 				public const int TAMANHO_RAIZ_CNPJ = 8;
 				public const String PREFIXO_BOLETO_NUM_CONTROLE_PARTICIPANTE = "TFBI";
 				public const String SQL_COLLATE_CASE_ACCENT = " COLLATE Latin1_General_CI_AI";
+				public const int TAM_MAX_NSU = 12;
 			}
 			#endregion
 
-			#region [ Log ]
-			public static class LogAtividade
+			#region [ LogOperacao ]
+			public class LogOperacao
+			{
+				public const string OP_LOG_CLIENTE_EXCLUSAO = "CLIENTE EXCLUSÃO";
+				public const string OP_LOG_CLIENTE_ALTERACAO = "CLIENTE EDIÇÃO";
+				public const string OP_LOG_CLIENTE_INCLUSAO = "CLIENTE INCLUSÃO";
+			}
+			#endregion
+
+			#region [ Sistema Responsável Cadastro ]
+			public class SistemaResponsavelCadastro
+			{
+				public const int COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP = 1;
+				public const int COD_SISTEMA_RESPONSAVEL_CADASTRO__ITS = 2;
+				public const int COD_SISTEMA_RESPONSAVEL_CADASTRO__UNIS = 3;
+				public const int COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP_WEBAPI = 4;
+			}
+            #endregion
+
+            #region [ Log ]
+            public static class LogAtividade
 			{
 				// System.Reflection.Assembly.GetExecutingAssembly().CodeBase retorna o nome do arquivo, ex: file:///C:/inetpub/wwwroot/Teste/WebAPI/bin/WebAPI.DLL
 				public static string PathLogAtividade = Path.GetDirectoryName(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase).Substring(6)) + "\\LOG_ATIVIDADE";
@@ -336,6 +394,48 @@ namespace ART3WebAPI.Models.Domains
 			{
 				public static readonly string ArClube = getConfigurationValue("LojaArclube");
 				public static readonly string Bonshop = getConfigurationValue("LojaBonshop");
+			}
+			#endregion
+
+			#region [ TipoPessoa ]
+			public static class TipoPessoa
+			{
+				public const string PJ = "PJ";
+				public const string PF = "PF";
+			}
+			#endregion
+
+			#region [ ProdutorRural ]
+			public static class ProdutorRural
+			{
+				public const int COD_ST_CLIENTE_PRODUTOR_RURAL_INICIAL = 0;
+				public const int COD_ST_CLIENTE_PRODUTOR_RURAL_NAO = 1;
+				public const int COD_ST_CLIENTE_PRODUTOR_RURAL_SIM = 2;
+			}
+			#endregion
+
+			#region [ ContribuinteIcms ]
+			public static class ContribuinteIcms
+			{
+				public const int COD_ST_CLIENTE_CONTRIBUINTE_ICMS_INICIAL = 0;
+				public const int COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO = 1;
+				public const int COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM = 2;
+				public const int COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO = 3;
+			}
+			#endregion
+
+			#region [ Sexo ]
+			public static class Sexo
+			{
+				public const string Masculino = "M";
+				public const string Feminino = "F";
+			}
+			#endregion
+
+			#region [ Nsu ]
+			public class Nsu
+			{
+				public const string NSU_CADASTRO_CLIENTES = "CADASTRO_CLIENTES";
 			}
 			#endregion
 		}
@@ -764,6 +864,99 @@ namespace ART3WebAPI.Models.Domains
 				if ((texto[i] >= '0') && (texto[i] <= '9')) d.Append(texto[i]);
 			}
 			return d.ToString();
+		}
+		#endregion
+
+		#region [ ecDadosDecodificaTelefoneFormatado ]
+		public static bool ecDadosDecodificaTelefoneFormatado(string telefoneFormatado, out string ddd, out string telefone)
+		{
+			#region [ Declarações ]
+			string sTelefoneFormatado;
+			string sTelAux;
+			string[] v;
+			#endregion
+
+			ddd = "";
+			telefone = "";
+
+			sTelefoneFormatado = (telefoneFormatado ?? "").Trim();
+
+			if (sTelefoneFormatado.Length < 8) return false;
+
+			sTelefoneFormatado = sTelefoneFormatado.Replace('(', ' ');
+			sTelefoneFormatado = sTelefoneFormatado.Replace(')', ' ');
+			sTelefoneFormatado = sTelefoneFormatado.Trim();
+
+			while(sTelefoneFormatado.Contains("  "))
+			{
+				sTelefoneFormatado = sTelefoneFormatado.Replace("  ", " ");
+			}
+
+			if (!sTelefoneFormatado.Contains(" "))
+			{
+				// NÃO ENCONTROU SEPARAÇÃO ENTRE DDD E TELEFONE
+				sTelAux = digitos(sTelefoneFormatado);
+				if (sTelAux.Length == 11)
+				{
+					// ASSUME QUE PROVAVELMENTE SE TRATA DE DDD + Nº DE 9 DÍGITOS
+					ddd = Texto.leftStr(sTelAux, 2);
+					telefone = Texto.rightStr(sTelAux, 9);
+				}
+				else if (sTelAux.Length == 10)
+				{
+					// ASSUME QUE PROVAVELMENTE SE TRATA DE DDD + Nº DE 8 DÍGITOS
+					ddd = Texto.leftStr(sTelAux, 2);
+					telefone = Texto.rightStr(sTelAux, 8);
+				}
+				else
+				{
+					// RETORNA O CONTEÚDO RECEBIDO SEM FAZER A SEPARAÇÃO ENTRE DDD E TELEFONE
+					telefone = (telefoneFormatado ?? "").Trim();
+				}
+			}
+			else
+			{
+				v = sTelefoneFormatado.Split(' ');
+				ddd = v[0].Trim();
+				telefone = v[1].Trim();
+			}
+
+			return true;
+		}
+		#endregion
+
+		#region [ ecDadosFormataNome ]
+		public static string ecDadosFormataNome(string firstName, string middleName, string lastName, int maxLength)
+		{
+			#region [ Declarações ]
+			string sResp;
+			string sAux;
+			#endregion
+
+			sResp = (firstName ?? "").Trim();
+			sAux = (middleName ?? "").Trim();
+			if ((sResp.Length > 0) && (sAux.Length > 0) && (!sResp.ToUpper().Equals(sAux.ToUpper()))) sResp += " " + sAux;
+			sAux = (lastName ?? "").Trim();
+			if ((sResp.Length > 0) && (sAux.Length > 0) && (!sResp.ToUpper().Equals(sAux.ToUpper()))) sResp += " " + sAux;
+
+			if (maxLength > 0)
+			{
+				if (sResp.Length > maxLength)
+				{
+					// SE HÁ TAMANHO MÁXIMO DEFINIDO E O NOME COMPLETO EXCEDE O LIMITE, UTILIZA APENAS O PRIMEIRO NOME E SOBRENOME
+					sResp = (firstName ?? "").Trim();
+					sAux = (lastName ?? "").Trim();
+					if ((sResp.Length > 0) && (sAux.Length > 0) && (!sResp.ToUpper().Equals(sAux.ToUpper()))) sResp += " " + sAux;
+				}
+
+				if (sResp.Length > maxLength)
+				{
+					// 'SE O PRIMEIRO NOME E SOBRENOME EXCEDEM O TAMANHO MÁXIMO, TRUNCA
+					sResp = Texto.leftStr(sResp, maxLength);
+				}
+			}
+
+			return sResp;
 		}
 		#endregion
 
@@ -1991,6 +2184,31 @@ namespace ART3WebAPI.Models.Domains
 		}
 		#endregion
 
+		#region [ serializaObjectToXml ]
+		public static string serializaObjectToXml(object obj)
+		{
+			#region [ Declarações ]
+			const string NOME_DESTA_ROTINA = "Global.serializaObjectToXml()";
+			XmlSerializer xmlWriter;
+			StringWriter stringWriter = new System.IO.StringWriter();
+			#endregion
+
+			if (obj == null) return "";
+
+			try
+			{
+				xmlWriter = new XmlSerializer(obj.GetType());
+				xmlWriter.Serialize(stringWriter, obj);
+				return stringWriter.ToString();
+			}
+			catch (Exception ex)
+			{
+				Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - Exception\n" + ex.ToString());
+				return "";
+			}
+		}
+		#endregion
+
 		#region [ setDefaultBD ]
 		public static bool setDefaultBD(string usuario, string nome_chave, string valor_texto)
 		{
@@ -2170,6 +2388,24 @@ namespace ART3WebAPI.Models.Domains
 			string strResposta;
 			strResposta = "Convert(varchar(8), getdate(), 108)";
 			return strResposta;
+		}
+		#endregion
+
+		#region [ sqlMontaCaseWhenParametroStringVaziaComoNull ]
+		/// <summary>
+		/// Para parâmetros de objetos SqlCommand que são usados para datas expressas como
+		/// string no formato YYYY-MM-DD, monta uma expressão CASE WHEN para gravar NULL
+		/// quando o valor do parâmetro for uma string vazia.
+		/// Lembrando que o SQL Server grava automaticamente a data de 1900-01-01 quando
+		/// converte uma string vazia para um campo datetime.
+		/// </summary>
+		/// <param name="nomeParametroDoCommand">Nome do parâmetro (ex: @dtVencto)</param>
+		/// <returns>Retorna um texto contendo uma expressão CASE WHEN, ex: CASE WHEN @dt_vencto='' THEN NULL ELSE @dt_vencto END</returns>
+		public static String sqlMontaCaseWhenParametroStringVaziaComoNull(String nomeParametroDoCommand)
+		{
+			String strResp;
+			strResp = "CASE WHEN " + nomeParametroDoCommand + " = '' THEN NULL ELSE " + nomeParametroDoCommand + " END";
+			return strResp;
 		}
 		#endregion
 	}

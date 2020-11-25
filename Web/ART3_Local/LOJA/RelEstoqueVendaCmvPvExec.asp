@@ -64,13 +64,17 @@
 	dim s_nome_fabricante, s_nome_produto, s_nome_produto_html,rb_exportacao
     dim v_fabricante(),v_codigo(),v_descricao(),v_qtde(),v_valor(),v_produtos()
     dim qtde_estoque_venda_aux,n_reg_total,vRelat(),vl_custo2_composto,qtde_estoque_venda_composto,i,blnPularProdutoComposto
-    dim s_where_compostos
+    dim c_fabricante_multiplo, c_grupo, c_subgrupo, v_fabricantes, v_grupos, v_subgrupos
+	dim s_where_compostos
 
     redim v_codigo(0)
     cont = 0
 	c_fabricante = retorna_so_digitos(Request.Form("c_fabricante"))
 	if c_fabricante <> "" then c_fabricante = normaliza_codigo(c_fabricante, TAM_MIN_FABRICANTE)
 	c_produto = UCase(Trim(Request.Form("c_produto")))
+    c_fabricante_multiplo = Trim(Request.Form("c_fabricante_multiplo"))
+	c_grupo = Ucase(Trim(Request.Form("c_grupo")))
+	c_subgrupo = Ucase(Trim(Request.Form("c_subgrupo")))
 	rb_estoque = Trim(Request.Form("rb_estoque"))
 	rb_detalhe = Trim(Request.Form("rb_detalhe"))
 	rb_exportacao = Trim(Request.Form("rb_exportacao"))
@@ -143,9 +147,12 @@
     end if
 
     if alerta = "" then
-		call set_default_valor_texto_bd(usuario, "RelEstoqueVendaCmvPvLoja|rb_detalhe", rb_detalhe)
-		call set_default_valor_texto_bd(usuario, "RelEstoqueVendaCmvPvLoja|rb_exportacao", rb_exportacao)
-		end if	
+		call set_default_valor_texto_bd(usuario, "LOJA/RelEstoqueVendaCmvPv|rb_detalhe", rb_detalhe)
+		call set_default_valor_texto_bd(usuario, "LOJA/RelEstoqueVendaCmvPv|rb_exportacao", rb_exportacao)
+		call set_default_valor_texto_bd(usuario, "LOJA/RelEstoqueVendaCmvPv|c_fabricante_multiplo", c_fabricante_multiplo)
+		call set_default_valor_texto_bd(usuario, "LOJA/RelEstoqueVendaCmvPv|c_grupo", c_grupo)
+		call set_default_valor_texto_bd(usuario, "LOJA/RelEstoqueVendaCmvPv|c_subgrupo", c_subgrupo)
+		end if
 
 
 ' _____________________________________________________________________________________________
@@ -158,9 +165,10 @@
 ' 
 sub consulta_estoque_venda_detalhe_sintetico
 dim r
-dim s, s_aux, s_sql, x, cab_table, cab, fabricante_a
+dim s, s_aux, s_sql, x, cab_table, cab, fabricante_a, s_where_temp
 dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
-cont = 0
+	
+	cont = 0
 
 
     if rb_exportacao = "Normais" then
@@ -190,6 +198,42 @@ cont = 0
             s_sql = s_sql & " AND (t_ESTOQUE.id_nfe_emitente='" & c_empresa & "')"
         end if
 	
+        s_where_temp = ""
+        v_fabricantes = split(c_fabricante_multiplo, ", ")
+        if c_fabricante_multiplo <> "" then
+	        for i = Lbound(v_fabricantes) to Ubound(v_fabricantes)
+	            if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		        s_where_temp = s_where_temp & _
+			           " (t_ESTOQUE_ITEM.fabricante = '" & v_fabricantes(i) & "')"
+	        next
+            s_sql = s_sql & "AND "
+	        s_sql = s_sql & "(" & s_where_temp & ")"
+        end if
+
+        s_where_temp = ""
+	    if c_grupo <> "" then
+	        v_grupos = split(c_grupo, ", ")
+	        for i = Lbound(v_grupos) to Ubound(v_grupos)
+	            if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		        s_where_temp = s_where_temp & _
+			        " (t_PRODUTO.grupo = '" & v_grupos(i) & "')"
+	        next
+	        s_sql = s_sql & "AND "
+	        s_sql = s_sql & "(" & s_where_temp & ")"
+        end if
+
+        s_where_temp = ""
+	    if c_subgrupo <> "" then
+	        v_subgrupos = split(c_subgrupo, ", ")
+	        for i = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+	            if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		        s_where_temp = s_where_temp & _
+			        " (t_PRODUTO.subgrupo = '" & v_subgrupos(i) & "')"
+	        next
+	        s_sql = s_sql & "AND "
+	        s_sql = s_sql & "(" & s_where_temp & ")"
+        end if
+
 	    s_sql = s_sql & _
 			    " GROUP BY" & _
 				    " t_ESTOQUE_ITEM.fabricante," & _
@@ -259,6 +303,19 @@ cont = 0
             if cod_produto <> "" then
 		        s_sql = s_sql & " AND (produto_composto='" & cod_produto & "')"
 	        end if 
+
+            s_where_temp = ""
+            v_fabricantes = split(c_fabricante_multiplo, ", ")
+            if c_fabricante_multiplo <> "" then
+	                for i = Lbound(v_fabricantes) to Ubound(v_fabricantes)
+	                    if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		                s_where_temp = s_where_temp & _
+			                   " (fabricante_composto = '" & v_fabricantes(i) & "')"
+	                next
+                    s_sql = s_sql & " AND "
+	                s_sql = s_sql & "(" & s_where_temp & ")"
+                end if
+
 			s_sql = s_sql & " ORDER BY" & _
 						    " fabricante_item," & _
 						    " produto_item"
@@ -276,12 +333,34 @@ cont = 0
                             " Coalesce((SELECT Sum((tEI.qtde-qtde_utilizada)* vl_custo2) AS saldo FROM t_ESTOQUE_ITEM tEI LEFT JOIN t_ESTOQUE tE ON (tEI.id_estoque=tE.id_estoque) WHERE (tEI.fabricante=tP.fabricante) AND (tEI.produto=tP.produto)"
                 if c_empresa <> "" then s_sql = s_sql & " AND (tE.id_nfe_emitente = '" & c_empresa & "')"
                 s_sql = s_sql & "), 0) AS vl_custo2" & _                                                                        
-						" FROM t_PRODUTO tPL" & _
-							" INNER JOIN t_PRODUTO tP ON (tPL.fabricante = tP.fabricante) AND (tPL.produto = tP.produto)" & _                                                                  
+						" FROM t_PRODUTO tP" & _
 						" WHERE " & _
                         " (tP.fabricante = '" & Trim("" & tPCI("fabricante_item")) & "')" & _
                        	" AND (tP.produto = '" & Trim("" & tPCI("produto_item")) & "') "   
                 
+                s_where_temp = ""
+	            if c_grupo <> "" then
+	                v_grupos = split(c_grupo, ", ")
+	                for i = Lbound(v_grupos) to Ubound(v_grupos)
+	                    if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		                s_where_temp = s_where_temp & _
+			                " (tP.grupo = '" & v_grupos(i) & "')"
+	                next
+	                s_sql = s_sql & "AND "
+	                s_sql = s_sql & "(" & s_where_temp & ")"
+                end if
+
+                s_where_temp = ""
+	            if c_subgrupo <> "" then
+	                v_subgrupos = split(c_subgrupo, ", ")
+	                for i = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+	                    if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		                s_where_temp = s_where_temp & _
+			                " (tP.subgrupo = '" & v_subgrupos(i) & "')"
+	                next
+	                s_sql = s_sql & "AND "
+	                s_sql = s_sql & "(" & s_where_temp & ")"
+                end if
 
 				s_sql = " SELECT " & _
 							"*" & _
@@ -359,6 +438,42 @@ cont = 0
 	    if cod_produto <> "" then
 		    s_sql = s_sql & " AND (t_ESTOQUE_ITEM.produto='" & cod_produto & "')"
 		    end if
+
+        s_where_temp = ""
+        v_fabricantes = split(c_fabricante_multiplo, ", ")
+        if c_fabricante_multiplo <> "" then
+	            for i = Lbound(v_fabricantes) to Ubound(v_fabricantes)
+	                if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		            s_where_temp = s_where_temp & _
+			                " (t_ESTOQUE_ITEM.fabricante = '" & v_fabricantes(i) & "')"
+	            next
+                s_sql = s_sql & "AND "
+	            s_sql = s_sql & "(" & s_where_temp & ")"
+            end if
+
+        s_where_temp = ""
+	    if c_grupo <> "" then
+	        v_grupos = split(c_grupo, ", ")
+	        for i = Lbound(v_grupos) to Ubound(v_grupos)
+	            if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		        s_where_temp = s_where_temp & _
+			        " (t_PRODUTO.grupo = '" & v_grupos(i) & "')"
+	        next
+	        s_sql = s_sql & "AND "
+	        s_sql = s_sql & "(" & s_where_temp & ")"
+        end if
+
+        s_where_temp = ""
+	    if c_subgrupo <> "" then
+	        v_subgrupos = split(c_subgrupo, ", ")
+	        for i = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+	            if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		        s_where_temp = s_where_temp & _
+			        " (t_PRODUTO.subgrupo = '" & v_subgrupos(i) & "')"
+	        next
+	        s_sql = s_sql & "AND "
+	        s_sql = s_sql & "(" & s_where_temp & ")"
+        end if
 
         if c_empresa <> "" then
             s_sql = s_sql & " AND (t_ESTOQUE.id_nfe_emitente='" & c_empresa & "')"
@@ -536,13 +651,15 @@ end sub
 ' 
 sub consulta_estoque_venda_detalhe_intermediario
 dim r
-dim s, s_aux, s_sql, x, cab_table, cab, fabricante_a
+dim s, s_aux, s_sql, x, cab_table, cab, fabricante_a, s_where_temp
 dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
 dim vl, vl_total_geral, vl_sub_total
 
 '	IMPORTANTE: O VALOR ATUAL DE CMV_PV ESTÁ EM T_PRODUTO.PRECO_FABRICANTE
 '	==========  O HISTÓRICO DO VALOR DE CMV_PV ESTÁ EM T_PEDIDO_ITEM.PRECO_FABRICANTE (E T_PEDIDO_ITEM_DEVOLVIDO.PRECO_FABRICANTE)
 '				O HISTÓRICO DO CUSTO REAL PAGO AO FABRICANTE ESTÁ EM T_ESTOQUE_ITEM.VL_CUSTO2
+
+	cont = 0
 
     if rb_exportacao = "Normais" then
 
@@ -571,6 +688,42 @@ dim vl, vl_total_geral, vl_sub_total
 
         if c_empresa <> "" then
             s_sql = s_sql & " AND (t_ESTOQUE.id_nfe_emitente='" & c_empresa & "')"
+        end if
+
+        s_where_temp = ""
+        v_fabricantes = split(c_fabricante_multiplo, ", ")
+        if c_fabricante_multiplo <> "" then
+	        for i = Lbound(v_fabricantes) to Ubound(v_fabricantes)
+	            if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		        s_where_temp = s_where_temp & _
+			           " (t_ESTOQUE_ITEM.fabricante = '" & v_fabricantes(i) & "')"
+	        next
+            s_sql = s_sql & "AND "
+	        s_sql = s_sql & "(" & s_where_temp & ")"
+        end if
+
+        s_where_temp = ""
+	    if c_grupo <> "" then
+	        v_grupos = split(c_grupo, ", ")
+	        for i = Lbound(v_grupos) to Ubound(v_grupos)
+	            if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		        s_where_temp = s_where_temp & _
+			        " (t_PRODUTO.grupo = '" & v_grupos(i) & "')"
+	        next
+	        s_sql = s_sql & "AND "
+	        s_sql = s_sql & "(" & s_where_temp & ")"
+        end if
+
+        s_where_temp = ""
+	    if c_subgrupo <> "" then
+	        v_subgrupos = split(c_subgrupo, ", ")
+	        for i = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+	            if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		        s_where_temp = s_where_temp & _
+			        " (t_PRODUTO.subgrupo = '" & v_subgrupos(i) & "')"
+	        next
+	        s_sql = s_sql & "AND "
+	        s_sql = s_sql & "(" & s_where_temp & ")"
         end if
 
 	    s_sql = s_sql & _
@@ -644,6 +797,19 @@ dim vl, vl_total_geral, vl_sub_total
             if cod_produto <> "" then
 		        s_sql = s_sql & " AND (produto_composto='" & cod_produto & "')"
 	        end if 
+
+            s_where_temp = ""
+            v_fabricantes = split(c_fabricante_multiplo, ", ")
+            if c_fabricante_multiplo <> "" then
+	                for i = Lbound(v_fabricantes) to Ubound(v_fabricantes)
+	                    if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		                s_where_temp = s_where_temp & _
+			                   " (fabricante_composto = '" & v_fabricantes(i) & "')"
+	                next
+                    s_sql = s_sql & " AND "
+	                s_sql = s_sql & "(" & s_where_temp & ")"
+                end if
+
 			s_sql = s_sql & " ORDER BY" & _
 						    " fabricante_item," & _
 						    " produto_item"
@@ -667,6 +833,29 @@ dim vl, vl_total_geral, vl_sub_total
                         " (tP.fabricante = '" & Trim("" & tPCI("fabricante_item")) & "')" & _
                        	" AND (tP.produto = '" & Trim("" & tPCI("produto_item")) & "') "   
                 
+                s_where_temp = ""
+	            if c_grupo <> "" then
+	                v_grupos = split(c_grupo, ", ")
+	                for i = Lbound(v_grupos) to Ubound(v_grupos)
+	                    if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		                s_where_temp = s_where_temp & _
+			                " (tP.grupo = '" & v_grupos(i) & "')"
+	                next
+	                s_sql = s_sql & "AND "
+	                s_sql = s_sql & "(" & s_where_temp & ")"
+                end if
+
+                s_where_temp = ""
+	            if c_subgrupo <> "" then
+	                v_subgrupos = split(c_subgrupo, ", ")
+	                for i = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+	                    if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		                s_where_temp = s_where_temp & _
+			                " (tP.subgrupo = '" & v_subgrupos(i) & "')"
+	                next
+	                s_sql = s_sql & "AND "
+	                s_sql = s_sql & "(" & s_where_temp & ")"
+                end if
 
 				s_sql = " SELECT " & _
 							"*" & _
@@ -751,6 +940,42 @@ dim vl, vl_total_geral, vl_sub_total
 	    if cod_produto <> "" then
 		    s_sql = s_sql & " AND (t_ESTOQUE_ITEM.produto='" & cod_produto & "')"
 		    end if
+
+        s_where_temp = ""
+        v_fabricantes = split(c_fabricante_multiplo, ", ")
+        if c_fabricante_multiplo <> "" then
+	            for i = Lbound(v_fabricantes) to Ubound(v_fabricantes)
+	                if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		            s_where_temp = s_where_temp & _
+			                " (t_ESTOQUE_ITEM.fabricante = '" & v_fabricantes(i) & "')"
+	            next
+                s_sql = s_sql & "AND "
+	            s_sql = s_sql & "(" & s_where_temp & ")"
+            end if
+
+        s_where_temp = ""
+	    if c_grupo <> "" then
+	        v_grupos = split(c_grupo, ", ")
+	        for i = Lbound(v_grupos) to Ubound(v_grupos)
+	            if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		        s_where_temp = s_where_temp & _
+			        " (t_PRODUTO.grupo = '" & v_grupos(i) & "')"
+	        next
+	        s_sql = s_sql & "AND "
+	        s_sql = s_sql & "(" & s_where_temp & ")"
+        end if
+
+        s_where_temp = ""
+	    if c_subgrupo <> "" then
+	        v_subgrupos = split(c_subgrupo, ", ")
+	        for i = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+	            if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+		        s_where_temp = s_where_temp & _
+			        " (t_PRODUTO.subgrupo = '" & v_subgrupos(i) & "')"
+	        next
+	        s_sql = s_sql & "AND "
+	        s_sql = s_sql & "(" & s_where_temp & ")"
+        end if
 
         if c_empresa <> "" then
             s_sql = s_sql & " AND (t_ESTOQUE.id_nfe_emitente='" & c_empresa & "')"
@@ -1115,13 +1340,14 @@ P.F { font-size:11pt; }
 	</tr>
 
 <!--  FABRICANTE  -->
-	<% if cod_fabricante <> "" then %>
-		<tr bgColor="#FFFFFF">
-		<td class="MDBE" NOWRAP colspan="2"><span class="PLTe">Fabricante</span>
-			<%	s = cod_fabricante
-				if (s<>"") And (s_nome_fabricante<>"") then s = s & " - " & s_nome_fabricante %>
-			<br><input name="c_fabricante_aux" id="c_fabricante_aux" readonly tabindex=-1 class="PLLe" style="width:460px;margin-left:2pt;" 
-					value="<%=s%>"></td>
+	<% if cod_fabricante <> "" Or c_fabricante_multiplo <> "" then %>
+		<tr bgcolor="#FFFFFF">
+		<td class="MDBE" nowrap colspan="2"><span class="PLTe">Fabricante(s)</span>			
+			<br><span class="C">
+                <%if cod_fabricante <> "" then Response.Write cod_fabricante %>
+                <%if cod_fabricante <> "" And c_fabricante_multiplo <> "" then Response.Write ", " %>
+                <%if c_fabricante_multiplo <> "" then Response.Write c_fabricante_multiplo %>
+			    </span></td>
 		</tr>
 	<% end if %>
 	
@@ -1136,6 +1362,28 @@ P.F { font-size:11pt; }
 			<%	s = cod_produto
 				if (s<>"") And (s_nome_produto<>"") then s = s & " - " & s_nome_produto %>
 				<input type="hidden" name="c_produto_aux" id="c_produto_aux" value="<%=s%>">
+			</td>
+		</tr>
+	<% end if %>
+
+<!--  GRUPOS  -->
+	<% if c_grupo <> "" then %>
+		<tr bgColor="#FFFFFF">
+		<td class="MDBE" NOWRAP colspan="2"><span class="PLTe">Grupo(s)</span>
+			<%	s = c_grupo %>
+			<br>
+				<span class="PLLe" style="width:460px;margin-left:2pt;"><%=s%></span>
+			</td>
+		</tr>
+	<% end if %>
+
+<!--  SUBGRUPOS  -->
+	<% if c_subgrupo <> "" then %>
+		<tr bgColor="#FFFFFF">
+		<td class="MDBE" NOWRAP colspan="2"><span class="PLTe">Subgrupo(s)</span>
+			<%	s = c_subgrupo %>
+			<br>
+				<span class="PLLe" style="width:460px;margin-left:2pt;"><%=s%></span>
 			</td>
 		</tr>
 	<% end if %>

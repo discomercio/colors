@@ -53,6 +53,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	dim s, s_aux, s_filtro, flag_ok, cadastrado
 	dim ckb_st_entrega_esperar, ckb_st_entrega_split, ckb_st_entrega_exceto_cancelados
@@ -71,7 +74,7 @@
 	dim ckb_perc_RT, c_perc_RT
 	dim ckb_analise_credito_pendente_vendas, ckb_analise_credito_pendente_endereco, ckb_analise_credito_pendente, ckb_analise_credito_pendente_cartao
 	dim ckb_analise_credito_ok, ckb_analise_credito_ok_aguardando_deposito, ckb_analise_credito_ok_deposito_aguardando_desbloqueio
-	dim ckb_entrega_imediata_sim, ckb_entrega_imediata_nao
+	dim ckb_entrega_imediata_sim, ckb_entrega_imediata_nao, c_dt_previsao_entrega_inicio, c_dt_previsao_entrega_termino
 	dim op_forma_pagto, c_forma_pagto_qtde_parc
 	dim c_vendedor, c_indicador
 	dim ckb_indicador_preenchido, ckb_indicador_nao_preenchido
@@ -125,6 +128,8 @@
 	ckb_analise_credito_ok_deposito_aguardando_desbloqueio = Trim(Request.Form("ckb_analise_credito_ok_deposito_aguardando_desbloqueio"))
 	ckb_entrega_imediata_sim = Trim(Request.Form("ckb_entrega_imediata_sim"))
 	ckb_entrega_imediata_nao = Trim(Request.Form("ckb_entrega_imediata_nao"))
+	c_dt_previsao_entrega_inicio = Trim(Request.Form("c_dt_previsao_entrega_inicio"))
+	c_dt_previsao_entrega_termino = Trim(Request.Form("c_dt_previsao_entrega_termino"))
 	op_forma_pagto = Trim(Request.Form("op_forma_pagto"))
 	c_forma_pagto_qtde_parc = retorna_so_digitos(Trim(Request.Form("c_forma_pagto_qtde_parc")))
 	c_vendedor = Trim(Request.Form("c_vendedor"))
@@ -352,7 +357,7 @@
 sub consulta_executa
 dim r
 dim blnPorFornecedor
-dim s, s_aux, s_cor, s_sql, cab_table, cab, n_reg, n_reg_total, s_colspan
+dim s, s_aux, s_periodo_aux, s_cor, s_sql, cab_table, cab, n_reg, n_reg_total, s_colspan
 dim s_where, s_from, cont
 dim vl_total_faturamento, vl_sub_total_faturamento, vl_total_pago, vl_sub_total_pago
 dim vl_total_faturamento_NF, vl_sub_total_faturamento_NF
@@ -560,16 +565,23 @@ dim s_grupo_origem
 
 '	CRITÉRIO: ENTREGA IMEDIATA
 	s = ""
-	s_aux = ckb_entrega_imediata_sim
-	if s_aux <> "" then
+	if ckb_entrega_imediata_sim <> "" then
 		if s <> "" then s = s & " OR"
-		s = s & " (t_PEDIDO.st_etg_imediata = " & s_aux & ")"
+		s = s & " (t_PEDIDO.st_etg_imediata = " & COD_ETG_IMEDIATA_SIM & ")"
 		end if
 	
-	s_aux = ckb_entrega_imediata_nao
-	if s_aux <> "" then
+	if ckb_entrega_imediata_nao <> "" then
+		s_periodo_aux = ""
+		if c_dt_previsao_entrega_inicio <> "" then
+			s_periodo_aux = " (t_PEDIDO.PrevisaoEntregaData >= " & bd_formata_data(StrToDate(c_dt_previsao_entrega_inicio)) & ")"
+			end if
+		if c_dt_previsao_entrega_termino <> "" then
+			if s_periodo_aux <> "" then s_periodo_aux = s_periodo_aux & " AND"
+			s_periodo_aux = s_periodo_aux & " (t_PEDIDO.PrevisaoEntregaData < " & bd_formata_data(StrToDate(c_dt_previsao_entrega_termino)+1) & ")"
+			end if
+		if s_periodo_aux <> "" then s_periodo_aux = " AND" & s_periodo_aux
 		if s <> "" then s = s & " OR"
-		s = s & " (t_PEDIDO.st_etg_imediata = " & s_aux & ")"
+		s = s & " ((t_PEDIDO.st_etg_imediata = " & COD_ETG_IMEDIATA_NAO & ")" & s_periodo_aux & ")"
 		end if
 
 	if s <> "" then 
@@ -736,15 +748,26 @@ dim s_grupo_origem
 		end if
 	
 '	CRITÉRIO: CLIENTE
-	if c_cliente_cnpj_cpf <> "" then
-		if s_where <> "" then s_where = s_where & " AND"
-		s_where = s_where & " (t_CLIENTE.cnpj_cpf = '" & retorna_so_digitos(c_cliente_cnpj_cpf) & "')"
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		if c_cliente_cnpj_cpf <> "" then
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (t_PEDIDO.endereco_cnpj_cpf = '" & retorna_so_digitos(c_cliente_cnpj_cpf) & "')"
+			end if
+		if c_cliente_uf <> "" then
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (t_PEDIDO.endereco_uf = '" & c_cliente_uf & "')"
 		end if
-    if c_cliente_uf <> "" then
-        if s_where <> "" then s_where = s_where & " AND"
-        s_where = s_where & " (t_CLIENTE.uf = '" & c_cliente_uf & "')"
-    end if
-	
+	else
+		if c_cliente_cnpj_cpf <> "" then
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (t_CLIENTE.cnpj_cpf = '" & retorna_so_digitos(c_cliente_cnpj_cpf) & "')"
+			end if
+		if c_cliente_uf <> "" then
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (t_CLIENTE.uf = '" & c_cliente_uf & "')"
+		end if
+	end if
+
 '	CRITÉRIO: CARTÃO DE CRÉDITO (ANTIGAMENTE PELA VISANET E AGORA PELA CIELO)
 	if ckb_visanet <> "" then
 		if s_where <> "" then s_where = s_where & " AND"
@@ -899,7 +922,17 @@ dim s_grupo_origem
 '		 SE "check_expression" FOR NULL, RETORNA "replacement_value"
 	s_sql = "SELECT DISTINCT t_PEDIDO.loja, t_PEDIDO.numero_loja," & _
 			" t_PEDIDO.data, t_PEDIDO.pedido, t_PEDIDO.pedido_bs_x_ac," & _
-			" t_PEDIDO.st_entrega, t_CLIENTE.nome_iniciais_em_maiusculas," & _
+			" t_PEDIDO.st_entrega,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" dbo.SqlClrUtilIniciaisEmMaiusculas(t_PEDIDO.endereco_nome) AS nome_iniciais_em_maiusculas,"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome_iniciais_em_maiusculas,"
+		end if
+
+	s_sql = s_sql & _
 			" t_PEDIDO__BASE.st_pagto," & _
             " t_PEDIDO__BASE.vendedor," & _
             " t_PEDIDO__BASE.indicador," & _
@@ -1757,6 +1790,15 @@ function fRELConcluir( id_pedido ){
 	if s_aux<>"" then
 		if s <> "" then s = s & ",&nbsp;&nbsp;"
 		s = s & s_aux
+		s = s & " (previsão de entrega: "
+		s_aux = c_dt_previsao_entrega_inicio
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux
+		s = s & " a "
+		s_aux = c_dt_previsao_entrega_termino
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux
+		s = s & ")"
 		end if
 
 	if s <> "" then

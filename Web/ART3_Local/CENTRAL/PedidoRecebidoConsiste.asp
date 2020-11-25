@@ -53,6 +53,9 @@
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	ckb_entrega = Trim(Request.Form("ckb_entrega"))
 	ckb_recebido = Trim(Request.Form("ckb_recebido"))
 	c_dt_recebido = Trim(Request.Form("c_dt_recebido"))
@@ -185,8 +188,17 @@
 					next
 				s = "SELECT" & _
 						" pedido," & _
-						" data," & _
-						" nome" & _
+						" data,"
+
+				if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+					s = s & _
+						" t_PEDIDO.endereco_nome AS nome"
+				else
+					s = s & _
+						" nome"
+					end if
+
+				s = s & _
 					" FROM t_PEDIDO INNER JOIN t_CLIENTE" & _
 						" ON (t_PEDIDO.id_cliente=t_CLIENTE.id)" & _
 					" WHERE" & _
@@ -245,8 +257,17 @@
 						" transportadora_id," & _
 						" PedidoRecebidoStatus," & _
 						" PedidoRecebidoData," & _
-						" data," & _
-						" nome" & _
+						" data,"
+
+				if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+					s = s & _
+						" t_PEDIDO.endereco_nome AS nome"
+				else
+					s = s & _
+						" nome"
+					end if
+
+				s = s & _
 					" FROM t_PEDIDO INNER JOIN t_CLIENTE" & _
 						" ON (t_PEDIDO.id_cliente=t_CLIENTE.id)" & _
 					" WHERE" & _

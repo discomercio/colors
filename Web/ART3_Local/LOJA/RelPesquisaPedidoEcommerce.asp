@@ -71,8 +71,9 @@
 			s = "SELECT TOP 1" & _
 					" pedido_bs_x_ac" & _
 				" FROM t_PEDIDO" & _
+					" INNER JOIN t_LOJA ON (t_PEDIDO.loja = t_LOJA.loja)" & _
 				" WHERE" & _
-					" (loja = '" & NUMERO_LOJA_BONSHOP & "')"
+					" (unidade_negocio = '" & COD_UNIDADE_NEGOCIO_LOJA__BS & "')"
 
 			if Len(c_num_pedido_aux) = TAMANHO_PEDIDO_MAGENTO then
 				s = s & _
@@ -92,7 +93,7 @@
 					" pedido_bs_x_ac AS numEC," & _
 					" data," & _
 					" nome_iniciais_em_maiusculas," & _
-					" loja," & _
+					" t_PEDIDO.loja AS loja," & _
 					" (" & _
 						"SELECT" & _
 							" Coalesce(Sum(qtde*preco_NF),0)" & _
@@ -102,8 +103,9 @@
 					") AS vl_pedido" & _
 				" FROM t_PEDIDO INNER JOIN t_CLIENTE" & _
 					" ON (t_PEDIDO.id_cliente=t_CLIENTE.id)" & _
+					" INNER JOIN t_LOJA ON (t_PEDIDO.loja = t_LOJA.loja)" & _
 				" WHERE" & _
-					" (loja = '" & NUMERO_LOJA_BONSHOP & "')" & _
+					" (unidade_negocio = '" & COD_UNIDADE_NEGOCIO_LOJA__BS & "')" & _
 					" AND (pedido_bs_x_ac IN (" & s & "))" & _
 				" ORDER BY" & _
 					" data_hora DESC"

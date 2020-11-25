@@ -49,6 +49,9 @@
 	dim alerta
 	alerta = ""
 	
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim r_pedido, v_item
 	if Not le_pedido(id_pedido_base, r_pedido, msg_erro) then
 		alerta = msg_erro
@@ -86,9 +89,16 @@
 	
 	if alerta = "" then
 		if CLng(r_pedido.st_end_entrega) = 0 then
-			if Trim("" & r_cliente.bairro) = "" then
-				if alerta <> "" then alerta = alerta & "<BR>"
-				alerta = alerta & "É necessário preencher o campo 'Bairro' no endereço do cadastro do cliente!"
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				if Trim("" & r_pedido.endereco_bairro) = "" then
+					if alerta <> "" then alerta = alerta & "<BR>"
+					alerta = alerta & "É necessário preencher o campo 'Bairro' no endereço do pedido!"
+					end if
+			else
+				if Trim("" & r_cliente.bairro) = "" then
+					if alerta <> "" then alerta = alerta & "<BR>"
+					alerta = alerta & "É necessário preencher o campo 'Bairro' no endereço do cadastro do cliente!"
+					end if
 				end if
 			end if
 		end if
@@ -122,8 +132,14 @@
 	blnForcarAlterarEmail = False
 	dim s_cnpj_cpf, s_email, s_erro_email
 	if alerta = "" then
-		s_cnpj_cpf = r_cliente.cnpj_cpf
-		s_email = Trim(r_cliente.email)
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s_cnpj_cpf = r_pedido.endereco_cnpj_cpf
+			s_email = Trim(r_pedido.endereco_email)
+		else
+			s_cnpj_cpf = r_cliente.cnpj_cpf
+			s_email = Trim(r_cliente.email)
+			end if
+
 		if s_email <> "" then
 			if Not email_AF_ok(s_email, s_cnpj_cpf, s_erro_email) then
 				blnForcarAlterarEmail = True
@@ -326,7 +342,7 @@ body::before
 	<tr><td colspan="2" style="height:6px;" align="left"></td></tr>
 	<tr>
 	<td align="right"><span class="Cd1">E-mail cadastrado</span></td>
-	<td align="left"><input name="c_email_atual" id="c_email_atual" class="C1" style="width:250px;color:#696969;" value="<%=r_cliente.email%>" readonly tabindex=-1></td>
+	<td align="left"><input name="c_email_atual" id="c_email_atual" class="C1" style="width:250px;color:#696969;" value="<%=s_email%>" readonly tabindex=-1></td>
 	</tr>
 	<tr><td colspan="2" style="height:30px;" align="left"></td></tr>
 	<tr><td colspan="2" align="center"><span class="STP" style="font-size:14pt;">Atualizar o endereço de e-mail</span></td></tr>

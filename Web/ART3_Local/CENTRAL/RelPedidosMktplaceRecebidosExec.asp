@@ -49,6 +49,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim url_back, strUrlBotaoVoltar
 	url_back = Trim(Request("url_back"))
 	if url_back <> "" then
@@ -203,10 +206,21 @@ dim intQtdeSubTotalPedidos, s_grupo_origem
                 " p.pedido_bs_x_marketplace," & _
                 " p.marketplace_codigo_origem," & _
 				" p.loja," & _
-                " p.MarketplacePedidoRecebidoRegistrarDataRecebido," & _
+                " p.MarketplacePedidoRecebidoRegistrarDataRecebido,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" p.endereco_cidade AS cidade," & _
+				" p.endereco_uf AS uf," & _
+				" dbo.SqlClrUtilIniciaisEmMaiusculas(p.endereco_nome) AS nome_iniciais_em_maiusculas,"
+	else
+		s_sql = s_sql & _
 				" c.cidade," & _
 				" c.uf," & _
-				" c.nome_iniciais_em_maiusculas," & _
+				" c.nome_iniciais_em_maiusculas,"
+		end if
+
+	s_sql = s_sql & _
                 " Sum(tPI.qtde*tPI.preco_venda) AS vl_pedido" & _
 			" FROM t_PEDIDO p" &_
             " INNER JOIN t_PEDIDO_ITEM tPI ON (p.pedido=tPI.pedido)" & _
@@ -219,10 +233,21 @@ dim intQtdeSubTotalPedidos, s_grupo_origem
 	           " ,p.pedido_bs_x_marketplace" & _
 	           " ,p.marketplace_codigo_origem" & _
 	           " ,p.loja" & _
-               " ,p.MarketplacePedidoRecebidoRegistrarDataRecebido" & _
+               " ,p.MarketplacePedidoRecebidoRegistrarDataRecebido"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+	           " ,p.endereco_cidade" & _
+	           " ,p.endereco_uf" & _
+	           " ,dbo.SqlClrUtilIniciaisEmMaiusculas(p.endereco_nome)"
+	else
+		s_sql = s_sql & _
 	           " ,c.cidade" & _
 	           " ,c.uf" & _
-	           " ,c.nome_iniciais_em_maiusculas" & _
+	           " ,c.nome_iniciais_em_maiusculas"
+		end if
+
+	s_sql = s_sql & _
 			" ORDER BY" & _
 				" p.transportadora_id," & _
 				" p.pedido"

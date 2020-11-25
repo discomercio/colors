@@ -617,61 +617,117 @@ namespace Financeiro
 			set { _transportadora_contato = value; }
 		}
 
-		private short _st_end_entrega;
-		public short st_end_entrega
-		{
-			get { return _st_end_entrega; }
-			set { _st_end_entrega = value; }
-		}
+		public byte st_memorizacao_completa_enderecos { get; set; } = 0;
 
-		private String _EndEtg_endereco;
-		public String endEtg_endereco
-		{
-			get { return _EndEtg_endereco; }
-			set { _EndEtg_endereco = value; }
-		}
+		public byte endereco_memorizado_status { get; set; } = 0;
 
-		private String _EndEtg_endereco_numero;
-		public String endEtg_endereco_numero
-		{
-			get { return _EndEtg_endereco_numero; }
-			set { _EndEtg_endereco_numero = value; }
-		}
+		public string endereco_logradouro { get; set; } = "";
 
-		private String _EndEtg_endereco_complemento;
-		public String endEtg_endereco_complemento
-		{
-			get { return _EndEtg_endereco_complemento; }
-			set { _EndEtg_endereco_complemento = value; }
-		}
+		public string endereco_bairro { get; set; } = "";
 
-		private String _EndEtg_bairro;
-		public String endEtg_bairro
-		{
-			get { return _EndEtg_bairro; }
-			set { _EndEtg_bairro = value; }
-		}
+		public string endereco_cidade { get; set; } = "";
 
-		private String _EndEtg_cidade;
-		public String endEtg_cidade
-		{
-			get { return _EndEtg_cidade; }
-			set { _EndEtg_cidade = value; }
-		}
+		public string endereco_uf { get; set; } = "";
 
-		private String _EndEtg_uf;
-		public String endEtg_uf
-		{
-			get { return _EndEtg_uf; }
-			set { _EndEtg_uf = value; }
-		}
+		public string endereco_cep { get; set; } = "";
 
-		private String _EndEtg_cep;
-		public String endEtg_cep
-		{
-			get { return _EndEtg_cep; }
-			set { _EndEtg_cep = value; }
-		}
+		public string endereco_numero { get; set; } = "";
+
+		public string endereco_complemento { get; set; } = "";
+
+		public string endereco_email { get; set; } = "";
+
+		public string endereco_email_xml { get; set; } = "";
+
+		public string endereco_nome { get; set; } = "";
+
+		public string endereco_ddd_res { get; set; } = "";
+
+		public string endereco_tel_res { get; set; } = "";
+
+		public string endereco_ddd_com { get; set; } = "";
+
+		public string endereco_tel_com { get; set; } = "";
+
+		public string endereco_ramal_com { get; set; } = "";
+
+		public string endereco_ddd_cel { get; set; } = "";
+
+		public string endereco_tel_cel { get; set; } = "";
+
+		public string endereco_ddd_com_2 { get; set; } = "";
+
+		public string endereco_tel_com_2 { get; set; } = "";
+
+		public string endereco_ramal_com_2 { get; set; } = "";
+
+		public string endereco_tipo_pessoa { get; set; } = "";
+
+		public string endereco_cnpj_cpf { get; set; } = "";
+
+		public byte endereco_contribuinte_icms_status { get; set; } = 0;
+
+		public byte endereco_produtor_rural_status { get; set; } = 0;
+
+		public string endereco_ie { get; set; } = "";
+
+		public string endereco_rg { get; set; } = "";
+
+		public string endereco_contato { get; set; } = "";
+
+		public short st_end_entrega { get; set; }
+
+		public String endEtg_endereco { get; set; } = "";
+
+		public String endEtg_endereco_numero { get; set; } = "";
+
+		public String endEtg_endereco_complemento { get; set; } = "";
+
+		public String endEtg_bairro { get; set; } = "";
+
+		public String endEtg_cidade { get; set; } = "";
+
+		public String endEtg_uf { get; set; } = "";
+
+		public String endEtg_cep { get; set; } = "";
+
+		public string endEtg_email { get; set; } = "";
+
+		public string endEtg_email_xml { get; set; } = "";
+
+		public string endEtg_nome { get; set; } = "";
+
+		public string endEtg_ddd_res { get; set; } = "";
+
+		public string endEtg_tel_res { get; set; } = "";
+
+		public string endEtg_ddd_com { get; set; } = "";
+
+		public string endEtg_tel_com { get; set; } = "";
+
+		public string endEtg_ramal_com { get; set; } = "";
+
+		public string endEtg_ddd_cel { get; set; } = "";
+
+		public string endEtg_tel_cel { get; set; } = "";
+
+		public string endEtg_ddd_com_2 { get; set; } = "";
+
+		public string endEtg_tel_com_2 { get; set; } = "";
+
+		public string endEtg_ramal_com_2 { get; set; } = "";
+
+		public string endEtg_tipo_pessoa { get; set; } = "";
+
+		public string endEtg_cnpj_cpf { get; set; } = "";
+
+		public byte endEtg_contribuinte_icms_status { get; set; } = 0;
+
+		public byte endEtg_produtor_rural_status { get; set; } = 0;
+
+		public string endEtg_ie { get; set; } = "";
+
+		public string endEtg_rg { get; set; } = "";
 
 		private short _st_etg_imediata;
 		public short st_etg_imediata
@@ -693,6 +749,12 @@ namespace Financeiro
 			get { return _etg_imediata_usuario; }
 			set { _etg_imediata_usuario = value; }
 		}
+
+		public DateTime PrevisaoEntregaData { get; set; }
+
+		public string PrevisaoEntregaUsuarioUltAtualiz { get; set; }
+
+		public DateTime PrevisaoEntregaDtHrUltAtualiz { get; set; }
 
 		private short _frete_status;
 		public short frete_status

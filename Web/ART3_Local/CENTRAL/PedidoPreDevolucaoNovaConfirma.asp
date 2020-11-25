@@ -62,6 +62,7 @@
     dim corpo_mensagem, id_email, msg_erro_grava_email
     dim c_pedido_possui_parcela_cartao
     dim c_taxa_observacoes, c_credito_observacoes
+    dim r_pedido
 	
     c_procedimento = Request.Form("c_procedimento")
     c_local_coleta = Request.Form("c_local_coleta")
@@ -263,6 +264,12 @@
         end if ' alerta
 
     if alerta = "" then
+        if Not le_pedido(pedido_selecionado, r_pedido, msg_erro) then
+            alerta = msg_erro
+            end if
+        end if
+
+    if alerta = "" then
         if Not cria_recordset_pessimista(rs, msg_erro) then
 		'	~~~~~~~~~~~~~~~~
 			cn.RollbackTrans
@@ -441,19 +448,23 @@
 	'	=================================
 		if alerta = "" then
             ' envia e-mail para o operador das devoluções
-            dim strEmailAdministrador
-            set strEmailAdministrador = get_registro_t_parametro("PEDIDO_DEVOLUCAO_EMAIL_ADMINISTRADOR")
-            corpo_mensagem = "Foi cadastrada uma nova pré-devolução no pedido " & pedido_selecionado & "."
-            EmailSndSvcGravaMensagemParaEnvio EMAILSNDSVC_REMETENTE__PEDIDO_DEVOLUCAO, _
-                                                                    "", _
-                                                                    strEmailAdministrador.campo_texto, _
-                                                                    "", _
-                                                                    "", _
-                                                                    "Novo cadastro de pré-devolução", _
-                                                                    corpo_mensagem, _
-                                                                    Now, _
-                                                                    id_email, _
-                                                                    msg_erro_grava_email
+            if isLojaBonshop(r_pedido.loja) Or isLojaVrf(r_pedido.loja) then
+                dim strEmailAdministrador
+                set strEmailAdministrador = get_registro_t_parametro("PEDIDO_DEVOLUCAO_EMAIL_ADMINISTRADOR")
+                if Trim("" & strEmailAdministrador.campo_texto) <> "" then
+                    corpo_mensagem = "Foi cadastrada uma nova pré-devolução no pedido " & pedido_selecionado & "."
+                    EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__PEDIDO_DEVOLUCAO), _
+                                                                            "", _
+                                                                            strEmailAdministrador.campo_texto, _
+                                                                            "", _
+                                                                            "", _
+                                                                            "Novo cadastro de pré-devolução", _
+                                                                            corpo_mensagem, _
+                                                                            Now, _
+                                                                            id_email, _
+                                                                            msg_erro_grava_email
+                    end if
+                end if
 
 			s_log = "Cadastro de pré-devolução:" & s_log
 			grava_log usuario, "", pedido_selecionado, "", OP_LOG_PEDIDO_DEVOLUCAO, s_log
