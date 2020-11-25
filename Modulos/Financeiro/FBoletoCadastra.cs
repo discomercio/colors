@@ -31,6 +31,8 @@ namespace Financeiro
 		}
 
 		FBoletoCadastraDetalhe fBoletoCadastraDetalhe;
+
+		int _flagPedidoUsarMemorizacaoCompletaEnderecos;
 		#endregion
 
 		#region [ Menu ]
@@ -390,6 +392,7 @@ namespace Financeiro
 			String strWhereInterno;
 			String strWhereExterno;
 			String strSql;
+			String strPedidoEnderecoNome;
 
 			#region [ Monta cláusula Where ]
 			strWhereInterno = montaClausulaWhereInterno();
@@ -399,9 +402,27 @@ namespace Financeiro
 			if (strWhereExterno.Length > 0) strWhereExterno = " WHERE " + strWhereExterno;
 			#endregion
 
+			if (_flagPedidoUsarMemorizacaoCompletaEnderecos == 0)
+			{
+				strPedidoEnderecoNome = "NULL";
+			}
+			else
+			{
+				strPedidoEnderecoNome = "SELECT TOP 1 endereco_nome FROM t_PEDIDO tP INNER JOIN t_FIN_NF_PARCELA_PAGTO_ITEM_RATEIO tRateio ON (tP.pedido = tRateio.pedido) WHERE (tRateio.id_nf_parcela_pagto = tFNPP.id) AND (tP.st_memorizacao_completa_enderecos <> 0) ORDER BY tP.data_hora";
+			}
+
 			#region [ Monta Select ]
-			strSql = "SELECT " +
-						"*" +
+			strSql = "SELECT" +
+						" id," +
+						" dt_cadastro," +
+						" numero_NF," +
+						" qtde_parcelas_boleto," +
+						" status," +
+						" id_cliente," +
+						" Coalesce(pedido_endereco_nome, nome) AS nome," +
+						" cnpj_cpf," +
+						" pedido," +
+						" vl_total" +
 					" FROM " +
 						"(" +
 							"SELECT " +
@@ -412,6 +433,7 @@ namespace Financeiro
 								" tFNPP.status," +
 								" tFNPP.id_cliente," +
 								" tC.nome," +
+								" (" + strPedidoEnderecoNome + ") AS pedido_endereco_nome," +
 								" tC.cnpj_cpf, " +
 								BD.strSchema + ".ConcatenaPedidosTabelaFinNfParcelaPagtoItemRateio(tFNPP.id, ', ') AS pedido," +
 								" (" +
@@ -647,6 +669,10 @@ namespace Financeiro
 					cbBoletoCedente.SelectedIndex = -1;
 					// Se houver apenas 1 opção, então seleciona
 					if ((cbBoletoCedente.Items.Count == 1) && (cbBoletoCedente.SelectedIndex == -1)) cbBoletoCedente.SelectedIndex = 0;
+					#endregion
+
+					#region [ Parâmetros do BD ]
+					_flagPedidoUsarMemorizacaoCompletaEnderecos = ComumDAO.getCampoInteiroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ID_PARAMETRO_FLAG_PEDIDO_MEMORIZACAOCOMPLETAENDERECOS, 0);
 					#endregion
 
 					#region [ Posiciona foco ]

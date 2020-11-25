@@ -180,25 +180,58 @@ namespace Financeiro
 			#endregion
 
 			#region [ Dados do cliente ]
-			lblNomeCliente.Text = cliente.nome;
-			if (cliente.tipo.Equals(Global.Cte.Etc.ID_PF))
+			if (pedido.st_memorizacao_completa_enderecos != 0)
 			{
-				lblTitCnpjCpf.Text = "CPF";
-				lblTitIeRg.Text = "RG";
-				lblIeRg.Text = cliente.rg;
+				#region [ Prioridade em usar dados do endereço memorizado no pedido, se houver ]
+				lblNomeCliente.Text = pedido.endereco_nome;
+				if (pedido.endereco_tipo_pessoa.Equals(Global.Cte.Etc.ID_PF))
+				{
+					lblTitCnpjCpf.Text = "CPF";
+					lblTitIeRg.Text = "RG";
+					lblIeRg.Text = pedido.endereco_rg;
+				}
+				else
+				{
+					lblTitCnpjCpf.Text = "CNPJ";
+					lblTitIeRg.Text = "I.E.";
+					if ((pedido.endereco_contribuinte_icms_status == Global.Cte.StClienteContribuinteIcmsStatus.CONTRIBUINTE_ICMS_SIM)
+						|| (pedido.endereco_contribuinte_icms_status == Global.Cte.StClienteContribuinteIcmsStatus.CONTRIBUINTE_ICMS_NAO))
+					{
+						lblIeRg.Text = pedido.endereco_ie;
+					}
+				}
+				lblCnpjCpf.Text = Global.formataCnpjCpf(pedido.endereco_cnpj_cpf);
+				lblEndereco.Text = Global.formataEndereco(pedido.endereco_logradouro, pedido.endereco_numero, pedido.endereco_complemento, pedido.endereco_bairro, pedido.endereco_cidade, pedido.endereco_uf, pedido.endereco_cep);
+				lblTelRes.Text = Global.formataTelefone(pedido.endereco_ddd_res, pedido.endereco_tel_res);
+				lblTelCom.Text = Global.formataTelefone(pedido.endereco_ddd_com, pedido.endereco_tel_com, pedido.endereco_ramal_com);
+				lblContato.Text = pedido.endereco_contato;
+				lblEmail.Text = pedido.endereco_email;
+				#endregion
 			}
 			else
 			{
-				lblTitCnpjCpf.Text = "CNPJ";
-				lblTitIeRg.Text = "I.E.";
-				lblIeRg.Text = cliente.ie;
+				#region [ Se não houver dados do endereço memorizado no pedido, usa dados do cadastro do cliente ]
+				lblNomeCliente.Text = cliente.nome;
+				if (cliente.tipo.Equals(Global.Cte.Etc.ID_PF))
+				{
+					lblTitCnpjCpf.Text = "CPF";
+					lblTitIeRg.Text = "RG";
+					lblIeRg.Text = cliente.rg;
+				}
+				else
+				{
+					lblTitCnpjCpf.Text = "CNPJ";
+					lblTitIeRg.Text = "I.E.";
+					lblIeRg.Text = cliente.ie;
+				}
+				lblCnpjCpf.Text = Global.formataCnpjCpf(cliente.cnpj_cpf);
+				lblEndereco.Text = Global.formataEndereco(cliente.endereco, cliente.endereco_numero, cliente.endereco_complemento, cliente.bairro, cliente.cidade, cliente.uf, cliente.cep);
+				lblTelRes.Text = Global.formataTelefone(cliente.ddd_res, cliente.tel_res);
+				lblTelCom.Text = Global.formataTelefone(cliente.ddd_com, cliente.tel_com, cliente.ramal_com);
+				lblContato.Text = cliente.contato;
+				lblEmail.Text = cliente.email;
+				#endregion
 			}
-			lblCnpjCpf.Text = Global.formataCnpjCpf(cliente.cnpj_cpf);
-			lblEndereco.Text = Global.formataEndereco(cliente.endereco, cliente.endereco_numero, cliente.endereco_complemento, cliente.bairro, cliente.cidade, cliente.uf, cliente.cep);
-			lblTelRes.Text = Global.formataTelefone(cliente.ddd_res, cliente.tel_res);
-			lblTelCom.Text = Global.formataTelefone(cliente.ddd_com, cliente.tel_com, cliente.ramal_com);
-			lblContato.Text = cliente.contato;
-			lblEmail.Text = cliente.email;
 			#endregion
 
 			#region [ Itens do pedido ]

@@ -45,24 +45,29 @@
 
 '	CONECTA AO BANCO DE DADOS
 '	=========================
-	dim cn, rs, tMAP_XML, tMAP_END_ETG, tMAP_ITEM, tPROD, tPCI, tPED, tPEDITM, msg_erro
+	dim cn, rs, tMAP_XML, tMAP_END_COB, tMAP_END_ETG, tMAP_ITEM, tPROD, tPCI, tPED, tPEDITM, t_CLIENTE, msg_erro
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	If Not cria_recordset_otimista(tMAP_XML, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+	If Not cria_recordset_otimista(tMAP_END_COB, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	If Not cria_recordset_otimista(tMAP_END_ETG, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	If Not cria_recordset_otimista(tMAP_ITEM, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	If Not cria_recordset_otimista(tPROD, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	If Not cria_recordset_otimista(tPCI, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	If Not cria_recordset_otimista(tPED, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	If Not cria_recordset_otimista(tPEDITM, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+	If Not cria_recordset_otimista(t_CLIENTE, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	
 	dim alerta
 	alerta = ""
 	
+	dim blnFlagCadSemiAutoPedMagentoCadAutoClienteNovo
+	blnFlagCadSemiAutoPedMagentoCadAutoClienteNovo = isActivatedFlagCadSemiAutoPedMagentoCadAutoClienteNovo
+
 	dim rowspan_placeholder
 	rowspan_placeholder = " rowspan=" & chr(34) & "XXX" & chr(34)
 
-	dim s_id_cliente, s_nome_cliente, s_end_entrega, s_value, s_cor, iv, s_row, qtde_rowspan, operacao_selecionada, id_magento_api_pedido_xml
+	dim s_id_cliente, s_nome_cliente, s_end_cobranca, s_end_entrega, s_value, s_cor, iv, s_row, qtde_rowspan, operacao_selecionada, id_magento_api_pedido_xml
 	s_id_cliente = ""
 	s_nome_cliente = ""
 	s_end_entrega = ""
@@ -93,6 +98,22 @@
 	else
 		id_magento_api_pedido_xml = Trim("" & tMAP_XML("id"))
 		s_nome_cliente = UCase(ec_dados_formata_nome(tMAP_XML("customer_firstname"), tMAP_XML("customer_middlename"), tMAP_XML("customer_lastname"), Null))
+		end if
+
+	if alerta = "" then
+		s = "SELECT " & _
+				"*" & _
+			" FROM t_MAGENTO_API_PEDIDO_XML_DECODE_ENDERECO" & _
+			" WHERE" & _
+				" (id_magento_api_pedido_xml = " & tMAP_XML("id") & ")" & _
+				" AND (tipo_endereco = 'COB')"
+		if tMAP_END_COB.State <> 0 then tMAP_END_COB.Close
+		tMAP_END_COB.open s, cn
+		if tMAP_END_COB.Eof then
+			alerta = "Falha ao tentar localizar no banco de dados o registro do endereço de cobrança do pedido Magento nº " & c_numero_magento & " (operationControlTicket = " & operationControlTicket & ")"
+		else
+			s_end_cobranca = formata_endereco(Trim("" & tMAP_END_COB("endereco")), Trim("" & tMAP_END_COB("endereco_numero")), Trim("" & tMAP_END_COB("endereco_complemento")), Trim("" & tMAP_END_COB("bairro")), Trim("" & tMAP_END_COB("cidade")), Trim("" & tMAP_END_COB("uf")), Trim("" & tMAP_END_COB("cep")))
+			end if
 		end if
 
 	if alerta = "" then
@@ -147,10 +168,10 @@
 			" FROM t_CLIENTE" & _
 			" WHERE" & _
 				" (cnpj_cpf = '" & retorna_so_digitos(Trim("" & tMAP_XML("cpfCnpjIdentificado"))) & "')"
-		if rs.State <> 0 then rs.Close
-		rs.open s, cn
-		if Not rs.Eof then
-			s_id_cliente = Trim("" & rs("id"))
+		if t_CLIENTE.State <> 0 then t_CLIENTE.Close
+		t_CLIENTE.open s, cn
+		if Not t_CLIENTE.Eof then
+			s_id_cliente = Trim("" & t_CLIENTE("id"))
 			if s_id_cliente <> "" then operacao_selecionada = OP_CONSULTA
 			end if
 		end if
@@ -185,6 +206,254 @@
 				end if
 			next
 		end if
+
+	dim s_lista_sugerida_municipios_end_cob, s_lista_sugerida_municipios_end_etg
+	dim blnErroIbgeEndCob, blnErroIbgeEndEtg, blnEnderecosIguais, blnFlagCadSemiAutoPedMagento_FluxoOtimizado, tipoCliente
+	dim EndCob_endereco, EndCob_endereco_numero, EndCob_endereco_complemento, EndCob_endereco_ponto_referencia, EndCob_bairro, EndCob_cidade, EndCob_uf, EndCob_cep
+	dim EndCob_email, EndCob_email_xml, EndCob_nome, EndCob_tipo_pessoa
+	dim EndCob_ddd_res, EndCob_tel_res, EndCob_ddd_com, EndCob_tel_com, EndCob_ramal_com, EndCob_ddd_com_2, EndCob_tel_com_2, EndCob_ramal_com_2, EndCob_ddd_cel, EndCob_tel_cel
+	dim EndCob_cnpj_cpf, EndCob_contribuinte_icms_status, EndCob_produtor_rural_status, EndCob_ie, EndCob_rg
+	dim rb_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_endereco_ponto_referencia, EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep
+	dim EndEtg_obs, EndEtg_email, EndEtg_email_xml, EndEtg_nome, EndEtg_tipo_pessoa
+	dim EndEtg_ddd_res, EndEtg_tel_res, EndEtg_ddd_com, EndEtg_tel_com, EndEtg_ramal_com, EndEtg_ddd_com_2, EndEtg_tel_com_2, EndEtg_ramal_com_2, EndEtg_ddd_cel, EndEtg_tel_cel
+	dim EndEtg_cnpj_cpf, EndEtg_contribuinte_icms_status, EndEtg_produtor_rural_status, EndEtg_ie, EndEtg_rg
+	dim rb_indicacao, c_indicador, rb_RA
+	dim s_ddd, s_tel
+	blnErroIbgeEndCob = False
+	blnErroIbgeEndEtg = False
+	blnEnderecosIguais = False
+	blnFlagCadSemiAutoPedMagento_FluxoOtimizado = False
+	tipoCliente = ""
+	EndCob_endereco = ""
+	EndCob_endereco_numero = ""
+	EndCob_endereco_complemento = ""
+	EndCob_endereco_ponto_referencia = ""
+	EndCob_bairro = ""
+	EndCob_cidade = ""
+	EndCob_uf = ""
+	EndCob_cep = ""
+	EndCob_email = ""
+	EndCob_email_xml = ""
+	EndCob_nome = ""
+	EndCob_ddd_res = ""
+	EndCob_tel_res = ""
+	EndCob_ddd_com = ""
+	EndCob_tel_com = ""
+	EndCob_ramal_com = ""
+	EndCob_ddd_cel = ""
+	EndCob_tel_cel = ""
+	EndCob_ddd_com_2 = ""
+	EndCob_tel_com_2 = ""
+	EndCob_ramal_com_2 = ""
+	EndCob_tipo_pessoa = ""
+	EndCob_cnpj_cpf = ""
+	EndCob_contribuinte_icms_status = ""
+	EndCob_produtor_rural_status = ""
+	EndCob_ie = ""
+	EndCob_rg = ""
+	rb_end_entrega = "N"
+	EndEtg_endereco = ""
+	EndEtg_endereco_numero = ""
+	EndEtg_endereco_complemento = ""
+	EndEtg_endereco_ponto_referencia = ""
+	EndEtg_bairro = ""
+	EndEtg_cidade = ""
+	EndEtg_uf = ""
+	EndEtg_cep = ""
+	EndEtg_obs = ""
+	EndEtg_email = ""
+	EndEtg_email_xml = ""
+	EndEtg_nome = ""
+	EndEtg_ddd_res = ""
+	EndEtg_tel_res = ""
+	EndEtg_ddd_com = ""
+	EndEtg_tel_com = ""
+	EndEtg_ramal_com = ""
+	EndEtg_ddd_cel = ""
+	EndEtg_tel_cel = ""
+	EndEtg_ddd_com_2 = ""
+	EndEtg_tel_com_2 = ""
+	EndEtg_ramal_com_2 = ""
+	EndEtg_tipo_pessoa = ""
+	EndEtg_cnpj_cpf = ""
+	EndEtg_contribuinte_icms_status = ""
+	EndEtg_produtor_rural_status = ""
+	EndEtg_ie = ""
+	EndEtg_rg = ""
+	rb_indicacao = "N"
+	c_indicador = ""
+	rb_RA = "N"
+
+	if alerta = "" then
+		if Len(retorna_so_digitos(Trim("" & tMAP_XML("cpfCnpjIdentificado")))) = 11 then
+			tipoCliente = ID_PF
+		else
+			tipoCliente = ID_PJ
+			end if
+
+		blnEnderecosIguais = isEnderecoMagentoIgual(Trim("" & tMAP_END_COB("endereco")), _
+													Trim("" & tMAP_END_COB("endereco_numero")), _
+													Trim("" & tMAP_END_COB("endereco_complemento")), _
+													Trim("" & tMAP_END_COB("bairro")), _
+													Trim("" & tMAP_END_COB("cidade")), _
+													Trim("" & tMAP_END_COB("uf")), _
+													Trim("" & tMAP_END_COB("cep")), _
+													Trim("" & tMAP_END_ETG("endereco")), _
+													Trim("" & tMAP_END_ETG("endereco_numero")), _
+													Trim("" & tMAP_END_ETG("endereco_complemento")), _
+													Trim("" & tMAP_END_ETG("bairro")), _
+													Trim("" & tMAP_END_ETG("cidade")), _
+													Trim("" & tMAP_END_ETG("uf")), _
+													Trim("" & tMAP_END_ETG("cep")))
+
+		'ENDEREÇO DE COBRANÇA
+		EndCob_tipo_pessoa = tipoCliente
+
+		EndCob_nome = UCase(ec_dados_formata_nome(tMAP_XML("customer_firstname"), tMAP_XML("customer_middlename"), tMAP_XML("customer_lastname"), 60))
+
+		'CLIENTES PF DO MAGENTO USAM O ENDEREÇO DE ENTREGA COMO SENDO O ÚNICO ENDEREÇO, OU SEJA, IGNORA-SE O ENDEREÇO DE COBRANÇA
+		if tipoCliente = ID_PF then
+			EndCob_endereco = Trim("" & tMAP_END_ETG("endereco"))
+			EndCob_endereco_numero = Trim("" & tMAP_END_ETG("endereco_numero"))
+			EndCob_endereco_complemento = Trim("" & tMAP_END_ETG("endereco_complemento"))
+			EndCob_endereco_ponto_referencia = Trim("" & tMAP_END_ETG("street_detail"))
+			EndCob_bairro = Trim("" & tMAP_END_ETG("bairro"))
+			EndCob_cidade = Trim("" & tMAP_END_ETG("cidade"))
+			EndCob_uf = Trim("" & tMAP_END_ETG("uf"))
+			EndCob_cep = retorna_so_digitos(Trim("" & tMAP_END_ETG("cep")))
+			EndCob_email = Trim("" & tMAP_XML("customer_email"))
+			EndCob_email_xml = ""
+
+			call ec_dados_decodifica_telefone_formatado(tMAP_END_ETG("telephone"), s_ddd, s_tel)
+			EndCob_ddd_res = s_ddd
+			EndCob_tel_res = s_tel
+
+			call ec_dados_decodifica_telefone_formatado(tMAP_END_ETG("celular"), s_ddd, s_tel)
+			EndCob_ddd_cel = s_ddd
+			EndCob_tel_cel = s_tel
+
+			EndCob_cnpj_cpf = retorna_so_digitos(Trim("" & tMAP_XML("cpfCnpjIdentificado")))
+			EndCob_contribuinte_icms_status = ""
+			EndCob_ie = ""
+			if Not t_CLIENTE.Eof then
+				EndCob_produtor_rural_status = Trim("" & t_CLIENTE("produtor_rural_status"))
+			else
+				EndCob_produtor_rural_status = COD_ST_CLIENTE_PRODUTOR_RURAL_NAO
+				end if
+			EndCob_rg = Trim("" & tMAP_END_ETG("rg"))
+		else
+			EndCob_endereco = Trim("" & tMAP_END_COB("endereco"))
+			EndCob_endereco_numero = Trim("" & tMAP_END_COB("endereco_numero"))
+			EndCob_endereco_complemento = Trim("" & tMAP_END_COB("endereco_complemento"))
+			EndCob_endereco_ponto_referencia = Trim("" & tMAP_END_COB("street_detail"))
+			EndCob_bairro = Trim("" & tMAP_END_COB("bairro"))
+			EndCob_cidade = Trim("" & tMAP_END_COB("cidade"))
+			EndCob_uf = Trim("" & tMAP_END_COB("uf"))
+			EndCob_cep = retorna_so_digitos(Trim("" & tMAP_END_COB("cep")))
+			EndCob_email = Trim("" & tMAP_XML("customer_email"))
+			EndCob_email_xml = ""
+
+			call ec_dados_decodifica_telefone_formatado(tMAP_END_COB("telephone"), s_ddd, s_tel)
+			EndCob_ddd_com = s_ddd
+			EndCob_tel_com = s_tel
+
+			call ec_dados_decodifica_telefone_formatado(tMAP_END_COB("celular"), s_ddd, s_tel)
+			EndCob_ddd_com_2 = s_ddd
+			EndCob_tel_com_2 = s_tel
+			EndCob_ramal_com_2 = ""
+
+			EndCob_cnpj_cpf = retorna_so_digitos(Trim("" & tMAP_END_COB("cpfcnpj")))
+			if (EndCob_cnpj_cpf = "") Or (Not cnpj_ok(EndCob_cnpj_cpf)) then EndCob_cnpj_cpf = retorna_so_digitos(Trim("" & tMAP_XML("cpfCnpjIdentificado")))
+			EndCob_contribuinte_icms_status = ""
+			EndCob_ie = Trim("" & tMAP_END_COB("ie"))
+			end if
+
+		'VERIFICA SE ESTÁ ATIVADO O FLAG DO PARÂMETRO DE CADASTRAMENTO AUTOMÁTICO DE CLIENTE NOVO NA WEB API PARA CADASTRAMENTO SEMI-AUTOMÁTICO DE PEDIDOS DO MAGENTO
+		'CASO ESTEJA, O FLUXO NORMAL É DIRECIONAR AUTOMATICAMENTE ATÉ CHEGAR NA PÁGINA PedidoNovoConsiste.asp
+		'ENTRETANTO, É FEITA A VERIFICAÇÃO DO CADASTRO DO MUNICÍPIO NO IBGE, POIS CASO EXISTA INCONSISTÊNCIA, O FLUXO É DIRECIONADO PARA O CADASTRO DE EDIÇÃO DO CLIENTE
+		'LEMBRANDO QUE NOS PEDIDOS DE E-COMMERCE, NO CASO DE CLIENTES PF, SOMENTE O ENDEREÇO DE ENTREGA É UTILIZADO
+		if blnFlagCadSemiAutoPedMagentoCadAutoClienteNovo then
+			'É CLIENTE PJ?
+			if tipoCliente = ID_PJ then
+				if Not consiste_municipio_IBGE_ok(Trim("" & tMAP_END_COB("cidade")), Trim("" & tMAP_END_COB("uf")), s_lista_sugerida_municipios_end_cob, msg_erro) then
+					blnErroIbgeEndCob = True
+					end if
+				end if
+
+			if Not consiste_municipio_IBGE_ok(Trim("" & tMAP_END_ETG("cidade")), Trim("" & tMAP_END_ETG("uf")), s_lista_sugerida_municipios_end_etg, msg_erro) then
+				 blnErroIbgeEndEtg = True
+				 end if
+			
+			if tipoCliente = ID_PJ then
+				'DEVIDO À AUSÊNCIA DE INFORMAÇÃO NO MAGENTO SOBRE O CLIENTE PJ SER CONTRIBUINTE DE ICMS E NÚMERO DE IE, O FLUXO É SEMPRE DIRECIONADO PARA O CADASTRO DE CLIENTES PARA REVISÃO MANUAL
+				'*DESATIVADO* if (Not blnErroIbgeEndCob) And (Not blnErroIbgeEndEtg) then blnFlagCadSemiAutoPedMagento_FluxoOtimizado = True
+			else
+				'CLIENTES PF CUJO CADASTRO É CRIADO COM DADOS DO MAGENTO: ASSUME-SE QUE NUNCA SÃO PRODUTORES RURAIS DEVIDO AO NÚMERO EXTREMAMENTE BAIXO DE CASOS
+				if (Not blnErroIbgeEndEtg) then blnFlagCadSemiAutoPedMagento_FluxoOtimizado = True
+				end if
+
+			'Tem valor de frete?
+			'Se houver valor de frete, o pedido será cadastrado automaticamente como tendo RA e o indicador será o 'FRETE'
+			if converte_numero(tMAP_XML("shipping_amount")) > 0 then
+				rb_indicacao = "S"
+				c_indicador = "FRETE"
+				rb_RA = "S"
+				end if
+
+			if tipoCliente = ID_PF then
+				'CLIENTES PF DO MAGENTO USAM O ENDEREÇO DE ENTREGA COMO SENDO O ÚNICO ENDEREÇO, OU SEJA, IGNORA-SE O ENDEREÇO DE COBRANÇA
+				rb_end_entrega = "N"
+			else
+				if Not blnEnderecosIguais then rb_end_entrega = "S"
+				end if
+				
+			if rb_end_entrega = "S" then
+				EndEtg_tipo_pessoa = tipoCliente
+				EndEtg_endereco = Trim("" & tMAP_END_ETG("endereco"))
+				EndEtg_endereco_numero = Trim("" & tMAP_END_ETG("endereco_numero"))
+				EndEtg_endereco_complemento = Trim("" & tMAP_END_ETG("endereco_complemento"))
+				EndEtg_endereco_ponto_referencia = Trim("" & tMAP_END_ETG("street_detail"))
+				EndEtg_bairro = Trim("" & tMAP_END_ETG("bairro"))
+				EndEtg_cidade = Trim("" & tMAP_END_ETG("cidade"))
+				EndEtg_uf = Trim("" & tMAP_END_ETG("uf"))
+				EndEtg_cep = retorna_so_digitos(Trim("" & tMAP_END_ETG("cep")))
+			'	CÓDIGO DA JUSTIFICATIVA DO ENDEREÇO DE ENTREGA (GRAVADO EM t_PEDIDO.EndEtg_cod_justificativa): "007" = Pedido Arclube
+				EndEtg_obs = "007"
+				EndEtg_email = Trim("" & tMAP_XML("customer_email"))
+				EndEtg_email_xml = ""
+				EndEtg_nome = UCase(ec_dados_formata_nome(tMAP_XML("customer_firstname"), tMAP_XML("customer_middlename"), tMAP_XML("customer_lastname"), 60))
+				if tipoCliente = ID_PF then
+					call ec_dados_decodifica_telefone_formatado(tMAP_END_ETG("telephone"), s_ddd, s_tel)
+					EndEtg_ddd_res = s_ddd
+					EndEtg_tel_res = s_tel
+
+					call ec_dados_decodifica_telefone_formatado(tMAP_END_ETG("celular"), s_ddd, s_tel)
+					EndEtg_ddd_cel = s_ddd
+					EndEtg_tel_cel = s_tel
+
+					EndEtg_cnpj_cpf = retorna_so_digitos(Trim("" & tMAP_XML("cpfCnpjIdentificado")))
+					EndEtg_contribuinte_icms_status = ""
+					EndEtg_ie = ""
+					EndEtg_produtor_rural_status = ""
+					EndEtg_rg = Trim("" & tMAP_END_ETG("rg"))
+				else
+					call ec_dados_decodifica_telefone_formatado(tMAP_END_ETG("telephone"), s_ddd, s_tel)
+					EndEtg_ddd_com = s_ddd
+					EndEtg_tel_com = s_tel
+
+					call ec_dados_decodifica_telefone_formatado(tMAP_END_ETG("celular"), s_ddd, s_tel)
+					EndEtg_ddd_com_2 = s_ddd
+					EndEtg_tel_com_2 = s_tel
+					EndEtg_ramal_com_2 = ""
+
+					EndEtg_cnpj_cpf = retorna_so_digitos(Trim("" & tMAP_END_ETG("cpfcnpj")))
+					if (EndEtg_cnpj_cpf = "") Or (Not cnpj_ok(EndEtg_cnpj_cpf)) then EndEtg_cnpj_cpf = retorna_so_digitos(Trim("" & tMAP_XML("cpfCnpjIdentificado")))
+					EndEtg_contribuinte_icms_status = ""
+					EndEtg_ie = Trim("" & tMAP_END_ETG("ie"))
+					end if
+				end if 'if rb_end_entrega = "S"
+			end if 'if blnFlagCadSemiAutoPedMagentoCadAutoClienteNovo
+		end if 'if alerta = ""
 %>
 
 
@@ -203,6 +472,8 @@
 %>
 
 
+<%=DOCTYPE_LEGADO%>
+
 
 <html>
 
@@ -216,10 +487,21 @@
 <script src="<%=URL_FILE__GLOBAL_JS%>" Language="JavaScript" Type="text/javascript"></script>
 
 <script language="JavaScript" type="text/javascript">
-function fPNECConfirma( f ) {
+function fPNECConfirma(f) {
+	f.action = "ClienteEdita.asp";
+	// Fluxo tradicional: segue para a página ClienteEdita.asp
+    f.c_FlagCadSemiAutoPedMagento_FluxoOtimizado.value = "9";
 	dCONFIRMA.style.visibility="hidden";
 	window.status = "Aguarde ...";
 	f.submit();
+}
+function fPNEC2Confirma(f) {
+	f.action = "PedidoNovo.asp";
+	// Fluxo otimizado: segue direto para a página PedidoNovo.asp
+	f.c_FlagCadSemiAutoPedMagento_FluxoOtimizado.value = "1";
+	dCONFIRMA2.style.visibility = "hidden";
+    window.status = "Aguarde ...";
+    f.submit();
 }
 </script>
 
@@ -398,6 +680,16 @@ function fPNECConfirma( f ) {
 {
 	text-align:left;
 }
+.TdEndLbl
+{
+	width:150px;
+	text-align:right;
+}
+.TdEndMsg
+{
+	width:540px;
+	text-align:left;
+}
 </style>
 
 
@@ -431,7 +723,7 @@ function fPNECConfirma( f ) {
 <body onload="focus();">
 <center>
 
-<form id="fPNEC" name="fPNEC" method="post" action="ClienteEdita.asp">
+<form id="fPNEC" name="fPNEC" method="post">
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
 <input type="hidden" name="operacao_selecionada" id="operacao_selecionada" value="<%=operacao_selecionada%>" />
 <input type="hidden" name="cliente_selecionado" id="cliente_selecionado" value="<%=s_id_cliente%>" />
@@ -441,6 +733,93 @@ function fPNECConfirma( f ) {
 <input type="hidden" name="sessionToken" id="sessionToken" value="<%=sessionToken%>" />
 <input type="hidden" name="operacao_origem" id="operacao_origem" value="<%=OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO%>" />
 <input type="hidden" name="id_magento_api_pedido_xml" id="id_magento_api_pedido_xml" value="<%=id_magento_api_pedido_xml%>" />
+
+<% if blnFlagCadSemiAutoPedMagento_FluxoOtimizado then
+		'Fluxo otimizado: segue direto para a página PedidoNovo.asp
+		s_value = "1"
+	else
+		'Fluxo tradicional: segue para a página ClienteEdita.asp
+		s_value = "9"
+		end if
+%>
+<input type="hidden" name="c_FlagCadSemiAutoPedMagento_FluxoOtimizado" value="<%=s_value%>" />
+<input type="hidden" name="rb_indicacao" id="rb_indicacao" value="<%=rb_indicacao%>" />
+<input type="hidden" name="c_indicador" id="c_indicador" value="<%=c_indicador%>" />
+<input type="hidden" name="rb_RA" id="rb_RA" value="<%=rb_RA%>" />
+
+<input type="hidden" name="EndCob_endereco" id="EndCob_endereco" value="<%=EndCob_endereco%>" />
+<input type="hidden" name="EndCob_endereco_numero" id="EndCob_endereco_numero" value="<%=EndCob_endereco_numero%>" />
+<input type="hidden" name="EndCob_endereco_complemento" id="EndCob_endereco_complemento" value="<%=EndCob_endereco_complemento%>" />
+<input type="hidden" name="EndCob_endereco_ponto_referencia" id="EndCob_endereco_ponto_referencia" value="<%=EndCob_endereco_ponto_referencia%>" />
+<input type="hidden" name="EndCob_bairro" id="EndCob_bairro" value="<%=EndCob_bairro%>" />
+<input type="hidden" name="EndCob_cidade" id="EndCob_cidade" value="<%=EndCob_cidade%>" />
+<input type="hidden" name="EndCob_uf" id="EndCob_uf" value="<%=EndCob_uf %>" />
+<input type="hidden" name="EndCob_cep" id="EndCob_cep" value="<%=EndCob_cep%>" />
+<input type="hidden" name="EndCob_email" id="EndCob_email" value="<%=EndCob_email%>" />
+<input type="hidden" name="EndCob_email_xml" id="EndCob_email_xml" value="<%=EndCob_email_xml%>" />
+<input type="hidden" name="EndCob_nome" id="EndCob_nome" value="<%=EndCob_nome%>" />
+<input type="hidden" name="EndCob_tipo_pessoa" id="EndCob_tipo_pessoa" value="<%=EndCob_tipo_pessoa%>" />
+<input type="hidden" name="EndCob_ddd_res" id="EndCob_ddd_res" value="<%=EndCob_ddd_res%>" />
+<input type="hidden" name="EndCob_tel_res" id="EndCob_tel_res" value="<%=EndCob_tel_res%>" />
+<input type="hidden" name="EndCob_ddd_com" id="EndCob_ddd_com" value="<%=EndCob_ddd_com%>" />
+<input type="hidden" name="EndCob_tel_com" id="EndCob_tel_com" value="<%=EndCob_tel_com%>" />
+<input type="hidden" name="EndCob_ramal_com" id="EndCob_ramal_com" value="<%=EndCob_ramal_com%>" />
+<input type="hidden" name="EndCob_ddd_com_2" id="EndCob_ddd_com_2" value="<%=EndCob_ddd_com_2%>" />
+<input type="hidden" name="EndCob_tel_com_2" id="EndCob_tel_com_2" value="<%=EndCob_tel_com_2%>" />
+<input type="hidden" name="EndCob_ramal_com_2" id="EndCob_ramal_com_2" value="<%=EndCob_ramal_com_2%>" />
+<input type="hidden" name="EndCob_ddd_cel" id="EndCob_ddd_cel" value="<%=EndCob_ddd_cel%>" />
+<input type="hidden" name="EndCob_tel_cel" id="EndCob_tel_cel" value="<%=EndCob_tel_cel%>" />
+<input type="hidden" name="EndCob_cnpj_cpf" id="EndCob_cnpj_cpf" value="<%=EndCob_cnpj_cpf%>" />
+<input type="hidden" name="EndCob_contribuinte_icms_status" id="EndCob_contribuinte_icms_status" value="<%=EndCob_contribuinte_icms_status%>" />
+<input type="hidden" name="EndCob_produtor_rural_status" id="EndCob_produtor_rural_status" value="<%=EndCob_produtor_rural_status%>" />
+<input type="hidden" name="EndCob_ie" id="EndCob_ie" value="<%=EndCob_ie%>" />
+<input type="hidden" name="EndCob_rg" id="EndCob_rg" value="<%=EndCob_rg%>" />
+
+<input type="hidden" name="rb_end_entrega" id="rb_end_entrega" value="<%=rb_end_entrega%>" />
+<input type="hidden" name="EndEtg_endereco" id="EndEtg_endereco" value="<%=EndEtg_endereco%>" />
+<input type="hidden" name="EndEtg_endereco_numero" id="EndEtg_endereco_numero" value="<%=EndEtg_endereco_numero%>" />
+<input type="hidden" name="EndEtg_endereco_complemento" id="EndEtg_endereco_complemento" value="<%=EndEtg_endereco_complemento%>" />
+<input type="hidden" name="EndEtg_endereco_ponto_referencia" id="EndEtg_endereco_ponto_referencia" value="<%=EndEtg_endereco_ponto_referencia%>" />
+<input type="hidden" name="EndEtg_bairro" id="EndEtg_bairro" value="<%=EndEtg_bairro%>" />
+<input type="hidden" name="EndEtg_cidade" id="EndEtg_cidade" value="<%=EndEtg_cidade%>" />
+<input type="hidden" name="EndEtg_uf" id="EndEtg_uf" value="<%=EndEtg_uf%>" />
+<input type="hidden" name="EndEtg_cep" id="EndEtg_cep" value="<%=EndEtg_cep%>" />
+<input type="hidden" name="EndEtg_obs" id="EndEtg_obs" value="<%=EndEtg_obs%>" />
+<input type="hidden" name="EndEtg_email" id="EndEtg_email" value="<%=EndEtg_email%>" />
+<input type="hidden" name="EndEtg_email_xml" id="EndEtg_email_xml" value="<%=EndEtg_email_xml%>" />
+<input type="hidden" name="EndEtg_nome" id="EndEtg_nome" value="<%=EndEtg_nome%>" />
+<input type="hidden" name="EndEtg_ddd_res" id="EndEtg_ddd_res" value="<%=EndEtg_ddd_res%>" />
+<input type="hidden" name="EndEtg_tel_res" id="EndEtg_tel_res" value="<%=EndEtg_tel_res%>" />
+<input type="hidden" name="EndEtg_ddd_com" id="EndEtg_ddd_com" value="<%=EndEtg_ddd_com%>" />
+<input type="hidden" name="EndEtg_tel_com" id="EndEtg_tel_com" value="<%=EndEtg_tel_com%>" />
+<input type="hidden" name="EndEtg_ramal_com" id="EndEtg_ramal_com" value="<%=EndEtg_ramal_com%>" />
+<input type="hidden" name="EndEtg_ddd_cel" id="EndEtg_ddd_cel" value="<%=EndEtg_ddd_cel%>" />
+<input type="hidden" name="EndEtg_tel_cel" id="EndEtg_tel_cel" value="<%=EndEtg_tel_cel%>" />
+<input type="hidden" name="EndEtg_ddd_com_2" id="EndEtg_ddd_com_2" value="<%=EndEtg_ddd_com_2%>" />
+<input type="hidden" name="EndEtg_tel_com_2" id="EndEtg_tel_com_2" value="<%=EndEtg_tel_com_2%>" />
+<input type="hidden" name="EndEtg_ramal_com_2" id="EndEtg_ramal_com_2" value="<%=EndEtg_ramal_com_2%>" />
+<input type="hidden" name="EndEtg_tipo_pessoa" id="EndEtg_tipo_pessoa" value="<%=EndEtg_tipo_pessoa%>" />
+<input type="hidden" name="EndEtg_cnpj_cpf" id="EndEtg_cnpj_cpf" value="<%=EndEtg_cnpj_cpf%>" />
+<input type="hidden" name="EndEtg_contribuinte_icms_status" id="EndEtg_contribuinte_icms_status" value="<%=EndEtg_contribuinte_icms_status%>" />
+<input type="hidden" name="EndEtg_produtor_rural_status" id="EndEtg_produtor_rural_status" value="<%=EndEtg_produtor_rural_status%>" />
+<input type="hidden" name="EndEtg_ie" id="EndEtg_ie" value="<%=EndEtg_ie%>" />
+<input type="hidden" name="EndEtg_rg" id="EndEtg_rg" value="<%=EndEtg_rg%>" />
+
+<% if blnFlagCadSemiAutoPedMagento_FluxoOtimizado then %>
+<!-- LISTA DE PRODUTOS -->
+<% for iv=LBound(v_map_item) to Ubound(v_map_item) 
+		if Trim(v_map_item(iv).sku) <> "" then %>
+<input type="hidden" name="c_fabricante" value="" />
+<input type="hidden" name="c_produto" value="<%=v_map_item(iv).sku%>" />
+<input type="hidden" name="c_qtde" value="<%=Cstr(v_map_item(iv).qty_ordered)%>" />
+<%			end if
+		next
+%>
+<!-- FORÇA A CRIAÇÃO DO ARRAY MESMO QUANDO HÁ SOMENTE 1 PRODUTO -->
+<input type="hidden" name="c_fabricante" value="" />
+<input type="hidden" name="c_produto" value="" />
+<input type="hidden" name="c_qtde" value="" />
+<% end if %>
 
 
 
@@ -465,6 +844,7 @@ function fPNECConfirma( f ) {
 		<td class="MB ME MD TdCliLbl"><span class="PLTd">Nome</span></td>
 		<td class="MB MD TdCliCel"><span class="C"><%=s_nome_cliente%></span></td>
 	</tr>
+	<% if Not blnFlagCadSemiAutoPedMagentoCadAutoClienteNovo then %>
 	<tr>
 		<% if s_id_cliente <> "" then
 				s_value = "SIM"
@@ -477,6 +857,7 @@ function fPNECConfirma( f ) {
 		<td class="MB ME MD TdCliLbl"><span class="PLTd">Cadastrado no Sistema</span></td>
 		<td class="MB MD TdCliCel"><span class="C" style="color:<%=s_cor%>;"><%=s_value%></span></td>
 	</tr>
+	<% end if %>
 	<tr>
 		<td class="MB ME MD TdCliLbl"><span class="PLTd">Endereço de Entrega</span></td>
 		<td class="MB MD TdCliCel"><span class="C"><%=s_end_entrega%></span></td>
@@ -507,8 +888,12 @@ function fPNECConfirma( f ) {
 						s_value = UCase(Trim("" & tMAP_XML("state")))
 						if (s_value = "CANCELED") Or (s_value = "CANCELLED") then s_cor="red" else s_cor="black"
 					%>
-					<td class="MD TdPedDadosLbl" align="right"><span class="PLTd">State (Magento)</span></td>
-					<td class="TdPedDadosCel"><span class="C" style="color:<%=s_cor%>;"><%=Trim("" & tMAP_XML("state_descricao"))%></span></td>
+					<td class="MB MD TdPedDadosLbl" align="right"><span class="PLTd">State (Magento)</span></td>
+					<td class="MB TdPedDadosCel"><span class="C" style="color:<%=s_cor%>;"><%=Trim("" & tMAP_XML("state_descricao"))%></span></td>
+				</tr>
+				<tr>
+					<td class="MD TdPedDadosLbl" align="right"><span class="PLTd">VL Frete</span></td>
+					<td class="TdPedDadosCel"><span class="C"><%=formata_moeda(tMAP_XML("shipping_amount"))%></span></td>
 				</tr>
 			</table>
 		</td>
@@ -681,6 +1066,42 @@ function fPNECConfirma( f ) {
 %>
 </table>
 
+<% if blnFlagCadSemiAutoPedMagentoCadAutoClienteNovo And _
+	  ( _
+		( (tipoCliente = ID_PF) And (blnErroIbgeEndEtg) ) _
+		Or _
+		( (tipoCliente = ID_PJ) And (blnErroIbgeEndCob Or blnErroIbgeEndEtg) ) _
+	  ) then %>
+<!--  PULA LINHA  -->
+<br /><br />
+<table class="Qx" cellspacing="0">
+	<tr style="background-color:lightyellow;">
+		<td colspan="2" class="MC MB ME MD" align="center"><span class="N" style="color:red;">ATENÇÃO</span></td>
+	</tr>
+	<% if blnErroIbgeEndCob And (tipoCliente = ID_PJ) then %>
+	<tr>
+		<td class="MB ME MD TdEndLbl"><span class="PLTd">Endereço de Cobrança</span></td>
+		<td class="MB MD TdEndMsg"><span class="C">O município de <%=Trim("" & tMAP_END_COB("cidade"))%>/<%=Trim("" & tMAP_END_COB("uf"))%> não consta no cadastro do IBGE</span></td>
+	</tr>
+	<% end if %>
+	<% if blnErroIbgeEndEtg And _
+		  ( _
+			(tipoCliente = ID_PF) _
+			Or _
+			( (tipoCliente = ID_PJ) And (Not blnEnderecosIguais) ) _
+		  ) then
+	%>
+	<tr>
+		<td class="MB ME MD TdEndLbl"><span class="PLTd">Endereço de Entrega</span></td>
+		<td class="MB MD TdEndMsg"><span class="C">O município de <%=Trim("" & tMAP_END_ETG("cidade"))%>/<%=Trim("" & tMAP_END_ETG("uf"))%> não consta no cadastro do IBGE</span></td>
+	</tr>
+	<% end if %>
+	<tr>
+		<td class="MB ME MD TdEndLbl"><span class="PLTd">Aviso</span></td>
+		<td class="MB MD TdEndMsg"><span class="C">Devido à necessidade de corrigir o nome do município, o fluxo de cadastramento será direcionado para a página de edição do cliente</span></td>
+	</tr>
+</table>
+<% end if %>
 
 <!-- ************   SEPARADOR   ************ -->
 <table width="849" cellPadding="4" CellSpacing="0" style="border-bottom:1px solid black">
@@ -693,10 +1114,18 @@ function fPNECConfirma( f ) {
 <tr>
 	<td><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()" title="volta para página anterior">
 		<img src="../botao/anterior.gif" width="176" height="55" border="0"></a></td>
-	<td align="right"><div name="dCONFIRMA" id="dCONFIRMA"><a name="bCONFIRMA" id="bCONFIRMA" href="javascript:fPNECConfirma(fPNEC)" title="prossegue com o cadastramento do pedido de e-commerce">
+	<td align="right"><div name="dCONFIRMA" id="dCONFIRMA"><a name="bCONFIRMA" id="bCONFIRMA" href="javascript:fPNECConfirma(fPNEC)" title="prossegue com o cadastramento do pedido de e-commerce seguindo para o cadastro do cliente">
 		<img src="../botao/proximo.gif" width="176" height="55" border="0"></a></div>
 	</td>
 </tr>
+<% if blnFlagCadSemiAutoPedMagento_FluxoOtimizado then %>
+<tr>
+	<td>&nbsp;</td>
+	<td align="right"><div name="dCONFIRMA2" id="dCONFIRMA2"><a name="bCONFIRMA2" id="bCONFIRMA2" href="javascript:fPNEC2Confirma(fPNEC)" title="prossegue com o cadastramento do pedido de e-commerce seguindo o fluxo otimizado">
+		<img src="../botao/pedido.gif" width="176" height="55" border="0"></a></div>
+	</td>
+</tr>
+<% end if %>
 </table>
 </form>
 
@@ -715,6 +1144,9 @@ function fPNECConfirma( f ) {
 	if tMAP_ITEM.State <> 0 then tMAP_ITEM.Close
 	set tMAP_ITEM = nothing
 	
+	if tMAP_END_COB.State <> 0 then tMAP_END_COB.Close
+	set tMAP_END_COB = nothing
+
 	if tMAP_END_ETG.State <> 0 then tMAP_END_ETG.Close
 	set tMAP_END_ETG = nothing
 
@@ -732,6 +1164,9 @@ function fPNECConfirma( f ) {
 
 	if tPEDITM.State <> 0 then tPEDITM.Close
 	set tPEDITM = nothing
+
+	if t_CLIENTE.State <> 0 then t_CLIENTE.Close
+	set t_CLIENTE = nothing
 
 '	FECHA CONEXAO COM O BANCO DE DADOS
 	cn.Close

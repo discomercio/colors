@@ -41,15 +41,19 @@
 
 '	CONECTA AO BANCO DE DADOS
 '	=========================
-	dim cn, t_CLIENTE, msg_erro, msg_erro_aux
+	dim cn, t_CLIENTE, t_PEDIDO, msg_erro, msg_erro_aux
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	If Not cria_recordset_otimista(t_CLIENTE, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+	If Not cria_recordset_otimista(t_PEDIDO, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	
 	dim s_log
 	s_log = ""
 	
 	dim alerta
 	alerta = ""
+
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 
 	dim c_email_novo, c_email_novo_redigite
 	c_email_novo = LCase(Trim(Request("c_email_novo")))
@@ -82,15 +86,27 @@
 		end if
 	
 	if alerta = "" then
-		if (r_cliente.email = "") And (c_email_novo = "") then
-			if alerta <> "" then alerta = alerta & "<BR>"
-			alerta = alerta & "É necessário cadastrar um endereço de e-mail!"
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			if (r_pedido.endereco_email = "") And (c_email_novo = "") then
+				if alerta <> "" then alerta = alerta & "<BR>"
+				alerta = alerta & "É necessário cadastrar um endereço de e-mail!"
+				end if
+		else
+			if (r_cliente.email = "") And (c_email_novo = "") then
+				if alerta <> "" then alerta = alerta & "<BR>"
+				alerta = alerta & "É necessário cadastrar um endereço de e-mail!"
+				end if
 			end if
 		end if
 	
 	dim s_cnpj_cpf, s_email
 	if alerta = "" then
-		s_cnpj_cpf = r_cliente.cnpj_cpf
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s_cnpj_cpf = r_pedido.endereco_cnpj_cpf
+		else
+			s_cnpj_cpf = r_cliente.cnpj_cpf
+			end if
+
 		if c_email_novo <> "" then
 			s_email = c_email_novo
 			if Not email_AF_ok(s_email, s_cnpj_cpf, msg_erro_aux) then
@@ -98,7 +114,11 @@
 				alerta=alerta & "Endereço de email (" & s_email & ") não é válido!!<br />" & msg_erro_aux
 				end if
 		else
-			s_email = r_cliente.email
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				s_email = r_pedido.endereco_email
+			else
+				s_email = r_cliente.email
+				end if
 			if Not email_AF_ok(s_email, s_cnpj_cpf, msg_erro_aux) then
 				alerta=texto_add_br(alerta)
 				alerta=alerta & "Endereço de email (" & s_email & ") não é válido!!<br />" & msg_erro_aux
@@ -107,25 +127,50 @@
 		end if
 	
 	if alerta = "" then
-		if (c_email_novo <> "") And (LCase(c_email_novo) <> LCase(r_cliente.email)) then
-			s = "SELECT " & _
-					"*" & _
-				" FROM t_CLIENTE" & _
-				" WHERE" & _
-					"(id = '" & r_pedido.id_cliente & "')"
-			if t_CLIENTE.State <> 0 then t_CLIENTE.Close
-			t_CLIENTE.open s, cn
-			if Not t_CLIENTE.Eof then
-				s_log = formata_texto_log(Trim("" & t_CLIENTE("email"))) & " => " & formata_texto_log(c_email_novo)
-				t_CLIENTE("email_anterior") = Trim("" & t_CLIENTE("email"))
-				t_CLIENTE("email") = c_email_novo
-				t_CLIENTE("email_atualizacao_data") = Date
-				t_CLIENTE("email_atualizacao_data_hora") = Now
-				t_CLIENTE("email_atualizacao_usuario") = usuario
-				t_CLIENTE.Update
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			if (c_email_novo <> "") And (LCase(c_email_novo) <> LCase(r_pedido.endereco_email)) then
+				s = "SELECT " & _
+						"*" & _
+					" FROM t_PEDIDO" & _
+					" WHERE" & _
+						"(pedido_base = '" & id_pedido_base & "')"
+				if t_PEDIDO.State <> 0 then t_PEDIDO.Close
+				t_PEDIDO.open s, cn
+				do while Not t_PEDIDO.Eof
+					if s_log <> "" then s_log = s_log & "; "
+					s_log = s_log & "Pedido " & Trim("" & t_PEDIDO("pedido")) & ": " & formata_texto_log(Trim("" & t_PEDIDO("endereco_email"))) & " => " & formata_texto_log(c_email_novo)
+					t_PEDIDO("endereco_email") = c_email_novo
+					t_PEDIDO.Update
 				
-				s_log = "Alteração do e-mail (id=" & r_cliente.id & "; CNPJ/CPF: " & cnpj_cpf_formata(r_cliente.cnpj_cpf) & "): " & s_log
-				grava_log usuario, loja, "", r_pedido.id_cliente, OP_LOG_CLIENTE_ALTERACAO, s_log
+					t_PEDIDO.MoveNext
+					loop
+				
+				if s_log <> "" then
+					s_log = "Alteração do e-mail (pedido=" & id_pedido_base & "; CNPJ/CPF: " & cnpj_cpf_formata(r_pedido.endereco_cnpj_cpf) & "): " & s_log
+					grava_log usuario, loja, id_pedido_base, "", OP_LOG_PEDIDO_ALTERACAO, s_log
+					end if
+				end if
+		else
+			if (c_email_novo <> "") And (LCase(c_email_novo) <> LCase(r_cliente.email)) then
+				s = "SELECT " & _
+						"*" & _
+					" FROM t_CLIENTE" & _
+					" WHERE" & _
+						"(id = '" & r_pedido.id_cliente & "')"
+				if t_CLIENTE.State <> 0 then t_CLIENTE.Close
+				t_CLIENTE.open s, cn
+				if Not t_CLIENTE.Eof then
+					s_log = formata_texto_log(Trim("" & t_CLIENTE("email"))) & " => " & formata_texto_log(c_email_novo)
+					t_CLIENTE("email_anterior") = Trim("" & t_CLIENTE("email"))
+					t_CLIENTE("email") = c_email_novo
+					t_CLIENTE("email_atualizacao_data") = Date
+					t_CLIENTE("email_atualizacao_data_hora") = Now
+					t_CLIENTE("email_atualizacao_usuario") = usuario
+					t_CLIENTE.Update
+				
+					s_log = "Alteração do e-mail (id=" & r_cliente.id & "; CNPJ/CPF: " & cnpj_cpf_formata(r_cliente.cnpj_cpf) & "): " & s_log
+					grava_log usuario, loja, "", r_pedido.id_cliente, OP_LOG_CLIENTE_ALTERACAO, s_log
+					end if
 				end if
 			end if
 		end if
@@ -225,6 +270,9 @@
 <%
 	if t_CLIENTE.State <> 0 then t_CLIENTE.Close
 	set t_CLIENTE = nothing
+
+	if t_PEDIDO.State <> 0 then t_PEDIDO.Close
+	set t_PEDIDO = nothing
 
 '	FECHA CONEXAO COM O BANCO DE DADOS
 	cn.Close

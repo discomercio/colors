@@ -51,6 +51,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim s_filtro, intQtdeTransacoes
 	intQtdeTransacoes = 0
 
@@ -97,7 +100,11 @@
 	if alerta = "" then
 		s_nome_cliente = ""
 		if c_cliente_cnpj_cpf <> "" then
-			s = "SELECT nome_iniciais_em_maiusculas FROM t_CLIENTE WHERE (cnpj_cpf = '" & c_cliente_cnpj_cpf & "')"
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				s = "SELECT TOP 1 dbo.SqlClrUtilIniciaisEmMaiusculas(endereco_nome) AS nome_iniciais_em_maiusculas FROM t_PEDIDO WHERE (endereco_cnpj_cpf = '" & c_cliente_cnpj_cpf & "') ORDER BY data_hora DESC"
+			else
+				s = "SELECT nome_iniciais_em_maiusculas FROM t_CLIENTE WHERE (cnpj_cpf = '" & c_cliente_cnpj_cpf & "')"
+				end if
 			if rs.State <> 0 then rs.Close
 			rs.open s, cn
 			if rs.Eof then 
@@ -221,7 +228,12 @@ dim blnTitularCartaoDivergente
 	
 	if c_cliente_cnpj_cpf <> "" then
 		if s_where <> "" then s_where = s_where & " AND"
-		s_where = s_where & " (cnpj_cpf = '" & retorna_so_digitos(c_cliente_cnpj_cpf) & "')"
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			'TRATA-SE DE UM WHERE EXTERNO, SENDO QUE O SELECT INTERNO NORMALIZOU O NOME DO CAMPO
+			s_where = s_where & " (cnpj_cpf = '" & retorna_so_digitos(c_cliente_cnpj_cpf) & "')"
+		else
+			s_where = s_where & " (cnpj_cpf = '" & retorna_so_digitos(c_cliente_cnpj_cpf) & "')"
+			end if
 		end if
 	
 	if c_loja <> "" then
@@ -261,7 +273,21 @@ dim blnTitularCartaoDivergente
 				" t_PEDIDO.EndEtg_cep AS EndEtg_cep," & _
 				" t_PEDIDO_PAGTO_BRASPAG.*," & _
 				" tPPB_PAG.id AS id_pedido_pagto_braspag_pag," & _
-				" tPPB_AF.id AS id_pedido_pagto_braspag_af," & _
+				" tPPB_AF.id AS id_pedido_pagto_braspag_af,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_cnpj_cpf AS cnpj_cpf," & _
+				" dbo.SqlClrUtilIniciaisEmMaiusculas(t_PEDIDO.endereco_nome) AS cliente_nome," & _
+				" t_PEDIDO.endereco_logradouro AS cliente_endereco," & _
+				" t_PEDIDO.endereco_numero AS cliente_endereco_numero," & _
+				" t_PEDIDO.endereco_complemento AS cliente_endereco_complemento," & _
+				" t_PEDIDO.endereco_bairro AS cliente_bairro," & _
+				" t_PEDIDO.endereco_cidade AS cliente_cidade," & _
+				" t_PEDIDO.endereco_uf AS cliente_uf," & _
+				" t_PEDIDO.endereco_cep AS cliente_cep,"
+	else
+		s_sql = s_sql & _
 				" t_CLIENTE.cnpj_cpf," & _
 				" t_CLIENTE.nome_iniciais_em_maiusculas AS cliente_nome," & _
 				" t_CLIENTE.endereco AS cliente_endereco," & _
@@ -270,7 +296,10 @@ dim blnTitularCartaoDivergente
 				" t_CLIENTE.bairro AS cliente_bairro," & _
 				" t_CLIENTE.cidade AS cliente_cidade," & _
 				" t_CLIENTE.uf AS cliente_uf," & _
-				" t_CLIENTE.cep AS cliente_cep," & _
+				" t_CLIENTE.cep AS cliente_cep,"
+		end if
+
+	s_sql = s_sql & _
 				" t_PEDIDO.numero_loja," & _
 				" tPPB_PAG.Req_PaymentDataCollection_CardHolder," & _
 				" tPPB_PAG.Req_PaymentDataCollection_PaymentPlan AS PAG_Req_PaymentDataCollection_PaymentPlan," & _

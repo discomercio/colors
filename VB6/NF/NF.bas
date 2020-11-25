@@ -740,13 +740,13 @@ Option Explicit
 '|          |      | - Ajustes sobre o UFS_INSCRICAO_VIRTUAL.CFG, para que     |
 '|          |      |   a definição das UF's seja feita por emitente            |
 '|__________|______|___________________________________________________________|
-'|XX.XX.XXXX| XXXX |V X.XX                                                     |
-'|          |      |                                                           |
-'|          |      |                                                           |
+'|24.04.2020| LHGX |V 2.14                                                     |
+'|          |      | - Implementação da memorização do endereço do cliente     |
+'|          |      |   na t_PEDIDO                                             |
 '|__________|______|___________________________________________________________|
-'|XX.XX.XXXX| XXXX |V X.XX                                                     |
-'|          |      |                                                           |
-'|          |      |                                                           |
+'|14.11.2020| LHGX |V 2.15                                                     |
+'|          |      | - Ajuste para trazer as informações memorizadas no        |
+'|          |      |   pedido no quadro Informações do Pedido                  |
 '|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
@@ -759,8 +759,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.13"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  10/02/2020"
+Global Const m_id_versao = "2.15"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  14/11/2020"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"

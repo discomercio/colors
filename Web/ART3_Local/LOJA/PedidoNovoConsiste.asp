@@ -43,6 +43,32 @@
 	cliente_selecionado = Trim(request("cliente_selecionado"))
 	if (cliente_selecionado = "") then Response.Redirect("aviso.asp?id=" & ERR_CLIENTE_NAO_ESPECIFICADO)
 	
+	dim alerta, alerta_aux, alerta_informativo, alerta_informativo_aux
+	alerta=""
+	alerta_informativo=""
+
+'	CONECTA AO BANCO DE DADOS
+'	=========================
+	dim cn, rs, tMAP_XML, tMAP_END_COB, tMAP_END_ETG, tOI, t_CLIENTE
+	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
+	If Not cria_recordset_otimista(t_CLIENTE, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+
+	dim blnLojaHabilitadaProdCompostoECommerce
+	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
+
+	dim s_lista_operacoes_permitidas
+	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
+
+	s = "SELECT * FROM t_CLIENTE WHERE (id='" & cliente_selecionado & "')"
+	if t_CLIENTE.State <> 0 then t_CLIENTE.Close
+	t_CLIENTE.open s, cn
+	if t_CLIENTE.Eof then
+		Response.Redirect("aviso.asp?id=" & ERR_CLIENTE_NAO_CADASTRADO)
+		end if
+
+	dim blnUsarMemorizacaoCompletaEnderecos
+	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim rb_indicacao, rb_RA, c_indicador, c_perc_RT, c_ped_bonshop
 	rb_indicacao = Trim(Request.Form("rb_indicacao"))
 	rb_RA = Trim(Request.Form("rb_RA"))
@@ -60,17 +86,20 @@
 	c_custoFinancFornecTipoParcelamento = Trim(Request.Form("c_custoFinancFornecTipoParcelamento"))
 	c_custoFinancFornecQtdeParcelas = Trim(Request.Form("c_custoFinancFornecQtdeParcelas"))
 	
-	dim rb_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento
+	dim c_FlagCadSemiAutoPedMagento_FluxoOtimizado, s_checked
+	c_FlagCadSemiAutoPedMagento_FluxoOtimizado = Trim(Request.Form("c_FlagCadSemiAutoPedMagento_FluxoOtimizado"))
+
+	dim EndCob_endereco, EndCob_endereco_numero, EndCob_endereco_complemento, EndCob_endereco_complemento_original_magento, EndCob_endereco_ponto_referencia, EndCob_bairro, EndCob_cidade, EndCob_uf, EndCob_cep
+	dim EndCob_email, EndCob_email_xml, EndCob_nome, EndCob_tipo_pessoa
+	dim EndCob_ddd_res, EndCob_tel_res, EndCob_ddd_com, EndCob_tel_com, EndCob_ramal_com, EndCob_ddd_com_2, EndCob_tel_com_2, EndCob_ramal_com_2, EndCob_ddd_cel, EndCob_tel_cel
+	dim EndCob_cnpj_cpf, EndCob_contribuinte_icms_status, EndCob_produtor_rural_status, EndCob_ie, EndCob_rg, EndCob_contato
+	dim rb_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_endereco_ponto_referencia
 	dim EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep,EndEtg_obs
-	rb_end_entrega = Trim(Request.Form("rb_end_entrega"))
-	EndEtg_endereco = Trim(Request.Form("EndEtg_endereco"))
-	EndEtg_endereco_numero = Trim(Request.Form("EndEtg_endereco_numero"))
-	EndEtg_endereco_complemento = Trim(Request.Form("EndEtg_endereco_complemento"))
-	EndEtg_bairro = Trim(Request.Form("EndEtg_bairro"))
-	EndEtg_cidade = Trim(Request.Form("EndEtg_cidade"))
-	EndEtg_uf = Trim(Request.Form("EndEtg_uf"))
-	EndEtg_cep = Trim(Request.Form("EndEtg_cep"))
-	EndEtg_obs = Trim(Request.Form("EndEtg_obs"))
+	dim EndEtg_email, EndEtg_email_xml, EndEtg_nome, EndEtg_ddd_res, EndEtg_tel_res, EndEtg_ddd_com, EndEtg_tel_com, EndEtg_ramal_com
+	dim EndEtg_ddd_cel, EndEtg_tel_cel, EndEtg_ddd_com_2, EndEtg_tel_com_2, EndEtg_ramal_com_2
+	dim EndEtg_tipo_pessoa, EndEtg_cnpj_cpf, EndEtg_contribuinte_icms_status, EndEtg_produtor_rural_status
+	dim EndEtg_ie, EndEtg_rg
+
 	dim s_fabricante, s_produto, s_descricao, s_descricao_html, s_qtde, s_readonly, s_vl_NF_readonly, s_vl_NF
 	dim s_preco_lista, s_vl_TotalItem, m_TotalItem, m_TotalDestePedido, m_TotalItemComRA
 	dim s_campo_focus
@@ -78,21 +107,7 @@
 	dim intIdx
 	dim s_qtde_dias
 	
-'	CONECTA AO BANCO DE DADOS
-'	=========================
-	dim cn, rs, tMAP_XML, tOI
-	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
-
-	dim blnLojaHabilitadaProdCompostoECommerce
-	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
-
-	dim s_lista_operacoes_permitidas
-	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
-
-	dim r_cliente
-	set r_cliente = New cl_CLIENTE
-	call x_cliente_bd(cliente_selecionado, r_cliente)
-	
+'	OBTÉM PARÂMETROS DE COMISSÃO E DESCONTO
 	dim rCD
 	set rCD = obtem_perc_max_comissao_e_desconto_por_loja(loja)
 
@@ -150,10 +165,6 @@
 		next
 	
 '	CONSISTÊNCIAS
-	dim alerta, alerta_aux, alerta_informativo, alerta_informativo_aux
-	alerta=""
-	alerta_informativo=""
-
 	dim s_nome_cliente, c_mag_cpf_cnpj_identificado, c_mag_installer_document
 	dim operacao_origem, c_numero_magento, c_numero_marketplace, c_marketplace_codigo_origem, operationControlTicket, sessionToken, id_magento_api_pedido_xml
 	operacao_origem = Trim(Request("operacao_origem"))
@@ -186,6 +197,8 @@
 		id_magento_api_pedido_xml = Trim(Request("id_magento_api_pedido_xml"))
 		
 		If Not cria_recordset_otimista(tMAP_XML, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+		If Not cria_recordset_otimista(tMAP_END_COB, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+		If Not cria_recordset_otimista(tMAP_END_ETG, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
 		set rParametro = get_registro_t_parametro(ID_PARAMETRO_MagentoPedidoComIndicadorListaLojaErp)
 		sListaLojaMagentoPedidoComIndicador = Trim("" & rParametro.campo_texto)
@@ -256,8 +269,148 @@
 						end if
 					end if
 				end if 'if tMAP_XML.Eof
+			
+			if alerta = "" then
+				s = "SELECT " & _
+						"*" & _
+					" FROM t_MAGENTO_API_PEDIDO_XML_DECODE_ENDERECO" & _
+					" WHERE" & _
+						" (id_magento_api_pedido_xml = " & tMAP_XML("id") & ")" & _
+						" AND (tipo_endereco = 'COB')"
+				if tMAP_END_COB.State <> 0 then tMAP_END_COB.Close
+				tMAP_END_COB.open s, cn
+				if tMAP_END_COB.Eof then
+					alerta = "Falha ao tentar localizar no banco de dados o registro do endereço de cobrança do pedido Magento nº " & c_numero_magento & " (operationControlTicket = " & operationControlTicket & ")"
+					end if
+				end if
+
+			if alerta = "" then
+				s = "SELECT " & _
+						"*" & _
+					" FROM t_MAGENTO_API_PEDIDO_XML_DECODE_ENDERECO" & _
+					" WHERE" & _
+						" (id_magento_api_pedido_xml = " & tMAP_XML("id") & ")" & _
+						" AND (tipo_endereco = 'ETG')"
+				if tMAP_END_ETG.State <> 0 then tMAP_END_ETG.Close
+				tMAP_END_ETG.open s, cn
+				if tMAP_END_ETG.Eof then
+					alerta = "Falha ao tentar localizar no banco de dados o registro do endereço de entrega do pedido Magento nº " & c_numero_magento & " (operationControlTicket = " & operationControlTicket & ")"
+					end if
+				end if
 			end if 'if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO
 		end if 'if alerta = ""
+
+	if c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1" then
+		EndCob_endereco = Trim(Request.Form("EndCob_endereco"))
+		EndCob_endereco_numero = Trim(Request.Form("EndCob_endereco_numero"))
+		EndCob_endereco_complemento = Trim(Request.Form("EndCob_endereco_complemento"))
+		EndCob_endereco_ponto_referencia = Trim(Request.Form("EndCob_endereco_ponto_referencia"))
+		EndCob_bairro = Trim(Request.Form("EndCob_bairro"))
+		EndCob_cidade = Trim(Request.Form("EndCob_cidade"))
+		EndCob_uf = Trim(Request.Form("EndCob_uf"))
+		EndCob_cep = Trim(Request.Form("EndCob_cep"))
+		EndCob_email = Trim(Request.Form("EndCob_email"))
+		EndCob_email_xml = Trim(Request.Form("EndCob_email_xml"))
+		EndCob_nome = Trim(Request.Form("EndCob_nome"))
+		EndCob_tipo_pessoa = Trim(Request.Form("EndCob_tipo_pessoa"))
+		EndCob_ddd_res = Trim(Request.Form("EndCob_ddd_res"))
+		EndCob_tel_res = Trim(Request.Form("EndCob_tel_res"))
+		EndCob_ddd_com = Trim(Request.Form("EndCob_ddd_com"))
+		EndCob_tel_com = Trim(Request.Form("EndCob_tel_com"))
+		EndCob_ramal_com = Trim(Request.Form("EndCob_ramal_com"))
+		EndCob_ddd_com_2 = Trim(Request.Form("EndCob_ddd_com_2"))
+		EndCob_tel_com_2 = Trim(Request.Form("EndCob_tel_com_2"))
+		EndCob_ramal_com_2 = Trim(Request.Form("EndCob_ramal_com_2"))
+		EndCob_ddd_cel = Trim(Request.Form("EndCob_ddd_cel"))
+		EndCob_tel_cel = Trim(Request.Form("EndCob_tel_cel"))
+		EndCob_cnpj_cpf = Trim(Request.Form("EndCob_cnpj_cpf"))
+		EndCob_contribuinte_icms_status = Trim(Request.Form("EndCob_contribuinte_icms_status"))
+		EndCob_produtor_rural_status = Trim(Request.Form("EndCob_produtor_rural_status"))
+		EndCob_ie = Trim(Request.Form("EndCob_ie"))
+		EndCob_rg = Trim(Request.Form("EndCob_rg"))
+		EndCob_contato = Trim("" & t_CLIENTE("contato"))
+	else
+		EndCob_endereco = Trim("" & t_CLIENTE("endereco"))
+		EndCob_endereco_numero = Trim("" & t_CLIENTE("endereco_numero"))
+		EndCob_endereco_complemento = Trim("" & t_CLIENTE("endereco_complemento"))
+		EndCob_endereco_ponto_referencia = ""
+		EndCob_bairro = Trim("" & t_CLIENTE("bairro"))
+		EndCob_cidade = Trim("" & t_CLIENTE("cidade"))
+		EndCob_uf = Trim("" & t_CLIENTE("uf"))
+		EndCob_cep = Trim("" & t_CLIENTE("cep"))
+		EndCob_email = Trim("" & t_CLIENTE("email"))
+		EndCob_email_xml = Trim("" & t_CLIENTE("email_xml"))
+		EndCob_nome = Trim("" & t_CLIENTE("nome"))
+		EndCob_tipo_pessoa = Trim("" & t_CLIENTE("tipo"))
+		EndCob_ddd_res = Trim("" & t_CLIENTE("ddd_res"))
+		EndCob_tel_res = Trim("" & t_CLIENTE("tel_res"))
+		EndCob_ddd_com = Trim("" & t_CLIENTE("ddd_com"))
+		EndCob_tel_com = Trim("" & t_CLIENTE("tel_com"))
+		EndCob_ramal_com = Trim("" & t_CLIENTE("ramal_com"))
+		EndCob_ddd_com_2 = Trim("" & t_CLIENTE("ddd_com_2"))
+		EndCob_tel_com_2 = Trim("" & t_CLIENTE("tel_com_2"))
+		EndCob_ramal_com_2 = Trim("" & t_CLIENTE("ramal_com_2"))
+		EndCob_ddd_cel = Trim("" & t_CLIENTE("ddd_cel"))
+		EndCob_tel_cel = Trim("" & t_CLIENTE("tel_cel"))
+		EndCob_cnpj_cpf = Trim("" & t_CLIENTE("cnpj_cpf"))
+		EndCob_contribuinte_icms_status = t_CLIENTE("contribuinte_icms_status")
+		EndCob_produtor_rural_status = t_CLIENTE("produtor_rural_status")
+		EndCob_ie = Trim("" & t_CLIENTE("ie"))
+		EndCob_rg = Trim("" & t_CLIENTE("rg"))
+		EndCob_contato = Trim("" & t_CLIENTE("contato"))
+		
+		'QUANDO O FLUXO PASSA PELA TELA DE CADASTRO DO CLIENTE, REALIZA TRATAMENTO ADICIONAL P/ CONSIDERAR OS CAMPOS ORIGINAIS DO MAGENTO DE COMPLEMENTO E PONTO DE REFERÊNCIA
+		if c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "9" then
+			if EndCob_tipo_pessoa = ID_PF then
+				EndCob_endereco_ponto_referencia = Trim("" & tMAP_END_ETG("street_detail"))
+				EndCob_endereco_complemento_original_magento = Trim("" & tMAP_END_ETG("endereco_complemento"))
+				'O COMPLEMENTO DO ENDEREÇO FOI TRUNCADO?
+				if (Len(EndCob_endereco_complemento) < Len(EndCob_endereco_complemento_original_magento)) And _
+					(Ucase(EndCob_endereco_complemento) = Ucase(Left(EndCob_endereco_complemento_original_magento, Len(EndCob_endereco_complemento)))) then
+					EndCob_endereco_complemento = EndCob_endereco_complemento_original_magento
+					end if
+				end if
+			end if
+		end if
+
+	rb_end_entrega = Trim(Request.Form("rb_end_entrega"))
+	EndEtg_endereco = Trim(Request.Form("EndEtg_endereco"))
+	EndEtg_endereco_numero = Trim(Request.Form("EndEtg_endereco_numero"))
+	EndEtg_endereco_complemento = Trim(Request.Form("EndEtg_endereco_complemento"))
+	EndEtg_endereco_ponto_referencia = Trim(Request.Form("EndEtg_endereco_ponto_referencia"))
+	EndEtg_bairro = Trim(Request.Form("EndEtg_bairro"))
+	EndEtg_cidade = Trim(Request.Form("EndEtg_cidade"))
+	EndEtg_uf = Trim(Request.Form("EndEtg_uf"))
+	EndEtg_cep = Trim(Request.Form("EndEtg_cep"))
+	EndEtg_obs = Trim(Request.Form("EndEtg_obs"))
+	EndEtg_email = Trim(Request.Form("EndEtg_email"))
+	EndEtg_email_xml = Trim(Request.Form("EndEtg_email_xml"))
+	EndEtg_nome = Trim(Request.Form("EndEtg_nome"))
+	EndEtg_ddd_res = Trim(Request.Form("EndEtg_ddd_res"))
+	EndEtg_tel_res = Trim(Request.Form("EndEtg_tel_res"))
+	EndEtg_ddd_com = Trim(Request.Form("EndEtg_ddd_com"))
+	EndEtg_tel_com = Trim(Request.Form("EndEtg_tel_com"))
+	EndEtg_ramal_com = Trim(Request.Form("EndEtg_ramal_com"))
+	EndEtg_ddd_cel = Trim(Request.Form("EndEtg_ddd_cel"))
+	EndEtg_tel_cel = Trim(Request.Form("EndEtg_tel_cel"))
+	EndEtg_ddd_com_2 = Trim(Request.Form("EndEtg_ddd_com_2"))
+	EndEtg_tel_com_2 = Trim(Request.Form("EndEtg_tel_com_2"))
+	EndEtg_ramal_com_2 = Trim(Request.Form("EndEtg_ramal_com_2"))
+	EndEtg_tipo_pessoa = Trim(Request.Form("EndEtg_tipo_pessoa"))
+	EndEtg_cnpj_cpf = Trim(Request.Form("EndEtg_cnpj_cpf"))
+	EndEtg_contribuinte_icms_status = Trim(Request.Form("EndEtg_contribuinte_icms_status"))
+	EndEtg_produtor_rural_status = Trim(Request.Form("EndEtg_produtor_rural_status"))
+	EndEtg_ie = Trim(Request.Form("EndEtg_ie"))
+	EndEtg_rg = Trim(Request.Form("EndEtg_rg"))
+
+	'QUANDO O FLUXO PASSA PELA TELA DE CADASTRO DO CLIENTE, REALIZA TRATAMENTO ADICIONAL P/ CONSIDERAR OS CAMPOS ORIGINAIS DO MAGENTO DE COMPLEMENTO E PONTO DE REFERÊNCIA
+	if c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "9" then
+		if (EndCob_tipo_pessoa = ID_PJ) And (rb_end_entrega = "S") then
+			if (EndEtg_endereco_ponto_referencia = "") And (Trim("" & tMAP_END_ETG("street_detail")) <> "") then
+				EndEtg_endereco_ponto_referencia = Trim("" & tMAP_END_ETG("street_detail"))
+				end if
+			end if
+		end if
 
 	dim s_loja_indicou, s_nome_loja_indicou
 	if Session("vendedor_externo") then
@@ -286,7 +439,7 @@
 	if alerta = "" then
 		if c_indicador <> "" then
 			if Not le_orcamentista_e_indicador(c_indicador, r_orcamentista_e_indicador, msg_erro) then
-				alerta = "Falha ao recuperar os dados do indicador!!<br>" & msg_erro
+				alerta = "Falha ao recuperar os dados do indicador!<br>" & msg_erro
 			else
 				if blnMagentoPedidoComIndicador then
 					rb_RA = "S"
@@ -318,9 +471,172 @@
 			elseif Not cep_ok(EndEtg_cep) then
 				alerta="CEP INVÁLIDO NO ENDEREÇO DE ENTREGA."
 				end if
+
+
+            if (alerta = "") And (EndCob_tipo_pessoa = ID_PJ) and blnUsarMemorizacaoCompletaEnderecos then
+                if EndEtg_tipo_pessoa <> "PJ" and EndEtg_tipo_pessoa <> "PF" then
+                    alerta = "Necessário escolher Pessoa Jurídica ou Pessoa Física no Endereço de entrega!"
+    			elseif EndEtg_nome = "" then
+                    alerta = "Preencha o nome/razão social no endereço de entrega!"
+                    end if 
+	
+                if alerta = "" and EndEtg_tipo_pessoa = "PJ" then
+                    '//Campos PJ: 
+                    if EndEtg_cnpj_cpf = "" or not cnpj_ok(EndEtg_cnpj_cpf) then
+                        alerta = "Endereço de entrega: CNPJ inválido!"
+                    elseif EndEtg_contribuinte_icms_status = "" then
+                        alerta = "Endereço de entrega: selecione o tipo de contribuinte de ICMS!"
+                    elseif converte_numero(EndEtg_contribuinte_icms_status) = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) and EndEtg_ie = "" then
+                        alerta = "Endereço de entrega: se o cliente é contribuinte do ICMS a inscrição estadual deve ser preenchida!"
+                    elseif converte_numero(EndEtg_contribuinte_icms_status) = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) and InStr(EndEtg_ie, "ISEN") > 0 then 
+                        alerta = "Endereço de entrega: se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!"
+                    elseif converte_numero(EndEtg_contribuinte_icms_status) = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) and InStr(EndEtg_ie, "ISEN") > 0 then 
+                        alerta = "Endereço de entrega: se cliente é contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!"
+                    'telefones PJ:
+                    'EndEtg_ddd_com
+                    'EndEtg_tel_com
+                    'EndEtg_ramal_com
+                    'EndEtg_ddd_com_2
+                    'EndEtg_tel_com_2
+                    'EndEtg_ramal_com_2
+                    elseif not ddd_ok(EndEtg_ddd_com) then
+                        alerta = "Endereço de entrega: DDD inválido!"
+                    elseif not telefone_ok(EndEtg_tel_com) then
+                        alerta = "Endereço de entrega: telefone inválido!"
+                    elseif EndEtg_ddd_com = "" and EndEtg_tel_com <> "" then
+                        alerta = "Endereço de entrega: preencha o DDD do telefone."
+                    elseif EndEtg_tel_com = "" and EndEtg_ddd_com <> "" then
+                        alerta = "Endereço de entrega: preencha o telefone."
+
+                    elseif not ddd_ok(EndEtg_ddd_com_2) then
+                        alerta = "Endereço de entrega: DDD inválido!"
+                    elseif not telefone_ok(EndEtg_tel_com_2) then
+                        alerta = "Endereço de entrega: telefone inválido!"
+                    elseif EndEtg_ddd_com_2 = "" and EndEtg_tel_com_2 <> "" then
+                        alerta = "Endereço de entrega: preencha o DDD do telefone."
+                    elseif EndEtg_tel_com_2 = "" and EndEtg_ddd_com_2 <> "" then
+                        alerta = "Endereço de entrega: preencha o telefone."
+                        end if 
+                    end if 
+
+                if alerta = "" and EndEtg_tipo_pessoa <> "PJ" then
+                    '//campos PF
+                    if EndEtg_cnpj_cpf = "" or not cpf_ok(EndEtg_cnpj_cpf) then
+                        alerta = "Endereço de entrega: CPF inválido!"
+                    elseif EndEtg_produtor_rural_status = "" then
+                        alerta = "Endereço de entrega: informe se o cliente é produtor rural ou não!"
+                    elseif converte_numero(EndEtg_produtor_rural_status) <> converte_numero(COD_ST_CLIENTE_PRODUTOR_RURAL_NAO) then
+                        if converte_numero(EndEtg_contribuinte_icms_status) <> converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
+                            alerta = "Endereço de entrega: para ser cadastrado como Produtor Rural, é necessário ser contribuinte do ICMS e possuir nº de IE!"
+                        elseif EndEtg_contribuinte_icms_status = "" then
+                            alerta = "Endereço de entrega: informe se o cliente é contribuinte do ICMS, não contribuinte ou isento!"
+                        elseif converte_numero(EndEtg_contribuinte_icms_status) = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) and EndEtg_ie = "" then
+                            alerta = "Endereço de entrega: se o cliente é contribuinte do ICMS a inscrição estadual deve ser preenchida!"
+                        elseif converte_numero(EndEtg_contribuinte_icms_status) = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO) and InStr(EndEtg_ie, "ISEN") > 0 then 
+                            alerta = "Endereço de entrega: se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!"
+                        elseif converte_numero(EndEtg_contribuinte_icms_status) = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) and InStr(EndEtg_ie, "ISEN") > 0 then 
+                            alerta = "Endereço de entrega: se cliente é contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!"
+                        elseif converte_numero(EndEtg_contribuinte_icms_status) = converte_numero(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO) and EndEtg_ie <> "" then 
+                            alerta = "Endereço de entrega: se o Contribuinte ICMS é isento, o campo IE deve ser vazio!"
+                            end if
+                        end if
+
+                    if alerta = "" then
+                        'telefones PF:
+                        'EndEtg_ddd_res
+                        'EndEtg_tel_res
+                        'EndEtg_ddd_cel
+                        'EndEtg_tel_cel
+                        if not ddd_ok(retorna_so_digitos(EndEtg_ddd_res)) then
+                            alerta = "Endereço de entrega: DDD inválido!"
+                        elseif not telefone_ok(retorna_so_digitos(EndEtg_tel_res)) then
+                            alerta = "Endereço de entrega: telefone inválido!"
+                        elseif EndEtg_ddd_res <> "" or EndEtg_tel_res <> "" then
+                            if EndEtg_ddd_res = "" then
+                                alerta = "Endereço de entrega: preencha o DDD!"
+                            elseif EndEtg_tel_res = "" then
+                                alerta = "Endereço de entrega: preencha o telefone!"
+                                end if
+                            end if
+                        end if
+
+                    if alerta = "" then
+                        if not ddd_ok(retorna_so_digitos(EndEtg_ddd_cel)) then
+                            alerta = "Endereço de entrega: DDD inválido!"
+                        elseif not telefone_ok(retorna_so_digitos(EndEtg_tel_cel)) then
+                            alerta = "Endereço de entrega: telefone inválido!"
+                        elseif EndEtg_ddd_cel = "" and EndEtg_tel_cel <> "" then
+                            alerta = "Endereço de entrega: preencha o DDD do celular."
+                        elseif EndEtg_tel_cel = "" and EndEtg_ddd_cel <> "" then
+                            alerta = "Endereço de entrega: preencha o número do celular."
+                            end if
+                        end if
+                    end if
+                end if
+
+		    end if
+	    end if
+
+	if alerta = "" then
+		if ( (EndCob_tipo_pessoa = ID_PF) And (Cstr(EndCob_produtor_rural_status) = Cstr(COD_ST_CLIENTE_PRODUTOR_RURAL_SIM)) ) _
+			Or _
+			( (EndCob_tipo_pessoa = ID_PJ) And (Cstr(EndCob_contribuinte_icms_status) = Cstr(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM)) ) _
+			Or _
+			( (EndCob_tipo_pessoa = ID_PJ) And (Cstr(EndCob_contribuinte_icms_status) = Cstr(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO)) And (EndCob_ie <> "") ) then
+			if Not isInscricaoEstadualValida(EndCob_ie, EndCob_uf) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Preencha a IE (Inscrição Estadual) com um número válido!" & _
+						"<br>" & "Certifique-se de que a UF informada corresponde à UF responsável pelo registro da IE."
+				end if
+			end if
+
+		if rb_end_entrega = "S" then
+			if ( (EndEtg_tipo_pessoa = ID_PF) And (Cstr(EndEtg_produtor_rural_status) = Cstr(COD_ST_CLIENTE_PRODUTOR_RURAL_SIM)) ) _
+				Or _
+			   ( (EndEtg_tipo_pessoa = ID_PJ) And (Cstr(EndEtg_contribuinte_icms_status) = Cstr(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM)) ) _
+			   Or _
+			   ( (EndEtg_tipo_pessoa = ID_PJ) And (Cstr(EndEtg_contribuinte_icms_status) = Cstr(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO)) And (Trim(EndEtg_ie) <> "") ) then
+				if Not isInscricaoEstadualValida(EndEtg_ie, EndEtg_uf) then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "Endereço de entrega: preencha a IE (Inscrição Estadual) com um número válido!" & _
+							"<br>" & "Certifique-se de que a UF do endereço de entrega corresponde à UF responsável pelo registro da IE."
+					end if
+				end if
 			end if
 		end if
-	
+
+	if alerta="" then
+	'	MUNICÍPIO DE ACORDO C/ TABELA DO IBGE?
+		dim s_lista_sugerida_municipios
+		if Not consiste_municipio_IBGE_ok(EndCob_cidade, EndCob_uf, s_lista_sugerida_municipios, msg_erro) then
+			if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
+			if msg_erro <> "" then
+				alerta = alerta & msg_erro
+			else
+				alerta = alerta & "Município '" & EndCob_cidade & "' não consta na relação de municípios do IBGE para a UF de '" & EndCob_uf & "'!!"
+				if s_lista_sugerida_municipios <> "" then
+					alerta = alerta & "<br>" & _
+										"Localize o município na lista abaixo e verifique se a grafia está correta!!"
+					end if
+				end if
+			end if
+		
+		if rb_end_entrega = "S" then
+			if Not consiste_municipio_IBGE_ok(EndEtg_cidade, EndEtg_uf, s_lista_sugerida_municipios, msg_erro) then
+				if alerta <> "" then alerta = alerta & "<br><br>" & String(80,"=") & "<br><br>"
+				if msg_erro <> "" then
+					alerta = alerta & msg_erro
+				else
+					alerta = alerta & "Endereço de entrega: município '" & EndEtg_cidade & "' não consta na relação de municípios do IBGE para a UF de '" & EndEtg_uf & "'!!"
+					if s_lista_sugerida_municipios <> "" then
+						alerta = alerta & "<br>" & _
+											"Localize o município na lista abaixo e verifique se a grafia está correta!!"
+						end if
+					end if
+				end if
+			end if
+		end if
+
 	if alerta="" then
 		if rb_indicacao = "" then
 			alerta = "Informe se o pedido é com indicação ou não."
@@ -425,7 +741,7 @@
 					rs.MoveNext
 					loop
 				alerta=texto_add_br(alerta)
-				alerta=alerta & "O código de produto " & v_item(i).produto & " do fabricante " & v_item(i).fabricante & " é somente um código auxiliar para agrupar os produtos " & s & " e não pode ser usado diretamente no pedido!!"
+				alerta=alerta & "O código de produto " & v_item(i).produto & " do fabricante " & v_item(i).fabricante & " é somente um código auxiliar para agrupar os produtos " & s & " e não pode ser usado diretamente no pedido!"
 				end if
 			next
 		end if
@@ -485,6 +801,8 @@
 			alerta="O CAMPO BAIRRO DO ENDEREÇO DE ENTREGA POSSUI UM OU MAIS CARACTERES INVÁLIDOS: " & s_caracteres_invalidos
 		elseif Not isTextoValido(EndEtg_cidade, s_caracteres_invalidos) then
 			alerta="O CAMPO CIDADE DO ENDEREÇO DE ENTREGA POSSUI UM OU MAIS CARACTERES INVÁLIDOS: " & s_caracteres_invalidos
+		elseif Not isTextoValido(EndEtg_nome, s_caracteres_invalidos) then
+			alerta="O CAMPO NOME DO ENDEREÇO DE ENTREGA POSSUI UM OU MAIS CARACTERES INVÁLIDOS: " & s_caracteres_invalidos
 			end if
 		end if
 	
@@ -492,7 +810,7 @@
 '	LÓGICA P/ CONSUMO DO ESTOQUE (REGRA DEFINIDA POR PRODUTO)
 	dim tipo_pessoa
 	dim descricao_tipo_pessoa
-	tipo_pessoa = multi_cd_regra_determina_tipo_pessoa(r_cliente.tipo, r_cliente.contribuinte_icms_status, r_cliente.produtor_rural_status)
+	tipo_pessoa = multi_cd_regra_determina_tipo_pessoa(EndCob_tipo_pessoa, EndCob_contribuinte_icms_status, EndCob_produtor_rural_status)
 	descricao_tipo_pessoa = descricao_multi_CD_regra_tipo_pessoa(tipo_pessoa)
 
 	dim id_nfe_emitente_selecao_manual
@@ -523,7 +841,7 @@
 			next
 		
 		'RECUPERA AS REGRAS DE CONSUMO DO ESTOQUE ASSOCIADAS AOS PRODUTOS
-		if Not obtemCtrlEstoqueProdutoRegra(r_cliente.uf, r_cliente.tipo, r_cliente.contribuinte_icms_status, r_cliente.produtor_rural_status, vProdRegra, msg_erro) then
+		if Not obtemCtrlEstoqueProdutoRegra(EndCob_uf, EndCob_tipo_pessoa, EndCob_contribuinte_icms_status, EndCob_produtor_rural_status, vProdRegra, msg_erro) then
 			alerta = "Falha ao tentar obter a(s) regra(s) de consumo do estoque"
 			if msg_erro <> "" then
 				alerta=texto_add_br(alerta)
@@ -542,7 +860,7 @@
 						alerta=alerta & vProdRegra(iRegra).msg_erro
 					else
 						alerta=texto_add_br(alerta)
-						alerta=alerta & "Falha desconhecida na leitura da regra de consumo do estoque para o produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " (UF: '" & r_cliente.uf & "', tipo de pessoa: '" & descricao_tipo_pessoa & "')"
+						alerta=alerta & "Falha desconhecida na leitura da regra de consumo do estoque para o produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " (UF: '" & EndCob_uf & "', tipo de pessoa: '" & descricao_tipo_pessoa & "')"
 						end if
 					end if
 				end if
@@ -561,13 +879,13 @@
 					alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " está desativada"
 				elseif vProdRegra(iRegra).regra.regraUF.st_inativo = 1 then
 					alerta=texto_add_br(alerta)
-					alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " está bloqueada para a UF '" & r_cliente.uf & "'"
+					alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " está bloqueada para a UF '" & EndCob_uf & "'"
 				elseif vProdRegra(iRegra).regra.regraUF.regraPessoa.st_inativo = 1 then
 					alerta=texto_add_br(alerta)
-					alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " está bloqueada para clientes '" & descricao_tipo_pessoa & "' da UF '" & r_cliente.uf & "'"
+					alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " está bloqueada para clientes '" & descricao_tipo_pessoa & "' da UF '" & EndCob_uf & "'"
 				elseif converte_numero(vProdRegra(iRegra).regra.regraUF.regraPessoa.spe_id_nfe_emitente) = 0 then
 					alerta=texto_add_br(alerta)
-					alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " não especifica nenhum CD para aguardar produtos sem presença no estoque para clientes '" & descricao_tipo_pessoa & "' da UF '" & r_cliente.uf & "'"
+					alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " não especifica nenhum CD para aguardar produtos sem presença no estoque para clientes '" & descricao_tipo_pessoa & "' da UF '" & EndCob_uf & "'"
 				else
 					qtde_CD_ativo = 0
 					for iCD=LBound(vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD) to UBound(vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD)
@@ -580,7 +898,7 @@
 					'A SELEÇÃO MANUAL DE CD PERMITE O USO DE CD DESATIVADO
 					if (qtde_CD_ativo = 0) And (id_nfe_emitente_selecao_manual = 0) then
 						alerta=texto_add_br(alerta)
-						alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " não especifica nenhum CD ativo para clientes '" & descricao_tipo_pessoa & "' da UF '" & r_cliente.uf & "'"
+						alerta=alerta & "Regra de consumo do estoque '" & vProdRegra(iRegra).regra.apelido & "' associada ao produto (" & vProdRegra(iRegra).fabricante & ")" & vProdRegra(iRegra).produto & " não especifica nenhum CD ativo para clientes '" & descricao_tipo_pessoa & "' da UF '" & EndCob_uf & "'"
 						end if
 					end if
 				end if
@@ -1007,11 +1325,11 @@ end function
 <script type="text/javascript">
 	$(function() {
 		$("#divAjaxRunning").css('filter', 'alpha(opacity=60)'); // TRANSPARÊNCIA NO IE8
-		<% if r_cliente.tipo = ID_PF then %>
+		<% if EndCob_tipo_pessoa = ID_PF then %>
 		if (($("#c_loja").val() != NUMERO_LOJA_ECOMMERCE_AR_CLUBE) && (!FLAG_MAGENTO_PEDIDO_COM_INDICADOR)) $(".TR_FP_PU").hide();
 		$(".TR_FP_PSE").hide();
 		<% end if %>
-		<% if r_cliente.tipo = ID_PJ then %>
+		<% if EndCob_tipo_pessoa = ID_PJ then %>
 		$(".TR_FP_PSE").hide();
 		<% end if %>
 		$(".tdGarInd").hide();
@@ -1089,7 +1407,7 @@ var percDesc,vlLista,vlVenda,strMsgErroAlert;
 	if (objAjaxCustoFinancFornecConsultaPreco.readyState==AJAX_REQUEST_IS_COMPLETE) {
 		strResp=objAjaxCustoFinancFornecConsultaPreco.responseText;
 		if (strResp=="") {
-			alert("Falha ao consultar o preço!!");
+			alert("Falha ao consultar o preço!");
 			window.status="Concluído";
 			$("#divAjaxRunning").hide();
 			return;
@@ -1119,7 +1437,7 @@ var percDesc,vlLista,vlVenda,strMsgErroAlert;
 						if (strPrecoLista==null) strPrecoLista="";
 					//  Atualiza o preço
 						if (strPrecoLista=="") {
-							alert("Falha na consulta do preço do produto " + strProduto + "!!\n" + strMsgErro);
+							alert("Falha na consulta do preço do produto " + strProduto + "!\n" + strMsgErro);
 							}
 						else {
 							for (j=0; j<f.c_fabricante.length; j++) {
@@ -1151,13 +1469,13 @@ var percDesc,vlLista,vlVenda,strMsgErroAlert;
 								}
 							}
 						if (strMsgErroAlert!="") strMsgErroAlert+="\n\n";
-						strMsgErroAlert+="Falha ao consultar o preço do produto " + strProduto + "!!\n" + strMsgErro;
+						strMsgErroAlert+="Falha ao consultar o preço do produto " + strProduto + "!\n" + strMsgErro;
 						}
 					}
 				}
 			catch (e)
 				{
-				alert("Falha na consulta do preço!!\n"+e.message);
+				alert("Falha na consulta do preço!\n"+e.message);
 				}
 			}
 			
@@ -1178,7 +1496,7 @@ var f, i, strListaProdutos, strUrl, strOpcaoFormaPagto;
 	f=fPED;
 	objAjaxCustoFinancFornecConsultaPreco=GetXmlHttpObject();
 	if (objAjaxCustoFinancFornecConsultaPreco==null) {
-		alert("O browser NÃO possui suporte ao AJAX!!");
+		alert("O browser NÃO possui suporte ao AJAX!");
 		return;
 		}
 		
@@ -1683,7 +2001,7 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 	if (f.rb_forma_pagto[idx].checked) {
 		if (trim(f.op_av_forma_pagto.value)=='') {
 			if (blnComAvisos) {
-				alert('Indique a forma de pagamento!!');
+				alert('Indique a forma de pagamento!');
 				f.op_av_forma_pagto.focus();
 				}
 			return false;
@@ -1696,14 +2014,14 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 	if (f.rb_forma_pagto[idx].checked) {
 		if (trim(f.op_pu_forma_pagto.value)=='') {
 			if (blnComAvisos) {
-				alert('Indique a forma de pagamento da parcela única!!');
+				alert('Indique a forma de pagamento da parcela única!');
 				f.op_pu_forma_pagto.focus();
 				}
 			return false;
 			}
 		if (trim(f.c_pu_valor.value)=='') {
 			if (blnComAvisos) {
-				alert('Indique o valor da parcela única!!');
+				alert('Indique o valor da parcela única!');
 				f.c_pu_valor.focus();
 				}
 			return false;
@@ -1712,14 +2030,14 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 		vtFP=ve;
 		if (ve<=0) {
 			if (blnComAvisos) {
-				alert('Valor da parcela única é inválido!!');
+				alert('Valor da parcela única é inválido!');
 				f.c_pu_valor.focus();
 				}
 			return false;
 			}
 		if (trim(f.c_pu_vencto_apos.value)=='') {
 			if (blnComAvisos) {
-				alert('Indique o intervalo de vencimento da parcela única!!');
+				alert('Indique o intervalo de vencimento da parcela única!');
 				f.c_pu_vencto_apos.focus();
 				}
 			return false;
@@ -1727,14 +2045,14 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 		nip=converte_numero(f.c_pu_vencto_apos.value);
 		if (nip<=0) {
 			if (blnComAvisos) {
-				alert('Intervalo de vencimento da parcela única é inválido!!');
+				alert('Intervalo de vencimento da parcela única é inválido!');
 				f.c_pu_vencto_apos.focus();
 				}
 			return false;
 			}
 		if (Math.abs(vtFP-vtNF)>MAX_ERRO_ARREDONDAMENTO) {
 			if (blnComAvisos) {
-				alert('Há divergência entre o valor total do pedido (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vtNF) + ') e o valor total descrito através da forma de pagamento (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vtFP) + ')!!');
+				alert('Há divergência entre o valor total do pedido (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vtNF) + ') e o valor total descrito através da forma de pagamento (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vtFP) + ')!');
 				f.c_pu_valor.focus();
 				}
 			return false;
@@ -1747,7 +2065,7 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 	if (f.rb_forma_pagto[idx].checked) {
 		if (trim(f.c_pc_qtde.value)=='') {
 			if (blnComAvisos) {
-				alert('Indique a quantidade de parcelas!!');
+				alert('Indique a quantidade de parcelas!');
 				f.c_pc_qtde.focus();
 				}
 			return false;
@@ -1755,14 +2073,14 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 		n=converte_numero(f.c_pc_qtde.value);
 		if (n < 1) {
 			if (blnComAvisos) {
-				alert('Quantidade de parcelas inválida!!');
+				alert('Quantidade de parcelas inválida!');
 				f.c_pc_qtde.focus();
 				}
 			return false;
 			}
 		if (trim(f.c_pc_valor.value)=='') {
 			if (blnComAvisos) {
-				alert('Indique o valor da parcela!!');
+				alert('Indique o valor da parcela!');
 				f.c_pc_valor.focus();
 				}
 			return false;
@@ -1770,7 +2088,7 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 		vp=converte_numero(f.c_pc_valor.value);
 		if (vp<=0) {
 			if (blnComAvisos) {
-				alert('Valor de parcela inválido!!');
+				alert('Valor de parcela inválido!');
 				f.c_pc_valor.focus();
 				}
 			return false;
@@ -1778,7 +2096,7 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 		vtFP=n*vp;
 		if (Math.abs(vtFP-vtNF)>MAX_ERRO_ARREDONDAMENTO) {
 			if (blnComAvisos) {
-				alert('Há divergência entre o valor total do pedido (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vtNF) + ') e o valor total descrito através da forma de pagamento (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vtFP) + ')!!');
+				alert('Há divergência entre o valor total do pedido (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vtNF) + ') e o valor total descrito através da forma de pagamento (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vtFP) + ')!');
 				f.c_pc_valor.focus();
 				}
 			return false;
@@ -1791,7 +2109,7 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 	if (f.rb_forma_pagto[idx].checked) {
 		if (trim(f.c_pc_maquineta_qtde.value)=='') {
 			if (blnComAvisos) {
-				alert('Indique a quantidade de parcelas!!');
+				alert('Indique a quantidade de parcelas!');
 				f.c_pc_maquineta_qtde.focus();
 			}
 			return false;
@@ -1799,14 +2117,14 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 		n=converte_numero(f.c_pc_maquineta_qtde.value);
 		if (n < 1) {
 			if (blnComAvisos) {
-				alert('Quantidade de parcelas inválida!!');
+				alert('Quantidade de parcelas inválida!');
 				f.c_pc_maquineta_qtde.focus();
 			}
 			return false;
 		}
 		if (trim(f.c_pc_maquineta_valor.value)=='') {
 			if (blnComAvisos) {
-				alert('Indique o valor da parcela!!');
+				alert('Indique o valor da parcela!');
 				f.c_pc_maquineta_valor.focus();
 			}
 			return false;
@@ -1814,7 +2132,7 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 		vp=converte_numero(f.c_pc_maquineta_valor.value);
 		if (vp<=0) {
 			if (blnComAvisos) {
-				alert('Valor de parcela inválido!!');
+				alert('Valor de parcela inválido!');
 				f.c_pc_maquineta_valor.focus();
 			}
 			return false;
@@ -1822,7 +2140,7 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 		vtFP=n*vp;
 		if (Math.abs(vtFP-vtNF)>MAX_ERRO_ARREDONDAMENTO) {
 			if (blnComAvisos) {
-				alert('Há divergência entre o valor total do pedido (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vtNF) + ') e o valor total descrito através da forma de pagamento (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vtFP) + ')!!');
+				alert('Há divergência entre o valor total do pedido (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vtNF) + ') e o valor total descrito através da forma de pagamento (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vtFP) + ')!');
 				f.c_pc_maquineta_valor.focus();
 			}
 			return false;
@@ -1835,14 +2153,14 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 	if (f.rb_forma_pagto[idx].checked) {
 		if (trim(f.op_pce_entrada_forma_pagto.value)=='') {
 			if (blnComAvisos) {
-				alert('Indique a forma de pagamento da entrada!!');
+				alert('Indique a forma de pagamento da entrada!');
 				f.op_pce_entrada_forma_pagto.focus();
 				}
 			return false;
 			}
 		if (trim(f.c_pce_entrada_valor.value)=='') {
 			if (blnComAvisos) {
-				alert('Indique o valor da entrada!!');
+				alert('Indique o valor da entrada!');
 				f.c_pce_entrada_valor.focus();
 				}
 			return false;
@@ -1850,21 +2168,21 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 		ve=converte_numero(f.c_pce_entrada_valor.value);
 		if (ve<=0) {
 			if (blnComAvisos) {
-				alert('Valor da entrada inválido!!');
+				alert('Valor da entrada inválido!');
 				f.c_pce_entrada_valor.focus();
 				}
 			return false;
 			}
 		if (trim(f.op_pce_prestacao_forma_pagto.value)=='') {
 			if (blnComAvisos) {
-				alert('Indique a forma de pagamento das prestações!!');
+				alert('Indique a forma de pagamento das prestações!');
 				f.op_pce_prestacao_forma_pagto.focus();
 				}
 			return false;
 			}
 		if (trim(f.c_pce_prestacao_qtde.value)=='') {
 			if (blnComAvisos) {
-				alert('Indique a quantidade de prestações!!');
+				alert('Indique a quantidade de prestações!');
 				f.c_pce_prestacao_qtde.focus();
 				}
 			return false;
@@ -1872,14 +2190,14 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 		n=converte_numero(f.c_pce_prestacao_qtde.value);
 		if (n<=0) {
 			if (blnComAvisos) {
-				alert('Quantidade de prestações inválida!!');
+				alert('Quantidade de prestações inválida!');
 				f.c_pce_prestacao_qtde.focus();
 				}
 			return false;
 			}
 		if (trim(f.c_pce_prestacao_valor.value)=='') {
 			if (blnComAvisos) {
-				alert('Indique o valor da prestação!!');
+				alert('Indique o valor da prestação!');
 				f.c_pce_prestacao_valor.focus();
 				}
 			return false;
@@ -1887,7 +2205,7 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 		vp=converte_numero(f.c_pce_prestacao_valor.value);
 		if (vp<=0) {
 			if (blnComAvisos) {
-				alert('Valor de prestação inválido!!');
+				alert('Valor de prestação inválido!');
 				f.c_pce_prestacao_valor.focus();
 				}
 			return false;
@@ -1895,14 +2213,14 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 		vtFP=ve+(n*vp);
 		if (Math.abs(vtFP-vtNF)>MAX_ERRO_ARREDONDAMENTO) {
 			if (blnComAvisos) {
-				alert('Há divergência entre o valor total do pedido (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vtNF) + ') e o valor total descrito através da forma de pagamento (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vtFP) + ')!!');
+				alert('Há divergência entre o valor total do pedido (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vtNF) + ') e o valor total descrito através da forma de pagamento (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vtFP) + ')!');
 				f.c_pce_prestacao_valor.focus();
 				}
 			return false;
 			}
 		if (trim(f.c_pce_prestacao_periodo.value)=='') {
 			if (blnComAvisos) {
-				alert('Indique o intervalo de vencimento entre as parcelas!!');
+				alert('Indique o intervalo de vencimento entre as parcelas!');
 				f.c_pce_prestacao_periodo.focus();
 				}
 			return false;
@@ -1910,7 +2228,7 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 		ni=converte_numero(f.c_pce_prestacao_periodo.value);
 		if (ni<=0) {
 			if (blnComAvisos) {
-				alert('Intervalo de vencimento inválido!!');
+				alert('Intervalo de vencimento inválido!');
 				f.c_pce_prestacao_periodo.focus();
 				}
 			return false;
@@ -1923,14 +2241,14 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 	if (f.rb_forma_pagto[idx].checked) {
 		if (trim(f.op_pse_prim_prest_forma_pagto.value)=='') {
 			if (blnComAvisos) {
-				alert('Indique a forma de pagamento da 1ª prestação!!');
+				alert('Indique a forma de pagamento da 1ª prestação!');
 				f.op_pse_prim_prest_forma_pagto.focus();
 				}
 			return false;
 			}
 		if (trim(f.c_pse_prim_prest_valor.value)=='') {
 			if (blnComAvisos) {
-				alert('Indique o valor da 1ª prestação!!');
+				alert('Indique o valor da 1ª prestação!');
 				f.c_pse_prim_prest_valor.focus();
 				}
 			return false;
@@ -1938,14 +2256,14 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 		ve=converte_numero(f.c_pse_prim_prest_valor.value);
 		if (ve<=0) {
 			if (blnComAvisos) {
-				alert('Valor da 1ª prestação inválido!!');
+				alert('Valor da 1ª prestação inválido!');
 				f.c_pse_prim_prest_valor.focus();
 				}
 			return false;
 			}
 		if (trim(f.c_pse_prim_prest_apos.value)=='') {
 			if (blnComAvisos) {
-				alert('Indique o intervalo de vencimento da 1ª parcela!!');
+				alert('Indique o intervalo de vencimento da 1ª parcela!');
 				f.c_pse_prim_prest_apos.focus();
 				}
 			return false;
@@ -1953,21 +2271,21 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 		nip=converte_numero(f.c_pse_prim_prest_apos.value);
 		if (nip<=0) {
 			if (blnComAvisos) {
-				alert('Intervalo de vencimento da 1ª parcela é inválido!!');
+				alert('Intervalo de vencimento da 1ª parcela é inválido!');
 				f.c_pse_prim_prest_apos.focus();
 				}
 			return false;
 			}
 		if (trim(f.op_pse_demais_prest_forma_pagto.value)=='') {
 			if (blnComAvisos) {
-				alert('Indique a forma de pagamento das demais prestações!!');
+				alert('Indique a forma de pagamento das demais prestações!');
 				f.op_pse_demais_prest_forma_pagto.focus();
 				}
 			return false;
 			}
 		if (trim(f.c_pse_demais_prest_qtde.value)=='') {
 			if (blnComAvisos) {
-				alert('Indique a quantidade das demais prestações!!');
+				alert('Indique a quantidade das demais prestações!');
 				f.c_pse_demais_prest_qtde.focus();
 				}
 			return false;
@@ -1975,14 +2293,14 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 		n=converte_numero(f.c_pse_demais_prest_qtde.value);
 		if (n<=0) {
 			if (blnComAvisos) {
-				alert('Quantidade de prestações inválida!!');
+				alert('Quantidade de prestações inválida!');
 				f.c_pse_demais_prest_qtde.focus();
 				}
 			return false;
 			}
 		if (trim(f.c_pse_demais_prest_valor.value)=='') {
 			if (blnComAvisos) {
-				alert('Indique o valor das demais prestações!!');
+				alert('Indique o valor das demais prestações!');
 				f.c_pse_demais_prest_valor.focus();
 				}
 			return false;
@@ -1990,7 +2308,7 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 		vp=converte_numero(f.c_pse_demais_prest_valor.value);
 		if (vp<=0) {
 			if (blnComAvisos) {
-				alert('Valor de prestação inválido!!');
+				alert('Valor de prestação inválido!');
 				f.c_pse_demais_prest_valor.focus();
 				}
 			return false;
@@ -1998,14 +2316,14 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 		vtFP=ve+(n*vp);
 		if (Math.abs(vtFP-vtNF)>MAX_ERRO_ARREDONDAMENTO) {
 			if (blnComAvisos) {
-				alert('Há divergência entre o valor total do pedido (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vtNF) + ') e o valor total descrito através da forma de pagamento (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vtFP) + ')!!');
+				alert('Há divergência entre o valor total do pedido (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vtNF) + ') e o valor total descrito através da forma de pagamento (' + SIMBOLO_MONETARIO + ' ' + formata_moeda(vtFP) + ')!');
 				f.c_pse_demais_prest_valor.focus();
 				}
 			return false;
 			}
 		if (trim(f.c_pse_demais_prest_periodo.value)=='') {
 			if (blnComAvisos) {
-				alert('Indique o intervalo de vencimento entre as parcelas!!');
+				alert('Indique o intervalo de vencimento entre as parcelas!');
 				f.c_pse_demais_prest_periodo.focus();
 				}
 			return false;
@@ -2013,7 +2331,7 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 		ni=converte_numero(f.c_pse_demais_prest_periodo.value);
 		if (ni<=0) {
 			if (blnComAvisos) {
-				alert('Intervalo de vencimento inválido!!');
+				alert('Intervalo de vencimento inválido!');
 				f.c_pse_demais_prest_periodo.focus();
 				}
 			return false;
@@ -2023,7 +2341,7 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 		
 	if (blnComAvisos) {
 		// Nenhuma forma de pagamento foi escolhida
-		alert('Indique a forma de pagamento!!');
+		alert('Indique a forma de pagamento!');
 		}
 		
 	return false;
@@ -2109,21 +2427,21 @@ var perc_max_comissao_e_desconto_a_utilizar;
 	
 	s = "" + f.c_obs1.value;
 	if (s.length > MAX_TAM_OBS1) {
-		alert('Conteúdo de "Observações " excede em ' + (s.length-MAX_TAM_OBS1) + ' caracteres o tamanho máximo de ' + MAX_TAM_OBS1 + '!!');
+		alert('Conteúdo de "Observações " excede em ' + (s.length-MAX_TAM_OBS1) + ' caracteres o tamanho máximo de ' + MAX_TAM_OBS1 + '!');
 		f.c_obs1.focus();
 		return;
 	}
 
 	s = "" + f.c_nf_texto.value;
 	if (s.length > MAX_TAM_NF_TEXTO) {
-	    alert('Conteúdo de "Constar na NF" excede em ' + (s.length-MAX_TAM_NF_TEXTO) + ' caracteres o tamanho máximo de ' + MAX_TAM_NF_TEXTO + '!!');
+	    alert('Conteúdo de "Constar na NF" excede em ' + (s.length-MAX_TAM_NF_TEXTO) + ' caracteres o tamanho máximo de ' + MAX_TAM_NF_TEXTO + '!');
 	    f.c_nf_texto.focus();
 	    return;
 	}
 	
 	s = "" + f.c_forma_pagto.value;
 	if (s.length > MAX_TAM_FORMA_PAGTO) {
-		alert('Conteúdo de "Forma de Pagamento" excede em ' + (s.length-MAX_TAM_FORMA_PAGTO) + ' caracteres o tamanho máximo de ' + MAX_TAM_FORMA_PAGTO + '!!');
+		alert('Conteúdo de "Forma de Pagamento" excede em ' + (s.length-MAX_TAM_FORMA_PAGTO) + ' caracteres o tamanho máximo de ' + MAX_TAM_FORMA_PAGTO + '!');
 		f.c_forma_pagto.focus();
 		return;
 		}
@@ -2137,7 +2455,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 			vlAux = (converte_numero(f.c_PercVlPedidoLimiteRA.value)/100) * converte_numero(f.c_total_geral.value);
 			if (($("#c_loja").val()!=NUMERO_LOJA_ECOMMERCE_AR_CLUBE)&&(!FLAG_MAGENTO_PEDIDO_COM_INDICADOR)){
 				if (converte_numero(f.c_total_RA.value) > vlAux) {
-					alert('O valor total de RA excede o limite permitido para este pedido!!');
+					alert('O valor total de RA excede o limite permitido para este pedido!');
 					return;
 				}
 			}
@@ -2197,13 +2515,13 @@ var perc_max_comissao_e_desconto_a_utilizar;
 						// Senha de desconto NÃO cobre desconto
 						if (perc_senha_desconto < perc_desc) {
 							if (strMsgErro != "") strMsgErro += "\n";
-							strMsgErro += "O desconto do produto '" + f.c_descricao[i].value + "' (" + formata_numero(perc_desc, 2) + "%) excede o máximo autorizado!!";
+							strMsgErro += "O desconto do produto '" + f.c_descricao[i].value + "' (" + formata_numero(perc_desc, 2) + "%) excede o máximo autorizado!";
 						}
 					}
 					// Não tem senha de desconto
 					else {
 						if (strMsgErro != "") strMsgErro += "\n";
-						strMsgErro += "O desconto do produto '" + f.c_descricao[i].value + "' (" + formata_numero(perc_desc, 2) + "%) excede o máximo permitido!!";
+						strMsgErro += "O desconto do produto '" + f.c_descricao[i].value + "' (" + formata_numero(perc_desc, 2) + "%) excede o máximo permitido!";
 					}
 				} // if (perc_desc > perc_max_comissao_e_desconto_a_utilizar)
 			} // if (perc_desc != 0)
@@ -2211,7 +2529,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 	} // for (laço produtos)
 
 	if (strMsgErro != "") {
-		strMsgErro += "\n\nNão é possível continuar!!";
+		strMsgErro += "\n\nNão é possível continuar!";
 		alert(strMsgErro);
 		return;
 	}
@@ -2220,7 +2538,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 	if (perc_RT != 0) {
 		// RT excede limite máximo?
 		if (perc_RT > perc_max_RT) {
-			alert("Percentual de comissão excede o máximo permitido!!");
+			alert("Percentual de comissão excede o máximo permitido!");
 			return;
 		}
 
@@ -2233,11 +2551,11 @@ var perc_max_comissao_e_desconto_a_utilizar;
 
 		// O percentual de RT será alterado automaticamente, solicita confirmação
 		if (perc_RT_novo != perc_RT) {
-			s = "A soma dos percentuais de comissão (" + formata_numero(perc_RT, 2) + "%) e de desconto médio do(s) produto(s) (" + formata_numero(perc_desc_medio, 2) + "%) totaliza " + formata_numero(perc_desc_medio + perc_RT, 2) + "% e excede o máximo permitido!!" +
-				"\nA comissão será reduzida automaticamente para " + formata_numero(perc_RT_novo, 2) + "%!!" +
+			s = "A soma dos percentuais de comissão (" + formata_numero(perc_RT, 2) + "%) e de desconto médio do(s) produto(s) (" + formata_numero(perc_desc_medio, 2) + "%) totaliza " + formata_numero(perc_desc_medio + perc_RT, 2) + "% e excede o máximo permitido!" +
+				"\nA comissão será reduzida automaticamente para " + formata_numero(perc_RT_novo, 2) + "%!" +
 				"\nContinua?";
 			if (!confirm(s)) {
-				s = "Operação cancelada!!";
+				s = "Operação cancelada!";
 				alert(s);
 				return;
 			}
@@ -2383,7 +2701,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
     }
 
     if (strMsgErro != "") {
-        strMsgErro += "\n\nNão é possível continuar!!";
+        strMsgErro += "\n\nNão é possível continuar!";
         alert(strMsgErro);
         return;
     }
@@ -2523,8 +2841,8 @@ var perc_max_comissao_e_desconto_a_utilizar;
 <form id="fPED" name="fPED" method="post" action="PedidoNovoConfirma.asp">
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
 <input type="hidden" name="cliente_selecionado" id="cliente_selecionado" value='<%=cliente_selecionado%>'>
-<input type="hidden" name="c_cnpj_cpf" id="c_cnpj_cpf" value='<%=r_cliente.cnpj_cpf%>'>
-<input type="hidden" name="c_tipo_cliente" id="c_tipo_cliente" value='<%=r_cliente.tipo%>'>
+<input type="hidden" name="c_cnpj_cpf" id="c_cnpj_cpf" value='<%=EndCob_cnpj_cpf%>'>
+<input type="hidden" name="c_tipo_cliente" id="c_tipo_cliente" value='<%=EndCob_tipo_pessoa%>'>
 <% if erro_produto_indisponivel then s="S" else s="" %>
 <input type="hidden" name="opcao_venda_sem_estoque" id="opcao_venda_sem_estoque" value='<%=s%>'>
 
@@ -2570,6 +2888,60 @@ var perc_max_comissao_e_desconto_a_utilizar;
 <input type="hidden" name="operationControlTicket" id="operationControlTicket" value="<%=operationControlTicket%>" />
 <input type="hidden" name="sessionToken" id="sessionToken" value="<%=sessionToken%>" />
 
+<!--  CAMPOS ADICIONAIS DO ENDERECO DE ENTREGA  -->
+<input type="hidden" name="EndEtg_endereco_ponto_referencia" id="EndEtg_endereco_ponto_referencia" value="<%=EndEtg_endereco_ponto_referencia%>" />
+<input type="hidden" name="EndEtg_email" id="EndEtg_email" value="<%=EndEtg_email%>" />
+<input type="hidden" name="EndEtg_email_xml" id="EndEtg_email_xml" value="<%=EndEtg_email_xml%>" />
+<input type="hidden" name="EndEtg_nome" id="EndEtg_nome" value="<%=EndEtg_nome%>" />
+<input type="hidden" name="EndEtg_ddd_res" id="EndEtg_ddd_res" value="<%=EndEtg_ddd_res%>" />
+<input type="hidden" name="EndEtg_tel_res" id="EndEtg_tel_res" value="<%=EndEtg_tel_res%>" />
+<input type="hidden" name="EndEtg_ddd_com" id="EndEtg_ddd_com" value="<%=EndEtg_ddd_com%>" />
+<input type="hidden" name="EndEtg_tel_com" id="EndEtg_tel_com" value="<%=EndEtg_tel_com%>" />
+<input type="hidden" name="EndEtg_ramal_com" id="EndEtg_ramal_com" value="<%=EndEtg_ramal_com%>" />
+<input type="hidden" name="EndEtg_ddd_cel" id="EndEtg_ddd_cel" value="<%=EndEtg_ddd_cel%>" />
+<input type="hidden" name="EndEtg_tel_cel" id="EndEtg_tel_cel" value="<%=EndEtg_tel_cel%>" />
+<input type="hidden" name="EndEtg_ddd_com_2" id="EndEtg_ddd_com_2" value="<%=EndEtg_ddd_com_2%>" />
+<input type="hidden" name="EndEtg_tel_com_2" id="EndEtg_tel_com_2" value="<%=EndEtg_tel_com_2%>" />
+<input type="hidden" name="EndEtg_ramal_com_2" id="EndEtg_ramal_com_2" value="<%=EndEtg_ramal_com_2%>" />
+<input type="hidden" name="EndEtg_tipo_pessoa" id="EndEtg_tipo_pessoa" value="<%=EndEtg_tipo_pessoa%>" />
+<input type="hidden" name="EndEtg_cnpj_cpf" id="EndEtg_cnpj_cpf" value="<%=EndEtg_cnpj_cpf%>" />
+<input type="hidden" name="EndEtg_contribuinte_icms_status" id="EndEtg_contribuinte_icms_status" value="<%=EndEtg_contribuinte_icms_status%>" />
+<input type="hidden" name="EndEtg_produtor_rural_status" id="EndEtg_produtor_rural_status" value="<%=EndEtg_produtor_rural_status%>" />
+<input type="hidden" name="EndEtg_ie" id="EndEtg_ie" value="<%=EndEtg_ie%>" />
+<input type="hidden" name="EndEtg_rg" id="EndEtg_rg" value="<%=EndEtg_rg%>" />
+<input type="hidden" name="c_FlagCadSemiAutoPedMagento_FluxoOtimizado" id="c_FlagCadSemiAutoPedMagento_FluxoOtimizado" value="<%=c_FlagCadSemiAutoPedMagento_FluxoOtimizado%>" />
+
+<% if c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1" then %>
+<input type="hidden" name="EndCob_endereco" id="EndCob_endereco" value="<%=EndCob_endereco%>" />
+<input type="hidden" name="EndCob_endereco_numero" id="EndCob_endereco_numero" value="<%=EndCob_endereco_numero%>" />
+<input type="hidden" name="EndCob_endereco_complemento" id="EndCob_endereco_complemento" value="<%=EndCob_endereco_complemento%>" />
+<input type="hidden" name="EndCob_endereco_ponto_referencia" id="EndCob_endereco_ponto_referencia" value="<%=EndCob_endereco_ponto_referencia%>" />
+<input type="hidden" name="EndCob_bairro" id="EndCob_bairro" value="<%=EndCob_bairro%>" />
+<input type="hidden" name="EndCob_cidade" id="EndCob_cidade" value="<%=EndCob_cidade%>" />
+<input type="hidden" name="EndCob_uf" id="EndCob_uf" value="<%=EndCob_uf %>" />
+<input type="hidden" name="EndCob_cep" id="EndCob_cep" value="<%=EndCob_cep%>" />
+<input type="hidden" name="EndCob_email" id="EndCob_email" value="<%=EndCob_email%>" />
+<input type="hidden" name="EndCob_email_xml" id="EndCob_email_xml" value="<%=EndCob_email_xml%>" />
+<input type="hidden" name="EndCob_nome" id="EndCob_nome" value="<%=EndCob_nome%>" />
+<input type="hidden" name="EndCob_tipo_pessoa" id="EndCob_tipo_pessoa" value="<%=EndCob_tipo_pessoa%>" />
+<input type="hidden" name="EndCob_ddd_res" id="EndCob_ddd_res" value="<%=EndCob_ddd_res%>" />
+<input type="hidden" name="EndCob_tel_res" id="EndCob_tel_res" value="<%=EndCob_tel_res%>" />
+<input type="hidden" name="EndCob_ddd_com" id="EndCob_ddd_com" value="<%=EndCob_ddd_com%>" />
+<input type="hidden" name="EndCob_tel_com" id="EndCob_tel_com" value="<%=EndCob_tel_com%>" />
+<input type="hidden" name="EndCob_ramal_com" id="EndCob_ramal_com" value="<%=EndCob_ramal_com%>" />
+<input type="hidden" name="EndCob_ddd_com_2" id="EndCob_ddd_com_2" value="<%=EndCob_ddd_com_2%>" />
+<input type="hidden" name="EndCob_tel_com_2" id="EndCob_tel_com_2" value="<%=EndCob_tel_com_2%>" />
+<input type="hidden" name="EndCob_ramal_com_2" id="EndCob_ramal_com_2" value="<%=EndCob_ramal_com_2%>" />
+<input type="hidden" name="EndCob_ddd_cel" id="EndCob_ddd_cel" value="<%=EndCob_ddd_cel%>" />
+<input type="hidden" name="EndCob_tel_cel" id="EndCob_tel_cel" value="<%=EndCob_tel_cel%>" />
+<input type="hidden" name="EndCob_cnpj_cpf" id="EndCob_cnpj_cpf" value="<%=EndCob_cnpj_cpf%>" />
+<input type="hidden" name="EndCob_contribuinte_icms_status" id="EndCob_contribuinte_icms_status" value="<%=EndCob_contribuinte_icms_status%>" />
+<input type="hidden" name="EndCob_produtor_rural_status" id="EndCob_produtor_rural_status" value="<%=EndCob_produtor_rural_status%>" />
+<input type="hidden" name="EndCob_ie" id="EndCob_ie" value="<%=EndCob_ie%>" />
+<input type="hidden" name="EndCob_rg" id="EndCob_rg" value="<%=EndCob_rg%>" />
+<input type="hidden" name="EndCob_contato" id="EndCob_contato" value="<%=EndCob_contato%>" />
+<% end if %>
+
 
 <!-- AJAX EM ANDAMENTO -->
 <div id="divAjaxRunning" style="display:none;"><img src="../Imagem/ajax_loader_gray_256.gif" class="AjaxImgLoader"/></div>
@@ -2598,6 +2970,32 @@ var perc_max_comissao_e_desconto_a_utilizar;
 			<br /><span class="C"><%=sIdIndicador & " - " & sNomeIndicador%></span>
 		</td>
 	</tr>
+	<% elseif (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1") Or (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "9") then %>
+	<tr>
+		<td class="MB ME MD TdCliLbl"><span class="PLTd">Indicador</span></td>
+		<td class="MB MD TdCliCel">
+			<span class="C"><%=c_indicador%></span>
+		</td>
+	</tr>
+	<tr>
+		<td class="MB ME MD TdCliLbl"><span class="PLTd">VL Frete</span></td>
+		<td class="MB MD TdCliCel">
+			<span class="C"><%=formata_moeda(tMAP_XML("shipping_amount"))%></span>
+		</td>
+	</tr>
+	<tr>
+		<td class="MB ME MD TdCliLbl"><span class="PLTd">VL Itens c/ Desc</span></td>
+		<td class="MB MD TdCliCel">
+			<span class="C"><%=formata_moeda(converte_numero(tMAP_XML("grand_total"))-converte_numero(tMAP_XML("shipping_amount")))%></span>
+		</td>
+	</tr>
+	<tr>
+		<td class="MB ME MD TdCliLbl"><span class="PLTd">VL Total</span></td>
+		<td class="MB MD TdCliCel">
+			<span class="C"><%=formata_moeda(tMAP_XML("grand_total"))%></span>
+		</td>
+	</tr>
+
 	<% end if %>
 </table>
 <% end if %>
@@ -2877,10 +3275,41 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		</td>
 	</tr>
     <tr>
+		<%
+			s_value = ""
+			if (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1") Or (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "9") then
+				'Colocar a informação do ponto de referência no campo 'Constar na NF'.
+				'Comparar o conteúdo do ponto de referência com o campo complemento. Se forem iguais, não colocar em 'Constar na NF'.
+				'Se o campo complemento exceder o tamanho do BD e precisar ser truncado, copiá-lo no campo 'Constar na NF', junto com o ponto de referência.
+				if rb_end_entrega = "S" then
+					'Texto do complemento do endereço será truncado
+					if Len(EndEtg_endereco_complemento) > MAX_TAMANHO_CAMPO_ENDERECO_COMPLEMENTO then
+						if s_value <> "" then s_value = s_value & vbCrLf
+						s_value = s_value & "Complemento do endereço: " & EndEtg_endereco_complemento
+						end if
+					'Texto do ponto de referência é diferente do texto do complemento do endereço
+					if (Ucase(Trim(EndEtg_endereco_complemento)) <> Ucase(Trim(EndEtg_endereco_ponto_referencia))) And (Trim(EndEtg_endereco_ponto_referencia) <> "") then
+						if s_value <> "" then s_value = s_value & vbCrLf
+						s_value = s_value & "Ponto de referência: " & EndEtg_endereco_ponto_referencia
+						end if
+				else
+					'Texto do complemento do endereço será truncado
+					if Len(EndCob_endereco_complemento) > MAX_TAMANHO_CAMPO_ENDERECO_COMPLEMENTO then
+						if s_value <> "" then s_value = s_value & vbCrLf
+						s_value = s_value & "Complemento do endereço: " & EndCob_endereco_complemento
+						end if
+					'Texto do ponto de referência é diferente do texto do complemento do endereço
+					if (Ucase(Trim(EndCob_endereco_complemento)) <> Ucase(Trim(EndCob_endereco_ponto_referencia))) And (Trim(EndCob_endereco_ponto_referencia) <> "") then
+						if s_value <> "" then s_value = s_value & vbCrLf
+						s_value = s_value & "Ponto de referência: " & EndCob_endereco_ponto_referencia
+						end if
+					end if
+				end if
+		%>
 		<td class="MB" colspan="<%=Cstr(intColSpan)%>" align="left"><p class="Rf">Constar na NF</p>
 			<textarea name="c_nf_texto" id="c_nf_texto" class="PLLe" rows="<%=Cstr(MAX_LINHAS_NF_TEXTO_CONSTAR)%>" 
 				style="width:641px;margin-left:2pt;" onkeypress="limita_tamanho(this,MAX_TAM_NF_TEXTO);" onblur="this.value=trim(this.value);"
-				></textarea>
+				><%=s_value%></textarea>
 		</td>
 	</tr>
 	<tr>
@@ -2900,10 +3329,12 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		</td>
         <%end if %>
 		<td class="MB MD" align="left" nowrap><p class="Rf">Entrega Imediata</p>
+			<input type="radio" id="rb_etg_imediata" name="rb_etg_imediata"
+				value="<%=COD_ETG_IMEDIATA_NAO%>" /><span class="C" style="cursor:default" onclick="fPED.rb_etg_imediata[0].click();">Não</span>
+			<% s_checked = ""
+				if Cstr(loja)=NUMERO_LOJA_ECOMMERCE_AR_CLUBE then s_checked = " checked" %>
 			<input type="radio" id="rb_etg_imediata" name="rb_etg_imediata" 
-				value="<%=COD_ETG_IMEDIATA_NAO%>"><span class="C" style="cursor:default" onclick="fPED.rb_etg_imediata[0].click();">Não</span>
-			<input type="radio" id="rb_etg_imediata" name="rb_etg_imediata" 
-				value="<%=COD_ETG_IMEDIATA_SIM%>" <%if Cstr(loja)=NUMERO_LOJA_ECOMMERCE_AR_CLUBE then Response.write " checked"%>><span class="C" style="cursor:default" onclick="fPED.rb_etg_imediata[1].click();">Sim</span>
+				value="<%=COD_ETG_IMEDIATA_SIM%>" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fPED.rb_etg_imediata[1].click();">Sim</span>
 		</td>
 		<td class="MB" align="left" nowrap><p class="Rf">Bem de Uso/Consumo&nbsp;</p>
 			<input type="radio" id="rb_bem_uso_consumo" name="rb_bem_uso_consumo" 
@@ -2991,7 +3422,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 				<td align="left">
 				  <select id="op_av_forma_pagto" name="op_av_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();">
 					<%	if (rb_indicacao = "S") And (loja <> NUMERO_LOJA_ECOMMERCE_AR_CLUBE) then
-							Response.Write forma_pagto_liberada_av_monta_itens_select(Null, c_indicador, r_cliente.tipo)
+							Response.Write forma_pagto_liberada_av_monta_itens_select(Null, c_indicador, EndCob_tipo_pessoa)
 						else
 							Response.Write forma_pagto_av_monta_itens_select(Null)
 							end if %>
@@ -3024,7 +3455,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 						else
 							s_qtde_dias = ""
 							if rb_indicacao = "S" then
-								Response.Write forma_pagto_liberada_da_parcela_unica_monta_itens_select(Null, c_indicador, r_cliente.tipo)
+								Response.Write forma_pagto_liberada_da_parcela_unica_monta_itens_select(Null, c_indicador, EndCob_tipo_pessoa)
 							else
 								Response.Write forma_pagto_da_parcela_unica_monta_itens_select(Null)
 								end if
@@ -3043,7 +3474,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		  </td>
 		</tr>
 		<!--  PARCELADO NO CARTÃO (INTERNET)  -->
-		<% if (rb_indicacao = "S") And is_restricao_ativa_forma_pagto(c_indicador, ID_FORMA_PAGTO_CARTAO, r_cliente.tipo) then %>
+		<% if (rb_indicacao = "S") And is_restricao_ativa_forma_pagto(c_indicador, ID_FORMA_PAGTO_CARTAO, EndCob_tipo_pessoa) then %>
 		<tr style="display:none;">
 		<% else %>
 		<tr>
@@ -3071,7 +3502,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		  </td>
 		</tr>
 		<!--  PARCELADO NO CARTÃO (MAQUINETA)  -->
-		<% if (rb_indicacao = "S") And is_restricao_ativa_forma_pagto(c_indicador, ID_FORMA_PAGTO_CARTAO_MAQUINETA, r_cliente.tipo) then %>
+		<% if (rb_indicacao = "S") And is_restricao_ativa_forma_pagto(c_indicador, ID_FORMA_PAGTO_CARTAO_MAQUINETA, EndCob_tipo_pessoa) then %>
 		<tr style="display:none;">
 		<% else %>
 		<tr>
@@ -3118,7 +3549,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 				<td align="left">
 				  <select id="op_pce_entrada_forma_pagto" name="op_pce_entrada_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();">
 					<%	if rb_indicacao = "S" then
-							Response.Write forma_pagto_liberada_da_entrada_monta_itens_select(Null, c_indicador, r_cliente.tipo)
+							Response.Write forma_pagto_liberada_da_entrada_monta_itens_select(Null, c_indicador, EndCob_tipo_pessoa)
 						else
 							Response.Write forma_pagto_da_entrada_monta_itens_select(Null)
 							end if%>
@@ -3134,7 +3565,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 				<td align="left">
 				  <select id="op_pce_prestacao_forma_pagto" name="op_pce_prestacao_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();">
 					<%	if rb_indicacao = "S" then
-							Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select(Null, c_indicador, r_cliente.tipo)
+							Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select(Null, c_indicador, EndCob_tipo_pessoa)
 						else
 							Response.Write forma_pagto_da_prestacao_monta_itens_select(Null)
 							end if%>
@@ -3181,7 +3612,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 				<td align="left">
 				  <select id="op_pse_prim_prest_forma_pagto" name="op_pse_prim_prest_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();">
 					<%	if rb_indicacao = "S" then
-							Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select(Null, c_indicador, r_cliente.tipo)
+							Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select(Null, c_indicador, EndCob_tipo_pessoa)
 						else
 							Response.Write forma_pagto_da_prestacao_monta_itens_select(Null)
 							end if%>
@@ -3201,7 +3632,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 				<td align="left">
 				  <select id="op_pse_demais_prest_forma_pagto" name="op_pse_demais_prest_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();">
 					<%	if rb_indicacao = "S" then
-							Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select(Null, c_indicador, r_cliente.tipo)
+							Response.Write forma_pagto_liberada_da_prestacao_monta_itens_select(Null, c_indicador, EndCob_tipo_pessoa)
 						else
 							Response.Write forma_pagto_da_prestacao_monta_itens_select(Null)
 							end if%>
@@ -3309,9 +3740,18 @@ var perc_max_comissao_e_desconto_a_utilizar;
 <%
 '	FECHA CONEXAO COM O BANCO DE DADOS
 	if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then
+		if tMAP_END_COB.State <> 0 then tMAP_END_COB.Close
+		set tMAP_END_COB = nothing
+
+		if tMAP_END_ETG.State <> 0 then tMAP_END_ETG.Close
+		set tMAP_END_ETG = nothing
+		
 		if tMAP_XML.State <> 0 then tMAP_XML.Close
 		set tMAP_XML = nothing
 		end if
+
+	if t_CLIENTE.State <> 0 then t_CLIENTE.Close
+	set t_CLIENTE = nothing
 
 	cn.Close
 	set cn = nothing

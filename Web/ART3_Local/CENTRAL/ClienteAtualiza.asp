@@ -80,7 +80,8 @@
 	dim eh_cpf
 	dim pagina_retorno
 	dim s_tel_com_2, s_ddd_com_2, s_tel_cel, s_ddd_cel, s_ramal_com_2
-	
+	dim s_cliente_tipo
+
 	operacao_selecionada=Trim(request("operacao_selecionada"))
 	cliente_selecionado=retorna_so_digitos(trim(request("cliente_selecionado")))
 	cnpj_cpf_selecionado=retorna_so_digitos(trim(request("cnpj_cpf_selecionado")))
@@ -122,6 +123,8 @@
 	s_tel_cel=retorna_so_digitos(Trim(request("tel_cel")))
 	s_ddd_cel=retorna_so_digitos(Trim(request("ddd_cel")))
 	s_ramal_com_2=retorna_so_digitos(Trim(request("ramal_com_2")))
+	eh_cpf=(len(cnpj_cpf_selecionado)=11)
+	if eh_cpf then s_cliente_tipo=ID_PF else s_cliente_tipo=ID_PJ
 
 	pagina_retorno = Trim(request("pagina_retorno"))
 	if pagina_retorno <> "" then
@@ -141,8 +144,6 @@
 	erro_consistencia=false
 	erro_fatal=false
 	
-	eh_cpf=(len(cnpj_cpf_selecionado)=11)
-
 '	DADOS DO SÓCIO MAJORITÁRIO
 	dim blnCadSocioMaj, blnConsistir, blnConsistirDadosBancarios
 	dim strSocMajNome, strSocMajCpf, strSocMajBanco, strSocMajAgencia, strSocMajConta
@@ -327,7 +328,11 @@
 	s_tabela_municipios_IBGE = ""
 	if alerta = "" then
 	'	I.E. É VÁLIDA?
-		if (Not eh_cpf) And (s_ie<>"") then
+		if ( (s_cliente_tipo = ID_PF) And (Cstr(s_produtor_rural) = Cstr(COD_ST_CLIENTE_PRODUTOR_RURAL_SIM)) ) _
+			Or _
+			( (s_cliente_tipo = ID_PJ) And (Cstr(s_contribuinte_icms) = Cstr(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM)) ) _
+			Or _
+			( (s_cliente_tipo = ID_PJ) And (Cstr(s_contribuinte_icms) = Cstr(COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO)) And (s_ie <> "") ) then
 			if Not isInscricaoEstadualValida(s_ie, s_uf) then
 				alerta="Preencha a IE (Inscrição Estadual) com um número válido!!" & _
 						"<br>" & "Certifique-se de que a UF informada corresponde à UF responsável pelo registro da IE."
@@ -623,6 +628,7 @@
 	if Not cria_recordset_otimista(r, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
 	'Verifica se está havendo edição no cadastro de cliente que possui pedido com status de análise de crédito 'crédito ok' e com entrega pendente
+    'somente se st_memorizacao_completa_enderecos = 0; se != 0, o endereço é controlado em cada pedido separadamente
 	dim blnHaPedidoAprovadoComEntregaPendente, listaPedidoAprovadoComEntregaPendente
 	blnHaPedidoAprovadoComEntregaPendente = False
 	listaPedidoAprovadoComEntregaPendente = ""
@@ -637,6 +643,7 @@
 					" AND (tP.loja NOT IN ('" & NUMERO_LOJA_ECOMMERCE_AR_CLUBE & "', '" & NUMERO_LOJA_TRANSFERENCIA & "', '" & NUMERO_LOJA_KITS & "'))" & _
 					" AND (tP__BASE.analise_credito = " & CStr(COD_AN_CREDITO_OK) & ")" & _
 					" AND (tP.st_entrega NOT IN ('" & ST_ENTREGA_ENTREGUE & "', '" & ST_ENTREGA_CANCELADO & "'))" & _
+					" AND (tP.st_memorizacao_completa_enderecos = 0)" & _
 				" ORDER BY" & _
 					" tP.data_hora"
 			if r.State <> 0 then r.Close
@@ -669,8 +676,7 @@
 			
 			log_via_vetor_carrega_do_recordset r, vLog1, campos_a_omitir
 			r("cnpj_cpf")=cnpj_cpf_selecionado
-			if eh_cpf then s=ID_PF else s=ID_PJ
-			r("tipo")=s
+			r("tipo")=s_cliente_tipo
 			r("ie")=s_ie
 			r("rg")=s_rg
 			s_nome_original = Trim("" & r("nome"))
@@ -1126,68 +1132,10 @@
 						end if
 					end if
 				end if
-			
-			if Not erro_fatal then
-			'	PROCESSA SELEÇÃO AUTOMÁTICA DE TRANSPORTADORA BASEADO NO CEP
-				s_cep_original = retorna_so_digitos(s_cep_original)
-				s_cep_novo = retorna_so_digitos(s_cep_novo)
-				if s_cep_original <> s_cep_novo then
-					s_log_transp_auto = ""
-					s_transp_id_auto_novo = ""
-					if s_cep_novo <> "" then s_transp_id_auto_novo = obtem_transportadora_pelo_cep(s_cep_novo)
-					
-				'	SE O CEP MUDOU, VERIFICA PEDIDOS CUJA ENTREGA SERÁ NO ENDEREÇO DE CADASTRO DO CLIENTE
-				'	RESTRIÇÕES:
-				'		st_end_entrega = 0  ->  NÃO TEM ENDEREÇO DE ENTREGA
-				'		Len(LTrim(RTrim(Coalesce(obs_2,'')))) = 0  ->  NF AINDA NÃO EMITIDA
-					s = "SELECT " & _
-							"*" & _
-						" FROM t_PEDIDO" & _
-						" WHERE" & _
-							" (id_cliente = '" & cliente_selecionado & "')" & _
-							" AND (st_entrega <> '" & ST_ENTREGA_ENTREGUE & "')" & _
-							" AND (st_entrega <> '" & ST_ENTREGA_CANCELADO & "')" & _
-							" AND (analise_credito <> " & COD_AN_CREDITO_OK & ")" & _
-							" AND (st_end_entrega = 0)" & _
-							" AND (Len(LTrim(RTrim(Coalesce(obs_2,'')))) = 0)" & _
-							" AND (transportadora_selecao_auto_status = " & TRANSPORTADORA_SELECAO_AUTO_STATUS_FLAG_S & ")" & _
-							" AND (transportadora_selecao_auto_tipo_endereco = " & TRANSPORTADORA_SELECAO_AUTO_TIPO_ENDERECO_CLIENTE & ")" & _
-							" AND (LTrim(RTrim(Coalesce(transportadora_id,''))) <> '" & s_transp_id_auto_novo & "')" & _
-						" ORDER BY" & _
-							" data_hora"
-					if r.State <> 0 then r.Close
-					r.Open s, cn
-					do while Not r.EOF
-						if Ucase(Trim("" & r("transportadora_id"))) <> Ucase(s_transp_id_auto_novo) then
-							if s_log_transp_auto <> "" then s_log_transp_auto = s_log_transp_auto & "; "
-							s_log_transp_auto = s_log_transp_auto & "Pedido " & Trim("" & r("pedido")) & ": '" & Trim("" & r("transportadora_id")) & "' => '" & s_transp_id_auto_novo & "'"
-							r("transportadora_id") = s_transp_id_auto_novo
-							r("transportadora_data") = Now
-							r("transportadora_usuario") = usuario
-							r("transportadora_selecao_auto_status") = TRANSPORTADORA_SELECAO_AUTO_STATUS_FLAG_S
-							r("transportadora_selecao_auto_cep") = s_cep_novo
-							r("transportadora_selecao_auto_transportadora") = s_transp_id_auto_novo
-							r("transportadora_selecao_auto_tipo_endereco") = TRANSPORTADORA_SELECAO_AUTO_TIPO_ENDERECO_CLIENTE
-							r("transportadora_selecao_auto_data_hora") = Now
-							r.Update
-							end if
-						r.MoveNext
-						loop
-					
-					r.Close
-					set r = nothing
-					if Not cria_recordset_otimista(r, msg_erro) then 
-						erro_fatal=True
-						alerta = "FALHA AO CRIAR RECORDSET"
-						end if
-					
-					if s_log_transp_auto <> "" then
-						s_log_transp_auto = "Alteração da transportadora cadastrada de modo automático no pedido devido à alteração do CEP (" & cep_formata(s_cep_original) & " => " & cep_formata(s_cep_novo) & ") no cadastro do cliente (id: " & cliente_selecionado & ", CNPJ/CPF: " & cnpj_cpf_formata(cnpj_cpf_selecionado) & "): " & " " & s_log_transp_auto
-						grava_log usuario, "", "", cliente_selecionado, OP_LOG_CLIENTE_ALTERACAO, s_log_transp_auto
-						end if
-					end if
-				end if
-			
+
+			' ANTES DA MEMORIZAÇÃO DE ENDEREÇOS FAZÍAMOS A SELEÇÃO AUTOMÁTICA DE TRANSPORTADORA BASEADO NO CEP DE PEDIDOS SEM NOTA FISCAL EMITIDA
+			' AGORA FAZEMOS ISSO NA EDIÇÃO DO PEDIDO (PEDIDOATUALIZA.ASP)
+
 			if Not erro_fatal then
 			'	~~~~~~~~~~~~~~
 				cn.CommitTrans

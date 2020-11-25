@@ -86,6 +86,9 @@
 	dim blnLojaHabilitadaProdCompostoECommerce
 	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
 
+	dim blnUsarMemorizacaoCompletaEnderecos
+	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim intIdx
 	Dim id_cliente, msg_erro
 	if operacao_selecionada=OP_INCLUI then
@@ -180,17 +183,26 @@
 	s_mag_end_cob_completo = ""
 
 	dim operacao_origem, c_numero_magento, operationControlTicket, sessionToken, id_magento_api_pedido_xml
+	dim c_FlagCadSemiAutoPedMagento_FluxoOtimizado, rb_indicacao, rb_RA, c_indicador
 	operacao_origem = Trim(Request("operacao_origem"))
 	c_numero_magento = ""
 	operationControlTicket = ""
 	sessionToken = ""
 	id_magento_api_pedido_xml = ""
+	c_FlagCadSemiAutoPedMagento_FluxoOtimizado = ""
+	rb_indicacao = ""
+	rb_RA = ""
+	c_indicador = ""
 	if alerta = "" then
 		if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then
 			c_numero_magento = Trim(Request("c_numero_magento"))
 			operationControlTicket = Trim(Request("operationControlTicket"))
 			sessionToken = Trim(Request("sessionToken"))
 			id_magento_api_pedido_xml = Trim(Request("id_magento_api_pedido_xml"))
+			c_FlagCadSemiAutoPedMagento_FluxoOtimizado = Trim(Request.Form("c_FlagCadSemiAutoPedMagento_FluxoOtimizado"))
+			rb_indicacao = Trim(Request.Form("rb_indicacao"))
+			rb_RA = Trim(Request.Form("rb_RA"))
+			c_indicador = Trim(Request.Form("c_indicador"))
 
 			If Not cria_recordset_otimista(tMAP_XML, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 			If Not cria_recordset_otimista(tMAP_END_ETG, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
@@ -284,7 +296,8 @@
 				c_mag_end_cob_fax_ddd = s_ddd
 				c_mag_end_cob_fax_numero = s_tel
 				'NORMALIZA TELEFONES, VERIFICANDO INCLUSIVE REPETIÇÕES
-				call ec_dados_normaliza_telefones(c_mag_end_cob_telephone_ddd, c_mag_end_cob_telephone_numero, c_mag_end_cob_celular_ddd, c_mag_end_cob_celular_numero, c_mag_end_cob_fax_ddd, c_mag_end_cob_fax_numero)
+				'10/NOV/2020: Normalização cancelada devido à inversão de telefones nos campos que passou a ser inconveniente após a implementação do fluxo otimizado decorrente da memorização do endereço no pedido
+				'	call ec_dados_normaliza_telefones(c_mag_end_cob_telephone_ddd, c_mag_end_cob_telephone_numero, c_mag_end_cob_celular_ddd, c_mag_end_cob_celular_numero, c_mag_end_cob_fax_ddd, c_mag_end_cob_fax_numero)
 				c_mag_end_cob_endereco = Trim("" & tMAP_END_COB("endereco"))
 				c_mag_end_cob_endereco_numero = Trim("" & tMAP_END_COB("endereco_numero"))
 				c_mag_end_cob_complemento = Trim("" & tMAP_END_COB("endereco_complemento"))
@@ -306,7 +319,8 @@
 				c_mag_end_etg_fax_ddd = s_ddd
 				c_mag_end_etg_fax_numero = s_tel
 				'NORMALIZA TELEFONES, VERIFICANDO INCLUSIVE REPETIÇÕES
-				call ec_dados_normaliza_telefones(c_mag_end_etg_telephone_ddd, c_mag_end_etg_telephone_numero, c_mag_end_etg_celular_ddd, c_mag_end_etg_celular_numero, c_mag_end_etg_fax_ddd, c_mag_end_etg_fax_numero)
+				'10/NOV/2020: Normalização cancelada devido à inversão de telefones nos campos que passou a ser inconveniente após a implementação do fluxo otimizado decorrente da memorização do endereço no pedido
+				'	call ec_dados_normaliza_telefones(c_mag_end_etg_telephone_ddd, c_mag_end_etg_telephone_numero, c_mag_end_etg_celular_ddd, c_mag_end_etg_celular_numero, c_mag_end_etg_fax_ddd, c_mag_end_etg_fax_numero)
 				c_mag_end_etg_endereco = Trim("" & tMAP_END_ETG("endereco"))
 				c_mag_end_etg_endereco_numero = Trim("" & tMAP_END_ETG("endereco_numero"))
 				c_mag_end_etg_complemento = Trim("" & tMAP_END_ETG("endereco_complemento"))
@@ -467,8 +481,8 @@ end function
 
 
 <head>
-	<title>LOJA</title>
-	</head>
+    <title>LOJA</title>
+</head>
 
 
 <%
@@ -487,409 +501,658 @@ end function
 <script src="<%=URL_FILE__JQUERY%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__JQUERY_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__JQUERY_UI%>" language="JavaScript" type="text/javascript"></script>
-<script src="<%=URL_FILE__JQUERY_UI_I18N%>" Language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI_I18N%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__JQUERY_UI_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__GLOBAL_JS%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__AJAX_JS%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__JANELACEP_JS%>" language="JavaScript" type="text/javascript"></script>
 
 <script language="JavaScript" type="text/javascript">
-var ja_carregou=false;
-var conteudo_original;
-var fCepPopup;
+    var ja_carregou = false;
+    var conteudo_original;
+    var fCepPopup;
 
-$(function () {
-    var f;
-    if ((typeof (fNEW) !== "undefined") && (fNEW !== null)) {
-    	f = fNEW;
+    $(function () {
+        var f;
+        if ((typeof (fNEW) !== "undefined") && (fNEW !== null)) {
+            f = fNEW;
 
-    	if (!f.rb_end_entrega[1].checked) {
-    		f.EndEtg_endereco.disabled = true;
-    		f.EndEtg_endereco_numero.disabled = true;
-    		f.EndEtg_bairro.disabled = true;
-    		f.EndEtg_cidade.disabled = true;
-    		f.EndEtg_obs.disabled = true;
-    		f.EndEtg_uf.disabled = true;
-    		f.EndEtg_cep.disabled = true;
-    		f.bPesqCepEndEtgNovo.disabled = true;
-    		f.EndEtg_endereco_complemento.disabled = true;
-    	}
+            if (!f.rb_end_entrega[1].checked) {
+                Disabled_change(f, true);
+            }
+        }
+
+        // Trata o problema em que os campos do formulário são limpos após retornar à esta página c/ o history.back() pela 2ª vez quando ocorre erro de consistência
+        if (trim(fCAD.c_FormFieldValues.value) != "")
+        {
+            stringToForm(fCAD.c_FormFieldValues.value, $('#fCAD'));
+        }
+
+        if ((typeof (fNEW) !== "undefined") && (fNEW !== null)) {
+            if (trim(fNEW.c_FormFieldValues.value) != "") {
+                stringToForm(fNEW.c_FormFieldValues.value, $('#fNEW'));
+            }
+        }
+        trataProdutorRuralEndEtg_PF(null);
+        trocarEndEtgTipoPessoa(null);
+    });
+
+    function copyMagentoCli() {
+        var fFROM, fTO;
+        fFROM = fMAG;
+        fTO = fCAD;
+        fTO.nome.value = fFROM.c_mag_customer_full_name.value;
+        fTO.dt_nasc.value = fFROM.c_mag_customer_dob.value;
+        fTO.email.value = fFROM.c_mag_email_identificado.value;
     }
 
-	// Trata o problema em que os campos do formulário são limpos após retornar à esta página c/ o history.back() pela 2ª vez quando ocorre erro de consistência
-    if (trim(fCAD.c_FormFieldValues.value) != "")
-    {
-    	stringToForm(fCAD.c_FormFieldValues.value, $('#fCAD'));
+    function copyMagentoBillAddrToBillAddr() {
+        var fFROM, fTO;
+        var s, eh_cpf;
+        fFROM = fMAG;
+        fTO = fCAD;
+        fTO.endereco.value = fFROM.c_mag_end_cob_endereco.value;
+        fTO.endereco_numero.value = fFROM.c_mag_end_cob_endereco_numero.value;
+        fTO.endereco_complemento.value = fFROM.c_mag_end_cob_complemento.value;
+        fTO.bairro.value = fFROM.c_mag_end_cob_bairro.value;
+        fTO.cidade.value = fFROM.c_mag_end_cob_cidade.value;
+        fTO.uf.value = fFROM.c_mag_end_cob_uf.value;
+        fTO.cep.value = cep_formata(fFROM.c_mag_end_cob_cep.value);
+
+        eh_cpf = false;
+        s = retorna_so_digitos(fCAD.cnpj_cpf_selecionado.value);
+        if (s.length == 11) eh_cpf = true;
+        if (eh_cpf) {
+            fTO.ddd_res.value = fFROM.c_mag_end_cob_telephone_ddd.value;
+            fTO.tel_res.value = telefone_formata(fFROM.c_mag_end_cob_telephone_numero.value);
+            fTO.ddd_cel.value = fFROM.c_mag_end_cob_celular_ddd.value;
+            fTO.tel_cel.value = telefone_formata(fFROM.c_mag_end_cob_celular_numero.value);
+        }
+        else {
+            fTO.ddd_com.value = fFROM.c_mag_end_cob_telephone_ddd.value;
+            fTO.tel_com.value = telefone_formata(fFROM.c_mag_end_cob_telephone_numero.value);
+            fTO.ddd_com_2.value = fFROM.c_mag_end_cob_celular_ddd.value;
+            fTO.tel_com_2.value = telefone_formata(fFROM.c_mag_end_cob_celular_numero.value);
+        }
     }
 
-    if ((typeof (fNEW) !== "undefined") && (fNEW !== null)) {
-    	if (trim(fNEW.c_FormFieldValues.value) != "") {
-    		stringToForm(fNEW.c_FormFieldValues.value, $('#fNEW'));
-    	}
+    function copyMagentoShipAddrToBillAddr() {
+        var fFROM, fTO;
+        var s, eh_cpf;
+        fFROM = fMAG;
+        fTO = fCAD;
+        fTO.endereco.value = fFROM.c_mag_end_etg_endereco.value;
+        fTO.endereco_numero.value = fFROM.c_mag_end_etg_endereco_numero.value;
+        fTO.endereco_complemento.value = fFROM.c_mag_end_etg_complemento.value;
+        fTO.bairro.value = fFROM.c_mag_end_etg_bairro.value;
+        fTO.cidade.value = fFROM.c_mag_end_etg_cidade.value;
+        fTO.uf.value = fFROM.c_mag_end_etg_uf.value;
+        fTO.cep.value = cep_formata(fFROM.c_mag_end_etg_cep.value);
+
+        eh_cpf = false;
+        s = retorna_so_digitos(fCAD.cnpj_cpf_selecionado.value);
+        if (s.length == 11) eh_cpf = true;
+        if (eh_cpf) {
+            fTO.ddd_res.value = fFROM.c_mag_end_etg_telephone_ddd.value;
+            fTO.tel_res.value = telefone_formata(fFROM.c_mag_end_etg_telephone_numero.value);
+            fTO.ddd_cel.value = fFROM.c_mag_end_etg_celular_ddd.value;
+            fTO.tel_cel.value = telefone_formata(fFROM.c_mag_end_etg_celular_numero.value);
+        }
+        else {
+            fTO.ddd_com.value = fFROM.c_mag_end_etg_telephone_ddd.value;
+            fTO.tel_com.value = telefone_formata(fFROM.c_mag_end_etg_telephone_numero.value);
+            fTO.ddd_com_2.value = fFROM.c_mag_end_etg_celular_ddd.value;
+            fTO.tel_com_2.value = telefone_formata(fFROM.c_mag_end_etg_celular_numero.value);
+        }
     }
-});
 
-function copyMagentoCli() {
-	var fFROM, fTO;
-	fFROM = fMAG;
-	fTO = fCAD;
-	fTO.nome.value = fFROM.c_mag_customer_full_name.value;
-	fTO.dt_nasc.value = fFROM.c_mag_customer_dob.value;
-	fTO.email.value = fFROM.c_mag_email_identificado.value;
-}
+    function copyMagentoShipAddrToShipAddr() {
+        var fFROM, fTO;
+        var s, eh_cpf;
+        fFROM = fMAG;
+        fTO = fNEW;
+        fTO.EndEtg_endereco.value = fFROM.c_mag_end_etg_endereco.value;
+        fTO.EndEtg_endereco_numero.value = fFROM.c_mag_end_etg_endereco_numero.value;
+        fTO.EndEtg_endereco_complemento.value = fFROM.c_mag_end_etg_complemento.value;
+        fTO.EndEtg_bairro.value = fFROM.c_mag_end_etg_bairro.value;
+        fTO.EndEtg_cidade.value = fFROM.c_mag_end_etg_cidade.value;
+        fTO.EndEtg_uf.value = fFROM.c_mag_end_etg_uf.value;
+        fTO.EndEtg_cep.value = cep_formata(fFROM.c_mag_end_etg_cep.value);
+    }
 
-function copyMagentoBillAddrToBillAddr() {
-	var fFROM, fTO;
-	var s, eh_cpf;
-	fFROM = fMAG;
-	fTO = fCAD;
-	fTO.endereco.value = fFROM.c_mag_end_cob_endereco.value;
-	fTO.endereco_numero.value = fFROM.c_mag_end_cob_endereco_numero.value;
-	fTO.endereco_complemento.value = fFROM.c_mag_end_cob_complemento.value;
-	fTO.bairro.value = fFROM.c_mag_end_cob_bairro.value;
-	fTO.cidade.value = fFROM.c_mag_end_cob_cidade.value;
-	fTO.uf.value = fFROM.c_mag_end_cob_uf.value;
-	fTO.cep.value = cep_formata(fFROM.c_mag_end_cob_cep.value);
+    function Disabled_True(f) {
+        Disabled_change(f, true);
+    }
+    function Disabled_False(f) {
+        Disabled_change(f, false);
+    }
 
-	eh_cpf = false;
-	s = retorna_so_digitos(fCAD.cnpj_cpf_selecionado.value);
-	if (s.length == 11) eh_cpf = true;
-	if (eh_cpf) {
-		fTO.ddd_res.value = fFROM.c_mag_end_cob_telephone_ddd.value;
-		fTO.tel_res.value = telefone_formata(fFROM.c_mag_end_cob_telephone_numero.value);
-		fTO.ddd_cel.value = fFROM.c_mag_end_cob_celular_ddd.value;
-		fTO.tel_cel.value = telefone_formata(fFROM.c_mag_end_cob_celular_numero.value);
-	}
-	else {
-		fTO.ddd_com.value = fFROM.c_mag_end_cob_telephone_ddd.value;
-		fTO.tel_com.value = telefone_formata(fFROM.c_mag_end_cob_telephone_numero.value);
-		fTO.ddd_com_2.value = fFROM.c_mag_end_cob_celular_ddd.value;
-		fTO.tel_com_2.value = telefone_formata(fFROM.c_mag_end_cob_celular_numero.value);
-	}
-}
+    function Disabled_change(f, value) {
 
-function copyMagentoShipAddrToBillAddr() {
-	var fFROM, fTO;
-	var s, eh_cpf;
-	fFROM = fMAG;
-	fTO = fCAD;
-	fTO.endereco.value = fFROM.c_mag_end_etg_endereco.value;
-	fTO.endereco_numero.value = fFROM.c_mag_end_etg_endereco_numero.value;
-	fTO.endereco_complemento.value = fFROM.c_mag_end_etg_complemento.value;
-	fTO.bairro.value = fFROM.c_mag_end_etg_bairro.value;
-	fTO.cidade.value = fFROM.c_mag_end_etg_cidade.value;
-	fTO.uf.value = fFROM.c_mag_end_etg_uf.value;
-	fTO.cep.value = cep_formata(fFROM.c_mag_end_etg_cep.value);
+        if(f.EndEtg_nome) f.EndEtg_nome.disabled = value;
+        f.EndEtg_endereco.disabled = value;
+        f.EndEtg_endereco_numero.disabled = value;
+        f.EndEtg_bairro.disabled = value;
+        f.EndEtg_cidade.disabled = value;
+        f.EndEtg_obs.disabled = value;
+        f.EndEtg_uf.disabled = value;
+        f.EndEtg_cep.disabled = value;
+        f.bPesqCepEndEtgNovo.disabled = value;
+        f.EndEtg_endereco_complemento.disabled = value;
 
-	eh_cpf = false;
-	s = retorna_so_digitos(fCAD.cnpj_cpf_selecionado.value);
-	if (s.length == 11) eh_cpf = true;
-	if (eh_cpf) {
-		fTO.ddd_res.value = fFROM.c_mag_end_etg_telephone_ddd.value;
-		fTO.tel_res.value = telefone_formata(fFROM.c_mag_end_etg_telephone_numero.value);
-		fTO.ddd_cel.value = fFROM.c_mag_end_etg_celular_ddd.value;
-		fTO.tel_cel.value = telefone_formata(fFROM.c_mag_end_etg_celular_numero.value);
-	}
-	else {
-		fTO.ddd_com.value = fFROM.c_mag_end_etg_telephone_ddd.value;
-		fTO.tel_com.value = telefone_formata(fFROM.c_mag_end_etg_telephone_numero.value);
-		fTO.ddd_com_2.value = fFROM.c_mag_end_etg_celular_ddd.value;
-		fTO.tel_com_2.value = telefone_formata(fFROM.c_mag_end_etg_celular_numero.value);
-	}
-}
+        var lista = $(".Habilitar_EndEtg_outroendereco input");
+        for (var i = 0; i < lista.length; i++) {
+            lista[i].disabled = value;
+        }
+        trocarEndEtgTipoPessoa(null);
+    }
 
-function copyMagentoShipAddrToShipAddr() {
-	var fFROM, fTO;
-	var s, eh_cpf;
-	fFROM = fMAG;
-	fTO = fNEW;
-	fTO.EndEtg_endereco.value = fFROM.c_mag_end_etg_endereco.value;
-	fTO.EndEtg_endereco_numero.value = fFROM.c_mag_end_etg_endereco_numero.value;
-	fTO.EndEtg_endereco_complemento.value = fFROM.c_mag_end_etg_complemento.value;
-	fTO.EndEtg_bairro.value = fFROM.c_mag_end_etg_bairro.value;
-	fTO.EndEtg_cidade.value = fFROM.c_mag_end_etg_cidade.value;
-	fTO.EndEtg_uf.value = fFROM.c_mag_end_etg_uf.value;
-	fTO.EndEtg_cep.value = cep_formata(fFROM.c_mag_end_etg_cep.value);
-}
 
-function Disabled_True(f) {
+    function ProcessaSelecaoCEP() { };
 
-        f.EndEtg_endereco.disabled = true;
-        f.EndEtg_endereco_numero.disabled = true;
-        f.EndEtg_bairro.disabled = true;
-        f.EndEtg_cidade.disabled = true;
-        f.EndEtg_obs.disabled = true;
-        f.EndEtg_uf.disabled = true;
-        f.EndEtg_cep.disabled = true;
-        f.bPesqCepEndEtgNovo.disabled = true;
-        f.EndEtg_endereco_complemento.disabled = true;
-}
-function Disabled_False(f) {
-
-    f.EndEtg_endereco.disabled = false;
-    f.EndEtg_endereco_numero.disabled = false;
-    f.EndEtg_bairro.disabled = false;
-    f.EndEtg_cidade.disabled = false;
-    f.EndEtg_obs.disabled = false;
-    f.EndEtg_uf.disabled = false;
-    f.EndEtg_cep.disabled = false;
-    f.bPesqCepEndEtgNovo.disabled = false;
-    f.EndEtg_endereco_complemento.disabled = false;
-}
-function ProcessaSelecaoCEP(){};
-
-function AbrePesquisaCep(){
-var f, strUrl;
+    function AbrePesquisaCep() {
+        var f, strUrl;
 	try
 		{
-	//  SE JÁ HOUVER UMA JANELA DE PESQUISA DE CEP ABERTA, GARANTE QUE ELA SERÁ FECHADA 
-	// E UMA NOVA SERÁ CRIADA (EVITA PROBLEMAS C/ O 'WINDOW.OPENER')	
-		fCepPopup=window.open("", "AjaxCepPesqPopup","status=1,toolbar=0,location=0,menubar=0,directories=0,resizable=1,scrollbars=1,width=5,height=5,left=0,top=0");
-		fCepPopup.close();
-		}
-	catch (e) {
-	 // NOP
-		}
-	f=fCAD;
-	ProcessaSelecaoCEP=TrataCepEnderecoCadastro;
-	strUrl="../Global/AjaxCepPesqPopup.asp";
-	if (trim(f.cep.value)!="") strUrl=strUrl+"?CepDefault="+trim(f.cep.value);
-	fCepPopup=window.open(strUrl, "AjaxCepPesqPopup", "status=1,toolbar=0,location=0,menubar=0,directories=0,resizable=1,scrollbars=1,width=980,height=650,left=0,top=0");
-	fCepPopup.focus();
-}
+            //  SE JÁ HOUVER UMA JANELA DE PESQUISA DE CEP ABERTA, GARANTE QUE ELA SERÁ FECHADA 
+            // E UMA NOVA SERÁ CRIADA (EVITA PROBLEMAS C/ O 'WINDOW.OPENER')	
+            fCepPopup = window.open("", "AjaxCepPesqPopup", "status=1,toolbar=0,location=0,menubar=0,directories=0,resizable=1,scrollbars=1,width=5,height=5,left=0,top=0");
+            fCepPopup.close();
+        }
+        catch (e) {
+            // NOP
+        }
+        f = fCAD;
+        ProcessaSelecaoCEP = TrataCepEnderecoCadastro;
+        strUrl = "../Global/AjaxCepPesqPopup.asp";
+        if (trim(f.cep.value) != "") strUrl = strUrl + "?CepDefault=" + trim(f.cep.value);
+        fCepPopup = window.open(strUrl, "AjaxCepPesqPopup", "status=1,toolbar=0,location=0,menubar=0,directories=0,resizable=1,scrollbars=1,width=980,height=650,left=0,top=0");
+        fCepPopup.focus();
+    }
 
-function TrataCepEnderecoCadastro(strCep, strUF, strLocalidade, strBairro, strLogradouro, strEnderecoNumero, strEnderecoComplemento) {
-var f;
-	f=fCAD;
-	f.cep.value=cep_formata(strCep);
-	f.uf.value=strUF;
-	f.cidade.value=strLocalidade;
-	f.bairro.value=strBairro;
-	f.endereco.value=strLogradouro;
-	f.endereco_numero.value=strEnderecoNumero;
-	f.endereco_complemento.value=strEnderecoComplemento;
-	f.endereco.focus();
-	window.status="Concluído";
-}
+    function TrataCepEnderecoCadastro(strCep, strUF, strLocalidade, strBairro, strLogradouro, strEnderecoNumero, strEnderecoComplemento) {
+        var f;
+        f = fCAD;
+        f.cep.value = cep_formata(strCep);
+        f.uf.value = strUF;
+        f.cidade.value = strLocalidade;
+        f.bairro.value = strBairro;
+        f.endereco.value = strLogradouro;
+        f.endereco_numero.value = strEnderecoNumero;
+        f.endereco_complemento.value = strEnderecoComplemento;
+        f.endereco.focus();
+        window.status = "Concluído";
+    }
 
-function AbrePesquisaCepEndEtg(){
-var f, strUrl;
+    function AbrePesquisaCepEndEtg() {
+        var f, strUrl;
 	try
 		{
-	//  SE JÁ HOUVER UMA JANELA DE PESQUISA DE CEP ABERTA, GARANTE QUE ELA SERÁ FECHADA 
-	// E UMA NOVA SERÁ CRIADA (EVITA PROBLEMAS C/ O 'WINDOW.OPENER')	
-		fCepPopup=window.open("", "AjaxCepPesqPopup","status=1,toolbar=0,location=0,menubar=0,directories=0,resizable=1,scrollbars=1,width=5,height=5,left=0,top=0");
-		fCepPopup.close();
-		}
-	catch (e) {
-	 // NOP
-		}
-	f=fNEW;
-	ProcessaSelecaoCEP=TrataCepEnderecoEntrega;
-	strUrl="../Global/AjaxCepPesqPopup.asp";
-	if (trim(f.EndEtg_cep.value)!="") strUrl=strUrl+"?CepDefault="+trim(f.EndEtg_cep.value);
-	fCepPopup=window.open(strUrl, "AjaxCepPesqPopup", "status=1,toolbar=0,location=0,menubar=0,directories=0,resizable=1,scrollbars=1,width=980,height=650,left=0,top=0");
-	fCepPopup.focus();
-}
-
-function TrataCepEnderecoEntrega(strCep, strUF, strLocalidade, strBairro, strLogradouro, strEnderecoNumero, strEnderecoComplemento) {
-var f;
-	f=fNEW;
-	f.EndEtg_cep.value=cep_formata(strCep);
-	f.EndEtg_uf.value=strUF;
-	f.EndEtg_cidade.value=strLocalidade;
-	f.EndEtg_bairro.value=strBairro;
-	f.EndEtg_endereco.value=strLogradouro;
-	f.EndEtg_endereco_numero.value=strEnderecoNumero;
-	f.EndEtg_endereco_complemento.value=strEnderecoComplemento;
-	f.EndEtg_endereco.focus();
-	window.status="Concluído";
-}
-
-function consiste_endereco_cadastro( f ) {
-
-	if (trim(f.endereco.value)=="") {
-		alert('Preencha o endereço!!');
-		f.endereco.focus();
-		return false;
-		}
-
-	if (trim(f.endereco_numero.value)=="") {
-		alert('Preencha o número do endereço!!');
-		f.endereco_numero.focus();
-		return false;
-		}
-		
-	if (trim(f.bairro.value)=="") {
-		alert('Preencha o bairro!!');
-		f.bairro.focus();
-		return false;
-		}
-
-	if (trim(f.cidade.value)=="") {
-		alert('Preencha a cidade!!');
-		f.cidade.focus();
-		return false;
-		}
-
-	s=trim(f.uf.value);
-	if ((s=="")||(!uf_ok(s))) {
-		alert('UF inválida!!');
-		f.uf.focus();
-		return false;
-		}
-
-	if (trim(f.cep.value)=="") {
-		alert('Informe o CEP!!');
-		return false;
-		}
-		
-	if (!cep_ok(f.cep.value)) {
-		alert('CEP inválido!!');
-		f.cep.focus();
-		return false;
-		}
-		
-	return true;
-}
-
-function fNEWConcluir( f ){
-var s;
-var eh_cpf;
-	if (!ja_carregou) return;
-	
-	s=retorna_so_digitos(fCAD.cnpj_cpf_selecionado.value);
-	eh_cpf=false;
-	if (s.length==11) eh_cpf=true;
-
-	s=retorna_dados_formulario(fCAD);
-	if (s!=conteudo_original) {
-		if (!confirm("As alterações feitas serão perdidas!!\nContinua mesmo assim?")) return;
-		}
-
-	if ((!f.rb_end_entrega[0].checked)&&(!f.rb_end_entrega[1].checked)) {
-		alert('Informe se o endereço de entrega será o mesmo endereço do cadastro ou não!!');
-		return;
-	}
-	
-
-	if (f.rb_end_entrega[1].checked) {
-		if (trim(f.EndEtg_endereco.value)=="") {
-			alert('Preencha o endereço de entrega!!');
-			f.EndEtg_endereco.focus();
-			return;
-			}
-		
-		if (trim(f.EndEtg_endereco_numero.value)=="") {
-			alert('Preencha o número do endereço de entrega!!');
-			f.EndEtg_endereco_numero.focus();
-			return;
-			}
-
-		if (trim(f.EndEtg_bairro.value)=="") {
-			alert('Preencha o bairro do endereço de entrega!!');
-			f.EndEtg_bairro.focus();
-			return;
-			}
-
-		if (trim(f.EndEtg_cidade.value)=="") {
-			alert('Preencha a cidade do endereço de entrega!!');
-			f.EndEtg_cidade.focus();
-			return;
-			}
-		if (trim(f.EndEtg_obs.value) == "") {
-		    alert('Selecione a justificativa do endereço de entrega!!');
-		    f.EndEtg_obs.focus();
-		    return;
-		}
-		s=trim(f.EndEtg_uf.value);
-		if ((s=="")||(!uf_ok(s))) {
-			alert('UF inválida no endereço de entrega!!');
-			f.EndEtg_uf.focus();
-			return;
-			}
-
-		if (trim(f.EndEtg_cep.value)=="") {
-			alert('Informe o CEP do endereço de entrega!!');
-			f.EndEtg_cep.focus();
-			return;
-			}
-			
-		if (!cep_ok(f.EndEtg_cep.value)) {
-			alert('CEP inválido no endereço de entrega!!');
-			f.EndEtg_cep.focus();
-			return;
-		    } 	
-		}
-
-	if (trim(fCAD.cep.value)=="") {
-		alert('É necessário preencher o CEP no cadastro do cliente!!');
-		return;
-		}
-
-	if (eh_cpf) {
-		if ((trim(fCAD.produtor_rural_cadastrado.value)=="0")||
-			((fCAD.rb_produtor_rural[0].checked)&&(fCAD.produtor_rural_cadastrado.value!=fCAD.rb_produtor_rural[0].value))||
-			((fCAD.rb_produtor_rural[1].checked)&&(fCAD.produtor_rural_cadastrado.value!=fCAD.rb_produtor_rural[1].value))) {
-			alert('É necessário gravar os dados do cadastro do cliente para que a opção Produtor Rural seja gravada!');
-			return;
-			}
-		if ((!fCAD.rb_produtor_rural[0].checked) && (!fCAD.rb_produtor_rural[1].checked)) {
-			alert('Informe se o cliente é produtor rural ou não!!');
-			return;
-			}
-		if (fCAD.rb_produtor_rural[1].checked) {
-			if (!fCAD.rb_contribuinte_icms[1].checked) {
-				alert('Para ser cadastrado como Produtor Rural, é necessário ser contribuinte do ICMS e possuir nº de IE!!');
-				return;
-			}
-			if ((!fCAD.rb_contribuinte_icms[0].checked) && (!fCAD.rb_contribuinte_icms[1].checked) && (!fCAD.rb_contribuinte_icms[2].checked)) {
-				alert('Informe se o cliente é contribuinte do ICMS, não contribuinte ou isento!!');
-				return;
-				}
-			if ((trim(fCAD.contribuinte_icms_cadastrado.value) == "0") ||
-				((fCAD.rb_contribuinte_icms[0].checked)&&(fCAD.contribuinte_icms_cadastrado.value!=fCAD.rb_contribuinte_icms[0].value))||
-				((fCAD.rb_contribuinte_icms[1].checked) && (fCAD.contribuinte_icms_cadastrado.value != fCAD.rb_contribuinte_icms[1].value)) ||
-				((fCAD.rb_contribuinte_icms[2].checked) && (fCAD.contribuinte_icms_cadastrado.value != fCAD.rb_contribuinte_icms[2].value))) {
-				alert('É necessário gravar os dados do cadastro do cliente para que a opção Contribuinte ICMS seja gravada!');
-				return;
-			}
-			}
-		}
-	else {
-		if ((trim(fCAD.contribuinte_icms_cadastrado.value) == "0") ||
-			((fCAD.rb_contribuinte_icms[0].checked) && (fCAD.contribuinte_icms_cadastrado.value != fCAD.rb_contribuinte_icms[0].value)) ||
-			((fCAD.rb_contribuinte_icms[1].checked) && (fCAD.contribuinte_icms_cadastrado.value != fCAD.rb_contribuinte_icms[1].value)) ||
-			((fCAD.rb_contribuinte_icms[2].checked) && (fCAD.contribuinte_icms_cadastrado.value != fCAD.rb_contribuinte_icms[2].value))) {
-			alert('É necessário gravar os dados do cadastro do cliente para que a opção Contribuinte ICMS seja gravada!');
-			return;
-			}
-		}
-
-//  Verifica se o endereço do cadastro está devidamente preenchido
-	if (!consiste_endereco_cadastro(fCAD)) return;
-	if (trim(fCAD.endereco_numero_cadastrado.value)=="") {
-		if (trim(fCAD.endereco_numero.value)=="") {
-			alert('É necessário preencher o número do endereço e, em seguida, gravar os dados do cadastro!');
-			}
-		else {
-			alert('É necessário gravar os dados do cadastro do cliente para que o número do endereço seja gravado!');
-			}
-		return;
+            //  SE JÁ HOUVER UMA JANELA DE PESQUISA DE CEP ABERTA, GARANTE QUE ELA SERÁ FECHADA 
+            // E UMA NOVA SERÁ CRIADA (EVITA PROBLEMAS C/ O 'WINDOW.OPENER')	
+            fCepPopup = window.open("", "AjaxCepPesqPopup", "status=1,toolbar=0,location=0,menubar=0,directories=0,resizable=1,scrollbars=1,width=5,height=5,left=0,top=0");
+            fCepPopup.close();
+        }
+        catch (e) {
+            // NOP
+        }
+        f = fNEW;
+        ProcessaSelecaoCEP = TrataCepEnderecoEntrega;
+        strUrl = "../Global/AjaxCepPesqPopup.asp";
+        if (trim(f.EndEtg_cep.value) != "") strUrl = strUrl + "?CepDefault=" + trim(f.EndEtg_cep.value);
+        fCepPopup = window.open(strUrl, "AjaxCepPesqPopup", "status=1,toolbar=0,location=0,menubar=0,directories=0,resizable=1,scrollbars=1,width=980,height=650,left=0,top=0");
+        fCepPopup.focus();
     }
-    // Verifica se o campo IE está vazio quando contribuinte ICMS = isento
-    if (eh_cpf) {
-    	if (!fCAD.rb_produtor_rural[0].checked) {
-    		if ((fCAD.rb_contribuinte_icms[0].checked) && (fCAD.ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
-    			alert('Se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
-    			fCAD.ie.focus();
-    			return;
-    		}
-    		if ((fCAD.rb_contribuinte_icms[1].checked) && (fCAD.ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
-    			alert('Se cliente é contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
-    			fCAD.ie.focus();
-    			return;
-    		}
+
+    function TrataCepEnderecoEntrega(strCep, strUF, strLocalidade, strBairro, strLogradouro, strEnderecoNumero, strEnderecoComplemento) {
+        var f;
+        f = fNEW;
+        f.EndEtg_cep.value = cep_formata(strCep);
+        f.EndEtg_uf.value = strUF;
+        f.EndEtg_cidade.value = strLocalidade;
+        f.EndEtg_bairro.value = strBairro;
+        f.EndEtg_endereco.value = strLogradouro;
+        f.EndEtg_endereco_numero.value = strEnderecoNumero;
+        f.EndEtg_endereco_complemento.value = strEnderecoComplemento;
+        f.EndEtg_endereco.focus();
+        window.status = "Concluído";
+    }
+
+    function consiste_endereco_cadastro(f) {
+
+        if (trim(f.endereco.value) == "") {
+            alert('Preencha o endereço!!');
+            f.endereco.focus();
+            return false;
+        }
+
+        if (trim(f.endereco_numero.value) == "") {
+            alert('Preencha o número do endereço!!');
+            f.endereco_numero.focus();
+            return false;
+        }
+
+        if (trim(f.bairro.value) == "") {
+            alert('Preencha o bairro!!');
+            f.bairro.focus();
+            return false;
+        }
+
+        if (trim(f.cidade.value) == "") {
+            alert('Preencha a cidade!!');
+            f.cidade.focus();
+            return false;
+        }
+
+        s = trim(f.uf.value);
+        if ((s == "") || (!uf_ok(s))) {
+            alert('UF inválida!!');
+            f.uf.focus();
+            return false;
+        }
+
+        if (trim(f.cep.value) == "") {
+            alert('Informe o CEP!!');
+            return false;
+        }
+
+        if (!cep_ok(f.cep.value)) {
+            alert('CEP inválido!!');
+            f.cep.focus();
+            return false;
+        }
+
+        return true;
+    }
+
+    function fNEWConcluir(f) {
+        var s;
+        var eh_cpf;
+        if (!ja_carregou) return;
+
+        s = retorna_so_digitos(fCAD.cnpj_cpf_selecionado.value);
+        eh_cpf = false;
+        if (s.length == 11) eh_cpf = true;
+
+        s = retorna_dados_formulario(fCAD);
+        if (s != conteudo_original) {
+            if (!confirm("As alterações feitas serão perdidas!!\nContinua mesmo assim?")) return;
+        }
+
+        if ((!f.rb_end_entrega[0].checked) && (!f.rb_end_entrega[1].checked)) {
+            alert('Informe se o endereço de entrega será o mesmo endereço do cadastro ou não!!');
+            return;
+        }
+
+
+        if (f.rb_end_entrega[1].checked) {
+            if (trim(f.EndEtg_endereco.value) == "") {
+                alert('Preencha o endereço de entrega!!');
+                f.EndEtg_endereco.focus();
+                return;
+            }
+
+            if (trim(f.EndEtg_endereco_numero.value) == "") {
+                alert('Preencha o número do endereço de entrega!!');
+                f.EndEtg_endereco_numero.focus();
+                return;
+            }
+
+            if (trim(f.EndEtg_bairro.value) == "") {
+                alert('Preencha o bairro do endereço de entrega!!');
+                f.EndEtg_bairro.focus();
+                return;
+            }
+
+            if (trim(f.EndEtg_cidade.value) == "") {
+                alert('Preencha a cidade do endereço de entrega!!');
+                f.EndEtg_cidade.focus();
+                return;
+            }
+            if (trim(f.EndEtg_obs.value) == "") {
+                alert('Selecione a justificativa do endereço de entrega!!');
+                f.EndEtg_obs.focus();
+                return;
+            }
+            s = trim(f.EndEtg_uf.value);
+            if ((s == "") || (!uf_ok(s))) {
+                alert('UF inválida no endereço de entrega!!');
+                f.EndEtg_uf.focus();
+                return;
+            }
+
+            if (trim(f.EndEtg_cep.value) == "") {
+                alert('Informe o CEP do endereço de entrega!!');
+                f.EndEtg_cep.focus();
+                return;
+            }
+
+            if (!cep_ok(f.EndEtg_cep.value)) {
+                alert('CEP inválido no endereço de entrega!!');
+                f.EndEtg_cep.focus();
+                return;
+            }
+
+<%if blnUsarMemorizacaoCompletaEnderecos then%>
+<%if Not eh_cpf then%>
+            var EndEtg_tipo_pessoa = $('input[name="EndEtg_tipo_pessoa"]:checked').val();
+            if (!EndEtg_tipo_pessoa)
+                EndEtg_tipo_pessoa = "";
+            if (EndEtg_tipo_pessoa != "PJ" && EndEtg_tipo_pessoa != "PF") {
+                alert('Necessário escolher Pessoa Jurídica ou Pessoa Física no Endereço de entrega!!');
+                f.EndEtg_tipo_pessoa.focus();
+                return;
+            }
+
+            if (EndEtg_tipo_pessoa == "PJ") {
+                //Campos PJ: 
+
+                if (f.EndEtg_cnpj_cpf_PJ.value == "" || !cnpj_ok(f.EndEtg_cnpj_cpf_PJ.value)) {
+                    alert('Endereço de entrega: CNPJ inválido!!');
+                    f.EndEtg_cnpj_cpf_PJ.focus();
+                    return;
+                }
+
+                if ($('input[name="EndEtg_contribuinte_icms_status_PJ"]:checked').length == 0) {
+                    alert('Endereço de entrega: informe se o cliente é contribuinte do ICMS, não contribuinte ou isento!!');
+                    f.EndEtg_contribuinte_icms_status_PJ.focus();
+                    return;
+                }
+
+                if ((f.EndEtg_contribuinte_icms_status_PJ[1].checked) && (trim(f.EndEtg_ie_PJ.value) == "")) {
+                    alert('Endereço de entrega: se o cliente é contribuinte do ICMS a inscrição estadual deve ser preenchida!!');
+                    f.EndEtg_ie_PJ.focus();
+                    return;
+                }
+                if ((f.EndEtg_contribuinte_icms_status_PJ[0].checked) && (f.EndEtg_ie_PJ.value.toUpperCase().indexOf('ISEN') >= 0)) {
+                    alert('Endereço de entrega: se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
+                    f.EndEtg_ie_PJ.focus();
+                    return;
+                }
+                if ((f.EndEtg_contribuinte_icms_status_PJ[1].checked) && (f.EndEtg_ie_PJ.value.toUpperCase().indexOf('ISEN') >= 0)) {
+                    alert('Endereço de entrega: se cliente é contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
+                    f.EndEtg_ie_PJ.focus();
+                    return;
+                }
+                if (f.EndEtg_contribuinte_icms_status_PJ[2].checked) {
+                    if (f.EndEtg_ie_PJ.value != "") {
+                        alert("Endereço de entrega: se o Contribuinte ICMS é isento, o campo IE deve ser vazio!");
+                        f.EndEtg_ie_PF.focus();
+                        return;
+                    }
+                }
+
+                if (trim(f.EndEtg_nome.value) == "") {
+                    alert('Preencha a razão social no endereço de entrega!!');
+                    f.EndEtg_nome.focus();
+                    return;
+                }
+
+                /*
+                telefones PJ:
+                EndEtg_ddd_com
+                EndEtg_tel_com
+                EndEtg_ramal_com
+                EndEtg_ddd_com_2
+                EndEtg_tel_com_2
+                EndEtg_ramal_com_2
+*/
+
+                if (!ddd_ok(f.EndEtg_ddd_com.value)) {
+                    alert('Endereço de entrega: DDD inválido!!');
+                    f.EndEtg_ddd_com.focus();
+                    return;
+                }
+                if (!telefone_ok(f.EndEtg_tel_com.value)) {
+                    alert('Endereço de entrega: telefone inválido!!');
+                    f.EndEtg_tel_com.focus();
+                    return;
+                }
+                if ((f.EndEtg_ddd_com.value == "") && (f.EndEtg_tel_com.value != "")) {
+                    alert('Endereço de entrega: preencha o DDD do telefone.');
+                    f.EndEtg_ddd_com.focus();
+                    return;
+                }
+                if ((f.EndEtg_tel_com.value == "") && (f.EndEtg_ddd_com.value != "")) {
+                    alert('Endereço de entrega: preencha o telefone.');
+                    f.EndEtg_tel_com.focus();
+                    return;
+                }
+                if (trim(f.EndEtg_ddd_com.value) == "" && trim(f.EndEtg_ramal_com.value) != "") {
+                    alert('Endereço de entrega: DDD comercial inválido!!');
+                    f.EndEtg_ddd_com.focus();
+                    return;
+                }
+
+                if (!ddd_ok(f.EndEtg_ddd_com_2.value)) {
+                    alert('Endereço de entrega: DDD inválido!!');
+                    f.EndEtg_ddd_com_2.focus();
+                    return;
+                }
+                if (!telefone_ok(f.EndEtg_tel_com_2.value)) {
+                    alert('Endereço de entrega: telefone inválido!!');
+                    f.EndEtg_tel_com_2.focus();
+                    return;
+                }
+                if ((f.EndEtg_ddd_com_2.value == "") && (f.EndEtg_tel_com_2.value != "")) {
+                    alert('Endereço de entrega: preencha o DDD do telefone.');
+                    f.EndEtg_ddd_com_2.focus();
+                    return;
+                }
+                if ((f.EndEtg_tel_com_2.value == "") && (f.EndEtg_ddd_com_2.value != "")) {
+                    alert('Endereço de entrega: preencha o telefone.');
+                    f.EndEtg_tel_com_2.focus();
+                    return;
+                }
+                if (trim(f.EndEtg_ddd_com_2.value) == "" && trim(f.EndEtg_ramal_com_2.value) != "") {
+                    alert('Endereço de entrega: DDD comercial 2 inválido!!');
+                    f.EndEtg_ddd_com_2.focus();
+                    return;
+                }
+
+            }
+            else {
+                //campos PF
+
+                if (f.EndEtg_cnpj_cpf_PF.value == "" || !cpf_ok(f.EndEtg_cnpj_cpf_PF.value)) {
+                    alert('Endereço de entrega: CPF inválido!!');
+                    f.EndEtg_cnpj_cpf_PF.focus();
+                    return;
+                }
+
+                if ((!f.EndEtg_produtor_rural_status_PF[0].checked) && (!f.EndEtg_produtor_rural_status_PF[1].checked)) {
+                    alert('Endereço de entrega: informe se o cliente é produtor rural ou não!!');
+                    return;
+                }
+                if (!f.EndEtg_produtor_rural_status_PF[0].checked) {
+                    if (!f.EndEtg_contribuinte_icms_status_PF[1].checked) {
+                        alert('Endereço de entrega: para ser cadastrado como Produtor Rural, é necessário ser contribuinte do ICMS e possuir nº de IE!!');
+                        return;
+                    }
+                    if ((!f.EndEtg_contribuinte_icms_status_PF[0].checked) && (!f.EndEtg_contribuinte_icms_status_PF[1].checked) && (!f.EndEtg_contribuinte_icms_status_PF[2].checked)) {
+                        alert('Endereço de entrega: informe se o cliente é contribuinte do ICMS, não contribuinte ou isento!!');
+                        return;
+                    }
+                    if ((f.EndEtg_contribuinte_icms_status_PF[1].checked) && (trim(f.EndEtg_ie_PF.value) == "")) {
+                        alert('Endereço de entrega: se o cliente é contribuinte do ICMS a inscrição estadual deve ser preenchida!!');
+                        f.EndEtg_ie_PF.focus();
+                        return;
+                    }
+                    if ((f.EndEtg_contribuinte_icms_status_PF[0].checked) && (f.EndEtg_ie_PF.value.toUpperCase().indexOf('ISEN') >= 0)) {
+                        alert('Endereço de entrega: se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
+                        f.EndEtg_ie_PF.focus();
+                        return;
+                    }
+                    if ((f.EndEtg_contribuinte_icms_status_PF[1].checked) && (f.EndEtg_ie_PF.value.toUpperCase().indexOf('ISEN') >= 0)) {
+                        alert('Endereço de entrega: se cliente é contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
+                        f.EndEtg_ie_PF.focus();
+                        return;
+                    }
+
+                    if (f.EndEtg_contribuinte_icms_status_PF[2].checked) {
+                        if (f.EndEtg_ie_PF.value != "") {
+                            alert("Endereço de entrega: se o Contribuinte ICMS é isento, o campo IE deve ser vazio!");
+                            f.EndEtg_ie_PF.focus();
+                            return;
+                        }
+                    }
+                }
+            
+
+                if (trim(f.EndEtg_nome.value) == "") {
+                    alert('Preencha o nome no endereço de entrega!!');
+                    f.EndEtg_nome.focus();
+                    return;
+                }
+
+                /*
+                telefones PF:
+                EndEtg_ddd_res
+                EndEtg_tel_res
+                EndEtg_ddd_cel
+                EndEtg_tel_cel
+                */
+                if (!ddd_ok(f.EndEtg_ddd_res.value)) {
+                    alert('Endereço de entrega: DDD inválido!!');
+                    f.EndEtg_ddd_res.focus();
+                    return;
+                }
+                if (!telefone_ok(f.EndEtg_tel_res.value)) {
+                    alert('Endereço de entrega: telefone inválido!!');
+                    f.EndEtg_tel_res.focus();
+                    return;
+                }
+                if ((trim(f.EndEtg_ddd_res.value) != "") || (trim(f.EndEtg_tel_res.value) != "")) {
+                    if (trim(f.EndEtg_ddd_res.value) == "") {
+                        alert('Endereço de entrega: preencha o DDD!!');
+                        f.EndEtg_ddd_res.focus();
+                        return;
+                    }
+                    if (trim(f.EndEtg_tel_res.value) == "") {
+                        alert('Endereço de entrega: preencha o telefone!!');
+                        f.EndEtg_tel_res.focus();
+                        return;
+                    }
+                }
+
+                if (!ddd_ok(f.EndEtg_ddd_cel.value)) {
+                    alert('Endereço de entrega: DDD inválido!!');
+                    f.EndEtg_ddd_cel.focus();
+                    return;
+                }
+                if (!telefone_ok(f.EndEtg_tel_cel.value)) {
+                    alert('Endereço de entrega: telefone inválido!!');
+                    f.EndEtg_tel_cel.focus();
+                    return;
+                }
+                if ((f.EndEtg_ddd_cel.value == "") && (f.EndEtg_tel_cel.value != "")) {
+                    alert('Endereço de entrega: preencha o DDD do celular.');
+                    f.EndEtg_tel_cel.focus();
+                    return;
+                }
+                if ((f.EndEtg_tel_cel.value == "") && (f.EndEtg_ddd_cel.value != "")) {
+                    alert('Endereço de entrega: preencha o número do celular.');
+                    f.EndEtg_tel_cel.focus();
+                    return;
+                }
+
+
+            }
+
+
+<%end if%>
+<%end if%>
+
+        }
+
+        if (trim(fCAD.cep.value) == "") {
+            alert('É necessário preencher o CEP no cadastro do cliente!!');
+            return;
+        }
+
+        if (eh_cpf) {
+            if ((trim(fCAD.produtor_rural_cadastrado.value) == "0") ||
+                ((fCAD.rb_produtor_rural[0].checked) && (fCAD.produtor_rural_cadastrado.value != fCAD.rb_produtor_rural[0].value)) ||
+                ((fCAD.rb_produtor_rural[1].checked) && (fCAD.produtor_rural_cadastrado.value != fCAD.rb_produtor_rural[1].value))) {
+                alert('É necessário gravar os dados do cadastro do cliente para que a opção Produtor Rural seja gravada!');
+                return;
+            }
+            if ((!fCAD.rb_produtor_rural[0].checked) && (!fCAD.rb_produtor_rural[1].checked)) {
+                alert('Informe se o cliente é produtor rural ou não!!');
+                return;
+            }
+            if (fCAD.rb_produtor_rural[1].checked) {
+                if (!fCAD.rb_contribuinte_icms[1].checked) {
+                    alert('Para ser cadastrado como Produtor Rural, é necessário ser contribuinte do ICMS e possuir nº de IE!!');
+                    return;
+                }
+                if ((!fCAD.rb_contribuinte_icms[0].checked) && (!fCAD.rb_contribuinte_icms[1].checked) && (!fCAD.rb_contribuinte_icms[2].checked)) {
+                    alert('Informe se o cliente é contribuinte do ICMS, não contribuinte ou isento!!');
+                    return;
+                }
+                if ((trim(fCAD.contribuinte_icms_cadastrado.value) == "0") ||
+                    ((fCAD.rb_contribuinte_icms[0].checked) && (fCAD.contribuinte_icms_cadastrado.value != fCAD.rb_contribuinte_icms[0].value)) ||
+                    ((fCAD.rb_contribuinte_icms[1].checked) && (fCAD.contribuinte_icms_cadastrado.value != fCAD.rb_contribuinte_icms[1].value)) ||
+                    ((fCAD.rb_contribuinte_icms[2].checked) && (fCAD.contribuinte_icms_cadastrado.value != fCAD.rb_contribuinte_icms[2].value))) {
+                    alert('É necessário gravar os dados do cadastro do cliente para que a opção Contribuinte ICMS seja gravada!');
+                    return;
+                }
+            }
+        }
+        else {
+            if ((trim(fCAD.contribuinte_icms_cadastrado.value) == "0") ||
+                ((fCAD.rb_contribuinte_icms[0].checked) && (fCAD.contribuinte_icms_cadastrado.value != fCAD.rb_contribuinte_icms[0].value)) ||
+                ((fCAD.rb_contribuinte_icms[1].checked) && (fCAD.contribuinte_icms_cadastrado.value != fCAD.rb_contribuinte_icms[1].value)) ||
+                ((fCAD.rb_contribuinte_icms[2].checked) && (fCAD.contribuinte_icms_cadastrado.value != fCAD.rb_contribuinte_icms[2].value))) {
+                alert('É necessário gravar os dados do cadastro do cliente para que a opção Contribuinte ICMS seja gravada!');
+                return;
+            }
+        }
+
+        //  Verifica se o endereço do cadastro está devidamente preenchido
+        if (!consiste_endereco_cadastro(fCAD)) return;
+        if (trim(fCAD.endereco_numero_cadastrado.value) == "") {
+            if (trim(fCAD.endereco_numero.value) == "") {
+                alert('É necessário preencher o número do endereço e, em seguida, gravar os dados do cadastro!');
+            }
+            else {
+                alert('É necessário gravar os dados do cadastro do cliente para que o número do endereço seja gravado!');
+            }
+            return;
+        }
+        // Verifica se o campo IE está vazio quando contribuinte ICMS = isento
+        if (eh_cpf) {
+            if (!fCAD.rb_produtor_rural[0].checked) {
+                if ((fCAD.rb_contribuinte_icms[0].checked) && (fCAD.ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
+                    alert('Se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
+                    fCAD.ie.focus();
+                    return;
+                }
+                if ((fCAD.rb_contribuinte_icms[1].checked) && (fCAD.ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
+                    alert('Se cliente é contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
+                    fCAD.ie.focus();
+                    return;
+                }
+                if (fCAD.rb_contribuinte_icms[2].checked) {
+                    if (fCAD.ie.value != "") {
+                        alert("Se o Contribuinte ICMS é isento, o campo IE deve ser vazio!");
+                        fCAD.ie.focus();
+                        return;
+                    }
+                }
+            }
+        }
+        else {
+            if ((fCAD.rb_contribuinte_icms[0].checked) && (fCAD.ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
+                alert('Se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
+                fCAD.ie.focus();
+                return;
+            }
+            if ((fCAD.rb_contribuinte_icms[1].checked) && (fCAD.ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
+                alert('Se cliente é contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
+                fCAD.ie.focus();
+                return;
+            }
             if (fCAD.rb_contribuinte_icms[2].checked) {
                 if (fCAD.ie.value != "") {
                     alert("Se o Contribuinte ICMS é isento, o campo IE deve ser vazio!");
@@ -898,319 +1161,317 @@ var eh_cpf;
                 }
             }
         }
-    }
-    else {
-    	if ((fCAD.rb_contribuinte_icms[0].checked) && (fCAD.ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
-    		alert('Se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
-    		fCAD.ie.focus();
-    		return;
-    	}
-    	if ((fCAD.rb_contribuinte_icms[1].checked) && (fCAD.ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
-    		alert('Se cliente é contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
-    		fCAD.ie.focus();
-    		return;
-    	}
-        if (fCAD.rb_contribuinte_icms[2].checked) {
-            if (fCAD.ie.value != "") {
-                alert("Se o Contribuinte ICMS é isento, o campo IE deve ser vazio!");
-                fCAD.ie.focus();
+
+    <% if CStr(loja) <> CStr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) then %>
+    // PARA CLIENTE PJ, É OBRIGATÓRIO O PREENCHIMENTO DO E-MAIL
+    if (!eh_cpf) {
+            if ((trim(fCAD.email_original.value) == "") && (trim(fCAD.email_xml_original.value) == "")) {
+                alert("É obrigatório que o cliente tenha um endereço de e-mail cadastrado!");
+                fCAD.email.focus();
                 return;
             }
         }
+    <% end if %>
+
+            fNEW.c_FormFieldValues.value = formToString($("#fNEW"));
+
+        //campos do endereço de entrega que precisam de transformacao
+        transferirCamposEndEtg(fNEW);
+
+        dPEDIDO.style.visibility = "hidden";
+        window.status = "Aguarde ...";
+        f.submit();
     }
 
-    <% if CStr(loja) <> CStr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) then %>
-    // PARA CLIENTE PJ, É OBRIGATÓRIO O PREENCHIMENTO DO E-MAIL
-    if (!eh_cpf) {
-        if ((trim(fCAD.email_original.value) == "") && (trim(fCAD.email_xml_original.value) == "")) {
-            alert("É obrigatório que o cliente tenha um endereço de e-mail cadastrado!");
-            fCAD.email.focus();
-            return;
+    function RemoveCliente(f) {
+        var b;
+        if (!ja_carregou) return;
+
+        b = window.confirm('Confirma a exclusão deste cliente?');
+        if (b) {
+            f.operacao_selecionada.value = OP_EXCLUI;
+            dREMOVE.style.visibility = "hidden";
+            window.status = "Aguarde ...";
+            f.submit();
         }
     }
-    <% end if %>
-	
-	fNEW.c_FormFieldValues.value = formToString($("#fNEW"));
 
-	dPEDIDO.style.visibility="hidden";
-	window.status = "Aguarde ...";
-	f.submit(); 
-}
+    function AtualizaCliente(f) {
+        var s, eh_cpf, i, blnConsistir, blnConsistirDadosBancarios, blnOk;
+        var blnCadRefBancaria, blnCadSocioMaj, blnCadRefComercial, blnCadRefProfissional;
 
-function RemoveCliente( f ) {
-var b;
-	if (!ja_carregou) return;
+        if (!ja_carregou) return;
 
-	b=window.confirm('Confirma a exclusão deste cliente?');
-	if (b){
-		f.operacao_selecionada.value=OP_EXCLUI;
-		dREMOVE.style.visibility="hidden";
-		window.status = "Aguarde ...";
-		f.submit();
-		}
-}
+        s = retorna_so_digitos(f.cnpj_cpf_selecionado.value);
+        eh_cpf = false;
+        if (s.length == 11) eh_cpf = true;
 
-function AtualizaCliente( f ) {
-var s, eh_cpf, i, blnConsistir, blnConsistirDadosBancarios, blnOk;
-var blnCadRefBancaria, blnCadSocioMaj, blnCadRefComercial, blnCadRefProfissional;
-
-	if (!ja_carregou) return;
-
-	s=retorna_so_digitos(f.cnpj_cpf_selecionado.value);
-	eh_cpf=false;
-	if (s.length==11) eh_cpf=true;
-	
-	if ((s=="")||(!cnpj_cpf_ok(s))) {
-		alert('CNPJ/CPF inválido!!');
-		return;
-		}
-		
-	if (eh_cpf) {
-		s=trim(f.sexo.value);
-		if ((s=="")||(!sexo_ok(s))) {
-			alert('Indique qual o sexo!!');
-			f.sexo.focus();
-			return;
-			}
-		if (!isDate(f.dt_nasc)) {
-			alert('Data inválida!!');
-			f.dt_nasc.focus();
-			return;
-			}
-		if ((!f.rb_produtor_rural[0].checked) && (!f.rb_produtor_rural[1].checked)) {
-			alert('Informe se o cliente é produtor rural ou não!!');
-			return;
-			}
-		if (!f.rb_produtor_rural[0].checked) {
-			if (!fCAD.rb_contribuinte_icms[1].checked) {
-				alert('Para ser cadastrado como Produtor Rural, é necessário ser contribuinte do ICMS e possuir nº de IE!!');
-				return;
-			}
-			if ((!f.rb_contribuinte_icms[0].checked) && (!f.rb_contribuinte_icms[1].checked) && (!f.rb_contribuinte_icms[2].checked)) {
-				alert('Informe se o cliente é contribuinte do ICMS, não contribuinte ou isento!!');
-				return;
-			}
-			if ((f.rb_contribuinte_icms[1].checked) && (trim(f.ie.value) == "")) {
-				alert('Se o cliente é contribuinte do ICMS a inscrição estadual deve ser preenchida!!');
-				f.ie.focus();
-				return;
-			}
-			if ((f.rb_contribuinte_icms[0].checked) && (f.ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
-				alert('Se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
-				f.ie.focus();
-				return;
-			}
-			if ((f.rb_contribuinte_icms[1].checked) && (f.ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
-				alert('Se cliente é contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
-				f.ie.focus();
-				return;
-				}
-			}
-		}
-	else {
-		//deixar de exigir preenchimento se cliente não é contribuinte?
-		//s=trim(f.ie.value);
-		//if (s=="") {
-		//	alert('Preencha a Inscrição Estadual!!');
-		//	f.ie.focus();
-		//	return;
-		//	}
-		s=trim(f.contato.value);
-		if (s=="") {
-			alert('Informe o nome da pessoa para contato!!');
-			f.contato.focus();
-			return;
-			}
-		if ((!f.rb_contribuinte_icms[0].checked) && (!f.rb_contribuinte_icms[1].checked) && (!f.rb_contribuinte_icms[2].checked)) {
-			alert('Informe se o cliente é contribuinte do ICMS, não contribuinte ou isento!!');
-			return;
-			}
-		if ((f.rb_contribuinte_icms[1].checked) && (trim(f.ie.value) == "")) {
-			alert('Se o cliente é contribuinte do ICMS a inscrição estadual deve ser preenchida!!');
-			f.ie.focus();
-			return;
-			}
-		if ((f.rb_contribuinte_icms[0].checked) && (f.ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
-			alert('Se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
-			f.ie.focus();
-			return;
-			}
-		if ((f.rb_contribuinte_icms[1].checked) && (f.ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
-			alert('Se cliente é contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
-			f.ie.focus();
-			return;
-			}
-	}
-
-	// Verifica se o campo IE está vazio quando contribuinte ICMS = isento
-	if (eh_cpf) {
-		if (!fCAD.rb_produtor_rural[0].checked) {
-			if (fCAD.rb_contribuinte_icms[2].checked) {
-				if (fCAD.ie.value != "") {
-					alert("Se o Contribuinte ICMS é isento, o campo IE deve ser vazio!");
-					fCAD.ie.focus();
-					return;
-				}
-			}
-		}
-	}
-	else {
-		if (fCAD.rb_contribuinte_icms[2].checked) {
-			if (fCAD.ie.value != "") {
-				alert("Se o Contribuinte ICMS é isento, o campo IE deve ser vazio!");
-				fCAD.ie.focus();
-				return;
-			}
-		}
-	}
-
-	if (trim(f.nome.value)=="") {
-		alert('Preencha o nome!!');
-		f.nome.focus();
-		return;
-		}
-
-	if (!consiste_endereco_cadastro(f)) return;
-	
-	if (eh_cpf) {
-		if (!ddd_ok(f.ddd_res.value)) {
-			alert('DDD inválido!!');
-			f._res.focus();
-			return;
-			}
-		if (!telefone_ok(f.tel_res.value)) {
-			alert('Telefone inválido!!');
-			f.tel_res.focus();
-			return;
-			}
-		if ((trim(f.ddd_res.value)!="")||(trim(f.tel_res.value)!="")) {
-			if (trim(f.ddd_res.value)=="") {
-				alert('Preencha o DDD!!');
-				f.ddd_res.focus();
-				return;
-				}
-			if (trim(f.tel_res.value)=="") {
-				alert('Preencha o telefone!!');
-				f.tel_res.focus();
-				return;
-				}
-			}
-
-}
-if (eh_cpf) {
-    if (!ddd_ok(f.ddd_cel.value)) {
-        alert('DDD inválido!!');
-        f.ddd_cel.focus();
-        return;
-    }
-    if (!telefone_ok(f.tel_cel.value)) {
-        alert('Telefone inválido!!');
-        f.tel_res.focus();
-        return;
-    }
-    if ((f.ddd_cel.value == "") && (f.tel_cel.value != "")) {
-        alert('Preencha o DDD do celular.');
-        f.ddd_cel.focus();
-        return;
-    }
-    if ((f.tel_cel.value == "") && (f.ddd_cel.value != "")) {
-        alert('Preencha o número do celular.');
-        f.tel_cel.focus();
-        return;
-    }
-}
-if (!eh_cpf) {
-    if (!ddd_ok(f.ddd_com_2.value)) {
-        alert('DDD inválido!!');
-        f.ddd_com_2.focus();
-        return;
-    }
-    if (!telefone_ok(f.tel_com_2.value)) {
-        alert('Telefone inválido!!');
-        f.tel_com_2.focus();
-        return;
-    }
-    if ((f.ddd_com_2.value == "") && (f.tel_com_2.value != "")) {
-        alert('Preencha o DDD do telefone.');
-        f.ddd_com_2.focus();
-        return;
-    }
-    if ((f.tel_com_2.value == "") && (f.ddd_com_2.value != "")) {
-        alert('Preencha o telefone.');
-        f.tel_com_2.focus();
-        return;
-    }
-
-}
-
-		
-	if (!ddd_ok(f.ddd_com.value)) {
-		alert('DDD inválido!!');
-		f.ddd_com.focus();
-		return;
-		}
-
-	if (!telefone_ok(f.tel_com.value)) {
-		alert('Telefone comercial inválido!!');
-		f.tel_com.focus();
-		return;
-		}
-
-	if ((trim(f.ddd_com.value)!="")||(trim(f.tel_com.value)!="")) {
-		if (trim(f.ddd_com.value)=="") {
-			alert('Preencha o DDD!!');
-			f.ddd_com.focus();
-			return;
-			}
-		if (trim(f.tel_com.value)=="") {
-			alert('Preencha o telefone!!');
-			f.tel_com.focus();
-			return;
-			}
-		}
+        if ((s == "") || (!cnpj_cpf_ok(s))) {
+            alert('CNPJ/CPF inválido!!');
+            return;
+        }
 
 		if (eh_cpf) {
-		    if ((trim(f.tel_res.value) == "") && (trim(f.tel_com.value) == "") && (trim(f.tel_cel.value) == "")) {
-		        alert('Preencha pelo menos um telefone!!');
-		        return;
-		    }
-		}
-		else {
-		    if (trim(f.tel_com_2.value) == "") {
-		        if (trim(f.ddd_com.value) == "") {
-		            alert('Preencha o DDD!!');
-		            f.ddd_com.focus();
-		            return;
-		        }
-		        if (trim(f.tel_com.value) == "") {
-		            alert('Preencha o telefone!!');
-		            f.tel_com.focus();
-		            return;
-		        }
-		    }
-		}
-	
-	if ( (trim(f.email.value)!="") && (!email_ok(f.email.value)) ) {
-		alert('E-mail inválido!!');
-		f.email.focus();
-		return;
-		}
+			<% if False then %>
+            s = trim(f.sexo.value);
+            if ((s == "") || (!sexo_ok(s))) {
+                alert('Indique qual o sexo!!');
+                f.sexo.focus();
+                return;
+            }
+            if (!isDate(f.dt_nasc)) {
+                alert('Data inválida!!');
+                f.dt_nasc.focus();
+                return;
+			}
+			<% end if %>
+            if ((!f.rb_produtor_rural[0].checked) && (!f.rb_produtor_rural[1].checked)) {
+                alert('Informe se o cliente é produtor rural ou não!!');
+                return;
+            }
+            if (!f.rb_produtor_rural[0].checked) {
+                if (!fCAD.rb_contribuinte_icms[1].checked) {
+                    alert('Para ser cadastrado como Produtor Rural, é necessário ser contribuinte do ICMS e possuir nº de IE!!');
+                    return;
+                }
+                if ((!f.rb_contribuinte_icms[0].checked) && (!f.rb_contribuinte_icms[1].checked) && (!f.rb_contribuinte_icms[2].checked)) {
+                    alert('Informe se o cliente é contribuinte do ICMS, não contribuinte ou isento!!');
+                    return;
+                }
+                if ((f.rb_contribuinte_icms[1].checked) && (trim(f.ie.value) == "")) {
+                    alert('Se o cliente é contribuinte do ICMS a inscrição estadual deve ser preenchida!!');
+                    f.ie.focus();
+                    return;
+                }
+                if ((f.rb_contribuinte_icms[0].checked) && (f.ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
+                    alert('Se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
+                    f.ie.focus();
+                    return;
+                }
+                if ((f.rb_contribuinte_icms[1].checked) && (f.ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
+                    alert('Se cliente é contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
+                    f.ie.focus();
+                    return;
+                }
+            }
+        }
+        else {
+            //deixar de exigir preenchimento se cliente não é contribuinte?
+            //s=trim(f.ie.value);
+            //if (s=="") {
+            //	alert('Preencha a Inscrição Estadual!!');
+            //	f.ie.focus();
+            //	return;
+            //	}
+			<% if CStr(loja) <> CStr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) then %>
+            s = trim(f.contato.value);
+            if (s == "") {
+                alert('Informe o nome da pessoa para contato!!');
+                f.contato.focus();
+                return;
+			}
+			<% end if %>
 
-	if ( (trim(f.email_xml.value)!="") && (!email_ok(f.email_xml.value)) ) {
-		alert('E-mail (XML) inválido!!');
-		f.email_xml.focus();
-		return;
-	}
+            if ((!f.rb_contribuinte_icms[0].checked) && (!f.rb_contribuinte_icms[1].checked) && (!f.rb_contribuinte_icms[2].checked)) {
+                alert('Informe se o cliente é contribuinte do ICMS, não contribuinte ou isento!!');
+                return;
+            }
+            if ((f.rb_contribuinte_icms[1].checked) && (trim(f.ie.value) == "")) {
+                alert('Se o cliente é contribuinte do ICMS a inscrição estadual deve ser preenchida!!');
+                f.ie.focus();
+                return;
+            }
+            if ((f.rb_contribuinte_icms[0].checked) && (f.ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
+                alert('Se cliente é não contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
+                f.ie.focus();
+                return;
+            }
+            if ((f.rb_contribuinte_icms[1].checked) && (f.ie.value.toUpperCase().indexOf('ISEN') >= 0)) {
+                alert('Se cliente é contribuinte do ICMS, não pode ter o valor ISENTO no campo de Inscrição Estadual!!');
+                f.ie.focus();
+                return;
+            }
+        }
+
+        // Verifica se o campo IE está vazio quando contribuinte ICMS = isento
+        if (eh_cpf) {
+            if (!fCAD.rb_produtor_rural[0].checked) {
+                if (fCAD.rb_contribuinte_icms[2].checked) {
+                    if (fCAD.ie.value != "") {
+                        alert("Se o Contribuinte ICMS é isento, o campo IE deve ser vazio!");
+                        fCAD.ie.focus();
+                        return;
+                    }
+                }
+            }
+        }
+        else {
+            if (fCAD.rb_contribuinte_icms[2].checked) {
+                if (fCAD.ie.value != "") {
+                    alert("Se o Contribuinte ICMS é isento, o campo IE deve ser vazio!");
+                    fCAD.ie.focus();
+                    return;
+                }
+            }
+        }
+
+        if (trim(f.nome.value) == "") {
+            alert('Preencha o nome!!');
+            f.nome.focus();
+            return;
+        }
+
+        if (!consiste_endereco_cadastro(f)) return;
+
+        if (eh_cpf) {
+            if (!ddd_ok(f.ddd_res.value)) {
+                alert('DDD inválido!!');
+                f._res.focus();
+                return;
+            }
+            if (!telefone_ok(f.tel_res.value)) {
+                alert('Telefone inválido!!');
+                f.tel_res.focus();
+                return;
+            }
+            if ((trim(f.ddd_res.value) != "") || (trim(f.tel_res.value) != "")) {
+                if (trim(f.ddd_res.value) == "") {
+                    alert('Preencha o DDD!!');
+                    f.ddd_res.focus();
+                    return;
+                }
+                if (trim(f.tel_res.value) == "") {
+                    alert('Preencha o telefone!!');
+                    f.tel_res.focus();
+                    return;
+                }
+            }
+
+        }
+        if (eh_cpf) {
+            if (!ddd_ok(f.ddd_cel.value)) {
+                alert('DDD inválido!!');
+                f.ddd_cel.focus();
+                return;
+            }
+            if (!telefone_ok(f.tel_cel.value)) {
+                alert('Telefone inválido!!');
+                f.tel_res.focus();
+                return;
+            }
+            if ((f.ddd_cel.value == "") && (f.tel_cel.value != "")) {
+                alert('Preencha o DDD do celular.');
+                f.ddd_cel.focus();
+                return;
+            }
+            if ((f.tel_cel.value == "") && (f.ddd_cel.value != "")) {
+                alert('Preencha o número do celular.');
+                f.tel_cel.focus();
+                return;
+            }
+        }
+        if (!eh_cpf) {
+            if (!ddd_ok(f.ddd_com_2.value)) {
+                alert('DDD inválido!!');
+                f.ddd_com_2.focus();
+                return;
+            }
+            if (!telefone_ok(f.tel_com_2.value)) {
+                alert('Telefone inválido!!');
+                f.tel_com_2.focus();
+                return;
+            }
+            if ((f.ddd_com_2.value == "") && (f.tel_com_2.value != "")) {
+                alert('Preencha o DDD do telefone.');
+                f.ddd_com_2.focus();
+                return;
+            }
+            if ((f.tel_com_2.value == "") && (f.ddd_com_2.value != "")) {
+                alert('Preencha o telefone.');
+                f.tel_com_2.focus();
+                return;
+            }
+            if (trim(f.ddd_com_2.value) == "" && trim(f.ramal_com_2.value) != "") {
+                alert('DDD comercial 2 inválido!!');
+                f.ddd_com_2.focus();
+                return;
+            }
+
+        }
+
+
+        if (!ddd_ok(f.ddd_com.value)) {
+            alert('DDD inválido!!');
+            f.ddd_com.focus();
+            return;
+        }
+
+        if (!telefone_ok(f.tel_com.value)) {
+            alert('Telefone comercial inválido!!');
+            f.tel_com.focus();
+            return;
+        }
+
+        if ((trim(f.ddd_com.value) != "") || (trim(f.tel_com.value) != "")) {
+            if (trim(f.ddd_com.value) == "") {
+                alert('Preencha o DDD!!');
+                f.ddd_com.focus();
+                return;
+            }
+            if (trim(f.tel_com.value) == "") {
+                alert('Preencha o telefone!!');
+                f.tel_com.focus();
+                return;
+            }
+        }
+        if (trim(f.ddd_com.value) == "" && trim(f.ramal_com.value) != "") {
+            alert('DDD comercial inválido!!');
+            f.ddd_com.focus();
+            return;
+        }
+
+        if (eh_cpf) {
+            if ((trim(f.tel_res.value) == "") && (trim(f.tel_com.value) == "") && (trim(f.tel_cel.value) == "")) {
+                alert('Preencha pelo menos um telefone!!');
+                return;
+            }
+        }
+        else {
+            if (trim(f.tel_com_2.value) == "") {
+                if (trim(f.ddd_com.value) == "") {
+                    alert('Preencha o DDD!!');
+                    f.ddd_com.focus();
+                    return;
+                }
+                if (trim(f.tel_com.value) == "") {
+                    alert('Preencha o telefone!!');
+                    f.tel_com.focus();
+                    return;
+                }
+            }
+        }
+
+        if ((trim(f.email.value) != "") && (!email_ok(f.email.value))) {
+            alert('E-mail inválido!!');
+            f.email.focus();
+            return;
+        }
+
+        if ((trim(f.email_xml.value) != "") && (!email_ok(f.email_xml.value))) {
+            alert('E-mail (XML) inválido!!');
+            f.email_xml.focus();
+            return;
+        }
 
     <% if CStr(loja) <> CStr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) then %>
     // PARA CLIENTE PJ, É OBRIGATÓRIO O PREENCHIMENTO DO E-MAIL
     if (!eh_cpf) {
-        if ((trim(fCAD.email.value) == "") && (trim(fCAD.email_xml.value) == "")) {
-            alert("É obrigatório informar um endereço de e-mail");
-            fCAD.email.focus();
-            return;
+            if ((trim(fCAD.email.value) == "") && (trim(fCAD.email_xml.value) == "")) {
+                alert("É obrigatório informar um endereço de e-mail");
+                fCAD.email.focus();
+                return;
+            }
         }
-    }
     <% end if %>
 
 /*
@@ -1224,173 +1485,274 @@ if (!eh_cpf) {
 		//  O cadastro de Referência Bancária será feito p/  PJ
 
 		if (!eh_cpf) {
-		    blnCadRefBancaria = true;
-		    if (blnCadRefBancaria) {
-		        for (i = 1; i < f.c_RefBancariaBanco.length; i++) {
-		            blnConsistir = false;
-		            if (trim(f.c_RefBancariaBanco[i].value) != "") blnConsistir = true;
-		            if (trim(f.c_RefBancariaAgencia[i].value) != "") blnConsistir = true;
-		            if (trim(f.c_RefBancariaConta[i].value) != "") blnConsistir = true;
-		            if (trim(f.c_RefBancariaDdd[i].value) != "") blnConsistir = true;
-		            if (trim(f.c_RefBancariaTelefone[i].value) != "") blnConsistir = true;
-		            if (trim(f.c_RefBancariaContato[i].value) != "") blnConsistir = true;
-		            if (blnConsistir) {
-		                if (trim(f.c_RefBancariaBanco[i].value) == "") {
-		                    alert('Informe o banco no cadastro de Referência Bancária!!');
-		                    f.c_RefBancariaBanco[i].focus();
-		                    return;
-		                }
-		                if (trim(f.c_RefBancariaAgencia[i].value) == "") {
-		                    alert('Informe a agência no cadastro de Referência Bancária!!');
-		                    f.c_RefBancariaAgencia[i].focus();
-		                    return;
-		                }
-		                if (trim(f.c_RefBancariaConta[i].value) == "") {
-		                    alert('Informe o número da conta no cadastro de Referência Bancária!!');
-		                    f.c_RefBancariaConta[i].focus();
-		                    return;
-		                }
-		            }
-		        }
-		    }
-		}
+                blnCadRefBancaria = true;
+                if (blnCadRefBancaria) {
+                    for (i = 1; i < f.c_RefBancariaBanco.length; i++) {
+                        blnConsistir = false;
+                        if (trim(f.c_RefBancariaBanco[i].value) != "") blnConsistir = true;
+                        if (trim(f.c_RefBancariaAgencia[i].value) != "") blnConsistir = true;
+                        if (trim(f.c_RefBancariaConta[i].value) != "") blnConsistir = true;
+                        if (trim(f.c_RefBancariaDdd[i].value) != "") blnConsistir = true;
+                        if (trim(f.c_RefBancariaTelefone[i].value) != "") blnConsistir = true;
+                        if (trim(f.c_RefBancariaContato[i].value) != "") blnConsistir = true;
+                        if (blnConsistir) {
+                            if (trim(f.c_RefBancariaBanco[i].value) == "") {
+                                alert('Informe o banco no cadastro de Referência Bancária!!');
+                                f.c_RefBancariaBanco[i].focus();
+                                return;
+                            }
+                            if (trim(f.c_RefBancariaAgencia[i].value) == "") {
+                                alert('Informe a agência no cadastro de Referência Bancária!!');
+                                f.c_RefBancariaAgencia[i].focus();
+                                return;
+                            }
+                            if (trim(f.c_RefBancariaConta[i].value) == "") {
+                                alert('Informe o número da conta no cadastro de Referência Bancária!!');
+                                f.c_RefBancariaConta[i].focus();
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
 
-//  Ref Profissional
-		//  O cadastro de Referência Profissional será feito apenas p/ PF
-/*
-	if (eh_cpf) blnCadRefProfissional=true; else blnCadRefProfissional=false;
-	if (blnCadRefProfissional) {
-		for (i=1; i<f.c_RefProfNomeEmpresa.length; i++) {
-			blnConsistir=false;
-			if (trim(f.c_RefProfNomeEmpresa[i].value)!="") blnConsistir=true;
-			if (trim(f.c_RefProfCargo[i].value)!="") blnConsistir=true;
-			if (trim(f.c_RefProfDdd[i].value)!="") blnConsistir=true;
-			if (trim(f.c_RefProfTelefone[i].value)!="") blnConsistir=true;
-			if (trim(f.c_RefProfPeriodoRegistro[i].value)!="") blnConsistir=true;
-			if (trim(f.c_RefProfRendimentos[i].value)!="") blnConsistir=true;
-			if (trim(f.c_RefProfCnpj[i].value)!="") blnConsistir=true;
-			if (blnConsistir) {
-				if (trim(f.c_RefProfNomeEmpresa[i].value)=="") {
-					alert('Informe o nome da empresa no cadastro de Referência Profissional!!');
-					f.c_RefProfNomeEmpresa[i].focus();
-					return;
-					}
-				if (trim(f.c_RefProfCargo[i].value)=="") {
-					alert('Informe o cargo no cadastro de Referência Profissional!!');
-					f.c_RefProfCargo[i].focus();
-					return;
-					}
-				if (trim(f.c_RefProfCnpj[i].value)!="") {
-					if (!cnpj_ok(f.c_RefProfCnpj[i].value)) {
-						alert('CNPJ inválido!!');
-						f.c_RefProfCnpj[i].focus();
-						return;
-						}
-					}
-				}
-			}
-		}
-*/
+        //  Ref Profissional
+        //  O cadastro de Referência Profissional será feito apenas p/ PF
+        /*
+            if (eh_cpf) blnCadRefProfissional=true; else blnCadRefProfissional=false;
+            if (blnCadRefProfissional) {
+                for (i=1; i<f.c_RefProfNomeEmpresa.length; i++) {
+                    blnConsistir=false;
+                    if (trim(f.c_RefProfNomeEmpresa[i].value)!="") blnConsistir=true;
+                    if (trim(f.c_RefProfCargo[i].value)!="") blnConsistir=true;
+                    if (trim(f.c_RefProfDdd[i].value)!="") blnConsistir=true;
+                    if (trim(f.c_RefProfTelefone[i].value)!="") blnConsistir=true;
+                    if (trim(f.c_RefProfPeriodoRegistro[i].value)!="") blnConsistir=true;
+                    if (trim(f.c_RefProfRendimentos[i].value)!="") blnConsistir=true;
+                    if (trim(f.c_RefProfCnpj[i].value)!="") blnConsistir=true;
+                    if (blnConsistir) {
+                        if (trim(f.c_RefProfNomeEmpresa[i].value)=="") {
+                            alert('Informe o nome da empresa no cadastro de Referência Profissional!!');
+                            f.c_RefProfNomeEmpresa[i].focus();
+                            return;
+                            }
+                        if (trim(f.c_RefProfCargo[i].value)=="") {
+                            alert('Informe o cargo no cadastro de Referência Profissional!!');
+                            f.c_RefProfCargo[i].focus();
+                            return;
+                            }
+                        if (trim(f.c_RefProfCnpj[i].value)!="") {
+                            if (!cnpj_ok(f.c_RefProfCnpj[i].value)) {
+                                alert('CNPJ inválido!!');
+                                f.c_RefProfCnpj[i].focus();
+                                return;
+                                }
+                            }
+                        }
+                    }
+                }
+        */
 
-//  Ref Comercial
-//  O cadastro de Referência Comercial será feito apenas p/ PJ
-	if (!eh_cpf) blnCadRefComercial=true; else blnCadRefComercial=false;
-	if (blnCadRefComercial) {
-		for (i=1; i<f.c_RefComercialNomeEmpresa.length; i++) {
-			blnConsistir=false;
-			if (trim(f.c_RefComercialNomeEmpresa[i].value)!="") blnConsistir=true;
-			if (trim(f.c_RefComercialContato[i].value)!="") blnConsistir=true;
-			if (trim(f.c_RefComercialDdd[i].value)!="") blnConsistir=true;
-			if (trim(f.c_RefComercialTelefone[i].value)!="") blnConsistir=true;
-			if (blnConsistir) {
-				if (trim(f.c_RefComercialNomeEmpresa[i].value)=="") {
-					alert('Informe o nome da empresa no cadastro de Referência Comercial!!');
-					f.c_RefComercialNomeEmpresa[i].focus();
-					return;
-					}
-				}
-			}
-		}
+        //  Ref Comercial
+        //  O cadastro de Referência Comercial será feito apenas p/ PJ
+        if (!eh_cpf) blnCadRefComercial = true; else blnCadRefComercial = false;
+        if (blnCadRefComercial) {
+            for (i = 1; i < f.c_RefComercialNomeEmpresa.length; i++) {
+                blnConsistir = false;
+                if (trim(f.c_RefComercialNomeEmpresa[i].value) != "") blnConsistir = true;
+                if (trim(f.c_RefComercialContato[i].value) != "") blnConsistir = true;
+                if (trim(f.c_RefComercialDdd[i].value) != "") blnConsistir = true;
+                if (trim(f.c_RefComercialTelefone[i].value) != "") blnConsistir = true;
+                if (blnConsistir) {
+                    if (trim(f.c_RefComercialNomeEmpresa[i].value) == "") {
+                        alert('Informe o nome da empresa no cadastro de Referência Comercial!!');
+                        f.c_RefComercialNomeEmpresa[i].focus();
+                        return;
+                    }
+                }
+            }
+        }
 
-//  Dados do Sócio Majoritário
-/*	if (!eh_cpf) blnCadSocioMaj=true; else blnCadSocioMaj=false;
-	if (blnCadSocioMaj) {
-		blnConsistir=false;
-		blnConsistirDadosBancarios=false;
-		if (trim(f.c_SocioMajNome.value)!="") blnConsistir=true;
-		if (trim(f.c_SocioMajCpf.value)!="") blnConsistir=true;
-		if (trim(f.c_SocioMajBanco.value)!="") {
-			blnConsistir=true;
-			blnConsistirDadosBancarios=true;
-			}
-		if (trim(f.c_SocioMajAgencia.value)!="") {
-			blnConsistir=true;
-			blnConsistirDadosBancarios=true;
-			}
-		if (trim(f.c_SocioMajConta.value)!="") {
-			blnConsistir=true;
-			blnConsistirDadosBancarios=true;
-			}
-		if (trim(f.c_SocioMajDdd.value)!="") blnConsistir=true;
-		if (trim(f.c_SocioMajTelefone.value)!="") blnConsistir=true;
-		if (trim(f.c_SocioMajContato.value)!="") blnConsistir=true;
-		if (blnConsistir) {
-			if (trim(f.c_SocioMajNome.value)=="") {
-				alert('Informe o nome do sócio majoritário!!');
-				f.c_SocioMajNome.focus();
-				return;
-				}
-			}
-		if (blnConsistirDadosBancarios) {
-			if (trim(f.c_SocioMajBanco.value)=="") {
-				alert('Informe o banco nos dados bancários do sócio majoritário!!');
-				f.c_SocioMajBanco.focus();
-				return;
-				}
-			if (trim(f.c_SocioMajAgencia.value)=="") {
-				alert('Informe a agência nos dados bancários do sócio majoritário!!');
-				f.c_SocioMajAgencia.focus();
-				return;
-				}
-			if (trim(f.c_SocioMajConta.value)=="") {
-				alert('Informe o número da conta nos dados bancários do sócio majoritário!!');
-				f.c_SocioMajConta.focus();
-				return;
-				}
-			}
-		}
-*/
+        //  Dados do Sócio Majoritário
+        /*	if (!eh_cpf) blnCadSocioMaj=true; else blnCadSocioMaj=false;
+            if (blnCadSocioMaj) {
+                blnConsistir=false;
+                blnConsistirDadosBancarios=false;
+                if (trim(f.c_SocioMajNome.value)!="") blnConsistir=true;
+                if (trim(f.c_SocioMajCpf.value)!="") blnConsistir=true;
+                if (trim(f.c_SocioMajBanco.value)!="") {
+                    blnConsistir=true;
+                    blnConsistirDadosBancarios=true;
+                    }
+                if (trim(f.c_SocioMajAgencia.value)!="") {
+                    blnConsistir=true;
+                    blnConsistirDadosBancarios=true;
+                    }
+                if (trim(f.c_SocioMajConta.value)!="") {
+                    blnConsistir=true;
+                    blnConsistirDadosBancarios=true;
+                    }
+                if (trim(f.c_SocioMajDdd.value)!="") blnConsistir=true;
+                if (trim(f.c_SocioMajTelefone.value)!="") blnConsistir=true;
+                if (trim(f.c_SocioMajContato.value)!="") blnConsistir=true;
+                if (blnConsistir) {
+                    if (trim(f.c_SocioMajNome.value)=="") {
+                        alert('Informe o nome do sócio majoritário!!');
+                        f.c_SocioMajNome.focus();
+                        return;
+                        }
+                    }
+                if (blnConsistirDadosBancarios) {
+                    if (trim(f.c_SocioMajBanco.value)=="") {
+                        alert('Informe o banco nos dados bancários do sócio majoritário!!');
+                        f.c_SocioMajBanco.focus();
+                        return;
+                        }
+                    if (trim(f.c_SocioMajAgencia.value)=="") {
+                        alert('Informe a agência nos dados bancários do sócio majoritário!!');
+                        f.c_SocioMajAgencia.focus();
+                        return;
+                        }
+                    if (trim(f.c_SocioMajConta.value)=="") {
+                        alert('Informe o número da conta nos dados bancários do sócio majoritário!!');
+                        f.c_SocioMajConta.focus();
+                        return;
+                        }
+                    }
+                }
+        */
 
-	fCAD.c_FormFieldValues.value = formToString($("#fCAD"));
+        fCAD.c_FormFieldValues.value = formToString($("#fCAD"));
 
-	dATUALIZA.style.visibility="hidden";
-	window.status = "Aguarde ...";
-	f.submit();
-}
+        dATUALIZA.style.visibility = "hidden";
+        window.status = "Aguarde ...";
+        f.submit();
+    }
 
 </script>
 
 <script type="text/javascript">
 
-function exibeJanelaCEP_Cli() {
-	$.mostraJanelaCEP("cep", "uf", "cidade", "bairro", "endereco", "endereco_numero", "endereco_complemento");
-}
+    function exibeJanelaCEP_Cli() {
+        $.mostraJanelaCEP("cep", "uf", "cidade", "bairro", "endereco", "endereco_numero", "endereco_complemento");
+    }
 
-function exibeJanelaCEP_Etg() {
-	$.mostraJanelaCEP("EndEtg_cep", "EndEtg_uf", "EndEtg_cidade", "EndEtg_bairro", "EndEtg_endereco", "EndEtg_endereco_numero", "EndEtg_endereco_complemento");
-}
+    function exibeJanelaCEP_Etg() {
+        $.mostraJanelaCEP("EndEtg_cep", "EndEtg_uf", "EndEtg_cidade", "EndEtg_bairro", "EndEtg_endereco", "EndEtg_endereco_numero", "EndEtg_endereco_complemento");
+    }
 
-function trataProdutorRural() {
-	//ao clicar na opção Produtor Rural, exibir/ocultar os campos apropriados
-	if ((typeof (fCAD.rb_produtor_rural) !== "undefined") && (fCAD.rb_produtor_rural !== null)) {
-		if (!fCAD.rb_produtor_rural[1].checked) {
-			$("#t_contribuinte_icms").css("display", "none");
-		}
-		else {
-			$("#t_contribuinte_icms").css("display", "block");
-		}
-	}
-}
+    function trataProdutorRural() {
+        //ao clicar na opção Produtor Rural, exibir/ocultar os campos apropriados
+        if ((typeof (fCAD.rb_produtor_rural) !== "undefined") && (fCAD.rb_produtor_rural !== null)) {
+            if (!fCAD.rb_produtor_rural[1].checked) {
+                $("#t_contribuinte_icms").css("display", "none");
+            }
+            else {
+                $("#t_contribuinte_icms").css("display", "block");
+            }
+        }
+    }
+
+
+
+    function transferirCamposEndEtg(fNEW) {
+<%if blnUsarMemorizacaoCompletaEnderecos then %>
+    <%if Not eh_cpf then %>
+        //Transferimos os dados do endereço de entrega dos campos certos. 
+        //Temos dois conjuntos de campos (para PF e PJ) porque o layout é muito diferente.
+        var pj = $('input[name="EndEtg_tipo_pessoa"]:checked').val() == "PJ";
+        if (pj) {
+            fNEW.EndEtg_cnpj_cpf.value = fNEW.EndEtg_cnpj_cpf_PJ.value;
+            fNEW.EndEtg_ie.value = fNEW.EndEtg_ie_PJ.value;
+            fNEW.EndEtg_contribuinte_icms_status.value = $('input[name="EndEtg_contribuinte_icms_status_PJ"]:checked').val();
+            if (!$('input[name="EndEtg_contribuinte_icms_status_PJ"]:checked').val())
+                fNEW.EndEtg_contribuinte_icms_status.value = "";
+        }
+        else {
+            fNEW.EndEtg_cnpj_cpf.value = fNEW.EndEtg_cnpj_cpf_PF.value;
+            fNEW.EndEtg_ie.value = fNEW.EndEtg_ie_PF.value;
+            fNEW.EndEtg_contribuinte_icms_status.value = $('input[name="EndEtg_contribuinte_icms_status_PF"]:checked').val();
+            if (!$('input[name="EndEtg_contribuinte_icms_status_PF"]:checked').val())
+                fNEW.EndEtg_contribuinte_icms_status.value = "";
+            fNEW.EndEtg_produtor_rural_status.value = $('input[name="EndEtg_produtor_rural_status_PF"]:checked').val();
+            if (!$('input[name="EndEtg_produtor_rural_status_PF"]:checked').val())
+                fNEW.EndEtg_produtor_rural_status.value = "";
+        }
+
+        //os campos a mais são enviados junto. Deixamos enviar...
+    <%end if%>
+<%end if%>
+    }
+
+    //para mudar o tipo do endereço de entrega
+    function trocarEndEtgTipoPessoa(novoTipo) {
+<%if blnUsarMemorizacaoCompletaEnderecos then%>
+        if (novoTipo && $('input[name="EndEtg_tipo_pessoa"]:disabled').length == 0)
+            setarValorRadio($('input[name="EndEtg_tipo_pessoa"]'), novoTipo);
+
+        var pj = $('input[name="EndEtg_tipo_pessoa"]:checked').val() == "PJ";
+
+        if (pj) {
+            $(".Mostrar_EndEtg_pf").css("display", "none");
+            $(".Mostrar_EndEtg_pj").css("display", "");
+            $("#Label_EndEtg_nome").text("RAZÃO SOCIAL");
+        }
+        else {
+            //display block prejudica as tabelas
+            $(".Mostrar_EndEtg_pf").css("display", "");
+            $(".Mostrar_EndEtg_pj").css("display", "none");
+            $("#Label_EndEtg_nome").text("NOME");
+        }
+<%else%>
+        //oculta todos
+        $(".Mostrar_EndEtg_pf").css("display", "none");
+        $(".Mostrar_EndEtg_pj").css("display", "none");
+        $(".Habilitar_EndEtg_outroendereco").css("display", "none");
+<%end if%>
+    }
+
+    function trataContribuinteIcmsEndEtg_PJ(novoTipo)
+    {
+        if (novoTipo && $('input[name="EndEtg_contribuinte_icms_status_PJ"]:disabled').length == 0)
+            setarValorRadio($('input[name="EndEtg_contribuinte_icms_status_PJ"]'),novoTipo);
+    }
+    function trataContribuinteIcmsEndEtg_PF(novoTipo)
+    {
+        if (novoTipo && $('input[name="EndEtg_contribuinte_icms_status_PF"]:disabled').length == 0)
+            setarValorRadio($('input[name="EndEtg_contribuinte_icms_status_PF"]'),novoTipo);
+    }
+
+    function trataProdutorRuralEndEtg_PF(novoTipo) {
+        //ao clicar na opção Produtor Rural, exibir/ocultar os campos apropriados (endereço de entrega)
+        if (novoTipo && $('input[name="EndEtg_produtor_rural_status_PF"]:disabled').length == 0)
+            setarValorRadio($('input[name="EndEtg_produtor_rural_status_PF"]'), novoTipo);
+
+        var sim = $('input[name="EndEtg_produtor_rural_status_PF"]:checked').val() == "<%=COD_ST_CLIENTE_PRODUTOR_RURAL_SIM%>";
+
+        //contribuinte ICMS sempre aparece para PJ
+        if(sim) {
+            $(".Mostrar_EndEtg_contribuinte_icms_PF").css("display", "");
+        }
+        else {
+            $(".Mostrar_EndEtg_contribuinte_icms_PF").css("display", "none");
+        }
+    }
+
+    function trataProdutorRuralEndEtg_PJ(novoTipo) {
+        if (novoTipo && $('input[name="EndEtg_produtor_rural_status_PJ"]:disabled').length == 0)
+            setarValorRadio($('input[name="EndEtg_produtor_rural_status_PJ"]'), novoTipo);
+    }
+
+    //definir um valor como ativo em um radio 
+    function setarValorRadio(array, valor)
+    {
+        for (var i = 0; i < array.length; i++)
+        {
+            var este = array[i];
+            if (este.value == valor)
+                este.checked = true;
+        }
+    }
 
 </script>
 
@@ -1414,19 +1776,19 @@ function trataProdutorRural() {
 <style type="text/css">
 .TdCliLbl
 {
-	width:130px;
-	text-align:right;
-}
+        width: 130px;
+        text-align: right;
+    }
 .TdCliCel
 {
-	width:520px;
-	text-align:left;
-}
+        width: 520px;
+        text-align: left;
+    }
 .TdCliBtn
 {
-	width:30px;
-	text-align:center;
-}
+        width: 30px;
+        text-align: center;
+    }
 </style>
 
 
@@ -1436,7 +1798,7 @@ function trataProdutorRural() {
 <!-- **********  PÁGINA PARA EXIBIR MENSAGENS DE ERRO  ********** -->
 <!-- ************************************************************ -->
 <body>
-<center>
+    <center>
 <br>
 <!--  T E L A  -->
 <p class="T">A V I S O</p>
@@ -1467,7 +1829,7 @@ function trataProdutorRural() {
 %>
 <body id="corpoPagina" onload="<%=s%>conteudo_original=retorna_dados_formulario(fCAD);ja_carregou=true;trataProdutorRural();">
 
-<center>
+    <center>
 
 <!-- #include file = "../global/JanelaBuscaCEP.htm"    -->
 
@@ -1524,6 +1886,12 @@ function trataProdutorRural() {
 <input type="hidden" name="c_numero_magento" id="c_numero_magento" value="<%=c_numero_magento%>" />
 <input type="hidden" name="operationControlTicket" id="operationControlTicket" value="<%=operationControlTicket%>" />
 <input type="hidden" name="sessionToken" id="sessionToken" value="<%=sessionToken%>" />
+<% if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then %>
+<input type="hidden" name="c_FlagCadSemiAutoPedMagento_FluxoOtimizado" id="c_FlagCadSemiAutoPedMagento_FluxoOtimizado" value="<%=c_FlagCadSemiAutoPedMagento_FluxoOtimizado%>" />
+<input type="hidden" name="rb_indicacao" id="rb_indicacao" value="<%=rb_indicacao%>" />
+<input type="hidden" name="c_indicador" id="c_indicador" value="<%=c_indicador%>" />
+<input type="hidden" name="rb_RA" id="rb_RA" value="<%=rb_RA%>" />
+<% end if %>
 
 
 <% if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then %>
@@ -1845,7 +2213,7 @@ function trataProdutorRural() {
 				s = c_mag_end_etg_celular_numero
 				end if
 			%>
-		<input id="tel_cel" name="tel_cel" class="TA" value="<%=telefone_formata(s)%>" maxlength="10" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fCAD.ddd_com.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Número de celular inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p></td>
+		<input id="tel_cel" name="tel_cel" class="TA" value="<%=telefone_formata(s)%>" maxlength="9" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fCAD.ddd_com.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Número de celular inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p></td>
 	</tr>
 </table>
 <% end if %>
@@ -2534,6 +2902,13 @@ function trataProdutorRural() {
 	<input type="hidden" name="c_numero_magento" id="c_numero_magento" value="<%=c_numero_magento%>" />
 	<input type="hidden" name="operationControlTicket" id="operationControlTicket" value="<%=operationControlTicket%>" />
 	<input type="hidden" name="sessionToken" id="sessionToken" value="<%=sessionToken%>" />
+	<% if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then %>
+	<input type="hidden" name="c_FlagCadSemiAutoPedMagento_FluxoOtimizado" id="c_FlagCadSemiAutoPedMagento_FluxoOtimizado" value="<%=c_FlagCadSemiAutoPedMagento_FluxoOtimizado%>" />
+	<input type="hidden" name="rb_indicacao" id="rb_indicacao" value="<%=rb_indicacao%>" />
+	<input type="hidden" name="c_indicador" id="c_indicador" value="<%=c_indicador%>" />
+	<input type="hidden" name="rb_RA" id="rb_RA" value="<%=rb_RA%>" />
+	<% end if %>
+
 
 <!-- ************   ENDEREÇO DE ENTREGA: S/N   ************ -->
 <br>
@@ -2554,6 +2929,108 @@ function trataProdutorRural() {
 		</td>
 	</tr>
 </table>
+
+
+<!--  ************  TIPO DO ENDEREÇO DE ENTREGA: PF/PJ (SOMENTE SE O CLIENTE FOR PJ)   ************ -->
+
+<%if blnUsarMemorizacaoCompletaEnderecos then%>
+    <%if eh_cpf then%>
+        <!-- ************   ENDEREÇO DE ENTREGA PARA CLIENTE PF   ************ -->
+        <!-- Pegamos todos os atuais. Sem campos editáveis. -->
+    <input type="hidden" id="EndEtg_tipo_pessoa" name="EndEtg_tipo_pessoa" value="PF"/>
+    <input type="hidden" id="EndEtg_cnpj_cpf" name="EndEtg_cnpj_cpf" value="<%=Trim("" & rs("cnpj_cpf"))%>"/>
+    <input type="hidden" id="EndEtg_ie" name="EndEtg_ie" value="<%=Trim("" & rs("ie"))%>"/>
+    <input type="hidden" id="EndEtg_contribuinte_icms_status" name="EndEtg_contribuinte_icms_status" value="<%=Trim("" & rs("contribuinte_icms_status"))%>"/>
+    <input type="hidden" id="EndEtg_rg" name="EndEtg_rg" value="<%=Trim("" & rs("rg"))%>"/>
+    <input type="hidden" id="EndEtg_produtor_rural_status" name="EndEtg_produtor_rural_status" value="<%=Trim("" & rs("produtor_rural_status"))%>"/>
+    <input type="hidden" id="EndEtg_email" name="EndEtg_email" value="<%=Trim("" & rs("email"))%>"/>
+    <input type="hidden" id="EndEtg_email_xml" name="EndEtg_email_xml" value="<%=Trim("" & rs("email_xml"))%>"/>
+    <input type="hidden" id="EndEtg_nome" name="EndEtg_nome" value="<%=Trim("" & rs("nome"))%>"/>
+
+
+    <%else%>
+
+    <table width="649" class="QS Habilitar_EndEtg_outroendereco" cellspacing="0">
+	    <tr>
+		    <td align="left">
+		    <p class="R">TIPO</p><p class="C">
+			    <input type="radio" id="EndEtg_tipo_pessoa_PJ" name="EndEtg_tipo_pessoa" value="PJ" onclick="trocarEndEtgTipoPessoa(null);" checked>
+			    <span class="C" style="cursor:default" onclick="trocarEndEtgTipoPessoa('PJ');">Pessoa Jurídica</span>
+			    &nbsp;
+			    <input type="radio" id="EndEtg_tipo_pessoa_PF" name="EndEtg_tipo_pessoa" value="PF" onclick="trocarEndEtgTipoPessoa(null);">
+			    <span class="C" style="cursor:default" onclick="trocarEndEtgTipoPessoa('PF');">Pessoa Física</span>
+		    </p>
+		    </td>
+	    </tr>
+    </table>
+
+            <!-- ************   PJ: CNPJ/CONTRIBUINTE ICMS/IE - DO ENDEREÇO DE ENTREGA DE PJ ************ -->
+            <!-- ************   PF: CPF/PRODUTOR RURAL/CONTRIBUINTE ICMS/IE - DO ENDEREÇO DE ENTREGA DE PJ  ************ -->
+            <!-- fizemos dois conjuntos diferentes de campos porque a ordem é muito diferente -->
+            <!-- EndEtg_rg EndEtg_email e EndEtg_email_xml vem diretamente do t_CLIENTE -->
+
+    <input type="hidden" id="EndEtg_cnpj_cpf" name="EndEtg_cnpj_cpf" />
+    <input type="hidden" id="EndEtg_ie" name="EndEtg_ie" />
+    <input type="hidden" id="EndEtg_contribuinte_icms_status" name="EndEtg_contribuinte_icms_status" />
+    <input type="hidden" id="EndEtg_rg" name="EndEtg_rg" value="<%=Trim("" & rs("rg"))%>"/>
+    <input type="hidden" id="EndEtg_produtor_rural_status" name="EndEtg_produtor_rural_status" />
+    <input type="hidden" id="EndEtg_email" name="EndEtg_email" value="<%=Trim("" & rs("email"))%>"/>
+    <input type="hidden" id="EndEtg_email_xml" name="EndEtg_email_xml" value="<%=Trim("" & rs("email_xml"))%>"/>
+
+
+    <table width="649" class="QS Habilitar_EndEtg_outroendereco Mostrar_EndEtg_pj" cellspacing="0">
+	    <tr>
+		    <td width="210" align="left">
+	    <p class="R">CNPJ</p><p class="C">
+	    <input id="EndEtg_cnpj_cpf_PJ" name="EndEtg_cnpj_cpf_PJ" class="TA" value="" size="22" style="text-align:center; color:#0000ff"></p></td>
+
+	    <td class="MDE" width="215" align="left"><p class="R">IE</p><p class="C">
+		    <input id="EndEtg_ie_PJ" name="EndEtg_ie_PJ" class="TA" type="text" maxlength="20" size="25" value="" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_nome.focus(); filtra_nome_identificador();"></p></td>
+
+	    <td align="left" class="Mostrar_EndEtg_contribuinte_icms_PJ"><p class="R">CONTRIBUINTE ICMS</p><p class="C">
+		    <input type="radio" id="EndEtg_contribuinte_icms_status_PJ_nao" name="EndEtg_contribuinte_icms_status_PJ" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PJ('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO%>');">Não</span>
+		    <input type="radio" id="EndEtg_contribuinte_icms_status_PJ_sim" name="EndEtg_contribuinte_icms_status_PJ" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PJ('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM%>');">Sim</span>
+		    <input type="radio" id="EndEtg_contribuinte_icms_status_PJ_isento" name="EndEtg_contribuinte_icms_status_PJ" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PJ('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO%>');">Isento</span></p></td>
+	    </tr>
+    </table>
+
+    <table width="649" class="QS Habilitar_EndEtg_outroendereco Mostrar_EndEtg_pf" cellspacing="0">
+	    <tr>
+		    <td width="210" align="left">
+	    <p class="R">CPF</p><p class="C">
+	    <input id="EndEtg_cnpj_cpf_PF" name="EndEtg_cnpj_cpf_PF" class="TA" value="" size="22" style="text-align:center; color:#0000ff"></p></td>
+
+	    <td align="left" class="ME" style="min-width: 110px;" ><p class="R">PRODUTOR RURAL</p><p class="C">
+		    <input type="radio" id="EndEtg_produtor_rural_status_PF_nao" name="EndEtg_produtor_rural_status_PF" value="<%=COD_ST_CLIENTE_PRODUTOR_RURAL_NAO%>" onclick="trataProdutorRuralEndEtg_PF(null);"><span class="C" style="cursor:default" onclick="trataProdutorRuralEndEtg_PF('<%=COD_ST_CLIENTE_PRODUTOR_RURAL_NAO%>');">Não</span>
+		    <input type="radio" id="EndEtg_produtor_rural_status_PF_sim" name="EndEtg_produtor_rural_status_PF" value="<%=COD_ST_CLIENTE_PRODUTOR_RURAL_SIM%>" onclick="trataProdutorRuralEndEtg_PF(null);"><span class="C" style="cursor:default" onclick="trataProdutorRuralEndEtg_PF('<%=COD_ST_CLIENTE_PRODUTOR_RURAL_SIM%>')">Sim</span></p></td>
+
+	    <td align="left" class="MDE Mostrar_EndEtg_contribuinte_icms_PF"><p class="R">IE</p><p class="C">
+		    <input id="EndEtg_ie_PF" name="EndEtg_ie_PF" class="TA" type="text" maxlength="20" size="13" value="" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_nome.focus(); filtra_nome_identificador();"></p>
+	    </td>
+
+	    <td align="left" class="Mostrar_EndEtg_contribuinte_icms_PF" ><p class="R">CONTRIBUINTE ICMS</p><p class="C">
+		    <input type="radio" id="EndEtg_contribuinte_icms_status_PF_nao" name="EndEtg_contribuinte_icms_status_PF" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PF('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO%>');">Não</span>
+		    <input type="radio" id="EndEtg_contribuinte_icms_status_PF_sim" name="EndEtg_contribuinte_icms_status_PF" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PF('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM%>');">Sim</span>
+		    <input type="radio" id="EndEtg_contribuinte_icms_status_PF_isento" name="EndEtg_contribuinte_icms_status_PF" value="<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO%>" ><span class="C" style="cursor:default" onclick="trataContribuinteIcmsEndEtg_PF('<%=COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO%>');">Isento</span></p>
+	    </td>
+	    </tr>
+    </table>
+
+
+
+    <!-- ************   ENDEREÇO DE ENTREGA: NOME  ************ -->
+    <table width="649" class="QS" cellspacing="0">
+	    <tr>
+	    <td width="100%" align="left"><p class="R" id="Label_EndEtg_nome">RAZÃO SOCIAL</p><p class="C">
+		    <input id="EndEtg_nome" name="EndEtg_nome" class="TA" value="" maxlength="60" size="85" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fNEW.EndEtg_endereco.focus(); filtra_nome_identificador();"></p></td>
+	    </tr>
+    </table>
+
+
+    <%end if%>
+<%end if%>
+
+
 
 <!-- ************   ENDEREÇO DE ENTREGA: ENDEREÇO   ************ -->
 <table width="649" class="QS" cellspacing="0">
@@ -2607,6 +3084,69 @@ function trataProdutorRural() {
 	</td>
 	</tr>
 </table>
+
+<%if blnUsarMemorizacaoCompletaEnderecos then%>
+    <%if eh_cpf then%>
+
+        <!-- ************   ENDEREÇO DE ENTREGA PARA PF: TELEFONES   ************ -->
+        <!-- pegamos todos em branco -->
+        <input type="hidden" id="EndEtg_ddd_res" name="EndEtg_ddd_res" value=""/>
+        <input type="hidden" id="EndEtg_tel_res" name="EndEtg_tel_res" value=""/>
+        <input type="hidden" id="EndEtg_ddd_cel" name="EndEtg_ddd_cel" value=""/>
+        <input type="hidden" id="EndEtg_tel_cel" name="EndEtg_tel_cel" value=""/>
+        <input type="hidden" id="EndEtg_ddd_com" name="EndEtg_ddd_com" value=""/>
+        <input type="hidden" id="EndEtg_tel_com" name="EndEtg_tel_com" value=""/>
+        <input type="hidden" id="EndEtg_ramal_com" name="EndEtg_ramal_com" value=""/>
+        <input type="hidden" id="EndEtg_ddd_com_2" name="EndEtg_ddd_com_2" value=""/>
+        <input type="hidden" id="EndEtg_tel_com_2" name="EndEtg_tel_com_2" value=""/>
+        <input type="hidden" id="EndEtg_ramal_com_2" name="EndEtg_ramal_com_2" value=""/>
+
+    <%else%>
+        
+        <!-- ************   ENDEREÇO DE ENTREGA: TELEFONE RESIDENCIAL   ************ -->
+        <table width="649" class="QS Mostrar_EndEtg_pf Habilitar_EndEtg_outroendereco" cellspacing="0">
+	        <tr>
+	        <td class="MD" width="20%" align="left"><p class="R">DDD</p><p class="C">
+		        <input id="EndEtg_ddd_res" name="EndEtg_ddd_res" class="TA" value="" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fNEW.EndEtg_tel_res.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p></td>
+	        <td align="left"><p class="R">TELEFONE RESIDENCIAL</p><p class="C">
+		        <input id="EndEtg_tel_res" name="EndEtg_tel_res" class="TA" value="" maxlength="11" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fNEW.EndEtg_ddd_cel.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Telefone inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p></td>
+	        </tr>
+	        <tr>
+	        <td class="MD MC" width="20%" align="left"><p class="R">DDD</p><p class="C">
+		        <input id="EndEtg_ddd_cel" name="EndEtg_ddd_cel" class="TA" value="" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fNEW.EndEtg_tel_cel.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p></td>
+	        <td align="left" class="MC"><p class="R">CELULAR</p><p class="C">
+		        <input id="EndEtg_tel_cel" name="EndEtg_tel_cel" class="TA" value="" maxlength="9" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fNEW.EndEtg_obs.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Número de celular inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p></td>
+	        </tr>
+        </table>
+	
+        
+        <!-- ************   ENDEREÇO DE ENTREGA: TELEFONE COMERCIAL   ************ -->
+        <table width="649" class="QS Mostrar_EndEtg_pj Habilitar_EndEtg_outroendereco" cellspacing="0">
+	        <tr>
+	        <td class="MD" width="20%" align="left"><p class="R">DDD</p><p class="C">
+		        <input id="EndEtg_ddd_com" name="EndEtg_ddd_com" class="TA" value="" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fNEW.EndEtg_tel_com.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p></td>
+	        <td class="MD" align="left"><p class="R">TELEFONE </p><p class="C">
+		        <input id="EndEtg_tel_com" name="EndEtg_tel_com" class="TA" value="" maxlength="11" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fNEW.EndEtg_ramal_com.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Telefone inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p></td>
+	        <td align="left"><p class="R">RAMAL</p><p class="C">
+		        <input id="EndEtg_ramal_com" name="EndEtg_ramal_com" class="TA" value="" maxlength="4" size="6" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_ddd_com_2.focus(); filtra_numerico();"></p></td>
+	        </tr>
+	        <tr>
+	            <td class="MD MC" width="20%" align="left"><p class="R">DDD</p><p class="C">
+	            <input id="EndEtg_ddd_com_2" name="EndEtg_ddd_com_2" class="TA" value="" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fNEW.EndEtg_tel_com_2.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!!');this.focus();}" /></p>  
+	            </td>
+	            <td class="MD MC" align="left"><p class="R">TELEFONE</p><p class="C">
+	            <input id="EndEtg_tel_com_2" name="EndEtg_tel_com_2" class="TA" value="" maxlength="9" size="12" onkeypress="if (digitou_enter(true) && telefone_ok(this.value)) fNEW.EndEtg_ramal_com_2.focus(); filtra_numerico();" onblur="if (!telefone_ok(this.value)) {alert('Telefone inválido!!');this.focus();} else this.value=telefone_formata(this.value);"></p>
+	            </td>
+	            <td align="left" class="MC"><p class="R">RAMAL</p><p class="C">
+	            <input id="EndEtg_ramal_com_2" name="EndEtg_ramal_com_2" class="TA" value="" maxlength="4" size="6" onkeypress="if (digitou_enter(true)) fNEW.EndEtg_obs.focus(); filtra_numerico();" /></p>
+	            </td>
+	        </tr>
+        </table>
+
+    <% end if %>
+<% end if %>
+
+
 <!-- ************   JUSTIFIQUE O ENDEREÇO   ************ -->
 <table id="obs_endereco" width="649" class="QS" cellspacing="0">
 	<tr >
@@ -2731,7 +3271,6 @@ function trataProdutorRural() {
 </body>
 
 <% end if %>
-
 </html>
 
 

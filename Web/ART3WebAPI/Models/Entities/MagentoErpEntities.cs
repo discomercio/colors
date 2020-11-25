@@ -127,6 +127,7 @@ namespace ART3WebAPI.Models.Entities
 		public string cpfcnpj { get; set; }
 		public string empresa { get; set; }
 		public string nomefantasia { get; set; }
+		public string street_detail { get; set; }
 	}
 	#endregion
 

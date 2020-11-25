@@ -99,6 +99,7 @@
     <Compile Include="BoletoAvulsoComPedidoDAO.cs" />
     <Compile Include="BoletoCedente.cs" />
     <Compile Include="BoletoCedenteDAO.cs" />
+    <Compile Include="BoletoCliente.cs" />
     <Compile Include="BoletoDAO.cs" />
     <Compile Include="BoletoHtml.cs" />
     <Compile Include="BoletoPreCadastrado.cs" />

@@ -311,6 +311,16 @@ dim rNfeEmitente
 				" t_CLIENTE.cidade AS cliente_cidade," & _
 				" t_CLIENTE.uf AS cliente_uf," & _
 				" t_CLIENTE.cep AS cliente_cep," & _
+				" t_PEDIDO.endereco_memorizado_status," & _
+				" t_PEDIDO.st_memorizacao_completa_enderecos," & _
+				" dbo.SqlClrUtilIniciaisEmMaiusculas(t_PEDIDO.endereco_nome) AS pedido_endereco_nome," & _
+				" t_PEDIDO.endereco_logradouro AS pedido_endereco_logradouro," & _
+				" t_PEDIDO.endereco_numero AS pedido_endereco_numero," & _
+				" t_PEDIDO.endereco_complemento AS pedido_endereco_complemento," & _
+				" t_PEDIDO.endereco_bairro AS pedido_endereco_bairro," & _
+				" t_PEDIDO.endereco_cidade AS pedido_endereco_cidade," & _
+				" t_PEDIDO.endereco_uf AS pedido_endereco_uf," & _
+				" t_PEDIDO.endereco_cep AS pedido_endereco_cep," & _
 				" t_FABRICANTE.nome AS nome_fabricante," & _
 				" t_FABRICANTE.razao_social AS razao_social_fabricante," & _
 				" t_PEDIDO_ITEM.fabricante," & _
@@ -322,17 +332,11 @@ dim rNfeEmitente
 				" t_PRODUTO.deposito_zona_id AS zona_id," & _
 				" t_WMS_DEPOSITO_MAP_ZONA.zona_codigo," & _
 				" (" & _
-					"SELECT" & _
-						" TOP 1 NFe_numero_NF" & _
-					" FROM t_NFe_EMISSAO tNE" & _
-					" WHERE" & _
-						" (tNE.pedido=t_PEDIDO.pedido)" & _
-						" AND (tipo_NF = '1')" & _
-						" AND (st_anulado = 0)" & _
-						" AND (codigo_retorno_NFe_T1 = 1)" & _
-					" ORDER BY" & _
-						" id DESC" & _
-				") AS numeroNFe," & _
+					"CASE" & _
+						" WHEN t_PEDIDO.num_obs_3 > 0 THEN t_PEDIDO.num_obs_3" & _
+						" WHEN t_PEDIDO.num_obs_2 > 0 THEN t_PEDIDO.num_obs_2" & _
+						" ELSE NULL" & _
+					" END) AS numeroNFe," & _
 				" (" & _
 					"SELECT " & _
 						" Sum(qtde*qtde_volumes)" & _
@@ -407,7 +411,11 @@ dim rNfeEmitente
 			.obs_3 = Trim("" & r("obs_3"))
 			.loja = Trim("" & r("loja"))
 			.id_cliente = Trim("" & r("id_cliente"))
-			.nome_cliente = Trim("" & r("nome_cliente"))
+			if Trim("" & r("st_memorizacao_completa_enderecos")) <> "1" then
+			    .nome_cliente = Trim("" & r("nome_cliente"))
+            else
+			    .nome_cliente = Trim("" & r("pedido_endereco_nome"))
+                end if
 			.transportadora_id = Trim("" & r("transportadora_id"))
 			.fabricante = Trim("" & r("fabricante"))
 			.produto = Trim("" & r("produto"))
@@ -432,13 +440,23 @@ dim rNfeEmitente
 				.destino_cep = Trim("" & r("EndEtg_cep"))
 			else
 				.destino_tipo_endereco = COD_WMS_ENDERECO_DESTINO__CAD_CLIENTE
-				.destino_endereco = Trim("" & r("cliente_endereco"))
-				.destino_endereco_numero = Trim("" & r("cliente_endereco_numero"))
-				.destino_endereco_complemento = Trim("" & r("cliente_endereco_complemento"))
-				.destino_bairro = Trim("" & r("cliente_bairro"))
-				.destino_cidade = Trim("" & r("cliente_cidade"))
-				.destino_uf = Ucase(Trim("" & r("cliente_uf")))
-				.destino_cep = Trim("" & r("cliente_cep"))
+    			if Trim("" & r("endereco_memorizado_status")) <> "1" then
+				    .destino_endereco = Trim("" & r("cliente_endereco"))
+				    .destino_endereco_numero = Trim("" & r("cliente_endereco_numero"))
+				    .destino_endereco_complemento = Trim("" & r("cliente_endereco_complemento"))
+				    .destino_bairro = Trim("" & r("cliente_bairro"))
+				    .destino_cidade = Trim("" & r("cliente_cidade"))
+				    .destino_uf = Ucase(Trim("" & r("cliente_uf")))
+				    .destino_cep = Trim("" & r("cliente_cep"))
+                else
+				    .destino_endereco = Trim("" & r("pedido_endereco_logradouro"))
+				    .destino_endereco_numero = Trim("" & r("pedido_endereco_numero"))
+				    .destino_endereco_complemento = Trim("" & r("pedido_endereco_complemento"))
+				    .destino_bairro = Trim("" & r("pedido_endereco_bairro"))
+				    .destino_cidade = Trim("" & r("pedido_endereco_cidade"))
+				    .destino_uf = Ucase(Trim("" & r("pedido_endereco_uf")))
+				    .destino_cep = Trim("" & r("pedido_endereco_cep"))
+                    end if
 				end if
 			end with
 		
@@ -1213,6 +1231,14 @@ P.Cd { font-size:10pt; }
 				"		<td align='right' valign='top' nowrap><span class='Nni'>NSU do Relatório:&nbsp;</span></td>" & chr(13) & _
 				"		<td align='left' valign='top' width='99%'><span id='spanFiltroNsuRelatorio' class='N'></span></td>" & chr(13) & _
 				"	</tr>" & chr(13)
+'	CD
+	s = obtem_apelido_empresa_NFe_emitente(c_nfe_emitente)
+	s_filtro = s_filtro & _
+				"	<tr>" & chr(13) & _
+				"		<td align='right' valign='top' nowrap><span class='Nni'>CD:&nbsp;</span></td>" & chr(13) & _
+				"		<td align='left' valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
+				"	</tr>" & chr(13)
+	
 '	EMISSÃO
 	s_filtro = s_filtro & _
 				"	<tr>" & chr(13) & _

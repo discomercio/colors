@@ -40,6 +40,9 @@
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 '	OBTÉM DADOS DO FORMULÁRIO
 	dim c_transportadora, s_transportadora_header
 	dim intCounter, intCounterAux, intQtdeItens
@@ -209,7 +212,14 @@
 								"frete_valor, " & _
 								"frete_data, " & _
 								"frete_usuario, " & _
-                                "obs_3, " & _
+                                "obs_3, "
+
+						if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+							s = s & _
+								"endereco_nome, "
+							end if
+
+						s = s & _
 								"(SELECT Sum(qtde*preco_NF) FROM t_PEDIDO_ITEM WHERE t_PEDIDO_ITEM.pedido=t_PEDIDO.pedido) AS vl_total_NF" & _
 							" FROM t_PEDIDO" & _
 							" WHERE" & _
@@ -222,6 +232,9 @@
 							.msg_erro = .msg_erro & "Pedido " & Trim(.pedido) & " NÃO está cadastrado."
 						else
 							.id_cliente = Trim("" & rs("id_cliente"))
+							if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+								.nome_cliente = Trim("" & rs("endereco_nome"))
+								end if
 							.transportadora_id = Trim("" & rs("transportadora_id"))
 							.vl_total_NF = rs("vl_total_NF")
 							if .vl_total_NF = 0 then
@@ -292,23 +305,25 @@
                             end if
 						end if
 						
-						if .id_cliente <> "" then
-							s = "SELECT " & _
-									"nome" & _
-								" FROM t_CLIENTE" & _
-								" WHERE" & _
-									" (id = '" & .id_cliente & "')"
-							if rs.State <> 0 then rs.Close
-							rs.open s, cn
-							if rs.Eof then
-								blnErroFatal = True
-								.msg_erro = texto_add_br(.msg_erro)
-								.msg_erro = .msg_erro & "Falha ao tentar localizar os dados do cliente do pedido " & Trim(.pedido)
-							else
-								.nome_cliente = Trim("" & rs("nome"))
+						if Not blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+							if .id_cliente <> "" then
+								s = "SELECT " & _
+										"nome" & _
+									" FROM t_CLIENTE" & _
+									" WHERE" & _
+										" (id = '" & .id_cliente & "')"
+								if rs.State <> 0 then rs.Close
+								rs.open s, cn
+								if rs.Eof then
+									blnErroFatal = True
+									.msg_erro = texto_add_br(.msg_erro)
+									.msg_erro = .msg_erro & "Falha ao tentar localizar os dados do cliente do pedido " & Trim(.pedido)
+								else
+									.nome_cliente = Trim("" & rs("nome"))
+									end if
 								end if
 							end if
-						
+
 						if .transportadora_id <> "" then
 							s = "SELECT " & _
 									"nome" & _

@@ -60,7 +60,7 @@ namespace ART3WebAPI.Controllers
                     await ART3WebAPI.Models.Domains.FarolGeradorRelatorio.GenerateXLS(relFarolList, filePath, dt_inicio, dt_termino, fabricante, grupo, subgrupo, btu, ciclo, pos_mercado, perc_est_cresc, loja, visao);
                     statusResponse = "OK";
 
-                    LogDAO.insere(usuario, s_log, strMsgErro);
+                    LogDAO.insere(usuario, s_log, out strMsgErro);
                 }
                 else {
                     statusResponse = "Vazio";

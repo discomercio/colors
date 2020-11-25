@@ -53,6 +53,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	dim s, s_aux, s_filtro, flag_ok, cadastrado
 	dim ckb_st_entrega_esperar, ckb_st_entrega_split, ckb_st_entrega_exceto_cancelados
@@ -745,15 +748,26 @@ dim s_grupo_origem
 		end if
 	
 '	CRITÉRIO: CLIENTE
-	if c_cliente_cnpj_cpf <> "" then
-		if s_where <> "" then s_where = s_where & " AND"
-		s_where = s_where & " (t_CLIENTE.cnpj_cpf = '" & retorna_so_digitos(c_cliente_cnpj_cpf) & "')"
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		if c_cliente_cnpj_cpf <> "" then
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (t_PEDIDO.endereco_cnpj_cpf = '" & retorna_so_digitos(c_cliente_cnpj_cpf) & "')"
+			end if
+		if c_cliente_uf <> "" then
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (t_PEDIDO.endereco_uf = '" & c_cliente_uf & "')"
 		end if
-    if c_cliente_uf <> "" then
-        if s_where <> "" then s_where = s_where & " AND"
-        s_where = s_where & " (t_CLIENTE.uf = '" & c_cliente_uf & "')"
-    end if
-	
+	else
+		if c_cliente_cnpj_cpf <> "" then
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (t_CLIENTE.cnpj_cpf = '" & retorna_so_digitos(c_cliente_cnpj_cpf) & "')"
+			end if
+		if c_cliente_uf <> "" then
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (t_CLIENTE.uf = '" & c_cliente_uf & "')"
+		end if
+	end if
+
 '	CRITÉRIO: CARTÃO DE CRÉDITO (ANTIGAMENTE PELA VISANET E AGORA PELA CIELO)
 	if ckb_visanet <> "" then
 		if s_where <> "" then s_where = s_where & " AND"
@@ -908,7 +922,17 @@ dim s_grupo_origem
 '		 SE "check_expression" FOR NULL, RETORNA "replacement_value"
 	s_sql = "SELECT DISTINCT t_PEDIDO.loja, t_PEDIDO.numero_loja," & _
 			" t_PEDIDO.data, t_PEDIDO.pedido, t_PEDIDO.pedido_bs_x_ac," & _
-			" t_PEDIDO.st_entrega, t_CLIENTE.nome_iniciais_em_maiusculas," & _
+			" t_PEDIDO.st_entrega,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" dbo.SqlClrUtilIniciaisEmMaiusculas(t_PEDIDO.endereco_nome) AS nome_iniciais_em_maiusculas,"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome_iniciais_em_maiusculas,"
+		end if
+
+	s_sql = s_sql & _
 			" t_PEDIDO__BASE.st_pagto," & _
             " t_PEDIDO__BASE.vendedor," & _
             " t_PEDIDO__BASE.indicador," & _

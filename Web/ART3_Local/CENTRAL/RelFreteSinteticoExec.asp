@@ -50,6 +50,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	dim s, s_aux
 	dim c_dt_entregue_inicio, c_dt_entregue_termino
@@ -463,12 +466,21 @@ dim strPercPrecoNF, strPercPrecoVenda, strVlTotalPercPrecoNF, strVlTotalPercPrec
 '	FILTRO: UF
 	if c_uf <> "" then
 		if s_where <> "" then s_where = s_where & " AND"
-		s_where = s_where & _
-			" (" & _
-				"((p.st_end_entrega <> 0) And (p.EndEtg_uf = '" & c_uf & "'))" & _
-				" OR " & _
-				"((p.st_end_entrega = 0) And (c.uf = '" & c_uf & "'))" & _
-			")"
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s_where = s_where & _
+				" (" & _
+					"((p.st_end_entrega <> 0) And (p.EndEtg_uf = '" & c_uf & "'))" & _
+					" OR " & _
+					"((p.st_end_entrega = 0) And (p.endereco_uf = '" & c_uf & "'))" & _
+				")"
+		else
+			s_where = s_where & _
+				" (" & _
+					"((p.st_end_entrega <> 0) And (p.EndEtg_uf = '" & c_uf & "'))" & _
+					" OR " & _
+					"((p.st_end_entrega = 0) And (c.uf = '" & c_uf & "'))" & _
+				")"
+			end if
 		end if
 		
 '	FILTRO: STATUS DO FRETE

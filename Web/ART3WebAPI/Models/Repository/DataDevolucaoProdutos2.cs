@@ -20,6 +20,7 @@ namespace ART3WebAPI.Models.Repository
             string dtDevolucaoTerminoSqlDateTime = "";
             string[] vLojas;
             string[] vAux;
+            int intParametroFlagPedidoMemorizacaoCompletaEnderecos;
             StringBuilder sbWhere = new StringBuilder("");
             StringBuilder sbWhereLoja = new StringBuilder("");
             StringBuilder sbAux = new StringBuilder("");
@@ -29,6 +30,8 @@ namespace ART3WebAPI.Models.Repository
             SqlCommand cmd;
             SqlDataReader reader;
             #endregion
+
+            intParametroFlagPedidoMemorizacaoCompletaEnderecos = GeralDAO.getCampoInteiroTabelaParametro(Global.Cte.Parametros.ID_T_PARAMETRO.FLAG_PEDIDO_MEMORIZACAO_COMPLETA_ENDERECOS);
 
             #region [ Prepara acesso ao BD ]
             cn = new SqlConnection(BD.getConnectionString());
@@ -175,8 +178,18 @@ namespace ART3WebAPI.Models.Repository
                     " t_PEDIDO.pedido," +
                     " t_PEDIDO.obs_2," +
                     " t_PEDIDO__BASE.vendedor," +
-                    " t_PEDIDO__BASE.indicador," +
-                    " t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente," +
+                    " t_PEDIDO__BASE.indicador,";
+                
+                if (intParametroFlagPedidoMemorizacaoCompletaEnderecos == 1)
+                {
+                    strSql += " dbo.SqlClrUtilIniciaisEmMaiusculas(t_PEDIDO.endereco_nome) AS nome_cliente, ";
+                }
+                else
+                {
+                    strSql += " t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente,";
+                }
+
+                strSql +=
                     " t_PEDIDO_ITEM_DEVOLVIDO.motivo," +
                     " t_PEDIDO_ITEM_DEVOLVIDO.qtde," +
                     " (SELECT Count(*) FROM t_PEDIDO_ITEM_DEVOLVIDO_BLOCO_NOTAS tAuxPIDBN INNER JOIN t_PEDIDO_ITEM_DEVOLVIDO tAuxPID ON (tAuxPIDBN.id_item_devolvido=tAuxPID.id) WHERE (tAuxPID.pedido=t_PEDIDO.pedido) AND (anulado_status = 0)) AS qtde_msgs," +

@@ -136,6 +136,9 @@
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	If Not cria_recordset_pessimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim r_pedido, r_cliente
 	
 	if s_pedido_destino <> "" then
@@ -405,21 +408,44 @@
 			rs("nf") = r_pedido.obs_2
 			rs("indicador") = r_pedido.indicador
 			rs("id_cliente") = r_pedido.id_cliente
-			rs("tipo_cliente") = r_cliente.tipo
-			rs("nome_cliente") = r_cliente.nome
-			rs("endereco") = r_cliente.endereco
-			rs("endereco_numero") = r_cliente.endereco_numero
-			rs("endereco_complemento") = r_cliente.endereco_complemento
-			rs("bairro") = r_cliente.bairro
-			rs("cidade") = r_cliente.cidade
-			rs("uf") = r_cliente.uf
-			rs("cep") = r_cliente.cep
-			rs("ddd_res") = r_cliente.ddd_res
-			rs("tel_res") = r_cliente.tel_res
-			rs("ddd_com") = r_cliente.ddd_com
-			rs("tel_com") = r_cliente.tel_com
-			rs("ramal_com") = r_cliente.ramal_com
-			rs("contato") = r_cliente.contato
+
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				rs("tipo_cliente") = r_pedido.endereco_tipo_pessoa
+				rs("nome_cliente") = r_pedido.endereco_nome
+				rs("endereco") = r_pedido.endereco_logradouro
+				rs("endereco_numero") = r_pedido.endereco_numero
+				rs("endereco_complemento") = r_pedido.endereco_complemento
+				rs("bairro") = r_pedido.endereco_bairro
+				rs("cidade") = r_pedido.endereco_cidade
+				rs("uf") = r_pedido.endereco_uf
+				rs("cep") = retorna_so_digitos(r_pedido.endereco_cep)
+				rs("ddd_res") = r_pedido.endereco_ddd_res
+				rs("tel_res") = r_pedido.endereco_tel_res
+				rs("ddd_com") = r_pedido.endereco_ddd_com
+				rs("tel_com") = r_pedido.endereco_tel_com
+				rs("ramal_com") = r_pedido.endereco_ramal_com
+				if r_pedido.endereco_contato <> "" then
+					rs("contato") = r_pedido.endereco_contato
+				else
+					rs("contato") = r_cliente.contato
+					end if
+			else
+				rs("tipo_cliente") = r_cliente.tipo
+				rs("nome_cliente") = r_cliente.nome
+				rs("endereco") = r_cliente.endereco
+				rs("endereco_numero") = r_cliente.endereco_numero
+				rs("endereco_complemento") = r_cliente.endereco_complemento
+				rs("bairro") = r_cliente.bairro
+				rs("cidade") = r_cliente.cidade
+				rs("uf") = r_cliente.uf
+				rs("cep") = r_cliente.cep
+				rs("ddd_res") = r_cliente.ddd_res
+				rs("tel_res") = r_cliente.tel_res
+				rs("ddd_com") = r_cliente.ddd_com
+				rs("tel_com") = r_cliente.tel_com
+				rs("ramal_com") = r_cliente.ramal_com
+				rs("contato") = r_cliente.contato
+				end if
 			end if
 		rs("cod_estoque_origem") = s_cod_estoque_origem
 		rs("loja_estoque_origem") = s_loja_origem
@@ -457,7 +483,13 @@
 			next
 
 	'	MONTA DADOS P/ O LOG DA ORDEM DE SERVIÇO
-		s_log = "Nova ordem de serviço: nº " & s_chave_OS & "; pedido=" & s_pedido_destino & "; id_nfe_emitente=" & s_id_nfe_emitente & "; loja=" & s_loja_origem & "; estoque_origem=" & s_cod_estoque_origem & "; fabricante=" & r_item.fabricante & "; produto=" & r_item.produto & "; qtde=" & Cstr(r_item.qtde) & "; nf=" & r_pedido.obs_2 & "; id_cliente=" & r_pedido.id_cliente & "; nome_cliente=" & r_cliente.nome & "; obs_pecas_necessarias=" & c_obs_pecas_necessarias
+		s_log = "Nova ordem de serviço: nº " & s_chave_OS & "; pedido=" & s_pedido_destino & "; id_nfe_emitente=" & s_id_nfe_emitente & "; loja=" & s_loja_origem & "; estoque_origem=" & s_cod_estoque_origem & "; fabricante=" & r_item.fabricante & "; produto=" & r_item.produto & "; qtde=" & Cstr(r_item.qtde) & "; nf=" & r_pedido.obs_2 & "; id_cliente=" & r_pedido.id_cliente
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s_log = s_log & "; nome_cliente=" & r_pedido.endereco_nome
+		else
+			s_log = s_log & "; nome_cliente=" & r_cliente.nome
+			end if
+		s_log = s_log & "; obs_pecas_necessarias=" & c_obs_pecas_necessarias
 		for i=Lbound(v_OS_item) to Ubound(v_OS_item)
 			with v_OS_item(i)
 				if s_log <> "" then s_log = s_log & chr(13)

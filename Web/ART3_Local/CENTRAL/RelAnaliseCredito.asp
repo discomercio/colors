@@ -132,7 +132,7 @@ dim vRefBancaria, vRefComercial, vRefProfissional
 dim intCounter, intIndice, intQtdePedido, intQtdeLinhasPedido
 dim s, s_aux, s_sql, cab_table, cab, n_reg, n_pedido, n_pedidos_anteriores
 dim s_where, s_from, s_where_pedido, s_where_loja, s_where_aux
-dim s_nome, s_cnpj_cpf, s_endereco, s_endereco_entrega, s_tel_res, s_tel_com, s_rg, s_email
+dim s_nome, s_cnpj_cpf, s_endereco, s_endereco_entrega, s_tel_res, s_tel_com, s_rg, s_email, s_email_xml
 dim s_descricao_forma_pagto_a, s_forma_pagto_a, s_forma_pagto_ped_ant, s_obs1_a
 dim s_indicador, s_desempenho_nota
 dim strInfoAnEnd
@@ -273,7 +273,15 @@ dim iCountPedFamilia
 			" t_CLIENTE.endereco, t_CLIENTE.endereco_numero, t_CLIENTE.endereco_complemento, t_CLIENTE.bairro, t_CLIENTE.cidade, t_CLIENTE.uf, t_CLIENTE.cep, t_CLIENTE.email," & _
 			" t_CLIENTE.SocMaj_Nome, t_CLIENTE.SocMaj_CPF, t_CLIENTE.SocMaj_banco, t_CLIENTE.SocMaj_agencia," & _
 			" t_CLIENTE.SocMaj_conta, t_CLIENTE.SocMaj_ddd, t_CLIENTE.SocMaj_telefone, t_CLIENTE.SocMaj_contato," & _
-			" t_ORCAMENTISTA_E_INDICADOR.apelido AS indicador, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota"
+			" t_ORCAMENTISTA_E_INDICADOR.apelido AS indicador, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota," & _
+			" t_PEDIDO.st_memorizacao_completa_enderecos, t_CLIENTE.email_xml, t_CLIENTE.produtor_rural_status, t_CLIENTE.contribuinte_icms_status, " & _
+			" t_PEDIDO.endereco_rg, t_PEDIDO.endereco_ie, t_PEDIDO.endereco_nome, t_PEDIDO.endereco_logradouro as pedido_endereco_logradouro, " & _
+			" t_PEDIDO.endereco_numero as pedido_endereco_numero, t_PEDIDO.endereco_complemento as pedido_endereco_complemento, " & _
+			" t_PEDIDO.endereco_bairro as pedido_endereco_bairro, t_PEDIDO.endereco_cidade as pedido_endereco_cidade, " & _
+			" t_PEDIDO.endereco_uf as pedido_endereco_uf, t_PEDIDO.endereco_cep as pedido_endereco_cep, " & _
+			" t_PEDIDO.endereco_tel_res, t_PEDIDO.endereco_ddd_res, t_PEDIDO.endereco_tel_com, t_PEDIDO.endereco_ddd_com, t_PEDIDO.endereco_ramal_com, " & _
+			" t_PEDIDO.endereco_tel_cel, t_PEDIDO.endereco_ddd_cel, t_PEDIDO.endereco_tel_com_2, t_PEDIDO.endereco_ddd_com_2, t_PEDIDO.endereco_ramal_com_2, " & _
+			" t_PEDIDO.endereco_email, t_PEDIDO.endereco_email_xml, t_PEDIDO.endereco_produtor_rural_status, t_PEDIDO.endereco_contribuinte_icms_status "
 	
 	if (vl_filtro_valor_inferior > 0) Or (vl_filtro_valor_superior > 0) then
 		s_sql = s_sql & _
@@ -719,24 +727,67 @@ dim iCountPedFamilia
 										"		</td>" & chr(13) & _
 										"	</tr>" & chr(13)
 				
+				dim cliente__nome_iniciais_em_maiusculas, cliente__endereco, cliente__endereco_numero, cliente__endereco_complemento
+				dim cliente__bairro, cliente__cidade, cliente__uf, cliente__cep, cliente__cnpj_cpf
+				dim cliente__tel_res, cliente__ddd_res, cliente__tel_com, cliente__ddd_com, cliente__ramal_com
+				dim cliente__ie, cliente__rg, cliente__email, cliente__email_xml
+				cliente__nome_iniciais_em_maiusculas = Trim("" & r("nome_iniciais_em_maiusculas"))
+				cliente__endereco = Trim("" & r("endereco"))
+				cliente__endereco_numero = Trim("" & r("endereco_numero"))
+				cliente__endereco_complemento = Trim("" & r("endereco_complemento"))
+				cliente__bairro = Trim("" & r("bairro"))
+				cliente__cidade = Trim("" & r("cidade"))
+				cliente__uf = Trim("" & r("uf"))
+				cliente__cep = Trim("" & r("cep"))
+				cliente__cnpj_cpf = Trim("" & r("cnpj_cpf"))
+				cliente__tel_res = Trim("" & r("tel_res"))
+				cliente__ddd_res = Trim("" & r("ddd_res"))
+				cliente__tel_com = Trim("" & r("tel_com"))
+				cliente__ddd_com = Trim("" & r("ddd_com"))
+				cliente__ramal_com = Trim("" & r("ramal_com"))
+				cliente__ie = Trim("" & r("ie"))
+				cliente__rg = Trim("" & r("rg"))
+				cliente__email = Trim("" & r("email"))
+				cliente__email_xml = Trim("" & r("email_xml"))
+				if Trim("" & r("st_memorizacao_completa_enderecos")) <> 0 then
+					cliente__nome_iniciais_em_maiusculas = iniciais_em_maiusculas(Trim("" & r("endereco_nome")))
+					cliente__endereco = Trim("" & r("pedido_endereco_logradouro"))
+					cliente__endereco_numero = Trim("" & r("pedido_endereco_numero"))
+					cliente__endereco_complemento = Trim("" & r("pedido_endereco_complemento"))
+					cliente__bairro = Trim("" & r("pedido_endereco_bairro"))
+					cliente__cidade = Trim("" & r("pedido_endereco_cidade"))
+					cliente__uf = Trim("" & r("pedido_endereco_uf"))
+					cliente__cep = Trim("" & r("pedido_endereco_cep"))
+					cliente__cnpj_cpf = Trim("" & r("cnpj_cpf")) ' este usamos o principal porque sempre é igual
+					cliente__tel_res = Trim("" & r("endereco_tel_res"))
+					cliente__ddd_res = Trim("" & r("endereco_ddd_res"))
+					cliente__tel_com = Trim("" & r("endereco_tel_com"))
+					cliente__ddd_com = Trim("" & r("endereco_ddd_com"))
+					cliente__ramal_com = Trim("" & r("endereco_ramal_com"))
+					cliente__ie = Trim("" & r("endereco_ie"))
+					cliente__rg = Trim("" & r("endereco_rg"))
+					cliente__email = Trim("" & r("endereco_email"))
+					cliente__email_xml = Trim("" & r("endereco_email_xml"))
+					end if
+
 			'	nome
 				s_nome = "&nbsp;"
-				if Trim("" & r("nome_iniciais_em_maiusculas")) <> "" then s_nome = Trim("" & r("nome_iniciais_em_maiusculas"))
+				if cliente__nome_iniciais_em_maiusculas <> "" then s_nome = cliente__nome_iniciais_em_maiusculas
 			'	endereço
 				s_endereco = "&nbsp;"
-				if Trim("" & r("endereco")) <> "" then
-					s_endereco = iniciais_em_maiusculas(Trim("" & r("endereco")))
-					s = Trim("" & r("endereco_numero"))
+				if cliente__endereco <> "" then
+					s_endereco = iniciais_em_maiusculas(cliente__endereco)
+					s = cliente__endereco_numero
 					if s<>"" then s_endereco=s_endereco & ", " & s
-					s = Trim("" & r("endereco_complemento"))
+					s = cliente__endereco_complemento
 					if s<>"" then s_endereco=s_endereco & " " & s
-					s = iniciais_em_maiusculas(Trim("" & r("bairro")))
+					s = iniciais_em_maiusculas(cliente__bairro)
 					if s<>"" then s_endereco=s_endereco & " - " & s
-					s = iniciais_em_maiusculas(Trim("" & r("cidade")))
+					s = iniciais_em_maiusculas(cliente__cidade)
 					if s<>"" then s_endereco=s_endereco & " - " & s
-					s=UCase(Trim("" & r("uf")))
+					s=UCase(cliente__uf)
 					if s<>"" then s_endereco=s_endereco & " - " & s
-					s=Trim("" & r("cep"))
+					s=cliente__cep
 					if s<>"" then s_endereco=s_endereco & " - " & cep_formata(s)
 					end if
 			'	endereço de entrega
@@ -747,49 +798,65 @@ dim iCountPedFamilia
 				
 			'	cnpj/cpf
 				s_cnpj_cpf = "CPF: "
-				if Trim("" & r("cnpj_cpf")) <> "" then
-					s_cnpj_cpf = retorna_so_digitos(Trim("" & r("cnpj_cpf")))
-					if Len(Trim("" & r("cnpj_cpf"))) = 14 then
+				if cliente__cnpj_cpf <> "" then
+					s_cnpj_cpf = cnpj_cpf_formata(cliente__cnpj_cpf)
+					if Len(cliente__cnpj_cpf) = 14 then
 						s_cnpj_cpf = "CNPJ: " & s_cnpj_cpf
 					else
 						s_cnpj_cpf = "CPF: " & s_cnpj_cpf
 						end if
 					end if
+
 			'	telefone residencial
 				s_tel_res = ""
-				if Trim("" & r("tel_res")) <> "" then
-					s = Trim("" & r("tel_res"))
+				if cliente__tel_res <> "" then
+					s = cliente__tel_res
 					s_tel_res = telefone_formata(s)
-					s = Trim("" & r("ddd_res"))
+					s = cliente__ddd_res
 					if s <> "" then s_tel_res = "(" & s & ") " & s_tel_res
 					end if
 				s_tel_res = "Tel Res: " & s_tel_res
 				
 			'	telefone comercial
 				s_tel_com = ""
-				if Trim("" & r("tel_com")) <> "" then
-					s = Trim("" & r("tel_com"))
+				if cliente__tel_com <> "" then
+					s = cliente__tel_com
 					s_tel_com = telefone_formata(s)
-					s = Trim("" & r("ddd_com"))
+					s = cliente__ddd_com
 					if s <> "" then s_tel_com = "(" & s & ") " & s_tel_com
-					s = Trim("" & r("ramal_com"))
+					s = cliente__ramal_com
 					if s<>"" then s_tel_com = s_tel_com & "  (R." & s & ")"
 					end if
 				s_tel_com = "Tel Com: " & s_tel_com
 				
 			'	rg
-				s_rg = "RG: "
+				s_rg = "&nbsp;"
 				if Trim("" & r("tipo")) = ID_PJ then
-					if Trim("" & r("ie")) <> "" then s_rg = "IE: " & Trim("" & r("ie"))
+					if cliente__ie <> "" then s_rg = "IE: " & cliente__ie
 				else
-					if Trim("" & r("rg")) <> "" then s_rg = "RG: " & Trim("" & r("rg"))
+					if cliente__rg <> "" then s_rg = "RG: " & cliente__rg
 					end if
 			'	e-mail
 				s_email = ""
-				if Trim("" & r("email")) <> "" then
-					s_email = Trim("" & r("email"))
+				if cliente__email <> "" then
+					s_email = "E-mail: " & cliente__email
 					end if
-				s_email = "E-mail: " & s_email
+			'	e-mail-xml
+				s_email_xml = ""
+				if cliente__email_xml <> "" then
+					s_email_xml = "E-mail (XML): " & cliente__email_xml
+					end if
+			'	concatena e-mail e e-mail-xml
+				if s_email = "" then
+					s_email = s_email_xml
+				else
+					if s_email_xml <> "" then
+						s_email = s_email  & " - " & s_email_xml
+						end if
+					end if
+				if s_email = "" then
+					s_email = "E-mail: "
+					end if
 
 			'	Referência Bancária
 				strRefBanc = ""

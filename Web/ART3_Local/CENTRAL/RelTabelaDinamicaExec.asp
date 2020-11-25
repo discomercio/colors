@@ -3,6 +3,7 @@
 <% Response.Buffer=True %>
 <!-- #include file = "../global/constantes.asp" -->
 <!-- #include file = "../global/funcoes.asp"    -->
+<!-- #include file = "../global/global.asp"    -->
 <!-- #include file = "../global/bdd.asp" -->
 <!-- #include file = "../global/estoque.asp" -->
 
@@ -30,6 +31,8 @@
 
 	On Error GoTo 0
 	Err.Clear
+	
+	Server.ScriptTimeout = MAX_SERVER_SCRIPT_TIMEOUT_EM_SEG
 	
 	const MSO_NUMBER_FORMAT_PERC = "\#\#0\.0%"
 	const MSO_NUMBER_FORMAT_INTEIRO = "\#\#\#\,\#\#\#\,\#\#0"
@@ -60,6 +63,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	dim c_dt_faturamento_inicio, c_dt_faturamento_termino
 	dim c_fabricante, c_grupo, c_potencia_BTU, c_ciclo, c_posicao_mercado, c_grupo_pedido_origem
@@ -67,6 +73,7 @@
 	dim s, s_aux, s_filtro, s_filtro_loja, lista_loja, v_loja, v, i
 	dim v_grupo_pedido_origem
     dim ckb_AGRUPAMENTO
+	dim ckb_COMPATIBILIDADE
 
 	alerta = ""
 
@@ -85,14 +92,15 @@
 	v_loja = split(lista_loja,chr(13),-1)
 
     ckb_AGRUPAMENTO = Trim(Request.Form("ckb_AGRUPAMENTO"))
+	ckb_COMPATIBILIDADE = Trim(Request.Form("ckb_COMPATIBILIDADE"))
 
 '	CAMPOS DE SAÍDA SELECIONADOS
-	dim ckb_COL_DATA, ckb_COL_NF, ckb_COL_DT_EMISSAO_NF, ckb_COL_LOJA, ckb_COL_PEDIDO, ckb_COL_GRUPO_PEDIDO_ORIGEM, ckb_COL_VENDEDOR, ckb_COL_INDICADOR
-	dim ckb_COL_CPF_CNPJ_CLIENTE, ckb_COL_CONTRIBUINTE_ICMS, ckb_COL_NOME_CLIENTE, ckb_COL_RT, ckb_COL_ICMS_UF_DEST
+	dim ckb_COL_DATA, ckb_COL_NF, ckb_COL_DT_EMISSAO_NF, ckb_COL_LOJA, ckb_COL_PEDIDO, ckb_COL_PEDIDO_MARKETPLACE, ckb_COL_GRUPO_PEDIDO_ORIGEM, ckb_COL_VENDEDOR, ckb_COL_INDICADOR
+	dim ckb_COL_CPF_CNPJ_CLIENTE, ckb_COL_CONTRIBUINTE_ICMS, ckb_COL_NOME_CLIENTE, ckb_COL_VL_RA, ckb_COL_RT, ckb_COL_ICMS_UF_DEST
 	dim ckb_COL_PRODUTO, ckb_COL_NAC_IMP, ckb_COL_DESCRICAO_PRODUTO, ckb_COL_VL_NF, ckb_COL_VL_UNITARIO, ckb_COL_VL_CUSTO_REAL_TOTAL, ckb_COL_VL_TOTAL_NF, ckb_COL_VL_TOTAL, ckb_COL_QTDE
 	dim ckb_COL_VL_CUSTO_ULT_ENTRADA, ckb_COL_VL_CUSTO_REAL, ckb_COL_VL_LISTA, ckb_COL_GRUPO, ckb_COL_POTENCIA_BTU
 	dim ckb_COL_CICLO, ckb_COL_POSICAO_MERCADO, ckb_COL_MARCA, ckb_COL_TRANSPORTADORA
-	dim ckb_COL_CIDADE, ckb_COL_UF, ckb_COL_QTDE_PARCELAS, ckb_COL_MEIO_PAGAMENTO, ckb_COL_TEL, ckb_COL_EMAIL
+	dim ckb_COL_CIDADE, ckb_COL_UF, ckb_COL_QTDE_PARCELAS, ckb_COL_MEIO_PAGAMENTO, ckb_COL_CHAVE_NFE, ckb_COL_TEL, ckb_COL_EMAIL
     dim ckb_COL_PERC_DESC, ckb_COL_CUBAGEM, ckb_COL_PESO, ckb_COL_FRETE
     dim ckb_COL_INDICADOR_EMAILS, ckb_COL_INDICADOR_CPF_CNPJ, ckb_COL_INDICADOR_ENDERECO, ckb_COL_INDICADOR_CIDADE, ckb_COL_INDICADOR_UF
 	
@@ -101,12 +109,14 @@
 	ckb_COL_DT_EMISSAO_NF = Trim(Request.Form("ckb_COL_DT_EMISSAO_NF"))
 	ckb_COL_LOJA = Trim(Request.Form("ckb_COL_LOJA"))
 	ckb_COL_PEDIDO = Trim(Request.Form("ckb_COL_PEDIDO"))
+	ckb_COL_PEDIDO_MARKETPLACE = Trim(Request.Form("ckb_COL_PEDIDO_MARKETPLACE"))
 	ckb_COL_GRUPO_PEDIDO_ORIGEM = Trim(Request.Form("ckb_COL_GRUPO_PEDIDO_ORIGEM"))
 	ckb_COL_VENDEDOR = Trim(Request.Form("ckb_COL_VENDEDOR"))
 	ckb_COL_INDICADOR = Trim(Request.Form("ckb_COL_INDICADOR"))
 	ckb_COL_CPF_CNPJ_CLIENTE = Trim(Request.Form("ckb_COL_CPF_CNPJ_CLIENTE"))
 	ckb_COL_CONTRIBUINTE_ICMS = Trim(Request.Form("ckb_COL_CONTRIBUINTE_ICMS"))
 	ckb_COL_NOME_CLIENTE = Trim(Request.Form("ckb_COL_NOME_CLIENTE"))
+	ckb_COL_VL_RA = Trim(Request.Form("ckb_COL_VL_RA"))
 	ckb_COL_RT = Trim(Request.Form("ckb_COL_RT"))
 	ckb_COL_ICMS_UF_DEST = Trim(Request.Form("ckb_COL_ICMS_UF_DEST"))
 	ckb_COL_PRODUTO = Trim(Request.Form("ckb_COL_PRODUTO"))
@@ -131,6 +141,7 @@
 	ckb_COL_UF = Trim(Request.Form("ckb_COL_UF"))
 	ckb_COL_QTDE_PARCELAS = Trim(Request.Form("ckb_COL_QTDE_PARCELAS"))
 	ckb_COL_MEIO_PAGAMENTO = Trim(Request.Form("ckb_COL_MEIO_PAGAMENTO"))
+	ckb_COL_CHAVE_NFE = Trim(Request.Form("ckb_COL_CHAVE_NFE"))
     ckb_COL_TEL = Trim(Request.Form("ckb_COL_TEL"))
     ckb_COL_EMAIL = Trim(Request.Form("ckb_COL_EMAIL"))
     ckb_COL_PERC_DESC = Trim(Request.Form("ckb_COL_PERC_DESC"))
@@ -151,6 +162,7 @@
 		if ckb_COL_DT_EMISSAO_NF <> "" then s_campos_saida = s_campos_saida & "ckb_COL_DT_EMISSAO_NF" & "|"
 		if ckb_COL_LOJA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_LOJA" & "|"
 		if ckb_COL_PEDIDO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_PEDIDO" & "|"
+		if ckb_COL_PEDIDO_MARKETPLACE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_PEDIDO_MARKETPLACE" & "|"
 		if ckb_COL_GRUPO_PEDIDO_ORIGEM <> "" then s_campos_saida = s_campos_saida & "ckb_COL_GRUPO_PEDIDO_ORIGEM" & "|"
 		if ckb_COL_CPF_CNPJ_CLIENTE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_CPF_CNPJ_CLIENTE" & "|"
 		if ckb_COL_CONTRIBUINTE_ICMS <> "" then s_campos_saida = s_campos_saida & "ckb_COL_CONTRIBUINTE_ICMS" & "|"
@@ -188,10 +200,12 @@
 		if ckb_COL_VL_CUSTO_REAL_TOTAL <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_CUSTO_REAL_TOTAL" & "|"
 		if ckb_COL_VL_TOTAL_NF <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_TOTAL_NF" & "|"
 		if ckb_COL_VL_TOTAL <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_TOTAL" & "|"
+		if ckb_COL_VL_RA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_RA" & "|"
 		if ckb_COL_RT <> "" then s_campos_saida = s_campos_saida & "ckb_COL_RT" & "|"
 		if ckb_COL_ICMS_UF_DEST <> "" then s_campos_saida = s_campos_saida & "ckb_COL_ICMS_UF_DEST" & "|"
 		if ckb_COL_QTDE_PARCELAS <> "" then s_campos_saida = s_campos_saida & "ckb_COL_QTDE_PARCELAS" & "|"
 		if ckb_COL_MEIO_PAGAMENTO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_MEIO_PAGAMENTO" & "|"
+		if ckb_COL_CHAVE_NFE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_CHAVE_NFE" & "|"
 		
 		if s_campos_saida = "|" then s_campos_saida = "NENHUM"
 		call set_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|campos_saida_selecionados", s_campos_saida)
@@ -205,6 +219,7 @@
 		call set_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|c_posicao_mercado", c_posicao_mercado)
 		call set_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|rb_tipo_cliente", rb_tipo_cliente)
 		call set_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|c_loja", c_loja)
+		call set_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|ckb_COMPATIBILIDADE", ckb_COMPATIBILIDADE)
 		end if
 	
 	if alerta = "" then
@@ -266,11 +281,70 @@ end function
 sub consulta_executa
 const SEPARADOR_DECIMAL = ","
 dim s, s_sql, s_cst, x, x_cab, s_where, s_where_aux, s_where_temp, s_where_venda, s_where_devolucao, s_where_loja, s_where_lista_codigo_frete_devolucao
-dim perc_RT, vl_RT, vl_preco_venda, n_reg, n_reg_total
+dim perc_RT, vl_RA, vl_RT, vl_preco_venda, vl_preco_NF, n_reg, n_reg_total, n_reg_total_passo1
 dim tipo_parc
 dim s_qtde, item_peso, item_cubagem, item_qtde
 dim s_vICMSUFDest, vl_vICMSUFDest, s_vICMSUFDest_unitario, vl_vICMSUFDest_unitario, s_det__qCom, n_det__qCom, vl_frete_proporcional
 dim v
+dim vNFeAConsultar, vNFeChave, iQI
+dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptografadaBd, senha_decodificada, chave, s_pesq_nf, idxNFeLocalizada
+
+	n_reg_total_passo1 = -1
+
+	if ckb_COL_CHAVE_NFE <> "" then
+		redim vNFeChave(0)
+		set vNFeChave(UBound(vNFeChave)) = New cl_DEZ_COLUNAS
+		vNFeChave(UBound(vNFeChave)).CampoOrdenacao = ""
+		vNFeChave(UBound(vNFeChave)).c1 = ""
+		vNFeChave(UBound(vNFeChave)).c2 = ""
+		vNFeChave(UBound(vNFeChave)).c3 = ""
+
+		redim vNFeAConsultar(0)
+		set vNFeAConsultar(Ubound(vNFeAConsultar)) = New cl_TRES_COLUNAS
+		vNFeAConsultar(UBound(vNFeAConsultar)).c1 = ""
+		set vNFeAConsultar(UBound(vNFeAConsultar)).c2 = nothing
+		vNFeAConsultar(UBound(vNFeAConsultar)).c3 = ""
+
+		'LOCALIZA TODOS OS EMITENTES DE NFE
+		s = "SELECT * FROM t_NFe_EMITENTE ORDER BY id"
+		if r.State <> 0 then r.Close
+		r.open s, cn
+		do while Not r.Eof
+			if vNFeAConsultar(UBound(vNFeAConsultar)).c1 <> "" then
+				redim preserve vNFeAConsultar(Ubound(vNFeAConsultar)+1)
+				set vNFeAConsultar(Ubound(vNFeAConsultar)) = New cl_TRES_COLUNAS
+				vNFeAConsultar(UBound(vNFeAConsultar)).c1 = ""
+				vNFeAConsultar(UBound(vNFeAConsultar)).c3 = ""
+				end if
+			vNFeAConsultar(UBound(vNFeAConsultar)).c1 = Trim("" & r("id"))
+
+			strNfeT1ServidorBd = Trim("" & r("NFe_T1_servidor_BD"))
+			strNfeT1NomeBd = Trim("" & r("NFe_T1_nome_BD"))
+			strNfeT1UsuarioBd = Trim("" & r("NFe_T1_usuario_BD"))
+			strNfeT1SenhaCriptografadaBd = Trim("" & r("NFe_T1_senha_BD"))
+
+			chave = gera_chave(FATOR_BD)
+			decodifica_dado strNfeT1SenhaCriptografadaBd, senha_decodificada, chave
+
+			s = "Provider=SQLOLEDB;" & _
+				"Data Source=" & strNfeT1ServidorBd & ";" & _
+				"Initial Catalog=" & strNfeT1NomeBd & ";" & _
+				"User ID=" & strNfeT1UsuarioBd & ";" & _
+				"Password=" & senha_decodificada & ";"
+			set vNFeAConsultar(UBound(vNFeAConsultar)).c2 = server.CreateObject("ADODB.Connection")
+			vNFeAConsultar(UBound(vNFeAConsultar)).c2.ConnectionTimeout = 45
+			vNFeAConsultar(UBound(vNFeAConsultar)).c2.CommandTimeout = 900
+			vNFeAConsultar(UBound(vNFeAConsultar)).c2.ConnectionString = s
+			On Error Resume Next
+			Err.Clear
+			vNFeAConsultar(UBound(vNFeAConsultar)).c2.Open
+			if Err <> 0 then set vNFeAConsultar(UBound(vNFeAConsultar)).c2 = nothing
+			On Error GoTo 0
+			Err.Clear
+
+			r.MoveNext
+			loop
+		end if 'if ckb_COL_CHAVE_NFE <> ""
 
 '	OBTÉM O CÓDIGO REFERENTE AO FRETE DE DEVOLUÇÃO
 	s_where_lista_codigo_frete_devolucao = ""
@@ -403,26 +477,32 @@ dim v
 	s_sql = "SELECT" & _
 				" 'VENDA_NORMAL' AS operacao," & _
 				" t_PEDIDO.data_hora," & _
-				" t_PEDIDO.entregue_data AS faturamento_data," & _
-				" Convert(DATETIME, t_NFe_IMAGEM_NORMALIZADO.ide__dEmi, 121) AS dt_emissao," & _
+				" t_PEDIDO.entregue_data AS faturamento_data,"
+
+	if ckb_COL_ICMS_UF_DEST <> "" then
+		s_sql = s_sql & _
+				" Convert(DATETIME, t_NFe_IMAGEM_NORMALIZADO.ide__dEmi, 121) AS dt_emissao,"
+	else
+		s_sql = s_sql & _
+				" (SELECT TOP 1 Convert(datetime, ide__dEmi, 121) FROM t_NFe_IMAGEM WHERE (t_NFe_IMAGEM.NFe_numero_NF = t_PEDIDO.num_obs_2) AND (t_NFe_IMAGEM.id_nfe_emitente = t_PEDIDO.id_nfe_emitente) AND (t_NFe_IMAGEM.ide__tpNF = '1') AND (t_NFe_IMAGEM.st_anulado = 0) AND (t_NFe_IMAGEM.codigo_retorno_NFe_T1 = 1) ORDER BY id DESC) AS dt_emissao,"
+		end if
+
+	s_sql = s_sql & _
+				" t_PEDIDO.id_nfe_emitente," & _
 				" t_PEDIDO.num_obs_2 AS numero_NF," & _
 				" t_PEDIDO.obs_2," & _
 				" t_PEDIDO.loja," & _
 				" t_PEDIDO.pedido," & _
+				" t_PEDIDO.pedido_bs_x_marketplace," & _
 				" t_PEDIDO.marketplace_codigo_origem," & _
 				" tGrupoPedidoOrigemDescricao.descricao AS GrupoPedidoOrigemDescricao," & _
 				" tPedidoOrigemDescricao.descricao AS PedidoOrigemDescricao," & _
 				" t_PEDIDO.transportadora_id," & _
 				" t_PEDIDO__BASE.vendedor," & _
 				" t_PEDIDO__BASE.indicador," & _
-				" t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente," & _
-                " t_CLIENTE.tipo AS tipo_cliente," & _
-				" t_CLIENTE.cnpj_cpf," & _
-				" t_CLIENTE.contribuinte_icms_status," & _
-				" t_CLIENTE.produtor_rural_status," & _
 				" t_PEDIDO__BASE.perc_RT,"
 
-	if ckb_COL_VL_CUSTO_REAL <> "" then
+	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_VL_CUSTO_REAL_TOTAL <> "") then
 		s_sql = s_sql & _
 				" t_ESTOQUE_MOVIMENTO.qtde,"
 	else
@@ -449,7 +529,35 @@ dim v
 				" t_PRODUTO.potencia_BTU," & _
 				" t_PRODUTO.ciclo," & _
 				" t_PRODUTO.posicao_mercado," & _
-				" t_FABRICANTE.nome AS nome_fabricante," & _
+				" t_FABRICANTE.nome AS nome_fabricante,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_nome AS nome_cliente," & _
+                " t_PEDIDO.endereco_tipo_pessoa AS tipo_cliente," & _
+				" t_PEDIDO.endereco_cnpj_cpf AS cnpj_cpf," & _
+				" t_PEDIDO.endereco_contribuinte_icms_status AS contribuinte_icms_status," & _
+				" t_PEDIDO.endereco_produtor_rural_status AS produtor_rural_status," & _
+				" t_PEDIDO.endereco_cidade AS cidade," & _
+				" t_PEDIDO.endereco_uf AS uf," & _
+                " t_PEDIDO.endereco_ddd_res AS ddd_res," & _
+                " t_PEDIDO.endereco_tel_res AS tel_res," & _
+                " t_PEDIDO.endereco_ddd_cel AS ddd_cel," & _
+                " t_PEDIDO.endereco_tel_cel AS tel_cel," & _
+                " t_PEDIDO.endereco_ddd_com AS ddd_com," & _
+                " t_PEDIDO.endereco_tel_com AS tel_com," & _
+                " t_PEDIDO.endereco_ddd_com_2 AS ddd_com_2," & _
+                " t_PEDIDO.endereco_tel_com_2 AS tel_com_2," & _
+                " t_PEDIDO.endereco_ramal_com AS ramal_com," & _
+                " t_PEDIDO.endereco_ramal_com_2 AS ramal_com_2," & _
+                " t_PEDIDO.endereco_email AS email,"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente," & _
+                " t_CLIENTE.tipo AS tipo_cliente," & _
+				" t_CLIENTE.cnpj_cpf," & _
+				" t_CLIENTE.contribuinte_icms_status," & _
+				" t_CLIENTE.produtor_rural_status," & _
 				" t_CLIENTE.cidade AS cidade," & _
 				" t_CLIENTE.uf AS uf," & _
                 " t_CLIENTE.ddd_res," & _
@@ -462,7 +570,10 @@ dim v
                 " t_CLIENTE.tel_com_2," & _
                 " t_CLIENTE.ramal_com," & _
                 " t_CLIENTE.ramal_com_2," & _
-                " t_CLIENTE.email," & _
+                " t_CLIENTE.email,"
+		end if
+
+	s_sql = s_sql & _
                 " t_ORCAMENTISTA_E_INDICADOR.cnpj_cpf AS indicador_cnpj_cpf," & _
                 " t_ORCAMENTISTA_E_INDICADOR.endereco AS indicador_endereco," & _
                 " t_ORCAMENTISTA_E_INDICADOR.endereco_numero AS indicador_endereco_numero," & _
@@ -487,14 +598,16 @@ dim v
 		s_where_aux = " AND (codigo_tipo_frete NOT IN " & s_where_lista_codigo_frete_devolucao & ")"
 		end if
 
-	s_sql = s_sql & _
-                " (SELECT Coalesce(SUM(vl_frete),0) AS vl_frete FROM t_PEDIDO_FRETE WHERE (t_PEDIDO_FRETE.pedido=t_PEDIDO.pedido)" & s_where_aux & ") AS vl_frete," & _
-				" (SELECT Coalesce(SUM(qtde * preco_venda),0) AS vl_total_produtos_calc_frete FROM t_PEDIDO_ITEM WHERE (t_PEDIDO_ITEM.pedido = t_PEDIDO.pedido)) AS vl_total_produtos_calc_frete,"
-	
+	if ckb_COL_FRETE <> "" then
+		s_sql = s_sql & _
+					" (SELECT Coalesce(SUM(vl_frete),0) AS vl_frete FROM t_PEDIDO_FRETE WHERE (t_PEDIDO_FRETE.pedido=t_PEDIDO.pedido)" & s_where_aux & ") AS vl_frete," & _
+					" (SELECT Coalesce(SUM(qtde * preco_venda),0) AS vl_total_produtos_calc_frete FROM t_PEDIDO_ITEM WHERE (t_PEDIDO_ITEM.pedido = t_PEDIDO.pedido)) AS vl_total_produtos_calc_frete,"
+		end if
+
 	s_sql = s_sql & _
 				" (SELECT TOP 1 vl_custo2 FROM t_ESTOQUE tE INNER JOIN t_ESTOQUE_ITEM tEI ON (tE.id_estoque = tEI.id_estoque) WHERE (tE.devolucao_status = 0) AND (tEI.fabricante = t_PEDIDO_ITEM.fabricante) AND (tEI.produto = t_PEDIDO_ITEM.produto) ORDER BY tEI.id_estoque DESC) AS vl_custo2_ult_entrada"
 
-	if ckb_COL_VL_CUSTO_REAL <> "" then
+	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_VL_CUSTO_REAL_TOTAL <> "") then
 		s_sql = s_sql & _
 				", (t_ESTOQUE_ITEM.vl_custo2) AS vl_custo2_real"
 		end if
@@ -514,7 +627,7 @@ dim v
 				" INNER JOIN t_FABRICANTE ON (t_PRODUTO.fabricante = t_FABRICANTE.fabricante)" & _
 				" INNER JOIN t_CLIENTE ON (t_PEDIDO.id_cliente = t_CLIENTE.id)"
 
-	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_NAC_IMP <> "") then
+	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_VL_CUSTO_REAL_TOTAL <> "") Or (ckb_COL_NAC_IMP <> "") then
 		s_sql = s_sql & _
 				" INNER JOIN t_ESTOQUE_MOVIMENTO ON ((t_ESTOQUE_MOVIMENTO.pedido=t_PEDIDO_ITEM.pedido)AND(t_ESTOQUE_MOVIMENTO.fabricante=t_PEDIDO_ITEM.fabricante)AND(t_ESTOQUE_MOVIMENTO.produto=t_PEDIDO_ITEM.produto))" & _
 				" INNER JOIN t_ESTOQUE_ITEM ON ((t_ESTOQUE_MOVIMENTO.id_estoque=t_ESTOQUE_ITEM.id_estoque)AND(t_ESTOQUE_MOVIMENTO.fabricante=t_ESTOQUE_ITEM.fabricante)AND(t_ESTOQUE_MOVIMENTO.produto=t_ESTOQUE_ITEM.produto))"
@@ -527,37 +640,39 @@ dim v
 	' Na tabela t_NFe_IMAGEM_ITEM também pode haver mais de um registro para o mesmo código de produto, isso pode ocorrer quando o pedido consumiu produtos de estoques diferentes e caso esses produtos tenham
 	' alguns dados diferentes entre si, como códigos de CST, por exemplo.
 	' Para que essas derived tables tenham apenas um registro por NFe ou produto, é usada a técnica em que se obtém o ID mais recente de um grupo de registros similares.
-	s_sql = s_sql & _
-			" LEFT JOIN (" & _
-				"SELECT" & _
-					" t_NFE_IMAGEM.*" & _
-				" FROM t_NFe_IMAGEM INNER JOIN (" & _
+	if ckb_COL_ICMS_UF_DEST <> "" then
+		s_sql = s_sql & _
+				" LEFT JOIN (" & _
 					"SELECT" & _
-						" id_nfe_emitente, NFe_serie_NF, NFe_numero_NF, Max(id) AS id" & _
-					" FROM t_NFe_IMAGEM" & _
+						" t_NFE_IMAGEM.*" & _
+					" FROM t_NFe_IMAGEM INNER JOIN (" & _
+						"SELECT" & _
+							" id_nfe_emitente, NFe_serie_NF, NFe_numero_NF, Max(id) AS id" & _
+						" FROM t_NFe_IMAGEM" & _
+						" WHERE" & _
+							" (t_NFe_IMAGEM.ide__tpNF = '1')" & _
+							" AND (t_NFe_IMAGEM.st_anulado = 0)" & _
+							" AND (t_NFe_IMAGEM.codigo_retorno_NFe_T1 = 1)" & _
+						" GROUP BY" & _
+							" id_nfe_emitente, NFe_serie_NF, NFe_numero_NF" & _
+						") t_NFe_IMAGEM_max_id" & _
+						" ON (t_NFe_IMAGEM_max_id.id = t_NFe_IMAGEM.id) AND (t_NFe_IMAGEM_max_id.id_nfe_emitente = t_NFe_IMAGEM.id_nfe_emitente)" & _
 					" WHERE" & _
-						" (t_NFe_IMAGEM.ide__tpNF = '1')" & _
-						" AND (t_NFe_IMAGEM.st_anulado = 0)" & _
-						" AND (t_NFe_IMAGEM.codigo_retorno_NFe_T1 = 1)" & _
-					" GROUP BY" & _
-						" id_nfe_emitente, NFe_serie_NF, NFe_numero_NF" & _
-					") t_NFe_IMAGEM_max_id" & _
-					" ON (t_NFe_IMAGEM_max_id.id = t_NFe_IMAGEM.id) AND (t_NFe_IMAGEM_max_id.id_nfe_emitente = t_NFe_IMAGEM.id_nfe_emitente)" & _
-				" WHERE" & _
-					" (t_NFe_IMAGEM.ide__tpNF = '1') AND (t_NFe_IMAGEM.st_anulado = 0) AND (t_NFe_IMAGEM.codigo_retorno_NFe_T1 = 1)" & _
-			") t_NFe_IMAGEM_NORMALIZADO ON (t_NFe_IMAGEM_NORMALIZADO.id_nfe_emitente = t_PEDIDO.id_nfe_emitente) AND (t_NFe_IMAGEM_NORMALIZADO.NFe_numero_NF = t_PEDIDO.num_obs_2)"
+						" (t_NFe_IMAGEM.ide__tpNF = '1') AND (t_NFe_IMAGEM.st_anulado = 0) AND (t_NFe_IMAGEM.codigo_retorno_NFe_T1 = 1)" & _
+				") t_NFe_IMAGEM_NORMALIZADO ON (t_NFe_IMAGEM_NORMALIZADO.id_nfe_emitente = t_PEDIDO.id_nfe_emitente) AND (t_NFe_IMAGEM_NORMALIZADO.NFe_numero_NF = t_PEDIDO.num_obs_2)"
 
-	s_sql = s_sql & _
-			" LEFT JOIN (" & _
-				"SELECT" & _
-					" t_NFe_IMAGEM_ITEM.*" & _
-				" FROM t_NFe_IMAGEM_ITEM INNER JOIN (" & _
+		s_sql = s_sql & _
+				" LEFT JOIN (" & _
 					"SELECT" & _
-						" id_nfe_imagem, fabricante, produto, Max(id) AS id" & _
-					" FROM t_NFe_IMAGEM_ITEM" & _
-					" GROUP BY id_nfe_imagem, fabricante, produto" & _
-					") t_NFe_IMAGEM_ITEM_max_id ON (t_NFe_IMAGEM_ITEM_max_id.id = t_NFe_IMAGEM_ITEM.id)" & _
-				") t_NFe_IMAGEM_ITEM_NORMALIZADO ON (t_NFe_IMAGEM_NORMALIZADO.id = t_NFe_IMAGEM_ITEM_NORMALIZADO.id_nfe_imagem) AND (t_NFe_IMAGEM_ITEM_NORMALIZADO.fabricante = t_PEDIDO_ITEM.fabricante) AND (t_NFe_IMAGEM_ITEM_NORMALIZADO.produto = t_PEDIDO_ITEM.produto)"
+						" t_NFe_IMAGEM_ITEM.*" & _
+					" FROM t_NFe_IMAGEM_ITEM INNER JOIN (" & _
+						"SELECT" & _
+							" id_nfe_imagem, fabricante, produto, Max(id) AS id" & _
+						" FROM t_NFe_IMAGEM_ITEM" & _
+						" GROUP BY id_nfe_imagem, fabricante, produto" & _
+						") t_NFe_IMAGEM_ITEM_max_id ON (t_NFe_IMAGEM_ITEM_max_id.id = t_NFe_IMAGEM_ITEM.id)" & _
+					") t_NFe_IMAGEM_ITEM_NORMALIZADO ON (t_NFe_IMAGEM_NORMALIZADO.id = t_NFe_IMAGEM_ITEM_NORMALIZADO.id_nfe_imagem) AND (t_NFe_IMAGEM_ITEM_NORMALIZADO.fabricante = t_PEDIDO_ITEM.fabricante) AND (t_NFe_IMAGEM_ITEM_NORMALIZADO.produto = t_PEDIDO_ITEM.produto)"
+		end if 'if ckb_COL_ICMS_UF_DEST <> ""
 
 	s_sql = s_sql & _
 			" LEFT JOIN t_CODIGO_DESCRICAO tPedidoOrigemDescricao ON (tPedidoOrigemDescricao.grupo = 'PedidoECommerce_Origem') AND (tPedidoOrigemDescricao.codigo = t_PEDIDO.marketplace_codigo_origem)" & _
@@ -567,7 +682,7 @@ dim v
 			" WHERE" & _
 				" (t_PEDIDO.st_entrega = '" & ST_ENTREGA_ENTREGUE & "')"
 
-	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_NAC_IMP <> "") then
+	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_VL_CUSTO_REAL_TOTAL <> "") Or (ckb_COL_NAC_IMP <> "") then
 		s_sql = s_sql & _
 				" AND (t_ESTOQUE_MOVIMENTO.anulado_status=0)" & _
 				" AND (t_ESTOQUE_MOVIMENTO.estoque='" & ID_ESTOQUE_ENTREGUE & "')"
@@ -589,24 +704,21 @@ dim v
 				" t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data AS data_hora," & _
 				" t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data AS faturamento_data," & _
 				" NULL AS dt_emissao," & _
+				" t_PEDIDO.id_nfe_emitente," & _
 				" t_PEDIDO_ITEM_DEVOLVIDO.NFe_numero_NF AS numero_NF," & _
 				" t_PEDIDO.obs_2," & _
 				" t_PEDIDO__BASE.loja," & _
 				" t_PEDIDO_ITEM_DEVOLVIDO.pedido," & _
+				" t_PEDIDO.pedido_bs_x_marketplace," & _
 				" t_PEDIDO.marketplace_codigo_origem," & _
 				" tGrupoPedidoOrigemDescricao.descricao AS GrupoPedidoOrigemDescricao," & _
 				" tPedidoOrigemDescricao.descricao AS PedidoOrigemDescricao," & _
 				" t_PEDIDO.transportadora_id," & _
 				" t_PEDIDO__BASE.vendedor," & _
 				" t_PEDIDO__BASE.indicador," & _
-				" t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente," & _
-                " t_CLIENTE.tipo AS tipo_cliente," & _
-				" t_CLIENTE.cnpj_cpf," & _
-				" t_CLIENTE.contribuinte_icms_status," & _
-				" t_CLIENTE.produtor_rural_status," & _
 				" t_PEDIDO__BASE.perc_RT,"
 
-	if ckb_COL_VL_CUSTO_REAL <> "" then
+	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_VL_CUSTO_REAL_TOTAL <> "") then
 		s_sql = s_sql & _
 				" -t_ESTOQUE_ITEM.qtde,"
 	else
@@ -633,20 +745,51 @@ dim v
 				" t_PRODUTO.potencia_BTU," & _
 				" t_PRODUTO.ciclo," & _
 				" t_PRODUTO.posicao_mercado," & _
-				" t_FABRICANTE.nome AS nome_fabricante," & _
+				" t_FABRICANTE.nome AS nome_fabricante,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_nome AS nome_cliente," & _
+                " t_PEDIDO.endereco_tipo_pessoa AS tipo_cliente," & _
+				" t_PEDIDO.endereco_cnpj_cpf AS cnpj_cpf," & _
+				" t_PEDIDO.endereco_contribuinte_icms_status AS contribuinte_icms_status," & _
+				" t_PEDIDO.endereco_produtor_rural_status AS produtor_rural_status," & _
+				" t_PEDIDO.endereco_cidade AS cidade," & _
+				" t_PEDIDO.endereco_uf AS uf," & _
+				" t_PEDIDO.endereco_ddd_res AS ddd_res," & _
+				" t_PEDIDO.endereco_tel_res AS tel_res," & _
+				" t_PEDIDO.endereco_ddd_cel AS ddd_cel," & _
+				" t_PEDIDO.endereco_tel_cel AS tel_cel," & _
+				" t_PEDIDO.endereco_ddd_com AS ddd_com," & _
+				" t_PEDIDO.endereco_tel_com AS tel_com," & _
+				" t_PEDIDO.endereco_ddd_com_2 AS ddd_com_2," & _
+				" t_PEDIDO.endereco_tel_com_2 AS tel_com_2," & _
+				" t_PEDIDO.endereco_ramal_com AS ramal_com," & _
+				" t_PEDIDO.endereco_ramal_com_2 AS ramal_com_2," & _
+				" t_PEDIDO.endereco_email AS email,"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente," & _
+				" t_CLIENTE.tipo AS tipo_cliente," & _
+				" t_CLIENTE.cnpj_cpf," & _
+				" t_CLIENTE.contribuinte_icms_status," & _
+				" t_CLIENTE.produtor_rural_status," & _
 				" t_CLIENTE.cidade AS cidade," & _
 				" t_CLIENTE.uf AS uf," & _
-                " t_CLIENTE.ddd_res," & _
-                " t_CLIENTE.tel_res," & _
-                " t_CLIENTE.ddd_cel," & _
-                " t_CLIENTE.tel_cel," & _
-                " t_CLIENTE.ddd_com," & _
-                " t_CLIENTE.tel_com," & _
-                " t_CLIENTE.ddd_com_2," & _
-                " t_CLIENTE.tel_com_2," & _
-                " t_CLIENTE.ramal_com," & _
-                " t_CLIENTE.ramal_com_2," & _
-                " t_CLIENTE.email," & _
+				" t_CLIENTE.ddd_res," & _
+				" t_CLIENTE.tel_res," & _
+				" t_CLIENTE.ddd_cel," & _
+				" t_CLIENTE.tel_cel," & _
+				" t_CLIENTE.ddd_com," & _
+				" t_CLIENTE.tel_com," & _
+				" t_CLIENTE.ddd_com_2," & _
+				" t_CLIENTE.tel_com_2," & _
+				" t_CLIENTE.ramal_com," & _
+				" t_CLIENTE.ramal_com_2," & _
+				" t_CLIENTE.email,"
+		end if
+
+	s_sql = s_sql & _
                 " t_ORCAMENTISTA_E_INDICADOR.cnpj_cpf AS indicador_cnpj_cpf," & _
                 " t_ORCAMENTISTA_E_INDICADOR.endereco AS indicador_endereco," & _
                 " t_ORCAMENTISTA_E_INDICADOR.endereco_numero AS indicador_endereco_numero," & _
@@ -671,14 +814,16 @@ dim v
 		s_where_aux = " AND (codigo_tipo_frete IN " & s_where_lista_codigo_frete_devolucao & ")"
 		end if
 
-	s_sql = s_sql & _
-                " (SELECT Coalesce(SUM(vl_frete),0) AS vl_frete FROM t_PEDIDO_FRETE WHERE (t_PEDIDO_FRETE.pedido=t_PEDIDO.pedido)" & s_where_aux & ") AS vl_frete," & _
-				" (SELECT Coalesce(SUM(qtde * preco_venda),0) AS vl_total_produtos_calc_frete FROM t_PEDIDO_ITEM_DEVOLVIDO WHERE (t_PEDIDO_ITEM_DEVOLVIDO.pedido = t_PEDIDO.pedido)) AS vl_total_produtos_calc_frete,"
-	
+	if ckb_COL_FRETE <> "" then
+		s_sql = s_sql & _
+					" (SELECT Coalesce(SUM(vl_frete),0) AS vl_frete FROM t_PEDIDO_FRETE WHERE (t_PEDIDO_FRETE.pedido=t_PEDIDO.pedido)" & s_where_aux & ") AS vl_frete," & _
+					" (SELECT Coalesce(SUM(qtde * preco_venda),0) AS vl_total_produtos_calc_frete FROM t_PEDIDO_ITEM_DEVOLVIDO WHERE (t_PEDIDO_ITEM_DEVOLVIDO.pedido = t_PEDIDO.pedido)) AS vl_total_produtos_calc_frete,"
+		end if
+
 	s_sql = s_sql & _
 				" (SELECT TOP 1 vl_custo2 FROM t_ESTOQUE tE INNER JOIN t_ESTOQUE_ITEM tEI ON (tE.id_estoque = tEI.id_estoque) WHERE (tE.devolucao_status = 0) AND (tEI.fabricante = t_PEDIDO_ITEM_DEVOLVIDO.fabricante) AND (tEI.produto = t_PEDIDO_ITEM_DEVOLVIDO.produto) ORDER BY tEI.id_estoque DESC) AS vl_custo2_ult_entrada"
 
-	if ckb_COL_VL_CUSTO_REAL <> "" then
+	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_VL_CUSTO_REAL_TOTAL <> "") then
 		s_sql = s_sql & _
 				", (t_ESTOQUE_ITEM.vl_custo2) AS vl_custo2_real"
 		end if
@@ -698,7 +843,7 @@ dim v
 				" INNER JOIN t_FABRICANTE ON (t_PRODUTO.fabricante = t_FABRICANTE.fabricante)" & _
 				" INNER JOIN t_CLIENTE ON (t_PEDIDO.id_cliente = t_CLIENTE.id)"
 
-	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_NAC_IMP <> "") then
+	if (ckb_COL_VL_CUSTO_REAL <> "") Or (ckb_COL_VL_CUSTO_REAL_TOTAL <> "") Or (ckb_COL_NAC_IMP <> "") then
 		s_sql = s_sql & _
 				" INNER JOIN t_ESTOQUE ON (t_PEDIDO_ITEM_DEVOLVIDO.id=t_ESTOQUE.devolucao_id_item_devolvido)" & _
 				" INNER JOIN t_ESTOQUE_ITEM ON ((t_ESTOQUE.id_estoque=t_ESTOQUE_ITEM.id_estoque)AND(t_PEDIDO_ITEM_DEVOLVIDO.fabricante=t_ESTOQUE_ITEM.fabricante)AND(t_PEDIDO_ITEM_DEVOLVIDO.produto=t_ESTOQUE_ITEM.produto))"
@@ -738,12 +883,86 @@ dim v
 				" produto," & _
 				" qtde"
 	
+	if ckb_COL_CHAVE_NFE <> "" then
+		'OBTÉM OS NÚMERO DE NF QUE DEVEM SER CONSULTADOS PARA OBTER A CHAVE DE ACESSO
+		n_reg_total_passo1 = 0
+		if r.State <> 0 then r.Close
+		r.open s_sql, cn
+		do while Not r.Eof
+			n_reg_total_passo1 = n_reg_total_passo1 + 1
+
+			if Trim("" & r("id_nfe_emitente")) <> "" then
+				for i=LBound(vNFeAConsultar) to UBound(vNFeAConsultar)
+					if Trim("" & r("id_nfe_emitente")) = vNFeAConsultar(i).c1 then
+						if (Trim("" & r("numero_NF")) <> "") And (Trim("" & r("operacao")) = "VENDA_NORMAL") then
+							s = "'" & NFeFormataNumeroNF(Trim("" & r("numero_NF"))) & "'"
+							if Instr(vNFeAConsultar(i).c3, s) = 0 then
+								if vNFeAConsultar(i).c3 <> "" then vNFeAConsultar(i).c3 = vNFeAConsultar(i).c3 & ","
+								vNFeAConsultar(i).c3 = vNFeAConsultar(i).c3 & s
+								end if
+							end if
+						exit for
+						end if
+					next
+				end if
+
+			r.MoveNext
+			loop
+		
+		'REALIZA A CONSULTA EM CADA BD DE NFE
+		for i=LBound(vNFeAConsultar) to UBound(vNFeAConsultar)
+			if (vNFeAConsultar(i).c1 <> "") And (Not (vNFeAConsultar(i).c2 is nothing)) And (vNFeAConsultar(i).c3 <> "") then
+				s = "SELECT DISTINCT" & _
+						" Serie," & _
+						" Nfe," & _
+						" ChaveAcesso" & _
+					" FROM NFE" & _
+					" WHERE" & _
+						" (CodProcAtual = 100)" & _
+						" AND (Coalesce(CANCELADA,0) = 0)" & _
+						" AND (LEN(RTRIM(Coalesce(ChaveAcesso,''))) > 0)" & _
+						" AND (Nfe IN (" & vNFeAConsultar(i).c3 & "))"
+				if r.State <> 0 then r.Close
+				r.open s, vNFeAConsultar(i).c2
+				do while Not r.Eof
+					if vNFeChave(UBound(vNFeChave)).c1 <> "" then
+						redim preserve vNFeChave(UBound(vNFeChave)+1)
+						set vNFeChave(UBound(vNFeChave)) = New cl_DEZ_COLUNAS
+						vNFeChave(UBound(vNFeChave)).CampoOrdenacao = ""
+						vNFeChave(UBound(vNFeChave)).c1 = ""
+						vNFeChave(UBound(vNFeChave)).c2 = ""
+						vNFeChave(UBound(vNFeChave)).c3 = ""
+						end if
+
+					vNFeChave(UBound(vNFeChave)).c1 = vNFeAConsultar(i).c1
+					vNFeChave(UBound(vNFeChave)).c2 = Trim("" & r("Nfe"))
+					vNFeChave(UBound(vNFeChave)).c3 = Trim("" & r("ChaveAcesso"))
+					vNFeChave(UBound(vNFeChave)).CampoOrdenacao = normaliza_codigo(vNFeAConsultar(i).c1, 6) & "|" & Trim("" & r("Nfe"))
+
+					r.MoveNext
+					loop
+				end if
+			next
+
+		'FECHA AS CONEXÕES COM O BD DE NFE
+		for i=LBound(vNFeAConsultar) to UBound(vNFeAConsultar)
+			if Not (vNFeAConsultar(i).c2 is nothing) then
+				vNFeAConsultar(i).c2.Close
+				set vNFeAConsultar(i).c2 = nothing
+				end if
+			next
+		
+		ordena_cl_dez_colunas vNFeChave, 0, UBound(vNFeChave)
+		end if 'if ckb_COL_CHAVE_NFE <> ""
+
+
 	x_cab = ""
 	if ckb_COL_DATA <> "" then x_cab = x_cab & "DATA;"
 	if ckb_COL_NF <> "" then x_cab = x_cab & "NF;"
 	if ckb_COL_DT_EMISSAO_NF <> "" then x_cab = x_cab & "EMISSAO NF;"
 	if ckb_COL_LOJA <> "" then x_cab = x_cab & "LOJA;"
 	if ckb_COL_PEDIDO <> "" then x_cab = x_cab & "PEDIDO;"
+	if ckb_COL_PEDIDO_MARKETPLACE <> "" then x_cab = x_cab & "PEDIDO MARKETPLACE;"
 	if ckb_COL_GRUPO_PEDIDO_ORIGEM <> "" then x_cab = x_cab & "ORIGEM PEDIDO (GRUPO);"
 	if ckb_COL_CPF_CNPJ_CLIENTE <> "" then x_cab = x_cab & "CPF/CNPJ;"
 	if ckb_COL_CONTRIBUINTE_ICMS <> "" then x_cab = x_cab & "Contrib ICMS;"
@@ -781,10 +1000,12 @@ dim v
 	if ckb_COL_VL_CUSTO_REAL_TOTAL <> "" then x_cab = x_cab & "VL CUSTO TOTAL (REAL);"
 	if ckb_COL_VL_TOTAL_NF <> "" then x_cab = x_cab & "VL TOTAL NF;"
 	if ckb_COL_VL_TOTAL <> "" then x_cab = x_cab & "VL TOTAL;"
+	if ckb_COL_VL_RA <> "" then x_cab = x_cab & "VL RA;"
 	if ckb_COL_RT <> "" then x_cab = x_cab & "RT;"
 	if ckb_COL_ICMS_UF_DEST <> "" then x_cab = x_cab & "ICMS UF DESTINO (UNIT);"
 	if ckb_COL_QTDE_PARCELAS <> "" then x_cab = x_cab & "QTDE PARCELAS;"
 	if ckb_COL_MEIO_PAGAMENTO <> "" then x_cab = x_cab & "MEIO DE PAGAMENTO;"
+	if ckb_COL_CHAVE_NFE <> "" then x_cab = x_cab & "CHAVE NFE;"
 	
 	
 	
@@ -809,7 +1030,7 @@ dim v
             item_qtde = CInt(Trim("" & r("qtde")))
         end if
 
-        for i=1 to Abs(item_qtde)
+        for iQI=1 to Abs(item_qtde)
 
 		 '> DATA
 			if ckb_COL_DATA <> "" then
@@ -822,6 +1043,15 @@ dim v
 				if (Trim("" & r("operacao")) = "VENDA_NORMAL") And ((s = "") Or (s = "0")) then
 					s = Trim("" & r("obs_2"))
 					end if
+				
+				if s <> "" then
+					if ckb_COMPATIBILIDADE <> "" then
+						s = chr(34) & "=" & chr(34) & chr(34) & s & chr(34) & chr(34) & chr(34)
+					else
+						s = "=" & chr(34) & s & chr(34)
+						end if
+					end if
+
 				x = x & s & ";"
 				end if
 		
@@ -845,6 +1075,19 @@ dim v
 				x = x & Trim("" & r("pedido")) & ";"
 				end if
 			
+		 '> PEDIDO MARKETPLACE
+			if ckb_COL_PEDIDO_MARKETPLACE <> "" then
+				'FORÇA PARA O EXCEL TRATAR COMO TEXTO E NÃO NÚMERO
+				s = ""
+				if ckb_COMPATIBILIDADE <> "" then
+					s = chr(34) & "=" & chr(34) & chr(34) & Trim("" & r("pedido_bs_x_marketplace")) & chr(34) & chr(34) & chr(34)
+				else
+					s = "=" & chr(34) & Trim("" & r("pedido_bs_x_marketplace")) & chr(34)
+					end if
+				
+				x = x & s & ";"
+				end if
+
 		 '> ORIGEM DO PEDIDO (GRUPO)
 			if ckb_COL_GRUPO_PEDIDO_ORIGEM <> "" then
 				x = x & Trim("" & r("GrupoPedidoOrigemDescricao")) & ";"
@@ -997,7 +1240,11 @@ dim v
 		 '> CÓDIGO DO PRODUTO
 			if ckb_COL_PRODUTO <> "" then
 			 '	FORÇA P/ SER TRATADO COMO TEXTO
-				x = x & chr(34) & "=" & chr(34) & chr(34) & Trim("" & r("produto")) & chr(34) & chr(34) & chr(34) & ";"
+				if ckb_COMPATIBILIDADE <> "" then
+					x = x & chr(34) & "=" & chr(34) & chr(34) & Trim("" & r("produto")) & chr(34) & chr(34) & chr(34) & ";"
+				else
+					x = x & "=" & chr(34) & Trim("" & r("produto")) & chr(34) & ";"
+					end if
 				end if
 
 		 '> NACIONAL/IMPORTADO
@@ -1124,6 +1371,16 @@ dim v
 				x = x & s & ";"
 				end if
 
+		 '> VL RA
+			if ckb_COL_VL_RA <> "" then
+				vl_preco_venda = converte_numero(formata_moeda(r("preco_venda")))
+				vl_preco_NF = converte_numero(formata_moeda(r("preco_NF")))
+				'CALCULA VALOR DA RA, MANTENDO O SINAL (POSITIVO/NEGATIVO)
+				vl_RA = CLng(s_qtde) * (vl_preco_NF - vl_preco_venda)
+				s = substitui_caracteres(bd_formata_moeda(vl_RA), ".", SEPARADOR_DECIMAL)
+				x = x & s & ";"
+				end if
+
 		 '> RT
 			perc_RT = r("perc_RT")
 		'	EVITA DIFERENÇAS DE ARREDONDAMENTO
@@ -1162,6 +1419,7 @@ dim v
 	    
 		 '> MEIO DE PAGAMENTO
 			if ckb_COL_MEIO_PAGAMENTO <> "" then
+				s = ""
         		tipo_parc = Trim("" & r("tipo_parcelamento"))
 				if tipo_parc = 1 then       
 					 s = x_opcao_forma_pagamento(Trim("" & r("forma_pagamento_av"))) 
@@ -1179,6 +1437,32 @@ dim v
 				x = x & s & ";"
 			end if            
                 
+		'> CHAVE DE ACESSO NFE
+			if ckb_COL_CHAVE_NFE <> "" then
+				s = ""
+
+				if Trim("" & r("operacao")) = "VENDA_NORMAL" then
+					s_pesq_nf = normaliza_codigo(Trim("" & r("id_nfe_emitente")), 6) & "|" & NFeFormataNumeroNF(Trim("" & r("numero_NF")))
+					if localiza_cl_dez_colunas(vNFeChave, s_pesq_nf, idxNFeLocalizada) then
+						'FORÇA PARA O EXCEL TRATAR COMO TEXTO E NÃO NÚMERO
+						if ckb_COMPATIBILIDADE <> "" then
+							s = chr(34) & "=" & chr(34) & chr(34) & vNFeChave(idxNFeLocalizada).c3 & chr(34) & chr(34) & chr(34)
+						else
+							s = "=" & chr(34) & vNFeChave(idxNFeLocalizada).c3 & chr(34)
+							end if
+						end if
+
+'					for i=LBound(vNFeChave) to UBound(vNFeChave)
+'						if (vNFeChave(i).c1 = Trim("" & r("id_nfe_emitente"))) And (vNFeChave(i).c2 = NFeFormataNumeroNF(Trim("" & r("numero_NF")))) then
+'							'FORÇA PARA O EXCEL TRATAR COMO TEXTO E NÃO NÚMERO
+'							s = "=" & chr(34) & vNFeChave(i).c3 & chr(34)
+'							exit for
+'							end if
+'						next
+					end if
+
+				x = x & s & ";"
+				end if
 		
 			x = x & vbCrLf
 		
@@ -1187,7 +1471,7 @@ dim v
 				x = ""
 				end if
 
-        next 'for i=1 to Abs(item_qtde)
+        next 'for iQI=1 to Abs(item_qtde)
 		
 		r.MoveNext
 		loop
@@ -1199,6 +1483,8 @@ dim v
 '	MOSTRA AVISO DE QUE NÃO HÁ DADOS!!
 	if n_reg_total = 0 then
 		x = "NENHUM PRODUTO ENCONTRADO"
+	elseif (n_reg_total <> n_reg_total_passo1) And (n_reg_total_passo1 <> -1) then
+		x = "OCORREU UMA INCONSISTÊNCIA NA PROCESSAMENTO DO RELATÓRIO, FAVOR EXECUTAR NOVAMENTE!"
 		end if
 	
 	Response.write x
