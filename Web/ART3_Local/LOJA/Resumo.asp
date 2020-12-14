@@ -1349,7 +1349,7 @@ function ConsultaPedidoMagentoAjax(f)
 
 	$("#divAjaxRunning").show();
 	var jqxhr = $.ajax({
-		url: 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/MagentoApi/GetPedido',
+		url: '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/MagentoApi/GetPedido',
 		type: "GET",
 		dataType: 'json',
 		data: {
