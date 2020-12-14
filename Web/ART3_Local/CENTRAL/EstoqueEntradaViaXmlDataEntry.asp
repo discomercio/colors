@@ -269,7 +269,7 @@ $(function () {
 	}
 
 	jqxhr = $.ajax({
-		url: 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/UploadedFile/ConvertXmlToJson',
+		url: '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/UploadedFile/ConvertXmlToJson',
 		type: "GET",
 		dataType: 'json',
 		data: {
@@ -303,7 +303,7 @@ $(function () {
 	if (uploaded_file_guid2 != "") {
 
 	    jqxhr = $.ajax({
-	        url: 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/UploadedFile/ConvertXmlToJson',
+			url: '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/UploadedFile/ConvertXmlToJson',
 	        type: "GET",
 	        dataType: 'json',
 	        data: {
@@ -346,7 +346,7 @@ $(function () {
 //        var produto = $("#c_erp_codigo_" + linha.toString()).val();
 
 //        var jqxhr = $.ajax({
-//            url: 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>/ART3/WebAPI/api/GetData/ProdutoBySku',
+//            url: '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>/ART3/WebAPI/api/GetData/ProdutoBySku',
 //            type: "GET",
 //            dataType: 'json',
 //            data: {
@@ -683,7 +683,7 @@ function preencheForm()
 	    else
 	    {
 	        var jqxhr = $.ajax({
-	        	url: 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/GetData/ProdutoBySku',
+				url: '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/GetData/ProdutoBySku',
 	            type: 'GET',
 	            dataType: 'json',
 	            data: {

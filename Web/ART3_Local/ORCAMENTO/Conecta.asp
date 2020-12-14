@@ -31,6 +31,12 @@
 	On Error GoTo 0
 	Err.Clear
 
+'	Tratamento para redirecionamento HTTPS
+	dim sUrlHttps
+	if isHttpsRedirectionMandatory(sUrlHttps) then
+		if sUrlHttps <> "" then Response.Redirect(sUrlHttps)
+		end if
+
 	dim strTarget, strTargetOutroAmb, urlOutroAmb
 	dim strTituloAmbiente, strTituloOutroAmbiente
 	dim idOutroAmbiente
@@ -51,9 +57,9 @@
 			strTargetOutroAmb = "fArtDIS"
 		'	VERIFICA SE EST� EM AMBIENTE DE HOMOLOGA플O
 			if BRASPAG_AMBIENTE_HOMOLOGACAO then
-				urlOutroAmb = "http://discomercio.com.br/homologacao"
+				urlOutroAmb = getProtocoloEmUsoHttpOrHttps & "://discomercio.com.br/homologacao"
 			else
-				urlOutroAmb = "http://discomercio.com.br/sistema"
+				urlOutroAmb = getProtocoloEmUsoHttpOrHttps & "://discomercio.com.br/sistema"
 				end if
 		elseif ID_AMBIENTE = ID_AMBIENTE__DIS then
 			strTituloAmbiente = "DIS"
@@ -63,9 +69,9 @@
 			strTargetOutroAmb = "fArtOLD01"
 		'	VERIFICA SE EST� EM AMBIENTE DE HOMOLOGA플O
 			if BRASPAG_AMBIENTE_HOMOLOGACAO then
-				urlOutroAmb = "http://central85.com.br/homologacao"
+				urlOutroAmb = getProtocoloEmUsoHttpOrHttps & "://central85.com.br/homologacao"
 			else
-				urlOutroAmb = "http://central85.com.br/sistema"
+				urlOutroAmb = getProtocoloEmUsoHttpOrHttps & "://central85.com.br/sistema"
 				end if
 			end if
 		end if

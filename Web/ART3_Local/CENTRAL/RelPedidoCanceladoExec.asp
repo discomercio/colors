@@ -49,6 +49,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	dim s, s_aux, s_filtro
 	dim ckb_st_entrega_cancelado, c_dt_entregue_mes, c_dt_entregue_ano, str_data, mes, ano
@@ -129,8 +132,17 @@ s_where = ""
 	        " ,t_CODIGO_DESCRICAO.descricao" & _
 	        " ,cancelado_usuario" & _
 	        " ,cancelado_data_hora" & _
-            " ,vendedor" & _
-            " ,nome" & _
+            " ,vendedor"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s = s & _
+            " , t_PEDIDO.endereco_nome_iniciais_em_maiusculas AS nome"
+	else
+		s = s & _
+            " ,nome"
+		end if
+
+	s = s & _
             " ,Coalesce((SELECT descricao FROM t_CODIGO_DESCRICAO WHERE grupo = 'CancelamentoPedido_Motivo_Sub' AND codigo_pai = t_PEDIDO.cancelado_codigo_motivo AND codigo=t_PEDIDO.cancelado_codigo_sub_motivo),'' ) As descricao_Sub" & _
         " FROM t_PEDIDO" & _
         " INNER JOIN t_CLIENTE ON (t_PEDIDO.id_cliente = t_CLIENTE.id)" & _

@@ -17,7 +17,7 @@ namespace ConsolidadorXlsEC
     {
         #region [ Constantes ]
         public const string PEDIDO_MAGENTO_STATUS_VALIDOS = "|despachado|rastreio_ic|";
-        public const string ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_SKYHUB = "|B2W|Zoom|Magazine Luiza|Carrefour|CNOVA|";
+        public const string ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_SKYHUB = "|B2W|Zoom|Magazine Luiza|Carrefour|CNOVA|Amazon|";
         public const string ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_INTEGRACOMMERCE = "";
         public const string ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_ANYMARKET = "|Leroy Merlin|";
         public const string COD_ST_PEDIDO_RECEBIDO_NAO = "0";
