@@ -170,7 +170,7 @@ dim s_disabled
 
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
-			" dbo.SqlClrUtilIniciaisEmMaiusculas(tP.endereco_nome) AS nome_cliente,"
+			" tP.endereco_nome_iniciais_em_maiusculas AS nome_cliente,"
 	else
 		s_sql = s_sql & _
 			" tC.nome_iniciais_em_maiusculas AS nome_cliente,"

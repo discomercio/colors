@@ -67,22 +67,42 @@
 	EndEtg_email = Trim(Request.Form("EndEtg_email"))
 	EndEtg_email_xml = Trim(Request.Form("EndEtg_email_xml"))
 	EndEtg_nome = Trim(Request.Form("EndEtg_nome"))
-	EndEtg_ddd_res = Trim(Request.Form("EndEtg_ddd_res"))
-	EndEtg_tel_res = Trim(Request.Form("EndEtg_tel_res"))
-	EndEtg_ddd_com = Trim(Request.Form("EndEtg_ddd_com"))
-	EndEtg_tel_com = Trim(Request.Form("EndEtg_tel_com"))
-	EndEtg_ramal_com = Trim(Request.Form("EndEtg_ramal_com"))
-	EndEtg_ddd_cel = Trim(Request.Form("EndEtg_ddd_cel"))
-	EndEtg_tel_cel = Trim(Request.Form("EndEtg_tel_cel"))
-	EndEtg_ddd_com_2 = Trim(Request.Form("EndEtg_ddd_com_2"))
-	EndEtg_tel_com_2 = Trim(Request.Form("EndEtg_tel_com_2"))
-	EndEtg_ramal_com_2 = Trim(Request.Form("EndEtg_ramal_com_2"))
 	EndEtg_tipo_pessoa = Trim(Request.Form("EndEtg_tipo_pessoa"))
 	EndEtg_cnpj_cpf = Trim(Request.Form("EndEtg_cnpj_cpf"))
 	EndEtg_contribuinte_icms_status = Trim(Request.Form("EndEtg_contribuinte_icms_status"))
 	EndEtg_produtor_rural_status = Trim(Request.Form("EndEtg_produtor_rural_status"))
 	EndEtg_ie = Trim(Request.Form("EndEtg_ie"))
 	EndEtg_rg = Trim(Request.Form("EndEtg_rg"))
+
+	'Tratamento para obter os dados de telefone conforme os campos exibidos no formulário
+	'O objetivo é evitar que dados sejam gravados de forma inconsistente na seguinte situação:
+	'	O usuário seleciona o tipo PJ e inicia o preenchimento dos dados do telefone, mas não informa o DDD
+	'	Em seguida, altera o tipo para PF e realiza o preenchimento corretamente
+	'	Os dados de telefone exibidos p/ o tipo PJ estão inconsistentes e não devem ser gravados no BD, até porque, mesmo que corretos, seriam informações que não pertencem ao contexto selecionado
+	EndEtg_ddd_res = ""
+	EndEtg_tel_res = ""
+	EndEtg_ddd_com = ""
+	EndEtg_tel_com = ""
+	EndEtg_ramal_com = ""
+	EndEtg_ddd_cel = ""
+	EndEtg_tel_cel = ""
+	EndEtg_ddd_com_2 = ""
+	EndEtg_tel_com_2 = ""
+	EndEtg_ramal_com_2 = ""
+
+	if EndEtg_tipo_pessoa = ID_PF then
+		EndEtg_ddd_res = Trim(Request.Form("EndEtg_ddd_res"))
+		EndEtg_tel_res = Trim(Request.Form("EndEtg_tel_res"))
+		EndEtg_ddd_cel = Trim(Request.Form("EndEtg_ddd_cel"))
+		EndEtg_tel_cel = Trim(Request.Form("EndEtg_tel_cel"))
+	else
+		EndEtg_ddd_com = Trim(Request.Form("EndEtg_ddd_com"))
+		EndEtg_tel_com = Trim(Request.Form("EndEtg_tel_com"))
+		EndEtg_ramal_com = Trim(Request.Form("EndEtg_ramal_com"))
+		EndEtg_ddd_com_2 = Trim(Request.Form("EndEtg_ddd_com_2"))
+		EndEtg_tel_com_2 = Trim(Request.Form("EndEtg_tel_com_2"))
+		EndEtg_ramal_com_2 = Trim(Request.Form("EndEtg_ramal_com_2"))
+		end if
 
     dim orcamento_endereco_logradouro, orcamento_endereco_bairro, orcamento_endereco_cidade, orcamento_endereco_uf, orcamento_endereco_cep, orcamento_endereco_numero
     dim orcamento_endereco_complemento, orcamento_endereco_email, orcamento_endereco_email_xml, orcamento_endereco_nome, orcamento_endereco_ddd_res
@@ -486,6 +506,60 @@
 				end if
 			end if 'if blnLojaHabilitadaProdCompostoECommerce
 		end if 'if alerta = ""
+
+	if alerta = "" then
+	'	Validação do DDD dos telefones
+		if orcamento_endereco_tipo_pessoa = ID_PF then
+			if (orcamento_endereco_tel_res <> "") And (Len(orcamento_endereco_ddd_res) < 2) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "DDD inválido para o telefone (endereço de cobrança): " & orcamento_endereco_tel_res
+				end if
+
+			if (orcamento_endereco_tel_cel <> "") And (Len(orcamento_endereco_ddd_cel) < 2) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "DDD inválido para o telefone (endereço de cobrança): " & orcamento_endereco_tel_cel
+				end if
+
+			if (orcamento_endereco_tel_com <> "") And (Len(orcamento_endereco_ddd_com) < 2) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "DDD inválido para o telefone (endereço de cobrança): " & orcamento_endereco_tel_com
+				end if
+		else
+			if (orcamento_endereco_tel_com <> "") And (Len(orcamento_endereco_ddd_com) < 2) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "DDD inválido para o telefone (endereço de cobrança): " & orcamento_endereco_tel_com
+				end if
+			
+			if (orcamento_endereco_tel_com_2 <> "") And (Len(orcamento_endereco_ddd_com_2) < 2) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "DDD inválido para o telefone (endereço de cobrança): " & orcamento_endereco_tel_com_2
+				end if
+			end if 'if orcamento_endereco_tipo_pessoa = ID_PF
+
+		if rb_end_entrega = "S" then
+			if EndEtg_tipo_pessoa = ID_PF then
+				if (EndEtg_tel_res <> "") And (Len(EndEtg_ddd_res) < 2) then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "DDD inválido para o telefone (endereço de entrega): " & EndEtg_tel_res
+					end if
+
+				if (EndEtg_tel_cel <> "") And (Len(EndEtg_ddd_cel) < 2) then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "DDD inválido para o telefone (endereço de entrega): " & EndEtg_tel_cel
+					end if
+			else
+				if (EndEtg_tel_com <> "") And (Len(EndEtg_ddd_com) < 2) then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "DDD inválido para o telefone (endereço de entrega): " & EndEtg_tel_com
+					end if
+
+				if (EndEtg_tel_com_2 <> "") And (Len(EndEtg_ddd_com_2) < 2) then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "DDD inválido para o telefone (endereço de entrega): " & EndEtg_tel_com_2
+					end if
+				end if 'if EndEtg_tipo_pessoa = ID_PF
+			end if 'if rb_end_entrega = "S"
+		end if
 %>
 
 

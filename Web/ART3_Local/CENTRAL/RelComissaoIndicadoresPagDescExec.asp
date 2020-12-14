@@ -53,6 +53,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	dim s, s_aux, s_filtro
 	dim ckb_st_entrega_entregue, c_dt_entregue_mes, c_dt_entregue_ano, str_data, mes, ano
@@ -300,7 +303,19 @@ dim vl_RT_desc_aux, vl_RA_desc_aux
 			        " t_PEDIDO.comissao_paga AS status_comissao," & _
 			        " coalesce(t_ORCAMENTISTA_E_INDICADOR.desempenho_nota,'') as desempenho_nota," & _
                     " t_ORCAMENTISTA_E_INDICADOR.banco," & _
-			        " t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor, t_CLIENTE.nome, t_CLIENTE.nome_iniciais_em_maiusculas," & _
+			        " t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
+
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				s_sql = s_sql & _
+						" t_PEDIDO.endereco_nome AS nome," & _
+						" t_PEDIDO.endereco_nome_iniciais_em_maiusculas AS nome_iniciais_em_maiusculas,"
+			else
+				s_sql = s_sql & _
+						" t_CLIENTE.nome," & _
+						" t_CLIENTE.nome_iniciais_em_maiusculas,"
+				end if
+
+			s_sql = s_sql & _
 			        " t_PEDIDO.loja AS loja, t_PEDIDO.numero_loja," & _
 			        " t_PEDIDO.entregue_data AS data," & _
 			        " t_PEDIDO.pedido AS pedido, t_PEDIDO.orcamento AS orcamento," & _
@@ -315,7 +330,20 @@ dim vl_RT_desc_aux, vl_RA_desc_aux
 			        " LEFT JOIN t_ORCAMENTISTA_E_INDICADOR ON (t_PEDIDO__BASE.indicador=t_ORCAMENTISTA_E_INDICADOR.apelido)" & _
 			        " WHERE (t_PEDIDO.st_entrega = '" & ST_ENTREGA_ENTREGUE & "')" & _
 			        s & _
-			        " GROUP BY t_PEDIDO.pedido, t_PEDIDO.comissao_paga, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.banco, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor, t_CLIENTE.nome, t_CLIENTE.nome_iniciais_em_maiusculas, t_PEDIDO.loja, t_PEDIDO.numero_loja, t_PEDIDO.entregue_data, t_PEDIDO.pedido, t_PEDIDO.orcamento, t_PEDIDO__BASE.perc_RT, t_PEDIDO__BASE.st_pagto, t_PEDIDO__BASE.vl_total_RA_liquido, t_PEDIDO__BASE.st_tem_desagio_RA, t_PEDIDO__BASE.perc_desagio_RA_liquida"
+			        " GROUP BY t_PEDIDO.pedido, t_PEDIDO.comissao_paga, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.banco, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
+
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				s_sql = s_sql & _
+						" t_PEDIDO.endereco_nome," & _
+						" t_PEDIDO.endereco_nome_iniciais_em_maiusculas,"
+			else
+				s_sql = s_sql & _
+						" t_CLIENTE.nome," & _
+						" t_CLIENTE.nome_iniciais_em_maiusculas,"
+				end if
+
+			s_sql = s_sql & _
+					" t_PEDIDO.loja, t_PEDIDO.numero_loja, t_PEDIDO.entregue_data, t_PEDIDO.pedido, t_PEDIDO.orcamento, t_PEDIDO__BASE.perc_RT, t_PEDIDO__BASE.st_pagto, t_PEDIDO__BASE.vl_total_RA_liquido, t_PEDIDO__BASE.st_tem_desagio_RA, t_PEDIDO__BASE.perc_desagio_RA_liquida"
 
         '	ITENS DEVOLVIDOS
 	        s = s_where
@@ -329,7 +357,19 @@ dim vl_RT_desc_aux, vl_RA_desc_aux
 			        " t_PEDIDO_ITEM_DEVOLVIDO.comissao_descontada AS status_comissao," & _
 			        " coalesce(t_ORCAMENTISTA_E_INDICADOR.desempenho_nota,'') AS desempenho_nota," & _
                     " t_ORCAMENTISTA_E_INDICADOR.banco," & _
-			        " t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor, t_CLIENTE.nome, t_CLIENTE.nome_iniciais_em_maiusculas," & _
+			        " t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
+
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				s_sql = s_sql & _
+					" t_PEDIDO.endereco_nome AS nome," & _
+					" t_PEDIDO.endereco_nome_iniciais_em_maiusculas AS nome_iniciais_em_maiusculas,"
+			else
+				s_sql = s_sql & _
+					" t_CLIENTE.nome," & _
+					" t_CLIENTE.nome_iniciais_em_maiusculas,"
+				end if
+
+			s_sql = s_sql & _
 			        " t_PEDIDO.loja AS loja, t_PEDIDO.numero_loja," & _
 			        " t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data AS data," & _
 			        " t_PEDIDO.pedido AS pedido, t_PEDIDO.orcamento AS orcamento," & _
@@ -343,7 +383,20 @@ dim vl_RT_desc_aux, vl_RA_desc_aux
 			        " INNER JOIN t_CLIENTE ON (t_PEDIDO__BASE.id_cliente=t_CLIENTE.id)" & _
 			        " LEFT JOIN t_ORCAMENTISTA_E_INDICADOR ON (t_PEDIDO__BASE.indicador=t_ORCAMENTISTA_E_INDICADOR.apelido)" & _
 			        s & _
-			        " GROUP BY t_PEDIDO_ITEM_DEVOLVIDO.id, t_PEDIDO_ITEM_DEVOLVIDO.comissao_descontada, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.banco, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor, t_CLIENTE.nome, t_CLIENTE.nome_iniciais_em_maiusculas, t_PEDIDO.loja, t_PEDIDO.numero_loja, t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data, t_PEDIDO.pedido, t_PEDIDO.orcamento, t_PEDIDO__BASE.perc_RT, t_PEDIDO__BASE.st_pagto, t_PEDIDO__BASE.vl_total_RA_liquido, t_PEDIDO__BASE.st_tem_desagio_RA, t_PEDIDO__BASE.perc_desagio_RA_liquida"
+			        " GROUP BY t_PEDIDO_ITEM_DEVOLVIDO.id, t_PEDIDO_ITEM_DEVOLVIDO.comissao_descontada, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.banco, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
+
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				s_sql = s_sql & _
+						" t_PEDIDO.endereco_nome," & _
+						" t_PEDIDO.endereco_nome_iniciais_em_maiusculas,"
+			else
+				s_sql = s_sql & _
+						" t_CLIENTE.nome," & _
+						" t_CLIENTE.nome_iniciais_em_maiusculas,"
+				end if
+
+			s_sql = s_sql & _
+					" t_PEDIDO.loja, t_PEDIDO.numero_loja, t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data, t_PEDIDO.pedido, t_PEDIDO.orcamento, t_PEDIDO__BASE.perc_RT, t_PEDIDO__BASE.st_pagto, t_PEDIDO__BASE.vl_total_RA_liquido, t_PEDIDO__BASE.st_tem_desagio_RA, t_PEDIDO__BASE.perc_desagio_RA_liquida"
 
         '	PERDAS
 	        s = s_where
@@ -357,7 +410,19 @@ dim vl_RT_desc_aux, vl_RA_desc_aux
 			        " t_PEDIDO_PERDA.comissao_descontada AS status_comissao," & _
 			        " coalesce(t_ORCAMENTISTA_E_INDICADOR.desempenho_nota,'') as desempenho_nota," & _
                     " t_ORCAMENTISTA_E_INDICADOR.banco," & _
-			        " t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor, t_CLIENTE.nome, t_CLIENTE.nome_iniciais_em_maiusculas," & _
+			        " t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
+
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				s_sql = s_sql & _
+						" t_PEDIDO.endereco_nome AS nome," & _
+						" t_PEDIDO.endereco_nome_iniciais_em_maiusculas AS nome_iniciais_em_maiusculas,"
+			else
+				s_sql = s_sql & _
+						" t_CLIENTE.nome," & _
+						" t_CLIENTE.nome_iniciais_em_maiusculas,"
+				end if
+
+			s_sql = s_sql & _
 			        " t_PEDIDO.loja AS loja, t_PEDIDO.numero_loja," & _
 			        " t_PEDIDO_PERDA.data AS data," & _
 			        " t_PEDIDO.pedido AS pedido, t_PEDIDO.orcamento AS orcamento," & _
@@ -371,7 +436,20 @@ dim vl_RT_desc_aux, vl_RA_desc_aux
 			        " INNER JOIN t_CLIENTE ON (t_PEDIDO__BASE.id_cliente=t_CLIENTE.id)" & _
 			        " LEFT JOIN t_ORCAMENTISTA_E_INDICADOR ON (t_PEDIDO__BASE.indicador=t_ORCAMENTISTA_E_INDICADOR.apelido)" & _
 			        s & _
-			        " GROUP BY t_PEDIDO_PERDA.id, t_PEDIDO_PERDA.comissao_descontada, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.banco, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor, t_CLIENTE.nome, t_CLIENTE.nome_iniciais_em_maiusculas, t_PEDIDO.loja, t_PEDIDO.numero_loja, t_PEDIDO_PERDA.data, t_PEDIDO.pedido, t_PEDIDO.orcamento, t_PEDIDO__BASE.perc_RT, t_PEDIDO__BASE.st_pagto, t_PEDIDO__BASE.vl_total_RA_liquido, t_PEDIDO__BASE.st_tem_desagio_RA, t_PEDIDO__BASE.perc_desagio_RA_liquida"
+			        " GROUP BY t_PEDIDO_PERDA.id, t_PEDIDO_PERDA.comissao_descontada, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.banco, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
+
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				s_sql = s_sql & _
+					" t_PEDIDO.endereco_nome," & _
+					" t_PEDIDO.endereco_nome_iniciais_em_maiusculas,"
+			else
+				s_sql = s_sql & _
+					" t_CLIENTE.nome," & _
+					" t_CLIENTE.nome_iniciais_em_maiusculas,"
+				end if
+
+			s_sql = s_sql & _
+					" t_PEDIDO.loja, t_PEDIDO.numero_loja, t_PEDIDO_PERDA.data, t_PEDIDO.pedido, t_PEDIDO.orcamento, t_PEDIDO__BASE.perc_RT, t_PEDIDO__BASE.st_pagto, t_PEDIDO__BASE.vl_total_RA_liquido, t_PEDIDO__BASE.st_tem_desagio_RA, t_PEDIDO__BASE.perc_desagio_RA_liquida"
 
 	        s_sql = "SELECT " & _
 				        "*" & _

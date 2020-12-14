@@ -47,6 +47,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	alerta = ""
 
@@ -111,7 +114,17 @@ dim qtde_pedidos, n_reg, n_reg_total
 	
 	s_sql = "SELECT t_PEDIDO.data, t_PEDIDO.pedido, t_PEDIDO.vendedor," & _
 			" abaixo_min_autorizador, abaixo_min_superv_autorizador, qtde, fabricante, produto," &_
-			" descricao, descricao_html, preco_lista, desc_max, preco_venda, t_CLIENTE.nome_iniciais_em_maiusculas" & _
+			" descricao, descricao_html, preco_lista, desc_max, preco_venda,"
+	
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_nome_iniciais_em_maiusculas AS nome_iniciais_em_maiusculas"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome_iniciais_em_maiusculas"
+		end if
+
+	s_sql = s_sql & _
 			" FROM t_PEDIDO INNER JOIN t_PEDIDO_ITEM ON (t_PEDIDO.pedido=t_PEDIDO_ITEM.pedido)" & _
 			" LEFT JOIN t_CLIENTE ON (t_PEDIDO.id_cliente=t_CLIENTE.id)" & _
 			" WHERE (st_entrega<>'" & ST_ENTREGA_CANCELADO & "')" & _

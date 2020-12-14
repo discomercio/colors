@@ -52,6 +52,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	dim s, s_aux, s_filtro
 	dim ckb_st_entrega_entregue, c_dt_entregue_inicio, c_dt_entregue_termino
@@ -268,8 +271,17 @@ dim nome_cliente
 			" t_PEDIDO.loja AS loja, t_PEDIDO.numero_loja," & _
 			" t_PEDIDO.entregue_data AS data," & _
 			" t_PEDIDO.pedido AS pedido, t_PEDIDO.orcamento AS orcamento," & _
-			" t_PEDIDO__BASE.perc_RT, t_PEDIDO__BASE.st_pagto," & _
-			" t_CLIENTE.nome AS nome_cliente," & _
+			" t_PEDIDO__BASE.perc_RT, t_PEDIDO__BASE.st_pagto,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_nome AS nome_cliente,"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome AS nome_cliente,"
+		end if
+
+	s_sql = s_sql & _
 			" Sum(t_PEDIDO_ITEM.qtde*t_PEDIDO_ITEM.preco_venda) AS total_preco_venda," & _
 			" Sum(t_PEDIDO_ITEM.qtde*t_PEDIDO_ITEM.preco_NF) AS total_preco_NF" & _
 			" FROM t_PEDIDO INNER JOIN t_PEDIDO AS t_PEDIDO__BASE ON (t_PEDIDO.pedido_base=t_PEDIDO__BASE.pedido)" & _
@@ -277,7 +289,18 @@ dim nome_cliente
 			" INNER JOIN t_CLIENTE ON (t_PEDIDO.id_cliente = t_CLIENTE.id)" & _
 			" WHERE (t_PEDIDO.st_entrega = '" & ST_ENTREGA_ENTREGUE & "')" & _
 			s & _
-			" GROUP BY t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor, t_PEDIDO.loja, t_PEDIDO.numero_loja, t_CLIENTE.nome, t_PEDIDO.entregue_data, t_PEDIDO.pedido, t_PEDIDO.orcamento, t_PEDIDO__BASE.perc_RT, t_PEDIDO__BASE.st_pagto"
+			" GROUP BY t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor, t_PEDIDO.loja, t_PEDIDO.numero_loja,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_nome,"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome,"
+		end if
+
+	s_sql = s_sql & _
+			" t_PEDIDO.entregue_data, t_PEDIDO.pedido, t_PEDIDO.orcamento, t_PEDIDO__BASE.perc_RT, t_PEDIDO__BASE.st_pagto"
 
 '	ITENS DEVOLVIDOS
 	s = s_where
@@ -289,15 +312,35 @@ dim nome_cliente
 			" t_PEDIDO.loja AS loja, t_PEDIDO.numero_loja," & _
 			" t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data AS data," & _
 			" t_PEDIDO.pedido AS pedido, t_PEDIDO.orcamento AS orcamento," & _
-			" t_PEDIDO__BASE.perc_RT, t_PEDIDO__BASE.st_pagto," & _
-			" t_CLIENTE.nome AS nome_cliente," & _
+			" t_PEDIDO__BASE.perc_RT, t_PEDIDO__BASE.st_pagto,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_nome AS nome_cliente,"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome AS nome_cliente,"
+		end if
+
+	s_sql = s_sql & _
 			" Sum(-t_PEDIDO_ITEM_DEVOLVIDO.qtde*t_PEDIDO_ITEM_DEVOLVIDO.preco_venda) AS total_preco_venda," & _
 			" Sum(-t_PEDIDO_ITEM_DEVOLVIDO.qtde*t_PEDIDO_ITEM_DEVOLVIDO.preco_NF) AS total_preco_NF" & _
 			" FROM t_PEDIDO INNER JOIN t_PEDIDO AS t_PEDIDO__BASE ON (t_PEDIDO.pedido_base=t_PEDIDO__BASE.pedido)" & _
 			" INNER JOIN t_PEDIDO_ITEM_DEVOLVIDO ON (t_PEDIDO.pedido=t_PEDIDO_ITEM_DEVOLVIDO.pedido)" & _
 			" INNER JOIN t_CLIENTE ON (t_PEDIDO.id_cliente = t_CLIENTE.id)" & _
 			s & _
-			" GROUP BY t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor, t_PEDIDO.loja, t_PEDIDO.numero_loja, t_CLIENTE.nome, t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data, t_PEDIDO.pedido, t_PEDIDO.orcamento, t_PEDIDO__BASE.perc_RT, t_PEDIDO__BASE.st_pagto"
+			" GROUP BY t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor, t_PEDIDO.loja, t_PEDIDO.numero_loja,"
+	
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_nome,"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome,"
+		end if
+
+	s_sql = s_sql & _
+			" t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data, t_PEDIDO.pedido, t_PEDIDO.orcamento, t_PEDIDO__BASE.perc_RT, t_PEDIDO__BASE.st_pagto"
 
 '	PERDAS
 	s = s_where
@@ -309,15 +352,35 @@ dim nome_cliente
 			" t_PEDIDO.loja AS loja, t_PEDIDO.numero_loja," & _
 			" t_PEDIDO_PERDA.data AS data," & _
 			" t_PEDIDO.pedido AS pedido, t_PEDIDO.orcamento AS orcamento," & _
-			" t_PEDIDO__BASE.perc_RT, t_PEDIDO__BASE.st_pagto," & _
-			" t_CLIENTE.nome AS nome_cliente," & _
+			" t_PEDIDO__BASE.perc_RT, t_PEDIDO__BASE.st_pagto,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_nome AS nome_cliente,"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome AS nome_cliente,"
+		end if
+
+	s_sql = s_sql & _
 			" Sum(-t_PEDIDO_PERDA.valor) AS total_preco_venda," & _
 			" Sum(-t_PEDIDO_PERDA.valor) AS total_preco_NF" & _
 			" FROM t_PEDIDO INNER JOIN t_PEDIDO AS t_PEDIDO__BASE ON (t_PEDIDO.pedido_base=t_PEDIDO__BASE.pedido)" & _
 			" INNER JOIN t_CLIENTE ON (t_PEDIDO.id_cliente = t_CLIENTE.id)" & _
 			" INNER JOIN t_PEDIDO_PERDA ON (t_PEDIDO.pedido=t_PEDIDO_PERDA.pedido)" & _
 			s & _
-			" GROUP BY t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor, t_PEDIDO.loja, t_PEDIDO.numero_loja, t_CLIENTE.nome, t_PEDIDO_PERDA.data, t_PEDIDO.pedido, t_PEDIDO.orcamento, t_PEDIDO__BASE.perc_RT, t_PEDIDO__BASE.st_pagto"
+			" GROUP BY t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor, t_PEDIDO.loja, t_PEDIDO.numero_loja,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_nome,"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome,"
+		end if
+
+	s_sql = s_sql & _
+			" t_PEDIDO_PERDA.data, t_PEDIDO.pedido, t_PEDIDO.orcamento, t_PEDIDO__BASE.perc_RT, t_PEDIDO__BASE.st_pagto"
 	
 	s_sql = "SELECT " & _
 				"*" & _

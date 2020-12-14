@@ -63,7 +63,7 @@
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s = s & _
 			" tPed.endereco_cnpj_cpf AS cnpj_cpf_cliente," & _
-			" dbo.SqlClrUtilIniciaisEmMaiusculas(tPed.endereco_nome) AS nome_cliente,"
+			" tPed.endereco_nome_iniciais_em_maiusculas AS nome_cliente,"
 	else
 		s = s & _
 			" tCli.cnpj_cpf AS cnpj_cpf_cliente," & _

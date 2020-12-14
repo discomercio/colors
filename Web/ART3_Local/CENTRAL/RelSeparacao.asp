@@ -47,6 +47,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta, s, s_aux, c_dt_inicio, c_dt_termino, c_transportadora, c_nfe_emitente
 	alerta = ""
 
@@ -129,8 +132,17 @@ dim rNfeEmitente
 				" t_PEDIDO.transportadora_id," & _
 				" t_PEDIDO_ITEM.fabricante," & _
 				" t_PEDIDO_ITEM.produto," & _
-				" t_PEDIDO_ITEM.qtde," & _
-				" t_CLIENTE.nome_iniciais_em_maiusculas," & _
+				" t_PEDIDO_ITEM.qtde,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_nome_iniciais_em_maiusculas AS nome_iniciais_em_maiusculas,"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome_iniciais_em_maiusculas,"
+		end if
+
+	s_sql = s_sql & _
 				" t_PRODUTO.descricao," & _
 				" t_PRODUTO.descricao_html" & _
 			" FROM t_PEDIDO" & _

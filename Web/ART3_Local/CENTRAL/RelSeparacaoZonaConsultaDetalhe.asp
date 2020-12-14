@@ -49,6 +49,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	alerta = ""
 
@@ -163,8 +166,17 @@ dim strJS_AllTablesCollapse, strJS_AllTablesNotPrint
 				" tN2.obs_3," & _
 				" tN2.loja," & _
 				" tN2.transportadora_id," & _
-				" tN2.id_cliente," & _
-				" tCli.nome_iniciais_em_maiusculas AS nome_cliente," & _
+				" tN2.id_cliente,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" tPed.endereco_nome_iniciais_em_maiusculas AS nome_cliente,"
+	else
+		s_sql = s_sql & _
+				" tCli.nome_iniciais_em_maiusculas AS nome_cliente,"
+		end if
+
+	s_sql = s_sql & _
 				" tFab.nome AS nome_fabricante," & _
 				" tFab.razao_social AS razao_social_fabricante," & _
 				" tN3.fabricante," & _
@@ -181,6 +193,7 @@ dim strJS_AllTablesCollapse, strJS_AllTablesNotPrint
 				" INNER JOIN t_WMS_ETQ_N2_SEPARACAO_ZONA_PEDIDO tN2 ON (tN1.id = tN2.id_wms_etq_n1)" & _
 				" INNER JOIN t_WMS_ETQ_N3_SEPARACAO_ZONA_PRODUTO tN3 ON (tN2.id = tN3.id_wms_etq_n2)" & _
 				" INNER JOIN t_CLIENTE tCli ON (tN2.id_cliente = tCli.id)" & _
+				" INNER JOIN t_PEDIDO tPed ON (tN2.pedido = tPed.pedido)" & _
 				" INNER JOIN t_FABRICANTE tFab ON (tN3.fabricante = tFab.fabricante)" & _
 				" INNER JOIN t_PRODUTO tProd ON ((tN3.fabricante = tProd.fabricante) AND (tN3.produto = tProd.produto))" & _
 			" WHERE" & _
