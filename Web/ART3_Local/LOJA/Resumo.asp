@@ -110,6 +110,9 @@
     If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
     If Not cria_recordset_otimista(rs2, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	strFlagPrimeiraExecucao = Request("FlagPrimeiraExecucao")
 	if strFlagPrimeiraExecucao = "1" then eh_primeira_execucao = True
 
@@ -308,8 +311,24 @@ function lista_pedidos
 dim i,r,s,sql, s_aux
 
 
-	s = "SELECT data, pedido, st_entrega, vendedor, cnpj_cpf, nome_iniciais_em_maiusculas, analise_credito, analise_credito_pendente_vendas_motivo FROM t_PEDIDO INNER JOIN t_CLIENTE ON t_PEDIDO.id_cliente=t_CLIENTE.id" & _
-		" WHERE (loja='" & loja & "')" & _
+	s = "SELECT" & _
+			" data, pedido, st_entrega, vendedor,"
+	
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s = s & _
+			" t_PEDIDO.endereco_cnpj_cpf AS cnpj_cpf," & _
+			" t_PEDIDO.endereco_nome_iniciais_em_maiusculas AS nome_iniciais_em_maiusculas,"
+	else
+		s = s & _
+			" t_CLIENTE.cnpj_cpf," & _
+			" t_CLIENTE.nome_iniciais_em_maiusculas,"
+		end if
+	
+	s = s & _
+			" analise_credito, analise_credito_pendente_vendas_motivo" & _
+		" FROM t_PEDIDO INNER JOIN t_CLIENTE ON (t_PEDIDO.id_cliente=t_CLIENTE.id)" & _
+		" WHERE" & _
+		" (loja='" & loja & "')" & _
 		" AND (st_entrega<>'" & ST_ENTREGA_CANCELADO & "')" & _
 		" AND (st_entrega<>'" & ST_ENTREGA_ENTREGUE & "')"
 		
@@ -420,8 +439,17 @@ strSqlVlPagoCartao = " Coalesce(" & _
 								" tPedBase.analise_credito," & _
 								" tPedBase.data_hora AS analise_credito_data," & _
 								" tPedBase.data AS analise_credito_data_sem_hora," & _
-                                " tPedBase.vendedor," & _
-                                " nome," &_
+                                " tPedBase.vendedor,"
+
+				if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+					strSql = strSql & _
+								" t1.endereco_nome_iniciais_em_maiusculas AS nome,"
+				else
+					strSql = strSql & _
+								" t_CLIENTE.nome_iniciais_em_maiusculas AS nome,"
+					end if
+
+				strSql = strSql & _
 								" Coalesce(Datediff(day, tPedBase.data, Convert(datetime, Convert(varchar(10), getdate(), 121), 121)), 0) AS dias_decorridos," & _
 								" (" & _
 									"SELECT Count(*) FROM t_PEDIDO t2 WHERE (t2.pedido_base = t1.pedido_base) AND (t2.st_auto_split = 0) AND (t2.tamanho_num_pedido > " & TAM_MIN_ID_PEDIDO & ")" & _
@@ -449,8 +477,17 @@ strSqlVlPagoCartao = " Coalesce(" & _
 								" tPedBase.analise_credito," & _
 								" tPedBase.analise_credito_data," & _
 								" tPedBase.analise_credito_data_sem_hora," & _
-                                " tPedBase.vendedor," & _
-                                " nome," &_
+                                " tPedBase.vendedor,"
+
+				if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+					strSql = strSql & _
+								" t1.endereco_nome_iniciais_em_maiusculas AS nome,"
+				else
+					strSql = strSql & _
+								" t_CLIENTE.nome_iniciais_em_maiusculas AS nome,"
+					end if
+
+				strSql = strSql & _
 								" Coalesce(Datediff(day, tPedBase.analise_credito_data_sem_hora, Convert(datetime, Convert(varchar(10), getdate(), 121), 121)), 0) AS dias_decorridos," & _
 								" (" & _
 									"SELECT Count(*) FROM t_PEDIDO t2 WHERE (t2.pedido_base = t1.pedido_base) AND (t2.st_auto_split = 0) AND (t2.tamanho_num_pedido > " & TAM_MIN_ID_PEDIDO & ")" & _
@@ -479,8 +516,17 @@ strSqlVlPagoCartao = " Coalesce(" & _
 								" tPedBase.analise_credito," & _
 								" tPedBase.analise_credito_data," & _
 								" tPedBase.analise_credito_data_sem_hora," & _
-                                " tPedBase.vendedor," & _
-                                " nome," &_
+                                " tPedBase.vendedor,"
+
+				if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+					strSql = strSql & _
+								" t1.endereco_nome_iniciais_em_maiusculas AS nome,"
+				else
+					strSql = strSql & _
+								" t_CLIENTE.nome_iniciais_em_maiusculas AS nome,"
+					end if
+
+				strSql = strSql & _
 								" Coalesce(Datediff(day, tPedBase.analise_credito_data_sem_hora, Convert(datetime, Convert(varchar(10), getdate(), 121), 121)), 0) AS dias_decorridos," & _
 								" (" & _
 									"SELECT Count(*) FROM t_PEDIDO t2 WHERE (t2.pedido_base = t1.pedido_base) AND (t2.st_auto_split = 0) AND (t2.tamanho_num_pedido > " & TAM_MIN_ID_PEDIDO & ")" & _
@@ -1303,7 +1349,7 @@ function ConsultaPedidoMagentoAjax(f)
 
 	$("#divAjaxRunning").show();
 	var jqxhr = $.ajax({
-		url: 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/MagentoApi/GetPedido',
+		url: '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/MagentoApi/GetPedido',
 		type: "GET",
 		dataType: 'json',
 		data: {

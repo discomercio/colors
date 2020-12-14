@@ -97,7 +97,7 @@
 		s_nome_cliente = ""
 		if c_cliente_cnpj_cpf <> "" then
 			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
-				s = "SELECT TOP 1 dbo.SqlClrUtilIniciaisEmMaiusculas(endereco_nome) AS nome_iniciais_em_maiusculas FROM t_PEDIDO WHERE (endereco_cnpj_cpf = '" & c_cliente_cnpj_cpf & "') ORDER BY data_hora DESC"
+				s = "SELECT TOP 1 endereco_nome_iniciais_em_maiusculas AS nome_iniciais_em_maiusculas FROM t_PEDIDO WHERE (endereco_cnpj_cpf = '" & c_cliente_cnpj_cpf & "') ORDER BY data_hora DESC"
 			else
 				s = "SELECT nome_iniciais_em_maiusculas FROM t_CLIENTE WHERE (cnpj_cpf = '" & c_cliente_cnpj_cpf & "')"
 				end if
@@ -222,7 +222,7 @@ dim blnTitularCartaoDivergente
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
 				" t_PEDIDO.endereco_cnpj_cpf AS cnpj_cpf," & _
-				" dbo.SqlClrUtilIniciaisEmMaiusculas(t_PEDIDO.endereco_nome) AS cliente_nome," & _
+				" t_PEDIDO.endereco_nome_iniciais_em_maiusculas AS cliente_nome," & _
 				" t_PEDIDO.endereco_logradouro AS cliente_endereco," & _
 				" t_PEDIDO.endereco_numero AS cliente_endereco_numero," & _
 				" t_PEDIDO.endereco_complemento AS cliente_endereco_complemento," & _

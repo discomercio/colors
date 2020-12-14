@@ -50,6 +50,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 	
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim s, s_filtro
 	dim c_obs2
 	dim i, n, s_filtro_obs2
@@ -74,8 +77,17 @@
 
 		s = "SELECT" & _
 				" pedido," & _
-				" data," & _
-				" nome_iniciais_em_maiusculas," & _
+				" data,"
+
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s = s & _
+				" t_PEDIDO.endereco_nome_iniciais_em_maiusculas AS nome_iniciais_em_maiusculas,"
+		else
+			s = s & _
+				" nome_iniciais_em_maiusculas,"
+			end if
+
+		s = s & _
                 " id_nfe_emitente," & _
 				" loja" & _
 			" FROM t_PEDIDO INNER JOIN t_CLIENTE" & _

@@ -49,6 +49,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 	
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim s_filtro, intQtdePreDevolucoes, intQtdePreDevolucoesItens
 	dim s, rb_status, origem
     dim c_pedido, c_nota_fiscal, c_cpf_cnpj
@@ -160,8 +163,17 @@ dim st_devolucao_descricao, st_devolucao_cor
             " tP.transportadora_id," & _
             " tP.indicador," & _
             " tP.obs_2," & _
-            " tP.obs_3," & _
-            " tC.nome_iniciais_em_maiusculas AS nome_cliente" & _
+            " tP.obs_3,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" tP.endereco_nome_iniciais_em_maiusculas AS nome_cliente"
+	else
+		s_sql = s_sql & _
+				" tC.nome_iniciais_em_maiusculas AS nome_cliente"
+		end if
+
+	s_sql = s_sql & _
         " FROM t_PEDIDO_DEVOLUCAO tPD" & _
         " INNER JOIN t_PEDIDO tP ON (tPD.pedido = tP.pedido)" & _
         " INNER JOIN t_CLIENTE tC ON (tP.id_cliente=tC.id)" & _
@@ -182,7 +194,11 @@ dim st_devolucao_descricao, st_devolucao_cor
 		end if
 
     if c_cpf_cnpj <> "" then
-		s_sql = s_sql & " AND (tC.cnpj_cpf = '" & c_cpf_cnpj & "')"
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s_sql = s_sql & " AND (tP.endereco_cnpj_cpf = '" & c_cpf_cnpj & "')"
+		else
+			s_sql = s_sql & " AND (tC.cnpj_cpf = '" & c_cpf_cnpj & "')"
+			end if
 		end if
 
     if c_nota_fiscal <> "" then

@@ -49,6 +49,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 	
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim s_filtro, intQtdeChamados
 	dim s, rb_status, origem
     dim blnHasDepto, c_depto, c_motivo_abertura
@@ -152,8 +155,18 @@ dim qtde_chamado_aberto, qtde_chamado_em_andamento
 			" tPC.tel_2," & _
 			" tPC.texto_chamado," & _
             " tPC.cod_motivo_abertura," & _
-			" tP.transportadora_id," & _
-			" tC.nome_iniciais_em_maiusculas AS nome_cliente, tCD.codigo, tCD.descricao," & _
+			" tP.transportadora_id,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" tP.endereco_nome_iniciais_em_maiusculas AS nome_cliente,"
+	else
+		s_sql = s_sql & _
+				" tC.nome_iniciais_em_maiusculas AS nome_cliente,"
+		end if
+
+	s_sql = s_sql & _
+			" tCD.codigo, tCD.descricao," & _
             " tPCD.descricao AS depto," & _
             " tPCD.id AS cod_depto," & _
 			" (" & _

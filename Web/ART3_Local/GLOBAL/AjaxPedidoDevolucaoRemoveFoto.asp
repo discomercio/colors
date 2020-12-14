@@ -48,6 +48,7 @@
 
     dim serverVariablesUrl, serverVariablesServerName
     dim x, full_url_file_src, full_url_file_href, file_attr_title, file_extension
+	'Esta página foi ajustada para usar a função getProtocoloEmUsoHttpOrHttps() na montagem da URL
     serverVariablesServerName = Request.ServerVariables("SERVER_NAME") & ":" & Request.ServerVariables("SERVER_PORT")
     serverVariablesUrl = Request.ServerVariables("URL")
     serverVariablesUrl = Ucase(serverVariablesUrl)
@@ -111,7 +112,7 @@
             i = i + 1
             x = rs("stored_file_name")
             file_extension = Mid(x, Instr(x, ".")+1, Len(x))
-            full_url_file_href = "http://"
+            full_url_file_href = getProtocoloEmUsoHttpOrHttps & "://"
             full_url_file_href = full_url_file_href & serverVariablesUrl
             full_url_file_href = full_url_file_href & "FileServer/"
             full_url_file_href = full_url_file_href & rs("stored_relative_path")

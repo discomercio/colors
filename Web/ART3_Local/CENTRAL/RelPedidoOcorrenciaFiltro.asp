@@ -141,7 +141,7 @@ var i, blnFlag;
         window.status = "Aguarde, gerando arquivo ...";
         divMsgAguardeObtendoDados.style.visibility = "";
 
-        strUrl = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/GetXLSReport2/';
+		strUrl = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/GetXLSReport2/';
         strUrl = strUrl + '?usuario=<%=usuario%>';
         strUrl = strUrl + '&oc_status=' + oc_status;
         strUrl = strUrl + '&loja=' + loja;
@@ -156,7 +156,7 @@ var i, blnFlag;
 
                 if (xmlResp.Status == "OK") {
 
-                    gerarRelatorio.action = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/downloadXLS2/?fileName=' + xmlResp.fileName;
+					gerarRelatorio.action = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/downloadXLS2/?fileName=' + xmlResp.fileName;
                     gerarRelatorio.submit();
 
                     window.status = "Concluído";
