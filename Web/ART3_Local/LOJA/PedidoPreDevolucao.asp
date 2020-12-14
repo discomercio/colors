@@ -91,6 +91,7 @@
         end if
 
     dim serverVariablesUrl, serverVariablesServerName
+	'Esta página foi ajustada para usar a função getProtocoloEmUsoHttpOrHttps() na montagem da URL
     serverVariablesServerName = Request.ServerVariables("SERVER_NAME") & ":" & Request.ServerVariables("SERVER_PORT")
     serverVariablesUrl = Request.ServerVariables("URL")
     serverVariablesUrl = Ucase(serverVariablesUrl)
@@ -553,7 +554,7 @@ serverVariableUrl = serverVariableUrl.substring(0, serverVariableUrl.indexOf("LO
 
 	    $.ajax({
 	        type: form.attr('method'),
-	        url: 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/UploadFile/PostFile',
+			url: '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/UploadFile/PostFile',
 	        enctype: 'multipart/form-data',
 	        processData: false,
 	        contentType: false,
@@ -1100,7 +1101,7 @@ select[disabled]::-ms-expand{
     else
         x = r("stored_file_name")
         file_extension = Mid(x, Instr(x, ".")+1, Len(x))
-        full_url_file_href = "http://"
+        full_url_file_href = getProtocoloEmUsoHttpOrHttps & "://"
         full_url_file_href = full_url_file_href & serverVariablesUrl
         full_url_file_href = full_url_file_href & "FileServer/"
         full_url_file_href = full_url_file_href & r("stored_relative_path")

@@ -167,7 +167,7 @@ function geraArquivoCSV(f) {
     window.status = "Aguarde, gerando arquivo ...";
     divMsgAguardeObtendoDados.style.visibility = "";
 
-    strUrl = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Ciagroup/GetCSVReport/?id=' + fFILTRO.id.value + '&usuario=<%=usuario%>';
+	strUrl = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Ciagroup/GetCSVReport/?id=' + fFILTRO.id.value + '&usuario=<%=usuario%>';
 
     xmlhttp.onreadystatechange = function () {
         var xmlResp;
@@ -177,7 +177,7 @@ function geraArquivoCSV(f) {
 
             if (xmlResp.Status == "OK") {
 
-            	gerarRelatorio.action = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Ciagroup/downloadCSV/?fileName=' + xmlResp.fileName;
+				gerarRelatorio.action = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Ciagroup/downloadCSV/?fileName=' + xmlResp.fileName;
                 gerarRelatorio.submit();
 
                 window.status = "Concluído";
@@ -220,7 +220,7 @@ function geraArquivoXLS(f) {
     window.status = "Aguarde, gerando arquivo ...";
     divMsgAguardeObtendoDados.style.visibility = "";
 
-    strUrl = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Ciagroup/GetXLSReport/?id=' + fFILTRO.id.value + '&usuario=<%=usuario%>';
+	strUrl = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Ciagroup/GetXLSReport/?id=' + fFILTRO.id.value + '&usuario=<%=usuario%>';
 
     xmlhttp.onreadystatechange = function () {
         var xmlResp;
@@ -230,7 +230,7 @@ function geraArquivoXLS(f) {
 
             if (xmlResp.Status == "OK") {
 
-            	gerarRelatorio.action = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Ciagroup/downloadXLS/?fileName=' + xmlResp.fileName;
+				gerarRelatorio.action = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Ciagroup/downloadXLS/?fileName=' + xmlResp.fileName;
                 gerarRelatorio.submit();
 
                 window.status = "Concluído";

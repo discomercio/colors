@@ -503,7 +503,7 @@ serverVariableUrl = serverVariableUrl.substring(0, serverVariableUrl.indexOf("CE
 
 	    $.ajax({
 	        type: form.attr('method'),
-	        url: 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/UploadFile/PostFile',
+			url: '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/UploadFile/PostFile',
 	        enctype: 'multipart/form-data',
 	        processData: false,
 	        contentType: false,

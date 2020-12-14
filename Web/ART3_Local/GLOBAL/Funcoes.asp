@@ -6331,10 +6331,32 @@ end function
 
 
 ' ___________________________________
-' OBTÉM DESCRIÇÃO STATUS DEVOLUÇÃO
+' isAcessoViaHttps
+'
+function isAcessoViaHttps
+	isAcessoViaHttps = (Ucase(Trim(Request.ServerVariables("HTTPS"))) = "ON")
+end function
+
+
+' ___________________________________
+' getProtocoloEmUsoHttpOrHttps
+'
+function getProtocoloEmUsoHttpOrHttps
+dim sProtocolo
+	if isAcessoViaHttps then
+		sProtocolo = "https"
+	else
+		sProtocolo = "http"
+		end if
+
+	getProtocoloEmUsoHttpOrHttps = sProtocolo
+end function
+
+
+' ___________________________________
+' isHttpsRedirectionMandatory
 '
 function isHttpsRedirectionMandatory(byref urlHttps)
-dim blnAcessadoViaHttps
 dim sUrlHttps
 dim sDomain
 dim sUrlPort
@@ -6347,9 +6369,7 @@ dim vServerName, vHttpHost
 	if Not HTTPS_OBRIGATORIO_HABILITADO then exit function
 
 '	Verifica se o acesso já está em HTTPS
-	blnAcessadoViaHttps = (Ucase(Trim(Request.ServerVariables("HTTPS"))) = "ON")
-	
-	if blnAcessadoViaHttps then exit function
+	if isAcessoViaHttps then exit function
 
 	sUrlPort = Trim(Request.ServerVariables("SERVER_PORT"))
 	if sUrlPort = "80" then
