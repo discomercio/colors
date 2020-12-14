@@ -48,6 +48,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	dim s, s_aux, s_filtro
 	dim c_dt_inicio, c_dt_termino, c_vendedor
@@ -124,7 +127,7 @@ dim s_where
 	s_where = _
 			" (t_CLIENTE.indicador <> t_PEDIDO.indicador)" & _
 			" AND (t_CLIENTE.indicador IS NOT NULL)" & _
-			" AND (LEN(t_CLIENTE.indicador) > 0)" & _
+			" AND (LEN(Coalesce(t_CLIENTE.indicador,'')) > 0)" & _
 			" AND (t_PEDIDO.indicador IS NOT NULL)" & _
 			" AND (LEN(t_PEDIDO.indicador) > 0)"
 				
@@ -154,8 +157,17 @@ dim s_where
 				" t_PEDIDO.vendedor," & _
 				" t_PEDIDO.pedido," & _
 				" t_PEDIDO.indicador AS indicador_novo," & _
-				" t_CLIENTE.indicador AS indicador_original," & _
-				" t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente" & _
+				" t_CLIENTE.indicador AS indicador_original,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_nome_iniciais_em_maiusculas AS nome_cliente"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente"
+		end if
+
+	s_sql = s_sql & _
 			" FROM t_PEDIDO INNER JOIN t_CLIENTE ON (t_PEDIDO.id_cliente=t_CLIENTE.id)" & _
 			s_where & _
 			" ORDER BY" & _

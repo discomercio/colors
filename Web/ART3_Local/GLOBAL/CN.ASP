@@ -1,4 +1,4 @@
-<%
+﻿<%
 '======================================================================================
 '*******   SITE: ARTVEN3 (BONSHOP) OU ARTVEN (F?BRICA)   *******
 '======================================================================================
@@ -240,6 +240,21 @@
 	Const OP_PESQ_PEDIDO_MAGENTO_AR_CLUBE = "ARCLUBE"
 	Const OP_PESQ_PEDIDO_MARKETPLACE_AR_CLUBE = "MARKETPLACE"
 
+
+'	HTTPS_OBRIGATORIO_HABILITADO
+'		False = permite o usu�rio usar o protocolo de sua prefer�ncia (HTTP ou HTTPS)
+'		True = o usu�rio � obrigado a usar o protocolo HTTPS, portanto, caso o acesso tenha sido via HTTP, ser� realizado um redirecionamento autom�tico para HTTPS
+'
+'	HTTPS_OBRIGATORIO_URL_REDIRECT
+'		Este par�metro � usado quando HTTPS_OBRIGATORIO_HABILITADO = True
+'		Quando se define uma URL espec�fica para redirecionamento, se houver a necessidade de usar uma porta personalizada, o n�mero da porta deve ser especificada diretamente no par�metro HTTPS_OBRIGATORIO_URL_REDIRECT
+'		O valor deste par�metro corresponde � URL base, se houver conte�do adicional do endere�o informado pelo usu�rio e obtido atrav�s de ServerVariables("URL"), esse conte�do ser� adicionado automaticamente
+'			pela rotina de tratamento do redirecionamento.
+'		Poss�veis valores:
+'			String vazia = o redirecionamento ser� feito para a mesma URL acessada pelo usu�rio, apenas alterando de HTTP para HTTPS
+'			URL especificada = o redirecionamento ser� feito para a URL especificada no par�metro
+	Const HTTPS_OBRIGATORIO_HABILITADO = False
+	Const HTTPS_OBRIGATORIO_URL_REDIRECT = ""
 
 
 

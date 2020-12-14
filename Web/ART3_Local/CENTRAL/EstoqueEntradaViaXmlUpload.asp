@@ -197,7 +197,7 @@ $(function () {
 
 		$.ajax({
 			type: form.attr('method'),
-			url: 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/UploadFile/PostFile',
+			url: '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/UploadFile/PostFile',
 			data: fd,
 			enctype: 'multipart/form-data',
 			processData: false,
@@ -226,7 +226,7 @@ $(function () {
 					// Obtém o objeto JSON com os dados da NFe
 					$("#divAjaxRunning").show();
 					$.ajax({
-						url: 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/UploadedFile/ConvertXmlToJson',
+						url: '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/UploadedFile/ConvertXmlToJson',
 						type: "GET",
 						dataType: 'json',
 						data: {
@@ -265,7 +265,7 @@ $(function () {
 					// Obtém o objeto JSON com os dados da NFe
 					$("#divAjaxRunning").show();
 					$.ajax({
-						url: 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/UploadedFile/ConvertXmlToJson',
+						url: '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/UploadedFile/ConvertXmlToJson',
 						type: "GET",
 						dataType: 'json',
 						data: {

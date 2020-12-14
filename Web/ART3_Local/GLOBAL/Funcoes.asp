@@ -6336,4 +6336,95 @@ dim s_descricao, s_cor
     st_devolucao_descricao = s_descricao
     st_devolucao_cor = s_cor
 end function
+
+
+' ___________________________________
+' isAcessoViaHttps
+'
+function isAcessoViaHttps
+	isAcessoViaHttps = (Ucase(Trim(Request.ServerVariables("HTTPS"))) = "ON")
+end function
+
+
+' ___________________________________
+' getProtocoloEmUsoHttpOrHttps
+'
+function getProtocoloEmUsoHttpOrHttps
+dim sProtocolo
+	if isAcessoViaHttps then
+		sProtocolo = "https"
+	else
+		sProtocolo = "http"
+		end if
+
+	getProtocoloEmUsoHttpOrHttps = sProtocolo
+end function
+
+
+' ___________________________________
+' isHttpsRedirectionMandatory
+'
+function isHttpsRedirectionMandatory(byref urlHttps)
+dim sUrlHttps
+dim sDomain
+dim sUrlPort
+dim sServerName, sHttpHost
+dim vServerName, vHttpHost
+
+	isHttpsRedirectionMandatory = False
+	urlHttps = ""
+
+	if Not HTTPS_OBRIGATORIO_HABILITADO then exit function
+
+'	Verifica se o acesso já está em HTTPS
+	if isAcessoViaHttps then exit function
+
+	sUrlPort = Trim(Request.ServerVariables("SERVER_PORT"))
+	if sUrlPort = "80" then
+		sUrlPort = ""
+	else
+		sUrlPort = ":" & sUrlPort
+		end if
+
+	if Trim("" & HTTPS_OBRIGATORIO_URL_REDIRECT) <> "" then
+		'Redireciona para a URL especificada no parâmetro HTTPS_OBRIGATORIO_URL_REDIRECT
+		sUrlHttps = Lcase(Trim("" & HTTPS_OBRIGATORIO_URL_REDIRECT))
+		'Verifica se a URL especifica o HTTPS, caso não, o protocolo será adicionado
+		if Instr(sUrlHttps, "http://") > 0 then sUrlHttps = Replace(sUrlHttps, "http://", "https://")
+		if Instr(sUrlHttps, "https://") = 0 then sUrlHttps = "https://" & sUrlHttps
+		'Quando se define uma URL específica para redirecionamento, se houver a necessidade de usar uma porta personalizada, o número da porta deve ser especificada diretamente no parâmetro HTTPS_OBRIGATORIO_URL_REDIRECT
+		'sUrlHttps = sUrlHttps & sUrlPort
+
+		'ServerVariables("URL") já retorna com um caractere "/" no início da string, então antes de concatenar, verifica se há a necessidade de remover p/ não ocorrer duplicidade
+		if Right(sUrlHttps, 1) = "/" then sUrlHttps = Left(sUrlHttps, Len(sUrlHttps)-1)
+		sUrlHttps = sUrlHttps & Trim(Request.ServerVariables("URL"))
+	else
+		'Redireciona para a mesma URL acessada pelo usuário, apenas alterando para HTTPS
+		sServerName = Lcase(Trim(Request.ServerVariables("SERVER_NAME")))
+		sHttpHost = Lcase(Trim(Request.ServerVariables("HTTP_HOST")))
+		'Caso os parâmetros retornem valores diferentes, o que é possível segundo a documentação, tenta identificar a variável que contém o valor mais provável que represente um nome de domínio
+		if sServerName <> sHttpHost then
+			vServerName = Split(sServerName, ".")
+			vHttpHost = Split(sHttpHost, ".")
+			if Ubound(vServerName) > UBound(vHttpHost) then
+				sDomain = sServerName
+			elseif Ubound(vHttpHost) > UBound(vServerName) then
+				sDomain = sHttpHost
+			else
+				'Ambos tem a mesma quantidade de caracteres ".", então escolhe qualquer um
+				sDomain = sServerName
+				end if
+		else
+			sDomain = sServerName
+			end if
+
+		sUrlHttps = "https://" & sDomain & sUrlPort
+		'ServerVariables("URL") já retorna com um caractere "/" no início da string, então antes de concatenar, verifica se há a necessidade de remover p/ não ocorrer duplicidade
+		if Right(sUrlHttps, 1) = "/" then sUrlHttps = Left(sUrlHttps, Len(sUrlHttps)-1)
+		sUrlHttps = sUrlHttps & Trim(Request.ServerVariables("URL"))
+		end if
+
+	urlHttps = sUrlHttps
+	isHttpsRedirectionMandatory = True
+end function
 %>

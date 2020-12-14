@@ -30,6 +30,12 @@
 	On Error GoTo 0
 	Err.Clear
 
+'	Tratamento para redirecionamento HTTPS
+	dim sUrlHttps
+	if isHttpsRedirectionMandatory(sUrlHttps) then
+		if sUrlHttps <> "" then Response.Redirect(sUrlHttps)
+		end if
+
 '	EXIBIÇÃO DE BOTÕES DE PESQUISA DE CEP
 	dim blnPesquisaCEPAntiga, blnPesquisaCEPNova
 	

@@ -99,7 +99,7 @@ dim w_cliente, w_valor
 	
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
-				" dbo.SqlClrUtilIniciaisEmMaiusculas(t_ORCAMENTO.endereco_nome) AS nome_iniciais_em_maiusculas"
+				" t_ORCAMENTO.endereco_nome_iniciais_em_maiusculas AS nome_iniciais_em_maiusculas"
 	else
 		s_sql = s_sql & _
 				" t_CLIENTE.nome_iniciais_em_maiusculas"

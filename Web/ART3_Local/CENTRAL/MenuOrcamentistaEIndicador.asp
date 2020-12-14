@@ -255,7 +255,7 @@ function geraArquivoCSV(f) {
     window.status = "Aguarde, gerando arquivo ...";
     divMsgAguardeObtendoDados.style.visibility = "";
 
-    strUrl = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/GetCadIndicadoresListagemCSV/?loja=' + loja + '&usuario=<%=usuario%>';
+	strUrl = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/GetCadIndicadoresListagemCSV/?loja=' + loja + '&usuario=<%=usuario%>';
 
     xmlhttp.onreadystatechange = function () {
         var xmlResp;
@@ -265,7 +265,7 @@ function geraArquivoCSV(f) {
 
             if (xmlResp.Status == "OK") {
 
-            	gerarRelatorio.action = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/downloadCadIndicadoresListagemCSV/?fileName=' + xmlResp.fileName;
+				gerarRelatorio.action = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/downloadCadIndicadoresListagemCSV/?fileName=' + xmlResp.fileName;
                 gerarRelatorio.submit();
 
                 window.status = "Concluído";

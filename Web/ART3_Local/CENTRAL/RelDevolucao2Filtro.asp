@@ -270,7 +270,7 @@ if (xmlhttp == null) {
 window.status = "Aguarde, gerando arquivo ...";
 divMsgAguardeObtendoDados.style.visibility = "";
 
-strUrl = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/GeraDevolucaoProdutos2XLS/';
+strUrl = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/GeraDevolucaoProdutos2XLS/';
 strUrl = strUrl + '?usuario=<%=usuario%>';
 strUrl = strUrl + '&dt_devolucao_inicio=' + f.c_dt_devolucao_inicio.value;
 strUrl = strUrl + '&dt_devolucao_termino=' + f.c_dt_devolucao_termino.value;
@@ -290,7 +290,7 @@ var xmlResp;
 
         if (xmlResp.Status == "OK") {
 
-        	fFILTRO.action = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/downloadDevolucaoProdutos2XLS/?fileName=' + xmlResp.fileName;
+			fFILTRO.action = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/downloadDevolucaoProdutos2XLS/?fileName=' + xmlResp.fileName;
             fFILTRO.submit();
 
             window.status = "Concluído";

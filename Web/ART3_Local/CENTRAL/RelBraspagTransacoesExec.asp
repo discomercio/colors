@@ -213,7 +213,7 @@ dim v, i
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
 				" t_PEDIDO.endereco_cnpj_cpf AS cnpj_cpf," & _
-				" dbo.SqlClrUtilIniciaisEmMaiusculas(t_PEDIDO.endereco_nome) AS cliente_nome,"
+				" t_PEDIDO.endereco_nome_iniciais_em_maiusculas AS cliente_nome,"
 	else
 		s_sql = s_sql & _
 				" t_CLIENTE.cnpj_cpf," & _

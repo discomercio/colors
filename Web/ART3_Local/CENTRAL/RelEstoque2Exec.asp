@@ -4745,7 +4745,7 @@ end sub
         parameters = "?paginaId=" + relatorioId + "&usuario=" + usuarioRel + "&codFabricante=" + fabricante + "&codProduto=" + produto + "&flag=" + Flag;
 
         $.ajax({
-        	url: 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/PostData/RelatorioProdutoFlagPost' + parameters,
+			url: '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/PostData/RelatorioProdutoFlagPost' + parameters,
             type: "POST",
             async: true
         })

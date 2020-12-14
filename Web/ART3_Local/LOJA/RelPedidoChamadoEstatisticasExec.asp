@@ -180,7 +180,7 @@ dim qtde_chamado_aberto, qtde_chamado_em_andamento, qtde_chamado_finalizado
 
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
-				" dbo.SqlClrUtilIniciaisEmMaiusculas(tP.endereco_nome) AS nome_cliente, "
+				" tP.endereco_nome_iniciais_em_maiusculas AS nome_cliente, "
 	else
 		s_sql = s_sql & _
 				" tC.nome_iniciais_em_maiusculas AS nome_cliente, "

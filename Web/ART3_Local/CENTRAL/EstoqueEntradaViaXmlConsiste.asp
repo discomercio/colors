@@ -526,7 +526,7 @@ function sizeDivAjaxRunning() {
 //	' }
 
 //	' var jqxhr = $.ajax({
-//		' url: 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/UploadedFile/ConvertXmlToJson',
+//		' url: '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/UploadedFile/ConvertXmlToJson',
 //		' type: "GET",
 //		' dataType: 'json',
 //		' data: {
