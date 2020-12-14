@@ -31,6 +31,12 @@
 	On Error GoTo 0
 	Err.Clear
 
+'	Tratamento para redirecionamento HTTPS
+	dim sUrlHttps
+	if isHttpsRedirectionMandatory(sUrlHttps) then
+		if sUrlHttps <> "" then Response.Redirect(sUrlHttps)
+		end if
+
 	dim strTarget, strTargetOutroAmb, urlOutroAmb
 	dim strTituloAmbiente, strTituloOutroAmbiente
 	dim idOutroAmbiente

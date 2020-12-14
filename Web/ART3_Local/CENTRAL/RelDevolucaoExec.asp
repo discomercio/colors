@@ -50,6 +50,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	dim s, s_aux, s_filtro, flag_ok
 	dim ckb_periodo_devolucao, c_dt_devolucao_inicio, c_dt_devolucao_termino
@@ -328,8 +331,17 @@ dim w_cliente, w_produto
 			 " LEFT JOIN t_CLIENTE ON (t_PEDIDO.id_cliente=t_CLIENTE.id)"
 
 	s_sql = "SELECT t_PEDIDO.loja, CONVERT(smallint,t_PEDIDO.loja) AS numero_loja," & _
-			" t_PEDIDO.data, t_PEDIDO.pedido," & _
-			" t_CLIENTE.nome_iniciais_em_maiusculas," & _
+			" t_PEDIDO.data, t_PEDIDO.pedido,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+			" t_PEDIDO.endereco_nome_iniciais_em_maiusculas AS nome_iniciais_em_maiusculas,"
+	else
+		s_sql = s_sql & _
+			" t_CLIENTE.nome_iniciais_em_maiusculas,"
+		end if
+
+	s_sql = s_sql & _
 			" t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data, t_PEDIDO_ITEM_DEVOLVIDO.fabricante," & _
 			" t_PEDIDO_ITEM_DEVOLVIDO.produto," & _
 			" t_PEDIDO_ITEM_DEVOLVIDO.descricao," & _
@@ -338,8 +350,19 @@ dim w_cliente, w_produto
 			s_from & _
 			s_where
 			
-	s_sql = s_sql & " GROUP BY t_PEDIDO.loja, t_PEDIDO.data, t_PEDIDO.pedido, t_CLIENTE.nome_iniciais_em_maiusculas, t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data, t_PEDIDO_ITEM_DEVOLVIDO.fabricante, t_PEDIDO_ITEM_DEVOLVIDO.produto, t_PEDIDO_ITEM_DEVOLVIDO.descricao, t_PEDIDO_ITEM_DEVOLVIDO.descricao_html" & _
-					" ORDER BY numero_loja, t_PEDIDO.data, t_PEDIDO.pedido"
+	s_sql = s_sql & " GROUP BY t_PEDIDO.loja, t_PEDIDO.data, t_PEDIDO.pedido,"
+	
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_nome_iniciais_em_maiusculas,"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome_iniciais_em_maiusculas,"
+		end if
+	
+	s_sql = s_sql & _
+			" t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data, t_PEDIDO_ITEM_DEVOLVIDO.fabricante, t_PEDIDO_ITEM_DEVOLVIDO.produto, t_PEDIDO_ITEM_DEVOLVIDO.descricao, t_PEDIDO_ITEM_DEVOLVIDO.descricao_html" & _
+			" ORDER BY numero_loja, t_PEDIDO.data, t_PEDIDO.pedido"
 
   ' CABEÇALHO
 	w_cliente = 173

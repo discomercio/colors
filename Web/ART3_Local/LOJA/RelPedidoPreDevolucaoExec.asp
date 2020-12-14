@@ -49,6 +49,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 	
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim s_filtro, intQtdePreDevolucoes
 	dim s, rb_status, origem, c_loja
 	origem = ucase(Trim(request("origem")))
@@ -147,8 +150,17 @@ dim st_devolucao_descricao, st_devolucao_cor
             " tP.data AS data_pedido," & _
             " tP.vendedor," & _
             " tP.transportadora_id," & _
-            " tP.indicador," & _
-            " tC.nome_iniciais_em_maiusculas AS nome_cliente" & _
+            " tP.indicador,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" tP.endereco_nome_iniciais_em_maiusculas AS nome_cliente"
+	else
+		s_sql = s_sql & _
+				" tC.nome_iniciais_em_maiusculas AS nome_cliente"
+		end if
+
+	s_sql = s_sql & _
         " FROM t_PEDIDO_DEVOLUCAO tPD" & _
         " INNER JOIN t_PEDIDO tP ON (tPD.pedido = tP.pedido)" & _
         " INNER JOIN t_CLIENTE tC ON (tP.id_cliente=tC.id)" & _

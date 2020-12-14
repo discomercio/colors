@@ -52,6 +52,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	dim s, s_aux, s_filtro, s_id,mes_competencia,ano_competencia,vendedor,c_dt_entregue_ano,c_dt_entregue_mes,ckb_Desc
     dim aviso, rb_visao, blnVisaoSintetica, s_vendedor, s_mes_competencia, s_ano_competencia
@@ -626,7 +629,12 @@ cedulas_codificado= 0
 				        s & "</a></span></td>" & chr(13)
 
 	         '> Nº PEDIDO
-		        s_nome_cliente = Trim("" & r("nome_iniciais_em_maiusculas"))
+                if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		            s_nome_cliente = Trim("" & r("endereco_nome_iniciais_em_maiusculas"))
+                else
+		            s_nome_cliente = Trim("" & r("nome_iniciais_em_maiusculas"))
+                    end if
+
 		        s_nome_cliente = Left(s_nome_cliente, 15)
 		
 		        x = x & "		<td class='MTD tdPedido' align='left'><span class='Cn'><a style='color:" & s_cor & ";' href='javascript:fPEDConsulta(" & _

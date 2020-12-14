@@ -48,6 +48,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 	
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim s, s_filtro
 	dim c_nf
 	dim i, n, s_filtro_nf
@@ -85,8 +88,17 @@
 				" loja," & _
 				" data," & _
 				" obs_2," & _
-				" obs_3," & _
-				" nome_iniciais_em_maiusculas," & _
+				" obs_3,"
+
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s = s & _
+				" t_PEDIDO.endereco_nome_iniciais_em_maiusculas AS nome_iniciais_em_maiusculas,"
+		else
+			s = s & _
+				" nome_iniciais_em_maiusculas,"
+			end if
+
+		s = s & _
                 " id_nfe_emitente," & _
 				" (" & _
 					"SELECT" & _

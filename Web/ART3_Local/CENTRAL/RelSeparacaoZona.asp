@@ -313,7 +313,7 @@ dim rNfeEmitente
 				" t_CLIENTE.cep AS cliente_cep," & _
 				" t_PEDIDO.endereco_memorizado_status," & _
 				" t_PEDIDO.st_memorizacao_completa_enderecos," & _
-				" dbo.SqlClrUtilIniciaisEmMaiusculas(t_PEDIDO.endereco_nome) AS pedido_endereco_nome," & _
+				" t_PEDIDO.endereco_nome_iniciais_em_maiusculas AS pedido_endereco_nome," & _
 				" t_PEDIDO.endereco_logradouro AS pedido_endereco_logradouro," & _
 				" t_PEDIDO.endereco_numero AS pedido_endereco_numero," & _
 				" t_PEDIDO.endereco_complemento AS pedido_endereco_complemento," & _
