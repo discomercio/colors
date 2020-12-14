@@ -49,6 +49,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 	
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim s_filtro, intQtdeOcorrencias
 	dim s, rb_status, origem, c_loja, c_transportadora, s_nome_transportadora
 	origem = ucase(Trim(request("origem")))
@@ -141,8 +144,18 @@ dim s_link_rastreio
 			" tPO.texto_ocorrencia," & _
 			" tP.loja," & _
             " tP.loja AS pedido_loja," & _
-			" tP.transportadora_id," & _
-			" tC.nome_iniciais_em_maiusculas AS nome_cliente, tCD.codigo, tCD.descricao," & _
+			" tP.transportadora_id,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" tP.endereco_nome_iniciais_em_maiusculas AS nome_cliente,"
+	else
+		s_sql = s_sql & _
+				" tC.nome_iniciais_em_maiusculas AS nome_cliente,"
+		end if
+
+	s_sql = s_sql & _
+			" tCD.codigo, tCD.descricao," & _
 			" (" & _
 				"SELECT" & _
 					" TOP 1 NFe_numero_NF" & _

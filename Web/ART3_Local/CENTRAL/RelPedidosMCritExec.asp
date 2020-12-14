@@ -1463,7 +1463,7 @@ dim rPSSW
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
 				" t_PEDIDO.endereco_nome AS nome," & _
-				" dbo.SqlClrUtilIniciaisEmMaiusculas(t_PEDIDO.endereco_nome) AS nome_iniciais_em_maiusculas,"
+				" t_PEDIDO.endereco_nome_iniciais_em_maiusculas AS nome_iniciais_em_maiusculas,"
 	else
 		s_sql = s_sql & _
 				" t_CLIENTE.nome, t_CLIENTE.nome_iniciais_em_maiusculas,"

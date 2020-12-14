@@ -41,6 +41,9 @@
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	alerta = ""
 
@@ -121,8 +124,18 @@ dim n_reg
 '	LEMBRE-SE DE INCLUIR A RESTRIÇÃO "anulado_status=0" P/ SELECIONAR APENAS 
 '	OS MOVIMENTOS VÁLIDOS, POIS "anulado_status<>0" INDICAM MOVIMENTOS QUE 
 '	FORAM CANCELADOS E QUE ESTÃO NO BD APENAS POR QUESTÃO DE HISTÓRICO.
-	s_sql = "SELECT t_PEDIDO.data, t_PEDIDO.pedido, t_PEDIDO_ITEM.fabricante, t_PEDIDO_ITEM.produto," & _
-			" t_CLIENTE.nome_iniciais_em_maiusculas, Sum(t_ESTOQUE_MOVIMENTO.qtde) AS qtde" & _
+	s_sql = "SELECT t_PEDIDO.data, t_PEDIDO.pedido, t_PEDIDO_ITEM.fabricante, t_PEDIDO_ITEM.produto,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_nome_iniciais_em_maiusculas AS nome_iniciais_em_maiusculas,"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome_iniciais_em_maiusculas,"
+		end if
+
+	s_sql = s_sql & _
+			" Sum(t_ESTOQUE_MOVIMENTO.qtde) AS qtde" & _
 			" FROM t_PEDIDO INNER JOIN t_PEDIDO_ITEM ON (t_PEDIDO.pedido=t_PEDIDO_ITEM.pedido)" & _
 			" INNER JOIN t_ESTOQUE_MOVIMENTO ON (t_PEDIDO_ITEM.pedido=t_ESTOQUE_MOVIMENTO.pedido) AND (t_PEDIDO_ITEM.fabricante=t_ESTOQUE_MOVIMENTO.fabricante) AND (t_PEDIDO_ITEM.produto=t_ESTOQUE_MOVIMENTO.produto)" & _
 			" LEFT JOIN t_CLIENTE ON (t_PEDIDO.id_cliente=t_CLIENTE.id)" & _
@@ -133,9 +146,19 @@ dim n_reg
 			" AND (t_ESTOQUE_MOVIMENTO.fabricante='" & c_fabricante & "')" & _
 			" AND (t_ESTOQUE_MOVIMENTO.produto='" & c_produto & "')"
 			
-	s_sql = s_sql & " GROUP BY t_PEDIDO.data, t_PEDIDO.pedido, t_PEDIDO_ITEM.fabricante, t_PEDIDO_ITEM.produto, t_CLIENTE.nome_iniciais_em_maiusculas" & _
-					" ORDER BY t_PEDIDO.data, t_PEDIDO.pedido"
-			
+	s_sql = s_sql & " GROUP BY t_PEDIDO.data, t_PEDIDO.pedido, t_PEDIDO_ITEM.fabricante, t_PEDIDO_ITEM.produto,"
+	
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_nome_iniciais_em_maiusculas"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome_iniciais_em_maiusculas"
+		end if
+
+	s_sql = s_sql & _
+			" ORDER BY t_PEDIDO.data, t_PEDIDO.pedido"
+	
   ' CABEÇALHO
 	cab_table = "<TABLE class='Q' style='border-bottom:0px;' cellSpacing=0>" & chr(13)
 	cab = "<TR style='background: #FFF0E0' nowrap>" & _

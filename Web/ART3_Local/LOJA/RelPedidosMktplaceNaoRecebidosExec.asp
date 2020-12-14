@@ -272,7 +272,7 @@ dim s_link_rastreio
 		s_sql = s_sql & _
 				" p.endereco_cidade AS cidade," & _
 				" p.endereco_uf AS uf," & _
-				" dbo.SqlClrUtilIniciaisEmMaiusculas(p.endereco_nome) AS nome_iniciais_em_maiusculas"
+				" p.endereco_nome_iniciais_em_maiusculas AS nome_iniciais_em_maiusculas"
 	else
 		s_sql = s_sql & _
 				" c.cidade," & _

@@ -44,7 +44,10 @@
 	dim s_lista_operacoes_permitidas
 	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
 	
-	dim s, s_filtro
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
+	dim s, sql_interno, s_filtro
 	dim c_num_pedido_aux, c_tipo_num_pedido, pedido_selecionado, loja_selecionada
 	
 	dim alerta
@@ -87,12 +90,23 @@
 				" ORDER BY" & _
 					" data_hora DESC"
 
+			sql_interno = s
+
 			s = "SELECT " & _
 					" pedido," & _
 					" st_entrega," & _
 					" pedido_bs_x_ac AS numEC," & _
-					" data," & _
-					" nome_iniciais_em_maiusculas," & _
+					" data,"
+
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				s = s & _
+					" t_PEDIDO.endereco_nome_iniciais_em_maiusculas AS nome_iniciais_em_maiusculas,"
+			else
+				s = s & _
+					" nome_iniciais_em_maiusculas,"
+				end if
+
+			s = s & _
 					" t_PEDIDO.loja AS loja," & _
 					" (" & _
 						"SELECT" & _
@@ -106,7 +120,7 @@
 					" INNER JOIN t_LOJA ON (t_PEDIDO.loja = t_LOJA.loja)" & _
 				" WHERE" & _
 					" (unidade_negocio = '" & COD_UNIDADE_NEGOCIO_LOJA__BS & "')" & _
-					" AND (pedido_bs_x_ac IN (" & s & "))" & _
+					" AND (pedido_bs_x_ac IN (" & sql_interno & "))" & _
 				" ORDER BY" & _
 					" data_hora DESC"
 			if rs.State <> 0 then rs.Close
@@ -153,18 +167,29 @@
 			    " ORDER BY" & _
 				    " data_hora DESC"
 
+			sql_interno = s
+
 			s = "SELECT " & _
 				    " pedido," & _
 					" st_entrega," & _
 					" pedido_bs_x_ac AS numEC," & _
-				    " data," & _
-				    " nome_iniciais_em_maiusculas," & _
+				    " data,"
+
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				s = s & _
+					" t_PEDIDO.endereco_nome_iniciais_em_maiusculas AS nome_iniciais_em_maiusculas,"
+			else
+				s = s & _
+					" nome_iniciais_em_maiusculas,"
+				end if
+
+			s = s & _
 				    " loja" & _
 			    " FROM t_PEDIDO INNER JOIN t_CLIENTE" & _
 				    " ON (t_PEDIDO.id_cliente=t_CLIENTE.id)" & _
 			    " WHERE" & _
 					" (loja = '" & NUMERO_LOJA_ECOMMERCE_AR_CLUBE & "')" & _
-					" AND (pedido_bs_x_ac IN (" & s & "))" & _
+					" AND (pedido_bs_x_ac IN (" & sql_interno & "))" & _
 			    " ORDER BY" & _
 				    " data_hora DESC"
 		    if rs.State <> 0 then rs.Close
@@ -197,8 +222,17 @@
 					" pedido," & _
 					" st_entrega," & _
 					" pedido_bs_x_marketplace AS numEC," & _
-					" data," & _
-					" nome_iniciais_em_maiusculas," & _
+					" data,"
+
+			if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+				s = s & _
+					" t_PEDIDO.endereco_nome_iniciais_em_maiusculas AS nome_iniciais_em_maiusculas,"
+			else
+				s = s & _
+					" nome_iniciais_em_maiusculas,"
+				end if
+
+			s = s & _
 					" loja" & _
 				" FROM t_PEDIDO INNER JOIN t_CLIENTE" & _
 					" ON (t_PEDIDO.id_cliente=t_CLIENTE.id)" & _
