@@ -227,7 +227,7 @@ if (trim(f.c_dt_cad_chamado_termino.value) == "") {
         window.status = "Aguarde, gerando arquivo ...";
         divMsgAguardeObtendoDados.style.visibility = "";
 
-        strUrl = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/GetXLSReport/';
+		strUrl = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/GetXLSReport/';
         strUrl = strUrl + '?usuario=<%=usuario%>';
         strUrl = strUrl + '&dt_inicio=' + $("#c_dt_cad_chamado_inicio").val();
         strUrl = strUrl + '&dt_termino=' + $("#c_dt_cad_chamado_termino").val();
@@ -248,7 +248,7 @@ if (trim(f.c_dt_cad_chamado_termino.value) == "") {
 
                 if (xmlResp.Status == "OK") {
 
-                	gerarRelatorio.action = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/downloadXLS/?fileName=' + xmlResp.fileName;
+					gerarRelatorio.action = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/downloadXLS/?fileName=' + xmlResp.fileName;
                     gerarRelatorio.submit();
 
                     window.status = "Concluído";

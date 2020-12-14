@@ -640,7 +640,7 @@ function limpaCampoSelect(c) {
             window.status = "Aguarde, gerando arquivo ...";
             divMsgAguardeObtendoDados.style.visibility = "";
 
-            strUrl = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/GetCompras2CSV/';
+			strUrl = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/GetCompras2CSV/';
             strUrl = strUrl + '?usuario=<%=usuario%>';
             strUrl = strUrl + '&dt_inicio=' + dt_inicio;
             strUrl = strUrl + '&dt_termino=' + dt_termino;
@@ -667,7 +667,7 @@ function limpaCampoSelect(c) {
 
                     if (xmlResp.Status == "OK") {
 
-                    	fFILTRO.action = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/downloadCompras2CSV/?fileName=' + xmlResp.fileName;
+						fFILTRO.action = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/downloadCompras2CSV/?fileName=' + xmlResp.fileName;
                         fFILTRO.submit();
 
                         window.status = "Concluído";
@@ -694,7 +694,7 @@ function limpaCampoSelect(c) {
             xmlhttp.send();
 
         }
-</script>
+	</script>
 
 
 
