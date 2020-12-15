@@ -46,7 +46,7 @@
 	alerta = ""
 
 	dim c_fabricante, c_produto, qtde_disponivel, s_nome_fabricante, s_nome_produto
-    dim blnPularProdutoComposto,qtde_estoque_venda_composto,qtde_estoque_venda_aux,n_reg,blnProdutoComposto,descricao,blnvendavel,v_fabricante(),v_produto(),cont
+    dim blnPularProdutoComposto,qtde_estoque_venda_composto,qtde_estoque_venda_aux,n_reg,blnProdutoComposto,descricao,blnvendavel,v_fabricante(),v_produto(),v_qtde_composicao(),cont
     blnProdutoComposto = false
     blnvendavel = true
     cont = 0
@@ -72,13 +72,12 @@
 
         rs.open s, cn
         if not rs.Eof then
-            blnProdutoComposto = true            		
+            blnProdutoComposto = true
 		end if
     end if
 		
 	if alerta = "" then
-        if blnProdutoComposto = false then		    
-	
+        if Not blnProdutoComposto then
 		    s = "SELECT Sum(qtde-qtde_utilizada) AS saldo" & _
 			    " FROM t_ESTOQUE_ITEM WHERE" & _
 			    " ((qtde-qtde_utilizada) > 0)" & _
@@ -93,14 +92,14 @@
     end if
 
     if alerta = "" then       
-        if blnProdutoComposto = True then                 	
-	
-		    s_sql = " SELECT t_EC_PRODUTO_COMPOSTO_ITEM.fabricante_item" &_
-	                    " ,t_EC_PRODUTO_COMPOSTO_ITEM.produto_item" &_
-	                    " ,descricao" &_
-                    " FROM t_EC_PRODUTO_COMPOSTO_ITEM" &_
-                    " INNER JOIN t_EC_PRODUTO_COMPOSTO ON (t_EC_PRODUTO_COMPOSTO_ITEM.produto_composto = t_EC_PRODUTO_COMPOSTO.produto_composto)" &_
-                    " WHERE t_EC_PRODUTO_COMPOSTO.produto_composto = '" & c_produto & "'" &_
+        if blnProdutoComposto then
+		    s_sql = " SELECT t_EC_PRODUTO_COMPOSTO_ITEM.fabricante_item" & _
+	                    " ,t_EC_PRODUTO_COMPOSTO_ITEM.produto_item" & _
+						", t_EC_PRODUTO_COMPOSTO_ITEM.qtde" & _
+	                    " ,descricao" & _
+                    " FROM t_EC_PRODUTO_COMPOSTO_ITEM" & _
+                    " INNER JOIN t_EC_PRODUTO_COMPOSTO ON (t_EC_PRODUTO_COMPOSTO_ITEM.produto_composto = t_EC_PRODUTO_COMPOSTO.produto_composto)" & _
+                    " WHERE t_EC_PRODUTO_COMPOSTO.produto_composto = '" & c_produto & "'" & _
 	                    " AND t_EC_PRODUTO_COMPOSTO.fabricante_composto = '" & c_fabricante & "'"
 
 		    n_reg = 0
@@ -110,8 +109,10 @@
 		    do while Not r.Eof                            
                 redim preserve v_fabricante(cont)
                 redim preserve v_produto(cont)
+				redim preserve v_qtde_composicao(cont)
                 v_fabricante(cont) = r("fabricante_item")
                 v_produto(cont)   = r("produto_item")
+				v_qtde_composicao(cont) = r("qtde")
                 descricao = Trim("" & r("descricao"))	
                 cont = cont + 1
                 r.MoveNext
@@ -124,14 +125,13 @@
 							    " tP.fabricante," & _
 							    " tP.produto," & _						    
 							    " Coalesce((SELECT Sum(qtde-qtde_utilizada) FROM t_ESTOQUE_ITEM tEI WHERE (tEI.fabricante=tP.fabricante) AND (tEI.produto=tP.produto) AND ((qtde-qtde_utilizada)>0)), 0) AS qtde_estoque_venda" & _                 
-						    " FROM t_PRODUTO tPL" & _
-							    " INNER JOIN t_PRODUTO tP ON (tPL.fabricante = tP.fabricante) AND (tPL.produto = tP.produto)" & _
-                                " INNER JOIN t_PRODUTO_LOJA on (tPL.fabricante = t_PRODUTO_LOJA.fabricante) AND (tPL.produto = t_PRODUTO_LOJA.produto)" & _                                            
+						    " FROM t_PRODUTO tP" & _
+                                " INNER JOIN t_PRODUTO_LOJA tPL ON (tP.fabricante = tPL.fabricante) AND (tP.produto = tPL.produto)" & _
 						    " WHERE " & _
                             " (tP.fabricante = '" & Trim("" & v_fabricante(cont)) & "')" & _
                        	    " AND (tP.produto = '" & Trim("" & v_produto(cont)) & "') "   
                     if loja <> "" then                         								
-				          s_sql = s_sql + " AND (t_PRODUTO_LOJA.loja = '" & loja &"')"
+				          s_sql = s_sql + " AND (tPL.loja = '" & loja &"')"
                     end if  				    
                     
 				    if t.State <> 0 then t.Close
@@ -140,7 +140,7 @@
 				        blnPularProdutoComposto = true 
                                
 				    else                                                  					
-					    qtde_estoque_venda_aux = t("qtde_estoque_venda")
+					    qtde_estoque_venda_aux = t("qtde_estoque_venda") \ v_qtde_composicao(cont)
 					    if qtde_estoque_venda_composto = -1 then
 						    qtde_estoque_venda_composto = qtde_estoque_venda_aux
 					    else
@@ -158,7 +158,7 @@
                        if Not blnPularProdutoComposto then				
 			             '> SALDO ESTOQUE                    
 				            qtde_disponivel = qtde_estoque_venda_composto
-                            blnProdutoComposto = true				                
+                            blnProdutoComposto = true
 		                end if
 			        end if
             next
@@ -189,7 +189,7 @@
 		rs.open s, cn
 		if rs.Eof then
 		'	PRODUTO NÃO ESTÁ CADASTRADO NA TABELA BÁSICA, PORTANTO NÃO ESTÁ DISPONÍVEL P/ VENDAS EM NENHUMA LOJA
-            if blnProdutoComposto <> true then
+            if Not blnProdutoComposto then
 			    qtde_disponivel = 0
 			    alerta = "Produto " & c_produto & " do fabricante " & c_fabricante & " não está cadastrado."            
             else            
@@ -198,7 +198,7 @@
 		else
 		'	PRODUTO ESTÁ EXCLUÍDO LOGICAMENTE DA TABELA BÁSICA, PORTANTO NÃO ESTÁ DISPONÍVEL P/ VENDAS EM NENHUMA LOJA
 			if rs("excluido_status")<>0 then qtde_disponivel = 0
-                if blnProdutoComposto = true then
+                if blnProdutoComposto then
                     s_nome_produto = descricao
                 else
 			        s_nome_produto = produto_formata_descricao_em_html(Trim("" & rs("descricao_html")))
@@ -212,13 +212,13 @@
 		rs.open s, cn
 		if rs.Eof then
 		'	PRODUTO NÃO ESTÁ CADASTRADO P/ VENDA NESTA LOJA
-            if blnProdutoComposto <> true then
+            if Not blnProdutoComposto then
 			    qtde_disponivel = 0
 			    alerta = "Produto " & c_produto & " do fabricante " & c_fabricante & " não está cadastrado."
             end if
 		else
             '	ESTÁ DISPONÍVEL P/ VENDA? PRODUTO COMPOSTO/NORMAIS	
-            if blnProdutoComposto = true then
+            if blnProdutoComposto then
                 s_sql = "SELECT produto_item" & _
                             " ,vendavel" & _
 	                        " ,sequencia" & _
@@ -243,15 +243,18 @@
 				end if 
                     t.MoveNext
                 loop
-                if blnvendavel <> true then qtde_disponivel = 0                
+                
+				'14/12/2020: A pedido do Adailton e autorização do Carlos, foi retirada a restrição que exibe como zero o estoque de um produto bloqueado p/ vendas
+				'if Not blnvendavel then qtde_disponivel = 0
                        
             else               	    
-			    if UCase(Trim("" & rs("vendavel"))) <> "S" then qtde_disponivel = 0              
-                    if IsNumeric(rs("qtde_max_venda")) then
-				        if CLng(rs("qtde_max_venda")) < qtde_disponivel then
-					        qtde_disponivel = CLng(rs("qtde_max_venda"))                 
-					    end if
-				    end if
+			    '14/12/2020: A pedido do Adailton e autorização do Carlos, foi retirada a restrição que exibe como zero o estoque de um produto bloqueado p/ vendas
+				'if UCase(Trim("" & rs("vendavel"))) <> "S" then qtde_disponivel = 0
+                if IsNumeric(rs("qtde_max_venda")) then
+				    if CLng(rs("qtde_max_venda")) < qtde_disponivel then
+					    qtde_disponivel = CLng(rs("qtde_max_venda"))                 
+					end if
+				end if
             end if
 		end if
 	end if
