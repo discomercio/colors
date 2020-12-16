@@ -216,7 +216,7 @@
 	Const URL_FILE__E_LOGO_TOP_OLD03_CSS = "../Global/eLogoTopOLD03.css?v=002"
 	
 '	URL PARA ACESSO NA PÁGINA DE LOGIN DO PARCEIRO (PÁGINA C/ LOGIN DUPLO)
-	Const URL_BASE_RELATIVA_SITE_ARTVEN3 = "/art3MemoEnd"
+	Const URL_BASE_RELATIVA_SITE_ARTVEN3 = "/art3HotFix3"
 	Const URL_BASE_RELATIVA_SITE_ASSISTENCIA_TECNICA = "/assistenciatecnica"
 	
 '	Const URL_SITE_CLIENTE_PAGTO_CIELO = "http://web.bonshop.com.br/pagamento/clientecartao/default.asp"
@@ -240,6 +240,21 @@
 	Const OP_PESQ_PEDIDO_MAGENTO_AR_CLUBE = "ARCLUBE"
 	Const OP_PESQ_PEDIDO_MARKETPLACE_AR_CLUBE = "MARKETPLACE"
 
+
+'	HTTPS_OBRIGATORIO_HABILITADO
+'		False = permite o usuário usar o protocolo de sua preferência (HTTP ou HTTPS)
+'		True = o usuário é obrigado a usar o protocolo HTTPS, portanto, caso o acesso tenha sido via HTTP, será realizado um redirecionamento automático para HTTPS
+'
+'	HTTPS_OBRIGATORIO_URL_REDIRECT
+'		Este parâmetro é usado quando HTTPS_OBRIGATORIO_HABILITADO = True
+'		Quando se define uma URL específica para redirecionamento, se houver a necessidade de usar uma porta personalizada, o número da porta deve ser especificada diretamente no parâmetro HTTPS_OBRIGATORIO_URL_REDIRECT
+'		O valor deste parâmetro corresponde à URL base, se houver conteúdo adicional do endereço informado pelo usuário e obtido através de ServerVariables("URL"), esse conteúdo será adicionado automaticamente
+'			pela rotina de tratamento do redirecionamento.
+'		Possíveis valores:
+'			String vazia = o redirecionamento será feito para a mesma URL acessada pelo usuário, apenas alterando de HTTP para HTTPS
+'			URL especificada = o redirecionamento será feito para a URL especificada no parâmetro
+	Const HTTPS_OBRIGATORIO_HABILITADO = False
+	Const HTTPS_OBRIGATORIO_URL_REDIRECT = ""
 
 
 

@@ -50,6 +50,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	dim s, s_aux, s_filtro, flag_ok, cadastrado
 	dim ckb_orcamento_em_aberto, ckb_orcamento_virou_pedido, ckb_orcamento_cancelado
@@ -366,7 +369,11 @@ dim intNumLinha
 '	CRITÉRIO: CLIENTE
 	if c_cliente_cnpj_cpf <> "" then
 		if s_where <> "" then s_where = s_where & " AND"
-		s_where = s_where & " (t_CLIENTE.cnpj_cpf = '" & retorna_so_digitos(c_cliente_cnpj_cpf) & "')"
+		if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+			s_where = s_where & " (t_ORCAMENTO.endereco_cnpj_cpf = '" & retorna_so_digitos(c_cliente_cnpj_cpf) & "')"
+		else
+			s_where = s_where & " (t_CLIENTE.cnpj_cpf = '" & retorna_so_digitos(c_cliente_cnpj_cpf) & "')"
+			end if
 		end if
 		
 '	CRITÉRIO: VENDEDOR
@@ -395,17 +402,37 @@ dim intNumLinha
 		end if
 
 	s_sql = "SELECT DISTINCT t_ORCAMENTO.loja, CONVERT(smallint,t_ORCAMENTO.loja) AS numero_loja," & _
-			" t_ORCAMENTO.data, t_ORCAMENTO.orcamento," & _
-			" t_CLIENTE.nome_iniciais_em_maiusculas, t_ORCAMENTO.st_orcamento," & _
+			" t_ORCAMENTO.data, t_ORCAMENTO.orcamento,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_ORCAMENTO.endereco_nome_iniciais_em_maiusculas AS nome_iniciais_em_maiusculas,"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome_iniciais_em_maiusculas,"
+		end if
+
+	s_sql = s_sql & _
+			" t_ORCAMENTO.st_orcamento," & _
 			" t_ORCAMENTO.st_orc_virou_pedido, t_ORCAMENTO.pedido," & _
 			" Sum(t_ORCAMENTO_ITEM.qtde*t_ORCAMENTO_ITEM.preco_venda) AS valor_total," & _
 			" Sum(t_ORCAMENTO_ITEM.qtde*t_ORCAMENTO_ITEM.preco_NF) AS valor_total_NF" & _
 			s_from & _
 			s_where
 
-	s_sql = s_sql & " GROUP BY t_ORCAMENTO.loja, t_ORCAMENTO.data, t_ORCAMENTO.orcamento," & _
-					" t_CLIENTE.nome_iniciais_em_maiusculas, t_ORCAMENTO.st_orcamento," & _
-					" t_ORCAMENTO.st_orc_virou_pedido, t_ORCAMENTO.pedido"
+	s_sql = s_sql & " GROUP BY t_ORCAMENTO.loja, t_ORCAMENTO.data, t_ORCAMENTO.orcamento,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_ORCAMENTO.endereco_nome_iniciais_em_maiusculas,"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome_iniciais_em_maiusculas,"
+		end if
+
+	s_sql = s_sql & _
+			" t_ORCAMENTO.st_orcamento," & _
+			" t_ORCAMENTO.st_orc_virou_pedido, t_ORCAMENTO.pedido"
 
 	s_sql = s_sql & " ORDER BY numero_loja, t_ORCAMENTO.data, t_ORCAMENTO.orcamento"
 

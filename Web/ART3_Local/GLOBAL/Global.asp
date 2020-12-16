@@ -3397,7 +3397,7 @@ dim rPSSW
 
 	s_url = ""
 	if InStr(lista_transportadora, "|" & transportadora_id & "|") <> 0 then
-		s_url = "http://ssw.inf.br/cgi-local/tracking/" & s_cnpj & "/" & numero_NF
+		s_url = "https://ssw.inf.br/cgi-local/tracking/" & s_cnpj & "/" & numero_NF
 		end if
 
 	monta_url_rastreio = s_url
@@ -3455,7 +3455,7 @@ dim rPSSW
 
 	s_url = ""
 	if InStr(lista_transportadora, "|" & transportadora_id & "|") <> 0 then
-		s_url = "http://ssw.inf.br/cgi-local/tracking/" & s_cnpj & "/" & numero_NF
+		s_url = "https://ssw.inf.br/cgi-local/tracking/" & s_cnpj & "/" & numero_NF
 		end if
 
 	monta_url_rastreio_do_emitente = s_url

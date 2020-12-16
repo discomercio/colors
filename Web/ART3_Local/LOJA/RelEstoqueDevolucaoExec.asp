@@ -52,6 +52,9 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
+	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	dim alerta
 	dim s, s_aux, s_filtro, flag_ok, s_filtro_operacao
 	dim c_loja, c_fabricante, c_produto, c_pedido
@@ -252,8 +255,17 @@ dim intNumProdutos, intQtdeTotal, intQtdeSubTotal
 				" t_ESTOQUE_MOVIMENTO.pedido," & _
 				" t_PEDIDO.obs_2," & _
 				" t_PEDIDO__BASE.vendedor," & _
-				" t_PEDIDO__BASE.indicador," & _
-				" t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente," & _
+				" t_PEDIDO__BASE.indicador,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_nome_iniciais_em_maiusculas AS nome_cliente,"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome_iniciais_em_maiusculas AS nome_cliente,"
+		end if
+
+	s_sql = s_sql & _
 				" t_PEDIDO_ITEM_DEVOLVIDO.motivo," & _
 				" Coalesce(Sum(t_ESTOQUE_MOVIMENTO.qtde),0) AS saldo" & _
 			" FROM t_ESTOQUE_MOVIMENTO" & _
@@ -278,8 +290,17 @@ dim intNumProdutos, intQtdeTotal, intQtdeSubTotal
 				" t_ESTOQUE_MOVIMENTO.pedido," & _
 				" t_PEDIDO.obs_2," & _
 				" t_PEDIDO__BASE.vendedor," & _
-				" t_PEDIDO__BASE.indicador," & _
-				" t_CLIENTE.nome_iniciais_em_maiusculas," & _
+				" t_PEDIDO__BASE.indicador,"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		s_sql = s_sql & _
+				" t_PEDIDO.endereco_nome_iniciais_em_maiusculas,"
+	else
+		s_sql = s_sql & _
+				" t_CLIENTE.nome_iniciais_em_maiusculas,"
+		end if
+
+	s_sql = s_sql & _
 				" t_PEDIDO_ITEM_DEVOLVIDO.motivo" & _
 			" ORDER BY" & _
 				" t_ESTOQUE_MOVIMENTO.fabricante," & _

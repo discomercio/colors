@@ -567,7 +567,7 @@ function fFILTROConfirma( f ) {
         lojaAux = lojaAux.replace("\n", ",");
     }
 
-    strUrl = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Farol/GetXLSReport/';
+	strUrl = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Farol/GetXLSReport/';
     strUrl = strUrl + '?usuario=<%=usuario%>';
     strUrl = strUrl + '&dt_inicio=' + dt_inicio;
     strUrl = strUrl + '&dt_termino=' + dt_termino;
@@ -590,7 +590,7 @@ function fFILTROConfirma( f ) {
 
             if (xmlResp.Status == "OK") {
 
-            	fFILTRO.action = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Farol/downloadXLS/?fileName=' + xmlResp.fileName;
+				fFILTRO.action = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Farol/downloadXLS/?fileName=' + xmlResp.fileName;
                 fFILTRO.submit();
 
                 window.status = "Concluído";
@@ -794,7 +794,7 @@ function fFILTROConfirma( f ) {
         lojaAux = lojaAux.replace("\n", ",");
     }
 
-    strUrl = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/FarolV3/GetXLSReport/';
+	strUrl = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/FarolV3/GetXLSReport/';
     strUrl = strUrl + '?usuario=<%=usuario%>';
     strUrl = strUrl + '&opcao_periodo=' + s_opcao_periodo;
 	strUrl = strUrl + '&dt_inicio=' + dt_inicio;
@@ -818,7 +818,7 @@ function fFILTROConfirma( f ) {
 
             if (xmlResp.Status == "OK") {
 
-            	fFILTRO.action = 'http://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/FarolV3/downloadXLS/?fileName=' + xmlResp.fileName;
+				fFILTRO.action = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/FarolV3/downloadXLS/?fileName=' + xmlResp.fileName;
                 fFILTRO.submit();
 
                 window.status = "Concluído";
