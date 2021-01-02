@@ -28,8 +28,8 @@ namespace ADM2
 			{
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "ADM2";
-				public const string VERSAO_NUMERO = "1.10";
-				public const string VERSAO_DATA = "20.AGO.2020";
+				public const string VERSAO_NUMERO = "1.11";
+				public const string VERSAO_DATA = "05.JAN.2021";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Módulo Administrativo";

@@ -22,7 +22,8 @@ namespace ADM2
 		FIbpt fIbpt;
 		FAtualizaPlanilhaEstoque fAtualizaPlanilhaEstoque;
 		FAnotarPedidoRecebidoCliente fAnotarPedidoRecebidoCliente;
-		private bool _InicializacaoOk;
+        FImportXML fImportXML;
+        private bool _InicializacaoOk;
 		private bool _OcorreuExceptionNaInicializacao = false;
 		#endregion
 
@@ -385,16 +386,40 @@ namespace ADM2
 			fAnotarPedidoRecebidoCliente.Show();
 			if (!fAnotarPedidoRecebidoCliente.ocorreuExceptionNaInicializacao) this.Visible = false;
 		}
-		#endregion
+        #endregion
 
-		#endregion
+        #region [ trataBotaoAtualizarDataImportArquivosXML ]
 
-		#region [ Eventos ]
+        private void trataBotaoAtualizarDataImportArquivosXML()
+        {
+            #region [ Verifica se a conexão c/ o BD está ok ]
+            if (!contextoBD.AmbienteBase.BD.isConexaoOk())
+            {
+                if (!FMain.reiniciaBancoDados())
+                {
+                    avisoErro("Ocorreu uma falha na conexão com o Banco de Dados!!\nA tentativa de reconectar automaticamente falhou!!\nPor favor, aguarde alguns instantes e tente outra vez!!");
+                    return;
+                }
+            }
+            #endregion
 
-		#region [ FMain ]
+            fImportXML = new FImportXML();
+            fImportXML.Location = this.Location;
+            fImportXML.Show();
+            if (!fImportXML.ocorreuExceptionNaInicializacao) this.Visible = false;
+        }
 
-		#region [ FMain_Shown ]
-		private void FMain_Shown(object sender, EventArgs e)
+        #endregion
+
+
+        #endregion
+
+        #region [ Eventos ]
+
+        #region [ FMain ]
+
+        #region [ FMain_Shown ]
+        private void FMain_Shown(object sender, EventArgs e)
 		{
 			#region [ Declarações ]
 			String strSenhaDescriptografada = "";
@@ -799,10 +824,22 @@ namespace ADM2
 		{
 			trataBotaoAnotarPedidosRecebidosCliente();
 		}
-		#endregion
+        #endregion
 
-		#endregion
+        #endregion
 
-		#endregion
-	}
+        #region [ btnAtualizarDataImportArquivosXML ]
+
+        #region [ btnAtualizarDataImportArquivosXML_Click ]
+        private void BtnAtualizarDataImportArquivosXML_Click(object sender, EventArgs e)
+        {
+            trataBotaoAtualizarDataImportArquivosXML();
+        }
+        #endregion
+
+        #endregion
+
+        #endregion
+
+    }
 }

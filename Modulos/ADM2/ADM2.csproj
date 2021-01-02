@@ -109,6 +109,12 @@
     <Compile Include="FIbpt.Designer.cs">
       <DependentUpon>FIbpt.cs</DependentUpon>
     </Compile>
+    <Compile Include="FImportXML.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FImportXML.Designer.cs">
+      <DependentUpon>FImportXML.cs</DependentUpon>
+    </Compile>
     <Compile Include="FMain.cs">
       <SubType>Form</SubType>
     </Compile>
