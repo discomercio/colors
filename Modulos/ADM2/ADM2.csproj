@@ -170,6 +170,9 @@
     <EmbeddedResource Include="FIbpt.resx">
       <DependentUpon>FIbpt.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FImportXML.resx">
+      <DependentUpon>FImportXML.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FMain.resx">
       <DependentUpon>FMain.cs</DependentUpon>
     </EmbeddedResource>

@@ -28,7 +28,26 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            this.pnBotoes.SuspendLayout();
+            this.SuspendLayout();
+            // 
+            // btnDummy
+            // 
+            this.btnDummy.Location = new System.Drawing.Point(375, -200);
+            // 
+            // FImportXML
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.ClientSize = new System.Drawing.Size(1008, 562);
+            this.Name = "FImportXML";
+            this.Text = "ADM2  -  1.11 - 05.JAN.2021";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FImportXML_FormClosing);
+            this.Load += new System.EventHandler(this.FImportXML_Load);
+            this.Shown += new System.EventHandler(this.FImportXML_Shown);
+            this.pnBotoes.ResumeLayout(false);
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
         }
 
         #endregion

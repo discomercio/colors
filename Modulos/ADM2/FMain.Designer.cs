@@ -46,7 +46,7 @@
             // pnCampos
             // 
             this.pnCampos.Controls.Add(this.gboxIBPT);
-            this.pnCampos.Size = new System.Drawing.Size(1008, 343);
+            this.pnCampos.Size = new System.Drawing.Size(1008, 423);
             // 
             // gboxIBPT
             // 
@@ -119,7 +119,7 @@
             // FMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.ClientSize = new System.Drawing.Size(1008, 440);
+            this.ClientSize = new System.Drawing.Size(1008, 520);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FMain";
             this.Text = "ADM2  -  1.00 - 01.JUN.2013";
