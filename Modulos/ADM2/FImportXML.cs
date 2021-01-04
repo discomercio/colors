@@ -12,6 +12,16 @@ namespace ADM2
     public partial class FImportXML : ADM2.FModelo
     {
 
+        #region [ Constantes ]
+        const String GRID_COL_ID_ESTOQUE = "colIdEstoque";
+        const String GRID_COL_DATA_ENTRADA = "colDataEntrada";
+        const String GRID_COL_CD = "colCD";
+        const String GRID_COL_DOCUMENTO = "colDocumento";
+        const String GRID_COL_FABRICANTE = "colFabricante";
+        const String GRID_COL_DESCRICAO = "colDescricao";
+        #endregion
+
+
         #region [ Atributos ]
         private bool _emProcessamento = false;
         private bool _InicializacaoOk;
