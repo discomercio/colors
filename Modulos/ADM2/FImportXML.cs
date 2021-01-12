@@ -26,7 +26,7 @@ namespace ADM2
         #region [ Atributos ]
         private bool _emProcessamento = false;
         private bool _InicializacaoOk;
-        private BancoDados _bd;
+        //private BancoDados _bd;
         public bool inicializacaoOk
         {
             get { return _InicializacaoOk; }
@@ -55,7 +55,8 @@ namespace ADM2
             String strSql;
             String strFrom;
             String strWhere = "";
-            SqlConnection cnConexao;
+            //BancoDados bd;
+            //SqlConnection cnConexao;
             SqlCommand cmCommand;
             SqlDataAdapter daAdapter;
             DataTable dtbConsulta = new DataTable();
@@ -70,11 +71,11 @@ namespace ADM2
 
                 #region [ Monta restrições da cláusula 'Where' ]
                 strWhere = " WHERE (" +
-                    "(t_ESTOQUE.data_entrada >= '2020-06-01')" +
+                    "(t_ESTOQUE.data_entrada >= '2020-01-01')" +
                     " AND " +
                     "(t_ESTOQUE.data_entrada < '2021-01-31')" +
                 ")" +
-              " AND (" +
+              " AND " +
                     "(t_ESTOQUE_XML.xml_prioridade = 1)";
 
 
@@ -86,9 +87,9 @@ namespace ADM2
                 info(ModoExibicaoMensagemRodape.EmExecucao, "consultando banco de dados");
 
                 #region [ Cria objetos de BD ]
-                cnConexao = _bd.getNovaConexao();
-                cmCommand = _bd.criaSqlCommand();
-                daAdapter = _bd.criaSqlDataAdapter();
+                //cnConexao = _bd.getNovaConexao();
+                cmCommand = FMain.contextoBD.AmbienteBase.BD.criaSqlCommand();
+                daAdapter = FMain.contextoBD.AmbienteBase.BD.criaSqlDataAdapter();
                 #endregion
 
                 #region [ Inicialização ]
@@ -99,12 +100,13 @@ namespace ADM2
                 strSql = "SELECT" +
                 " t_ESTOQUE.*," +
                 " t_ESTOQUE_XML.xml_conteudo," +
-                " t_PEDIDO.xml_prioridade ";
+                " t_ESTOQUE_XML.xml_prioridade ";
 
                 strSql +=
                 strFrom +
                 strWhere +
                 " ORDER BY t_ESTOQUE.id_estoque, t_ESTOQUE.data_entrada";
+                //aviso(strSql);
                 #endregion
 
                 #region [ Executa a consulta no BD ]
@@ -112,6 +114,7 @@ namespace ADM2
                 daAdapter.SelectCommand = cmCommand;
                 daAdapter.MissingSchemaAction = MissingSchemaAction.Add;
                 daAdapter.Fill(dtbConsulta);
+                aviso("dtbConsulta.Rows.Count = " + dtbConsulta.Rows.Count.ToString());
                 #endregion
 
                 #region [ Carrega dados no grid ]
