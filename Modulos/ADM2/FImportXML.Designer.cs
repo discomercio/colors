@@ -30,13 +30,12 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FImportXML));
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
             this.lblTitulo = new System.Windows.Forms.Label();
             this.gboxMsgErro = new System.Windows.Forms.GroupBox();
             this.lbErro = new System.Windows.Forms.ListBox();
@@ -47,16 +46,15 @@
             this.lblTotalRegistros = new System.Windows.Forms.Label();
             this.lblTitTotalRegistros = new System.Windows.Forms.Label();
             this.grdDados = new System.Windows.Forms.DataGridView();
-            this.LblPeriodoEntradaNFde = new System.Windows.Forms.Label();
-            this.dtpDataEntradaIni = new System.Windows.Forms.DateTimePicker();
-            this.dtpDataEntradaFim = new System.Windows.Forms.DateTimePicker();
-            this.LblPeriodoEntradaNFate = new System.Windows.Forms.Label();
             this.colIdEstoque = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colDataEntrada = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colCD = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colDocumento = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colFabricante = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colDescricao = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.LblPeriodoEntradaNFde = new System.Windows.Forms.Label();
+            this.dtpDataEntradaIni = new System.Windows.Forms.DateTimePicker();
+            this.dtpDataEntradaFim = new System.Windows.Forms.DateTimePicker();
+            this.LblPeriodoEntradaNFate = new System.Windows.Forms.Label();
             this.pnBotoes.SuspendLayout();
             this.pnCampos.SuspendLayout();
             this.gboxMsgErro.SuspendLayout();
@@ -151,6 +149,7 @@
             this.btnAtualizaDatas.TabIndex = 8;
             this.btnAtualizaDatas.TabStop = false;
             this.btnAtualizaDatas.UseVisualStyleBackColor = true;
+            this.btnAtualizaDatas.Click += new System.EventHandler(this.BtnAtualizaDatas_Click);
             // 
             // gboxDados
             // 
@@ -205,16 +204,15 @@
             this.colDataEntrada,
             this.colCD,
             this.colDocumento,
-            this.colFabricante,
-            this.colDescricao});
-            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.grdDados.DefaultCellStyle = dataGridViewCellStyle8;
+            this.colFabricante});
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.grdDados.DefaultCellStyle = dataGridViewCellStyle7;
             this.grdDados.Location = new System.Drawing.Point(15, 19);
             this.grdDados.MultiSelect = false;
             this.grdDados.Name = "grdDados";
@@ -227,40 +225,6 @@
             this.grdDados.Size = new System.Drawing.Size(965, 129);
             this.grdDados.StandardTab = true;
             this.grdDados.TabIndex = 0;
-            // 
-            // LblPeriodoEntradaNFde
-            // 
-            this.LblPeriodoEntradaNFde.AutoSize = true;
-            this.LblPeriodoEntradaNFde.Location = new System.Drawing.Point(15, 51);
-            this.LblPeriodoEntradaNFde.Name = "LblPeriodoEntradaNFde";
-            this.LblPeriodoEntradaNFde.Size = new System.Drawing.Size(166, 13);
-            this.LblPeriodoEntradaNFde.TabIndex = 11;
-            this.LblPeriodoEntradaNFde.Text = "Período de Entrada das NFs:  de ";
-            // 
-            // dtpDataEntradaIni
-            // 
-            this.dtpDataEntradaIni.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtpDataEntradaIni.Location = new System.Drawing.Point(187, 51);
-            this.dtpDataEntradaIni.Name = "dtpDataEntradaIni";
-            this.dtpDataEntradaIni.Size = new System.Drawing.Size(101, 20);
-            this.dtpDataEntradaIni.TabIndex = 12;
-            // 
-            // dtpDataEntradaFim
-            // 
-            this.dtpDataEntradaFim.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtpDataEntradaFim.Location = new System.Drawing.Point(328, 51);
-            this.dtpDataEntradaFim.Name = "dtpDataEntradaFim";
-            this.dtpDataEntradaFim.Size = new System.Drawing.Size(101, 20);
-            this.dtpDataEntradaFim.TabIndex = 14;
-            // 
-            // LblPeriodoEntradaNFate
-            // 
-            this.LblPeriodoEntradaNFate.AutoSize = true;
-            this.LblPeriodoEntradaNFate.Location = new System.Drawing.Point(294, 51);
-            this.LblPeriodoEntradaNFate.Name = "LblPeriodoEntradaNFate";
-            this.LblPeriodoEntradaNFate.Size = new System.Drawing.Size(28, 13);
-            this.LblPeriodoEntradaNFate.TabIndex = 13;
-            this.LblPeriodoEntradaNFate.Text = " até ";
             // 
             // colIdEstoque
             // 
@@ -318,16 +282,39 @@
             this.colFabricante.ReadOnly = true;
             this.colFabricante.Width = 110;
             // 
-            // colDescricao
+            // LblPeriodoEntradaNFde
             // 
-            this.colDescricao.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopLeft;
-            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.colDescricao.DefaultCellStyle = dataGridViewCellStyle7;
-            this.colDescricao.HeaderText = "Descrição";
-            this.colDescricao.MinimumWidth = 150;
-            this.colDescricao.Name = "colDescricao";
-            this.colDescricao.ReadOnly = true;
+            this.LblPeriodoEntradaNFde.AutoSize = true;
+            this.LblPeriodoEntradaNFde.Location = new System.Drawing.Point(15, 51);
+            this.LblPeriodoEntradaNFde.Name = "LblPeriodoEntradaNFde";
+            this.LblPeriodoEntradaNFde.Size = new System.Drawing.Size(166, 13);
+            this.LblPeriodoEntradaNFde.TabIndex = 11;
+            this.LblPeriodoEntradaNFde.Text = "Período de Entrada das NFs:  de ";
+            // 
+            // dtpDataEntradaIni
+            // 
+            this.dtpDataEntradaIni.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.dtpDataEntradaIni.Location = new System.Drawing.Point(187, 51);
+            this.dtpDataEntradaIni.Name = "dtpDataEntradaIni";
+            this.dtpDataEntradaIni.Size = new System.Drawing.Size(101, 20);
+            this.dtpDataEntradaIni.TabIndex = 12;
+            // 
+            // dtpDataEntradaFim
+            // 
+            this.dtpDataEntradaFim.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.dtpDataEntradaFim.Location = new System.Drawing.Point(328, 51);
+            this.dtpDataEntradaFim.Name = "dtpDataEntradaFim";
+            this.dtpDataEntradaFim.Size = new System.Drawing.Size(101, 20);
+            this.dtpDataEntradaFim.TabIndex = 14;
+            // 
+            // LblPeriodoEntradaNFate
+            // 
+            this.LblPeriodoEntradaNFate.AutoSize = true;
+            this.LblPeriodoEntradaNFate.Location = new System.Drawing.Point(294, 51);
+            this.LblPeriodoEntradaNFate.Name = "LblPeriodoEntradaNFate";
+            this.LblPeriodoEntradaNFate.Size = new System.Drawing.Size(28, 13);
+            this.LblPeriodoEntradaNFate.TabIndex = 13;
+            this.LblPeriodoEntradaNFate.Text = " até ";
             // 
             // FImportXML
             // 
@@ -372,6 +359,5 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn colCD;
         private System.Windows.Forms.DataGridViewTextBoxColumn colDocumento;
         private System.Windows.Forms.DataGridViewTextBoxColumn colFabricante;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colDescricao;
     }
 }
