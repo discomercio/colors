@@ -166,6 +166,7 @@
     <Compile Include="Models\Domains\EstOcorrenciasGeradorRelatorio.cs" />
     <Compile Include="Models\Domains\FarolGeradorRelatorio.cs" />
     <Compile Include="Models\Domains\Global.cs" />
+    <Compile Include="Models\Domains\Magento2RestApi.cs" />
     <Compile Include="Models\Domains\MagentoSoapApi.cs" />
     <Compile Include="Models\Domains\OcorrenciasGeradorRelatorio.cs" />
     <Compile Include="Models\Domains\RelatorioProdutoFlagBD.cs" />
@@ -178,6 +179,7 @@
     <Compile Include="Models\Entities\Farol.cs" />
     <Compile Include="Models\Entities\Indicador.cs" />
     <Compile Include="Models\Entities\Log.cs" />
+    <Compile Include="Models\Entities\Magento2ApiEntities.cs" />
     <Compile Include="Models\Entities\MagentoApiLoginParameters.cs" />
     <Compile Include="Models\Entities\MagentoErpEntities.cs" />
     <Compile Include="Models\Entities\MagentoSoapApiEntities.cs" />

@@ -52,7 +52,9 @@ namespace ART3WebAPI.Models.Entities
 		public DateTime dt_cadastro { get; set; }
 		public DateTime dt_hr_cadastro { get; set; }
 		public string usuario_cadastro { get; set; }
+		public int magento_api_versao { get; set; }
 		public string pedido_xml { get; set; }
+		public string pedido_json { get; set; }
 		public string cpfCnpjIdentificado { get; set; }
 		public int increment_id { get; set; }
 		public string created_at { get; set; }

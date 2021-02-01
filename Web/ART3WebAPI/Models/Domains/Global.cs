@@ -38,14 +38,14 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.23";
-				public const string Data = "15.SET.2020";
+				public const string Numero = "2.25";
+				public const string Data = "05.FEV.2021";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
-            #endregion
+			#endregion
 
-            #region [ Comentário sobre as versões ]
-            /*================================================================================================
+			#region [ Comentário sobre as versões ]
+			/*================================================================================================
 			 * v 2.00 - 08.09.2017 - por TRR
 			 *		Ajuste no relatório Farol para aceitar lista de lojas no filtro.
 			 * -----------------------------------------------------------------------------------------------
@@ -164,9 +164,14 @@ namespace ART3WebAPI.Models.Domains
 			 *      Esta versão está sendo desenvolvida para ser implantada junto a memorização de endereços
 			 *      no pedido/pré-pedido.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.24 - XX.XX.20XX - por XXX
+			 * v 2.24 - 31.01.2021 - por HHO
+			 *      Correção de bug no relatório de Compras II referente ao período de consulta. Além do
+			 *      filtro por período de emissão da NF de entrada estar sendo aplicado sobre a data de
+			 *      entrada no estoque no cálculo mês a mês, quando esse mesmo filtro não estava sendo
+			 *      informado, o relatório calculava o valor do mês a mês sem restrição de período.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.25 - XX.XX.20XX - por XXX
+			 * v 2.25 - 05.02.2021 - por HHO
+			 *      Implementação de tratamento para a API REST (JSON) do Magento 2
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.26 - XX.XX.20XX - por XXX
 			 * -----------------------------------------------------------------------------------------------
@@ -181,10 +186,10 @@ namespace ART3WebAPI.Models.Domains
 			 * v 2.XX - XX.XX.20XX - por XXX
 			* ===============================================================================================
 			*/
-            #endregion
+			#endregion
 
-            #region [ Usuario ]
-            public static class Usuario
+			#region [ Usuario ]
+			public static class Usuario
 			{
 				public const string ID_USUARIO_SISTEMA = "SISTEMA";
 			}
@@ -207,6 +212,26 @@ namespace ART3WebAPI.Models.Domains
 					public const string FLAG_CAD_SEMI_AUTO_PED_MAGENTO_CADASTRAR_AUTOMATICAMENTE_CLIENTE_NOVO = "CadSemiAutomaticoPedidoMagento_FlagWebApiCadastrarAutomaticamenteClienteNovo";
 					public const string FLAG_PEDIDO_MEMORIZACAO_COMPLETA_ENDERECOS = "Flag_Pedido_MemorizacaoCompletaEnderecos";
 				}
+			}
+			#endregion
+
+			#region [ MagentoApiIntegracao ]
+			public static class MagentoApiIntegracao
+			{
+				public static readonly int VERSAO_API_MAGENTO_V1_SOAP_XML = 0;
+				public static readonly int VERSAO_API_MAGENTO_V2_REST_JSON = 2;
+			}
+			#endregion
+
+			#region [ Magento2RestApi ]
+			public static class Magento2RestApi
+			{
+				// The Timeout applies to the entire request and response, not individually to the GetRequestStream and GetResponse method calls
+				public static readonly int REQUEST_TIMEOUT_EM_MS = 3 * 60 * 1000;
+				public static readonly int TIMEOUT_READER_WRITER_LOCK_EM_MS = 60 * 1000;
+
+				public static readonly string TIPO_ENDERECO__COBRANCA = "COB";
+				public static readonly string TIPO_ENDERECO__ENTREGA = "ETG";
 			}
 			#endregion
 

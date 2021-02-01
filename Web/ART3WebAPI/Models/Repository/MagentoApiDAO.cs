@@ -50,7 +50,11 @@ namespace ART3WebAPI.Models.Repository
 					strSql = "SELECT" +
 							" magento_api_urlWebService," +
 							" magento_api_username," +
-							" magento_api_password" +
+							" magento_api_password," +
+							" magento_api_versao," +
+							" magento_api_rest_endpoint," +
+							" magento_api_rest_access_token," +
+							" magento_api_rest_force_get_sales_order_by_entity_id" +
 						" FROM t_LOJA" +
 						" WHERE" +
 							" (loja = '" + loja + "')";
@@ -76,6 +80,10 @@ namespace ART3WebAPI.Models.Repository
 					parameters.username = BD.readToString(row["magento_api_username"]);
 					senha_criptografada = BD.readToString(row["magento_api_password"]);
 					parameters.password = Domains.Criptografia.Descriptografa(senha_criptografada);
+					parameters.api_versao = BD.readToInt(row["magento_api_versao"]);
+					parameters.api_rest_endpoint = BD.readToString(row["magento_api_rest_endpoint"]);
+					parameters.api_rest_access_token = BD.readToString(row["magento_api_rest_access_token"]);
+					parameters.api_rest_force_get_sales_order_by_entity_id = BD.readToByte(row["magento_api_rest_force_get_sales_order_by_entity_id"]);
 				}
 				finally
 				{
@@ -110,7 +118,9 @@ namespace ART3WebAPI.Models.Repository
 			pedidoXml.dt_cadastro = BD.readToDateTime(rowDados["dt_cadastro"]);
 			pedidoXml.dt_hr_cadastro = BD.readToDateTime(rowDados["dt_hr_cadastro"]);
 			pedidoXml.usuario_cadastro = BD.readToString(rowDados["usuario_cadastro"]);
+			pedidoXml.magento_api_versao = BD.readToInt(rowDados["magento_api_versao"]);
 			pedidoXml.pedido_xml = BD.readToString(rowDados["pedido_xml"]);
+			pedidoXml.pedido_json = BD.readToString(rowDados["pedido_json"]);
 			pedidoXml.cpfCnpjIdentificado = BD.readToString(rowDados["cpfCnpjIdentificado"]);
 			pedidoXml.increment_id = BD.readToInt(rowDados["increment_id"]);
 			pedidoXml.created_at = BD.readToString(rowDados["created_at"]);
@@ -1031,7 +1041,7 @@ namespace ART3WebAPI.Models.Repository
 		#endregion
 
 		#region [ getMagentoPedidoXmlByTicket ]
-		public static MagentoErpPedidoXml getMagentoPedidoXmlByTicket(string numeroPedidoMagento, string operationControlTicket, out string msg_erro)
+		public static MagentoErpPedidoXml getMagentoPedidoXmlByTicket(string numeroPedidoMagento, string operationControlTicket, int api_versao, out string msg_erro)
 		{
 			#region [ Declarações ]
 			MagentoErpPedidoXml pedidoXml;
@@ -1073,7 +1083,8 @@ namespace ART3WebAPI.Models.Repository
 							" FROM t_MAGENTO_API_PEDIDO_XML" +
 							" WHERE" +
 								" (operationControlTicket = '" + operationControlTicket + "')" +
-								" AND (pedido_magento = '" + numeroPedidoMagento + "')";
+								" AND (pedido_magento = '" + numeroPedidoMagento + "')" +
+								" AND (magento_api_versao = " + api_versao.ToString() + ")";
 					#endregion
 
 					#region [ Executa a consulta ]
