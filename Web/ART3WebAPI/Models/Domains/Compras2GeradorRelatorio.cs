@@ -15,22 +15,21 @@ namespace ART3WebAPI.Models.Domains
     {
 
         #region [ Constantes ]
-        private const int LIN_INICIO_REGISTROS = 17;
-        private const int LIN_CABECALHO = 16; 
+        private const int LIN_INICIO_REGISTROS = 16;
+        private const int LIN_CABECALHO = 15; 
         #endregion
         
 
-        public static Task GenerateXLS(List<Compras> datasource, string filePath, string dt_inicio, string dt_termino, string fabricante,string produto, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string nf, string dt_nf_inicio, string dt_nf_termino, string visao, string detalhamento)
+        public static Task GenerateXLS(List<Compras> datasource, string filePath, string tipo_periodo, string dt_inicio, string dt_termino, string fabricante,string produto, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string nf, string dt_nf_inicio, string dt_nf_termino, string visao, string detalhamento)
         {
             return Task.Run(() =>
             {
-
                 int totalMeses = 0;
                 if (visao.Equals("ANALITICA"))
                 {
                     if (detalhamento != "SINTETICO_NF")
                     {
-                        if (!string.IsNullOrEmpty(dt_inicio))
+                        if (tipo_periodo.Equals(Global.Cte.Relatorio.Compras2.COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE))
                         {
                             totalMeses = ((Global.converteDdMmYyyyParaDateTime(dt_termino).Year - Global.converteDdMmYyyyParaDateTime(dt_inicio).Year) * 12) + (Global.converteDdMmYyyyParaDateTime(dt_termino).Month - Global.converteDdMmYyyyParaDateTime(dt_inicio).Month) + 1;
                         }
@@ -43,7 +42,7 @@ namespace ART3WebAPI.Models.Domains
 
                 int NumRegistros = datasource.Count;
                 DateTime dt1, dt2;
-                if (!string.IsNullOrEmpty(dt_inicio))
+                if (tipo_periodo.Equals(Global.Cte.Relatorio.Compras2.COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE))
                 {
                     dt1 = Global.converteDdMmYyyyParaDateTime(dt_inicio);
                     dt2 = Global.converteDdMmYyyyParaDateTime(dt_termino);
@@ -53,20 +52,13 @@ namespace ART3WebAPI.Models.Domains
                     dt1 = Global.converteDdMmYyyyParaDateTime(dt_nf_inicio);
                     dt2 = Global.converteDdMmYyyyParaDateTime(dt_nf_termino);
                 }
-            
-
 
                 string periodoentrada = "";
-                if (!string.IsNullOrEmpty(dt_inicio))
-                    periodoentrada = dt_inicio;
-                if (!string.IsNullOrEmpty(dt_termino))
-                {
-                    if (!string.IsNullOrEmpty(periodoentrada))
-                        periodoentrada = "de " + periodoentrada + " a ";
-                    periodoentrada = periodoentrada + dt_termino;
-                }
-                if (periodoentrada == "")
-                    periodoentrada = "N.I";
+				if (tipo_periodo.Equals(Global.Cte.Relatorio.Compras2.COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE))
+				{
+					periodoentrada = "de " + dt_inicio + " a " + dt_termino;
+				}
+				if (periodoentrada == "") periodoentrada = "N.I";
 
                 if (!string.IsNullOrEmpty(fabricante))
                     fabricante = fabricante.Replace("_", ", ");
@@ -90,17 +82,13 @@ namespace ART3WebAPI.Models.Domains
                     pos_mercado = "N.I";
                 if (string.IsNullOrEmpty(nf))
                     nf = "N.I";
-                string emissaoNF = "";
-                if (!string.IsNullOrEmpty(dt_nf_inicio))
-                    emissaoNF = dt_nf_inicio;
-                if (!string.IsNullOrEmpty(dt_nf_termino))
-                {
-                    if (!string.IsNullOrEmpty(emissaoNF))
-                            emissaoNF = "de " + emissaoNF + " a ";
-                    emissaoNF = emissaoNF + dt_nf_termino;
-                }
-                if (emissaoNF == "")
-                    emissaoNF = "N.I";
+
+				string emissaoNF = "";
+				if (tipo_periodo.Equals(Global.Cte.Relatorio.Compras2.COD_CONSULTA_POR_PERIODO_EMISSAO_NF_ENTRADA))
+				{
+					emissaoNF = "de " + dt_nf_inicio + " a " + dt_nf_termino;
+				}
+				if (emissaoNF == "") emissaoNF = "N.I";
 
                 using (ExcelPackage pck = new ExcelPackage())
                 {
@@ -148,10 +136,17 @@ namespace ART3WebAPI.Models.Domains
 
 
                     #region [ Filtro ]
-                    ws.Cells["B2:M12"].Style.Font.Bold = true;
+                    ws.Cells["B2:M13"].Style.Font.Bold = true;
                     ws.Cells["B2"].Style.Font.Size = 12;
                     ws.Cells["B2"].Value = "Compras II";
-                    ws.Cells["B3"].Value = "Período: " + periodoentrada;
+					if (tipo_periodo.Equals(Global.Cte.Relatorio.Compras2.COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE))
+					{
+						ws.Cells["B3"].Value = "Período da Entrada no Estoque: " + periodoentrada;
+					}
+					else
+					{
+						ws.Cells["B3"].Value = "Período da Emissão NF Entrada: " + emissaoNF;
+					}
                     ws.Cells["B4"].Value = "Fabricante(s): " + fabricante;
                     ws.Cells["B5"].Value = "Grupo(s) de produtos: " + grupo;
                     ws.Cells["B6"].Value = "Subgrupo(s) de produtos: " + subgrupo;
@@ -160,10 +155,9 @@ namespace ART3WebAPI.Models.Domains
                     ws.Cells["B9"].Value = "Ciclo: " + ciclo;
                     ws.Cells["B10"].Value = "Posição Mercado: " + pos_mercado;
                     ws.Cells["B11"].Value = "Nº Nota Fiscal: " + nf;
-                    ws.Cells["B12"].Value = "Emissão NF Entrada: " + emissaoNF;
-                    ws.Cells["B13"].Value = "Tipo de Detalhamento: " + Global.getDetalhamento(detalhamento);
-                    ws.Cells["B14"].Value = "Emissão: " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
-                    ws.Cells["L15:M15"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+                    ws.Cells["B12"].Value = "Tipo de Detalhamento: " + Global.getDetalhamento(detalhamento);
+                    ws.Cells["B13"].Value = "Emissão: " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+                    ws.Cells["L14:M14"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
                     #endregion
 
                     #region [ Cabeçalho ]
