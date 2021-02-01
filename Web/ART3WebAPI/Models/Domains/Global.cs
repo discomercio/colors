@@ -463,6 +463,19 @@ namespace ART3WebAPI.Models.Domains
 				public const string NSU_CADASTRO_CLIENTES = "CADASTRO_CLIENTES";
 			}
 			#endregion
+
+			#region [ Relatorio (constantes usadas por relatórios) ]
+			public static class Relatorio
+			{
+				#region [ Compras2 ]
+				public static class Compras2
+				{
+					public const string COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE = "ENT_ESTOQ";
+					public const string COD_CONSULTA_POR_PERIODO_EMISSAO_NF_ENTRADA = "EMI_NF";
+				}
+				#endregion
+			}
+			#endregion
 		}
 		#endregion
 
