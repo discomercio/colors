@@ -567,7 +567,7 @@ function limpaCampoSelect(c) {
 				}
 			}
 
-			if (sTipoPeriodo = "<%=COD_CONSULTA_POR_PERIODO_EMISSAO_NF_ENTRADA%>") {
+			if (sTipoPeriodo == "<%=COD_CONSULTA_POR_PERIODO_EMISSAO_NF_ENTRADA%>") {
 				if (trim(f.c_dt_nf_inicio.value) == "") {
 					alert("Informe a data de início do período!");
 					f.c_dt_nf_inicio.focus();
