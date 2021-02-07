@@ -503,6 +503,9 @@
 	Const COD_SISTEMA_RESPONSAVEL_CADASTRO__UNIS = 3
 	Const COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP_WEBAPI = 4
 
+	Const VERSAO_API_MAGENTO_V1_SOAP_XML = 0
+	Const VERSAO_API_MAGENTO_V2_REST_JSON = 2
+
   ' CÓDIGOS PARA NÍVEL DOS USUÁRIOS
 	Const ID_VENDEDOR		= "V"
 	Const ID_SEPARADOR		= "S"
@@ -1781,6 +1784,23 @@
 		dim comissao_indicacao
 		dim PercMaxSenhaDesconto
 		dim PercMaxDescSemZerarRT
+		dim id_plano_contas_empresa
+		dim id_plano_contas_grupo
+		dim id_plano_contas_conta
+		dim natureza
+		dim perc_max_comissao
+		dim perc_max_comissao_e_desconto
+		dim perc_max_comissao_e_desconto_nivel2
+		dim perc_max_comissao_e_desconto_nivel2_pj
+		dim perc_max_comissao_e_desconto_pj
+		dim magento_api_urlWebService
+		dim magento_api_username
+		dim magento_api_password
+		dim unidade_negocio
+		dim magento_api_versao
+		dim magento_api_rest_endpoint
+		dim magento_api_rest_access_token
+		dim magento_api_rest_force_get_sales_order_by_entity_id
 		end class
 	
 	class cl_CLIENTE

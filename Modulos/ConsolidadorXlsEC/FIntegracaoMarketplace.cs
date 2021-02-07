@@ -6,6 +6,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -41,10 +42,10 @@ namespace ConsolidadorXlsEC
         private SqlCommand _cmCommandPedidoRecebidoParaSim;
 
         int _flagPedidoUsarMemorizacaoCompletaEnderecos;
-        #endregion
+		#endregion
 
-        #region [ Construtor ]
-        public FIntegracaoMarketplace()
+		#region [ Construtor ]
+		public FIntegracaoMarketplace()
         {
             InitializeComponent();
         }
@@ -251,10 +252,10 @@ namespace ConsolidadorXlsEC
 
                     #region [ Carrega os dados no grid ]
                     grdDados.DataSource = dtbConsulta;
-                    #endregion
+					#endregion
 
-                    #region [ Exibe o grid sem nenhuma linha pré-selecionada ]
-                    grdDados.ClearSelection();
+					#region [ Exibe o grid sem nenhuma linha pré-selecionada ]
+					grdDados.ClearSelection();
                     #endregion                    
                 }
                 finally
@@ -312,29 +313,53 @@ namespace ConsolidadorXlsEC
         private void trataBotaoConfirma()
         {
             #region [ Declarações ]
-            bool blnEnviouOk;
+			bool blnRequisicaoApiOk;
             int intCounter = 0;
             string xmlReqSoap;
             string xmlRespSoap;
-            string sessionId;
+			string sessionId = "";
+			string strMsgErro;
+			string msg_erro;
             string msg_erro_aux;
+			string msg_erro_api;
             string strOrigemPedidoAux;
             string strIncrementId = "";
+			string strEntityId = "";
             string strStatus = "";
             string strComment = "";
-            List<DataGridViewRow> linhasSelecionadas = new List<DataGridViewRow>();
+			string sJson = null;
+			string urlParamReqRest;
+			string respJson;
+			string urlBaseAddress = "";
+			List<DataGridViewRow> linhasSelecionadas = new List<DataGridViewRow>();
             List<DataGridViewRow> salesOrderInfoComStatusOk = new List<DataGridViewRow>();
             List<DataGridViewRow> salesOrderInfoComStatusInvalido = new List<DataGridViewRow>();
             SalesOrderInfo salesOrderInfoAux = new SalesOrderInfo();
             SalesOrderAddCommentRequest addCommentRequest;
             SalesOrderAddCommentResponse addCommentResponse;
+			Magento2AddComment mage2AddCommentRequest;
             FConfirmaPedidoStatus fConfirmaPedidoStatus;
             DialogResult drConfirmaPedidoStatus;
-            #endregion
-            
-            #region [ Captura os pedidos selecionados ]
-            foreach (DataGridViewRow row in grdDados.Rows)
+			Loja lojaLoginParameters;
+			Magento2SalesOrderInfo mage2SalesOrderInfo;
+			HttpResponseMessage response;
+			#endregion
+
+			#region [ Inicialização ]
+			lojaLoginParameters = FMain.contextoBD.AmbienteBase.lojaDAO.GetLoja(FMain.contextoBD.AmbienteBase.NumeroLojaArclube, out msg_erro_aux);
+			if (lojaLoginParameters == null)
+			{
+				strMsgErro = "Falha ao tentar recuperar os parâmetros de login da API do Magento para a loja " + FMain.contextoBD.AmbienteBase.NumeroLojaArclube + "!";
+				if (msg_erro_aux.Length > 0) strMsgErro += "\n" + msg_erro_aux;
+				avisoErro(strMsgErro);
+				return;
+			}
+			#endregion
+
+			#region [ Captura os pedidos selecionados ]
+			foreach (DataGridViewRow row in grdDados.Rows)
                 row.DefaultCellStyle.BackColor = Color.White;
+
             foreach (DataGridViewRow row in grdDados.Rows)
             {
                 if (Convert.ToBoolean(row.Cells[colGrdDadosCheckBox.Name].Value) == true)
@@ -372,220 +397,274 @@ namespace ConsolidadorXlsEC
 
             info(ModoExibicaoMensagemRodape.EmExecucao, "verificando status dos pedidos no magento");
 
-            #region [ Requisição para efetuar login ]
-            xmlReqSoap = Magento.montaRequisicaoLogin(Global.Cte.Magento.USER_NAME, Global.Cte.Magento.PASSWORD);
-            blnEnviouOk = Magento.enviaRequisicaoComRetry(xmlReqSoap, Global.Cte.Magento.Transacao.login, out xmlRespSoap, out msg_erro_aux);
-            #endregion
+			if (lojaLoginParameters.magento_api_versao == Global.Cte.MagentoApiIntegracao.VERSAO_API_MAGENTO_V1_SOAP_XML)
+			{
+				#region [ Requisição para efetuar login ]
+				xmlReqSoap = Magento.montaRequisicaoLogin(Global.Cte.Magento.USER_NAME, Global.Cte.Magento.PASSWORD);
+				blnRequisicaoApiOk = Magento.enviaRequisicaoComRetry(xmlReqSoap, Global.Cte.Magento.Transacao.login, out xmlRespSoap, out msg_erro_aux);
+				if (!blnRequisicaoApiOk)
+				{
+					info(ModoExibicaoMensagemRodape.Normal);
+					avisoErro("Erro ao efetuar logon na API do Magento: \n\n" + msg_erro_aux);
+					return;
+				}
+				#endregion
 
-            if (!blnEnviouOk)
-            {
-                info(ModoExibicaoMensagemRodape.Normal);
-                avisoErro("Erro ao efetuar logon na API do Magento: \n\n" + msg_erro_aux);
-                return;
-            }
+				#region [ Obtém a SessionId ]
+				sessionId = Magento.obtemSessionIdFromLoginResponse(xmlRespSoap, out msg_erro_aux);
 
-            #region [ Obtém a SessionId ]
-            sessionId = Magento.obtemSessionIdFromLoginResponse(xmlRespSoap, out msg_erro_aux);
-            #endregion
+				if ((sessionId ?? "").Length == 0)
+				{
+					info(ModoExibicaoMensagemRodape.Normal);
+					avisoErro("Falha ao tentar obter o SessionId!!");
+					return;
+				}
+				#endregion
+			}
 
-            if ((sessionId ?? "").Length == 0)
-            {
-                info(ModoExibicaoMensagemRodape.Normal);
-                avisoErro("Falha ao tentar obter o SessionId!!");
-                return;
-            }
+			try // Finally: encerra sessão Magento (SOAP API)
+			{
+				foreach (DataGridViewRow item in linhasSelecionadas)
+				{
+					intCounter++;
+					info(ModoExibicaoMensagemRodape.EmExecucao, "verificando status dos pedidos no magento: " + intCounter + " de " + linhasSelecionadas.Count);
 
-            try
-            {
-                foreach (DataGridViewRow item in linhasSelecionadas)
-                {
-                    intCounter++;
-                    info(ModoExibicaoMensagemRodape.EmExecucao, "verificando status dos pedidos no magento: " + intCounter + " de " + linhasSelecionadas.Count);
+					#region [ Recupera o status dos pedidos ]
+					if (lojaLoginParameters.magento_api_versao == Global.Cte.MagentoApiIntegracao.VERSAO_API_MAGENTO_V1_SOAP_XML)
+					{
+						xmlReqSoap = Magento.montaRequisicaoCallSalesOrderInfo(sessionId, item.Cells[colGrdDadosNumMagento.Name].Value.ToString());
+						blnRequisicaoApiOk = Magento.enviaRequisicaoComRetry(xmlReqSoap, Global.Cte.Magento.Transacao.call, out xmlRespSoap, out msg_erro_api);
+						if (blnRequisicaoApiOk)
+						{
+							salesOrderInfoAux = Magento.decodificaXmlSalesOrderInfoResponse(xmlRespSoap, out msg_erro_aux);
+						}
+					}
+					else
+					{
+						mage2SalesOrderInfo = Magento2.getSalesOrderInfo(item.Cells[colGrdDadosNumMagento.Name].Value.ToString(), lojaLoginParameters, out sJson, out msg_erro_api);
+						blnRequisicaoApiOk = (mage2SalesOrderInfo != null);
+						if (blnRequisicaoApiOk)
+						{
+							salesOrderInfoAux = Magento2.decodificaSalesOrderInfoMage2ParaMage1(mage2SalesOrderInfo, out msg_erro);
+						}
+					}
+					#endregion
 
-                    #region [ Recupera o status dos pedidos ]
-                    xmlReqSoap = Magento.montaRequisicaoCallSalesOrderInfo(sessionId, item.Cells[colGrdDadosNumMagento.Name].Value.ToString());
-                    blnEnviouOk = Magento.enviaRequisicaoComRetry(xmlReqSoap, Global.Cte.Magento.Transacao.call, out xmlRespSoap, out msg_erro_aux);
+					#region [ Processa o status do pedido ]
+					if (blnRequisicaoApiOk)
+					{
+						if (!salesOrderInfoAux.faultResponse.isFaultResponse)
+						{
+							if (isSalesOrderStatusValido(salesOrderInfoAux.status))
+							{
+								item.Cells[colGrdDadosStatus.Name].Value = salesOrderInfoAux.status;
+								item.Cells[colGrdDadosStatusDescricao.Name].Value = getDescricaoStatusMagento(salesOrderInfoAux.status);
+								// Obs: na conversão dos dados do Magento 2 para Magento 1, o campo 'entity_id' do Magento 2 é armazenado no campo 'order_id' do Magento 1
+								item.Cells[colGrdDadosOrderEntityId.Name].Value = salesOrderInfoAux.order_id;
+								salesOrderInfoComStatusOk.Add(item);
+							}
+							else
+							{
+								item.Cells[colGrdDadosStatus.Name].Value = salesOrderInfoAux.status;
+								item.Cells[colGrdDadosStatusDescricao.Name].Value = getDescricaoStatusMagento(salesOrderInfoAux.status);
+								item.Cells[colGrdDadosMensagemStatus.Name].Style.ForeColor = Color.Red;
+								item.Cells[colGrdDadosMensagemStatus.Name].Value += "Falha: status inválido";
+								// Obs: na conversão dos dados do Magento 2 para Magento 1, o campo 'entity_id' do Magento 2 é armazenado no campo 'order_id' do Magento 1
+								item.Cells[colGrdDadosOrderEntityId.Name].Value = salesOrderInfoAux.order_id;
+								salesOrderInfoComStatusInvalido.Add(item);
+							}
+						}
+						else
+						{
+							item.Cells[colGrdDadosMensagemStatus.Name].Style.ForeColor = Color.Red;
+							item.Cells[colGrdDadosMensagemStatus.Name].Value += "Falha: falha ao tentar consultar o status no magento \t" + salesOrderInfoAux.faultResponse.faultstring;
+						}
+					}
+					else
+					{
+						info(ModoExibicaoMensagemRodape.Normal);
+						avisoErro("Erro ao enviar requisição de um dos pedidos!!\n\nA operação será cancelada!!\n\n" + msg_erro_api);
+						executaPesquisa();
+						return;
+					}
+					#endregion
+				}
 
-                    if (blnEnviouOk)
-                    {
-                        salesOrderInfoAux = Magento.decodificaXmlSalesOrderInfoResponse(xmlRespSoap, out msg_erro_aux);
-                        if (!salesOrderInfoAux.faultResponse.isFaultResponse)
-                        {
-                            if (isSalesOrderStatusValido(salesOrderInfoAux.status))
-                            {
-                                item.Cells[colGrdDadosStatus.Name].Value = salesOrderInfoAux.status;
-                                item.Cells[colGrdDadosStatusDescricao.Name].Value = getDescricaoStatusMagento(salesOrderInfoAux.status);
-                                salesOrderInfoComStatusOk.Add(item);
-                            }
-                            else
-                            {
-                                item.Cells[colGrdDadosStatus.Name].Value = salesOrderInfoAux.status;
-                                item.Cells[colGrdDadosStatusDescricao.Name].Value = getDescricaoStatusMagento(salesOrderInfoAux.status);
-                                item.Cells[colGrdDadosMensagemStatus.Name].Style.ForeColor = Color.Red;
-                                item.Cells[colGrdDadosMensagemStatus.Name].Value += "Falha: status inválido";
-                                salesOrderInfoComStatusInvalido.Add(item);
-                            } 
-                        }
-                        else
-                        {
-                            item.Cells[colGrdDadosMensagemStatus.Name].Style.ForeColor = Color.Red;
-                            item.Cells[colGrdDadosMensagemStatus.Name].Value += "Falha: falha ao tentar consultar o status no magento \t" + salesOrderInfoAux.faultResponse.faultstring;
-                        }
-                    }
-                    else
-                    {
-                        info(ModoExibicaoMensagemRodape.Normal);
-                        avisoErro("Erro ao enviar requisição de um dos pedidos!!\n\nA operação será cancelada!!\n\n" + msg_erro_aux);
-                        executaPesquisa();
-                        return;
-                    }
-                    #endregion
-                }
+				#region [ Exibe Form com os pedidos contendo status inválido ]
+				if (salesOrderInfoComStatusInvalido.Count > 0)
+				{
+					info(ModoExibicaoMensagemRodape.Normal);
+					fConfirmaPedidoStatus = new FConfirmaPedidoStatus(salesOrderInfoComStatusInvalido);
+					drConfirmaPedidoStatus = fConfirmaPedidoStatus.ShowDialog();
+					if (drConfirmaPedidoStatus != DialogResult.OK)
+					{
+						info(ModoExibicaoMensagemRodape.Normal);
+						avisoErro("Operação não realizada!!");
+						executaPesquisa();
+						return;
+					}
+				}
+				else
+					fConfirmaPedidoStatus = new FConfirmaPedidoStatus();
+				#endregion
 
-                #region [ Exibe Form com os pedidos contendo status inválido ]
-                if (salesOrderInfoComStatusInvalido.Count > 0)
-                {
-                    info(ModoExibicaoMensagemRodape.Normal);
-                    fConfirmaPedidoStatus = new FConfirmaPedidoStatus(salesOrderInfoComStatusInvalido);
-                    drConfirmaPedidoStatus = fConfirmaPedidoStatus.ShowDialog();
-                    if (drConfirmaPedidoStatus != DialogResult.OK)
-                    {
-                        info(ModoExibicaoMensagemRodape.Normal);
-                        avisoErro("Operação não realizada!!");
-                        executaPesquisa();
-                        return;
-                    }
-                }
-                else
-                    fConfirmaPedidoStatus = new FConfirmaPedidoStatus();
-                #endregion
-
-                #region [ Altera status dos pedidos no magento ]
-                intCounter = 0;
-                preparaSqlCommandPedidoRecebidoParaSim();
-                foreach (DataGridViewRow row in salesOrderInfoComStatusOk)
-                {
-                    intCounter++;
-                    info(ModoExibicaoMensagemRodape.EmExecucao, "alterando status dos pedidos no magento: " + intCounter + " de " + salesOrderInfoComStatusOk.Count);
-                    strOrigemPedidoAux = row.Cells[colGrdDadosCodigoOrigemPai.Name].Value.ToString();
-                    strOrigemPedidoAux = "|" + strOrigemPedidoAux + "|";
+				#region [ Altera status dos pedidos no magento ]
+				intCounter = 0;
+				preparaSqlCommandPedidoRecebidoParaSim();
+				foreach (DataGridViewRow row in salesOrderInfoComStatusOk)
+				{
+					intCounter++;
+					info(ModoExibicaoMensagemRodape.EmExecucao, "alterando status dos pedidos no magento: " + intCounter + " de " + salesOrderInfoComStatusOk.Count);
+					strOrigemPedidoAux = row.Cells[colGrdDadosCodigoOrigemPai.Name].Value.ToString();
+					strOrigemPedidoAux = "|" + strOrigemPedidoAux + "|";
 
 
-                    if (ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_SKYHUB.ToUpper().IndexOf(strOrigemPedidoAux.ToUpper()) != -1)
-                    {
-                        #region [ Tratamento dos pedidos skyhub ]
-                        strIncrementId = row.Cells[colGrdDadosNumMagento.Name].Value.ToString();
-                        strStatus = "complete";
-                        strComment = "";
-                        #endregion
-                    }
-                    else if (ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_INTEGRACOMMERCE.ToUpper().IndexOf(strOrigemPedidoAux.ToUpper()) != -1)
-                    {
-                        #region [ Tratamento dos pedidos Integra Commerce ]
-                        strIncrementId = row.Cells[colGrdDadosNumMagento.Name].Value.ToString();
-                        strStatus = "delivered";
-                        strComment = Global.formataDataDdMmYyyyComSeparador(Convert.ToDateTime(row.Cells[colGrdDadosRecebido.Name].Value));
-                        #endregion
-                    }
-                    else if (ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_ANYMARKET.ToUpper().IndexOf(strOrigemPedidoAux.ToUpper()) != -1)
-                    {
-                        #region [ Tratamento dos pedidos AnyMarket ]
-                        strIncrementId = row.Cells[colGrdDadosNumMagento.Name].Value.ToString();
-                        strStatus = "complete";
-                        strComment = "";
-                        #endregion
-                    }
-                    else
-                        continue;
+					if (ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_SKYHUB.ToUpper().IndexOf(strOrigemPedidoAux.ToUpper()) != -1)
+					{
+						#region [ Tratamento dos pedidos skyhub ]
+						strIncrementId = row.Cells[colGrdDadosNumMagento.Name].Value.ToString();
+						strEntityId = row.Cells[colGrdDadosOrderEntityId.Name].Value.ToString();
+						strStatus = "complete";
+						strComment = "";
+						#endregion
+					}
+					else if (ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_INTEGRACOMMERCE.ToUpper().IndexOf(strOrigemPedidoAux.ToUpper()) != -1)
+					{
+						#region [ Tratamento dos pedidos Integra Commerce ]
+						strIncrementId = row.Cells[colGrdDadosNumMagento.Name].Value.ToString();
+						strEntityId = row.Cells[colGrdDadosOrderEntityId.Name].Value.ToString();
+						strStatus = "delivered";
+						strComment = Global.formataDataDdMmYyyyComSeparador(Convert.ToDateTime(row.Cells[colGrdDadosRecebido.Name].Value));
+						#endregion
+					}
+					else if (ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_ANYMARKET.ToUpper().IndexOf(strOrigemPedidoAux.ToUpper()) != -1)
+					{
+						#region [ Tratamento dos pedidos AnyMarket ]
+						strIncrementId = row.Cells[colGrdDadosNumMagento.Name].Value.ToString();
+						strEntityId = row.Cells[colGrdDadosOrderEntityId.Name].Value.ToString();
+						strStatus = "complete";
+						strComment = "";
+						#endregion
+					}
+					else
+						continue;
 
-                    #region [ Enviar requisição AddComment ]
-                    addCommentRequest = new SalesOrderAddCommentRequest();
-                    addCommentRequest.orderIncrementId = strIncrementId;
-                    addCommentRequest.status = strStatus;
-                    addCommentRequest.comment = strComment;
+					if (lojaLoginParameters.magento_api_versao == Global.Cte.MagentoApiIntegracao.VERSAO_API_MAGENTO_V1_SOAP_XML)
+					{
+						#region [ Enviar requisição AddComment (API SOAP) ]
+						addCommentRequest = new SalesOrderAddCommentRequest();
+						addCommentRequest.orderIncrementId = strIncrementId;
+						addCommentRequest.status = strStatus;
+						addCommentRequest.comment = strComment;
 
-                    xmlReqSoap = Magento.montaRequisicaoSalesOrderAddComment(sessionId, addCommentRequest);
-                    blnEnviouOk = Magento.enviaRequisicaoComRetry(xmlReqSoap, Global.Cte.Magento.Transacao.call, out xmlRespSoap, out msg_erro_aux);
+						xmlReqSoap = Magento.montaRequisicaoSalesOrderAddComment(sessionId, addCommentRequest);
+						blnRequisicaoApiOk = Magento.enviaRequisicaoComRetry(xmlReqSoap, Global.Cte.Magento.Transacao.call, out xmlRespSoap, out msg_erro_api);
+						if (blnRequisicaoApiOk)
+						{
+							msg_erro_aux = "";
+							addCommentResponse = Magento.decodificaXmlSalesOrderAddCommentResponse(xmlRespSoap, out msg_erro_api);
+							if (addCommentResponse.faultResponse.isFaultResponse)
+							{
+								blnRequisicaoApiOk = false;
+								row.Cells[colGrdDadosMensagemStatus.Name].Style.ForeColor = Color.Red;
+								row.Cells[colGrdDadosMensagemStatus.Name].Value += "Falha: falha ao atualizar status no magento \t" + addCommentResponse.faultResponse.faultstring;
+							}
+						}
+						else
+						{
+							row.Cells[colGrdDadosMensagemStatus.Name].Style.ForeColor = Color.Red;
+							row.Cells[colGrdDadosMensagemStatus.Name].Value += "Falha: falha ao atualizar status no magento \t" + msg_erro_api;
+						}
+						#endregion
+					}
+					else
+					{
+						#region [ Enviar requisição AddComment (API REST) ]
+						mage2AddCommentRequest = new Magento2AddComment();
+						// No Magento 2, o campo 'parent_id' deve informar o valor do campo 'entity_id' do pedido e não o 'increment_id'
+						// Obs: na conversão dos dados do Magento 2 para Magento 1, o campo 'entity_id' do Magento 2 é armazenado no campo 'order_id' do Magento 1
+						mage2AddCommentRequest.statusHistory.parent_id = strEntityId;
+						mage2AddCommentRequest.statusHistory.status = strStatus;
+						mage2AddCommentRequest.statusHistory.is_customer_notified = "0";
+						mage2AddCommentRequest.statusHistory.entity_name = "order";
+						mage2AddCommentRequest.statusHistory.comment = strComment.Replace("\r\n", "\n");
 
-                    if (blnEnviouOk)
-                    {
-                        msg_erro_aux = "";
-                        addCommentResponse = Magento.decodificaXmlSalesOrderAddCommentResponse(xmlRespSoap, out msg_erro_aux);
-                        if (!addCommentResponse.faultResponse.isFaultResponse)
-                        {
-                            if (msg_erro_aux.Length > 0)
-                            {
-                                row.Cells[colGrdDadosMensagemStatus.Name].Style.ForeColor = Color.Red;
-                                row.Cells[colGrdDadosMensagemStatus.Name].Value += "Falha: falha ao tentar atualizar status no magento \t" + msg_erro_aux;
-                            }
-                            else
-                            {
-                                row.Cells[colGrdDadosMensagemStatus.Name].Value += "status atualizado no magento";
-                                if (!setPedidoRecebidoParaSim(row.Cells[colGrdDadosNumPedido.Name].Value.ToString(), out msg_erro_aux))
-                                {
-                                    row.Cells[colGrdDadosMensagemStatus.Name].Style.ForeColor = Color.Orange;
-                                    row.Cells[colGrdDadosMensagemStatus.Name].Value = "Parcial: " + row.Cells[colGrdDadosMensagemStatus.Name].Value;
-                                    row.Cells[colGrdDadosMensagemStatus.Name].Value += "; falha ao tentar baixar no sistema interno \t" + msg_erro_aux;
-                                }
-                                else
-                                {
-                                    row.Cells[colGrdDadosMensagemStatus.Name].Style.ForeColor = Color.Green;
-                                    row.Cells[colGrdDadosMensagemStatus.Name].Value = "Sucesso: " + row.Cells[colGrdDadosMensagemStatus.Name].Value;
-                                    row.Cells[colGrdDadosMensagemStatus.Name].Value += "; baixa no sistema interno";
-                                }
-                            }
-                        }
-                        else
-                        {
-                            row.Cells[colGrdDadosMensagemStatus.Name].Style.ForeColor = Color.Red;
-                            row.Cells[colGrdDadosMensagemStatus.Name].Value += "Falha: falha ao atualizar status no magento \t" + addCommentResponse.faultResponse.faultstring;
-                        }
+						urlParamReqRest = Magento2.montaRequisicaoPostSalesOrderAddComment(strEntityId, lojaLoginParameters.magento_api_rest_endpoint, out urlBaseAddress);
+						blnRequisicaoApiOk = Magento2.enviaRequisicaoPost(urlParamReqRest, mage2AddCommentRequest, lojaLoginParameters.magento_api_rest_access_token, urlBaseAddress, out respJson, out response, out msg_erro_api);
+						if (!blnRequisicaoApiOk)
+						{
+							row.Cells[colGrdDadosMensagemStatus.Name].Style.ForeColor = Color.Red;
+							row.Cells[colGrdDadosMensagemStatus.Name].Value += "Falha: falha ao atualizar status no magento \t" + msg_erro_api;
+						}
+						#endregion
+					}
 
-                    }
-                    else
-                    {
-                        row.Cells[colGrdDadosMensagemStatus.Name].Style.ForeColor = Color.Red;
-                        row.Cells[colGrdDadosMensagemStatus.Name].Value += "Falha: falha ao atualizar status no magento \t" + msg_erro_aux;
-                    }
-                    #endregion
-                }
-                #endregion
+					#region [ Processa status de retorno da requisição AddComment ]
+					if (blnRequisicaoApiOk)
+					{
+						if (msg_erro_api.Length > 0)
+						{
+							row.Cells[colGrdDadosMensagemStatus.Name].Style.ForeColor = Color.Red;
+							row.Cells[colGrdDadosMensagemStatus.Name].Value += "Falha: falha ao tentar atualizar status no magento \t" + msg_erro_api;
+						}
+						else
+						{
+							row.Cells[colGrdDadosMensagemStatus.Name].Value += "status atualizado no magento";
+							if (!setPedidoRecebidoParaSim(row.Cells[colGrdDadosNumPedido.Name].Value.ToString(), out msg_erro_aux))
+							{
+								row.Cells[colGrdDadosMensagemStatus.Name].Style.ForeColor = Color.Orange;
+								row.Cells[colGrdDadosMensagemStatus.Name].Value = "Parcial: " + row.Cells[colGrdDadosMensagemStatus.Name].Value;
+								row.Cells[colGrdDadosMensagemStatus.Name].Value += "; falha ao tentar baixar no sistema interno \t" + msg_erro_aux;
+							}
+							else
+							{
+								row.Cells[colGrdDadosMensagemStatus.Name].Style.ForeColor = Color.Green;
+								row.Cells[colGrdDadosMensagemStatus.Name].Value = "Sucesso: " + row.Cells[colGrdDadosMensagemStatus.Name].Value;
+								row.Cells[colGrdDadosMensagemStatus.Name].Value += "; baixa no sistema interno";
+							}
+						}
+					}
+					#endregion
+				}
+				#endregion
 
-                #region [ Baixa no BD pedidos com status inválido ]
-                intCounter = 0;
-                foreach (DataGridViewRow row in fConfirmaPedidoStatus.LinhasSelecionadas)
-                {
-                    intCounter++;
-                    info(ModoExibicaoMensagemRodape.EmExecucao, "baixando no banco de dados pedidos com status inválidos " + intCounter + " de " + fConfirmaPedidoStatus.LinhasSelecionadas.Count);
+				#region [ Baixa no BD pedidos com status inválido ]
+				intCounter = 0;
+				foreach (DataGridViewRow row in fConfirmaPedidoStatus.LinhasSelecionadas)
+				{
+					intCounter++;
+					info(ModoExibicaoMensagemRodape.EmExecucao, "baixando no banco de dados pedidos com status inválidos " + intCounter + " de " + fConfirmaPedidoStatus.LinhasSelecionadas.Count);
 
-                    if (!setPedidoRecebidoParaSim(row.Cells[colGrdDadosNumPedido.Name].Value.ToString(), out msg_erro_aux))
-                    {
-                        row.Cells[colGrdDadosMensagemStatus.Name].Style.ForeColor = Color.Red;
-                        row.Cells[colGrdDadosMensagemStatus.Name].Value += "; falha ao tentar baixar no sistema interno \t" + msg_erro_aux;
-                    }
-                    else
-                    {
-                        row.Cells[colGrdDadosMensagemStatus.Name].Style.ForeColor = Color.Orange;
-                        row.Cells[colGrdDadosMensagemStatus.Name].Value = row.Cells[colGrdDadosMensagemStatus.Name].Value.ToString().Replace("Falha:", "Parcial:");
-                        row.Cells[colGrdDadosMensagemStatus.Name].Value += "; baixa no sistema interno";
-                    }
-                }
-                #endregion
-            }
-            finally
-            {
-                info(ModoExibicaoMensagemRodape.Normal);
+					if (!setPedidoRecebidoParaSim(row.Cells[colGrdDadosNumPedido.Name].Value.ToString(), out msg_erro_aux))
+					{
+						row.Cells[colGrdDadosMensagemStatus.Name].Style.ForeColor = Color.Red;
+						row.Cells[colGrdDadosMensagemStatus.Name].Value += "; falha ao tentar baixar no sistema interno \t" + msg_erro_aux;
+					}
+					else
+					{
+						row.Cells[colGrdDadosMensagemStatus.Name].Style.ForeColor = Color.Orange;
+						row.Cells[colGrdDadosMensagemStatus.Name].Value = row.Cells[colGrdDadosMensagemStatus.Name].Value.ToString().Replace("Falha:", "Parcial:");
+						row.Cells[colGrdDadosMensagemStatus.Name].Value += "; baixa no sistema interno";
+					}
+				}
+				#endregion
+			}
+			finally
+			{
+				info(ModoExibicaoMensagemRodape.Normal);
 
-                #region [ Encerra sessão ]
-                xmlReqSoap = Magento.montaRequisicaoEndSession(sessionId);
-                blnEnviouOk = Magento.enviaRequisicaoComRetry(xmlReqSoap, Global.Cte.Magento.Transacao.endSession, out xmlRespSoap, out msg_erro_aux);
-                #endregion
-
-                if (!blnEnviouOk)
-                {
-                    avisoErro(msg_erro_aux);
-                }
-            }
+				if (lojaLoginParameters.magento_api_versao == Global.Cte.MagentoApiIntegracao.VERSAO_API_MAGENTO_V1_SOAP_XML)
+				{
+					#region [ Encerra sessão ]
+					xmlReqSoap = Magento.montaRequisicaoEndSession(sessionId);
+					blnRequisicaoApiOk = Magento.enviaRequisicaoComRetry(xmlReqSoap, Global.Cte.Magento.Transacao.endSession, out xmlRespSoap, out msg_erro_aux);
+					if (!blnRequisicaoApiOk)
+					{
+						avisoErro(msg_erro_aux);
+					}
+					#endregion
+				}
+			}
         }
         #endregion
 

@@ -120,6 +120,8 @@ namespace ART3WebAPI.Controllers
 				#endregion
 			}
 
+			Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + "Retorno da requisição:\n" + result.ToString());
+
 			return result;
 		}
 		#endregion

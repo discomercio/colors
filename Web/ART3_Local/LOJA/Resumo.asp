@@ -1368,7 +1368,16 @@ function ConsultaPedidoMagentoAjax(f)
 	.fail(function (jqXHR, textStatus) {
 		$("#divAjaxRunning").hide();
 		var msgErro = "";
-		if (textStatus.toString().length > 0) msgErro = "Mensagem de Status: " + textStatus.toString();
+		var blnOmitirCampoResponseTextCompleto = false;
+		try {
+			if (jqXHR.responseText.toString().length > 0) {
+				var jsonResponseError = JSON.parse(jqXHR.responseText);
+				if (jsonResponseError.ExceptionMessage.toString().length > 0) { if (msgErro.length > 0) msgErro += "\n\n"; msgErro += jsonResponseError.ExceptionMessage.toString(); blnOmitirCampoResponseTextCompleto = true;}
+			}
+		} catch (e) { }
+
+		if (textStatus.toString().length > 0) { if (msgErro.length > 0) msgErro += "\n\n"; msgErro += "Mensagem de Status: " + textStatus.toString(); }
+
 		try {
 			if (jqXHR.status.toString().length > 0) {if (msgErro.length > 0) msgErro += "\n\n"; msgErro += "Status: " + jqXHR.status.toString();}
 		} catch (e) { }
@@ -1376,11 +1385,13 @@ function ConsultaPedidoMagentoAjax(f)
 		try {
 			if (jqXHR.statusText.toString().length > 0) {if (msgErro.length > 0) msgErro += "\n\n"; msgErro += "Descrição do Status: " + jqXHR.statusText.toString();}
 		} catch (e) { }
-		
-		try {
-			if (jqXHR.responseText.toString().length > 0) {if (msgErro.length > 0) msgErro += "\n\n"; msgErro += "Mensagem de Resposta: " + jqXHR.responseText.toString();}
-		} catch (e) { }
-		
+
+		if (!blnOmitirCampoResponseTextCompleto) {
+			try {
+				if (jqXHR.responseText.toString().length > 0) { if (msgErro.length > 0) msgErro += "\n\n"; msgErro += "Mensagem de Resposta: " + jqXHR.responseText.toString(); }
+			} catch (e) { }
+		}
+
 		alert("Falha ao tentar processar a requisição!!\n\n" + msgErro);
 	});
 }

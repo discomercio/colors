@@ -195,7 +195,9 @@ namespace ART3WebAPI.Models.Repository
 								"pedido_marketplace_completo, " +
 								"marketplace_codigo_origem, " +
 								"usuario_cadastro, " +
+								"magento_api_versao, " +
 								"pedido_xml, " +
+								"pedido_json, " +
 								"cpfCnpjIdentificado, " +
 								"increment_id, " +
 								"created_at, " +
@@ -242,7 +244,9 @@ namespace ART3WebAPI.Models.Repository
 								"@pedido_marketplace_completo, " +
 								"@marketplace_codigo_origem, " +
 								"@usuario_cadastro, " +
+								"@magento_api_versao, " +
 								"@pedido_xml, " +
+								"@pedido_json, " +
 								"@cpfCnpjIdentificado, " +
 								"@increment_id, " +
 								"@created_at, " +
@@ -289,7 +293,9 @@ namespace ART3WebAPI.Models.Repository
 					cmInsert.Parameters.Add("@pedido_marketplace_completo", SqlDbType.VarChar, 30);
 					cmInsert.Parameters.Add("@marketplace_codigo_origem", SqlDbType.VarChar, 3);
 					cmInsert.Parameters.Add("@usuario_cadastro", SqlDbType.VarChar, TAMANHO_CAMPO_USUARIO_CADASTRO);
+					cmInsert.Parameters.Add("@magento_api_versao", SqlDbType.Int);
 					cmInsert.Parameters.Add("@pedido_xml", SqlDbType.VarChar, -1); // varchar(max)
+					cmInsert.Parameters.Add("@pedido_json", SqlDbType.VarChar, -1); // varchar(max)
 					cmInsert.Parameters.Add("@cpfCnpjIdentificado", SqlDbType.VarChar, 14);
 					cmInsert.Parameters.Add("@increment_id", SqlDbType.Int);
 					cmInsert.Parameters.Add("@created_at", SqlDbType.VarChar, 19);
@@ -344,7 +350,9 @@ namespace ART3WebAPI.Models.Repository
 							cmInsert.Parameters["@pedido_marketplace_completo"].Value = (pedidoXml.pedido_marketplace_completo ?? "");
 							cmInsert.Parameters["@marketplace_codigo_origem"].Value = (pedidoXml.marketplace_codigo_origem ?? "");
 							cmInsert.Parameters["@usuario_cadastro"].Value = Global.leftStr((pedidoXml.usuario_cadastro ?? ""), TAMANHO_CAMPO_USUARIO_CADASTRO);
+							cmInsert.Parameters["@magento_api_versao"].Value = pedidoXml.magento_api_versao;
 							cmInsert.Parameters["@pedido_xml"].Value = (pedidoXml.pedido_xml ?? "");
+							cmInsert.Parameters["@pedido_json"].Value = (pedidoXml.pedido_json ?? "");
 							cmInsert.Parameters["@cpfCnpjIdentificado"].Value = Global.digitos((pedidoXml.cpfCnpjIdentificado ?? ""));
 							cmInsert.Parameters["@increment_id"].Value = pedidoXml.increment_id;
 							cmInsert.Parameters["@created_at"].Value = (pedidoXml.created_at ?? "");

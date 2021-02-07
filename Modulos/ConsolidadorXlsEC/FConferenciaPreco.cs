@@ -31,6 +31,7 @@ namespace ConsolidadorXlsEC
 		private int _qtdeMsgDisplayInformativo = 0;
 		private string _tituloBoxDisplayErro = "Mensagens de Erro";
 		private int _qtdeMsgDisplayErro = 0;
+		string MARGEM_MSG_NIVEL_2 = new string(' ', 8);
 		#endregion
 
 		#region [ Constantes ]
@@ -250,12 +251,310 @@ namespace ConsolidadorXlsEC
 		}
 		#endregion
 
+		#region [ processaConsultaMagentoSoapApi ]
+		private bool processaConsultaMagentoSoapApi(ref List<ProdutoConferePreco> vConferePreco, out string msg_erro)
+		{
+			#region [ Declarações ]
+			bool blnEnviouOk;
+			string sku;
+			string msg_erro_aux;
+			string strMsg;
+			string strMsgErro;
+			string xmlReqSoap;
+			string xmlRespSoap;
+			string magentoSessionId;
+			string sPercProgresso;
+			ProductList productList;
+			List<ProductList> vProductList;
+			ProductInfo productInfo;
+			#endregion
+
+			msg_erro = "";
+			try
+			{
+				#region [ Consulta dados no Magento v1 via API SOAP ]
+				try
+				{
+					info(ModoExibicaoMensagemRodape.EmExecucao, "Consultando relação de produtos cadastrados no Magento");
+
+					#region [ Login no Magento ]
+					xmlReqSoap = Magento.montaRequisicaoLogin(Global.Cte.Magento.USER_NAME, Global.Cte.Magento.PASSWORD);
+					blnEnviouOk = Magento.enviaRequisicaoComRetry(xmlReqSoap, Global.Cte.Magento.Transacao.login, out xmlRespSoap, out msg_erro_aux);
+					if (!blnEnviouOk)
+					{
+						strMsgErro = "Falha ao tentar realizar o login no Magento!!" + (msg_erro_aux.Length > 0 ? "\r\n" + msg_erro_aux : "");
+						adicionaErro(strMsgErro);
+						avisoErro(strMsgErro);
+						return false;
+					}
+
+					magentoSessionId = Magento.obtemSessionIdFromLoginResponse(xmlRespSoap, out msg_erro_aux);
+					if (magentoSessionId.Length == 0)
+					{
+						strMsgErro = "Falha ao tentar obter o SessionId";
+						adicionaErro(strMsgErro);
+						avisoErro(strMsgErro);
+						return false;
+					}
+
+					strMsg = "Sessão iniciada com sucesso no Magento";
+					adicionaDisplay(strMsg);
+					#endregion
+
+					try // Finally: executa EndSession no Magento
+					{
+						#region [ Obtém a relação de produtos no Magento ]
+						adicionaDisplay("Obtendo a relação de produtos cadastrados no Magento");
+						xmlReqSoap = Magento.montaRequisicaoCallCatalogProductList(magentoSessionId);
+						blnEnviouOk = Magento.enviaRequisicaoComRetry(xmlReqSoap, Global.Cte.Magento.Transacao.call, out xmlRespSoap, out msg_erro_aux);
+						if (!blnEnviouOk)
+						{
+							strMsgErro = "Falha ao tentar obter a relação de produtos cadastrados no Magento!!" + (msg_erro_aux.Length > 0 ? "\r\n" + msg_erro_aux : "");
+							adicionaErro(strMsgErro);
+							avisoErro(strMsgErro);
+							return false;
+						}
+						vProductList = Magento.decodificaXmlCatalogProductListResponse(xmlRespSoap, out msg_erro_aux);
+						#endregion
+
+						#region [ A partir do SKU, obtém o valor de product_id ]
+						info(ModoExibicaoMensagemRodape.EmExecucao, "Analisando relação de produtos do Magento");
+						for (int i = 0; i < vConferePreco.Count; i++)
+						{
+							try
+							{
+								// O uso de lambda expression com variáveis passadas por parâmetro gera o seguinte erro:
+								// Error	CS1628	Cannot use ref, out, or in parameter 'vConferePreco' inside an anonymous method, lambda expression, query expression, or local function
+								sku = vConferePreco[i].sku;
+								productList = vProductList.Single(p => p.sku.Equals(sku));
+							}
+							catch (Exception)
+							{
+								// O método Single() lança uma exception se houver 0 (zero) ou mais do que 1 elemento no resultado
+								productList = null;
+							}
+
+							if (productList == null)
+							{
+								strMsg = "O SKU " + vConferePreco[i].sku + " não foi encontrado na relação de produtos do Magento!!";
+								adicionaErro(strMsg);
+							}
+							else
+							{
+								vConferePreco[i].isCadastradoMagento = true;
+								vConferePreco[i].product_id = productList.product_id;
+								vConferePreco[i].name = productList.name;
+							}
+						}
+						#endregion
+
+						#region [ Para cada produto que foi encontrado o product_id, realiza a consulta detalhada para obter o preço no Magento ]
+						for (int i = 0; i < vConferePreco.Count; i++)
+						{
+							if (!vConferePreco[i].isCadastradoMagento) continue;
+							if (vConferePreco[i].product_id.Trim().Length == 0) continue;
+
+							sPercProgresso = (vConferePreco.Count == 0 ? "" : Global.sqlFormataDouble(100d * ((double)(i + 1) / (double)vConferePreco.Count), 0, ',') + "%");
+							strMsg = "Consultando produto no Magento: SKU " + vConferePreco[i].sku + "  (Etapa: " + (i + 1).ToString() + "/" + vConferePreco.Count.ToString() + ", Progresso: " + sPercProgresso + ")";
+							info(ModoExibicaoMensagemRodape.EmExecucao, strMsg);
+							adicionaDisplay(strMsg);
+							xmlReqSoap = Magento.montaRequisicaoCallCatalogProductInfo(magentoSessionId, vConferePreco[i].product_id);
+							blnEnviouOk = Magento.enviaRequisicaoComRetry(xmlReqSoap, Global.Cte.Magento.Transacao.call, out xmlRespSoap, out msg_erro_aux);
+							if (!blnEnviouOk)
+							{
+								strMsgErro = "Falha ao tentar consultar SKU " + vConferePreco[i].sku + " no Magento!!" + (msg_erro_aux.Length > 0 ? "\r\n" + msg_erro_aux : "");
+								adicionaErro(strMsgErro);
+								avisoErro(strMsgErro);
+								return false;
+							}
+
+							productInfo = Magento.decodificaXmlCatalogProductInfoResponse(xmlRespSoap, out msg_erro_aux);
+							if ((productInfo.price ?? "").Length == 0)
+							{
+								strMsg = "Falha ao tentar obter o preço do SKU " + vConferePreco[i].sku + " na resposta do Magento!";
+								adicionaErro(strMsg);
+							}
+							else
+							{
+								vConferePreco[i].priceMagento = productInfo.price;
+								vConferePreco[i].vlPriceMagento = Global.converteNumeroDecimal(vConferePreco[i].priceMagento);
+							}
+
+							Application.DoEvents();
+						}
+						#endregion
+					}
+					finally
+					{
+						xmlReqSoap = Magento.montaRequisicaoEndSession(magentoSessionId);
+						blnEnviouOk = Magento.enviaRequisicaoComRetry(xmlReqSoap, Global.Cte.Magento.Transacao.endSession, out xmlRespSoap, out msg_erro_aux);
+						if (blnEnviouOk)
+						{
+							strMsg = "Sessão finalizada com sucesso no Magento";
+							adicionaDisplay(strMsg);
+						}
+						else
+						{
+							strMsg = "Falha ao tentar finalizar sessão no Magento" + (msg_erro_aux.Length > 0 ? "\r\n" + MARGEM_MSG_NIVEL_2 + msg_erro_aux : "");
+							adicionaErro(strMsg);
+						}
+					}
+				}
+				catch (Exception ex)
+				{
+					Global.gravaLogAtividade(ex.ToString());
+					adicionaErro(ex.Message);
+					avisoErro(ex.ToString());
+					return false;
+				}
+				#endregion
+
+				return true;
+			}
+			catch (Exception ex)
+			{
+				msg_erro = ex.Message;
+				return false;
+			}
+		}
+		#endregion
+
+		#region [ processaConsultaMagento2RestApi ]
+		private bool processaConsultaMagento2RestApi(ref List<ProdutoConferePreco> vConferePreco, Loja lojaLoginParameters, out string msg_erro)
+		{
+			#region [ Declarações ]
+			bool blnEnviouOk;
+			string sku;
+			string strMsg;
+			string msg_erro_aux;
+			string strMsgErro;
+			string urlParamReqRest;
+			string urlBaseAddress = "";
+			string respJson;
+			Magento2Product product;
+			List<Magento2SearchCriteriaFilterGroups> filtros;
+			Magento2SearchCriteriaFilterGroups filter_group;
+			Magento2SearchCriteriaFilterGroupsFilters filtro;
+			Magento2ProductSearchResponse productSearchResponse;
+			#endregion
+
+			msg_erro = "";
+			try
+			{
+				#region [ Consulta dados no Magento 2 via API REST ]
+				try
+				{
+					info(ModoExibicaoMensagemRodape.EmExecucao, "Consultando relação de produtos cadastrados no Magento");
+
+					#region [ Obtém a relação de produtos no Magento ]
+
+					#region [ Monta o filtro da consulta ]
+					// Lógica de operação dos filtros:
+					// https://devdocs.magento.com/guides/v2.4/rest/performing-searches.html
+					// The filter_groups array defines one or more filters. Each filter defines a search term, and the field, value, and condition_type of a search term must be assigned the same index number, starting with 0. Increment additional terms as needed.
+					// When constructing a search, keep the following in mind:
+					//		To perform a logical OR, specify multiple filters within a filter_groups.
+					//		To perform a logical AND, specify multiple filter_groups.
+					//		You cannot perform a logical OR across different filter_groups, such as (A AND B) OR (X AND Y). ORs can be performed only within the context of a single filter_groups.
+					//		You can only search top-level attributes.
+					filtros = new List<Magento2SearchCriteriaFilterGroups>();
+					filter_group = new Magento2SearchCriteriaFilterGroups();
+					filter_group.filters = new List<Magento2SearchCriteriaFilterGroupsFilters>();
+					filtro = new Magento2SearchCriteriaFilterGroupsFilters();
+					filtro.field = "type_id";
+					filtro.value = "simple";
+					filtro.condition_type = "eq";
+					filter_group.filters.Add(filtro);
+					filtro = new Magento2SearchCriteriaFilterGroupsFilters();
+					filtro.field = "type_id";
+					filtro.value = "virtual";
+					filtro.condition_type = "eq";
+					filter_group.filters.Add(filtro);
+					filtros.Add(filter_group);
+					#endregion
+
+					adicionaDisplay("Obtendo a relação de produtos cadastrados no Magento");
+					urlParamReqRest = Magento2.montaRequisicaoGetProducts(filtros, lojaLoginParameters.magento_api_rest_endpoint, out urlBaseAddress);
+					blnEnviouOk = Magento2.enviaRequisicaoGetComRetry(urlParamReqRest, lojaLoginParameters.magento_api_rest_access_token, urlBaseAddress, out respJson, out msg_erro_aux);
+					if (!blnEnviouOk)
+					{
+						strMsgErro = "Falha ao tentar obter a relação de produtos cadastrados no Magento via API REST!" + (msg_erro_aux.Length > 0 ? "\r\n" + msg_erro_aux : "");
+						adicionaErro(strMsgErro);
+						avisoErro(strMsgErro);
+						return false;
+					}
+					productSearchResponse = Magento2.decodificaJsonProductSearchResponse(respJson, out msg_erro_aux);
+					if (productSearchResponse == null)
+					{
+						strMsgErro = "Falha ao analisar a resposta com a relação de produtos do Magento: não há nenhum produto ou ocorreu erro na decodificação dos dados da resposta!" + (msg_erro_aux.Length > 0 ? "\r\n" + msg_erro_aux : "");
+						adicionaErro(strMsgErro);
+						avisoErro(strMsgErro);
+						return false;
+					}
+
+					if (productSearchResponse.total_count == 0)
+					{
+						strMsgErro = "A consulta ao Magento da lista de produtos não retornou nenhum produto!";
+						adicionaErro(strMsgErro);
+						avisoErro(strMsgErro);
+						return false;
+					}
+
+					for (int i = 0; i < vConferePreco.Count; i++)
+					{
+						try
+						{
+							// O uso de lambda expression com variáveis passadas por parâmetro gera o seguinte erro:
+							// Error	CS1628	Cannot use ref, out, or in parameter 'vConferePreco' inside an anonymous method, lambda expression, query expression, or local function
+							sku = vConferePreco[i].sku;
+							product = productSearchResponse.items.Single(p => p.sku.Equals(sku));
+						}
+						catch (Exception)
+						{
+							// O método Single() lança uma exception se houver 0 (zero) ou mais do que 1 elemento no resultado
+							product = null;
+						}
+
+						if (product == null)
+						{
+							strMsg = "O SKU " + vConferePreco[i].sku + " não foi encontrado na relação de produtos do Magento!";
+							adicionaErro(strMsg);
+						}
+						else
+						{
+							vConferePreco[i].isCadastradoMagento = true;
+							vConferePreco[i].product_id = product.id;
+							vConferePreco[i].name = product.name;
+							vConferePreco[i].priceMagento = product.price;
+							vConferePreco[i].vlPriceMagento = Global.converteNumeroDecimal(vConferePreco[i].priceMagento);
+						}
+					}
+					#endregion
+				}
+				catch (Exception ex)
+				{
+					Global.gravaLogAtividade(ex.ToString());
+					adicionaErro(ex.Message);
+					avisoErro(ex.ToString());
+					return false;
+				}
+				#endregion
+
+				return true;
+			}
+			catch (Exception ex)
+			{
+				msg_erro = ex.Message;
+				return false;
+			}
+		}
+		#endregion
+
 		#region [ trataBotaoIniciaProcessamento ]
 		private void trataBotaoIniciaProcessamento()
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "FConferenciaPreco.trataBotaoIniciaProcessamento";
-			string MARGEM_MSG_NIVEL_2 = new string(' ', 8);
 			int IDX_PRIORIDADE_SKU_NOVO;
 			int IDX_PRIORIDADE_REDUCAO_PRECO;
 			int IDX_PRIORIDADE_AUMENTO_PRECO;
@@ -263,7 +562,6 @@ namespace ConsolidadorXlsEC
 			int qtdeLinhaDadosArquivo = 0;
 			int idxSku;
 			int idxPrice;
-			bool blnEnviouOk;
 			string msg_erro_aux;
 			string strMsg;
 			string strMsgErro;
@@ -273,13 +571,9 @@ namespace ConsolidadorXlsEC
 			string strNomeArquivoResultadoHistorico;
 			string strNomeArquivoResultadoHistoricoBR;
 			string strPathHistorico;
-			string xmlReqSoap;
-			string xmlRespSoap;
-			string magentoSessionId;
 			string linhaHeader;
 			string linha;
 			string sPerc;
-			string sPercProgresso;
 			string[] linhasCSV;
 			string[] camposHeader;
 			string[] camposCSV;
@@ -289,11 +583,9 @@ namespace ConsolidadorXlsEC
 			ProdutoConferePreco conferePreco;
 			List<ProdutoConferePreco> vConferePreco = new List<ProdutoConferePreco>();
 			List<ProdutoConferePreco> vConferePrecoOrdenado;
-			ProductList productList;
-			List<ProductList> vProductList;
-			ProductInfo productInfo;
 			List<string> vResultadoHistorico;
 			List<string> vResultadoHistoricoBR;
+			Loja lojaLoginParameters;
 			Log log = new Log();
 			Encoding encode = Encoding.GetEncoding("Windows-1252");
 			#endregion
@@ -350,6 +642,16 @@ namespace ConsolidadorXlsEC
 				strMsg = "Início do processamento\r\n" +
 						MARGEM_MSG_NIVEL_2 + "Arquivo: " + strNomeArquivo;
 				adicionaDisplay(strMsg);
+
+				lojaLoginParameters = FMain.contextoBD.AmbienteBase.lojaDAO.GetLoja(FMain.contextoBD.AmbienteBase.NumeroLojaArclube, out msg_erro_aux);
+				if (lojaLoginParameters == null)
+				{
+					strMsgErro = "Falha ao tentar recuperar os parâmetros de login da API do Magento para a loja " + FMain.contextoBD.AmbienteBase.NumeroLojaArclube + "!";
+					if (msg_erro_aux.Length > 0) strMsgErro += "\n" + msg_erro_aux;
+					adicionaErro(strMsgErro);
+					avisoErro(strMsgErro);
+					return;
+				}
 				#endregion
 
 				#region [ Carrega dados do arquivo CSV ]
@@ -438,130 +740,33 @@ namespace ConsolidadorXlsEC
 				#endregion
 
 				#region [ Consulta dados no Magento via API ]
+				if (lojaLoginParameters.magento_api_versao == Global.Cte.MagentoApiIntegracao.VERSAO_API_MAGENTO_V2_REST_JSON)
+				{
+					if (!processaConsultaMagento2RestApi(ref vConferePreco, lojaLoginParameters, out msg_erro_aux))
+					{
+						strMsgErro = "Falha no processamento dos dados obtidos através da API do Magento (API REST)!";
+						if (msg_erro_aux.Length > 0) strMsgErro += "\n" + msg_erro_aux;
+						adicionaErro(strMsgErro);
+						avisoErro(strMsgErro);
+						return;
+					}
+				}
+				else
+				{
+					if (!processaConsultaMagentoSoapApi(ref vConferePreco, out msg_erro_aux))
+					{
+						strMsgErro = "Falha no processamento dos dados obtidos através da API do Magento (API SOAP)!";
+						if (msg_erro_aux.Length > 0) strMsgErro += "\n" + msg_erro_aux;
+						adicionaErro(strMsgErro);
+						avisoErro(strMsgErro);
+						return;
+					}
+				}
+				#endregion
+
+				#region [ Processa dados ]
 				try
 				{
-					info(ModoExibicaoMensagemRodape.EmExecucao, "Consultando relação de produtos cadastrados no Magento");
-
-					#region [ Login no Magento ]
-					xmlReqSoap = Magento.montaRequisicaoLogin(Global.Cte.Magento.USER_NAME, Global.Cte.Magento.PASSWORD);
-					blnEnviouOk = Magento.enviaRequisicaoComRetry(xmlReqSoap, Global.Cte.Magento.Transacao.login, out xmlRespSoap, out msg_erro_aux);
-					if (!blnEnviouOk)
-					{
-						strMsgErro = "Falha ao tentar realizar o login no Magento!!" + (msg_erro_aux.Length > 0 ? "\r\n" + msg_erro_aux : "");
-						adicionaErro(strMsgErro);
-						avisoErro(strMsgErro);
-						return;
-					}
-
-					magentoSessionId = Magento.obtemSessionIdFromLoginResponse(xmlRespSoap, out msg_erro_aux);
-					if (magentoSessionId.Length == 0)
-					{
-						strMsgErro = "Falha ao tentar obter o SessionId";
-						adicionaErro(strMsgErro);
-						avisoErro(strMsgErro);
-						return;
-					}
-
-					strMsg = "Sessão iniciada com sucesso no Magento";
-					adicionaDisplay(strMsg);
-					#endregion
-
-					try // Finally: executa EndSession no Magento
-					{
-						#region [ Obtém a relação de produtos no Magento ]
-						adicionaDisplay("Obtendo a relação de produtos cadastrados no Magento");
-						xmlReqSoap = Magento.montaRequisicaoCallCatalogProductList(magentoSessionId);
-						blnEnviouOk = Magento.enviaRequisicaoComRetry(xmlReqSoap, Global.Cte.Magento.Transacao.call, out xmlRespSoap, out msg_erro_aux);
-						if (!blnEnviouOk)
-						{
-							strMsgErro = "Falha ao tentar obter a relação de produtos cadastrados no Magento!!" + (msg_erro_aux.Length > 0 ? "\r\n" + msg_erro_aux : "");
-							adicionaErro(strMsgErro);
-							avisoErro(strMsgErro);
-							return;
-						}
-						vProductList = Magento.decodificaXmlCatalogProductListResponse(xmlRespSoap, out msg_erro_aux);
-						#endregion
-
-						#region [ A partir do SKU, obtém o valor de product_id ]
-						info(ModoExibicaoMensagemRodape.EmExecucao, "Analisando relação de produtos do Magento");
-						for (int i = 0; i < vConferePreco.Count; i++)
-						{
-							try
-							{
-								productList = vProductList.Single(p => p.sku.Equals(vConferePreco[i].sku));
-							}
-							catch (Exception)
-							{
-								// O método Single() lança uma exception se houver 0 (zero) ou mais do que 1 elemento no resultado
-								productList = null;
-							}
-
-							if (productList == null)
-							{
-								strMsg = "O SKU " + vConferePreco[i].sku + " não foi encontrado na relação de produtos do Magento!!";
-								adicionaErro(strMsg);
-							}
-							else
-							{
-								vConferePreco[i].isCadastradoMagento = true;
-								vConferePreco[i].product_id = productList.product_id;
-								vConferePreco[i].name = productList.name;
-							}
-						}
-						#endregion
-
-						#region [ Para cada produto que foi encontrado o product_id, realiza a consulta detalhada para obter o preço no Magento ]
-						for (int i = 0; i < vConferePreco.Count; i++)
-						{
-							if (!vConferePreco[i].isCadastradoMagento) continue;
-							if (vConferePreco[i].product_id.Trim().Length == 0) continue;
-
-							sPercProgresso = (vConferePreco.Count == 0 ? "" : Global.sqlFormataDouble(100d * ((double)(i + 1) / (double)vConferePreco.Count), 0, ',') + "%");
-							strMsg = "Consultando produto no Magento: SKU " + vConferePreco[i].sku + "  (Etapa: " + (i + 1).ToString() + "/" + vConferePreco.Count.ToString() + ", Progresso: " + sPercProgresso + ")";
-							info(ModoExibicaoMensagemRodape.EmExecucao, strMsg);
-							adicionaDisplay(strMsg);
-							xmlReqSoap = Magento.montaRequisicaoCallCatalogProductInfo(magentoSessionId, vConferePreco[i].product_id);
-							blnEnviouOk = Magento.enviaRequisicaoComRetry(xmlReqSoap, Global.Cte.Magento.Transacao.call, out xmlRespSoap, out msg_erro_aux);
-							if (!blnEnviouOk)
-							{
-								strMsgErro = "Falha ao tentar consultar SKU " + vConferePreco[i].sku + " no Magento!!" + (msg_erro_aux.Length > 0 ? "\r\n" + msg_erro_aux : "");
-								adicionaErro(strMsgErro);
-								avisoErro(strMsgErro);
-								return;
-							}
-
-							productInfo = Magento.decodificaXmlCatalogProductInfoResponse(xmlRespSoap, out msg_erro_aux);
-							if ((productInfo.price ?? "").Length == 0)
-							{
-								strMsg = "Falha ao tentar obter o preço do SKU " + vConferePreco[i].sku + " na resposta do Magento!";
-								adicionaErro(strMsg);
-							}
-							else
-							{
-								vConferePreco[i].priceMagento = productInfo.price;
-								vConferePreco[i].vlPriceMagento = Global.converteNumeroDecimal(vConferePreco[i].priceMagento);
-							}
-
-							Application.DoEvents();
-						}
-						#endregion
-					}
-					finally
-					{
-						xmlReqSoap = Magento.montaRequisicaoEndSession(magentoSessionId);
-						blnEnviouOk = Magento.enviaRequisicaoComRetry(xmlReqSoap, Global.Cte.Magento.Transacao.endSession, out xmlRespSoap, out msg_erro_aux);
-						if (blnEnviouOk)
-						{
-							strMsg = "Sessão finalizada com sucesso no Magento";
-							adicionaDisplay(strMsg);
-						}
-						else
-						{
-							strMsg = "Falha ao tentar finalizar sessão no Magento" + (msg_erro_aux.Length > 0 ? "\r\n" + MARGEM_MSG_NIVEL_2 + msg_erro_aux : "");
-							adicionaErro(strMsg);
-						}
-					}
-
 					#region [ Compara os preços e monta o campo de ordenação ]
 					info(ModoExibicaoMensagemRodape.EmExecucao, "Analisando os preços");
 					// Define a prioridade na ordenação p/ exibição, lembrando que ordenação será decrescente visando exibir primeiro as maiores variações no preço

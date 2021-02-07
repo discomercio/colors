@@ -28,8 +28,8 @@ namespace ConsolidadorXlsEC
 			{
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "ConsolidadorXlsEC";
-				public const string VERSAO_NUMERO = "1.13";
-				public const string VERSAO_DATA = "25.NOV.2020";
+				public const string VERSAO_NUMERO = "1.14";
+				public const string VERSAO_DATA = "05.FEV.2021";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Módulo para processos do e-commerce";
@@ -109,8 +109,8 @@ namespace ConsolidadorXlsEC
 			 * v 1.13 - 25.11.2020 - por HHO
 			 *		  Inclusão da Amazon como origem de pedido aceito no painel de integração Marketplace.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.14 - XX.XX.20XX - por XXX
-			 *		  
+			 * v 1.14 - 05.02.2021 - por HHO
+			 *		  Implementação de tratamento para a API REST (JSON) do Magento 2
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.15 - XX.XX.20XX - por XXX
 			 *		  
@@ -514,6 +514,26 @@ namespace ConsolidadorXlsEC
 					}
 				}
 				#endregion
+			}
+			#endregion
+
+			#region [ MagentoApiIntegracao ]
+			public static class MagentoApiIntegracao
+			{
+				public static readonly int VERSAO_API_MAGENTO_V1_SOAP_XML = 0;
+				public static readonly int VERSAO_API_MAGENTO_V2_REST_JSON = 2;
+			}
+			#endregion
+
+			#region [ Magento2RestApi ]
+			public static class Magento2RestApi
+			{
+				// The Timeout applies to the entire request and response, not individually to the GetRequestStream and GetResponse method calls
+				public static readonly int REQUEST_TIMEOUT_EM_MS = 3 * 60 * 1000;
+				public static readonly int TIMEOUT_READER_WRITER_LOCK_EM_MS = 60 * 1000;
+
+				public static readonly string TIPO_ENDERECO__COBRANCA = "COB";
+				public static readonly string TIPO_ENDERECO__ENTREGA = "ETG";
 			}
 			#endregion
 		}
@@ -2344,6 +2364,18 @@ namespace ConsolidadorXlsEC
 		#endregion
 
 		#region[ gravaLogAtividade ]
+		public static void gravaLogAtividade(string mensagem, int maxSize)
+		{
+			if ((maxSize > 0) && ((mensagem ?? "").Length > maxSize))
+			{
+				gravaLogAtividade(mensagem.Substring(0, maxSize) + " ... (truncated)");
+			}
+			else
+			{
+				gravaLogAtividade(mensagem);
+			}
+		}
+
 		/// <summary>
 		/// Grava a informação do parâmetro no arquivo de log, junto com a data/hora
 		/// Se o parâmetro for 'null', será gravada uma linha em branco no arquivo

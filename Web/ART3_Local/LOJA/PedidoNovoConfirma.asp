@@ -442,6 +442,10 @@
 	dim rCD
 	set rCD = obtem_perc_max_comissao_e_desconto_por_loja(loja)
 
+	dim r_loja
+	set r_loja = New cl_LOJA
+	call x_loja_bd(loja, r_loja)
+
 '	OBTÉM A RELAÇÃO DE MEIOS DE PAGAMENTO PREFERENCIAIS (QUE FAZEM USO O PERCENTUAL DE COMISSÃO+DESCONTO NÍVEL 2)
 	dim rP, vMPN2
 	set rP = get_registro_t_parametro(ID_PARAMETRO_PercMaxComissaoEDesconto_Nivel2_MeiosPagto)
@@ -1759,17 +1763,19 @@
 	                alerta=alerta & "O número Magento deve conter apenas dígitos"
                 end if
 
-                do while Len(s_pedido_ac) < 9
-                    if Len(s_pedido_ac) = 8 then
-                        s_pedido_ac = "1" & s_pedido_ac
-                    else
-                        s_pedido_ac = "0" & s_pedido_ac
-						end if
-					Loop
+				if r_loja.magento_api_versao <> VERSAO_API_MAGENTO_V2_REST_JSON then
+					do while Len(s_pedido_ac) < 9
+						if Len(s_pedido_ac) = 8 then
+							s_pedido_ac = "1" & s_pedido_ac
+						else
+							s_pedido_ac = "0" & s_pedido_ac
+							end if
+						Loop
 
-				if Left(s_pedido_ac, 1) <> "1" then
-					alerta=texto_add_br(alerta)
-					alerta=alerta & "O número do pedido Magento inicia com dígito inválido para a loja " & loja
+					if Left(s_pedido_ac, 1) <> "1" then
+						alerta=texto_add_br(alerta)
+						alerta=alerta & "O número do pedido Magento inicia com dígito inválido para a loja " & loja
+						end if
 					end if
 				end if 'if s_pedido_ac <> ""
 			

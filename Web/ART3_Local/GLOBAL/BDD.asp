@@ -601,6 +601,23 @@ dim r
 			.comissao_indicacao = r("comissao_indicacao")
 			.PercMaxSenhaDesconto = r("PercMaxSenhaDesconto")
 			.PercMaxDescSemZerarRT = r("PercMaxDescSemZerarRT")
+			.id_plano_contas_empresa = r("id_plano_contas_empresa")
+			.id_plano_contas_grupo = r("id_plano_contas_grupo")
+			.id_plano_contas_conta = r("id_plano_contas_conta")
+			.natureza = Trim("" & r("natureza"))
+			.unidade_negocio = Trim("" & r("unidade_negocio"))
+			.perc_max_comissao = r("perc_max_comissao")
+			.perc_max_comissao_e_desconto = r("perc_max_comissao_e_desconto")
+			.perc_max_comissao_e_desconto_nivel2 = r("perc_max_comissao_e_desconto_nivel2")
+			.perc_max_comissao_e_desconto_nivel2_pj = r("perc_max_comissao_e_desconto_nivel2_pj")
+			.perc_max_comissao_e_desconto_pj = r("perc_max_comissao_e_desconto_pj")
+			.magento_api_urlWebService = Trim("" & r("magento_api_urlWebService"))
+			.magento_api_username = Trim("" & r("magento_api_username"))
+			.magento_api_password = Trim("" & r("magento_api_password"))
+			.magento_api_versao = r("magento_api_versao")
+			.magento_api_rest_endpoint = Trim("" & r("magento_api_rest_endpoint"))
+			.magento_api_rest_access_token = Trim("" & r("magento_api_rest_access_token"))
+			.magento_api_rest_force_get_sales_order_by_entity_id = r("magento_api_rest_force_get_sales_order_by_entity_id")
 			end with
 		end if
 

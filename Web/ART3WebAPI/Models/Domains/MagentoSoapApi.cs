@@ -1849,7 +1849,9 @@ namespace ART3WebAPI.Models.Domains
 			{
 				if ((numeroPedidoMagento ?? "").Trim().Length == 0)
 				{
-					throw new Exception("O número do pedido Magento não foi informado!");
+					msg = "O número do pedido Magento não foi informado!";
+					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+					throw new Exception(msg);
 				}
 
 				readPedidoXml = MagentoApiDAO.getMagentoPedidoXmlByTicket(numeroPedidoMagento, operationControlTicket, loginParameters.api_versao, out msg_erro);
@@ -2343,6 +2345,7 @@ namespace ART3WebAPI.Models.Domains
 				insertPedidoXml.operationControlTicket = operationControlTicket;
 				insertPedidoXml.loja = loja;
 				insertPedidoXml.usuario_cadastro = usuario;
+				insertPedidoXml.magento_api_versao = loginParameters.api_versao;
 				insertPedidoXml.pedido_xml = sXml;
 				insertPedidoXml.cpfCnpjIdentificado = cpfCnpjIdentificado;
 				insertPedidoXml.increment_id = (int)Global.converteInteiro((salesOrder.magentoSalesOrderInfo.increment_id ?? ""));
