@@ -244,6 +244,11 @@
 	dim blnUsarMemorizacaoCompletaEnderecos
 	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 
+	dim sBlocoNotasEndCob, sBlocoNotasEndEtg, sBlocoNotasMsg
+	sBlocoNotasEndCob = ""
+	sBlocoNotasEndEtg = ""
+	sBlocoNotasMsg = ""
+
 	dim r_cliente
 	set r_cliente = New cl_CLIENTE
 	if alerta = "" then
@@ -1460,6 +1465,8 @@
 						rs("EndEtg_ie") = r_orcamento.EndEtg_ie
 						rs("EndEtg_rg") = r_orcamento.EndEtg_rg
 						end if
+					
+					sBlocoNotasEndEtg = formata_endereco(Trim("" & rs("EndEtg_endereco")), Trim("" & rs("EndEtg_endereco_numero")), Trim("" & rs("EndEtg_endereco_complemento")), Trim("" & rs("EndEtg_bairro")), Trim("" & rs("EndEtg_cidade")), Trim("" & rs("EndEtg_uf")), Trim("" & rs("EndEtg_cep")))
 					end if
 
 				'OBTENÇÃO DE TRANSPORTADORA QUE ATENDA AO CEP INFORMADO, SE HOUVER
@@ -1536,6 +1543,8 @@
 				    rs("endereco_numero") = Trim("" & t_CLIENTE("endereco_numero"))
 				    rs("endereco_complemento") = Trim("" & t_CLIENTE("endereco_complemento"))
 					end if
+
+				sBlocoNotasEndCob = formata_endereco(Trim("" & rs("endereco_logradouro")), Trim("" & rs("endereco_numero")), Trim("" & rs("endereco_complemento")), Trim("" & rs("endereco_bairro")), Trim("" & rs("endereco_cidade")), Trim("" & rs("endereco_uf")), Trim("" & rs("endereco_cep")))
 
 				rs("plataforma_origem_pedido") = COD_PLATAFORMA_ORIGEM_PEDIDO__ERP
 
@@ -2170,6 +2179,25 @@
 							end if
 						end if
 					end if 'if indice_pedido = 1
+
+				'Registra no bloco de notas os dados do endereço inicial
+				if alerta = "" then
+					sBlocoNotasMsg = "Endereço de cobrança inicial: " & vbCrLf & _
+									sBlocoNotasEndCob
+
+					sBlocoNotasMsg = sBlocoNotasMsg & vbCrLf & _
+									vbCrLf & _
+									"Endereço de entrega inicial: " & vbCrLf
+					if CLng(r_orcamento.st_end_entrega) <> 0 then
+						sBlocoNotasMsg = sBlocoNotasMsg & sBlocoNotasEndEtg
+					else
+						sBlocoNotasMsg = sBlocoNotasMsg & "(N.I.)"
+						end if
+
+					if Not grava_bloco_notas_pedido(id_pedido, ID_USUARIO_SISTEMA, loja, COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__RESTRITO, sBlocoNotasMsg, COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_EDICAO_ENDERECO, msg_erro) then
+						alerta = "Falha ao gravar bloco de notas com mensagem automática no pedido (" & id_pedido & ")"
+						end if
+					end if
 				end if ' if (vEmpresaAutoSplit(iv) <> 0) then
 			
 			if alerta <> "" then exit for

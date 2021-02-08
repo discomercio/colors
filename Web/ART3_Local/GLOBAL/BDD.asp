@@ -6425,4 +6425,64 @@ dim rP
 	getParametroFromCampoData = rP.campo_data
 	set rP = Nothing
 end function
+
+
+' ________________________________________________________
+' getParametroFromCampoData
+'
+function grava_bloco_notas_pedido(ByVal numeroPedido, ByVal idUsuario, ByVal numeroLoja, ByVal nivelAcesso, ByVal mensagem, ByVal tipo_mensagem, ByRef msg_erro)
+dim s, intNsuNovoBlocoNotas, msg_erro_aux
+dim tBN
+dim campos_a_omitir
+dim vLog()
+dim s_log
+
+	grava_bloco_notas_pedido = False
+	msg_erro = ""
+
+	if Not fin_gera_nsu(T_PEDIDO_BLOCO_NOTAS, intNsuNovoBlocoNotas, msg_erro_aux) then
+		msg_erro = "Falha ao gerar NSU para o novo registro de bloco de notas (" & msg_erro_aux & ")!"
+		exit function
+	else
+		if intNsuNovoBlocoNotas <= 0 then
+			msg_erro = "NSU gerado para o novo registro de bloco de notas é inválido (" & intNsuNovoBlocoNotas & ")!"
+			exit function
+			end if
+		end if
+
+	if Not cria_recordset_otimista(tBN, msg_erro_aux) then
+		msg_erro = "Falha ao tentar criar recordset durante a gravação do bloco de notas (" & msg_erro_aux & ")!"
+		exit function
+		end if
+
+	s = "SELECT * FROM t_PEDIDO_BLOCO_NOTAS WHERE (id = -1)"
+	tBN.Open s, cn
+	tBN.AddNew
+	tBN("id") = intNsuNovoBlocoNotas
+	tBN("pedido") = numeroPedido
+	tBN("usuario") = idUsuario
+	tBN("loja") = Trim("" & numeroLoja)
+	tBN("nivel_acesso") = CLng(nivelAcesso)
+	tBN("mensagem") = mensagem
+	tBN("tipo_mensagem") = tipo_mensagem
+	tBN.Update
+
+	if Err <> 0 then
+		msg_erro_grava_msg = Err.Description
+		exit function
+		end if
+
+	s_log = ""
+	campos_a_omitir = "|dt_cadastro|dt_hr_cadastro|anulado_status|anulado_usuario|anulado_data|anulado_data_hora|"
+
+	log_via_vetor_carrega_do_recordset tBN, vLog, campos_a_omitir
+	s_log = log_via_vetor_monta_inclusao(vLog)
+
+	if tBN.State <> 0 then tBN.Close
+	set tBN = nothing
+
+	if s_log <> "" then grava_log idUsuario, numeroLoja, numeroPedido, "", OP_LOG_PEDIDO_BLOCO_NOTAS_INCLUSAO, s_log
+
+	grava_bloco_notas_pedido = True
+end function
 %>
