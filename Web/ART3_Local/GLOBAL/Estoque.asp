@@ -4095,7 +4095,12 @@ dim total_estoque_sem_presenca, total_estoque_vendido
 	s = "SELECT" & _
 			" t_ESTOQUE_MOVIMENTO.pedido," & _
 			" t_ESTOQUE_MOVIMENTO.fabricante," & _
-			" t_ESTOQUE_MOVIMENTO.produto" & _
+			" t_ESTOQUE_MOVIMENTO.produto," & _
+			" (CASE" & _
+				" WHEN (analise_credito = " & COD_AN_CREDITO_OK & ") AND (st_etg_imediata = " & COD_ETG_IMEDIATA_SIM & ") THEN 1" & _
+				" WHEN (analise_credito = " & COD_AN_CREDITO_OK & ") AND (st_etg_imediata = " & COD_ETG_IMEDIATA_NAO  & ") THEN 2" & _
+				" ELSE 9" & _
+			" END) AS Prioridade" & _
 		" FROM t_ESTOQUE_MOVIMENTO" & _
 			" INNER JOIN t_PEDIDO ON (t_ESTOQUE_MOVIMENTO.pedido=t_PEDIDO.pedido)" & _
 			" INNER JOIN t_ESTOQUE_ITEM ON ((t_ESTOQUE_MOVIMENTO.fabricante=t_ESTOQUE_ITEM.fabricante) AND (t_ESTOQUE_MOVIMENTO.produto=t_ESTOQUE_ITEM.produto))" & _
@@ -4111,6 +4116,7 @@ dim total_estoque_sem_presenca, total_estoque_vendido
 
 	s = s & _
 		" ORDER BY" & _
+			" Prioridade," & _
 			" t_PEDIDO.data," & _
 			" t_PEDIDO.hora"
 	set rs = cn.Execute(s)
