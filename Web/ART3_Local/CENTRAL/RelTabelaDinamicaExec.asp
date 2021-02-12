@@ -32,7 +32,7 @@
 	On Error GoTo 0
 	Err.Clear
 	
-	Server.ScriptTimeout = MAX_SERVER_SCRIPT_EXTENDED_TIMEOUT_EM_SEG
+	Server.ScriptTimeout = 2 * MAX_SERVER_SCRIPT_EXTENDED_TIMEOUT_EM_SEG
 	
 	const MSO_NUMBER_FORMAT_PERC = "\#\#0\.0%"
 	const MSO_NUMBER_FORMAT_INTEIRO = "\#\#\#\,\#\#\#\,\#\#0"
