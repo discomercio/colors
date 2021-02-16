@@ -7913,8 +7913,12 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             Exit Sub
             End If
         If t_DESTINATARIO("st_memorizacao_completa_enderecos") > 0 Then blnExisteMemorizacaoEndereco = True
-        strEndEtgUf = UCase$(Trim$("" & t_DESTINATARIO("uf_end_nota")))
-        strEndClienteUf = UCase$(Trim$("" & t_DESTINATARIO("uf_end_nota")))
+        If (param_nfmemooendentrega.campo_inteiro = 1) Then strEndEtgUf = UCase$(Trim$("" & t_DESTINATARIO("uf_end_nota")))
+        If (param_nfmemooendentrega.campo_inteiro = 1) Then
+            strEndClienteUf = UCase$(Trim$("" & t_DESTINATARIO("uf_end_nota")))
+        Else
+            strEndClienteUf = UCase$(Trim$("" & t_DESTINATARIO("uf")))
+            End If
         End If
         
     'SEGUNDO CASO: A MEMORIZAÇÃO DO ENDEREÇO DO CLIENTE NA TABELA DE PEDIDOS NÃO ESTÁ OK
@@ -11559,7 +11563,7 @@ Dim s_erro As String
     strIE = ""
     If pedido <> "" Then
         'verificar se os dados do cliente devem vir da memorização no pedido
-        If param_pedidomemorizacaoenderecos.campo_inteiro = 1 Then
+        If (param_pedidomemorizacaoenderecos.campo_inteiro = 1) And (param_nfmemooendentrega.campo_inteiro = 1) Then
             If obtem_info_pedido_memorizada(pedido, s_resp, s_end_entrega, s_end_entrega_uf, s_end_cliente_uf, s_NFe_texto_constar, strIE, s_erro) Then
                 c_info_pedido = s_resp
                 c_dados_adicionais = s_NFe_texto_constar

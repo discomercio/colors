@@ -6293,7 +6293,7 @@ Dim s_NFe_texto_constar As String
     
     If pedido <> "" Then
         'verificar se os dados do cliente devem vir da memorização no pedido
-        If param_pedidomemorizacaoenderecos.campo_inteiro = 1 Then
+        If (param_pedidomemorizacaoenderecos.campo_inteiro) Then
             If Not obtem_info_pedido_triangular_memorizada(pedido, s_resp, s_end_entrega, s_end_entrega_uf, s_NFe_texto_constar, s_end_cliente_uf, s_erro) Then
                 If s_erro <> "" Then
                     aviso_erro s_erro

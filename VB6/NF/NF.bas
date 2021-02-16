@@ -748,9 +748,9 @@ Option Explicit
 '|          |      | - Ajuste para trazer as informações memorizadas no        |
 '|          |      |   pedido no quadro Informações do Pedido                  |
 '|__________|______|___________________________________________________________|
-'|XX.XX.XXXX| XXXX |V X.XX                                                     |
-'|          |      |                                                           |
-'|          |      |                                                           |
+'|16.02.2021| LHGX |V 2.16                                                     |
+'|          |      | - Flag para definir se será usado o endereço de cobrança  |
+'|          |      |   ou de entrega nas notas de PF com memorização           |
 '|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
@@ -759,8 +759,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.15"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  14/11/2020"
+Global Const m_id_versao = "2.16"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  16/02/2021"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"
