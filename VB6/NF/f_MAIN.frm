@@ -8279,7 +8279,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("xNome", rNFeImg.dest__xNome)
     
 '   LOGRADOURO
-    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) And (param_nfmemooendentrega.campo_inteiro = 1) Then
         strCampo = Trim$("" & t_DESTINATARIO("endereco_end_nota"))
     Else
         strCampo = Trim("" & t_DESTINATARIO("endereco"))
@@ -8295,7 +8295,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("xLgr", rNFeImg.dest__xLgr)
     
 '   ENDEREÇO: NÚMERO
-    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) And (param_nfmemooendentrega.campo_inteiro = 1) Then
         strCampo = Trim$("" & t_DESTINATARIO("numero_end_nota"))
     Else
         strCampo = Trim$("" & t_DESTINATARIO("endereco_numero"))
@@ -8312,7 +8312,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("nro", rNFeImg.dest__nro)
         
 '   ENDEREÇO: COMPLEMENTO
-    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) And (param_nfmemooendentrega.campo_inteiro = 1) Then
         strCampo = Trim$("" & t_DESTINATARIO("complemento_end_nota"))
     Else
         strCampo = Trim$("" & t_DESTINATARIO("endereco_complemento"))
@@ -8325,7 +8325,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     If Len(strCampo) > 0 Then strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("xCpl", rNFeImg.dest__xCpl)
     
 '   BAIRRO
-    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) And (param_nfmemooendentrega.campo_inteiro = 1) Then
         strCampo = Trim$("" & t_DESTINATARIO("bairro_end_nota"))
     Else
         strCampo = Trim$("" & t_DESTINATARIO("bairro"))
@@ -8338,12 +8338,12 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("xBairro", rNFeImg.dest__xBairro)
     
 '   MUNICIPIO
-    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) And (param_nfmemooendentrega.campo_inteiro = 1) Then
         strCampo = Trim$("" & t_DESTINATARIO("cidade_end_nota"))
     Else
         strCampo = Trim$("" & t_DESTINATARIO("cidade"))
         End If
-    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) And (param_nfmemooendentrega.campo_inteiro = 1) Then
         s_aux = Trim$("" & t_DESTINATARIO("uf_end_nota"))
     Else
         s_aux = Trim$("" & t_DESTINATARIO("uf"))
@@ -8353,7 +8353,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     rNFeImg.dest__cMun = strCampo
     strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("cMun", rNFeImg.dest__cMun)
     
-    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) And (param_nfmemooendentrega.campo_inteiro = 1) Then
         strCampo = Trim$("" & t_DESTINATARIO("cidade_end_nota"))
     Else
         strCampo = Trim$("" & t_DESTINATARIO("cidade"))
@@ -8366,7 +8366,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("xMun", rNFeImg.dest__xMun)
     
 '   UF
-    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) And (param_nfmemooendentrega.campo_inteiro = 1) Then
         strCampo = Trim$("" & t_DESTINATARIO("uf_end_nota"))
     Else
         strCampo = Trim$("" & t_DESTINATARIO("uf"))
@@ -8392,7 +8392,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         End If
 
 '   CEP
-    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) And (param_nfmemooendentrega.campo_inteiro = 1) Then
         strCampo = retorna_so_digitos(Trim$("" & t_DESTINATARIO("cep_end_nota")))
     Else
         strCampo = retorna_so_digitos(Trim$("" & t_DESTINATARIO("cep")))
@@ -13336,6 +13336,9 @@ Dim cor_inicial As String
     
     '   OBTER O PARÂMETRO DA MEMORIZAÇÃO DOS ENDEREÇOS NA T_PEDIDO
         get_registro_t_parametro "Flag_Pedido_MemorizacaoCompletaEnderecos", param_pedidomemorizacaoenderecos
+        
+    '   OBTER O PARÂMETRO DO ENDEREÇO DE ENTREGA NA NOTA FISCAL
+        get_registro_t_parametro "NF_MemorizacaoUsarEnderecoEntrega", param_nfmemooendentrega
     
     '   SELEÇÃO DO EMITENTE A SER UTILIZADO
         If obtem_emitentes_usuario(usuario.id, vEmitsUsuario, qtdEmits) Then
