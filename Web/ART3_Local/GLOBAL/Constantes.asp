@@ -1788,6 +1788,7 @@
 		dim comissao_indicacao
 		dim PercMaxSenhaDesconto
 		dim PercMaxDescSemZerarRT
+		dim unidade_negocio
 		end class
 	
 	class cl_CLIENTE
@@ -1799,6 +1800,7 @@
 		dim produtor_rural_status
 		dim rg
 		dim nome
+		dim nome_iniciais_em_maiusculas
 		dim sexo
 		dim endereco
 		dim endereco_numero
@@ -2049,6 +2051,7 @@
 		dim endereco_email
 		dim endereco_email_xml
 		dim endereco_nome
+		dim endereco_nome_iniciais_em_maiusculas
 		dim endereco_ddd_res
 		dim endereco_tel_res
 		dim endereco_ddd_com
@@ -2069,6 +2072,7 @@
 		dim EndEtg_email
 		dim EndEtg_email_xml
 		dim EndEtg_nome
+		dim EndEtg_nome_iniciais_em_maiusculas
 		dim EndEtg_ddd_res
 		dim EndEtg_tel_res
 		dim EndEtg_ddd_com
@@ -2544,6 +2548,7 @@
 		dim endereco_email
 		dim endereco_email_xml
 		dim endereco_nome
+		dim endereco_nome_iniciais_em_maiusculas
 		dim endereco_ddd_res
 		dim endereco_tel_res
 		dim endereco_ddd_com
@@ -2564,6 +2569,7 @@
 		dim EndEtg_email
 		dim EndEtg_email_xml
 		dim EndEtg_nome
+		dim EndEtg_nome_iniciais_em_maiusculas
 		dim EndEtg_ddd_res
 		dim EndEtg_tel_res
 		dim EndEtg_ddd_com
@@ -3123,6 +3129,7 @@
 		dim DtHrSessionTokenModuloCentral
 		dim SessionTokenModuloLoja
 		dim DtHrSessionTokenModuloLoja
+		dim fin_smtp_enable_ssl
 		dim nivel_acesso_bloco_notas_pedido
 		dim nivel_acesso_chamado
 		end class

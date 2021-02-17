@@ -3,6 +3,7 @@
 <% Response.Buffer=True %>
 <!-- #include file = "../global/constantes.asp" -->
 <!-- #include file = "../global/funcoes.asp"    -->
+<!-- #include file = "../global/Global.asp" -->
 <!-- #include file = "../global/bdd.asp" -->
 
 <!-- #include file = "../global/TrataSessaoExpirada.asp"        -->
@@ -62,17 +63,99 @@
 		alerta = "O tamanho do texto (" & Cstr(len(c_texto)) & ") excede o tamanho máximo permitido de " & Cstr(MAX_TAM_MENSAGEM_OCORRENCIAS_EM_PEDIDOS) & " caracteres."
 		end if
 
+'	CONECTA AO BANCO DE DADOS
+'	=========================
+	dim cn, rs
+	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
+	if Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+
+	dim id_email, corpo_mensagem, msg_erro_grava_email, dtHrMensagem
+	dim s_email_vendedor
+	s_email_vendedor = ""
+	if alerta = "" then
+		s = "SELECT" & _
+				" tP.vendedor," & _
+				" tU.email" & _
+			" FROM t_PEDIDO tP" & _
+				" INNER JOIN t_USUARIO tU ON (tP.vendedor = tU.usuario)" & _
+			" WHERE" & _
+				" (tP.pedido = '" & pedido_selecionado & "')"
+		if rs.State <> 0 then rs.Close
+		rs.Open s, cn
+		if Not rs.Eof then
+			s_email_vendedor = LCase(Trim("" & rs("email")))
+			end if
+		end if
+
+	dim s_descricao_motivo_abertura, s_texto_ocorrencia
+	s_descricao_motivo_abertura = ""
+	s_texto_ocorrencia = ""
+	if alerta = "" then
+		s = "SELECT" & _
+				" t_PEDIDO_OCORRENCIA.*," & _
+				" t_CODIGO_DESCRICAO.descricao AS descricao_motivo_abertura" & _
+			" FROM t_PEDIDO_OCORRENCIA LEFT JOIN t_CODIGO_DESCRICAO ON (t_PEDIDO_OCORRENCIA.cod_motivo_abertura=t_CODIGO_DESCRICAO.codigo) AND (t_CODIGO_DESCRICAO.grupo='" & GRUPO_T_CODIGO_DESCRICAO__OCORRENCIAS_EM_PEDIDOS__MOTIVO_ABERTURA & "')" & _
+			" WHERE" & _
+				" (t_PEDIDO_OCORRENCIA.id = " & CStr(id_ocorrencia) & ")"
+		if rs.State <> 0 then rs.Close
+		rs.Open s, cn
+		if Not rs.Eof then
+			s_descricao_motivo_abertura = Trim("" & rs("descricao_motivo_abertura"))
+			s_texto_ocorrencia = Trim("" & rs("texto_ocorrencia"))
+			end if
+		end if
+
+	dim s_unidade_negocio
+	s_unidade_negocio = ""
+
+	dim rParamEmailRemetente, r_usuario
+	dim s_dados_cliente
+	s_dados_cliente = ""
+	if alerta = "" then
+		'Se encontrou e-mail do vendedor para enviar mensagem de aviso, obtém demais informações para a montagem da mensagem
+		if s_email_vendedor <> "" then
+			set rParamEmailRemetente = get_registro_t_parametro(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__MENSAGEM_SISTEMA)
+			call le_usuario(usuario, r_usuario, msg_erro)
+
+			s = "SELECT" & _
+					" p.st_memorizacao_completa_enderecos," & _
+					" p.endereco_nome_iniciais_em_maiusculas AS endereco_nome," & _
+					" p.endereco_cnpj_cpf," & _
+					" c.nome_iniciais_em_maiusculas AS cliente_nome," & _
+					" c.cnpj_cpf AS cliente_cnpj_cpf," & _
+					" p.loja," & _
+					" lj.unidade_negocio" & _
+				" FROM t_PEDIDO p" & _
+					" INNER JOIN t_CLIENTE c ON (p.id_cliente = c.id)" & _
+					" INNER JOIN t_LOJA lj ON (p.loja = lj.loja)" & _
+				" WHERE" & _
+					" (p.pedido = '" & pedido_selecionado & "')"
+			if rs.State <> 0 then rs.Close
+			rs.Open s, cn
+			if Not rs.Eof then
+				s_unidade_negocio = Trim("" & rs("unidade_negocio"))
+				if rs("st_memorizacao_completa_enderecos") <> 0 then
+					s_dados_cliente = "Cliente: " & Trim("" & rs("endereco_nome")) & " (" & cnpj_cpf_formata(Trim("" & rs("endereco_cnpj_cpf"))) & ")"
+				else
+					s_dados_cliente = "Cliente: " & Trim("" & rs("cliente_nome")) & " (" & cnpj_cpf_formata(Trim("" & rs("cliente_cnpj_cpf"))) & ")"
+					end if
+				end if
+			end if
+		end if
+
+	dim r_pedido
+	if alerta = "" then
+		if Not le_pedido(pedido_selecionado, r_pedido, msg_erro) then
+			alerta = msg_erro
+			end if
+		end if
+
+
 	dim campos_a_omitir
 	dim vLog()
 	dim s_log
 	s_log = ""
 	campos_a_omitir = "|dt_cadastro|dt_hr_cadastro|"
-
-
-'	CONECTA AO BANCO DE DADOS
-'	=========================
-	dim cn, rs
-	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
 '	GRAVA A MENSAGEM P/ ESTA OCORRÊNCIA
 	if alerta = "" then
@@ -80,6 +163,7 @@
 	'	~~~~~~~~~~~~~
 		cn.BeginTrans
 	'	~~~~~~~~~~~~~
+		if rs.State <> 0 then rs.Close
 		if Not cria_recordset_pessimista(rs, msg_erro) then
 		'	~~~~~~~~~~~~~~~~
 			cn.RollbackTrans
@@ -104,7 +188,7 @@
 			rs("id")=intNsuNovaOcorrenciaMensagem
 			rs("id_ocorrencia")=CLng(id_ocorrencia)
 			rs("usuario_cadastro")=usuario
-			rs("fluxo_mensagem") = COD_FLUXO_MENSAGEM_OCORRENCIAS_EM_PEDIDOS__LOJA_PARA_CENTRAL
+			rs("fluxo_mensagem") = COD_FLUXO_MENSAGEM_OCORRENCIAS_EM_PEDIDOS__CENTRAL_PARA_LOJA
 			rs("texto_mensagem")=c_texto
 			rs.Update 
 			if Err <> 0 then
@@ -122,6 +206,46 @@
 			if s_log <> "" then grava_log usuario, "", pedido_selecionado, "", OP_LOG_PEDIDO_OCORRENCIA_MENSAGEM_INCLUSAO, s_log
 			end if
 		
+		if alerta = "" then
+			if s_email_vendedor <> "" then
+				if Trim("" & rParamEmailRemetente.campo_texto) <> "" then
+					if UCase(usuario) <> UCase(r_pedido.vendedor) then
+						if (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__BS) Or (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__VRF) then
+							dtHrMensagem = Now
+
+							corpo_mensagem = "Usuário '" & usuario & "' (" & r_usuario.nome_iniciais_em_maiusculas & ") registrou uma mensagem no bloco de notas de Ocorrências do pedido " & pedido_selecionado & " em " & formata_data_hora_sem_seg(dtHrMensagem) & _
+											vbCrLf & _
+											"Pedido: " & pedido_selecionado & _
+											vbCrLf & _
+											s_dados_cliente & _
+											vbCrLf & _
+											"Ocorrência: " & s_descricao_motivo_abertura & _
+											vbCrLf & vbCrLf & _
+											String(30, "-") & "( Início )" & String(30, "-") & _
+											vbCrLf & _
+											c_texto & _
+											vbCrLf & _
+											String(31, "-") & "( Fim )" & String(32, "-") & _
+											vbCrLf & vbCrLf & _
+											"Atenção: esta é uma mensagem automática, NÃO responda a este e-mail!"
+
+							'Envia e-mail para o vendedor
+							EmailSndSvcGravaMensagemParaEnvio Trim("" & rParamEmailRemetente.campo_texto), _
+															"", _
+															s_email_vendedor, _
+															"", _
+															"", _
+															"Nova mensagem registrada no bloco de notas de Ocorrências do pedido " & pedido_selecionado, _
+															corpo_mensagem, _
+															Now, _
+															id_email, _
+															msg_erro_grava_email
+							end if 'if (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__BS) Or (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__VRF)
+						end if 'if UCase(usuario) <> UCase(r_pedido.vendedor)
+					end if 'if Trim("" & rParamEmailRemetente.campo_texto) <> ""
+				end if 'if s_email_vendedor <> ""
+			end if 'if alerta = "" then
+
 		if alerta = "" then
 		'	~~~~~~~~~~~~~~
 			cn.CommitTrans
