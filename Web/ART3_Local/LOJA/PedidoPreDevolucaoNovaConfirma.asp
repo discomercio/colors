@@ -267,20 +267,56 @@
 		    end if
         end if ' alerta
 
-    if alerta = "" then
+	dim r_pedido
+	if alerta = "" then
+		if Not le_pedido(pedido_selecionado, r_pedido, msg_erro) then
+			alerta = msg_erro
+			end if
+		end if
+
+	dim r_usuario
+	if alerta = "" then
+		'Obtém maiores informações sobre o usuário que está realizando o cadastro da pré-devolução para montar a mensagem do e-mail de aviso
+		call le_usuario(usuario, r_usuario, msg_erro)
+		end if
+
+	dim r_vendedor
+	if alerta = "" then
+		'Se o usuário que estiver cadastrando a pré-devolução não for o vendedor do pedido, o vendedor irá receber um email de aviso sobre a pré-devolução
+		if UCase(Trim("" & r_pedido.vendedor)) <> UCase(usuario) then
+			call le_usuario(Trim("" & r_pedido.vendedor), r_vendedor, msg_erro)
+			end if
+		end if
+
+	dim dtHrMensagem
+	dim s_dados_produtos_devolucao
+	s_dados_produtos_devolucao = ""
+
+	dim s_dados_cliente
+	dim r_cliente
+	if alerta = "" then
+		set r_cliente = New cl_CLIENTE
+		call x_cliente_bd(r_pedido.id_cliente, r_cliente)
+
+		if r_pedido.st_memorizacao_completa_enderecos <> 0 then
+			s_dados_cliente = "Cliente: " & r_pedido.endereco_nome_iniciais_em_maiusculas & " (" & cnpj_cpf_formata(r_pedido.endereco_cnpj_cpf) & ")"
+		else
+			s_dados_cliente = "Cliente: " & r_cliente.nome_iniciais_em_maiusculas & " (" & cnpj_cpf_formata(r_cliente.cnpj_cpf) & ")"
+			end if
+		end if
+
+
+	if alerta = "" then
+	'	~~~~~~~~~~~~~
+		cn.BeginTrans
+	'	~~~~~~~~~~~~~
         if Not cria_recordset_pessimista(rs, msg_erro) then
 		'	~~~~~~~~~~~~~~~~
 			cn.RollbackTrans
 		'	~~~~~~~~~~~~~~~~
 			Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 			end if
-                   
-        end if
-		
-	if alerta = "" then
-	'	~~~~~~~~~~~~~
-		cn.BeginTrans
-	'	~~~~~~~~~~~~~
+
 		if Not cria_recordset_otimista(sx, msg_erro) then
 		'	~~~~~~~~~~~~~~~~
 			cn.RollbackTrans
@@ -387,6 +423,8 @@
                         rs("vl_unitario") = .vl_unitario
 						rs.Update
 						s_log = s_log & log_produto_monta(.qtde_a_devolver, .fabricante, .produto)
+						if s_dados_produtos_devolucao <> "" then s_dados_produtos_devolucao = s_dados_produtos_devolucao & vbCrLf
+						s_dados_produtos_devolucao = s_dados_produtos_devolucao & .qtde_a_devolver & " x " & .produto & "(" & .fabricante & ")"
 						if Err <> 0 then
 						'	~~~~~~~~~~~~~~~~
 							cn.RollbackTrans
@@ -455,24 +493,72 @@
 	'	GRAVA O LOG E CONCLUI A TRANSAÇÃO
 	'	=================================
 		if alerta = "" then
+			dtHrMensagem = Now
             ' envia e-mail para o operador das devoluções
             if isLojaBonshop(loja) Or isLojaVrf(loja) then
                 dim strEmailAdministrador
                 set strEmailAdministrador = get_registro_t_parametro("PEDIDO_DEVOLUCAO_EMAIL_ADMINISTRADOR")
                 if Trim("" & strEmailAdministrador.campo_texto) <> "" then
-                    corpo_mensagem = "Foi cadastrada uma nova pré-devolução no pedido " & pedido_selecionado & "."
+					corpo_mensagem = "Usuário '" & usuario & "' (" & r_usuario.nome_iniciais_em_maiusculas & ") cadastrou uma nova pré-devolução no pedido " & pedido_selecionado & " em " & formata_data_hora_sem_seg(dtHrMensagem) & _
+									vbCrLf & _
+									"Pedido: " & pedido_selecionado & _
+									vbCrLf & _
+									"Devolução nº " & RetiraZerosAEsquerda(Cstr(id_pedido_devolucao)) & _
+									vbCrLf & _
+									s_dados_cliente & _
+									vbCrLf & vbCrLf & _
+									String(30, "-") & "( Início )" & String(30, "-") & _
+									vbCrLf & _
+									s_dados_produtos_devolucao & _
+									vbCrLf & _
+									String(31, "-") & "( Fim )" & String(32, "-") & _
+									vbCrLf & vbCrLf & _
+									"Atenção: esta é uma mensagem automática, NÃO responda a este e-mail!"
+
                     EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__PEDIDO_DEVOLUCAO), _
-                                                                            "", _
-                                                                            strEmailAdministrador.campo_texto, _
-                                                                            "", _
-                                                                            "", _
-                                                                            "Novo cadastro de pré-devolução", _
-                                                                            corpo_mensagem, _
-                                                                            Now, _
-                                                                            id_email, _
-                                                                            msg_erro_grava_email
-                    end if
-                end if
+                                                    "", _
+                                                    strEmailAdministrador.campo_texto, _
+                                                    "", _
+                                                    "", _
+                                                    "Nova pré-devolução cadastrada no pedido " & pedido_selecionado, _
+                                                    corpo_mensagem, _
+                                                    Now, _
+                                                    id_email, _
+                                                    msg_erro_grava_email
+                    end if 'if Trim("" & strEmailAdministrador.campo_texto) <> ""
+
+				if UCase(usuario) <> UCase(r_pedido.vendedor) then
+					if Trim("" & r_vendedor.email) <> "" then
+						'Envia email para o vendedor
+						corpo_mensagem = "Usuário '" & usuario & "' (" & r_usuario.nome_iniciais_em_maiusculas & ") cadastrou uma nova pré-devolução no pedido " & pedido_selecionado & " em " & formata_data_hora_sem_seg(dtHrMensagem) & _
+										vbCrLf & _
+										"Pedido: " & pedido_selecionado & _
+										vbCrLf & _
+										"Devolução nº " & RetiraZerosAEsquerda(Cstr(id_pedido_devolucao)) & _
+										vbCrLf & _
+										s_dados_cliente & _
+										vbCrLf & vbCrLf & _
+										String(30, "-") & "( Início )" & String(30, "-") & _
+										vbCrLf & _
+										s_dados_produtos_devolucao & _
+										vbCrLf & _
+										String(31, "-") & "( Fim )" & String(32, "-") & _
+										vbCrLf & vbCrLf & _
+										"Atenção: esta é uma mensagem automática, NÃO responda a este e-mail!"
+
+						EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__PEDIDO_DEVOLUCAO), _
+														"", _
+														Trim("" & r_vendedor.email), _
+														"", _
+														"", _
+														"Nova pré-devolução cadastrada no pedido " & pedido_selecionado, _
+														corpo_mensagem, _
+														Now, _
+														id_email, _
+														msg_erro_grava_email
+						end if 'if Trim("" & r_vendedor.email) <> ""
+					end if 'if UCase(usuario) <> UCase(r_pedido.vendedor)
+                end if 'if isLojaBonshop(loja) Or isLojaVrf(loja)
 
 			s_log_aux = log_via_vetor_monta_inclusao(vLog)
 			s_log = "Cadastro de pré-devolução:" & s_log

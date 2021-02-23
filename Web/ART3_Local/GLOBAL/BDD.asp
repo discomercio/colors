@@ -601,6 +601,7 @@ dim r
 			.comissao_indicacao = r("comissao_indicacao")
 			.PercMaxSenhaDesconto = r("PercMaxSenhaDesconto")
 			.PercMaxDescSemZerarRT = r("PercMaxDescSemZerarRT")
+			.unidade_negocio = Trim("" & r("unidade_negocio"))
 			end with
 		end if
 
@@ -728,6 +729,7 @@ dim r
 			.contribuinte_icms_status = Trim("" & r("contribuinte_icms_status"))
 			.rg = Trim("" & r("rg"))
 			.nome = Trim("" & r("nome"))
+			.nome_iniciais_em_maiusculas = Trim("" & r("nome_iniciais_em_maiusculas"))
 			.sexo = Trim("" & r("sexo"))
 			.endereco = Trim("" & r("endereco"))
 			.endereco_numero = Trim("" & r("endereco_numero"))
@@ -1722,6 +1724,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.endereco_email = ""
 			.endereco_email_xml = ""
 			.endereco_nome = ""
+			.endereco_nome_iniciais_em_maiusculas = ""
 			.endereco_ddd_res = ""
 			.endereco_tel_res = ""
 			.endereco_ddd_com = ""
@@ -1754,6 +1757,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.endereco_email = Trim("" & rs("endereco_email"))
 					.endereco_email_xml = Trim("" & rs("endereco_email_xml"))
 					.endereco_nome = Trim("" & rs("endereco_nome"))
+					.endereco_nome_iniciais_em_maiusculas = Trim("" & rs("endereco_nome_iniciais_em_maiusculas"))
 					.endereco_ddd_res = Trim("" & rs("endereco_ddd_res"))
 					.endereco_tel_res = Trim("" & rs("endereco_tel_res"))
 					.endereco_ddd_com = Trim("" & rs("endereco_ddd_com"))
@@ -1784,6 +1788,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.EndEtg_email = ""
 			.EndEtg_email_xml = ""
 			.EndEtg_nome = ""
+			.EndEtg_nome_iniciais_em_maiusculas = ""
 			.EndEtg_ddd_res = ""
 			.EndEtg_tel_res = ""
 			.EndEtg_ddd_com = ""
@@ -1813,6 +1818,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.EndEtg_email = Trim("" & rs("EndEtg_email"))
 					.EndEtg_email_xml = Trim("" & rs("EndEtg_email_xml"))
 					.EndEtg_nome = Trim("" & rs("EndEtg_nome"))
+					.EndEtg_nome_iniciais_em_maiusculas = Trim("" & rs("EndEtg_nome_iniciais_em_maiusculas"))
 					.EndEtg_ddd_res = Trim("" & rs("EndEtg_ddd_res"))
 					.EndEtg_tel_res = Trim("" & rs("EndEtg_tel_res"))
 					.EndEtg_ddd_com = Trim("" & rs("EndEtg_ddd_com"))
@@ -3589,6 +3595,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.endereco_email = ""
 			.endereco_email_xml = ""
 			.endereco_nome = ""
+			.endereco_nome_iniciais_em_maiusculas = ""
 			.endereco_ddd_res = ""
 			.endereco_tel_res = ""
 			.endereco_ddd_com = ""
@@ -3621,6 +3628,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.endereco_email = Trim("" & rs("endereco_email"))
 					.endereco_email_xml = Trim("" & rs("endereco_email_xml"))
 					.endereco_nome = Trim("" & rs("endereco_nome"))
+					.endereco_nome_iniciais_em_maiusculas = Trim("" & rs("endereco_nome_iniciais_em_maiusculas"))
 					.endereco_ddd_res = Trim("" & rs("endereco_ddd_res"))
 					.endereco_tel_res = Trim("" & rs("endereco_tel_res"))
 					.endereco_ddd_com = Trim("" & rs("endereco_ddd_com"))
@@ -3651,6 +3659,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.EndEtg_email = ""
 			.EndEtg_email_xml = ""
 			.EndEtg_nome = ""
+			.EndEtg_nome_iniciais_em_maiusculas = ""
 			.EndEtg_ddd_res = ""
 			.EndEtg_tel_res = ""
 			.EndEtg_ddd_com = ""
@@ -3680,6 +3689,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.EndEtg_email = Trim("" & rs("EndEtg_email"))
 					.EndEtg_email_xml = Trim("" & rs("EndEtg_email_xml"))
 					.EndEtg_nome = Trim("" & rs("EndEtg_nome"))
+					.EndEtg_nome_iniciais_em_maiusculas = Trim("" & rs("EndEtg_nome_iniciais_em_maiusculas"))
 					.EndEtg_ddd_res = Trim("" & rs("EndEtg_ddd_res"))
 					.EndEtg_tel_res = Trim("" & rs("EndEtg_tel_res"))
 					.EndEtg_ddd_com = Trim("" & rs("EndEtg_ddd_com"))
@@ -6322,6 +6332,7 @@ dim rs
 			.DtHrSessionTokenModuloCentral = rs("DtHrSessionTokenModuloCentral")
 			.SessionTokenModuloLoja = Trim("" & rs("SessionTokenModuloLoja"))
 			.DtHrSessionTokenModuloLoja = rs("DtHrSessionTokenModuloLoja")
+			.fin_smtp_enable_ssl = rs("fin_smtp_enable_ssl")
 			end with
 		end if
 
