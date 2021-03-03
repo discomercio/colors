@@ -506,6 +506,11 @@
 	Const VERSAO_API_MAGENTO_V1_SOAP_XML = 0
 	Const VERSAO_API_MAGENTO_V2_REST_JSON = 2
 
+	Const COD_MAGENTO_PRODUCT_TYPE__SIMPLE = "simple"
+	Const COD_MAGENTO_PRODUCT_TYPE__VIRTUAL = "virtual"
+	Const COD_MAGENTO_PRODUCT_TYPE__CONFIGURABLE = "configurable"
+
+
   ' CÓDIGOS PARA NÍVEL DOS USUÁRIOS
 	Const ID_VENDEDOR		= "V"
 	Const ID_SEPARADOR		= "S"
@@ -2104,6 +2109,41 @@
 		end class
 
 	class cl_ITEM_PEDIDO
+		dim pedido
+		dim fabricante
+		dim produto
+		dim qtde
+		dim desc_dado
+		dim preco_venda
+		dim preco_NF
+		dim preco_fabricante
+		dim preco_lista
+		dim margem
+		dim desc_max
+		dim comissao
+		dim descricao
+		dim descricao_html
+		dim ean
+		dim grupo
+        dim subgrupo
+		dim peso
+		dim qtde_volumes
+		dim abaixo_min_status
+		dim abaixo_min_autorizacao
+		dim abaixo_min_autorizador
+		dim sequencia
+		dim markup_fabricante
+		dim abaixo_min_superv_autorizador
+		dim vl_custo2
+		dim custoFinancFornecCoeficiente
+		dim custoFinancFornecPrecoListaBase
+		dim cubagem
+		dim ncm
+		dim cst
+		dim descontinuado
+		end class
+
+	class cl_ITEM_PEDIDO_SERVICO
 		dim pedido
 		dim fabricante
 		dim produto

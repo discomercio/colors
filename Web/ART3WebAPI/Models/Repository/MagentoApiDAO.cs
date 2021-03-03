@@ -222,6 +222,7 @@ namespace ART3WebAPI.Models.Repository
 								"clearSale_score, " +
 								"clearSale_packageID, " +
 								"shipping_amount, " +
+								"shipping_discount_amount, " +
 								"discount_amount, " +
 								"subtotal, " +
 								"grand_total, " +
@@ -271,6 +272,7 @@ namespace ART3WebAPI.Models.Repository
 								"@clearSale_score, " +
 								"@clearSale_packageID," +
 								"@shipping_amount, " +
+								"@shipping_discount_amount, " +
 								"@discount_amount, " +
 								"@subtotal, " +
 								"@grand_total, " +
@@ -320,6 +322,7 @@ namespace ART3WebAPI.Models.Repository
 					cmInsert.Parameters.Add("@clearSale_score", SqlDbType.VarChar, 20);
 					cmInsert.Parameters.Add("@clearSale_packageID", SqlDbType.VarChar, 20);
 					cmInsert.Parameters.Add(new SqlParameter("@shipping_amount", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@shipping_discount_amount", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
 					cmInsert.Parameters.Add(new SqlParameter("@discount_amount", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
 					cmInsert.Parameters.Add(new SqlParameter("@subtotal", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
 					cmInsert.Parameters.Add(new SqlParameter("@grand_total", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
@@ -377,6 +380,7 @@ namespace ART3WebAPI.Models.Repository
 							cmInsert.Parameters["@clearSale_score"].Value = (pedidoXml.clearSale_score ?? "");
 							cmInsert.Parameters["@clearSale_packageID"].Value = (pedidoXml.clearSale_packageID ?? "");
 							cmInsert.Parameters["@shipping_amount"].Value = pedidoXml.shipping_amount;
+							cmInsert.Parameters["@shipping_discount_amount"].Value = pedidoXml.shipping_discount_amount;
 							cmInsert.Parameters["@discount_amount"].Value = pedidoXml.discount_amount;
 							cmInsert.Parameters["@subtotal"].Value = pedidoXml.subtotal;
 							cmInsert.Parameters["@grand_total"].Value = pedidoXml.grand_total;
@@ -753,7 +757,34 @@ namespace ART3WebAPI.Models.Repository
 								"name, " +
 								"product_type, " +
 								"has_children, " +
-								"parent_item_id" +
+								"parent_item_id," +
+								"weight," +
+								"is_virtual," +
+								"free_shipping," +
+								"is_qty_decimal," +
+								"no_discount," +
+								"qty_canceled," +
+								"qty_invoiced," +
+								"qty_refunded," +
+								"qty_shipped," +
+								"tax_percent," +
+								"tax_amount," +
+								"base_tax_amount," +
+								"tax_invoiced," +
+								"base_tax_invoiced," +
+								"discount_invoiced," +
+								"base_discount_invoiced," +
+								"amount_refunded," +
+								"base_amount_refunded," +
+								"row_total," +
+								"base_row_total," +
+								"row_invoiced," +
+								"base_row_invoiced," +
+								"row_weight," +
+								"price_incl_tax," +
+								"base_price_incl_tax," +
+								"row_total_incl_tax," +
+								"base_row_total_incl_tax" +
 							")" +
 							" OUTPUT INSERTED.id" +
 							" VALUES " +
@@ -775,7 +806,34 @@ namespace ART3WebAPI.Models.Repository
 								"@name, " +
 								"@product_type, " +
 								"@has_children, " +
-								"@parent_item_id" +
+								"@parent_item_id," +
+								"@weight," +
+								"@is_virtual," +
+								"@free_shipping," +
+								"@is_qty_decimal," +
+								"@no_discount," +
+								"@qty_canceled," +
+								"@qty_invoiced," +
+								"@qty_refunded," +
+								"@qty_shipped," +
+								"@tax_percent," +
+								"@tax_amount," +
+								"@base_tax_amount," +
+								"@tax_invoiced," +
+								"@base_tax_invoiced," +
+								"@discount_invoiced," +
+								"@base_discount_invoiced," +
+								"@amount_refunded," +
+								"@base_amount_refunded," +
+								"@row_total," +
+								"@base_row_total," +
+								"@row_invoiced," +
+								"@base_row_invoiced," +
+								"@row_weight," +
+								"@price_incl_tax," +
+								"@base_price_incl_tax," +
+								"@row_total_incl_tax," +
+								"@base_row_total_incl_tax" +
 							")";
 					cmInsert = new SqlCommand();
 					cmInsert.Connection = cn;
@@ -798,6 +856,33 @@ namespace ART3WebAPI.Models.Repository
 					cmInsert.Parameters.Add("@product_type", SqlDbType.VarChar, 30);
 					cmInsert.Parameters.Add("@has_children", SqlDbType.VarChar, 10);
 					cmInsert.Parameters.Add("@parent_item_id", SqlDbType.Int);
+					cmInsert.Parameters.Add("@weight", SqlDbType.Real);
+					cmInsert.Parameters.Add("@is_virtual", SqlDbType.SmallInt);
+					cmInsert.Parameters.Add("@free_shipping", SqlDbType.SmallInt);
+					cmInsert.Parameters.Add("@is_qty_decimal", SqlDbType.SmallInt);
+					cmInsert.Parameters.Add("@no_discount", SqlDbType.SmallInt);
+					cmInsert.Parameters.Add(new SqlParameter("@qty_canceled", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@qty_invoiced", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@qty_refunded", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@qty_shipped", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add("@tax_percent", SqlDbType.Real);
+					cmInsert.Parameters.Add(new SqlParameter("@tax_amount", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@base_tax_amount", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@tax_invoiced", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@base_tax_invoiced", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@discount_invoiced", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@base_discount_invoiced", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@amount_refunded", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@base_amount_refunded", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@row_total", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@base_row_total", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@row_invoiced", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@base_row_invoiced", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add("@row_weight", SqlDbType.Real);
+					cmInsert.Parameters.Add(new SqlParameter("@price_incl_tax", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@base_price_incl_tax", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@row_total_incl_tax", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@base_row_total_incl_tax", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
 					cmInsert.Prepare();
 					#endregion
 
@@ -828,6 +913,33 @@ namespace ART3WebAPI.Models.Repository
 							cmInsert.Parameters["@product_type"].Value = (produtoItem.product_type ?? "");
 							cmInsert.Parameters["@has_children"].Value = (produtoItem.has_children ?? "");
 							cmInsert.Parameters["@parent_item_id"].Value = produtoItem.parent_item_id;
+							cmInsert.Parameters["@weight"].Value = produtoItem.weight;
+							cmInsert.Parameters["@is_virtual"].Value = produtoItem.is_virtual;
+							cmInsert.Parameters["@free_shipping"].Value = produtoItem.free_shipping;
+							cmInsert.Parameters["@is_qty_decimal"].Value = produtoItem.is_qty_decimal;
+							cmInsert.Parameters["@no_discount"].Value = produtoItem.no_discount;
+							cmInsert.Parameters["@qty_canceled"].Value = produtoItem.qty_canceled;
+							cmInsert.Parameters["@qty_invoiced"].Value = produtoItem.qty_invoiced;
+							cmInsert.Parameters["@qty_refunded"].Value = produtoItem.qty_refunded;
+							cmInsert.Parameters["@qty_shipped"].Value = produtoItem.qty_shipped;
+							cmInsert.Parameters["@tax_percent"].Value = produtoItem.tax_percent;
+							cmInsert.Parameters["@tax_amount"].Value = produtoItem.tax_amount;
+							cmInsert.Parameters["@base_tax_amount"].Value = produtoItem.base_tax_amount;
+							cmInsert.Parameters["@tax_invoiced"].Value = produtoItem.tax_invoiced;
+							cmInsert.Parameters["@base_tax_invoiced"].Value = produtoItem.base_tax_invoiced;
+							cmInsert.Parameters["@discount_invoiced"].Value = produtoItem.discount_invoiced;
+							cmInsert.Parameters["@base_discount_invoiced"].Value = produtoItem.base_discount_invoiced;
+							cmInsert.Parameters["@amount_refunded"].Value = produtoItem.amount_refunded;
+							cmInsert.Parameters["@base_amount_refunded"].Value = produtoItem.base_amount_refunded;
+							cmInsert.Parameters["@row_total"].Value = produtoItem.row_total;
+							cmInsert.Parameters["@base_row_total"].Value = produtoItem.base_row_total;
+							cmInsert.Parameters["@row_invoiced"].Value = produtoItem.row_invoiced;
+							cmInsert.Parameters["@base_row_invoiced"].Value = produtoItem.base_row_invoiced;
+							cmInsert.Parameters["@row_weight"].Value = produtoItem.row_weight;
+							cmInsert.Parameters["@price_incl_tax"].Value = produtoItem.price_incl_tax;
+							cmInsert.Parameters["@base_price_incl_tax"].Value = produtoItem.base_price_incl_tax;
+							cmInsert.Parameters["@row_total_incl_tax"].Value = produtoItem.row_total_incl_tax;
+							cmInsert.Parameters["@base_row_total_incl_tax"].Value = produtoItem.base_row_total_incl_tax;
 							#endregion
 
 							#region [ Monta texto para o log em arquivo ]

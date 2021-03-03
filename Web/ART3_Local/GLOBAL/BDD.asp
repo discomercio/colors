@@ -2089,6 +2089,83 @@ end function
 
 
 ' ___________________________________________
+' LE PEDIDO ITEM SERVICO
+'
+function le_pedido_item_servico(byval id_pedido, byref v_pedido_item_servico, byref msg_erro)
+dim s
+dim rs
+	le_pedido_item_servico = False
+	msg_erro = ""
+	id_pedido=Trim("" & id_pedido)
+	redim v_pedido_item_servico(0)
+	set v_pedido_item_servico(0) = New cl_ITEM_PEDIDO_SERVICO
+	
+	s="SELECT * FROM t_PEDIDO_ITEM_SERVICO WHERE (pedido='" & id_pedido & "') ORDER BY sequencia"
+	set rs=cn.Execute(s)
+	if Err <> 0 then
+		msg_erro=Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+		
+	if rs.EOF then
+		msg_erro="Não há itens de serviço cadastrados para o pedido nº " & id_pedido & "."
+	else
+		do while Not rs.EOF 
+			if Trim(v_pedido_item_servico(Ubound(v_pedido_item_servico)).produto)<>"" then
+				redim preserve v_pedido_item_servico(Ubound(v_pedido_item_servico)+1)
+				set v_pedido_item_servico(ubound(v_pedido_item_servico)) = New cl_ITEM_PEDIDO_SERVICO
+				end if
+			with v_pedido_item_servico(Ubound(v_pedido_item_servico))
+				.pedido					= Trim("" & rs("pedido"))
+				.fabricante				= Trim("" & rs("fabricante"))
+				.produto				= Trim("" & rs("produto"))
+				.qtde					= rs("qtde")
+				.desc_dado				= rs("desc_dado")
+				.preco_venda			= rs("preco_venda")
+				.preco_NF				= rs("preco_NF")
+				.preco_fabricante		= rs("preco_fabricante")
+				.vl_custo2				= rs("vl_custo2")
+				.preco_lista			= rs("preco_lista")
+				.margem					= rs("margem")
+				.desc_max				= rs("desc_max")
+				.comissao				= rs("comissao")
+				.descricao				= Trim("" & rs("descricao"))
+				.descricao_html			= Trim("" & rs("descricao_html"))
+				.ean					= Trim("" & rs("ean"))
+				.grupo					= Trim("" & rs("grupo"))
+                .subgrupo				= Trim("" & rs("subgrupo"))
+				.peso					= rs("peso")
+				.qtde_volumes			= rs("qtde_volumes")
+				.abaixo_min_status		= rs("abaixo_min_status")
+				.abaixo_min_autorizacao	= Trim("" & rs("abaixo_min_autorizacao"))
+				.abaixo_min_autorizador	= Trim("" & rs("abaixo_min_autorizador"))
+				.abaixo_min_superv_autorizador	= Trim("" & rs("abaixo_min_superv_autorizador"))
+				.sequencia				= rs("sequencia")
+				.markup_fabricante		= rs("markup_fabricante")
+				.custoFinancFornecCoeficiente = rs("custoFinancFornecCoeficiente")
+				.custoFinancFornecPrecoListaBase = rs("custoFinancFornecPrecoListaBase")
+				.cubagem				= rs("cubagem")
+				.ncm					= Trim("" & rs("ncm"))
+				.cst					= Trim("" & rs("cst"))
+				.descontinuado			= Trim("" & rs("descontinuado"))
+				end with
+			rs.MoveNext 
+			Loop
+		end if
+
+	if Err <> 0 then
+		msg_erro=Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+
+	if rs.State <> 0 then rs.Close
+
+	if msg_erro = "" then le_pedido_item_servico=True
+end function
+
+
+
+' ___________________________________________
 ' LE PEDIDO ITEM CONSOLIDADO FAMILIA
 '
 function le_pedido_item_consolidado_familia(byval id_pedido, byref v_pedido_item, byref msg_erro)

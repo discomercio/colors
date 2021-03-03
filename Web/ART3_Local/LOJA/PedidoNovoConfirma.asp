@@ -47,12 +47,13 @@
 
 '	CONECTA AO BANCO DE DADOS
 '	=========================
-	dim cn, rs, rs2, t_CLIENTE, tMAP_XML, tOI
+	dim cn, rs, rs2, t_CLIENTE, tMAP_XML, tMAP_ITEM, tITEM_SVC, tOI
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
 	dim blnUsarMemorizacaoCompletaEnderecos
 	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 
+	dim percDescServico, vl_servico_original_price, vl_servico_price
 	dim operacao_origem, c_numero_magento, operationControlTicket, sessionToken, id_magento_api_pedido_xml
 	operacao_origem = Trim(Request("operacao_origem"))
 	c_numero_magento = ""
@@ -949,7 +950,7 @@
 	percCommissionDiscount = 0
 	vlMagentoShippingAmount = 0
 
-	if (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO) And blnMagentoPedidoComIndicador then
+	if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then
 		if alerta = "" then
 			s = "SELECT " & _
 					"*" & _
@@ -961,54 +962,59 @@
 			if tMAP_XML.Eof then
 				alerta = "Falha ao tentar localizar no banco de dados o registro com os dados do pedido Magento consultados via API (id = " & id_magento_api_pedido_xml & ")"
 			else
-				c_mag_installer_document = retorna_so_digitos(Trim("" & tMAP_XML("installer_document")))
-				percCommissionValue = tMAP_XML("commission_value")
-				percCommissionDiscount = tMAP_XML("commission_discount")
-				vlMagentoShippingAmount = tMAP_XML("shipping_amount")
+				vlMagentoShippingAmount = converte_numero(tMAP_XML("shipping_amount")) - converte_numero(tMAP_XML("shipping_discount_amount"))
+				
+				if blnMagentoPedidoComIndicador then
+					c_mag_installer_document = retorna_so_digitos(Trim("" & tMAP_XML("installer_document")))
+					percCommissionValue = tMAP_XML("commission_value")
+					percCommissionDiscount = tMAP_XML("commission_discount")
 
-				if c_mag_installer_document = "" then
-					alerta=texto_add_br(alerta)
-					alerta=alerta & "O pedido Magento nº " & c_numero_magento & " não informa o CPF/CNPJ do indicador!"
-				else
-					If Not cria_recordset_otimista(tOI, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
-					s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (cnpj_cpf = '" & retorna_so_digitos(c_mag_installer_document) & "') AND (Convert(smallint, loja) = " & loja & ")"
-					if tOI.State <> 0 then tOI.Close
-					tOI.open s, cn
-					if tOI.Eof then
+					if c_mag_installer_document = "" then
 						alerta=texto_add_br(alerta)
-						alerta=alerta & "O pedido Magento nº " & c_numero_magento & " especifica o indicador com CPF/CNPJ " & cnpj_cpf_formata(c_mag_installer_document) & " que não foi localizado no banco de dados (loja: " & loja & ")!"
+						alerta=alerta & "O pedido Magento nº " & c_numero_magento & " não informa o CPF/CNPJ do indicador!"
 					else
-						sIdIndicador = Trim("" & tOI("apelido"))
-						sNomeIndicador = Trim("" & tOI("razao_social_nome"))
-						sIdVendedor = Trim("" & tOI("vendedor"))
-						sNomeVendedor = Trim("" & x_usuario (sIdVendedor))
+						If Not cria_recordset_otimista(tOI, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+						s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (cnpj_cpf = '" & retorna_so_digitos(c_mag_installer_document) & "') AND (Convert(smallint, loja) = " & loja & ")"
+						if tOI.State <> 0 then tOI.Close
+						tOI.open s, cn
+						if tOI.Eof then
+							alerta=texto_add_br(alerta)
+							alerta=alerta & "O pedido Magento nº " & c_numero_magento & " especifica o indicador com CPF/CNPJ " & cnpj_cpf_formata(c_mag_installer_document) & " que não foi localizado no banco de dados (loja: " & loja & ")!"
+						else
+							sIdIndicador = Trim("" & tOI("apelido"))
+							sNomeIndicador = Trim("" & tOI("razao_social_nome"))
+							sIdVendedor = Trim("" & tOI("vendedor"))
+							sNomeVendedor = Trim("" & x_usuario (sIdVendedor))
+							end if
+						if tOI.State <> 0 then tOI.Close
+						set tOI = nothing
 						end if
-					if tOI.State <> 0 then tOI.Close
-					set tOI = nothing
-					end if
+					end if 'if blnMagentoPedidoComIndicador
 				end if 'if tMAP_XML.Eof
 			end if 'if alerta = ""
 
-		if alerta = "" then
-			if sIdIndicador = "" then
-				alerta=texto_add_br(alerta)
-				alerta=alerta & "Não foi possível localizar no banco de dados o indicador com CPF/CNPJ " & cnpj_cpf_formata(c_mag_installer_document)
-				end if
-			end if 'if alerta = ""
+		if blnMagentoPedidoComIndicador then
+			if alerta = "" then
+				if sIdIndicador = "" then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "Não foi possível localizar no banco de dados o indicador com CPF/CNPJ " & cnpj_cpf_formata(c_mag_installer_document)
+					end if
+				end if 'if alerta = ""
 
-		if alerta = "" then
-			if UCase(sIdIndicador) <> UCase(c_indicador) then
-				alerta=texto_add_br(alerta)
-				alerta=alerta & "Inconsistência encontrada na identificação do indicador: '" & sIdIndicador & "' e '" & c_indicador & "'"
-				end if
-			end if 'if alerta = ""
+			if alerta = "" then
+				if UCase(sIdIndicador) <> UCase(c_indicador) then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "Inconsistência encontrada na identificação do indicador: '" & sIdIndicador & "' e '" & c_indicador & "'"
+					end if
+				end if 'if alerta = ""
 
-		if alerta = "" then
-			if sIdVendedor = "" then
-				alerta=texto_add_br(alerta)
-				alerta=alerta & "Não foi possível determinar o vendedor associado ao indicador '" & sIdIndicador & "'"
-				end if
-			end if 'if alerta = ""
+			if alerta = "" then
+				if sIdVendedor = "" then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "Não foi possível determinar o vendedor associado ao indicador '" & sIdIndicador & "'"
+					end if
+				end if 'if alerta = ""
+			end if 'if blnMagentoPedidoComIndicador
 		end if 'if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO
 
 '	LÓGICA P/ CONSUMO DO ESTOQUE
@@ -1936,11 +1942,13 @@
 '	CADASTRA O PEDIDO E PROCESSA A MOVIMENTAÇÃO NO ESTOQUE
 	if alerta="" then
 		dim id_pedido, id_pedido_base, id_pedido_temp, id_pedido_temp_base, indice_pedido, indice_item, sequencia_item, s_hora_pedido, s_log, s_log_cliente_indicador, vLogAutoSplit, s_log_item_autosplit
+		dim s_log_item_servico
 		indice_pedido = 0
 		id_pedido_base = ""
 		id_pedido_temp_base = ""
 		s_log=""
 		s_log_cliente_indicador=""
+		s_log_item_servico = ""
 		redim vLogAutoSplit(0)
 		vLogAutoSplit(UBound(vLogAutoSplit)) = ""
 		s_hora_pedido = retorna_so_digitos(formata_hora(Now))
@@ -1948,6 +1956,22 @@
 	'	~~~~~~~~~~~~~
 		cn.BeginTrans
 	'	~~~~~~~~~~~~~
+		if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then
+			If Not cria_recordset_pessimista(tMAP_ITEM, msg_erro) then
+			'	~~~~~~~~~~~~~~~~
+				cn.RollbackTrans
+			'	~~~~~~~~~~~~~~~~
+				Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+				end if
+
+			If Not cria_recordset_pessimista(tITEM_SVC, msg_erro) then
+			'	~~~~~~~~~~~~~~~~
+				cn.RollbackTrans
+			'	~~~~~~~~~~~~~~~~
+				Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+				end if
+			end if 'if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO
+
 		for iv = LBound(vEmpresaAutoSplit) to UBound(vEmpresaAutoSplit)
 			if (vEmpresaAutoSplit(iv) <> 0) then
 				if Not (rs Is nothing) then
@@ -2194,10 +2218,12 @@
 				'01/02/2018: os pedidos do Arclube usam o RA para incluir o valor do frete e, portanto, não devem ter deságio do RA
 				if (Cstr(loja) <> Cstr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE)) And (Not blnMagentoPedidoComIndicador) then rs("perc_desagio_RA_liquida") = getParametroPercDesagioRALiquida
 
-				if (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO) And blnMagentoPedidoComIndicador then
-					rs("magento_installer_commission_value") = percCommissionValue
-					rs("magento_installer_commission_discount") = percCommissionDiscount
+				if (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO) then
 					rs("magento_shipping_amount") = vlMagentoShippingAmount
+					if blnMagentoPedidoComIndicador then
+						rs("magento_installer_commission_value") = percCommissionValue
+						rs("magento_installer_commission_discount") = percCommissionDiscount
+						end if
 					end if
 
 				rs("permite_RA_status") = permite_RA_status
@@ -2370,6 +2396,75 @@
 						end if 'if Trim(vProdRegra(iRegra).produto) <> ""
 					next 'for iRegra=LBound(vProdRegra) to UBound(vProdRegra)
 				
+				'Cadastramento semi-automático de pedidos do Magento: se houver serviços no pedido, cadastra no pedido-base
+				if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then
+					if indice_pedido = 1 then
+						sequencia_item = 0
+						s = "SELECT " & _
+								"*" & _
+							" FROM t_MAGENTO_API_PEDIDO_XML_DECODE_ITEM" & _
+							" WHERE" & _
+								" (id_magento_api_pedido_xml = " & id_magento_api_pedido_xml & ")" & _
+								" AND (product_type = '" & COD_MAGENTO_PRODUCT_TYPE__VIRTUAL & "')" & _
+							" ORDER BY" & _
+								" id"
+						if tMAP_ITEM.State <> 0 then tMAP_ITEM.Close
+						tMAP_ITEM.open s, cn
+						do while Not tMAP_ITEM.Eof
+							sequencia_item = sequencia_item + 1
+							s = "SELECT * FROM t_PEDIDO_ITEM_SERVICO WHERE pedido='X'"
+							if tITEM_SVC.State <> 0 then tITEM_SVC.Close
+							tITEM_SVC.Open s, cn
+							tITEM_SVC.AddNew
+							tITEM_SVC("pedido") = id_pedido_temp
+							tITEM_SVC("fabricante") = ""
+							tITEM_SVC("produto") = Trim("" & tMAP_ITEM("sku"))
+							tITEM_SVC("qtde") = CLng(tMAP_ITEM("qty_ordered"))
+							vl_servico_original_price = converte_numero(tMAP_ITEM("original_price"))
+							'O campo discount_amount informa o valor total do desconto já multiplicado pela quantidade, ou seja, não há campo com o valor unitário do desconto aplicado e
+							'nem o valor unitário de venda do item já com o desconto aplicado.
+							'Já o campo row_total informa o valor total do item já calculado com os descontos e multiplicado pela quantidade
+							vl_servico_price = 0
+							if converte_numero(tMAP_ITEM("qty_ordered")) > 0 then
+								vl_servico_price = converte_numero(tMAP_ITEM("row_total")) / converte_numero(tMAP_ITEM("qty_ordered"))
+								end if
+							'Calcula percentual de desconto
+							percDescServico = 0
+							if vl_servico_original_price <> 0 then
+								percDescServico = 100*((vl_servico_original_price - vl_servico_price)/vl_servico_original_price)
+								end if
+							tITEM_SVC("desc_dado") = percDescServico
+							tITEM_SVC("preco_venda") = vl_servico_price
+							tITEM_SVC("preco_NF") = vl_servico_price
+							tITEM_SVC("preco_lista") = vl_servico_original_price
+							tITEM_SVC("descricao") = Trim("" & tMAP_ITEM("name"))
+							tITEM_SVC("descricao_html") = Trim("" & tMAP_ITEM("name"))
+							tITEM_SVC("sequencia") = sequencia_item
+							
+							if s_log_item_servico <> "" then s_log_item_servico = s_log_item_servico & chr(13)
+							s_log_item_servico = s_log_item_servico & Trim("" & tITEM_SVC("produto")) & ":" & _
+												" qtde = " & Trim("" & tITEM_SVC("qtde")) & ", " & _
+												" preco_venda = " & formata_moeda(tITEM_SVC("preco_venda")) & ", " & _
+												" preco_NF = " & formata_moeda(tITEM_SVC("preco_NF")) & ", " & _
+												" preco_lista = " & formata_moeda(tITEM_SVC("preco_lista")) & ", " & _
+												" desc_dado = " & formata_perc(tITEM_SVC("desc_dado")) & ", " & _
+												" descricao = " & Trim("" & tITEM_SVC("descricao"))
+
+							tITEM_SVC.Update
+							if Err <> 0 then
+							'	~~~~~~~~~~~~~~~~
+								cn.RollbackTrans
+							'	~~~~~~~~~~~~~~~~
+								Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
+								end if
+
+							if tITEM_SVC.State <> 0 then tITEM_SVC.Close
+
+							tMAP_ITEM.MoveNext
+							loop
+						end if 'if indice_pedido = 1
+					end if 'if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO
+
 				if indice_pedido = 1 then
 					if Not gera_num_pedido(id_pedido_base, msg_erro) then
 					'	~~~~~~~~~~~~~~~~
@@ -2393,6 +2488,11 @@
 				s="UPDATE t_PEDIDO_ITEM SET pedido='" & id_pedido & "' WHERE pedido='" & id_pedido_temp & "'"
 				cn.Execute(s)
 		
+				if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then
+					s="UPDATE t_PEDIDO_ITEM_SERVICO SET pedido='" & id_pedido & "' WHERE pedido='" & id_pedido_temp & "'"
+					cn.Execute(s)
+					end if
+
 				s="UPDATE t_ESTOQUE_MOVIMENTO SET pedido='" & id_pedido & "' WHERE pedido='" & id_pedido_temp & "'"
 				cn.Execute(s)
 		
@@ -3093,6 +3193,15 @@
 					s_log = s_log & vLogAutoSplit(i)
 					end if
 				next
+
+			if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then
+				if s_log_item_servico <> "" then
+					if s_log <> "" then s_log = s_log & chr(13)
+					s_log = s_log & "Serviço(s):"
+					s_log = s_log & chr(13)
+					s_log = s_log & s_log_item_servico
+					end if
+				end if
 
 			if s_log <> "" then
 				grava_log usuario, loja, id_pedido, cliente_selecionado, OP_LOG_PEDIDO_NOVO, s_log

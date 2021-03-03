@@ -15,6 +15,7 @@ namespace ART3WebAPI.Models.Domains
 {
 	public static class Magento2RestApi
 	{
+		public const char SEPARADOR_DECIMAL_NUM_REAL = '.';
 		#region[ ReaderWriterLock ]
 		// Para garantir que os acessos à API do Magento sejam thread-safe
 		public static ReaderWriterLock rwlMagento2RestApi = new ReaderWriterLock();
@@ -334,6 +335,7 @@ namespace ART3WebAPI.Models.Domains
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "Magento2RestApi.decodificaSalesOrderInfoMage2ParaMage1()";
+			bool blnUsarParentItem;
 			StringBuilder sbEndereco;
 			MagentoSoapApiSalesOrderInfo mage1SalesOrderInfo = new MagentoSoapApiSalesOrderInfo();
 			Magento2ExtensionAttributesShippingAssignmentsShipping mage2Shipping;
@@ -681,7 +683,50 @@ namespace ART3WebAPI.Models.Domains
 					foreach (Magento2SalesOrderItem mage2SalesOrderItem in mage2SalesOrderInfo.items)
 					{
 						// Ignora os produtos do tipo 'configurable' (processa somente os do tipo 'simple' e 'virtual')
+						// IMPORTANTE: O Magento 2 possui o conceito de produto 'configurable', ou seja, um produto que representa
+						// ==========  um determinado tipo de produto que possui algum tipo de variação (potência, voltagem, etc),
+						// mas com as demais características permanecendo as mesmas.
+						// Um produto 'configurable' possui no seu conjunto de opções vários produtos 'simple'.
+						// Mas um produto 'simple' pode não estar vinculado a um produto 'configurable'.
+						// Dito isso, o Magento 2 pode retornar os dados de um item do pedido em uma das seguintes formas:
+						//    1) Produto 'simple' que não está vinculado a nenhum produto 'configurable': retorna os dados do item
+						//       em um bloco de dados em que o campo 'product_type' será igual a 'simple'.
+						//    2) Produto que está vinculado a um produto 'configurable': neste caso, dependerá de como o produto foi
+						//       adicionado ao carrinho.
+						//       2-A) Se o produto estiver sendo exibido em um grid em que está sendo apresentado com os
+						//            dados/características de uma determinada versão 'simple' e for adicionado ao carrinho diretamente
+						//            desse local, então no resultado da consulta da API os dados serão retornados da mesma forma
+						//            como acontece no produto 'simple' que não está vinculado a nenhum produto 'configurable', ou seja,
+						//            no mesmo formato do item (1).
+						//       2-B) Se o cliente estiver na página do produto que exibe as opções para selecionar potência/voltagem/etc
+						//            e adiciona ao carrinho, o resultado da API irá retornar a seguinte estrutura para esse item:
+						//            i) Bloco de dados com 'product_type' igual a 'configurable' cujo campo 'name' irá exibir o nome
+						//               do produto 'configurable' (nome genérico).
+						//            ii) Bloco de dados com 'product_type' igual a 'simple' cujo campo 'name' irá exibir o nome do produto
+						//                'simple' selecionado.
+						//            iii) Dentro do bloco de dados do item anterior (ii), haverá um campo chamado 'parent_item' que
+						//                 irá repetir os mesmos campos já informados no item (i).
+						//
+						// ATENÇÃO: é fundamental ter conhecimento de que na ocorrência da situação (2-B ii), a grande maioria dos
+						// =======  campos de valores irá ser informada com zero, sendo necessário buscar essas informações dentro do
+						// bloco de dados informado em 'parent_item'. Até onde se notou nos testes realizados, aparentemente apenas
+						// os campos 'price', 'qty_ordered' e 'weight' retornam com valor, os demais sendo informados com zero.
+						// Para os demais campos, não foi possível determinar se ocorre o mesmo porque os valores estavam zerados
+						// nos dois blocos de dados.
+						//
+						// Por fim, a forma como o item é adicionado ao carrinho (2A ou 2B) também impacta na exibição de algumas
+						// informações do produto na página do pedido no painel Admin.
+
 						if (mage2SalesOrderItem.product_type.Equals("configurable")) continue;
+
+						blnUsarParentItem = false;
+						if (mage2SalesOrderItem.product_type.Equals("simple"))
+						{
+							if (mage2SalesOrderItem.parent_item != null)
+							{
+								if ((mage2SalesOrderItem.parent_item.product_type.Equals("configurable")) && ((mage2SalesOrderItem.parent_item.sku ?? "").Trim().Length > 0)) blnUsarParentItem = true;
+							}
+						}
 
 						mage1SalesOrderItem = new MagentoSoapApiSalesOrderItem();
 						mage1SalesOrderItem.item_id = mage2SalesOrderItem.item_id;
@@ -701,46 +746,46 @@ namespace ART3WebAPI.Models.Domains
 						// *** description
 						// *** applied_rule_ids
 						// *** additional_data
-						mage1SalesOrderItem.free_shipping = mage2SalesOrderItem.free_shipping;
-						mage1SalesOrderItem.is_qty_decimal = mage2SalesOrderItem.is_qty_decimal;
-						mage1SalesOrderItem.no_discount = mage2SalesOrderItem.no_discount;
+						mage1SalesOrderItem.free_shipping = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.free_shipping : mage2SalesOrderItem.free_shipping);
+						mage1SalesOrderItem.is_qty_decimal = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.is_qty_decimal : mage2SalesOrderItem.is_qty_decimal);
+						mage1SalesOrderItem.no_discount = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.no_discount : mage2SalesOrderItem.no_discount);
 						// *** qty_backordered
-						mage1SalesOrderItem.qty_canceled = mage2SalesOrderItem.qty_canceled;
-						mage1SalesOrderItem.qty_invoiced = mage2SalesOrderItem.qty_invoiced;
-						mage1SalesOrderItem.qty_ordered = mage2SalesOrderItem.qty_ordered;
-						mage1SalesOrderItem.qty_refunded = mage2SalesOrderItem.qty_refunded;
-						mage1SalesOrderItem.qty_shipped = mage2SalesOrderItem.qty_shipped;
+						mage1SalesOrderItem.qty_canceled = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.qty_canceled : mage2SalesOrderItem.qty_canceled);
+						mage1SalesOrderItem.qty_invoiced = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.qty_invoiced : mage2SalesOrderItem.qty_invoiced);
+						mage1SalesOrderItem.qty_ordered = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.qty_ordered : mage2SalesOrderItem.qty_ordered);
+						mage1SalesOrderItem.qty_refunded = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.qty_refunded : mage2SalesOrderItem.qty_refunded);
+						mage1SalesOrderItem.qty_shipped = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.qty_shipped : mage2SalesOrderItem.qty_shipped);
 						// *** base_cost
-						mage1SalesOrderItem.price = mage2SalesOrderItem.price;
-						mage1SalesOrderItem.base_price = mage2SalesOrderItem.base_price;
-						mage1SalesOrderItem.original_price = mage2SalesOrderItem.original_price;
-						mage1SalesOrderItem.base_original_price = mage2SalesOrderItem.base_original_price;
-						mage1SalesOrderItem.tax_percent = mage2SalesOrderItem.tax_percent;
-						mage1SalesOrderItem.tax_amount = mage2SalesOrderItem.tax_amount;
-						mage1SalesOrderItem.base_tax_amount = mage2SalesOrderItem.base_tax_amount;
-						mage1SalesOrderItem.tax_invoiced = mage2SalesOrderItem.tax_invoiced;
-						mage1SalesOrderItem.base_tax_invoiced = mage2SalesOrderItem.base_tax_invoiced;
-						mage1SalesOrderItem.discount_percent = mage2SalesOrderItem.discount_percent;
-						mage1SalesOrderItem.discount_amount = mage2SalesOrderItem.discount_amount;
-						mage1SalesOrderItem.base_discount_amount = mage2SalesOrderItem.base_discount_amount;
-						mage1SalesOrderItem.discount_invoiced = mage2SalesOrderItem.discount_invoiced;
-						mage1SalesOrderItem.base_discount_invoiced = mage2SalesOrderItem.base_discount_invoiced;
-						mage1SalesOrderItem.amount_refunded = mage2SalesOrderItem.amount_refunded;
-						mage1SalesOrderItem.base_amount_refunded = mage2SalesOrderItem.base_amount_refunded;
-						mage1SalesOrderItem.row_total = mage2SalesOrderItem.row_total;
-						mage1SalesOrderItem.base_row_total = mage2SalesOrderItem.base_row_total;
-						mage1SalesOrderItem.row_invoiced = mage2SalesOrderItem.row_invoiced;
-						mage1SalesOrderItem.base_row_invoiced = mage2SalesOrderItem.base_row_invoiced;
-						mage1SalesOrderItem.row_weight = mage2SalesOrderItem.row_weight;
+						mage1SalesOrderItem.price = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.price : mage2SalesOrderItem.price);
+						mage1SalesOrderItem.base_price = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.base_price : mage2SalesOrderItem.base_price);
+						mage1SalesOrderItem.original_price = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.original_price : mage2SalesOrderItem.original_price);
+						mage1SalesOrderItem.base_original_price = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.base_original_price : mage2SalesOrderItem.base_original_price);
+						mage1SalesOrderItem.tax_percent = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.tax_percent : mage2SalesOrderItem.tax_percent);
+						mage1SalesOrderItem.tax_amount = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.tax_amount : mage2SalesOrderItem.tax_amount);
+						mage1SalesOrderItem.base_tax_amount = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.base_tax_amount : mage2SalesOrderItem.base_tax_amount);
+						mage1SalesOrderItem.tax_invoiced = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.tax_invoiced : mage2SalesOrderItem.tax_invoiced);
+						mage1SalesOrderItem.base_tax_invoiced = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.base_tax_invoiced : mage2SalesOrderItem.base_tax_invoiced);
+						mage1SalesOrderItem.discount_percent = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.discount_percent : mage2SalesOrderItem.discount_percent);
+						mage1SalesOrderItem.discount_amount = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.discount_amount : mage2SalesOrderItem.discount_amount);
+						mage1SalesOrderItem.base_discount_amount = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.base_discount_amount : mage2SalesOrderItem.base_discount_amount);
+						mage1SalesOrderItem.discount_invoiced = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.discount_invoiced : mage2SalesOrderItem.discount_invoiced);
+						mage1SalesOrderItem.base_discount_invoiced = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.base_discount_invoiced : mage2SalesOrderItem.base_discount_invoiced);
+						mage1SalesOrderItem.amount_refunded = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.amount_refunded : mage2SalesOrderItem.amount_refunded);
+						mage1SalesOrderItem.base_amount_refunded = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.base_amount_refunded : mage2SalesOrderItem.base_amount_refunded);
+						mage1SalesOrderItem.row_total = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.row_total : mage2SalesOrderItem.row_total);
+						mage1SalesOrderItem.base_row_total = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.base_row_total : mage2SalesOrderItem.base_row_total);
+						mage1SalesOrderItem.row_invoiced = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.row_invoiced : mage2SalesOrderItem.row_invoiced);
+						mage1SalesOrderItem.base_row_invoiced = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.base_row_invoiced : mage2SalesOrderItem.base_row_invoiced);
+						mage1SalesOrderItem.row_weight = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.row_weight : mage2SalesOrderItem.row_weight);
 						// *** base_tax_before_discount
 						// *** tax_before_discount
 						// *** ext_order_item_id
 						// *** locked_do_invoice
 						// *** locked_do_ship
-						mage1SalesOrderItem.price_incl_tax = mage2SalesOrderItem.price_incl_tax;
-						mage1SalesOrderItem.base_price_incl_tax = mage2SalesOrderItem.base_price_incl_tax;
-						mage1SalesOrderItem.row_total_incl_tax = mage2SalesOrderItem.row_total_incl_tax;
-						mage1SalesOrderItem.base_row_total_incl_tax = mage2SalesOrderItem.base_row_total_incl_tax;
+						mage1SalesOrderItem.price_incl_tax = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.price_incl_tax : mage2SalesOrderItem.price_incl_tax);
+						mage1SalesOrderItem.base_price_incl_tax = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.base_price_incl_tax : mage2SalesOrderItem.base_price_incl_tax);
+						mage1SalesOrderItem.row_total_incl_tax = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.row_total_incl_tax : mage2SalesOrderItem.row_total_incl_tax);
+						mage1SalesOrderItem.base_row_total_incl_tax = (blnUsarParentItem ? mage2SalesOrderItem.parent_item.base_row_total_incl_tax : mage2SalesOrderItem.base_row_total_incl_tax);
 						// *** hidden_tax_amount
 						// *** base_hidden_tax_amount
 						// *** hidden_tax_invoiced
@@ -1184,10 +1229,10 @@ namespace ART3WebAPI.Models.Domains
 									#region [ Cliente PF ]
 									// Cliente PF: usa o endereço de entrega como sendo o único endereço do cliente
 									v = (salesOrder.magentoSalesOrderInfo.shipping_address.street ?? "").Split('\n');
-									if (v.Length >= 1) cliente.endereco = v[0].Trim();
-									if (v.Length >= 2) cliente.endereco_numero = v[1].Trim();
-									if (v.Length >= 3) cliente.endereco_complemento = v[2].Trim();
-									if (v.Length >= 4) cliente.bairro = v[3].Trim();
+									if (v.Length >= 1) cliente.endereco = v[0].Replace('\r', ' ').Trim();
+									if (v.Length >= 2) cliente.endereco_numero = v[1].Replace('\r', ' ').Trim();
+									if (v.Length >= 3) cliente.endereco_complemento = v[2].Replace('\r', ' ').Trim();
+									if (v.Length >= 4) cliente.bairro = v[3].Replace('\r', ' ').Trim();
 									cliente.cidade = (salesOrder.magentoSalesOrderInfo.shipping_address.city ?? "").Trim();
 									if (Global.isUfOk(salesOrder.magentoSalesOrderInfo.shipping_address.region))
 									{
@@ -1204,10 +1249,10 @@ namespace ART3WebAPI.Models.Domains
 								{
 									#region [ Cliente PJ ]
 									v = (salesOrder.magentoSalesOrderInfo.billing_address.street ?? "").Split('\n');
-									if (v.Length >= 1) cliente.endereco = v[0].Trim();
-									if (v.Length >= 2) cliente.endereco_numero = v[1].Trim();
-									if (v.Length >= 3) cliente.endereco_complemento = v[2].Trim();
-									if (v.Length >= 4) cliente.bairro = v[3].Trim();
+									if (v.Length >= 1) cliente.endereco = v[0].Replace('\r', ' ').Trim();
+									if (v.Length >= 2) cliente.endereco_numero = v[1].Replace('\r', ' ').Trim();
+									if (v.Length >= 3) cliente.endereco_complemento = v[2].Replace('\r', ' ').Trim();
+									if (v.Length >= 4) cliente.bairro = v[3].Replace('\r', ' ').Trim();
 									cliente.cidade = (salesOrder.magentoSalesOrderInfo.billing_address.city ?? "").Trim();
 									if (Global.isUfOk(salesOrder.magentoSalesOrderInfo.billing_address.region))
 									{
@@ -1527,6 +1572,7 @@ namespace ART3WebAPI.Models.Domains
 				insertPedidoXml.clearSale_score = (salesOrder.magentoSalesOrderInfo.clearSale_score ?? "");
 				insertPedidoXml.clearSale_packageID = (salesOrder.magentoSalesOrderInfo.clearSale_packageID ?? "");
 				insertPedidoXml.shipping_amount = Global.converteNumeroDecimal((salesOrder.magentoSalesOrderInfo.shipping_amount ?? ""));
+				insertPedidoXml.shipping_discount_amount = Global.converteNumeroDecimal((salesOrder.magentoSalesOrderInfo.shipping_discount_amount ?? ""));
 				insertPedidoXml.discount_amount = Global.converteNumeroDecimal((salesOrder.magentoSalesOrderInfo.discount_amount ?? ""));
 				insertPedidoXml.subtotal = Global.converteNumeroDecimal((salesOrder.magentoSalesOrderInfo.subtotal ?? ""));
 				insertPedidoXml.grand_total = Global.converteNumeroDecimal((salesOrder.magentoSalesOrderInfo.grand_total ?? ""));
@@ -1565,10 +1611,10 @@ namespace ART3WebAPI.Models.Domains
 				decodeEndereco.id_magento_api_pedido_xml = insertPedidoXml.id;
 				decodeEndereco.tipo_endereco = Global.Cte.MagentoSoapApi.TIPO_ENDERECO__COBRANCA;
 				v = (salesOrder.magentoSalesOrderInfo.billing_address.street ?? "").Split('\n');
-				if (v.Length >= 1) decodeEndereco.endereco = v[0];
-				if (v.Length >= 2) decodeEndereco.endereco_numero = v[1];
-				if (v.Length >= 3) decodeEndereco.endereco_complemento = v[2];
-				if (v.Length >= 4) decodeEndereco.bairro = v[3];
+				if (v.Length >= 1) decodeEndereco.endereco = v[0].Replace('\r', ' ').Trim();
+				if (v.Length >= 2) decodeEndereco.endereco_numero = v[1].Replace('\r', ' ').Trim();
+				if (v.Length >= 3) decodeEndereco.endereco_complemento = v[2].Replace('\r', ' ').Trim();
+				if (v.Length >= 4) decodeEndereco.bairro = v[3].Replace('\r', ' ').Trim();
 				decodeEndereco.cidade = (salesOrder.magentoSalesOrderInfo.billing_address.city ?? "");
 				if (Global.isUfOk(salesOrder.magentoSalesOrderInfo.billing_address.region))
 				{
@@ -1618,10 +1664,10 @@ namespace ART3WebAPI.Models.Domains
 				decodeEndereco.id_magento_api_pedido_xml = insertPedidoXml.id;
 				decodeEndereco.tipo_endereco = Global.Cte.MagentoSoapApi.TIPO_ENDERECO__ENTREGA;
 				v = (salesOrder.magentoSalesOrderInfo.shipping_address.street ?? "").Split('\n');
-				if (v.Length >= 1) decodeEndereco.endereco = v[0];
-				if (v.Length >= 2) decodeEndereco.endereco_numero = v[1];
-				if (v.Length >= 3) decodeEndereco.endereco_complemento = v[2];
-				if (v.Length >= 4) decodeEndereco.bairro = v[3];
+				if (v.Length >= 1) decodeEndereco.endereco = v[0].Replace('\r', ' ').Trim();
+				if (v.Length >= 2) decodeEndereco.endereco_numero = v[1].Replace('\r', ' ').Trim();
+				if (v.Length >= 3) decodeEndereco.endereco_complemento = v[2].Replace('\r', ' ').Trim();
+				if (v.Length >= 4) decodeEndereco.bairro = v[3].Replace('\r', ' ').Trim();
 				decodeEndereco.cidade = (salesOrder.magentoSalesOrderInfo.shipping_address.city ?? "");
 				if (Global.isUfOk(salesOrder.magentoSalesOrderInfo.shipping_address.region))
 				{
@@ -1688,6 +1734,34 @@ namespace ART3WebAPI.Models.Domains
 					decodeItem.product_type = (item.product_type ?? "");
 					decodeItem.has_children = (item.has_children ?? "");
 					decodeItem.parent_item_id = (int)Global.converteInteiro((item.parent_item_id ?? ""));
+					decodeItem.weight = Global.converteDouble(item.weight, SEPARADOR_DECIMAL_NUM_REAL);
+					decodeItem.is_virtual = (int)Global.converteInteiro((item.is_virtual ?? ""));
+					decodeItem.free_shipping = (int)Global.converteInteiro((item.free_shipping ?? ""));
+					decodeItem.is_qty_decimal = (int)Global.converteInteiro((item.is_qty_decimal ?? ""));
+					decodeItem.no_discount = (int)Global.converteInteiro((item.no_discount ?? ""));
+					decodeItem.qty_canceled = Global.converteNumeroDecimal((item.qty_canceled ?? ""));
+					decodeItem.qty_invoiced = Global.converteNumeroDecimal((item.qty_invoiced ?? ""));
+					decodeItem.qty_refunded = Global.converteNumeroDecimal((item.qty_refunded ?? ""));
+					decodeItem.qty_shipped = Global.converteNumeroDecimal((item.qty_shipped ?? ""));
+					decodeItem.tax_percent = Global.converteDouble(item.tax_percent, SEPARADOR_DECIMAL_NUM_REAL);
+					decodeItem.tax_amount = Global.converteNumeroDecimal((item.tax_amount ?? ""));
+					decodeItem.base_tax_amount = Global.converteNumeroDecimal((item.base_tax_amount ?? ""));
+					decodeItem.tax_invoiced = Global.converteNumeroDecimal((item.tax_invoiced ?? ""));
+					decodeItem.base_tax_invoiced = Global.converteNumeroDecimal((item.base_tax_invoiced ?? ""));
+					decodeItem.discount_invoiced = Global.converteNumeroDecimal((item.discount_invoiced ?? ""));
+					decodeItem.base_discount_invoiced = Global.converteNumeroDecimal((item.base_discount_invoiced ?? ""));
+					decodeItem.amount_refunded = Global.converteNumeroDecimal((item.amount_refunded ?? ""));
+					decodeItem.base_amount_refunded = Global.converteNumeroDecimal((item.base_amount_refunded ?? ""));
+					decodeItem.row_total = Global.converteNumeroDecimal((item.row_total ?? ""));
+					decodeItem.base_row_total = Global.converteNumeroDecimal((item.base_row_total ?? ""));
+					decodeItem.row_invoiced = Global.converteNumeroDecimal((item.row_invoiced ?? ""));
+					decodeItem.base_row_invoiced = Global.converteNumeroDecimal((item.base_row_invoiced ?? ""));
+					decodeItem.row_weight = Global.converteDouble(item.row_weight, SEPARADOR_DECIMAL_NUM_REAL);
+					decodeItem.price_incl_tax = Global.converteNumeroDecimal((item.price_incl_tax ?? ""));
+					decodeItem.base_price_incl_tax = Global.converteNumeroDecimal((item.base_price_incl_tax ?? ""));
+					decodeItem.row_total_incl_tax = Global.converteNumeroDecimal((item.row_total_incl_tax ?? ""));
+					decodeItem.base_row_total_incl_tax = Global.converteNumeroDecimal((item.base_row_total_incl_tax ?? ""));
+
 					if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeItem(decodeItem, out msg_erro))
 					{
 						msg = "Falha ao tentar gravar no BD os dados do item do pedido (sku=" + decodeItem.sku + ")!";

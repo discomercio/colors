@@ -535,6 +535,63 @@ namespace ART3WebAPI.Models.Domains
 		}
 		#endregion
 
+		#region [ converteDouble ]
+		/// <summary>
+		/// Converte o número representado pelo texto do parâmetro em um número do tipo double
+		/// Se não conseguir realizar a conversão, será retornado zero
+		/// </summary>
+		/// <param name="numero">Texto representando um número double; aceita sinal de negativo no início ou no final; aceita separador de milhar</param>
+		/// <param name="separadorDecimal">Define o caractere que deve ser considerado como ponto decimal</param>
+		/// <returns>Retorna um número do tipo double</returns>
+		public static double converteDouble(String numero, char separadorDecimal)
+		{
+			#region [ Declarações ]
+			string numeroNormalizado;
+			#endregion
+
+			if (numero == null) return 0d;
+			if (numero.Trim().Length == 0) return 0d;
+
+			numeroNormalizado = numero.Trim();
+			numeroNormalizado = numeroNormalizado.Replace(separadorDecimal, 'V');
+			numeroNormalizado = numeroNormalizado.Replace(".", "");
+			numeroNormalizado = numeroNormalizado.Replace(",", "");
+			numeroNormalizado = numeroNormalizado.Replace("V", ".");
+			return converteDouble(numeroNormalizado);
+		}
+		#endregion
+
+		#region [ converteDouble ]
+		/// <summary>
+		/// Converte o número representado pelo texto do parâmetro em um número do tipo double
+		/// Se não conseguir realizar a conversão, será retornado zero
+		/// IMPORTANTE: o separador decimal deve ser o ponto.
+		/// </summary>
+		/// <param name="numero">
+		/// Texto representando um número double (separador decimal é o ponto); aceita sinal de negativo no início ou no final; aceita separador de milhar
+		/// </param>
+		/// <returns>
+		/// Retorna um número do tipo double
+		/// </returns>
+		public static double converteDouble(String numero)
+		{
+			#region [ Declarações ]
+			double dblResultado;
+			NumberStyles style = NumberStyles.AllowLeadingSign | NumberStyles.AllowTrailingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowThousands;
+			CultureInfo culture = System.Globalization.CultureInfo.InvariantCulture;
+			#endregion
+
+			if (numero == null) return 0d;
+			if (numero.Trim().Length == 0) return 0d;
+
+			numero = numero.Trim();
+
+			if (double.TryParse(numero, style, culture, out dblResultado)) return dblResultado;
+
+			return 0d;
+		}
+		#endregion
+
 		#region[ converteInteiro ]
 		/// <summary>
 		/// Converte o número representado pelo texto do parâmetro em um número do tipo inteiro
