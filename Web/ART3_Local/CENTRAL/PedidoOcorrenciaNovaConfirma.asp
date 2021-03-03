@@ -4,6 +4,7 @@
 <!-- #include file = "../global/constantes.asp" -->
 <!-- #include file = "../global/funcoes.asp"    -->
 <!-- #include file = "../global/bdd.asp" -->
+<!-- #include file = "../global/global.asp" -->
 
 <!-- #include file = "../global/TrataSessaoExpirada.asp"        -->
 
@@ -96,8 +97,9 @@
 
 '	CONECTA AO BANCO DE DADOS
 '	=========================
-	dim cn, rs, rs2
+	dim cn, rs, rs2, rsMail
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
+	if Not cria_recordset_otimista(rsMail, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
 '	VERIFICA SE JÁ EXISTE OCORRÊNCIA ABERTA
 '	TAMBÉM PREVINE CONTRA DUPLICAÇÃO CAUSADA POR NOVO ACIONAMENTO APÓS USAR O BOTÃO 'BACK' DO BROWSER
@@ -117,6 +119,74 @@
 			end if
 		set rs2 = Nothing
 		end if
+
+	dim id_email, corpo_mensagem, msg_erro_grava_email, dtHrMensagem
+	dim s_email_vendedor
+	s_email_vendedor = ""
+	if alerta = "" then
+		s = "SELECT" & _
+				" tP.vendedor," & _
+				" tU.email" & _
+			" FROM t_PEDIDO tP" & _
+				" INNER JOIN t_USUARIO tU ON (tP.vendedor = tU.usuario)" & _
+			" WHERE" & _
+				" (tP.pedido = '" & pedido_selecionado & "')"
+		if rsMail.State <> 0 then rsMail.Close
+		rsMail.Open s, cn
+		if Not rsMail.Eof then
+			s_email_vendedor = LCase(Trim("" & rsMail("email")))
+			end if
+		end if
+
+	dim s_email_remetente
+	dim r_usuario
+	dim s_dados_cliente
+	dim s_unidade_negocio
+	s_dados_cliente = ""
+	s_unidade_negocio = ""
+	s_email_remetente = getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__MENSAGEM_SISTEMA)
+	call le_usuario(usuario, r_usuario, msg_erro)
+
+	if alerta = "" then
+		'Se encontrou e-mail do vendedor para enviar mensagem de aviso, obtém demais informações para a montagem da mensagem
+		if s_email_vendedor <> "" then
+			call le_usuario(usuario, r_usuario, msg_erro)
+
+			s = "SELECT" & _
+					" p.st_memorizacao_completa_enderecos," & _
+					" p.endereco_nome_iniciais_em_maiusculas AS endereco_nome," & _
+					" p.endereco_cnpj_cpf," & _
+					" c.nome_iniciais_em_maiusculas AS cliente_nome," & _
+					" c.cnpj_cpf AS cliente_cnpj_cpf," & _
+					" p.loja," & _
+					" lj.unidade_negocio" & _
+				" FROM t_PEDIDO p" & _
+					" INNER JOIN t_CLIENTE c ON (p.id_cliente = c.id)" & _
+					" INNER JOIN t_LOJA lj ON (p.loja = lj.loja)" & _
+				" WHERE" & _
+					" (p.pedido = '" & pedido_selecionado & "')"
+			if rsMail.State <> 0 then rsMail.Close
+			rsMail.Open s, cn
+			if Not rsMail.Eof then
+				s_unidade_negocio = Trim("" & rsMail("unidade_negocio"))
+				if rsMail("st_memorizacao_completa_enderecos") <> 0 then
+					s_dados_cliente = "Cliente: " & Trim("" & rsMail("endereco_nome")) & " (" & cnpj_cpf_formata(Trim("" & rsMail("endereco_cnpj_cpf"))) & ")"
+				else
+					s_dados_cliente = "Cliente: " & Trim("" & rsMail("cliente_nome")) & " (" & cnpj_cpf_formata(Trim("" & rsMail("cliente_cnpj_cpf"))) & ")"
+					end if
+				end if
+			end if
+		end if
+
+	dim r_pedido
+	if alerta = "" then
+		if Not le_pedido(pedido_selecionado, r_pedido, msg_erro) then
+			alerta = msg_erro
+			end if
+		end if
+
+	dim s_descricao_motivo_abertura
+	s_descricao_motivo_abertura = obtem_descricao_tabela_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__OCORRENCIAS_EM_PEDIDOS__MOTIVO_ABERTURA, motivo_ocorrencia)
 
 
 '	GRAVA A OCORRÊNCIA
@@ -172,6 +242,52 @@
 			if s_log <> "" then grava_log usuario, "", pedido_selecionado, "", OP_LOG_PEDIDO_OCORRENCIA_INCLUSAO, s_log
 			end if
 			
+		if alerta = "" then
+			if s_email_vendedor <> "" then
+				if s_email_remetente <> "" then
+					if UCase(usuario) <> UCase(r_pedido.vendedor) then
+						if (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__BS) Or (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__VRF) then
+							dtHrMensagem = Now
+
+							corpo_mensagem = "Usuário '" & usuario & "' (" & r_usuario.nome_iniciais_em_maiusculas & ") cadastrou uma nova ocorrência no pedido " & pedido_selecionado & " em " & formata_data_hora_sem_seg(dtHrMensagem) & _
+											vbCrLf & _
+											"Pedido: " & pedido_selecionado & _
+											vbCrLf & _
+											s_dados_cliente & _
+											vbCrLf & _
+											"Ocorrência: " & s_descricao_motivo_abertura
+
+							if Trim(c_texto) <> "" then
+								corpo_mensagem = corpo_mensagem & _
+												vbCrLf & vbCrLf & _
+												String(30, "-") & "( Início )" & String(30, "-") & _
+												vbCrLf & _
+												c_texto & _
+												vbCrLf & _
+												String(31, "-") & "( Fim )" & String(32, "-")
+								end if
+
+							corpo_mensagem = corpo_mensagem & _
+											vbCrLf & vbCrLf & _
+											"Atenção: esta é uma mensagem automática, NÃO responda a este e-mail!"
+
+							'Envia e-mail para o vendedor
+							EmailSndSvcGravaMensagemParaEnvio s_email_remetente, _
+															"", _
+															s_email_vendedor, _
+															"", _
+															"", _
+															"Nova ocorrência cadastrada no pedido " & pedido_selecionado, _
+															corpo_mensagem, _
+															Now, _
+															id_email, _
+															msg_erro_grava_email
+							end if 'if (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__BS) Or (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__VRF)
+						end if 'if UCase(usuario) <> UCase(r_pedido.vendedor)
+					end if 'if s_email_remetente <> ""
+				end if 'if s_email_vendedor <> ""
+			end if 'if alerta = "" then
+
 		if alerta = "" then
 		'	~~~~~~~~~~~~~~
 			cn.CommitTrans

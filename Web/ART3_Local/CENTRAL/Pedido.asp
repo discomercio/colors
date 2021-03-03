@@ -243,6 +243,12 @@
 	dim s_width
 	dim s_link_rastreio
 
+	dim blnExibeBotaoEditarCD
+	blnExibeBotaoEditarCD = False
+	if alerta = "" then
+		if operacao_permitida(OP_CEN_EDITA_PEDIDO_CD, s_lista_operacoes_permitidas) And (r_pedido.st_entrega = ST_ENTREGA_ESPERAR) then blnExibeBotaoEditarCD = True
+		end if
+
 
 
 
@@ -603,6 +609,12 @@ function fPEDConsulta( id_pedido ) {
 	fPEDCONS.pedido_selecionado.value = id_pedido;
 	fPEDCONS.action = "pedido.asp"
 	fPEDCONS.submit();
+}
+
+function fPedEditaCDConclui() {
+	window.status = "Aguarde ...";
+	fPedEditaCD.action = "PedidoEditaCD.asp"
+	fPedEditaCD.submit();
 }
 
 function fPEDPESQConclui() {
@@ -1291,7 +1303,16 @@ function fPEDPreDevolucao(f) {
 		end if
 
 %>
-	<td width="90" class="MD" align="left"><p class="Rf">CD</p><p class="C"><%=obtem_apelido_empresa_NFe_emitente(r_pedido.id_nfe_emitente)%>&nbsp;</p></td>
+	<td width="90" class="MD" align="left">
+		<table width="100%" cellspacing="0" cellpadding="0" border="0">
+		<tr>
+			<td><p class="Rf">CD</p><p class="C"><%=obtem_apelido_empresa_NFe_emitente(r_pedido.id_nfe_emitente)%>&nbsp;</p></td>
+			<% if blnExibeBotaoEditarCD then %>
+			<td align="right" valign="bottom" class="notPrint"><a href='javascript:fPedEditaCDConclui();' title="clique para editar o CD" class="notPrint"><img id="imgPedEditaCD" src="../IMAGEM/edita_20x20.gif" class="notPrint" /></a></td>
+			<% end if %>
+		</tr>
+		</table>
+	</td>
 	<td class="MD" align="left"><p class="Rf">LOJA</p><p class="C"><%=s%>&nbsp;</p></td>
 	<td width="145" class="MD" align="left"><p class="Rf">INDICADOR</p><a href='javascript:fOrcamentistaEIndicadorConsultaView(<%=chr(34) & r_pedido.indicador & chr(34)%>)' title="clique para consultar o cadastro do indicador"><p class="C"><%=strTextoIndicador%>&nbsp;</p></a></td>
 	<td width="145" align="left"><p class="Rf">VENDEDOR</p><p class="C"><%=r_pedido.vendedor%>&nbsp;</p></td>
@@ -4197,6 +4218,12 @@ function fPEDPreDevolucao(f) {
 <form id="fPEDCONS" name="fPEDCONS" method="post">
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
 <input type="hidden" name="pedido_selecionado" value="">
+</form>
+
+<form id="fPedEditaCD" name="fPedEditaCD" method="post">
+<%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
+<input type="hidden" name="pedido_selecionado" value="<%=pedido_selecionado%>">
+<input type="hidden" name="url_origem" id="url_origem" value="<%=url_origem%>" />
 </form>
 
 <!-- ************   DIRECIONA PARA CADASTRO DE CLIENTES   ************ -->

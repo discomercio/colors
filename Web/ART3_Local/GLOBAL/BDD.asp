@@ -601,6 +601,7 @@ dim r
 			.comissao_indicacao = r("comissao_indicacao")
 			.PercMaxSenhaDesconto = r("PercMaxSenhaDesconto")
 			.PercMaxDescSemZerarRT = r("PercMaxDescSemZerarRT")
+			.unidade_negocio = Trim("" & r("unidade_negocio"))
 			.id_plano_contas_empresa = r("id_plano_contas_empresa")
 			.id_plano_contas_grupo = r("id_plano_contas_grupo")
 			.id_plano_contas_conta = r("id_plano_contas_conta")
@@ -745,6 +746,7 @@ dim r
 			.contribuinte_icms_status = Trim("" & r("contribuinte_icms_status"))
 			.rg = Trim("" & r("rg"))
 			.nome = Trim("" & r("nome"))
+			.nome_iniciais_em_maiusculas = Trim("" & r("nome_iniciais_em_maiusculas"))
 			.sexo = Trim("" & r("sexo"))
 			.endereco = Trim("" & r("endereco"))
 			.endereco_numero = Trim("" & r("endereco_numero"))
@@ -1739,6 +1741,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.endereco_email = ""
 			.endereco_email_xml = ""
 			.endereco_nome = ""
+			.endereco_nome_iniciais_em_maiusculas = ""
 			.endereco_ddd_res = ""
 			.endereco_tel_res = ""
 			.endereco_ddd_com = ""
@@ -1771,6 +1774,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.endereco_email = Trim("" & rs("endereco_email"))
 					.endereco_email_xml = Trim("" & rs("endereco_email_xml"))
 					.endereco_nome = Trim("" & rs("endereco_nome"))
+					.endereco_nome_iniciais_em_maiusculas = Trim("" & rs("endereco_nome_iniciais_em_maiusculas"))
 					.endereco_ddd_res = Trim("" & rs("endereco_ddd_res"))
 					.endereco_tel_res = Trim("" & rs("endereco_tel_res"))
 					.endereco_ddd_com = Trim("" & rs("endereco_ddd_com"))
@@ -1801,6 +1805,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.EndEtg_email = ""
 			.EndEtg_email_xml = ""
 			.EndEtg_nome = ""
+			.EndEtg_nome_iniciais_em_maiusculas = ""
 			.EndEtg_ddd_res = ""
 			.EndEtg_tel_res = ""
 			.EndEtg_ddd_com = ""
@@ -1830,6 +1835,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.EndEtg_email = Trim("" & rs("EndEtg_email"))
 					.EndEtg_email_xml = Trim("" & rs("EndEtg_email_xml"))
 					.EndEtg_nome = Trim("" & rs("EndEtg_nome"))
+					.EndEtg_nome_iniciais_em_maiusculas = Trim("" & rs("EndEtg_nome_iniciais_em_maiusculas"))
 					.EndEtg_ddd_res = Trim("" & rs("EndEtg_ddd_res"))
 					.EndEtg_tel_res = Trim("" & rs("EndEtg_tel_res"))
 					.EndEtg_ddd_com = Trim("" & rs("EndEtg_ddd_com"))
@@ -3683,6 +3689,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.endereco_email = ""
 			.endereco_email_xml = ""
 			.endereco_nome = ""
+			.endereco_nome_iniciais_em_maiusculas = ""
 			.endereco_ddd_res = ""
 			.endereco_tel_res = ""
 			.endereco_ddd_com = ""
@@ -3715,6 +3722,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.endereco_email = Trim("" & rs("endereco_email"))
 					.endereco_email_xml = Trim("" & rs("endereco_email_xml"))
 					.endereco_nome = Trim("" & rs("endereco_nome"))
+					.endereco_nome_iniciais_em_maiusculas = Trim("" & rs("endereco_nome_iniciais_em_maiusculas"))
 					.endereco_ddd_res = Trim("" & rs("endereco_ddd_res"))
 					.endereco_tel_res = Trim("" & rs("endereco_tel_res"))
 					.endereco_ddd_com = Trim("" & rs("endereco_ddd_com"))
@@ -3745,6 +3753,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.EndEtg_email = ""
 			.EndEtg_email_xml = ""
 			.EndEtg_nome = ""
+			.EndEtg_nome_iniciais_em_maiusculas = ""
 			.EndEtg_ddd_res = ""
 			.EndEtg_tel_res = ""
 			.EndEtg_ddd_com = ""
@@ -3774,6 +3783,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.EndEtg_email = Trim("" & rs("EndEtg_email"))
 					.EndEtg_email_xml = Trim("" & rs("EndEtg_email_xml"))
 					.EndEtg_nome = Trim("" & rs("EndEtg_nome"))
+					.EndEtg_nome_iniciais_em_maiusculas = Trim("" & rs("EndEtg_nome_iniciais_em_maiusculas"))
 					.EndEtg_ddd_res = Trim("" & rs("EndEtg_ddd_res"))
 					.EndEtg_tel_res = Trim("" & rs("EndEtg_tel_res"))
 					.EndEtg_ddd_com = Trim("" & rs("EndEtg_ddd_com"))
@@ -6416,6 +6426,7 @@ dim rs
 			.DtHrSessionTokenModuloCentral = rs("DtHrSessionTokenModuloCentral")
 			.SessionTokenModuloLoja = Trim("" & rs("SessionTokenModuloLoja"))
 			.DtHrSessionTokenModuloLoja = rs("DtHrSessionTokenModuloLoja")
+			.fin_smtp_enable_ssl = rs("fin_smtp_enable_ssl")
 			end with
 		end if
 
@@ -6518,5 +6529,65 @@ dim rP
 	set rP = get_registro_t_parametro(id_registro)
 	getParametroFromCampoData = rP.campo_data
 	set rP = Nothing
+end function
+
+
+' ________________________________________________________
+' getParametroFromCampoData
+'
+function grava_bloco_notas_pedido(ByVal numeroPedido, ByVal idUsuario, ByVal numeroLoja, ByVal nivelAcesso, ByVal mensagem, ByVal tipo_mensagem, ByRef msg_erro)
+dim s, intNsuNovoBlocoNotas, msg_erro_aux
+dim tBN
+dim campos_a_omitir
+dim vLog()
+dim s_log
+
+	grava_bloco_notas_pedido = False
+	msg_erro = ""
+
+	if Not fin_gera_nsu(T_PEDIDO_BLOCO_NOTAS, intNsuNovoBlocoNotas, msg_erro_aux) then
+		msg_erro = "Falha ao gerar NSU para o novo registro de bloco de notas (" & msg_erro_aux & ")!"
+		exit function
+	else
+		if intNsuNovoBlocoNotas <= 0 then
+			msg_erro = "NSU gerado para o novo registro de bloco de notas é inválido (" & intNsuNovoBlocoNotas & ")!"
+			exit function
+			end if
+		end if
+
+	if Not cria_recordset_otimista(tBN, msg_erro_aux) then
+		msg_erro = "Falha ao tentar criar recordset durante a gravação do bloco de notas (" & msg_erro_aux & ")!"
+		exit function
+		end if
+
+	s = "SELECT * FROM t_PEDIDO_BLOCO_NOTAS WHERE (id = -1)"
+	tBN.Open s, cn
+	tBN.AddNew
+	tBN("id") = intNsuNovoBlocoNotas
+	tBN("pedido") = numeroPedido
+	tBN("usuario") = idUsuario
+	tBN("loja") = Trim("" & numeroLoja)
+	tBN("nivel_acesso") = CLng(nivelAcesso)
+	tBN("mensagem") = mensagem
+	tBN("tipo_mensagem") = tipo_mensagem
+	tBN.Update
+
+	if Err <> 0 then
+		msg_erro_grava_msg = Err.Description
+		exit function
+		end if
+
+	s_log = ""
+	campos_a_omitir = "|dt_cadastro|dt_hr_cadastro|anulado_status|anulado_usuario|anulado_data|anulado_data_hora|"
+
+	log_via_vetor_carrega_do_recordset tBN, vLog, campos_a_omitir
+	s_log = log_via_vetor_monta_inclusao(vLog)
+
+	if tBN.State <> 0 then tBN.Close
+	set tBN = nothing
+
+	if s_log <> "" then grava_log idUsuario, numeroLoja, numeroPedido, "", OP_LOG_PEDIDO_BLOCO_NOTAS_INCLUSAO, s_log
+
+	grava_bloco_notas_pedido = True
 end function
 %>

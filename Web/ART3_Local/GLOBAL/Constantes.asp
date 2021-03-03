@@ -673,6 +673,12 @@
     Const TAXA_ADMINISTRATIVA__SIM = "1"
     Const PEDIDO_DEVOLUCAO_QTDE_FOTO = 6
 	
+'	TIPO DE MENSAGEM DO BLOCO DE NOTAS DO PEDIDO
+	Const COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__MANUAL = 0
+	Const COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_EDICAO_ENDERECO = 1100
+	Const COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_EDICAO_FORMA_PAGTO = 1200
+	Const COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_EDICAO_INDICADOR = 1300
+
 '	NÍVEL DE ACESSO DO BLOCO DE NOTAS DO PEDIDO
 	Const COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__NAO_DEFINIDO = 0
 	Const COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__ILIMITADO = -1
@@ -1444,6 +1450,7 @@
 	Const OP_CEN_PRE_DEVOLUCAO_ADMINISTRACAO					= 29400
 	Const OP_CEN_PRE_DEVOLUCAO_LEITURA							= 29500
 	Const OP_CEN_PRE_DEVOLUCAO_ESCREVER_MSG						= 29600
+	Const OP_CEN_EDITA_PEDIDO_CD								= 29800
 
 
   ' LOJA
@@ -1789,6 +1796,7 @@
 		dim comissao_indicacao
 		dim PercMaxSenhaDesconto
 		dim PercMaxDescSemZerarRT
+		dim unidade_negocio
 		dim id_plano_contas_empresa
 		dim id_plano_contas_grupo
 		dim id_plano_contas_conta
@@ -1817,6 +1825,7 @@
 		dim produtor_rural_status
 		dim rg
 		dim nome
+		dim nome_iniciais_em_maiusculas
 		dim sexo
 		dim endereco
 		dim endereco_numero
@@ -2067,6 +2076,7 @@
 		dim endereco_email
 		dim endereco_email_xml
 		dim endereco_nome
+		dim endereco_nome_iniciais_em_maiusculas
 		dim endereco_ddd_res
 		dim endereco_tel_res
 		dim endereco_ddd_com
@@ -2087,6 +2097,7 @@
 		dim EndEtg_email
 		dim EndEtg_email_xml
 		dim EndEtg_nome
+		dim EndEtg_nome_iniciais_em_maiusculas
 		dim EndEtg_ddd_res
 		dim EndEtg_tel_res
 		dim EndEtg_ddd_com
@@ -2597,6 +2608,7 @@
 		dim endereco_email
 		dim endereco_email_xml
 		dim endereco_nome
+		dim endereco_nome_iniciais_em_maiusculas
 		dim endereco_ddd_res
 		dim endereco_tel_res
 		dim endereco_ddd_com
@@ -2617,6 +2629,7 @@
 		dim EndEtg_email
 		dim EndEtg_email_xml
 		dim EndEtg_nome
+		dim EndEtg_nome_iniciais_em_maiusculas
 		dim EndEtg_ddd_res
 		dim EndEtg_tel_res
 		dim EndEtg_ddd_com
@@ -3176,6 +3189,7 @@
 		dim DtHrSessionTokenModuloCentral
 		dim SessionTokenModuloLoja
 		dim DtHrSessionTokenModuloLoja
+		dim fin_smtp_enable_ssl
 		dim nivel_acesso_bloco_notas_pedido
 		dim nivel_acesso_chamado
 		end class

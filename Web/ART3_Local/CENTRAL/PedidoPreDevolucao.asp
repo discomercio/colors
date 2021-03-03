@@ -1394,7 +1394,7 @@ end if %>
 		<img src="../botao/confirmar.gif" width="176" height="55" id="btnCONFIRMAR" border="0"></a></div>
 	</td>
 <% end if %>
-<% if ((usuario = rs("usuario_cadastro") Or usuario = r_pedido.vendedor) And st_codigo = COD_ST_PEDIDO_DEVOLUCAO__CADASTRADA) then %>
+<% if ((usuario = rs("usuario_cadastro")) Or (usuario = r_pedido.vendedor)) And (st_codigo = COD_ST_PEDIDO_DEVOLUCAO__CADASTRADA) then %>
 <% if blnExibeBotaoConfirma then %>
 </tr>
 <tr>

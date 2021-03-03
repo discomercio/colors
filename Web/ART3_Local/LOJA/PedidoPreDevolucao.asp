@@ -99,7 +99,10 @@
     serverVariablesUrl = serverVariablesServerName & serverVariablesUrl
 
     if alerta = "" then
-        s = "SELECT * FROM t_PEDIDO_DEVOLUCAO " & _
+        s = "SELECT" & _
+				" t_PEDIDO_DEVOLUCAO.*," & _
+				" t_PEDIDO.loja" & _
+			" FROM t_PEDIDO_DEVOLUCAO " & _
                 "INNER JOIN t_PEDIDO on t_PEDIDO_DEVOLUCAO.pedido = t_PEDIDO.pedido WHERE (id='" & id_devolucao & "')"
         set rs = cn.Execute(s)
 	    if Err <> 0 then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
@@ -1396,7 +1399,7 @@ end if %>
 		<img src="../botao/confirmar.gif" width="176" height="55" id="btnCONFIRMAR" border="0"></a></div>
 	</td>
 <% end if %>
-<% if ((usuario = rs("usuario_cadastro") Or usuario = r_pedido.vendedor) And st_codigo = COD_ST_PEDIDO_DEVOLUCAO__CADASTRADA) then %>
+<% if ((usuario = rs("usuario_cadastro")) Or (usuario = r_pedido.vendedor)) And (st_codigo = COD_ST_PEDIDO_DEVOLUCAO__CADASTRADA) then %>
 <% if blnExibeBotaoConfirma then %>
 </tr>
 <tr>
