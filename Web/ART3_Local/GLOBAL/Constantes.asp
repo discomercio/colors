@@ -1809,7 +1809,6 @@
 		dim magento_api_urlWebService
 		dim magento_api_username
 		dim magento_api_password
-		dim unidade_negocio
 		dim magento_api_versao
 		dim magento_api_rest_endpoint
 		dim magento_api_rest_access_token
