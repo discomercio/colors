@@ -39,7 +39,7 @@ namespace ART3WebAPI.Models.Domains
 			{
 				public const string NomeSistema = "WebAPI";
 				public const string Numero = "2.25";
-				public const string Data = "05.FEV.2021";
+				public const string Data = "08.MAR.2021";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
 			#endregion
@@ -170,8 +170,9 @@ namespace ART3WebAPI.Models.Domains
 			 *      entrada no estoque no cálculo mês a mês, quando esse mesmo filtro não estava sendo
 			 *      informado, o relatório calculava o valor do mês a mês sem restrição de período.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.25 - 05.02.2021 - por HHO
-			 *      Implementação de tratamento para a API REST (JSON) do Magento 2
+			 * v 2.25 - 08.03.2021 - por HHO
+			 *      Implementação de tratamento para a API REST (JSON) do Magento 2 (incluindo tratamento para
+			 *      serviços da iSnow).
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.26 - XX.XX.20XX - por XXX
 			 * -----------------------------------------------------------------------------------------------

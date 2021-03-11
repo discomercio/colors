@@ -532,7 +532,13 @@ namespace ART3WebAPI.Models.Domains
 				// *** carrier_method_lengow
 				// *** clearsale_status_code
 				// *** session_id
-				if (mage2SkyHubInfo != null) mage1SalesOrderInfo.skyhub_code = mage2SkyHubInfo.code;
+				if (mage2SkyHubInfo != null)
+				{
+					mage1SalesOrderInfo.skyhub_code = mage2SkyHubInfo.code;
+					mage1SalesOrderInfo.bseller_skyhub_code = mage2SkyHubInfo.code;
+					mage1SalesOrderInfo.bseller_skyhub_channel = mage2SkyHubInfo.channel;
+					mage1SalesOrderInfo.bseller_skyhub_json = mage2SkyHubInfo.data_source;
+				}
 				// *** commission_value
 				// *** installer_document
 				// *** installer_id
@@ -550,11 +556,8 @@ namespace ART3WebAPI.Models.Domains
 				// *** clearSale_fingerPrintSessionId
 				// *** integracommerce_id
 				// *** bseller_skyhub
-				// *** bseller_skyhub_code
-				// *** bseller_skyhub_channel
 				// *** bseller_skyhub_invoice_key
 				// *** bseller_skyhub_interest
-				// *** bseller_skyhub_json
 				#endregion
 
 				#region [ Shipping Address ]
@@ -1370,31 +1373,30 @@ namespace ART3WebAPI.Models.Domains
 				}
 				#endregion
 
-				// TODO - PENDENTE - AGUARDANDO A HIBRIDO TERMINAR A INSTALAÇÃO DO MÓDULO DA SKYHUB
 				#region [ Analisa os dados para tentar identificar se é pedido de marketplace e qual é o nº pedido marketplace ]
 				sNumPedidoMktpIdentificado = "";
 				sNumPedidoMktpCompletoIdentificado = "";
 				sOrigemMktpIdentificado = "";
 				listaCodigoDescricao = GeralDAO.getCodigoDescricaoByGrupo(Global.Cte.CodigoDescricao.PedidoECommerce_Origem, Global.eFiltroFlagStInativo.FLAG_IGNORADO, out msg_erro);
 
-				if ((salesOrder.magentoSalesOrderInfo.bseller_skyhub ?? "").Equals("1") && ((salesOrder.magentoSalesOrderInfo.bseller_skyhub_code ?? "").Trim().Length > 0))
+				if ((salesOrder.magentoSalesOrderInfo.skyhub_code ?? "").Trim().Length > 0)
 				{
-					#region [ Tenta identificar o nº pedido marketplace através do campo 'bseller_skyhub_code' (ao invés do comentário registrado no status history) ]
+					#region [ Tenta identificar o nº pedido marketplace através do campo 'skyhub_code' (ao invés do comentário registrado no status history) ]
 					foreach (var codDescr in listaCodigoDescricao)
 					{
-						// Verifica se o flag está configurado para que seja feito o tratamento usando o campo 'bseller_skyhub_code'
-						if (codDescr.parametro_1_campo_flag == 0) continue;
-						sParametro = (codDescr.parametro_2_campo_texto ?? "").Trim();
+						// Verifica se o flag está configurado para que seja feito o tratamento usando o campo 'skyhub_info.code' (que foi decodificado para o campo 'skyhub_code')
+						if (codDescr.parametro_3_campo_flag == 0) continue;
+						sParametro = (codDescr.parametro_4_campo_texto ?? "").Trim();
 						if (sParametro.Length == 0) continue;
 						vMktpOrderDescriptor = sParametro.Split('|');
 						for (int k = 0; k < vMktpOrderDescriptor.Length; k++)
 						{
 							sMktpOrderDescriptor = vMktpOrderDescriptor[k];
 							if ((sMktpOrderDescriptor ?? "").Trim().Length == 0) continue;
-							if (salesOrder.magentoSalesOrderInfo.bseller_skyhub_code.Trim().ToUpper().StartsWith(sMktpOrderDescriptor.ToUpper()))
+							if (salesOrder.magentoSalesOrderInfo.skyhub_code.Trim().ToUpper().StartsWith(sMktpOrderDescriptor.ToUpper()))
 							{
 								// Obtém a parte relativa ao nº pedido marketplace
-								sValue = salesOrder.magentoSalesOrderInfo.bseller_skyhub_code.Trim().Substring(sMktpOrderDescriptor.Length).Trim();
+								sValue = salesOrder.magentoSalesOrderInfo.skyhub_code.Trim().Substring(sMktpOrderDescriptor.Length).Trim();
 								if (sValue.Length > 0)
 								{
 									sNumPedidoMktpCompletoIdentificado = sValue;
@@ -1431,7 +1433,7 @@ namespace ART3WebAPI.Models.Domains
 					#endregion
 				}
 
-				#region [ Se não conseguiu identificar o nº pedido marketplace através do campo 'bseller_skyhub_code', analisa o status history ]
+				#region [ Se não conseguiu identificar o nº pedido marketplace através do campo 'skyhub_code', analisa o status history ]
 				if (sNumPedidoMktpIdentificado.Length == 0)
 				{
 					for (int i = (salesOrder.magentoSalesOrderInfo.status_history.Count - 1); i >= 0; i--)
@@ -1536,7 +1538,6 @@ namespace ART3WebAPI.Models.Domains
 					}
 				}
 				#endregion
-
 				#endregion
 
 				#region [ Grava o XML do pedido no BD ]
