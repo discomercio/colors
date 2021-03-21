@@ -53,7 +53,7 @@
 		end if
 
 	dim alerta
-	dim s, s_aux, s_filtro, s_id,c_dt_entregue_mes, c_dt_entregue_ano,c_vendedor,vendedor, rb_visao
+	dim s, s_aux, s_filtro, s_id,c_dt_entregue_mes, c_dt_entregue_ano,vendedor, rb_visao
     dim aviso
     
 	alerta = ""
@@ -61,7 +61,7 @@
     rb_visao = Request("rb_visao")
     s_id = Request("id")
 
-    c_vendedor = Trim(Request.Form("c_vendedor"))
+
 ' _____________________________________________________________________________________________
 '
 '									F  U  N  Ç  Õ  E  S 
@@ -133,283 +133,325 @@ const VENDA_NORMAL = "VENDA_NORMAL"
 const DEVOLUCAO = "DEVOLUCAO"
 const PERDA = "PERDA"
 dim r
-dim s, s_aux, s_sql, x, cab_table, cab, meio_pagto_a, n_reg, n_reg_total, qtde_indicadores, indicador_a, vendedor_a
+dim s, s_aux, s_sql, x, cab_table, meio_pagto_a, n_reg, n_reg_total, qtde_indicadores, indicador_a, vendedor_a
 dim idx_bloco, inc, comissao, num_pag,indice,qtde_vendedor
 dim v_Banco,strAuxbanco,blnAchou,vl_aux,n_reg_BD,intIdxBanco,strAuxBancoAnterior,intIdxVetor,strCampoOrdenacao,v_OutrosBancos, num_linhas
 dim regex
 
-    set regex = New RegExp
-    regex.Pattern = "1+$"
+	'Devido ao código "DEP1" usado para "Pagamento em Depósito (Banco Inter)", é usada a regex para retirar todos os dígitos 1 que estejam no final do código
+	set regex = New RegExp
+	regex.Pattern = "1+$"
 
-    s_sql = "SELECT " & _
+	s_sql = "SELECT " & _
 				"*" & _
 			" FROM t_COMISSAO_INDICADOR_N1" & _
-            " INNER JOIN t_COMISSAO_INDICADOR_N2 ON (t_COMISSAO_INDICADOR_N1.id = t_COMISSAO_INDICADOR_N2.id_comissao_indicador_n1)" & _
-            " INNER JOIN t_COMISSAO_INDICADOR_N3 ON (t_COMISSAO_INDICADOR_N2.id = t_COMISSAO_INDICADOR_N3.id_comissao_indicador_n2)" & _
-            " INNER JOIN t_COMISSAO_INDICADOR_N4 ON (t_COMISSAO_INDICADOR_N3.id = t_COMISSAO_INDICADOR_N4.id_comissao_indicador_n3)" & _
-            " WHERE (t_COMISSAO_INDICADOR_N1.id = '" & s_id & "') AND (t_COMISSAO_INDICADOR_N3.st_tratamento_manual=0)" & _
-            " ORDER BY t_COMISSAO_INDICADOR_N2.vendedor,"& _
-            " CASE t_COMISSAO_INDICADOR_N3.meio_pagto WHEN 'DEP' THEN -3 END DESC ," & _
-            " CASE t_COMISSAO_INDICADOR_N3.meio_pagto WHEN 'DEP1' THEN -2 END DESC ," & _
-            " CASE t_COMISSAO_INDICADOR_N3.meio_pagto WHEN 'CHQ' THEN -1 END DESC ," & _
-            " t_COMISSAO_INDICADOR_N3.indicador," & _
-            " t_COMISSAO_INDICADOR_N3.numero_banco," & _
-            " t_COMISSAO_INDICADOR_N3.vl_total_comissao_arredondado"
-            	
+				" INNER JOIN t_COMISSAO_INDICADOR_N2 ON (t_COMISSAO_INDICADOR_N1.id = t_COMISSAO_INDICADOR_N2.id_comissao_indicador_n1)" & _
+				" INNER JOIN t_COMISSAO_INDICADOR_N3 ON (t_COMISSAO_INDICADOR_N2.id = t_COMISSAO_INDICADOR_N3.id_comissao_indicador_n2)" & _
+			" WHERE" & _
+				" (t_COMISSAO_INDICADOR_N1.id = " & s_id & ")" & _
+				" AND (t_COMISSAO_INDICADOR_N3.st_tratamento_manual=0)" & _
+			" ORDER BY" & _
+				" t_COMISSAO_INDICADOR_N2.vendedor,"& _
+				" CASE t_COMISSAO_INDICADOR_N3.meio_pagto WHEN 'DEP' THEN -3 END DESC ," & _
+				" CASE t_COMISSAO_INDICADOR_N3.meio_pagto WHEN 'DEP1' THEN -2 END DESC ," & _
+				" CASE t_COMISSAO_INDICADOR_N3.meio_pagto WHEN 'CHQ' THEN -1 END DESC ," & _
+				" t_COMISSAO_INDICADOR_N3.indicador," & _
+				" t_COMISSAO_INDICADOR_N3.numero_banco," & _
+				" t_COMISSAO_INDICADOR_N3.vl_total_comissao_arredondado"
+
   ' CABEÇALHO
 	cab_table = "<table cellspacing='0' id='tableDados'  style='border:1.2px solid black;'>" & chr(13)
-	cab = "	<tr style='background:white' nowrap>" & chr(13) & _
-		 
-		  "	</tr>" & chr(13)
 	
 	x = ""
 	n_reg = 0
 	n_reg_total = 0
 	idx_bloco = 0
-    num_pag=1
-    num_linhas = 0
-    qtde_vendedor = 1
+	num_pag=1
+	num_linhas = 0
+	qtde_vendedor = 1
 
 	meio_pagto_a = "XXXXXXXXXXXX"
-    indicador_a = "XXXXXXXXXX"
-    vendedor_a = "XXXXXXXX"
+	indicador_a = "XXXXXXXXXX"
+	vendedor_a = "XXXXXXXX"
 	set r = cn.execute(s_sql)
 
-    redim vRelat(1)
-	for intIdxVetor = Lbound(vRelat) to Ubound(vRelat)
-		set vRelat(intIdxVetor) = New cl_VINTE_COLUNAS
-		vRelat(intIdxVetor).CampoOrdenacao = ""
-		next
+	aviso=""
 
-    aviso=""
-    
-    if r.Eof then
-        aviso="Não há valores a serem pagos."        
-    else
-        c_dt_entregue_mes = r("competencia_mes")
-        c_dt_entregue_ano = r("competencia_ano")
-        if Trim("" & r("proc_automatico_status"))=1 then
-            aviso= "O Relatório já foi processado por " & r("proc_automatico_usuario") & " em " & r("proc_automatico_data_hora") & "."
-        end if
-    end if
-    if aviso <> "" then
-        x = "<div class='MtAlerta notPrint' style='width:649px;font-weight:bold;' align='center'><p style='margin:5px 2px 5px 2px;'>" & aviso & "</p></div><br />"
-    end if 
+	if r.Eof then
+		aviso="Não há valores a serem pagos."
+	else
+		c_dt_entregue_mes = r("competencia_mes")
+		c_dt_entregue_ano = r("competencia_ano")
+		if Trim("" & r("proc_automatico_status"))=1 then
+			aviso= "O Relatório já foi processado por " & r("proc_automatico_usuario") & " em " & r("proc_automatico_data_hora") & "."
+			end if
+		end if
+
+	if aviso <> "" then
+		x = "<div class='MtAlerta notPrint' style='width:649px;font-weight:bold;' align='center'><p style='margin:5px 2px 5px 2px;'>" & aviso & "</p></div><br />"
+		end if
 
 	do while Not r.Eof
-    if r("vl_total_comissao_arredondado")+r("vl_total_RA_arredondado")=0 then
-    if Trim("" & r("vendedor") <> vendedor_a) then 
-           if vendedor = "" then 
-              vendedor = vendedor & r("vendedor")
-            else   
-              vendedor = vendedor & ","
-              vendedor = vendedor & r("vendedor")
-           end if 
-    end if 
-    vendedor_a = r("vendedor")     
-    end if   
-    if r("vl_total_comissao_arredondado")+r("vl_total_RA_arredondado")>0 then
-	'	MUDOU DE INDICADOR?
-		if Trim("" & r("indicador"))<>indicador_a then
+		if (r("vl_total_comissao_arredondado") + r("vl_total_RA_arredondado")) = 0 then
+			if Trim("" & r("vendedor")) <> vendedor_a then
+				if vendedor = "" then
+					vendedor = vendedor & r("vendedor")
+				else
+					vendedor = vendedor & ","
+					vendedor = vendedor & r("vendedor")
+					end if
+				end if 'if Trim("" & r("vendedor")) <> vendedor_a
+
 			indicador_a = Trim("" & r("indicador"))
-			idx_bloco = idx_bloco + 1
-            if num_linhas > 10 then num_linhas = 9
+			vendedor_a = r("vendedor")
+			end if 'if (r("vl_total_comissao_arredondado") + r("vl_total_RA_arredondado")) = 0
 
-		  ' FECHA TABELA DO INDICADOR ANTERIOR
-			if n_reg_total > 0 then 
 
-				    x = x & "	<tr nowrap style='background: #FFF'>" & chr(13) & _
-						    "		<td class='MC' align='right' width='80%' style='height:15px;border-left:0;' nowrap><span class='Cd'>" & SIMBOLO_MONETARIO & " :</span></td>" & chr(13) & _
-						    "		<td class='MC' align='right' style='height:15px'><span class='Cd'>" & formata_moeda(comissao) & "</span></td>" & chr(13) & _
-						    "	</tr>" & chr(13) & _ 
-						    "</table>" & chr(13)
-                     
-                    inc = inc + 1
-                    if (inc mod 2) = 0  then 
-                       num_linhas = num_linhas + 1	
-                        x = x & "</td></tr><tr><td width='50%'>"
-                    else
-                        x = x & "</td><td width='50%'>"
-                    end if 
-				    
-                    if Trim("" & r("meio_pagto") <> meio_pagto_a) Or Trim("" & r("vendedor") <> vendedor_a) then
-                        if (inc mod 2) = 1 then num_linhas = num_linhas + 1	 
-                        if n_reg_total > 0 then x = x & "</td></tr></table><br />"
-                    end if
+		if (r("vl_total_comissao_arredondado") + r("vl_total_RA_arredondado")) > 0 then
+		'	MUDOU DE INDICADOR OU VENDEDOR?
+		'	LEMBRANDO QUE O MESMO INDICADOR PODE TER PEDIDOS COM VENDEDORES DIFERENTES
+			if (Trim("" & r("indicador")) <> indicador_a) Or (Trim("" & r("vendedor")) <> vendedor_a) then
+				idx_bloco = idx_bloco + 1
+				if num_linhas > 10 then num_linhas = 9
 
-                    if (inc mod 2) = 0 Or Trim("" & r("meio_pagto") <> meio_pagto_a) Or Trim("" & r("vendedor") <> vendedor_a) then
-                        if num_pag = 1 then
-                            if num_linhas = 8 Or num_linhas = 9 Or (qtde_vendedor >= 4 And num_linhas >= 6) then 
-                                x = x & "</td></tr></table><div style='break-after:always'></div><table width='649' style='border-left:1.2px solid #000;border-right:1.2px solid #000;border-bottom:1.2px solid #000;' cellpadding='0' cellspacing='0'><tr><td width='50%'>"
-                                num_linhas = 1
-                                qtde_vendedor = 1
-                                num_pag = 0
-                            end if
-                        else
-                            if num_linhas = 10 Or num_linhas = 11 Or (qtde_vendedor >= 4 And num_linhas >= 6) then 
-                                x = x & "</td></tr></table><div style='break-after:always'></div><table width='649' style='border-left:1.2px solid #000;border-right:1.2px solid #000;border-bottom:1.2px solid #000;' cellpadding='0' cellspacing='0'><tr><td width='50%'>"
-                                num_linhas = 1
-                                qtde_vendedor = 1
-                            end if
-                        end if
-                    end if
+			  ' FECHA TABELA DO INDICADOR ANTERIOR
+				if n_reg_total > 0 then
+					inc = inc + 1
+					if (inc mod 2) = 0  then
+						num_linhas = num_linhas + 1
+						x = x & _
+							"		</td>" & chr(13) & _
+							"	</tr>" & chr(13) & _
+							"	<tr>" & chr(13) & _
+							"		<td width='50%'>" & chr(13)
+					else
+						x = x & _
+							"		</td>" & chr(13) & _
+							"		<td width='50%'>" & chr(13)
+						end if
+					
+					if (Trim("" & r("meio_pagto")) <> meio_pagto_a) Or (Trim("" & r("vendedor")) <> vendedor_a) then
+						if (inc mod 2) = 1 then num_linhas = num_linhas + 1
+						if n_reg_total > 0 then
+							x = x & _
+								"		</td>" & chr(13) & _
+								"	</tr>" & chr(13) & _
+								"</table>" & chr(13) & _
+								"<br />" & chr(13)
+							end if
+						end if
 
-                    Response.Write x
-                    
-				    x="" & chr(13)
-                end if
+					if ((inc mod 2) = 0) Or (Trim("" & r("meio_pagto")) <> meio_pagto_a) Or (Trim("" & r("vendedor")) <> vendedor_a) then
+						if num_pag = 1 then
+							if (num_linhas >= 8) Or ((qtde_vendedor >= 4) And (num_linhas >= 6)) then
+								if (Trim("" & r("meio_pagto")) <> meio_pagto_a) Or (Trim("" & r("vendedor")) <> vendedor_a) then
+									x = x & _
+										"<div style='break-after:always'></div>" & chr(13)
+								else
+									x = x & _
+										"		</td>" & chr(13) & _
+										"	</tr>" & chr(13) & _
+										"</table>" & chr(13) & _
+										"<div style='break-after:always'></div>" & chr(13) & _
+										"<table width='649' style='border-left:1.2px solid #000;border-right:1.2px solid #000;border-bottom:1.2px solid #000;' cellpadding='0' cellspacing='0'>" & chr(13) & _
+										"	<tr>" & chr(13) & _
+										"		<td width='50%'>" & chr(13)
+									end if
 
-            '   MUDOU DE VENDEDOR?
-                if Trim("" & r("vendedor") <> vendedor_a) then 
-                    qtde_vendedor = qtde_vendedor + 1
-                    if vendedor <> "" then vendedor = vendedor & ", "
-                       vendedor = vendedor & r("vendedor")
-       
-                    x = x & "</td></tr></table><br />" & chr(13) & _
-                        "<table width='649' style='border: 0' cellpadding='0' cellspacing='0'>" & chr(13) & _
-                        "   <tr>" & chr(13) & _
-                        "       <td align='left' valign='bottom' class='MB' style='background:#fff;border-bottom:1.2px solid #000'><span class='N'>" & r("vendedor") & " - " & x_usuario(r("vendedor")) & "</span>" & chr(13) & _
-                        "       </td>" & chr(13) & _
-                        "   </tr>" & chr(13) & _
-                        "</table><br />" & chr(13)
-                    
-                end if
-
-            '   MUDOU DE MEIO PAGTO?
-
-                if Trim("" & r("meio_pagto") <> meio_pagto_a) Or Trim("" & r("vendedor") <> vendedor_a) then
-                    x = x & "<table width='649' style='border:1.2px solid black;' cellpadding='0' cellspacing='0'>" & chr(13) & _
-                            "   <tr>" & chr(13) & _
-                            "       <td colspan='2' align='left' valign='bottom' style='background:white;border-bottom:1.2px solid black;'><span class='N'>&nbsp;" & regex.Replace(r("meio_pagto"), "") & " - " & x_meio_pagto(r("meio_pagto")) & "</span>" & chr(13) & _
-                            "       </td>" & chr(13) & _
-                            "   </tr>" & chr(13) & _
-                            "   <tr>" & chr(13) & _
-                            "       <td width='50%'>" & chr(13)  
-
-                    inc = 0
-                    meio_pagto_a = r("meio_pagto")
-                end if
-
-                indice = indice + 1  
-                vendedor_a = r("vendedor")
-            
-			    n_reg = 0
-
-			    x = x & Replace(cab_table, "tableDados", "tableDados_" & idx_bloco)
-			    x = x & "	<tr>" & chr(13) & _
-									    "		<td colspan='10' width='50%' align='left' valign='bottom' style='background:white;'>" & chr(13) & _
-									    "			<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
-                                        "               <tr class='notPrint'>" & chr(13) & _
-									    "					<td colspan='3' align='left' valign='bottom' style='height:15px;vertical-align:middle;border-bottom:1px solid #c0c0c0'><span class='Cn'>Indicador: " & r("indicador") & "</span></td>" & chr(13) & _
-									    "				</tr>" & chr(13) & _
-									    "				<tr>" & chr(13) & _
-									    "					<td colspan='3' align='left' valign='bottom' style='vertical-align:middle'><div valign='bottom' style='height:14px;max-height:14px;overflow:hidden;vertical-align:middle'><span class='Cn'>Banco: " & r("banco") & " - " & x_banco(r("banco")) &  "</span></div></td>" & chr(13) & _
-									    "				</tr>" & chr(13) & _
-									    "				<tr>" & chr(13) & _
-									    "					<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & r("agencia")
-                            if Trim("" & r("agencia_dv")) <> "" then
-                                x = x & "-" & r("agencia_dv") & chr(13)
-                            end if
-    
-                            x = x & "</span></td>" & chr(13) & _
-									    "					<td class='MC' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>"
-
-                            if Trim("" & r("tipo_conta")) <> "" then
-                                if r("tipo_conta") = "P" then
-                                    x = x & "C/P: "
-                                elseif r("tipo_conta") = "C" then
-                                    x = x & "C/C: "
-                                end if
-                            else
-                                x = x & "Conta: "
-                            end if
-
-                            if Trim("" & r("conta_operacao")) <> "" then
-                                x = x & r("conta_operacao") & "-"
-                            end if               
-    
-                            x = x & r("conta")
-    
-                            if Trim("" & r("conta_dv")) <> "" then
-                                x = x & "-" & r("conta_dv") & chr(13)
-                            end if
-                            x = x & "</span></td>" & chr(13) & _
-                                        "               </tr>" & chr(13) & _
-                                        "               <tr>" & chr(13) & _
-									    "					<td class='MC' width='60%' colspan='2' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Favorecido: " & r("favorecido") & "</span></td>" & chr(13) & _
-									    "				</tr>" & chr(13)
-
-							if Len(retorna_so_digitos(Trim("" & r("favorecido_cnpj_cpf")))) = 11 then
-								s_aux = "CPF"
-							else
-								s_aux = "CNPJ"
+								num_linhas = 1
+								qtde_vendedor = 1
+								num_pag = 0
 								end if
+						else
+							if (num_linhas >= 9) Or ((qtde_vendedor >= 4) And (num_linhas >= 6)) then
+								if (Trim("" & r("meio_pagto")) <> meio_pagto_a) Or (Trim("" & r("vendedor")) <> vendedor_a) then
+									x = x & _
+										"<div style='break-after:always'></div>" & chr(13)
+								else
+									x = x & _
+										"		</td>" & chr(13) & _
+										"	</tr>" & chr(13) & _
+										"</table>" & chr(13) & _
+										"<div style='break-after:always'></div>" & chr(13) & _
+										"<table width='649' style='border-left:1.2px solid #000;border-right:1.2px solid #000;border-bottom:1.2px solid #000;' cellpadding='0' cellspacing='0'>" & chr(13) & _
+										"	<tr>" & chr(13) & _
+										"		<td width='50%'>" & chr(13)
+									end if
 
-							x = x & _
-                                        "               <tr>" & chr(13) & _
-									    "					<td class='MC' width='60%' colspan='2' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>" & s_aux & ": " & cnpj_cpf_formata(Trim("" & r("favorecido_cnpj_cpf"))) & "</span></td>" & chr(13) & _
-									    "				</tr>" & chr(13)
+								num_linhas = 1
+								qtde_vendedor = 1
+								end if
+							end if
+						end if 'if ((inc mod 2) = 0) Or (Trim("" & r("meio_pagto")) <> meio_pagto_a) Or (Trim("" & r("vendedor")) <> vendedor_a)
 
-							x = x & _
-									    "			</table>" & chr(13) & _
-									    "		</td>" & chr(13) & _
-									    "	</tr>" & chr(13)
-                    
-			    end if
-            
-	  ' CONTAGEM
-		n_reg = n_reg + 1
-		n_reg_total = n_reg_total + 1
+					Response.Write x
 
-        comissao = r("vl_total_pagto")
+					x = ""
+					end if 'if n_reg_total > 0
+
+			'   MUDOU DE VENDEDOR?
+				if Trim("" & r("vendedor")) <> vendedor_a then
+					qtde_vendedor = qtde_vendedor + 1
+					if vendedor <> "" then vendedor = vendedor & ", "
+					vendedor = vendedor & r("vendedor")
+
+'					if n_reg_total > 0 then x = x & "</td></tr></table><br />" & chr(13)
+
+					x = x & chr(13) & _
+						"<table width='649' style='border: 0' cellpadding='0' cellspacing='0'>" & chr(13) & _
+						"	<tr>" & chr(13) & _
+						"		<td align='left' valign='bottom' class='MB' style='background:#fff;border-bottom:1.2px solid #000'><span class='N'>" & r("vendedor") & " - " & x_usuario(r("vendedor")) & "</span>" & "</td>" & chr(13) & _
+						"	</tr>" & chr(13) & _
+						"</table>" & chr(13) & _
+						"<br />" & chr(13)
+					end if 'if Trim("" & r("vendedor")) <> vendedor_a
+
+			'   MUDOU DE MEIO PAGTO?
+				if (Trim("" & r("meio_pagto")) <> meio_pagto_a) Or (Trim("" & r("vendedor")) <> vendedor_a) then
+					x = x & "<table width='649' style='border:1.2px solid black;' cellpadding='0' cellspacing='0'>" & chr(13) & _
+							"	<tr>" & chr(13) & _
+							"		<td colspan='2' align='left' valign='bottom' style='background:white;border-bottom:1.2px solid black;'><span class='N'>&nbsp;" & regex.Replace(r("meio_pagto"), "") & " - " & x_meio_pagto(r("meio_pagto")) & "</span>" & "</td>" & chr(13) & _
+							"	</tr>" & chr(13) & _
+							"	<tr>" & chr(13) & _
+							"		<td width='50%'>" & chr(13)
+
+					inc = 0
+					meio_pagto_a = r("meio_pagto")
+					end if 'if (Trim("" & r("meio_pagto")) <> meio_pagto_a) Or (Trim("" & r("vendedor")) <> vendedor_a)
+
+				indice = indice + 1
+				n_reg = 0
+
+				x = x & _
+					"			" & Replace(cab_table, "tableDados", "tableDados_" & idx_bloco)
+
+				x = x & _
+					"				<tr>" & chr(13) & _
+					"					<td colspan='10' width='50%' align='left' valign='bottom' style='background:white;'>" & chr(13) & _
+					"						<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
+					"							<tr class='notPrint'>" & chr(13) & _
+					"								<td colspan='3' align='left' valign='bottom' style='height:15px;vertical-align:middle;border-bottom:1px solid #c0c0c0'><span class='Cn'>Indicador: " & r("indicador") & "</span></td>" & chr(13) & _
+					"							</tr>" & chr(13) & _
+					"							<tr>" & chr(13) & _
+					"								<td colspan='3' align='left' valign='bottom' style='vertical-align:middle'><div valign='bottom' style='height:14px;max-height:14px;overflow:hidden;vertical-align:middle'><span class='Cn'>Banco: " & r("banco") & " - " & x_banco(r("banco")) &  "</span></div></td>" & chr(13) & _
+					"							</tr>" & chr(13) & _
+					"							<tr>" & chr(13) & _
+					"								<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & r("agencia")
+
+				if Trim("" & r("agencia_dv")) <> "" then
+					x = x & "-" & r("agencia_dv")
+					end if
+
+				x = x & "</span></td>" & chr(13) & _
+					"								<td class='MC' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>"
+
+				if Trim("" & r("tipo_conta")) <> "" then
+					if r("tipo_conta") = "P" then
+						x = x & "C/P: "
+					elseif r("tipo_conta") = "C" then
+						x = x & "C/C: "
+						end if
+				else
+					x = x & "Conta: "
+					end if
+
+				if Trim("" & r("conta_operacao")) <> "" then
+					x = x & r("conta_operacao") & "-"
+					end if
+
+				x = x & r("conta")
 	
-		if (n_reg_total mod 50) = 0 then
-			Response.Write x
-			x = ""
-			end if
+				if Trim("" & r("conta_dv")) <> "" then
+					x = x & "-" & r("conta_dv")
+					end if
 
-        end if
+				x = x & "</span></td>" & chr(13) & _
+					"							</tr>" & chr(13) & _
+					"							<tr>" & chr(13) & _
+					"								<td class='MC' width='60%' colspan='2' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Favorecido: " & r("favorecido") & "</span></td>" & chr(13) & _
+					"							</tr>" & chr(13)
 
-        
+				if Len(retorna_so_digitos(Trim("" & r("favorecido_cnpj_cpf")))) = 11 then
+					s_aux = "CPF"
+				else
+					s_aux = "CNPJ"
+					end if
+
+				x = x & _
+					"							<tr>" & chr(13) & _
+					"								<td class='MC' width='60%' colspan='2' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>" & s_aux & ": " & cnpj_cpf_formata(Trim("" & r("favorecido_cnpj_cpf"))) & "</span></td>" & chr(13) & _
+					"							</tr>" & chr(13)
+
+				x = x & _
+					"						</table>" & chr(13) & _
+					"					</td>" & chr(13) & _
+					"				</tr>" & chr(13)
+				
+				comissao = r("vl_total_pagto")
+				
+				x = x & _
+					"				<tr nowrap style='background: #FFF'>" & chr(13) & _
+					"					<td class='MC' align='right' width='80%' style='height:15px;border-left:0;' nowrap><span class='Cd'>" & SIMBOLO_MONETARIO & " :</span></td>" & chr(13) & _
+					"					<td class='MC' align='right' style='height:15px'><span class='Cd'>" & formata_moeda(comissao) & "</span></td>" & chr(13) & _
+					"				</tr>" & chr(13) & _ 
+					"			</table>" & chr(13)
+
+				end if 'if (Trim("" & r("indicador")) <> indicador_a) Or (Trim("" & r("vendedor")) <> vendedor_a)
+
+			indicador_a = Trim("" & r("indicador"))
+			vendedor_a = Trim("" & r("vendedor"))
+
+		  ' CONTAGEM
+			n_reg = n_reg + 1
+			n_reg_total = n_reg_total + 1
+	
+			if (n_reg_total mod 50) = 0 then
+				Response.Write x
+				x = ""
+				end if
+			
+			end if 'if (r("vl_total_comissao_arredondado") + r("vl_total_RA_arredondado")) > 0
+
 		r.MoveNext
 		loop
-		
-  ' MOSTRA TOTAL DO ÚLTIMO INDICADOR
-	if n_reg <> 0 And comissao > 0 then 
 
-		x = x & "	<tr nowrap style='background: #FFF'>" & chr(13) & _
-						"		<td class='MTB' align='right' width='80%' nowrap><span class='Cd'>" & SIMBOLO_MONETARIO & " :</span></td>" & chr(13) & _
-						"		<td class='MTBD' align='right'><span class='Cd'>" & formata_moeda(comissao) & "</span></td>" & chr(13) & _
-						"	</tr>" & chr(13) 
-	
-   end if
 
   ' MOSTRA AVISO DE QUE NÃO HÁ DADOS!!
 	if n_reg_total = 0 then
-		x = cab_table & cab
-		x = x & "	<tr nowrap>" & chr(13) & _
-				"		<td class='MT ALERTA' width='649'  colspan='12' align='center'><span class='ALERTA'>&nbsp;NÃO HÁ PEDIDOS NO PERÍODO ESPECIFICADO&nbsp;</span></td>" & chr(13) & _			
-				"	</tr>" & chr(13)
-		
+		x = cab_table
+		x = x & _
+			"	<tr nowrap>" & chr(13) & _
+			"		<td class='MT ALERTA' width='649'  colspan='12' align='center'><span class='ALERTA'>&nbsp;NENHUM REGISTRO ENCONTRADO&nbsp;</span></td>" & chr(13) & _
+			"	</tr>" & chr(13) & _
+			"</table>" & chr(13)
+	else
+	  ' FECHA TABELA DO ÚLTIMO BANCO
+		if (inc mod 2) = 0  then
+			x = x & _
+				"		</td>" & chr(13) & _
+				"		<td width='50%'>" & chr(13) & _
+				"		</td>" & chr(13) & _
+				"	</tr>" & chr(13) & _
+				"</table>" & chr(13)
+		else
+			x = x & _
+				"		</td>" & chr(13) & _
+				"	</tr>" & chr(13) & _
+				"</table>" & chr(13)
+			end if
 		end if
 
-  ' FECHA TABELA DO ÚLTIMO INDICADOR
-	x = x & "</table>" & chr(13)
+	x = x & _
+		chr(13) & chr(13) & _
+		"<input type='hidden' name='ConsultaVendedor' id='ConsultaVendedor' value='" & vendedor & "' />" & chr(13) & _
+		"<input type='hidden' name='filtroMes' id='filtroMes' value='" & c_dt_entregue_mes & "' />" & chr(13) & _
+		"<input type='hidden' name='filtroAno' id='filtroAno' value='" & c_dt_entregue_ano & "' />" & chr(13)
 
-  ' FECHA TABELA DO ÚLTIMO BANCO
-    x = x & "</td><td width='50%'>"
-    x = x & "</table>"
-    x = x & "</td></tr></table>"
-	x = x & "       <input type='hidden' name='ConsultaVendedor' id='ConsultaVendedor' value='" & vendedor & "'>"
-    x = x & "       <input type='hidden' name='filtroMes' id='filtroMes' value='" & c_dt_entregue_mes & "'>"
-    x = x & "       <input type='hidden' name='filtroAno' id='filtroAno' value='" & c_dt_entregue_ano & "'>"
-   
 	Response.write x
 
 	if r.State <> 0 then r.Close
 	set r=nothing
-	
-    
+
 end sub
 
 %>
