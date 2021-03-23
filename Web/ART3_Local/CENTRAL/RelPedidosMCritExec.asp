@@ -71,7 +71,7 @@
 	dim ckb_st_pagto_pago, ckb_st_pagto_nao_pago, ckb_st_pagto_pago_parcial
 	dim ckb_periodo_cadastro, c_dt_cadastro_inicio, c_dt_cadastro_termino
 	dim ckb_entrega_marcada_para, c_dt_entrega_inicio, c_dt_entrega_termino
-	dim ckb_produto, c_fabricante, c_produto, c_grupo, v_grupos
+	dim ckb_produto, c_fabricante, c_produto, c_grupo, v_grupos, ckb_somente_pedidos_produto_alocado
 	dim rb_loja, c_loja, c_loja_de, c_loja_ate, vLoja, vLojaAux
 	dim c_cliente_cnpj_cpf, c_cliente_uf
 	dim c_transportadora
@@ -119,6 +119,7 @@
 	ckb_produto = Trim(Request.Form("ckb_produto"))
 	c_fabricante = retorna_so_digitos(Trim(Request.Form("c_fabricante")))
 	c_produto = Ucase(Trim(Request.Form("c_produto")))
+	ckb_somente_pedidos_produto_alocado = Trim(Request.Form("ckb_somente_pedidos_produto_alocado"))
 	rb_loja = Ucase(Trim(Request.Form("rb_loja")))
 	c_loja = Trim(Request.Form("c_loja"))
 	c_loja_de = Trim(Request.Form("c_loja_de"))
@@ -727,6 +728,7 @@ dim s, s_aux, s_resp
 		if s_aux = "" then s_aux = "todos"
 		s = s & ", produto: " & s_aux
 		s_resp = s_resp & "Somente pedidos que incluam: " & s
+		if ckb_somente_pedidos_produto_alocado <> "" then s_resp = s_resp & " (somente pedidos que possuam o produto alocado)"
 		s_resp = s_resp & "<br>"
 		end if
 
@@ -1164,6 +1166,11 @@ dim rPSSW
 			s = s & " (t_PEDIDO_ITEM.produto = '" & c_produto & "')"
 			end if
 
+		if ckb_somente_pedidos_produto_alocado <> "" then
+			if s <> "" then s = s & " AND"
+			s = s & " (ISNULL(t_ESTOQUE_MOVIMENTO__AUX.qtde_produto_alocada,0) > 0)"
+			end if
+
 		if s <> "" then 
 			if s_where <> "" then s_where = s_where & " AND"
 			s_where = s_where & " (" & s & ")"
@@ -1451,6 +1458,24 @@ dim rPSSW
 					" GROUP BY t_PEDIDO_ITEM.pedido" & _
 					") AS t_PEDIDO__VL_FORNECEDOR" & _
 				" ON (t_PEDIDO.pedido=t_PEDIDO__VL_FORNECEDOR.pedido)"
+		end if
+
+'	CRIA UMA "DERIVED TABLE" PARA OBTER A QUANTIDADE DE PRODUTO ALOCADO PARA O PEDIDO
+	if (ckb_produto <> "") And (ckb_somente_pedidos_produto_alocado <> "") then
+		s_from = s_from & _
+				" LEFT JOIN (" & _
+					"SELECT " & _
+					" pedido, fabricante, produto," & _
+					" Sum(qtde) AS qtde_produto_alocada" & _
+					" FROM t_ESTOQUE_MOVIMENTO" & _
+					" WHERE" & _
+						" (anulado_status = 0)" & _
+						" AND (estoque NOT IN ('" & ID_ESTOQUE_SEM_PRESENCA & "'))" & _
+						" AND (fabricante = '" & c_fabricante & "')" & _
+						" AND (produto = '" & c_produto & "')" & _
+					" GROUP BY pedido, fabricante, produto" & _
+					") AS t_ESTOQUE_MOVIMENTO__AUX" & _
+				" ON (t_PEDIDO_ITEM.pedido=t_ESTOQUE_MOVIMENTO__AUX.pedido) AND (t_PEDIDO_ITEM.fabricante=t_ESTOQUE_MOVIMENTO__AUX.fabricante) AND (t_PEDIDO_ITEM.produto=t_ESTOQUE_MOVIMENTO__AUX.produto)"
 		end if
 
 '	OBS: SINTAXE DA FUNÇÃO ISNULL():
@@ -2712,6 +2737,7 @@ function fRELConcluir( id_pedido ){
 		s_aux = c_produto
 		if s_aux = "" then s_aux = "todos"
 		s = s & ",&nbsp;&nbsp;produto: " & s_aux
+		if ckb_somente_pedidos_produto_alocado <> "" then s = s & "&nbsp;&nbsp;(somente pedidos que possuam o produto alocado)"
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
 					"		<td align='right' valign='top' NOWRAP><p class='N'>Somente pedidos que incluam:&nbsp;</p></td>" & chr(13) & _
