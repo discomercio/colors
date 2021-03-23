@@ -356,8 +356,15 @@ end function
 	        function sizeDivAjaxRunning() {
 		        var newTop = $(window).scrollTop() + "px";
 		        $("#divMsgAguardeObtendoDados").css("top", newTop);
-	        }
-    $(document).tooltip();
+		}
+
+		$("#ckb_somente_pedidos_produto_alocado").change(function () {
+			if ($("#ckb_somente_pedidos_produto_alocado").is(":checked")) {
+				$("#ckb_produto").prop("checked", true);
+			}
+		});
+
+		$(document).tooltip();
 	});
 
 	function limpaCampoSelectProduto() {
@@ -1021,6 +1028,7 @@ function exibe_botao_confirmar() {
 			onclick="fFILTRO.ckb_produto.click();">Somente pedidos que incluam:</span
 			><br><span class="C" style="margin-left:30px;">Fabricante</span><input maxlength="4" class="Cc" style="width:50px;" name="c_fabricante" id="c_fabricante" onblur="this.value=normaliza_codigo(this.value,TAM_MIN_FABRICANTE);" onkeypress="if (digitou_enter(true)) fFILTRO.c_produto.focus(); else fFILTRO.ckb_produto.checked=true; filtra_fabricante();" onclick="fFILTRO.ckb_produto.checked=true;">
 			<span class="C">&nbsp;&nbsp;&nbsp;Produto</span><input maxlength="13" class="Cc" style="width:100px;" name="c_produto" id="c_produto" onblur="this.value=ucase(normaliza_codigo(this.value,TAM_MIN_PRODUTO));" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_produto.checked=true; filtra_produto();" onclick="fFILTRO.ckb_produto.checked=true;">
+			<span class="C">&nbsp;&nbsp;&nbsp;</span><input type="checkbox" tabindex="-1" id="ckb_somente_pedidos_produto_alocado" name="ckb_somente_pedidos_produto_alocado" value="ON" /><span class="C" style="cursor:default;" onclick="fFILTRO.ckb_somente_pedidos_produto_alocado.click();">Somente pedidos que possuam o produto alocado</span>
 		</td></tr>
 	</table>
 </td></tr>
