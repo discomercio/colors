@@ -62,10 +62,11 @@
 
 	dim alerta
 	dim i
-	dim s, s_aux, s_filtro, flag_ok, cadastrado
+	dim s, s_aux, s_aux_dti, s_aux_dtf, s_filtro, flag_ok, cadastrado
 	dim ckb_st_entrega_esperar, ckb_st_entrega_split, ckb_st_entrega_exceto_cancelados, ckb_st_entrega_exceto_entregues
 	dim ckb_st_entrega_separar_sem_marc, ckb_st_entrega_separar_com_marc
 	dim ckb_st_entrega_a_entregar_sem_marc, ckb_st_entrega_a_entregar_com_marc, ckb_pedido_nao_recebido_pelo_cliente, ckb_pedido_recebido_pelo_cliente
+	dim c_dt_coleta_a_separar_inicio, c_dt_coleta_a_separar_termino, c_dt_coleta_st_a_entregar_inicio, c_dt_coleta_st_a_entregar_termino
 	dim ckb_st_entrega_entregue, c_dt_entregue_inicio, c_dt_entregue_termino
 	dim ckb_st_entrega_cancelado, c_dt_cancelado_inicio, c_dt_cancelado_termino
 	dim ckb_st_pagto_pago, ckb_st_pagto_nao_pago, ckb_st_pagto_pago_parcial
@@ -97,9 +98,13 @@
 	ckb_st_entrega_split = Trim(Request.Form("ckb_st_entrega_split"))
 	ckb_st_entrega_separar_sem_marc = Trim(Request.Form("ckb_st_entrega_separar_sem_marc"))
 	ckb_st_entrega_separar_com_marc = Trim(Request.Form("ckb_st_entrega_separar_com_marc"))
+	c_dt_coleta_a_separar_inicio = Trim(Request.Form("c_dt_coleta_a_separar_inicio"))
+	c_dt_coleta_a_separar_termino = Trim(Request.Form("c_dt_coleta_a_separar_termino"))
 	ckb_st_entrega_a_entregar_sem_marc = Trim(Request.Form("ckb_st_entrega_a_entregar_sem_marc"))
 	ckb_st_entrega_a_entregar_com_marc = Trim(Request.Form("ckb_st_entrega_a_entregar_com_marc"))
-    ckb_pedido_nao_recebido_pelo_cliente = Trim(Request.Form("ckb_pedido_nao_recebido_pelo_cliente"))
+	c_dt_coleta_st_a_entregar_inicio = Trim(Request.Form("c_dt_coleta_st_a_entregar_inicio"))
+	c_dt_coleta_st_a_entregar_termino = Trim(Request.Form("c_dt_coleta_st_a_entregar_termino"))
+	ckb_pedido_nao_recebido_pelo_cliente = Trim(Request.Form("ckb_pedido_nao_recebido_pelo_cliente"))
 	ckb_pedido_recebido_pelo_cliente = Trim(Request.Form("ckb_pedido_recebido_pelo_cliente"))
 	ckb_st_entrega_entregue = Trim(Request.Form("ckb_st_entrega_entregue"))
 	c_dt_entregue_inicio = Trim(Request.Form("c_dt_entregue_inicio"))
@@ -300,6 +305,28 @@
 		strMinDtInicialFiltroPeriodoYYYYMMDD = formata_data_yyyymmdd(dtMinDtInicialFiltroPeriodo)
 		strMinDtInicialFiltroPeriodoDDMMYYYY = formata_data(dtMinDtInicialFiltroPeriodo)
 
+		if alerta = "" then
+			if ckb_st_entrega_separar_com_marc <> "" then
+				if (c_dt_coleta_a_separar_inicio <> "") And (c_dt_coleta_a_separar_termino <> "") then
+					if StrToDate(c_dt_coleta_a_separar_termino) < StrToDate(c_dt_coleta_a_separar_inicio) then
+						alerta=texto_add_br(alerta)
+						alerta=alerta & "A data de término (" & c_dt_coleta_a_separar_termino & ") do período de coleta é anterior à data de início (" & c_dt_coleta_a_separar_inicio & ")!"
+						end if
+					end if
+				end if
+			end if
+
+		if alerta = "" then
+			if ckb_st_entrega_a_entregar_com_marc <> "" then
+				if (c_dt_coleta_st_a_entregar_inicio <> "") And (c_dt_coleta_st_a_entregar_termino <> "") then
+					if StrToDate(c_dt_coleta_st_a_entregar_termino) < StrToDate(c_dt_coleta_st_a_entregar_inicio) then
+						alerta=texto_add_br(alerta)
+						alerta=alerta & "A data de término (" & c_dt_coleta_st_a_entregar_termino & ") do período de coleta é anterior à data de início (" & c_dt_coleta_st_a_entregar_inicio & ")!"
+						end if
+					end if
+				end if
+			end if
+
 	'	COLOCADOS ENTRE
 		if alerta = "" then
 			strDtRefDDMMYYYY = c_dt_cadastro_inicio
@@ -459,7 +486,9 @@ dim s, s_aux, s_resp
 	s_aux = Lcase(x_status_entrega(ckb_st_entrega_separar_com_marc))
 	if s_aux<>"" then
 		if s <> "" then s = s & ", "
-		s_aux = s_aux & " (com data de coleta)"
+		if c_dt_coleta_a_separar_inicio <> "" then s_aux_dti = c_dt_coleta_a_separar_inicio else s_aux_dti = "N.I."
+		if c_dt_coleta_a_separar_termino <> "" then s_aux_dtf = c_dt_coleta_a_separar_termino else s_aux_dtf = "N.I."
+		s_aux = s_aux & " (com data de coleta: " & s_aux_dti & " a " & s_aux_dtf & ")"
 		s = s & s_aux
 		end if
 		
@@ -473,7 +502,9 @@ dim s, s_aux, s_resp
 	s_aux = Lcase(x_status_entrega(ckb_st_entrega_a_entregar_com_marc))
 	if s_aux<>"" then
 		if s <> "" then s = s & ", "
-		s_aux = s_aux & " (com data de coleta)"
+		if c_dt_coleta_st_a_entregar_inicio <> "" then s_aux_dti = c_dt_coleta_st_a_entregar_inicio else s_aux_dti = "N.I."
+		if c_dt_coleta_st_a_entregar_termino <> "" then s_aux_dtf = c_dt_coleta_st_a_entregar_termino else s_aux_dtf = "N.I."
+		s_aux = s_aux & " (com data de coleta: " & s_aux_dti & " a " & s_aux_dtf & ")"
 		s = s & s_aux
 		end if
 
@@ -826,7 +857,7 @@ sub consulta_executa
 dim r
 dim blnPorFornecedor
 dim s, s_aux, s_periodo_aux, s_cor, s_bkg_color, s_nbsp, s_align, s_nowrap, s_sql, cab_table, cab, n_reg, n_reg_total, n_colspan, n_colspan_final, s_colspan_final, s_loja
-dim s_where, s_from, cont
+dim s_where, s_where_aux, s_from, cont
 dim vl_total_faturamento, vl_sub_total_faturamento, vl_total_pago, vl_sub_total_pago
 dim vl_total_faturamento_NF, vl_sub_total_faturamento_NF
 dim vl_a_pagar, vl_sub_total_a_pagar, vl_total_a_pagar
@@ -882,8 +913,18 @@ dim rPSSW
 
 	s_aux = ckb_st_entrega_separar_com_marc
 	if s_aux <> "" then
+		s_where_aux = ""
+		if c_dt_coleta_a_separar_inicio <> "" then
+			if s_where_aux <> "" then s_where_aux = s_where_aux & " AND"
+			s_where_aux = s_where_aux & " (t_PEDIDO.a_entregar_data_marcada >= " & bd_formata_data(StrToDate(c_dt_coleta_a_separar_inicio)) & ")"
+			end if
+		if c_dt_coleta_a_separar_termino <> "" then
+			if s_where_aux <> "" then s_where_aux = s_where_aux & " AND"
+			s_where_aux = s_where_aux & " (t_PEDIDO.a_entregar_data_marcada < " & bd_formata_data(StrToDate(c_dt_coleta_a_separar_termino)+1) & ")"
+			end if
+		if s_where_aux <> "" then s_where_aux = " AND" & s_where_aux
 		if s <> "" then s = s & " OR"
-		s = s & " ((t_PEDIDO.st_entrega = '" & s_aux & "')AND(t_PEDIDO.a_entregar_status<>0))"
+		s = s & " ((t_PEDIDO.st_entrega = '" & s_aux & "')AND(t_PEDIDO.a_entregar_status<>0)" & s_where_aux & ")"
 		end if
 
 	s_aux = ckb_st_entrega_a_entregar_sem_marc
@@ -894,8 +935,18 @@ dim rPSSW
 
 	s_aux = ckb_st_entrega_a_entregar_com_marc
 	if s_aux <> "" then
+		s_where_aux = ""
+		if c_dt_coleta_st_a_entregar_inicio <> "" then
+			if s_where_aux <> "" then s_where_aux = s_where_aux & " AND"
+			s_where_aux = s_where_aux & " (t_PEDIDO.a_entregar_data_marcada >= " & bd_formata_data(StrToDate(c_dt_coleta_st_a_entregar_inicio)) & ")"
+			end if
+		if c_dt_coleta_st_a_entregar_termino <> "" then
+			if s_where_aux <> "" then s_where_aux = s_where_aux & " AND"
+			s_where_aux = s_where_aux & " (t_PEDIDO.a_entregar_data_marcada < " & bd_formata_data(StrToDate(c_dt_coleta_st_a_entregar_termino)+1) & ")"
+			end if
+		if s_where_aux <> "" then s_where_aux = " AND" & s_where_aux
 		if s <> "" then s = s & " OR"
-		s = s & " ((t_PEDIDO.st_entrega = '" & s_aux & "')AND(t_PEDIDO.a_entregar_status<>0))"
+		s = s & " ((t_PEDIDO.st_entrega = '" & s_aux & "')AND(t_PEDIDO.a_entregar_status<>0)" & s_where_aux & ")"
 		end if
 
 '	ENTREGUE ENTRE
@@ -2439,7 +2490,9 @@ function fRELConcluir( id_pedido ){
 	s_aux = Lcase(x_status_entrega(ckb_st_entrega_separar_com_marc))
 	if s_aux<>"" then
 		if s <> "" then s = s & ",&nbsp; "
-		s_aux = s_aux & " (com data de coleta)"
+		if c_dt_coleta_a_separar_inicio <> "" then s_aux_dti = c_dt_coleta_a_separar_inicio else s_aux_dti = "N.I."
+		if c_dt_coleta_a_separar_termino <> "" then s_aux_dtf = c_dt_coleta_a_separar_termino else s_aux_dtf = "N.I."
+		s_aux = s_aux & " (com data de coleta: " & s_aux_dti & " a " & s_aux_dtf & ")"
 		s_aux = replace(s_aux, " ", "&nbsp;")
 		s = s & s_aux
 		end if
@@ -2455,7 +2508,9 @@ function fRELConcluir( id_pedido ){
 	s_aux = Lcase(x_status_entrega(ckb_st_entrega_a_entregar_com_marc))
 	if s_aux<>"" then
 		if s <> "" then s = s & ",&nbsp; "
-		s_aux = s_aux & " (com data de coleta)"
+		if c_dt_coleta_st_a_entregar_inicio <> "" then s_aux_dti = c_dt_coleta_st_a_entregar_inicio else s_aux_dti = "N.I."
+		if c_dt_coleta_st_a_entregar_termino <> "" then s_aux_dtf = c_dt_coleta_st_a_entregar_termino else s_aux_dtf = "N.I."
+		s_aux = s_aux & " (com data de coleta: " & s_aux_dti & " a " & s_aux_dtf & ")"
 		s_aux = replace(s_aux, " ", "&nbsp;")
 		s = s & s_aux
 		end if
