@@ -321,26 +321,32 @@ end function
         
      <% end if %>
         
-		$("#c_dt_cancelado_inicio").hUtilUI('datepicker_filtro_inicial');
-		$("#c_dt_cancelado_termino").hUtilUI('datepicker_filtro_final');
+		$("#c_dt_cancelado_inicio").hUtilUI('datepicker_peq_filtro_inicial');
+		$("#c_dt_cancelado_termino").hUtilUI('datepicker_peq_filtro_final');
+
+		$("#c_dt_coleta_a_separar_inicio").hUtilUI('datepicker_peq_filtro_inicial');
+		$("#c_dt_coleta_a_separar_termino").hUtilUI('datepicker_peq_filtro_final');
+
+		$("#c_dt_coleta_st_a_entregar_inicio").hUtilUI('datepicker_peq_filtro_inicial');
+		$("#c_dt_coleta_st_a_entregar_termino").hUtilUI('datepicker_peq_filtro_final');
 
 	<% if operacao_permitida(OP_CEN_FILTRO_MCRIT_PEDIDOS_ENTREGUES_ENTRE, s_lista_operacoes_permitidas) then %>
-		$("#c_dt_entregue_inicio").hUtilUI('datepicker_filtro_inicial');
-		$("#c_dt_entregue_termino").hUtilUI('datepicker_filtro_final');
+		$("#c_dt_entregue_inicio").hUtilUI('datepicker_peq_filtro_inicial');
+		$("#c_dt_entregue_termino").hUtilUI('datepicker_peq_filtro_final');
 	<% end if %>
 
 	<% if operacao_permitida(OP_CEN_FILTRO_MCRIT_PEDIDOS_COLOCADOS_ENTRE, s_lista_operacoes_permitidas) then %>
-		$("#c_dt_cadastro_inicio").hUtilUI('datepicker_filtro_inicial');
-		$("#c_dt_cadastro_termino").hUtilUI('datepicker_filtro_final');
+		$("#c_dt_cadastro_inicio").hUtilUI('datepicker_peq_filtro_inicial');
+		$("#c_dt_cadastro_termino").hUtilUI('datepicker_peq_filtro_final');
 	<% end if %>
 
 	<% if operacao_permitida(OP_CEN_FILTRO_MCRIT_PEDIDOS_ENTREGA_MARC_ENTRE, s_lista_operacoes_permitidas) then %>
-		$("#c_dt_entrega_inicio").hUtilUI('datepicker_filtro_inicial');
-		$("#c_dt_entrega_termino").hUtilUI('datepicker_filtro_final');
+		$("#c_dt_entrega_inicio").hUtilUI('datepicker_peq_filtro_inicial');
+		$("#c_dt_entrega_termino").hUtilUI('datepicker_peq_filtro_final');
 	<% end if%>
 
-        $("#c_dt_previsao_entrega_inicio").hUtilUI('datepicker_filtro_inicial');
-        $("#c_dt_previsao_entrega_termino").hUtilUI('datepicker_filtro_final');
+		$("#c_dt_previsao_entrega_inicio").hUtilUI('datepicker_peq_filtro_inicial');
+		$("#c_dt_previsao_entrega_termino").hUtilUI('datepicker_peq_filtro_final');
 	
 		//Every resize of window
 	    $(window).resize(function() {
@@ -376,6 +382,18 @@ end function
 function fFILTROConfirma( f ) {
 var i, b;
 var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
+
+	if (f.ckb_st_entrega_separar_com_marc.checked) {
+		if ((trim(f.c_dt_coleta_a_separar_inicio.value) != "") && (trim(f.c_dt_coleta_a_separar_termino.value) != "")) {
+			if (!consiste_periodo(f.c_dt_coleta_a_separar_inicio, f.c_dt_coleta_a_separar_termino)) return;
+		}
+	}
+
+	if (f.ckb_st_entrega_a_entregar_com_marc.checked) {
+		if ((trim(f.c_dt_coleta_st_a_entregar_inicio.value) != "") && (trim(f.c_dt_coleta_st_a_entregar_termino.value) != "")) {
+			if (!consiste_periodo(f.c_dt_coleta_st_a_entregar_inicio, f.c_dt_coleta_st_a_entregar_termino)) return;
+		}
+	}
 
 	if (f.c_opcao_filtro_pedidos_entregues_entre.value=="S") {
 		if (f.ckb_st_entrega_entregue.checked) {
@@ -789,7 +807,9 @@ function exibe_botao_confirmar() {
 	<tr bgcolor="#FFFFFF"><td align="left">
 		<input type="checkbox" tabindex="-1" id="ckb_st_entrega_separar_com_marc" name="ckb_st_entrega_separar_com_marc"
 			value="<%=ST_ENTREGA_SEPARAR%>"><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_st_entrega_separar_com_marc.click();">A Separar (com data de coleta)</span>
+			onclick="fFILTRO.ckb_st_entrega_separar_com_marc.click();">A Separar (com data de coleta)</span
+			><input class="Cc" maxlength="10" style="width:70px;" name="c_dt_coleta_a_separar_inicio" id="c_dt_coleta_a_separar_inicio" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_coleta_a_separar_termino.focus(); else fFILTRO.ckb_st_entrega_separar_com_marc.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_separar_com_marc.checked=true;" onchange="fFILTRO.ckb_st_entrega_separar_com_marc.checked=true;"
+			/>&nbsp;<span class="C">a</span>&nbsp;<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_coleta_a_separar_termino" id="c_dt_coleta_a_separar_termino" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_st_entrega_separar_com_marc.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_separar_com_marc.checked=true;" onchange="fFILTRO.ckb_st_entrega_separar_com_marc.checked=true;" />
 		</td></tr>
 	<tr bgcolor="#FFFFFF"><td align="left">
 		<input type="checkbox" tabindex="-1" id="ckb_st_entrega_a_entregar_sem_marc" name="ckb_st_entrega_a_entregar_sem_marc"
@@ -799,7 +819,9 @@ function exibe_botao_confirmar() {
 	<tr bgcolor="#FFFFFF"><td align="left">
 		<input type="checkbox" tabindex="-1" id="ckb_st_entrega_a_entregar_com_marc" name="ckb_st_entrega_a_entregar_com_marc"
 			value="<%=ST_ENTREGA_A_ENTREGAR%>"><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_st_entrega_a_entregar_com_marc.click();">A Entregar (com data de coleta)</span>
+			onclick="fFILTRO.ckb_st_entrega_a_entregar_com_marc.click();">A Entregar (com data de coleta)</span
+			><input class="Cc" maxlength="10" style="width:70px;" name="c_dt_coleta_st_a_entregar_inicio" id="c_dt_coleta_st_a_entregar_inicio" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_coleta_st_a_entregar_termino.focus(); else fFILTRO.ckb_st_entrega_a_entregar_com_marc.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_a_entregar_com_marc.checked=true;" onchange="fFILTRO.ckb_st_entrega_a_entregar_com_marc.checked=true;"
+			/>&nbsp;<span class="C">a</span>&nbsp;<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_coleta_st_a_entregar_termino" id="c_dt_coleta_st_a_entregar_termino" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_st_entrega_a_entregar_com_marc.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_a_entregar_com_marc.checked=true;" onchange="fFILTRO.ckb_st_entrega_a_entregar_com_marc.checked=true;" />
 		</td></tr>
 	<% if operacao_permitida(OP_CEN_FILTRO_MCRIT_PEDIDOS_ENTREGUES_ENTRE, s_lista_operacoes_permitidas) then %>
 	<tr bgcolor="#FFFFFF"><td align="left">
