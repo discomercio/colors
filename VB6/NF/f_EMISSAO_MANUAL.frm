@@ -8288,6 +8288,11 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("indPag", vNFeImgPag(UBound(vNFeImgPag)).pag__indPag)
     strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("tPag", vNFeImgPag(UBound(vNFeImgPag)).pag__tPag)
     strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("vPag", vNFeImgPag(UBound(vNFeImgPag)).pag__vPag)
+    'informações do intermediador
+    'strNFeTagPag = strNFeTagPag & vbTab & "infIntermed;"
+    'strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("CNPJ", "00776574000660")
+    'strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("idCadIntTran", "'23.209.013/0003-32")
+
     'Segundo informado pelo Valter (Target) em e-mail de 27/07/2017, o grupo vcard não deve ser informado no arquivo texto,
     'ele é preenchido pelo sistema
     'strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("vTroco", "0.00")
@@ -8651,6 +8656,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     '=== Novo campo indFinal
     strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indFinal", rNFeImg.ide__indFinal) '0-Normal  1-Consumidor Final
     strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indPres", rNFeImg.ide__indPres) '2-Internet  3-Teleatendimento
+    '=== Campo indIntermed: para emissão manual, considerar sem intermediador
+    strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indIntermed", "0") '0-Sem intermediador 1-Operação em site ou plataforma de terceiros
     '=== aqui: campo IEST
     
     '=== Grupo NFref
@@ -9289,6 +9296,10 @@ Dim vAliquotas() As String
     cb_meio_pagto.AddItem "12 - Vale Presente"
     cb_meio_pagto.AddItem "13 - Vale Combustível"
     cb_meio_pagto.AddItem "15 - Boleto Bancário"
+    cb_meio_pagto.AddItem "16 - Depósito Bancário"
+    cb_meio_pagto.AddItem "17 - PIX"
+    cb_meio_pagto.AddItem "18 - Transf Bancária, Carteira Digital"
+    cb_meio_pagto.AddItem "19 - Programa Fidelidade, Cashback, Crédito Virtual"
     cb_meio_pagto.AddItem "90 - Sem pagamento"
     cb_meio_pagto.AddItem "99 - Outros"
     

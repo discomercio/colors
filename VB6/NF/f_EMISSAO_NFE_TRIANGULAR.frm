@@ -9063,6 +9063,7 @@ Dim strInfoAdicIbpt As String
 Dim strEmailXML As String
 Dim strNFeRef As String
 Dim strInfoAdicParc As String
+Dim strPedidoBSMarketplace As String
 
 ' FLAGS
 Dim blnAchou As Boolean
@@ -9472,6 +9473,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strConfirmacaoObs2 = ""
     strConfirmacaoEtgImediata = ""
     strTransportadoraId = ""
+    strPedidoBSMarketplace = ""
     rNFeImg.ide__indPag = "2" ' Forma de pagamento: outros
     For i = LBound(v_pedido) To UBound(v_pedido)
         If Trim$(v_pedido(i)) <> "" Then
@@ -9484,6 +9486,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     " t_PEDIDO.transportadora_id," & _
                     " t_PEDIDO.StBemUsoConsumo," & _
                     " t_PEDIDO.st_etg_imediata," & _
+                    " t_PEDIDO.pedido_bs_x_marketplace," & _
                     " t_PEDIDO__BASE.tipo_parcelamento," & _
                     " t_PEDIDO__BASE.av_forma_pagto," & _
                     " t_PEDIDO__BASE.pce_forma_pagto_entrada," & _
@@ -9503,6 +9506,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 s_erro = s_erro & "Pedido " & Trim$(v_pedido(i)) & " não está cadastrado!!"
             Else
                 strLoja = Trim$("" & t_PEDIDO("loja"))
+                
+                strPedidoBSMarketplace = Trim$("" & t_PEDIDO("pedido_bs_x_marketplace"))
                 
                 If CLng(t_PEDIDO("StBemUsoConsumo")) = 1 Then
                     blnTemPedidoComStBemUsoConsumo = True
@@ -10838,7 +10843,12 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagOperacional = "operacional;" & vbCrLf
 
 '   EMAIL DO DESTINATÁRIO DA NFe
-    rNFeImg.operacional__email = Trim("" & t_DESTINATARIO("email"))
+    'para a loja 201, caso o campo pedido_bs_x_marketplace indique ser um pedido de marketplace, desconsiderar o e-mail do cliente
+    If (strLoja = "201") And (strPedidoBSMarketplace <> "") Then
+        rNFeImg.operacional__email = ""
+    Else
+        rNFeImg.operacional__email = Trim("" & t_DESTINATARIO("email"))
+        End If
     If (Trim$(rNFeImg.operacional__email) <> "") And (Trim$(strTransportadoraEmail) <> "") Then rNFeImg.operacional__email = rNFeImg.operacional__email & ";"
     rNFeImg.operacional__email = rNFeImg.operacional__email & strTransportadoraEmail
     strEmailXML = Trim("" & t_DESTINATARIO("email_xml"))
@@ -12089,6 +12099,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     s_aux = "03"
                 Case ID_FORMA_PAGTO_CARTAO_MAQUINETA
                     s_aux = "03"
+                Case ID_FORMA_PAGTO_DEPOSITO
+                    s_aux = "16"
                 Case Else
                     s_aux = "99" 'Outros
                 End Select
@@ -12110,6 +12122,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 s_aux = "03"
             Case ID_FORMA_PAGTO_CARTAO_MAQUINETA
                 s_aux = "03"
+            Case ID_FORMA_PAGTO_DEPOSITO
+                    s_aux = "16"
             Case Else
                 s_aux = "99" 'Outros
             End Select
@@ -15854,6 +15868,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     s_aux = "03"
                 Case ID_FORMA_PAGTO_CARTAO_MAQUINETA
                     s_aux = "03"
+                Case ID_FORMA_PAGTO_DEPOSITO
+                    s_aux = "16"
                 Case Else
                     s_aux = "99" 'Outros
                 End Select
@@ -15875,7 +15891,9 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 s_aux = "03"
             Case ID_FORMA_PAGTO_CARTAO_MAQUINETA
                 s_aux = "03"
-            Case Else
+            Case ID_FORMA_PAGTO_DEPOSITO
+                    s_aux = "16"
+                Case Else
                 s_aux = "99" 'Outros
             End Select
         'obtém o total a prazo (retira o valor da entrada,se houver)
