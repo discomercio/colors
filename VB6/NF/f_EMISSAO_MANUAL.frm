@@ -8280,6 +8280,14 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "0"
         vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = "90"
         vNFeImgPag(UBound(vNFeImgPag)).pag__vPag = NFeFormataMoeda2Dec(0)
+    'se já estiver valendo a exigência de um tPag diferente de 99 (Outros), impedir emissão
+    ElseIf (param_nftipopag.campo_inteiro = 1) And (left(cb_meio_pagto, 2) = "99") Then
+        s = "Não é possível prosseguir com a emissão, pois o meio de pagamento não pode ser Outros!!"
+        aviso_erro s
+        cb_meio_pagto.SetFocus
+        GoSub NFE_EMITE_FECHA_TABELAS
+        aguarde INFO_NORMAL, m_id
+        Exit Sub
     Else
         vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "0"
         vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = left(cb_meio_pagto, 2)
@@ -8297,6 +8305,13 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     'ele é preenchido pelo sistema
     'strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("vTroco", "0.00")
                               
+    'teste informações cartão
+    'strNFeTagPag = strNFeTagPag & vbTab & "card;"
+    'strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("tpIntegra", "1")
+    'strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("tBand", "01")  'visa
+    'strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("cAut", "A1B2C3D4E5F6G7H8I9J0")
+    'strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("vTroco", "0.00")
+
     
 '   TAG INFADIC
 '   ~~~~~~~~~~~
@@ -9296,10 +9311,12 @@ Dim vAliquotas() As String
     cb_meio_pagto.AddItem "12 - Vale Presente"
     cb_meio_pagto.AddItem "13 - Vale Combustível"
     cb_meio_pagto.AddItem "15 - Boleto Bancário"
-    cb_meio_pagto.AddItem "16 - Depósito Bancário"
-    cb_meio_pagto.AddItem "17 - PIX"
-    cb_meio_pagto.AddItem "18 - Transf Bancária, Carteira Digital"
-    cb_meio_pagto.AddItem "19 - Programa Fidelidade, Cashback, Crédito Virtual"
+    If (param_nftipopag.campo_inteiro = 1) Then
+        cb_meio_pagto.AddItem "16 - Depósito Bancário"
+        cb_meio_pagto.AddItem "17 - PIX"
+        cb_meio_pagto.AddItem "18 - Transf Bancária, Carteira Digital"
+        cb_meio_pagto.AddItem "19 - Programa Fidelidade, Cashback, Crédito Virtual"
+        End If
     cb_meio_pagto.AddItem "90 - Sem pagamento"
     cb_meio_pagto.AddItem "99 - Outros"
     

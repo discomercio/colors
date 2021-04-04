@@ -12094,13 +12094,15 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 Case ID_FORMA_PAGTO_CHEQUE
                     s_aux = "02"
                 Case ID_FORMA_PAGTO_BOLETO
-                    s_aux = "15"
+                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "15" Else s_aux = "99"
+                Case ID_FORMA_PAGTO_BOLETO_AV
+                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "15" Else s_aux = "99"
                 Case ID_FORMA_PAGTO_CARTAO
                     s_aux = "03"
                 Case ID_FORMA_PAGTO_CARTAO_MAQUINETA
                     s_aux = "03"
                 Case ID_FORMA_PAGTO_DEPOSITO
-                    s_aux = "16"
+                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "16" Else s_aux = "99"
                 Case Else
                     s_aux = "99" 'Outros
                 End Select
@@ -12117,13 +12119,15 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             Case ID_FORMA_PAGTO_CHEQUE
                 s_aux = "02"
             Case ID_FORMA_PAGTO_BOLETO
-                s_aux = "15"
+                If (param_nftipopag.campo_inteiro = 1) Then s_aux = "15" Else s_aux = "99"
+            Case ID_FORMA_PAGTO_BOLETO_AV
+                If (param_nftipopag.campo_inteiro = 1) Then s_aux = "15" Else s_aux = "99"
             Case ID_FORMA_PAGTO_CARTAO
                 s_aux = "03"
             Case ID_FORMA_PAGTO_CARTAO_MAQUINETA
                 s_aux = "03"
             Case ID_FORMA_PAGTO_DEPOSITO
-                    s_aux = "16"
+                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "16" Else s_aux = "99"
             Case Else
                 s_aux = "99" 'Outros
             End Select
@@ -15863,13 +15867,15 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 Case ID_FORMA_PAGTO_CHEQUE
                     s_aux = "02"
                 Case ID_FORMA_PAGTO_BOLETO
-                    s_aux = "15"
+                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "15" Else s_aux = "99"
+                Case ID_FORMA_PAGTO_BOLETO_AV
+                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "15" Else s_aux = "99"
                 Case ID_FORMA_PAGTO_CARTAO
                     s_aux = "03"
                 Case ID_FORMA_PAGTO_CARTAO_MAQUINETA
                     s_aux = "03"
                 Case ID_FORMA_PAGTO_DEPOSITO
-                    s_aux = "16"
+                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "16" Else s_aux = "99"
                 Case Else
                     s_aux = "99" 'Outros
                 End Select
@@ -15886,13 +15892,15 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             Case ID_FORMA_PAGTO_CHEQUE
                 s_aux = "02"
             Case ID_FORMA_PAGTO_BOLETO
-                s_aux = "15"
+                If (param_nftipopag.campo_inteiro = 1) Then s_aux = "15" Else s_aux = "99"
+            Case ID_FORMA_PAGTO_BOLETO_AV
+                If (param_nftipopag.campo_inteiro = 1) Then s_aux = "15" Else s_aux = "99"
             Case ID_FORMA_PAGTO_CARTAO
                 s_aux = "03"
             Case ID_FORMA_PAGTO_CARTAO_MAQUINETA
                 s_aux = "03"
             Case ID_FORMA_PAGTO_DEPOSITO
-                    s_aux = "16"
+                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "16" Else s_aux = "99"
                 Case Else
                 s_aux = "99" 'Outros
             End Select
