@@ -3430,7 +3430,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-    Option Explicit
+Option Explicit
 
 Dim modulo_inicializacao_ok As Boolean
 Dim pedido_anterior As String
@@ -9533,7 +9533,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     'Segundo informado pelo Valter (Target) em e-mail de 27/06/2017, não deve ser informada no arquivo de integração,
     'ela é inserida automaticamente pelo sistema
     'strNFeTagPag = strNFeTagPag & "detpag;" & vbCrLf
-    
+    s_aux = param_nftipopag.campo_texto
     'Se a nota é de entrada ou ajuste/devolução - sem pagamento
     If rNFeImg.ide__tpNF = "0" Or _
         strNFeCodFinalidade = "3" Or _
@@ -9559,13 +9559,21 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 Case ID_FORMA_PAGTO_DEPOSITO
                     If (param_nftipopag.campo_inteiro = 1) Then s_aux = "16" Else s_aux = "99"
                 Case Else
-                    s_aux = "99" 'Outros
+                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = param_nftipopag.campo_texto Else s_aux = "99" 'Outros
                 End Select
         
         vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "0"
         vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = s_aux
         vNFeImgPag(UBound(vNFeImgPag)).pag__vPag = rNFeImg.total__vNF
     'Se o pagamento é à prazo
+    ElseIf (strTipoParcelamento = COD_FORMA_PAGTO_PARCELADO_CARTAO) Or _
+           (strTipoParcelamento = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA) Then
+        s_aux = "03"
+        'obtém o total a prazo (retira o valor da entrada,se houver)
+        vl_aux = vl_total_NF - vl_aux
+        vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "1"
+        vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = s_aux
+        vNFeImgPag(UBound(vNFeImgPag)).pag__vPag = NFeFormataMoeda2Dec(vl_aux)
     Else
         vl_aux = 0
         Select Case t_PEDIDO("pce_forma_pagto_prestacao")
@@ -9584,7 +9592,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             Case ID_FORMA_PAGTO_DEPOSITO
                     If (param_nftipopag.campo_inteiro = 1) Then s_aux = "16" Else s_aux = "99"
             Case Else
-                s_aux = "99" 'Outros
+                If (param_nftipopag.campo_inteiro = 1) Then s_aux = param_nftipopag.campo_texto Else s_aux = "99" 'Outros
             End Select
         'obtém o total a prazo (retira o valor da entrada,se houver)
         vl_aux = vl_total_NF - vl_aux
@@ -9599,7 +9607,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     'Segundo informado pelo Valter (Target) em e-mail de 27/07/2017, o grupo vcard não deve ser informado no arquivo texto,
     'ele é preenchido pelo sistema
     'informações do intermediador
-    If (param_nfintermediador.campo_inteiro = 1) Then
+    If (param_nfintermediador.campo_inteiro = 1) And (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") Then
         'If (strMarketplaceCodOrigem <> "") Then
         If ((strMarketPlaceCNPJ <> "") And (strMarketPlaceCadIntTran <> "")) Then
             strNFeTagPag = strNFeTagPag & vbTab & "infIntermed;"
@@ -9789,7 +9797,9 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
 '   SÓ AUTORIZA EMISSÃO SEM INTERMEDIADOR SE intImprimeIntermediadorAusente FOR 1
 '   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     If (param_nfintermediador.campo_inteiro = 1) Then
-        If ((strMarketPlaceCNPJ = "") Or (strMarketPlaceCadIntTran = "")) And (intImprimeIntermediadorAusente = 0) Then
+        If (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") And _
+            ((strMarketPlaceCNPJ = "") Or (strMarketPlaceCadIntTran = "")) And _
+            (intImprimeIntermediadorAusente = 0) Then
             s = "Não é possível prosseguir com a emissão, pois o intermediador do pedido não está identificado!!"
             aviso_erro s
             GoSub NFE_EMITE_FECHA_TABELAS

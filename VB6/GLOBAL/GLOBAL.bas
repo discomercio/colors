@@ -120,6 +120,10 @@ Option Explicit
     Global param_pedidomemorizacaoenderecos As TIPO_t_PARAMETRO
     
     Global param_nfmemooendentrega As TIPO_t_PARAMETRO
+    
+    Global param_nfintermediador As TIPO_t_PARAMETRO
+    
+    Global param_nftipopag As TIPO_t_PARAMETRO
 
     Global Const FORMATO_MOEDA = "###,###,###,##0.00"
     Global Const FORMATO_VALOR = "###,###,###,##0.00"

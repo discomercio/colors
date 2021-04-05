@@ -8672,7 +8672,9 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indFinal", rNFeImg.ide__indFinal) '0-Normal  1-Consumidor Final
     strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indPres", rNFeImg.ide__indPres) '2-Internet  3-Teleatendimento
     '=== Campo indIntermed: para emissão manual, considerar sem intermediador
-    strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indIntermed", "0") '0-Sem intermediador 1-Operação em site ou plataforma de terceiros
+    If (param_nfintermediador.campo_inteiro = 1) And ((strPresComprador = "2") Or (strPresComprador = "3")) Then
+        strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indIntermed", "0") '0-Sem intermediador 1-Operação em site ou plataforma de terceiros
+        End If
     '=== aqui: campo IEST
     
     '=== Grupo NFref

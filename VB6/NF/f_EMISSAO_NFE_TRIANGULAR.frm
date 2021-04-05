@@ -9064,6 +9064,9 @@ Dim strEmailXML As String
 Dim strNFeRef As String
 Dim strInfoAdicParc As String
 Dim strPedidoBSMarketplace As String
+Dim strMarketplaceCodOrigem As String
+Dim strMarketPlaceCNPJ As String
+Dim strMarketPlaceCadIntTran As String
 
 ' FLAGS
 Dim blnAchou As Boolean
@@ -9112,6 +9115,7 @@ Dim lngNFeSerieManual As Long
 Dim lngNFeNumeroNfManual As Long
 Dim intContribuinteICMS As Integer
 Dim intAnoPartilha As Integer
+Dim intImprimeIntermediadorAusente As Integer
 
 ' BANCO DE DADOS
 Dim t_PEDIDO As ADODB.Recordset
@@ -9126,6 +9130,7 @@ Dim t_NFE_EMITENTE As ADODB.Recordset
 Dim t_NFe_EMISSAO As ADODB.Recordset
 Dim t_NFe_IMAGEM As ADODB.Recordset
 Dim t_T1_NFE_INUTILIZA As ADODB.Recordset
+Dim t_CODIGO_DESCRICAO As ADODB.Recordset
 Dim rsNFeRetornoSPSituacao As ADODB.Recordset
 Dim rsNFeRetornoSPEmite As ADODB.Recordset
 Dim cmdNFeSituacao As New ADODB.Command
@@ -9464,7 +9469,16 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         .CacheSize = BD_CACHE_CONSULTA
         End With
         
+  ' T_CODIGO_DESCRICAO
+    Set t_CODIGO_DESCRICAO = New ADODB.Recordset
+    With t_CODIGO_DESCRICAO
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
+        
   
+
 '   VERIFICA CADA UM DOS PEDIDOS
     strIdCliente = ""
     strPedidoAnterior = ""
@@ -9487,6 +9501,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     " t_PEDIDO.StBemUsoConsumo," & _
                     " t_PEDIDO.st_etg_imediata," & _
                     " t_PEDIDO.pedido_bs_x_marketplace," & _
+                    " t_PEDIDO.marketplace_codigo_origem," & _
                     " t_PEDIDO__BASE.tipo_parcelamento," & _
                     " t_PEDIDO__BASE.av_forma_pagto," & _
                     " t_PEDIDO__BASE.pce_forma_pagto_entrada," & _
@@ -9508,6 +9523,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 strLoja = Trim$("" & t_PEDIDO("loja"))
                 
                 strPedidoBSMarketplace = Trim$("" & t_PEDIDO("pedido_bs_x_marketplace"))
+                strMarketplaceCodOrigem = Trim$("" & t_PEDIDO("marketplace_codigo_origem"))
                 
                 If CLng(t_PEDIDO("StBemUsoConsumo")) = 1 Then
                     blnTemPedidoComStBemUsoConsumo = True
@@ -9592,6 +9608,28 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 s_erro = s_erro & "Não foi encontrado nenhum produto relacionado ao pedido " & Trim$(v_pedido(i)) & "!!"
                 End If
             End If
+            
+            'obter as informações de marketplace
+            If (param_nfintermediador.campo_inteiro = 1) And (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") Then
+                s = "SELECT o.codigo, o.descricao, og.parametro_campo_texto, og.parametro_2_campo_texto, og.parametro_3_campo_flag  " & _
+                    "FROM (select * from t_CODIGO_DESCRICAO where grupo = 'PedidoECommerce_Origem') o  " & _
+                        "INNER JOIN (select * from t_CODIGO_DESCRICAO where grupo = 'PedidoECommerce_Origem_Grupo') og  " & _
+                        "on o.codigo_pai = og.codigo " & _
+                    "WHERE o.codigo = '" & strMarketplaceCodOrigem & "'"
+                If t_CODIGO_DESCRICAO.State <> adStateClosed Then t_CODIGO_DESCRICAO.Close
+                t_CODIGO_DESCRICAO.Open s, dbc, , , adCmdText
+                If t_CODIGO_DESCRICAO.EOF Then
+                    If s_erro <> "" Then s_erro = s_erro & vbCrLf
+                    s_erro = s_erro & "Problema na identificação do marketplace do pedido " & Trim$(v_pedido(i)) & "!!"
+                Else
+                    strMarketPlaceCNPJ = Trim$("" & t_CODIGO_DESCRICAO("parametro_campo_texto"))
+                    strMarketPlaceCadIntTran = Trim$("" & t_CODIGO_DESCRICAO("parametro_2_campo_texto"))
+                    intImprimeIntermediadorAusente = t_CODIGO_DESCRICAO("parametro_3_campo_flag")
+                    End If
+                    
+                End If
+
+            
         Next
         
     If s_erro = "" Then
@@ -12079,6 +12117,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     'Segundo informado pelo Valter (Target) em e-mail de 27/06/2017, não deve ser informada no arquivo de integração,
     'ela é inserida automaticamente pelo sistema
     'strNFeTagPag = strNFeTagPag & "detpag;" & vbCrLf
+    s_aux = param_nftipopag.campo_texto
     'Se a nota é de entrada ou ajuste/devolução - sem pagamento
     If rNFeImg.ide__tpNF = "0" Or _
         strNFeCodFinalidade = "3" Or _
@@ -12104,13 +12143,21 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 Case ID_FORMA_PAGTO_DEPOSITO
                     If (param_nftipopag.campo_inteiro = 1) Then s_aux = "16" Else s_aux = "99"
                 Case Else
-                    s_aux = "99" 'Outros
+                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = param_nftipopag.campo_texto Else s_aux = "99" 'Outros
                 End Select
         
         vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "0"
         vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = s_aux
         vNFeImgPag(UBound(vNFeImgPag)).pag__vPag = rNFeImg.total__vNF
     'Se o pagamento é à prazo
+    ElseIf (strTipoParcelamento = COD_FORMA_PAGTO_PARCELADO_CARTAO) Or _
+           (strTipoParcelamento = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA) Then
+        s_aux = "03"
+    'obtém o total a prazo (retira o valor da entrada,se houver)
+        vl_aux = vl_total_NF - vl_aux
+        vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "1"
+        vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = s_aux
+        vNFeImgPag(UBound(vNFeImgPag)).pag__vPag = NFeFormataMoeda2Dec(vl_aux)
     Else
         vl_aux = 0
         Select Case t_PEDIDO("pce_forma_pagto_prestacao")
@@ -12129,7 +12176,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             Case ID_FORMA_PAGTO_DEPOSITO
                     If (param_nftipopag.campo_inteiro = 1) Then s_aux = "16" Else s_aux = "99"
             Case Else
-                s_aux = "99" 'Outros
+                If (param_nftipopag.campo_inteiro = 1) Then s_aux = param_nftipopag.campo_texto Else s_aux = "99" 'Outros
             End Select
         'obtém o total a prazo (retira o valor da entrada,se houver)
         vl_aux = vl_total_NF - vl_aux
@@ -12143,7 +12190,16 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("vPag", vNFeImgPag(UBound(vNFeImgPag)).pag__vPag)
     'Segundo informado pelo Valter (Target) em e-mail de 27/07/2017, o grupo vcard não deve ser informado no arquivo texto,
     'ele é preenchido pelo sistema
-                              
+    'informações do intermediador
+    If (param_nfintermediador.campo_inteiro = 1) And (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") Then
+        'If (strMarketplaceCodOrigem <> "") Then
+        If ((strMarketPlaceCNPJ <> "") And (strMarketPlaceCadIntTran <> "")) Then
+            strNFeTagPag = strNFeTagPag & vbTab & "infIntermed;"
+            strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("CNPJ", strMarketPlaceCNPJ)
+            strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("idCadIntTran", strMarketPlaceCadIntTran)
+            End If
+        End If
+                    
 
 '   TAG INFADIC
 '   ~~~~~~~~~~~
@@ -12288,6 +12344,23 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                               vbTab & NFeFormataCampo("xMun", rNFeImg.entrega__xMun) & _
                               vbTab & NFeFormataCampo("UF", rNFeImg.entrega__UF)
         End If
+        
+        
+'   SÓ AUTORIZA EMISSÃO SEM INTERMEDIADOR SE intImprimeIntermediadorAusente FOR 1
+'   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    If (param_nfintermediador.campo_inteiro = 1) Then
+        If (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") And _
+            ((strMarketPlaceCNPJ = "") Or (strMarketPlaceCadIntTran = "")) And _
+            (intImprimeIntermediadorAusente = 0) Then
+            s = "Não é possível prosseguir com a emissão, pois o intermediador do pedido não está identificado!!"
+            aviso_erro s
+            GoSub NFE_EMITE_FECHA_TABELAS
+            aguarde INFO_NORMAL, m_id
+            Exit Sub
+            End If
+        End If
+
+        
 
 '   SE HOUVER MAIS DE UMA CONFIRMAÇÃO DE EMISSÃO QUE PODEM GERAR NFe PARA UM EMITENTE INDEVIDO, CONFIRMAR NOVAMENTE
 '   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -12451,6 +12524,14 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     '=== Novo campo indFinal
     strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indFinal", rNFeImg.ide__indFinal) '0-Normal  1-Consumidor Final
     strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indPres", rNFeImg.ide__indPres) '2-Internet  3-Teleatendimento
+        '=== Campo indIntermed  (0-Sem intermediador 1-Operação em site ou plataforma de terceiros)
+    If (param_nfintermediador.campo_inteiro = 1) Then
+        If ((strMarketPlaceCNPJ <> "") And (strMarketPlaceCadIntTran <> "")) Then
+            strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indIntermed", "1")
+        Else
+            strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indIntermed", "0")
+            End If
+        End If
     '=== aqui: campo IEST
     
     '=== Grupo NFref
@@ -12801,6 +12882,7 @@ NFE_EMITE_FECHA_TABELAS:
     bd_desaloca_recordset t_NFe_EMISSAO, True
     bd_desaloca_recordset t_NFe_IMAGEM, True
     bd_desaloca_recordset t_T1_NFE_INUTILIZA, True
+    bd_desaloca_recordset t_CODIGO_DESCRICAO, True
     bd_desaloca_recordset rsNFeRetornoSPSituacao, True
     bd_desaloca_recordset rsNFeRetornoSPEmite, True
   
@@ -12945,6 +13027,10 @@ Dim strZerarCofinsCst As String
 Dim strInfoAdicIbpt As String
 Dim strEmailXML As String
 Dim strNFeRef As String
+Dim strPedidoBSMarketplace As String
+Dim strMarketplaceCodOrigem As String
+Dim strMarketPlaceCNPJ As String
+Dim strMarketPlaceCadIntTran As String
 
 
 ' FLAGS
@@ -12994,6 +13080,7 @@ Dim lngNFeSerieManual As Long
 Dim lngNFeNumeroNfManual As Long
 Dim intContribuinteICMS As Integer
 Dim intAnoPartilha As Integer
+Dim intImprimeIntermediadorAusente As Integer
 
 ' BANCO DE DADOS
 Dim t_PEDIDO As ADODB.Recordset
@@ -13008,6 +13095,7 @@ Dim t_NFE_EMITENTE As ADODB.Recordset
 Dim t_NFe_EMISSAO As ADODB.Recordset
 Dim t_NFe_IMAGEM As ADODB.Recordset
 Dim t_T1_NFE_INUTILIZA As ADODB.Recordset
+Dim t_CODIGO_DESCRICAO As ADODB.Recordset
 Dim rsNFeRetornoSPSituacao As ADODB.Recordset
 Dim rsNFeRetornoSPEmite As ADODB.Recordset
 Dim cmdNFeSituacao As New ADODB.Command
@@ -13346,7 +13434,16 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         .CacheSize = BD_CACHE_CONSULTA
         End With
         
+  ' T_CODIGO_DESCRICAO
+    Set t_CODIGO_DESCRICAO = New ADODB.Recordset
+    With t_CODIGO_DESCRICAO
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
+        
   
+
 '   VERIFICA CADA UM DOS PEDIDOS
     strIdCliente = ""
     strPedidoAnterior = ""
@@ -13470,6 +13567,27 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 s_erro = s_erro & "Não foi encontrado nenhum produto relacionado ao pedido " & Trim$(v_pedido(i)) & "!!"
                 End If
             End If
+            
+            'obter as informações de marketplace
+            If (param_nfintermediador.campo_inteiro = 1) And (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") Then
+                s = "SELECT o.codigo, o.descricao, og.parametro_campo_texto, og.parametro_2_campo_texto, og.parametro_3_campo_flag  " & _
+                    "FROM (select * from t_CODIGO_DESCRICAO where grupo = 'PedidoECommerce_Origem') o  " & _
+                        "INNER JOIN (select * from t_CODIGO_DESCRICAO where grupo = 'PedidoECommerce_Origem_Grupo') og  " & _
+                        "on o.codigo_pai = og.codigo " & _
+                    "WHERE o.codigo = '" & strMarketplaceCodOrigem & "'"
+                If t_CODIGO_DESCRICAO.State <> adStateClosed Then t_CODIGO_DESCRICAO.Close
+                t_CODIGO_DESCRICAO.Open s, dbc, , , adCmdText
+                If t_CODIGO_DESCRICAO.EOF Then
+                    If s_erro <> "" Then s_erro = s_erro & vbCrLf
+                    s_erro = s_erro & "Problema na identificação do marketplace do pedido " & Trim$(v_pedido(i)) & "!!"
+                Else
+                    strMarketPlaceCNPJ = Trim$("" & t_CODIGO_DESCRICAO("parametro_campo_texto"))
+                    strMarketPlaceCadIntTran = Trim$("" & t_CODIGO_DESCRICAO("parametro_2_campo_texto"))
+                    intImprimeIntermediadorAusente = t_CODIGO_DESCRICAO("parametro_3_campo_flag")
+                    End If
+                    
+                End If
+                        
         Next
         
     If s_erro = "" Then
@@ -15852,6 +15970,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     'Segundo informado pelo Valter (Target) em e-mail de 27/06/2017, não deve ser informada no arquivo de integração,
     'ela é inserida automaticamente pelo sistema
     'strNFeTagPag = strNFeTagPag & "detpag;" & vbCrLf
+    s_aux = param_nftipopag.campo_texto
     'Se a nota é de entrada ou ajuste/devolução - sem pagamento
     If rNFeImg.ide__tpNF = "0" Or _
         strNFeCodFinalidade = "3" Or _
@@ -15877,13 +15996,21 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 Case ID_FORMA_PAGTO_DEPOSITO
                     If (param_nftipopag.campo_inteiro = 1) Then s_aux = "16" Else s_aux = "99"
                 Case Else
-                    s_aux = "99" 'Outros
+                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = param_nftipopag.campo_texto Else s_aux = "99" 'Outros
                 End Select
         
         vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "0"
         vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = s_aux
         vNFeImgPag(UBound(vNFeImgPag)).pag__vPag = rNFeImg.total__vNF
     'Se o pagamento é à prazo
+    ElseIf (strTipoParcelamento = COD_FORMA_PAGTO_PARCELADO_CARTAO) Or _
+           (strTipoParcelamento = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA) Then
+        s_aux = "03"
+        'obtém o total a prazo (retira o valor da entrada,se houver)
+        vl_aux = vl_total_NF - vl_aux
+        vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "1"
+        vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = s_aux
+        vNFeImgPag(UBound(vNFeImgPag)).pag__vPag = NFeFormataMoeda2Dec(vl_aux)
     Else
         vl_aux = 0
         Select Case t_PEDIDO("pce_forma_pagto_prestacao")
@@ -15900,9 +16027,9 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             Case ID_FORMA_PAGTO_CARTAO_MAQUINETA
                 s_aux = "03"
             Case ID_FORMA_PAGTO_DEPOSITO
-                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "16" Else s_aux = "99"
-                Case Else
-                s_aux = "99" 'Outros
+                If (param_nftipopag.campo_inteiro = 1) Then s_aux = "16" Else s_aux = "99"
+            Case Else
+                If (param_nftipopag.campo_inteiro = 1) Then s_aux = param_nftipopag.campo_texto Else s_aux = "99" 'Outros
             End Select
         'obtém o total a prazo (retira o valor da entrada,se houver)
         vl_aux = vl_total_NF - vl_aux
@@ -15916,7 +16043,16 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("vPag", vNFeImgPag(UBound(vNFeImgPag)).pag__vPag)
     'Segundo informado pelo Valter (Target) em e-mail de 27/07/2017, o grupo vcard não deve ser informado no arquivo texto,
     'ele é preenchido pelo sistema
-                              
+    'informações do intermediador
+    If (param_nfintermediador.campo_inteiro = 1) And (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") Then
+        'If (strMarketplaceCodOrigem <> "") Then
+        If ((strMarketPlaceCNPJ <> "") And (strMarketPlaceCadIntTran <> "")) Then
+            strNFeTagPag = strNFeTagPag & vbTab & "infIntermed;"
+            strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("CNPJ", strMarketPlaceCNPJ)
+            strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("idCadIntTran", strMarketPlaceCadIntTran)
+            End If
+        End If
+
                                
 '   TAG INFADIC
 '   ~~~~~~~~~~~
@@ -16054,6 +16190,22 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
 '                              vbTab & NFeFormataCampo("xMun", rNFeImg.entrega__xMun) & _
 '                              vbTab & NFeFormataCampo("UF", rNFeImg.entrega__UF)
 '        End If
+
+
+'   SÓ AUTORIZA EMISSÃO SEM INTERMEDIADOR SE intImprimeIntermediadorAusente FOR 1
+'   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    If (param_nfintermediador.campo_inteiro = 1) Then
+        If (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") And _
+            ((strMarketPlaceCNPJ = "") Or (strMarketPlaceCadIntTran = "")) And _
+            (intImprimeIntermediadorAusente = 0) Then
+            s = "Não é possível prosseguir com a emissão, pois o intermediador do pedido não está identificado!!"
+            aviso_erro s
+            GoSub NFE_EMITE_REMESSA_FECHA_TABELAS
+            aguarde INFO_NORMAL, m_id
+            Exit Sub
+            End If
+        End If
+
 
 '   SE HOUVER MAIS DE UMA CONFIRMAÇÃO DE EMISSÃO QUE PODEM GERAR NFe PARA UM EMITENTE INDEVIDO, CONFIRMAR NOVAMENTE
 '   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -16212,6 +16364,14 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     '=== Novo campo indFinal
     strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indFinal", rNFeImg.ide__indFinal) '0-Normal  1-Consumidor Final
     strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indPres", rNFeImg.ide__indPres) '2-Internet  3-Teleatendimento
+    '=== Campo indIntermed  (0-Sem intermediador 1-Operação em site ou plataforma de terceiros)
+    If (param_nfintermediador.campo_inteiro = 1) Then
+        If ((strMarketPlaceCNPJ <> "") And (strMarketPlaceCadIntTran <> "")) Then
+            strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indIntermed", "1")
+        Else
+            strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indIntermed", "0")
+            End If
+        End If
     '=== aqui: campo IEST
     
     '=== Grupo NFref
@@ -16536,6 +16696,7 @@ NFE_EMITE_REMESSA_FECHA_TABELAS:
     bd_desaloca_recordset t_NFe_EMISSAO, True
     bd_desaloca_recordset t_NFe_IMAGEM, True
     bd_desaloca_recordset t_T1_NFE_INUTILIZA, True
+    bd_desaloca_recordset t_CODIGO_DESCRICAO, True
     bd_desaloca_recordset rsNFeRetornoSPSituacao, True
     bd_desaloca_recordset rsNFeRetornoSPEmite, True
   
