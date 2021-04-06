@@ -8280,6 +8280,14 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "0"
         vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = "90"
         vNFeImgPag(UBound(vNFeImgPag)).pag__vPag = NFeFormataMoeda2Dec(0)
+    'se já estiver valendo a exigência de um tPag diferente de 99 (Outros), impedir emissão
+    ElseIf (param_nftipopag.campo_inteiro = 1) And (left(cb_meio_pagto, 2) = "99") Then
+        s = "Não é possível prosseguir com a emissão, pois o meio de pagamento não pode ser Outros!!"
+        aviso_erro s
+        cb_meio_pagto.SetFocus
+        GoSub NFE_EMITE_FECHA_TABELAS
+        aguarde INFO_NORMAL, m_id
+        Exit Sub
     Else
         vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "0"
         vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = left(cb_meio_pagto, 2)
@@ -8288,10 +8296,22 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("indPag", vNFeImgPag(UBound(vNFeImgPag)).pag__indPag)
     strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("tPag", vNFeImgPag(UBound(vNFeImgPag)).pag__tPag)
     strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("vPag", vNFeImgPag(UBound(vNFeImgPag)).pag__vPag)
+    'informações do intermediador
+    'strNFeTagPag = strNFeTagPag & vbTab & "infIntermed;"
+    'strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("CNPJ", "00776574000660")
+    'strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("idCadIntTran", "'23.209.013/0003-32")
+
     'Segundo informado pelo Valter (Target) em e-mail de 27/07/2017, o grupo vcard não deve ser informado no arquivo texto,
     'ele é preenchido pelo sistema
     'strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("vTroco", "0.00")
                               
+    'teste informações cartão
+    'strNFeTagPag = strNFeTagPag & vbTab & "card;"
+    'strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("tpIntegra", "1")
+    'strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("tBand", "01")  'visa
+    'strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("cAut", "A1B2C3D4E5F6G7H8I9J0")
+    'strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("vTroco", "0.00")
+
     
 '   TAG INFADIC
 '   ~~~~~~~~~~~
@@ -8651,6 +8671,10 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     '=== Novo campo indFinal
     strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indFinal", rNFeImg.ide__indFinal) '0-Normal  1-Consumidor Final
     strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indPres", rNFeImg.ide__indPres) '2-Internet  3-Teleatendimento
+    '=== Campo indIntermed: para emissão manual, considerar sem intermediador
+    If (param_nfintermediador.campo_inteiro = 1) And ((strPresComprador = "2") Or (strPresComprador = "3")) Then
+        strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indIntermed", "0") '0-Sem intermediador 1-Operação em site ou plataforma de terceiros
+        End If
     '=== aqui: campo IEST
     
     '=== Grupo NFref
@@ -9289,6 +9313,12 @@ Dim vAliquotas() As String
     cb_meio_pagto.AddItem "12 - Vale Presente"
     cb_meio_pagto.AddItem "13 - Vale Combustível"
     cb_meio_pagto.AddItem "15 - Boleto Bancário"
+    If (param_nftipopag.campo_inteiro = 1) Then
+        cb_meio_pagto.AddItem "16 - Depósito Bancário"
+        cb_meio_pagto.AddItem "17 - PIX"
+        cb_meio_pagto.AddItem "18 - Transf Bancária, Carteira Digital"
+        cb_meio_pagto.AddItem "19 - Programa Fidelidade, Cashback, Crédito Virtual"
+        End If
     cb_meio_pagto.AddItem "90 - Sem pagamento"
     cb_meio_pagto.AddItem "99 - Outros"
     
