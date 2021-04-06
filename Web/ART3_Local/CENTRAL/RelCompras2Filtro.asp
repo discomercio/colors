@@ -30,6 +30,9 @@
 	On Error GoTo 0
 	Err.Clear
 
+	Const COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE = "ENT_ESTOQ"
+	Const COD_CONSULTA_POR_PERIODO_EMISSAO_NF_ENTRADA = "EMI_NF"
+
 	dim usuario, s, intIdx
 	usuario = Trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
@@ -497,7 +500,8 @@ function limpaCampoSelect(c) {
         function geraArquivoXLS(f) {
             var serverVariableUrl, strUrl, xmlHttp;
             var i, dt_inicio, dt_termino, fabricante, grupo, subgrupo, dt_nf_inicio, dt_nf_termino, valorVisao;
-            var s_de, s_ate, s_hoje, b;
+			var s_de, s_ate, s_hoje, b;
+			var sTipoPeriodo;
 
             //if (trim(f.c_dt_inicio.value) == "") {
             //    alert("Informe a data de início do período de vendas!!");
@@ -505,78 +509,101 @@ function limpaCampoSelect(c) {
             //    return;
             //}
 
-            if (!isDate(f.c_dt_inicio)) {
-                alert("Data inválida!!");
-                f.c_dt_inicio.focus();
-                return;
-            }
+			sTipoPeriodo = $("input[name='rb_periodo']:checked").val();
+			if (sTipoPeriodo == null) sTipoPeriodo = "";
 
-            //if (trim(f.c_dt_termino.value) == "") {
-            //    alert("Informe a data de término do período de vendas!!");
-            //    f.c_dt_termino.focus();
-            //    return;
-            //}
+			if (sTipoPeriodo == "") {
+				alert("É necessário selecionar o tipo de período da consulta!");
+				f.rb_periodo[0].focus();
+				return;
+			}
 
-            if (!isDate(f.c_dt_termino)) {
-                alert("Data inválida!!");
-                f.c_dt_termino.focus();
-                return;
-            }
+			if (sTipoPeriodo == "<%=COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE%>") {
+				if (trim(f.c_dt_inicio.value) == "") {
+					alert("Informe a data de início do período!");
+					f.c_dt_inicio.focus();
+					return;
+				}
 
-            s_de = trim(f.c_dt_inicio.value);
-            s_ate = trim(f.c_dt_termino.value);
-            if ((s_de != "") && (s_ate != "")) {
-                s_de = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_de));
-                s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
-                if (s_de > s_ate) {
-                    alert("Data de término é menor que a data de início!!");
-                    f.c_dt_termino.focus();
-                    return;
-                }
-            }
+				if (!isDate(f.c_dt_inicio)) {
+					alert("Data inválida!!");
+					f.c_dt_inicio.focus();
+					return;
+				}
 
-            s_ate = trim(f.c_dt_termino.value);
-            if (s_ate != "") {
-                s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
-                s_hoje = retorna_so_digitos(f.c_DtHojeYYYYMMDD.value);
-                if (s_ate > s_hoje) {
-                    alert("Data de término não pode ser uma data futura!!");
-                    f.c_dt_termino.focus();
-                    return;
-                }
-            }
+				if (trim(f.c_dt_termino.value) == "") {
+					alert("Informe a data de término do período!");
+					f.c_dt_termino.focus();
+					return;
+				}
 
-            if (!isDate(f.c_dt_nf_inicio)) {
-                alert("Data inválida!!");
-                f.c_dt_nf_inicio.focus();
-                return;
-            }
+				if (!isDate(f.c_dt_termino)) {
+					alert("Data inválida!!");
+					f.c_dt_termino.focus();
+					return;
+				}
 
-            if (!isDate(f.c_dt_nf_termino)) {
-                alert("Data inválida!!");
-                f.c_dt_nf_termino.focus();
-                return;
-            }
+				s_de = trim(f.c_dt_inicio.value);
+				s_ate = trim(f.c_dt_termino.value);
+				if ((s_de != "") && (s_ate != "")) {
+					s_de = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_de));
+					s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
+					if (s_de > s_ate) {
+						alert("Data de término é menor que a data de início!!");
+						f.c_dt_termino.focus();
+						return;
+					}
+				}
 
-            s_de = trim(f.c_dt_nf_inicio.value);
-            s_ate = trim(f.c_dt_nf_termino.value);
-            if ((s_de != "") && (s_ate != "")) {
-                s_de = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_de));
-                s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
-                if (s_de > s_ate) {
-                    alert("Emissão NF Entrada: data de término é menor que a data de início!!");
-                    f.c_dt_nf_termino.focus();
-                    return;
-                }
-            }
+				s_ate = trim(f.c_dt_termino.value);
+				if (s_ate != "") {
+					s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
+					s_hoje = retorna_so_digitos(f.c_DtHojeYYYYMMDD.value);
+					if (s_ate > s_hoje) {
+						alert("Data de término não pode ser uma data futura!!");
+						f.c_dt_termino.focus();
+						return;
+					}
+				}
+			}
 
-            //  UMA DAS DATAS (PERÍODO OU NF ENTRADA) DEVE ESTAR PREENCHIDA
-            if ((trim(f.c_dt_inicio.value) == "") && (trim(f.c_dt_termino.value) == "") && (trim(f.c_dt_nf_inicio.value) == "") && (trim(f.c_dt_nf_termino.value) == "")) {
-                alert("Pelo menos uma faixa de datas (período ou data nf entrada) deve estar preenchida!!");
-                f.c_dt_inicio.focus();
-                return;
-            }
+			if (sTipoPeriodo == "<%=COD_CONSULTA_POR_PERIODO_EMISSAO_NF_ENTRADA%>") {
+				if (trim(f.c_dt_nf_inicio.value) == "") {
+					alert("Informe a data de início do período!");
+					f.c_dt_nf_inicio.focus();
+					return;
+				}
 
+				if (!isDate(f.c_dt_nf_inicio)) {
+					alert("Data inválida!!");
+					f.c_dt_nf_inicio.focus();
+					return;
+				}
+
+				if (trim(f.c_dt_nf_termino.value) == "") {
+					alert("Informe a data de término do período!");
+					f.c_dt_nf_termino.focus();
+					return;
+				}
+
+				if (!isDate(f.c_dt_nf_termino)) {
+					alert("Data inválida!!");
+					f.c_dt_nf_termino.focus();
+					return;
+				}
+
+				s_de = trim(f.c_dt_nf_inicio.value);
+				s_ate = trim(f.c_dt_nf_termino.value);
+				if ((s_de != "") && (s_ate != "")) {
+					s_de = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_de));
+					s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
+					if (s_de > s_ate) {
+						alert("Emissão NF Entrada: data de término é menor que a data de início!!");
+						f.c_dt_nf_termino.focus();
+						return;
+					}
+				}
+			}
 
             var detalhamento = document.getElementsByName('rb_detalhe');
             var detalhamentoValor;
@@ -641,7 +668,8 @@ function limpaCampoSelect(c) {
             divMsgAguardeObtendoDados.style.visibility = "";
 
 			strUrl = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/GetCompras2CSV/';
-            strUrl = strUrl + '?usuario=<%=usuario%>';
+			strUrl = strUrl + '?usuario=<%=usuario%>';
+			strUrl = strUrl + '&tipo_periodo=' + $("input[name='rb_periodo']:checked").val();
             strUrl = strUrl + '&dt_inicio=' + dt_inicio;
             strUrl = strUrl + '&dt_termino=' + dt_termino;
             strUrl = strUrl + '&fabricante=' + fabricante;
@@ -759,13 +787,46 @@ function limpaCampoSelect(c) {
 <!--  PERÍODO  -->
 	<tr bgColor="#FFFFFF">
 	<td class="MT" colspan="2" NOWRAP>
-		<table cellSpacing="2" cellPadding="0"><tr bgColor="#FFFFFF"><td>
-		<span class="PLTe" style="cursor:default">PERÍODO</span>
-		<br>
+		<% intIdx=-1 %>
+		<table cellspacing="0" cellpadding="0">
+		<tr>
+			<td align="left">
+				<input type="radio" id="rb_periodo" name="rb_periodo" value="<%=COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE%>">
+			</td>
+			<td align="left" valign="bottom">
+				<% intIdx=intIdx+1 %>
+				<span class="PLTe" style="cursor:default" onclick="fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();">PERÍODO DA ENTRADA NO ESTOQUE</span>
+			</td>
+		</tr>
+		</table>
+		<table cellSpacing="2" cellPadding="0"><tr bgColor="#FFFFFF"><td valign="bottom">
             <input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_inicio" id="c_dt_inicio" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de início inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_termino.focus(); filtra_data();"
-					value='<%=get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_inicio")%>'
+					value='<%=get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_periodo_inicio")%>'
 					/>&nbsp;<span class="PLLc" style="color:#808080;">&nbsp;&nbsp;&nbsp;até&nbsp;</span>&nbsp;<input class="PLLc" maxlength="10" style="width:70px; " name="c_dt_termino" id="c_dt_termino" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de término inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_fabricante.focus(); filtra_data();"
-					value='<%=get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_termino")%>'
+					value='<%=get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_periodo_termino")%>'
+					/>
+			</td></tr>
+		</table>
+		</td></tr>
+<!--  PERÍODO DE EMISSÃO DA NOTA FISCAL DE ENTRADA  -->
+	<tr bgColor="#FFFFFF">
+	<td class="ME MD MB" colspan="2" NOWRAP>
+		<table cellspacing="0" cellpadding="0">
+		<tr>
+			<td align="left">
+				<input type="radio" id="rb_periodo" name="rb_periodo" value="<%=COD_CONSULTA_POR_PERIODO_EMISSAO_NF_ENTRADA%>">
+			</td>
+			<td align="left" valign="bottom">
+				<% intIdx=intIdx+1 %>
+				<span class="PLTe" style="cursor:default" onclick="fFILTRO.rb_periodo[<%=Cstr(intIdx)%>].click();">PERÍODO DA EMISSÃO NF ENTRADA</span>
+			</td>
+		</tr>
+		</table>
+		<table cellSpacing="2" cellPadding="0"><tr bgColor="#FFFFFF"><td>
+            <input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_nf_inicio" id="c_dt_nf_inicio" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de início inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_nf_termino.focus(); filtra_data();"
+					value='<%=get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_nf_inicio")%>'
+					/>&nbsp;<span class="PLLc" style="color:#808080;">&nbsp;&nbsp;&nbsp;até&nbsp;</span>&nbsp;<input class="PLLc" maxlength="10" style="width:70px; " name="c_dt_nf_termino" id="c_dt_nf_termino" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de término inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.rb_detalhe.focus(); filtra_data();"
+					value='<%=get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_nf_termino")%>'
 					/>
 			</td></tr>
 		</table>
@@ -908,20 +969,6 @@ function limpaCampoSelect(c) {
 	<td class="ME MD MB" align="left"><span class="PLTe">Nº Nota Fiscal</span>
 		<br><input name="c_nf" id="c_nf" class="PLLe" maxlength="30" style="margin-left:2pt;width:150px;" onblur="this.value=ucase(trim(this.value));"></td>
 	</tr>
-<!--  DATA DE EMISSÃO DA NOTA FISCAL DE ENTRADA  -->
-	<tr bgColor="#FFFFFF">
-	<td class="ME MD MB" colspan="2" NOWRAP>
-		<table cellSpacing="2" cellPadding="0"><tr bgColor="#FFFFFF"><td>
-		<span class="PLTe" style="cursor:default">DATA NF ENTRADA</span>
-		<br>
-            <input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_nf_inicio" id="c_dt_nf_inicio" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de início inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_nf_termino.focus(); filtra_data();"
-					value='<%=get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_nf_inicio")%>'
-					/>&nbsp;<span class="PLLc" style="color:#808080;">&nbsp;&nbsp;&nbsp;até&nbsp;</span>&nbsp;<input class="PLLc" maxlength="10" style="width:70px; " name="c_dt_nf_termino" id="c_dt_nf_termino" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de término inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.rb_detalhe.focus(); filtra_data();"
-					value='<%=get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_nf_termino")%>'
-					/>
-			</td></tr>
-		</table>
-		</td></tr>
 <!--  TIPO DE DETALHAMENTO  -->
 	<tr bgColor="#FFFFFF">
 	<td colspan="2" class="MDBE" NOWRAP><span class="PLTe">TIPO DE DETALHAMENTO</span>

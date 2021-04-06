@@ -51,7 +51,7 @@
 	
 '	CONECTA AO BANCO DE DADOS
 '	=========================
-	dim cn, rs, sx, r
+	dim cn, rs, sx, r, rsMail
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
 	dim vLog1()
@@ -273,20 +273,58 @@
 
         end if ' alerta
 
-    if alerta = "" then
-        if Not cria_recordset_pessimista(rs, msg_erro) then
+	dim s_dados_cliente
+	dim s_unidade_negocio
+	dim s_descricao_status_devolucao, s_cor_status_devolucao
+	dim strEmailDestinatarioAlerta
+	dim strEmailAdministrador
+	set strEmailAdministrador = get_registro_t_parametro("PEDIDO_DEVOLUCAO_EMAIL_ADMINISTRADOR_2")
+	'16/09/2020: a Gabriela Hernandes solicitou para enviar o email de alerta para o vendedor apenas
+	'strEmailDestinatarioAlerta = Trim("" & strEmailAdministrador.campo_texto)
+	strEmailDestinatarioAlerta = Trim("" & r_vendedor.email)
+
+	if Not cria_recordset_otimista(rsMail, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+	
+	s_dados_cliente = ""
+	s_unidade_negocio = ""
+	if strEmailDestinatarioAlerta <> "" then
+		s = "SELECT" & _
+				" p.st_memorizacao_completa_enderecos," & _
+				" p.endereco_nome_iniciais_em_maiusculas AS endereco_nome," & _
+				" p.endereco_cnpj_cpf," & _
+				" c.nome_iniciais_em_maiusculas AS cliente_nome," & _
+				" c.cnpj_cpf AS cliente_cnpj_cpf," & _
+				" p.loja," & _
+				" lj.unidade_negocio" & _
+			" FROM t_PEDIDO p" & _
+				" INNER JOIN t_CLIENTE c ON (p.id_cliente = c.id)" & _
+				" INNER JOIN t_LOJA lj ON (p.loja = lj.loja)" & _
+			" WHERE" & _
+				" (p.pedido = '" & pedido_selecionado & "')"
+		if rsMail.State <> 0 then rsMail.Close
+		rsMail.Open s, cn
+		if Not rsMail.Eof then
+			s_unidade_negocio = Trim("" & rsMail("unidade_negocio"))
+			if rsMail("st_memorizacao_completa_enderecos") <> 0 then
+				s_dados_cliente = "Cliente: " & Trim("" & rsMail("endereco_nome")) & " (" & cnpj_cpf_formata(Trim("" & rsMail("endereco_cnpj_cpf"))) & ")"
+			else
+				s_dados_cliente = "Cliente: " & Trim("" & rsMail("cliente_nome")) & " (" & cnpj_cpf_formata(Trim("" & rsMail("cliente_cnpj_cpf"))) & ")"
+				end if
+			end if
+		end if
+
+
+	if alerta = "" then
+	'	~~~~~~~~~~~~~
+		cn.BeginTrans
+	'	~~~~~~~~~~~~~
+		if Not cria_recordset_pessimista(rs, msg_erro) then
 		'	~~~~~~~~~~~~~~~~
 			cn.RollbackTrans
 		'	~~~~~~~~~~~~~~~~
 			Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 			end if
-                   
-        end if
-		
-	if alerta = "" then
-	'	~~~~~~~~~~~~~
-		cn.BeginTrans
-	'	~~~~~~~~~~~~~
+
 		if Not cria_recordset_otimista(sx, msg_erro) then
 		'	~~~~~~~~~~~~~~~~
 			cn.RollbackTrans
@@ -302,35 +340,40 @@
 			log_via_vetor_carrega_do_recordset rs, vLog1, campos_a_omitir
 
             if rb_status <> "" then
+				obtem_descricao_status_devolucao rb_status, s_descricao_status_devolucao, s_cor_status_devolucao
+
                 rs("status") = rb_status
                 rs("status_usuario") = usuario
                 rs("status_data") = Date
                 rs("status_data_hora") = Now
+
                 if rb_status = COD_ST_PEDIDO_DEVOLUCAO__EM_ANDAMENTO then
                     rs("st_aprovado") = 1
                     rs("usuario_aprovado") = usuario
                     rs("dt_aprovado") = Date
                     rs("dt_hr_aprovado") = Now
                     delete_file_scheduled_date = DateAdd("m", 2, Date)
-        
-                    dim strEmailDestinatarioAlerta
-                    dim strEmailAdministrador
-                    set strEmailAdministrador = get_registro_t_parametro("PEDIDO_DEVOLUCAO_EMAIL_ADMINISTRADOR_2")
-                    '16/09/2020: a Gabriela Hernandes solicitou para enviar o email de alerta para o vendedor apenas
-                    'strEmailDestinatarioAlerta = Trim("" & strEmailAdministrador.campo_texto)
-                    strEmailDestinatarioAlerta = Trim("" & r_vendedor.email)
+
                     if strEmailDestinatarioAlerta <> "" then
-                        corpo_mensagem = "A pré-devolução referente o pedido " & pedido_selecionado & " foi aprovada por " & usuario & " em " & formata_data_hora(Now) & "."
+                        corpo_mensagem = "O status da devolução nº " & id_devolucao & " do pedido " & pedido_selecionado & " foi alterado para '" & s_descricao_status_devolucao & "' por " & usuario & " em " & formata_data_hora_sem_seg(Now) & _
+										vbCrLf & _
+										"Pedido: " & pedido_selecionado & _
+										vbCrLf & _
+										"Devolução nº " & id_devolucao & _
+										vbCrLf & _
+										s_dados_cliente & _
+										vbCrLf & vbCrLf & _
+										"Atenção: esta é uma mensagem automática, NÃO responda a este e-mail!"
                         EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__PEDIDO_DEVOLUCAO), _
-                                                                                "", _
-                                                                                strEmailDestinatarioAlerta, _
-                                                                                "", _
-                                                                                "", _
-                                                                                "Pré-devolução aprovada", _
-                                                                                corpo_mensagem, _
-                                                                                Now, _
-                                                                                id_email, _
-                                                                                msg_erro_grava_email
+                                                        "", _
+                                                        strEmailDestinatarioAlerta, _
+                                                        "", _
+                                                        "", _
+                                                        "Status da devolução nº " & id_devolucao & " do pedido " & pedido_selecionado & " alterado para '" & s_descricao_status_devolucao & "'", _
+                                                        corpo_mensagem, _
+                                                        Now, _
+                                                        id_email, _
+                                                        msg_erro_grava_email
                         end if
 
                 elseif rb_status = COD_ST_PEDIDO_DEVOLUCAO__REPROVADA then
@@ -339,7 +382,29 @@
                     rs("dt_reprovado") = Date
                     rs("dt_hr_reprovado") = Now
                     delete_file_scheduled_date = DateAdd("m", 1, Date)
-                    end if
+
+					if strEmailDestinatarioAlerta <> "" then
+						corpo_mensagem = "O status da devolução nº " & id_devolucao & " do pedido " & pedido_selecionado & " foi alterado para '" & s_descricao_status_devolucao & "' por " & usuario & " em " & formata_data_hora_sem_seg(Now) & _
+										vbCrLf & _
+										"Pedido: " & pedido_selecionado & _
+										vbCrLf & _
+										"Devolução nº " & id_devolucao & _
+										vbCrLf & _
+										s_dados_cliente & _
+										vbCrLf & vbCrLf & _
+										"Atenção: esta é uma mensagem automática, NÃO responda a este e-mail!"
+						EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__PEDIDO_DEVOLUCAO), _
+														"", _
+														strEmailDestinatarioAlerta, _
+														"", _
+														"", _
+														"Status da devolução nº " & id_devolucao & " do pedido " & pedido_selecionado & " alterado para '" & s_descricao_status_devolucao & "'", _
+														corpo_mensagem, _
+														Now, _
+														id_email, _
+														msg_erro_grava_email
+						end if
+					end if
 
                 if Not cria_recordset_otimista(r, msg_erro) then
 		            '	~~~~~~~~~~~~~~~~

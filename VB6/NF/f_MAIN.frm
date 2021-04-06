@@ -3430,7 +3430,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-    Option Explicit
+Option Explicit
 
 Dim modulo_inicializacao_ok As Boolean
 Dim pedido_anterior As String
@@ -5938,31 +5938,59 @@ Dim t_DESTINATARIO As ADODB.Recordset
             " endereco_contato as contato " & _
         " FROM t_PEDIDO" & _
         " WHERE (pedido = '" & Trim$(pedido) & "')" & " AND (endereco_tipo_pessoa = '" & ID_PJ & "')"
-    s = s & " UNION" & _
-        " SELECT" & _
-            " pedido, id_cliente, st_memorizacao_completa_enderecos, " & _
-            " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_uf else EndEtg_uf end as uf, " & _
-            " endereco_cnpj_cpf as cnpj_cpf, " & _
-            " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_logradouro else EndEtg_endereco end as endereco, " & _
-            " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_bairro else EndEtg_bairro end as bairro, " & _
-            " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_cidade else EndEtg_cidade end as cidade, " & _
-            " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_cep else EndEtg_cep end as cep, " & _
-            " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_numero else EndEtg_endereco_numero end as endereco_numero, " & _
-            " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_complemento else EndEtg_endereco_complemento end as endereco_complemento, " & _
-            " endereco_email as email, endereco_email_xml as email_xml, " & _
-            " endereco_nome as nome, " & _
-            " endereco_ddd_res as ddd_res, endereco_tel_res as tel_res, " & _
-            " endereco_ddd_com as ddd_com, endereco_tel_com as tel_com, endereco_ramal_com as ramal_com, " & _
-            " endereco_ddd_cel as ddd_cel, endereco_tel_cel as tel_cel, " & _
-            " endereco_ddd_com_2 as ddd_com_2, endereco_tel_com_2 as tel_com_2, endereco_ramal_com_2 as ramal_com_2, " & _
-            " endereco_tipo_pessoa as tipo, " & _
-            " endereco_contribuinte_icms_status as contribuinte_icms_status, " & _
-            " endereco_produtor_rural_status as produtor_rural_status, " & _
-            " endereco_ie as ie, " & _
-            " endereco_rg as rg, " & _
-            " endereco_contato as contato " & _
-        " FROM t_PEDIDO" & _
-        " WHERE (pedido = '" & Trim$(pedido) & "')" & " AND (endereco_tipo_pessoa = '" & ID_PF & "')"
+    If param_nfmemooendentrega.campo_inteiro = 1 Then
+        s = s & " UNION" & _
+            " SELECT" & _
+                " pedido, id_cliente, st_memorizacao_completa_enderecos, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_uf else EndEtg_uf end as uf, " & _
+                " endereco_cnpj_cpf as cnpj_cpf, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_logradouro else EndEtg_endereco end as endereco, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_bairro else EndEtg_bairro end as bairro, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_cidade else EndEtg_cidade end as cidade, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_cep else EndEtg_cep end as cep, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_numero else EndEtg_endereco_numero end as endereco_numero, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_complemento else EndEtg_endereco_complemento end as endereco_complemento, " & _
+                " endereco_email as email, endereco_email_xml as email_xml, " & _
+                " endereco_nome as nome, " & _
+                " endereco_ddd_res as ddd_res, endereco_tel_res as tel_res, " & _
+                " endereco_ddd_com as ddd_com, endereco_tel_com as tel_com, endereco_ramal_com as ramal_com, " & _
+                " endereco_ddd_cel as ddd_cel, endereco_tel_cel as tel_cel, " & _
+                " endereco_ddd_com_2 as ddd_com_2, endereco_tel_com_2 as tel_com_2, endereco_ramal_com_2 as ramal_com_2, " & _
+                " endereco_tipo_pessoa as tipo, " & _
+                " endereco_contribuinte_icms_status as contribuinte_icms_status, " & _
+                " endereco_produtor_rural_status as produtor_rural_status, " & _
+                " endereco_ie as ie, " & _
+                " endereco_rg as rg, " & _
+                " endereco_contato as contato " & _
+            " FROM t_PEDIDO" & _
+            " WHERE (pedido = '" & Trim$(pedido) & "')" & " AND (endereco_tipo_pessoa = '" & ID_PF & "')"
+    Else
+        s = s & " UNION" & _
+            " SELECT" & _
+                " pedido, id_cliente, st_memorizacao_completa_enderecos, " & _
+                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_uf else EndEtg_uf end as uf, " & _
+                " endereco_cnpj_cpf as cnpj_cpf, " & _
+                " endereco_logradouro as endereco, " & _
+                " endereco_bairro as bairro, " & _
+                " endereco_cidade as cidade, " & _
+                " endereco_cep as cep, " & _
+                " endereco_numero as endereco_numero, " & _
+                " endereco_complemento as endereco_complemento, " & _
+                " endereco_email as email, endereco_email_xml as email_xml, " & _
+                " endereco_nome as nome, " & _
+                " endereco_ddd_res as ddd_res, endereco_tel_res as tel_res, " & _
+                " endereco_ddd_com as ddd_com, endereco_tel_com as tel_com, endereco_ramal_com as ramal_com, " & _
+                " endereco_ddd_cel as ddd_cel, endereco_tel_cel as tel_cel, " & _
+                " endereco_ddd_com_2 as ddd_com_2, endereco_tel_com_2 as tel_com_2, endereco_ramal_com_2 as ramal_com_2, " & _
+                " endereco_tipo_pessoa as tipo, " & _
+                " endereco_contribuinte_icms_status as contribuinte_icms_status, " & _
+                " endereco_produtor_rural_status as produtor_rural_status, " & _
+                " endereco_ie as ie, " & _
+                " endereco_rg as rg, " & _
+                " endereco_contato as contato " & _
+            " FROM t_PEDIDO" & _
+            " WHERE (pedido = '" & Trim$(pedido) & "')" & " AND (endereco_tipo_pessoa = '" & ID_PF & "')"
+        End If
     t_DESTINATARIO.Open s, dbc, , , adCmdText
     If t_DESTINATARIO.EOF Then
         strMsgErro = "Problemas na localização do endereço memorizado no pedido " & Trim$(pedido) & "!!"
@@ -6500,6 +6528,10 @@ Dim strInfoAdicIbpt As String
 Dim strEmailXML As String
 Dim strNFeRef As String
 Dim strInfoAdicParc As String
+Dim strPedidoBSMarketplace As String
+Dim strMarketplaceCodOrigem As String
+Dim strMarketPlaceCNPJ As String
+Dim strMarketPlaceCadIntTran As String
 
 ' FLAGS
 Dim blnAchou As Boolean
@@ -6548,6 +6580,7 @@ Dim lngNFeSerieManual As Long
 Dim lngNFeNumeroNfManual As Long
 Dim intContribuinteICMS As Integer
 Dim intAnoPartilha As Integer
+Dim intImprimeIntermediadorAusente As Integer
 
 ' BANCO DE DADOS
 Dim t_PEDIDO As ADODB.Recordset
@@ -6562,6 +6595,7 @@ Dim t_NFE_EMITENTE As ADODB.Recordset
 Dim t_NFe_EMISSAO As ADODB.Recordset
 Dim t_NFe_IMAGEM As ADODB.Recordset
 Dim t_T1_NFE_INUTILIZA As ADODB.Recordset
+Dim t_CODIGO_DESCRICAO As ADODB.Recordset
 Dim rsNFeRetornoSPSituacao As ADODB.Recordset
 Dim rsNFeRetornoSPEmite As ADODB.Recordset
 Dim cmdNFeSituacao As New ADODB.Command
@@ -6885,6 +6919,14 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         .CacheSize = BD_CACHE_CONSULTA
         End With
         
+  ' T_CODIGO_DESCRICAO
+    Set t_CODIGO_DESCRICAO = New ADODB.Recordset
+    With t_CODIGO_DESCRICAO
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
+        
   
 '   VERIFICA CADA UM DOS PEDIDOS
     strIdCliente = ""
@@ -6894,6 +6936,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strConfirmacaoObs2 = ""
     strConfirmacaoEtgImediata = ""
     strTransportadoraId = ""
+    strPedidoBSMarketplace = ""
     rNFeImg.ide__indPag = "2" ' Forma de pagamento: outros
     For i = LBound(v_pedido) To UBound(v_pedido)
         If Trim$(v_pedido(i)) <> "" Then
@@ -6906,6 +6949,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     " t_PEDIDO.transportadora_id," & _
                     " t_PEDIDO.StBemUsoConsumo," & _
                     " t_PEDIDO.st_etg_imediata," & _
+                    " t_PEDIDO.pedido_bs_x_marketplace," & _
+                    " t_PEDIDO.marketplace_codigo_origem," & _
                     " t_PEDIDO__BASE.tipo_parcelamento," & _
                     " t_PEDIDO__BASE.av_forma_pagto," & _
                     " t_PEDIDO__BASE.pce_forma_pagto_entrada," & _
@@ -6925,6 +6970,9 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 s_erro = s_erro & "Pedido " & Trim$(v_pedido(i)) & " não está cadastrado!!"
             Else
                 strLoja = Trim$("" & t_PEDIDO("loja"))
+                
+                strPedidoBSMarketplace = Trim$("" & t_PEDIDO("pedido_bs_x_marketplace"))
+                strMarketplaceCodOrigem = Trim$("" & t_PEDIDO("marketplace_codigo_origem"))
                 
                 If CLng(t_PEDIDO("StBemUsoConsumo")) = 1 Then
                     blnTemPedidoComStBemUsoConsumo = True
@@ -7008,6 +7056,28 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 If s_erro <> "" Then s_erro = s_erro & vbCrLf
                 s_erro = s_erro & "Não foi encontrado nenhum produto relacionado ao pedido " & Trim$(v_pedido(i)) & "!!"
                 End If
+                
+            'obter as informações de marketplace
+            If (param_nfintermediador.campo_inteiro = 1) And (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") Then
+                s = "SELECT o.codigo, o.descricao, og.parametro_campo_texto, og.parametro_2_campo_texto, og.parametro_3_campo_flag  " & _
+                    "FROM (select * from t_CODIGO_DESCRICAO where grupo = 'PedidoECommerce_Origem') o  " & _
+                        "INNER JOIN (select * from t_CODIGO_DESCRICAO where grupo = 'PedidoECommerce_Origem_Grupo') og  " & _
+                        "on o.codigo_pai = og.codigo " & _
+                    "WHERE o.codigo = '" & strMarketplaceCodOrigem & "'"
+                If t_CODIGO_DESCRICAO.State <> adStateClosed Then t_CODIGO_DESCRICAO.Close
+                t_CODIGO_DESCRICAO.Open s, dbc, , , adCmdText
+                If t_CODIGO_DESCRICAO.EOF Then
+                    If s_erro <> "" Then s_erro = s_erro & vbCrLf
+                    s_erro = s_erro & "Problema na identificação do marketplace do pedido " & Trim$(v_pedido(i)) & "!!"
+                Else
+                    strMarketPlaceCNPJ = Trim$("" & t_CODIGO_DESCRICAO("parametro_campo_texto"))
+                    strMarketPlaceCadIntTran = Trim$("" & t_CODIGO_DESCRICAO("parametro_2_campo_texto"))
+                    intImprimeIntermediadorAusente = t_CODIGO_DESCRICAO("parametro_3_campo_flag")
+                    End If
+                    
+                End If
+            
+            
             End If
         Next
         
@@ -7913,8 +7983,12 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             Exit Sub
             End If
         If t_DESTINATARIO("st_memorizacao_completa_enderecos") > 0 Then blnExisteMemorizacaoEndereco = True
-        strEndEtgUf = UCase$(Trim$("" & t_DESTINATARIO("uf_end_nota")))
-        strEndClienteUf = UCase$(Trim$("" & t_DESTINATARIO("uf_end_nota")))
+        If (param_nfmemooendentrega.campo_inteiro = 1) Then strEndEtgUf = UCase$(Trim$("" & t_DESTINATARIO("uf_end_nota")))
+        If (param_nfmemooendentrega.campo_inteiro = 1) Then
+            strEndClienteUf = UCase$(Trim$("" & t_DESTINATARIO("uf_end_nota")))
+        Else
+            strEndClienteUf = UCase$(Trim$("" & t_DESTINATARIO("uf")))
+            End If
         End If
         
     'SEGUNDO CASO: A MEMORIZAÇÃO DO ENDEREÇO DO CLIENTE NA TABELA DE PEDIDOS NÃO ESTÁ OK
@@ -8218,7 +8292,12 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagOperacional = "operacional;" & vbCrLf
 
 '   EMAIL DO DESTINATÁRIO DA NFe
-    rNFeImg.operacional__email = Trim("" & t_DESTINATARIO("email"))
+    'para a loja 201, caso o campo pedido_bs_x_marketplace indique ser um pedido de marketplace, desconsiderar o e-mail do cliente
+    If (strLoja = "201") And (strPedidoBSMarketplace <> "") Then
+        rNFeImg.operacional__email = ""
+    Else
+        rNFeImg.operacional__email = Trim("" & t_DESTINATARIO("email"))
+        End If
     If (Trim$(rNFeImg.operacional__email) <> "") And (Trim$(strTransportadoraEmail) <> "") Then rNFeImg.operacional__email = rNFeImg.operacional__email & ";"
     rNFeImg.operacional__email = rNFeImg.operacional__email & strTransportadoraEmail
     strEmailXML = Trim("" & t_DESTINATARIO("email_xml"))
@@ -8279,7 +8358,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("xNome", rNFeImg.dest__xNome)
     
 '   LOGRADOURO
-    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) And (param_nfmemooendentrega.campo_inteiro = 1) Then
         strCampo = Trim$("" & t_DESTINATARIO("endereco_end_nota"))
     Else
         strCampo = Trim("" & t_DESTINATARIO("endereco"))
@@ -8295,7 +8374,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("xLgr", rNFeImg.dest__xLgr)
     
 '   ENDEREÇO: NÚMERO
-    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) And (param_nfmemooendentrega.campo_inteiro = 1) Then
         strCampo = Trim$("" & t_DESTINATARIO("numero_end_nota"))
     Else
         strCampo = Trim$("" & t_DESTINATARIO("endereco_numero"))
@@ -8312,7 +8391,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("nro", rNFeImg.dest__nro)
         
 '   ENDEREÇO: COMPLEMENTO
-    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) And (param_nfmemooendentrega.campo_inteiro = 1) Then
         strCampo = Trim$("" & t_DESTINATARIO("complemento_end_nota"))
     Else
         strCampo = Trim$("" & t_DESTINATARIO("endereco_complemento"))
@@ -8325,7 +8404,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     If Len(strCampo) > 0 Then strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("xCpl", rNFeImg.dest__xCpl)
     
 '   BAIRRO
-    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) And (param_nfmemooendentrega.campo_inteiro = 1) Then
         strCampo = Trim$("" & t_DESTINATARIO("bairro_end_nota"))
     Else
         strCampo = Trim$("" & t_DESTINATARIO("bairro"))
@@ -8338,12 +8417,12 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("xBairro", rNFeImg.dest__xBairro)
     
 '   MUNICIPIO
-    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) And (param_nfmemooendentrega.campo_inteiro = 1) Then
         strCampo = Trim$("" & t_DESTINATARIO("cidade_end_nota"))
     Else
         strCampo = Trim$("" & t_DESTINATARIO("cidade"))
         End If
-    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) And (param_nfmemooendentrega.campo_inteiro = 1) Then
         s_aux = Trim$("" & t_DESTINATARIO("uf_end_nota"))
     Else
         s_aux = Trim$("" & t_DESTINATARIO("uf"))
@@ -8353,7 +8432,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     rNFeImg.dest__cMun = strCampo
     strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("cMun", rNFeImg.dest__cMun)
     
-    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) And (param_nfmemooendentrega.campo_inteiro = 1) Then
         strCampo = Trim$("" & t_DESTINATARIO("cidade_end_nota"))
     Else
         strCampo = Trim$("" & t_DESTINATARIO("cidade"))
@@ -8366,7 +8445,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagDestinatario = strNFeTagDestinatario & vbTab & NFeFormataCampo("xMun", rNFeImg.dest__xMun)
     
 '   UF
-    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) And (param_nfmemooendentrega.campo_inteiro = 1) Then
         strCampo = Trim$("" & t_DESTINATARIO("uf_end_nota"))
     Else
         strCampo = Trim$("" & t_DESTINATARIO("uf"))
@@ -8392,7 +8471,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         End If
 
 '   CEP
-    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) Then
+    If blnExisteMemorizacaoEndereco And (strEndClienteUf = strEndEtgUf) And (param_nfmemooendentrega.campo_inteiro = 1) Then
         strCampo = retorna_so_digitos(Trim$("" & t_DESTINATARIO("cep_end_nota")))
     Else
         strCampo = retorna_so_digitos(Trim$("" & t_DESTINATARIO("cep")))
@@ -9454,7 +9533,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     'Segundo informado pelo Valter (Target) em e-mail de 27/06/2017, não deve ser informada no arquivo de integração,
     'ela é inserida automaticamente pelo sistema
     'strNFeTagPag = strNFeTagPag & "detpag;" & vbCrLf
-    
+    s_aux = param_nftipopag.campo_texto
     'Se a nota é de entrada ou ajuste/devolução - sem pagamento
     If rNFeImg.ide__tpNF = "0" Or _
         strNFeCodFinalidade = "3" Or _
@@ -9470,19 +9549,31 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 Case ID_FORMA_PAGTO_CHEQUE
                     s_aux = "02"
                 Case ID_FORMA_PAGTO_BOLETO
-                    s_aux = "15"
+                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "15" Else s_aux = "99"
+                Case ID_FORMA_PAGTO_BOLETO_AV
+                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "15" Else s_aux = "99"
                 Case ID_FORMA_PAGTO_CARTAO
                     s_aux = "03"
                 Case ID_FORMA_PAGTO_CARTAO_MAQUINETA
                     s_aux = "03"
+                Case ID_FORMA_PAGTO_DEPOSITO
+                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "16" Else s_aux = "99"
                 Case Else
-                    s_aux = "99" 'Outros
+                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = param_nftipopag.campo_texto Else s_aux = "99" 'Outros
                 End Select
         
         vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "0"
         vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = s_aux
         vNFeImgPag(UBound(vNFeImgPag)).pag__vPag = rNFeImg.total__vNF
     'Se o pagamento é à prazo
+    ElseIf (strTipoParcelamento = COD_FORMA_PAGTO_PARCELADO_CARTAO) Or _
+           (strTipoParcelamento = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA) Then
+        s_aux = "03"
+        'obtém o total a prazo (retira o valor da entrada,se houver)
+        vl_aux = vl_total_NF - vl_aux
+        vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "1"
+        vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = s_aux
+        vNFeImgPag(UBound(vNFeImgPag)).pag__vPag = NFeFormataMoeda2Dec(vl_aux)
     Else
         vl_aux = 0
         Select Case t_PEDIDO("pce_forma_pagto_prestacao")
@@ -9490,14 +9581,18 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 s_aux = "01"
             Case ID_FORMA_PAGTO_CHEQUE
                 s_aux = "02"
-            Case ID_FORMA_PAGTO_BOLETO
-                s_aux = "15"
+                Case ID_FORMA_PAGTO_BOLETO
+                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "15" Else s_aux = "99"
+                Case ID_FORMA_PAGTO_BOLETO_AV
+                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "15" Else s_aux = "99"
             Case ID_FORMA_PAGTO_CARTAO
                 s_aux = "03"
             Case ID_FORMA_PAGTO_CARTAO_MAQUINETA
                 s_aux = "03"
+            Case ID_FORMA_PAGTO_DEPOSITO
+                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "16" Else s_aux = "99"
             Case Else
-                s_aux = "99" 'Outros
+                If (param_nftipopag.campo_inteiro = 1) Then s_aux = param_nftipopag.campo_texto Else s_aux = "99" 'Outros
             End Select
         'obtém o total a prazo (retira o valor da entrada,se houver)
         vl_aux = vl_total_NF - vl_aux
@@ -9511,7 +9606,15 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("vPag", vNFeImgPag(UBound(vNFeImgPag)).pag__vPag)
     'Segundo informado pelo Valter (Target) em e-mail de 27/07/2017, o grupo vcard não deve ser informado no arquivo texto,
     'ele é preenchido pelo sistema
-                              
+    'informações do intermediador
+    If (param_nfintermediador.campo_inteiro = 1) And (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") Then
+        'If (strMarketplaceCodOrigem <> "") Then
+        If ((strMarketPlaceCNPJ <> "") And (strMarketPlaceCadIntTran <> "")) Then
+            strNFeTagPag = strNFeTagPag & vbTab & "infIntermed;"
+            strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("CNPJ", strMarketPlaceCNPJ)
+            strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("idCadIntTran", strMarketPlaceCadIntTran)
+            End If
+        End If
 
 '   TAG INFADIC
 '   ~~~~~~~~~~~
@@ -9688,6 +9791,20 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                                           vbTab & NFeFormataCampo("UF", rNFeImg.entrega__UF)
                     End If
                 End If
+            End If
+        End If
+
+'   SÓ AUTORIZA EMISSÃO SEM INTERMEDIADOR SE intImprimeIntermediadorAusente FOR 1
+'   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    If (param_nfintermediador.campo_inteiro = 1) Then
+        If (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") And _
+            ((strMarketPlaceCNPJ = "") Or (strMarketPlaceCadIntTran = "")) And _
+            (intImprimeIntermediadorAusente = 0) Then
+            s = "Não é possível prosseguir com a emissão, pois o intermediador do pedido não está identificado!!"
+            aviso_erro s
+            GoSub NFE_EMITE_FECHA_TABELAS
+            aguarde INFO_NORMAL, m_id
+            Exit Sub
             End If
         End If
 
@@ -9966,6 +10083,14 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     '=== Novo campo indFinal
     strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indFinal", rNFeImg.ide__indFinal) '0-Normal  1-Consumidor Final
     strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indPres", rNFeImg.ide__indPres) '2-Internet  3-Teleatendimento
+    '=== Campo indIntermed  (0-Sem intermediador 1-Operação em site ou plataforma de terceiros)
+    If (param_nfintermediador.campo_inteiro = 1) Then
+        If ((strMarketPlaceCNPJ <> "") And (strMarketPlaceCadIntTran <> "")) Then
+            strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indIntermed", "1")
+        Else
+            strNFeTagIdentificacao = strNFeTagIdentificacao & vbTab & NFeFormataCampo("indIntermed", "0")
+            End If
+        End If
     '=== aqui: campo IEST
     
     '=== Grupo NFref
@@ -10311,6 +10436,7 @@ NFE_EMITE_FECHA_TABELAS:
     bd_desaloca_recordset t_NFe_EMISSAO, True
     bd_desaloca_recordset t_NFe_IMAGEM, True
     bd_desaloca_recordset t_T1_NFE_INUTILIZA, True
+    bd_desaloca_recordset t_CODIGO_DESCRICAO, True
     bd_desaloca_recordset rsNFeRetornoSPSituacao, True
     bd_desaloca_recordset rsNFeRetornoSPEmite, True
   
@@ -13336,6 +13462,15 @@ Dim cor_inicial As String
     
     '   OBTER O PARÂMETRO DA MEMORIZAÇÃO DOS ENDEREÇOS NA T_PEDIDO
         get_registro_t_parametro "Flag_Pedido_MemorizacaoCompletaEnderecos", param_pedidomemorizacaoenderecos
+        
+    '   OBTER O PARÂMETRO DO ENDEREÇO DE ENTREGA NA NOTA FISCAL
+        get_registro_t_parametro "NF_MemorizacaoUsarEnderecoEntrega", param_nfmemooendentrega
+    
+    '   OBTER O PARÂMETRO DO INTERMEDIADOR
+        get_registro_t_parametro "NF_IntermediadorAtivo", param_nfintermediador
+    
+    '   OBTER O PARÂMETRO DO TIPO DE PAGAMENTO
+        get_registro_t_parametro "NF_TipoPagamentoObrigatorio", param_nftipopag
     
     '   SELEÇÃO DO EMITENTE A SER UTILIZADO
         If obtem_emitentes_usuario(usuario.id, vEmitsUsuario, qtdEmits) Then

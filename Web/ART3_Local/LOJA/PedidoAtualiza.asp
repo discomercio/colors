@@ -103,6 +103,11 @@
 	dim blnUsarMemorizacaoCompletaEnderecos
 	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 
+	dim sBlocoNotasEndCob, sBlocoNotasEndEtg, sBlocoNotasMsg, sEnderecoOriginal, sEnderecoNovo
+	sBlocoNotasEndCob = ""
+	sBlocoNotasEndEtg = ""
+	sBlocoNotasMsg = ""
+
 	dim rCD
 	set rCD = obtem_perc_max_comissao_e_desconto_por_loja(loja)
 
@@ -156,7 +161,10 @@
 	versao_forma_pagamento = Trim(Request.Form("versao_forma_pagamento"))
 	vlTotalFormaPagto = 0
 	
-    dim blnIndicadorEdicaoLiberada
+	dim blnEditouIndicador
+	blnEditouIndicador = False
+    
+	dim blnIndicadorEdicaoLiberada
     s = Trim(Request.Form("blnIndicadorEdicaoLiberada"))
     blnIndicadorEdicaoLiberada = CBool(s)
 
@@ -1501,6 +1509,22 @@
 															msg_erro_grava_email
 							end if
 						end if
+
+					'Registra edição no bloco de notas
+					if s_descricao_forma_pagto <> s_descricao_forma_pagto_anterior then
+						sBlocoNotasMsg = "Edição da forma de pagamento realizada por '" & usuario & "' (status da análise de crédito: " & descricao_analise_credito(s_analise_credito_a) & ")" & vbCrLf & _
+										"Anterior: " & s_descricao_forma_pagto_anterior & vbCrLf & _
+										"Nova: " & s_descricao_forma_pagto
+						if Not grava_bloco_notas_pedido(pedido_selecionado, ID_USUARIO_SISTEMA, loja, COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__RESTRITO, sBlocoNotasMsg, COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_EDICAO_FORMA_PAGTO, msg_erro) then
+							alerta = "Falha ao gravar bloco de notas com mensagem automática no pedido (" & pedido_selecionado & ")"
+							end if
+						'Assegura de gravar também no pedido-base pois trata-se de informação controlada através do pedido-base
+						if IsPedidoFilhote(pedido_selecionado) then
+							if Not grava_bloco_notas_pedido(retorna_num_pedido_base(pedido_selecionado), ID_USUARIO_SISTEMA, loja, COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__RESTRITO, sBlocoNotasMsg, COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_EDICAO_FORMA_PAGTO, msg_erro) then
+								alerta = "Falha ao gravar bloco de notas com mensagem automática no pedido (" & retorna_num_pedido_base(pedido_selecionado) & ")"
+								end if
+							end if
+						end if
 					end if
 				
 				if bln_RT_EdicaoLiberada Or (c_gravar_perc_RT_novo = "S") then rs("perc_RT") = converte_numero(s_perc_RT)
@@ -1508,8 +1532,9 @@
 				if blnIndicadorEdicaoLiberada then
 					s_indicador_anterior = Trim("" & rs("indicador"))
 					rs("indicador") = s_indicador
+					if Ucase(Trim(s_indicador_anterior)) <> Ucase(Trim(s_indicador)) then blnEditouIndicador = True
 
-					if (Ucase(Trim(s_indicador_anterior)) <> Ucase(Trim(s_indicador))) And (Trim("" & rs("analise_credito")) = COD_AN_CREDITO_OK) then
+					if blnEditouIndicador And (Trim("" & rs("analise_credito")) = COD_AN_CREDITO_OK) then
 						'Envia mensagem de alerta sobre alteração do indicador em pedido com status "crédito ok"
 						set rEmailDestinatario = get_registro_t_parametro(ID_PARAMETRO_EmailDestinatarioAlertaAlteracaoIndicadorEmPedidoCreditoOk)
 						if Trim("" & rEmailDestinatario.campo_texto) <> "" then
@@ -1531,6 +1556,22 @@
 															Now, _
 															id_email, _
 															msg_erro_grava_email
+							end if
+						end if
+
+					'Registra edição no bloco de notas
+					if blnEditouIndicador then
+						sBlocoNotasMsg = "Edição do indicador realizada por '" & usuario & "' (status da análise de crédito: " & descricao_analise_credito(s_analise_credito_a) & ")" & vbCrLf & _
+										"Anterior: " & s_indicador_anterior & vbCrLf & _
+										"Novo: " & s_indicador
+						if Not grava_bloco_notas_pedido(pedido_selecionado, ID_USUARIO_SISTEMA, loja, COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__RESTRITO, sBlocoNotasMsg, COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_EDICAO_INDICADOR, msg_erro) then
+							alerta = "Falha ao gravar bloco de notas com mensagem automática no pedido (" & pedido_selecionado & ")"
+							end if
+						'Assegura de gravar também no pedido-base pois trata-se de informação controlada através do pedido-base
+						if IsPedidoFilhote(pedido_selecionado) then
+							if Not grava_bloco_notas_pedido(retorna_num_pedido_base(pedido_selecionado), ID_USUARIO_SISTEMA, loja, COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__RESTRITO, sBlocoNotasMsg, COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_EDICAO_INDICADOR, msg_erro) then
+								alerta = "Falha ao gravar bloco de notas com mensagem automática no pedido (" & retorna_num_pedido_base(pedido_selecionado) & ")"
+								end if
 							end if
 						end if
 					end if
@@ -1693,8 +1734,71 @@
 																msg_erro_grava_email
 								end if
 							end if
+
+						'Registra edição no bloco de notas
+						if s_descricao_forma_pagto <> s_descricao_forma_pagto_anterior then
+							sBlocoNotasMsg = "Edição da forma de pagamento realizada por '" & usuario & "' (status da análise de crédito: " & descricao_analise_credito(s_analise_credito_a) & ")" & vbCrLf & _
+											"Anterior: " & s_descricao_forma_pagto_anterior & vbCrLf & _
+											"Nova: " & s_descricao_forma_pagto
+							if Not grava_bloco_notas_pedido(pedido_selecionado, ID_USUARIO_SISTEMA, loja, COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__RESTRITO, sBlocoNotasMsg, COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_EDICAO_FORMA_PAGTO, msg_erro) then
+								alerta = "Falha ao gravar bloco de notas com mensagem automática no pedido (" & pedido_selecionado & ")"
+								end if
+							'Assegura de gravar também no pedido-base pois trata-se de informação controlada através do pedido-base
+							if IsPedidoFilhote(pedido_selecionado) then
+								if Not grava_bloco_notas_pedido(retorna_num_pedido_base(pedido_selecionado), ID_USUARIO_SISTEMA, loja, COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__RESTRITO, sBlocoNotasMsg, COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_EDICAO_FORMA_PAGTO, msg_erro) then
+									alerta = "Falha ao gravar bloco de notas com mensagem automática no pedido (" & retorna_num_pedido_base(pedido_selecionado) & ")"
+									end if
+								end if
+							end if
+						end if 'if (versao_forma_pagamento = "2") And blnFormaPagtoEdicaoLiberada
+
+					if blnIndicadorEdicaoLiberada then
+						s_indicador_anterior = Trim("" & rs("indicador"))
+						rs("indicador") = s_indicador
+						if Ucase(Trim(s_indicador_anterior)) <> Ucase(Trim(s_indicador)) then blnEditouIndicador = True
+
+						if blnEditouIndicador And (Trim("" & rs("analise_credito")) = COD_AN_CREDITO_OK) then
+							'Envia mensagem de alerta sobre alteração do indicador em pedido com status "crédito ok"
+							set rEmailDestinatario = get_registro_t_parametro(ID_PARAMETRO_EmailDestinatarioAlertaAlteracaoIndicadorEmPedidoCreditoOk)
+							if Trim("" & rEmailDestinatario.campo_texto) <> "" then
+								corpo_mensagem = "O usuário '" & usuario & "' alterou em " & formata_data_hora_sem_seg(Now) & " na loja " & loja & " o indicador do pedido " & pedido_selecionado & vbCrLf & _
+													vbCrLf & _
+													"Indicador anterior:" & vbCrLf & _
+													Ucase(Trim(s_indicador_anterior)) & vbCrLf & _
+													vbCrLf & _
+													"Indicador atual:" & vbCrLf & _
+													Ucase(Trim(s_indicador))
+
+								EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__SENTINELA_SISTEMA), _
+																"", _
+																rEmailDestinatario.campo_texto, _
+																"", _
+																"", _
+																"Alteração do indicador em pedido com status 'Crédito OK'", _
+																corpo_mensagem, _
+																Now, _
+																id_email, _
+																msg_erro_grava_email
+								end if
+							end if
+					
+						'Registra edição no bloco de notas
+						if blnEditouIndicador then
+							sBlocoNotasMsg = "Edição do indicador realizada por '" & usuario & "' (status da análise de crédito: " & descricao_analise_credito(s_analise_credito_a) & ")" & vbCrLf & _
+											"Anterior: " & s_indicador_anterior & vbCrLf & _
+											"Novo: " & s_indicador
+							if Not grava_bloco_notas_pedido(pedido_selecionado, ID_USUARIO_SISTEMA, loja, COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__RESTRITO, sBlocoNotasMsg, COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_EDICAO_INDICADOR, msg_erro) then
+								alerta = "Falha ao gravar bloco de notas com mensagem automática no pedido (" & pedido_selecionado & ")"
+								end if
+							'Assegura de gravar também no pedido-base pois trata-se de informação controlada através do pedido-base
+							if IsPedidoFilhote(pedido_selecionado) then
+								if Not grava_bloco_notas_pedido(retorna_num_pedido_base(pedido_selecionado), ID_USUARIO_SISTEMA, loja, COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__RESTRITO, sBlocoNotasMsg, COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_EDICAO_INDICADOR, msg_erro) then
+									alerta = "Falha ao gravar bloco de notas com mensagem automática no pedido (" & retorna_num_pedido_base(pedido_selecionado) & ")"
+									end if
+								end if
+							end if
 						end if
-					end if
+					end if 'if Not IsPedidoFilhote(pedido_selecionado)
 				
 				if blnObs1EdicaoLiberada then
                      rs("obs_1") = s_obs1
@@ -1705,36 +1809,6 @@
 				if blnFormaPagtoEdicaoLiberada then rs("forma_pagto") = s_forma_pagto
 
 				if bln_RT_EdicaoLiberada Or (c_gravar_perc_RT_novo = "S") then rs("perc_RT") = converte_numero(s_perc_RT)
-
-				if blnIndicadorEdicaoLiberada then
-					s_indicador_anterior = Trim("" & rs("indicador"))
-					rs("indicador") = s_indicador
-
-					if (Ucase(Trim(s_indicador_anterior)) <> Ucase(Trim(s_indicador))) And (Trim("" & rs("analise_credito")) = COD_AN_CREDITO_OK) then
-						'Envia mensagem de alerta sobre alteração do indicador em pedido com status "crédito ok"
-						set rEmailDestinatario = get_registro_t_parametro(ID_PARAMETRO_EmailDestinatarioAlertaAlteracaoIndicadorEmPedidoCreditoOk)
-						if Trim("" & rEmailDestinatario.campo_texto) <> "" then
-							corpo_mensagem = "O usuário '" & usuario & "' alterou em " & formata_data_hora_sem_seg(Now) & " na loja " & loja & " o indicador do pedido " & pedido_selecionado & vbCrLf & _
-												vbCrLf & _
-												"Indicador anterior:" & vbCrLf & _
-												Ucase(Trim(s_indicador_anterior)) & vbCrLf & _
-												vbCrLf & _
-												"Indicador atual:" & vbCrLf & _
-												Ucase(Trim(s_indicador))
-
-							EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__SENTINELA_SISTEMA), _
-															"", _
-															rEmailDestinatario.campo_texto, _
-															"", _
-															"", _
-															"Alteração do indicador em pedido com status 'Crédito OK'", _
-															corpo_mensagem, _
-															Now, _
-															id_email, _
-															msg_erro_grava_email
-							end if
-						end if
-					end if
 				
 				if (versao_forma_pagamento = "1") And blnFormaPagtoEdicaoLiberada then
 					if IsNumeric(s_qtde_parcelas) then 
@@ -1786,6 +1860,14 @@
 
 
 				if r_pedido.st_memorizacao_completa_enderecos = 1 or r_pedido.st_memorizacao_completa_enderecos = 9 then
+					sEnderecoOriginal = formata_endereco(Trim("" & rs("endereco_logradouro")), Trim("" & rs("endereco_numero")), Trim("" & rs("endereco_complemento")), Trim("" & rs("endereco_bairro")), Trim("" & rs("endereco_cidade")), Trim("" & rs("endereco_uf")), Trim("" & rs("endereco_cep")))
+					sEnderecoNovo = formata_endereco(endereco__endereco, endereco__numero, endereco__complemento, endereco__bairro, endereco__cidade, endereco__uf, endereco__cep)
+					if UCase(sEnderecoOriginal) <> UCase(sEnderecoNovo) then
+						sBlocoNotasEndCob = "Endereço de cobrança: " & vbCrLf & _
+											String(4, " ") & "Anterior: " & sEnderecoOriginal & vbCrLf & _
+											String(4, " ") & "Novo: " & sEnderecoNovo
+						end if
+
 					if rs("endereco_cep") <> endereco__cep then blnEndereco_cep_alterado = True
 					rs("st_memorizacao_completa_enderecos") = 1
 					rs("endereco_bairro") = endereco__bairro
@@ -1819,12 +1901,26 @@
 				
 				'Editável?
 				if blnEndEntregaEdicaoLiberada then
+					if rs("st_end_entrega") = 0 then
+						sEnderecoOriginal = "(N.I.)"
+					else
+						sEnderecoOriginal = formata_endereco(Trim("" & rs("EndEtg_endereco")), Trim("" & rs("EndEtg_endereco_numero")), Trim("" & rs("EndEtg_endereco_complemento")), Trim("" & rs("EndEtg_bairro")), Trim("" & rs("EndEtg_cidade")), Trim("" & rs("EndEtg_uf")), Trim("" & rs("EndEtg_cep")))
+						end if
+
 					if EndEtg_endereco <> "" then 
 						rs("st_end_entrega") = 1
+						sEnderecoNovo = formata_endereco(EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep)
 					else
 						rs("st_end_entrega") = 0
+						sEnderecoNovo = "(N.I.)"
 						end if
 					
+					if UCase(sEnderecoOriginal) <> UCase(sEnderecoNovo) then
+						sBlocoNotasEndEtg = "Endereço de entrega: " & vbCrLf & _
+											String(4, " ") & "Anterior: " & sEnderecoOriginal & vbCrLf & _
+											String(4, " ") & "Novo: " & sEnderecoNovo
+						end if
+
 					rs("EndEtg_endereco") = EndEtg_endereco
 					rs("EndEtg_endereco_numero") = EndEtg_endereco_numero
 					rs("EndEtg_endereco_complemento") = EndEtg_endereco_complemento
@@ -1964,6 +2060,20 @@
 					if s_log_manual <> "" then
 						if s_log <> "" then s_log = s_log & "; "
 						s_log = s_log & s_log_manual
+						end if
+					end if
+
+				if alerta = "" then
+					if (sBlocoNotasEndCob <> "") Or (sBlocoNotasEndEtg <> "") then
+						sBlocoNotasMsg = sBlocoNotasEndCob
+						if (sBlocoNotasMsg <> "") And (sBlocoNotasEndEtg <> "") then sBlocoNotasMsg = sBlocoNotasMsg & vbCrLf & vbCrLf
+						sBlocoNotasMsg = sBlocoNotasMsg & sBlocoNotasEndEtg
+						sBlocoNotasMsg = "Edição de endereço realizada por '" & usuario & "' (status da análise de crédito: " & descricao_analise_credito(s_analise_credito_a) & ")" & vbCrLf & _
+										vbCrLf & _
+										sBlocoNotasMsg
+						if Not grava_bloco_notas_pedido(pedido_selecionado, ID_USUARIO_SISTEMA, loja, COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__RESTRITO, sBlocoNotasMsg, COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_EDICAO_ENDERECO, msg_erro) then
+							alerta = "Falha ao gravar bloco de notas com mensagem automática no pedido (" & pedido_selecionado & ")"
+							end if
 						end if
 					end if
 				end if
@@ -2254,6 +2364,24 @@
 				cn.Execute(s)
 				If Err <> 0 then
 					alerta = "FALHA AO SINCRONIZAR O CAMPO 'marketplace_codigo_origem' (" & Cstr(Err) & ": " & Err.Description & ")."
+					end if
+				end if
+			end if
+
+		'Ajusta o indicador de todos os pedidos da família
+		if alerta = "" then
+			if blnEditouIndicador then
+				s = "UPDATE t_PED__FILHOTE" & _
+					" SET" & _
+						" t_PED__FILHOTE.indicador = t_PED__BASE.indicador" & _
+					" FROM t_PEDIDO AS t_PED__FILHOTE" & _
+						" INNER JOIN t_PEDIDO AS t_PED__BASE ON (t_PED__FILHOTE.pedido_base = t_PED__BASE.pedido)" & _
+					" WHERE" & _
+						" (t_PED__FILHOTE.pedido_base = '" & retorna_num_pedido_base(pedido_selecionado) & "')" & _
+						" AND (t_PED__FILHOTE.pedido <> t_PED__FILHOTE.pedido_base)"
+				cn.Execute(s)
+				If Err <> 0 then
+					alerta = "FALHA AO SINCRONIZAR O CAMPO 'indicador' (" & Cstr(Err) & ": " & Err.Description & ")."
 					end if
 				end if
 			end if

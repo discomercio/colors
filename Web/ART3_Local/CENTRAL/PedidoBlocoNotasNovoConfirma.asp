@@ -214,12 +214,12 @@
 				dtHrMensagem = Now
 		
 				if r_pedido.st_memorizacao_completa_enderecos <> 0 then
-					s_dados_cliente = "Cliente: " & r_pedido.endereco_nome & " (" & cnpj_cpf_formata(r_pedido.endereco_cnpj_cpf) & ")"
+					s_dados_cliente = "Cliente: " & r_pedido.endereco_nome_iniciais_em_maiusculas & " (" & cnpj_cpf_formata(r_pedido.endereco_cnpj_cpf) & ")"
 				else
-					s_dados_cliente = "Cliente: " & r_cliente.nome & " (" & cnpj_cpf_formata(r_cliente.cnpj_cpf) & ")"
+					s_dados_cliente = "Cliente: " & r_cliente.nome_iniciais_em_maiusculas & " (" & cnpj_cpf_formata(r_cliente.cnpj_cpf) & ")"
 					end if
 			
-				corpo_mensagem = "Usuário '" & usuario & "' (" & r_usuario.nome_iniciais_em_maiusculas & ") registrou uma mensagem no bloco de notas do pedido " & pedido_selecionado & " às " & formata_data_hora_sem_seg(dtHrMensagem) & _
+				corpo_mensagem = "Usuário '" & usuario & "' (" & r_usuario.nome_iniciais_em_maiusculas & ") registrou uma mensagem no bloco de notas do pedido " & pedido_selecionado & " em " & formata_data_hora_sem_seg(dtHrMensagem) & _
 								vbCrLf & _
 								"Pedido: " & pedido_selecionado & _
 								vbCrLf & _

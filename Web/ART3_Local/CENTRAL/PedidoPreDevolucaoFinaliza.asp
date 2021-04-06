@@ -3,6 +3,7 @@
 <% Response.Buffer=True %>
 <!-- #include file = "../global/constantes.asp" -->
 <!-- #include file = "../global/funcoes.asp"    -->
+<!-- #include file = "../global/global.asp" -->
 <!-- #include file = "../global/bdd.asp" -->
 
 <!-- #include file = "../global/TrataSessaoExpirada.asp"        -->
@@ -67,8 +68,31 @@
 
 '	CONECTA AO BANCO DE DADOS
 '	=========================
-	dim cn, rs
+	dim cn, rs, rsMail
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
+	if Not cria_recordset_otimista(rsMail, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+
+	dim corpo_mensagem, id_email, msg_erro_grava_email
+	dim r_pedido
+	if alerta = "" then
+		if Not le_pedido(pedido_selecionado, r_pedido, msg_erro) then
+			alerta = msg_erro
+			end if
+		end if
+
+	dim s_email_remetente, s_email_vendedor
+	dim r_usuario
+	dim s_dados_cliente
+	dim s_unidade_negocio
+	dim s_descricao_status_devolucao, s_cor_status_devolucao
+	s_email_vendedor = ""
+	s_dados_cliente = ""
+	s_unidade_negocio = ""
+	s_descricao_status_devolucao = ""
+	s_cor_status_devolucao = ""
+	s_email_remetente = getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__PEDIDO_DEVOLUCAO)
+	call le_usuario(usuario, r_usuario, msg_erro)
+
 
 	if alerta = "" then
 	'	INICIA A TRANSAÇÃO
@@ -136,6 +160,75 @@
 
 			s_log = log_via_vetor_monta_alteracao(vLog1, vLog2)
 			if s_log <> "" then grava_log usuario, "", pedido_selecionado, "", "PED DEVOL FINALIZA", s_log
+
+			'Foi encontrado o email para ser usado como remetente da mensagem?
+			if s_email_remetente <> "" then
+				s = "SELECT" & _
+						" tP.vendedor," & _
+						" tU.email" & _
+					" FROM t_PEDIDO tP" & _
+						" INNER JOIN t_USUARIO tU ON (tP.vendedor = tU.usuario)" & _
+					" WHERE" & _
+						" (tP.pedido = '" & pedido_selecionado & "')"
+				if rsMail.State <> 0 then rsMail.Close
+				rsMail.Open s, cn
+				if Not rsMail.Eof then
+					s_email_vendedor = LCase(Trim("" & rsMail("email")))
+					end if
+
+				'Se encontrou e-mail do vendedor para enviar mensagem de aviso, obtém demais informações para a montagem da mensagem
+				if s_email_vendedor <> "" then
+					s = "SELECT" & _
+							" p.st_memorizacao_completa_enderecos," & _
+							" p.endereco_nome_iniciais_em_maiusculas AS endereco_nome," & _
+							" p.endereco_cnpj_cpf," & _
+							" c.nome_iniciais_em_maiusculas AS cliente_nome," & _
+							" c.cnpj_cpf AS cliente_cnpj_cpf," & _
+							" p.loja," & _
+							" lj.unidade_negocio" & _
+						" FROM t_PEDIDO p" & _
+							" INNER JOIN t_CLIENTE c ON (p.id_cliente = c.id)" & _
+							" INNER JOIN t_LOJA lj ON (p.loja = lj.loja)" & _
+						" WHERE" & _
+							" (p.pedido = '" & pedido_selecionado & "')"
+					if rsMail.State <> 0 then rsMail.Close
+					rsMail.Open s, cn
+					if Not rsMail.Eof then
+						s_unidade_negocio = Trim("" & rsMail("unidade_negocio"))
+						if rsMail("st_memorizacao_completa_enderecos") <> 0 then
+							s_dados_cliente = "Cliente: " & Trim("" & rsMail("endereco_nome")) & " (" & cnpj_cpf_formata(Trim("" & rsMail("endereco_cnpj_cpf"))) & ")"
+						else
+							s_dados_cliente = "Cliente: " & Trim("" & rsMail("cliente_nome")) & " (" & cnpj_cpf_formata(Trim("" & rsMail("cliente_cnpj_cpf"))) & ")"
+							end if
+						end if
+
+					'Envia email de aviso para o vendedor
+					if UCase(usuario) <> UCase(r_pedido.vendedor) then
+						if (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__BS) Or (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__VRF) then
+							obtem_descricao_status_devolucao COD_ST_PEDIDO_DEVOLUCAO__FINALIZADA, s_descricao_status_devolucao, s_cor_status_devolucao
+							corpo_mensagem = "O status da devolução nº " & id_devolucao & " do pedido " & pedido_selecionado & " foi alterado para '" & s_descricao_status_devolucao & "' por " & usuario & " em " & formata_data_hora_sem_seg(Now) & _
+											vbCrLf & _
+											"Pedido: " & pedido_selecionado & _
+											vbCrLf & _
+											"Devolução nº " & id_devolucao & _
+											vbCrLf & _
+											s_dados_cliente & _
+											vbCrLf & vbCrLf & _
+											"Atenção: esta é uma mensagem automática, NÃO responda a este e-mail!"
+							EmailSndSvcGravaMensagemParaEnvio s_email_remetente, _
+															"", _
+															s_email_vendedor, _
+															"", _
+															"", _
+															"Status da devolução nº " & id_devolucao & " do pedido " & pedido_selecionado & " alterado para '" & s_descricao_status_devolucao & "'", _
+															corpo_mensagem, _
+															Now, _
+															id_email, _
+															msg_erro_grava_email
+							end if 'if (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__BS) Or (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__VRF)
+						end if 'if UCase(usuario) <> UCase(r_pedido.vendedor)
+					end if 'if s_email_vendedor <> ""
+				end if 'if s_email_remetente <> ""
 			end if
 
 		if alerta = "" then

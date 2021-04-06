@@ -228,7 +228,7 @@ namespace ART3WebAPI.Controllers
 
         #region [ Get CSV COMPRAS ]
         [HttpPost]
-        public async Task<HttpResponseMessage> GetCompras2CSV(string usuario, string dt_inicio, string dt_termino, string fabricante, string produto, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string nf, string dt_nf_inicio, string dt_nf_termino, string visao, string detalhamento)
+        public async Task<HttpResponseMessage> GetCompras2CSV(string usuario, string tipo_periodo, string dt_inicio, string dt_termino, string fabricante, string produto, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string nf, string dt_nf_inicio, string dt_nf_termino, string visao, string detalhamento)
         {
 
 
@@ -246,41 +246,84 @@ namespace ART3WebAPI.Controllers
             string MsgErroException = "";
             HttpResponseMessage result = null;
 
-            try
-            {
+			try
+			{
+				#region [ Consistências ]
+				if ((tipo_periodo ?? "").Length == 0)
+				{
+					statusResponse = "Falha";
+					MsgErroException = "Não foi informado o tipo de período da consulta!";
+				}
+				else if (tipo_periodo.Equals(Global.Cte.Relatorio.Compras2.COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE))
+				{
+					if ((dt_inicio ?? "").Length == 0)
+					{
+						statusResponse = "Falha";
+						MsgErroException = "Data de início do período da consulta não foi informado!";
+					}
 
-                Global.setDefaultBD(usuario, "RelCompras2Filtro|c_dt_periodo_inicio", string.IsNullOrEmpty(dt_inicio) ? "" : dt_inicio);
-                Global.setDefaultBD(usuario, "RelCompras2Filtro|c_dt_periodo_termino", string.IsNullOrEmpty(dt_termino) ? "" : dt_termino);
-                Global.setDefaultBD(usuario, "RelCompras2Filtro|c_fabricante", string.IsNullOrEmpty(fabricante) ? "" : fabricante.Replace("_", ", "));
-                Global.setDefaultBD(usuario, "RelCompras2Filtro|c_grupo", string.IsNullOrEmpty(grupo) ? "" : grupo.Replace("_", ", "));
-                Global.setDefaultBD(usuario, "RelCompras2Filtro|c_subgrupo", string.IsNullOrEmpty(subgrupo) ? "" : subgrupo.Replace("_", ", "));
-                Global.setDefaultBD(usuario, "RelCompras2Filtro|c_potencia_BTU", string.IsNullOrEmpty(btu) ? "" : btu);
-                Global.setDefaultBD(usuario, "RelCompras2Filtro|c_ciclo", string.IsNullOrEmpty(ciclo) ? "" : ciclo);
-                Global.setDefaultBD(usuario, "RelCompras2Filtro|c_posicao_mercado", string.IsNullOrEmpty(pos_mercado) ? "" : pos_mercado);
-                Global.setDefaultBD(usuario, "RelCompras2Filtro|c_dt_nf_inicio", string.IsNullOrEmpty(dt_nf_inicio) ? "" : dt_nf_inicio);
-                Global.setDefaultBD(usuario, "RelCompras2Filtro|c_dt_nf_termino", string.IsNullOrEmpty(dt_nf_termino) ? "" : dt_nf_termino);
-                Global.setDefaultBD(usuario, "RelCompras2Filtro|rb_detalhe", detalhamento);
+					if ((dt_termino ?? "").Length == 0)
+					{
+						statusResponse = "Falha";
+						MsgErroException = "Data de término do período da consulta não foi informado!";
+					}
+				}
+				else if (tipo_periodo.Equals(Global.Cte.Relatorio.Compras2.COD_CONSULTA_POR_PERIODO_EMISSAO_NF_ENTRADA))
+				{
+					if ((dt_nf_inicio ?? "").Length == 0)
+					{
+						statusResponse = "Falha";
+						MsgErroException = "Data de início do período da consulta não foi informado!";
+					}
 
-                DataCompras2 datasource = new DataCompras2();
-                List<Compras> relCompras2List = datasource.Get(dt_inicio, dt_termino, fabricante, produto, grupo, subgrupo, btu, ciclo, pos_mercado, nf, dt_nf_inicio, dt_nf_termino, visao, detalhamento).ToList();
-                if (relCompras2List.Count != 0)
-                {
-                    await ART3WebAPI.Models.Domains.Compras2GeradorRelatorio.GenerateXLS(relCompras2List, filePath, dt_inicio, dt_termino, fabricante, produto, grupo, subgrupo, btu, ciclo, pos_mercado, nf, dt_nf_inicio, dt_nf_termino, visao, detalhamento);
-                    statusResponse = "OK";
-                    LogDAO.insere(usuario, s_log, out strMsgErro);
-                }
-                else
-                {
-                    statusResponse = "Vazio";
-                    MsgErroException = "Nenhum registro foi encontrado!";
-                }
+					if ((dt_nf_termino ?? "").Length == 0)
+					{
+						statusResponse = "Falha";
+						MsgErroException = "Data de término do período da consulta não foi informado!";
+					}
+				}
+				else
+				{
+					statusResponse = "Falha";
+					MsgErroException = "Tipo de período da consulta informado é inválido (" + tipo_periodo + ")!";
+				}
+				#endregion
 
-            }
-            catch (Exception e)
-            {
-                statusResponse = "Falha";
-                MsgErroException = e.Message;
-            }
+				if (MsgErroException.Length == 0)
+				{
+					Global.setDefaultBD(usuario, "RelCompras2Filtro|rb_periodo", string.IsNullOrEmpty(tipo_periodo) ? "" : tipo_periodo);
+					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_dt_periodo_inicio", string.IsNullOrEmpty(dt_inicio) ? "" : dt_inicio);
+					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_dt_periodo_termino", string.IsNullOrEmpty(dt_termino) ? "" : dt_termino);
+					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_fabricante", string.IsNullOrEmpty(fabricante) ? "" : fabricante.Replace("_", ", "));
+					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_grupo", string.IsNullOrEmpty(grupo) ? "" : grupo.Replace("_", ", "));
+					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_subgrupo", string.IsNullOrEmpty(subgrupo) ? "" : subgrupo.Replace("_", ", "));
+					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_potencia_BTU", string.IsNullOrEmpty(btu) ? "" : btu);
+					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_ciclo", string.IsNullOrEmpty(ciclo) ? "" : ciclo);
+					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_posicao_mercado", string.IsNullOrEmpty(pos_mercado) ? "" : pos_mercado);
+					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_dt_nf_inicio", string.IsNullOrEmpty(dt_nf_inicio) ? "" : dt_nf_inicio);
+					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_dt_nf_termino", string.IsNullOrEmpty(dt_nf_termino) ? "" : dt_nf_termino);
+					Global.setDefaultBD(usuario, "RelCompras2Filtro|rb_detalhe", detalhamento);
+
+					DataCompras2 datasource = new DataCompras2();
+					List<Compras> relCompras2List = datasource.Get(tipo_periodo, dt_inicio, dt_termino, fabricante, produto, grupo, subgrupo, btu, ciclo, pos_mercado, nf, dt_nf_inicio, dt_nf_termino, visao, detalhamento).ToList();
+					if (relCompras2List.Count != 0)
+					{
+						await ART3WebAPI.Models.Domains.Compras2GeradorRelatorio.GenerateXLS(relCompras2List, filePath, tipo_periodo, dt_inicio, dt_termino, fabricante, produto, grupo, subgrupo, btu, ciclo, pos_mercado, nf, dt_nf_inicio, dt_nf_termino, visao, detalhamento);
+						statusResponse = "OK";
+						LogDAO.insere(usuario, s_log, out strMsgErro);
+					}
+					else
+					{
+						statusResponse = "Vazio";
+						MsgErroException = "Nenhum registro foi encontrado!";
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				statusResponse = "Falha";
+				MsgErroException = e.Message;
+			}
 
             xmlResponse.Append("{ \"fileName\" : \"" + fileName + "\", " + "\"Status\" : \"" + statusResponse + "\", " + "\"Exception\" : " + System.Web.Helpers.Json.Encode(MsgErroException) + "}");
             result = Request.CreateResponse(HttpStatusCode.OK);
