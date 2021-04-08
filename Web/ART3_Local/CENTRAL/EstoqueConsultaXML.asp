@@ -149,7 +149,7 @@
 			v_item(i).cst					= v_item_bd(i).cst
 			v_item(i).descricao = ""
 			v_item(i).descricao_html = ""
-			v_item(i).ean = ""
+			v_item(i).ean 					= v_item_bd(i).ean
             v_item(i).aliq_ipi              = v_item_bd(i).aliq_ipi
             v_item(i).vl_ipi                = v_item_bd(i).vl_ipi
             v_item(i).aliq_icms             = v_item_bd(i).aliq_icms
@@ -166,7 +166,7 @@
 					if Not rs.Eof then
 						.descricao = Trim("" & rs("descricao"))
 						.descricao_html = Trim("" & rs("descricao_html"))
-						.ean = Trim("" & rs("ean"))
+						'.ean = Trim("" & rs("ean"))
 					else
 						.descricao = "NÃO CADASTRADO"
 						.descricao_html = "NÃO CADASTRADO"
