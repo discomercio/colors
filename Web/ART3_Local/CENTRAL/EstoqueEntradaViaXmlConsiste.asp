@@ -58,6 +58,8 @@
     dim c_perc_agio, c_total_nf, c_nfe_vl_total_geral
     dim arquivo_nfe, arquivo_nfe2
     dim c_op_upload
+    dim vl_total_nf, vl_nfe_vl_total_geral
+    
 
     c_op_upload = Trim(Request("c_op_upload"))
     if c_op_upload = "M" then
@@ -214,6 +216,9 @@
 			end if
 		end if
 
+    vl_total_nf = 0
+    vl_nfe_vl_total_geral = 0
+
     dim s_visibilidade
 	dim s_ckb_importa
 	dim s_prod_ean
@@ -334,6 +339,9 @@
                             s_linha_importa = "IMPORTA_S"
 						    End If
 					    end if
+                    'calcular os totais dos produtos a serem importados
+                    vl_total_nf = vl_total_nf + converte_numero(s_prod_qtde) * converte_numero(s_prod_vl_unitario_nota)
+                    vl_nfe_vl_total_geral = vl_nfe_vl_total_geral + converte_numero(s_prod_vl_total)
 				    end if
 			    icont = icont + 1
 			    if s_cod_produto_import <> "" then
@@ -1013,14 +1021,14 @@ select
 	    <td colspan="7" class="MD">&nbsp;</td>
 	    <td class="MDB" align="left"><p class="Cd">Total NF</p></td>	
 	    <td class="MDB" align="right"><input name="c_total_nf" id="c_total_nf" class="PLLd" style="width:62px;color:black;" 
-	        value="<%=c_total_nf%>"></td>	
+	        value="<%=formata_numero(vl_total_nf, 2)%>"></td>	
 	    <td>&nbsp;</td>
         <td>&nbsp;</td>
 	    <td>&nbsp;</td>
 	    <td>&nbsp;</td>
 	    <td class="MD">&nbsp;</td>
 	    <td class="MDB" align="right"><input name="c_nfe_vl_total_geral" id="c_nfe_vl_total_geral" class="PLLd" style="width:70px;color:black;"
-		    value="<%=c_nfe_vl_total_geral%>" readonly tabindex=-1 /></td>	
+		    value="<%=formata_numero(vl_nfe_vl_total_geral, 2)%>" readonly tabindex=-1 /></td>	
 	    </tr>
 	</tfoot>
 </table>
