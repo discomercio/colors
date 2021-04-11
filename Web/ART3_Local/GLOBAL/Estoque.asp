@@ -4092,17 +4092,19 @@ dim total_estoque_sem_presenca, total_estoque_vendido
 
 	msg_erro = ""
 	s_log = ""
-	s = "SELECT" & _
+	s = "SELECT DISTINCT" & _
+			" t_PEDIDO.data_hora," & _
 			" t_ESTOQUE_MOVIMENTO.pedido," & _
 			" t_ESTOQUE_MOVIMENTO.fabricante," & _
 			" t_ESTOQUE_MOVIMENTO.produto," & _
 			" (CASE" & _
-				" WHEN (analise_credito = " & COD_AN_CREDITO_OK & ") AND (st_etg_imediata = " & COD_ETG_IMEDIATA_SIM & ") THEN 1" & _
-				" WHEN (analise_credito = " & COD_AN_CREDITO_OK & ") AND (st_etg_imediata = " & COD_ETG_IMEDIATA_NAO  & ") THEN 2" & _
+				" WHEN (t_PEDIDO__BASE.analise_credito = " & COD_AN_CREDITO_OK & ") AND (t_PEDIDO.st_etg_imediata = " & COD_ETG_IMEDIATA_SIM & ") THEN 1" & _
+				" WHEN (t_PEDIDO__BASE.analise_credito = " & COD_AN_CREDITO_OK & ") AND (t_PEDIDO.st_etg_imediata = " & COD_ETG_IMEDIATA_NAO  & ") THEN 2" & _
 				" ELSE 9" & _
 			" END) AS Prioridade" & _
 		" FROM t_ESTOQUE_MOVIMENTO" & _
 			" INNER JOIN t_PEDIDO ON (t_ESTOQUE_MOVIMENTO.pedido=t_PEDIDO.pedido)" & _
+			" INNER JOIN t_PEDIDO AS t_PEDIDO__BASE ON (t_PEDIDO.pedido_base=t_PEDIDO__BASE.pedido)" & _
 			" INNER JOIN t_ESTOQUE_ITEM ON ((t_ESTOQUE_MOVIMENTO.fabricante=t_ESTOQUE_ITEM.fabricante) AND (t_ESTOQUE_MOVIMENTO.produto=t_ESTOQUE_ITEM.produto))" & _
 		" WHERE" & _
 			" (anulado_status=0)" & _
@@ -4117,8 +4119,7 @@ dim total_estoque_sem_presenca, total_estoque_vendido
 	s = s & _
 		" ORDER BY" & _
 			" Prioridade," & _
-			" t_PEDIDO.data," & _
-			" t_PEDIDO.hora"
+			" t_PEDIDO.data_hora"
 	set rs = cn.Execute(s)
 	if Err <> 0 then
 		msg_erro=Cstr(Err) & ": " & Err.Description
