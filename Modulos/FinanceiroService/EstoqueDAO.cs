@@ -922,9 +922,15 @@ namespace FinanceiroService
 							" t_PEDIDO.data_hora," +
 							" t_ESTOQUE_MOVIMENTO.pedido," +
 							" t_ESTOQUE_MOVIMENTO.fabricante," +
-							" t_ESTOQUE_MOVIMENTO.produto" +
+							" t_ESTOQUE_MOVIMENTO.produto," +
+							" (CASE" +
+								" WHEN (t_PEDIDO__BASE.analise_credito = " + Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK.ToString() + ") AND (t_PEDIDO.st_etg_imediata = " + Global.Cte.T_PEDIDO__ENTREGA_IMEDIATA_STATUS.ETG_IMEDIATA_SIM.ToString() + ") THEN 1" +
+								" WHEN (t_PEDIDO__BASE.analise_credito = " + Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK.ToString() + ") AND (t_PEDIDO.st_etg_imediata = " + Global.Cte.T_PEDIDO__ENTREGA_IMEDIATA_STATUS.ETG_IMEDIATA_NAO.ToString() + ") THEN 2" +
+								" ELSE 9" +
+							" END) AS Prioridade" +
 						" FROM t_ESTOQUE_MOVIMENTO" +
 							" INNER JOIN t_PEDIDO ON (t_ESTOQUE_MOVIMENTO.pedido=t_PEDIDO.pedido)" +
+							" INNER JOIN t_PEDIDO AS t_PEDIDO__BASE ON (t_PEDIDO.pedido_base=t_PEDIDO__BASE.pedido)" +
 							" INNER JOIN t_ESTOQUE_ITEM ON ((t_ESTOQUE_MOVIMENTO.fabricante=t_ESTOQUE_ITEM.fabricante) AND (t_ESTOQUE_MOVIMENTO.produto=t_ESTOQUE_ITEM.produto))" +
 						" WHERE" +
 							" (anulado_status = 0)" +
@@ -937,6 +943,7 @@ namespace FinanceiroService
 				}
 
 				strSql += " ORDER BY" +
+							" Prioridade," +
 							" t_PEDIDO.data_hora";
 
 				#region [ Executa a consulta no BD ]

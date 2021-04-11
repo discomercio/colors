@@ -174,6 +174,70 @@ namespace FinanceiroService
 		}
 		#endregion
 
+		#region [ getRegistroTabelaParametro ]
+		public static RegistroTabelaParametro getRegistroTabelaParametro(String nomeParametro)
+		{
+			#region [ Declarações ]
+			const string NOME_DESTA_ROTINA = "GeralDAO.getRegistroTabelaParametro()";
+			string strSql = "";
+			string msg_erro_aux;
+			RegistroTabelaParametro parametro = new RegistroTabelaParametro();
+			DataTable dtbResultado = new DataTable();
+			DataRow row;
+			SqlCommand cmCommand;
+			SqlDataAdapter daAdapter;
+			#endregion
+
+			try
+			{
+				#region [ Cria objetos de BD ]
+				cmCommand = BD.criaSqlCommand();
+				daAdapter = BD.criaSqlDataAdapter();
+				daAdapter.SelectCommand = cmCommand;
+				daAdapter.MissingSchemaAction = MissingSchemaAction.Add;
+				#endregion
+
+				strSql = "SELECT " +
+							"*" +
+						" FROM t_PARAMETRO" +
+						" WHERE" +
+							" (id = '" + nomeParametro + "')";
+				cmCommand.CommandText = strSql;
+				daAdapter.Fill(dtbResultado);
+				if (dtbResultado.Rows.Count == 0) return null;
+
+				row = dtbResultado.Rows[0];
+
+				parametro.id = BD.readToString(row["id"]);
+				parametro.campo_inteiro = BD.readToInt(row["campo_inteiro"]);
+				parametro.campo_monetario = BD.readToDecimal(row["campo_monetario"]);
+				parametro.campo_real = BD.readToSingle(row["campo_real"]);
+				parametro.campo_data = BD.readToDateTime(row["campo_data"]);
+				parametro.campo_texto = BD.readToString(row["campo_texto"]);
+				parametro.campo_2_texto = BD.readToString(row["campo_2_texto"]);
+				parametro.dt_hr_ult_atualizacao = BD.readToDateTime(row["dt_hr_ult_atualizacao"]);
+				parametro.usuario_ult_atualizacao = BD.readToString(row["usuario_ult_atualizacao"]);
+				parametro.obs = BD.readToString(row["obs"]);
+
+				return parametro;
+			}
+			catch (Exception ex)
+			{
+				#region [ Registra detalhes em t_FINSVC_LOG (chama gravaLogAtividade() automaticamente) ]
+				FinSvcLog svcLog = new FinSvcLog();
+				svcLog.operacao = NOME_DESTA_ROTINA;
+				svcLog.descricao = ex.ToString();
+				svcLog.complemento_1 = "t_PARAMETRO.id=" + nomeParametro;
+				svcLog.complemento_2 = Global.serializaObjectToXml(parametro);
+				svcLog.complemento_3 = strSql;
+				GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
+				#endregion
+
+				return null;
+			}
+		}
+		#endregion
+
 		#region [ getCampoDataTabelaParametro ]
 		public static DateTime getCampoDataTabelaParametro(String nomeParametro)
 		{
@@ -475,6 +539,74 @@ namespace FinanceiroService
 			catch (Exception ex)
 			{
 				Global.gravaLogAtividade("Falha ao gravar em t_PARAMETRO.campo_texto no registro '" + nomeParametro + "'\n" + ex.ToString());
+				return false;
+			}
+		}
+		#endregion
+
+		#region [ setCampo2TextoTabelaParametro ]
+		public static bool setCampo2TextoTabelaParametro(String nomeParametro, String valorParametro)
+		{
+			#region [ Declarações ]
+			String strSql;
+			SqlCommand cmCommand;
+			int intQtdeCount;
+			int intQtdeUpdated;
+			#endregion
+
+			try
+			{
+				cmCommand = BD.criaSqlCommand();
+
+				#region [ Registro existe? ]
+				strSql = "SELECT" +
+							" Count(*)" +
+						" FROM t_PARAMETRO" +
+						" WHERE" +
+							" (id = '" + nomeParametro + "')";
+				cmCommand.CommandText = strSql;
+				intQtdeCount = (int)cmCommand.ExecuteScalar();
+				#endregion
+
+				#region [ Grava o novo valor do parâmetro ]
+				if (intQtdeCount == 1)
+				{
+					strSql = "UPDATE" +
+								" t_PARAMETRO" +
+							" SET" +
+								" campo_2_texto = @campo_2_texto," +
+								" dt_hr_ult_atualizacao = getdate()" +
+							" WHERE" +
+								" (id = '" + nomeParametro + "')";
+				}
+				else
+				{
+					strSql = "INSERT INTO t_PARAMETRO (" +
+								"id, " +
+								"campo_2_texto, " +
+								"dt_hr_ult_atualizacao" +
+							") VALUES (" +
+								"'" + nomeParametro + "', " +
+								"@campo_2_texto, " +
+								"getdate()" +
+							")";
+				}
+				cmCommand.CommandText = strSql;
+				cmCommand.Parameters.Add("@campo_2_texto", SqlDbType.VarChar, 1024);
+				cmCommand.Parameters["@campo_2_texto"].Value = valorParametro;
+				intQtdeUpdated = BD.executaNonQuery(ref cmCommand);
+				#endregion
+
+				#region [ Sucesso ou falha? ]
+				if (intQtdeUpdated == 1)
+					return true;
+				else
+					return false;
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				Global.gravaLogAtividade("Falha ao gravar em t_PARAMETRO.campo_2_texto no registro '" + nomeParametro + "'\n" + ex.ToString());
 				return false;
 			}
 		}
