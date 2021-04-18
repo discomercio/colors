@@ -332,6 +332,119 @@ namespace FinanceiroService
 		}
 		#endregion
 
+		#region [ nfeEmitenteCarregaFromDataRow ]
+		private static NfeEmitente nfeEmitenteCarregaFromDataRow(DataRow rowDados)
+		{
+			#region [ Declarações ]
+			NfeEmitente emitente = new NfeEmitente();
+			#endregion
+
+			emitente.id = BD.readToInt(rowDados["id"]);
+			emitente.id_boleto_cedente = BD.readToInt(rowDados["id_boleto_cedente"]);
+			emitente.braspag_id_boleto_cedente = BD.readToInt(rowDados["braspag_id_boleto_cedente"]);
+			emitente.st_ativo = BD.readToByte(rowDados["st_ativo"]);
+			emitente.apelido = BD.readToString(rowDados["apelido"]);
+			emitente.cnpj = BD.readToString(rowDados["cnpj"]);
+			emitente.razao_social = BD.readToString(rowDados["razao_social"]);
+			emitente.endereco = BD.readToString(rowDados["endereco"]);
+			emitente.endereco_numero = BD.readToString(rowDados["endereco_numero"]);
+			emitente.endereco_complemento = BD.readToString(rowDados["endereco_complemento"]);
+			emitente.bairro = BD.readToString(rowDados["bairro"]);
+			emitente.cidade = BD.readToString(rowDados["cidade"]);
+			emitente.uf = BD.readToString(rowDados["uf"]);
+			emitente.cep = BD.readToString(rowDados["cep"]);
+			emitente.NFe_st_emitente_padrao = BD.readToByte(rowDados["NFe_st_emitente_padrao"]);
+			emitente.NFe_T1_servidor_BD = BD.readToString(rowDados["NFe_T1_servidor_BD"]);
+			emitente.NFe_T1_nome_BD = BD.readToString(rowDados["NFe_T1_nome_BD"]);
+			emitente.NFe_T1_usuario_BD = BD.readToString(rowDados["NFe_T1_usuario_BD"]);
+			emitente.NFe_T1_senha_BD = Criptografia.Descriptografa(BD.readToString(rowDados["NFe_T1_senha_BD"]));
+			emitente.st_habilitado_ctrl_estoque = BD.readToByte(rowDados["st_habilitado_ctrl_estoque"]);
+			emitente.ordem = BD.readToInt(rowDados["ordem"]);
+			emitente.texto_fixo_especifico = BD.readToString(rowDados["texto_fixo_especifico"]);
+			emitente.dt_cadastro = BD.readToDateTime(rowDados["dt_cadastro"]);
+			emitente.dt_hr_cadastro = BD.readToDateTime(rowDados["dt_hr_cadastro"]);
+			emitente.usuario_cadastro = BD.readToString(rowDados["usuario_cadastro"]);
+			emitente.dt_ult_atualizacao = BD.readToDateTime(rowDados["dt_ult_atualizacao"]);
+			emitente.dt_hr_ult_atualizacao = BD.readToDateTime(rowDados["dt_hr_ult_atualizacao"]);
+			emitente.usuario_ult_atualizacao = BD.readToString(rowDados["usuario_ult_atualizacao"]);
+
+			return emitente;
+		}
+		#endregion
+
+		#region [ getListaNfeEmitente ]
+		public static List<NfeEmitente> getListaNfeEmitente(Global.eOpcaoFiltroStAtivo filtroStAtivo)
+		{
+			#region [ Declarações ]
+			const string NOME_DESTA_ROTINA = "GeralDAO.getListaNfeEmitente()";
+			string strSql = "";
+			string strWhere = "";
+			string msg_erro_aux;
+			DataTable dtbResultado = new DataTable();
+			DataRow row;
+			SqlCommand cmCommand;
+			SqlDataAdapter daAdapter;
+			NfeEmitente emitente;
+			List<NfeEmitente> listaNfeEmitente = new List<NfeEmitente>();
+			#endregion
+
+			try
+			{
+				#region [ Cria objetos de BD ]
+				cmCommand = BD.criaSqlCommand();
+				daAdapter = BD.criaSqlDataAdapter();
+				daAdapter.SelectCommand = cmCommand;
+				daAdapter.MissingSchemaAction = MissingSchemaAction.Add;
+				#endregion
+
+				#region [ Monta SQL ]
+				if (filtroStAtivo == Global.eOpcaoFiltroStAtivo.SELECIONAR_SOMENTE_ATIVOS)
+				{
+					strWhere = " (st_ativo = 1)";
+				}
+				else if (filtroStAtivo == Global.eOpcaoFiltroStAtivo.SELECIONAR_SOMENTE_INATIVOS)
+				{
+					strWhere = " (st_ativo = 0)";
+				}
+
+				if (strWhere.Length > 0) strWhere = " WHERE " + strWhere;
+
+				strSql = "SELECT " +
+							"*" +
+						" FROM t_NFe_EMITENTE" +
+						strWhere +
+						" ORDER BY" +
+							" ordem";
+				#endregion
+
+				cmCommand.CommandText = strSql;
+				daAdapter.Fill(dtbResultado);
+
+				for (int i = 0; i < dtbResultado.Rows.Count; i++)
+				{
+					row = dtbResultado.Rows[i];
+					emitente = nfeEmitenteCarregaFromDataRow(row);
+					listaNfeEmitente.Add(emitente);
+				}
+
+				return listaNfeEmitente;
+			}
+			catch (Exception ex)
+			{
+				#region [ Registra detalhes em t_FINSVC_LOG (chama gravaLogAtividade() automaticamente) ]
+				FinSvcLog svcLog = new FinSvcLog();
+				svcLog.operacao = NOME_DESTA_ROTINA;
+				svcLog.descricao = ex.ToString();
+				svcLog.complemento_1 = "filtroStAtivo=" + filtroStAtivo.ToString();
+				svcLog.complemento_2 = strSql;
+				GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
+				#endregion
+
+				return null;
+			}
+		}
+		#endregion
+
 		#region [ setCampoDataTabelaParametro ]
 		public static bool setCampoDataTabelaParametro(String nomeParametro, DateTime dtHrValorParametro)
 		{
@@ -607,6 +720,76 @@ namespace FinanceiroService
 			catch (Exception ex)
 			{
 				Global.gravaLogAtividade("Falha ao gravar em t_PARAMETRO.campo_2_texto no registro '" + nomeParametro + "'\n" + ex.ToString());
+				return false;
+			}
+		}
+		#endregion
+
+		#region [ resetRegistroTabelaParametro ]
+		public static bool resetRegistroTabelaParametro(String nomeParametro)
+		{
+			#region [ Declarações ]
+			String strSql;
+			SqlCommand cmCommand;
+			int intQtdeCount;
+			int intQtdeUpdated;
+			#endregion
+
+			try
+			{
+				cmCommand = BD.criaSqlCommand();
+
+				#region [ Registro existe? ]
+				strSql = "SELECT" +
+							" Count(*)" +
+						" FROM t_PARAMETRO" +
+						" WHERE" +
+							" (id = '" + nomeParametro + "')";
+				cmCommand.CommandText = strSql;
+				intQtdeCount = (int)cmCommand.ExecuteScalar();
+				#endregion
+
+				#region [ Grava o novo valor do parâmetro ]
+				if (intQtdeCount == 1)
+				{
+					strSql = "UPDATE" +
+								" t_PARAMETRO" +
+							" SET" +
+								" campo_inteiro = 0," +
+								" campo_monetario = 0," +
+								" campo_real = 0," +
+								" campo_data = NULL," +
+								" campo_texto = NULL," +
+								" campo_2_texto = NULL," +
+								" dt_hr_ult_atualizacao = getdate()," +
+								" usuario_ult_atualizacao = NULL" +
+							" WHERE" +
+								" (id = '" + nomeParametro + "')";
+				}
+				else
+				{
+					strSql = "INSERT INTO t_PARAMETRO (" +
+								"id, " +
+								"dt_hr_ult_atualizacao" +
+							") VALUES (" +
+								"'" + nomeParametro + "', " +
+								"getdate()" +
+							")";
+				}
+				cmCommand.CommandText = strSql;
+				intQtdeUpdated = BD.executaNonQuery(ref cmCommand);
+				#endregion
+
+				#region [ Sucesso ou falha? ]
+				if (intQtdeUpdated == 1)
+					return true;
+				else
+					return false;
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				Global.gravaLogAtividade("Falha ao tentar realizar o reset dos campos do parâmetro '" + nomeParametro + "'\n" + ex.ToString());
 				return false;
 			}
 		}

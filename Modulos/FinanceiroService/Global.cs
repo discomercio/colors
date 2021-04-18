@@ -29,8 +29,8 @@ namespace FinanceiroService
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "Financeiro Service";
 				public static readonly string ID_SISTEMA_EVENTLOG = GetConfigurationValue("ServiceName");
-				public const string VERSAO_NUMERO = "1.34";
-				public const string VERSAO_DATA = "10.ABR.2021";
+				public const string VERSAO_NUMERO = "1.35";
+				public const string VERSAO_DATA = "18.ABR.2021";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Serviço do Windows para execução automática de rotinas financeiras";
@@ -267,7 +267,10 @@ namespace FinanceiroService
 			 *      no estoque para que seja executada sob demanda a partir da sinalização feita através de
 			 *      flag definida em parâmetro.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.35 - XX.XX.20XX - por XXX
+			 * v 1.35 - 18.04.2021 - por HHO
+			 *      Ajustes na solicitação de execução sob demanda da rotina de processamento de produtos
+			 *      vendidos sem presença no estoque para aceitar no parâmetro  opção que processa para todos
+			 *      os códigos de id_nfe_emitente.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.36 - XX.XX.20XX - por XXX
 			 * -----------------------------------------------------------------------------------------------
@@ -1898,6 +1901,15 @@ namespace FinanceiroService
 				public static bool ExecutarProcessamentoBpCsAntifraudeClearsale = false;
 			}
 			#endregion
+		}
+		#endregion
+
+		#region [ enum: eOpcaoFiltroStAtivo ]
+		public enum eOpcaoFiltroStAtivo : byte
+		{
+			SELECIONAR_TODOS = 0,
+			SELECIONAR_SOMENTE_ATIVOS = 1,
+			SELECIONAR_SOMENTE_INATIVOS = 2
 		}
 		#endregion
 
