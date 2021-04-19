@@ -29,8 +29,8 @@ namespace FinanceiroService
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "Financeiro Service";
 				public static readonly string ID_SISTEMA_EVENTLOG = GetConfigurationValue("ServiceName");
-				public const string VERSAO_NUMERO = "1.35";
-				public const string VERSAO_DATA = "18.ABR.2021";
+				public const string VERSAO_NUMERO = "1.36";
+				public const string VERSAO_DATA = "19.ABR.2021";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Serviço do Windows para execução automática de rotinas financeiras";
@@ -272,7 +272,10 @@ namespace FinanceiroService
 			 *      vendidos sem presença no estoque para aceitar no parâmetro  opção que processa para todos
 			 *      os códigos de id_nfe_emitente.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.36 - XX.XX.20XX - por XXX
+			 * v 1.36 - 19.04.2021 - por HHO
+			 *      Ajustes na solicitação de execução sob demanda da rotina de processamento de produtos
+			 *      vendidos sem presença no estoque para resetar o parâmetro logo após a sua leitura a fim
+			 *      de minimizar o risco de problemas por acesso concorrente.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.37 - XX.XX.20XX - por XXX
 			 * -----------------------------------------------------------------------------------------------
