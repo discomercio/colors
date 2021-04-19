@@ -874,46 +874,66 @@ function exibe_botao_confirmar() {
 <td class="MDBE" nowrap align="left"><span class="PLTe">ANÁLISE DE CRÉDITO</span>
 	<br>
 	<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;">
-	<tr bgcolor="#FFFFFF"><td align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_analise_credito_st_inicial" name="ckb_analise_credito_st_inicial"
-			value="<%=COD_AN_CREDITO_ST_INICIAL%>"><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_analise_credito_st_inicial.click();">Status Inicial</span>
-		</td></tr>
-	<tr bgcolor="#FFFFFF"><td align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_analise_credito_pendente_vendas" name="ckb_analise_credito_pendente_vendas"
-			value="<%=COD_AN_CREDITO_PENDENTE_VENDAS%>"><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_analise_credito_pendente_vendas.click();">Pendente Vendas</span>
-		</td></tr>
-	<tr bgcolor="#FFFFFF"><td align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_analise_credito_pendente_endereco" name="ckb_analise_credito_pendente_endereco"
-			value="<%=COD_AN_CREDITO_PENDENTE_ENDERECO%>"><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_analise_credito_pendente_endereco.click();">Pendente Endereço</span>
-		</td></tr>
-	<tr bgcolor="#FFFFFF"><td align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_analise_credito_pendente" name="ckb_analise_credito_pendente"
-			value="<%=COD_AN_CREDITO_PENDENTE%>"><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_analise_credito_pendente.click();">Pendente</span>
-		</td></tr>
-	<tr bgcolor="#FFFFFF"><td align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_analise_credito_pendente_cartao" name="ckb_analise_credito_pendente_cartao"
-			value="<%=COD_AN_CREDITO_PENDENTE_CARTAO%>"><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_analise_credito_pendente_cartao.click();">Pendente Cartão de Crédito</span>
-		</td></tr>
-	<tr bgcolor="#FFFFFF"><td align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_analise_credito_ok_aguardando_deposito" name="ckb_analise_credito_ok_aguardando_deposito"
-			value="<%=COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO%>"><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_analise_credito_ok_aguardando_deposito.click();">Crédito OK (aguardando depósito)</span>
-		</td></tr>
-	<tr bgcolor="#FFFFFF"><td align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_analise_credito_ok_deposito_aguardando_desbloqueio" name="ckb_analise_credito_ok_deposito_aguardando_desbloqueio"
-			value="<%=COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO%>"><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_analise_credito_ok_deposito_aguardando_desbloqueio.click();">Crédito OK (depósito aguardando desbloqueio)</span>
-		</td></tr>
-	<tr bgcolor="#FFFFFF"><td align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_analise_credito_ok" name="ckb_analise_credito_ok"
-			value="<%=COD_AN_CREDITO_OK%>"><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_analise_credito_ok.click();">Crédito OK</span>
-		</td></tr>
+	<tr>
+		<td width="50%" valign="top">
+			<table cellspacing="0" cellpadding="0">
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<input type="checkbox" tabindex="-1" id="ckb_analise_credito_st_inicial" name="ckb_analise_credito_st_inicial"
+						value="<%=COD_AN_CREDITO_ST_INICIAL%>"><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_ST_INICIAL)%>;" 
+						onclick="fFILTRO.ckb_analise_credito_st_inicial.click();">Status Inicial</span>
+					</td></tr>
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<input type="checkbox" tabindex="-1" id="ckb_analise_credito_pendente_vendas" name="ckb_analise_credito_pendente_vendas"
+						value="<%=COD_AN_CREDITO_PENDENTE_VENDAS%>"><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_PENDENTE_VENDAS)%>;" 
+						onclick="fFILTRO.ckb_analise_credito_pendente_vendas.click();">Pendente Vendas</span>
+					</td></tr>
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<input type="checkbox" tabindex="-1" id="ckb_analise_credito_pendente_endereco" name="ckb_analise_credito_pendente_endereco"
+						value="<%=COD_AN_CREDITO_PENDENTE_ENDERECO%>"><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_PENDENTE_ENDERECO)%>;" 
+						onclick="fFILTRO.ckb_analise_credito_pendente_endereco.click();">Pendente Endereço</span>
+					</td></tr>
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<input type="checkbox" tabindex="-1" id="ckb_analise_credito_pendente" name="ckb_analise_credito_pendente"
+						value="<%=COD_AN_CREDITO_PENDENTE%>"><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_PENDENTE)%>;" 
+						onclick="fFILTRO.ckb_analise_credito_pendente.click();">Pendente</span>
+					</td></tr>
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<input type="checkbox" tabindex="-1" id="ckb_analise_credito_pendente_cartao" name="ckb_analise_credito_pendente_cartao"
+						value="<%=COD_AN_CREDITO_PENDENTE_CARTAO%>"><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_PENDENTE_CARTAO)%>;" 
+						onclick="fFILTRO.ckb_analise_credito_pendente_cartao.click();">Pendente Cartão de Crédito</span>
+					</td></tr>
+			</table>
+		</td>
+		<td width="50%" valign="top">
+			<table cellspacing="0" cellpadding="0">
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<input type="checkbox" tabindex="-1" id="ckb_analise_credito_pendente_pagto_antecipado_boleto" name="ckb_analise_credito_pendente_pagto_antecipado_boleto"
+						value="<%=COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO%>" /><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)%>;"
+						onclick="fFILTRO.ckb_analise_credito_pendente_pagto_antecipado_boleto.click();"><%=x_analise_credito(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)%></span>
+					</td></tr>
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<input type="checkbox" tabindex="-1" id="ckb_analise_credito_ok_aguardando_deposito" name="ckb_analise_credito_ok_aguardando_deposito"
+						value="<%=COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO%>"><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO)%>;" 
+						onclick="fFILTRO.ckb_analise_credito_ok_aguardando_deposito.click();">Crédito OK (aguardando depósito)</span>
+					</td></tr>
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<input type="checkbox" tabindex="-1" id="ckb_analise_credito_ok_deposito_aguardando_desbloqueio" name="ckb_analise_credito_ok_deposito_aguardando_desbloqueio"
+						value="<%=COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO%>"><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO)%>;" 
+						onclick="fFILTRO.ckb_analise_credito_ok_deposito_aguardando_desbloqueio.click();">Crédito OK (depósito aguardando desbloqueio)</span>
+					</td></tr>
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<input type="checkbox" tabindex="-1" id="ckb_analise_credito_ok_aguardando_pagto_boleto_av" name="ckb_analise_credito_ok_aguardando_pagto_boleto_av"
+						value="<%=COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV%>" /><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)%>;"
+						onclick="fFILTRO.ckb_analise_credito_ok_aguardando_pagto_boleto_av.click();"><%=x_analise_credito(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)%></span>
+					</td></tr>
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<input type="checkbox" tabindex="-1" id="ckb_analise_credito_ok" name="ckb_analise_credito_ok"
+						value="<%=COD_AN_CREDITO_OK%>"><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_OK)%>;" 
+						onclick="fFILTRO.ckb_analise_credito_ok.click();">Crédito OK</span>
+					</td></tr>
+			</table>
+		</td>
+	</tr>
 	</table>
 </td></tr>
 

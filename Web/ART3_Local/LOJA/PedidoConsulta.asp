@@ -1586,6 +1586,16 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 		if vl_saldo_a_pagar >= 0 then Response.Write "black" else Response.Write "red" 
 		%>;"><%=s_vl_saldo_a_pagar%></span></td>
 </tr>
+<% if r_pedido.PagtoAntecipadoStatus <> 0 then %>
+<tr>
+	<td colspan="3" class="MC MD" align="left" valign="bottom"><span class="Rf">Condição Pagto</span></td>
+	<td colspan="3" class="MC" align="left" valign="bottom"><span class="Rf">Status Pagto Antecipado</span></td>
+</tr>
+<tr>
+	<td colspan="3" class="MD" align="left"><span class="C"><%=pagto_antecipado_descricao(r_pedido.PagtoAntecipadoStatus)%></span></td>
+	<td colspan="3" align="left"><span class="C" style="color:<%=pagto_antecipado_quitado_cor(r_pedido.PagtoAntecipadoStatus, r_pedido.PagtoAntecipadoQuitadoStatus)%>;"><%=pagto_antecipado_quitado_descricao(r_pedido.PagtoAntecipadoStatus, r_pedido.PagtoAntecipadoQuitadoStatus)%></span></td>
+</tr>
+<% end if %>
 </table>
 
 

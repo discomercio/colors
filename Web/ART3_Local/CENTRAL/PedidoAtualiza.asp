@@ -99,6 +99,10 @@
 	s = Trim(Request.Form("blnFormaPagtoEdicaoLiberada"))
 	blnFormaPagtoEdicaoLiberada = CBool(s)
 	
+	dim blnPagtoAntecipadoEdicaoLiberada
+	s = Trim(Request.Form("blnPagtoAntecipadoEdicaoLiberada"))
+	blnPagtoAntecipadoEdicaoLiberada = CBool(s)
+
 	dim blnEntregaImediataEdicaoLiberada
 	s = Trim(Request.Form("blnEntregaImediataEdicaoLiberada"))
 	blnEntregaImediataEdicaoLiberada = CBool(s)
@@ -142,12 +146,16 @@
     dim s_nf_texto, s_num_pedido_compra
 	dim blnAEntregarStatusEdicaoLiberada, c_a_entregar_data_marcada, c_a_entregar_data_marcada_original
 	dim s_analise_credito, s_analise_credito_a, s_ac_pendente_vendas_motivo
+	dim s_pagto_antecipado_status, s_pagto_antecipado_status_anterior, blnPagtoAntecipadoStatusAlteradoAutomaticamente
+	dim s_pagto_antecipado_quitado_status, s_pagto_antecipado_quitado_status_anterior, blnPagtoAntecipadoQuitadoStatusResetadoAutomaticamente
 	dim s_etg_imediata, s_bem_uso_consumo, s_etg_imediata_original, c_data_previsao_entrega
 	dim blnUpdate, blnFlag, blnEditou
 	dim blnEditouTransp, blnProcessaSelecaoAutoTransp
     dim transportadora_cnpj, blnEditouFrete
 	transportadora_cnpj = ""
     blnEditouFrete = False
+	blnPagtoAntecipadoStatusAlteradoAutomaticamente = False
+	blnPagtoAntecipadoQuitadoStatusResetadoAutomaticamente = False
 
 	s_obs1=Trim(request("c_obs1"))
 	s_obs2=Trim(request("c_obs2"))
@@ -159,6 +167,8 @@
 	c_a_entregar_data_marcada_original=Trim(request("c_a_entregar_data_marcada_original"))
 	s = Trim(Request.Form("blnAEntregarStatusEdicaoLiberada"))
 	blnAEntregarStatusEdicaoLiberada = CBool(s)
+	s_pagto_antecipado_status = Trim(Request.Form("rb_pagto_antecipado_status"))
+	s_pagto_antecipado_quitado_status = Trim(Request.Form("rb_pagto_antecipado_quitado_status"))
 	s_analise_credito=Trim(request("rb_analise_credito"))
 	s_etg_imediata=Trim(request("rb_etg_imediata"))
 	c_data_previsao_entrega = Trim(Request("c_data_previsao_entrega"))
@@ -173,6 +183,14 @@
     s_ac_pendente_vendas_motivo = Trim(Request("c_pendente_vendas_motivo"))
 
 ' BUG:	if s_pedido_mktplace = "" then s_pedido_origem = ""
+
+	if blnPagtoAntecipadoEdicaoLiberada then
+		if CStr(s_pagto_antecipado_status) = CStr(COD_PAGTO_ANTECIPADO_STATUS_NORMAL) then
+			'Se for condição de pagamento normal (não-antecipado), força para que o campo PagtoAntecipadoQuitadoStatus seja colocado no status default
+			s_pagto_antecipado_quitado_status = CStr(COD_PAGTO_ANTECIPADO_QUITADO_STATUS_PENDENTE)
+			blnPagtoAntecipadoQuitadoStatusResetadoAutomaticamente = True
+			end if
+		end if
 
 '	PARA PEDIDOS DO ARCLUBE, É PERMITIDO FICAR SEM O Nº MAGENTO SOMENTE NOS SEGUINTES CASOS:
 '		1) PEDIDO ORIGINADO PELO TELEVENDAS
@@ -1317,6 +1335,7 @@
 				alerta = "Pedido base " & pedido_base & " não foi encontrado."
 			else
 				log_via_vetor_carrega_do_recordset rs, vLogFP1, campos_a_omitir_FP
+				
 				s_analise_credito_a = Trim("" & rs("analise_credito"))
 				if blnAnaliseCreditoEdicaoLiberada then
 					if s_analise_credito <> "" then 
@@ -1342,8 +1361,30 @@
                                     end if
                                 end if
 						end if
+					end if 'if blnAnaliseCreditoEdicaoLiberada
+
+				s_pagto_antecipado_status_anterior = Trim("" & rs("PagtoAntecipadoStatus"))
+				if blnPagtoAntecipadoEdicaoLiberada then
+					'Se o status de análise de crédito tiver sido alterado para 'Pendente - Pagto Antecipado Boleto', altera o pedido
+					'automaticamente para 'Pagamento Antecipado'
+					if s_analise_credito <> "" then
+						if (CLng(s_analise_credito_a) <> CLng(s_analise_credito)) _
+							And (CLng(s_analise_credito) = CLng(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)) _
+							And (CLng(s_pagto_antecipado_status) <> CLng(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO)) then
+							s_pagto_antecipado_status = COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO
+							blnPagtoAntecipadoStatusAlteradoAutomaticamente = True
+							end if
+						end if
+
+					if s_pagto_antecipado_status <> "" then
+						if CLng(rs("PagtoAntecipadoStatus")) <> CLng(s_pagto_antecipado_status) then
+							rs("PagtoAntecipadoStatus")=CLng(s_pagto_antecipado_status)
+							rs("PagtoAntecipadoDataHora")=Now
+							rs("PagtoAntecipadoUsuario")=usuario
+							end if
+						end if
 					end if
-					
+
 			'	Forma de Pagamento (nova versão)
 				if (versao_forma_pagamento = "2") And blnFormaPagtoEdicaoLiberada then
 					s_descricao_forma_pagto_anterior = monta_descricao_forma_pagto_com_quebra_linha(rs, quebraLinhaFormaPagto)
@@ -1582,6 +1623,28 @@
 								    rs("analise_credito_usuario")=usuario
                                     end if
                                 end if
+							end if
+						end if 'if blnAnaliseCreditoEdicaoLiberada
+
+					s_pagto_antecipado_status_anterior = Trim("" & rs("PagtoAntecipadoStatus"))
+					if blnPagtoAntecipadoEdicaoLiberada then
+						'Se o status de análise de crédito tiver sido alterado para 'Pendente - Pagto Antecipado Boleto', altera o pedido
+						'automaticamente para 'Pagamento Antecipado'
+						if s_analise_credito <> "" then
+							if (CLng(s_analise_credito_a) <> CLng(s_analise_credito)) _
+								And (CLng(s_analise_credito) = CLng(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)) _
+								And (CLng(s_pagto_antecipado_status) <> CLng(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO)) then
+								s_pagto_antecipado_status = COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO
+								blnPagtoAntecipadoStatusAlteradoAutomaticamente = True
+								end if
+							end if
+
+						if s_pagto_antecipado_status <> "" then
+							if CLng(rs("PagtoAntecipadoStatus")) <> CLng(s_pagto_antecipado_status) then
+								rs("PagtoAntecipadoStatus")=CLng(s_pagto_antecipado_status)
+								rs("PagtoAntecipadoDataHora")=Now
+								rs("PagtoAntecipadoUsuario")=usuario
+								end if
 							end if
 						end if
 
@@ -2039,6 +2102,17 @@
 						end if
 					end if
 					
+				if blnPagtoAntecipadoEdicaoLiberada then
+					s_pagto_antecipado_quitado_status_anterior = Trim("" & rs("PagtoAntecipadoQuitadoStatus"))
+					if s_pagto_antecipado_quitado_status <> "" then
+						if CLng(rs("PagtoAntecipadoQuitadoStatus")) <> CLng(s_pagto_antecipado_quitado_status) then
+							rs("PagtoAntecipadoQuitadoStatus")=CLng(s_pagto_antecipado_quitado_status)
+							rs("PagtoAntecipadoQuitadoDataHora")=Now
+							rs("PagtoAntecipadoQuitadoUsuario")=usuario
+							end if
+						end if
+					end if
+
 				if blnEntregaImediataEdicaoLiberada then
 					s_etg_imediata_original = Trim("" & rs("st_etg_imediata"))
 					if s_etg_imediata <> "" then 
@@ -2117,6 +2191,22 @@
 							s_log = s_log & "analise_credito: " & formata_texto_log(s_analise_credito_a) & " => " & formata_texto_log(s_analise_credito)
 							end if
 						end if
+
+					if blnPagtoAntecipadoEdicaoLiberada then
+						if (s_pagto_antecipado_status<>"") And (s_pagto_antecipado_status<>s_pagto_antecipado_status_anterior) And (Instr(s_log,"PagtoAntecipadoStatus")=0) then
+							if s_log <> "" then s_log = s_log & "; "
+							s_log = s_log & "PagtoAntecipadoStatus: " & formata_texto_log(s_pagto_antecipado_status_anterior) & " => " & formata_texto_log(s_pagto_antecipado_status)
+							if blnPagtoAntecipadoStatusAlteradoAutomaticamente then s_log = s_log & " (alteração automática devido à alteração do status da análise de crédito)"
+						elseif (Instr(s_log,"PagtoAntecipadoStatus") > 0) And blnPagtoAntecipadoStatusAlteradoAutomaticamente then
+							if s_log <> "" then s_log = s_log & "; "
+							s_log = s_log & "PagtoAntecipadoStatus alterado automaticamente devido à alteração do status da análise de crédito"
+							end if
+						if (s_pagto_antecipado_quitado_status<>"") And (s_pagto_antecipado_quitado_status<>s_pagto_antecipado_quitado_status_anterior) And (Instr(s_log,"PagtoAntecipadoQuitadoStatus")=0) then
+							if s_log <> "" then s_log = s_log & "; "
+							s_log = s_log & "PagtoAntecipadoQuitadoStatus: " & formata_texto_log(s_pagto_antecipado_quitado_status_anterior) & " => " & formata_texto_log(s_pagto_antecipado_quitado_status)
+							end if
+						end if
+
 					if s_log_manual <> "" then
 						if s_log <> "" then s_log = s_log & "; "
 						s_log = s_log & s_log_manual
@@ -2526,6 +2616,31 @@
 				cn.Execute(s)
 				If Err <> 0 then
 					alerta = "FALHA AO SINCRONIZAR O CAMPO 'indicador' (" & Cstr(Err) & ": " & Err.Description & ")."
+					end if
+				end if
+			end if
+
+		'Sincroniza o campo 'PagtoAntecipadoQuitadoStatus' dos pedidos-filhote, se existirem, para o status COD_PAGTO_ANTECIPADO_QUITADO_STATUS_PENDENTE
+		'caso o campo 'PagtoAntecipadoStatus' tenha sido alterado para COD_PAGTO_ANTECIPADO_STATUS_NORMAL
+		'Lembrando que o campo 'PagtoAntecipadoStatus' do pedido-pai é válido para toda a família de pedidos e
+		'o campo 'PagtoAntecipadoQuitadoStatus' é individual para cada pedido da família.
+		if alerta = "" then
+			if blnPagtoAntecipadoQuitadoStatusResetadoAutomaticamente then
+				s = "UPDATE t_PED__DEMAIS" & _
+					" SET" & _
+						" t_PED__DEMAIS.PagtoAntecipadoQuitadoStatus = t_PED__SELECIONADO.PagtoAntecipadoQuitadoStatus" & _
+						", t_PED__DEMAIS.PagtoAntecipadoQuitadoDataHora = t_PED__SELECIONADO.PagtoAntecipadoQuitadoDataHora" & _
+						", t_PED__DEMAIS.PagtoAntecipadoQuitadoUsuario = t_PED__SELECIONADO.PagtoAntecipadoQuitadoUsuario" & _
+					" FROM t_PEDIDO AS t_PED__DEMAIS" & _
+						" INNER JOIN t_PEDIDO AS t_PED__SELECIONADO ON (t_PED__DEMAIS.pedido_base = t_PED__SELECIONADO.pedido_base)" & _
+					" WHERE" & _
+						" (t_PED__SELECIONADO.pedido = '" & pedido_selecionado & "')" & _
+						" AND (t_PED__DEMAIS.pedido <> t_PED__SELECIONADO.pedido)" & _
+						" AND (t_PED__DEMAIS.PagtoAntecipadoQuitadoStatus <> t_PED__SELECIONADO.PagtoAntecipadoQuitadoStatus)" & _
+						" AND (t_PED__DEMAIS.st_entrega NOT IN ('" & ST_ENTREGA_ENTREGUE & "','" & ST_ENTREGA_CANCELADO & "'))"
+				cn.Execute(s)
+				If Err <> 0 then
+					alerta = "FALHA AO SINCRONIZAR O CAMPO 'PagtoAntecipadoQuitadoStatus' (" & Cstr(Err) & ": " & Err.Description & ")."
 					end if
 				end if
 			end if

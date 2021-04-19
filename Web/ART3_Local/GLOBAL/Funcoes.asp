@@ -6419,4 +6419,47 @@ dim vServerName, vHttpHost
 	urlHttps = sUrlHttps
 	isHttpsRedirectionMandatory = True
 end function
+
+
+function pagto_antecipado_descricao(byval PagtoAntecipadoStatus)
+dim sResp
+
+	select case CStr(PagtoAntecipadoStatus)
+		case COD_PAGTO_ANTECIPADO_STATUS_NORMAL: sResp = "Pagamento Normal"
+		case COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO: sResp = "Pagamento Antecipado"
+		case else: sResp = ""
+	end select
+
+	pagto_antecipado_descricao = sResp
+end function
+
+
+function pagto_antecipado_quitado_descricao(byval PagtoAntecipadoStatus, byval PagtoAntecipadoQuitadoStatus)
+dim sResp
+	pagto_antecipado_quitado_descricao = ""
+	if CStr(PagtoAntecipadoStatus) <> COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO then exit function
+	
+	select case CStr(PagtoAntecipadoQuitadoStatus)
+		case COD_PAGTO_ANTECIPADO_QUITADO_STATUS_PENDENTE: sResp = "Pendente"
+		case COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO: sResp = "Quitado"
+		case else: sResp = ""
+	end select
+
+	pagto_antecipado_quitado_descricao = sResp
+end function
+
+
+function pagto_antecipado_quitado_cor(byval PagtoAntecipadoStatus, byval PagtoAntecipadoQuitadoStatus)
+dim sResp
+	pagto_antecipado_quitado_cor = "black"
+	if CStr(PagtoAntecipadoStatus) <> COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO then exit function
+	
+	select case CStr(PagtoAntecipadoQuitadoStatus)
+		case COD_PAGTO_ANTECIPADO_QUITADO_STATUS_PENDENTE: sResp = "red"
+		case COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO: sResp = "green"
+		case else: sResp = "black"
+	end select
+
+	pagto_antecipado_quitado_cor = sResp
+end function
 %>

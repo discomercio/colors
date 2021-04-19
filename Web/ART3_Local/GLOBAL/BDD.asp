@@ -1886,6 +1886,12 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.st_forma_pagto_possui_parcela_cartao_maquineta = rs("st_forma_pagto_possui_parcela_cartao_maquineta")
 			.usuario_cadastro = Trim("" & rs("usuario_cadastro"))
 			.plataforma_origem_pedido = rs("plataforma_origem_pedido")
+			.PagtoAntecipadoStatus = rs("PagtoAntecipadoStatus")
+			.PagtoAntecipadoDataHora = rs("PagtoAntecipadoDataHora")
+			.PagtoAntecipadoUsuario = Trim("" & rs("PagtoAntecipadoUsuario"))
+			.PagtoAntecipadoQuitadoStatus = rs("PagtoAntecipadoQuitadoStatus")
+			.PagtoAntecipadoQuitadoDataHora = rs("PagtoAntecipadoQuitadoDataHora")
+			.PagtoAntecipadoQuitadoUsuario = Trim("" & rs("PagtoAntecipadoQuitadoUsuario"))
 			end with
 		end if
 
@@ -1989,6 +1995,14 @@ dim blnUsarMemorizacaoCompletaEnderecos
 				.pedido_ac_reverso          = Trim("" & rs("pedido_bs_x_ac_reverso"))
 				.usuario_cadastro = Trim("" & rs("usuario_cadastro"))
 				.plataforma_origem_pedido = rs("plataforma_origem_pedido")
+				'O status que indica se o pedido será pago através de pagamento antecipado é único para toda a família de pedidos
+				'e está atrelado ao processo de análise de crédito, que também é único por família de pedidos. Por esse motivo,
+				'a informação deve ser sempre armazenada e lida do pedido-base, mesmo que este esteja cancelado e o(s) pedido(s)-filhote não.
+				'Já a informação que indica se o pagamento antecipado foi quitado é armazenado em cada pedido individualmente, pois pode
+				'ocorrer de serem gerados conjuntos de boletos separados para o pedido-pai e o(s) pedido(s)-filhote.
+				.PagtoAntecipadoStatus = rs("PagtoAntecipadoStatus")
+				.PagtoAntecipadoDataHora = rs("PagtoAntecipadoDataHora")
+				.PagtoAntecipadoUsuario = Trim("" & rs("PagtoAntecipadoUsuario"))
 				end with
 			end if
 		end if
@@ -3909,6 +3923,8 @@ dim s
 		case COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO: s="Crédito OK (aguardando depósito)"
 		case COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO: s="Crédito OK (depósito aguardando desbloqueio)"
 		case COD_AN_CREDITO_NAO_ANALISADO: s="Pedido Sem Análise de Crédito"
+		case COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV: s = "Crédito OK (aguardando pagto boleto AV)"
+		case COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO: s = "Pendente - Pagto Antecipado Boleto"
 		case else s=""
 		end select
 	descricao_analise_credito=s
@@ -3932,6 +3948,8 @@ dim s
 		case COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO: s="Crédito OK (depósito aguardando desbloqueio)"
 		case COD_AN_CREDITO_NAO_ANALISADO: s=""
 		case COD_AN_CREDITO_PENDENTE_CARTAO: s="Pendente Cartão de Crédito"
+		case COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV: s = "Crédito OK (aguardando pagto boleto AV)"
+		case COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO: s = "Pendente - Pagto Antecipado Boleto"
 		case else s=""
 		end select
 	x_analise_credito=s
@@ -3952,6 +3970,8 @@ dim s_cor
 		case COD_AN_CREDITO_OK: s_cor="green"
 		case COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO: s_cor="darkorange"
 		case COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO: s_cor="darkorange"
+		case COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV: s_cor="darkorange"
+		case COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO: s_cor="blue"
 		case else s_cor="black"
 		end select
 	x_analise_credito_cor=s_cor

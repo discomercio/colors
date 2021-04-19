@@ -72,8 +72,9 @@
 	dim c_transportadora
 	dim ckb_visanet
 	dim ckb_perc_RT, c_perc_RT
-	dim ckb_analise_credito_pendente_vendas, ckb_analise_credito_pendente_endereco, ckb_analise_credito_pendente, ckb_analise_credito_pendente_cartao
+	dim ckb_analise_credito_st_inicial, ckb_analise_credito_pendente_vendas, ckb_analise_credito_pendente_endereco, ckb_analise_credito_pendente, ckb_analise_credito_pendente_cartao
 	dim ckb_analise_credito_ok, ckb_analise_credito_ok_aguardando_deposito, ckb_analise_credito_ok_deposito_aguardando_desbloqueio
+	dim ckb_analise_credito_pendente_pagto_antecipado_boleto, ckb_analise_credito_ok_aguardando_pagto_boleto_av
 	dim ckb_entrega_imediata_sim, ckb_entrega_imediata_nao, c_dt_previsao_entrega_inicio, c_dt_previsao_entrega_termino
 	dim op_forma_pagto, c_forma_pagto_qtde_parc
 	dim c_vendedor, c_indicador
@@ -119,13 +120,16 @@
 	ckb_visanet = Trim(Request.Form("ckb_visanet"))
 	ckb_perc_RT = Trim(Request.Form("ckb_perc_RT"))
 	c_perc_RT = Trim(Request.Form("c_perc_RT"))
+	ckb_analise_credito_st_inicial = Trim(Request.Form("ckb_analise_credito_st_inicial"))
 	ckb_analise_credito_pendente_vendas = Trim(Request.Form("ckb_analise_credito_pendente_vendas"))
 	ckb_analise_credito_pendente_endereco = Trim(Request.Form("ckb_analise_credito_pendente_endereco"))
 	ckb_analise_credito_pendente = Trim(Request.Form("ckb_analise_credito_pendente"))
 	ckb_analise_credito_pendente_cartao = Trim(Request.Form("ckb_analise_credito_pendente_cartao"))
+	ckb_analise_credito_pendente_pagto_antecipado_boleto = Trim(Request.Form("ckb_analise_credito_pendente_pagto_antecipado_boleto"))
 	ckb_analise_credito_ok = Trim(Request.Form("ckb_analise_credito_ok"))
 	ckb_analise_credito_ok_aguardando_deposito = Trim(Request.Form("ckb_analise_credito_ok_aguardando_deposito"))
 	ckb_analise_credito_ok_deposito_aguardando_desbloqueio = Trim(Request.Form("ckb_analise_credito_ok_deposito_aguardando_desbloqueio"))
+	ckb_analise_credito_ok_aguardando_pagto_boleto_av = Trim(Request.Form("ckb_analise_credito_ok_aguardando_pagto_boleto_av"))
 	ckb_entrega_imediata_sim = Trim(Request.Form("ckb_entrega_imediata_sim"))
 	ckb_entrega_imediata_nao = Trim(Request.Form("ckb_entrega_imediata_nao"))
 	c_dt_previsao_entrega_inicio = Trim(Request.Form("c_dt_previsao_entrega_inicio"))
@@ -514,6 +518,12 @@ dim s_grupo_origem
 '	CRITÉRIO: ANÁLISE DE CRÉDITO
 	s = ""
 
+	s_aux = ckb_analise_credito_st_inicial
+	if s_aux <> "" then
+		if s <> "" then s = s & " OR"
+		s = s & " (t_PEDIDO__BASE.analise_credito = " & s_aux & ")"
+		end if
+
 	s_aux = ckb_analise_credito_pendente_vendas
 	if s_aux <> "" then
 		if s <> "" then s = s & " OR"
@@ -532,6 +542,12 @@ dim s_grupo_origem
 		s = s & " (t_PEDIDO__BASE.analise_credito = " & s_aux & ")"
 		end if
 	
+	s_aux = ckb_analise_credito_pendente_pagto_antecipado_boleto
+	if s_aux <> "" then
+		if s <> "" then s = s & " OR"
+		s = s & " (t_PEDIDO__BASE.analise_credito = " & s_aux & ")"
+		end if
+
 	s_aux = ckb_analise_credito_ok
 	if s_aux <> "" then
 		if s <> "" then s = s & " OR"
@@ -545,6 +561,12 @@ dim s_grupo_origem
 		end if
 
 	s_aux = ckb_analise_credito_ok_deposito_aguardando_desbloqueio
+	if s_aux <> "" then
+		if s <> "" then s = s & " OR"
+		s = s & " (t_PEDIDO__BASE.analise_credito = " & s_aux & ")"
+		end if
+
+	s_aux = ckb_analise_credito_ok_aguardando_pagto_boleto_av
 	if s_aux <> "" then
 		if s <> "" then s = s & " OR"
 		s = s & " (t_PEDIDO__BASE.analise_credito = " & s_aux & ")"
@@ -1727,6 +1749,13 @@ function fRELConcluir( id_pedido ){
 		end if
 
 	s = ""
+
+	if ckb_analise_credito_st_inicial <> "" then
+		s_aux = "status inicial"
+		if s <> "" then s = s & ",&nbsp;&nbsp;"
+		s = s & s_aux
+		end if
+
 	s_aux = Lcase(x_analise_credito(ckb_analise_credito_pendente_vendas))
 	if s_aux<>"" then
 		if s <> "" then s = s & ",&nbsp;&nbsp;"
@@ -1751,6 +1780,12 @@ function fRELConcluir( id_pedido ){
 		s = s & s_aux
 		end if
 	
+	s_aux = Lcase(x_analise_credito(ckb_analise_credito_pendente_pagto_antecipado_boleto))
+	if s_aux<>"" then
+		if s <> "" then s = s & ",&nbsp;&nbsp;"
+		s = s & s_aux
+		end if
+
 	s_aux = Lcase(x_analise_credito(ckb_analise_credito_ok))
 	if s_aux<>"" then
 		if s <> "" then s = s & ",&nbsp;&nbsp;"
@@ -1764,6 +1799,12 @@ function fRELConcluir( id_pedido ){
 		end if
 
 	s_aux = Lcase(x_analise_credito(ckb_analise_credito_ok_deposito_aguardando_desbloqueio))
+	if s_aux<>"" then
+		if s <> "" then s = s & ",&nbsp;&nbsp;"
+		s = s & s_aux
+		end if
+
+	s_aux = Lcase(x_analise_credito(ckb_analise_credito_ok_aguardando_pagto_boleto_av))
 	if s_aux<>"" then
 		if s <> "" then s = s & ",&nbsp;&nbsp;"
 		s = s & s_aux

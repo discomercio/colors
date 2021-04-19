@@ -48,6 +48,7 @@
 	dim blnUsarMemorizacaoCompletaEnderecos
 	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 
+	dim sBlocoNotasMsg
 	dim total_estoque_sem_presenca, total_estoque_vendido
 	dim i, n, v_split, alerta, deve_splitar, id_pedido_filhote, s_log, msg_erro
 	redim v_split(0)
@@ -219,6 +220,10 @@
 			rs("etg_imediata_data") = sx("etg_imediata_data")
 			rs("etg_imediata_usuario") = sx("etg_imediata_usuario")
 			
+			rs("PagtoAntecipadoQuitadoStatus") = sx("PagtoAntecipadoQuitadoStatus")
+			rs("PagtoAntecipadoQuitadoDataHora") = sx("PagtoAntecipadoQuitadoDataHora")
+			rs("PagtoAntecipadoQuitadoUsuario") = sx("PagtoAntecipadoQuitadoUsuario")
+
 			rs("pedido_bs_x_ac") = sx("pedido_bs_x_ac")
 			rs("pedido_bs_x_marketplace") = sx("pedido_bs_x_marketplace")
 			rs("marketplace_codigo_origem") = sx("marketplace_codigo_origem")
@@ -381,6 +386,13 @@
 				next
 			end if
 		
+		if alerta = "" then
+			sBlocoNotasMsg = "Pedido gerado através de split manual do pedido " & pedido_selecionado & " por '" & usuario & "'"
+			if Not grava_bloco_notas_pedido(id_pedido_filhote, ID_USUARIO_SISTEMA, "", COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__RESTRITO, sBlocoNotasMsg, COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_SPLIT_MANUAL, msg_erro) then
+				alerta = "Falha ao gravar bloco de notas com mensagem automática no pedido (" & id_pedido_filhote & ")"
+				end if
+			end if
+
 		if alerta = "" then
 		'	PEDIDO-BASE: ATUALIZA STATUS DE ENTREGA
 			total_estoque_sem_presenca = 0

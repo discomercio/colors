@@ -73,6 +73,7 @@
 			'	NO FORMULÁRIO, HÁ CAMPO(S) DO TIPO HIDDEN P/ FORÇAR
 			'	A CRIAÇÃO DE ARRAY DE CAMPOS MESMO QUANDO HÁ APENAS 1 PEDIDO!!
 				.c1=Trim(Request.Form("c_pedido")(i))
+				if .c1 <> "" then .c1 = retorna_num_pedido_base(.c1)
 				.c2=Trim(Request.Form("c_obs1")(i))
 				.c3=Trim(Request.Form("rb_credito_ped_" & Cstr(i-1)))
 				.c4=Trim(Request.Form("c_descr_forma_pagto")(i))
@@ -148,6 +149,12 @@
 							rs("analise_credito_data")=Now
 							rs("analise_credito_usuario")=usuario
 							if v_dados(i).c3 = COD_AN_CREDITO_PENDENTE_VENDAS then rs("analise_credito_pendente_vendas_motivo") = v_dados(i).c6
+							
+							if CLng(v_dados(i).c3) = CLng(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO) then
+								rs("PagtoAntecipadoStatus")=CLng(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO)
+								rs("PagtoAntecipadoDataHora")=Now
+								rs("PagtoAntecipadoUsuario")=usuario
+								end if
 							end if
 					
 						rs("forma_pagto")=v_dados(i).c4

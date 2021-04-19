@@ -66,7 +66,7 @@ dim x, r, strResp, ha_default, strSql
 			 " WHERE (vendedor_loja <> 0) AND " & _
 			 SCHEMA_BD & ".UsuarioPossuiAcessoLoja(t_USUARIO.usuario, '" & loja & "') = 'S'" & _
 			 " UNION" & _
-			 " SELECT DISTINCT vendedor AS id, nome, nome_iniciais_em_maiusculas FROM t_PEDIDO INNER JOIN t_USUARIO ON t_PEDIDO.vendedor=t_USUARIO.usuario WHERE (t_PEDIDO.numero_loja = " & loja & ") AND (analise_credito = " & COD_AN_CREDITO_PENDENTE & ")" & _
+			 " SELECT DISTINCT t_PEDIDO__BASE.vendedor AS id, nome, nome_iniciais_em_maiusculas FROM t_PEDIDO INNER JOIN t_PEDIDO AS t_PEDIDO__BASE ON (t_PEDIDO.pedido_base=t_PEDIDO__BASE.pedido) INNER JOIN t_USUARIO ON t_PEDIDO__BASE.vendedor=t_USUARIO.usuario WHERE (t_PEDIDO__BASE.numero_loja = " & loja & ") AND (t_PEDIDO__BASE.analise_credito = " & COD_AN_CREDITO_PENDENTE & ")" & _
 			 ") AS t" & _
 			 " ORDER BY id"
 	

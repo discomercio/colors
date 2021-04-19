@@ -247,6 +247,12 @@ function fFILTROConfirma( f ) {
 	<tr>
 		<td class="MDE" align="left">
 			<% intIdx = intIdx + 1 %>
+			<input type="radio" id="rb_analise_credito" name="rb_analise_credito" value="<%=COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO%>" /><span class="C" style="cursor:default" onclick="fFILTRO.rb_analise_credito[<%=Cstr(intIdx)%>].click();"><%=x_analise_credito(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)%></span>
+		</td>
+	</tr>
+	<tr>
+		<td class="MDE" align="left">
+			<% intIdx = intIdx + 1 %>
 			<input type="radio" id="rb_analise_credito" name="rb_analise_credito" value="<%=COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO%>"><span class="C" style="cursor:default" onclick="fFILTRO.rb_analise_credito[<%=Cstr(intIdx)%>].click();"><%=x_analise_credito(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO)%></span>
 		</td>
 	</tr>
@@ -254,6 +260,12 @@ function fFILTROConfirma( f ) {
 		<td class="MDE" align="left">
 			<% intIdx = intIdx + 1 %>
 			<input type="radio" id="rb_analise_credito" name="rb_analise_credito" value="<%=COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO%>"><span class="C" style="cursor:default" onclick="fFILTRO.rb_analise_credito[<%=Cstr(intIdx)%>].click();"><%=x_analise_credito(COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO)%></span>
+		</td>
+	</tr>
+	<tr>
+		<td class="MDE" align="left">
+			<% intIdx = intIdx + 1 %>
+			<input type="radio" id="rb_analise_credito" name="rb_analise_credito" value="<%=COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV%>" /><span class="C" style="cursor:default" onclick="fFILTRO.rb_analise_credito[<%=Cstr(intIdx)%>].click();"><%=x_analise_credito(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)%></span>
 		</td>
 	</tr>
 	<tr>

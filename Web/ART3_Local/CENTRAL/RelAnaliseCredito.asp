@@ -494,6 +494,17 @@ dim iCountPedFamilia
 										"					</td>" & chr(13) & _
 										"					<td class='MC MD' style='width:" & Cstr(intEspacamentoOpcoesAnaliseCredito) & "px;' align='left'>&nbsp;</td>" & chr(13) & _
 										"				</tr>" & chr(13) & _
+										"				<tr>" & chr(13) & _
+										"					<td class='MC' style='width:" & Cstr(intEspacamentoOpcoesAnaliseCredito) & "px;' align='left'>&nbsp;</td>" & chr(13) & _
+										"					<td class='MC' align='left'>" & chr(13) & _
+										"						<input type='radio' id='rb_credito_ped_" & Cstr(n_pedido) & "' name='rb_credito_ped_" & Cstr(n_pedido) & "' value='" & COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV & "' onchange='exibeOcultaPendenteVendasMotivo(" & Cstr(n_pedido) & ")'><span class='C' style='cursor:default;color:" & x_analise_credito_cor(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV) & ";' onclick='fREL.rb_credito_ped_" & Cstr(n_pedido) & "[6].click();'>" & x_analise_credito(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV) & "</span>" & chr(13) &_
+										"					</td>" & chr(13) & _
+										"					<td class='MC' style='width:" & Cstr(intEspacamentoOpcoesAnaliseCredito) & "px;' align='left'>&nbsp;</td>" & chr(13) & _
+										"					<td class='MC' colspan='5' align='left'>" & chr(13) & _
+										"						<input type='radio' id='rb_credito_ped_" & Cstr(n_pedido) & "' name='rb_credito_ped_" & Cstr(n_pedido) & "' value='" & COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO & "' onchange='exibeOcultaPendenteVendasMotivo(" & Cstr(n_pedido) & ")'><span class='C' style='cursor:default;color:" & x_analise_credito_cor(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO) & ";' onclick='fREL.rb_credito_ped_" & Cstr(n_pedido) & "[7].click();'>" & x_analise_credito(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO) & "</span>" & chr(13) &_
+										"					</td>" & chr(13) & _
+										"					<td class='MC MD' style='width:" & Cstr(intEspacamentoOpcoesAnaliseCredito) & "px;' align='left'>&nbsp;</td>" & chr(13) & _
+										"				</tr>" & chr(13) & _
 										"			</table>" & chr(13) & _
 										"		</td>" & chr(13) & _
 										"	</tr>" & chr(13)
@@ -1735,13 +1746,24 @@ dim iCountPedFamilia
                                 "                   </td>" & chr(13) & _
                                 "               </tr>" & _
 								"				<tr>" & chr(13) & _
+								"					<td class='MC' style='width:" & Cstr(intEspacamentoOpcoesAnaliseCredito) & "px;' align='left'>&nbsp;</td>" & chr(13) & _
+								"					<td class='MC' align='left'>" & chr(13) & _
+								"						<input type='radio' id='rb_credito_ped_" & Cstr(n_pedido) & "' name='rb_credito_ped_" & Cstr(n_pedido) & "' value='" & COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO & "' onchange='exibeOcultaPendenteVendasMotivo(" & Cstr(n_pedido) & ")'><span class='C' style='cursor:default;color:darkorange;' onclick='fREL.rb_credito_ped_" & Cstr(n_pedido) & "[4].click();'>" & x_analise_credito(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO) & "</span>" & chr(13) &_
+								"					</td>" & chr(13) & _
+								"					<td class='MC' style='width:" & Cstr(intEspacamentoOpcoesAnaliseCredito) & "px;' align='left'>&nbsp;</td>" & chr(13) & _
+								"					<td class='MC' colspan='5' align='left'>" & chr(13) & _
+								"						<input type='radio' id='rb_credito_ped_" & Cstr(n_pedido) & "' name='rb_credito_ped_" & Cstr(n_pedido) & "' value='" & COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO & "' onchange='exibeOcultaPendenteVendasMotivo(" & Cstr(n_pedido) & ")'><span class='C' style='cursor:default;color:darkorange;' onclick='fREL.rb_credito_ped_" & Cstr(n_pedido) & "[5].click();'>" & x_analise_credito(COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO) & "</span>" & chr(13) &_
+								"					</td>" & chr(13) & _
+								"					<td class='MC MD' style='width:" & Cstr(intEspacamentoOpcoesAnaliseCredito) & "px;' align='left'>&nbsp;</td>" & chr(13) & _
+								"				</tr>" & chr(13) & _
+								"				<tr>" & chr(13) & _
 								"					<td class='MC MB' style='width:" & Cstr(intEspacamentoOpcoesAnaliseCredito) & "px;' align='left'>&nbsp;</td>" & chr(13) & _
 								"					<td class='MC MB' align='left'>" & chr(13) & _
-								"						<input type='radio' id='rb_credito_ped_" & Cstr(n_pedido) & "' name='rb_credito_ped_" & Cstr(n_pedido) & "' value='" & COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO & "' onchange='exibeOcultaPendenteVendasMotivo(" & Cstr(n_pedido) & ")'><span class='C' style='cursor:default;color:darkorange;' onclick='fREL.rb_credito_ped_" & Cstr(n_pedido) & "[4].click();'>" & x_analise_credito(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO) & "</span>" & chr(13) &_
+								"						<input type='radio' id='rb_credito_ped_" & Cstr(n_pedido) & "' name='rb_credito_ped_" & Cstr(n_pedido) & "' value='" & COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV & "' onchange='exibeOcultaPendenteVendasMotivo(" & Cstr(n_pedido) & ")'><span class='C' style='cursor:default;color:" & x_analise_credito_cor(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV) & ";' onclick='fREL.rb_credito_ped_" & Cstr(n_pedido) & "[6].click();'>" & x_analise_credito(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV) & "</span>" & chr(13) &_
 								"					</td>" & chr(13) & _
 								"					<td class='MC MB' style='width:" & Cstr(intEspacamentoOpcoesAnaliseCredito) & "px;' align='left'>&nbsp;</td>" & chr(13) & _
 								"					<td class='MC MB' colspan='5' align='left'>" & chr(13) & _
-								"						<input type='radio' id='rb_credito_ped_" & Cstr(n_pedido) & "' name='rb_credito_ped_" & Cstr(n_pedido) & "' value='" & COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO & "' onchange='exibeOcultaPendenteVendasMotivo(" & Cstr(n_pedido) & ")'><span class='C' style='cursor:default;color:darkorange;' onclick='fREL.rb_credito_ped_" & Cstr(n_pedido) & "[5].click();'>" & x_analise_credito(COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO) & "</span>" & chr(13) &_
+								"						<input type='radio' id='rb_credito_ped_" & Cstr(n_pedido) & "' name='rb_credito_ped_" & Cstr(n_pedido) & "' value='" & COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO & "' onchange='exibeOcultaPendenteVendasMotivo(" & Cstr(n_pedido) & ")'><span class='C' style='cursor:default;color:" & x_analise_credito_cor(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO) & ";' onclick='fREL.rb_credito_ped_" & Cstr(n_pedido) & "[7].click();'>" & x_analise_credito(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO) & "</span>" & chr(13) &_
 								"					</td>" & chr(13) & _
 								"					<td class='MC MB MD' style='width:" & Cstr(intEspacamentoOpcoesAnaliseCredito) & "px;' align='left'>&nbsp;</td>" & chr(13) & _
 								"				</tr>" & chr(13) & _

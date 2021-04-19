@@ -41,14 +41,14 @@
 	Const COD_FC_AMBIENTE = "L"
 
 	Const SERVIDOR_BD = "Win2019DB,29981"
-	Const NOME_BD = "Artven2End"
+	Const NOME_BD = "Artven2DIS"
 	Const USUARIO_BD = "artven2"
 	Const SCHEMA_BD = "dbo"
 	Const SENHA_BD = "000000007bbddfed3b85e97d47b91b"
 
 '	DADOS P/ CONEXÃO USADOS PELO RELATÓRIO DE PEDIDOS INDICADORES AO GRAVAR OS LANÇAMENTOS NO FLUXO DE CAIXA
 	Const SERVIDOR_BD_RPIFC = "Win2019DB,29981"
-	Const NOME_BD_RPIFC = "Artven2End"
+	Const NOME_BD_RPIFC = "Artven2DIS"
 	Const USUARIO_BD_RPIFC = "artven2"
 	Const SENHA_BD_RPIFC = "000000007bbddfed3b85e97d47b91b"
 
@@ -58,7 +58,7 @@
 	Const SENHA_BD_AT = "000000007bbddfed3b85e97d47b91b"
 
 	Const SERVIDOR_BD_BS = "Win2019DB,29981"
-	Const NOME_BD_BS = "Artven2End"
+	Const NOME_BD_BS = "Artven2DIS"
 	Const USUARIO_BD_BS = "artven2"
 	Const SENHA_BD_BS = "000000007bbddfed3b85e97d47b91b"
 
@@ -216,7 +216,7 @@
 	Const URL_FILE__E_LOGO_TOP_OLD03_CSS = "../Global/eLogoTopOLD03.css?v=002"
 	
 '	URL PARA ACESSO NA PÁGINA DE LOGIN DO PARCEIRO (PÁGINA C/ LOGIN DUPLO)
-	Const URL_BASE_RELATIVA_SITE_ARTVEN3 = "/art3HotFix3"
+	Const URL_BASE_RELATIVA_SITE_ARTVEN3 = "/art3HotFix4"
 	Const URL_BASE_RELATIVA_SITE_ASSISTENCIA_TECNICA = "/assistenciatecnica"
 	
 '	Const URL_SITE_CLIENTE_PAGTO_CIELO = "http://web.bonshop.com.br/pagamento/clientecartao/default.asp"

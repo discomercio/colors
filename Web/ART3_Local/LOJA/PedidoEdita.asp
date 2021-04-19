@@ -371,6 +371,16 @@ end function
 	blnFormaPagtoEdicaoLiberada = False
 	if operacao_permitida(OP_LJA_EDITA_PEDIDO_FORMA_PAGTO, s_lista_operacoes_permitidas) then
 		if Not IsPedidoEncerrado(r_pedido.st_entrega) then blnFormaPagtoEdicaoLiberada = True
+		'Se o boleto AV já foi emitido, o vendedor não pode mais editar a forma de pagamento
+		if ( (st_pagto = ST_PAGTO_PAGO) Or (st_pagto = ST_PAGTO_PARCIAL) ) _
+			And _
+		   ( _
+				( (CStr(r_pedido.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_A_VISTA)) And (CStr(r_pedido.av_forma_pagto) = CStr(ID_FORMA_PAGTO_BOLETO_AV)) ) _
+				Or _
+				( (CStr(r_pedido.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA)) And (CStr(r_pedido.pce_forma_pagto_entrada) = CStr(ID_FORMA_PAGTO_BOLETO_AV)) ) _
+			) then
+			blnFormaPagtoEdicaoLiberada = False
+			end if
 		end if
 	
 	dim strPercLimiteRASemDesagio, strPercDesagio

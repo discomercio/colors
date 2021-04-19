@@ -272,6 +272,24 @@
 	blnFormaPagtoEdicaoLiberada = False
 	if operacao_permitida(OP_CEN_EDITA_PEDIDO_FORMA_PAGTO, s_lista_operacoes_permitidas) then
 		blnFormaPagtoEdicaoLiberada = True
+		'Se o boleto AV já foi emitido, o vendedor não pode mais editar a forma de pagamento
+		if ( (st_pagto = ST_PAGTO_PAGO) Or (st_pagto = ST_PAGTO_PARCIAL) ) _
+			And _
+			( _
+				( (CStr(r_pedido.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_A_VISTA)) And (CStr(r_pedido.av_forma_pagto) = CStr(ID_FORMA_PAGTO_BOLETO_AV)) ) _
+				Or _
+				( (CStr(r_pedido.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA)) And (CStr(r_pedido.pce_forma_pagto_entrada) = CStr(ID_FORMA_PAGTO_BOLETO_AV)) ) _
+			) then
+			if Not ( _
+				operacao_permitida(OP_CEN_EDITA_ANALISE_CREDITO, s_lista_operacoes_permitidas) _
+				Or _
+				operacao_permitida(OP_CEN_PAGTO_PARCIAL, s_lista_operacoes_permitidas) _
+				Or _
+				operacao_permitida(OP_CEN_PAGTO_QUITACAO, s_lista_operacoes_permitidas) _
+				) then
+				blnFormaPagtoEdicaoLiberada = False
+				end if
+			end if
 		end if
 
 	dim blnEntregaImediataEdicaoLiberada, blnEntregaImediataNaoSemDataPrevisao
@@ -279,6 +297,10 @@
 	if operacao_permitida(OP_CEN_EDITA_PEDIDO, s_lista_operacoes_permitidas) then
 		if (Not IsPedidoEncerrado(r_pedido.st_entrega)) Or (Trim(r_pedido.obs_2) = "") then blnEntregaImediataEdicaoLiberada = True
 		end if
+
+	dim blnPagtoAntecipadoEdicaoLiberada
+	blnPagtoAntecipadoEdicaoLiberada = False
+	if operacao_permitida(OP_CEN_EDITA_ANALISE_CREDITO, s_lista_operacoes_permitidas) then blnPagtoAntecipadoEdicaoLiberada = True
 
 	blnEntregaImediataNaoSemDataPrevisao = False
 	if (Cstr(r_pedido.st_etg_imediata)=Cstr(COD_ETG_IMEDIATA_NAO)) And (Trim("" & r_pedido.PrevisaoEntregaData) = "") then blnEntregaImediataNaoSemDataPrevisao = True
@@ -614,6 +636,8 @@ end function
 	    <%else%>
 			$('#trPendVendasMotivo').hide();
         <% end if%>
+
+		exibeOcultaPagtoAntecipadoQuitadoStatus();
 
 		$("#c_data_previsao_entrega").hUtilUI('datepicker_padrao');
 
@@ -1566,12 +1590,21 @@ function LimparCamposEndEtg( f ) {
 }
 
 function exibeOcultaPendenteVendasMotivo() {
-    if ($('#rb_analise_credito').is(':checked')) {
+	if ($('#rb_analise_credito_pendente_vendas').is(':checked')) {
         $('#trPendVendasMotivo').show();
     }
     else {
         $('#trPendVendasMotivo').hide();
     }
+}
+
+function exibeOcultaPagtoAntecipadoQuitadoStatus() {
+	if ($("#rb_pagto_antecipado_status_antecipado").is(":checked")) {
+		$(".TdPagtoAntecipadoQuitadoStatus").show();
+	}
+	else {
+		$(".TdPagtoAntecipadoQuitadoStatus").hide();
+	}
 }
 
 function fPEDConfirma( f ) {
@@ -2576,6 +2609,7 @@ function setarValorRadio(array, valor)
 <input type="hidden" name="blnObs2EdicaoLiberada" id="blnObs2EdicaoLiberada" value='<%=Cstr(blnObs2EdicaoLiberada)%>'>
 <input type="hidden" name="blnObs3EdicaoLiberada" id="blnObs3EdicaoLiberada" value='<%=Cstr(blnObs3EdicaoLiberada)%>'>
 <input type="hidden" name="blnFormaPagtoEdicaoLiberada" id="blnFormaPagtoEdicaoLiberada" value='<%=Cstr(blnFormaPagtoEdicaoLiberada)%>'>
+<input type="hidden" name="blnPagtoAntecipadoEdicaoLiberada" id="blnPagtoAntecipadoEdicaoLiberada" value="<%=CStr(blnPagtoAntecipadoEdicaoLiberada)%>" />
 <input type="hidden" name="blnEndEntregaEdicaoLiberada" id="blnEndEntregaEdicaoLiberada" value='<%=Cstr(blnEndEntregaEdicaoLiberada)%>'>
 <input type="hidden" name="blnTransportadoraEdicaoLiberada" id="blnTransportadoraEdicaoLiberada" value='<%=Cstr(blnTransportadoraEdicaoLiberada)%>'>
 <input type="hidden" name="blnValorFreteEdicaoLiberada" id="blnValorFreteEdicaoLiberada" value='<%=Cstr(blnValorFreteEdicaoLiberada)%>'>
@@ -4434,6 +4468,32 @@ function setarValorRadio(array, valor)
 		if vl_saldo_a_pagar >= 0 then Response.Write "black" else Response.Write "red" 
 		%>;"><%=s_vl_saldo_a_pagar%></p></td>
 </tr>
+<% if blnPagtoAntecipadoEdicaoLiberada then %>
+<tr>
+	<td colspan="3" class="MC MD" align="left" valign="bottom"><span class="Rf">Condição Pagto</span></td>
+	<td colspan="3" class="MC" align="left" valign="bottom"><span class="Rf">Status Pagto Antecipado</span></td>
+</tr>
+<tr>
+	<td colspan="3" class="MD" align="left">
+		<%intIdx=0%>
+		<input type="radio" name="rb_pagto_antecipado_status" id="rb_pagto_antecipado_status_normal" value="<%=COD_PAGTO_ANTECIPADO_STATUS_NORMAL%>"
+			<% if CStr(r_pedido.PagtoAntecipadoStatus) = COD_PAGTO_ANTECIPADO_STATUS_NORMAL then Response.Write " checked" %> onchange="exibeOcultaPagtoAntecipadoQuitadoStatus();" /><span class="C" style="cursor:default;" onclick="fPED.rb_pagto_antecipado_status[<%=Cstr(intIdx)%>].click();"><%=pagto_antecipado_descricao(COD_PAGTO_ANTECIPADO_STATUS_NORMAL)%></span>
+		<br />
+		<%intIdx=intIdx+1%>
+		<input type="radio" name="rb_pagto_antecipado_status" id="rb_pagto_antecipado_status_antecipado" value="<%=COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO%>"
+			<% if CStr(r_pedido.PagtoAntecipadoStatus) = COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO then Response.Write " checked" %> onchange="exibeOcultaPagtoAntecipadoQuitadoStatus();" /><span class="C" style="cursor:default;" onclick="fPED.rb_pagto_antecipado_status[<%=Cstr(intIdx)%>].click();"><%=pagto_antecipado_descricao(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO)%></span>
+	</td>
+	<td colspan="3" class="TdPagtoAntecipadoQuitadoStatus" align="left">
+		<%intIdx=0%>
+		<input type="radio" name="rb_pagto_antecipado_quitado_status" value="<%=COD_PAGTO_ANTECIPADO_QUITADO_STATUS_PENDENTE%>"
+			<% if CStr(r_pedido.PagtoAntecipadoQuitadoStatus) = COD_PAGTO_ANTECIPADO_QUITADO_STATUS_PENDENTE then Response.Write " checked" %> /><span class="C" style="cursor:default;color:<%=pagto_antecipado_quitado_cor(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO, COD_PAGTO_ANTECIPADO_QUITADO_STATUS_PENDENTE)%>;" onclick="fPED.rb_pagto_antecipado_quitado_status[<%=Cstr(intIdx)%>].click();"><%=pagto_antecipado_quitado_descricao(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO, COD_PAGTO_ANTECIPADO_QUITADO_STATUS_PENDENTE)%></span>
+		<br />
+		<%intIdx=intIdx+1%>
+		<input type="radio" name="rb_pagto_antecipado_quitado_status" value="<%=COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO%>"
+			<% if CStr(r_pedido.PagtoAntecipadoQuitadoStatus) = COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO then Response.Write " checked" %> /><span class="C" style="cursor:default;color:<%=pagto_antecipado_quitado_cor(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO, COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO)%>;" onclick="fPED.rb_pagto_antecipado_quitado_status[<%=Cstr(intIdx)%>].click();"><%=pagto_antecipado_quitado_descricao(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO, COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO)%></span>
+	</td>
+</tr>
+<% end if %>
 </table>
 
 
@@ -4450,6 +4510,10 @@ function setarValorRadio(array, valor)
 		( Cstr(r_pedido.analise_credito)=Cstr(COD_AN_CREDITO_PENDENTE_ENDERECO) ) _
 		  Or _
 		( Cstr(r_pedido.analise_credito)=Cstr(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO) ) _
+		  Or _
+		( Cstr(r_pedido.analise_credito)=Cstr(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV) ) _
+		  Or _
+		( Cstr(r_pedido.analise_credito)=Cstr(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO) ) _
 		  Or _
 		( Cstr(r_pedido.analise_credito)=Cstr(COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO) ) _
 		  Or _
@@ -4469,22 +4533,22 @@ function setarValorRadio(array, valor)
 		<tr>
 			<td>
 				<%intIdx=0%>
-				<input type="radio" id="rb_analise_credito" name="rb_analise_credito" 
+				<input type="radio" name="rb_analise_credito" id="rb_analise_credito_pendente_vendas"
 					value="<%=COD_AN_CREDITO_PENDENTE_VENDAS%>" <%if Cstr(r_pedido.analise_credito)=Cstr(COD_AN_CREDITO_PENDENTE_VENDAS) then Response.Write " checked"%> onchange="exibeOcultaPendenteVendasMotivo()"><span class="C" style="cursor:default;color:red;" onclick="fPED.rb_analise_credito[<%=Cstr(intIdx)%>].click();"><%=x_analise_credito(COD_AN_CREDITO_PENDENTE_VENDAS)%></span>
 			</td>
 			<td>
 				<%intIdx=intIdx+1%>
-				<input type="radio" id="rb_analise_credito" name="rb_analise_credito" 
+				<input type="radio" name="rb_analise_credito" id="rb_analise_credito_pendente_endereco"
 					value="<%=COD_AN_CREDITO_PENDENTE_ENDERECO%>" <%if Cstr(r_pedido.analise_credito)=Cstr(COD_AN_CREDITO_PENDENTE_ENDERECO) then Response.Write " checked"%> onchange="exibeOcultaPendenteVendasMotivo()"><span class="C" style="cursor:default;color:red;" onclick="fPED.rb_analise_credito[<%=Cstr(intIdx)%>].click();"><%=x_analise_credito(COD_AN_CREDITO_PENDENTE_ENDERECO)%></span>
 			</td>
 			<td>
 				<%intIdx=intIdx+1%>
-				<input type="radio" id="rb_analise_credito" name="rb_analise_credito" 
+				<input type="radio" name="rb_analise_credito" id="rb_analise_credito_pendente"
 					value="<%=COD_AN_CREDITO_PENDENTE%>" <%if Cstr(r_pedido.analise_credito)=Cstr(COD_AN_CREDITO_PENDENTE) then Response.Write " checked"%> onchange="exibeOcultaPendenteVendasMotivo()"><span class="C" style="cursor:default;color:red;" onclick="fPED.rb_analise_credito[<%=Cstr(intIdx)%>].click();"><%=x_analise_credito(COD_AN_CREDITO_PENDENTE)%></span>
 			</td>
 			<td>
 				<%intIdx=intIdx+1%>
-				<input type="radio" id="rb_analise_credito" name="rb_analise_credito" 
+				<input type="radio" name="rb_analise_credito" id="rb_analise_credito_ok"
 					value="<%=COD_AN_CREDITO_OK%>" <%if Cstr(r_pedido.analise_credito)=Cstr(COD_AN_CREDITO_OK) then Response.Write " checked"%> onchange="exibeOcultaPendenteVendasMotivo()"><span class="C" style="cursor:default;color:green;" onclick="fPED.rb_analise_credito[<%=Cstr(intIdx)%>].click();"><%=x_analise_credito(COD_AN_CREDITO_OK)%></span>
 			</td>
 		</tr>
@@ -4499,13 +4563,25 @@ function setarValorRadio(array, valor)
 		<tr>
 			<td>
 					<%intIdx=intIdx+1%>
-					<input type="radio" id="rb_analise_credito" name="rb_analise_credito" 
+					<input type="radio" name="rb_analise_credito" id="rb_analise_credito_ok_aguardando_deposito"
 						value="<%=COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO%>" <%if Cstr(r_pedido.analise_credito)=Cstr(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO) then Response.Write " checked"%> onchange="exibeOcultaPendenteVendasMotivo()"><span class="C" style="cursor:default;color:darkorange;" onclick="fPED.rb_analise_credito[<%=Cstr(intIdx)%>].click();"><%=x_analise_credito(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO)%></span>
 			</td>
 			<td colspan="3">
 					<%intIdx=intIdx+1%>
-					<input type="radio" id="rb_analise_credito" name="rb_analise_credito" 
+					<input type="radio" name="rb_analise_credito" id="rb_analise_credito_ok_deposito_aguardando_desbloqueio"
 						value="<%=COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO%>" <%if Cstr(r_pedido.analise_credito)=Cstr(COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO) then Response.Write " checked"%> onchange="exibeOcultaPendenteVendasMotivo()"><span class="C" style="cursor:default;color:darkorange;" onclick="fPED.rb_analise_credito[<%=Cstr(intIdx)%>].click();"><%=x_analise_credito(COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO)%></span>
+			</td>
+		</tr>
+		<tr>
+			<td>
+					<%intIdx=intIdx+1%>
+					<input type="radio" name="rb_analise_credito" id="rb_analise_credito_ok_aguardando_pagto_boleto_av"
+						value="<%=COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV%>" <%if Cstr(r_pedido.analise_credito)=Cstr(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV) then Response.Write " checked"%> onchange="exibeOcultaPendenteVendasMotivo()" /><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)%>;" onclick="fPED.rb_analise_credito[<%=Cstr(intIdx)%>].click();"><%=x_analise_credito(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)%></span>
+			</td>
+			<td colspan="3">
+					<%intIdx=intIdx+1%>
+					<input type="radio" name="rb_analise_credito" id="rb_analise_credito_pendente_pagto_antecipado_boleto"
+						value="<%=COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO%>" <%if Cstr(r_pedido.analise_credito)=Cstr(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO) then Response.Write " checked"%> onchange="exibeOcultaPendenteVendasMotivo()" /><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)%>;" onclick="fPED.rb_analise_credito[<%=Cstr(intIdx)%>].click();"><%=x_analise_credito(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)%></span>
 			</td>
 		</tr>
 		</table>
