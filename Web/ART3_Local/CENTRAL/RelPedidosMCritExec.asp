@@ -62,16 +62,17 @@
 
 	dim alerta
 	dim i
-	dim s, s_aux, s_filtro, flag_ok, cadastrado
+	dim s, s_aux, s_aux_dti, s_aux_dtf, s_filtro, flag_ok, cadastrado
 	dim ckb_st_entrega_esperar, ckb_st_entrega_split, ckb_st_entrega_exceto_cancelados, ckb_st_entrega_exceto_entregues
 	dim ckb_st_entrega_separar_sem_marc, ckb_st_entrega_separar_com_marc
 	dim ckb_st_entrega_a_entregar_sem_marc, ckb_st_entrega_a_entregar_com_marc, ckb_pedido_nao_recebido_pelo_cliente, ckb_pedido_recebido_pelo_cliente
+	dim c_dt_coleta_a_separar_inicio, c_dt_coleta_a_separar_termino, c_dt_coleta_st_a_entregar_inicio, c_dt_coleta_st_a_entregar_termino
 	dim ckb_st_entrega_entregue, c_dt_entregue_inicio, c_dt_entregue_termino
 	dim ckb_st_entrega_cancelado, c_dt_cancelado_inicio, c_dt_cancelado_termino
 	dim ckb_st_pagto_pago, ckb_st_pagto_nao_pago, ckb_st_pagto_pago_parcial
 	dim ckb_periodo_cadastro, c_dt_cadastro_inicio, c_dt_cadastro_termino
 	dim ckb_entrega_marcada_para, c_dt_entrega_inicio, c_dt_entrega_termino
-	dim ckb_produto, c_fabricante, c_produto, c_grupo, v_grupos
+	dim ckb_produto, c_fabricante, c_produto, c_grupo, v_grupos, ckb_somente_pedidos_produto_alocado
 	dim rb_loja, c_loja, c_loja_de, c_loja_ate, vLoja, vLojaAux
 	dim c_cliente_cnpj_cpf, c_cliente_uf
 	dim c_transportadora
@@ -98,9 +99,13 @@
 	ckb_st_entrega_split = Trim(Request.Form("ckb_st_entrega_split"))
 	ckb_st_entrega_separar_sem_marc = Trim(Request.Form("ckb_st_entrega_separar_sem_marc"))
 	ckb_st_entrega_separar_com_marc = Trim(Request.Form("ckb_st_entrega_separar_com_marc"))
+	c_dt_coleta_a_separar_inicio = Trim(Request.Form("c_dt_coleta_a_separar_inicio"))
+	c_dt_coleta_a_separar_termino = Trim(Request.Form("c_dt_coleta_a_separar_termino"))
 	ckb_st_entrega_a_entregar_sem_marc = Trim(Request.Form("ckb_st_entrega_a_entregar_sem_marc"))
 	ckb_st_entrega_a_entregar_com_marc = Trim(Request.Form("ckb_st_entrega_a_entregar_com_marc"))
-    ckb_pedido_nao_recebido_pelo_cliente = Trim(Request.Form("ckb_pedido_nao_recebido_pelo_cliente"))
+	c_dt_coleta_st_a_entregar_inicio = Trim(Request.Form("c_dt_coleta_st_a_entregar_inicio"))
+	c_dt_coleta_st_a_entregar_termino = Trim(Request.Form("c_dt_coleta_st_a_entregar_termino"))
+	ckb_pedido_nao_recebido_pelo_cliente = Trim(Request.Form("ckb_pedido_nao_recebido_pelo_cliente"))
 	ckb_pedido_recebido_pelo_cliente = Trim(Request.Form("ckb_pedido_recebido_pelo_cliente"))
 	ckb_st_entrega_entregue = Trim(Request.Form("ckb_st_entrega_entregue"))
 	c_dt_entregue_inicio = Trim(Request.Form("c_dt_entregue_inicio"))
@@ -120,6 +125,7 @@
 	ckb_produto = Trim(Request.Form("ckb_produto"))
 	c_fabricante = retorna_so_digitos(Trim(Request.Form("c_fabricante")))
 	c_produto = Ucase(Trim(Request.Form("c_produto")))
+	ckb_somente_pedidos_produto_alocado = Trim(Request.Form("ckb_somente_pedidos_produto_alocado"))
 	rb_loja = Ucase(Trim(Request.Form("rb_loja")))
 	c_loja = Trim(Request.Form("c_loja"))
 	c_loja_de = Trim(Request.Form("c_loja_de"))
@@ -302,6 +308,28 @@
 		strMinDtInicialFiltroPeriodoYYYYMMDD = formata_data_yyyymmdd(dtMinDtInicialFiltroPeriodo)
 		strMinDtInicialFiltroPeriodoDDMMYYYY = formata_data(dtMinDtInicialFiltroPeriodo)
 
+		if alerta = "" then
+			if ckb_st_entrega_separar_com_marc <> "" then
+				if (c_dt_coleta_a_separar_inicio <> "") And (c_dt_coleta_a_separar_termino <> "") then
+					if StrToDate(c_dt_coleta_a_separar_termino) < StrToDate(c_dt_coleta_a_separar_inicio) then
+						alerta=texto_add_br(alerta)
+						alerta=alerta & "A data de término (" & c_dt_coleta_a_separar_termino & ") do período de coleta é anterior à data de início (" & c_dt_coleta_a_separar_inicio & ")!"
+						end if
+					end if
+				end if
+			end if
+
+		if alerta = "" then
+			if ckb_st_entrega_a_entregar_com_marc <> "" then
+				if (c_dt_coleta_st_a_entregar_inicio <> "") And (c_dt_coleta_st_a_entregar_termino <> "") then
+					if StrToDate(c_dt_coleta_st_a_entregar_termino) < StrToDate(c_dt_coleta_st_a_entregar_inicio) then
+						alerta=texto_add_br(alerta)
+						alerta=alerta & "A data de término (" & c_dt_coleta_st_a_entregar_termino & ") do período de coleta é anterior à data de início (" & c_dt_coleta_st_a_entregar_inicio & ")!"
+						end if
+					end if
+				end if
+			end if
+
 	'	COLOCADOS ENTRE
 		if alerta = "" then
 			strDtRefDDMMYYYY = c_dt_cadastro_inicio
@@ -461,7 +489,9 @@ dim s, s_aux, s_resp
 	s_aux = Lcase(x_status_entrega(ckb_st_entrega_separar_com_marc))
 	if s_aux<>"" then
 		if s <> "" then s = s & ", "
-		s_aux = s_aux & " (com data de coleta)"
+		if c_dt_coleta_a_separar_inicio <> "" then s_aux_dti = c_dt_coleta_a_separar_inicio else s_aux_dti = "N.I."
+		if c_dt_coleta_a_separar_termino <> "" then s_aux_dtf = c_dt_coleta_a_separar_termino else s_aux_dtf = "N.I."
+		s_aux = s_aux & " (com data de coleta: " & s_aux_dti & " a " & s_aux_dtf & ")"
 		s = s & s_aux
 		end if
 		
@@ -475,7 +505,9 @@ dim s, s_aux, s_resp
 	s_aux = Lcase(x_status_entrega(ckb_st_entrega_a_entregar_com_marc))
 	if s_aux<>"" then
 		if s <> "" then s = s & ", "
-		s_aux = s_aux & " (com data de coleta)"
+		if c_dt_coleta_st_a_entregar_inicio <> "" then s_aux_dti = c_dt_coleta_st_a_entregar_inicio else s_aux_dti = "N.I."
+		if c_dt_coleta_st_a_entregar_termino <> "" then s_aux_dtf = c_dt_coleta_st_a_entregar_termino else s_aux_dtf = "N.I."
+		s_aux = s_aux & " (com data de coleta: " & s_aux_dti & " a " & s_aux_dtf & ")"
 		s = s & s_aux
 		end if
 
@@ -742,6 +774,7 @@ dim s, s_aux, s_resp
 		if s_aux = "" then s_aux = "todos"
 		s = s & ", produto: " & s_aux
 		s_resp = s_resp & "Somente pedidos que incluam: " & s
+		if ckb_somente_pedidos_produto_alocado <> "" then s_resp = s_resp & " (somente pedidos que possuam o produto alocado)"
 		s_resp = s_resp & "<br>"
 		end if
 
@@ -839,7 +872,7 @@ sub consulta_executa
 dim r
 dim blnPorFornecedor
 dim s, s_aux, s_periodo_aux, s_cor, s_bkg_color, s_nbsp, s_align, s_nowrap, s_sql, cab_table, cab, n_reg, n_reg_total, n_colspan, n_colspan_final, s_colspan_final, s_loja
-dim s_where, s_from, cont
+dim s_where, s_where_aux, s_from, cont
 dim vl_total_faturamento, vl_sub_total_faturamento, vl_total_pago, vl_sub_total_pago
 dim vl_total_faturamento_NF, vl_sub_total_faturamento_NF
 dim vl_a_pagar, vl_sub_total_a_pagar, vl_total_a_pagar
@@ -895,8 +928,18 @@ dim rPSSW
 
 	s_aux = ckb_st_entrega_separar_com_marc
 	if s_aux <> "" then
+		s_where_aux = ""
+		if c_dt_coleta_a_separar_inicio <> "" then
+			if s_where_aux <> "" then s_where_aux = s_where_aux & " AND"
+			s_where_aux = s_where_aux & " (t_PEDIDO.a_entregar_data_marcada >= " & bd_formata_data(StrToDate(c_dt_coleta_a_separar_inicio)) & ")"
+			end if
+		if c_dt_coleta_a_separar_termino <> "" then
+			if s_where_aux <> "" then s_where_aux = s_where_aux & " AND"
+			s_where_aux = s_where_aux & " (t_PEDIDO.a_entregar_data_marcada < " & bd_formata_data(StrToDate(c_dt_coleta_a_separar_termino)+1) & ")"
+			end if
+		if s_where_aux <> "" then s_where_aux = " AND" & s_where_aux
 		if s <> "" then s = s & " OR"
-		s = s & " ((t_PEDIDO.st_entrega = '" & s_aux & "')AND(t_PEDIDO.a_entregar_status<>0))"
+		s = s & " ((t_PEDIDO.st_entrega = '" & s_aux & "')AND(t_PEDIDO.a_entregar_status<>0)" & s_where_aux & ")"
 		end if
 
 	s_aux = ckb_st_entrega_a_entregar_sem_marc
@@ -907,8 +950,18 @@ dim rPSSW
 
 	s_aux = ckb_st_entrega_a_entregar_com_marc
 	if s_aux <> "" then
+		s_where_aux = ""
+		if c_dt_coleta_st_a_entregar_inicio <> "" then
+			if s_where_aux <> "" then s_where_aux = s_where_aux & " AND"
+			s_where_aux = s_where_aux & " (t_PEDIDO.a_entregar_data_marcada >= " & bd_formata_data(StrToDate(c_dt_coleta_st_a_entregar_inicio)) & ")"
+			end if
+		if c_dt_coleta_st_a_entregar_termino <> "" then
+			if s_where_aux <> "" then s_where_aux = s_where_aux & " AND"
+			s_where_aux = s_where_aux & " (t_PEDIDO.a_entregar_data_marcada < " & bd_formata_data(StrToDate(c_dt_coleta_st_a_entregar_termino)+1) & ")"
+			end if
+		if s_where_aux <> "" then s_where_aux = " AND" & s_where_aux
 		if s <> "" then s = s & " OR"
-		s = s & " ((t_PEDIDO.st_entrega = '" & s_aux & "')AND(t_PEDIDO.a_entregar_status<>0))"
+		s = s & " ((t_PEDIDO.st_entrega = '" & s_aux & "')AND(t_PEDIDO.a_entregar_status<>0)" & s_where_aux & ")"
 		end if
 
 '	ENTREGUE ENTRE
@@ -1189,6 +1242,11 @@ dim rPSSW
 		if c_produto <> "" then
 			if s <> "" then s = s & " AND"
 			s = s & " (t_PEDIDO_ITEM.produto = '" & c_produto & "')"
+			end if
+
+		if ckb_somente_pedidos_produto_alocado <> "" then
+			if s <> "" then s = s & " AND"
+			s = s & " (ISNULL(t_ESTOQUE_MOVIMENTO__AUX.qtde_produto_alocada,0) > 0)"
 			end if
 
 		if s <> "" then 
@@ -1478,6 +1536,24 @@ dim rPSSW
 					" GROUP BY t_PEDIDO_ITEM.pedido" & _
 					") AS t_PEDIDO__VL_FORNECEDOR" & _
 				" ON (t_PEDIDO.pedido=t_PEDIDO__VL_FORNECEDOR.pedido)"
+		end if
+
+'	CRIA UMA "DERIVED TABLE" PARA OBTER A QUANTIDADE DE PRODUTO ALOCADO PARA O PEDIDO
+	if (ckb_produto <> "") And (ckb_somente_pedidos_produto_alocado <> "") then
+		s_from = s_from & _
+				" LEFT JOIN (" & _
+					"SELECT " & _
+					" pedido, fabricante, produto," & _
+					" Sum(qtde) AS qtde_produto_alocada" & _
+					" FROM t_ESTOQUE_MOVIMENTO" & _
+					" WHERE" & _
+						" (anulado_status = 0)" & _
+						" AND (estoque NOT IN ('" & ID_ESTOQUE_SEM_PRESENCA & "'))" & _
+						" AND (fabricante = '" & c_fabricante & "')" & _
+						" AND (produto = '" & c_produto & "')" & _
+					" GROUP BY pedido, fabricante, produto" & _
+					") AS t_ESTOQUE_MOVIMENTO__AUX" & _
+				" ON (t_PEDIDO_ITEM.pedido=t_ESTOQUE_MOVIMENTO__AUX.pedido) AND (t_PEDIDO_ITEM.fabricante=t_ESTOQUE_MOVIMENTO__AUX.fabricante) AND (t_PEDIDO_ITEM.produto=t_ESTOQUE_MOVIMENTO__AUX.produto)"
 		end if
 
 '	OBS: SINTAXE DA FUNÇÃO ISNULL():
@@ -2441,7 +2517,9 @@ function fRELConcluir( id_pedido ){
 	s_aux = Lcase(x_status_entrega(ckb_st_entrega_separar_com_marc))
 	if s_aux<>"" then
 		if s <> "" then s = s & ",&nbsp; "
-		s_aux = s_aux & " (com data de coleta)"
+		if c_dt_coleta_a_separar_inicio <> "" then s_aux_dti = c_dt_coleta_a_separar_inicio else s_aux_dti = "N.I."
+		if c_dt_coleta_a_separar_termino <> "" then s_aux_dtf = c_dt_coleta_a_separar_termino else s_aux_dtf = "N.I."
+		s_aux = s_aux & " (com data de coleta: " & s_aux_dti & " a " & s_aux_dtf & ")"
 		s_aux = replace(s_aux, " ", "&nbsp;")
 		s = s & s_aux
 		end if
@@ -2457,7 +2535,9 @@ function fRELConcluir( id_pedido ){
 	s_aux = Lcase(x_status_entrega(ckb_st_entrega_a_entregar_com_marc))
 	if s_aux<>"" then
 		if s <> "" then s = s & ",&nbsp; "
-		s_aux = s_aux & " (com data de coleta)"
+		if c_dt_coleta_st_a_entregar_inicio <> "" then s_aux_dti = c_dt_coleta_st_a_entregar_inicio else s_aux_dti = "N.I."
+		if c_dt_coleta_st_a_entregar_termino <> "" then s_aux_dtf = c_dt_coleta_st_a_entregar_termino else s_aux_dtf = "N.I."
+		s_aux = s_aux & " (com data de coleta: " & s_aux_dti & " a " & s_aux_dtf & ")"
 		s_aux = replace(s_aux, " ", "&nbsp;")
 		s = s & s_aux
 		end if
@@ -2751,6 +2831,7 @@ function fRELConcluir( id_pedido ){
 		s_aux = c_produto
 		if s_aux = "" then s_aux = "todos"
 		s = s & ",&nbsp;&nbsp;produto: " & s_aux
+		if ckb_somente_pedidos_produto_alocado <> "" then s = s & "&nbsp;&nbsp;(somente pedidos que possuam o produto alocado)"
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
 					"		<td align='right' valign='top' NOWRAP><p class='N'>Somente pedidos que incluam:&nbsp;</p></td>" & chr(13) & _
