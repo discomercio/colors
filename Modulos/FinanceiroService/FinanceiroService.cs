@@ -394,6 +394,7 @@ namespace FinanceiroService
 			String strMsgInfoEstornosPendentes;
 			String strMsgInformativa;
 			String strLogFalha;
+			String strListaIdNfeEmitente;
 			StringBuilder sbMsgParametros = new StringBuilder("");
 			String strSubject;
 			String strBody;
@@ -1745,150 +1746,152 @@ namespace FinanceiroService
 											// A execução foi solicitada
 											if (parametro.campo_inteiro == 1)
 											{
-												try // Finally
+												strListaIdNfeEmitente = "";
+
+												#region [ Limpa/reseta o parâmetro usado para a solicitação de execução ]
+												// O parâmetro usado para a solicitação de execução é resetado antes da execução do processamento para minimizar o risco de
+												// problemas causados por acesso concorrente (ex: outra solicitação ser realizada enquanto esta rotina está sendo executada,
+												// pois nesse caso haveria o risco da solicitação ser resetada sem ter sido atendida).
+												strMsg = "Reset do parâmetro: " + Global.Cte.FIN.ID_T_PARAMETRO.FLAG_EXECUCAO_SOLICITADA_PROCESSAMENTO_PRODUTOS_VENDIDOS_SEM_PRESENCA_ESTOQUE;
+												Global.gravaLogAtividade(strMsg);
+												GeralDAO.resetRegistroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.FLAG_EXECUCAO_SOLICITADA_PROCESSAMENTO_PRODUTOS_VENDIDOS_SEM_PRESENCA_ESTOQUE);
+												#endregion
+
+												// Para o parâmetro usado na solicitação da execução do processamento dos produtos vendidos sem presença no estoque,
+												// os campos possuem os seguintes significados:
+												//		campo_inteiro: flag que sinaliza a solicitação de execução do processamento (1 = execução solicitada)
+												//		campo_texto: Relação dos códigos de id_nfe_emitente para as quais o processamento deve ser realizado (se estiver vazio, indica que deve ser realizado para todos os códigos de id_nfe_emitente ativos; se houver mais de um, separar com vírgula, ponto e vírgula ou caractere pipe, sem espaços em branco)
+												//		campo_2_texto: operação/método/página que solicitou o processamento
+												//		dt_hr_ult_atualizacao: data/hora em que a solicitação foi realizada
+												//		usuario_ult_atualizacao: usuário que acionou a operação que acarretou na solicitação do processamento
+												strMsg = "Execução do processamento dos produtos vendidos sem presença no estoque devido à solicitação requisitada para o(s) código(s) de id_nfe_emitente " +
+														(parametro.campo_texto.Length == 0 ? "(todos)" : parametro.campo_texto) + " em " +
+														Global.formataDataDdMmYyyyHhMmSsComSeparador(parametro.dt_hr_ult_atualizacao) +
+														" por '" + parametro.usuario_ult_atualizacao + "'" +
+														" (" + parametro.campo_2_texto + ")";
+												Global.gravaLogAtividade(strMsg);
+
+												dtHrInicioProcessamento = DateTime.Now;
+												listaIdNfeEmitente = new List<int>();
+
+												if (parametro.campo_texto.Trim().Length == 0)
 												{
-													// Para o parâmetro usado na solicitação da execução do processamento dos produtos vendidos sem presença no estoque,
-													// os campos possuem os seguintes significados:
-													//		campo_inteiro: flag que sinaliza a solicitação de execução do processamento (1 = execução solicitada)
-													//		campo_texto: Relação dos códigos de id_nfe_emitente para as quais o processamento deve ser realizado (se estiver vazio, indica que deve ser realizado para todos os códigos de id_nfe_emitente ativos; se houver mais de um, separar com vírgula, ponto e vírgula ou caractere pipe, sem espaços em branco)
-													//		campo_2_texto: operação/método/página que solicitou o processamento
-													//		dt_hr_ult_atualizacao: data/hora em que a solicitação foi realizada
-													//		usuario_ult_atualizacao: usuário que acionou a operação que acarretou na solicitação do processamento
-													strMsg = "Execução do processamento dos produtos vendidos sem presença no estoque devido à solicitação requisitada para o(s) código(s) de id_nfe_emitente " +
-															(parametro.campo_texto.Length == 0 ? "(todos)" : parametro.campo_texto) + " em " +
-															Global.formataDataDdMmYyyyHhMmSsComSeparador(parametro.dt_hr_ult_atualizacao) +
-															" por '" + parametro.usuario_ult_atualizacao + "'" +
-															" (" + parametro.campo_2_texto + ")";
-													Global.gravaLogAtividade(strMsg);
-
-													dtHrInicioProcessamento = DateTime.Now;
-													listaIdNfeEmitente = new List<int>();
-
-													if (parametro.campo_texto.Trim().Length == 0)
+													#region [ Obtém a relação de todos os códigos de id_nfe_emitente ativos ]
+													// Se o campo estiver vazio, significa que o processamento deve ser realizado para todos os códigos de
+													// id_nfe_emitente que estiverem ativos.
+													listaNfeEmitente = GeralDAO.getListaNfeEmitente(Global.eOpcaoFiltroStAtivo.SELECIONAR_SOMENTE_ATIVOS);
+													if (listaNfeEmitente == null)
 													{
-														#region [ Obtém a relação de todos os códigos de id_nfe_emitente ativos ]
-														// Se o campo estiver vazio, significa que o processamento deve ser realizado para todos os códigos de
-														// id_nfe_emitente que estiverem ativos.
-														listaNfeEmitente = GeralDAO.getListaNfeEmitente(Global.eOpcaoFiltroStAtivo.SELECIONAR_SOMENTE_ATIVOS);
-														if (listaNfeEmitente == null)
-														{
-															strMsg = "O processamento dos produtos vendidos sem presença no estoque não será realizado porque houve falha ao tentar obter os códigos de id_nfe_emitente ativos!";
-															Global.gravaLogAtividade(strMsg);
-														}
-														else
-														{
-															strAux = "";
-															foreach (NfeEmitente emitente in listaNfeEmitente)
-															{
-																if ((emitente.st_ativo == 1) && (emitente.st_habilitado_ctrl_estoque == 1))
-																{
-																	if (strAux.Length > 0) strAux += ", ";
-																	strAux += emitente.id.ToString();
-																	listaIdNfeEmitente.Add(emitente.id);
-																}
-															}
-															strMsg = "O processamento dos produtos vendidos sem presença no estoque será realizado para os seguintes códigos de id_nfe_emitente ativos no sistema: " + strAux;
-															Global.gravaLogAtividade(strMsg);
-														}
-														#endregion
-													}
-													else
-													{
-														#region [ Obtém e normaliza a lista de códigos de id_nfe_emitente p/ a qual o processamento foi solicitado ]
-														strParametro = parametro.campo_texto;
-														while (strParametro.Contains(" ")) strParametro = strParametro.Replace(" ", "");
-														if (strParametro.Contains(";")) strParametro = strParametro.Replace(";", ",");
-														if (strParametro.Contains("|")) strParametro = strParametro.Replace("|", ",");
-														if (strParametro.Contains(","))
-														{
-															vAux = strParametro.Split(',');
-															foreach (string sIdNfeEmitente in vAux)
-															{
-																if (sIdNfeEmitente.Trim().Length == 0) continue;
-																// Verifica antes se o conteúdo informado é um texto que representa um número inteiro
-																if (Global.digitos(sIdNfeEmitente).Equals(sIdNfeEmitente))
-																{
-																	listaIdNfeEmitente.Add((int)Global.converteInteiro(sIdNfeEmitente));
-																}
-																else
-																{
-																	strMsg = "O processamento dos produtos vendidos sem presença no estoque irá ignorar o código de id_nfe_emitente que está em formato inválido: " + sIdNfeEmitente;
-																	Global.gravaLogAtividade(strMsg);
-																}
-															}
-														}
-														else
-														{
-															// Verifica antes se o conteúdo informado é um texto que representa um número inteiro
-															if (Global.digitos(strParametro).Equals(strParametro))
-															{
-																listaIdNfeEmitente.Add((int)Global.converteInteiro(strParametro));
-															}
-															else
-															{
-																strMsg = "O processamento dos produtos vendidos sem presença no estoque irá ignorar o código de id_nfe_emitente que está em formato inválido: " + strParametro;
-																Global.gravaLogAtividade(strMsg);
-															}
-														}
-														#endregion
-													}
-
-													#region [ Executa o processamento ]
-													if (listaIdNfeEmitente.Count == 0)
-													{
-														strMsg = "O processamento dos produtos vendidos sem presença no estoque não será realizado porque a solicitação não informou em formato válido a relação de códigos de id_nfe_emitente para a qual o processamento deveria ser realizado (" + (parametro.campo_texto.Length == 0 ? "(todos)" : parametro.campo_texto) + ")!";
+														strMsg = "O processamento dos produtos vendidos sem presença no estoque não será realizado porque houve falha ao tentar obter os códigos de id_nfe_emitente ativos!";
 														Global.gravaLogAtividade(strMsg);
 													}
 													else
 													{
-														if (PedidoDAO.executaProcessamentoProdutosVendidosSemPresencaEstoque(listaIdNfeEmitente, out strMsgErro))
+														strListaIdNfeEmitente = "";
+														foreach (NfeEmitente emitente in listaNfeEmitente)
 														{
-															#region [ Tratamento para sucesso no processamento ]
-															lngDuracaoProcessamentoEmSegundos = Global.calculaTimeSpanSegundos(DateTime.Now - dtHrInicioProcessamento);
-															strMsg = "Sucesso na execução do processamento dos produtos vendidos sem presença no estoque (duração: " + lngDuracaoProcessamentoEmSegundos.ToString() + " segundos): " +
-																	"id_nfe_emitente = " + (parametro.campo_texto.Length == 0 ? "(todos)" : parametro.campo_texto) +
-																	"; data/hora da solicitação = " + Global.formataDataDdMmYyyyHhMmSsComSeparador(parametro.dt_hr_ult_atualizacao) +
-																	"; usuário = " + parametro.usuario_ult_atualizacao +
-																	"; operação = " + parametro.campo_2_texto;
-															Global.gravaEventLog(NOME_DESTA_ROTINA + "\r\n" + strMsg, EventLogEntryType.Information);
-															GeralDAO.gravaLog(Global.Cte.LogBd.Operacao.OP_LOG_FINANCEIROSERVICE_PROCESSAMENTO_PRODUTOS_VENDIDOS_SEM_PRESENCA_ESTOQUE, strMsg, out strMsgErro);
-															#endregion
+															if ((emitente.st_ativo == 1) && (emitente.st_habilitado_ctrl_estoque == 1))
+															{
+																if (strListaIdNfeEmitente.Length > 0) strListaIdNfeEmitente += ", ";
+																strListaIdNfeEmitente += emitente.id.ToString();
+																listaIdNfeEmitente.Add(emitente.id);
+															}
+														}
+														strMsg = "O processamento dos produtos vendidos sem presença no estoque será realizado para os seguintes códigos de id_nfe_emitente ativos no sistema: " + strListaIdNfeEmitente;
+														Global.gravaLogAtividade(strMsg);
+													}
+													#endregion
+												}
+												else
+												{
+													#region [ Obtém e normaliza a lista de códigos de id_nfe_emitente p/ a qual o processamento foi solicitado ]
+													strParametro = parametro.campo_texto;
+													while (strParametro.Contains(" ")) strParametro = strParametro.Replace(" ", "");
+													if (strParametro.Contains(";")) strParametro = strParametro.Replace(";", ",");
+													if (strParametro.Contains("|")) strParametro = strParametro.Replace("|", ",");
+													if (strParametro.Contains(","))
+													{
+														vAux = strParametro.Split(',');
+														foreach (string sIdNfeEmitente in vAux)
+														{
+															if (sIdNfeEmitente.Trim().Length == 0) continue;
+															// Verifica antes se o conteúdo informado é um texto que representa um número inteiro
+															if (Global.digitos(sIdNfeEmitente).Equals(sIdNfeEmitente))
+															{
+																listaIdNfeEmitente.Add((int)Global.converteInteiro(sIdNfeEmitente));
+															}
+															else
+															{
+																strMsg = "O processamento dos produtos vendidos sem presença no estoque irá ignorar o código de id_nfe_emitente que está em formato inválido: " + sIdNfeEmitente;
+																Global.gravaLogAtividade(strMsg);
+															}
+														}
+													}
+													else
+													{
+														// Verifica antes se o conteúdo informado é um texto que representa um número inteiro
+														if (Global.digitos(strParametro).Equals(strParametro))
+														{
+															listaIdNfeEmitente.Add((int)Global.converteInteiro(strParametro));
 														}
 														else
 														{
-															#region [ Tratamento para erro no processamento ]
-															lngDuracaoProcessamentoEmSegundos = Global.calculaTimeSpanSegundos(DateTime.Now - dtHrInicioProcessamento);
-															strMsg = "Falha na execução do processamento dos produtos vendidos sem presença no estoque (duração: " + lngDuracaoProcessamentoEmSegundos.ToString() + " segundos): " +
-																	"id_nfe_emitente = " + (parametro.campo_texto.Length == 0 ? "(todos)" : parametro.campo_texto) +
-																	"; data/hora da solicitação = " + Global.formataDataDdMmYyyyHhMmSsComSeparador(parametro.dt_hr_ult_atualizacao) +
-																	"; usuário = " + parametro.usuario_ult_atualizacao +
-																	"; operação = " + parametro.campo_2_texto +
-																	"\r\n" +
-																	"\r\n" +
-																	strMsgErro;
-															Global.gravaEventLog(NOME_DESTA_ROTINA + "\r\n" + strMsg, EventLogEntryType.Information);
-															GeralDAO.gravaLog(Global.Cte.LogBd.Operacao.OP_LOG_FINANCEIROSERVICE_PROCESSAMENTO_PRODUTOS_VENDIDOS_SEM_PRESENCA_ESTOQUE, strMsg, out strMsgErro);
-
-															#region [ Envia email de alerta ]
-															strSubject = Global.montaIdInstanciaServicoEmailSubject() + ": Falha na execução do processamento dos produtos vendidos sem presença no estoque [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
-															strBody = strMsg;
-															if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out strMsgErroAux))
-															{
-																strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + strMsgErroAux;
-																Global.gravaLogAtividade(strMsg);
-															}
-															#endregion
-															#endregion
+															strMsg = "O processamento dos produtos vendidos sem presença no estoque irá ignorar o código de id_nfe_emitente que está em formato inválido: " + strParametro;
+															Global.gravaLogAtividade(strMsg);
 														}
 													}
 													#endregion
 												}
-												finally
+
+												#region [ Executa o processamento ]
+												if (listaIdNfeEmitente.Count == 0)
 												{
-													#region [ Limpa/reseta o parâmetro usado para a solicitação de execução ]
-													GeralDAO.resetRegistroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.FLAG_EXECUCAO_SOLICITADA_PROCESSAMENTO_PRODUTOS_VENDIDOS_SEM_PRESENCA_ESTOQUE);
-													#endregion
+													strMsg = "O processamento dos produtos vendidos sem presença no estoque não será realizado porque a solicitação não informou em formato válido a relação de códigos de id_nfe_emitente para a qual o processamento deveria ser realizado (" + (parametro.campo_texto.Length == 0 ? "(todos)" : parametro.campo_texto) + ")!";
+													Global.gravaLogAtividade(strMsg);
 												}
+												else
+												{
+													if (PedidoDAO.executaProcessamentoProdutosVendidosSemPresencaEstoque(listaIdNfeEmitente, out strMsgErro))
+													{
+														#region [ Tratamento para sucesso no processamento ]
+														lngDuracaoProcessamentoEmSegundos = Global.calculaTimeSpanSegundos(DateTime.Now - dtHrInicioProcessamento);
+														strMsg = "Sucesso na execução do processamento dos produtos vendidos sem presença no estoque (duração: " + lngDuracaoProcessamentoEmSegundos.ToString() + " segundos): " +
+																"id_nfe_emitente = " + (parametro.campo_texto.Length == 0 ? "(todos) " + strListaIdNfeEmitente : parametro.campo_texto) +
+																"; data/hora da solicitação = " + Global.formataDataDdMmYyyyHhMmSsComSeparador(parametro.dt_hr_ult_atualizacao) +
+																"; usuário = " + parametro.usuario_ult_atualizacao +
+																"; operação = " + parametro.campo_2_texto;
+														Global.gravaEventLog(NOME_DESTA_ROTINA + "\r\n" + strMsg, EventLogEntryType.Information);
+														GeralDAO.gravaLog(Global.Cte.LogBd.Operacao.OP_LOG_FINANCEIROSERVICE_PROCESSAMENTO_PRODUTOS_VENDIDOS_SEM_PRESENCA_ESTOQUE, strMsg, out strMsgErro);
+														#endregion
+													}
+													else
+													{
+														#region [ Tratamento para erro no processamento ]
+														lngDuracaoProcessamentoEmSegundos = Global.calculaTimeSpanSegundos(DateTime.Now - dtHrInicioProcessamento);
+														strMsg = "Falha na execução do processamento dos produtos vendidos sem presença no estoque (duração: " + lngDuracaoProcessamentoEmSegundos.ToString() + " segundos): " +
+																"id_nfe_emitente = " + (parametro.campo_texto.Length == 0 ? "(todos) " + strListaIdNfeEmitente : parametro.campo_texto) +
+																"; data/hora da solicitação = " + Global.formataDataDdMmYyyyHhMmSsComSeparador(parametro.dt_hr_ult_atualizacao) +
+																"; usuário = " + parametro.usuario_ult_atualizacao +
+																"; operação = " + parametro.campo_2_texto +
+																"\r\n" +
+																"\r\n" +
+																strMsgErro;
+														Global.gravaEventLog(NOME_DESTA_ROTINA + "\r\n" + strMsg, EventLogEntryType.Information);
+														GeralDAO.gravaLog(Global.Cte.LogBd.Operacao.OP_LOG_FINANCEIROSERVICE_PROCESSAMENTO_PRODUTOS_VENDIDOS_SEM_PRESENCA_ESTOQUE, strMsg, out strMsgErro);
+
+														#region [ Envia email de alerta ]
+														strSubject = Global.montaIdInstanciaServicoEmailSubject() + ": Falha na execução do processamento dos produtos vendidos sem presença no estoque [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+														strBody = strMsg;
+														if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out strMsgErroAux))
+														{
+															strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + strMsgErroAux;
+															Global.gravaLogAtividade(strMsg);
+														}
+														#endregion
+														#endregion
+													}
+												}
+												#endregion
 											}
 										}
 
