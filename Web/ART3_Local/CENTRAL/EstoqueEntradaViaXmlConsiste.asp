@@ -338,10 +338,10 @@
 						    s_desc_produto_import = Trim("" & rs("descricao"))
                             s_linha_importa = "IMPORTA_S"
 						    End If
+                        'calcular os totais dos produtos a serem importados
+                        vl_total_nf = vl_total_nf + converte_numero(s_prod_qtde) * converte_numero(formata_moeda(s_prod_vl_unitario_nota))
+                        vl_nfe_vl_total_geral = vl_nfe_vl_total_geral + converte_numero(formata_moeda(s_prod_vl_total))
 					    end if
-                    'calcular os totais dos produtos a serem importados
-                    vl_total_nf = vl_total_nf + converte_numero(s_prod_qtde) * converte_numero(s_prod_vl_unitario_nota)
-                    vl_nfe_vl_total_geral = vl_nfe_vl_total_geral + converte_numero(s_prod_vl_total)
 				    end if
 			    icont = icont + 1
 			    if s_cod_produto_import <> "" then
