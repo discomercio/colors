@@ -149,8 +149,32 @@ namespace ConsolidadorXlsEC
             daDataAdapter.Fill(dtbOrigemPedido);
             return dtbOrigemPedido;
         }
-        #endregion
+		#endregion
 
-        #endregion
-    }
+		#region [ criaDtbPlataforma ]
+		public DataTable criaDtbPlataforma()
+		{
+			#region [ Declarações ]
+			DataTable dtbPlataforma;
+			DataRow rowPlataforma;
+			#endregion
+
+			dtbPlataforma = new DataTable();
+			dtbPlataforma.Columns.Add("codigo", typeof(System.Int32));
+			dtbPlataforma.Columns.Add("descricao", typeof(System.String));
+			rowPlataforma = dtbPlataforma.NewRow();
+			rowPlataforma["codigo"] = Global.Cte.MagentoApiIntegracao.VERSAO_API_MAGENTO_V1_SOAP_XML;
+			rowPlataforma["descricao"] = "Magento v1";
+			dtbPlataforma.Rows.Add(rowPlataforma);
+			rowPlataforma = dtbPlataforma.NewRow();
+			rowPlataforma["codigo"] = Global.Cte.MagentoApiIntegracao.VERSAO_API_MAGENTO_V2_REST_JSON;
+			rowPlataforma["descricao"] = "Magento v2";
+			dtbPlataforma.Rows.Add(rowPlataforma);
+
+			return dtbPlataforma;
+		}
+		#endregion
+
+		#endregion
+	}
 }

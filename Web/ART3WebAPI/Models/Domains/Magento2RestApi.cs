@@ -1057,7 +1057,7 @@ namespace ART3WebAPI.Models.Domains
 
 				// Apesar da nomenclatura 'xml', os dados obtidos através da API REST/JSON estão armazenados na mesma tabela anterior para minimizar os ajustes necessários,
 				// principalmente nas páginas ASP que utilizam os dados armazenados durante o processo de cadastramento semi-automático de pedidos do Magento.
-				readPedidoApiBd = MagentoApiDAO.getMagentoPedidoXmlByTicket(numeroPedidoMagento, operationControlTicket, loginParameters.api_versao, out msg_erro);
+				readPedidoApiBd = MagentoApiDAO.getMagentoPedidoXmlByTicket(numeroPedidoMagento, operationControlTicket, Global.Cte.MagentoApiIntegracao.VERSAO_API_MAGENTO_V2_REST_JSON, out msg_erro);
 				if (readPedidoApiBd != null)
 				{
 					msg = "Pedido Magento nº " + numeroPedidoMagento + " localizado no BD";
@@ -1547,7 +1547,7 @@ namespace ART3WebAPI.Models.Domains
 				insertPedidoXml.operationControlTicket = operationControlTicket;
 				insertPedidoXml.loja = loja;
 				insertPedidoXml.usuario_cadastro = usuario;
-				insertPedidoXml.magento_api_versao = loginParameters.api_versao;
+				insertPedidoXml.magento_api_versao = Global.Cte.MagentoApiIntegracao.VERSAO_API_MAGENTO_V2_REST_JSON;
 				insertPedidoXml.pedido_json = sJson;
 				insertPedidoXml.cpfCnpjIdentificado = cpfCnpjIdentificado;
 				insertPedidoXml.increment_id = (int)Global.converteInteiro((salesOrder.magentoSalesOrderInfo.increment_id ?? ""));

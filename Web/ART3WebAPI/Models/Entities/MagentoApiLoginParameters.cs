@@ -14,5 +14,6 @@ namespace ART3WebAPI.Models.Entities
 		public string api_rest_endpoint { get; set; } = "";
 		public string api_rest_access_token { get; set; } = "";
 		public byte api_rest_force_get_sales_order_by_entity_id { get; set; }
+		public string magento_api_rest_prefixo_num_magento { get; set; } = "";
 	}
 }

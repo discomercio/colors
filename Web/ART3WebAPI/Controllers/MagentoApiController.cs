@@ -49,6 +49,7 @@ namespace ART3WebAPI.Controllers
 			string msg;
 			string msg_erro;
 			string serializedResult;
+			string prefixoNumPedidoMagento;
 			Usuario usuarioBD;
 			MagentoApiLoginParameters loginParameters;
 			MagentoErpSalesOrder salesOrder = new MagentoErpSalesOrder();
@@ -103,18 +104,20 @@ namespace ART3WebAPI.Controllers
 			}
 			#endregion
 
-			if (loginParameters.api_versao == Global.Cte.MagentoApiIntegracao.VERSAO_API_MAGENTO_V1_SOAP_XML)
+			prefixoNumPedidoMagento = Texto.leftStr(numeroPedidoMagento, 1);
+
+			if (loginParameters.magento_api_rest_prefixo_num_magento.Equals(prefixoNumPedidoMagento))
 			{
-				#region [ Tratamento para API SOAP (XML) do Magento 1.8 ]
-				serializedResult = MagentoSoapApi.processaGetPedido(numeroPedidoMagento, operationControlTicket, loja, usuario, sessionToken, loginParameters);
+				#region [ Tratamento para API REST (JSON) do Magento 2 ]
+				serializedResult = Magento2RestApi.processaGetPedido(numeroPedidoMagento, operationControlTicket, loja, usuario, sessionToken, loginParameters);
 				result = Request.CreateResponse(HttpStatusCode.OK);
 				result.Content = new StringContent(serializedResult, Encoding.UTF8, "text/html");
 				#endregion
 			}
 			else
 			{
-				#region [ Tratamento para API REST (JSON) do Magento 2 ]
-				serializedResult = Magento2RestApi.processaGetPedido(numeroPedidoMagento, operationControlTicket, loja, usuario, sessionToken, loginParameters);
+				#region [ Tratamento para API SOAP (XML) do Magento 1.8 ]
+				serializedResult = MagentoSoapApi.processaGetPedido(numeroPedidoMagento, operationControlTicket, loja, usuario, sessionToken, loginParameters);
 				result = Request.CreateResponse(HttpStatusCode.OK);
 				result.Content = new StringContent(serializedResult, Encoding.UTF8, "text/html");
 				#endregion

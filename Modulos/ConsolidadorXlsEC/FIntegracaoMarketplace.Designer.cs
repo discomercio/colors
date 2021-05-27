@@ -41,6 +41,8 @@
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
+			this.cbPlataforma = new System.Windows.Forms.ComboBox();
+			this.lblPlataforma = new System.Windows.Forms.Label();
 			this.txtLoja = new System.Windows.Forms.TextBox();
 			this.lblLoja = new System.Windows.Forms.Label();
 			this.cbOrigemPedido = new System.Windows.Forms.ComboBox();
@@ -116,6 +118,8 @@
 			// 
 			// groupBox1
 			// 
+			this.groupBox1.Controls.Add(this.cbPlataforma);
+			this.groupBox1.Controls.Add(this.lblPlataforma);
 			this.groupBox1.Controls.Add(this.txtLoja);
 			this.groupBox1.Controls.Add(this.lblLoja);
 			this.groupBox1.Controls.Add(this.cbOrigemPedido);
@@ -130,6 +134,28 @@
 			this.groupBox1.TabIndex = 0;
 			this.groupBox1.TabStop = false;
 			// 
+			// cbPlataforma
+			// 
+			this.cbPlataforma.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+			this.cbPlataforma.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+			this.cbPlataforma.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.cbPlataforma.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.cbPlataforma.FormattingEnabled = true;
+			this.cbPlataforma.Location = new System.Drawing.Point(1123, 15);
+			this.cbPlataforma.Name = "cbPlataforma";
+			this.cbPlataforma.Size = new System.Drawing.Size(150, 24);
+			this.cbPlataforma.TabIndex = 3;
+			// 
+			// lblPlataforma
+			// 
+			this.lblPlataforma.AutoSize = true;
+			this.lblPlataforma.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblPlataforma.Location = new System.Drawing.Point(1050, 20);
+			this.lblPlataforma.Name = "lblPlataforma";
+			this.lblPlataforma.Size = new System.Drawing.Size(67, 13);
+			this.lblPlataforma.TabIndex = 2;
+			this.lblPlataforma.Text = "Plataforma";
+			// 
 			// txtLoja
 			// 
 			this.txtLoja.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -137,7 +163,7 @@
 			this.txtLoja.MaxLength = 3;
 			this.txtLoja.Name = "txtLoja";
 			this.txtLoja.Size = new System.Drawing.Size(71, 22);
-			this.txtLoja.TabIndex = 4;
+			this.txtLoja.TabIndex = 9;
 			// 
 			// lblLoja
 			// 
@@ -146,7 +172,7 @@
 			this.lblLoja.Location = new System.Drawing.Point(611, 80);
 			this.lblLoja.Name = "lblLoja";
 			this.lblLoja.Size = new System.Drawing.Size(31, 13);
-			this.lblLoja.TabIndex = 4;
+			this.lblLoja.TabIndex = 8;
 			this.lblLoja.Text = "Loja";
 			// 
 			// cbOrigemPedido
@@ -159,7 +185,7 @@
 			this.cbOrigemPedido.Location = new System.Drawing.Point(169, 75);
 			this.cbOrigemPedido.Name = "cbOrigemPedido";
 			this.cbOrigemPedido.Size = new System.Drawing.Size(232, 24);
-			this.cbOrigemPedido.TabIndex = 3;
+			this.cbOrigemPedido.TabIndex = 7;
 			// 
 			// cbOrigemPedidoGrupo
 			// 
@@ -171,7 +197,7 @@
 			this.cbOrigemPedidoGrupo.Location = new System.Drawing.Point(169, 45);
 			this.cbOrigemPedidoGrupo.Name = "cbOrigemPedidoGrupo";
 			this.cbOrigemPedidoGrupo.Size = new System.Drawing.Size(232, 24);
-			this.cbOrigemPedidoGrupo.TabIndex = 1;
+			this.cbOrigemPedidoGrupo.TabIndex = 5;
 			// 
 			// cbTransportadora
 			// 
@@ -183,7 +209,7 @@
 			this.cbTransportadora.Location = new System.Drawing.Point(169, 15);
 			this.cbTransportadora.Name = "cbTransportadora";
 			this.cbTransportadora.Size = new System.Drawing.Size(550, 24);
-			this.cbTransportadora.TabIndex = 0;
+			this.cbTransportadora.TabIndex = 1;
 			// 
 			// lblOrigemPedido
 			// 
@@ -192,7 +218,7 @@
 			this.lblOrigemPedido.Location = new System.Drawing.Point(56, 80);
 			this.lblOrigemPedido.Name = "lblOrigemPedido";
 			this.lblOrigemPedido.Size = new System.Drawing.Size(107, 13);
-			this.lblOrigemPedido.TabIndex = 2;
+			this.lblOrigemPedido.TabIndex = 6;
 			this.lblOrigemPedido.Text = "Origem do Pedido";
 			// 
 			// lblOrigemPedidoGrupo
@@ -202,7 +228,7 @@
 			this.lblOrigemPedidoGrupo.Location = new System.Drawing.Point(10, 50);
 			this.lblOrigemPedidoGrupo.Name = "lblOrigemPedidoGrupo";
 			this.lblOrigemPedidoGrupo.Size = new System.Drawing.Size(153, 13);
-			this.lblOrigemPedidoGrupo.TabIndex = 1;
+			this.lblOrigemPedidoGrupo.TabIndex = 4;
 			this.lblOrigemPedidoGrupo.Text = "Origem do Pedido (Grupo)";
 			// 
 			// lblTransportadora
@@ -261,7 +287,7 @@
 			this.grdDados.ShowEditingIcon = false;
 			this.grdDados.Size = new System.Drawing.Size(1290, 449);
 			this.grdDados.StandardTab = true;
-			this.grdDados.TabIndex = 0;
+			this.grdDados.TabIndex = 1;
 			this.grdDados.AutoGenerateColumns = false;
 			// 
 			// lblTitTotalRegistros
@@ -324,7 +350,7 @@
 			this.btnDesmarcarTodos.Location = new System.Drawing.Point(1186, 576);
 			this.btnDesmarcarTodos.Name = "btnDesmarcarTodos";
 			this.btnDesmarcarTodos.Size = new System.Drawing.Size(114, 23);
-			this.btnDesmarcarTodos.TabIndex = 4;
+			this.btnDesmarcarTodos.TabIndex = 5;
 			this.btnDesmarcarTodos.Text = "Desmarcar todos";
 			this.btnDesmarcarTodos.UseVisualStyleBackColor = true;
 			this.btnDesmarcarTodos.Click += new System.EventHandler(this.btnDesmarcarTodos_Click);
@@ -334,7 +360,7 @@
 			this.btnMarcarTodos.Location = new System.Drawing.Point(1066, 576);
 			this.btnMarcarTodos.Name = "btnMarcarTodos";
 			this.btnMarcarTodos.Size = new System.Drawing.Size(114, 23);
-			this.btnMarcarTodos.TabIndex = 5;
+			this.btnMarcarTodos.TabIndex = 4;
 			this.btnMarcarTodos.Text = "Marcar todos";
 			this.btnMarcarTodos.UseVisualStyleBackColor = true;
 			this.btnMarcarTodos.Click += new System.EventHandler(this.btnMarcarTodos_Click);
@@ -484,6 +510,7 @@
 			// 
 			this.colGrdDadosOrderEntityId.HeaderText = "OrderEntityId";
 			this.colGrdDadosOrderEntityId.Name = "colGrdDadosOrderEntityId";
+			this.colGrdDadosOrderEntityId.ReadOnly = true;
 			this.colGrdDadosOrderEntityId.Visible = false;
 			// 
 			// FIntegracaoMarketplace
@@ -526,6 +553,8 @@
         private System.Windows.Forms.Button btnConfirma;
         private System.Windows.Forms.Button btnMarcarTodos;
         private System.Windows.Forms.Button btnDesmarcarTodos;
+		private System.Windows.Forms.ComboBox cbPlataforma;
+		private System.Windows.Forms.Label lblPlataforma;
 		private System.Windows.Forms.DataGridViewCheckBoxColumn colGrdDadosCheckBox;
 		private System.Windows.Forms.DataGridViewCheckBoxColumn colGrdDadosCheckBoxConfirma;
 		private System.Windows.Forms.DataGridViewTextBoxColumn colGrdDadosTransportadora;

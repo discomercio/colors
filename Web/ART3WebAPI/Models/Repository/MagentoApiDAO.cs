@@ -54,7 +54,8 @@ namespace ART3WebAPI.Models.Repository
 							" magento_api_versao," +
 							" magento_api_rest_endpoint," +
 							" magento_api_rest_access_token," +
-							" magento_api_rest_force_get_sales_order_by_entity_id" +
+							" magento_api_rest_force_get_sales_order_by_entity_id," +
+							" magento_api_rest_prefixo_num_magento" +
 						" FROM t_LOJA" +
 						" WHERE" +
 							" (loja = '" + loja + "')";
@@ -84,6 +85,7 @@ namespace ART3WebAPI.Models.Repository
 					parameters.api_rest_endpoint = BD.readToString(row["magento_api_rest_endpoint"]);
 					parameters.api_rest_access_token = BD.readToString(row["magento_api_rest_access_token"]);
 					parameters.api_rest_force_get_sales_order_by_entity_id = BD.readToByte(row["magento_api_rest_force_get_sales_order_by_entity_id"]);
+					parameters.magento_api_rest_prefixo_num_magento = BD.readToString(row["magento_api_rest_prefixo_num_magento"]);
 				}
 				finally
 				{

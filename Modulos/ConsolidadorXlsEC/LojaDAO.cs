@@ -133,10 +133,11 @@ namespace ConsolidadorXlsEC
 				loja.magento_api_versao = BD.readToInt(rowResultado["magento_api_versao"]);
 				loja.magento_api_urlWebService = BD.readToString(rowResultado["magento_api_urlWebService"]);
 				loja.magento_api_username = BD.readToString(rowResultado["magento_api_username"]);
-				loja.magento_api_password = BD.readToString(rowResultado["magento_api_password"]);
+				loja.magento_api_password = Criptografia.Descriptografa(BD.readToString(rowResultado["magento_api_password"]));
 				loja.magento_api_rest_endpoint = BD.readToString(rowResultado["magento_api_rest_endpoint"]);
 				loja.magento_api_rest_access_token = BD.readToString(rowResultado["magento_api_rest_access_token"]);
 				loja.magento_api_rest_force_get_sales_order_by_entity_id = BD.readToByte(rowResultado["magento_api_rest_force_get_sales_order_by_entity_id"]);
+				loja.magento_api_rest_prefixo_num_magento = BD.readToString(rowResultado["magento_api_rest_prefixo_num_magento"]);
 
 				return loja;
 			}

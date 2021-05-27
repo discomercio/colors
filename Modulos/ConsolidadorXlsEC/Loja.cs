@@ -46,6 +46,7 @@ namespace ConsolidadorXlsEC
 		public string magento_api_rest_endpoint { get; set; } = "";
 		public string magento_api_rest_access_token { get; set; } = "";
 		public byte magento_api_rest_force_get_sales_order_by_entity_id { get; set; } = 0;
+		public string magento_api_rest_prefixo_num_magento { get; set; } = "";
 	}
 	#endregion
 }

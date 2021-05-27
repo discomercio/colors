@@ -278,7 +278,7 @@ namespace ConsolidadorXlsEC
 					info(ModoExibicaoMensagemRodape.EmExecucao, "Consultando relação de produtos cadastrados no Magento");
 
 					#region [ Login no Magento ]
-					xmlReqSoap = Magento.montaRequisicaoLogin(Global.Cte.Magento.USER_NAME, Global.Cte.Magento.PASSWORD);
+					xmlReqSoap = Magento.montaRequisicaoLogin(FMain.lojaLoginParameters.magento_api_username, FMain.lojaLoginParameters.magento_api_password);
 					blnEnviouOk = Magento.enviaRequisicaoComRetry(xmlReqSoap, Global.Cte.Magento.Transacao.login, out xmlRespSoap, out msg_erro_aux);
 					if (!blnEnviouOk)
 					{
@@ -585,7 +585,6 @@ namespace ConsolidadorXlsEC
 			List<ProdutoConferePreco> vConferePrecoOrdenado;
 			List<string> vResultadoHistorico;
 			List<string> vResultadoHistoricoBR;
-			Loja lojaLoginParameters;
 			Log log = new Log();
 			Encoding encode = Encoding.GetEncoding("Windows-1252");
 			#endregion
@@ -627,6 +626,12 @@ namespace ConsolidadorXlsEC
 					avisoErro(strMsgErro);
 					return;
 				}
+
+				if (cbPlataforma.SelectedIndex == -1)
+				{
+					avisoErro("Selecione a Plataforma!");
+					return;
+				}
 				#endregion
 
 				#region [ Confirmação ]
@@ -643,12 +648,9 @@ namespace ConsolidadorXlsEC
 						MARGEM_MSG_NIVEL_2 + "Arquivo: " + strNomeArquivo;
 				adicionaDisplay(strMsg);
 
-				lojaLoginParameters = FMain.contextoBD.AmbienteBase.lojaDAO.GetLoja(FMain.contextoBD.AmbienteBase.NumeroLojaArclube, out msg_erro_aux);
-				if (lojaLoginParameters == null)
+				if (FMain.lojaLoginParameters == null)
 				{
 					strMsgErro = "Falha ao tentar recuperar os parâmetros de login da API do Magento para a loja " + FMain.contextoBD.AmbienteBase.NumeroLojaArclube + "!";
-					if (msg_erro_aux.Length > 0) strMsgErro += "\n" + msg_erro_aux;
-					adicionaErro(strMsgErro);
 					avisoErro(strMsgErro);
 					return;
 				}
@@ -740,9 +742,9 @@ namespace ConsolidadorXlsEC
 				#endregion
 
 				#region [ Consulta dados no Magento via API ]
-				if (lojaLoginParameters.magento_api_versao == Global.Cte.MagentoApiIntegracao.VERSAO_API_MAGENTO_V2_REST_JSON)
+				if (cbPlataforma.SelectedValue.ToString().Equals(Global.Cte.MagentoApiIntegracao.VERSAO_API_MAGENTO_V2_REST_JSON.ToString()))
 				{
-					if (!processaConsultaMagento2RestApi(ref vConferePreco, lojaLoginParameters, out msg_erro_aux))
+					if (!processaConsultaMagento2RestApi(ref vConferePreco, FMain.lojaLoginParameters, out msg_erro_aux))
 					{
 						strMsgErro = "Falha no processamento dos dados obtidos através da API do Magento (API REST)!";
 						if (msg_erro_aux.Length > 0) strMsgErro += "\n" + msg_erro_aux;
@@ -1028,12 +1030,42 @@ namespace ConsolidadorXlsEC
 		#region [ FConferenciaPreco_Load ]
 		private void FConferenciaPreco_Load(object sender, EventArgs e)
 		{
+			#region [ Declarações ]
 			bool blnSucesso = false;
+			string strMsgErro;
+			#endregion
 
 			try
 			{
 				txtArquivo.Text = "";
 				grid.Rows.Clear();
+
+				#region [ Dados de login no Magento ]
+				if (FMain.lojaLoginParameters == null)
+				{
+					strMsgErro = "Falha ao tentar recuperar os parâmetros de login da API do Magento para a loja " + FMain.contextoBD.AmbienteBase.NumeroLojaArclube + "!";
+					throw new Exception(strMsgErro);
+				}
+				#endregion
+
+				#region [ Combo Plataforma ]
+				DataTable dtbPlataforma = FMain.contextoBD.AmbienteBase.comboDAO.criaDtbPlataforma();
+				cbPlataforma.DataSource = dtbPlataforma;
+				cbPlataforma.ValueMember = "codigo";
+				cbPlataforma.DisplayMember = "descricao";
+				switch (FMain.lojaLoginParameters.magento_api_versao)
+				{
+					case Global.Cte.MagentoApiIntegracao.VERSAO_API_MAGENTO_V1_SOAP_XML:
+						cbPlataforma.SelectedIndex = 0;
+						break;
+					case Global.Cte.MagentoApiIntegracao.VERSAO_API_MAGENTO_V2_REST_JSON:
+						cbPlataforma.SelectedIndex = 1;
+						break;
+					default:
+						cbPlataforma.SelectedIndex = -1;
+						break;
+				}
+				#endregion
 
 				limpaCamposMensagem();
 				blnSucesso = true;

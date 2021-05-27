@@ -1854,7 +1854,7 @@ namespace ART3WebAPI.Models.Domains
 					throw new Exception(msg);
 				}
 
-				readPedidoXml = MagentoApiDAO.getMagentoPedidoXmlByTicket(numeroPedidoMagento, operationControlTicket, loginParameters.api_versao, out msg_erro);
+				readPedidoXml = MagentoApiDAO.getMagentoPedidoXmlByTicket(numeroPedidoMagento, operationControlTicket, Global.Cte.MagentoApiIntegracao.VERSAO_API_MAGENTO_V1_SOAP_XML, out msg_erro);
 				if (readPedidoXml != null)
 				{
 					msg = "Pedido Magento nº " + numeroPedidoMagento + " localizado no BD";
@@ -2345,7 +2345,7 @@ namespace ART3WebAPI.Models.Domains
 				insertPedidoXml.operationControlTicket = operationControlTicket;
 				insertPedidoXml.loja = loja;
 				insertPedidoXml.usuario_cadastro = usuario;
-				insertPedidoXml.magento_api_versao = loginParameters.api_versao;
+				insertPedidoXml.magento_api_versao = Global.Cte.MagentoApiIntegracao.VERSAO_API_MAGENTO_V1_SOAP_XML;
 				insertPedidoXml.pedido_xml = sXml;
 				insertPedidoXml.cpfCnpjIdentificado = cpfCnpjIdentificado;
 				insertPedidoXml.increment_id = (int)Global.converteInteiro((salesOrder.magentoSalesOrderInfo.increment_id ?? ""));

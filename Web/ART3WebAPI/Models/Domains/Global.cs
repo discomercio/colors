@@ -39,7 +39,7 @@ namespace ART3WebAPI.Models.Domains
 			{
 				public const string NomeSistema = "WebAPI";
 				public const string Numero = "2.25";
-				public const string Data = "08.MAR.2021";
+				public const string Data = "12.ABR.2021";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
 			#endregion
@@ -170,9 +170,11 @@ namespace ART3WebAPI.Models.Domains
 			 *      entrada no estoque no cálculo mês a mês, quando esse mesmo filtro não estava sendo
 			 *      informado, o relatório calculava o valor do mês a mês sem restrição de período.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.25 - 08.03.2021 - por HHO
+			 * v 2.25 - 12.04.2021 - por HHO
 			 *      Implementação de tratamento para a API REST (JSON) do Magento 2 (incluindo tratamento para
-			 *      serviços da iSnow).
+			 *      serviços da iSnow). O tratamento implementado foi ajustado antes de entrar em produção
+			 *      para que seja possível usar o cadastramento semi-automático de pedidos Magento para os
+			 *      pedidos de Magento v1.8 e v2 simultaneamente.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.26 - XX.XX.20XX - por XXX
 			 * -----------------------------------------------------------------------------------------------
