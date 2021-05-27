@@ -207,6 +207,22 @@
 	dim strHistPagtoCorParcelaEmAtraso
 	dim dtReferenciaLimitePagamentoEmAtraso
 
+	dim blnPossuiFormaPagtoProporcional, sDescricaoFormaPagtoProporcional, blnFormaPagtoProporcionalNaoSeAplica, blnFormaPagtoProporcionalFalhaCalculo, msgFormaPagtoProporcionalFalhaCalculo
+	if alerta = "" then
+		blnPossuiFormaPagtoProporcional = monta_descricao_forma_pagto_proporcional(r_pedido, sDescricaoFormaPagtoProporcional, blnFormaPagtoProporcionalNaoSeAplica, blnFormaPagtoProporcionalFalhaCalculo, msgFormaPagtoProporcionalFalhaCalculo, msg_erro)
+		if blnPossuiFormaPagtoProporcional then
+			if blnFormaPagtoProporcionalNaoSeAplica then blnPossuiFormaPagtoProporcional = False
+			end if
+		if blnPossuiFormaPagtoProporcional then
+			'Se houve falha no cálculo e foi retornada uma mensagem da falha, pode-se exibi-la ou não para o usuário
+			if blnFormaPagtoProporcionalFalhaCalculo then sDescricaoFormaPagtoProporcional = msgFormaPagtoProporcionalFalhaCalculo
+			end if
+		if blnPossuiFormaPagtoProporcional then
+			'Situação inesperada: não há descrição para ser exibida
+			if Trim(sDescricaoFormaPagtoProporcional) = "" then blnPossuiFormaPagtoProporcional = False
+			end if
+		end if
+
 
 
 
@@ -1341,7 +1357,7 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 <br>
 <table class="Q" style="width:649px;" cellspacing="0">
 	<tr>
-		<td class="MB" colspan="6" align="left"><p class="Rf">Observações </p>
+		<td class="MB" align="left"><p class="Rf">Observações </p>
 			<textarea name="c_obs1" id="c_obs1" class="PLLe notPrint" rows="<%=Cstr(MAX_LINHAS_OBS1)%>" 
 				style="width:99%;margin-left:2pt;" 
 				readonly tabindex=-1><%=r_pedido.obs_1%></textarea>
@@ -1354,7 +1370,7 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 <%  notPrint = ""
     if Trim(r_pedido.NFe_texto_constar) = "" then notPrint="class='notPrint'" %>
     <tr <%=notPrint%>>
-		<td class="MB" colspan="5" align="left"><p class="Rf">Constar na NF</p>
+		<td class="MB" align="left"><p class="Rf">Constar na NF</p>
 			<textarea name="c_nf_texto" id="c_nf_texto" class="PLLe notPrint" rows="<%=Cstr(MAX_LINHAS_NF_TEXTO_CONSTAR)%>" 
 				style="width:641px;margin-left:2pt;"
 				readonly tabindex=-1><%=r_pedido.NFe_texto_constar%></textarea>
@@ -1365,94 +1381,117 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 		</td>
 	</tr>
     <tr>
-        <td class="MB MD" align="left" colspan="2" nowrap><p class="Rf">xPed</p>
-			<input name="c_num_pedido_compra" id="c_num_pedido_compra" class="PLLe" maxlength="15" style="width:100px;margin-left:2pt;" onkeypress="filtra_nome_identificador();" onblur="this.value=trim(this.value);"
-				value='<%=r_pedido.NFe_xPed%>' readonly tabindex=-1>
-		</td>
-		<td class="MB" align="left" colspan="4">
-			<p class="Rf">Previsão de Entrega</p>
-			<% s = formata_data_e_talvez_hora_hhmm(r_pedido.PrevisaoEntregaData)
-				if s <> "" then s = s & " &nbsp; (" & iniciais_em_maiusculas(r_pedido.PrevisaoEntregaUsuarioUltAtualiz) & " - " & formata_data_e_talvez_hora_hhmm(r_pedido.PrevisaoEntregaDtHrUltAtualiz) & ")"
-				if s="" then s="&nbsp;"
-			%>
-			<p class="C"><%=s%></p>
+		<td width="100%">
+			<table width="100%" cellspacing="0" cellpadding="0">
+				<tr>
+					<td class="MB MD" align="left" nowrap width="40%"><p class="Rf">xPed</p>
+						<input name="c_num_pedido_compra" id="c_num_pedido_compra" class="PLLe" maxlength="15" style="width:100px;margin-left:2pt;" onkeypress="filtra_nome_identificador();" onblur="this.value=trim(this.value);"
+							value='<%=r_pedido.NFe_xPed%>' readonly tabindex=-1>
+					</td>
+					<td class="MB" align="left">
+						<p class="Rf">Previsão de Entrega</p>
+						<% s = formata_data_e_talvez_hora_hhmm(r_pedido.PrevisaoEntregaData)
+							if s <> "" then s = s & " &nbsp; (" & iniciais_em_maiusculas(r_pedido.PrevisaoEntregaUsuarioUltAtualiz) & " - " & formata_data_e_talvez_hora_hhmm(r_pedido.PrevisaoEntregaDtHrUltAtualiz) & ")"
+							if s="" then s="&nbsp;"
+						%>
+						<p class="C"><%=s%></p>
+					</td>
+				</tr>
+			</table>
 		</td>
     </tr>
 	<tr>
-		<td class="MD" align="left" nowrap><p class="Rf">Nº Nota Fiscal</p>
-			<% s_link_rastreio = monta_link_rastreio(pedido_selecionado, r_pedido.obs_2, r_pedido.transportadora_id, r_pedido.loja) %>
-			<input name="c_obs2" id="c_obs2" class="PLLe" style="width:67px;margin-left:2pt;" 
-				readonly tabindex=-1 value='<%=r_pedido.obs_2%>'><%=s_link_rastreio%>
-		</td>
-		<td class="MD" align="left" nowrap><p class="Rf">NF Simples Remessa</p>
-			<% s_link_rastreio = monta_link_rastreio(pedido_selecionado, r_pedido.obs_3, r_pedido.transportadora_id, r_pedido.loja) %>
-			<input name="c_obs3" id="c_obs3" class="PLLe" style="width:67px;margin-left:2pt;" 
-				readonly tabindex=-1 value='<%=r_pedido.obs_3%>'><%=s_link_rastreio%>
-		</td>
-		<td class="MD" nowrap align="left" valign="top"><p class="Rf">Entrega Imediata</p>
-		<% 	if Cstr(r_pedido.st_etg_imediata) = Cstr(COD_ETG_IMEDIATA_NAO) then
-				s = "NÃO"
-			elseif Cstr(r_pedido.st_etg_imediata) = Cstr(COD_ETG_IMEDIATA_SIM) then
-				s = "SIM"
-			else
-				s = ""
-				end if
+		<td width="100%">
+			<table width="100%" cellspacing="0" cellpadding="0">
+				<tr>
+					<td class="MB MD" nowrap align="left" valign="top" width="40%"><p class="Rf">Entrega Imediata</p>
+					<% 	if Cstr(r_pedido.st_etg_imediata) = Cstr(COD_ETG_IMEDIATA_NAO) then
+							s = "NÃO"
+						elseif Cstr(r_pedido.st_etg_imediata) = Cstr(COD_ETG_IMEDIATA_SIM) then
+							s = "SIM"
+						else
+							s = ""
+							end if
 			
-			if s <> "" then
-				s_aux=formata_data_e_talvez_hora_hhmm(r_pedido.etg_imediata_data)
-				if s_aux <> "" then s = s & " &nbsp; (" & iniciais_em_maiusculas(r_pedido.etg_imediata_usuario) & " - " & s_aux & ")"
-				end if
-			if s="" then s="&nbsp;"
-		%>
-		<p class="C" style="margin-top:3px;"><%=s%></p>
-		</td>
-		<td class="MD" nowrap align="left" valign="top"><p class="Rf">Bem Uso/Consumo</p>
-		<% 	if Cstr(r_pedido.StBemUsoConsumo) = Cstr(COD_ST_BEM_USO_CONSUMO_NAO) then
-				s = "NÃO"
-			elseif Cstr(r_pedido.StBemUsoConsumo) = Cstr(COD_ST_BEM_USO_CONSUMO_SIM) then
-				s = "SIM"
-			else
-				s = ""
-				end if
+						if s <> "" then
+							s_aux=formata_data_e_talvez_hora_hhmm(r_pedido.etg_imediata_data)
+							if s_aux <> "" then s = s & " &nbsp; (" & iniciais_em_maiusculas(r_pedido.etg_imediata_usuario) & " - " & s_aux & ")"
+							end if
+						if s="" then s="&nbsp;"
+					%>
+					<span class="C" style="margin-top:3px;"><%=s%></span>
+					</td>
+					<td class="MB MD" nowrap align="left" valign="top" width="20%"><p class="Rf">Bem Uso/Consumo</p>
+					<% 	if Cstr(r_pedido.StBemUsoConsumo) = Cstr(COD_ST_BEM_USO_CONSUMO_NAO) then
+							s = "NÃO"
+						elseif Cstr(r_pedido.StBemUsoConsumo) = Cstr(COD_ST_BEM_USO_CONSUMO_SIM) then
+							s = "SIM"
+						else
+							s = ""
+							end if
 			
-			if s="" then s="&nbsp;"
-		%>
-		<p class="C" style="margin-top:3px;"><%=s%></p>
-		</td>
-		<td class="MD" nowrap align="left" valign="top"><p class="Rf">Instalador Instala</p>
-		<% 	if Cstr(r_pedido.InstaladorInstalaStatus) = Cstr(COD_INSTALADOR_INSTALA_NAO) then
-				s = "NÃO"
-			elseif Cstr(r_pedido.InstaladorInstalaStatus) = Cstr(COD_INSTALADOR_INSTALA_SIM) then
-				s = "SIM"
-			else
-				s = ""
-				end if
+						if s="" then s="&nbsp;"
+					%>
+					<span class="C" style="margin-top:3px;"><%=s%></span>
+					</td>
+					<td class="MB MD" nowrap align="left" valign="top" width="20%"><p class="Rf">Instalador Instala</p>
+					<% 	if Cstr(r_pedido.InstaladorInstalaStatus) = Cstr(COD_INSTALADOR_INSTALA_NAO) then
+							s = "NÃO"
+						elseif Cstr(r_pedido.InstaladorInstalaStatus) = Cstr(COD_INSTALADOR_INSTALA_SIM) then
+							s = "SIM"
+						else
+							s = ""
+							end if
 			
-			if s="" then s="&nbsp;"
-		%>
-		<p class="C" style="margin-top:3px;"><%=s%></p>
-		</td>
-		<td class="tdGarInd" nowrap align="left" valign="top"><p class="Rf">Garantia Indicador</p>
-		<% 	if Cstr(r_pedido.GarantiaIndicadorStatus) = Cstr(COD_GARANTIA_INDICADOR_STATUS__NAO) then
-				s = "NÃO"
-			elseif Cstr(r_pedido.GarantiaIndicadorStatus) = Cstr(COD_GARANTIA_INDICADOR_STATUS__SIM) then
-				s = "SIM"
-			else
-				s = ""
-				end if
+						if s="" then s="&nbsp;"
+					%>
+					<span class="C" style="margin-top:3px;"><%=s%></span>
+					</td>
+					<td class="MB tdGarInd" nowrap align="left" valign="top" width="20%"><p class="Rf">Garantia Indicador</p>
+					<% 	if Cstr(r_pedido.GarantiaIndicadorStatus) = Cstr(COD_GARANTIA_INDICADOR_STATUS__NAO) then
+							s = "NÃO"
+						elseif Cstr(r_pedido.GarantiaIndicadorStatus) = Cstr(COD_GARANTIA_INDICADOR_STATUS__SIM) then
+							s = "SIM"
+						else
+							s = ""
+							end if
 			
-			if s="" then s="&nbsp;"
-		%>
-		<p class="C" style="margin-top:3px;"><%=s%></p>
+						if s="" then s="&nbsp;"
+					%>
+					<span class="C" style="margin-top:3px;"><%=s%></span>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+			<table width="100%" cellspacing="0" cellpadding="0">
+				<tr>
+					<td class="MD" align="left" nowrap width="33.3%"><p class="Rf">Nº Nota Fiscal</p>
+						<% s_link_rastreio = monta_link_rastreio(pedido_selecionado, r_pedido.obs_2, r_pedido.transportadora_id, r_pedido.loja) %>
+						<input name="c_obs2" id="c_obs2" class="PLLe" style="width:67px;margin-left:2pt;" 
+							readonly tabindex=-1 value='<%=r_pedido.obs_2%>'><%=s_link_rastreio%>
+					</td>
+					<td class="MD" align="left" nowrap width="33.3%"><p class="Rf">NF Simples Remessa</p>
+						<% s_link_rastreio = monta_link_rastreio(pedido_selecionado, r_pedido.obs_3, r_pedido.transportadora_id, r_pedido.loja) %>
+						<input name="c_obs3" id="c_obs3" class="PLLe" style="width:67px;margin-left:2pt;" 
+							readonly tabindex=-1 value='<%=r_pedido.obs_3%>'><%=s_link_rastreio%>
+					</td>
+					<td nowrap align="left" width="33.3%"><p class="Rf">NF Entrega Futura</p>
+						<input name="c_obs4" id="c_obs4" class="PLLe" style="width:75px;margin-left:2pt;" 
+							readonly tabindex=-1 value='<%=r_pedido.obs_4%>'>
+					</td>
+				</tr>
+			</table>
 		</td>
 	</tr>
 	<% if ID_PARAM_SITE = COD_SITE_ASSISTENCIA_TECNICA then %>
 	<tr>
-		<td class="MC" align="left" nowrap colspan="6"><p class="Rf">Referente Pedido Bonshop</p>
+		<td class="MC" align="left" nowrap><p class="Rf">Referente Pedido Bonshop</p>
 			<input name="c_ped_bonshop" id="c_ped_bonshop" class="PLLe" style="width:100px;margin-left:2pt;height:20px" 
 				readonly tabindex=-1 value='<%=r_pedido.pedido_bs_x_at%>'>
 		</td>
-		
 	</tr>
 	<% end if %>
 </table>
@@ -1540,6 +1579,26 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 	  </table>
 	</td>
   </tr>
+  <% if blnPossuiFormaPagtoProporcional then %>
+  <tr>
+	<td align="left" class="MC"><span class="Rf">Forma de Pagamento Proporcional Deste Pedido</span></td>
+  </tr>
+  <tr>
+	<td align="left">
+	  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+		<tr>
+		  <td align="left">
+			<table cellspacing="0" cellpadding="0" border="0">
+			  <tr>
+				<td align="left"><span class="C" style="display:inline-block;"><%=sDescricaoFormaPagtoProporcional%></span></td>
+			  </tr>
+			</table>
+		  </td>
+		</tr>
+	  </table>
+	</td>
+  </tr>
+  <% end if %>
 <%  notPrint = ""
     if Trim(r_pedido.forma_pagto) = "" then notPrint="class='notPrint'" %>
     <tr <%=notPrint%>>

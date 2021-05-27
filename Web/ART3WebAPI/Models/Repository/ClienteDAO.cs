@@ -208,7 +208,9 @@ namespace ART3WebAPI.Models.Repository
 			Log log;
 			SqlConnection cn;
 			SqlCommand cmInsert;
+			SqlCommand cmUpdateTabelaControleNsuAcquireXLock;
 			SqlParameter p;
+			SqlTransaction trx;
 			#endregion
 
 			msg_erro = "";
@@ -234,167 +236,203 @@ namespace ART3WebAPI.Models.Repository
 
 			try // try-catch-finally: BD.fechaConexao(ref cn);
 			{
-				if (!GeralDAO.geraNsuUsandoTabelaControle(ref cn, Global.Cte.Nsu.NSU_CADASTRO_CLIENTES, out id_cliente, out msg_erro))
+				trx = cn.BeginTransaction();
+				try // try-finally: commit/rollback
 				{
-					if (msg_erro.Length > 0) msg_erro = "\n" + msg_erro;
-					msg_erro = "Falha ao tentar gerar o identificador do registro para o cadastro de novo cliente!" +
-								msg_erro;
-					return false;
+					#region [ Bloqueia registro p/ evitar acesso concorrente ]
+					if (Global.Parametros.Geral.TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO)
+					{
+						// BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+						// OBS: TODOS OS MÓDULOS DO SISTEMA QUE REALIZEM ESTA OPERAÇÃO DE CADASTRAMENTO DEVEM SINCRONIZAR O ACESSO OBTENDO O LOCK EXCLUSIVO DO REGISTRO DE CONTROLE DESIGNADO
+						strSql = "UPDATE t_CONTROLE SET" +
+									" dummy = ~dummy" +
+								" WHERE" +
+									" (id_nsu = @id_nsu)";
+						cmUpdateTabelaControleNsuAcquireXLock = new SqlCommand();
+						cmUpdateTabelaControleNsuAcquireXLock.Connection = cn;
+						cmUpdateTabelaControleNsuAcquireXLock.Transaction = trx;
+						cmUpdateTabelaControleNsuAcquireXLock.CommandText = strSql;
+						cmUpdateTabelaControleNsuAcquireXLock.Parameters.Add("@id_nsu", SqlDbType.VarChar, 80);
+						cmUpdateTabelaControleNsuAcquireXLock.Prepare();
+						cmUpdateTabelaControleNsuAcquireXLock.Parameters["@id_nsu"].Value = Global.Cte.ID_T_CONTROLE.ID_XLOCK_SYNC_CLIENTE;
+						cmUpdateTabelaControleNsuAcquireXLock.ExecuteNonQuery();
+					}
+					#endregion
+
+					if (!GeralDAO.geraNsuUsandoTabelaControle(ref cn, ref trx, Global.Cte.ID_T_CONTROLE.NSU_CADASTRO_CLIENTES, out id_cliente, out msg_erro))
+					{
+						if (msg_erro.Length > 0) msg_erro = "\n" + msg_erro;
+						msg_erro = "Falha ao tentar gerar o identificador do registro para o cadastro de novo cliente!" +
+									msg_erro;
+						return false;
+					}
+
+					cliente.id = id_cliente;
+
+					#region [ cmInsert ]
+					strSql = "INSERT INTO t_CLIENTE (" +
+								"id, " +
+								"dt_cadastro, " +
+								"usuario_cadastro, " +
+								"dt_ult_atualizacao, " +
+								"usuario_ult_atualizacao, " +
+								"cnpj_cpf, " +
+								"tipo, " +
+								"ie, " +
+								"produtor_rural_status, " +
+								"nome, " +
+								"sexo, " +
+								"endereco, " +
+								"endereco_numero, " +
+								"endereco_complemento, " +
+								"bairro, " +
+								"cidade, " +
+								"uf, " +
+								"cep, " +
+								"ddd_res, " +
+								"tel_res, " +
+								"ddd_cel, " +
+								"tel_cel, " +
+								"ddd_com, " +
+								"tel_com, " +
+								"ddd_com_2, " +
+								"tel_com_2, " +
+								"dt_nasc, " +
+								"email, " +
+								"sistema_responsavel_cadastro, " +
+								"sistema_responsavel_atualizacao" +
+							") VALUES (" +
+								"@id, " +
+								Global.sqlMontaGetdateSomenteData() + ", " +
+								"@usuario_cadastro, " +
+								"getdate(), " +
+								"@usuario_ult_atualizacao, " +
+								"@cnpj_cpf, " +
+								"@tipo, " +
+								"@ie, " +
+								"@produtor_rural_status, " +
+								"@nome, " +
+								"@sexo, " +
+								"@endereco, " +
+								"@endereco_numero, " +
+								"@endereco_complemento, " +
+								"@bairro, " +
+								"@cidade, " +
+								"@uf, " +
+								"@cep, " +
+								"@ddd_res, " +
+								"@tel_res, " +
+								"@ddd_cel, " +
+								"@tel_cel, " +
+								"@ddd_com, " +
+								"@tel_com, " +
+								"@ddd_com_2, " +
+								"@tel_com_2, " +
+								Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@dt_nasc") + ", " +
+								"@email, " +
+								"@sistema_responsavel_cadastro, " +
+								"@sistema_responsavel_atualizacao" +
+							")";
+					cmInsert = new SqlCommand();
+					cmInsert.Connection = cn;
+					cmInsert.Transaction = trx;
+					cmInsert.CommandText = strSql;
+					cmInsert.Parameters.Add("@id", SqlDbType.VarChar, 12);
+					cmInsert.Parameters.Add("@usuario_cadastro", SqlDbType.VarChar, 20);
+					cmInsert.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 20);
+					cmInsert.Parameters.Add("@cnpj_cpf", SqlDbType.VarChar, 14);
+					cmInsert.Parameters.Add("@tipo", SqlDbType.VarChar, 2);
+					cmInsert.Parameters.Add("@ie", SqlDbType.VarChar, 20);
+					cmInsert.Parameters.Add("@produtor_rural_status", SqlDbType.TinyInt);
+					cmInsert.Parameters.Add("@nome", SqlDbType.VarChar, 60);
+					cmInsert.Parameters.Add("@sexo", SqlDbType.VarChar, 1);
+					cmInsert.Parameters.Add("@endereco", SqlDbType.VarChar, 80);
+					cmInsert.Parameters.Add("@endereco_numero", SqlDbType.VarChar, 20);
+					cmInsert.Parameters.Add("@endereco_complemento", SqlDbType.VarChar, 60);
+					cmInsert.Parameters.Add("@bairro", SqlDbType.VarChar, 72);
+					cmInsert.Parameters.Add("@cidade", SqlDbType.VarChar, 60);
+					cmInsert.Parameters.Add("@uf", SqlDbType.VarChar, 2);
+					cmInsert.Parameters.Add("@cep", SqlDbType.VarChar, 8);
+					cmInsert.Parameters.Add("@ddd_res", SqlDbType.VarChar, 4);
+					cmInsert.Parameters.Add("@tel_res", SqlDbType.VarChar, 11);
+					cmInsert.Parameters.Add("@ddd_cel", SqlDbType.VarChar, 2);
+					cmInsert.Parameters.Add("@tel_cel", SqlDbType.VarChar, 9);
+					cmInsert.Parameters.Add("@ddd_com", SqlDbType.VarChar, 4);
+					cmInsert.Parameters.Add("@tel_com", SqlDbType.VarChar, 11);
+					cmInsert.Parameters.Add("@ddd_com_2", SqlDbType.VarChar, 2);
+					cmInsert.Parameters.Add("@tel_com_2", SqlDbType.VarChar, 9);
+					cmInsert.Parameters.Add("@dt_nasc", SqlDbType.VarChar, 10);
+					cmInsert.Parameters.Add("@email", SqlDbType.VarChar, 60);
+					cmInsert.Parameters.Add("@sistema_responsavel_cadastro", SqlDbType.Int);
+					cmInsert.Parameters.Add("@sistema_responsavel_atualizacao", SqlDbType.Int);
+					cmInsert.Prepare();
+					#endregion
+
+					#region [ Preenche o valor dos parâmetros ]
+					cmInsert.Parameters["@id"].Value = cliente.id;
+					p = cmInsert.Parameters["@usuario_cadastro"]; p.Value = Texto.leftStr(usuario, p.Size);
+					p = cmInsert.Parameters["@usuario_ult_atualizacao"]; p.Value = Texto.leftStr(usuario, p.Size);
+					cmInsert.Parameters["@cnpj_cpf"].Value = Global.digitos(cliente.cnpj_cpf);
+					cmInsert.Parameters["@tipo"].Value = (cliente.tipo ?? "");
+					p = cmInsert.Parameters["@ie"]; p.Value = Texto.leftStr((cliente.ie ?? ""), p.Size);
+					cmInsert.Parameters["@produtor_rural_status"].Value = cliente.produtor_rural_status;
+					p = cmInsert.Parameters["@nome"]; p.Value = Texto.leftStr((cliente.nome ?? ""), p.Size);
+					p = cmInsert.Parameters["@sexo"]; p.Value = Texto.leftStr((cliente.sexo ?? ""), p.Size);
+					p = cmInsert.Parameters["@endereco"]; p.Value = Texto.leftStr((cliente.endereco ?? ""), p.Size);
+					p = cmInsert.Parameters["@endereco_numero"]; p.Value = Texto.leftStr((cliente.endereco_numero ?? ""), p.Size);
+					p = cmInsert.Parameters["@endereco_complemento"]; p.Value = Texto.leftStr((cliente.endereco_complemento ?? ""), p.Size);
+					p = cmInsert.Parameters["@bairro"]; p.Value = Texto.leftStr((cliente.bairro ?? ""), p.Size);
+					p = cmInsert.Parameters["@cidade"]; p.Value = Texto.leftStr((cliente.cidade ?? ""), p.Size);
+					p = cmInsert.Parameters["@uf"]; p.Value = Texto.leftStr((cliente.uf ?? ""), p.Size);
+					p = cmInsert.Parameters["@cep"]; p.Value = Texto.leftStr(Global.digitos(cliente.cep ?? ""), p.Size);
+					p = cmInsert.Parameters["@ddd_res"]; p.Value = Texto.leftStr((cliente.ddd_res ?? ""), p.Size);
+					p = cmInsert.Parameters["@tel_res"]; p.Value = Texto.leftStr((cliente.tel_res ?? ""), p.Size);
+					p = cmInsert.Parameters["@ddd_cel"]; p.Value = Texto.leftStr((cliente.ddd_cel ?? ""), p.Size);
+					p = cmInsert.Parameters["@tel_cel"]; p.Value = Texto.leftStr((cliente.tel_cel ?? ""), p.Size);
+					p = cmInsert.Parameters["@ddd_com"]; p.Value = Texto.leftStr((cliente.ddd_com ?? ""), p.Size);
+					p = cmInsert.Parameters["@tel_com"]; p.Value = Texto.leftStr((cliente.tel_com ?? ""), p.Size);
+					p = cmInsert.Parameters["@ddd_com_2"]; p.Value = Texto.leftStr((cliente.ddd_com_2 ?? ""), p.Size);
+					p = cmInsert.Parameters["@tel_com_2"]; p.Value = Texto.leftStr((cliente.tel_com_2 ?? ""), p.Size);
+					cmInsert.Parameters["@dt_nasc"].Value = Global.formataDataYyyyMmDdComSeparador(cliente.dt_nasc);
+					p = cmInsert.Parameters["@email"]; p.Value = Texto.leftStr((cliente.email ?? ""), p.Size);
+					cmInsert.Parameters["@sistema_responsavel_cadastro"].Value = Global.Cte.SistemaResponsavelCadastro.COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP_WEBAPI;
+					cmInsert.Parameters["@sistema_responsavel_atualizacao"].Value = Global.Cte.SistemaResponsavelCadastro.COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP_WEBAPI;
+					#endregion
+
+					#region [ Monta texto para o log em arquivo ]
+					// Se houver conteúdo de alguma tentativa anterior, descarta
+					sbLog = new StringBuilder("");
+					foreach (SqlParameter item in cmInsert.Parameters)
+					{
+						if (sbLog.Length > 0) sbLog.Append("; ");
+						sbLog.Append(item.ParameterName + "=" + (item.Value != null ? item.Value.ToString() : ""));
+					}
+					#endregion
+
+					#region [ Tenta inserir o registro ]
+					try
+					{
+						intRetorno = cmInsert.ExecuteNonQuery();
+					}
+					catch
+					{
+						intRetorno = 0;
+					}
+
+					if (intRetorno > 0) blnSucesso = true;
+					#endregion
 				}
-
-				cliente.id = id_cliente;
-
-				#region [ cmInsert ]
-				strSql = "INSERT INTO t_CLIENTE (" +
-							"id, " +
-							"dt_cadastro, " +
-							"usuario_cadastro, " +
-							"dt_ult_atualizacao, " +
-							"usuario_ult_atualizacao, " +
-							"cnpj_cpf, " +
-							"tipo, " +
-							"ie, " +
-							"produtor_rural_status, "+
-							"nome, " +
-							"sexo, " +
-							"endereco, " +
-							"endereco_numero, " +
-							"endereco_complemento, " +
-							"bairro, " +
-							"cidade, " +
-							"uf, " +
-							"cep, " +
-							"ddd_res, " +
-							"tel_res, " +
-							"ddd_cel, " +
-							"tel_cel, " +
-							"ddd_com, " +
-							"tel_com, " +
-							"ddd_com_2, " +
-							"tel_com_2, " +
-							"dt_nasc, " +
-							"email, " +
-							"sistema_responsavel_cadastro, " +
-							"sistema_responsavel_atualizacao" +
-						") VALUES (" +
-							"@id, " +
-							Global.sqlMontaGetdateSomenteData() + ", " +
-							"@usuario_cadastro, " +
-							"getdate(), " +
-							"@usuario_ult_atualizacao, " +
-							"@cnpj_cpf, " +
-							"@tipo, " +
-							"@ie, " +
-							"@produtor_rural_status, " +
-							"@nome, " +
-							"@sexo, " +
-							"@endereco, " +
-							"@endereco_numero, " +
-							"@endereco_complemento, " +
-							"@bairro, " +
-							"@cidade, " +
-							"@uf, " +
-							"@cep, " +
-							"@ddd_res, " +
-							"@tel_res, " +
-							"@ddd_cel, " +
-							"@tel_cel, " +
-							"@ddd_com, " +
-							"@tel_com, " +
-							"@ddd_com_2, " +
-							"@tel_com_2, " +
-							Global.sqlMontaCaseWhenParametroStringVaziaComoNull("@dt_nasc") + ", " +
-							"@email, " +
-							"@sistema_responsavel_cadastro, " +
-							"@sistema_responsavel_atualizacao" +
-						")";
-				cmInsert = new SqlCommand();
-				cmInsert.Connection = cn;
-				cmInsert.CommandText = strSql;
-				cmInsert.Parameters.Add("@id", SqlDbType.VarChar, 12);
-				cmInsert.Parameters.Add("@usuario_cadastro", SqlDbType.VarChar, 20);
-				cmInsert.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 20);
-				cmInsert.Parameters.Add("@cnpj_cpf", SqlDbType.VarChar, 14);
-				cmInsert.Parameters.Add("@tipo", SqlDbType.VarChar, 2);
-				cmInsert.Parameters.Add("@ie", SqlDbType.VarChar, 20);
-				cmInsert.Parameters.Add("@produtor_rural_status", SqlDbType.TinyInt);
-				cmInsert.Parameters.Add("@nome", SqlDbType.VarChar, 60);
-				cmInsert.Parameters.Add("@sexo", SqlDbType.VarChar, 1);
-				cmInsert.Parameters.Add("@endereco", SqlDbType.VarChar, 80);
-				cmInsert.Parameters.Add("@endereco_numero", SqlDbType.VarChar, 20);
-				cmInsert.Parameters.Add("@endereco_complemento", SqlDbType.VarChar, 60);
-				cmInsert.Parameters.Add("@bairro", SqlDbType.VarChar, 72);
-				cmInsert.Parameters.Add("@cidade", SqlDbType.VarChar, 60);
-				cmInsert.Parameters.Add("@uf", SqlDbType.VarChar, 2);
-				cmInsert.Parameters.Add("@cep", SqlDbType.VarChar, 8);
-				cmInsert.Parameters.Add("@ddd_res", SqlDbType.VarChar, 4);
-				cmInsert.Parameters.Add("@tel_res", SqlDbType.VarChar, 11);
-				cmInsert.Parameters.Add("@ddd_cel", SqlDbType.VarChar, 2);
-				cmInsert.Parameters.Add("@tel_cel", SqlDbType.VarChar, 9);
-				cmInsert.Parameters.Add("@ddd_com", SqlDbType.VarChar, 4);
-				cmInsert.Parameters.Add("@tel_com", SqlDbType.VarChar, 11);
-				cmInsert.Parameters.Add("@ddd_com_2", SqlDbType.VarChar, 2);
-				cmInsert.Parameters.Add("@tel_com_2", SqlDbType.VarChar, 9);
-				cmInsert.Parameters.Add("@dt_nasc", SqlDbType.VarChar, 10);
-				cmInsert.Parameters.Add("@email", SqlDbType.VarChar, 60);
-				cmInsert.Parameters.Add("@sistema_responsavel_cadastro", SqlDbType.Int);
-				cmInsert.Parameters.Add("@sistema_responsavel_atualizacao", SqlDbType.Int);
-				cmInsert.Prepare();
-				#endregion
-
-				#region [ Preenche o valor dos parâmetros ]
-				cmInsert.Parameters["@id"].Value = cliente.id;
-				p = cmInsert.Parameters["@usuario_cadastro"]; p.Value = Texto.leftStr(usuario, p.Size);
-				p = cmInsert.Parameters["@usuario_ult_atualizacao"]; p.Value = Texto.leftStr(usuario, p.Size);
-				cmInsert.Parameters["@cnpj_cpf"].Value = Global.digitos(cliente.cnpj_cpf);
-				cmInsert.Parameters["@tipo"].Value = (cliente.tipo ?? "");
-				p = cmInsert.Parameters["@ie"]; p.Value = Texto.leftStr((cliente.ie ?? ""), p.Size);
-				cmInsert.Parameters["@produtor_rural_status"].Value = cliente.produtor_rural_status;
-				p = cmInsert.Parameters["@nome"]; p.Value = Texto.leftStr((cliente.nome ?? ""), p.Size);
-				p = cmInsert.Parameters["@sexo"]; p.Value = Texto.leftStr((cliente.sexo ?? ""), p.Size);
-				p = cmInsert.Parameters["@endereco"]; p.Value = Texto.leftStr((cliente.endereco ?? ""), p.Size);
-				p = cmInsert.Parameters["@endereco_numero"]; p.Value = Texto.leftStr((cliente.endereco_numero ?? ""), p.Size);
-				p = cmInsert.Parameters["@endereco_complemento"]; p.Value = Texto.leftStr((cliente.endereco_complemento ?? ""), p.Size);
-				p = cmInsert.Parameters["@bairro"]; p.Value = Texto.leftStr((cliente.bairro ?? ""), p.Size);
-				p = cmInsert.Parameters["@cidade"]; p.Value = Texto.leftStr((cliente.cidade ?? ""), p.Size);
-				p = cmInsert.Parameters["@uf"]; p.Value = Texto.leftStr((cliente.uf ?? ""), p.Size);
-				p = cmInsert.Parameters["@cep"]; p.Value = Texto.leftStr(Global.digitos(cliente.cep ?? ""), p.Size);
-				p = cmInsert.Parameters["@ddd_res"]; p.Value = Texto.leftStr((cliente.ddd_res ?? ""), p.Size);
-				p = cmInsert.Parameters["@tel_res"]; p.Value = Texto.leftStr((cliente.tel_res ?? ""), p.Size);
-				p = cmInsert.Parameters["@ddd_cel"]; p.Value = Texto.leftStr((cliente.ddd_cel ?? ""), p.Size);
-				p = cmInsert.Parameters["@tel_cel"]; p.Value = Texto.leftStr((cliente.tel_cel ?? ""), p.Size);
-				p = cmInsert.Parameters["@ddd_com"]; p.Value = Texto.leftStr((cliente.ddd_com ?? ""), p.Size);
-				p = cmInsert.Parameters["@tel_com"]; p.Value = Texto.leftStr((cliente.tel_com ?? ""), p.Size);
-				p = cmInsert.Parameters["@ddd_com_2"]; p.Value = Texto.leftStr((cliente.ddd_com_2 ?? ""), p.Size);
-				p = cmInsert.Parameters["@tel_com_2"]; p.Value = Texto.leftStr((cliente.tel_com_2 ?? ""), p.Size);
-				cmInsert.Parameters["@dt_nasc"].Value = Global.formataDataYyyyMmDdComSeparador(cliente.dt_nasc);
-				p = cmInsert.Parameters["@email"]; p.Value = Texto.leftStr((cliente.email ?? ""), p.Size);
-				cmInsert.Parameters["@sistema_responsavel_cadastro"].Value = Global.Cte.SistemaResponsavelCadastro.COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP_WEBAPI;
-				cmInsert.Parameters["@sistema_responsavel_atualizacao"].Value = Global.Cte.SistemaResponsavelCadastro.COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP_WEBAPI;
-				#endregion
-
-				#region [ Monta texto para o log em arquivo ]
-				// Se houver conteúdo de alguma tentativa anterior, descarta
-				sbLog = new StringBuilder("");
-				foreach (SqlParameter item in cmInsert.Parameters)
+				finally
 				{
-					if (sbLog.Length > 0) sbLog.Append("; ");
-					sbLog.Append(item.ParameterName + "=" + (item.Value != null ? item.Value.ToString() : ""));
+					if (blnSucesso)
+					{
+						trx.Commit();
+					}
+					else
+					{
+						trx.Rollback();
+					}
 				}
-				#endregion
-
-				#region [ Tenta inserir o registro ]
-				try
-				{
-					intRetorno = cmInsert.ExecuteNonQuery();
-				}
-				catch
-				{
-					intRetorno = 0;
-				}
-
-				if (intRetorno > 0) blnSucesso = true;
-				#endregion
 
 				#region [ Grava o log ]
 				if (blnSucesso)

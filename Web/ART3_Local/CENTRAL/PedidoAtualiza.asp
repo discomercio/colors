@@ -95,6 +95,10 @@
 	s = Trim(Request.Form("blnObs3EdicaoLiberada"))
 	blnObs3EdicaoLiberada = CBool(s)
 
+	dim blnObs4EdicaoLiberada
+	s = Trim(Request.Form("blnObs4EdicaoLiberada"))
+	blnObs4EdicaoLiberada = CBool(s)
+
 	dim blnFormaPagtoEdicaoLiberada
 	s = Trim(Request.Form("blnFormaPagtoEdicaoLiberada"))
 	blnFormaPagtoEdicaoLiberada = CBool(s)
@@ -142,7 +146,7 @@
 	dim blnMarketplaceCodigoOrigemAlterado
 	blnMarketplaceCodigoOrigemAlterado = False
 
-	dim s_qtde_parcelas, s_forma_pagto, s_obs1, s_obs2, s_obs2_original, s_obs3, s_obs3_original, s_ped_bonshop, s_indicador, s_pedido_ac, s_pedido_mktplace, s_pedido_origem
+	dim s_qtde_parcelas, s_forma_pagto, s_obs1, s_obs2, s_obs2_original, s_obs3, s_obs3_original, s_obs4, s_obs4_original, s_ped_bonshop, s_indicador, s_pedido_ac, s_pedido_mktplace, s_pedido_origem
     dim s_nf_texto, s_num_pedido_compra
 	dim blnAEntregarStatusEdicaoLiberada, c_a_entregar_data_marcada, c_a_entregar_data_marcada_original
 	dim s_analise_credito, s_analise_credito_a, s_ac_pendente_vendas_motivo
@@ -162,6 +166,8 @@
 	s_obs2_original=Trim(request("c_obs2_original"))
 	s_obs3=Trim(request("c_obs3"))
 	s_obs3_original=Trim(request("c_obs3_original"))
+	s_obs4=Trim(request("c_obs4"))
+	s_obs4_original=Trim(request("c_obs4_original"))
 	s_ped_bonshop=Trim(request("pedBonshop"))
 	c_a_entregar_data_marcada=Trim(request("c_a_entregar_data_marcada"))
 	c_a_entregar_data_marcada_original=Trim(request("c_a_entregar_data_marcada_original"))
@@ -1318,6 +1324,16 @@
 	'	~~~~~~~~~~~~~
 		cn.BeginTrans
 	'	~~~~~~~~~~~~~
+		if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+		'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+		'	OBS: TODOS OS MÓDULOS DO SISTEMA QUE REALIZEM ESTA OPERAÇÃO DE CADASTRAMENTO DEVEM SINCRONIZAR O ACESSO OBTENDO O LOCK EXCLUSIVO DO REGISTRO DE CONTROLE DESIGNADO
+			s = "UPDATE t_CONTROLE SET" & _
+					" dummy = ~dummy" & _
+				" WHERE" & _
+					" id_nsu = '" & ID_XLOCK_SYNC_PEDIDO & "'"
+			cn.Execute(s)
+			end if
+
 		if Not cria_recordset_pessimista(rs, msg_erro) then
 		'	~~~~~~~~~~~~~~~~
 			cn.RollbackTrans
@@ -1827,6 +1843,14 @@
 						end if
 					end if
 				
+				if blnObs4EdicaoLiberada then
+					'Usuário fez alteração do campo na página de edição?
+					'Obs: controle feito com o objetivo de evitar que alterações realizadas por outros processos enquanto o usuário estava na página de edição sejam sobrescritas
+					if s_obs4 <> s_obs4_original then
+						rs("obs_4") = s_obs4
+						end if
+					end if
+
 				if blnFormaPagtoEdicaoLiberada then rs("forma_pagto") = s_forma_pagto
 				
 				if (versao_forma_pagamento = "1") And blnFormaPagtoEdicaoLiberada then

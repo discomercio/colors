@@ -228,6 +228,14 @@ dim linkXmlNFe
 	if s_where <> "" then s_where = s_where & " AND"
 	s_where = s_where & " (t_NFE_EMISSAO.id_nfe_emitente = " & rNfeEmitente.id & ")"
 
+'	EXCLUI NFs DE ENTREGA FUTURA
+	if s_where <> "" then s_where = s_where & " AND"
+	s_where = s_where & _
+				" (EXISTS (SELECT 1  " & _
+							" FROM t_NFe_IMAGEM_ITEM  " & _
+							" WHERE t_NFE_IMAGEM.id = t_NFe_IMAGEM_ITEM.id_nfe_imagem " & _
+							" AND t_NFe_IMAGEM_ITEM.det__CFOP NOT IN ('5922','6922')))"
+
 '	Primeiro grupo selecionado: NFes interestaduais emitidas automaticamente
 	s_sql = "SELECT" & _
 				" t_NFE_EMISSAO.id," & _
@@ -253,7 +261,7 @@ dim linkXmlNFe
 				" INNER JOIN (SELECT id_nfe_emitente, NFe_serie_NF, NFe_numero_NF, max(id) AS id FROM t_NFE_IMAGEM WHERE (st_anulado = 0) GROUP BY id_nfe_emitente, NFe_serie_NF, NFe_numero_NF) img_max_id ON (t_NFE_IMAGEM.id = img_max_id.id AND t_NFE_IMAGEM.id_nfe_emitente=img_max_id.id_nfe_emitente)" & _
 				" INNER JOIN (SELECT id_nfe_emitente, NFe_serie_NF, NFe_numero_NF, max(id) AS id FROM t_NFE_EMISSAO WHERE (st_anulado = 0) GROUP BY id_nfe_emitente, NFe_serie_NF, NFe_numero_NF) emi_max_id ON (t_NFE_EMISSAO.id = emi_max_id.id AND t_NFE_EMISSAO.id_nfe_emitente=emi_max_id.id_nfe_emitente)" & _
 				" INNER JOIN t_PEDIDO ON (t_NFE_EMISSAO.pedido=t_PEDIDO.pedido AND t_NFE_EMISSAO.id_nfe_emitente=t_PEDIDO.id_nfe_emitente)" & _
-			" WHERE t_NFE_EMISSAO.pedido IS NOT NULL " & _
+			" WHERE (t_NFE_EMISSAO.pedido IS NOT NULL) " & _
 			s_where
 
 '	Segundo grupo selecionado: NFes interestaduais emitidas manualmente, com um conjunto específico de CFOPs relacionados
@@ -284,7 +292,7 @@ dim linkXmlNFe
 				" INNER JOIN (SELECT id_nfe_emitente, NFe_serie_NF, NFe_numero_NF, max(id) AS id FROM t_NFE_EMISSAO WHERE (st_anulado = 0) GROUP BY id_nfe_emitente, NFe_serie_NF, NFe_numero_NF) emi_max_id ON (t_NFE_EMISSAO.id = emi_max_id.id AND t_NFE_EMISSAO.id_nfe_emitente=emi_max_id.id_nfe_emitente)" & _
 				" INNER JOIN (SELECT * FROM t_PEDIDO WHERE (ISNUMERIC(t_PEDIDO.obs_2) = 1) AND (LEN(t_PEDIDO.obs_2) < 10) " & s_where_data &") pedidos_nf_ok" & _
 				"		ON t_NFE_EMISSAO.NFe_numero_NF=CONVERT(INT, pedidos_nf_ok.obs_2) AND t_NFE_EMISSAO.id_nfe_emitente = pedidos_nf_ok.id_nfe_emitente" & _
-			" WHERE t_NFE_EMISSAO.pedido IS NULL " & _
+			" WHERE (t_NFE_EMISSAO.pedido IS NULL) " & _
 				" AND " & _
 				" (EXISTS (SELECT 1  " & _
 							" FROM t_NFe_IMAGEM_ITEM  " & _

@@ -71,7 +71,7 @@
 	if alerta = "" then
 		set rNfeEmitente = le_nfe_emitente(r_pedido.id_nfe_emitente)
 		'Se houver NFe emitida para o pedido, somente permite alterar para outro CD que possua o mesmo CNPJ
-		if (Trim("" & r_pedido.obs_2) <> "") Or (Trim("" & r_pedido.obs_3) <> "") then
+		if (Trim("" & r_pedido.obs_2) <> "") Or (Trim("" & r_pedido.obs_3) <> "") Or (Trim("" & r_pedido.obs_4) <> "") then
 			sCnpjMustBeEqual = rNfeEmitente.cnpj
 			end if
 		end if

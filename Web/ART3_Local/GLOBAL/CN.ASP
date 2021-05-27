@@ -257,6 +257,10 @@
 	Const HTTPS_OBRIGATORIO_URL_REDIRECT = ""
 
 
+'	TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO
+'		Se habilitado (True), nas rotinas em que o acesso concorrente causa problemas sérios, é executado um Update em um campo dummy nos registros pertinentes para obter o lock exclusivo
+	Const TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO = True
+
 
 
 '======================================================================================

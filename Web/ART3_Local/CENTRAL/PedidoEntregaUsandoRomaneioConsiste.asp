@@ -94,7 +94,9 @@
 				" tP.st_entrega," & _
 				" tP.st_etg_imediata," & _
 				" tP.id_nfe_emitente," & _
-				" t_PEDIDO__BASE.analise_credito" & _
+				" t_PEDIDO__BASE.analise_credito," & _
+				" t_PEDIDO__BASE.PagtoAntecipadoStatus," & _
+				" tP.PagtoAntecipadoQuitadoStatus" & _
 			" FROM t_WMS_ROMANEIO_N1 tN1" & _
 				" INNER JOIN t_WMS_ROMANEIO_N2 tN2 ON (tN2.id_wms_romaneio_n1 = tN1.id)" & _
 				" INNER JOIN t_PEDIDO tP ON (tN2.pedido = tP.pedido)" & _
@@ -137,6 +139,12 @@
 					v_pedido(UBound(v_pedido)).blnErroConsistencia = True
 					strMsgAlertaPedido=texto_add_br(strMsgAlertaPedido)
 					strMsgAlertaPedido=strMsgAlertaPedido & "Pedido " & Trim("" & rs("pedido")) & " está com 'Entrega Imediata' assinalada com 'Não'"
+					end if
+				if (CInt(rs("PagtoAntecipadoStatus")) = CInt(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO)) And (CInt(rs("PagtoAntecipadoQuitadoStatus")) <> CInt(COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO)) then
+					blnErroFatal = True
+					v_pedido(UBound(v_pedido)).blnErroConsistencia = True
+					strMsgAlertaPedido=texto_add_br(strMsgAlertaPedido)
+					strMsgAlertaPedido=strMsgAlertaPedido & "Pedido " & Trim("" & rs("pedido")) & " está com status de pagamento antecipado '" & pagto_antecipado_quitado_descricao(rs("PagtoAntecipadoStatus"), rs("PagtoAntecipadoQuitadoStatus")) & "'"
 					end if
 
 			'	VERIFICA SE O CD DO USUÁRIO ESTÁ COERENTE COM O PEDIDO

@@ -1000,6 +1000,11 @@ namespace FinanceiroService
 
 				#endregion
 
+				#region [ Parâmetro que define tratamento p/ acesso concorrente ]
+				strMsg = "Parâmetro TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO: " + Global.Parametros.Geral.TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO.ToString();
+				sbMsgParametros.AppendLine(strMsg);
+				#endregion
+
 				// Log informativo com os parâmetros
 				Global.gravaEventLog(NOME_DESTA_ROTINA + "\r\n" + sbMsgParametros.ToString(), EventLogEntryType.Information);
 

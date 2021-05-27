@@ -793,7 +793,8 @@ namespace ART3WebAPI.Models.Repository
 		#endregion
 
 		#region [ atualizaTabelaControleNsu ]
-		private static bool atualizaTabelaControleNsu(String id_nsu,
+		private static bool atualizaTabelaControleNsu(ref SqlConnection cn, ref SqlTransaction trx,
+													String id_nsu,
 													String nsu_novo,
 													String nsu_atual,
 													out String strMsgErro)
@@ -801,9 +802,9 @@ namespace ART3WebAPI.Models.Repository
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "GeralDAO.atualizaTabelaControleNsu()";
 			bool blnSucesso = false;
+			bool blnAbriuConexao = false;
 			int intRetorno;
 			string strSql;
-			SqlConnection cn;
 			SqlCommand cmUpdateTabelaControleNsu;
 			#endregion
 
@@ -843,8 +844,12 @@ namespace ART3WebAPI.Models.Repository
 				#endregion
 
 				#region [ Prepara acesso ao BD ]
-				cn = new SqlConnection(BD.getConnectionString());
-				cn.Open();
+				if (cn == null)
+				{
+					cn = new SqlConnection(BD.getConnectionString());
+					cn.Open();
+					blnAbriuConexao = true;
+				}
 
 				// Caso o relógio do servidor seja alterado p/ datas futuras e passadas, evita que o campo 'ano_letra_seq' seja incrementado várias vezes através
 				// do controle que impede o campo 'dt_ult_atualizacao' de receber uma data menor do que aquela que ele já possui
@@ -856,6 +861,7 @@ namespace ART3WebAPI.Models.Repository
 							" AND (nsu = @nsu_atual)";
 				cmUpdateTabelaControleNsu = new SqlCommand();
 				cmUpdateTabelaControleNsu.Connection = cn;
+				if (trx != null) cmUpdateTabelaControleNsu.Transaction = trx;
 				cmUpdateTabelaControleNsu.CommandText = strSql;
 				cmUpdateTabelaControleNsu.Parameters.Add("@id_nsu", SqlDbType.VarChar, 80);
 				cmUpdateTabelaControleNsu.Parameters.Add("@nsu_novo", SqlDbType.VarChar, 12);
@@ -895,7 +901,7 @@ namespace ART3WebAPI.Models.Repository
 				}
 				finally
 				{
-					BD.fechaConexao(ref cn);
+					if (blnAbriuConexao) BD.fechaConexao(ref cn);
 				}
 
 				#region [ Processamento final de sucesso ou falha ]
@@ -921,7 +927,8 @@ namespace ART3WebAPI.Models.Repository
 		#endregion
 
 		#region [ atualizaTabelaControleNsuComLetraSeq ]
-		private static bool atualizaTabelaControleNsuComLetraSeq(String id_nsu,
+		private static bool atualizaTabelaControleNsuComLetraSeq(ref SqlConnection cn, ref SqlTransaction trx,
+													String id_nsu,
 													String nsu_novo,
 													String nsu_atual,
 													String ano_letra_seq_novo,
@@ -930,9 +937,9 @@ namespace ART3WebAPI.Models.Repository
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "GeralDAO.atualizaTabelaControleNsuComLetraSeq()";
 			bool blnSucesso = false;
+			bool blnAbriuConexao = false;
 			int intRetorno;
 			string strSql;
-			SqlConnection cn;
 			SqlCommand cmUpdateTabelaControleNsuComLetraSeq;
 			#endregion
 
@@ -972,8 +979,12 @@ namespace ART3WebAPI.Models.Repository
 				#endregion
 
 				#region [ Prepara acesso ao BD ]
-				cn = new SqlConnection(BD.getConnectionString());
-				cn.Open();
+				if (cn == null)
+				{
+					cn = new SqlConnection(BD.getConnectionString());
+					cn.Open();
+					blnAbriuConexao = true;
+				}
 
 				// Caso o relógio do servidor seja alterado p/ datas futuras e passadas, evita que o campo 'ano_letra_seq' seja incrementado várias vezes através
 				// do controle que impede o campo 'dt_ult_atualizacao' de receber uma data menor do que aquela que ele já possui
@@ -986,6 +997,7 @@ namespace ART3WebAPI.Models.Repository
 							" AND (nsu = @nsu_atual)";
 				cmUpdateTabelaControleNsuComLetraSeq = new SqlCommand();
 				cmUpdateTabelaControleNsuComLetraSeq.Connection = cn;
+				if (trx != null) cmUpdateTabelaControleNsuComLetraSeq.Transaction = trx;
 				cmUpdateTabelaControleNsuComLetraSeq.CommandText = strSql;
 				cmUpdateTabelaControleNsuComLetraSeq.Parameters.Add("@id_nsu", SqlDbType.VarChar, 80);
 				cmUpdateTabelaControleNsuComLetraSeq.Parameters.Add("@nsu_novo", SqlDbType.VarChar, 12);
@@ -1027,7 +1039,7 @@ namespace ART3WebAPI.Models.Repository
 				}
 				finally
 				{
-					BD.fechaConexao(ref cn);
+					if (blnAbriuConexao) BD.fechaConexao(ref cn);
 				}
 
 				#region [ Processamento final de sucesso ou falha ]
@@ -1053,7 +1065,7 @@ namespace ART3WebAPI.Models.Repository
 		#endregion
 
 		#region [ geraNsuUsandoTabelaControle ]
-		public static bool geraNsuUsandoTabelaControle(ref SqlConnection cn, String id_nsu, out String nsu_novo, out String strMsgErro)
+		public static bool geraNsuUsandoTabelaControle(ref SqlConnection cn, ref SqlTransaction trx, String id_nsu, out String nsu_novo, out String strMsgErro)
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "GeralDAO.geraNsuUsandoTabelaControle()";
@@ -1071,7 +1083,7 @@ namespace ART3WebAPI.Models.Repository
 				{
 					intQtdeTentativas++;
 
-					blnRetorno = executaGeraNsuUsandoTabelaControle(ref cn, id_nsu, out nsu_novo, out strMsgErro);
+					blnRetorno = executaGeraNsuUsandoTabelaControle(ref cn, ref trx, id_nsu, out nsu_novo, out strMsgErro);
 					if (blnRetorno) return true;
 
 					if (intQtdeTentativas > MAX_TENTATIVAS)
@@ -1094,7 +1106,7 @@ namespace ART3WebAPI.Models.Repository
 		#endregion
 
 		#region [ executaGeraNsuUsandoTabelaControle ]
-		private static bool executaGeraNsuUsandoTabelaControle(ref SqlConnection cn, String id_nsu, out String nsu_novo, out String strMsgErro)
+		private static bool executaGeraNsuUsandoTabelaControle(ref SqlConnection cn, ref SqlTransaction trx, String id_nsu, out String nsu_novo, out String strMsgErro)
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "GeralDAO.executaGeraNsuUsandoTabelaControle()";
@@ -1105,6 +1117,7 @@ namespace ART3WebAPI.Models.Repository
 			String strLetraSeqNovo;
 			String strSql;
 			SqlCommand cmCommand;
+			SqlCommand cmUpdateTabelaControleNsuAcquireXLock;
 			SqlDataAdapter daAdapter;
 			DataTable dtbConsulta = new DataTable();
 			DataRow rowConsulta;
@@ -1124,6 +1137,7 @@ namespace ART3WebAPI.Models.Repository
 
 				cmCommand = new SqlCommand();
 				cmCommand.Connection = cn;
+				if (trx != null) cmCommand.Transaction = trx;
 				daAdapter = new SqlDataAdapter();
 				daAdapter.SelectCommand = cmCommand;
 				daAdapter.MissingSchemaAction = MissingSchemaAction.Add;
@@ -1147,6 +1161,24 @@ namespace ART3WebAPI.Models.Repository
 
 					strMsgErro = "";
 					n_nsu = -1;
+
+					#region [ Bloqueia registro p/ evitar acesso concorrente ]
+					if (Global.Parametros.Geral.TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO)
+					{
+						cmUpdateTabelaControleNsuAcquireXLock = new SqlCommand();
+						cmUpdateTabelaControleNsuAcquireXLock.Connection = cn;
+						if (trx != null) cmUpdateTabelaControleNsuAcquireXLock.Transaction = trx;
+						strSql = "UPDATE t_CONTROLE SET" +
+									" dummy = ~dummy" +
+								" WHERE" +
+									" (id_nsu = @id_nsu)";
+						cmUpdateTabelaControleNsuAcquireXLock.CommandText = strSql;
+						cmUpdateTabelaControleNsuAcquireXLock.Parameters.Add("@id_nsu", SqlDbType.VarChar, 80);
+						cmUpdateTabelaControleNsuAcquireXLock.Prepare();
+						cmUpdateTabelaControleNsuAcquireXLock.Parameters["@id_nsu"].Value = id_nsu;
+						cmUpdateTabelaControleNsuAcquireXLock.ExecuteNonQuery();
+					}
+					#endregion
 
 					strSql = "SELECT * FROM t_CONTROLE WHERE (id_nsu = '" + id_nsu + "')";
 
@@ -1182,7 +1214,7 @@ namespace ART3WebAPI.Models.Repository
 									{
 										strLetraSeqNovo = BD.readToString(rowConsulta["ano_letra_seq"]);
 										strLetraSeqNovo = Texto.chr((short)(Texto.asc(strLetraSeqNovo[0]) + BD.readToInt(rowConsulta["ano_letra_step"]))).ToString();
-										if (!atualizaTabelaControleNsuComLetraSeq(id_nsu, strNsuNovo, strNsuAtual, strLetraSeqNovo, out strMsgErro))
+										if (!atualizaTabelaControleNsuComLetraSeq(ref cn, ref trx, id_nsu, strNsuNovo, strNsuAtual, strLetraSeqNovo, out strMsgErro))
 										{
 											if (strMsgErro.Length > 0) strMsgErro = "\n" + strMsgErro;
 											strMsgErro = "Falha ao tentar atualizar o registro da tabela de controle (id_nsu=" + id_nsu + ")!!" + strMsgErro;
@@ -1191,7 +1223,7 @@ namespace ART3WebAPI.Models.Repository
 									}
 									else
 									{
-										if (!atualizaTabelaControleNsu(id_nsu, strNsuNovo, strNsuAtual, out strMsgErro))
+										if (!atualizaTabelaControleNsu(ref cn, ref trx, id_nsu, strNsuNovo, strNsuAtual, out strMsgErro))
 										{
 											if (strMsgErro.Length > 0) strMsgErro = "\n" + strMsgErro;
 											strMsgErro = "Falha ao tentar atualizar o registro da tabela de controle (id_nsu=" + id_nsu + ")!!" + strMsgErro;
@@ -1211,7 +1243,7 @@ namespace ART3WebAPI.Models.Repository
 
 					n_nsu++;
 					strNsuNovo = n_nsu.ToString().PadLeft(Global.Cte.Etc.TAM_MAX_NSU, '0');
-					if (!atualizaTabelaControleNsu(id_nsu, strNsuNovo, strNsuAtual, out strMsgErro))
+					if (!atualizaTabelaControleNsu(ref cn, ref trx, id_nsu, strNsuNovo, strNsuAtual, out strMsgErro))
 					{
 						if (strMsgErro.Length > 0) strMsgErro = "\n" + strMsgErro;
 						strMsgErro = "Falha ao tentar atualizar a tabela de controle (id_nsu=" + id_nsu + ")!!" + strMsgErro;

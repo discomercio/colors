@@ -23,10 +23,32 @@ namespace ART3WebAPI.Models.Domains
 		static Global()
 		{
 			#region [ Declarações ]
+			string strValue;
 			string msg_erro;
 			#endregion
 
 			gravaLogAtividade(Cte.Versao.M_ID);
+
+			#region [ Configuração do parâmetro que define o tratamento para evitar acesso concorrente nas operações com o BD ]
+			strValue = getConfigurationValue("TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO");
+			if ((strValue ?? "").Length > 0)
+			{
+				if (strValue.ToUpper().Equals("TRUE")
+					|| strValue.ToUpper().Equals("1")
+					|| strValue.ToUpper().Equals("YES")
+					|| strValue.ToUpper().Equals("Y")
+					|| strValue.ToUpper().Equals("SIM")
+					|| strValue.ToUpper().Equals("S"))
+				{
+					Parametros.Geral.TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO = true;
+				}
+				else
+				{
+					Parametros.Geral.TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO = false;
+				}
+			}
+			#endregion
+
 			executaManutencaoArqLogAtividade(out msg_erro);
 		}
 		#endregion
@@ -172,7 +194,12 @@ namespace ART3WebAPI.Models.Domains
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.25 - XX.XX.20XX - por XXX
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.26 - XX.XX.20XX - por XXX
+			 * v 2.26 - 26.05.2021 - por HHO
+			 *      Implementação de tratamento para acesso concorrente nas operações com o banco de dados
+			 *      que podem causar um problema grave. O tratamento se baseia em obter previamente o lock
+			 *      exclusivo do(s) registro(s) através de um update que realiza o flip de um campo bit.
+			 *      A ativação do tratamento de acesso concorrente é feita através do novo parâmetro no
+			 *      arquivo de configuração: TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.27 - XX.XX.20XX - por XXX
 			 * -----------------------------------------------------------------------------------------------
@@ -203,6 +230,7 @@ namespace ART3WebAPI.Models.Domains
 			#region [ Parâmetros ]
 			public static class Parametros
 			{
+				#region [ ID_T_PARAMETRO ]
 				public static class ID_T_PARAMETRO
 				{
 					public const string FLAG_HABILITACAO_UPLOAD_FILE_BACKUP_RECENT_FILES = "WebAPI_UploadFile_FlagHabilitacao_BackupRecentFiles";
@@ -211,6 +239,7 @@ namespace ART3WebAPI.Models.Domains
 					public const string FLAG_CAD_SEMI_AUTO_PED_MAGENTO_CADASTRAR_AUTOMATICAMENTE_CLIENTE_NOVO = "CadSemiAutomaticoPedidoMagento_FlagWebApiCadastrarAutomaticamenteClienteNovo";
 					public const string FLAG_PEDIDO_MEMORIZACAO_COMPLETA_ENDERECOS = "Flag_Pedido_MemorizacaoCompletaEnderecos";
 				}
+				#endregion
 			}
 			#endregion
 
@@ -436,10 +465,14 @@ namespace ART3WebAPI.Models.Domains
 			}
 			#endregion
 
-			#region [ Nsu ]
-			public class Nsu
+			#region [ ID_T_CONTROLE ]
+			public class ID_T_CONTROLE
 			{
 				public const string NSU_CADASTRO_CLIENTES = "CADASTRO_CLIENTES";
+				public const string ID_XLOCK_SYNC_PEDIDO = "XLOCK_SYNC_PEDIDO";
+				public const string ID_XLOCK_SYNC_ORCAMENTO = "XLOCK_SYNC_ORCAMENTO";
+				public const string ID_XLOCK_SYNC_CLIENTE = "XLOCK_SYNC_CLIENTE";
+				public const string ID_XLOCK_SYNC_ORCAMENTISTA_E_INDICADOR = "XLOCK_SYNC_ORCAMENTISTA_E_INDICADOR";
 			}
 			#endregion
 
@@ -453,6 +486,18 @@ namespace ART3WebAPI.Models.Domains
 					public const string COD_CONSULTA_POR_PERIODO_EMISSAO_NF_ENTRADA = "EMI_NF";
 				}
 				#endregion
+			}
+			#endregion
+		}
+		#endregion
+
+		#region [ Parâmetros ]
+		public static class Parametros
+		{
+			#region [ Geral ]
+			public static class Geral
+			{
+				public static bool TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO = false;
 			}
 			#endregion
 		}

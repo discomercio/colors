@@ -113,7 +113,9 @@
 						" t_PEDIDO.st_entrega," & _
 						" t_PEDIDO.st_etg_imediata," & _
 						" t_PEDIDO.id_nfe_emitente," & _
-						" t_PEDIDO__BASE.analise_credito" & _
+						" t_PEDIDO__BASE.analise_credito," & _
+						" t_PEDIDO__BASE.PagtoAntecipadoStatus," & _
+						" t_PEDIDO.PagtoAntecipadoQuitadoStatus" & _
 					" FROM t_PEDIDO" & _
 						" INNER JOIN t_PEDIDO AS t_PEDIDO__BASE ON (t_PEDIDO.pedido_base=t_PEDIDO__BASE.pedido)" & _
 					" WHERE" & _
@@ -136,7 +138,11 @@
 						alerta=texto_add_br(alerta)
 						alerta=alerta & "Pedido " & v_pedido(i) & " não está cadastrado para entrega imediata"
 						end if
-					
+					if (CInt(rs("PagtoAntecipadoStatus")) = CInt(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO)) And (CInt(rs("PagtoAntecipadoQuitadoStatus")) <> CInt(COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO)) then
+						alerta=texto_add_br(alerta)
+						alerta=alerta & "Pedido " & v_pedido(i) & " está com status de pagamento antecipado '" & pagto_antecipado_quitado_descricao(rs("PagtoAntecipadoStatus"), rs("PagtoAntecipadoQuitadoStatus")) & "'"
+						end if
+
 				'	VERIFICA SE O CD DO USUÁRIO ESTÁ COERENTE COM O PEDIDO
 					if CLng(rNfeEmitente.id) <> CLng(rs("id_nfe_emitente")) then
 					'	ERRO: PEDIDO PERTENCE A OUTRO CD

@@ -1273,6 +1273,12 @@ dim r, s, n_nsu, s_nsu, n_tentativas, update_OK
 		Err.Clear 
 		msg_erro = ""
 		
+		if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+		'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+			s = "UPDATE t_CONTROLE SET dummy = ~dummy WHERE id_nsu='" & id_nsu & "'"
+			cn.Execute(s)
+			end if
+
 		n_nsu = -1
 		s = "SELECT * FROM t_CONTROLE WHERE id_nsu='" & id_nsu & "'"
 		if Not cria_recordset_pessimista(r, msg_erro) then exit function
@@ -1394,6 +1400,15 @@ dim intQtdeTentativas, intNsuUltimo, intNsuNovo, blnSucesso
 	do 
 		intQtdeTentativas = intQtdeTentativas + 1
 		
+		if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+		'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+			strSql = "UPDATE t_FIN_CONTROLE SET" & _
+						" dummy = ~dummy" & _
+					" WHERE" & _
+						" id = '" & idNsu & "'"
+			cn.Execute(strSql)
+			end if
+
 	'	OBTÉM O ÚLTIMO NSU USADO
 		strSql = "SELECT" & _
 					" nsu" & _
@@ -1642,6 +1657,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.obs_1						= Trim("" & rs("obs_1"))
 			.obs_2						= Trim("" & rs("obs_2"))
 			.obs_3						= Trim("" & rs("obs_3"))
+			.obs_4						= Trim("" & rs("obs_4"))
 			.qtde_parcelas				= rs("qtde_parcelas")
 			.forma_pagto				= Trim("" & rs("forma_pagto"))
 			.vl_total_familia			= rs("vl_total_familia")
@@ -3193,6 +3209,77 @@ dim id_pedido_base
 		
 	if rs.State <> 0 then rs.Close
 	calcula_valor_total_pedido = True
+end function
+
+
+' ___________________________________________________________
+' CALCULA TOTAIS FAMILIA PEDIDO
+'
+function calcula_totais_familia_pedido(byval id_pedido, _
+										byref vl_NF_deste_pedido, byref vl_venda_deste_pedido, _
+										byref vl_total_NF_com_cancelado, byref vl_total_NF_sem_cancelado, _
+										byref vl_total_venda_com_cancelado, byref vl_total_venda_sem_cancelado, _
+										byref qtde_pedidos_familia, byref qtde_pedidos_cancelados, byref msg_erro)
+dim s
+dim rs
+dim id_pedido_base
+	calcula_totais_familia_pedido = False
+	
+	id_pedido = Trim("" & id_pedido)
+	vl_NF_deste_pedido = 0
+	vl_venda_deste_pedido = 0
+	vl_total_NF_com_cancelado = 0
+	vl_total_NF_sem_cancelado = 0
+	vl_total_venda_com_cancelado = 0
+	vl_total_venda_sem_cancelado = 0
+	qtde_pedidos_familia = 0
+	qtde_pedidos_cancelados = 0
+	msg_erro = ""
+	
+	id_pedido_base = retorna_num_pedido_base(id_pedido)
+
+	s = "SELECT" & _
+			" t_PEDIDO.pedido," & _
+			" t_PEDIDO.st_entrega," & _
+			" Coalesce(SUM(qtde*preco_NF),0) AS vl_NF," & _
+			" Coalesce(SUM(qtde*preco_venda),0) AS vl_venda" & _
+		" FROM t_PEDIDO INNER JOIN t_PEDIDO_ITEM" & _
+			" ON (t_PEDIDO.pedido=t_PEDIDO_ITEM.pedido)" & _
+		" WHERE" & _
+			" (t_PEDIDO.pedido_base = '" & id_pedido_base & "')" & _
+		" GROUP BY" & _
+			" t_PEDIDO.pedido," & _
+			" t_PEDIDO.st_entrega" & _
+		" ORDER BY" & _
+			" t_PEDIDO.pedido"
+	set rs = cn.Execute(s)
+	if Err <> 0 then
+		msg_erro = Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+
+	do while Not rs.Eof
+		qtde_pedidos_familia = qtde_pedidos_familia + 1
+		if Trim("" & rs("st_entrega")) = ST_ENTREGA_CANCELADO then qtde_pedidos_cancelados = qtde_pedidos_cancelados + 1
+
+		if Trim("" & rs("pedido")) = id_pedido then
+			vl_NF_deste_pedido = vl_NF_deste_pedido + rs("vl_NF")
+			vl_venda_deste_pedido = vl_venda_deste_pedido + rs("vl_venda")
+			end if
+
+		vl_total_NF_com_cancelado = vl_total_NF_com_cancelado + rs("vl_NF")
+		vl_total_venda_com_cancelado = vl_total_venda_com_cancelado + rs("vl_venda")
+
+		if Trim("" & rs("st_entrega")) <> ST_ENTREGA_CANCELADO then
+			vl_total_NF_sem_cancelado = vl_total_NF_sem_cancelado + rs("vl_NF")
+			vl_total_venda_sem_cancelado = vl_total_venda_sem_cancelado + rs("vl_venda")
+			end if
+
+		rs.MoveNext
+		loop
+		
+	if rs.State <> 0 then rs.Close
+	calcula_totais_familia_pedido = True
 end function
 
 

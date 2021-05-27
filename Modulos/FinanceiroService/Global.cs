@@ -29,8 +29,8 @@ namespace FinanceiroService
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "Financeiro Service";
 				public static readonly string ID_SISTEMA_EVENTLOG = GetConfigurationValue("ServiceName");
-				public const string VERSAO_NUMERO = "1.36";
-				public const string VERSAO_DATA = "19.ABR.2021";
+				public const string VERSAO_NUMERO = "1.37";
+				public const string VERSAO_DATA = "21.MAI.2021";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Serviço do Windows para execução automática de rotinas financeiras";
@@ -277,7 +277,19 @@ namespace FinanceiroService
 			 *      vendidos sem presença no estoque para resetar o parâmetro logo após a sua leitura a fim
 			 *      de minimizar o risco de problemas por acesso concorrente.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.37 - XX.XX.20XX - por XXX
+			 * v 1.37 - 21.05.2021 - por HHO
+			 *      Ajustes em BraspagDAO.registraPagamentoNoPedido() para não alterar o status da análise de
+			 *      crédito quando este estiver nos seguintes status:
+			 *      CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO, CREDITO_OK_AGUARDANDO_DEPOSITO,
+			 *      CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV e PENDENTE_PAGTO_ANTECIPADO_BOLETO
+			 *      Esses status exigem que seja feita uma confirmação manual do pagamento, sendo que nesses
+			 *      casos pode ter sido registrado antecipadamente o valor de uma parcela no pedido apenas
+			 *      para indicar que um boleto foi emitido.
+			 *      Implementação de tratamento para acesso concorrente nas operações com o banco de dados
+			 *      que podem causar um problema grave. O tratamento se baseia em obter previamente o lock
+			 *      exclusivo do(s) registro(s) através de um update que realiza o flip de um campo bit.
+			 *      A ativação do tratamento de acesso concorrente é feita através do novo parâmetro no
+			 *      arquivo de configuração: TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.38 - XX.XX.20XX - por XXX
 			 * -----------------------------------------------------------------------------------------------
@@ -1851,6 +1863,7 @@ namespace FinanceiroService
 				public static bool SessionToken_Limpeza_FlagHabilitacao = false;
 				public static TimeSpan SessionToken_Limpeza_Horario = new TimeSpan(1, 20, 0); // Hours, Minutes, Seconds
 				public static int ConsultaExecucaoSolicitada_ProcProdutosVendidosSemPresencaEstoque_TempoEntreProcEmSeg = 60;
+				public static bool TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO = false;
 			}
 			#endregion
 
@@ -2008,6 +2021,26 @@ namespace FinanceiroService
 						loja = (int)converteInteiro(strLoja);
 						if (loja > 0) Parametros.Geral.CancelamentoAutomaticoPedidosLojasIgnoradas.Add(loja);
 					}
+				}
+			}
+			#endregion
+
+			#region [ Configuração do parâmetro que define o tratamento para evitar acesso concorrente nas operações com o BD ]
+			strValue = GetConfigurationValue("TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO");
+			if ((strValue ?? "").Length > 0)
+			{
+				if (strValue.ToUpper().Equals("TRUE")
+					|| strValue.ToUpper().Equals("1")
+					|| strValue.ToUpper().Equals("YES")
+					|| strValue.ToUpper().Equals("Y")
+					|| strValue.ToUpper().Equals("SIM")
+					|| strValue.ToUpper().Equals("S"))
+				{
+					Parametros.Geral.TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO = true;
+				}
+				else
+				{
+					Parametros.Geral.TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO = false;
 				}
 			}
 			#endregion
@@ -2902,6 +2935,14 @@ namespace FinanceiroService
 			else if (statusAnaliseCredito == Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.NAO_ANALISADO)
 			{
 				strResp = "Pedido Sem Análise de Crédito";
+			}
+			else if (statusAnaliseCredito == Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)
+			{
+				strResp = "Crédito OK (aguardando pagto boleto AV)";
+			}
+			else if (statusAnaliseCredito == Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.PENDENTE_PAGTO_ANTECIPADO_BOLETO)
+			{
+				strResp = "Pendente - Pagto Antecipado Boleto";
 			}
 			else
 			{

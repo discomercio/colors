@@ -4096,6 +4096,8 @@ namespace FinanceiroService
 						// COM O STATUS 'PAGO' E A ANÁLISE DE CRÉDITO DEVE FICAR C/ O STATUS 'OK'.
 						// ENTRETANTO, O SISTEMA NÃO SABE DE ANTEMÃO SE O PAGAMENTO SERÁ INTEGRALIZADO OU NÃO, PORTANTO, ENQUANTO O STATUS DE PAGAMENTO ESTIVER PARCIAL, O STATUS
 						// DA ANÁLISE DE CRÉDITO DEVE FICAR COMO 'PENDENTE VENDAS', POIS CASO O VALOR NÃO SEJA INTEGRALIZADO, ESSE SERÁ O STATUS FINAL.
+						// HÁ ALGUNS STATUS DE ANÁLISE DE CRÉDITO QUE NÃO DEVEM SER ALTERADOS, POIS DEPENDEM QUE SEJA REALIZADA UMA CONFIRMAÇÃO MANUAL DO PAGAMENTO. NESSES CASOS,
+						// NO PEDIDO PODE TER SIDO REGISTRADO O VALOR DE UMA PARCELA ANTECIPADAMENTE APENAS PARA INDICAR QUE UM BOLETO FOI EMITIDO.
 						if (s_ult_AF_status.Equals(Global.Cte.Clearsale.StatusAF.APROVACAO_MANUAL.GetValue()))
 						{
 							#region [ Tratamento para Aprovação Manual ]
@@ -4107,6 +4109,14 @@ namespace FinanceiroService
 									)
 									&&
 									(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK)
+									&&
+									(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO)
+									&&
+									(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK_AGUARDANDO_DEPOSITO)
+									&&
+									(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)
+									&&
+									(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.PENDENTE_PAGTO_ANTECIPADO_BOLETO)
 								)
 							{
 								st_analise_credito_novo = Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK;
@@ -4125,9 +4135,17 @@ namespace FinanceiroService
 							#region [ Tratamento para Aprovação Automática ]
 							// EM CASO DE APROVAÇÃO AUTOMÁTICA, COLOCA-SE EM 'PENDENTE VENDAS' PARA DAR OPORTUNIDADE AO ANALISTA CONFERIR A TITULARIDADE DO CARTÃO
 							if (
-									(pedidoBase.analise_credito != Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.PENDENTE_VENDAS)
+									(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.PENDENTE_VENDAS)
 									&&
 									(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK)
+									&&
+									(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO)
+									&&
+									(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK_AGUARDANDO_DEPOSITO)
+									&&
+									(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)
+									&&
+									(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.PENDENTE_PAGTO_ANTECIPADO_BOLETO)
 								)
 							{
 								st_analise_credito_novo = Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.PENDENTE_VENDAS;
@@ -4145,9 +4163,17 @@ namespace FinanceiroService
 						{
 							#region [ Tratamento para outros status ]
 							if (
-									(pedidoBase.analise_credito != Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.PENDENTE_VENDAS)
+									(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.PENDENTE_VENDAS)
 									&&
 									(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK)
+									&&
+									(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO)
+									&&
+									(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK_AGUARDANDO_DEPOSITO)
+									&&
+									(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)
+									&&
+									(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.PENDENTE_PAGTO_ANTECIPADO_BOLETO)
 								)
 							{
 								st_analise_credito_novo = Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.PENDENTE_VENDAS;
@@ -4173,9 +4199,17 @@ namespace FinanceiroService
 						//	1) SE O PEDIDO ESTIVER COM 'CRÉDITO OK', NÃO SERÁ ALTERADO DEVIDO A CANCELAMENTO/ESTORNO (DEFINIDO PELA ROSE EM 22/06/2016)
 						//	2) SE O PEDIDO ESTIVER COM 'PENDENTE VENDAS', NÃO SERÁ ALTERADO. NÃO HÁ NECESSIDADE DE ATUALIZAR A DATA DA ÚLTIMA ALTERAÇÃO DE STATUS, POIS PEDIDOS C/ STATUS DE PAGTO 'PAGO PARCIAL' NÃO SÃO CANCELADOS AUTOMATICAMENTE
 						if (
-								(pedidoBase.analise_credito != Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.PENDENTE_VENDAS)
+								(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.PENDENTE_VENDAS)
 								&&
 								(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK)
+								&&
+								(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO)
+								&&
+								(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK_AGUARDANDO_DEPOSITO)
+								&&
+								(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)
+								&&
+								(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.PENDENTE_PAGTO_ANTECIPADO_BOLETO)
 							)
 						{
 							st_analise_credito_novo = Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.PENDENTE_VENDAS;
@@ -4199,9 +4233,17 @@ namespace FinanceiroService
 						//	1) SE O PEDIDO ESTIVER COM 'CRÉDITO OK', NÃO SERÁ ALTERADO DEVIDO A CANCELAMENTO/ESTORNO (DEFINIDO PELA ROSE EM 22/06/2016)
 						//	2) SE O PEDIDO ESTIVER COMO 'PENDENTE VENDAS', CONTINUA COMO ESTÁ E A DATA DA ÚLTIMA ALTERAÇÃO DE STATUS NÃO É ALTERADA, MANTENDO A CONTAGEM ORIGINAL DO PERÍODO DE CANCELAMENTO AUTOMÁTICO DE PEDIDOS
 						if (
-								(pedidoBase.analise_credito != Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.PENDENTE_VENDAS)
+								(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.PENDENTE_VENDAS)
 								&&
 								(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK)
+								&&
+								(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO)
+								&&
+								(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK_AGUARDANDO_DEPOSITO)
+								&&
+								(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)
+								&&
+								(pedidoBase.analise_credito != (short)Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.PENDENTE_PAGTO_ANTECIPADO_BOLETO)
 							)
 						{
 							st_analise_credito_novo = Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.PENDENTE_VENDAS;

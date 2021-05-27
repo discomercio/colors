@@ -57,6 +57,8 @@
 		strMinDtInicialFiltroPeriodoDDMMYYYY = ""
 		end if
 
+	dim s_memoria
+
 	dim url_origem
 	url_origem = Trim(Request("url_origem"))
 
@@ -374,6 +376,29 @@ end function
 
 		$("#c_dt_coleta_st_a_entregar_inicio").hUtilUI('datepicker_peq_filtro_inicial');
 		$("#c_dt_coleta_st_a_entregar_termino").hUtilUI('datepicker_peq_filtro_final');
+
+		$(".CkbPagAntQuitSt").change(function () {
+			if ($(this).is(":checked")) {
+				$("#ckb_pagto_antecipado_status_nao").prop("checked", false);
+				$("#ckb_pagto_antecipado_status_sim").prop("checked", true);
+			}
+		});
+
+		$("#ckb_pagto_antecipado_status_nao").change(function () {
+			if ($(this).is(":checked")) {
+				$("#ckb_pagto_antecipado_status_sim").prop("checked", false);
+				$(".CkbPagAntQuitSt").prop("checked", false);
+			}
+		});
+
+		$("#ckb_pagto_antecipado_status_sim").change(function () {
+			if ($(this).is(":checked")) {
+				$("#ckb_pagto_antecipado_status_nao").prop("checked", false);
+			}
+			else {
+				$(".CkbPagAntQuitSt").prop("checked", false);
+			}
+		});
 
 		//Every resize of window
 		$(window).resize(function() {
@@ -845,11 +870,52 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 	</table>
 </td></tr>
 
+<!--  PAGAMENTO ANTECIPADO  -->
+<tr bgcolor="#FFFFFF">
+<td class="MDBE" align="left" nowrap>
+	<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;" width="100%">
+	<tr>
+		<td width="50%" valign="top">
+			<span class="PLTe">PAGAMENTO ANTECIPADO</span>
+			<br />
+			<table cellspacing="0" cellpadding="0">
+			<tr bgcolor="#FFFFFF"><td align="left">
+				<input type="checkbox" tabindex="-1" id="ckb_pagto_antecipado_status_nao" name="ckb_pagto_antecipado_status_nao"
+					value="0"><span class="C" style="cursor:default" 
+					onclick="fFILTRO.ckb_pagto_antecipado_status_nao.click();">Não</span>
+				</td></tr>
+			<tr bgcolor="#FFFFFF"><td align="left">
+				<input type="checkbox" tabindex="-1" id="ckb_pagto_antecipado_status_sim" name="ckb_pagto_antecipado_status_sim"
+					value="1"><span class="C" style="cursor:default" 
+					onclick="fFILTRO.ckb_pagto_antecipado_status_sim.click();">Sim</span>
+				</td></tr>
+			</table>
+		</td>
+		<td width="50%" valign="top">
+			<span class="PLTe">STATUS PAGAMENTO ANTECIPADO</span>
+			<br />
+			<table cellspacing="0" cellpadding="0">
+			<tr bgcolor="#FFFFFF"><td align="left">
+				<input type="checkbox" class="CkbPagAntQuitSt" tabindex="-1" id="ckb_pagto_antecipado_quitado_status_pendente" name="ckb_pagto_antecipado_quitado_status_pendente"
+					value="<%=COD_PAGTO_ANTECIPADO_QUITADO_STATUS_PENDENTE%>"><span class="C" style="cursor:default;color:<%=pagto_antecipado_quitado_cor(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO, COD_PAGTO_ANTECIPADO_QUITADO_STATUS_PENDENTE)%>;" 
+					onclick="fFILTRO.ckb_pagto_antecipado_quitado_status_pendente.click();"><%=pagto_antecipado_quitado_descricao(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO, COD_PAGTO_ANTECIPADO_QUITADO_STATUS_PENDENTE)%></span>
+				</td></tr>
+			<tr bgcolor="#FFFFFF"><td align="left">
+				<input type="checkbox" class="CkbPagAntQuitSt" tabindex="-1" id="ckb_pagto_antecipado_quitado_status_quitado" name="ckb_pagto_antecipado_quitado_status_quitado"
+					value="<%=COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO%>"><span class="C" style="cursor:default;color:<%=pagto_antecipado_quitado_cor(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO, COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO)%>;" 
+					onclick="fFILTRO.ckb_pagto_antecipado_quitado_status_quitado.click();"><%=pagto_antecipado_quitado_descricao(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO, COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO)%></span>
+				</td></tr>
+			</table>
+		</td>
+	</tr>
+	</table>
+</td></tr>
+
 <!--  ANÁLISE DE CRÉDITO  -->
 <tr bgcolor="#FFFFFF">
 <td class="MDBE" align="left" nowrap><span class="PLTe">ANÁLISE DE CRÉDITO</span>
 	<br>
-	<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;">
+	<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;" width="100%">
 	<tr>
 		<td width="50%" valign="top">
 			<table cellspacing="0" cellpadding="0">
@@ -932,6 +998,26 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 			<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_previsao_entrega_inicio" id="c_dt_previsao_entrega_inicio" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_previsao_entrega_termino.focus(); else fFILTRO.ckb_entrega_imediata_nao.checked=true; filtra_data();" onclick="fFILTRO.ckb_entrega_imediata_nao.checked = true;" onchange="fFILTRO.ckb_entrega_imediata_nao.checked=true;"
 			/>&nbsp;<span class="C">e</span>&nbsp;<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_previsao_entrega_termino" id="c_dt_previsao_entrega_termino" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_entrega_imediata_nao.checked=true; filtra_data();" onclick="fFILTRO.ckb_entrega_imediata_nao.checked = true;" onchange="fFILTRO.ckb_entrega_imediata_nao.checked=true;" />
 		</td></tr>
+	</table>
+</td></tr>
+
+<!--  GERAL  -->
+<tr bgcolor="#FFFFFF">
+<td class="MDBE" align="left" nowrap><span class="PLTe">GERAL</span>
+	<br>
+	<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;" width="100%">
+	<tr>
+		<td width="50%" valign="top">
+			<table cellspacing="0" cellpadding="0">
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<%	s_memoria = get_default_valor_texto_bd(usuario, "LOJA/RelPedidosMCrit|ckb_nao_exibir_links") %>
+					<input type="checkbox" tabindex="-1" id="ckb_nao_exibir_links" name="ckb_nao_exibir_links"
+						value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+						onclick="fFILTRO.ckb_nao_exibir_links.click();">Não exibir links</span>
+					</td></tr>
+			</table>
+		</td>
+	</tr>
 	</table>
 </td></tr>
 
