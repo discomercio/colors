@@ -6532,6 +6532,8 @@ Dim strPedidoBSMarketplace As String
 Dim strMarketplaceCodOrigem As String
 Dim strMarketPlaceCNPJ As String
 Dim strMarketPlaceCadIntTran As String
+Dim strPagtoAntecipadoStatus As Integer
+Dim strPagtoAntecipadoQuitadoStatus As Integer
 
 ' FLAGS
 Dim blnAchou As Boolean
@@ -6951,6 +6953,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     " t_PEDIDO.st_etg_imediata," & _
                     " t_PEDIDO.pedido_bs_x_marketplace," & _
                     " t_PEDIDO.marketplace_codigo_origem," & _
+                    " t_PEDIDO.PagtoAntecipadoStatus," & _
+                    " t_PEDIDO.PagtoAntecipadoQuitadoStatus," & _
                     " t_PEDIDO__BASE.tipo_parcelamento," & _
                     " t_PEDIDO__BASE.av_forma_pagto," & _
                     " t_PEDIDO__BASE.pce_forma_pagto_entrada," & _
@@ -6973,6 +6977,14 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 
                 strPedidoBSMarketplace = Trim$("" & t_PEDIDO("pedido_bs_x_marketplace"))
                 strMarketplaceCodOrigem = Trim$("" & t_PEDIDO("marketplace_codigo_origem"))
+                
+                strPagtoAntecipadoStatus = Trim$("" & CStr(t_PEDIDO("PagtoAntecipadoStatus")))
+                strPagtoAntecipadoQuitadoStatus = Trim$("" & CStr(t_PEDIDO("PagtoAntecipadoQuitadoStatus")))
+                
+                If (strPagtoAntecipadoQuitadoStatus = "1") And (strPagtoAntecipadoQuitadoStatus = "1") Then
+                    If s_erro <> "" Then s_erro = s_erro & vbCrLf
+                    s_erro = s_erro & "Pedido " & Trim$(v_pedido(i)) & " está com pagamento antecipado quitado, emitir nota de venda no painel manual!!"
+                    End If
                 
                 If CLng(t_PEDIDO("StBemUsoConsumo")) = 1 Then
                     blnTemPedidoComStBemUsoConsumo = True
@@ -8176,6 +8188,47 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             GoSub NFE_EMITE_FECHA_TABELAS
             aguarde INFO_NORMAL, m_id
             Exit Sub
+            End If
+        End If
+        
+'   CASO O PEDIDO SEJA PARA PAGAMENTO ANTECIPADO, VERIFICA SE A NATUREZA DA OPERAÇÃO ESTÁ COMPATÍVEL
+    If (strPagtoAntecipadoStatus = "1") And _
+        ((strCfopCodigo <> "5922") And (strCfopCodigo <> "6922")) Then
+        s_confirma = "O pedido se refere a uma venda futura, mas o CFOP da operação não é 5.922 ou 6.922" & vbCrLf & _
+                     "Prosseguir mesmo assim?"
+        If Not confirma(s_confirma) Then
+            GoSub NFE_EMITE_FECHA_TABELAS
+            aguarde INFO_NORMAL, m_id
+            Exit Sub
+            End If
+        End If
+        
+'   CASO O PEDIDO SEJA PARA PAGAMENTO ANTECIPADO, VERIFICAR SE O CST É 041
+    If (strPagtoAntecipadoStatus = "1") Then
+        s_confirma = ""
+        For i = LBound(v_nf) To UBound(v_nf)
+            If Trim$(v_nf(i).produto) <> "" Then
+                strNFeCst = Trim$(right$(v_nf(i).cst, 2))
+                If strNFeCst <> "41" Then
+                    s = "O o produto " & v_nf(i).produto & " possui CST diferente de 41"
+                    End If
+                If s <> "" Then
+                    If s_confirma <> "" Then s_confirma = s_confirma & vbCrLf
+                    s_confirma = s_confirma & s
+                    End If
+                End If
+            Next
+        If s_confirma <> "" Then
+            s_confirma = "PROBLEMAS COM CST EM PEDIDO DE VENDA FUTURA:" & _
+                         vbCrLf & _
+                         s_confirma & _
+                         vbCrLf & vbCrLf & _
+                         "Continua mesmo assim?"
+            If Not confirma(s_confirma) Then
+                GoSub NFE_EMITE_FECHA_TABELAS
+                aguarde INFO_NORMAL, m_id
+                Exit Sub
+                End If
             End If
         End If
 

@@ -5696,4 +5696,91 @@ GDPP_FECHA_TABELAS:
 End Function
 
 
+Function consultaDadosParcelasPagto(v_pedido() As String, v_parcela_pagto() As TIPO_NF_LINHA_DADOS_PARCELA_PAGTO, ByRef strMsgErro As String) As Boolean
+' __________________________________________________________________________________________
+'|
+'|  CONSULTA PEDIDOS COM PARCELAMENTO VIA BOLETO PARA EXIBIÇÃO.
+'|
+'|
+
+Dim s As String
+Dim i As Integer
+
+' BANCO DE DADOS
+Dim rs As ADODB.Recordset
+
+    On Error GoTo CDPP_TRATA_ERRO
+
+    consultaDadosParcelasPagto = False
+    
+    strMsgErro = ""
+    ReDim v_parcela_pagto(0)
+    
+    ReDim vPedidoCalculoParcelas(0)
+    vPedidoCalculoParcelas(UBound(vPedidoCalculoParcelas)).pedido = ""
+  
+  ' rs
+    Set rs = New ADODB.Recordset
+    With rs
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
+        
+    For i = LBound(v_pedido) To UBound(v_pedido)
+        If Trim$(v_pedido(i)) <> "" Then
+            s = "select i.num_parcela, i.forma_pagto, i.valor, i.dt_vencto " & _
+                "from t_FIN_NF_PARCELA_PAGTO_ITEM i " & _
+                "inner join t_FIN_NF_PARCELA_PAGTO_ITEM_RATEIO ir on i.id = ir.id_nf_parcela_pagto_item " & _
+                "where ir.pedido = '" & v_pedido(i) & "' "
+            If rs.State <> adStateClosed Then rs.Close
+            rs.Open s, dbc, , , adCmdText
+            If rs.EOF Then
+                If strMsgErro <> "" Then strMsgErro = strMsgErro & vbCrLf
+                strMsgErro = strMsgErro & "Pedido " & Trim$(v_pedido(i)) & " não está cadastrado!!"
+            Else
+                Do While Not rs.EOF
+                    If v_parcela_pagto(UBound(v_parcela_pagto)).intNumDestaParcela <> 0 Then
+                        ReDim Preserve v_parcela_pagto(UBound(v_parcela_pagto) + 1)
+                        End If
+                    With v_parcela_pagto(UBound(v_parcela_pagto))
+                        .intNumDestaParcela = rs("num_parcela")
+                        .id_forma_pagto = rs("num_parcela")
+                        .vlValor = rs("valor")
+                        .dtVencto = rs("dt_vencto")
+                        End With
+                    rs.MoveNext
+                    Loop
+                End If
+            End If
+        Next
+        
+    consultaDadosParcelasPagto = True
+    
+    GoSub CDPP_FECHA_TABELAS
+    
+Exit Function
+    
+    
+    
+'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CDPP_TRATA_ERRO:
+'===============
+    strMsgErro = CStr(Err) & ": " & Error$(Err)
+    GoSub CDPP_FECHA_TABELAS
+    Exit Function
+    
+
+
+'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CDPP_FECHA_TABELAS:
+'==================
+  ' RECORDSETS
+    bd_desaloca_recordset rs, True
+    Return
+    
+    
+End Function
+
+
 

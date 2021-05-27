@@ -1,30 +1,375 @@
 VERSION 5.00
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
 Begin VB.Form f_EMISSAO_MANUAL 
    BorderStyle     =   1  'Fixed Single
    Caption         =   "Nota Fiscal"
-   ClientHeight    =   11130
+   ClientHeight    =   12780
    ClientLeft      =   150
    ClientTop       =   540
-   ClientWidth     =   20475
+   ClientWidth     =   20655
    Icon            =   "f_EMISSAO_MANUAL.frx":0000
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
-   ScaleHeight     =   11130
-   ScaleWidth      =   20475
+   ScaleHeight     =   12780
+   ScaleWidth      =   20655
    StartUpPosition =   1  'CenterOwner
+   Begin VB.Frame pnDanfe 
+      Caption         =   "DANFE"
+      Height          =   915
+      Left            =   120
+      TabIndex        =   111
+      Top             =   11670
+      Width           =   14520
+      Begin VB.ComboBox cb_emitente_danfe 
+         BeginProperty Font 
+            Name            =   "Courier New"
+            Size            =   9.75
+            Charset         =   0
+            Weight          =   400
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   360
+         ItemData        =   "f_EMISSAO_MANUAL.frx":0442
+         Left            =   150
+         List            =   "f_EMISSAO_MANUAL.frx":0444
+         Style           =   2  'Dropdown List
+         TabIndex        =   96
+         Top             =   435
+         Width           =   7290
+      End
+      Begin VB.TextBox c_num_nfe_danfe 
+         Alignment       =   2  'Center
+         BeginProperty Font 
+            Name            =   "Courier New"
+            Size            =   9.75
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   360
+         Left            =   9735
+         ScrollBars      =   2  'Vertical
+         TabIndex        =   98
+         Top             =   420
+         Width           =   1650
+      End
+      Begin VB.CommandButton b_danfe 
+         Caption         =   "D&ANFE"
+         Height          =   450
+         Left            =   11820
+         TabIndex        =   99
+         Top             =   360
+         Width           =   1500
+      End
+      Begin VB.TextBox c_num_serie_danfe 
+         Alignment       =   2  'Center
+         BeginProperty Font 
+            Name            =   "Courier New"
+            Size            =   9.75
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   360
+         Left            =   8070
+         ScrollBars      =   2  'Vertical
+         TabIndex        =   97
+         Top             =   435
+         Width           =   1170
+      End
+      Begin VB.Label l_tit_emitente_danfe 
+         AutoSize        =   -1  'True
+         Caption         =   "Emitente"
+         Height          =   195
+         Left            =   165
+         TabIndex        =   125
+         Top             =   225
+         Width           =   615
+      End
+      Begin VB.Label l_tit_num_nfe_danfe 
+         AutoSize        =   -1  'True
+         Caption         =   "Nº NFe"
+         Height          =   195
+         Left            =   9750
+         TabIndex        =   114
+         Top             =   225
+         Width           =   525
+      End
+      Begin VB.Label l_tit_num_serie_Danfe 
+         AutoSize        =   -1  'True
+         Caption         =   "Nº Série"
+         Height          =   195
+         Left            =   8085
+         TabIndex        =   112
+         Top             =   225
+         Width           =   585
+      End
+   End
+   Begin VB.Frame pnNumeroNFe 
+      Caption         =   "Última NFe emitida"
+      Height          =   705
+      Left            =   120
+      TabIndex        =   107
+      Top             =   10860
+      Width           =   14520
+      Begin VB.Label l_tit_emitente_NF 
+         AutoSize        =   -1  'True
+         Caption         =   "Emitente"
+         Height          =   195
+         Left            =   6060
+         TabIndex        =   110
+         Top             =   345
+         Width           =   615
+      End
+      Begin VB.Label l_emitente_NF 
+         Alignment       =   2  'Center
+         BorderStyle     =   1  'Fixed Single
+         BeginProperty Font 
+            Name            =   "Courier"
+            Size            =   12
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         ForeColor       =   &H00000000&
+         Height          =   300
+         Left            =   6840
+         TabIndex        =   95
+         Top             =   300
+         Width           =   7485
+      End
+      Begin VB.Label l_tit_serie_NF 
+         AutoSize        =   -1  'True
+         Caption         =   "Nº Série"
+         Height          =   195
+         Left            =   480
+         TabIndex        =   109
+         Top             =   345
+         Width           =   585
+      End
+      Begin VB.Label l_serie_NF 
+         Alignment       =   2  'Center
+         BorderStyle     =   1  'Fixed Single
+         BeginProperty Font 
+            Name            =   "Courier"
+            Size            =   12
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         ForeColor       =   &H00000000&
+         Height          =   300
+         Left            =   1230
+         TabIndex        =   93
+         Top             =   300
+         Width           =   1230
+      End
+      Begin VB.Label l_tit_num_NF 
+         AutoSize        =   -1  'True
+         Caption         =   "Nº NFe"
+         Height          =   195
+         Left            =   3000
+         TabIndex        =   108
+         Top             =   345
+         Width           =   525
+      End
+      Begin VB.Label l_num_NF 
+         Alignment       =   2  'Center
+         BorderStyle     =   1  'Fixed Single
+         BeginProperty Font 
+            Name            =   "Courier"
+            Size            =   12
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         ForeColor       =   &H000000FF&
+         Height          =   300
+         Left            =   3690
+         TabIndex        =   94
+         Top             =   300
+         Width           =   1830
+      End
+   End
+   Begin VB.Frame pnParcelasEmBoletos 
+      Caption         =   "Parcelas em Boletos"
+      Height          =   4695
+      Left            =   14760
+      TabIndex        =   350
+      Top             =   7920
+      Width           =   5655
+      Begin VB.CheckBox chk_InfoAdicParc 
+         Caption         =   "Incluir parcelas no campo de  Informações Adicionais"
+         Height          =   360
+         Left            =   120
+         TabIndex        =   357
+         Top             =   4200
+         Width           =   5175
+      End
+      Begin VB.TextBox c_numparc 
+         Alignment       =   2  'Center
+         BackColor       =   &H8000000F&
+         Enabled         =   0   'False
+         BeginProperty Font 
+            Name            =   "Courier New"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   400
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   360
+         Left            =   360
+         TabIndex        =   356
+         Top             =   3120
+         Width           =   945
+      End
+      Begin VB.CommandButton b_parc_edicao_ok 
+         Height          =   390
+         Left            =   360
+         Picture         =   "f_EMISSAO_MANUAL.frx":0446
+         Style           =   1  'Graphical
+         TabIndex        =   355
+         Top             =   3650
+         Width           =   690
+      End
+      Begin VB.CommandButton b_parc_edicao_cancela 
+         Height          =   390
+         Left            =   1560
+         Picture         =   "f_EMISSAO_MANUAL.frx":0698
+         Style           =   1  'Graphical
+         TabIndex        =   354
+         Top             =   3650
+         Width           =   690
+      End
+      Begin VB.CommandButton b_recalculaparc 
+         Caption         =   "&Reagendar Parcelas Seguintes"
+         Enabled         =   0   'False
+         Height          =   495
+         Left            =   2760
+         TabIndex        =   353
+         Top             =   3600
+         Width           =   2535
+      End
+      Begin VB.TextBox c_valorparc 
+         Alignment       =   2  'Center
+         BackColor       =   &H8000000F&
+         Enabled         =   0   'False
+         BeginProperty Font 
+            Name            =   "Courier New"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   400
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   360
+         Left            =   3720
+         TabIndex        =   352
+         Top             =   3120
+         Width           =   1545
+      End
+      Begin VB.TextBox c_dataparc 
+         Alignment       =   2  'Center
+         BeginProperty Font 
+            Name            =   "Courier New"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   400
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   360
+         Left            =   1560
+         TabIndex        =   351
+         Top             =   3120
+         Width           =   1260
+      End
+      Begin MSComctlLib.ListView lvParcBoletos 
+         Height          =   2415
+         Left            =   120
+         TabIndex        =   358
+         Top             =   360
+         Width           =   5385
+         _ExtentX        =   9499
+         _ExtentY        =   4260
+         View            =   3
+         LabelWrap       =   -1  'True
+         HideSelection   =   0   'False
+         FullRowSelect   =   -1  'True
+         GridLines       =   -1  'True
+         _Version        =   393217
+         ForeColor       =   -2147483640
+         BackColor       =   -2147483643
+         BorderStyle     =   1
+         Appearance      =   1
+         BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   400
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         NumItems        =   0
+      End
+      Begin VB.Label l_tit_valorparc 
+         AutoSize        =   -1  'True
+         Caption         =   "Valor"
+         Height          =   195
+         Left            =   3720
+         TabIndex        =   361
+         Top             =   2880
+         Width           =   360
+      End
+      Begin VB.Label l_tit_dataparc 
+         AutoSize        =   -1  'True
+         Caption         =   "Data"
+         Height          =   195
+         Left            =   1560
+         TabIndex        =   360
+         Top             =   2880
+         Width           =   345
+      End
+      Begin VB.Label l_tit_numparc 
+         AutoSize        =   -1  'True
+         Caption         =   "Parcela"
+         Height          =   195
+         Left            =   360
+         TabIndex        =   359
+         Top             =   2880
+         Width           =   540
+      End
+   End
    Begin VB.Frame pn_info_pagamento 
       Caption         =   "Informações de Pagamento"
-      Height          =   2295
-      Left            =   17640
+      Height          =   975
+      Left            =   9960
       TabIndex        =   293
-      Top             =   7200
-      Width           =   2655
+      Top             =   7680
+      Width           =   4335
       Begin VB.ComboBox cb_meio_pagto 
          Height          =   315
-         Left            =   240
+         Left            =   2280
          Style           =   2  'Dropdown List
          TabIndex        =   348
-         Top             =   1560
+         Top             =   480
          Width           =   1935
       End
       Begin VB.ComboBox cb_forma_pagto 
@@ -32,15 +377,15 @@ Begin VB.Form f_EMISSAO_MANUAL
          Left            =   240
          Style           =   2  'Dropdown List
          TabIndex        =   346
-         Top             =   720
+         Top             =   480
          Width           =   1935
       End
       Begin VB.Label l_meio_pato 
          Caption         =   "Meio de Pagamento"
          Height          =   255
-         Left            =   240
+         Left            =   2280
          TabIndex        =   347
-         Top             =   1320
+         Top             =   240
          Width           =   2055
       End
       Begin VB.Label l_forma_pato 
@@ -48,18 +393,27 @@ Begin VB.Form f_EMISSAO_MANUAL
          Height          =   255
          Left            =   240
          TabIndex        =   345
-         Top             =   480
+         Top             =   240
          Width           =   2055
       End
    End
    Begin VB.Frame pn_pedido_nota 
       Enabled         =   0   'False
-      Height          =   1400
+      Height          =   1875
       Left            =   120
       TabIndex        =   287
       Top             =   7800
       Visible         =   0   'False
       Width           =   1815
+      Begin VB.OptionButton opVendaFutura 
+         Caption         =   "Como Venda Futura"
+         Height          =   375
+         Left            =   120
+         TabIndex        =   349
+         Top             =   1320
+         Value           =   -1  'True
+         Width           =   1455
+      End
       Begin VB.OptionButton opVenda 
          Caption         =   "Como Venda"
          Height          =   255
@@ -74,7 +428,6 @@ Begin VB.Form f_EMISSAO_MANUAL
          Left            =   120
          TabIndex        =   288
          Top             =   960
-         Value           =   -1  'True
          Width           =   1455
       End
       Begin VB.Label lbl_pedido_nota 
@@ -111,7 +464,7 @@ Begin VB.Form f_EMISSAO_MANUAL
       Height          =   450
       Left            =   17160
       MousePointer    =   14  'Arrow and Question
-      Picture         =   "f_EMISSAO_MANUAL.frx":0442
+      Picture         =   "f_EMISSAO_MANUAL.frx":0B0B
       ScaleHeight     =   420
       ScaleWidth      =   465
       TabIndex        =   280
@@ -122,9 +475,9 @@ Begin VB.Form f_EMISSAO_MANUAL
    Begin VB.CommandButton b_assistencia_tecnica 
       Caption         =   "Pedido Assist &Técnica"
       Height          =   495
-      Left            =   14910
+      Left            =   12270
       TabIndex        =   238
-      Top             =   8040
+      Top             =   9600
       Width           =   2115
    End
    Begin VB.ComboBox cb_finalidade 
@@ -138,9 +491,9 @@ Begin VB.Form f_EMISSAO_MANUAL
          Strikethrough   =   0   'False
       EndProperty
       Height          =   360
-      ItemData        =   "f_EMISSAO_MANUAL.frx":0B78
+      ItemData        =   "f_EMISSAO_MANUAL.frx":1241
       Left            =   120
-      List            =   "f_EMISSAO_MANUAL.frx":0B7A
+      List            =   "f_EMISSAO_MANUAL.frx":1243
       Style           =   2  'Dropdown List
       TabIndex        =   11
       Top             =   2250
@@ -160,7 +513,7 @@ Begin VB.Form f_EMISSAO_MANUAL
       Left            =   11265
       MultiLine       =   -1  'True
       TabIndex        =   12
-      Text            =   "f_EMISSAO_MANUAL.frx":0B7C
+      Text            =   "f_EMISSAO_MANUAL.frx":1245
       Top             =   2250
       Width           =   9015
    End
@@ -203,9 +556,9 @@ Begin VB.Form f_EMISSAO_MANUAL
    Begin VB.CommandButton b_editar_endereco 
       Caption         =   "Editar E&ndereço"
       Height          =   450
-      Left            =   14910
+      Left            =   12270
       TabIndex        =   233
-      Top             =   7320
+      Top             =   9000
       Width           =   2115
    End
    Begin VB.Frame pnZerarAliquotas 
@@ -272,25 +625,25 @@ Begin VB.Form f_EMISSAO_MANUAL
    Begin VB.CommandButton b_edicao 
       Caption         =   "Li&berar Edição"
       Height          =   450
-      Left            =   12435
+      Left            =   9915
       TabIndex        =   184
-      Top             =   8040
+      Top             =   9600
       Width           =   2115
    End
    Begin VB.CommandButton b_emite_numeracao_manual 
       Caption         =   "Emitir NFe (Nº &Manual)"
       Height          =   450
-      Left            =   9960
+      Left            =   7560
       TabIndex        =   89
-      Top             =   8040
+      Top             =   9600
       Width           =   2115
    End
    Begin VB.CommandButton b_emissao_automatica 
       Caption         =   "Painel Emissão &Automática"
       Height          =   450
-      Left            =   12435
+      Left            =   9915
       TabIndex        =   91
-      Top             =   7320
+      Top             =   9000
       Width           =   2115
    End
    Begin VB.ComboBox cb_transportadora 
@@ -304,9 +657,9 @@ Begin VB.Form f_EMISSAO_MANUAL
          Strikethrough   =   0   'False
       EndProperty
       Height          =   360
-      ItemData        =   "f_EMISSAO_MANUAL.frx":0BA9
+      ItemData        =   "f_EMISSAO_MANUAL.frx":1272
       Left            =   7350
-      List            =   "f_EMISSAO_MANUAL.frx":0BAB
+      List            =   "f_EMISSAO_MANUAL.frx":1274
       Style           =   2  'Dropdown List
       TabIndex        =   9
       Top             =   1560
@@ -1253,9 +1606,9 @@ Begin VB.Form f_EMISSAO_MANUAL
       Begin VB.ComboBox cb_CFOP 
          Height          =   315
          Index           =   11
-         ItemData        =   "f_EMISSAO_MANUAL.frx":0BAD
+         ItemData        =   "f_EMISSAO_MANUAL.frx":1276
          Left            =   13670
-         List            =   "f_EMISSAO_MANUAL.frx":0BAF
+         List            =   "f_EMISSAO_MANUAL.frx":1278
          Style           =   2  'Dropdown List
          TabIndex        =   182
          Top             =   3600
@@ -1264,9 +1617,9 @@ Begin VB.Form f_EMISSAO_MANUAL
       Begin VB.ComboBox cb_CFOP 
          Height          =   315
          Index           =   10
-         ItemData        =   "f_EMISSAO_MANUAL.frx":0BB1
+         ItemData        =   "f_EMISSAO_MANUAL.frx":127A
          Left            =   13670
-         List            =   "f_EMISSAO_MANUAL.frx":0BB3
+         List            =   "f_EMISSAO_MANUAL.frx":127C
          Style           =   2  'Dropdown List
          TabIndex        =   181
          Top             =   3315
@@ -1275,9 +1628,9 @@ Begin VB.Form f_EMISSAO_MANUAL
       Begin VB.ComboBox cb_CFOP 
          Height          =   315
          Index           =   9
-         ItemData        =   "f_EMISSAO_MANUAL.frx":0BB5
+         ItemData        =   "f_EMISSAO_MANUAL.frx":127E
          Left            =   13670
-         List            =   "f_EMISSAO_MANUAL.frx":0BB7
+         List            =   "f_EMISSAO_MANUAL.frx":1280
          Style           =   2  'Dropdown List
          TabIndex        =   180
          Top             =   3030
@@ -1286,9 +1639,9 @@ Begin VB.Form f_EMISSAO_MANUAL
       Begin VB.ComboBox cb_CFOP 
          Height          =   315
          Index           =   8
-         ItemData        =   "f_EMISSAO_MANUAL.frx":0BB9
+         ItemData        =   "f_EMISSAO_MANUAL.frx":1282
          Left            =   13670
-         List            =   "f_EMISSAO_MANUAL.frx":0BBB
+         List            =   "f_EMISSAO_MANUAL.frx":1284
          Style           =   2  'Dropdown List
          TabIndex        =   179
          Top             =   2745
@@ -1297,9 +1650,9 @@ Begin VB.Form f_EMISSAO_MANUAL
       Begin VB.ComboBox cb_CFOP 
          Height          =   315
          Index           =   7
-         ItemData        =   "f_EMISSAO_MANUAL.frx":0BBD
+         ItemData        =   "f_EMISSAO_MANUAL.frx":1286
          Left            =   13670
-         List            =   "f_EMISSAO_MANUAL.frx":0BBF
+         List            =   "f_EMISSAO_MANUAL.frx":1288
          Style           =   2  'Dropdown List
          TabIndex        =   178
          Top             =   2460
@@ -1308,9 +1661,9 @@ Begin VB.Form f_EMISSAO_MANUAL
       Begin VB.ComboBox cb_CFOP 
          Height          =   315
          Index           =   6
-         ItemData        =   "f_EMISSAO_MANUAL.frx":0BC1
+         ItemData        =   "f_EMISSAO_MANUAL.frx":128A
          Left            =   13670
-         List            =   "f_EMISSAO_MANUAL.frx":0BC3
+         List            =   "f_EMISSAO_MANUAL.frx":128C
          Style           =   2  'Dropdown List
          TabIndex        =   177
          Top             =   2175
@@ -1319,9 +1672,9 @@ Begin VB.Form f_EMISSAO_MANUAL
       Begin VB.ComboBox cb_CFOP 
          Height          =   315
          Index           =   5
-         ItemData        =   "f_EMISSAO_MANUAL.frx":0BC5
+         ItemData        =   "f_EMISSAO_MANUAL.frx":128E
          Left            =   13670
-         List            =   "f_EMISSAO_MANUAL.frx":0BC7
+         List            =   "f_EMISSAO_MANUAL.frx":1290
          Style           =   2  'Dropdown List
          TabIndex        =   176
          Top             =   1890
@@ -1330,9 +1683,9 @@ Begin VB.Form f_EMISSAO_MANUAL
       Begin VB.ComboBox cb_CFOP 
          Height          =   315
          Index           =   4
-         ItemData        =   "f_EMISSAO_MANUAL.frx":0BC9
+         ItemData        =   "f_EMISSAO_MANUAL.frx":1292
          Left            =   13670
-         List            =   "f_EMISSAO_MANUAL.frx":0BCB
+         List            =   "f_EMISSAO_MANUAL.frx":1294
          Style           =   2  'Dropdown List
          TabIndex        =   175
          Top             =   1605
@@ -1341,9 +1694,9 @@ Begin VB.Form f_EMISSAO_MANUAL
       Begin VB.ComboBox cb_CFOP 
          Height          =   315
          Index           =   3
-         ItemData        =   "f_EMISSAO_MANUAL.frx":0BCD
+         ItemData        =   "f_EMISSAO_MANUAL.frx":1296
          Left            =   13670
-         List            =   "f_EMISSAO_MANUAL.frx":0BCF
+         List            =   "f_EMISSAO_MANUAL.frx":1298
          Style           =   2  'Dropdown List
          TabIndex        =   174
          Top             =   1320
@@ -1352,9 +1705,9 @@ Begin VB.Form f_EMISSAO_MANUAL
       Begin VB.ComboBox cb_CFOP 
          Height          =   315
          Index           =   2
-         ItemData        =   "f_EMISSAO_MANUAL.frx":0BD1
+         ItemData        =   "f_EMISSAO_MANUAL.frx":129A
          Left            =   13670
-         List            =   "f_EMISSAO_MANUAL.frx":0BD3
+         List            =   "f_EMISSAO_MANUAL.frx":129C
          Style           =   2  'Dropdown List
          TabIndex        =   173
          Top             =   1035
@@ -1363,9 +1716,9 @@ Begin VB.Form f_EMISSAO_MANUAL
       Begin VB.ComboBox cb_CFOP 
          Height          =   315
          Index           =   1
-         ItemData        =   "f_EMISSAO_MANUAL.frx":0BD5
+         ItemData        =   "f_EMISSAO_MANUAL.frx":129E
          Left            =   13670
-         List            =   "f_EMISSAO_MANUAL.frx":0BD7
+         List            =   "f_EMISSAO_MANUAL.frx":12A0
          Style           =   2  'Dropdown List
          TabIndex        =   172
          Top             =   750
@@ -1374,9 +1727,9 @@ Begin VB.Form f_EMISSAO_MANUAL
       Begin VB.ComboBox cb_CFOP 
          Height          =   315
          Index           =   0
-         ItemData        =   "f_EMISSAO_MANUAL.frx":0BD9
+         ItemData        =   "f_EMISSAO_MANUAL.frx":12A2
          Left            =   13670
-         List            =   "f_EMISSAO_MANUAL.frx":0BDB
+         List            =   "f_EMISSAO_MANUAL.frx":12A4
          Style           =   2  'Dropdown List
          TabIndex        =   171
          Top             =   465
@@ -2867,9 +3220,9 @@ Begin VB.Form f_EMISSAO_MANUAL
          Strikethrough   =   0   'False
       EndProperty
       Height          =   360
-      ItemData        =   "f_EMISSAO_MANUAL.frx":0BDD
+      ItemData        =   "f_EMISSAO_MANUAL.frx":12A6
       Left            =   120
-      List            =   "f_EMISSAO_MANUAL.frx":0BDF
+      List            =   "f_EMISSAO_MANUAL.frx":12A8
       Style           =   2  'Dropdown List
       TabIndex        =   0
       Top             =   300
@@ -2893,118 +3246,20 @@ Begin VB.Form f_EMISSAO_MANUAL
       Top             =   930
       Width           =   2820
    End
-   Begin VB.Frame pnDanfe 
-      Caption         =   "DANFE"
-      Height          =   915
-      Left            =   2040
-      TabIndex        =   111
-      Top             =   10110
-      Width           =   15000
-      Begin VB.ComboBox cb_emitente_danfe 
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   9.75
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   360
-         ItemData        =   "f_EMISSAO_MANUAL.frx":0BE1
-         Left            =   150
-         List            =   "f_EMISSAO_MANUAL.frx":0BE3
-         Style           =   2  'Dropdown List
-         TabIndex        =   96
-         Top             =   435
-         Width           =   7290
-      End
-      Begin VB.TextBox c_num_nfe_danfe 
-         Alignment       =   2  'Center
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   9.75
-            Charset         =   0
-            Weight          =   700
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   360
-         Left            =   9735
-         ScrollBars      =   2  'Vertical
-         TabIndex        =   98
-         Top             =   420
-         Width           =   1650
-      End
-      Begin VB.CommandButton b_danfe 
-         Caption         =   "D&ANFE"
-         Height          =   450
-         Left            =   11820
-         TabIndex        =   99
-         Top             =   360
-         Width           =   1500
-      End
-      Begin VB.TextBox c_num_serie_danfe 
-         Alignment       =   2  'Center
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   9.75
-            Charset         =   0
-            Weight          =   700
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   360
-         Left            =   8070
-         ScrollBars      =   2  'Vertical
-         TabIndex        =   97
-         Top             =   435
-         Width           =   1170
-      End
-      Begin VB.Label l_tit_emitente_danfe 
-         AutoSize        =   -1  'True
-         Caption         =   "Emitente"
-         Height          =   195
-         Left            =   165
-         TabIndex        =   125
-         Top             =   225
-         Width           =   615
-      End
-      Begin VB.Label l_tit_num_nfe_danfe 
-         AutoSize        =   -1  'True
-         Caption         =   "Nº NFe"
-         Height          =   195
-         Left            =   9750
-         TabIndex        =   114
-         Top             =   225
-         Width           =   525
-      End
-      Begin VB.Label l_tit_num_serie_Danfe 
-         AutoSize        =   -1  'True
-         Caption         =   "Nº Série"
-         Height          =   195
-         Left            =   8085
-         TabIndex        =   112
-         Top             =   225
-         Width           =   585
-      End
-   End
    Begin VB.CommandButton b_fechar 
       Caption         =   "&Fechar"
       Height          =   450
-      Left            =   12435
+      Left            =   9915
       TabIndex        =   92
-      Top             =   8775
+      Top             =   10215
       Width           =   2115
    End
    Begin VB.CommandButton b_destinatario 
       Caption         =   "&Dados do Destinatário"
       Height          =   450
-      Left            =   9960
+      Left            =   7560
       TabIndex        =   90
-      Top             =   8775
+      Top             =   10215
       Width           =   2115
    End
    Begin VB.Timer relogio 
@@ -3092,9 +3347,9 @@ Begin VB.Form f_EMISSAO_MANUAL
          Strikethrough   =   0   'False
       EndProperty
       Height          =   360
-      ItemData        =   "f_EMISSAO_MANUAL.frx":0BE5
+      ItemData        =   "f_EMISSAO_MANUAL.frx":12AA
       Left            =   6630
-      List            =   "f_EMISSAO_MANUAL.frx":0BE7
+      List            =   "f_EMISSAO_MANUAL.frx":12AC
       Style           =   2  'Dropdown List
       TabIndex        =   5
       Top             =   960
@@ -3131,9 +3386,9 @@ Begin VB.Form f_EMISSAO_MANUAL
          Strikethrough   =   0   'False
       EndProperty
       Height          =   450
-      Left            =   9960
+      Left            =   7560
       TabIndex        =   88
-      Top             =   7320
+      Top             =   9000
       Width           =   2115
    End
    Begin VB.CommandButton b_dummy 
@@ -3145,101 +3400,9 @@ Begin VB.Form f_EMISSAO_MANUAL
       Top             =   -525
       Width           =   1350
    End
-   Begin VB.Frame pnNumeroNFe 
-      Caption         =   "Última NFe emitida"
-      Height          =   705
-      Left            =   2040
-      TabIndex        =   107
-      Top             =   9300
-      Width           =   15000
-      Begin VB.Label l_tit_emitente_NF 
-         AutoSize        =   -1  'True
-         Caption         =   "Emitente"
-         Height          =   195
-         Left            =   6060
-         TabIndex        =   110
-         Top             =   345
-         Width           =   615
-      End
-      Begin VB.Label l_emitente_NF 
-         Alignment       =   2  'Center
-         BorderStyle     =   1  'Fixed Single
-         BeginProperty Font 
-            Name            =   "Courier"
-            Size            =   12
-            Charset         =   0
-            Weight          =   700
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         ForeColor       =   &H00000000&
-         Height          =   300
-         Left            =   6840
-         TabIndex        =   95
-         Top             =   300
-         Width           =   7965
-      End
-      Begin VB.Label l_tit_serie_NF 
-         AutoSize        =   -1  'True
-         Caption         =   "Nº Série"
-         Height          =   195
-         Left            =   480
-         TabIndex        =   109
-         Top             =   345
-         Width           =   585
-      End
-      Begin VB.Label l_serie_NF 
-         Alignment       =   2  'Center
-         BorderStyle     =   1  'Fixed Single
-         BeginProperty Font 
-            Name            =   "Courier"
-            Size            =   12
-            Charset         =   0
-            Weight          =   700
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         ForeColor       =   &H00000000&
-         Height          =   300
-         Left            =   1230
-         TabIndex        =   93
-         Top             =   300
-         Width           =   1230
-      End
-      Begin VB.Label l_tit_num_NF 
-         AutoSize        =   -1  'True
-         Caption         =   "Nº NFe"
-         Height          =   195
-         Left            =   3000
-         TabIndex        =   108
-         Top             =   345
-         Width           =   525
-      End
-      Begin VB.Label l_num_NF 
-         Alignment       =   2  'Center
-         BorderStyle     =   1  'Fixed Single
-         BeginProperty Font 
-            Name            =   "Courier"
-            Size            =   12
-            Charset         =   0
-            Weight          =   700
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         ForeColor       =   &H000000FF&
-         Height          =   300
-         Left            =   3690
-         TabIndex        =   94
-         Top             =   300
-         Width           =   1830
-      End
-   End
    Begin VB.Frame pn_aviso_pedido_nota 
       Enabled         =   0   'False
-      Height          =   1635
+      Height          =   1995
       Left            =   120
       TabIndex        =   291
       Top             =   7800
@@ -3257,11 +3420,11 @@ Begin VB.Form f_EMISSAO_MANUAL
    End
    Begin VB.Frame pn_endereco 
       Caption         =   "Endereço"
-      Height          =   3900
+      Height          =   5580
       Left            =   105
       TabIndex        =   294
       Top             =   7125
-      Width           =   20250
+      Width           =   20490
       Begin VB.Frame pn_endereco_cadastro 
          Caption         =   "Endereço do Cadastro"
          Height          =   900
@@ -3469,7 +3632,7 @@ Begin VB.Form f_EMISSAO_MANUAL
          Begin VB.CommandButton b_end_editado_exclui 
             Height          =   390
             Left            =   17340
-            Picture         =   "f_EMISSAO_MANUAL.frx":0BE9
+            Picture         =   "f_EMISSAO_MANUAL.frx":12AE
             Style           =   1  'Graphical
             TabIndex        =   315
             Top             =   465
@@ -3693,7 +3856,7 @@ Begin VB.Form f_EMISSAO_MANUAL
          Begin VB.CommandButton b_cep_pesquisar 
             Height          =   390
             Left            =   2535
-            Picture         =   "f_EMISSAO_MANUAL.frx":0D86
+            Picture         =   "f_EMISSAO_MANUAL.frx":144B
             Style           =   1  'Graphical
             TabIndex        =   305
             Top             =   255
@@ -3757,7 +3920,7 @@ Begin VB.Form f_EMISSAO_MANUAL
          Begin VB.CommandButton b_end_edicao_cancela 
             Height          =   390
             Left            =   17340
-            Picture         =   "f_EMISSAO_MANUAL.frx":0FD8
+            Picture         =   "f_EMISSAO_MANUAL.frx":169D
             Style           =   1  'Graphical
             TabIndex        =   298
             Top             =   855
@@ -3766,7 +3929,7 @@ Begin VB.Form f_EMISSAO_MANUAL
          Begin VB.CommandButton b_end_edicao_ok 
             Height          =   390
             Left            =   16470
-            Picture         =   "f_EMISSAO_MANUAL.frx":144B
+            Picture         =   "f_EMISSAO_MANUAL.frx":1B10
             Style           =   1  'Graphical
             TabIndex        =   297
             Top             =   855
@@ -3775,7 +3938,7 @@ Begin VB.Form f_EMISSAO_MANUAL
          Begin VB.CommandButton b_end_edicao_limpa 
             Height          =   390
             Left            =   15600
-            Picture         =   "f_EMISSAO_MANUAL.frx":169D
+            Picture         =   "f_EMISSAO_MANUAL.frx":1D62
             Style           =   1  'Graphical
             TabIndex        =   296
             Top             =   855
@@ -4213,6 +4376,10 @@ Dim endereco_editado__cidade As String
 Dim endereco_editado__uf As String
 
 Dim blnAtualizaNFnoPedido As Boolean
+
+Dim v_pedido_manual_boleto() As String
+Dim v_parcela_manual_boleto() As TIPO_NF_LINHA_DADOS_PARCELA_PAGTO
+Dim blnExisteParcelamentoBoleto As Boolean
 
 Sub atualiza_dados_endereco_cadastro()
 
@@ -5537,6 +5704,20 @@ Dim t_CLIENTE As ADODB.Recordset
     strCNPJCPF = Trim$("" & t_CLIENTE("cnpj_cpf"))
 
 
+'   TRATA A EXIBIÇÃO DE PARCELAMENTO CASO O PEDIDO POSSUA
+    If (param_geracaoboletos.campo_texto = "Manual") Then
+        If pedido <> "" Then
+            ReDim v_pedido_manual_boleto(0)
+            v_pedido_manual_boleto(UBound(v_pedido_manual_boleto)) = pedido
+            blnExisteParcelamentoBoleto = False
+            pnParcelasEmBoletos.Visible = False
+            'If geraDadosParcelasPagto(v_pedido_manual_boleto(), v_parcela_manual_boleto(), s_erro) Then
+            '    AdicionaListaParcelasEmBoletos v_parcela_manual_boleto()
+            '    End If
+            End If
+        End If
+
+
     GoSub OICP_FECHA_TABELAS
     
     aguarde INFO_NORMAL, m_id
@@ -5572,6 +5753,44 @@ OICP_FECHA_TABELAS:
     Return
     
 End Function
+
+Private Sub AdicionaListaParcelasEmBoletos(lista_parc() As TIPO_NF_LINHA_DADOS_PARCELA_PAGTO)
+    Dim itmX As ListItem
+    Dim i As Integer
+    Dim existeBoleto As Boolean
+    
+    lvParcBoletos.ListItems.Clear
+    c_numparc.Text = ""
+    c_dataparc.Text = ""
+    c_valorparc.Text = ""
+    b_parc_edicao_ok.Enabled = False
+
+    'se não houver parcelamento, sair
+    If (UBound(lista_parc) = 0) And (lista_parc(0).intNumDestaParcela = 0) Then Exit Sub
+    
+    'verificar se existe parcela em boleto; se não existir, sair
+    existeBoleto = False
+    i = LBound(lista_parc)
+    Do While Not existeBoleto And (i <= UBound(lista_parc))
+        If lista_parc(i).id_forma_pagto = ID_FORMA_PAGTO_BOLETO Then
+            existeBoleto = True
+            End If
+        i = i + 1
+        Loop
+    If Not existeBoleto Then Exit Sub
+    
+    pnParcelasEmBoletos.Visible = True
+    blnExisteParcelamentoBoleto = True
+    
+    For i = LBound(lista_parc) To UBound(lista_parc)
+        Set itmX = lvParcBoletos.ListItems.Add()
+        itmX.SubItems(1) = lista_parc(i).intNumDestaParcela
+        itmX.SubItems(2) = descricao_opcao_forma_pagamento(lista_parc(i).id_forma_pagto)
+        itmX.SubItems(3) = lista_parc(i).dtVencto
+        itmX.SubItems(4) = formata_moeda(lista_parc(i).vlValor)
+        Next i
+End Sub
+
 
 Function lista_de_produtos_OK(ByVal pedido_digitado As String, ByRef mensagem As String) As Boolean
 ' a rotina fará a comparação dos itens do pedido com os itens em tela
@@ -11170,11 +11389,27 @@ Dim c As String
 End Sub
 
 Private Sub c_pedido_nota_KeyUp(KeyCode As Integer, Shift As Integer)
+Dim s_erro As String
 
     If Len(c_pedido_nota) > 0 Then
         If blnAtualizaNFnoPedido Then
             pn_pedido_nota.Visible = True
             pn_aviso_pedido_nota.Visible = False
+            
+            'verificar se existe informação de parcelas em boleto
+            If (param_geracaoboletos.campo_texto = "Manual") Then
+                If c_pedido_nota <> "" Then
+                    ReDim v_pedido_manual_boleto(0)
+                    v_pedido_manual_boleto(UBound(v_pedido_manual_boleto)) = c_pedido_nota
+                    blnExisteParcelamentoBoleto = False
+                    'pnParcelasEmBoletos.Visible = False
+                    If consultaDadosParcelasPagto(v_pedido_manual_boleto(), v_parcela_manual_boleto(), s_erro) Then
+                        AdicionaListaParcelasEmBoletos v_parcela_manual_boleto()
+                        End If
+                    End If
+                End If
+
+            
         Else
             pn_pedido_nota.Visible = False
             pn_aviso_pedido_nota.Visible = True
