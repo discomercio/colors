@@ -29,8 +29,8 @@ namespace FinanceiroService
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "Financeiro Service";
 				public static readonly string ID_SISTEMA_EVENTLOG = GetConfigurationValue("ServiceName");
-				public const string VERSAO_NUMERO = "1.33";
-				public const string VERSAO_DATA = "14.AGO.2020";
+				public const string VERSAO_NUMERO = "1.36";
+				public const string VERSAO_DATA = "19.ABR.2021";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Serviço do Windows para execução automática de rotinas financeiras";
@@ -260,11 +260,22 @@ namespace FinanceiroService
 			 *      usar os dados que estão gravados no próprio pedido. O tratamento que já ocorria com o
 			 *      endereço de entrega deve passar a ser feito p/ o endereço de cobrança/cadastro.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.34 - XX.XX.20XX - por XXX
+			 * v 1.34 - 10.04.2021 - por HHO
+			 *      Ajustes na lógica do processamento dos produtos vendidos sem presença no estoque para
+			 *      definir critérios de prioridade para os pedidos.
+			 *      Desenvolvimento de rotina para executar o processamento dos produtos vendidos sem presença
+			 *      no estoque para que seja executada sob demanda a partir da sinalização feita através de
+			 *      flag definida em parâmetro.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.35 - XX.XX.20XX - por XXX
+			 * v 1.35 - 18.04.2021 - por HHO
+			 *      Ajustes na solicitação de execução sob demanda da rotina de processamento de produtos
+			 *      vendidos sem presença no estoque para aceitar no parâmetro  opção que processa para todos
+			 *      os códigos de id_nfe_emitente.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.36 - XX.XX.20XX - por XXX
+			 * v 1.36 - 19.04.2021 - por HHO
+			 *      Ajustes na solicitação de execução sob demanda da rotina de processamento de produtos
+			 *      vendidos sem presença no estoque para resetar o parâmetro logo após a sua leitura a fim
+			 *      de minimizar o risco de problemas por acesso concorrente.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.37 - XX.XX.20XX - por XXX
 			 * -----------------------------------------------------------------------------------------------
@@ -289,6 +300,10 @@ namespace FinanceiroService
 					public const string DT_HR_ULT_CANCELAMENTO_AUTOMATICO_PEDIDOS = "FinSvc_DtHrUltCancelamentoAutomaticoPedidos";
 					public const string DT_HR_ULT_PROCESSAMENTO_BP_CS_ANTIFRAUDE_CLEARSALE = "FinSvc_DtHrUltProcessamentoBpCsAntifraudeClearsale";
 					public const string FLAG_HABILITACAO_CANCELAMENTO_AUTOMATICO_PEDIDOS = "FinSvc_FlagHabilitacao_CancelamentoAutomaticoPedidos";
+					public const string FLAG_HABILITACAO_PROCESSAMENTO_PRODUTOS_VENDIDOS_SEM_PRESENCA_ESTOQUE = "FinSvc_FlagHabilitacao_ProcProdutosVendidosSemPresencaEstoque";
+					public const string FLAG_EXECUCAO_SOLICITADA_PROCESSAMENTO_PRODUTOS_VENDIDOS_SEM_PRESENCA_ESTOQUE = "FinSvc_FlagExecucaoSolicitada_ProcProdutosVendidosSemPresencaEstoque";
+					public const string CONSULTA_EXECUCAO_SOLICITADA_PROCESSAMENTO_PRODUTOS_VENDIDOS_SEM_PRESENCA_ESTOQUE_EM_SEG = "FinSvc_ConsultaExecucaoSolicitada_ProcProdutosVendidosSemPresencaEstoque_TempoEntreProcEmSeg";
+					public const string DT_HR_ULT_CONSULTA_EXECUCAO_SOLICITADA_PROC_PRODUTOS_VENDIDOS_SEM_PRESENCA_ESTOQUE = "FinSvc_DtHrUltConsultaExecucaoSolicitadaProcProdutosVendidosSemPresencaEstoque";
 					public const string FLAG_HABILITACAO_BP_CS_ANTIFRAUDE_CLEARSALE = "FinSvc_BP_CS_Clearsale_FlagHabilitacao";
 					public const string BP_CS_CLEARSALE_MAX_TENTATIVAS_TX_ANTIFRAUDE = "FinSvc_BP_CS_Clearsale_MaxTentativasTX";
 					public const string BP_CS_CLEARSALE_TEMPO_MIN_ENTRE_TENTATIVAS_EM_SEG = "FinSvc_BP_CS_Clearsale_TempoMinEntreTentativasEmSeg";
@@ -1446,6 +1461,7 @@ namespace FinanceiroService
 					public const string OP_LOG_FINANCEIROSERVICE_INICIADO = "FINSVC INICIADO";
 					public const string OP_LOG_FINANCEIROSERVICE_ENCERRADO = "FINSVC ENCERRADO";
 					public const string OP_LOG_CANCELAMENTO_AUTOMATICO_PEDIDO = "PED CANCEL AUTO";
+					public const string OP_LOG_FINANCEIROSERVICE_PROCESSAMENTO_PRODUTOS_VENDIDOS_SEM_PRESENCA_ESTOQUE = "FINSVC PROC PROD SP";
 					public const string OP_LOG_PROCESSAMENTO_BP_CS_ANTIFRAUDE_CLEARSALE = "BP_CS_SVC_ANTIFRAUDE";
 					public const string OP_LOG_PEDIDO_PAGTO_CONTABILIZADO_BRASPAG_CLEARSALE = "PedPagtoContabBpCs";
 					public const string OP_LOG_PROCESSAMENTO_BP_CS_BRASPAG_ATUALIZACAO_STATUS_TR_PENDENTES = "BP_CS_PrcBpUpdTrPend";
@@ -1770,6 +1786,18 @@ namespace FinanceiroService
 				public const int PENDENTE_VENDAS = 8;
 				public const int CREDITO_OK_AGUARDANDO_DEPOSITO = 9;
 				public const int NAO_ANALISADO = 10; // PEDIDOS ANTIGOS QUE JÁ ESTAVAM NA BASE
+				public const int CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV = 11;
+				public const int PENDENTE_PAGTO_ANTECIPADO_BOLETO = 12;
+			}
+			#endregion
+
+			#region [ T_PEDIDO__ENTREGA_IMEDIATA_STATUS ]
+			public class T_PEDIDO__ENTREGA_IMEDIATA_STATUS
+			{
+				public const int ETG_IMEDIATA_ST_INICIAL = 0;
+				public const int ETG_IMEDIATA_NAO = 1;
+				public const int ETG_IMEDIATA_SIM = 2;
+				public const int ETG_IMEDIATA_NAO_DEFINIDO = 10;
 			}
 			#endregion
 
@@ -1792,6 +1820,7 @@ namespace FinanceiroService
 			{
 				public static string DESTINATARIO_PADRAO_MSG_ALERTA_SISTEMA = "adm_finsvc@bonshop.com.br";
 				public static bool ExecutarCancelamentoAutomaticoPedidos = false;
+				public static bool ProcessamentoProdutosVendidosSemPresencaEstoque_FlagHabilitacao = false;
 				public static TimeSpan HorarioCancelamentoAutomaticoPedidos = new TimeSpan(1, 20, 0); // Hours, Minutes, Seconds
 				public static TimeSpan HorarioManutencaoArqLogAtividade = new TimeSpan(1, 20, 0); // Hours, Minutes, Seconds
 				public static TimeSpan HorarioManutencaoBdLogAntigo = new TimeSpan(1, 20, 0); // Hours, Minutes, Seconds
@@ -1821,6 +1850,7 @@ namespace FinanceiroService
 				public static TimeSpan UploadFile_ManutencaoArquivos_Horario = new TimeSpan(1, 20, 0); // Hours, Minutes, Seconds
 				public static bool SessionToken_Limpeza_FlagHabilitacao = false;
 				public static TimeSpan SessionToken_Limpeza_Horario = new TimeSpan(1, 20, 0); // Hours, Minutes, Seconds
+				public static int ConsultaExecucaoSolicitada_ProcProdutosVendidosSemPresencaEstoque_TempoEntreProcEmSeg = 60;
 			}
 			#endregion
 
@@ -1874,6 +1904,15 @@ namespace FinanceiroService
 				public static bool ExecutarProcessamentoBpCsAntifraudeClearsale = false;
 			}
 			#endregion
+		}
+		#endregion
+
+		#region [ enum: eOpcaoFiltroStAtivo ]
+		public enum eOpcaoFiltroStAtivo : byte
+		{
+			SELECIONAR_TODOS = 0,
+			SELECIONAR_SOMENTE_ATIVOS = 1,
+			SELECIONAR_SOMENTE_INATIVOS = 2
 		}
 		#endregion
 

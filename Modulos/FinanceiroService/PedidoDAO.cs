@@ -2620,6 +2620,73 @@ namespace FinanceiroService
 		}
 		#endregion
 
+		#region [ executaProcessamentoProdutosVendidosSemPresencaEstoque ]
+		public static bool executaProcessamentoProdutosVendidosSemPresencaEstoque(List<int> lista_id_nfe_emitente, out string strMsgErro)
+		{
+			#region [ Declarações ]
+			const string NOME_DESTA_ROTINA = "PedidoDAO.executaProcessamentoProdutosVendidosSemPresencaEstoque()";
+			bool blnSucesso;
+			string strMsg;
+			DateTime dtHrInicio = DateTime.Now;
+			#endregion
+
+			strMsgErro = "";
+
+			try
+			{
+				strMsg = "Rotina " + NOME_DESTA_ROTINA + " iniciada";
+				Global.gravaLogAtividade(strMsg);
+
+				blnSucesso = false;
+				try
+				{
+					BD.iniciaTransacao();
+
+					foreach (int id_nfe_emitente in lista_id_nfe_emitente)
+					{
+						if (id_nfe_emitente == 0) continue;
+
+						strMsg = "Execução da rotina EstoqueDAO.estoqueProcessaProdutosVendidosSemPresenca() para o id_nfe_emitente: " + id_nfe_emitente.ToString();
+						Global.gravaLogAtividade(strMsg);
+
+						if (!EstoqueDAO.estoqueProcessaProdutosVendidosSemPresenca(id_nfe_emitente, Global.Cte.LogBd.Usuario.ID_USUARIO_SISTEMA, out strMsgErro))
+						{
+							throw new Exception("Falha ao processar os produtos vendidos sem presença no estoque para o id_nfe_emitente " + id_nfe_emitente.ToString() + "\n" + strMsgErro);
+						}
+					}
+
+					blnSucesso = true;
+				}
+				catch (Exception ex)
+				{
+					strMsgErro = NOME_DESTA_ROTINA + "\n" + ex.ToString();
+					Global.gravaLogAtividade(strMsgErro);
+					blnSucesso = false;
+				}
+
+				if (blnSucesso)
+				{
+					BD.commitTransacao();
+					strMsg = "Rotina " + NOME_DESTA_ROTINA + " concluída com sucesso (duração: " + Global.formataDuracaoHMS(DateTime.Now - dtHrInicio) + ")";
+					Global.gravaLogAtividade(strMsg);
+					return true;
+				}
+				else
+				{
+					BD.rollbackTransacao();
+					strMsgErro = "Rotina " + NOME_DESTA_ROTINA + ": falha no processamento e reversão da transação!!";
+					return false;
+				}
+			}
+			catch (Exception ex)
+			{
+				strMsgErro = NOME_DESTA_ROTINA + "\n" + ex.ToString();
+				Global.gravaLogAtividade(strMsgErro);
+				return false;
+			}
+		}
+		#endregion
+
 		#region [ calculaPagamentos ]
 		public static bool calculaPagamentos(String pedido,
 											 out Decimal vlTotalFamiliaPrecoVenda,

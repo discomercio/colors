@@ -152,9 +152,26 @@
 '
 %>
 
+<% if False then 'APENAS P/ HABILITAR O INTELLISENSE DURANTE O DESENVOLVIMENTO!! %>
+<script src="../Global/jquery.js" language="JavaScript" type="text/javascript"></script>
+<% end if %>
+
+<script src="<%=URL_FILE__JQUERY%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI_I18N%>" Language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__GLOBAL_JS%>" language="JavaScript" type="text/javascript"></script>
 
 <script language="JavaScript" type="text/javascript">
+	$(function () {
+		$(".CKBLOJAVEND").change(function () {
+			if ($(this).is(":checked")) {
+				$("#ckb_vendedor").prop("checked", true);
+			}
+		});
+	});
+
 function RemoveUsuario( f ) {
 var b;
 	b=window.confirm('Confirma a exclusão do usuário?');
@@ -414,7 +431,7 @@ var i, s_senha, blnTemLoja;
 		s_checked = ""
 		if Instr(s_lista_lojas_vendedor, s) > 0 then s_checked = " checked"
 %>
-		<p class="C"><input type="checkbox" id="ckb_loja_vendedor" name="ckb_loja_vendedor" value="<%=Cstr(r("loja"))%>" class="TA"<%=s_checked%>><span style="cursor:default" onclick="fCAD.ckb_loja_vendedor[<%=Cstr(intIndex+1)%>].click();"><%=Trim("" & r("loja"))%> - <%=Trim("" & r("nome"))%></span>&nbsp;</p>
+		<p class="C"><input type="checkbox" id="ckb_loja_vendedor" name="ckb_loja_vendedor" value="<%=Cstr(r("loja"))%>" class="TA CKBLOJAVEND"<%=s_checked%>><span style="cursor:default" onclick="fCAD.ckb_loja_vendedor[<%=Cstr(intIndex+1)%>].click();"><%=Trim("" & r("loja"))%> - <%=Trim("" & r("nome"))%></span>&nbsp;</p>
 <%
 		r.MoveNext
 		loop
