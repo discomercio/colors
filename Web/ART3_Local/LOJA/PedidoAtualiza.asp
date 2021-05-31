@@ -131,6 +131,10 @@
 		if Not le_pedido_item(pedido_selecionado, v_item_bd, msg_erro) then alerta = msg_erro
 		end if
 
+	dim r_loja
+	set r_loja = New cl_LOJA
+	call x_loja_bd(r_pedido.loja, r_loja)
+
 	dim blnTemRA
 	blnTemRA = False
 	if alerta = "" then
@@ -270,7 +274,7 @@
 	c_loja = Trim(Request.Form("c_loja"))
 
 	if r_pedido.loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
-		if s_pedido_ac <> "" then
+		if (s_pedido_ac <> "") And (r_loja.magento_api_versao <> VERSAO_API_MAGENTO_V2_REST_JSON) then
 			do while Len(s_pedido_ac) < 9
 				if Len(s_pedido_ac) = 8 then
 					s_pedido_ac = "1" & s_pedido_ac
