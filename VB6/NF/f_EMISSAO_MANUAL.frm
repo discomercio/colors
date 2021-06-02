@@ -11395,21 +11395,6 @@ Dim s_erro As String
         If blnAtualizaNFnoPedido Then
             pn_pedido_nota.Visible = True
             pn_aviso_pedido_nota.Visible = False
-            
-            'verificar se existe informação de parcelas em boleto
-            If (param_geracaoboletos.campo_texto = "Manual") Then
-                If c_pedido_nota <> "" Then
-                    ReDim v_pedido_manual_boleto(0)
-                    v_pedido_manual_boleto(UBound(v_pedido_manual_boleto)) = c_pedido_nota
-                    blnExisteParcelamentoBoleto = False
-                    'pnParcelasEmBoletos.Visible = False
-                    If consultaDadosParcelasPagto(v_pedido_manual_boleto(), v_parcela_manual_boleto(), s_erro) Then
-                        AdicionaListaParcelasEmBoletos v_parcela_manual_boleto()
-                        End If
-                    End If
-                End If
-
-            
         Else
             pn_pedido_nota.Visible = False
             pn_aviso_pedido_nota.Visible = True
@@ -11422,12 +11407,37 @@ Dim s_erro As String
 End Sub
 
 Private Sub c_pedido_nota_LostFocus()
-    
+
+Dim s_erro As String
+
     c_pedido_nota = normaliza_num_pedido(Trim$(c_pedido_nota))
 
     If Len(c_pedido_nota) <= 0 Then
         pn_pedido_nota.Visible = False
         pn_aviso_pedido_nota.Visible = False
+        End If
+    
+    If Len(c_pedido_nota) > 0 Then
+        'verificar se existe informação de parcelas em boleto
+        If (param_geracaoboletos.campo_texto = "Manual") Then
+            If c_pedido_nota <> "" Then
+                ReDim v_pedido_manual_boleto(0)
+                v_pedido_manual_boleto(UBound(v_pedido_manual_boleto)) = c_pedido_nota
+                blnExisteParcelamentoBoleto = False
+                'pnParcelasEmBoletos.Visible = False
+                If consultaDadosParcelasPagto(v_pedido_manual_boleto(), v_parcela_manual_boleto(), s_erro) Then
+                    AdicionaListaParcelasEmBoletos v_parcela_manual_boleto()
+                Else
+                    aviso "Erro: " & s_erro
+                    End If
+                                    
+                If True Then
+                    pn_pedido_nota.Visible = True
+                    pn_aviso_pedido_nota.Visible = True
+                    End If
+                    
+                End If
+            End If
         End If
 
 End Sub

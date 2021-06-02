@@ -5968,7 +5968,7 @@ Dim t_DESTINATARIO As ADODB.Recordset
         s = s & " UNION" & _
             " SELECT" & _
                 " pedido, id_cliente, st_memorizacao_completa_enderecos, " & _
-                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_uf else EndEtg_uf end as uf, " & _
+                " endereco_uf as uf, " & _
                 " endereco_cnpj_cpf as cnpj_cpf, " & _
                 " endereco_logradouro as endereco, " & _
                 " endereco_bairro as bairro, " & _
@@ -6550,6 +6550,7 @@ Dim blnErro As Boolean
 Dim blnExibirTotalTributos As Boolean
 Dim blnHaProdutoSemDadosIbpt As Boolean
 Dim blnExisteMemorizacaoEndereco As Boolean
+Dim blnNotadeCompromisso As Boolean
 
 ' CONTADORES
 Dim i As Integer
@@ -6953,8 +6954,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     " t_PEDIDO.st_etg_imediata," & _
                     " t_PEDIDO.pedido_bs_x_marketplace," & _
                     " t_PEDIDO.marketplace_codigo_origem," & _
-                    " t_PEDIDO.PagtoAntecipadoStatus," & _
                     " t_PEDIDO.PagtoAntecipadoQuitadoStatus," & _
+                    " t_PEDIDO__BASE.PagtoAntecipadoStatus," & _
                     " t_PEDIDO__BASE.tipo_parcelamento," & _
                     " t_PEDIDO__BASE.av_forma_pagto," & _
                     " t_PEDIDO__BASE.pce_forma_pagto_entrada," & _
@@ -8191,20 +8192,14 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             End If
         End If
         
-'   CASO O PEDIDO SEJA PARA PAGAMENTO ANTECIPADO, VERIFICA SE A NATUREZA DA OPERAÇÃO ESTÁ COMPATÍVEL
-    If (strPagtoAntecipadoStatus = "1") And _
-        ((strCfopCodigo <> "5922") And (strCfopCodigo <> "6922")) Then
-        s_confirma = "O pedido se refere a uma venda futura, mas o CFOP da operação não é 5.922 ou 6.922" & vbCrLf & _
-                     "Prosseguir mesmo assim?"
-        If Not confirma(s_confirma) Then
-            GoSub NFE_EMITE_FECHA_TABELAS
-            aguarde INFO_NORMAL, m_id
-            Exit Sub
-            End If
+'   VERIFICAR SE É NOTA DE COMPROMISSO
+    blnNotadeCompromisso = False
+    If ((strCfopCodigo = "5922") And (strCfopCodigo = "6922")) Then
+        blnNotadeCompromisso = True
         End If
-        
-'   CASO O PEDIDO SEJA PARA PAGAMENTO ANTECIPADO, VERIFICAR SE O CST É 041
-    If (strPagtoAntecipadoStatus = "1") Then
+    
+'   CASO SEJA NOTA DE COMPROMISSO, VERIFICAR SE O CST É 041
+    If blnNotadeCompromisso Then
         s_confirma = ""
         For i = LBound(v_nf) To UBound(v_nf)
             If Trim$(v_nf(i).produto) <> "" Then
@@ -8231,6 +8226,20 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 End If
             End If
         End If
+
+'   CASO O PEDIDO PAI SEJA PARA PAGAMENTO ANTECIPADO, VERIFICA SE O PEDIDO FILHO ESTÁ QUITADO
+'   (não permitir emissão se não for nota de compromisso)
+    If (strPagtoAntecipadoStatus = "1") And (strPagtoAntecipadoQuitadoStatus <> "1") Then
+        If Not blnNotadeCompromisso Then
+            s = "Pedido " & Trim$(v_pedido(i)) & " se refere a venda futura não quitada!"
+            aviso s
+            GoSub NFE_EMITE_FECHA_TABELAS
+            aguarde INFO_NORMAL, m_id
+            Exit Sub
+            End If
+        End If
+        
+        
 
 '   ZERAR PIS/COFINS?
     s_confirma = ""

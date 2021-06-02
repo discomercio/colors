@@ -5696,7 +5696,7 @@ GDPP_FECHA_TABELAS:
 End Function
 
 
-Function consultaDadosParcelasPagto(v_pedido() As String, v_parcela_pagto() As TIPO_NF_LINHA_DADOS_PARCELA_PAGTO, ByRef strMsgErro As String) As Boolean
+Function consultaDadosParcelasPagto(v_pedido() As String, ByRef v_parcela_pagto() As TIPO_NF_LINHA_DADOS_PARCELA_PAGTO, ByRef strMsgErro As String) As Boolean
 ' __________________________________________________________________________________________
 '|
 '|  CONSULTA PEDIDOS COM PARCELAMENTO VIA BOLETO PARA EXIBIÇÃO.
@@ -5716,8 +5716,8 @@ Dim rs As ADODB.Recordset
     strMsgErro = ""
     ReDim v_parcela_pagto(0)
     
-    ReDim vPedidoCalculoParcelas(0)
-    vPedidoCalculoParcelas(UBound(vPedidoCalculoParcelas)).pedido = ""
+    ReDim v_parcela_pagto(0)
+    v_parcela_pagto(UBound(v_parcela_pagto)).intNumDestaParcela = 0
   
   ' rs
     Set rs = New ADODB.Recordset
@@ -5766,7 +5766,7 @@ Exit Function
 '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 CDPP_TRATA_ERRO:
 '===============
-    strMsgErro = CStr(Err) & ": " & Error$(Err)
+    strMsgErro = strMsgErro & vbCrLf & CStr(Err) & ": " & Error$(Err)
     GoSub CDPP_FECHA_TABELAS
     Exit Function
     
