@@ -18,22 +18,23 @@ namespace ConsolidadorXlsEC
 		#region [ Atributos ]
 		public static FMain fMain;
 		public static ContextoBD contextoBD = new ContextoBD();
+		public static readonly Loja lojaLoginParameters;
 
 		FConsolidaDadosPlanilha fConsolidaDadosPlanilha;
 		FAtualizaPrecosSistema fAtualizaPrecosSistema;
 		FConferenciaPreco fConferenciaPreco;
         FIntegracaoMarketplace fIntegracaoMarketplace;
-        private bool _InicializacaoOk;
-		private bool _OcorreuExceptionNaInicializacao = false;
+        private static bool _InicializacaoOk;
+		private static bool _OcorreuExceptionNaInicializacao = false;
 
 		private String REGISTRY_PATH_FORM_OPTIONS;
 		#endregion
 
-		#region [ Construtor ]
-		public FMain()
+		#region [ Construtor estático ]
+		static FMain()
 		{
 			#region [ Declarações ]
-			const string NOME_DESTA_ROTINA = "ConsolidadorXlsEC.FMain.Constructor()";
+			const string NOME_DESTA_ROTINA = "ConsolidadorXlsEC.FMain.Static-Constructor()";
 			int qtdeAmbientesBD;
 			int indiceAmbienteBDBase = 0;
 			string strNomeAmbiente;
@@ -46,14 +47,10 @@ namespace ConsolidadorXlsEC
 			string strMsg;
 			string strParametro;
 			string strValue;
+			string strMsgErro;
+			string msg_erro_aux;
 			AmbienteBD ambiente;
 			#endregion
-
-			InitializeComponent();
-
-			fMain = this;
-			REGISTRY_PATH_FORM_OPTIONS = Global.RegistryApp.REGISTRY_BASE_PATH + "\\" + this.Name;
-			if (!Directory.Exists(Global.Cte.LogAtividade.PathLogAtividade)) Directory.CreateDirectory(Global.Cte.LogAtividade.PathLogAtividade);
 
 			try
 			{
@@ -161,6 +158,45 @@ namespace ConsolidadorXlsEC
 
 				if (contextoBD.AmbienteBase == null) throw new Exception("Nenhum ambiente de banco de dados foi definido para ser usado como ambiente base!");
 				#endregion
+
+				#region [ Leitura de parâmetros do BD ]
+				lojaLoginParameters = contextoBD.AmbienteBase.lojaDAO.GetLoja(contextoBD.AmbienteBase.NumeroLojaArclube, out msg_erro_aux);
+				if (lojaLoginParameters == null)
+				{
+					strMsgErro = "Falha ao tentar recuperar os parâmetros de login da API do Magento para a loja " + contextoBD.AmbienteBase.NumeroLojaArclube + "!";
+					if (msg_erro_aux.Length > 0) strMsgErro += "\n" + msg_erro_aux;
+					throw new Exception(strMsgErro);
+				}
+				#endregion
+			}
+			catch (Exception ex)
+			{
+				msgErro = ex.ToString();
+				Global.gravaLogAtividade(NOME_DESTA_ROTINA + "\r\n" + msgErro);
+				strMsg = "Falha ao iniciar módulo!!\r\n\r\n" + ex.Message;
+				MessageBox.Show(strMsg, Global.Cte.Aplicativo.NOME_SISTEMA, MessageBoxButtons.OK, MessageBoxIcon.Error);
+				_OcorreuExceptionNaInicializacao = true;
+				Application.Exit();
+			}
+		}
+		#endregion
+
+		#region [ Construtor ]
+		public FMain()
+		{
+			#region [ Declarações ]
+			const string NOME_DESTA_ROTINA = "ConsolidadorXlsEC.FMain.Constructor()";
+			string msgErro;
+			string strMsg;
+			#endregion
+
+			InitializeComponent();
+
+			try
+			{
+				fMain = this;
+				REGISTRY_PATH_FORM_OPTIONS = Global.RegistryApp.REGISTRY_BASE_PATH + "\\" + this.Name;
+				if (!Directory.Exists(Global.Cte.LogAtividade.PathLogAtividade)) Directory.CreateDirectory(Global.Cte.LogAtividade.PathLogAtividade);
 			}
 			catch (Exception ex)
 			{

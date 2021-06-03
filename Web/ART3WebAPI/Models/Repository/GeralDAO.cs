@@ -181,6 +181,7 @@ namespace ART3WebAPI.Models.Repository
 			codigoDescricao.parametro_campo_texto = BD.readToString(rowDados["parametro_campo_texto"]);
 			codigoDescricao.parametro_2_campo_texto = BD.readToString(rowDados["parametro_2_campo_texto"]);
 			codigoDescricao.parametro_3_campo_texto = BD.readToString(rowDados["parametro_3_campo_texto"]);
+			codigoDescricao.parametro_4_campo_texto = BD.readToString(rowDados["parametro_4_campo_texto"]);
 			codigoDescricao.descricao_parametro = BD.readToString(rowDados["descricao_parametro"]);
 
 			return codigoDescricao;

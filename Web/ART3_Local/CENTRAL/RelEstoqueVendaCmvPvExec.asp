@@ -166,7 +166,7 @@
 sub consulta_estoque_venda_detalhe_sintetico
 dim r
 dim s, s_aux, s_sql, x, cab_table, cab, fabricante_a
-dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes, s_where_temp
+dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes, s_where, s_where_temp
 dim s_color
 
 	cont = 0
@@ -267,7 +267,6 @@ dim s_color
 	    set r = cn.execute(s_sql)
 	    do while Not r.Eof
     
-
                 redim preserve v_fabricante(cont)
                 redim preserve v_codigo(cont)
                 redim preserve v_descricao(cont)
@@ -289,7 +288,35 @@ dim s_color
             
     ' CONSULTA COMPOSTOS		
     if rb_exportacao = "Compostos" then
+		'Monta cláusula WHERE
+		s_where = ""
+		s_where_temp = ""
+		if c_grupo <> "" then
+			v_grupos = split(c_grupo, ", ")
+			for i = Lbound(v_grupos) to Ubound(v_grupos)
+				if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+				s_where_temp = s_where_temp & _
+					" (tP.grupo = '" & v_grupos(i) & "')"
+				next
+			if s_where <> "" then s_where = s_where & " AND "
+			s_where = s_where & "(" & s_where_temp & ")"
+			end if
 
+		s_where_temp = ""
+		if c_subgrupo <> "" then
+			v_subgrupos = split(c_subgrupo, ", ")
+			for i = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+				if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+				s_where_temp = s_where_temp & _
+					" (tP.subgrupo = '" & v_subgrupos(i) & "')"
+				next
+			if s_where <> "" then s_where = s_where & " AND "
+			s_where = s_where & "(" & s_where_temp & ")"
+			end if
+
+		if s_where <> "" then s_where = " WHERE " & s_where
+
+		'Monta SQL
         s_sql = "SELECT" & _
 					" tECPC.fabricante_composto," & _
 					" tECPC.produto_composto," & _
@@ -297,6 +324,8 @@ dim s_color
 					" tF.nome AS nome_fabricante" & _
 				" FROM t_EC_PRODUTO_COMPOSTO tECPC" & _
 					" LEFT JOIN t_FABRICANTE tF ON (tECPC.fabricante_composto = tF.fabricante)" & _
+					" LEFT JOIN t_PRODUTO tP ON (tECPC.fabricante_composto = tP.fabricante) AND (tECPC.produto_composto = tP.produto)" & _
+				s_where & _
 				" ORDER BY" & _
 					" tECPC.fabricante_composto," & _
 					" tECPC.produto_composto"
@@ -359,30 +388,6 @@ dim s_color
 						" WHERE " & _
                         " (tP.fabricante = '" & Trim("" & tPCI("fabricante_item")) & "')" & _
                        	" AND (tP.produto = '" & Trim("" & tPCI("produto_item")) & "') "   
-                
-                s_where_temp = ""
-	            if c_grupo <> "" then
-	                v_grupos = split(c_grupo, ", ")
-	                for i = Lbound(v_grupos) to Ubound(v_grupos)
-	                    if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
-		                s_where_temp = s_where_temp & _
-			                " (tP.grupo = '" & v_grupos(i) & "')"
-	                next
-	                s_sql = s_sql & "AND "
-	                s_sql = s_sql & "(" & s_where_temp & ")"
-                end if
-
-                s_where_temp = ""
-	            if c_subgrupo <> "" then
-	                v_subgrupos = split(c_subgrupo, ", ")
-	                for i = Lbound(v_subgrupos) to Ubound(v_subgrupos)
-	                    if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
-		                s_where_temp = s_where_temp & _
-			                " (tP.subgrupo = '" & v_subgrupos(i) & "')"
-	                next
-	                s_sql = s_sql & "AND "
-	                s_sql = s_sql & "(" & s_where_temp & ")"
-                end if
 
                 if c_potencia_BTU <> "" then
 		            s_sql = s_sql & _
@@ -722,7 +727,7 @@ end sub
 sub consulta_estoque_venda_detalhe_intermediario
 dim r
 dim s, s_aux, s_sql, x, cab_table, cab, fabricante_a
-dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes, s_where_temp
+dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes, s_where, s_where_temp
 dim vl, vl_total_geral, vl_sub_total
 dim s_color
 
@@ -853,7 +858,35 @@ dim s_color
     ' CONSULTA COMPOSTOS
 		
     if rb_exportacao = "Compostos" then
+		'Monta cláusula WHERE
+		s_where = ""
+		s_where_temp = ""
+		if c_grupo <> "" then
+			v_grupos = split(c_grupo, ", ")
+			for i = Lbound(v_grupos) to Ubound(v_grupos)
+				if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+				s_where_temp = s_where_temp & _
+					" (tP.grupo = '" & v_grupos(i) & "')"
+				next
+			if s_where <> "" then s_where = s_where & " AND "
+			s_where = s_where & "(" & s_where_temp & ")"
+			end if
 
+		s_where_temp = ""
+		if c_subgrupo <> "" then
+			v_subgrupos = split(c_subgrupo, ", ")
+			for i = Lbound(v_subgrupos) to Ubound(v_subgrupos)
+				if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
+				s_where_temp = s_where_temp & _
+					" (tP.subgrupo = '" & v_subgrupos(i) & "')"
+				next
+			if s_where <> "" then s_where = s_where & " AND "
+			s_where = s_where & "(" & s_where_temp & ")"
+			end if
+
+		if s_where <> "" then s_where = " WHERE " & s_where
+
+		'Monta SQL
         s_sql = "SELECT" & _
 					" tECPC.fabricante_composto," & _
 					" tECPC.produto_composto," & _
@@ -861,6 +894,8 @@ dim s_color
 					" tF.nome AS nome_fabricante" & _
 				" FROM t_EC_PRODUTO_COMPOSTO tECPC" & _
 					" LEFT JOIN t_FABRICANTE tF ON (tECPC.fabricante_composto = tF.fabricante)" & _
+					" LEFT JOIN t_PRODUTO tP ON (tECPC.fabricante_composto = tP.fabricante) AND (tECPC.produto_composto = tP.produto)" & _
+				s_where & _
 				" ORDER BY" & _
 					" tECPC.fabricante_composto," & _
 					" tECPC.produto_composto"
@@ -924,30 +959,6 @@ dim s_color
 						" WHERE " & _
                         " (tP.fabricante = '" & Trim("" & tPCI("fabricante_item")) & "')" & _
                        	" AND (tP.produto = '" & Trim("" & tPCI("produto_item")) & "') "   
-                
-                s_where_temp = ""
-	            if c_grupo <> "" then
-	                v_grupos = split(c_grupo, ", ")
-	                for i = Lbound(v_grupos) to Ubound(v_grupos)
-	                    if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
-		                s_where_temp = s_where_temp & _
-			                " (tP.grupo = '" & v_grupos(i) & "')"
-	                next
-	                s_sql = s_sql & "AND "
-	                s_sql = s_sql & "(" & s_where_temp & ")"
-                end if
-
-                s_where_temp = ""
-	            if c_subgrupo <> "" then
-	                v_subgrupos = split(c_subgrupo, ", ")
-	                for i = Lbound(v_subgrupos) to Ubound(v_subgrupos)
-	                    if s_where_temp <> "" then s_where_temp = s_where_temp & " OR"
-		                s_where_temp = s_where_temp & _
-			                " (tP.subgrupo = '" & v_subgrupos(i) & "')"
-	                next
-	                s_sql = s_sql & "AND "
-	                s_sql = s_sql & "(" & s_where_temp & ")"
-                end if
 
                 if c_potencia_BTU <> "" then
 		            s_sql = s_sql & _

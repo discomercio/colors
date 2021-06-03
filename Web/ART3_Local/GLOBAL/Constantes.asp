@@ -503,6 +503,14 @@
 	Const COD_SISTEMA_RESPONSAVEL_CADASTRO__UNIS = 3
 	Const COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP_WEBAPI = 4
 
+	Const VERSAO_API_MAGENTO_V1_SOAP_XML = 0
+	Const VERSAO_API_MAGENTO_V2_REST_JSON = 2
+
+	Const COD_MAGENTO_PRODUCT_TYPE__SIMPLE = "simple"
+	Const COD_MAGENTO_PRODUCT_TYPE__VIRTUAL = "virtual"
+	Const COD_MAGENTO_PRODUCT_TYPE__CONFIGURABLE = "configurable"
+
+
   ' CÓDIGOS PARA NÍVEL DOS USUÁRIOS
 	Const ID_VENDEDOR		= "V"
 	Const ID_SEPARADOR		= "S"
@@ -1805,6 +1813,22 @@
 		dim PercMaxSenhaDesconto
 		dim PercMaxDescSemZerarRT
 		dim unidade_negocio
+		dim id_plano_contas_empresa
+		dim id_plano_contas_grupo
+		dim id_plano_contas_conta
+		dim natureza
+		dim perc_max_comissao
+		dim perc_max_comissao_e_desconto
+		dim perc_max_comissao_e_desconto_nivel2
+		dim perc_max_comissao_e_desconto_nivel2_pj
+		dim perc_max_comissao_e_desconto_pj
+		dim magento_api_urlWebService
+		dim magento_api_username
+		dim magento_api_password
+		dim magento_api_versao
+		dim magento_api_rest_endpoint
+		dim magento_api_rest_access_token
+		dim magento_api_rest_force_get_sales_order_by_entity_id
 		end class
 	
 	class cl_CLIENTE
@@ -2118,6 +2142,41 @@
 		end class
 
 	class cl_ITEM_PEDIDO
+		dim pedido
+		dim fabricante
+		dim produto
+		dim qtde
+		dim desc_dado
+		dim preco_venda
+		dim preco_NF
+		dim preco_fabricante
+		dim preco_lista
+		dim margem
+		dim desc_max
+		dim comissao
+		dim descricao
+		dim descricao_html
+		dim ean
+		dim grupo
+        dim subgrupo
+		dim peso
+		dim qtde_volumes
+		dim abaixo_min_status
+		dim abaixo_min_autorizacao
+		dim abaixo_min_autorizador
+		dim sequencia
+		dim markup_fabricante
+		dim abaixo_min_superv_autorizador
+		dim vl_custo2
+		dim custoFinancFornecCoeficiente
+		dim custoFinancFornecPrecoListaBase
+		dim cubagem
+		dim ncm
+		dim cst
+		dim descontinuado
+		end class
+
+	class cl_ITEM_PEDIDO_SERVICO
 		dim pedido
 		dim fabricante
 		dim produto

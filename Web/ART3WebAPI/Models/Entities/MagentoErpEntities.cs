@@ -52,7 +52,9 @@ namespace ART3WebAPI.Models.Entities
 		public DateTime dt_cadastro { get; set; }
 		public DateTime dt_hr_cadastro { get; set; }
 		public string usuario_cadastro { get; set; }
+		public int magento_api_versao { get; set; }
 		public string pedido_xml { get; set; }
+		public string pedido_json { get; set; }
 		public string cpfCnpjIdentificado { get; set; }
 		public int increment_id { get; set; }
 		public string created_at { get; set; }
@@ -77,6 +79,7 @@ namespace ART3WebAPI.Models.Entities
 		public string clearSale_score { get; set; }
 		public string clearSale_packageID { get; set; }
 		public decimal shipping_amount { get; set; }
+		public decimal shipping_discount_amount { get; set; }
 		public decimal discount_amount { get; set; }
 		public decimal subtotal { get; set; }
 		public decimal grand_total { get; set; }
@@ -153,6 +156,33 @@ namespace ART3WebAPI.Models.Entities
 		public string product_type { get; set; }
 		public string has_children { get; set; }
 		public int parent_item_id { get; set; }
+		public double weight { get; set; } = 0d;
+		public int is_virtual { get; set; } = 0;
+		public int free_shipping { get; set; } = 0;
+		public int is_qty_decimal { get; set; } = 0;
+		public int no_discount { get; set; } = 0;
+		public decimal qty_canceled { get; set; } = 0m;
+		public decimal qty_invoiced { get; set; } = 0m;
+		public decimal qty_refunded { get; set; } = 0m;
+		public decimal qty_shipped { get; set; } = 0m;
+		public double tax_percent { get; set; } = 0d;
+		public decimal tax_amount { get; set; } = 0m;
+		public decimal base_tax_amount { get; set; } = 0m;
+		public decimal tax_invoiced { get; set; } = 0m;
+		public decimal base_tax_invoiced { get; set; } = 0m;
+		public decimal discount_invoiced { get; set; } = 0m;
+		public decimal base_discount_invoiced { get; set; } = 0m;
+		public decimal amount_refunded { get; set; } = 0m;
+		public decimal base_amount_refunded { get; set; } = 0m;
+		public decimal row_total { get; set; } = 0m;
+		public decimal base_row_total { get; set; } = 0m;
+		public decimal row_invoiced { get; set; } = 0m;
+		public decimal base_row_invoiced { get; set; } = 0m;
+		public double row_weight { get; set; } = 0d;
+		public decimal price_incl_tax { get; set; } = 0m;
+		public decimal base_price_incl_tax { get; set; } = 0m;
+		public decimal row_total_incl_tax { get; set; } = 0m;
+		public decimal base_row_total_incl_tax { get; set; } = 0m;
 	}
 	#endregion
 

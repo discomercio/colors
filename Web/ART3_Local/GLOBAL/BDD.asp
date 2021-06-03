@@ -602,6 +602,23 @@ dim r
 			.PercMaxSenhaDesconto = r("PercMaxSenhaDesconto")
 			.PercMaxDescSemZerarRT = r("PercMaxDescSemZerarRT")
 			.unidade_negocio = Trim("" & r("unidade_negocio"))
+			.id_plano_contas_empresa = r("id_plano_contas_empresa")
+			.id_plano_contas_grupo = r("id_plano_contas_grupo")
+			.id_plano_contas_conta = r("id_plano_contas_conta")
+			.natureza = Trim("" & r("natureza"))
+			.unidade_negocio = Trim("" & r("unidade_negocio"))
+			.perc_max_comissao = r("perc_max_comissao")
+			.perc_max_comissao_e_desconto = r("perc_max_comissao_e_desconto")
+			.perc_max_comissao_e_desconto_nivel2 = r("perc_max_comissao_e_desconto_nivel2")
+			.perc_max_comissao_e_desconto_nivel2_pj = r("perc_max_comissao_e_desconto_nivel2_pj")
+			.perc_max_comissao_e_desconto_pj = r("perc_max_comissao_e_desconto_pj")
+			.magento_api_urlWebService = Trim("" & r("magento_api_urlWebService"))
+			.magento_api_username = Trim("" & r("magento_api_username"))
+			.magento_api_password = Trim("" & r("magento_api_password"))
+			.magento_api_versao = r("magento_api_versao")
+			.magento_api_rest_endpoint = Trim("" & r("magento_api_rest_endpoint"))
+			.magento_api_rest_access_token = Trim("" & r("magento_api_rest_access_token"))
+			.magento_api_rest_force_get_sales_order_by_entity_id = r("magento_api_rest_force_get_sales_order_by_entity_id")
 			end with
 		end if
 
@@ -2103,6 +2120,83 @@ dim rs
 	if rs.State <> 0 then rs.Close
 
 	if msg_erro = "" then le_pedido_item=True
+end function
+
+
+
+' ___________________________________________
+' LE PEDIDO ITEM SERVICO
+'
+function le_pedido_item_servico(byval id_pedido, byref v_pedido_item_servico, byref msg_erro)
+dim s
+dim rs
+	le_pedido_item_servico = False
+	msg_erro = ""
+	id_pedido=Trim("" & id_pedido)
+	redim v_pedido_item_servico(0)
+	set v_pedido_item_servico(0) = New cl_ITEM_PEDIDO_SERVICO
+	
+	s="SELECT * FROM t_PEDIDO_ITEM_SERVICO WHERE (pedido='" & id_pedido & "') ORDER BY sequencia"
+	set rs=cn.Execute(s)
+	if Err <> 0 then
+		msg_erro=Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+		
+	if rs.EOF then
+		msg_erro="Não há itens de serviço cadastrados para o pedido nº " & id_pedido & "."
+	else
+		do while Not rs.EOF 
+			if Trim(v_pedido_item_servico(Ubound(v_pedido_item_servico)).produto)<>"" then
+				redim preserve v_pedido_item_servico(Ubound(v_pedido_item_servico)+1)
+				set v_pedido_item_servico(ubound(v_pedido_item_servico)) = New cl_ITEM_PEDIDO_SERVICO
+				end if
+			with v_pedido_item_servico(Ubound(v_pedido_item_servico))
+				.pedido					= Trim("" & rs("pedido"))
+				.fabricante				= Trim("" & rs("fabricante"))
+				.produto				= Trim("" & rs("produto"))
+				.qtde					= rs("qtde")
+				.desc_dado				= rs("desc_dado")
+				.preco_venda			= rs("preco_venda")
+				.preco_NF				= rs("preco_NF")
+				.preco_fabricante		= rs("preco_fabricante")
+				.vl_custo2				= rs("vl_custo2")
+				.preco_lista			= rs("preco_lista")
+				.margem					= rs("margem")
+				.desc_max				= rs("desc_max")
+				.comissao				= rs("comissao")
+				.descricao				= Trim("" & rs("descricao"))
+				.descricao_html			= Trim("" & rs("descricao_html"))
+				.ean					= Trim("" & rs("ean"))
+				.grupo					= Trim("" & rs("grupo"))
+                .subgrupo				= Trim("" & rs("subgrupo"))
+				.peso					= rs("peso")
+				.qtde_volumes			= rs("qtde_volumes")
+				.abaixo_min_status		= rs("abaixo_min_status")
+				.abaixo_min_autorizacao	= Trim("" & rs("abaixo_min_autorizacao"))
+				.abaixo_min_autorizador	= Trim("" & rs("abaixo_min_autorizador"))
+				.abaixo_min_superv_autorizador	= Trim("" & rs("abaixo_min_superv_autorizador"))
+				.sequencia				= rs("sequencia")
+				.markup_fabricante		= rs("markup_fabricante")
+				.custoFinancFornecCoeficiente = rs("custoFinancFornecCoeficiente")
+				.custoFinancFornecPrecoListaBase = rs("custoFinancFornecPrecoListaBase")
+				.cubagem				= rs("cubagem")
+				.ncm					= Trim("" & rs("ncm"))
+				.cst					= Trim("" & rs("cst"))
+				.descontinuado			= Trim("" & rs("descontinuado"))
+				end with
+			rs.MoveNext 
+			Loop
+		end if
+
+	if Err <> 0 then
+		msg_erro=Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+
+	if rs.State <> 0 then rs.Close
+
+	if msg_erro = "" then le_pedido_item_servico=True
 end function
 
 

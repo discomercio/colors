@@ -1917,7 +1917,7 @@ onload="trata_indicador_onchange(); if (trim(fPED.c_fabricante[0].value)=='') fP
 	<table style="width:300px;" cellpadding="2" cellspacing="0" border="0">
 	<tr>
 		<td align="right"><span class="C">VL Frete:</span></td>
-		<td align="left"><span class="C"><%=formata_moeda(tMAP_XML("shipping_amount"))%></span></td>
+		<td align="left"><span class="C"><%=formata_moeda(converte_numero(tMAP_XML("shipping_amount")) - converte_numero(tMAP_XML("shipping_discount_amount")))%></span></td>
 	</tr>
 	<tr>
 		<td align="right"><span class="C">Indicador:</span></td>

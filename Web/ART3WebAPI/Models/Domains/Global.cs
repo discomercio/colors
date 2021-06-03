@@ -60,8 +60,8 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.24";
-				public const string Data = "31.JAN.2021";
+				public const string Numero = "2.25";
+				public const string Data = "12.ABR.2021";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
 			#endregion
@@ -192,7 +192,11 @@ namespace ART3WebAPI.Models.Domains
 			 *      entrada no estoque no cálculo mês a mês, quando esse mesmo filtro não estava sendo
 			 *      informado, o relatório calculava o valor do mês a mês sem restrição de período.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.25 - XX.XX.20XX - por XXX
+			 * v 2.25 - 12.04.2021 - por HHO
+			 *      Implementação de tratamento para a API REST (JSON) do Magento 2 (incluindo tratamento para
+			 *      serviços da iSnow). O tratamento implementado foi ajustado antes de entrar em produção
+			 *      para que seja possível usar o cadastramento semi-automático de pedidos Magento para os
+			 *      pedidos de Magento v1.8 e v2 simultaneamente.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.26 - 26.05.2021 - por HHO
 			 *      Implementação de tratamento para acesso concorrente nas operações com o banco de dados
@@ -240,6 +244,26 @@ namespace ART3WebAPI.Models.Domains
 					public const string FLAG_PEDIDO_MEMORIZACAO_COMPLETA_ENDERECOS = "Flag_Pedido_MemorizacaoCompletaEnderecos";
 				}
 				#endregion
+			}
+			#endregion
+
+			#region [ MagentoApiIntegracao ]
+			public static class MagentoApiIntegracao
+			{
+				public static readonly int VERSAO_API_MAGENTO_V1_SOAP_XML = 0;
+				public static readonly int VERSAO_API_MAGENTO_V2_REST_JSON = 2;
+			}
+			#endregion
+
+			#region [ Magento2RestApi ]
+			public static class Magento2RestApi
+			{
+				// The Timeout applies to the entire request and response, not individually to the GetRequestStream and GetResponse method calls
+				public static readonly int REQUEST_TIMEOUT_EM_MS = 3 * 60 * 1000;
+				public static readonly int TIMEOUT_READER_WRITER_LOCK_EM_MS = 60 * 1000;
+
+				public static readonly string TIPO_ENDERECO__COBRANCA = "COB";
+				public static readonly string TIPO_ENDERECO__ENTREGA = "ETG";
 			}
 			#endregion
 
@@ -556,6 +580,63 @@ namespace ART3WebAPI.Models.Domains
 						 DataHora.FmtAno;
 			if (DateTime.TryParseExact(digitos(strDdMmYyyy), strFormato, myCultureInfo, DateTimeStyles.NoCurrentDateDefault, out dtDataHoraResp)) return dtDataHoraResp;
 			return DateTime.MinValue;
+		}
+		#endregion
+
+		#region [ converteDouble ]
+		/// <summary>
+		/// Converte o número representado pelo texto do parâmetro em um número do tipo double
+		/// Se não conseguir realizar a conversão, será retornado zero
+		/// </summary>
+		/// <param name="numero">Texto representando um número double; aceita sinal de negativo no início ou no final; aceita separador de milhar</param>
+		/// <param name="separadorDecimal">Define o caractere que deve ser considerado como ponto decimal</param>
+		/// <returns>Retorna um número do tipo double</returns>
+		public static double converteDouble(String numero, char separadorDecimal)
+		{
+			#region [ Declarações ]
+			string numeroNormalizado;
+			#endregion
+
+			if (numero == null) return 0d;
+			if (numero.Trim().Length == 0) return 0d;
+
+			numeroNormalizado = numero.Trim();
+			numeroNormalizado = numeroNormalizado.Replace(separadorDecimal, 'V');
+			numeroNormalizado = numeroNormalizado.Replace(".", "");
+			numeroNormalizado = numeroNormalizado.Replace(",", "");
+			numeroNormalizado = numeroNormalizado.Replace("V", ".");
+			return converteDouble(numeroNormalizado);
+		}
+		#endregion
+
+		#region [ converteDouble ]
+		/// <summary>
+		/// Converte o número representado pelo texto do parâmetro em um número do tipo double
+		/// Se não conseguir realizar a conversão, será retornado zero
+		/// IMPORTANTE: o separador decimal deve ser o ponto.
+		/// </summary>
+		/// <param name="numero">
+		/// Texto representando um número double (separador decimal é o ponto); aceita sinal de negativo no início ou no final; aceita separador de milhar
+		/// </param>
+		/// <returns>
+		/// Retorna um número do tipo double
+		/// </returns>
+		public static double converteDouble(String numero)
+		{
+			#region [ Declarações ]
+			double dblResultado;
+			NumberStyles style = NumberStyles.AllowLeadingSign | NumberStyles.AllowTrailingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowThousands;
+			CultureInfo culture = System.Globalization.CultureInfo.InvariantCulture;
+			#endregion
+
+			if (numero == null) return 0d;
+			if (numero.Trim().Length == 0) return 0d;
+
+			numero = numero.Trim();
+
+			if (double.TryParse(numero, style, culture, out dblResultado)) return dblResultado;
+
+			return 0d;
 		}
 		#endregion
 

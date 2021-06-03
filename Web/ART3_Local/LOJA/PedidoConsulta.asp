@@ -56,7 +56,7 @@
 	if Len(pedido_selecionado) > TAM_MAX_ID_PEDIDO then Response.Redirect("aviso.asp?id=" & ERR_PEDIDO_INVALIDO)
 	
 	dim i, n, x, s_fabricante, s_produto, s_descricao, s_descricao_html, s_qtde, s_preco_lista, s_desc_dado
-	dim s_vl_unitario, s_vl_TotalItem, m_TotalItem, m_TotalDestePedido, m_TotalItemComRA, m_TotalDestePedidoComRA
+	dim s_vl_unitario, s_vl_TotalItem, m_TotalItem, m_TotalDestePedido, m_TotalItemComRA, m_TotalDestePedidoComRA, m_TotalServicos
 	dim s_preco_NF, m_TotalFamiliaParcelaRA, intQtdeFrete, notPrint
     dim blnIsUsuarioResponsavelDepto, blnIsUsuarioCadastroChamado
 	
@@ -86,7 +86,7 @@
 	dim blnAcessoLojaOk
 	blnAcessoLojaOk = False
 	
-	dim r_pedido, v_item, alerta
+	dim r_pedido, v_item, v_item_servico, qtdeItemServico, alerta
 	alerta=""
 	if Not le_pedido(pedido_selecionado, r_pedido, msg_erro) then 
 		alerta = msg_erro
@@ -102,6 +102,17 @@
 			end if
 		end if
 	
+	qtdeItemServico = 0
+	if r_pedido.loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
+		if le_pedido_item_servico(pedido_selecionado, v_item_servico, msg_erro) then
+			for i=LBound(v_item_servico) to UBound(v_item_servico)
+				if Trim(v_item_servico(i).produto) <> "" then
+					qtdeItemServico = qtdeItemServico + 1
+					end if
+				next
+			end if
+		end if
+
 	dim blnTemRA
 	blnTemRA = False
 	if alerta = "" then
@@ -126,6 +137,7 @@
 	dim pedido_splitado
 	dim v_pedido_perda, s_perdas, vl_total_perdas, vl_total_frete, frete_transportadora_id, frete_numero_NF, frete_serie_NF
     dim vlTotalItemDevolucao, vlTotalDevolucao
+	dim qtdeColProd
 	s_devolucoes = ""
 	pedido_splitado = False
 	s_perdas = ""
@@ -1128,7 +1140,9 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 	<td class="MB" align="right" valign="bottom"><span class="PLTd">VL Total</span></td>
 	</tr>
 
-<% m_TotalDestePedido=0
+<% qtdeColProd = 9
+   if blnTemRA Or ((r_pedido.permite_RA_status = 1) And (r_pedido.opcao_possui_RA = "S")) then qtdeColProd = qtdeColProd + 1
+   m_TotalDestePedido=0
    m_TotalDestePedidoComRA=0
    n = Lbound(v_item)-1
    for i=1 to MAX_ITENS 
@@ -1255,6 +1269,78 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 	<td class="MDB" align="right"><input name="c_total_geral" id="c_total_geral" class="PLLd" style="width:70px;color:blue;" 
 		value='<%=formata_moeda(m_TotalDestePedido)%>' readonly tabindex=-1></td>
 	</tr>
+
+	<%
+		if r_pedido.loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
+			if qtdeItemServico > 0 then
+				m_TotalServicos = 0
+	%>
+	<tr><td colspan="<%=CStr(qtdeColProd)%>">&nbsp;</td></tr>
+	<tr><td class="MB" colspan="<%=CStr(qtdeColProd)%>" align="left"><span class="PLTe">Serviços</span></td></tr>
+	<%
+				for i=LBound(v_item_servico) to UBound(v_item_servico)
+					if Trim(v_item_servico(i).produto) <> "" then
+						s_cor = "black"
+						with v_item_servico(i)
+							s_fabricante=.fabricante
+							s_produto=.produto
+							s_descricao=.descricao
+							s_descricao_html=produto_formata_descricao_em_html(.descricao_html)
+							s_qtde=.qtde
+							s_preco_lista=formata_moeda(.preco_lista)
+							if .desc_dado=0 then s_desc_dado="" else s_desc_dado=formata_perc_desc(.desc_dado)
+							s_vl_unitario=formata_moeda(.preco_venda)
+							if .preco_NF <> 0 then s_preco_NF=formata_moeda(.preco_NF) else s_preco_NF=""
+							m_TotalItem=.qtde * .preco_venda
+							m_TotalItemComRA=.qtde * .preco_NF
+							s_vl_TotalItem=formata_moeda(m_TotalItem)
+							m_TotalServicos = m_TotalServicos + m_TotalItem
+							end with
+
+	%>
+	<tr>
+		<td class="MB ME" align="left">
+			&nbsp;
+		</td>
+		<td class="MDB" align="left">
+			<input name="c_servico_sku" class="PLLe" style="width:54px;color:<%=s_cor%>" value="<%=s_produto%>" readonly tabindex="-1" />
+		</td>
+		<td class="MDB" align="left" style="width:269px;">
+			<span class="PLLe" style="color:<%=s_cor%>"><%=s_descricao_html%></span>
+			<input type="hidden" name="c_servico_descricao" value="<%=s_descricao%>" />
+		</td>
+		<td class="MDB" align="right">
+			<input name="c_servico_qtde" class="PLLd" style="width:21px;color:<%=s_cor%>" value="<%=s_qtde%>" readonly tabindex="-1" />
+		</td>
+		<td class="MDB" align="right">&nbsp;</td>
+		<% if blnTemRA Or ((r_pedido.permite_RA_status = 1) And (r_pedido.opcao_possui_RA = "S")) then %>
+		<td class="MDB" align="right">
+			<input name="c_servico_vl_NF" class="PLLd" style="width:62px;color:<%=s_cor%>" value="<%=s_preco_NF%>" readonly tabindex="-1" />
+		</td>
+		<% end if %>
+		<td class="MDB" align="right">
+			<input name="c_servico_preco_lista" class="PLLd" style="width:62px;color:<%=s_cor%>" value="<%=s_preco_lista%>" readonly tabindex="-1" />
+		</td>
+		<td class="MDB" align="right">
+			<input name="c_servico_desc" class="PLLd" style="width:28px;color:<%=s_cor%>" value="<%=s_desc_dado%>" readonly tabindex="-1" />
+		</td>
+		<td class="MDB" align="right">
+			<input name="c_servico_vl_unitario" class="PLLd" style="width:62px;color:<%=s_cor%>" value="<%=s_vl_unitario%>" readonly tabindex="-1" />
+		</td>
+		<td class="MDB" align="right">
+			<input name="c_servico_vl_total" class="PLLd" style="width:70px;color:<%=s_cor%>" value="<%=s_vl_TotalItem%>" readonly tabindex="-1" />
+		</td>
+	</tr>
+	<%				end if 'if Trim(v_item_servico(i).produto) <> ""
+				next %>
+	<tr>
+		<td class="MD" colspan="<%=CStr(qtdeColProd-1)%>">&nbsp;</td>
+		<td class="MDB" align="right"><input name="c_total_servicos" id="c_total_servicos" class="PLLd" style="width:70px;color:blue;" value="<%=formata_moeda(m_TotalServicos)%>" readonly tabindex="-1" /></td>
+	</tr>
+	<%
+			end if 'if qtdeItemServico > 0
+		end if
+	%>
 </table>
 
 <% if r_pedido.tipo_parcelamento = 0 then %>

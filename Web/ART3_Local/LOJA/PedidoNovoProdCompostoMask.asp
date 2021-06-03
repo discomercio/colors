@@ -176,13 +176,18 @@
 				end if
 
 			s = "SELECT " & _
-					"*" & _
-				" FROM t_MAGENTO_API_PEDIDO_XML_DECODE_ITEM" & _
+					"tMAP_ITEM.*" & _
+				" FROM t_MAGENTO_API_PEDIDO_XML tMAP" & _
+					" INNER JOIN t_MAGENTO_API_PEDIDO_XML_DECODE_ITEM tMAP_ITEM ON (tMAP.id = tMAP_ITEM.id_magento_api_pedido_xml)" & _
 				" WHERE" & _
-					" (id_magento_api_pedido_xml = " & id_magento_api_pedido_xml & ")" & _
-					" AND (product_type <> 'configurable')" & _
+					" (tMAP_ITEM.id_magento_api_pedido_xml = " & id_magento_api_pedido_xml & ")" & _
+					" AND (" & _
+						" ((tMAP.magento_api_versao = " & VERSAO_API_MAGENTO_V1_SOAP_XML & ") AND (tMAP_ITEM.product_type <> '" & COD_MAGENTO_PRODUCT_TYPE__CONFIGURABLE & "'))" & _
+						" OR" & _
+						" ((tMAP.magento_api_versao = " & VERSAO_API_MAGENTO_V2_REST_JSON & ") AND (tMAP_ITEM.product_type = '" & COD_MAGENTO_PRODUCT_TYPE__SIMPLE & "'))" & _
+						")" & _
 				" ORDER BY" & _
-					" id"
+					" tMAP_ITEM.id"
 			if tMAP_ITEM.State <> 0 then tMAP_ITEM.Close
 			tMAP_ITEM.open s, cn
 			if tMAP_ITEM.Eof then
