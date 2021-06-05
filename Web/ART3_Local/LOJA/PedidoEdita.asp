@@ -347,6 +347,7 @@ end function
 	   blnAnaliseCreditoProcessado = True
 	   end if
 
+	'Edição do indicador está liberada?
     sql = "SELECT * FROM t_COMISSAO_INDICADOR_N4 WHERE (pedido='" & r_pedido.pedido & "')"
     set rs = cn.Execute(sql)
     dim blnIndicadorEdicaoLiberada
@@ -357,6 +358,8 @@ end function
         end if 
     end if
     if rs.State <> 0 then rs.Close
+	'04/Jun/2021: a edição do indicador foi desmembrada em uma operação específica para melhorar o tempo de carregamento da página de edição do pedido (PedidoEditaIndicador.asp)
+	blnIndicadorEdicaoLiberada = False
 	
 	dim blnObs1EdicaoLiberada
 	blnObs1EdicaoLiberada = False
