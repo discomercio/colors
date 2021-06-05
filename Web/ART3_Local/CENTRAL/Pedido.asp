@@ -249,6 +249,16 @@
 		if operacao_permitida(OP_CEN_EDITA_PEDIDO_CD, s_lista_operacoes_permitidas) And (r_pedido.st_entrega = ST_ENTREGA_ESPERAR) then blnExibeBotaoEditarCD = True
 		end if
 
+	dim blnIndicadorEdicaoLiberada
+	blnIndicadorEdicaoLiberada = False
+	s = "SELECT * FROM t_COMISSAO_INDICADOR_N4 WHERE (pedido='" & r_pedido.pedido & "')"
+	set rs = cn.Execute(s)
+	if operacao_permitida(OP_CEN_EDITA_PEDIDO_INDICADOR, s_lista_operacoes_permitidas) then
+		if r_pedido.st_entrega<>ST_ENTREGA_CANCELADO And rs.Eof then
+			blnIndicadorEdicaoLiberada = True
+			end if
+		end if
+	if rs.State <> 0 then rs.Close
 
 
 
@@ -615,6 +625,12 @@ function fPedEditaCDConclui() {
 	window.status = "Aguarde ...";
 	fPedEditaCD.action = "PedidoEditaCD.asp"
 	fPedEditaCD.submit();
+}
+
+function fPedEditaIndicadorConclui() {
+	window.status = "Aguarde ...";
+	fPedEditaIndicador.action = "PedidoEditaIndicador.asp"
+	fPedEditaIndicador.submit();
 }
 
 function fPEDPESQConclui() {
@@ -1314,7 +1330,16 @@ function fPEDPreDevolucao(f) {
 		</table>
 	</td>
 	<td class="MD" align="left"><p class="Rf">LOJA</p><p class="C"><%=s%>&nbsp;</p></td>
-	<td width="145" class="MD" align="left"><p class="Rf">INDICADOR</p><a href='javascript:fOrcamentistaEIndicadorConsultaView(<%=chr(34) & r_pedido.indicador & chr(34)%>)' title="clique para consultar o cadastro do indicador"><p class="C"><%=strTextoIndicador%>&nbsp;</p></a></td>
+	<td width="145" class="MD" align="left">
+		<table width="100%" cellspacing="0" cellpadding="0" border="0">
+		<tr>
+			<td><p class="Rf">INDICADOR</p><a href='javascript:fOrcamentistaEIndicadorConsultaView(<%=chr(34) & r_pedido.indicador & chr(34)%>)' title="clique para consultar o cadastro do indicador"><p class="C"><%=strTextoIndicador%>&nbsp;</p></a></td>
+			<% if blnIndicadorEdicaoLiberada then %>
+			<td align="right" valign="bottom" class="notPrint"><a href='javascript:fPedEditaIndicadorConclui();' title="clique para editar o indicador" class="notPrint"><img id="imgPedEditaIndicador" src="../IMAGEM/edita_20x20.gif" class="notPrint" /></a></td>
+			<% end if %>
+		</tr>
+		</table>
+	</td>
 	<td width="145" align="left"><p class="Rf">VENDEDOR</p><p class="C"><%=r_pedido.vendedor%>&nbsp;</p></td>
 	<% if operacao_permitida(OP_CEN_PEDIDO_EXIBIR_LINK_DANFE, s_lista_operacoes_permitidas) then
 			s = monta_link_para_DANFE_com_icone_PDF(pedido_selecionado, MAX_PERIODO_LINK_DANFE_DISPONIVEL_NO_PEDIDO_EM_DIAS)
@@ -4221,6 +4246,12 @@ function fPEDPreDevolucao(f) {
 </form>
 
 <form id="fPedEditaCD" name="fPedEditaCD" method="post">
+<%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
+<input type="hidden" name="pedido_selecionado" value="<%=pedido_selecionado%>">
+<input type="hidden" name="url_origem" id="url_origem" value="<%=url_origem%>" />
+</form>
+
+<form id="fPedEditaIndicador" name="fPedEditaIndicador" method="post">
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
 <input type="hidden" name="pedido_selecionado" value="<%=pedido_selecionado%>">
 <input type="hidden" name="url_origem" id="url_origem" value="<%=url_origem%>" />
