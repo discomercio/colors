@@ -209,6 +209,7 @@ Begin VB.Form f_EMISSAO_MANUAL
       Left            =   14760
       TabIndex        =   350
       Top             =   7920
+      Visible         =   0   'False
       Width           =   5655
       Begin VB.CheckBox chk_InfoAdicParc 
          Caption         =   "Incluir parcelas no campo de  Informações Adicionais"
@@ -4673,6 +4674,7 @@ Dim aliquota_icms As Single
     c_pedido_nota = ""
     pn_pedido_nota.Visible = False
     pn_aviso_pedido_nota.Visible = False
+    pnParcelasEmBoletos.Visible = False
     
 '   FOCO INICIAL
 '   ~~~~~~~~~~~~
@@ -5753,6 +5755,33 @@ OICP_FECHA_TABELAS:
     Return
     
 End Function
+
+Private Sub CriaListaParcelasEmBoletos()
+   Dim clmX As ColumnHeader
+
+    lvParcBoletos.ListItems.Clear
+    
+    'criar a coluna oculta e as três colunas visíveis
+    Set clmX = lvParcBoletos.ColumnHeaders.Add()
+    clmX.Text = "oculto"
+    Set clmX = lvParcBoletos.ColumnHeaders.Add()
+    clmX.Text = "Parcela"
+    clmX.Alignment = lvwColumnRight
+    Set clmX = lvParcBoletos.ColumnHeaders.Add()
+    clmX.Text = "Forma"
+    clmX.Alignment = lvwColumnLeft
+    Set clmX = lvParcBoletos.ColumnHeaders.Add()
+    clmX.Text = "Dt Vencto"
+    clmX.Alignment = lvwColumnCenter
+    Set clmX = lvParcBoletos.ColumnHeaders.Add()
+    clmX.Text = "Valor"
+    clmX.Alignment = lvwColumnRight
+    
+    'diminuir a largura da primeira coluna
+    lvParcBoletos.ColumnHeaders(1).Width = 0
+    lvParcBoletos.ColumnHeaders(2).Width = lvParcBoletos.ColumnHeaders(2).Width * 0.5
+
+End Sub
 
 Private Sub AdicionaListaParcelasEmBoletos(lista_parc() As TIPO_NF_LINHA_DADOS_PARCELA_PAGTO)
     Dim itmX As ListItem
@@ -11427,15 +11456,13 @@ Dim s_erro As String
                 'pnParcelasEmBoletos.Visible = False
                 If consultaDadosParcelasPagto(v_pedido_manual_boleto(), v_parcela_manual_boleto(), s_erro) Then
                     AdicionaListaParcelasEmBoletos v_parcela_manual_boleto()
+                    pnParcelasEmBoletos.Visible = True
+                    pn_pedido_nota.Visible = True
+                    pn_aviso_pedido_nota.Visible = True
                 Else
                     aviso "Erro: " & s_erro
                     End If
                                     
-                If True Then
-                    pn_pedido_nota.Visible = True
-                    pn_aviso_pedido_nota.Visible = True
-                    End If
-                    
                 End If
             End If
         End If
@@ -12447,6 +12474,8 @@ Private Sub Form_Load()
     modulo_inicializacao_ok = False
     
     ScaleMode = vbPixels
+    
+    CriaListaParcelasEmBoletos
     
 End Sub
 
