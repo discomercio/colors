@@ -229,6 +229,9 @@
 			rs("st_etg_imediata") = sx("st_etg_imediata")
 			rs("etg_imediata_data") = sx("etg_imediata_data")
 			rs("etg_imediata_usuario") = sx("etg_imediata_usuario")
+			rs("PrevisaoEntregaData") = sx("PrevisaoEntregaData")
+			rs("PrevisaoEntregaUsuarioUltAtualiz") = sx("PrevisaoEntregaUsuarioUltAtualiz")
+			rs("PrevisaoEntregaDtHrUltAtualiz") = sx("PrevisaoEntregaDtHrUltAtualiz")
 			
 			rs("PagtoAntecipadoQuitadoStatus") = sx("PagtoAntecipadoQuitadoStatus")
 			rs("PagtoAntecipadoQuitadoDataHora") = sx("PagtoAntecipadoQuitadoDataHora")
