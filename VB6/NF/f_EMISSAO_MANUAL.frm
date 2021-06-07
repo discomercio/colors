@@ -5828,6 +5828,31 @@ Private Sub AdicionaListaParcelasEmBoletos(lista_parc() As TIPO_NF_LINHA_DADOS_P
         Next i
 End Sub
 
+Private Sub ObtemParcelaSelecionada(ByRef parcnum As Integer, ByRef parcdata As String, ByRef parcvalor As String)
+    
+    parcnum = lvParcBoletos.SelectedItem.SubItems(1)
+    parcdata = lvParcBoletos.SelectedItem.SubItems(3)
+    parcvalor = lvParcBoletos.SelectedItem.SubItems(4)
+
+End Sub
+
+Private Sub AtualizaParcelaSelecionada(ByRef parcnum As Integer, _
+                                    ByRef parcdata As String, _
+                                    ByRef parcvalor As String, _
+                                    ByRef lista_parc() As TIPO_NF_LINHA_DADOS_PARCELA_PAGTO)
+    Dim i As Integer
+    For i = LBound(lista_parc) To UBound(lista_parc)
+        If lista_parc(i).intNumDestaParcela = parcnum Then
+            lvParcBoletos.ListItems.Item(parcnum).SubItems(3) = parcdata
+            lvParcBoletos.ListItems.Item(parcnum).SubItems(4) = parcvalor
+            lista_parc(i).dtVencto = CDate(parcdata)
+            lista_parc(i).vlValor = converte_para_currency(parcvalor)
+            Exit For
+            End If
+        Next
+
+End Sub
+
 
 Function lista_de_produtos_OK(ByVal pedido_digitado As String, ByRef mensagem As String) As Boolean
 ' a rotina fará a comparação dos itens do pedido com os itens em tela
@@ -10522,8 +10547,72 @@ End Sub
 
 Private Sub b_imprime_Click()
 
+    If blnExisteParcelamentoBoleto Then
+        aviso "Emissão de notas com parcelamento em manutenção, favor utilizar o painel automático"
+        formulario_limpa
+        blnExisteParcelamentoBoleto = False
+        Exit Sub
+        End If
+    
     NFe_emite False
     
+End Sub
+
+Private Sub b_parc_edicao_cancela_Click()
+    
+    c_numparc.Text = ""
+    c_dataparc.Text = ""
+    c_valorparc.Text = ""
+    
+    b_parc_edicao_ok.Enabled = False
+
+End Sub
+
+Private Sub b_parc_edicao_ok_Click()
+    
+    If Trim(c_dataparc) = "" Then
+        aviso "Data da parcela não pode estar em branco!!!"
+        c_dataparc.SetFocus
+        End If
+        
+    If CDate(c_dataparc) < Date Then
+        aviso "Data não pode ser anterior ao dia atual!!!"
+        c_dataparc.SetFocus
+        End If
+        
+    If CDate(c_dataparc) < Date + 5 Then
+        aviso "Data não pode ser inferior a um período de 05 dias!!!"
+        c_dataparc.SetFocus
+        End If
+        
+    If Trim(c_valorparc) = "" Then
+        aviso "Valor da parcela não pode estar em branco!!!"
+        c_valorparc.SetFocus
+        End If
+    
+    AtualizaParcelaSelecionada CInt(c_numparc), c_dataparc, c_valorparc, v_parcela_manual_boleto()
+        
+    'se a primeira parcela foi alterada, habilita o botão para recálculo das demais parcelas
+    If CInt(c_numparc) = 1 Then b_recalculaparc.Enabled = True
+
+End Sub
+
+Private Sub b_recalculaparc_Click()
+    Dim i As Integer
+    Dim dtUltimoPagtoCalculado As Date
+    Dim posicao_tela As Integer
+    
+    If Not confirma("Confirma o reagendamento das parcelas seguintes?") Then Exit Sub
+    
+    dtUltimoPagtoCalculado = v_parcela_manual_boleto(LBound(v_parcela_manual_boleto)).dtVencto
+    
+    For i = LBound(v_parcela_manual_boleto) + 1 To UBound(v_parcela_manual_boleto)
+        dtUltimoPagtoCalculado = DateAdd("m", 1, dtUltimoPagtoCalculado)
+        v_parcela_manual_boleto(i).dtVencto = dtUltimoPagtoCalculado
+        posicao_tela = v_parcela_manual_boleto(i).intNumDestaParcela
+        lvParcBoletos.ListItems.Item(posicao_tela).SubItems(3) = dtUltimoPagtoCalculado
+        Next
+        
 End Sub
 
 Private Sub c_chave_nfe_ref_GotFocus()
@@ -12582,6 +12671,20 @@ Private Sub Form_Unload(Cancel As Integer)
 End Sub
 
 
+
+Private Sub lvParcBoletos_ItemClick(ByVal Item As MSComctlLib.ListItem)
+    Dim parcnum As Integer
+    Dim parcdata As String
+    Dim parcvalor As String
+    
+    ObtemParcelaSelecionada parcnum, parcdata, parcvalor
+    c_numparc.Text = Str(parcnum)
+    c_dataparc.Text = parcdata
+    c_valorparc.Text = parcvalor
+    b_parc_edicao_ok.Enabled = True
+    b_recalculaparc.Enabled = False
+    
+End Sub
 
 Private Sub mnu_download_pdf_danfe_Click()
         executa_download_pdf_danfe_parametro_emitente Me
