@@ -6982,10 +6982,10 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 strPagtoAntecipadoStatus = Trim$("" & CStr(t_PEDIDO("PagtoAntecipadoStatus")))
                 strPagtoAntecipadoQuitadoStatus = Trim$("" & CStr(t_PEDIDO("PagtoAntecipadoQuitadoStatus")))
                 
-                If (strPagtoAntecipadoQuitadoStatus = "1") And (strPagtoAntecipadoQuitadoStatus = "1") Then
-                    If s_erro <> "" Then s_erro = s_erro & vbCrLf
-                    s_erro = s_erro & "Pedido " & Trim$(v_pedido(i)) & " está com pagamento antecipado quitado, emitir nota de venda no painel manual!!"
-                    End If
+                'If (strPagtoAntecipadoQuitadoStatus = "1") And (strPagtoAntecipadoQuitadoStatus = "1") Then
+                '    If s_erro <> "" Then s_erro = s_erro & vbCrLf
+                '    s_erro = s_erro & "Pedido " & Trim$(v_pedido(i)) & " está com pagamento antecipado quitado, emitir nota de venda no painel manual!!"
+                '    End If
                 
                 If CLng(t_PEDIDO("StBemUsoConsumo")) = 1 Then
                     blnTemPedidoComStBemUsoConsumo = True
@@ -8194,7 +8194,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         
 '   VERIFICAR SE É NOTA DE COMPROMISSO
     blnNotadeCompromisso = False
-    If ((strCfopCodigo = "5922") And (strCfopCodigo = "6922")) Then
+    If ((strCfopCodigo = "5922") Or (strCfopCodigo = "6922")) Then
         blnNotadeCompromisso = True
         End If
     
@@ -8809,6 +8809,13 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                                             & vbTab & NFeFormataCampo("vOrig", NFeFormataMoeda2Dec(vl_aux)) _
                                             & vbTab & NFeFormataCampo("vDesc", "0.00") _
                                             & vbTab & NFeFormataCampo("vLiq", NFeFormataMoeda2Dec(vl_aux))
+        
+        'se as faturas já foram gravadas na nota de compromisso, zerar as tags de parcelamento
+        If ExisteDadosParcelasPagto(rNFeImg.pedido, s_erro) Then
+            strNFeTagFat = ""
+            strNFeTagDup = ""
+            End If
+        
         End If
     
     
@@ -9783,6 +9790,11 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & strInfoAdicParc
         End If
 
+'   INFORMAR QUANDO SE TRATA DE PEDIDO QUITADO (PAGAMENTO ANTECIPADO)
+    If (strPagtoAntecipadoStatus = "1") And (strPagtoAntecipadoQuitadoStatus = "1") Then
+        If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
+        strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "Pedido com pagamento antecipado (Quitado)"
+        End If
 
     rNFeImg.infAdic__infCpl = strNFeInfAdicQuadroInfAdic & "|" & strNFeInfAdicQuadroProdutos
     strNFeTagInfAdicionais = "infAdic;" & vbCrLf & _
@@ -10392,9 +10404,16 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 s = "SELECT * FROM t_PEDIDO WHERE (" & s & ")"
                 t_PEDIDO.Open s, dbc, , , adCmdText
                 If Not t_PEDIDO.EOF Then
-                    If (Trim$("" & t_PEDIDO("obs_2")) = "") Or IsLetra(Trim$("" & t_PEDIDO("obs_2"))) Then
-                        t_PEDIDO("obs_2") = strNumeroNf
-                        t_PEDIDO.Update
+                    If blnNotadeCompromisso Then
+                        If (Trim$("" & t_PEDIDO("obs_4")) = "") Or IsLetra(Trim$("" & t_PEDIDO("obs_4"))) Then
+                            t_PEDIDO("obs_4") = strNumeroNf
+                            t_PEDIDO.Update
+                            End If
+                    Else
+                        If (Trim$("" & t_PEDIDO("obs_2")) = "") Or IsLetra(Trim$("" & t_PEDIDO("obs_2"))) Then
+                            t_PEDIDO("obs_2") = strNumeroNf
+                            t_PEDIDO.Update
+                            End If
                         End If
                     End If
                 End If
@@ -10417,10 +10436,12 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     '   Tipo de NFe: 0-Entrada  1-Saída
         If rNFeImg.ide__tpNF = "1" Then
         '   GRAVA OS DADOS DE BOLETOS NO BD!!
-            If Not gravaDadosParcelaPagto(CLng(strNumeroNf), v_parcela_pagto(), s_erro) Then
-                If s_erro <> "" Then s_erro = Chr(13) & Chr(13) & s_erro
-                s_erro = "Falha ao gravar as informações dos boletos no banco de dados!!" & s_erro
-                aviso_erro s_erro
+            If Not ExisteDadosParcelasPagto(rNFeImg.pedido, s_erro) Then
+                If Not gravaDadosParcelaPagto(CLng(strNumeroNf), v_parcela_pagto(), s_erro) Then
+                    If s_erro <> "" Then s_erro = Chr(13) & Chr(13) & s_erro
+                    s_erro = "Falha ao gravar as informações dos boletos no banco de dados!!" & s_erro
+                    aviso_erro s_erro
+                    End If
                 End If
             End If
             
@@ -11774,8 +11795,21 @@ Dim s_erro As String
             v_pedido_manual_boleto(UBound(v_pedido_manual_boleto)) = pedido
             blnExisteParcelamentoBoleto = False
             pnParcelasEmBoletos.Visible = False
-            If geraDadosParcelasPagto(v_pedido_manual_boleto(), v_parcela_manual_boleto(), s_erro) Then
+            If ExisteDadosParcelasPagto(pedido, s_erro) And _
+                consultaDadosParcelasPagto(v_pedido_manual_boleto(), v_parcela_manual_boleto(), s_erro) Then
                 AdicionaListaParcelasEmBoletos v_parcela_manual_boleto()
+                If blnExisteParcelamentoBoleto Then
+                    pnParcelasEmBoletos.Visible = True
+                    pnParcelasEmBoletos.Enabled = False
+                    c_dataparc.Enabled = False
+                    End If
+            ElseIf geraDadosParcelasPagto(v_pedido_manual_boleto(), v_parcela_manual_boleto(), s_erro) Then
+                AdicionaListaParcelasEmBoletos v_parcela_manual_boleto()
+                If blnExisteParcelamentoBoleto Then
+                    pnParcelasEmBoletos.Visible = True
+                    pnParcelasEmBoletos.Enabled = True
+                    c_dataparc.Enabled = True
+                    End If
                 End If
             End If
         End If

@@ -399,7 +399,6 @@ Begin VB.Form f_EMISSAO_MANUAL
       End
    End
    Begin VB.Frame pn_pedido_nota 
-      Enabled         =   0   'False
       Height          =   1875
       Left            =   120
       TabIndex        =   287
@@ -5608,6 +5607,8 @@ End Function
 Function obtem_info_cliente_pedido(ByVal pedido As String, _
                             ByRef strNome As String, _
                             ByRef strCNPJCPF As String, _
+                            ByRef strPgAntecStatus As String, _
+                            ByRef strPgAntecQuitado As String, _
                             ByRef strMsgErro As String) As Boolean
 ' CONSTANTES
 Const NomeDestaRotina = "obtem_info_cliente_pedido()"
@@ -5659,10 +5660,14 @@ Dim t_CLIENTE As ADODB.Recordset
     s_id_cliente = ""
     s_erro = ""
     s = "SELECT" & _
-            " pedido, st_entrega, id_cliente " & _
+            " t_PEDIDO.pedido, t_PEDIDO.st_entrega, t_PEDIDO.id_cliente, " & _
+            " t_PEDIDO.PagtoAntecipadoQuitadoStatus," & _
+            " t_PEDIDO__BASE.PagtoAntecipadoStatus" & _
         " FROM t_PEDIDO" & _
+        " INNER JOIN t_PEDIDO AS t_PEDIDO__BASE" & _
+        " ON (SUBSTRING(t_PEDIDO.pedido,1," & CStr(TAM_MIN_ID_PEDIDO) & ")=t_PEDIDO__BASE.pedido)" & _
         " WHERE" & _
-            " (pedido = '" & Trim$(pedido) & "')"
+            " (t_PEDIDO.pedido = '" & Trim$(pedido) & "')"
     If t_PEDIDO.State <> adStateClosed Then t_PEDIDO.Close
     t_PEDIDO.Open s, dbc, , , adCmdText
     If t_PEDIDO.EOF Then
@@ -5676,6 +5681,9 @@ Dim t_CLIENTE As ADODB.Recordset
             End If
             
         s_id_cliente = Trim$("" & t_PEDIDO("id_cliente"))
+        
+        strPgAntecQuitado = Trim$("" & CStr(t_PEDIDO("PagtoAntecipadoQuitadoStatus")))
+        strPgAntecStatus = Trim$("" & CStr(t_PEDIDO("PagtoAntecipadoStatus")))
         
         End If
     
@@ -6099,6 +6107,9 @@ Dim strEnderecoCidade As String
 Dim strEnderecoUf As String
 Dim strPresComprador As String
 
+Dim strPagtoAntecipadoStatus As String
+Dim strPagtoAntecipadoQuitadoStatus As String
+
 ' FLAGS
 Dim blnIsDestinatarioPJ As Boolean
 Dim blnHaProdutoCstIcms60 As Boolean
@@ -6107,6 +6118,7 @@ Dim edicao_manual_liberada_foi_usada As Boolean
 Dim blnExibirTotalTributos As Boolean
 Dim blnHaProdutoSemDadosIbpt As Boolean
 Dim blnIgnorarAtualizacaoNFnoPedido
+Dim blnNotadeCompromisso As Boolean
 
 ' CONTADORES
 Dim i As Integer
@@ -6351,7 +6363,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             End If
         
         '   verificar se os dados do cliente batem
-        If Not obtem_info_cliente_pedido(s_pedido_nota, strCampo, strCnpjCpfAux, s_aux) Then
+        If Not obtem_info_cliente_pedido(s_pedido_nota, strCampo, strCnpjCpfAux, strPagtoAntecipadoStatus, strPagtoAntecipadoQuitadoStatus, s_aux) Then
             s_aux = "Não foi possível obter os dados do cliente do pedido " & s_pedido_nota & ": " & vbCrLf & _
                     s_aux
             aviso s_aux
@@ -6378,6 +6390,19 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     End If
                 End If
                 
+                
+        '   CASO O PEDIDO PAI SEJA PARA PAGAMENTO ANTECIPADO, VERIFICA SE O PEDIDO FILHO ESTÁ QUITADO
+        '   (não permitir emissão se não for nota de compromisso)
+            If (strPagtoAntecipadoStatus = "1") And (strPagtoAntecipadoQuitadoStatus <> "1") Then
+                If Not blnNotadeCompromisso Then
+                    s = "Pedido " & s_pedido_nota & " se refere a venda futura não quitada!"
+                    aviso s
+                    GoSub NFE_EMITE_FECHA_TABELAS
+                    aguarde INFO_NORMAL, m_id
+                    Exit Sub
+                    End If
+                End If
+        
                 
         '   verificar se a lista de produtos bate
             If Not lista_de_produtos_OK(s_pedido_nota, s_aux) Then
@@ -6573,9 +6598,15 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                                 Chr(13) & _
                                 "Atualizar o pedido com o novo número?"
                         End If
-                Else
+                ElseIf opRemessa.Value = True Then
                     If Trim$("" & t_PEDIDO("obs_3")) <> "" Then
                         s_aux = "O pedido " & s_pedido_nota & " já possui o campo 'NF Simples Remessa' preenchido com: " & Trim$("" & t_PEDIDO("obs_3")) & _
+                                Chr(13) & _
+                                "Atualizar o pedido com o novo número?"
+                        End If
+                ElseIf opVendaFutura.Value = True Then
+                    If Trim$("" & t_PEDIDO("obs_4")) <> "" Then
+                        s_aux = "O pedido " & s_pedido_nota & " já possui o campo 'NF Venda Futura' preenchido com: " & Trim$("" & t_PEDIDO("obs_4")) & _
                                 Chr(13) & _
                                 "Atualizar o pedido com o novo número?"
                         End If
@@ -7228,6 +7259,42 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             Exit Sub
             End If
         End If
+        
+'   VERIFICAR SE É NOTA DE COMPROMISSO
+    blnNotadeCompromisso = False
+    If ((strCfopCodigo = "5922") Or (strCfopCodigo = "6922")) Then
+        blnNotadeCompromisso = True
+        End If
+    
+'   CASO SEJA NOTA DE COMPROMISSO, VERIFICAR SE O CST É 041
+    If blnNotadeCompromisso Then
+        s_confirma = ""
+        For i = LBound(v_nf) To UBound(v_nf)
+            If Trim$(v_nf(i).produto) <> "" Then
+                strNFeCst = Trim$(right$(v_nf(i).cst, 2))
+                If strNFeCst <> "41" Then
+                    s = "O o produto " & v_nf(i).produto & " possui CST diferente de 41"
+                    End If
+                If s <> "" Then
+                    If s_confirma <> "" Then s_confirma = s_confirma & vbCrLf
+                    s_confirma = s_confirma & s
+                    End If
+                End If
+            Next
+        If s_confirma <> "" Then
+            s_confirma = "PROBLEMAS COM CST EM PEDIDO DE VENDA FUTURA:" & _
+                         vbCrLf & _
+                         s_confirma & _
+                         vbCrLf & vbCrLf & _
+                         "Continua mesmo assim?"
+            If Not confirma(s_confirma) Then
+                GoSub NFE_EMITE_FECHA_TABELAS
+                aguarde INFO_NORMAL, m_id
+                Exit Sub
+                End If
+            End If
+        End If
+        
         
 '   ZERAR PIS/COFINS?
     s_confirma = ""
@@ -9161,11 +9228,14 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             s = "SELECT * FROM t_PEDIDO WHERE ( pedido = '" & s_pedido_nota & "')"
             t_PEDIDO.Open s, dbc, , , adCmdText
             If Not t_PEDIDO.EOF Then
-                If opVenda.Value = True Then
-                    t_PEDIDO("obs_2") = strNumeroNf
+                If opVendaFutura.Value = True Then
+                    t_PEDIDO("obs_4") = strNumeroNf
+                    t_PEDIDO.Update
+                ElseIf opRemessa.Value = True Then
+                    t_PEDIDO("obs_3") = strNumeroNf
                     t_PEDIDO.Update
                 Else
-                    t_PEDIDO("obs_3") = strNumeroNf
+                    t_PEDIDO("obs_2") = strNumeroNf
                     t_PEDIDO.Update
                     End If
                 End If
@@ -11446,6 +11516,8 @@ Dim s_erro As String
         pn_aviso_pedido_nota.Visible = False
         End If
     
+    pnParcelasEmBoletos.Visible = False
+    
     If Len(c_pedido_nota) > 0 Then
         'verificar se existe informação de parcelas em boleto
         If (param_geracaoboletos.campo_texto = "Manual") Then
@@ -11454,11 +11526,27 @@ Dim s_erro As String
                 v_pedido_manual_boleto(UBound(v_pedido_manual_boleto)) = c_pedido_nota
                 blnExisteParcelamentoBoleto = False
                 'pnParcelasEmBoletos.Visible = False
-                If consultaDadosParcelasPagto(v_pedido_manual_boleto(), v_parcela_manual_boleto(), s_erro) Then
+            If ExisteDadosParcelasPagto(c_pedido_nota, s_erro) And _
+                consultaDadosParcelasPagto(v_pedido_manual_boleto(), v_parcela_manual_boleto(), s_erro) Then
                     AdicionaListaParcelasEmBoletos v_parcela_manual_boleto()
-                    pnParcelasEmBoletos.Visible = True
-                    pn_pedido_nota.Visible = True
-                    pn_aviso_pedido_nota.Visible = True
+                    If blnExisteParcelamentoBoleto Then
+                        pnParcelasEmBoletos.Visible = True
+                        pnParcelasEmBoletos.Enabled = False
+                        c_dataparc.Enabled = False
+                        pn_pedido_nota.Visible = True
+                        pn_aviso_pedido_nota.Visible = True
+                        opVenda.Value = True
+                        End If
+                ElseIf geraDadosParcelasPagto(v_pedido_manual_boleto(), v_parcela_manual_boleto(), s_erro) Then
+                    AdicionaListaParcelasEmBoletos v_parcela_manual_boleto()
+                    If blnExisteParcelamentoBoleto Then
+                        pnParcelasEmBoletos.Visible = True
+                        pnParcelasEmBoletos.Enabled = True
+                        c_dataparc.Enabled = True
+                        pn_pedido_nota.Visible = True
+                        pn_aviso_pedido_nota.Visible = True
+                        opVendaFutura.Value = True
+                        End If
                 Else
                     aviso "Erro: " & s_erro
                     End If
@@ -12286,15 +12374,18 @@ Private Sub cb_natureza_Click()
     digito = left(Trim(cb_natureza.Text), 1)
     If (digito = "1") Or (digito = "5") Then cb_loc_dest.ListIndex = 0
     If (digito = "2") Or (digito = "6") Then cb_loc_dest.ListIndex = 1
+
+    s_cfop = left(Trim(cb_natureza.Text), 5)
     
     If cfop_eh_de_remessa(retorna_so_digitos(left(cb_natureza.Text, 5))) Or _
         (InStr(UCase(cb_natureza), "REMESSA") > 0) Then
         opRemessa.Value = True
+    ElseIf ((s_cfop = "5.922") Or (s_cfop = "6.922")) Then
+        opVendaFutura.Value = True
     Else
         opVenda.Value = True
         End If
-
-    s_cfop = left(Trim(cb_natureza.Text), 5)
+    
     If s_cfop = ("5.915") Or s_cfop = ("6.152") Or s_cfop = ("5.949") Or _
        s_cfop = ("6.117") Or s_cfop = ("6.923") Or s_cfop = ("6.910") Then
        cb_zerar_COFINS.ListIndex = 4
