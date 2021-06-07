@@ -211,14 +211,6 @@ Begin VB.Form f_EMISSAO_MANUAL
       Top             =   7920
       Visible         =   0   'False
       Width           =   5655
-      Begin VB.CheckBox chk_InfoAdicParc 
-         Caption         =   "Incluir parcelas no campo de  Informações Adicionais"
-         Height          =   360
-         Left            =   120
-         TabIndex        =   357
-         Top             =   4200
-         Width           =   5175
-      End
       Begin VB.TextBox c_numparc 
          Alignment       =   2  'Center
          BackColor       =   &H8000000F&
@@ -244,7 +236,7 @@ Begin VB.Form f_EMISSAO_MANUAL
          Picture         =   "f_EMISSAO_MANUAL.frx":0446
          Style           =   1  'Graphical
          TabIndex        =   355
-         Top             =   3650
+         Top             =   4005
          Width           =   690
       End
       Begin VB.CommandButton b_parc_edicao_cancela 
@@ -253,7 +245,7 @@ Begin VB.Form f_EMISSAO_MANUAL
          Picture         =   "f_EMISSAO_MANUAL.frx":0698
          Style           =   1  'Graphical
          TabIndex        =   354
-         Top             =   3650
+         Top             =   4005
          Width           =   690
       End
       Begin VB.CommandButton b_recalculaparc 
@@ -262,7 +254,7 @@ Begin VB.Form f_EMISSAO_MANUAL
          Height          =   495
          Left            =   2760
          TabIndex        =   353
-         Top             =   3600
+         Top             =   3960
          Width           =   2535
       End
       Begin VB.TextBox c_valorparc 
@@ -304,7 +296,7 @@ Begin VB.Form f_EMISSAO_MANUAL
       Begin MSComctlLib.ListView lvParcBoletos 
          Height          =   2415
          Left            =   120
-         TabIndex        =   358
+         TabIndex        =   357
          Top             =   360
          Width           =   5385
          _ExtentX        =   9499
@@ -335,7 +327,7 @@ Begin VB.Form f_EMISSAO_MANUAL
          Caption         =   "Valor"
          Height          =   195
          Left            =   3720
-         TabIndex        =   361
+         TabIndex        =   360
          Top             =   2880
          Width           =   360
       End
@@ -344,7 +336,7 @@ Begin VB.Form f_EMISSAO_MANUAL
          Caption         =   "Data"
          Height          =   195
          Left            =   1560
-         TabIndex        =   360
+         TabIndex        =   359
          Top             =   2880
          Width           =   345
       End
@@ -353,7 +345,7 @@ Begin VB.Form f_EMISSAO_MANUAL
          Caption         =   "Parcela"
          Height          =   195
          Left            =   360
-         TabIndex        =   359
+         TabIndex        =   358
          Top             =   2880
          Width           =   540
       End
@@ -6131,7 +6123,7 @@ Dim strEnderecoBairro As String
 Dim strEnderecoCidade As String
 Dim strEnderecoUf As String
 Dim strPresComprador As String
-
+Dim strInfoAdicParc As String
 Dim strPagtoAntecipadoStatus As String
 Dim strPagtoAntecipadoQuitadoStatus As String
 
@@ -6144,6 +6136,7 @@ Dim blnExibirTotalTributos As Boolean
 Dim blnHaProdutoSemDadosIbpt As Boolean
 Dim blnIgnorarAtualizacaoNFnoPedido
 Dim blnNotadeCompromisso As Boolean
+Dim blnImprimeDadosFatura As Boolean
 
 ' CONTADORES
 Dim i As Integer
@@ -6207,6 +6200,7 @@ Dim vl_total_ICMS As Currency
 Dim vl_total_ICMSDeson As Currency
 Dim vl_total_ICMS_ST As Currency
 Dim vl_total_IPI As Currency
+Dim vl_aux As Currency
 Dim vl_total_outras_despesas_acessorias As Currency
 Dim vl_BC_PIS As Currency
 Dim vl_PIS As Currency
@@ -6229,7 +6223,6 @@ Dim vl_total_vFCP As Currency
 Dim vl_total_vFCPST As Currency
 Dim vl_total_vFCPSTRet As Currency
 Dim vl_total_vIPIDevol As Currency
-
 
 
 ' PERCENTUAL
@@ -6258,6 +6251,8 @@ Dim aliquota_icms_interestadual As Single
 ' VETORES
 Dim v_nf() As TIPO_LINHA_NFe_EMISSAO_MANUAL
 Dim vListaNFeRef() As String
+Dim v_parcela_pagto() As TIPO_NF_LINHA_DADOS_PARCELA_PAGTO
+Dim v_pedido_nota() As String
 
 ' DADOS DE IMAGEM DA NFE
 Dim rNFeImg As TIPO_NFe_IMG
@@ -6467,7 +6462,10 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagInfAdicionais = ""
     strNFeInfAdicQuadroProdutos = ""
     strNFeInfAdicQuadroInfAdic = ""
+    strNFeTagFat = ""
     strNFeTagDup = ""
+
+    blnImprimeDadosFatura = False
     
 '   OBTÉM TIPO DO DOCUMENTO FISCAL
     rNFeImg.ide__tpNF = left$(Trim$(cb_tipo_NF), 1)
@@ -7285,6 +7283,46 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             End If
         End If
         
+'   SE HÁ PEDIDO ESPECIFICANDO PAGAMENTO VIA BOLETO BANCÁRIO, CALCULA QUANTIDADE DE PARCELAS, DATAS E VALORES
+'   DOS BOLETOS. ESSES DADOS SERÃO IMPRESSOS NA NF E TAMBÉM SALVOS NO BD, POIS SERVIRÃO DE BASE PARA A GERAÇÃO
+'   DOS BOLETOS NO ARQUIVO DE REMESSA.
+    If (param_geracaoboletos.campo_texto = "Manual") And blnExisteParcelamentoBoleto Then
+        ReDim v_parcela_pagto(UBound(v_parcela_manual_boleto))
+        v_parcela_pagto = v_parcela_manual_boleto
+    Else
+        ReDim v_parcela_pagto(0)
+        ReDim v_pedido_nota(0)
+        v_pedido_nota(0) = s_pedido_nota
+        If Not geraDadosParcelasPagto(v_pedido_nota(), v_parcela_pagto(), s_erro) Then
+            GoSub NFE_EMITE_FECHA_TABELAS
+            aguarde INFO_NORMAL, m_id
+            If s_erro <> "" Then s_erro = Chr(13) & Chr(13) & s_erro
+            s_erro = "Falha ao tentar processar os dados de pagamento!!" & s_erro
+            aviso_erro s_erro
+            Exit Sub
+            End If
+        End If
+        
+'   Tipo de NFe: 0-Entrada  1-Saída
+    If rNFeImg.ide__tpNF = "1" Then
+        s = ""
+        For i = LBound(v_parcela_pagto) To UBound(v_parcela_pagto)
+            If v_parcela_pagto(i).intNumDestaParcela <> 0 Then
+                blnImprimeDadosFatura = True
+                If s <> "" Then s = s & Chr(13)
+                s = s & "Parcela:  " & v_parcela_pagto(i).intNumDestaParcela & "/" & v_parcela_pagto(i).intNumTotalParcelas & " para " & Format$(v_parcela_pagto(i).dtVencto, FORMATO_DATA) & " de " & SIMBOLO_MONETARIO & " " & Format$(v_parcela_pagto(i).vlValor, FORMATO_MOEDA) & " (" & descricao_opcao_forma_pagamento(v_parcela_pagto(i).id_forma_pagto) & ")"
+                End If
+            Next
+            
+        If s <> "" Then
+            s = "Serão emitidas na NFe as seguintes informações de pagamento:" & Chr(13) & Chr(13) & s
+            If DESENVOLVIMENTO Then
+                aviso s
+                End If
+            End If
+        End If
+        
+        
 '   VERIFICAR SE É NOTA DE COMPROMISSO
     blnNotadeCompromisso = False
     If ((strCfopCodigo = "5922") Or (strCfopCodigo = "6922")) Then
@@ -7724,6 +7762,55 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         'Terceira situação: o cliente é isento
         'Não enviar a inscrição estadual
         End If
+    
+'>  DADOS DA FATURA
+    If blnImprimeDadosFatura Then
+        vl_aux = 0
+        strInfoAdicParc = ""
+        For i = LBound(v_parcela_pagto) To UBound(v_parcela_pagto)
+            With v_parcela_pagto(i)
+                If .intNumDestaParcela <> 0 Then
+                    If Trim$(vNFeImgTagDup(UBound(vNFeImgTagDup)).dVenc) <> "" Then
+                        ReDim Preserve vNFeImgTagDup(UBound(vNFeImgTagDup) + 1)
+                        End If
+                        
+                '   FORMA DE PAGTO
+                    If blnInfoAdicParc Then
+                        vNFeImgTagDup(UBound(vNFeImgTagDup)).nDup = NFeFormataSerieNF(i + 1)
+                        If strInfoAdicParc <> "" Then strInfoAdicParc = strInfoAdicParc & " / "
+                        strInfoAdicParc = strInfoAdicParc & "Parcela " & NFeFormataSerieNF(i + 1) & " - " & _
+                                            abreviacao_opcao_forma_pagamento(.id_forma_pagto) & " - " & _
+                                            "Vencto: " & .dtVencto & " - " & _
+                                            "Valor: " & NFeFormataMoeda2Dec(.vlValor)
+                    Else
+                        vNFeImgTagDup(UBound(vNFeImgTagDup)).nDup = NFeFormataSerieNF(i + 1)
+                        End If
+                    s = vbTab & NFeFormataCampo("nDup", vNFeImgTagDup(UBound(vNFeImgTagDup)).nDup)
+                '   VENCTO
+                    vNFeImgTagDup(UBound(vNFeImgTagDup)).dVenc = NFeFormataData(.dtVencto)
+                    s = s & vbTab & NFeFormataCampo("dVenc", vNFeImgTagDup(UBound(vNFeImgTagDup)).dVenc)
+                '   VALOR
+                    vNFeImgTagDup(UBound(vNFeImgTagDup)).vDup = NFeFormataMoeda2Dec(.vlValor)
+                    s = s & vbTab & NFeFormataCampo("vDup", vNFeImgTagDup(UBound(vNFeImgTagDup)).vDup)
+                '   ADICIONA PARCELA À TAG
+                    strNFeTagDup = strNFeTagDup & "dup;" & vbCrLf & s
+                    vl_aux = vl_aux + .vlValor
+                    End If
+                End With
+            Next
+        strNFeTagFat = strNFeTagFat & "fat;" & vbCrLf & vbTab & NFeFormataCampo("nFat", "001") _
+                                    & vbTab & NFeFormataCampo("vOrig", NFeFormataMoeda2Dec(vl_aux)) _
+                                    & vbTab & NFeFormataCampo("vDesc", "0.00") _
+                                    & vbTab & NFeFormataCampo("vLiq", NFeFormataMoeda2Dec(vl_aux))
+        
+        'se as faturas já foram gravadas na nota de compromisso, zerar as tags de parcelamento
+        If ExisteDadosParcelasPagto(rNFeImg.pedido, s_erro) Then
+            strNFeTagFat = ""
+            strNFeTagDup = ""
+            End If
+                
+        End If
+    
     
 '>  LISTA DE PRODUTOS
     vl_total_ICMS = 0
@@ -8702,6 +8789,20 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             End If
         End If 'If (strNFeCodFinalidade <> NFE_FINALIDADE_NFE_COMPLEMENTAR)
         
+    '   INFORMAÇÕES SOBRE MEIO DE PAGAMENTO DAS PARCELAS
+        If blnImprimeDadosFatura And _
+            strInfoAdicParc <> "" Then
+            If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
+            strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & strInfoAdicParc
+            End If
+            
+    '   INFORMAR QUANDO SE TRATA DE PEDIDO QUITADO (PAGAMENTO ANTECIPADO)
+        If (strPagtoAntecipadoStatus = "1") And (strPagtoAntecipadoQuitadoStatus = "1") Then
+            If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
+            strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "Pedido com pagamento antecipado (Quitado)"
+            End If
+    
+    
     rNFeImg.infAdic__infCpl = strNFeInfAdicQuadroInfAdic & "|" & strNFeInfAdicQuadroProdutos
     strNFeTagInfAdicionais = "infAdic;" & vbCrLf & _
                              vbTab & NFeFormataCampo("infCpl", rNFeImg.infAdic__infCpl)
@@ -9047,6 +9148,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                    strNFeTagTransp & _
                    strNFeTagTransporta & _
                    strNFeTagVol & _
+                   strNFeTagFat & _
                    strNFeTagDup & _
                    strNFeTagPag & _
                    strNFeTagInfAdicionais
