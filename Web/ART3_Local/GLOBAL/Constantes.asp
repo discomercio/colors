@@ -517,6 +517,11 @@
 	Const ID_ADMINISTRADOR	= "A" 
 	Const ID_GERENCIAL		= "G" 
 
+  ' CÓDIGOS PARA NÍVEL DE EDIÇÃO
+	Const COD_NIVEL_EDICAO_LIBERADA_TOTAL = 100
+	Const COD_NIVEL_EDICAO_LIBERADA_PARCIAL = 50
+	Const COD_NIVEL_EDICAO_BLOQUEADA = 0
+
   ' CÓDIGOS PARA TIPOS DE PAGAMENTO
 	Const COD_PAGTO_QUITACAO = "Q"
 	Const COD_PAGTO_PARCIAL = "P"
@@ -893,6 +898,8 @@
 	Const ID_PARAMETRO_MagentoPedidoComIndicadorListaLojaErp = "MagentoPedidoComIndicadorListaLojaErp"
 	Const ID_PARAMETRO_EmailDestinatarioAlertaEdicaoCadastroClienteComPedidoCreditoOkEntregaPendente = "EmailDestinatarioAlertaEdicaoCadastroClienteComPedidoCreditoOkEntregaPendente"
 	Const ID_PARAMETRO_EmailDestinatarioAlertaEdicaoFormaPagtoEmPedidoCreditoOk = "EmailDestinatarioAlertaEdicaoFormaPagtoEmPedidoCreditoOk"
+	Const ID_PARAMETRO_EmailDestinatarioAlertaEdicaoFormaPagtoPassouPossuirMeioPagtoMonitorado = "EmailDestinatarioAlertaEdicaoFormaPagtoPassouPossuirMeioPagtoMonitorado"
+	Const ID_PARAMETRO_EmailDestinatarioAlertaEdicaoFormaPagtoComBoletoAV = "EmailDestinatarioAlertaEdicaoFormaPagtoComBoletoAV"
 	Const ID_PARAMETRO_EmailDestinatarioAlertaAlteracaoIndicadorEmPedidoCreditoOk = "EmailDestinatarioAlertaAlteracaoIndicadorEmPedidoCreditoOk"
 	Const ID_PARAMETRO_CtrlRelatorio_RelControleImpostos_TimeoutLockEmMinutos = "CtrlRelatorio_RelControleImpostos_TimeoutLockEmMinutos"
     Const ID_PARAMETRO_CtrlRelatorio_RelControleImpostos_MaxQtdeResultadoPorConsulta = "CtrlRelatorio_RelControleImpostos_MaxQtdeResultadoPorConsulta"

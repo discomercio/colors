@@ -1639,14 +1639,15 @@ dim blnUsarMemorizacaoCompletaEnderecos
 	msg_erro = ""
 	id_pedido=Trim("" & id_pedido)
 	set r_pedido = New cl_PEDIDO
+
+	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	s="SELECT * FROM t_PEDIDO WHERE (pedido='" & id_pedido & "')"
 	set rs=cn.Execute(s)
 	if Err <> 0 then
 		msg_erro=Cstr(Err) & ": " & Err.Description
 		exit function
 		end if
-		
-	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 
 	if rs.EOF then
 		msg_erro="Pedido nº " & id_pedido & " não está cadastrado."
