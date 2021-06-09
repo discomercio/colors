@@ -274,45 +274,26 @@
 			end if
 		end if
 
-	dim blnFormaPagtoEdicaoLiberada
-	blnFormaPagtoEdicaoLiberada = False
-	if operacao_permitida(OP_CEN_EDITA_PEDIDO_FORMA_PAGTO, s_lista_operacoes_permitidas) then
-		blnFormaPagtoEdicaoLiberada = True
-		'Se o boleto AV já foi emitido, o vendedor não pode mais editar a forma de pagamento
-		if blnFormaPagtoEdicaoLiberada _
-			AND _
-			(Cstr(r_pedido.loja) <> Cstr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE)) _
-			AND _
-			( (st_pagto = ST_PAGTO_PAGO) Or (st_pagto = ST_PAGTO_PARCIAL) ) _
-			AND _
-			( _
-				( (CStr(r_pedido.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_A_VISTA)) And (CStr(r_pedido.av_forma_pagto) = CStr(ID_FORMA_PAGTO_BOLETO_AV)) ) _
-				OR _
-				( (CStr(r_pedido.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA)) And (CStr(r_pedido.pce_forma_pagto_entrada) = CStr(ID_FORMA_PAGTO_BOLETO_AV)) ) _
-			) then
-			if Not ( _
-				operacao_permitida(OP_CEN_EDITA_ANALISE_CREDITO, s_lista_operacoes_permitidas) _
-				OR _
-				operacao_permitida(OP_CEN_PAGTO_PARCIAL, s_lista_operacoes_permitidas) _
-				OR _
-				operacao_permitida(OP_CEN_PAGTO_QUITACAO, s_lista_operacoes_permitidas) _
-				) then
-				blnFormaPagtoEdicaoLiberada = False
-				end if
-			end if
+	dim nivelEdicaoFormaPagto
+	nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_BLOQUEADA
+	if operacao_permitida(OP_CEN_EDITA_PEDIDO_FORMA_PAGTO, s_lista_operacoes_permitidas) Or operacao_permitida(OP_CEN_EDITA_FORMA_PAGTO_SEM_APLICAR_RESTRICOES, s_lista_operacoes_permitidas) then
+		nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_TOTAL
 
+		' Analisa situações que liberam apenas parcialmente a edição da forma de pagamento, ou seja,
+		' pode-se alterar os valores da forma de pagamento atualmente selecionada, mas não se pode
+		' alterar a forma de pagamento e nem os meios de pagamento (ex: de 'À Vista' para 
+		' 'Parcelado com Entrada' ou de 'Depósito' para 'Boleto').
+		'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		'Se o status da análise de crédito está em uma situação que demanda uma confirmação manual do depto de análise de crédito, bloqueia
 		'a edição da forma de pagamento para não haver o risco de uma alteração ser feita sem o conhecimento do depto de análise de crédito.
 		'Qualquer alteração necessária na forma de pagamento deve ser solicitada ao depto de análise de crédito.
-		if blnFormaPagtoEdicaoLiberada _
+		if (nivelEdicaoFormaPagto > COD_NIVEL_EDICAO_LIBERADA_PARCIAL) _
 			AND _
 			(Cstr(r_pedido.loja) <> Cstr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE)) _
 			AND _
 			( _
-				(Trim("" & r_pedido.analise_credito) = Cstr(COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO)) _
-				OR (Trim("" & r_pedido.analise_credito) = Cstr(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO)) _
-				OR (Trim("" & r_pedido.analise_credito) = Cstr(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)) _
-				OR (Trim("" & r_pedido.analise_credito) = Cstr(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)) _
+				(Trim("" & r_pedido.analise_credito) = Cstr(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)) _
+				OR (Trim("" & r_pedido.analise_credito) = Cstr(COD_AN_CREDITO_OK)) _
 			) then
 			if Not ( _
 				operacao_permitida(OP_CEN_EDITA_ANALISE_CREDITO, s_lista_operacoes_permitidas) _
@@ -321,33 +302,25 @@
 				OR _
 				operacao_permitida(OP_CEN_PAGTO_QUITACAO, s_lista_operacoes_permitidas) _
 				) then
-				blnFormaPagtoEdicaoLiberada = False
+				nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_PARCIAL
 				end if
 			end if
 
-		'Se houver parcela em boleto e o status de pagamento for diferente de 'NÃO PAGO', bloquear a edição da forma de pagamento, pois somente o depto de análise de crédito poderá fazer a edição
-		if blnFormaPagtoEdicaoLiberada _
-			AND _
-			(Cstr(r_pedido.loja) <> Cstr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE)) _
-			AND _
-			( (st_pagto = ST_PAGTO_PAGO) Or (st_pagto = ST_PAGTO_PARCIAL) ) _
-			AND _
-			( _
-				parcelamentoPossuiMeioPagamento(r_pedido, ID_FORMA_PAGTO_BOLETO) _
-				OR _
-				parcelamentoPossuiMeioPagamento(r_pedido, ID_FORMA_PAGTO_BOLETO_AV) _
-			) then
-			if Not ( _
-				operacao_permitida(OP_CEN_EDITA_ANALISE_CREDITO, s_lista_operacoes_permitidas) _
-				OR _
-				operacao_permitida(OP_CEN_PAGTO_PARCIAL, s_lista_operacoes_permitidas) _
-				OR _
-				operacao_permitida(OP_CEN_PAGTO_QUITACAO, s_lista_operacoes_permitidas) _
-				) then
-				blnFormaPagtoEdicaoLiberada = False
+		' Analisa situações em que a edição da forma de pagamento deve ser bloqueada totalmente
+		'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		if Trim("" & r_pedido.st_entrega) = ST_ENTREGA_ENTREGUE then
+			if IsMesmoAnoEMes(r_pedido.entregue_data, Date) then
+				nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_PARCIAL
+			else
+				nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_BLOQUEADA
 				end if
 			end if
-		end if 'if operacao_permitida(OP_CEN_EDITA_PEDIDO_FORMA_PAGTO, s_lista_operacoes_permitidas)
+
+		if Trim("" & r_pedido.st_entrega) = ST_ENTREGA_CANCELADO then
+			nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_BLOQUEADA
+			end if
+		end if 'if operacao_permitida(OP_CEN_EDITA_PEDIDO_FORMA_PAGTO, s_lista_operacoes_permitidas) Or operacao_permitida(OP_CEN_EDITA_FORMA_PAGTO_SEM_APLICAR_RESTRICOES, s_lista_operacoes_permitidas)
+
 
 	dim blnEntregaImediataEdicaoLiberada, blnEntregaImediataNaoSemDataPrevisao
 	blnEntregaImediataEdicaoLiberada = False
@@ -471,6 +444,7 @@
 	dim strScriptJS
 	strScriptJS = "<script language='JavaScript' type='text/javascript'>" & chr(13) & _
 				  "var PERC_DESAGIO_RA_LIQUIDA_PEDIDO = " & js_formata_numero(r_pedido.perc_desagio_RA_liquida) & ";" & chr(13) & _
+				  "var nivelEdicaoFormaPagto = " & CStr(nivelEdicaoFormaPagto) & ";" & chr(13) & _
 				  "</script>" & chr(13)
 
 
@@ -750,6 +724,9 @@ end function
 var objAjaxCustoFinancFornecConsultaPreco;
 var blnConfirmaDifRAeValores=false;
 var fCepPopup;
+var COD_NIVEL_EDICAO_LIBERADA_TOTAL = <%=COD_NIVEL_EDICAO_LIBERADA_TOTAL%>;
+var COD_NIVEL_EDICAO_LIBERADA_PARCIAL = <%=COD_NIVEL_EDICAO_LIBERADA_PARCIAL%>;
+var COD_NIVEL_EDICAO_BLOQUEADA = <%=COD_NIVEL_EDICAO_BLOQUEADA%>;
 
 $(function() {
     var f;
@@ -809,12 +786,13 @@ function processaFormaPagtoDefault() {
 var f, i;
 	f=fPED;
 
+	if (nivelEdicaoFormaPagto == COD_NIVEL_EDICAO_BLOQUEADA) return;
+
 	// Versão antiga da forma de pagamento?
 	if (f.tipo_parcelamento.value=="0") return;
 	
 //  O pedido foi cadastrado já com a nova política de custo financeiro por fornecedor?
 	if (f.c_custoFinancFornecTipoParcelamento.value=="") return;
-	if (f.blnFormaPagtoEdicaoLiberada.value != "<%=Cstr(True)%>") return;
 	
 	for (i=0; i<fPED.rb_forma_pagto.length; i++) {
 		if (fPED.rb_forma_pagto[i].checked) {
@@ -838,9 +816,10 @@ var strFabricante,strProduto, strStatus, strPrecoLista, strMsgErro, strCodigoErr
 var percDesc,vlLista,vlVenda,strMsgErroAlert;
 	f=fPED;
 
+	if (nivelEdicaoFormaPagto == COD_NIVEL_EDICAO_BLOQUEADA) return;
+
 //  O pedido foi cadastrado já com a nova política de custo financeiro por fornecedor?
 	if (f.c_custoFinancFornecTipoParcelamento.value=="") return;
-	if (f.blnFormaPagtoEdicaoLiberada.value != "<%=Cstr(True)%>") return;
 
 	strMsgErroAlert="";
 	if (objAjaxCustoFinancFornecConsultaPreco.readyState==AJAX_REQUEST_IS_COMPLETE) {
@@ -931,9 +910,11 @@ function recalculaCustoFinanceiroPrecoLista() {
 var f, i, strListaProdutos, strUrl, strOpcaoFormaPagto;
 	f=fPED;
 
+	if (nivelEdicaoFormaPagto == COD_NIVEL_EDICAO_BLOQUEADA) return;
+
 //  O pedido foi cadastrado já com a nova política de custo financeiro por fornecedor?
 	if (f.c_custoFinancFornecTipoParcelamento.value=="") return;
-	if (f.blnFormaPagtoEdicaoLiberada.value != "<%=Cstr(True)%>") return;
+
 
 	objAjaxCustoFinancFornecConsultaPreco=GetXmlHttpObject();
 	if (objAjaxCustoFinancFornecConsultaPreco==null) {
@@ -1704,7 +1685,7 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 		}
 
 //  Consiste a nova versão da forma de pagamento
-	if ((f.versao_forma_pagamento.value == '2') && (f.blnFormaPagtoEdicaoLiberada.value == '<%=Cstr(True)%>')) {
+	if ((f.versao_forma_pagamento.value == '2') && (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL)) {
 		if (!consiste_forma_pagto(true)) return;
 		}
 
@@ -2666,7 +2647,7 @@ function setarValorRadio(array, valor)
 <input type="hidden" name="blnObs2EdicaoLiberada" id="blnObs2EdicaoLiberada" value='<%=Cstr(blnObs2EdicaoLiberada)%>'>
 <input type="hidden" name="blnObs3EdicaoLiberada" id="blnObs3EdicaoLiberada" value='<%=Cstr(blnObs3EdicaoLiberada)%>'>
 <input type="hidden" name="blnObs4EdicaoLiberada" id="blnObs4EdicaoLiberada" value="<%=Cstr(blnObs4EdicaoLiberada)%>" />
-<input type="hidden" name="blnFormaPagtoEdicaoLiberada" id="blnFormaPagtoEdicaoLiberada" value='<%=Cstr(blnFormaPagtoEdicaoLiberada)%>'>
+<input type="hidden" name="nivelEdicaoFormaPagto" id="nivelEdicaoFormaPagto" value='<%=Cstr(nivelEdicaoFormaPagto)%>'>
 <input type="hidden" name="blnPagtoAntecipadoEdicaoLiberada" id="blnPagtoAntecipadoEdicaoLiberada" value="<%=CStr(blnPagtoAntecipadoEdicaoLiberada)%>" />
 <input type="hidden" name="blnEndEntregaEdicaoLiberada" id="blnEndEntregaEdicaoLiberada" value='<%=Cstr(blnEndEntregaEdicaoLiberada)%>'>
 <input type="hidden" name="blnTransportadoraEdicaoLiberada" id="blnTransportadoraEdicaoLiberada" value='<%=Cstr(blnTransportadoraEdicaoLiberada)%>'>
@@ -3477,12 +3458,12 @@ function setarValorRadio(array, valor)
 			m_total_venda_deste_pedido = m_total_venda_deste_pedido + (.qtde * .preco_venda)
 			m_total_NF_deste_pedido = m_total_NF_deste_pedido + (.qtde * .preco_NF)
 			
-			if blnItemPedidoEdicaoLiberada then s_readonly = ""
-			
 			' Para assegurar a consistência entre o valor total de NF e o total da forma de pagamento,
-			' a edição fica permitida somente se o usuário puder editar a forma de pagamento!
-			s_readonly_RA = s_readonly_RT
-			if Not blnFormaPagtoEdicaoLiberada then s_readonly_RA = "readonly tabindex=-1"
+			' a edição fica permitida somente se o usuário puder editar os valores na forma de pagamento!
+			if nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL then
+				if blnItemPedidoEdicaoLiberada then s_readonly = ""
+				if bln_RT_e_RA_EdicaoLiberada then s_readonly_RA = ""
+				end if
 			end with
 			
 		s_falta=""
@@ -3622,7 +3603,7 @@ function setarValorRadio(array, valor)
 		<td class="MDB" nowrap width="10%" align="left"><p class="Rf">Parcelas</p>
 			<table cellspacing="0" cellpadding="0" width="100%"><tr>
 				<td align="left"><input name="c_qtde_parcelas" id="c_qtde_parcelas" class="PLLc" maxlength="2" style="width:60px;" onkeypress="if (digitou_enter(true)) fPED.c_forma_pagto.focus(); filtra_numerico();"
-						<% if Not blnFormaPagtoEdicaoLiberada then Response.Write " readonly tabindex=-1 " %>
+						<% if (nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_BLOQUEADA) then Response.Write " readonly tabindex=-1 " %>
 						value='<%if (r_pedido.qtde_parcelas<>0) Or (r_pedido.forma_pagto<>"") then Response.write Cstr(r_pedido.qtde_parcelas)%>'></td>
 			</tr></table>
 		</td>
@@ -3705,7 +3686,7 @@ function setarValorRadio(array, valor)
 		<td align="left" colspan="5"><p class="Rf">Forma de Pagamento</p>
 			<textarea name="c_forma_pagto" id="c_forma_pagto" class="PLLe" rows="<%=Cstr(MAX_LINHAS_FORMA_PAGTO)%>"
 				style="width:642px;margin-left:2pt;" onkeypress="limita_tamanho(this,MAX_TAM_FORMA_PAGTO);" onblur="this.value=trim(this.value);"
-				<% if Not blnFormaPagtoEdicaoLiberada then Response.Write " readonly tabindex=-1 " %>
+				<% if (nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_BLOQUEADA) then Response.Write " readonly tabindex=-1 " %>
 				><%=r_pedido.forma_pagto%></textarea>
 		</td>
 	</tr>
@@ -3717,7 +3698,7 @@ function setarValorRadio(array, valor)
 <input type="hidden" name="versao_forma_pagamento" id="versao_forma_pagamento" value='2'>
 <br>
 
-	<% if Not blnFormaPagtoEdicaoLiberada then %>
+	<% if (nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_BLOQUEADA) then %>
 		<!--  EDIÇÃO ESTÁ BLOQUEADA EM PEDIDO ENTREGUE   -->
 		<table class="Q" style="width:649px;" cellspacing="0">
 			<tr>
@@ -3988,7 +3969,7 @@ function setarValorRadio(array, valor)
 		</table>
 	
 	<% else %>
-		<!--  EDIÇÃO LIBERADA   -->
+		<!--  EDIÇÃO LIBERADA (TOTAL OU PARCIALMENTE)   -->
 		<table class="Q" style="width:649px;" cellspacing="0">
 			<tr>
 				<td class="MB" align="left"><p class="Rf">Observações</p>
@@ -4184,12 +4165,16 @@ function setarValorRadio(array, valor)
 						  <input type="radio" id="rb_forma_pagto" name="rb_forma_pagto" 
 								value="<%=COD_FORMA_PAGTO_A_VISTA%>"
 								<% if Cstr(r_pedido.tipo_parcelamento) = COD_FORMA_PAGTO_A_VISTA then Response.Write " checked"%>
+								<% if (Cstr(r_pedido.tipo_parcelamento) <> COD_FORMA_PAGTO_A_VISTA) And (nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_PARCIAL) then Response.Write " disabled"%>
 								onclick="recalcula_RA_Liquido();recalculaCustoFinanceiroPrecoLista();"
 								><span class="C" style="cursor:default" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();">À Vista</span>
 						</td>
 						<td align="left">&nbsp;</td>
 						<td align="left">
-						  <select id="op_av_forma_pagto" name="op_av_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();">
+							<%	'No nível COD_NIVEL_EDICAO_LIBERADA_PARCIAL pode-se apenas editar valores, mas não a forma de pagamento ou o meio de pagamento
+								if nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_TOTAL then strDisabled="" else strDisabled=" disabled"
+							%>
+						  <select id="op_av_forma_pagto" name="op_av_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();" <%=strDisabled%>>
 							<%	if operacao_permitida(OP_CEN_EDITA_FORMA_PAGTO_SEM_APLICAR_RESTRICOES, s_lista_operacoes_permitidas) then
 									if Cstr(r_pedido.tipo_parcelamento) = COD_FORMA_PAGTO_A_VISTA then 
 										Response.Write forma_pagto_av_monta_itens_select_incluindo_default(r_pedido.av_forma_pagto)
@@ -4220,12 +4205,16 @@ function setarValorRadio(array, valor)
 						  <input type="radio" id="rb_forma_pagto" name="rb_forma_pagto" 
 								value="<%=COD_FORMA_PAGTO_PARCELA_UNICA%>"
 								<% if Cstr(r_pedido.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELA_UNICA then Response.Write " checked"%>
+								<% if (Cstr(r_pedido.tipo_parcelamento) <> COD_FORMA_PAGTO_PARCELA_UNICA) And (nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_PARCIAL) then Response.Write " disabled"%>
 								onclick="pu_atualiza_valor();recalcula_RA_Liquido();recalculaCustoFinanceiroPrecoLista();"
 								><span class="C" style="cursor:default" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();">Parcela Única</span>
 						</td>
 						<td align="left">&nbsp;</td>
 						<td align="left">
-						  <select id="op_pu_forma_pagto" name="op_pu_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();">
+							<%	'No nível COD_NIVEL_EDICAO_LIBERADA_PARCIAL pode-se apenas editar valores, mas não a forma de pagamento ou o meio de pagamento
+								if nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_TOTAL then strDisabled="" else strDisabled=" disabled"
+							%>
+						  <select id="op_pu_forma_pagto" name="op_pu_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();" <%=strDisabled%>>
 							<%	if operacao_permitida(OP_CEN_EDITA_FORMA_PAGTO_SEM_APLICAR_RESTRICOES, s_lista_operacoes_permitidas) then
 									if Cstr(r_pedido.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELA_UNICA then
 										Response.Write forma_pagto_da_parcela_unica_monta_itens_select_incluindo_default(r_pedido.pu_forma_pagto)
@@ -4257,6 +4246,10 @@ function setarValorRadio(array, valor)
 							<% else %>
 								value=""
 							<% end if %>
+							<%	'No nível COD_NIVEL_EDICAO_LIBERADA_PARCIAL pode-se apenas editar valores, mas não a forma de pagamento ou o meio de pagamento
+								if nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_TOTAL then s_readonly="" else s_readonly=" readonly tabindex=-1"
+							%>
+							<%=s_readonly%>
 						  ><span class="C">dias</span>
 						</td>
 					  </tr>
@@ -4279,6 +4272,7 @@ function setarValorRadio(array, valor)
 						  <input type="radio" id="rb_forma_pagto" name="rb_forma_pagto" 
 								value="<%=COD_FORMA_PAGTO_PARCELADO_CARTAO%>"
 								<% if Cstr(r_pedido.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO then Response.Write " checked"%>
+								<% if (Cstr(r_pedido.tipo_parcelamento) <> COD_FORMA_PAGTO_PARCELADO_CARTAO) And (nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_PARCIAL) then Response.Write " disabled"%>
 								onclick="recalcula_RA_Liquido();recalculaCustoFinanceiroPrecoLista();"
 								><span class="C" style="cursor:default" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();">Parcelado no Cartão (internet)</span>
 						</td>
@@ -4290,6 +4284,10 @@ function setarValorRadio(array, valor)
 							<% else %>
 								value=""
 							<% end if %>
+							<%	'No nível COD_NIVEL_EDICAO_LIBERADA_PARCIAL pode-se apenas editar valores, mas não a forma de pagamento ou o meio de pagamento
+								if nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_TOTAL then s_readonly="" else s_readonly=" readonly tabindex=-1"
+							%>
+							<%=s_readonly%>
 						  >
 						</td>
 						<td align="left"><span class="C" style="margin-right:0pt;">&nbsp;X&nbsp;&nbsp;&nbsp;<%=SIMBOLO_MONETARIO%></span></td>
@@ -4322,6 +4320,7 @@ function setarValorRadio(array, valor)
 						  <input type="radio" id="rb_forma_pagto" name="rb_forma_pagto" 
 								value="<%=COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA%>"
 								<% if Cstr(r_pedido.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA then Response.Write " checked"%>
+								<% if (Cstr(r_pedido.tipo_parcelamento) <> COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA) And (nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_PARCIAL) then Response.Write " disabled"%>
 								onclick="recalcula_RA_Liquido();recalculaCustoFinanceiroPrecoLista();"
 								><span class="C" style="cursor:default" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();">Parcelado no Cartão (maquineta)</span>
 						</td>
@@ -4333,6 +4332,10 @@ function setarValorRadio(array, valor)
 							<% else %>
 								value=""
 							<% end if %>
+							<%	'No nível COD_NIVEL_EDICAO_LIBERADA_PARCIAL pode-se apenas editar valores, mas não a forma de pagamento ou o meio de pagamento
+								if nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_TOTAL then s_readonly="" else s_readonly=" readonly tabindex=-1"
+							%>
+							<%=s_readonly%>
 						  >
 						</td>
 						<td align="left"><span class="C" style="margin-right:0pt;">&nbsp;X&nbsp;&nbsp;&nbsp;<%=SIMBOLO_MONETARIO%></span></td>
@@ -4359,6 +4362,7 @@ function setarValorRadio(array, valor)
 						  <input type="radio" id="rb_forma_pagto" name="rb_forma_pagto" 
 								value="<%=COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA%>"
 								<% if Cstr(r_pedido.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then Response.Write " checked"%>
+								<% if (Cstr(r_pedido.tipo_parcelamento) <> COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA) And (nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_PARCIAL) then Response.Write " disabled"%>
 								onclick="pce_preenche_sugestao_intervalo();recalcula_RA_Liquido();recalculaCustoFinanceiroPrecoLista();"
 								><span class="C" style="cursor:default" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();">Parcelado com Entrada</span>
 						</td>
@@ -4367,7 +4371,10 @@ function setarValorRadio(array, valor)
 						<td style="width:60px;" align="left">&nbsp;</td>
 						<td align="right"><span class="C">Entrada&nbsp;</span></td>
 						<td align="left">
-						  <select id="op_pce_entrada_forma_pagto" name="op_pce_entrada_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();">
+							<%	'No nível COD_NIVEL_EDICAO_LIBERADA_PARCIAL pode-se apenas editar valores, mas não a forma de pagamento ou o meio de pagamento
+								if nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_TOTAL then strDisabled="" else strDisabled=" disabled"
+							%>
+						  <select id="op_pce_entrada_forma_pagto" name="op_pce_entrada_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();" <%=strDisabled%>>
 							<%	if operacao_permitida(OP_CEN_EDITA_FORMA_PAGTO_SEM_APLICAR_RESTRICOES, s_lista_operacoes_permitidas) then
 									if Cstr(r_pedido.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
 										Response.Write forma_pagto_da_entrada_monta_itens_select_incluindo_default(r_pedido.pce_forma_pagto_entrada)
@@ -4398,7 +4405,10 @@ function setarValorRadio(array, valor)
 						<td style="width:60px;" align="left">&nbsp;</td>
 						<td align="right"><span class="C">Prestações&nbsp;</span></td>
 						<td align="left">
-						  <select id="op_pce_prestacao_forma_pagto" name="op_pce_prestacao_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();">
+							<%	'No nível COD_NIVEL_EDICAO_LIBERADA_PARCIAL pode-se apenas editar valores, mas não a forma de pagamento ou o meio de pagamento
+								if nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_TOTAL then strDisabled="" else strDisabled=" disabled"
+							%>
+						  <select id="op_pce_prestacao_forma_pagto" name="op_pce_prestacao_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();" <%=strDisabled%>>
 							<%	if operacao_permitida(OP_CEN_EDITA_FORMA_PAGTO_SEM_APLICAR_RESTRICOES, s_lista_operacoes_permitidas) then
 									if Cstr(r_pedido.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
 										Response.Write forma_pagto_da_prestacao_monta_itens_select_incluindo_default(r_pedido.pce_forma_pagto_prestacao)
@@ -4415,12 +4425,16 @@ function setarValorRadio(array, valor)
 							%>
 						  </select>
 						  <span style="width:10px;">&nbsp;</span>
+							<%	'No nível COD_NIVEL_EDICAO_LIBERADA_PARCIAL pode-se apenas editar valores, mas não a forma de pagamento ou o meio de pagamento
+								if nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_TOTAL then s_readonly="" else s_readonly=" readonly tabindex=-1"
+							%>
 						  <input name="c_pce_prestacao_qtde" id="c_pce_prestacao_qtde" class="Cc" maxlength="2" style="width:30px;" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onkeypress="if (digitou_enter(true)&&tem_info(this.value)) fPED.c_pce_prestacao_valor.focus(); filtra_numerico();" onblur="pce_calcula_valor_parcela();recalcula_RA_Liquido();recalculaCustoFinanceiroPrecoLista();"
 							<% if Cstr(r_pedido.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then %>
 								value="<%=Cstr(r_pedido.pce_prestacao_qtde)%>"
 							<% else %>
 								value=""
 							<% end if %>
+							<%=s_readonly%>
 						  ><span class="C" style="margin-right:0pt;">&nbsp;X&nbsp;&nbsp;&nbsp;<%=SIMBOLO_MONETARIO%></span
 						  ><input name="c_pce_prestacao_valor" id="c_pce_prestacao_valor" class="Cd" maxlength="18" style="width:90px;" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onkeypress="if (digitou_enter(true)&&tem_info(this.value)) fPED.c_pce_prestacao_periodo.focus(); filtra_moeda_positivo();" onblur="this.value=formata_moeda(this.value);recalcula_RA_Liquido();" 
 							<% if Cstr(r_pedido.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then %>
@@ -4433,6 +4447,9 @@ function setarValorRadio(array, valor)
 					  </tr>
 					  <tr>
 						<td style="width:60px;" align="left">&nbsp;</td>
+							<%	'No nível COD_NIVEL_EDICAO_LIBERADA_PARCIAL pode-se apenas editar valores, mas não a forma de pagamento ou o meio de pagamento
+								if nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_TOTAL then s_readonly="" else s_readonly=" readonly tabindex=-1"
+							%>
 						<td colspan="2" align="left"><span class="C">Parcelas vencendo a cada</span
 						><input name="c_pce_prestacao_periodo" id="c_pce_prestacao_periodo" class="Cc" maxlength="2" style="width:30px;" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onkeypress="if (digitou_enter(true)&&tem_info(this.value)) fPED.c_forma_pagto.focus(); filtra_numerico();" onblur="recalcula_RA_Liquido();"
 							<% if Cstr(r_pedido.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then %>
@@ -4440,6 +4457,7 @@ function setarValorRadio(array, valor)
 							<% else %>
 								value=""
 							<% end if %>
+							<%=s_readonly%>
 						><span class="C">dias</span
 						><span style="width:10px;">&nbsp;</span
 						><span class="notPrint"><input name="b_pce_SugereFormaPagto" id="b_pce_SugereFormaPagto" type="button" class="Button" style="visibility:hidden;" onclick="pce_sugestao_forma_pagto();" value="sugestão automática" title="preenche o campo 'Forma de Pagamento' com uma sugestão de texto"></span
@@ -4458,6 +4476,7 @@ function setarValorRadio(array, valor)
 						  <input type="radio" id="rb_forma_pagto" name="rb_forma_pagto" 
 								value="<%=COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA%>"
 								<% if Cstr(r_pedido.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then Response.Write " checked"%>
+								<% if (Cstr(r_pedido.tipo_parcelamento) <> COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA) And (nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_PARCIAL) then Response.Write " disabled"%>
 								onclick="pse_preenche_sugestao_intervalo();recalcula_RA_Liquido();recalculaCustoFinanceiroPrecoLista();"
 								><span class="C" style="cursor:default" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();">Parcelado sem Entrada</span>
 						</td>
@@ -4466,7 +4485,10 @@ function setarValorRadio(array, valor)
 						<td style="width:60px;" align="left">&nbsp;</td>
 						<td align="right"><span class="C">1ª Prestação&nbsp;</span></td>
 						<td align="left">
-						  <select id="op_pse_prim_prest_forma_pagto" name="op_pse_prim_prest_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();">
+							<%	'No nível COD_NIVEL_EDICAO_LIBERADA_PARCIAL pode-se apenas editar valores, mas não a forma de pagamento ou o meio de pagamento
+								if nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_TOTAL then strDisabled="" else strDisabled=" disabled"
+							%>
+						  <select id="op_pse_prim_prest_forma_pagto" name="op_pse_prim_prest_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();" <%=strDisabled%>>
 							<%	if operacao_permitida(OP_CEN_EDITA_FORMA_PAGTO_SEM_APLICAR_RESTRICOES, s_lista_operacoes_permitidas) then
 									if Cstr(r_pedido.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
 										Response.Write forma_pagto_da_prestacao_monta_itens_select_incluindo_default(r_pedido.pse_forma_pagto_prim_prest)
@@ -4498,6 +4520,10 @@ function setarValorRadio(array, valor)
 							<% else %>
 								value=""
 							<% end if %>
+							<%	'No nível COD_NIVEL_EDICAO_LIBERADA_PARCIAL pode-se apenas editar valores, mas não a forma de pagamento ou o meio de pagamento
+								if nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_TOTAL then s_readonly="" else s_readonly=" readonly tabindex=-1"
+							%>
+							<%=s_readonly%>
 						  ><span class="C">dias</span>
 						</td>
 					  </tr>
@@ -4505,7 +4531,10 @@ function setarValorRadio(array, valor)
 						<td style="width:60px;" align="left">&nbsp;</td>
 						<td align="right"><span class="C">Demais Prestações&nbsp;</span></td>
 						<td align="left">
-						  <select id="op_pse_demais_prest_forma_pagto" name="op_pse_demais_prest_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();">
+							<%	'No nível COD_NIVEL_EDICAO_LIBERADA_PARCIAL pode-se apenas editar valores, mas não a forma de pagamento ou o meio de pagamento
+								if nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_TOTAL then strDisabled="" else strDisabled=" disabled"
+							%>
+						  <select id="op_pse_demais_prest_forma_pagto" name="op_pse_demais_prest_forma_pagto" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onchange="recalcula_RA_Liquido();" <%=strDisabled%>>
 							<%	if operacao_permitida(OP_CEN_EDITA_FORMA_PAGTO_SEM_APLICAR_RESTRICOES, s_lista_operacoes_permitidas) then
 									if Cstr(r_pedido.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
 										Response.Write forma_pagto_da_prestacao_monta_itens_select_incluindo_default(r_pedido.pse_forma_pagto_demais_prest)
@@ -4528,6 +4557,10 @@ function setarValorRadio(array, valor)
 							<% else %>
 								value=""
 							<% end if %>
+							<%	'No nível COD_NIVEL_EDICAO_LIBERADA_PARCIAL pode-se apenas editar valores, mas não a forma de pagamento ou o meio de pagamento
+								if nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_TOTAL then s_readonly="" else s_readonly=" readonly tabindex=-1"
+							%>
+							<%=s_readonly%>
 						  >
 						  <span class="C" style="margin-right:0pt;">&nbsp;X&nbsp;&nbsp;&nbsp;<%=SIMBOLO_MONETARIO%></span
 						  ><input name="c_pse_demais_prest_valor" id="c_pse_demais_prest_valor" class="Cd" maxlength="18" style="width:90px;" onclick="fPED.rb_forma_pagto[<%=Cstr(intIdx)%>].click();" onkeypress="if (digitou_enter(true)&&tem_info(this.value)) fPED.c_pse_demais_prest_periodo.focus(); filtra_moeda_positivo();" onblur="this.value=formata_moeda(this.value);recalcula_RA_Liquido();" 
@@ -4548,6 +4581,10 @@ function setarValorRadio(array, valor)
 							<% else %>
 								value=""
 							<% end if %>
+							<%	'No nível COD_NIVEL_EDICAO_LIBERADA_PARCIAL pode-se apenas editar valores, mas não a forma de pagamento ou o meio de pagamento
+								if nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_TOTAL then s_readonly="" else s_readonly=" readonly tabindex=-1"
+							%>
+							<%=s_readonly%>
 						><span class="C">dias</span
 						><span style="width:10px;">&nbsp;</span
 						><span class="notPrint"><input name="b_pse_SugereFormaPagto" id="b_pse_SugereFormaPagto" type="button" class="Button" style="visibility:hidden;" onclick="pse_sugestao_forma_pagto();" value="sugestão automática" title="preenche o campo 'Forma de Pagamento' com uma sugestão de texto"></span
