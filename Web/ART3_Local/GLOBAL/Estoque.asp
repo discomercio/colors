@@ -4635,7 +4635,7 @@ Dim qtde_movimentada
 	id_nfe_emitente = converte_numero(id_nfe_emitente)
     
     If (qtde_a_sair <= 0) Or (id_produto = "") Then
-        estoque_produto_saida_por_transferencia = True
+        estoque_produto_saida_por_transferencia_v2 = True
         exit function
         end if
 
