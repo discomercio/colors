@@ -765,6 +765,18 @@ Option Explicit
 '|          |      | - Venda Futura / Pagamento Antecipado                     |
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| LHGX |V 2.20                                                     |
+'|          |      | - Venda Futura (ajuste painel triangular)                 |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
 '|          |      |                                                           |
@@ -776,8 +788,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.19"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  06/06/2021"
+Global Const m_id_versao = "2.20"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  15/06/2021"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"

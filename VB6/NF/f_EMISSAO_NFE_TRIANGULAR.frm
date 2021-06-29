@@ -10795,6 +10795,14 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     If ((strCfopCodigo = "5922") Or (strCfopCodigo = "6922")) Then
         blnNotadeCompromisso = True
         End If
+        
+'   NÃO PERMITIR EMISSÃO DE NOTA DE COMPROMISSO, SENÃO A OPERAÇÃO TRIANGULAR NÃO PERMITIRÁ A NOTA DE VENDA
+    If blnNotadeCompromisso Then
+        aviso "Não é possível emitir a nota fiscal!! Emitir NOTAS FUTURAS nos painéis automático ou manual"
+        GoSub NFE_EMITE_FECHA_TABELAS
+        aguarde INFO_NORMAL, m_id
+        Exit Sub
+        End If
     
 '   CASO SEJA NOTA DE COMPROMISSO, VERIFICAR SE O CST É 041
     If blnNotadeCompromisso Then
