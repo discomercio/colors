@@ -29,8 +29,8 @@ namespace FinanceiroService
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "Financeiro Service";
 				public static readonly string ID_SISTEMA_EVENTLOG = GetConfigurationValue("ServiceName");
-				public const string VERSAO_NUMERO = "1.37";
-				public const string VERSAO_DATA = "21.MAI.2021";
+				public const string VERSAO_NUMERO = "1.38";
+				public const string VERSAO_DATA = "29.JUN.2021";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Serviço do Windows para execução automática de rotinas financeiras";
@@ -291,11 +291,54 @@ namespace FinanceiroService
 			 *      A ativação do tratamento de acesso concorrente é feita através do novo parâmetro no
 			 *      arquivo de configuração: TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.38 - XX.XX.20XX - por XXX
+			 * v 1.38 - 29.06.2021 - por HHO
+			 *      Implementação de tratamento dos dados recebidos pelo post de notificação da Braspag, já
+			 *      que o antigo serviço de 2º post será desativado em 01/07/2021. O novo post de notificação
+			 *      informa dados diferentes que o post anterior, sendo que as principais são:
+			 *          1) PaymentId: passa a informar o GUID referente ao Braspag Transaction ID e não mais
+			 *             o NumPedido (nº do pedido informado em OrderId na requisição de pagamento).
+			 *          2) CODPAGAMENTO: deixa de ser informado o código do meio de pagamento, portanto, agora
+			 *             é necessário realizar um processamento usando o PaymentId p/ descobrir se o paga-
+			 *             mento se refere a um boleto ou cartão.
+			 *      Enquanto antes os dados eram armazenados nas tabelas t_BRASPAG_WEBHOOK e
+			 *      t_BRASPAG_WEBHOOK_COMPLEMENTAR, o tratamento para o novo post de notificação armazena em
+			 *      t_BRASPAG_WEBHOOK_V2 e t_BRASPAG_WEBHOOK_V2_COMPLEMENTAR
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.39 - XX.XX.20XX - por XXX
+			 *      
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.40 - XX.XX.20XX - por XXX
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.41 - XX.XX.20XX - por XXX
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.42 - XX.XX.20XX - por XXX
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.43 - XX.XX.20XX - por XXX
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.44 - XX.XX.20XX - por XXX
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.45 - XX.XX.20XX - por XXX
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.46 - XX.XX.20XX - por XXX
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.47 - XX.XX.20XX - por XXX
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.48 - XX.XX.20XX - por XXX
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.49 - XX.XX.20XX - por XXX
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.50 - XX.XX.20XX - por XXX
+			 *      
 			 * ===============================================================================================
 			 */
 			#endregion
@@ -348,6 +391,12 @@ namespace FinanceiroService
 					public const string FLAG_HABILITACAO_PROCESSAMENTO_WEBHOOK_BRASPAG_PERIODO_INATIVIDADE = "FinSvc_ProcessamentoWebhookBraspag_PeriodoInatividade_FlagHabilitacao";
 					public const string PROCESSAMENTO_WEBHOOK_BRASPAG_PERIODO_INATIVIDADE_HORARIO_INICIO = "FinSvc_ProcessamentoWebhookBraspag_PeriodoInatividade_HorarioInicio";
 					public const string PROCESSAMENTO_WEBHOOK_BRASPAG_PERIODO_INATIVIDADE_HORARIO_TERMINO = "FinSvc_ProcessamentoWebhookBraspag_PeriodoInatividade_HorarioTermino";
+					public const string DT_HR_ULT_PROCESSAMENTO_WEBHOOK_BRASPAG_V2 = "FinSvc_DtHrUltProcWebhookBraspagV2";
+					public const string DESTINATARIO_MSG_ALERTA_WEBHOOK_BRASPAG_V2 = "FinSvc_DestinatarioMsgAlertaWebhookBraspagV2";
+					public const string FLAG_HABILITACAO_PROCESSAMENTO_WEBHOOK_BRASPAG_V2 = "FinSvc_FlagHabilitacao_ProcWebhookBraspagV2";
+					public const string FLAG_HABILITACAO_PROCESSAMENTO_WEBHOOK_BRASPAG_V2_PERIODO_INATIVIDADE = "FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_FlagHabilitacao";
+					public const string PROCESSAMENTO_WEBHOOK_BRASPAG_V2_PERIODO_INATIVIDADE_HORARIO_INICIO = "FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioInicio";
+					public const string PROCESSAMENTO_WEBHOOK_BRASPAG_V2_PERIODO_INATIVIDADE_HORARIO_TERMINO = "FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioTermino";
 					public const string FLAG_HABILITACAO_BP_CS_PROCESSAMENTO_ESTORNOS_PENDENTES = "FinSvc_BP_CS_Processamento_EstornosPendentes_FlagHabilitacao";
 					public const string FLAG_HABILITACAO_BP_CS_PROCESSAMENTO_ESTORNOS_PENDENTES_PERIODO_INATIVIDADE = "FinSvc_BP_CS_Processamento_EstornosPendentes_PeriodoInatividade_FlagHabilitacao";
 					public const string BP_CS_PROCESSAMENTO_ESTORNOS_PENDENTES_PERIODO_INATIVIDADE_HORARIO_INICIO = "FinSvc_BP_CS_Processamento_EstornosPendentes_PeriodoInatividade_HorarioInicio";
@@ -384,6 +433,7 @@ namespace FinanceiroService
 					public const byte BRASPAG_CARTAO = 4;
 					public const byte BRASPAG_CLEARSALE = 5;
 					public const byte BRASPAG_WEBHOOK = 6;
+					public const byte BRASPAG_WEBHOOK_V2 = 7;
 					public const byte PAGTO_COMISSAO_INDICADOR = 11;
 				}
 				#endregion
@@ -410,6 +460,8 @@ namespace FinanceiroService
 					public const string T_PAGTO_GW_AF_OP_COMPLEMENTAR_XML = "T_PAGTO_GW_AF_OP_COMPLEMENTAR_XML";
 					public const string T_BRASPAG_WEBHOOK = "T_BRASPAG_WEBHOOK";
 					public const string T_BRASPAG_WEBHOOK_COMPLEMENTAR = "T_BRASPAG_WEBHOOK_COMPLEMENTAR";
+					public const string T_BRASPAG_WEBHOOK_V2 = "T_BRASPAG_WEBHOOK_V2";
+					public const string T_BRASPAG_WEBHOOK_V2_COMPLEMENTAR = "T_BRASPAG_WEBHOOK_V2_COMPLEMENTAR";
 				}
 				#endregion
 
@@ -1105,6 +1157,65 @@ namespace FinanceiroService
 					#endregion
 				}
 				#endregion
+
+				#region [ WebhookV2 ]
+				public static class WebhookV2
+				{
+					#region [ NotificacaoProcessadoStatus ]
+					public static class NotificacaoProcessadoStatus
+					{
+						public const byte Inicial = 0;
+						public const byte PaymentMethodIdentificado = 1;
+						public const byte NaoProcessado = 2;
+						public const byte Sucesso = 3;
+						public const byte Falha = 4;
+						public const byte TransacaoJaProcessadaAnteriormente = 5;
+						public const byte PagamentoJaRegistrado = 6;
+					}
+					#endregion
+
+					#region [ EmailEnviadoStatus ]
+					public static class EmailEnviadoStatus
+					{
+						public const byte Inicial = 0;
+						public const byte EnviadoComSucesso = 1;
+						public const byte ErroERP = 3;
+						public const byte TransacaoJaProcessadaAnteriormente = 4;
+						public const byte EmpresaInvalida = 6;
+						public const byte OperacaoForaEscopo = 7;
+						public const byte DadosPreImplantacao = 8;
+						public const byte ExcedeuMaxTentativasQueryDadosComplementares = 9;
+					}
+					#endregion
+
+					#region [ ProcessamentoErpStatus ]
+					public static class ProcessamentoErpStatus
+					{
+						public const int Inicial = 0;
+						public const int ProcessadoComSucesso = 1;
+						public const int ErroERP = 3;
+						public const int TransacaoJaProcessadaAnteriormente = 4;
+						public const int EmpresaInvalida = 6;
+						public const int OperacaoForaEscopo = 7;
+						public const int DadosPreImplantacao = 8;
+						public const int ExcedeuMaxTentativasQueryDadosComplementares = 9;
+					}
+					#endregion
+
+					#region [ BraspagDadosComplementaresQueryStatus ]
+					public static class BraspagDadosComplementaresQueryStatus
+					{
+						public const byte Inicial = 0;
+						public const byte ProcessadoComSucesso = 1;
+						public const byte ErroERP = 3;
+						public const byte TransacaoJaProcessadaAnteriormente = 4;
+						public const byte FalhaConsultaBraspag = 5;
+						public const byte EmpresaInvalida = 6;
+						public const byte ExcedeuMaxTentativasQueryDadosComplementares = 9;
+					}
+					#endregion
+				}
+				#endregion
 			}
 			#endregion
 
@@ -1481,8 +1592,10 @@ namespace FinanceiroService
 					public const string OP_LOG_PROCESSAMENTO_BP_CS_BRASPAG_CAPTURA_TRANSACAO_PENDENTE_DEVIDO_PRAZO_FINAL_CANCEL_AUTO = "BP_CS_CapTrxCancAuto";
 					public const string OP_LOG_PROCESSAMENTO_ENVIAR_EMAIL_ALERTA_PEDIDO_NOVO_ANALISE_CREDITO = "MsgPedNovoAnCred";
 					public const string OP_LOG_PROCESSAMENTO_WEBHOOK_BRASPAG = "WebhookBraspag";
+					public const string OP_LOG_PROCESSAMENTO_WEBHOOK_BRASPAG_V2 = "WebhookBraspagV2";
 					public const string OP_LOG_PROCESSAMENTO_ESTORNOS_PENDENTES = "FINSVC_ESTORNOS_PEND";
 					public const string OP_LOG_PEDIDO_PAGTO_CONTABILIZADO_BRASPAG_WEBHOOK = "PedPagtoContabBpWH";
+					public const string OP_LOG_PEDIDO_PAGTO_CONTABILIZADO_BRASPAG_WEBHOOK_V2 = "PedPagtoContabBpWHV2";
 					public const string OP_LOG_FLUXO_CAIXA_INSERE_DEVIDO_BOLETO_ECOMMERCE = "FCInsBolEC";
 					public const string OP_LOG_LIMPEZA_SESSION_TOKEN = "LimpezaSessionToken";
 					public const string OP_LOG_MANUTENCAO_ARQUIVOS_UPLOAD_FILE = "ManutArqUploadFile";
@@ -1744,6 +1857,7 @@ namespace FinanceiroService
 				public const string BRASPAG = "B";
 				public const string GW_BRASPAG_CLEARSALE = "G";
 				public const string BRASPAG_WEBHOOK = "W";
+				public const string BRASPAG_WEBHOOK_V2 = "W";
 			}
 			#endregion
 
@@ -1852,6 +1966,13 @@ namespace FinanceiroService
 				public static int TempoEntreProcessamentoWebhookBraspagEmSeg = 10 * 60;
 				public static string DESTINATARIO_MSG_ALERTA_WEBHOOK_BRASPAG = ""; // Obtém o parâmetro no BD (FinSvc_DestinatarioMsgAlertaWebhookBraspag)
 				public static int FinSvc_ProcessamentoWebhookBraspag_MaxTentativasQueryDadosComplementares = 10;
+				public static bool FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_FlagHabilitacao = true;
+				public static TimeSpan FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioInicio = new TimeSpan(20, 0, 0); // Hours, Minutes, Seconds
+				public static TimeSpan FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioTermino = new TimeSpan(7, 0, 0); // Hours, Minutes, Seconds
+				public static bool ExecutarProcessamentoWebhookBraspagV2 = false;
+				public static int TempoEntreProcessamentoWebhookBraspagV2EmSeg = 10 * 60;
+				public static string DESTINATARIO_MSG_ALERTA_WEBHOOK_BRASPAG_V2 = ""; // Obtém o parâmetro no BD (FinSvc_DestinatarioMsgAlertaWebhookBraspagV2)
+				public static int FinSvc_ProcessamentoWebhookBraspagV2_MaxTentativasQueryDadosComplementares = 10;
 				public static List<int> CancelamentoAutomaticoPedidosLojasIgnoradas;
 				public static bool FinSvc_BP_CS_Processamento_EstornosPendentes_PeriodoInatividade_FlagHabilitacao = true;
 				public static TimeSpan FinSvc_BP_CS_Processamento_EstornosPendentes_PeriodoInatividade_HorarioInicio = new TimeSpan(21, 0, 0); // Hours, Minutes, Seconds
@@ -1903,6 +2024,31 @@ namespace FinanceiroService
 				public static List<WebhookBraspagMerchantId> webhookBraspagMerchantIdList;
 				public static List<WebhookBraspagPlanoContasBoletoEC> webhookBraspagPlanoContasBoletoECList;
 				#endregion
+
+				#region [ Webhook V2 ]
+
+				#region [ WebhookBraspagV2MerchantId ]
+				public class WebhookBraspagV2MerchantId
+				{
+					public string Empresa { get; set; }
+					public string MerchantId { get; set; }
+				}
+				#endregion
+
+				#region [ WebhookBraspagV2PlanoContasBoletoEC ]
+				public class WebhookBraspagV2PlanoContasBoletoEC
+				{
+					public string Empresa { get; set; }
+					public byte id_conta_corrente { get; set; }
+					public byte id_plano_contas_empresa { get; set; }
+					public short id_plano_contas_grupo { get; set; }
+					public int id_plano_contas_conta { get; set; }
+				}
+				#endregion
+
+				public static List<WebhookBraspagV2MerchantId> webhookBraspagV2MerchantIdList;
+				public static List<WebhookBraspagV2PlanoContasBoletoEC> webhookBraspagV2PlanoContasBoletoECList;
+				#endregion
 			}
 			#endregion
 
@@ -1948,6 +2094,8 @@ namespace FinanceiroService
 			string[] vLojasIgnoradas;
 			Parametros.Braspag.WebhookBraspagMerchantId webhookBraspagMerchantId;
 			Parametros.Braspag.WebhookBraspagPlanoContasBoletoEC webhookBraspagPlanoContasBoletoEC;
+			Parametros.Braspag.WebhookBraspagV2MerchantId webhookBraspagV2MerchantId;
+			Parametros.Braspag.WebhookBraspagV2PlanoContasBoletoEC webhookBraspagV2PlanoContasBoletoEC;
 			#endregion
 
 			#region [ Carrega dados do Braspag MerchantId para serem usados no processamento dos dados recebidos pelo Webhook ]
@@ -1999,6 +2147,61 @@ namespace FinanceiroService
 							webhookBraspagPlanoContasBoletoEC.id_plano_contas_conta = (int)converteInteiro(vParametrosAux[index]);
 
 							Parametros.Braspag.webhookBraspagPlanoContasBoletoECList.Add(webhookBraspagPlanoContasBoletoEC);
+						}
+					}
+				}
+			}
+			#endregion
+
+			#region [ Carrega dados do Braspag MerchantId para serem usados no processamento dos dados recebidos pelo Webhook V2 ]
+			Parametros.Braspag.webhookBraspagV2MerchantIdList = new List<Parametros.Braspag.WebhookBraspagV2MerchantId>();
+			strValue = GetConfigurationValue("WebhookBraspagV2MerchantIdList");
+			if ((strValue ?? "").Length > 0)
+			{
+				vEmpresa = strValue.Split('|');
+				for (int i = 0; i < vEmpresa.Length; i++)
+				{
+					vParametros = vEmpresa[i].Split('=');
+					if (vParametros.Length >= 2)
+					{
+						webhookBraspagV2MerchantId = new Parametros.Braspag.WebhookBraspagV2MerchantId();
+						webhookBraspagV2MerchantId.Empresa = vParametros[0];
+						webhookBraspagV2MerchantId.MerchantId = vParametros[1];
+						Parametros.Braspag.webhookBraspagV2MerchantIdList.Add(webhookBraspagV2MerchantId);
+					}
+				}
+			}
+			#endregion
+
+			#region [ Carrega dados do plano de contas para gravação de lançamentos no fluxo de caixa dos boletos de e-commerce (Webhook V2) ]
+			Parametros.Braspag.webhookBraspagV2PlanoContasBoletoECList = new List<Parametros.Braspag.WebhookBraspagV2PlanoContasBoletoEC>();
+			strValue = GetConfigurationValue("WebhookBraspagV2PlanoContasBoletoEC");
+			if ((strValue ?? "").Length > 0)
+			{
+				vEmpresa = strValue.Split('|');
+				for (int i = 0; i < vEmpresa.Length; i++)
+				{
+					// Formato: IdentificadorEmpresa=id_conta_corrente;id_plano_contas_empresa;id_plano_contas_conta
+					// Obs: id_plano_contas_grupo deve ser obtido a partir do cadastro da conta (plano de contas) no banco de dados,
+					// mas isso não pode ser feito neste momento porque a conexão com o BD ainda não está estabelecida e nem as
+					// classes e objetos necessários ainda não estão devidamente inicializados.
+					vParametros = vEmpresa[i].Split('=');
+					if (vParametros.Length >= 2)
+					{
+						webhookBraspagV2PlanoContasBoletoEC = new Parametros.Braspag.WebhookBraspagV2PlanoContasBoletoEC();
+						webhookBraspagV2PlanoContasBoletoEC.Empresa = vParametros[0];
+						strValueAux = vParametros[1];
+						vParametrosAux = strValueAux.Split(';');
+						if (vParametrosAux.Length >= 3)
+						{
+							index = 0;
+							webhookBraspagV2PlanoContasBoletoEC.id_conta_corrente = (byte)converteInteiro(vParametrosAux[index]);
+							index++;
+							webhookBraspagV2PlanoContasBoletoEC.id_plano_contas_empresa = (byte)converteInteiro(vParametrosAux[index]);
+							index++;
+							webhookBraspagV2PlanoContasBoletoEC.id_plano_contas_conta = (int)converteInteiro(vParametrosAux[index]);
+
+							Parametros.Braspag.webhookBraspagV2PlanoContasBoletoECList.Add(webhookBraspagV2PlanoContasBoletoEC);
 						}
 					}
 				}

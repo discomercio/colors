@@ -6069,6 +6069,8 @@ dim strCodigo, strResp
 		strResp = "Cartão"
 	elseif strCodigo = CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK then
 		strResp = "Boleto (EC)"
+	elseif strCodigo = CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK_V2 then
+		strResp = "Boleto (EC)"
 	else
 		if strCodigo <> "" then
 			strResp = strCodigo & " - Código Desconhecido"

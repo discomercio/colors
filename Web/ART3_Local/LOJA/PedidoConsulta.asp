@@ -2963,7 +2963,7 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 '	EM 22/08/2018, A LILIAN SOLICITOU A LIBERAÇÃO DA EXIBIÇÃO DAS PARCELAS DE BOLETO C/ AUTORIZAÇÃO DO ROGÉRIO RASGA
 '	if r_pedido.loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
 '		s = s & _
-'				" AND ((tFPHP.ctrl_pagto_modulo = " & CTRL_PAGTO_MODULO__BRASPAG_CLEARSALE & ") OR (tFPHP.ctrl_pagto_modulo = " & CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK & "))"
+'				" AND ((tFPHP.ctrl_pagto_modulo = " & CTRL_PAGTO_MODULO__BRASPAG_CLEARSALE & ") OR (tFPHP.ctrl_pagto_modulo = " & CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK & ") OR (tFPHP.ctrl_pagto_modulo = " & CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK_V2 & "))"
 '	else
 '		s = s & _
 '				" AND (tFPHP.ctrl_pagto_modulo = " & CTRL_PAGTO_MODULO__BRASPAG_CLEARSALE & ")"
@@ -3012,6 +3012,11 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 			strHistPagtoVlParcela = formata_moeda(rs("valor_total"))
 			strHistPagtoDtPagto = formata_data(rs("dt_credito"))
 			if strHistPagtoDescricao = "" then strHistPagtoDescricao = Trim("" & rs("descricao"))
+		elseif Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK_V2 then
+			strHistPagtoDtVencto = formata_data(rs("dt_vencto"))
+			strHistPagtoVlParcela = formata_moeda(rs("valor_total"))
+			strHistPagtoDtPagto = formata_data(rs("dt_credito"))
+			if strHistPagtoDescricao = "" then strHistPagtoDescricao = Trim("" & rs("descricao"))
 		elseif (Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BRASPAG_CARTAO) Or (Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BRASPAG_CLEARSALE) then
 			strHistPagtoDtPagto = formata_data(rs("dt_operacao"))
 			if strHistPagtoDescricao = "" then strHistPagtoDescricao = Trim("" & rs("descricao"))
@@ -3033,6 +3038,8 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 			if Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BOLETO then
 				strHistPagtoValorPago = formata_moeda(rs("vl_pago_FC"))
 			elseif Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK then
+				strHistPagtoValorPago = formata_moeda(rs("valor_pago"))
+			elseif Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK_V2 then
 				strHistPagtoValorPago = formata_moeda(rs("valor_pago"))
 			elseif (Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BRASPAG_CARTAO) Or (Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BRASPAG_CLEARSALE) then
 				strHistPagtoValorPago = formata_moeda(rs("valor_total"))

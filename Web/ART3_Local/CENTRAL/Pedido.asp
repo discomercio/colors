@@ -3945,6 +3945,11 @@ function fPEDPreDevolucao(f) {
 			strHistPagtoVlParcela = formata_moeda(rs("valor_total"))
 			strHistPagtoDtPagto = formata_data(rs("dt_credito"))
 			if strHistPagtoDescricao = "" then strHistPagtoDescricao = Trim("" & rs("descricao"))
+		elseif Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK_V2 then
+			strHistPagtoDtVencto = formata_data(rs("dt_vencto"))
+			strHistPagtoVlParcela = formata_moeda(rs("valor_total"))
+			strHistPagtoDtPagto = formata_data(rs("dt_credito"))
+			if strHistPagtoDescricao = "" then strHistPagtoDescricao = Trim("" & rs("descricao"))
 		elseif (Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BRASPAG_CARTAO) Or (Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BRASPAG_CLEARSALE) then
 			strHistPagtoDtPagto = formata_data(rs("dt_operacao"))
 			if strHistPagtoDescricao = "" then strHistPagtoDescricao = Trim("" & rs("descricao"))
@@ -3966,6 +3971,8 @@ function fPEDPreDevolucao(f) {
 			if Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BOLETO then
 				strHistPagtoValorPago = formata_moeda(rs("vl_pago_FC"))
 			elseif Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK then
+				strHistPagtoValorPago = formata_moeda(rs("valor_pago"))
+			elseif Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK_V2 then
 				strHistPagtoValorPago = formata_moeda(rs("valor_pago"))
 			elseif (Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BRASPAG_CARTAO) Or (Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BRASPAG_CLEARSALE) then
 				strHistPagtoValorPago = formata_moeda(rs("valor_total"))

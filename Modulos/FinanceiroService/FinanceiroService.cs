@@ -412,6 +412,7 @@ namespace FinanceiroService
 			DateTime dtHrUltProcCapturaTransacaoPendenteDevidoPrazoFinalCancelAuto = DateTime.MinValue;
 			DateTime dtHrUltProcEnviarEmailAlertaPedidoNovoAnaliseCredito = DateTime.MinValue;
 			DateTime dtHrUltProcWebhookBraspag = DateTime.MinValue;
+			DateTime dtHrUltProcWebhookBraspagV2 = DateTime.MinValue;
 			DateTime dtHrUltProcEstornosPendentes = DateTime.MinValue;
 			DateTime dtHrUltConsultaExecucaoSolicitadaProcProdutosVendidosSemPresencaEstoque = DateTime.MinValue;
 			DateTime dtHrUltSinalVida = DateTime.MinValue;
@@ -423,8 +424,10 @@ namespace FinanceiroService
 			DateTime dtHrUltBpCsTransicaoPeriodoInatividade = DateTime.MinValue;
 			DateTime dtHrUltProcEnvioEmailAlertaPedidoNovoAnaliseCreditoTransicaoPeriodoInatividade = DateTime.MinValue;
 			DateTime dtHrUltProcWebhookBraspagTransicaoPeriodoInatividade = DateTime.MinValue;
+			DateTime dtHrUltProcWebhookBraspagV2TransicaoPeriodoInatividade = DateTime.MinValue;
 			DateTime dtHrUltProcEstornosPendentesTransicaoPeriodoInatividade = DateTime.MinValue;
 			DateTime dtHrUltMsgInatividadeProcWebhookBraspag = DateTime.MinValue;
+			DateTime dtHrUltMsgInatividadeProcWebhookBraspagV2 = DateTime.MinValue;
 			DateTime dtHrUltMsgInatividadeProcEstornosPendentes = DateTime.MinValue;
 			DateTime dtHrUltVerificacaoConexaoBd = DateTime.MinValue;
 			DateTime dtHrUltLimpezaSessionToken = DateTime.MinValue;
@@ -435,6 +438,7 @@ namespace FinanceiroService
 			bool blnPeriodoAtividadeBpCs = true;
 			bool blnPeriodoAtividadeProcEnvioEmailAlertaPedidoNovoAnaliseCredito = true;
 			bool blnPeriodoAtividadeProcWebhookBraspag = true;
+			bool blnPeriodoAtividadeProcWebhookBraspagV2 = true;
 			bool blnPeriodoAtividadeProcEstornosPendentes = true;
 			int intQtdeTentativas = 0;
 			int intParametro;
@@ -590,6 +594,15 @@ namespace FinanceiroService
 				}
 				#endregion
 
+				#region [ Braspag Webhook V2: dados do plano de contas p/ gravar lançamento do boleto de e-commerce ]
+				// Completa os dados do plano de contas obtendo o código do grupo a partir do cadastro do plano de contas no banco de dados
+				foreach (var item in Global.Parametros.Braspag.webhookBraspagV2PlanoContasBoletoECList)
+				{
+					planoContasConta = PlanoContasDAO.getPlanoContasContaById(item.id_plano_contas_conta, out strMsgErroAux);
+					if (planoContasConta != null) item.id_plano_contas_grupo = planoContasConta.id_plano_contas_grupo;
+				}
+				#endregion
+
 				#region [ Log informativo: parâmetros Braspag/Clearsale ]
 				strMsg = "Parâmetros do sistema (" + Global.Cte.Aplicativo.AMBIENTE_EXECUCAO + ")";
 				sbMsgParametros.AppendLine(strMsg);
@@ -623,6 +636,7 @@ namespace FinanceiroService
 				dtHrUltProcCapturaTransacaoPendenteDevidoPrazoFinalCancelAuto = GeralDAO.getCampoDataTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.DT_HR_ULT_PROCESSAMENTO_BP_CS_BRASPAG_CAPTURA_TRANSACAO_PENDENTE_DEVIDO_PRAZO_FINAL_CANCEL_AUTO);
 				dtHrUltProcEnviarEmailAlertaPedidoNovoAnaliseCredito = GeralDAO.getCampoDataTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.DT_HR_ULT_PROCESSAMENTO_ENVIAR_EMAIL_ALERTA_PEDIDO_NOVO_ANALISE_CREDITO);
 				dtHrUltProcWebhookBraspag = GeralDAO.getCampoDataTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.DT_HR_ULT_PROCESSAMENTO_WEBHOOK_BRASPAG);
+				dtHrUltProcWebhookBraspagV2 = GeralDAO.getCampoDataTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.DT_HR_ULT_PROCESSAMENTO_WEBHOOK_BRASPAG_V2);
 				dtHrUltProcEstornosPendentes = GeralDAO.getCampoDataTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.DT_HR_ULT_PROCESSAMENTO_ESTORNOS_PENDENTES);
 				dtHrUltLimpezaSessionToken = GeralDAO.getCampoDataTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.DT_HR_ULT_LIMPEZA_SESSION_TOKEN);
 				dtHrUltUploadFileManutencaoArquivos = GeralDAO.getCampoDataTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.DT_HR_ULT_UPLOAD_FILE_MANUTENCAO_ARQUIVOS);
@@ -928,7 +942,75 @@ namespace FinanceiroService
 				#endregion
 
 				#endregion
+				#endregion
 
+				#region [ Processamento dos dados recebidos pelo Webhook Braspag V2 ]
+				strParametro = GeralDAO.getCampoTextoTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.DESTINATARIO_MSG_ALERTA_WEBHOOK_BRASPAG_V2);
+				if ((strParametro ?? "").Trim().Length == 0) strParametro = Global.Parametros.Geral.DESTINATARIO_PADRAO_MSG_ALERTA_SISTEMA;
+				Global.Parametros.Geral.DESTINATARIO_MSG_ALERTA_WEBHOOK_BRASPAG_V2 = strParametro;
+
+				intParametro = GeralDAO.getCampoInteiroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.FLAG_HABILITACAO_PROCESSAMENTO_WEBHOOK_BRASPAG_V2);
+				blnFlag = (intParametro != 0) ? true : false;
+				Global.Parametros.Geral.ExecutarProcessamentoWebhookBraspagV2 = blnFlag;
+				strMsg = "Processamento dos dados recebidos pelo Webhook Braspag V2: " +
+						(blnFlag ? "ativado" : "desativado") +
+						", destinatário(s): " + (Global.Parametros.Geral.DESTINATARIO_MSG_ALERTA_WEBHOOK_BRASPAG_V2.Length > 0 ? Global.Parametros.Geral.DESTINATARIO_MSG_ALERTA_WEBHOOK_BRASPAG_V2 : "(nenhum)");
+				sbMsgParametros.AppendLine(strMsg);
+
+				#region [ Parâmetros do período de inatividade do processamento dos dados recebidos pelo Webhook Braspag V2 ]
+				strParametro = GeralDAO.getCampoTextoTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.PROCESSAMENTO_WEBHOOK_BRASPAG_V2_PERIODO_INATIVIDADE_HORARIO_INICIO);
+				tsParametro = Global.converteHhMmParaTimeSpan(strParametro);
+				Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioInicio = tsParametro;
+
+				strParametro = GeralDAO.getCampoTextoTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.PROCESSAMENTO_WEBHOOK_BRASPAG_V2_PERIODO_INATIVIDADE_HORARIO_TERMINO);
+				tsParametro = Global.converteHhMmParaTimeSpan(strParametro);
+				Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioTermino = tsParametro;
+
+				intParametro = GeralDAO.getCampoInteiroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.FLAG_HABILITACAO_PROCESSAMENTO_WEBHOOK_BRASPAG_V2_PERIODO_INATIVIDADE);
+				blnFlag = (intParametro != 0) ? true : false;
+				if ((Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioInicio == TimeSpan.MinValue)
+					||
+					(Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioTermino == TimeSpan.MinValue))
+				{
+					blnFlag = false;
+				}
+				Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_FlagHabilitacao = blnFlag;
+
+				if (Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_FlagHabilitacao)
+				{
+					strMsg = "Suspender processamento dos dados recebidos pelo Webhook Braspag V2 durante o período de inatividade (" +
+						Global.formataTimeSpanHorario(Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioInicio, "(nenhum)") +
+						" às " +
+						Global.formataTimeSpanHorario(Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioTermino, "(nenhum)") +
+						"): " + (blnFlag ? "ativado" : "desativado");
+				}
+				else
+				{
+					strMsg = "Suspender processamento dos dados recebidos pelo Webhook Braspag V2 durante o período de inatividade: " + (blnFlag ? "ativado" : "desativado");
+				}
+				sbMsgParametros.AppendLine(strMsg);
+
+				#region [ Parâmetros Braspag MerchantId para serem usados no processamento dos dados recebidos pelo Webhook V2 ]
+				strMsg = "Parâmetros Braspag MerchantId para ser usado no processamento dos dados recebidos pelo Webhook V2:";
+				sbMsgParametros.AppendLine(strMsg);
+				foreach (var item in Global.Parametros.Braspag.webhookBraspagV2MerchantIdList)
+				{
+					strMsg = "    " + item.Empresa + " = " + item.MerchantId;
+					sbMsgParametros.AppendLine(strMsg);
+				}
+				#endregion
+
+				#region [ Parâmetros de plano de contas para gravação de lançamentos no fluxo de caixa devido aos boletos de e-commerce (Webhook Braspag V2) ]
+				strMsg = "Parâmetros de plano de contas para gravação de lançamentos no fluxo de caixa dos boletos de e-commerce (Webhook Braspag V2):";
+				sbMsgParametros.AppendLine(strMsg);
+				foreach (var item in Global.Parametros.Braspag.webhookBraspagV2PlanoContasBoletoECList)
+				{
+					strMsg = "    " + item.Empresa + ": id_conta_corrente=" + item.id_conta_corrente.ToString() + ", id_plano_contas_empresa=" + item.id_plano_contas_empresa.ToString() + ", id_plano_contas_conta=" + item.id_plano_contas_conta.ToString();
+					sbMsgParametros.AppendLine(strMsg);
+				}
+				#endregion
+
+				#endregion
 				#endregion
 
 				#region [ Parâmetros para processamento Clearsale ]
@@ -1345,6 +1427,57 @@ namespace FinanceiroService
 									Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspag_PeriodoInatividade_FlagHabilitacao = blnFlagPeriodoInatividadeAux;
 									Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspag_PeriodoInatividade_HorarioInicio = tsParametroInicioAux;
 									Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspag_PeriodoInatividade_HorarioTermino = tsParametroTerminoAux;
+								}
+								#endregion
+
+								#region [ Parâmetro: flag de habilitação do processamento dos dados recebidos pelo Webhook Braspag V2 ]
+								strDestinatario = GeralDAO.getCampoTextoTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.DESTINATARIO_MSG_ALERTA_WEBHOOK_BRASPAG_V2);
+								if ((strDestinatario ?? "").Trim().Length == 0) strDestinatario = Global.Parametros.Geral.DESTINATARIO_PADRAO_MSG_ALERTA_SISTEMA;
+								intParametro = GeralDAO.getCampoInteiroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.FLAG_HABILITACAO_PROCESSAMENTO_WEBHOOK_BRASPAG_V2);
+								blnFlag = (intParametro != 0 ? true : false);
+								if ((Global.Parametros.Geral.ExecutarProcessamentoWebhookBraspagV2 != blnFlag)
+									||
+									(!strDestinatario.Equals(Global.Parametros.Geral.DESTINATARIO_MSG_ALERTA_WEBHOOK_BRASPAG_V2)))
+								{
+									Global.Parametros.Geral.ExecutarProcessamentoWebhookBraspagV2 = blnFlag;
+									Global.Parametros.Geral.DESTINATARIO_MSG_ALERTA_WEBHOOK_BRASPAG_V2 = strDestinatario;
+									strMsg = "Processamento dos dados recebidos pelo Webhook Braspag V2 (alteração da configuração): " +
+											(blnFlag ? "ativado" : "desativado") +
+											", destinatário(s): " + (Global.Parametros.Geral.DESTINATARIO_MSG_ALERTA_WEBHOOK_BRASPAG_V2.Length > 0 ? Global.Parametros.Geral.DESTINATARIO_MSG_ALERTA_WEBHOOK_BRASPAG_V2 : "(nenhum)");
+									Global.gravaEventLog(NOME_DESTA_ROTINA + "\r\n" + strMsg, EventLogEntryType.Information);
+								}
+								#endregion
+
+								#region [ Parâmetros do período de inatividade do processamento de dados recebidos pelo Webhook Braspag V2 ]
+								strParametro = GeralDAO.getCampoTextoTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.PROCESSAMENTO_WEBHOOK_BRASPAG_V2_PERIODO_INATIVIDADE_HORARIO_INICIO);
+								tsParametroInicioAux = Global.converteHhMmParaTimeSpan(strParametro);
+
+								strParametro = GeralDAO.getCampoTextoTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.PROCESSAMENTO_WEBHOOK_BRASPAG_V2_PERIODO_INATIVIDADE_HORARIO_TERMINO);
+								tsParametroTerminoAux = Global.converteHhMmParaTimeSpan(strParametro);
+
+								intParametro = GeralDAO.getCampoInteiroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.FLAG_HABILITACAO_PROCESSAMENTO_WEBHOOK_BRASPAG_V2_PERIODO_INATIVIDADE);
+								blnFlagPeriodoInatividadeAux = (intParametro != 0) ? true : false;
+
+								if ((tsParametroInicioAux == TimeSpan.MinValue) || (tsParametroTerminoAux == TimeSpan.MinValue)) blnFlagPeriodoInatividadeAux = false;
+
+								if ((blnFlagPeriodoInatividadeAux != Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_FlagHabilitacao)
+									||
+									(tsParametroInicioAux != Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioInicio)
+									||
+									(tsParametroTerminoAux != Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioTermino)
+								)
+								{
+									strMsg = "Período de inatividade do processamento de dados recebidos pelo Webhook Braspag V2 alterado de " +
+											(Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_FlagHabilitacao ? "'habilitado'" : "'desabilitado'") +
+											" (" + Global.formataTimeSpanHorario(Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioInicio, "(nenhum)") + " às " + Global.formataTimeSpanHorario(Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioTermino, "(nenhum)") + ")" +
+											" para " +
+											(blnFlagPeriodoInatividadeAux ? "'habilitado'" : "'desabilitado'") +
+											" (" + Global.formataTimeSpanHorario(tsParametroInicioAux, "(nenhum)") + " às " + Global.formataTimeSpanHorario(tsParametroTerminoAux, "(nenhum)") + ")";
+									Global.gravaEventLog(NOME_DESTA_ROTINA + "\r\n" + strMsg, EventLogEntryType.Information);
+
+									Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_FlagHabilitacao = blnFlagPeriodoInatividadeAux;
+									Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioInicio = tsParametroInicioAux;
+									Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioTermino = tsParametroTerminoAux;
 								}
 								#endregion
 
@@ -2444,6 +2577,100 @@ namespace FinanceiroService
 							{
 								strMsg = ex.ToString();
 								Global.gravaEventLog(NOME_DESTA_ROTINA + "\r\nProcessamento dos dados recebidos pelo Webhook Braspag\r\n" + strMsg, EventLogEntryType.Error);
+							}
+							#endregion
+
+							#region [ Processamento dos dados recebidos pelo Webhook Braspag V2 ]
+							try
+							{
+								blnPeriodoAtividadeAux = true;
+								if (Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_FlagHabilitacao)
+								{
+									if (Global.isHorarioDentroIntervalo(DateTime.Now.TimeOfDay, Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioInicio, Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioTermino))
+									{
+										blnPeriodoAtividadeAux = false;
+									}
+								}
+
+								if ((blnPeriodoAtividadeProcWebhookBraspagV2 != blnPeriodoAtividadeAux) || (dtHrUltProcWebhookBraspagV2TransicaoPeriodoInatividade == DateTime.MinValue))
+								{
+									dtHrUltProcWebhookBraspagV2TransicaoPeriodoInatividade = DateTime.Now;
+									blnPeriodoAtividadeProcWebhookBraspagV2 = blnPeriodoAtividadeAux;
+									if (blnPeriodoAtividadeProcWebhookBraspagV2)
+									{
+										strMsg = "O processamento dos dados recebidos pelo Webhook Braspag V2 entrou no período de atividade (período de inatividade: " + Global.formataTimeSpanHorario(Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioInicio, "(nenhum)") + " às " + Global.formataTimeSpanHorario(Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioTermino, "(nenhum)") + ")";
+									}
+									else
+									{
+										strMsg = "O processamento dos dados recebidos pelo Webhook Braspag V2 entrou no período de inatividade (" + Global.formataTimeSpanHorario(Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioInicio, "(nenhum)") + " às " + Global.formataTimeSpanHorario(Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioTermino, "(nenhum)") + ")";
+									}
+									Global.gravaEventLog(NOME_DESTA_ROTINA + "\r\n" + strMsg, EventLogEntryType.Information);
+								}
+
+								if (blnPeriodoAtividadeProcWebhookBraspagV2)
+								{
+									#region [ Executa o processamento em intervalos regulares ]
+									if (Global.Parametros.Geral.ExecutarProcessamentoWebhookBraspagV2)
+									{
+										// Executa nas seguintes condições:
+										//	1) A rotina nunca foi executada.
+										//	2) Já passou o intervalo de tempo de espera desde a última execução
+										lngSegundosDecorridos = Global.calculaTimeSpanSegundos(DateTime.Now - dtHrUltProcWebhookBraspagV2);
+										if (lngSegundosDecorridos >= Global.Parametros.Geral.TempoEntreProcessamentoWebhookBraspagV2EmSeg)
+										{
+											dtHrInicioProcessamento = DateTime.Now;
+											if (Braspag.executaProcessamentoWebhookV2(out blnEmailAlertaEnviado, out strMsgInformativa, out strMsgErro))
+											{
+												lngDuracaoProcessamentoEmSegundos = Global.calculaTimeSpanSegundos(DateTime.Now - dtHrInicioProcessamento);
+												strMsg = "Sucesso na execução do processamento dos dados recebidos pelo Webhook Braspag V2 (duração: " + lngDuracaoProcessamentoEmSegundos.ToString() + " segundos): " + strMsgInformativa;
+												if (blnEmailAlertaEnviado)
+												{
+													Global.gravaEventLog(NOME_DESTA_ROTINA + "\r\n" + strMsg, EventLogEntryType.Information);
+													GeralDAO.gravaLog(Global.Cte.LogBd.Operacao.OP_LOG_PROCESSAMENTO_WEBHOOK_BRASPAG_V2, strMsg, out strMsgErro);
+												}
+												else
+												{
+													Global.gravaLogAtividade(NOME_DESTA_ROTINA + ": " + strMsg);
+												}
+											}
+											else
+											{
+												lngDuracaoProcessamentoEmSegundos = Global.calculaTimeSpanSegundos(DateTime.Now - dtHrInicioProcessamento);
+												strMsg = "Falha na execução do processamento dos dados recebidos pelo Webhook Braspag V2 (duração: " + lngDuracaoProcessamentoEmSegundos.ToString() + " segundos): " + strMsgErro;
+												Global.gravaEventLog(NOME_DESTA_ROTINA + "\r\n" + strMsg, EventLogEntryType.Information);
+												GeralDAO.gravaLog(Global.Cte.LogBd.Operacao.OP_LOG_PROCESSAMENTO_WEBHOOK_BRASPAG_V2, strMsg, out strMsgErro);
+
+												#region [ Envia email de alerta ]
+												strSubject = Global.montaIdInstanciaServicoEmailSubject() + ": Falha na execução do processamento dos dados recebidos pelo Webhook Braspag V2 [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+												strBody = strMsg;
+												if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out strMsgErroAux))
+												{
+													strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + strMsgErroAux;
+													Global.gravaLogAtividade(strMsg);
+												}
+												#endregion
+											}
+
+											dtHrUltProcWebhookBraspagV2 = DateTime.Now;
+											GeralDAO.setCampoDataTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.DT_HR_ULT_PROCESSAMENTO_WEBHOOK_BRASPAG_V2, dtHrUltProcWebhookBraspagV2);
+										}
+									}
+									#endregion
+								}
+								else
+								{
+									if (Global.calculaTimeSpanMinutos(DateTime.Now - dtHrUltMsgInatividadeProcWebhookBraspagV2) >= 30)
+									{
+										dtHrUltMsgInatividadeProcWebhookBraspagV2 = DateTime.Now;
+										strMsg = "Processamento dos dados recebidos pelo Webhook Braspag V2 está suspenso devido ao horário de inatividade: " + Global.formataTimeSpanHorario(Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioInicio, "(nenhum)") + " às " + Global.formataTimeSpanHorario(Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_PeriodoInatividade_HorarioTermino, "(nenhum)");
+										Global.gravaEventLog(NOME_DESTA_ROTINA + "\r\n" + strMsg, EventLogEntryType.Information);
+									}
+								}
+							}
+							catch (Exception ex)
+							{
+								strMsg = ex.ToString();
+								Global.gravaEventLog(NOME_DESTA_ROTINA + "\r\nProcessamento dos dados recebidos pelo Webhook Braspag V2\r\n" + strMsg, EventLogEntryType.Error);
 							}
 							#endregion
 
