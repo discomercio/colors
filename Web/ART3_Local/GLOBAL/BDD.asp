@@ -4179,6 +4179,21 @@ end function
 
 
 
+function decodifica_etg_imediata(byval codigo)
+dim s
+	codigo = Trim("" & codigo)
+	select case codigo
+		case COD_ETG_IMEDIATA_ST_INICIAL: s=""
+		case COD_ETG_IMEDIATA_NAO: s="Não"
+		case COD_ETG_IMEDIATA_SIM: s="Sim"
+		case COD_ETG_IMEDIATA_NAO_DEFINIDO: s=""
+		case else s=""
+		end select
+	decodifica_etg_imediata=s
+end function
+
+
+
 ' ___________________________________________________
 ' X _ O P C A O _ F O R M A _ P A G A M E N T O
 '

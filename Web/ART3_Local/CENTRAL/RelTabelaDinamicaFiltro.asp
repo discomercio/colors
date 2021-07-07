@@ -59,7 +59,7 @@
 ' FABRICANTE MONTA ITENS SELECT
 '
 function fabricante_monta_itens_select(byval id_default)
-dim x, r, strResp, ha_default, strSql
+dim x, r, strResp, ha_default, strSql, sSelected
 	id_default = Trim("" & id_default)
 	ha_default=False
 	strSql = "SELECT DISTINCT" & _
@@ -85,7 +85,12 @@ dim x, r, strResp, ha_default, strSql
 		r.MoveNext
 		loop
 
-	strResp = "<option selected value=''>&nbsp;</option>" & chr(13) & strResp
+	if ha_default then
+		sSelected = ""
+	else
+		sSelected = " selected"
+		end if
+	strResp = "<option" & sSelected & " value=''>&nbsp;</option>" & chr(13) & strResp
 		
 	fabricante_monta_itens_select = strResp
 	r.close
@@ -98,7 +103,7 @@ end function
 ' GRUPO MONTA ITENS SELECT
 '
 function grupo_monta_itens_select(byval id_default)
-dim x, r, strResp, ha_default, strSql
+dim x, r, strResp, ha_default, strSql, sSelected
 	id_default = Trim("" & id_default)
 	ha_default=False
 	strSql = "SELECT DISTINCT" & _
@@ -124,7 +129,12 @@ dim x, r, strResp, ha_default, strSql
 		r.MoveNext
 		loop
 
-	strResp = "<option selected value=''>&nbsp;</option>" & chr(13) & strResp
+	if ha_default then
+		sSelected = ""
+	else
+		sSelected = " selected"
+		end if
+	strResp = "<option" & sSelected & " value=''>&nbsp;</option>" & chr(13) & strResp
 		
 	grupo_monta_itens_select = strResp
 	r.close
@@ -137,7 +147,7 @@ end function
 ' POTENCIA BTU MONTA ITENS SELECT
 '
 function potencia_BTU_monta_itens_select(byval id_default)
-dim x, r, strResp, ha_default, strSql
+dim x, r, strResp, ha_default, strSql, sSelected
 	id_default = Trim("" & id_default)
 	ha_default=False
 	strSql = "SELECT DISTINCT" & _
@@ -163,7 +173,12 @@ dim x, r, strResp, ha_default, strSql
 		r.MoveNext
 		loop
 
-	strResp = "<option selected value=''>&nbsp;</option>" & chr(13) & strResp
+	if ha_default then
+		sSelected = ""
+	else
+		sSelected = " selected"
+		end if
+	strResp = "<option" & sSelected & " value=''>&nbsp;</option>" & chr(13) & strResp
 		
 	potencia_BTU_monta_itens_select = strResp
 	r.close
@@ -176,7 +191,7 @@ end function
 ' CICLO MONTA ITENS SELECT
 '
 function ciclo_monta_itens_select(byval id_default)
-dim x, r, strResp, ha_default, strSql
+dim x, r, strResp, ha_default, strSql, sSelected
 	id_default = Trim("" & id_default)
 	ha_default=False
 	strSql = "SELECT DISTINCT" & _
@@ -202,7 +217,12 @@ dim x, r, strResp, ha_default, strSql
 		r.MoveNext
 		loop
 
-	strResp = "<option selected value=''>&nbsp;</option>" & chr(13) & strResp
+	if ha_default then
+		sSelected = ""
+	else
+		sSelected = " selected"
+		end if
+	strResp = "<option" & sSelected & " value=''>&nbsp;</option>" & chr(13) & strResp
 		
 	ciclo_monta_itens_select = strResp
 	r.close
@@ -215,7 +235,7 @@ end function
 ' POSICAO MERCADO MONTA ITENS SELECT
 '
 function posicao_mercado_monta_itens_select(byval id_default)
-dim x, r, strResp, ha_default, strSql
+dim x, r, strResp, ha_default, strSql, sSelected
 	id_default = Trim("" & id_default)
 	ha_default=False
 	strSql = "SELECT DISTINCT" & _
@@ -241,7 +261,12 @@ dim x, r, strResp, ha_default, strSql
 		r.MoveNext
 		loop
 
-	strResp = "<option selected value=''>&nbsp;</option>" & chr(13) & strResp
+	if ha_default then
+		sSelected = ""
+	else
+		sSelected = " selected"
+		end if
+	strResp = "<option" & sSelected & " value=''>&nbsp;</option>" & chr(13) & strResp
 		
 	posicao_mercado_monta_itens_select = strResp
 	r.close
@@ -304,6 +329,40 @@ dim x, r, strResp
 	r.close
 	set r=nothing
 end function
+
+' ____________________________________________________________________________
+' ENTREGA IMEDIATA MONTA ITENS SELECT
+'
+function entrega_imediata_monta_itens_select(byval id_default)
+dim x, strResp, ha_default, i, sOpcoes, vOpcoes, sDescricao, sSelected
+	id_default = Trim("" & id_default)
+	ha_default=False
+	strResp = ""
+	sOpcoes = COD_ETG_IMEDIATA_NAO & "|" & COD_ETG_IMEDIATA_SIM
+	vOpcoes = Split(sOpcoes, "|")
+	for i=LBound(vOpcoes) to Ubound(vOpcoes)
+		x = Trim("" & vOpcoes(i))
+		if (id_default<>"") And (id_default=x) then
+			strResp = strResp & "<option selected"
+			ha_default=True
+		else
+			strResp = strResp & "<option"
+			end if
+		strResp = strResp & " value='" & x & "'>"
+		sDescricao = decodifica_etg_imediata(vOpcoes(i))
+		strResp = strResp & sDescricao
+		strResp = strResp & "</option>" & chr(13)
+		next
+
+	if ha_default then
+		sSelected = ""
+	else
+		sSelected = " selected"
+		end if
+	strResp = "<option" & sSelected & " value=''>&nbsp;</option>" & chr(13) & strResp
+		
+	entrega_imediata_monta_itens_select = strResp
+end function
 %>
 
 
@@ -347,8 +406,12 @@ end function
 <script type="text/javascript">
 	$(function() {
 		$("input[type=radio]").hUtil('fix_radios');
-		$("#c_dt_faturamento_inicio").hUtilUI('datepicker_filtro_inicial');
-		$("#c_dt_faturamento_termino").hUtilUI('datepicker_filtro_final');
+		$("#c_dt_faturamento_inicio").hUtilUI('datepicker_peq_filtro_inicial');
+		$("#c_dt_faturamento_termino").hUtilUI('datepicker_peq_filtro_final');
+		$("#c_dt_NF_venda_inicio").hUtilUI('datepicker_peq_filtro_inicial');
+		$("#c_dt_NF_venda_termino").hUtilUI('datepicker_peq_filtro_final');
+		$("#c_dt_NF_remessa_inicio").hUtilUI('datepicker_peq_filtro_inicial');
+		$("#c_dt_NF_remessa_termino").hUtilUI('datepicker_peq_filtro_final');
 
         $("#c_grupo_pedido_origem").change(function () {
             $("#spnCounterGrupoOrigemPedido").text($("#c_grupo_pedido_origem :selected").length);
@@ -361,6 +424,14 @@ end function
 <script language="JavaScript" type="text/javascript">
 function limpaCampoSelect(c) {
 	c.options[0].selected = true;
+}
+
+function limpaCampoText() {
+	var c;
+	for (var i = 0; i < arguments.length; i++) {
+		c = arguments[i];
+		c.value = "";
+	}
 }
 
 function marcarDesmarcarCadastro() {
@@ -410,45 +481,95 @@ function desmarcarTodos() {
 }
 
 function fFILTROConfirma( f ) {
-var s_de, s_ate, i_qtde_campos;
+var i_qtde_campos, bTemFiltroPeriodo, msg_erro_consistencia;
 
-//  PERÍODO DE FATURAMENTO
-	if (trim(f.c_dt_faturamento_inicio.value) == "") {
-		alert("Informe a data de início do período!!");
-		f.c_dt_faturamento_inicio.focus();
-		return;
-	}
+	bTemFiltroPeriodo = false;
+	msg_erro_consistencia = "";
 
-	if (trim(f.c_dt_faturamento_termino.value) == "") {
-		alert("Informe a data de término do período!!");
-		f.c_dt_faturamento_termino.focus();
-		return;
-	}
-
-	if (trim(f.c_dt_faturamento_inicio.value) != "") {
-		if (!isDate(f.c_dt_faturamento_inicio)) {
-			alert("Data inválida!!");
+	//  PERÍODO DE FATURAMENTO
+	if ((trim(f.c_dt_faturamento_inicio.value) != "") || (trim(f.c_dt_faturamento_termino.value) != "")) {
+		if (trim(f.c_dt_faturamento_inicio.value) == "") {
+			alert("Informe a data de início do período!!");
 			f.c_dt_faturamento_inicio.focus();
 			return;
 		}
-	}
 
-	if (trim(f.c_dt_faturamento_termino.value) != "") {
-		if (!isDate(f.c_dt_faturamento_termino)) {
-			alert("Data inválida!!");
+		if (trim(f.c_dt_faturamento_termino.value) == "") {
+			alert("Informe a data de término do período!!");
 			f.c_dt_faturamento_termino.focus();
 			return;
 		}
+
+		if (!consiste_periodo(f.c_dt_faturamento_inicio, f.c_dt_faturamento_termino)) return;
+		bTemFiltroPeriodo = true;
 	}
 
-	s_de = trim(f.c_dt_faturamento_inicio.value);
-	s_ate = trim(f.c_dt_faturamento_termino.value);
-	if ((s_de != "") && (s_ate != "")) {
-		s_de = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_de));
-		s_ate = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(s_ate));
-		if (s_de > s_ate) {
-			alert("Data de término é menor que a data de início!!");
-			f.c_dt_faturamento_termino.focus();
+	// PERÍODO NF VENDA
+	if ((trim(f.c_dt_NF_venda_inicio.value) != "") || (trim(f.c_dt_NF_venda_termino.value) != "")) {
+		if (trim(f.c_dt_NF_venda_inicio.value) == "") {
+			alert("Informe a data de início do período!!");
+			f.c_dt_NF_venda_inicio.focus();
+			return;
+		}
+
+		if (trim(f.c_dt_NF_venda_termino.value) == "") {
+			alert("Informe a data de término do período!!");
+			f.c_dt_NF_venda_termino.focus();
+			return;
+		}
+
+		if (!consiste_periodo(f.c_dt_NF_venda_inicio, f.c_dt_NF_venda_termino)) return;
+		bTemFiltroPeriodo = true;
+	}
+
+	// PERÍODO NF REMESSA
+	if ((trim(f.c_dt_NF_remessa_inicio.value) != "") || (trim(f.c_dt_NF_remessa_termino.value) != "")) {
+		if (trim(f.c_dt_NF_remessa_inicio.value) == "") {
+			alert("Informe a data de início do período!!");
+			f.c_dt_NF_remessa_inicio.focus();
+			return;
+		}
+
+		if (trim(f.c_dt_NF_remessa_termino.value) == "") {
+			alert("Informe a data de término do período!!");
+			f.c_dt_NF_remessa_termino.focus();
+			return;
+		}
+
+		if (!consiste_periodo(f.c_dt_NF_remessa_inicio, f.c_dt_NF_remessa_termino)) return;
+		bTemFiltroPeriodo = true;
+	}
+
+	// ALGUM FILTRO POR PERÍODO DE DATAS FOI FORNECIDO?
+	// O FILTRO POR STATUS DE ENTREGA IMEDIATA NÃO DEVE TER NENHUM FILTRO POR DATA PARA FUNCIONAR CORRETAMENTE, JÁ QUE OS PEDIDOS NESSE CONTEXTO AINDA NÃO ESTÃO COMO ENTREGUES
+	if ((!bTemFiltroPeriodo) && (trim(f.c_entrega_imediata.value) == "")) {
+		alert("É necessário preencher um dos períodos de data como filtro!!");
+		return;
+	}
+
+	// O FILTRO DE STATUS DE ENTREGA IMEDIATA NÃO PODE OPERAR JUNTO COM OS CAMPOS DE SAÍDA 'VL Custo (Real)', 'VL Custo Total (Real)' E 'Nacional/Importado'
+	// PORQUE O PROCESSAMENTO DESSES CAMPOS IMPLICA EM USAR AS TABELAS T_ESTOQUE_MOVIMENTO E T_ESTOQUE_ITEM, SENDO QUE NO CONTEXTO DA ENTREGA IMEDIATA
+	// O PEDIDO AINDA NÃO ESTÁ ENTREGUE E PODE ESTAR ESPERANDO A CHEGADA DE PRODUTOS NO ESTOQUE
+	if (trim(f.c_entrega_imediata.value) != "") {
+		if ((trim(f.c_dt_faturamento_inicio.value) != "") || (trim(f.c_dt_faturamento_termino.value) != "")) {
+			if (msg_erro_consistencia.length > 0) msg_erro_consistencia += "\n\n";
+			msg_erro_consistencia += "O filtro de status de Entrega Imediata não pode operar em conjunto com o filtro 'PERÍODO (ENTREGUE)'!";
+		}
+		if (f.ckb_COL_VL_CUSTO_REAL.checked) {
+			if (msg_erro_consistencia.length > 0) msg_erro_consistencia += "\n\n";
+			msg_erro_consistencia += "O filtro de status de Entrega Imediata não pode operar em conjunto com o campo de saída 'VL Custo (Real)'!";
+		}
+		if (f.ckb_COL_VL_CUSTO_REAL_TOTAL.checked) {
+			if (msg_erro_consistencia.length > 0) msg_erro_consistencia += "\n\n";
+			msg_erro_consistencia += "O filtro de status de Entrega Imediata não pode operar em conjunto com o campo de saída 'VL Custo Total (Real)'!";
+		}
+		if (f.ckb_COL_NAC_IMP.checked) {
+			if (msg_erro_consistencia.length > 0) msg_erro_consistencia += "\n\n";
+			msg_erro_consistencia += "O filtro de status de Entrega Imediata não pode operar em conjunto com o campo de saída 'Nacional/Importado'!";
+		}
+
+		if (msg_erro_consistencia.length > 0) {
+			alert(msg_erro_consistencia);
 			return;
 		}
 	}
@@ -547,23 +668,94 @@ function exibe_botao_confirmar() {
 		<table cellspacing="0" cellpadding="0">
 		<tr>
 			<td align="left" valign="bottom">
-				<span class="PLTe" style="cursor:default">PERÍODO</span>
+				<span class="PLTe" style="cursor:default">PERÍODO (ENTREGUE)</span>
 			</td>
 		</tr>
 		</table>
 		<table cellspacing="0" cellpadding="0">
 			<tr bgcolor="#FFFFFF">
 			<td align="left">
-				<input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_faturamento_inicio" id="c_dt_faturamento_inicio"
+				<input class="PLLc" maxlength="10" style="width:76px;" name="c_dt_faturamento_inicio" id="c_dt_faturamento_inicio"
 					onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" 
 					onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_faturamento_termino.focus(); filtra_data();"
 					value="<%=get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|c_dt_faturamento_inicio")%>"
 					>&nbsp;<span class="PLLc" style="color:#808080;">&nbsp;até&nbsp;</span>&nbsp;
-					<input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_faturamento_termino" id="c_dt_faturamento_termino"
+					<input class="PLLc" maxlength="10" style="width:76px;" name="c_dt_faturamento_termino" id="c_dt_faturamento_termino"
 					onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" 
 					onkeypress="if (digitou_enter(true)) fFILTRO.c_fabricante.focus(); filtra_data();"
 					value="<%=get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|c_dt_faturamento_termino")%>"
 					/>
+			</td>
+			<td style="width:10px;"></td>
+			<td align="left" valign="middle">
+				<a name="bLimparPeriodoFaturamento" id="bLimparPeriodoFaturamento" href="javascript:limpaCampoText(fFILTRO.c_dt_faturamento_inicio,fFILTRO.c_dt_faturamento_termino);" title="limpa o filtro 'Período (Entregue)'">
+							<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+			</td>
+			</tr>
+		</table>
+	</td>
+	</tr>
+<!--  PERÍODO NF VENDA  -->
+	<tr bgcolor="#FFFFFF">
+	<td class="MDBE" align="left" nowrap>
+		<table cellspacing="0" cellpadding="0">
+		<tr>
+			<td align="left" valign="bottom">
+				<span class="PLTe" style="cursor:default">PERÍODO NF VENDA</span>
+			</td>
+		</tr>
+		</table>
+		<table cellspacing="0" cellpadding="0">
+			<tr bgcolor="#FFFFFF">
+			<td align="left">
+				<input class="PLLc" maxlength="10" style="width:76px;" name="c_dt_NF_venda_inicio" id="c_dt_NF_venda_inicio"
+					onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" 
+					onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_NF_venda_termino.focus(); filtra_data();"
+					value="<%=get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|c_dt_NF_venda_inicio")%>"
+					>&nbsp;<span class="PLLc" style="color:#808080;">&nbsp;até&nbsp;</span>&nbsp;
+					<input class="PLLc" maxlength="10" style="width:76px;" name="c_dt_NF_venda_termino" id="c_dt_NF_venda_termino"
+					onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" 
+					onkeypress="if (digitou_enter(true)) fFILTRO.c_fabricante.focus(); filtra_data();"
+					value="<%=get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|c_dt_NF_venda_termino")%>"
+					/>
+			</td>
+			<td style="width:10px;"></td>
+			<td align="left" valign="middle">
+				<a name="bLimparPeriodoNfVenda" id="bLimparPeriodoNfVenda" href="javascript:limpaCampoText(fFILTRO.c_dt_NF_venda_inicio,fFILTRO.c_dt_NF_venda_termino);" title="limpa o filtro 'Período NF Venda'">
+							<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+			</td>
+			</tr>
+		</table>
+	</td>
+	</tr>
+<!--  PERÍODO NF REMESSA  -->
+	<tr bgcolor="#FFFFFF">
+	<td class="MDBE" align="left" nowrap>
+		<table cellspacing="0" cellpadding="0">
+		<tr>
+			<td align="left" valign="bottom">
+				<span class="PLTe" style="cursor:default">PERÍODO NF REMESSA</span>
+			</td>
+		</tr>
+		</table>
+		<table cellspacing="0" cellpadding="0">
+			<tr bgcolor="#FFFFFF">
+			<td align="left">
+				<input class="PLLc" maxlength="10" style="width:76px;" name="c_dt_NF_remessa_inicio" id="c_dt_NF_remessa_inicio"
+					onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" 
+					onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_NF_remessa_termino.focus(); filtra_data();"
+					value="<%=get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|c_dt_NF_remessa_inicio")%>"
+					>&nbsp;<span class="PLLc" style="color:#808080;">&nbsp;até&nbsp;</span>&nbsp;
+					<input class="PLLc" maxlength="10" style="width:76px;" name="c_dt_NF_remessa_termino" id="c_dt_NF_remessa_termino"
+					onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" 
+					onkeypress="if (digitou_enter(true)) fFILTRO.c_fabricante.focus(); filtra_data();"
+					value="<%=get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|c_dt_NF_remessa_termino")%>"
+					/>
+			</td>
+			<td style="width:10px;"></td>
+			<td align="left" valign="middle">
+				<a name="bLimparPeriodoNfRemessa" id="bLimparPeriodoNfRemessa" href="javascript:limpaCampoText(fFILTRO.c_dt_NF_remessa_inicio,fFILTRO.c_dt_NF_remessa_termino);" title="limpa o filtro 'Período NF Remessa'">
+							<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
 			</td>
 			</tr>
 		</table>
@@ -675,6 +867,27 @@ function exibe_botao_confirmar() {
 		</table>
 	</td>
 	</tr>
+<!--  ENTREGA IMEDIATA  -->
+	<tr bgcolor="#FFFFFF">
+	<td class="ME MD MB" align="left" nowrap>
+		<span class="PLTe">ENTREGA IMEDIATA</span>
+		<br>
+		<table cellpadding="0" cellspacing="0">
+		<tr>
+		<td>
+			<select id="c_entrega_imediata" name="c_entrega_imediata" class="LST" style="min-width:70px;" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;">
+			<% =entrega_imediata_monta_itens_select(get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|c_entrega_imediata")) %>
+			</select>
+		</td>
+		<td style="width:1px;"></td>
+		<td align="left" valign="middle">
+			<a name="bLimparEntregaImediata" id="bLimparEntregaImediata" href="javascript:limpaCampoSelect(fFILTRO.c_entrega_imediata)" title="limpa o filtro 'Entrega Imediata'">
+						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+		</td>
+		</tr>
+		</table>
+	</td>
+	</tr>
 <!--  TIPO DE CLIENTE  -->
 	<tr bgcolor="#FFFFFF">
 	<td class="MDBE" align="left" nowrap>
@@ -755,7 +968,7 @@ function exibe_botao_confirmar() {
 		<table width="100%" cellpadding="2" cellspacing="2">
 			<tr>	
 			    <td rowspan="2" class="tdColSaida" align="left" valign="top" style="margin-left:2px; margin-right:2px">	
-			        <fieldset style="height:452px; border: solid 1px #555; padding: auto"><legend><input id="cadastro" type="checkbox" onclick="marcarDesmarcarCadastro()"/><label for="cadastro">Cadastro</label></legend>	   
+			        <fieldset style="height:508px; border: solid 1px #555; padding: auto"><legend><input id="cadastro" type="checkbox" onclick="marcarDesmarcarCadastro()"/><label for="cadastro">Cadastro</label></legend>	   
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_DATA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 				
@@ -771,6 +984,16 @@ function exibe_botao_confirmar() {
 					        if (InStr(s_campos_saida_default, "|ckb_COL_DT_EMISSAO_NF|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_DT_EMISSAO_NF" name="ckb_COL_DT_EMISSAO_NF"
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_DT_EMISSAO_NF.click();">Data Emissão NF</span><br />
+
+				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_NF_REMESSA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_NF_REMESSA" name="ckb_COL_NF_REMESSA"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_NF_REMESSA.click();">NF Remessa</span><br />
+						
+                        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_DT_EMISSAO_NF_REMESSA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_DT_EMISSAO_NF_REMESSA" name="ckb_COL_DT_EMISSAO_NF_REMESSA"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_DT_EMISSAO_NF_REMESSA.click();">Data Emissão NF Remessa</span><br />
 
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_LOJA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
@@ -841,6 +1064,10 @@ function exibe_botao_confirmar() {
 					        if (InStr(s_campos_saida_default, "|ckb_COL_TRANSPORTADORA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_TRANSPORTADORA" name="ckb_COL_TRANSPORTADORA"
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_TRANSPORTADORA.click();">Transportadora</span><br />
+				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_ENTREGA_IMEDIATA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_ENTREGA_IMEDIATA" name="ckb_COL_ENTREGA_IMEDIATA"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_ENTREGA_IMEDIATA.click();">Entrega Imediata</span><br />
                         <hr />
                         <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_INDICADOR_CPF_CNPJ|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
