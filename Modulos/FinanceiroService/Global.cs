@@ -29,8 +29,8 @@ namespace FinanceiroService
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "Financeiro Service";
 				public static readonly string ID_SISTEMA_EVENTLOG = GetConfigurationValue("ServiceName");
-				public const string VERSAO_NUMERO = "1.38";
-				public const string VERSAO_DATA = "29.JUN.2021";
+				public const string VERSAO_NUMERO = "1.39";
+				public const string VERSAO_DATA = "08.JUL.2021";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Serviço do Windows para execução automática de rotinas financeiras";
@@ -304,8 +304,13 @@ namespace FinanceiroService
 			 *      t_BRASPAG_WEBHOOK_COMPLEMENTAR, o tratamento para o novo post de notificação armazena em
 			 *      t_BRASPAG_WEBHOOK_V2 e t_BRASPAG_WEBHOOK_V2_COMPLEMENTAR
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.39 - XX.XX.20XX - por XXX
-			 *      
+			 * v 1.39 - 08.07.2021 - por HHO
+			 *      Ajustes no tratamento do post de notificação da Braspag para tratar a situação em que a
+			 *      transação é feita fora do sistema, como no site Arclube, por exemplo. Nessa situação,
+			 *      para transações que não sejam de boleto, ou seja, transações de cartão feitas no
+			 *      e-commerce, o processamento não tem sucesso na tentativa de obter as informações
+			 *      específicas de boleto e retorna com falha, repetindo esse processo até atingir o limite
+			 *      máximo de tentativas.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.40 - XX.XX.20XX - por XXX
 			 *      

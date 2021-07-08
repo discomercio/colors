@@ -843,7 +843,7 @@ namespace FinanceiroService
 			cmUpdateWebhookV2PaymentMethodIdentificado = BD.criaSqlCommand();
 			cmUpdateWebhookV2PaymentMethodIdentificado.CommandText = strSql;
 			cmUpdateWebhookV2PaymentMethodIdentificado.Parameters.Add("@Id", SqlDbType.Int);
-			cmUpdateWebhookV2PaymentMethodIdentificado.Parameters.Add("@PaymentMethodIdentificado", SqlDbType.VarChar, 3);
+			cmUpdateWebhookV2PaymentMethodIdentificado.Parameters.Add("@PaymentMethodIdentificado", SqlDbType.VarChar, 5);
 			cmUpdateWebhookV2PaymentMethodIdentificado.Parameters.Add("@OrderIdIdentificado", SqlDbType.VarChar, 20);
 			cmUpdateWebhookV2PaymentMethodIdentificado.Parameters.Add("@ProcessadoStatus", SqlDbType.TinyInt);
 			cmUpdateWebhookV2PaymentMethodIdentificado.Prepare();
@@ -970,7 +970,7 @@ namespace FinanceiroService
 			cmInsertWebhookV2QueryDadosComplementares.Parameters.Add("@id_braspag_webhook_v2", SqlDbType.Int);
 			cmInsertWebhookV2QueryDadosComplementares.Parameters.Add("@BraspagTransactionId", SqlDbType.VarChar, 36);
 			cmInsertWebhookV2QueryDadosComplementares.Parameters.Add("@BraspagOrderId", SqlDbType.VarChar, 36);
-			cmInsertWebhookV2QueryDadosComplementares.Parameters.Add("@PaymentMethod", SqlDbType.VarChar, 3);
+			cmInsertWebhookV2QueryDadosComplementares.Parameters.Add("@PaymentMethod", SqlDbType.VarChar, 5);
 			cmInsertWebhookV2QueryDadosComplementares.Parameters.Add("@GlobalStatus", SqlDbType.VarChar, 5);
 			cmInsertWebhookV2QueryDadosComplementares.Parameters.Add("@ReceivedDate", SqlDbType.VarChar, 19);
 			cmInsertWebhookV2QueryDadosComplementares.Parameters.Add("@CapturedDate", SqlDbType.VarChar, 19);

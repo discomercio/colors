@@ -5122,7 +5122,7 @@ namespace FinanceiroService
 		#endregion
 
 		#region [ consultaDadosConsolidadosBoletoParaWebhookV2 ]
-		public static BraspagWebhookV2DadosConsolidadosBoleto consultaDadosConsolidadosBoletoParaWebhookV2(string merchantId, string braspagTransactionId, out string msg_erro)
+		public static BraspagWebhookV2DadosConsolidadosBoleto consultaDadosConsolidadosBoletoParaWebhookV2(string merchantId, string braspagTransactionId,out BraspagGetTransactionDataResponse rGetTransactionData, out string msg_erro)
 		{
 			#region [ Declarações ]
 			const String NOME_DESTA_ROTINA = "Braspag.consultaDadosConsolidadosBoletoParaWebhookV2()";
@@ -5135,11 +5135,11 @@ namespace FinanceiroService
 			DateTime? dtCapturedDate;
 			DateTime? dtBoletoExpirationDate;
 			BraspagWebhookV2DadosConsolidadosBoleto rRESP = null;
-			BraspagGetTransactionDataResponse rGetTransactionData;
 			BraspagGetBoletoDataResponse rGetBoletoData;
 			#endregion
 
 			msg_erro = "";
+			rGetTransactionData = null;
 			try
 			{
 				#region [ Consulta GetTransactionData p/ obter 'Status', 'CapturedDate' e 'ReceivedDate' ]
@@ -6194,6 +6194,7 @@ namespace FinanceiroService
 			#region [ Declarações ]
 			const String NOME_DESTA_ROTINA = "Braspag.executaProcessamentoWebhookV2()";
 			bool blnWebhookV2QueryComplSucesso;
+			bool blnWebhookV2QueryComplPaymentMethodIdentificadoTransacaoIgnorada;
 			bool blnWebhookV2QueryComplFalhaDefinitiva;
 			bool blnWebhookV2QueryComplFalhaTemporaria;
 			bool blnRegistrouPagtoPedido;
@@ -6214,6 +6215,7 @@ namespace FinanceiroService
 			string strMerchantId;
 			string strNumPedidoERP;
 			string strNumPedidoERPAux;
+			string strPaymentMethod;
 			string s_log;
 			String strLinhaSeparadora = new String('=', 80);
 			List<StringBuilder> vDadosEmail = new List<StringBuilder>();
@@ -6228,6 +6230,7 @@ namespace FinanceiroService
 			Global.Parametros.Braspag.WebhookBraspagV2MerchantId webhookBraspagV2MerchantId;
 			Global.Parametros.Braspag.WebhookBraspagV2PlanoContasBoletoEC webhookBraspagV2PlanoContasBoletoEC;
 			BraspagWebhookV2DadosConsolidadosBoleto rBoleto;
+			BraspagGetTransactionDataResponse rGetTransactionData;
 			List<BraspagWebhookV2> listaWebhookV2 = new List<BraspagWebhookV2>();
 			BraspagWebhookV2 pedidoWebhookV2;
 			SqlCommand cmCommand;
@@ -6346,6 +6349,7 @@ namespace FinanceiroService
 					strMerchantId = "";
 					webhookBraspagV2PlanoContasBoletoEC = null;
 					blnWebhookV2QueryComplSucesso = false;
+					blnWebhookV2QueryComplPaymentMethodIdentificadoTransacaoIgnorada = false;
 					blnWebhookV2QueryComplFalhaDefinitiva = false;
 					blnWebhookV2QueryComplFalhaTemporaria = false;
 					strNumPedidoERP = "";
@@ -6413,17 +6417,66 @@ namespace FinanceiroService
 						#endregion
 
 						#region [ Obtém dados consolidados do boleto ]
-						rBoleto = consultaDadosConsolidadosBoletoParaWebhookV2(strMerchantId, pedidoWHV2.PaymentId, out msg_erro_aux);
+						rBoleto = consultaDadosConsolidadosBoletoParaWebhookV2(strMerchantId, pedidoWHV2.PaymentId, out rGetTransactionData, out msg_erro_aux);
 						if (rBoleto == null)
 						{
 							msg_erro_requisicao = (msg_erro_aux ?? "");
 
-							blnWebhookV2QueryComplFalhaTemporaria = true;
-							updateWebhookV2QueryComplFalhaTemporaria = new BraspagUpdateWebhookV2QueryDadosComplementaresFalhaTemporaria();
-							updateWebhookV2QueryComplFalhaTemporaria.id_braspag_webhook_v2 = pedidoWHV2.Id;
-							updateWebhookV2QueryComplFalhaTemporaria.BraspagDadosComplementaresQueryStatus = Global.Cte.Braspag.WebhookV2.BraspagDadosComplementaresQueryStatus.FalhaConsultaBraspag;
-							updateWebhookV2QueryComplFalhaTemporaria.BraspagDadosComplementaresQueryTentativas = pedidoWHV2.BraspagDadosComplementaresQueryTentativas;
-							updateWebhookV2QueryComplFalhaTemporaria.MsgErroTemporario = "Falha ao consultar dados complementares na Braspag (MerchantId = " + strMerchantId + ", PaymentId = " + pedidoWHV2.PaymentId + ")" + (msg_erro_requisicao.Length > 0 ? ": " + msg_erro_requisicao : "");
+							strPaymentMethod = "";
+							if (rGetTransactionData == null)
+							{
+								// Houve falha na consulta inicial GetTransactionData
+								blnWebhookV2QueryComplFalhaTemporaria = true;
+							}
+							else
+							{
+								strPaymentMethod = (rGetTransactionData.PaymentMethod ?? "");
+								if (strPaymentMethod.Equals(Global.Cte.Braspag.PaymentMethod.Boleto_Bradesco_SPS.GetValue()) || strPaymentMethod.Equals(Global.Cte.Braspag.PaymentMethod.Boleto_Registrado_Bradesco.GetValue()))
+								{
+									// É transação de boleto e houve falha na consulta GetBoletoData
+									blnWebhookV2QueryComplFalhaTemporaria = true;
+								}
+								else
+								{
+									if (strPaymentMethod.Trim().Length > 0)
+									{
+										// Transação não é de boleto, então deve ser transação de cartão realizada no site de e-commerce, ou seja, realizada fora do sistema
+										// Esta situação não é erro
+										blnWebhookV2QueryComplPaymentMethodIdentificadoTransacaoIgnorada = true;
+										strMsg = NOME_DESTA_ROTINA + ": Identificado o PaymentMethod de transação que não é de boleto: PaymentId = " + pedidoWHV2.PaymentId + ", PaymentMethod = " + strPaymentMethod + ", " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString();
+										Global.gravaLogAtividade(strMsg);
+
+										#region [ Atualiza o PaymentMethod no registro ]
+										updateWebhookV2PaymentMethodIdentificado = new BraspagUpdateWebhookV2PaymentMethodIdentificado();
+										updateWebhookV2PaymentMethodIdentificado.Id = pedidoWHV2.Id;
+										updateWebhookV2PaymentMethodIdentificado.OrderIdIdentificado = rGetTransactionData.OrderId;
+										updateWebhookV2PaymentMethodIdentificado.PaymentMethodIdentificado = rGetTransactionData.PaymentMethod;
+										updateWebhookV2PaymentMethodIdentificado.ProcessadoStatus = Global.Cte.Braspag.WebhookV2.NotificacaoProcessadoStatus.NaoProcessado;
+										if (!BraspagDAO.updateWebhookV2PaymentMethodIdentificado(updateWebhookV2PaymentMethodIdentificado, out msg_erro_aux))
+										{
+											msg_erro_last_op = msg_erro_aux;
+
+											strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Falha ao tentar atualizar o PaymentMethod e OrderId no registro da transação " + pedidoWHV2.PaymentId + " [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+											strBody = "Mensagem de Financeiro Service\nFalha ao tentar atualizar o PaymentMethod e OrderId no registro da transação " + pedidoWHV2.PaymentId + " (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")\r\n" + msg_erro_last_op;
+											if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+											{
+												strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+												Global.gravaLogAtividade(strMsg);
+											}
+										}
+										#endregion
+									}
+								}
+							}
+
+							if (blnWebhookV2QueryComplFalhaTemporaria)
+							{
+								updateWebhookV2QueryComplFalhaTemporaria = new BraspagUpdateWebhookV2QueryDadosComplementaresFalhaTemporaria();
+								updateWebhookV2QueryComplFalhaTemporaria.id_braspag_webhook_v2 = pedidoWHV2.Id;
+								updateWebhookV2QueryComplFalhaTemporaria.BraspagDadosComplementaresQueryStatus = Global.Cte.Braspag.WebhookV2.BraspagDadosComplementaresQueryStatus.FalhaConsultaBraspag;
+								updateWebhookV2QueryComplFalhaTemporaria.BraspagDadosComplementaresQueryTentativas = pedidoWHV2.BraspagDadosComplementaresQueryTentativas;
+								updateWebhookV2QueryComplFalhaTemporaria.MsgErroTemporario = "Falha ao consultar dados complementares na Braspag (MerchantId = " + strMerchantId + ", PaymentId = " + pedidoWHV2.PaymentId + ")" + (msg_erro_requisicao.Length > 0 ? ": " + msg_erro_requisicao : "");
+							}
 
 							// Prossegue para o próximo pedido da lista (o bloco finally irá registrar o código e mensagem da falha)
 							continue;
@@ -6554,6 +6607,12 @@ namespace FinanceiroService
 								}
 							}
 							#endregion
+						}
+						else if (blnWebhookV2QueryComplPaymentMethodIdentificadoTransacaoIgnorada)
+						{
+							// Não realiza nenhuma operação adicional
+							// O PaymentMethod foi identificado e atualizado já durante o processamento de identificação
+							// Esse caso ocorre no processamento de transações de cartão realizadas fora do sistema, ou seja, no site de e-commerce
 						}
 						else
 						{
