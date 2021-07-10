@@ -1737,3 +1737,16 @@ function converte_cst_nfe_fabricante_para_entrada_estoque(cst_nfe_fabricante) {
 
 	return s_resp;
 }
+
+function limpaMultiplosCampos() {
+	var c;
+	for (var i = 0; i < arguments.length; i++) {
+		c = arguments[i];
+		if (c.type && c.type.toLowerCase() === 'checkbox') {
+			c.checked = false;
+		}
+		else {
+			c.value = "";
+		}
+	}
+}

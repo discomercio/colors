@@ -72,6 +72,8 @@
 	dim ckb_st_pagto_pago, ckb_st_pagto_nao_pago, ckb_st_pagto_pago_parcial
 	dim ckb_periodo_cadastro, c_dt_cadastro_inicio, c_dt_cadastro_termino
 	dim ckb_entrega_marcada_para, c_dt_entrega_inicio, c_dt_entrega_termino
+	dim ckb_periodo_emissao_NF_venda, c_dt_NF_venda_inicio, c_dt_NF_venda_termino
+	dim ckb_periodo_emissao_NF_remessa, c_dt_NF_remessa_inicio, c_dt_NF_remessa_termino
 	dim ckb_produto, c_fabricante, c_produto, c_grupo, v_grupos, ckb_somente_pedidos_produto_alocado
 	dim rb_loja, c_loja, c_loja_de, c_loja_ate, vLoja, vLojaAux
 	dim c_cliente_cnpj_cpf, c_cliente_uf
@@ -123,6 +125,12 @@
 	ckb_entrega_marcada_para = Trim(Request.Form("ckb_entrega_marcada_para"))
 	c_dt_entrega_inicio = Trim(Request.Form("c_dt_entrega_inicio"))
 	c_dt_entrega_termino = Trim(Request.Form("c_dt_entrega_termino"))
+	ckb_periodo_emissao_NF_venda = Trim(Request.Form("ckb_periodo_emissao_NF_venda"))
+	c_dt_NF_venda_inicio = Trim(Request.Form("c_dt_NF_venda_inicio"))
+	c_dt_NF_venda_termino = Trim(Request.Form("c_dt_NF_venda_termino"))
+	ckb_periodo_emissao_NF_remessa = Trim(Request.Form("ckb_periodo_emissao_NF_remessa"))
+	c_dt_NF_remessa_inicio = Trim(Request.Form("c_dt_NF_remessa_inicio"))
+	c_dt_NF_remessa_termino = Trim(Request.Form("c_dt_NF_remessa_termino"))
 	ckb_produto = Trim(Request.Form("ckb_produto"))
 	c_fabricante = retorna_so_digitos(Trim(Request.Form("c_fabricante")))
 	c_produto = Ucase(Trim(Request.Form("c_produto")))
@@ -433,6 +441,56 @@
 				end if
 			end if
 		
+	'	PERÍODO DE EMISSÃO DA NF DE VENDA
+		if ckb_periodo_emissao_NF_venda <> "" then
+			if alerta = "" then
+				strDtRefDDMMYYYY = c_dt_NF_venda_inicio
+				if strDtRefDDMMYYYY <> "" then
+					if StrToDate(strDtRefDDMMYYYY) < dtMinDtInicialFiltroPeriodo then
+						alerta = "Data inválida para consulta: " & strDtRefDDMMYYYY & ".  O período de consulta não pode compreender datas anteriores a " & strMinDtInicialFiltroPeriodoDDMMYYYY
+						end if
+					end if
+				end if
+
+			if alerta = "" then
+				strDtRefDDMMYYYY = c_dt_NF_venda_termino
+				if strDtRefDDMMYYYY <> "" then
+					if StrToDate(strDtRefDDMMYYYY) < dtMinDtInicialFiltroPeriodo then
+						alerta = "Data inválida para consulta: " & strDtRefDDMMYYYY & ".  O período de consulta não pode compreender datas anteriores a " & strMinDtInicialFiltroPeriodoDDMMYYYY
+						end if
+					end if
+				end if
+
+			if alerta = "" then
+				if c_dt_NF_venda_inicio = "" then c_dt_NF_venda_inicio = strMinDtInicialFiltroPeriodoDDMMYYYY
+				end if
+			end if
+
+	'	PERÍODO DE EMISSÃO DA NF DE REMESSA
+		if ckb_periodo_emissao_NF_remessa <> "" then
+			if alerta = "" then
+				strDtRefDDMMYYYY = c_dt_NF_remessa_inicio
+				if strDtRefDDMMYYYY <> "" then
+					if StrToDate(strDtRefDDMMYYYY) < dtMinDtInicialFiltroPeriodo then
+						alerta = "Data inválida para consulta: " & strDtRefDDMMYYYY & ".  O período de consulta não pode compreender datas anteriores a " & strMinDtInicialFiltroPeriodoDDMMYYYY
+						end if
+					end if
+				end if
+
+			if alerta = "" then
+				strDtRefDDMMYYYY = c_dt_NF_remessa_termino
+				if strDtRefDDMMYYYY <> "" then
+					if StrToDate(strDtRefDDMMYYYY) < dtMinDtInicialFiltroPeriodo then
+						alerta = "Data inválida para consulta: " & strDtRefDDMMYYYY & ".  O período de consulta não pode compreender datas anteriores a " & strMinDtInicialFiltroPeriodoDDMMYYYY
+						end if
+					end if
+				end if
+
+			if alerta = "" then
+				if c_dt_NF_remessa_inicio = "" then c_dt_NF_remessa_inicio = strMinDtInicialFiltroPeriodoDDMMYYYY
+				end if
+			end if
+
 	else
 		strMinDtInicialFiltroPeriodoYYYYMMDD = ""
 		strMinDtInicialFiltroPeriodoDDMMYYYY = ""
@@ -817,6 +875,30 @@ dim s, s_aux, s_resp
 		s_resp = s_resp & "<br>"
 		end if
 	
+	if ckb_periodo_emissao_NF_venda <> "" then
+		s = ""
+		s_aux = c_dt_NF_venda_inicio
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux & " a "
+		s_aux = c_dt_NF_venda_termino
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux
+		s_resp = s_resp & "Emissão NF Venda: " & s
+		s_resp = s_resp & "<br>"
+		end if
+
+	if ckb_periodo_emissao_NF_remessa <> "" then
+		s = ""
+		s_aux = c_dt_NF_remessa_inicio
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux & " a "
+		s_aux = c_dt_NF_remessa_termino
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux
+		s_resp = s_resp & "Emissão NF Remessa: " & s
+		s_resp = s_resp & "<br>"
+		end if
+
 	if ckb_produto <> "" then 
 		s_aux = c_fabricante
 		if s_aux = "" then s_aux = "todos"
@@ -923,7 +1005,7 @@ sub consulta_executa
 dim r
 dim blnPorFornecedor
 dim s, s_aux, s_periodo_aux, s_cor, s_bkg_color, s_nbsp, s_align, s_nowrap, s_sql, cab_table, cab, n_reg, n_reg_total, n_colspan, n_colspan_final, s_colspan_final, s_loja
-dim s_where, s_where_aux, s_from, cont
+dim s_where, s_where_aux, s_where_ext, s_from, cont
 dim vl_total_faturamento, vl_sub_total_faturamento, vl_total_pago, vl_sub_total_pago
 dim vl_total_faturamento_NF, vl_sub_total_faturamento_NF
 dim vl_a_pagar, vl_sub_total_a_pagar, vl_total_a_pagar
@@ -957,6 +1039,7 @@ dim sLinkView
 
 '	MONTA CLÁUSULA WHERE
 	s_where = ""
+	s_where_ext = ""
 
 '	CRITÉRIO: STATUS DE ENTREGA
 	s = ""
@@ -1318,7 +1401,73 @@ dim sLinkView
 			s_where = s_where & " (" & s & ")"
 			end if
 		end if
-		
+	
+'	CRITÉRIO: PERÍODO DE EMISSÃO DA NF DE VENDA
+	if ckb_periodo_emissao_NF_venda <> "" then
+		'PERÍODO NF
+		'DEVIDO À FORMA COMO A DATA DE EMISSÃO DA NF É OBTIDA, NÃO É POSSÍVEL APLICAR A RESTRIÇÃO POR DATA NA CONSULTA BASE
+		'PORTANTO, PARA MINIMIZAR A QUANTIDADE DE REGISTROS SELECIONADOS, FORAM ADOTADOS OS SEGUINTES CRITÉRIOS:
+		'	1) AS RESTRIÇÕES SÃO APLICADAS EM 2 MOMENTOS DISTINTOS: NA CONSULTA BASE (INTERNA) E NA CONSULTA GERAL (EXTERNA)
+		'	2) CONSULTA BASE:
+		'		2a) RESTRINGE POR PEDIDOS QUE TENHAM NÚMERO DE NF
+		'		2b) EXCLUI OS PEDIDOS CANCELADOS
+		'	3) CONSULTA GERAL
+		'		3a) AS DATAS DE INÍCIO E FIM DO PERÍODO SÃO APLICADAS SOBRE A DATA DE EMISSÃO RETORNADA PELA CONSULTA BASE
+		s = ""
+		if IsDate(c_dt_NF_venda_inicio) Or IsDate(c_dt_NF_venda_termino) then
+			if s <> "" then s = s & " AND"
+			s = s & " (t_PEDIDO.num_obs_2 > 0) AND (t_PEDIDO.st_entrega <> '" & ST_ENTREGA_CANCELADO & "')"
+			end if
+
+		if s <> "" then 
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (" & s & ")"
+			end if
+
+		if IsDate(c_dt_NF_venda_inicio) then
+			if s_where_ext <> "" then s_where_ext = s_where_ext & " AND"
+			s_where_ext = s_where_ext & " (dt_emissao_venda >= " & bd_formata_data(StrToDate(c_dt_NF_venda_inicio)) & ")"
+			end if
+
+		if IsDate(c_dt_NF_venda_termino) then
+			if s_where_ext <> "" then s_where_ext = s_where_ext & " AND"
+			s_where_ext = s_where_ext & " (dt_emissao_venda < " & bd_formata_data(StrToDate(c_dt_NF_venda_termino)+1) & ")"
+			end if
+		end if
+
+'	CRITÉRIO: PERÍODO DE EMISSÃO DA NF DE REMESSA
+	if ckb_periodo_emissao_NF_remessa <> "" then
+		'PERÍODO NF
+		'DEVIDO À FORMA COMO A DATA DE EMISSÃO DA NF É OBTIDA, NÃO É POSSÍVEL APLICAR A RESTRIÇÃO POR DATA NA CONSULTA BASE
+		'PORTANTO, PARA MINIMIZAR A QUANTIDADE DE REGISTROS SELECIONADOS, FORAM ADOTADOS OS SEGUINTES CRITÉRIOS:
+		'	1) AS RESTRIÇÕES SÃO APLICADAS EM 2 MOMENTOS DISTINTOS: NA CONSULTA BASE (INTERNA) E NA CONSULTA GERAL (EXTERNA)
+		'	2) CONSULTA BASE:
+		'		2a) RESTRINGE POR PEDIDOS QUE TENHAM NÚMERO DE NF
+		'		2b) EXCLUI OS PEDIDOS CANCELADOS
+		'	3) CONSULTA GERAL
+		'		3a) AS DATAS DE INÍCIO E FIM DO PERÍODO SÃO APLICADAS SOBRE A DATA DE EMISSÃO RETORNADA PELA CONSULTA BASE
+		s = ""
+		if IsDate(c_dt_NF_remessa_inicio) Or IsDate(c_dt_NF_remessa_termino) then
+			if s <> "" then s = s & " AND"
+			s = s & " (t_PEDIDO.num_obs_3 > 0) AND (t_PEDIDO.st_entrega <> '" & ST_ENTREGA_CANCELADO & "')"
+			end if
+
+		if s <> "" then 
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (" & s & ")"
+			end if
+
+		if IsDate(c_dt_NF_remessa_inicio) then
+			if s_where_ext <> "" then s_where_ext = s_where_ext & " AND"
+			s_where_ext = s_where_ext & " (dt_emissao_remessa >= " & bd_formata_data(StrToDate(c_dt_NF_remessa_inicio)) & ")"
+			end if
+
+		if IsDate(c_dt_NF_remessa_termino) then
+			if s_where_ext <> "" then s_where_ext = s_where_ext & " AND"
+			s_where_ext = s_where_ext & " (dt_emissao_remessa < " & bd_formata_data(StrToDate(c_dt_NF_remessa_termino)+1) & ")"
+			end if
+		end if
+
 '	CRITÉRIO: PRODUTO
 	blnPorFornecedor = False
 	if ckb_produto <> "" then
@@ -1653,6 +1802,16 @@ dim sLinkView
 			" t_PEDIDO.data, t_PEDIDO.pedido, t_PEDIDO.pedido_bs_x_ac, t_PEDIDO.obs_2, t_PEDIDO.obs_3," & _
 			" t_PEDIDO.st_entrega, t_PEDIDO.PrevisaoEntregaData, t_PEDIDO.transportadora_id,"
 
+	if ckb_periodo_emissao_NF_venda <> "" then
+		s_sql = s_sql & _
+				" (SELECT TOP 1 Convert(datetime, ide__dEmi, 121) FROM t_NFe_IMAGEM WHERE (t_NFe_IMAGEM.NFe_numero_NF = t_PEDIDO.num_obs_2) AND (t_NFe_IMAGEM.id_nfe_emitente = t_PEDIDO.id_nfe_emitente) AND (t_NFe_IMAGEM.ide__tpNF = '1') AND (t_NFe_IMAGEM.st_anulado = 0) AND (t_NFe_IMAGEM.codigo_retorno_NFe_T1 = 1) ORDER BY id DESC) AS dt_emissao_venda,"
+		end if
+
+	if ckb_periodo_emissao_NF_remessa <> "" then
+		s_sql = s_sql & _
+				" (SELECT TOP 1 Convert(datetime, ide__dEmi, 121) FROM t_NFe_IMAGEM WHERE (t_NFe_IMAGEM.NFe_numero_NF = t_PEDIDO.num_obs_3) AND (t_NFe_IMAGEM.id_nfe_emitente = t_PEDIDO.id_nfe_emitente) AND (t_NFe_IMAGEM.ide__tpNF = '1') AND (t_NFe_IMAGEM.st_anulado = 0) AND (t_NFe_IMAGEM.codigo_retorno_NFe_T1 = 1) ORDER BY id DESC) AS dt_emissao_remessa,"
+		end if
+
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
 				" t_PEDIDO.endereco_nome AS nome," & _
@@ -1692,14 +1851,24 @@ dim sLinkView
 			s_from & _
 			s_where
 
+	s_sql = "SELECT " & _
+				"*" & _
+			" FROM (" & s_sql & ") t"
+
+	if s_where_ext <> "" then
+		s_sql = s_sql & _
+				" WHERE" & _
+				s_where_ext
+		end if
+
     if ckb_st_entrega_cancelado <> "" then
         if c_cancelados_ordena = "VENDEDOR" then
-            s_sql = s_sql & " ORDER BY numero_loja, vendedor, indicador, t_PEDIDO.data, t_PEDIDO.pedido"
+            s_sql = s_sql & " ORDER BY numero_loja, vendedor, indicador, data, pedido"
         else
-	        s_sql = s_sql & " ORDER BY numero_loja, t_PEDIDO.data, t_PEDIDO.pedido"
+	        s_sql = s_sql & " ORDER BY numero_loja, data, pedido"
         end if
     else
-	    s_sql = s_sql & " ORDER BY numero_loja, t_PEDIDO.data, t_PEDIDO.pedido"
+	    s_sql = s_sql & " ORDER BY numero_loja, data, pedido"
     end if
 
   ' CABEÇALHO
@@ -3055,6 +3224,36 @@ body
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
 					"		<td align='right' valign='top' NOWRAP><span class='N'>Data de coleta:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
+					"	</tr>" & chr(13)
+		end if
+
+	if ckb_periodo_emissao_NF_venda <> "" then
+		s = ""
+		s_aux = c_dt_NF_venda_inicio
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux & " a "
+		s_aux = c_dt_NF_venda_termino
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux
+		s_filtro = s_filtro & _
+					"	<tr>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Emissão NF Venda:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
+					"	</tr>" & chr(13)
+		end if
+
+	if ckb_periodo_emissao_NF_remessa <> "" then
+		s = ""
+		s_aux = c_dt_NF_remessa_inicio
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux & " a "
+		s_aux = c_dt_NF_remessa_termino
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux
+		s_filtro = s_filtro & _
+					"	<tr>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Emissão NF Remessa:&nbsp;</span></td>" & chr(13) & _
 					"		<td valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if

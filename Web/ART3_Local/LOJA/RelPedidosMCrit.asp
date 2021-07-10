@@ -788,7 +788,11 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 			onclick="fFILTRO.ckb_st_entrega_separar_com_marc.click();">A Separar (com data de coleta)</span
 			><input class="Cc" maxlength="10" style="width:70px;" name="c_dt_coleta_a_separar_inicio" id="c_dt_coleta_a_separar_inicio" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_coleta_a_separar_termino.focus(); else fFILTRO.ckb_st_entrega_separar_com_marc.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_separar_com_marc.checked=true;" onchange="fFILTRO.ckb_st_entrega_separar_com_marc.checked=true;"
 			/>&nbsp;<span class="C">a</span>&nbsp;<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_coleta_a_separar_termino" id="c_dt_coleta_a_separar_termino" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_st_entrega_separar_com_marc.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_separar_com_marc.checked=true;" onchange="fFILTRO.ckb_st_entrega_separar_com_marc.checked=true;" />
-		</td></tr>
+		<span style="display:inline-block;width:2px;"></span>
+		<a name="bLimparStEtgSeparar" id="bLimparStEtgSeparar" href="javascript:limpaMultiplosCampos(fFILTRO.ckb_st_entrega_separar_com_marc,fFILTRO.c_dt_coleta_a_separar_inicio,fFILTRO.c_dt_coleta_a_separar_termino);" title="limpa os campos deste filtro">
+					<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+		</td>
+	</tr>
 	<tr bgcolor="#FFFFFF"><td align="left">
 		<input type="checkbox" tabindex="-1" id="ckb_st_entrega_a_entregar_sem_marc" name="ckb_st_entrega_a_entregar_sem_marc"
 			value="<%=ST_ENTREGA_A_ENTREGAR%>"><span class="C" style="cursor:default" 
@@ -800,7 +804,11 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 			onclick="fFILTRO.ckb_st_entrega_a_entregar_com_marc.click();">A Entregar (com data de coleta)</span
 			><input class="Cc" maxlength="10" style="width:70px;" name="c_dt_coleta_st_a_entregar_inicio" id="c_dt_coleta_st_a_entregar_inicio" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_coleta_st_a_entregar_termino.focus(); else fFILTRO.ckb_st_entrega_a_entregar_com_marc.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_a_entregar_com_marc.checked=true;" onchange="fFILTRO.ckb_st_entrega_a_entregar_com_marc.checked=true;"
 			/>&nbsp;<span class="C">a</span>&nbsp;<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_coleta_st_a_entregar_termino" id="c_dt_coleta_st_a_entregar_termino" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_st_entrega_a_entregar_com_marc.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_a_entregar_com_marc.checked=true;" onchange="fFILTRO.ckb_st_entrega_a_entregar_com_marc.checked=true;" />
-		</td></tr>
+		<span style="display:inline-block;width:2px;"></span>
+		<a name="bLimparStEtgAEntregar" id="bLimparStEtgAEntregar" href="javascript:limpaMultiplosCampos(fFILTRO.ckb_st_entrega_a_entregar_com_marc,fFILTRO.c_dt_coleta_st_a_entregar_inicio,fFILTRO.c_dt_coleta_st_a_entregar_termino);" title="limpa os campos deste filtro">
+					<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+		</td>
+	</tr>
 	<tr bgcolor="#FFFFFF"><td align="left">
 		<input type="checkbox" tabindex="-1" id="ckb_st_entrega_entregue" name="ckb_st_entrega_entregue"
 			onclick="if (fFILTRO.ckb_st_entrega_entregue.checked) fFILTRO.c_dt_entregue_inicio.focus();"
@@ -808,7 +816,11 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 			onclick="fFILTRO.ckb_st_entrega_entregue.click();">Entregue entre</span
 			><input class="Cc" maxlength="10" style="width:70px;" name="c_dt_entregue_inicio" id="c_dt_entregue_inicio" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_entregue_termino.focus(); else fFILTRO.ckb_st_entrega_entregue.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_entregue.checked=true;" onchange="fFILTRO.ckb_st_entrega_entregue.checked=true;"
 			>&nbsp;<span class="C">e</span>&nbsp;<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_entregue_termino" id="c_dt_entregue_termino" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_st_entrega_entregue.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_entregue.checked=true;" onchange="fFILTRO.ckb_st_entrega_entregue.checked=true;">
-		</td></tr>
+		<span style="display:inline-block;width:2px;"></span>
+		<a name="bLimparStEtgEntregue" id="bLimparStEtgEntregue" href="javascript:limpaMultiplosCampos(fFILTRO.ckb_st_entrega_entregue,fFILTRO.c_dt_entregue_inicio,fFILTRO.c_dt_entregue_termino);" title="limpa os campos deste filtro">
+					<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+		</td>
+	</tr>
 	<tr bgcolor="#FFFFFF"><td align="left">
 		<input type="checkbox" tabindex="-1" id="ckb_st_entrega_cancelado" name="ckb_st_entrega_cancelado" onclick="if (fFILTRO.ckb_st_entrega_cancelado.checked) fFILTRO.c_dt_cancelado_inicio.focus();"
 			value="<%=ST_ENTREGA_CANCELADO%>"><span class="C" style="cursor:default" 
@@ -819,8 +831,12 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
         <select name="c_cancelados_ordena">
             <option value="VENDEDOR" selected>Vendedor</option>
             <option value="PEDIDO">Pedido</option>
-        </select>	
-    </td></tr>
+        </select>
+		<span style="display:inline-block;width:2px;"></span>
+		<a name="bLimparStEtgCancelado" id="bLimparStEtgCancelado" href="javascript:limpaMultiplosCampos(fFILTRO.ckb_st_entrega_cancelado,fFILTRO.c_dt_cancelado_inicio,fFILTRO.c_dt_cancelado_termino);" title="limpa os campos deste filtro">
+					<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+    </td>
+	</tr>
 	<tr bgcolor="#FFFFFF"><td align="left">
 		<input type="checkbox" tabindex="-1" id="ckb_st_entrega_exceto_cancelados" name="ckb_st_entrega_exceto_cancelados"
 			value="<%=ST_ENTREGA_CANCELADO%>"><span class="C" style="cursor:default" 
@@ -997,7 +1013,11 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 			<span class="C" style="cursor:default;" onclick="fFILTRO.ckb_entrega_imediata_nao.click();">Previsão de Entrega entre</span>
 			<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_previsao_entrega_inicio" id="c_dt_previsao_entrega_inicio" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_previsao_entrega_termino.focus(); else fFILTRO.ckb_entrega_imediata_nao.checked=true; filtra_data();" onclick="fFILTRO.ckb_entrega_imediata_nao.checked = true;" onchange="fFILTRO.ckb_entrega_imediata_nao.checked=true;"
 			/>&nbsp;<span class="C">e</span>&nbsp;<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_previsao_entrega_termino" id="c_dt_previsao_entrega_termino" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_entrega_imediata_nao.checked=true; filtra_data();" onclick="fFILTRO.ckb_entrega_imediata_nao.checked = true;" onchange="fFILTRO.ckb_entrega_imediata_nao.checked=true;" />
-		</td></tr>
+			<span style="display:inline-block;width:2px;"></span>
+			<a name="bLimparEtgImediataNao" id="bLimparEtgImediataNao" href="javascript:limpaMultiplosCampos(fFILTRO.ckb_entrega_imediata_nao,fFILTRO.c_dt_previsao_entrega_inicio,fFILTRO.c_dt_previsao_entrega_termino);" title="limpa os campos deste filtro">
+						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+		</td>
+	</tr>
 	</table>
 </td></tr>
 
@@ -1050,14 +1070,22 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 			onclick="fFILTRO.ckb_periodo_cadastro.click();">Somente pedidos colocados entre</span
 			><input class="Cc" maxlength="10" style="width:70px;" name="c_dt_cadastro_inicio" id="c_dt_cadastro_inicio" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_cadastro_termino.focus(); else fFILTRO.ckb_periodo_cadastro.checked=true; filtra_data();" onclick="fFILTRO.ckb_periodo_cadastro.checked=true;" onchange="fFILTRO.ckb_periodo_cadastro.checked=true;"
 			>&nbsp;<span class="C">e</span>&nbsp;<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_cadastro_termino" id="c_dt_cadastro_termino" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_periodo_cadastro.checked=true; filtra_data();" onclick="fFILTRO.ckb_periodo_cadastro.checked=true;" onchange="fFILTRO.ckb_periodo_cadastro.checked=true;">
-		</td></tr>
+		<span style="display:inline-block;width:2px;"></span>
+		<a name="bLimparPeriodoCadastro" id="bLimparPeriodoCadastro" href="javascript:limpaMultiplosCampos(fFILTRO.ckb_periodo_cadastro,fFILTRO.c_dt_cadastro_inicio,fFILTRO.c_dt_cadastro_termino);" title="limpa os campos deste filtro">
+					<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+		</td>
+	</tr>
 	<tr bgcolor="#FFFFFF"><td align="left">
 		<input type="checkbox" tabindex="-1" id="ckb_entrega_marcada_para" name="ckb_entrega_marcada_para" onclick="if (fFILTRO.ckb_entrega_marcada_para.checked) fFILTRO.c_dt_entrega_inicio.focus();"
 			value="ENTREGA_MARCADA_PARA_ON"><span class="C" style="cursor:default" 
 			onclick="fFILTRO.ckb_entrega_marcada_para.click();">Data de coleta no período entre</span
 			><input class="Cc" maxlength="10" style="width:70px;" name="c_dt_entrega_inicio" id="c_dt_entrega_inicio" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_entrega_termino.focus(); else fFILTRO.ckb_entrega_marcada_para.checked=true; filtra_data();" onclick="fFILTRO.ckb_entrega_marcada_para.checked=true;" onchange="fFILTRO.ckb_entrega_marcada_para.checked=true;"
 			>&nbsp;<span class="C">e</span>&nbsp;<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_entrega_termino" id="c_dt_entrega_termino" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_entrega_marcada_para.checked=true; filtra_data();" onclick="fFILTRO.ckb_entrega_marcada_para.checked=true;" onchange="fFILTRO.ckb_entrega_marcada_para.checked=true;">
-		</td></tr>
+		<span style="display:inline-block;width:2px;"></span>
+		<a name="bLimparPeriodoColeta" id="bLimparPeriodoColeta" href="javascript:limpaMultiplosCampos(fFILTRO.ckb_entrega_marcada_para,fFILTRO.c_dt_entrega_inicio,fFILTRO.c_dt_entrega_termino);" title="limpa os campos deste filtro">
+					<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+		</td>
+	</tr>
 	</table>
 </td></tr>
 
@@ -1072,7 +1100,11 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 			onclick="fFILTRO.ckb_produto.click();">Somente pedidos que incluam:</span
 			><br><span class="C" style="margin-left:30px;">Fabricante</span><input maxlength="4" class="Cc" style="width:50px;" name="c_fabricante" id="c_fabricante" onblur="this.value=normaliza_codigo(this.value,TAM_MIN_FABRICANTE);" onkeypress="if (digitou_enter(true)) fFILTRO.c_produto.focus(); else fFILTRO.ckb_produto.checked=true; filtra_fabricante();" onclick="fFILTRO.ckb_produto.checked=true;">
 			<span class="C">&nbsp;&nbsp;&nbsp;Produto</span><input maxlength="13" class="Cc" style="width:100px;" name="c_produto" id="c_produto" onblur="this.value=ucase(normaliza_codigo(this.value,TAM_MIN_PRODUTO));" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_produto.checked=true; filtra_produto();" onclick="fFILTRO.ckb_produto.checked=true;">
-		</td></tr>
+		<span style="display:inline-block;width:2px;"></span>
+		<a name="bLimparProduto" id="bLimparProduto" href="javascript:limpaMultiplosCampos(fFILTRO.ckb_produto,fFILTRO.c_fabricante,fFILTRO.c_produto);" title="limpa os campos deste filtro">
+					<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+		</td>
+	</tr>
 	</table>
 </td></tr>
 

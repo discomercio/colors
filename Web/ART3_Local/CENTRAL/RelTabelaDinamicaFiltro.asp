@@ -413,6 +413,8 @@ end function
 		$("#c_dt_NF_remessa_inicio").hUtilUI('datepicker_peq_filtro_inicial');
 		$("#c_dt_NF_remessa_termino").hUtilUI('datepicker_peq_filtro_final');
 
+		$(document).tooltip();
+
         $("#c_grupo_pedido_origem").change(function () {
             $("#spnCounterGrupoOrigemPedido").text($("#c_grupo_pedido_origem :selected").length);
         });
@@ -424,14 +426,6 @@ end function
 <script language="JavaScript" type="text/javascript">
 function limpaCampoSelect(c) {
 	c.options[0].selected = true;
-}
-
-function limpaCampoText() {
-	var c;
-	for (var i = 0; i < arguments.length; i++) {
-		c = arguments[i];
-		c.value = "";
-	}
 }
 
 function marcarDesmarcarCadastro() {
@@ -688,7 +682,7 @@ function exibe_botao_confirmar() {
 			</td>
 			<td style="width:10px;"></td>
 			<td align="left" valign="middle">
-				<a name="bLimparPeriodoFaturamento" id="bLimparPeriodoFaturamento" href="javascript:limpaCampoText(fFILTRO.c_dt_faturamento_inicio,fFILTRO.c_dt_faturamento_termino);" title="limpa o filtro 'Período (Entregue)'">
+				<a name="bLimparPeriodoFaturamento" id="bLimparPeriodoFaturamento" href="javascript:limpaMultiplosCampos(fFILTRO.c_dt_faturamento_inicio,fFILTRO.c_dt_faturamento_termino);" title="limpa o filtro 'Período (Entregue)'">
 							<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
 			</td>
 			</tr>
@@ -721,7 +715,7 @@ function exibe_botao_confirmar() {
 			</td>
 			<td style="width:10px;"></td>
 			<td align="left" valign="middle">
-				<a name="bLimparPeriodoNfVenda" id="bLimparPeriodoNfVenda" href="javascript:limpaCampoText(fFILTRO.c_dt_NF_venda_inicio,fFILTRO.c_dt_NF_venda_termino);" title="limpa o filtro 'Período NF Venda'">
+				<a name="bLimparPeriodoNfVenda" id="bLimparPeriodoNfVenda" href="javascript:limpaMultiplosCampos(fFILTRO.c_dt_NF_venda_inicio,fFILTRO.c_dt_NF_venda_termino);" title="limpa o filtro 'Período NF Venda'">
 							<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
 			</td>
 			</tr>
@@ -754,7 +748,7 @@ function exibe_botao_confirmar() {
 			</td>
 			<td style="width:10px;"></td>
 			<td align="left" valign="middle">
-				<a name="bLimparPeriodoNfRemessa" id="bLimparPeriodoNfRemessa" href="javascript:limpaCampoText(fFILTRO.c_dt_NF_remessa_inicio,fFILTRO.c_dt_NF_remessa_termino);" title="limpa o filtro 'Período NF Remessa'">
+				<a name="bLimparPeriodoNfRemessa" id="bLimparPeriodoNfRemessa" href="javascript:limpaMultiplosCampos(fFILTRO.c_dt_NF_remessa_inicio,fFILTRO.c_dt_NF_remessa_termino);" title="limpa o filtro 'Período NF Remessa'">
 							<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
 			</td>
 			</tr>
@@ -1218,7 +1212,7 @@ function exibe_botao_confirmar() {
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_ICMS_UF_DEST|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
                 	        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_ICMS_UF_DEST" name="ckb_COL_ICMS_UF_DEST"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_ICMS_UF_DEST.click();">ICMS UF Destino</span><br />
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_ICMS_UF_DEST.click();">ICMS UF Destino</span><img src="../IMAGEM/exclamacao_14x14.png" id="colIcmsUfDestExclamacao" style="cursor:pointer" title="A inclusão desse campo aumenta consideravelmente o tempo de processamento" /><br />
 
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_QTDE_PARCELAS|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
