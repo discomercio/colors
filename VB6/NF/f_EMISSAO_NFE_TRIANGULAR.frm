@@ -8419,7 +8419,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hWnd As Long
+Dim hwnd As Long
 
 Dim blnOperacaoNaoTriangular As Boolean
 
@@ -9099,6 +9099,7 @@ Dim blnExibirTotalTributos As Boolean
 Dim blnHaProdutoSemDadosIbpt As Boolean
 Dim blnExisteMemorizacaoEndereco As Boolean
 Dim blnNotadeCompromisso As Boolean
+Dim blnRemessaEntregaFutura As Boolean
 
 ' CONTADORES
 Dim i As Integer
@@ -10743,7 +10744,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 End If
             Next
             
-        If s <> "" Then
+        If (s <> "") And Not blnRemessaEntregaFutura Then
             s = "Serão emitidas na NFe as seguintes informações de pagamento:" & Chr(13) & Chr(13) & s
             If DESENVOLVIMENTO Then
                 aviso s
@@ -10796,9 +10797,16 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         blnNotadeCompromisso = True
         End If
         
+'   VERIFICAR SE É NOTA DE REMESSA DE ENTREGA FUTURA
+    blnRemessaEntregaFutura = False
+    If ((strCfopCodigo = "5117") Or (strCfopCodigo = "6117")) Then
+        blnRemessaEntregaFutura = True
+        End If
+    
 '   NÃO PERMITIR EMISSÃO DE NOTA DE COMPROMISSO, SENÃO A OPERAÇÃO TRIANGULAR NÃO PERMITIRÁ A NOTA DE VENDA
     If blnNotadeCompromisso Then
-        aviso "Não é possível emitir a nota fiscal!! Emitir NOTAS FUTURAS nos painéis automático ou manual"
+        aviso "Não é possível emitir NOTAS FUTURAS no painel triangular!!!" & vbCrLf & _
+                "Emitir nos painéis automático ou manual"
         GoSub NFE_EMITE_FECHA_TABELAS
         aguarde INFO_NORMAL, m_id
         Exit Sub
@@ -12901,10 +12909,12 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     '   Tipo de NFe: 0-Entrada  1-Saída
         If rNFeImg.ide__tpNF = "1" Then
         '   GRAVA OS DADOS DE BOLETOS NO BD!!
-            If Not gravaDadosParcelaPagto(CLng(strNumeroNf), v_parcela_pagto(), s_erro) Then
-                If s_erro <> "" Then s_erro = Chr(13) & Chr(13) & s_erro
-                s_erro = "Falha ao gravar as informações dos boletos no banco de dados!!" & s_erro
-                aviso_erro s_erro
+            If Not ExisteDadosParcelasPagto(rNFeImg.pedido, s_erro) Then
+                If Not gravaDadosParcelaPagto(CLng(strNumeroNf), v_parcela_pagto(), s_erro) Then
+                    If s_erro <> "" Then s_erro = Chr(13) & Chr(13) & s_erro
+                    s_erro = "Falha ao gravar as informações dos boletos no banco de dados!!" & s_erro
+                    aviso_erro s_erro
+                    End If
                 End If
             End If
             

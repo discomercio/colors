@@ -4146,7 +4146,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hWnd As Long
+Dim hwnd As Long
 
 ' VETORES
 Dim v() As String
@@ -4466,7 +4466,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hWnd As Long
+Dim hwnd As Long
 
 ' VETORES
 Dim v() As String
@@ -4784,7 +4784,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hWnd As Long
+Dim hwnd As Long
 
 Dim blnOperacaoNaoTriangular As Boolean
 
@@ -6551,6 +6551,7 @@ Dim blnExibirTotalTributos As Boolean
 Dim blnHaProdutoSemDadosIbpt As Boolean
 Dim blnExisteMemorizacaoEndereco As Boolean
 Dim blnNotadeCompromisso As Boolean
+Dim blnRemessaEntregaFutura As Boolean
 
 ' CONTADORES
 Dim i As Integer
@@ -8147,7 +8148,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 End If
             Next
             
-        If s <> "" Then
+        If (s <> "") And Not blnRemessaEntregaFutura Then
             s = "Serão emitidas na NFe as seguintes informações de pagamento:" & Chr(13) & Chr(13) & s
             If DESENVOLVIMENTO Then
                 aviso s
@@ -8197,6 +8198,13 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     If ((strCfopCodigo = "5922") Or (strCfopCodigo = "6922")) Then
         blnNotadeCompromisso = True
         End If
+    
+'   VERIFICAR SE É NOTA DE REMESSA DE ENTREGA FUTURA
+    blnRemessaEntregaFutura = False
+    If ((strCfopCodigo = "5117") Or (strCfopCodigo = "6117")) Then
+        blnRemessaEntregaFutura = True
+        End If
+    
     
 '   CASO SEJA NOTA DE COMPROMISSO, VERIFICAR SE O CST É 041
     If blnNotadeCompromisso Then

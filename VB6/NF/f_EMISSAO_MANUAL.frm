@@ -4956,7 +4956,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hWnd As Long
+Dim hwnd As Long
 
 ' BANCO DE DADOS
 Dim t_FIN_BOLETO_CEDENTE As ADODB.Recordset
@@ -5195,7 +5195,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hWnd As Long
+Dim hwnd As Long
 
 ' BANCO DE DADOS
 Dim t_NFE_EMITENTE As ADODB.Recordset
@@ -6136,6 +6136,7 @@ Dim blnExibirTotalTributos As Boolean
 Dim blnHaProdutoSemDadosIbpt As Boolean
 Dim blnIgnorarAtualizacaoNFnoPedido
 Dim blnNotadeCompromisso As Boolean
+Dim blnRemessaEntregaFutura As Boolean
 Dim blnImprimeDadosFatura As Boolean
 
 ' CONTADORES
@@ -6410,6 +6411,19 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     End If
                 End If
                 
+        
+        
+        '   VERIFICAR SE É NOTA DE COMPROMISSO
+            blnNotadeCompromisso = False
+            If ((strCfopCodigo = "5922") Or (strCfopCodigo = "6922")) Then
+                blnNotadeCompromisso = True
+                End If
+            
+        '   VERIFICAR SE É NOTA DE REMESSA DE ENTREGA FUTURA
+            blnRemessaEntregaFutura = False
+            If ((strCfopCodigo = "5117") Or (strCfopCodigo = "6117")) Then
+                blnRemessaEntregaFutura = True
+                End If
                 
         '   CASO O PEDIDO PAI SEJA PARA PAGAMENTO ANTECIPADO, VERIFICA SE O PEDIDO FILHO ESTÁ QUITADO
         '   (não permitir emissão se não for nota de compromisso)
@@ -7320,13 +7334,6 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 aviso s
                 End If
             End If
-        End If
-        
-        
-'   VERIFICAR SE É NOTA DE COMPROMISSO
-    blnNotadeCompromisso = False
-    If ((strCfopCodigo = "5922") Or (strCfopCodigo = "6922")) Then
-        blnNotadeCompromisso = True
         End If
     
 '   CASO SEJA NOTA DE COMPROMISSO, VERIFICAR SE O CST É 041
