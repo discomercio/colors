@@ -377,6 +377,7 @@ namespace FinanceiroService
 			int qtdeEstornosConfirmados;
 			int qtdeEstornosAbortados;
 			int intDuracaoPausaInicializacaoEmSegundos;
+			int intParametroPeriodoCorte;
 			int id_emailsndsvc_mensagem;
 			List<int> listaIdNfeEmitente;
 			bool blnEmailAlertaEnviado;
@@ -390,11 +391,14 @@ namespace FinanceiroService
 			String strMsgErroResumido = "";
 			String strMsgInfo;
 			String strMsgInfoCancelAutoPedidos;
+			String strMsgInfoEnvioEmailAlertaVendedoresPrazoPrevisaoEntrega;
 			String strMsgInfoBpCsAntifraudeClearsale;
 			String strMsgInfoEstornosPendentes;
 			String strMsgInformativa;
 			String strLogFalha;
 			String strListaIdNfeEmitente;
+			String strParametroLojasIgnoradas;
+			String strParametroDestinatarioResumoGeral;
 			StringBuilder sbMsgParametros = new StringBuilder("");
 			String strSubject;
 			String strBody;
@@ -406,6 +410,7 @@ namespace FinanceiroService
 			DateTime dtHrUltManutencaoArqLogAtividade = DateTime.MinValue;
 			DateTime dtHrUltManutencaoBdLogAntigo = DateTime.MinValue;
 			DateTime dtHrUltCancelamentoAutomaticoPedidos = DateTime.MinValue;
+			DateTime dtHrUltEnvioEmailAlertaVendedoresPrazoPrevisaoEntrega = DateTime.MinValue;
 			DateTime dtHrUltProcessamentoBpCsAntifraudeClearsale = DateTime.MinValue;
 			DateTime dtHrUltProcBpCsBraspagAtualizaStatusTransacoesPendentes = DateTime.MinValue;
 			DateTime dtHrUltProcEnviarEmailAlertaTransacoesPendentesProxCancelAuto = DateTime.MinValue;
@@ -630,6 +635,7 @@ namespace FinanceiroService
 				dtHrUltManutencaoArqLogAtividade = GeralDAO.getCampoDataTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.DT_HR_ULT_MANUTENCAO_ARQ_LOG_ATIVIDADE);
 				dtHrUltManutencaoBdLogAntigo = GeralDAO.getCampoDataTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.DT_HR_ULT_MANUTENCAO_BD_LOG_ANTIGO);
 				dtHrUltCancelamentoAutomaticoPedidos = GeralDAO.getCampoDataTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.DT_HR_ULT_CANCELAMENTO_AUTOMATICO_PEDIDOS);
+				dtHrUltEnvioEmailAlertaVendedoresPrazoPrevisaoEntrega = GeralDAO.getCampoDataTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.DT_HR_ULT_ENVIO_EMAIL_ALERTA_VENDEDORES_PRAZO_PREVISAO_ENTREGA);
 				dtHrUltProcessamentoBpCsAntifraudeClearsale = GeralDAO.getCampoDataTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.DT_HR_ULT_PROCESSAMENTO_BP_CS_ANTIFRAUDE_CLEARSALE);
 				dtHrUltProcBpCsBraspagAtualizaStatusTransacoesPendentes = GeralDAO.getCampoDataTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.DT_HR_ULT_PROCESSAMENTO_BP_CS_BRASPAG_ATUALIZA_STATUS_TRANSACOES_PENDENTES);
 				dtHrUltProcEnviarEmailAlertaTransacoesPendentesProxCancelAuto = GeralDAO.getCampoDataTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.DT_HR_ULT_PROCESSAMENTO_BP_CS_BRASPAG_ENVIAR_EMAIL_ALERTA_TRANSACOES_PENDENTES_PROX_CANCEL_AUTO);
@@ -692,6 +698,35 @@ namespace FinanceiroService
 				strMsg = "Status da rotina de cancelamento automático de pedidos: " +
 						(blnFlag ? "ativado" : "desativado") +
 						" (horário programado: " + Global.formataTimeSpanHorario(Global.Parametros.Geral.HorarioCancelamentoAutomaticoPedidos, "(nenhum)") + ", lojas ignoradas: " + strAux + ")";
+				sbMsgParametros.AppendLine(strMsg);
+				#endregion
+
+				#region [ Envio de e-mail de alerta para os vendedores sobre o prazo de previsão de entrega ]
+				strParametro = GeralDAO.getCampoTextoTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ENVIO_EMAIL_ALERTA_VENDEDORES_PRAZO_PREVISAO_ENTREGA_HORARIO);
+				tsParametro = Global.converteHhMmParaTimeSpan(strParametro);
+				Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaHorario = tsParametro;
+
+				strParametro = GeralDAO.getCampoTextoTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ENVIO_EMAIL_ALERTA_VENDEDORES_PRAZO_PREVISAO_ENTREGA_LOJAS_IGNORADAS);
+				Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaLojasIgnoradas = strParametro;
+
+				intParametro = GeralDAO.getCampoInteiroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ENVIO_EMAIL_ALERTA_VENDEDORES_PRAZO_PREVISAO_ENTREGA_PERIODO_CORTE);
+				Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaPeriodoCorte = intParametro;
+
+				strParametro = GeralDAO.getCampoTextoTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ENVIO_EMAIL_ALERTA_VENDEDORES_PRAZO_PREVISAO_ENTREGA_DESTINATARIO_RESUMO_GERAL);
+				Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaDestinatarioResumoGeral = strParametro;
+
+				intParametro = GeralDAO.getCampoInteiroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.FLAG_HABILITACAO_ENVIO_EMAIL_ALERTA_VENDEDORES_PRAZO_PREVISAO_ENTREGA);
+				blnFlag = (intParametro != 0) ? true : false;
+				if (Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaHorario == TimeSpan.MinValue) blnFlag = false;
+				Global.Parametros.Geral.ExecutarEnvioEmailAlertaVendedoresPrazoPrevisaoEntrega = blnFlag;
+				strMsg = "Status da rotina de envio de e-mail de alerta para os vendedores sobre o prazo de previsão de entrega: " +
+						(blnFlag ? "ativado" : "desativado") +
+						" (" +
+						"horário programado: " + Global.formataTimeSpanHorario(Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaHorario, "(nenhum)") +
+						", lojas ignoradas: " + (Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaLojasIgnoradas.Trim().Length > 0 ? Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaLojasIgnoradas : "(nenhuma)") +
+						", período de corte: " + Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaPeriodoCorte.ToString() +
+						", destinatário do resumo geral: " + (Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaDestinatarioResumoGeral.Length > 0 ? Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaDestinatarioResumoGeral : "(nenhum)") +
+						")";
 				sbMsgParametros.AppendLine(strMsg);
 				#endregion
 
@@ -1235,6 +1270,42 @@ namespace FinanceiroService
 								{
 									Global.Parametros.Geral.ExecutarCancelamentoAutomaticoPedidos = blnFlag;
 									strMsg = "Rotina de cancelamento automático de pedidos (alteração de status): " + (blnFlag ? "ativado" : "desativado");
+									Global.gravaEventLog(NOME_DESTA_ROTINA + "\r\n" + strMsg, EventLogEntryType.Information);
+								}
+								#endregion
+
+								#region [ Parâmetro: flag de habilitação do envio de e-mail de alerta para os vendedores sobre o prazo de previsão de entrega ]
+								strParametro = GeralDAO.getCampoTextoTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ENVIO_EMAIL_ALERTA_VENDEDORES_PRAZO_PREVISAO_ENTREGA_HORARIO);
+								tsParametroHorarioAux = Global.converteHhMmParaTimeSpan(strParametro);
+								strParametroLojasIgnoradas = GeralDAO.getCampoTextoTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ENVIO_EMAIL_ALERTA_VENDEDORES_PRAZO_PREVISAO_ENTREGA_LOJAS_IGNORADAS);
+								intParametroPeriodoCorte = GeralDAO.getCampoInteiroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ENVIO_EMAIL_ALERTA_VENDEDORES_PRAZO_PREVISAO_ENTREGA_PERIODO_CORTE);
+								strParametroDestinatarioResumoGeral = GeralDAO.getCampoTextoTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ENVIO_EMAIL_ALERTA_VENDEDORES_PRAZO_PREVISAO_ENTREGA_DESTINATARIO_RESUMO_GERAL);
+								intParametro = GeralDAO.getCampoInteiroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.FLAG_HABILITACAO_ENVIO_EMAIL_ALERTA_VENDEDORES_PRAZO_PREVISAO_ENTREGA);
+								blnFlag = (intParametro != 0 ? true : false);
+								if ((Global.Parametros.Geral.ExecutarEnvioEmailAlertaVendedoresPrazoPrevisaoEntrega != blnFlag)
+									||
+									(tsParametroHorarioAux != Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaHorario)
+									||
+									(!strParametroLojasIgnoradas.Equals(Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaLojasIgnoradas))
+									||
+									(intParametroPeriodoCorte != Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaPeriodoCorte)
+									||
+									(!strParametroDestinatarioResumoGeral.Equals(Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaDestinatarioResumoGeral))
+									)
+								{
+									Global.Parametros.Geral.ExecutarEnvioEmailAlertaVendedoresPrazoPrevisaoEntrega = blnFlag;
+									Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaHorario = tsParametroHorarioAux;
+									Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaLojasIgnoradas = strParametroLojasIgnoradas;
+									Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaPeriodoCorte = intParametroPeriodoCorte;
+									Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaDestinatarioResumoGeral = strParametroDestinatarioResumoGeral;
+									strMsg = "Rotina de envio de e-mail de alerta para os vendedores sobre o prazo de previsão de entrega (alteração da configuração): " +
+											(blnFlag ? "ativado" : "desativado") +
+											" (" +
+											"horário programado: " + Global.formataTimeSpanHorario(Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaHorario, "(nenhum)") +
+											", lojas ignoradas: " + (Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaLojasIgnoradas.Trim().Length > 0 ? Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaLojasIgnoradas : "(nenhuma)") +
+											", período de corte: " + Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaPeriodoCorte.ToString() +
+											", destinatário do resumo geral: " + (Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaDestinatarioResumoGeral.Length > 0 ? Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaDestinatarioResumoGeral : "(nenhum)") +
+											")";
 									Global.gravaEventLog(NOME_DESTA_ROTINA + "\r\n" + strMsg, EventLogEntryType.Information);
 								}
 								#endregion
@@ -1862,6 +1933,76 @@ namespace FinanceiroService
 							{
 								strMsg = ex.ToString();
 								Global.gravaEventLog(NOME_DESTA_ROTINA + "\r\nCancelamento automático de pedidos\r\n" + strMsg, EventLogEntryType.Error);
+							}
+							#endregion
+
+							#region [ Executa o envio de e-mail de alerta para os vendedores sobre o prazo de previsão de entrega? ]
+							try
+							{
+								#region [ Executa a rotina de envio de e-mail de alerta para os vendedores sobre o prazo de previsão de entrega ]
+								if (Global.Parametros.Geral.ExecutarEnvioEmailAlertaVendedoresPrazoPrevisaoEntrega)
+								{
+									if (
+											(DateTime.Now.TimeOfDay >= Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaHorario)
+											&&
+											(dtHrUltEnvioEmailAlertaVendedoresPrazoPrevisaoEntrega.DayOfYear != DateTime.Now.DayOfYear)
+										)
+									{
+										dtHrInicioProcessamento = DateTime.Now;
+										strMsg = "Início da execução do envio de e-mail de alerta para os vendedores sobre o prazo de previsão de entrega";
+										Global.gravaEventLog(NOME_DESTA_ROTINA + "\r\n" + strMsg, EventLogEntryType.Information);
+										if (Geral.executaEnvioEmailAlertaVendedoresPrazoPrevisaoEntrega(out strMsgInfoEnvioEmailAlertaVendedoresPrazoPrevisaoEntrega, out strMsgErro))
+										{
+											#region [ Tratamento para sucesso no processamento ]
+											lngDuracaoProcessamentoEmSegundos = Global.calculaTimeSpanSegundos(DateTime.Now - dtHrInicioProcessamento);
+
+											strMsg = "Sucesso na execução do envio de e-mail de alerta para os vendedores sobre o prazo de previsão de entrega (duração: " + lngDuracaoProcessamentoEmSegundos.ToString() + " segundos)";
+											if (strMsgInfoEnvioEmailAlertaVendedoresPrazoPrevisaoEntrega.Length > 0) strMsg += "\r\n\r\n";
+											strMsg += strMsgInfoEnvioEmailAlertaVendedoresPrazoPrevisaoEntrega;
+											Global.gravaEventLog(NOME_DESTA_ROTINA + "\r\n" + strMsg, EventLogEntryType.Information);
+											GeralDAO.gravaLog(Global.Cte.LogBd.Operacao.OP_LOG_ENVIO_EMAIL_ALERTA_VENDEDORES_PRAZO_PREVISAO_ENTREGA, strMsg, out strMsgErro);
+
+											#region [ Envia email informativo para o vigia do sistema ]
+											strSubject = Global.montaIdInstanciaServicoEmailSubject() + ": Sucesso na execução do envio de e-mail de alerta para os vendedores sobre o prazo de previsão de entrega [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+											strBody = strMsg;
+											if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out strMsgErroAux))
+											{
+												strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + strMsgErroAux;
+												Global.gravaLogAtividade(strMsg);
+											}
+											#endregion
+											#endregion
+										}
+										else
+										{
+											#region [ Tratamento para erro no processamento ]
+											lngDuracaoProcessamentoEmSegundos = Global.calculaTimeSpanSegundos(DateTime.Now - dtHrInicioProcessamento);
+											strMsg = "Falha na execução do envio de e-mail de alerta para os vendedores sobre o prazo de previsão de entrega (duração: " + lngDuracaoProcessamentoEmSegundos.ToString() + " segundos): " + strMsgErro;
+											Global.gravaEventLog(NOME_DESTA_ROTINA + "\r\n" + strMsg, EventLogEntryType.Information);
+											GeralDAO.gravaLog(Global.Cte.LogBd.Operacao.OP_LOG_ENVIO_EMAIL_ALERTA_VENDEDORES_PRAZO_PREVISAO_ENTREGA, strMsg, out strMsgErro);
+
+											#region [ Envia email de alerta ]
+											strSubject = Global.montaIdInstanciaServicoEmailSubject() + ": Falha na execução do envio de e-mail de alerta para os vendedores sobre o prazo de previsão de entrega [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+											strBody = strMsg;
+											if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out strMsgErroAux))
+											{
+												strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + strMsgErroAux;
+												Global.gravaLogAtividade(strMsg);
+											}
+											#endregion
+											#endregion
+										}
+
+										dtHrUltEnvioEmailAlertaVendedoresPrazoPrevisaoEntrega = DateTime.Now;
+										GeralDAO.setCampoDataTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.DT_HR_ULT_ENVIO_EMAIL_ALERTA_VENDEDORES_PRAZO_PREVISAO_ENTREGA, dtHrUltEnvioEmailAlertaVendedoresPrazoPrevisaoEntrega);
+									}
+								}
+								#endregion
+							}
+							catch (Exception ex)
+							{
+								strMsg = ex.ToString();
+								Global.gravaEventLog(NOME_DESTA_ROTINA + "\r\nEnvio de e-mail de alerta para os vendedores sobre o prazo de previsão de entrega\r\n" + strMsg, EventLogEntryType.Error);
 							}
 							#endregion
 

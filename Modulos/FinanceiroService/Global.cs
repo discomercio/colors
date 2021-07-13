@@ -29,8 +29,8 @@ namespace FinanceiroService
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "Financeiro Service";
 				public static readonly string ID_SISTEMA_EVENTLOG = GetConfigurationValue("ServiceName");
-				public const string VERSAO_NUMERO = "1.39";
-				public const string VERSAO_DATA = "08.JUL.2021";
+				public const string VERSAO_NUMERO = "1.40";
+				public const string VERSAO_DATA = "12.JUL.2021";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Serviço do Windows para execução automática de rotinas financeiras";
@@ -312,8 +312,9 @@ namespace FinanceiroService
 			 *      específicas de boleto e retorna com falha, repetindo esse processo até atingir o limite
 			 *      máximo de tentativas.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.40 - XX.XX.20XX - por XXX
-			 *      
+			 * v 1.40 - 12.07.2021 - por HHO
+			 *      Implementação de envio de e-mail de alerta para os vendedores sobre pedidos com data de
+			 *      previsão de entrega próxima de expirar ou já expirada.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.41 - XX.XX.20XX - por XXX
 			 *      
@@ -358,8 +359,14 @@ namespace FinanceiroService
 					public const string DT_HR_ULT_MANUTENCAO_ARQ_LOG_ATIVIDADE = "FinSvc_DtHrUltManutencaoArqLogAtividade";
 					public const string DT_HR_ULT_MANUTENCAO_BD_LOG_ANTIGO = "FinSvc_DtHrUltManutencaoBdLogAntigo";
 					public const string DT_HR_ULT_CANCELAMENTO_AUTOMATICO_PEDIDOS = "FinSvc_DtHrUltCancelamentoAutomaticoPedidos";
-					public const string DT_HR_ULT_PROCESSAMENTO_BP_CS_ANTIFRAUDE_CLEARSALE = "FinSvc_DtHrUltProcessamentoBpCsAntifraudeClearsale";
 					public const string FLAG_HABILITACAO_CANCELAMENTO_AUTOMATICO_PEDIDOS = "FinSvc_FlagHabilitacao_CancelamentoAutomaticoPedidos";
+					public const string DT_HR_ULT_ENVIO_EMAIL_ALERTA_VENDEDORES_PRAZO_PREVISAO_ENTREGA = "FinSvc_DtHrUltEnvioEmailAlertaVendedoresPrazoPrevisaoEntrega";
+					public const string FLAG_HABILITACAO_ENVIO_EMAIL_ALERTA_VENDEDORES_PRAZO_PREVISAO_ENTREGA = "FinSvc_FlagHabilitacao_EnvioEmailAlertaVendedoresPrazoPrevisaoEntrega";
+					public const string ENVIO_EMAIL_ALERTA_VENDEDORES_PRAZO_PREVISAO_ENTREGA_HORARIO = "FinSvc_EnvioEmailAlertaVendedoresPrazoPrevisaoEntrega_Horario";
+					public const string ENVIO_EMAIL_ALERTA_VENDEDORES_PRAZO_PREVISAO_ENTREGA_LOJAS_IGNORADAS = "FinSvc_EnvioEmailAlertaVendedoresPrazoPrevisaoEntrega_LojasIgnoradas";
+					public const string ENVIO_EMAIL_ALERTA_VENDEDORES_PRAZO_PREVISAO_ENTREGA_PERIODO_CORTE = "FinSvc_EnvioEmailAlertaVendedoresPrazoPrevisaoEntrega_PeriodoCorte";
+					public const string ENVIO_EMAIL_ALERTA_VENDEDORES_PRAZO_PREVISAO_ENTREGA_DESTINATARIO_RESUMO_GERAL = "FinSvc_EnvioEmailAlertaVendedoresPrazoPrevisaoEntrega_DestinatarioResumoGeral";
+					public const string DT_HR_ULT_PROCESSAMENTO_BP_CS_ANTIFRAUDE_CLEARSALE = "FinSvc_DtHrUltProcessamentoBpCsAntifraudeClearsale";
 					public const string FLAG_HABILITACAO_PROCESSAMENTO_PRODUTOS_VENDIDOS_SEM_PRESENCA_ESTOQUE = "FinSvc_FlagHabilitacao_ProcProdutosVendidosSemPresencaEstoque";
 					public const string FLAG_EXECUCAO_SOLICITADA_PROCESSAMENTO_PRODUTOS_VENDIDOS_SEM_PRESENCA_ESTOQUE = "FinSvc_FlagExecucaoSolicitada_ProcProdutosVendidosSemPresencaEstoque";
 					public const string CONSULTA_EXECUCAO_SOLICITADA_PROCESSAMENTO_PRODUTOS_VENDIDOS_SEM_PRESENCA_ESTOQUE_EM_SEG = "FinSvc_ConsultaExecucaoSolicitada_ProcProdutosVendidosSemPresencaEstoque_TempoEntreProcEmSeg";
@@ -417,6 +424,7 @@ namespace FinanceiroService
 					public const string UPLOAD_FILE_MANUTENCAO_ARQUIVOS_HORARIO = "FinSvc_UploadFile_ManutencaoArquivos_Horario";
 					public const string DT_HR_ULT_UPLOAD_FILE_MANUTENCAO_ARQUIVOS = "FinSvc_DtHrUltUploadFileManutencaoArquivos";
 					public const string ID_PARAMETRO_FLAG_PEDIDO_MEMORIZACAOCOMPLETAENDERECOS = "Flag_Pedido_MemorizacaoCompletaEnderecos";
+					public const string ID_PARAMETRO_EMAILSNDSVC_REMETENTE__MENSAGEM_SISTEMA = "EMAILSNDSVC_REMETENTE__MENSAGEM_SISTEMA";
 				}
 				#endregion
 
@@ -1589,6 +1597,7 @@ namespace FinanceiroService
 					public const string OP_LOG_FINANCEIROSERVICE_INICIADO = "FINSVC INICIADO";
 					public const string OP_LOG_FINANCEIROSERVICE_ENCERRADO = "FINSVC ENCERRADO";
 					public const string OP_LOG_CANCELAMENTO_AUTOMATICO_PEDIDO = "PED CANCEL AUTO";
+					public const string OP_LOG_ENVIO_EMAIL_ALERTA_VENDEDORES_PRAZO_PREVISAO_ENTREGA = "EmailVendedorPrevEtg";
 					public const string OP_LOG_FINANCEIROSERVICE_PROCESSAMENTO_PRODUTOS_VENDIDOS_SEM_PRESENCA_ESTOQUE = "FINSVC PROC PROD SP";
 					public const string OP_LOG_PROCESSAMENTO_BP_CS_ANTIFRAUDE_CLEARSALE = "BP_CS_SVC_ANTIFRAUDE";
 					public const string OP_LOG_PEDIDO_PAGTO_CONTABILIZADO_BRASPAG_CLEARSALE = "PedPagtoContabBpCs";
@@ -1949,10 +1958,16 @@ namespace FinanceiroService
 			#region [ Geral ]
 			public static class Geral
 			{
-				public static string DESTINATARIO_PADRAO_MSG_ALERTA_SISTEMA = "adm_finsvc@bonshop.com.br";
+				public static string DESTINATARIO_PADRAO_MSG_ALERTA_SISTEMA = "vigia@sistema.discomercio.com.br";
 				public static bool ExecutarCancelamentoAutomaticoPedidos = false;
-				public static bool ProcessamentoProdutosVendidosSemPresencaEstoque_FlagHabilitacao = false;
 				public static TimeSpan HorarioCancelamentoAutomaticoPedidos = new TimeSpan(1, 20, 0); // Hours, Minutes, Seconds
+				public static List<int> CancelamentoAutomaticoPedidosLojasIgnoradas;
+				public static bool ExecutarEnvioEmailAlertaVendedoresPrazoPrevisaoEntrega = false;
+				public static TimeSpan EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaHorario = new TimeSpan(6, 0, 0); // Hours, Minutes, Seconds
+				public static string EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaLojasIgnoradas = "";
+				public static int EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaPeriodoCorte = 0;
+				public static string EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaDestinatarioResumoGeral = "";
+				public static bool ProcessamentoProdutosVendidosSemPresencaEstoque_FlagHabilitacao = false;
 				public static TimeSpan HorarioManutencaoArqLogAtividade = new TimeSpan(1, 20, 0); // Hours, Minutes, Seconds
 				public static TimeSpan HorarioManutencaoBdLogAntigo = new TimeSpan(1, 20, 0); // Hours, Minutes, Seconds
 				public static bool FinSvc_BP_CS_Processamento_PeriodoInatividade_FlagHabilitacao = true;
@@ -1978,7 +1993,6 @@ namespace FinanceiroService
 				public static int TempoEntreProcessamentoWebhookBraspagV2EmSeg = 10 * 60;
 				public static string DESTINATARIO_MSG_ALERTA_WEBHOOK_BRASPAG_V2 = ""; // Obtém o parâmetro no BD (FinSvc_DestinatarioMsgAlertaWebhookBraspagV2)
 				public static int FinSvc_ProcessamentoWebhookBraspagV2_MaxTentativasQueryDadosComplementares = 10;
-				public static List<int> CancelamentoAutomaticoPedidosLojasIgnoradas;
 				public static bool FinSvc_BP_CS_Processamento_EstornosPendentes_PeriodoInatividade_FlagHabilitacao = true;
 				public static TimeSpan FinSvc_BP_CS_Processamento_EstornosPendentes_PeriodoInatividade_HorarioInicio = new TimeSpan(21, 0, 0); // Hours, Minutes, Seconds
 				public static TimeSpan FinSvc_BP_CS_Processamento_EstornosPendentes_PeriodoInatividade_HorarioTermino = new TimeSpan(8, 0, 0); // Hours, Minutes, Seconds
