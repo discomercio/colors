@@ -12390,16 +12390,16 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & strInfoAdicParc
         End If
         
-    rNFeImg.infAdic__infCpl = strNFeInfAdicQuadroInfAdic & "|" & strNFeInfAdicQuadroProdutos
-    strNFeTagInfAdicionais = "infAdic;" & vbCrLf & _
-                             vbTab & NFeFormataCampo("infCpl", rNFeImg.infAdic__infCpl)
-                             
 '   INFORMAR QUANDO SE TRATA DE PEDIDO QUITADO (PAGAMENTO ANTECIPADO)
     If (strPagtoAntecipadoStatus = "1") And (strPagtoAntecipadoQuitadoStatus = "1") Then
         If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
         strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "Pedido com pagamento antecipado (Quitado)"
         End If
 
+    rNFeImg.infAdic__infCpl = strNFeInfAdicQuadroInfAdic & "|" & strNFeInfAdicQuadroProdutos
+    strNFeTagInfAdicionais = "infAdic;" & vbCrLf & _
+                             vbTab & NFeFormataCampo("infCpl", rNFeImg.infAdic__infCpl)
+                             
     
 '   LHGX - rever (a tag "entrega" só vale nesta situação?)
 '   TAG ENTREGA

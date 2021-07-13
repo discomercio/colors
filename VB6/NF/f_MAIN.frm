@@ -11760,6 +11760,9 @@ Dim s_end_cliente_uf As String
 Dim s_NFe_texto_constar As String
 Dim strIE As String
 Dim s_erro As String
+Dim pos_inicio_cnpj_cpf As Integer
+Dim s_possivel_cpf As String
+Dim s As String
 
     c_pedido = pedido
     
@@ -11818,6 +11821,30 @@ Dim s_erro As String
                     pnParcelasEmBoletos.Enabled = True
                     c_dataparc.Enabled = True
                     End If
+                End If
+            End If
+        End If
+        
+    'se a UF de entrega for diferente da UF do cliente e for pessoa física, emitir aviso
+    If s_end_entrega_uf <> s_end_cliente_uf Then
+        pos_inicio_cnpj_cpf = InStr(s_resp, "CNPJ/CPF: ")
+        If (pos_inicio_cnpj_cpf > 0) Then
+            'Para evitar mexer nas rotinas obtem_info_pedido_memorizada e obtem_info_pedido,
+            'vamos analisar se existe um CPF na variável de retorno s_resp.
+            'Para isto, pegaremos a substring com as 14 posições posteriores à string 'CNPJ/CPF: '
+            'Se esta substring estiver no formato XXX.XXX.XXX/XX e for um CPF válido, emitiremos
+            'o alerta de endereço de entrega diferente, para que o usuário receba este aviso antes
+            'mesmo de iniciar a emissão da NF
+            s_possivel_cpf = Mid(s_resp, pos_inicio_cnpj_cpf + Len("CNPJ/CPF: "), 14)
+            If Mid(s_possivel_cpf, 4, 1) = "." And _
+                Mid(s_possivel_cpf, 8, 1) = "." And _
+                Mid(s_possivel_cpf, 12, 1) = "/" And _
+                cnpj_cpf_ok(retorna_so_digitos(s_possivel_cpf)) Then
+                s = "ATENÇÃO!!" & vbCrLf & _
+                    "Pedido de PESSOA FÍSICA com endereço de entrega localizado em outra UF!!" & vbCrLf & _
+                    vbCrLf & _
+                    s_resp
+                aviso s
                 End If
             End If
         End If
