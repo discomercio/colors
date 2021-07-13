@@ -208,6 +208,341 @@ namespace FinanceiroService
 		}
 		#endregion
 
+		#region [ executaEnvioEmailAlertaVendedoresPrazoPrevisaoEntrega ]
+		public static bool executaEnvioEmailAlertaVendedoresPrazoPrevisaoEntrega(out string strMsgInformativa, out string strMsgErro)
+		{
+			#region [ Declarações ]
+			const string NOME_DESTA_ROTINA = "Geral.executaEnvioEmailAlertaVendedoresPrazoPrevisaoEntrega()";
+			const string TAB_x1 = "    ";
+			const string TAB_x2 = TAB_x1 + TAB_x1;
+			string strLinhaSeparadoraInicio = new string('-', 30) + "( Início )" + new string('-', 30);
+			string strLinhaSeparadoraFim = new string('-', 31) + "( Fim )" + new string('-', 32);
+			int loja;
+			int periodoCorteEmDias;
+			int qtdeEmailsEnviados = 0;
+			int qtdeEmailsNaoEnviados = 0;
+			int qtdeEmailsFalhaEnvio = 0;
+			int qtdeTotalPedidos = 0;
+			bool bIncluirVendedor;
+			bool bIncluirData;
+			string strMsg;
+			string strSql;
+			string strLoja;
+			string strLojasIgnoradas;
+			string strVendedor;
+			string strWhereLojasIgnoradas = "";
+			string[] vLojasIgnoradas;
+			string sRemetente;
+			StringBuilder sbPedido;
+			StringBuilder sbMsgVendedor;
+			StringBuilder sbMsgEnviado = new StringBuilder("");
+			StringBuilder sbMsgNaoEnviado = new StringBuilder("");
+			StringBuilder sbMsgFalhaEnvio = new StringBuilder("");
+			List<EmailAlertaVendedoresPrazoPrevisaoEntrega> listaEmailAlerta = new List<EmailAlertaVendedoresPrazoPrevisaoEntrega>();
+			EmailAlertaVendedoresPrazoPrevisaoEntrega emailAlertaVendedor;
+			EmailAlertaVendedoresPrazoPrevisaoEntregaPedido emailAlertaPorPedido;
+			EmailAlertaVendedoresPrazoPrevisaoEntregaAgrupaPorData emailAlertaPorData;
+			DateTime dtDataCorte;
+			DateTime dtPrevisaoEntregaData;
+			SqlCommand cmCommand;
+			SqlDataAdapter daAdapter;
+			DataTable dtbConsulta = new DataTable();
+			DataRow rowConsulta;
+			int id_emailsndsvc_mensagem;
+			string msg_erro_aux;
+			string strSubject;
+			string strBody;
+			#endregion
+
+			strMsgInformativa = "";
+			strMsgErro = "";
+
+			try
+			{
+				strMsg = "Rotina " + NOME_DESTA_ROTINA + " iniciada";
+				Global.gravaLogAtividade(strMsg);
+
+				#region [ Cria objetos de BD ]
+				cmCommand = BD.criaSqlCommand();
+				daAdapter = BD.criaSqlDataAdapter();
+				daAdapter.SelectCommand = cmCommand;
+				daAdapter.MissingSchemaAction = MissingSchemaAction.Add;
+				#endregion
+
+				#region [ Obtém remetente a ser usado no envio ]
+				sRemetente = GeralDAO.getCampoTextoTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ID_PARAMETRO_EMAILSNDSVC_REMETENTE__MENSAGEM_SISTEMA);
+				if (sRemetente.Trim().Length == 0) sRemetente = Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA;
+				#endregion
+
+				#region [ Prepara restrição para lojas ignoradas ]
+				strLojasIgnoradas = (Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaLojasIgnoradas ?? "").Trim();
+				strLojasIgnoradas = strLojasIgnoradas.Replace(';', ',');
+				strLojasIgnoradas = strLojasIgnoradas.Replace('|', ',');
+				vLojasIgnoradas = strLojasIgnoradas.Split(',');
+				for (int i = 0; i < vLojasIgnoradas.Length; i++)
+				{
+					strLoja = (vLojasIgnoradas[i] ?? "");
+					if (strLoja.Length > 0)
+					{
+						loja = (int)Global.converteInteiro(strLoja);
+						if (loja > 0)
+						{
+							if (strWhereLojasIgnoradas.Length > 0) strWhereLojasIgnoradas += ",";
+							strWhereLojasIgnoradas += loja.ToString();
+						}
+					}
+				}
+				if (strWhereLojasIgnoradas.Length > 0)
+				{
+					strWhereLojasIgnoradas = " AND (tPedBase.numero_loja NOT IN (" + strWhereLojasIgnoradas + "))";
+				}
+				#endregion
+
+				#region [ Prepara restrição por período de corte ]
+				periodoCorteEmDias = Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaPeriodoCorte;
+				dtDataCorte = DateTime.Today.AddDays(Math.Abs(periodoCorteEmDias));
+				#endregion
+
+				#region [ Monta o SQL da consulta ]
+				strSql = "SELECT" +
+							" tPed.vendedor" +
+							", tPed.pedido" +
+							", tPed.PrevisaoEntregaData" +
+							", tPedBase.loja" +
+							", tPed.endereco_nome_iniciais_em_maiusculas AS cliente_nome" +
+							", tPed.endereco_cnpj_cpf AS cliente_cnpj_cpf" +
+							", t_USUARIO.email AS vendedor_email" +
+						" FROM t_PEDIDO tPed" +
+							" INNER JOIN t_PEDIDO AS tPedBase ON (tPed.pedido_base=tPedBase.pedido)" +
+							" INNER JOIN t_USUARIO ON (tPedBase.vendedor = t_USUARIO.usuario)" +
+						" WHERE" +
+							" (tPed.st_etg_imediata = " + Global.Cte.T_PEDIDO__ENTREGA_IMEDIATA_STATUS.ETG_IMEDIATA_NAO.ToString() + ")" +
+							" AND ( (tPed.PrevisaoEntregaData IS NULL) OR (tPed.PrevisaoEntregaData <= " + Global.sqlMontaDateTimeParaSqlDateTimeSomenteData(dtDataCorte) + ") )" +
+							" AND (tPedBase.analise_credito = " + Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK.ToString() + ")" +
+							" AND (tPed.st_entrega NOT IN ('" + Global.Cte.StEntregaPedido.ST_ENTREGA_ENTREGUE + "','" + Global.Cte.StEntregaPedido.ST_ENTREGA_CANCELADO + "'))" +
+							strWhereLojasIgnoradas +
+						" ORDER BY" +
+							" tPedBase.vendedor" +
+							", tPed.PrevisaoEntregaData" +
+							", tPed.pedido";
+				#endregion
+
+				#region [ Log informativo da consulta realizada ]
+				strMsg = NOME_DESTA_ROTINA + ":\r\n" + strSql;
+				Global.gravaLogAtividade(strMsg);
+				#endregion
+
+				#region [ Executa a consulta no BD ]
+				cmCommand.CommandText = strSql;
+				daAdapter.Fill(dtbConsulta);
+				#endregion
+
+				#region [ Processa o resultado da consulta ao BD em uma lista ]
+				for (int i = 0; i < dtbConsulta.Rows.Count; i++)
+				{
+					rowConsulta = dtbConsulta.Rows[i];
+					strVendedor = BD.readToString(rowConsulta["vendedor"]);
+					dtPrevisaoEntregaData = BD.readToDateTime(rowConsulta["PrevisaoEntregaData"]);
+
+					try
+					{
+						emailAlertaVendedor = listaEmailAlerta.Single(p => p.vendedor.ToUpper().Equals(strVendedor.ToUpper()));
+						bIncluirVendedor = false;
+					}
+					catch (Exception)
+					{
+						emailAlertaVendedor = null;
+						bIncluirVendedor = true;
+					}
+
+					if (bIncluirVendedor)
+					{
+						emailAlertaVendedor = new EmailAlertaVendedoresPrazoPrevisaoEntrega();
+						emailAlertaVendedor.vendedor = strVendedor;
+						emailAlertaVendedor.email = BD.readToString(rowConsulta["vendedor_email"]);
+					}
+
+					emailAlertaPorPedido = new EmailAlertaVendedoresPrazoPrevisaoEntregaPedido();
+					emailAlertaPorPedido.pedido = BD.readToString(rowConsulta["pedido"]);
+					emailAlertaPorPedido.loja = BD.readToString(rowConsulta["loja"]);
+					emailAlertaPorPedido.PrevisaoEntregaData = BD.readToDateTime(rowConsulta["PrevisaoEntregaData"]);
+					emailAlertaPorPedido.cliente_nome = BD.readToString(rowConsulta["cliente_nome"]);
+					emailAlertaPorPedido.cliente_cnpj_cpf = BD.readToString(rowConsulta["cliente_cnpj_cpf"]);
+
+					emailAlertaVendedor.listaPorPedido.Add(emailAlertaPorPedido);
+
+					qtdeTotalPedidos++;
+
+					try
+					{
+						emailAlertaPorData = emailAlertaVendedor.listaPorData.Single(p => p.PrevisaoEntregaData == dtPrevisaoEntregaData);
+						bIncluirData = false;
+					}
+					catch (Exception)
+					{
+						emailAlertaPorData = null;
+						bIncluirData = true;
+					}
+
+					if (bIncluirData)
+					{
+						emailAlertaPorData = new EmailAlertaVendedoresPrazoPrevisaoEntregaAgrupaPorData();
+						emailAlertaPorData.PrevisaoEntregaData = dtPrevisaoEntregaData;
+					}
+
+					emailAlertaPorData.listaPedido.Add(emailAlertaPorPedido);
+					if (bIncluirData) emailAlertaVendedor.listaPorData.Add(emailAlertaPorData);
+
+					if (bIncluirVendedor) listaEmailAlerta.Add(emailAlertaVendedor);
+				}
+				#endregion
+
+				#region [ Processa o envio dos e-mails a partir da lista ]
+				foreach (EmailAlertaVendedoresPrazoPrevisaoEntrega vendedor in listaEmailAlerta)
+				{
+					#region [ Monta mensagem informativa para ser enviada no e-mail de resumo geral ]
+					sbMsgVendedor = new StringBuilder("");
+					foreach (EmailAlertaVendedoresPrazoPrevisaoEntregaAgrupaPorData data in vendedor.listaPorData)
+					{
+						sbPedido = new StringBuilder("");
+						foreach (EmailAlertaVendedoresPrazoPrevisaoEntregaPedido pedido in data.listaPedido)
+						{
+							if (sbPedido.Length > 0) sbPedido.Append(", ");
+							sbPedido.Append(pedido.pedido);
+						}
+
+						sbMsgVendedor.AppendLine(TAB_x2 + ((data.PrevisaoEntregaData == DateTime.MinValue) ? "(data não preenchida)" : Global.formataDataDdMmYyyyComSeparador(data.PrevisaoEntregaData)) + ": " + sbPedido.ToString());
+					}
+					#endregion
+
+					if (vendedor.email.Length == 0)
+					{
+						// O vendedor não possui e-mail cadastrado, então não será possível enviar o e-mail de alerta
+						qtdeEmailsNaoEnviados++;
+
+						#region [ Registra os dados para incluir no e-mail informativo de resumo geral ]
+						if (sbMsgNaoEnviado.Length > 0) sbMsgNaoEnviado.AppendLine("");
+						sbMsgNaoEnviado.AppendLine("Vendedor: " + vendedor.vendedor);
+						sbMsgNaoEnviado.AppendLine("E-mail: " + (vendedor.email.Length > 0 ? vendedor.email : "(e-mail não cadastrado)"));
+						sbMsgNaoEnviado.AppendLine("Qtde pedidos: " + vendedor.listaPorPedido.Count.ToString());
+						sbMsgNaoEnviado.AppendLine(sbMsgVendedor.ToString());
+						#endregion
+					}
+					else
+					{
+						#region [ Envia e-mail de alerta para o vendedor ]
+						strSubject = "Pedidos com entrega imediata 'Não': informativo sobre previsão de entrega próxima de expirar ou já expirada";
+						strBody = "Informativo sobre previsão de entrega próxima de expirar ou já expirada para pedidos com entrega imediata 'Não'"
+								+ "\r\n"
+								+ "\r\n"
+								+ sbMsgVendedor.ToString()
+								+ "\r\n"
+								+ "\r\n"
+								+ "Atenção: esta é uma mensagem automática, NÃO responda a este e-mail!";
+						if (EmailSndSvcDAO.gravaMensagemParaEnvio(sRemetente, vendedor.email, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+						{
+							qtdeEmailsEnviados++;
+
+							#region [ Registra os dados para incluir no e-mail informativo de resumo geral ]
+							if (sbMsgEnviado.Length > 0) sbMsgEnviado.AppendLine("");
+							sbMsgEnviado.AppendLine("Vendedor: " + vendedor.vendedor);
+							sbMsgEnviado.AppendLine("E-mail: " + vendedor.email);
+							sbMsgEnviado.AppendLine("Qtde pedidos: " + vendedor.listaPorPedido.Count.ToString());
+							sbMsgEnviado.AppendLine(sbMsgVendedor.ToString());
+							#endregion
+						}
+						else
+						{
+							qtdeEmailsFalhaEnvio++;
+
+							#region [ Registra os dados para incluir no e-mail informativo de resumo geral ]
+							if (sbMsgFalhaEnvio.Length > 0) sbMsgFalhaEnvio.AppendLine("");
+							sbMsgFalhaEnvio.AppendLine("Vendedor: " + vendedor.vendedor);
+							sbMsgFalhaEnvio.AppendLine("E-mail: " + vendedor.email);
+							sbMsgFalhaEnvio.AppendLine("Qtde pedidos: " + vendedor.listaPorPedido.Count.ToString());
+							sbMsgFalhaEnvio.AppendLine(sbMsgVendedor.ToString());
+							#endregion
+
+							if (strMsgErro.Length > 0) strMsgErro += "\r\n\r\n";
+							strMsgErro += "Falha ao tentar inserir email de alerta na fila de mensagens sobre pedidos com data de previsão de entrega próxima de expirar ou já expirada para o vendedor '" + vendedor.vendedor + "'!!\n" + msg_erro_aux;
+
+							strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens sobre pedidos com data de previsão de entrega próxima de expirar ou já expirada!!\n" + msg_erro_aux;
+							Global.gravaLogAtividade(strMsg);
+						}
+						#endregion
+					}
+				}
+				#endregion
+
+				strMsgInformativa = "Qtde de vendedores: " + listaEmailAlerta.Count.ToString()
+						+ "\r\n"
+						+ "Qtde de pedidos: " + Global.formataInteiro(qtdeTotalPedidos)
+						+ "\r\n"
+						+ "E-mails enviados: " + qtdeEmailsEnviados.ToString()
+						+ "\r\n"
+						+ "E-mails não enviados por ausência de e-mail no cadastro: " + qtdeEmailsNaoEnviados.ToString()
+						+ "\r\n"
+						+ "E-mails com falha no envio: " + qtdeEmailsFalhaEnvio.ToString()
+						+ "\r\n"
+						+ "\r\n"
+						+ "Informações detalhadas sobre e-mails enviados"
+						+ "\r\n"
+						+ strLinhaSeparadoraInicio
+						+ "\r\n"
+						+ sbMsgEnviado.ToString()
+						+ "\r\n"
+						+ strLinhaSeparadoraFim
+						+ "\r\n"
+						+ "\r\n"
+						+ "\r\n"
+						+ "Informações detalhadas sobre e-mails não enviados"
+						+ "\r\n"
+						+ strLinhaSeparadoraInicio
+						+ "\r\n"
+						+ sbMsgNaoEnviado.ToString()
+						+ "\r\n"
+						+ strLinhaSeparadoraFim
+						+ "\r\n"
+						+ "\r\n"
+						+ "\r\n"
+						+ "Informações detalhadas sobre e-mails com falha no envio"
+						+ "\r\n"
+						+ strLinhaSeparadoraInicio
+						+ "\r\n"
+						+ sbMsgFalhaEnvio.ToString()
+						+ "\r\n"
+						+ strLinhaSeparadoraFim;
+
+				#region [ Envia e-mail de resumo geral? ]
+				if (Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaDestinatarioResumoGeral.Length > 0)
+				{
+					strSubject = "Pedidos com entrega imediata 'Não': informativo com resumo geral sobre previsão de entrega próxima de expirar ou já expirada";
+					strBody = "Informativo com resumo geral sobre previsão de entrega próxima de expirar ou já expirada para pedidos com entrega imediata 'Não'"
+								+ "\r\n"
+								+ "\r\n"
+								+ strMsgInformativa
+								+ "\r\n"
+								+ "\r\n"
+								+ "Atenção: esta é uma mensagem automática, NÃO responda a este e-mail!";
+					if (!EmailSndSvcDAO.gravaMensagemParaEnvio(sRemetente, Global.Parametros.Geral.EnvioEmailAlertaVendedoresPrazoPrevisaoEntregaDestinatarioResumoGeral, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+					{
+						strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta com o resumo geral na fila de mensagens sobre pedidos com data de previsão de entrega próxima de expirar ou já expirada!!\n" + msg_erro_aux;
+						Global.gravaLogAtividade(strMsg);
+					}
+				}
+				#endregion
+
+				return true;
+			}
+			catch (Exception ex)
+			{
+				strMsgErro = NOME_DESTA_ROTINA + "\n" + ex.ToString();
+				Global.gravaLogAtividade(strMsgErro);
+				return false;
+			}
+		}
+		#endregion
+
 		#endregion
 	}
 	#endregion
@@ -298,6 +633,35 @@ namespace FinanceiroService
 			get { return _complemento_6; }
 			set { _complemento_6 = value; }
 		}
+	}
+	#endregion
+
+	#region [ EmailAlertaVendedoresPrazoPrevisaoEntrega ]
+	class EmailAlertaVendedoresPrazoPrevisaoEntrega
+	{
+		public string vendedor { get; set; } = "";
+		public string email { get; set; } = "";
+		public List<EmailAlertaVendedoresPrazoPrevisaoEntregaPedido> listaPorPedido { get; set; } = new List<EmailAlertaVendedoresPrazoPrevisaoEntregaPedido>();
+		public List<EmailAlertaVendedoresPrazoPrevisaoEntregaAgrupaPorData> listaPorData { get; set; } = new List<EmailAlertaVendedoresPrazoPrevisaoEntregaAgrupaPorData>();
+	}
+	#endregion
+
+	#region [ EmailAlertaVendedoresPrazoPrevisaoEntregaPedido ]
+	class EmailAlertaVendedoresPrazoPrevisaoEntregaPedido
+	{
+		public string pedido { get; set; } = "";
+		public string loja { get; set; } = "";
+		public DateTime PrevisaoEntregaData { get; set; } = DateTime.MinValue;
+		public string cliente_nome { get; set; } = "";
+		public string cliente_cnpj_cpf { get; set; } = "";
+	}
+	#endregion
+
+	#region [ EmailAlertaVendedoresPrazoPrevisaoEntregaAgrupaPorData ]
+	class EmailAlertaVendedoresPrazoPrevisaoEntregaAgrupaPorData
+	{
+		public DateTime PrevisaoEntregaData { get; set; } = DateTime.MinValue;
+		public List<EmailAlertaVendedoresPrazoPrevisaoEntregaPedido> listaPedido { get; set; } = new List<EmailAlertaVendedoresPrazoPrevisaoEntregaPedido>();
 	}
 	#endregion
 }
