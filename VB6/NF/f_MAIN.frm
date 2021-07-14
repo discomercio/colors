@@ -11826,7 +11826,7 @@ Dim s As String
         End If
         
     'se a UF de entrega for diferente da UF do cliente e for pessoa física, emitir aviso
-    If s_end_entrega_uf <> s_end_cliente_uf Then
+    If (s_end_entrega_uf <> "") And (s_end_entrega_uf <> s_end_cliente_uf) Then
         pos_inicio_cnpj_cpf = InStr(s_resp, "CNPJ/CPF: ")
         If (pos_inicio_cnpj_cpf > 0) Then
             'Para evitar mexer nas rotinas obtem_info_pedido_memorizada e obtem_info_pedido,
