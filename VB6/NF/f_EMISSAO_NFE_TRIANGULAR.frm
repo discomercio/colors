@@ -11072,7 +11072,10 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     
 '   BAIRRO
     strCampo = Trim$("" & t_DESTINATARIO("bairro"))
-    If Len(strCampo) > 60 Then
+    If strCampo = "" Then
+        s_erro = "O campo bairro no endereço do cliente não está preenchido no cadastro!!"
+        GoTo NFE_EMITE_ENCERRA_POR_ERRO_CONSISTENCIA
+    ElseIf Len(strCampo) > 60 Then
         s_erro = "O campo bairro no endereço do cliente excede o tamanho máximo (60 caracteres)!!"
         GoTo NFE_EMITE_ENCERRA_POR_ERRO_CONSISTENCIA
         End If
@@ -15021,7 +15024,10 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     
 '   BAIRRO
     strCampo = l_end_recebedor_bairro
-    If Len(strCampo) > 60 Then
+    If strCampo = "" Then
+        s_erro = "O campo bairro no endereço do cliente não está preenchido no cadastro!!"
+        GoTo NFE_EMITE_REMESSA_ENCERRA_POR_ERRO_CONSISTENCIA
+    ElseIf Len(strCampo) > 60 Then
         s_erro = "O campo bairro no endereço do recebedor excede o tamanho máximo (60 caracteres)!!"
         GoTo NFE_EMITE_REMESSA_ENCERRA_POR_ERRO_CONSISTENCIA
         End If
