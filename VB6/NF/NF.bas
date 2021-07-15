@@ -7,8 +7,8 @@ Option Explicit
 '                          IMPRESSÃO DE NOTA FISCAL
 '                       _______________________________
 ' 
-'                           EDIÇÃO = 071
-'                           DATA   = 01.NOV.2018
+'                           EDIÇÃO = 072
+'                           DATA   = 15.JUL.2021
 '                       _______________________________
 ' 
 ' 
@@ -757,6 +757,19 @@ Option Explicit
 '|          |      |   de marketplace                                          |
 '|          |      | - Novos meios de pagamento e restrição ao 99 - Outros     |
 '|__________|______|___________________________________________________________|
+'|01.06.2021| LHGX |V 2.18                                                     |
+'|          |      | - Correção da UF do endereço de venda no painel de        |
+'|          |      |   Informações do Pedido na tela principal                 |
+'|__________|______|___________________________________________________________|
+'|06.06.2021| LHGX |V 2.19                                                     |
+'|          |      | - Venda Futura / Pagamento Antecipado                     |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| LHGX |V 2.20                                                     |
+'|          |      | - Venda Futura (ajuste painel triangular)                 |
+'|          |      | - Obrigatoriedade de preenchimento do campo xBairro       |
+'|          |      |   para não haver rejeição na SEFAZ                        |
+'|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
 '|          |      |                                                           |
@@ -776,8 +789,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.17"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  04/04/2021"
+Global Const m_id_versao = "2.20"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  15/07/2021"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"
@@ -1334,7 +1347,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hWnd As Long
+Dim hwnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -1656,7 +1669,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hWnd As Long
+Dim hwnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -2012,7 +2025,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hWnd As Long
+Dim hwnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -2329,7 +2342,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hWnd As Long
+Dim hwnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -5694,6 +5707,240 @@ GDPP_FECHA_TABELAS:
     Return
 
 End Function
+
+
+Function consultaDadosParcelasPagto(v_pedido() As String, ByRef v_parcela_pagto() As TIPO_NF_LINHA_DADOS_PARCELA_PAGTO, ByRef strMsgErro As String) As Boolean
+' __________________________________________________________________________________________
+'|
+'|  CONSULTA PEDIDOS COM PARCELAMENTO VIA BOLETO PARA EXIBIÇÃO.
+'|
+'|
+
+Dim s As String
+Dim i As Integer
+
+' BANCO DE DADOS
+Dim rs As ADODB.Recordset
+
+    On Error GoTo CDPP_TRATA_ERRO
+
+    consultaDadosParcelasPagto = False
+    
+    strMsgErro = ""
+    ReDim v_parcela_pagto(0)
+    
+    ReDim v_parcela_pagto(0)
+    v_parcela_pagto(UBound(v_parcela_pagto)).intNumDestaParcela = 0
+  
+  ' rs
+    Set rs = New ADODB.Recordset
+    With rs
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
+        
+    For i = LBound(v_pedido) To UBound(v_pedido)
+        If Trim$(v_pedido(i)) <> "" Then
+            s = "select i.num_parcela, i.forma_pagto, i.valor, i.dt_vencto " & _
+                "from t_FIN_NF_PARCELA_PAGTO_ITEM i " & _
+                "inner join t_FIN_NF_PARCELA_PAGTO_ITEM_RATEIO ir on i.id = ir.id_nf_parcela_pagto_item " & _
+                "where ir.pedido = '" & v_pedido(i) & "' "
+            If rs.State <> adStateClosed Then rs.Close
+            rs.Open s, dbc, , , adCmdText
+            If rs.EOF Then
+                If strMsgErro <> "" Then strMsgErro = strMsgErro & vbCrLf
+                strMsgErro = strMsgErro & "Pedido " & Trim$(v_pedido(i)) & " não está cadastrado!!"
+            Else
+                Do While Not rs.EOF
+                    If v_parcela_pagto(UBound(v_parcela_pagto)).intNumDestaParcela <> 0 Then
+                        ReDim Preserve v_parcela_pagto(UBound(v_parcela_pagto) + 1)
+                        End If
+                    With v_parcela_pagto(UBound(v_parcela_pagto))
+                        .intNumDestaParcela = rs("num_parcela")
+                        .id_forma_pagto = rs("num_parcela")
+                        .vlValor = rs("valor")
+                        .dtVencto = rs("dt_vencto")
+                        End With
+                    rs.MoveNext
+                    Loop
+                End If
+            End If
+        Next
+        
+    consultaDadosParcelasPagto = True
+    
+    GoSub CDPP_FECHA_TABELAS
+    
+Exit Function
+    
+    
+    
+'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CDPP_TRATA_ERRO:
+'===============
+    strMsgErro = strMsgErro & vbCrLf & CStr(Err) & ": " & Error$(Err)
+    GoSub CDPP_FECHA_TABELAS
+    Exit Function
+    
+
+
+'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CDPP_FECHA_TABELAS:
+'==================
+  ' RECORDSETS
+    bd_desaloca_recordset rs, True
+    Return
+    
+    
+End Function
+
+
+
+Function ExisteDadosParcelasPagto(pedido As String, ByRef strMsgErro As String) As Boolean
+' __________________________________________________________________________________________
+'|
+'|  VERIFICA SE EXISTEM PEDIDOS COM PARCELAMENTO VIA BOLETO PARA EXIBIÇÃO.
+'|
+'|
+
+Dim s As String
+Dim i As Integer
+Dim ok As Boolean
+
+' BANCO DE DADOS
+Dim rs As ADODB.Recordset
+
+    On Error GoTo EDPP_TRATA_ERRO
+
+    ok = False
+    
+    strMsgErro = ""
+  ' rs
+    Set rs = New ADODB.Recordset
+    With rs
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
+        
+    If Trim$(pedido) <> "" Then
+        s = "select i.num_parcela, i.forma_pagto, i.valor, i.dt_vencto " & _
+            "from t_FIN_NF_PARCELA_PAGTO_ITEM i " & _
+            "inner join t_FIN_NF_PARCELA_PAGTO_ITEM_RATEIO ir on i.id = ir.id_nf_parcela_pagto_item " & _
+            "where ir.pedido = '" & pedido & "' "
+        If rs.State <> adStateClosed Then rs.Close
+        rs.Open s, dbc, , , adCmdText
+        If rs.RecordCount > 0 Then
+            ok = True
+            End If
+        End If
+        
+    ExisteDadosParcelasPagto = ok
+    
+    GoSub EDPP_FECHA_TABELAS
+    
+Exit Function
+    
+    
+    
+'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+EDPP_TRATA_ERRO:
+'===============
+    strMsgErro = strMsgErro & vbCrLf & CStr(Err) & ": " & Error$(Err)
+    GoSub EDPP_FECHA_TABELAS
+    Exit Function
+    
+
+
+'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+EDPP_FECHA_TABELAS:
+'==================
+  ' RECORDSETS
+    bd_desaloca_recordset rs, True
+    Return
+    
+    
+End Function
+
+
+
+Function ExisteDadosParcelasPagtobkp(v_pedido() As String, ByRef strMsgErro As String) As Boolean
+' __________________________________________________________________________________________
+'|
+'|  VERIFICA SE EXISTEM PEDIDOS COM PARCELAMENTO VIA BOLETO PARA EXIBIÇÃO.
+'|
+'|
+
+Dim s As String
+Dim i As Integer
+Dim ok As Boolean
+
+' BANCO DE DADOS
+Dim rs As ADODB.Recordset
+
+    On Error GoTo EDPP_TRATA_ERRO
+
+    ok = False
+    
+    strMsgErro = ""
+    ReDim v_parcela_pagto(0)
+    
+    ReDim v_parcela_pagto(0)
+    v_parcela_pagto(UBound(v_parcela_pagto)).intNumDestaParcela = 0
+  
+  ' rs
+    Set rs = New ADODB.Recordset
+    With rs
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
+        
+    For i = LBound(v_pedido) To UBound(v_pedido)
+            If Trim$(v_pedido(i)) <> "" Then
+            s = "select i.num_parcela, i.forma_pagto, i.valor, i.dt_vencto " & _
+                "from t_FIN_NF_PARCELA_PAGTO_ITEM i " & _
+                "inner join t_FIN_NF_PARCELA_PAGTO_ITEM_RATEIO ir on i.id = ir.id_nf_parcela_pagto_item " & _
+                "where ir.pedido = '" & v_pedido(i) & "' "
+            If rs.State <> adStateClosed Then rs.Close
+            rs.Open s, dbc, , , adCmdText
+            If Not rs.EOF Then
+                ok = True
+                End If
+            End If
+        Next
+        
+    ExisteDadosParcelasPagtobkp = ok
+    
+    GoSub EDPP_FECHA_TABELAS
+    
+Exit Function
+    
+    
+    
+'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+EDPP_TRATA_ERRO:
+'===============
+    strMsgErro = strMsgErro & vbCrLf & CStr(Err) & ": " & Error$(Err)
+    GoSub EDPP_FECHA_TABELAS
+    Exit Function
+    
+
+
+'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+EDPP_FECHA_TABELAS:
+'==================
+  ' RECORDSETS
+    bd_desaloca_recordset rs, True
+    Return
+    
+    
+End Function
+
+
+
+
 
 
 

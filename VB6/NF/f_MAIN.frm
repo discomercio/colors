@@ -4146,7 +4146,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hWnd As Long
+Dim hwnd As Long
 
 ' VETORES
 Dim v() As String
@@ -4466,7 +4466,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hWnd As Long
+Dim hwnd As Long
 
 ' VETORES
 Dim v() As String
@@ -4784,7 +4784,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hWnd As Long
+Dim hwnd As Long
 
 Dim blnOperacaoNaoTriangular As Boolean
 
@@ -5968,7 +5968,7 @@ Dim t_DESTINATARIO As ADODB.Recordset
         s = s & " UNION" & _
             " SELECT" & _
                 " pedido, id_cliente, st_memorizacao_completa_enderecos, " & _
-                " case when ltrim(rtrim(EndEtg_endereco)) = '' or isnull(EndEtg_endereco, '') = '' then endereco_uf else EndEtg_uf end as uf, " & _
+                " endereco_uf as uf, " & _
                 " endereco_cnpj_cpf as cnpj_cpf, " & _
                 " endereco_logradouro as endereco, " & _
                 " endereco_bairro as bairro, " & _
@@ -6532,6 +6532,8 @@ Dim strPedidoBSMarketplace As String
 Dim strMarketplaceCodOrigem As String
 Dim strMarketPlaceCNPJ As String
 Dim strMarketPlaceCadIntTran As String
+Dim strPagtoAntecipadoStatus As Integer
+Dim strPagtoAntecipadoQuitadoStatus As Integer
 
 ' FLAGS
 Dim blnAchou As Boolean
@@ -6548,6 +6550,8 @@ Dim blnErro As Boolean
 Dim blnExibirTotalTributos As Boolean
 Dim blnHaProdutoSemDadosIbpt As Boolean
 Dim blnExisteMemorizacaoEndereco As Boolean
+Dim blnNotadeCompromisso As Boolean
+Dim blnRemessaEntregaFutura As Boolean
 
 ' CONTADORES
 Dim i As Integer
@@ -6951,6 +6955,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     " t_PEDIDO.st_etg_imediata," & _
                     " t_PEDIDO.pedido_bs_x_marketplace," & _
                     " t_PEDIDO.marketplace_codigo_origem," & _
+                    " t_PEDIDO.PagtoAntecipadoQuitadoStatus," & _
+                    " t_PEDIDO__BASE.PagtoAntecipadoStatus," & _
                     " t_PEDIDO__BASE.tipo_parcelamento," & _
                     " t_PEDIDO__BASE.av_forma_pagto," & _
                     " t_PEDIDO__BASE.pce_forma_pagto_entrada," & _
@@ -6973,6 +6979,14 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 
                 strPedidoBSMarketplace = Trim$("" & t_PEDIDO("pedido_bs_x_marketplace"))
                 strMarketplaceCodOrigem = Trim$("" & t_PEDIDO("marketplace_codigo_origem"))
+                
+                strPagtoAntecipadoStatus = Trim$("" & CStr(t_PEDIDO("PagtoAntecipadoStatus")))
+                strPagtoAntecipadoQuitadoStatus = Trim$("" & CStr(t_PEDIDO("PagtoAntecipadoQuitadoStatus")))
+                
+                'If (strPagtoAntecipadoQuitadoStatus = "1") And (strPagtoAntecipadoQuitadoStatus = "1") Then
+                '    If s_erro <> "" Then s_erro = s_erro & vbCrLf
+                '    s_erro = s_erro & "Pedido " & Trim$(v_pedido(i)) & " está com pagamento antecipado quitado, emitir nota de venda no painel manual!!"
+                '    End If
                 
                 If CLng(t_PEDIDO("StBemUsoConsumo")) = 1 Then
                     blnTemPedidoComStBemUsoConsumo = True
@@ -8134,7 +8148,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 End If
             Next
             
-        If s <> "" Then
+        If (s <> "") And Not blnRemessaEntregaFutura Then
             s = "Serão emitidas na NFe as seguintes informações de pagamento:" & Chr(13) & Chr(13) & s
             If DESENVOLVIMENTO Then
                 aviso s
@@ -8178,6 +8192,62 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             Exit Sub
             End If
         End If
+        
+'   VERIFICAR SE É NOTA DE COMPROMISSO
+    blnNotadeCompromisso = False
+    If ((strCfopCodigo = "5922") Or (strCfopCodigo = "6922")) Then
+        blnNotadeCompromisso = True
+        End If
+    
+'   VERIFICAR SE É NOTA DE REMESSA DE ENTREGA FUTURA
+    blnRemessaEntregaFutura = False
+    If ((strCfopCodigo = "5117") Or (strCfopCodigo = "6117")) Then
+        blnRemessaEntregaFutura = True
+        End If
+    
+    
+'   CASO SEJA NOTA DE COMPROMISSO, VERIFICAR SE O CST É 041
+    If blnNotadeCompromisso Then
+        s_confirma = ""
+        For i = LBound(v_nf) To UBound(v_nf)
+            If Trim$(v_nf(i).produto) <> "" Then
+                strNFeCst = Trim$(right$(v_nf(i).cst, 2))
+                If strNFeCst <> "41" Then
+                    s = "O o produto " & v_nf(i).produto & " possui CST diferente de 41"
+                    End If
+                If s <> "" Then
+                    If s_confirma <> "" Then s_confirma = s_confirma & vbCrLf
+                    s_confirma = s_confirma & s
+                    End If
+                End If
+            Next
+        If s_confirma <> "" Then
+            s_confirma = "PROBLEMAS COM CST EM PEDIDO DE VENDA FUTURA:" & _
+                         vbCrLf & _
+                         s_confirma & _
+                         vbCrLf & vbCrLf & _
+                         "Continua mesmo assim?"
+            If Not confirma(s_confirma) Then
+                GoSub NFE_EMITE_FECHA_TABELAS
+                aguarde INFO_NORMAL, m_id
+                Exit Sub
+                End If
+            End If
+        End If
+
+'   CASO O PEDIDO PAI SEJA PARA PAGAMENTO ANTECIPADO, VERIFICA SE O PEDIDO FILHO ESTÁ QUITADO
+'   (não permitir emissão se não for nota de compromisso)
+    If (strPagtoAntecipadoStatus = "1") And (strPagtoAntecipadoQuitadoStatus <> "1") Then
+        If Not blnNotadeCompromisso Then
+            s = "Pedido " & Trim$(v_pedido(i)) & " se refere a venda futura não quitada!"
+            aviso s
+            GoSub NFE_EMITE_FECHA_TABELAS
+            aguarde INFO_NORMAL, m_id
+            Exit Sub
+            End If
+        End If
+        
+        
 
 '   ZERAR PIS/COFINS?
     s_confirma = ""
@@ -8409,7 +8479,10 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     Else
         strCampo = Trim$("" & t_DESTINATARIO("bairro"))
         End If
-    If Len(strCampo) > 60 Then
+    If strCampo = "" Then
+        s_erro = "O campo bairro no endereço do cliente não está preenchido no cadastro!!"
+        GoTo NFE_EMITE_ENCERRA_POR_ERRO_CONSISTENCIA
+    ElseIf Len(strCampo) > 60 Then
         s_erro = "O campo bairro no endereço do cliente excede o tamanho máximo (60 caracteres)!!"
         GoTo NFE_EMITE_ENCERRA_POR_ERRO_CONSISTENCIA
         End If
@@ -8747,6 +8820,13 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                                             & vbTab & NFeFormataCampo("vOrig", NFeFormataMoeda2Dec(vl_aux)) _
                                             & vbTab & NFeFormataCampo("vDesc", "0.00") _
                                             & vbTab & NFeFormataCampo("vLiq", NFeFormataMoeda2Dec(vl_aux))
+        
+        'se as faturas já foram gravadas na nota de compromisso, zerar as tags de parcelamento
+        If ExisteDadosParcelasPagto(rNFeImg.pedido, s_erro) Then
+            strNFeTagFat = ""
+            strNFeTagDup = ""
+            End If
+        
         End If
     
     
@@ -9721,6 +9801,11 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & strInfoAdicParc
         End If
 
+'   INFORMAR QUANDO SE TRATA DE PEDIDO QUITADO (PAGAMENTO ANTECIPADO)
+    If (strPagtoAntecipadoStatus = "1") And (strPagtoAntecipadoQuitadoStatus = "1") Then
+        If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
+        strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "Pedido com pagamento antecipado (Quitado)"
+        End If
 
     rNFeImg.infAdic__infCpl = strNFeInfAdicQuadroInfAdic & "|" & strNFeInfAdicQuadroProdutos
     strNFeTagInfAdicionais = "infAdic;" & vbCrLf & _
@@ -10330,9 +10415,16 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 s = "SELECT * FROM t_PEDIDO WHERE (" & s & ")"
                 t_PEDIDO.Open s, dbc, , , adCmdText
                 If Not t_PEDIDO.EOF Then
-                    If (Trim$("" & t_PEDIDO("obs_2")) = "") Or IsLetra(Trim$("" & t_PEDIDO("obs_2"))) Then
-                        t_PEDIDO("obs_2") = strNumeroNf
-                        t_PEDIDO.Update
+                    If blnNotadeCompromisso Then
+                        If (Trim$("" & t_PEDIDO("obs_4")) = "") Or IsLetra(Trim$("" & t_PEDIDO("obs_4"))) Then
+                            t_PEDIDO("obs_4") = strNumeroNf
+                            t_PEDIDO.Update
+                            End If
+                    Else
+                        If (Trim$("" & t_PEDIDO("obs_2")) = "") Or IsLetra(Trim$("" & t_PEDIDO("obs_2"))) Then
+                            t_PEDIDO("obs_2") = strNumeroNf
+                            t_PEDIDO.Update
+                            End If
                         End If
                     End If
                 End If
@@ -10355,10 +10447,12 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     '   Tipo de NFe: 0-Entrada  1-Saída
         If rNFeImg.ide__tpNF = "1" Then
         '   GRAVA OS DADOS DE BOLETOS NO BD!!
-            If Not gravaDadosParcelaPagto(CLng(strNumeroNf), v_parcela_pagto(), s_erro) Then
-                If s_erro <> "" Then s_erro = Chr(13) & Chr(13) & s_erro
-                s_erro = "Falha ao gravar as informações dos boletos no banco de dados!!" & s_erro
-                aviso_erro s_erro
+            If Not ExisteDadosParcelasPagto(rNFeImg.pedido, s_erro) Then
+                If Not gravaDadosParcelaPagto(CLng(strNumeroNf), v_parcela_pagto(), s_erro) Then
+                    If s_erro <> "" Then s_erro = Chr(13) & Chr(13) & s_erro
+                    s_erro = "Falha ao gravar as informações dos boletos no banco de dados!!" & s_erro
+                    aviso_erro s_erro
+                    End If
                 End If
             End If
             
@@ -11669,6 +11763,9 @@ Dim s_end_cliente_uf As String
 Dim s_NFe_texto_constar As String
 Dim strIE As String
 Dim s_erro As String
+Dim pos_inicio_cnpj_cpf As Integer
+Dim s_possivel_cpf As String
+Dim s As String
 
     c_pedido = pedido
     
@@ -11712,8 +11809,45 @@ Dim s_erro As String
             v_pedido_manual_boleto(UBound(v_pedido_manual_boleto)) = pedido
             blnExisteParcelamentoBoleto = False
             pnParcelasEmBoletos.Visible = False
-            If geraDadosParcelasPagto(v_pedido_manual_boleto(), v_parcela_manual_boleto(), s_erro) Then
+            If ExisteDadosParcelasPagto(pedido, s_erro) And _
+                consultaDadosParcelasPagto(v_pedido_manual_boleto(), v_parcela_manual_boleto(), s_erro) Then
                 AdicionaListaParcelasEmBoletos v_parcela_manual_boleto()
+                If blnExisteParcelamentoBoleto Then
+                    pnParcelasEmBoletos.Visible = True
+                    pnParcelasEmBoletos.Enabled = False
+                    c_dataparc.Enabled = False
+                    End If
+            ElseIf geraDadosParcelasPagto(v_pedido_manual_boleto(), v_parcela_manual_boleto(), s_erro) Then
+                AdicionaListaParcelasEmBoletos v_parcela_manual_boleto()
+                If blnExisteParcelamentoBoleto Then
+                    pnParcelasEmBoletos.Visible = True
+                    pnParcelasEmBoletos.Enabled = True
+                    c_dataparc.Enabled = True
+                    End If
+                End If
+            End If
+        End If
+        
+    'se a UF de entrega for diferente da UF do cliente e for pessoa física, emitir aviso
+    If (s_end_entrega_uf <> "") And (s_end_entrega_uf <> s_end_cliente_uf) Then
+        pos_inicio_cnpj_cpf = InStr(s_resp, "CNPJ/CPF: ")
+        If (pos_inicio_cnpj_cpf > 0) Then
+            'Para evitar mexer nas rotinas obtem_info_pedido_memorizada e obtem_info_pedido,
+            'vamos analisar se existe um CPF na variável de retorno s_resp.
+            'Para isto, pegaremos a substring com as 14 posições posteriores à string 'CNPJ/CPF: '
+            'Se esta substring estiver no formato XXX.XXX.XXX/XX e for um CPF válido, emitiremos
+            'o alerta de endereço de entrega diferente, para que o usuário receba este aviso antes
+            'mesmo de iniciar a emissão da NF
+            s_possivel_cpf = Mid(s_resp, pos_inicio_cnpj_cpf + Len("CNPJ/CPF: "), 14)
+            If Mid(s_possivel_cpf, 4, 1) = "." And _
+                Mid(s_possivel_cpf, 8, 1) = "." And _
+                Mid(s_possivel_cpf, 12, 1) = "/" And _
+                cnpj_cpf_ok(retorna_so_digitos(s_possivel_cpf)) Then
+                s = "ATENÇÃO!!" & vbCrLf & _
+                    "Pedido de PESSOA FÍSICA com endereço de entrega localizado em outra UF!!" & vbCrLf & _
+                    vbCrLf & _
+                    s_resp
+                aviso s
                 End If
             End If
         End If
