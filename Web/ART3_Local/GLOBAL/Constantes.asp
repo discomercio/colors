@@ -40,7 +40,7 @@
 	Const URL_FILE__JQUERY_MY_PLUGIN = "../Global/jquery-my-plugin.js?v=002"
 	Const URL_FILE__JQUERY_UI_MY_PLUGIN = "../Global/jquery-ui-my-plugin.js?v=003"
 	Const URL_FILE__JQUERY_MASKMONEY = "../Global/jquery.maskMoney.min.js?v=001"
-	Const URL_FILE__GLOBAL_JS = "../Global/global.js?v=066"
+	Const URL_FILE__GLOBAL_JS = "../Global/global.js?v=067"
 	Const URL_FILE__SSL_JS = "../Global/SSL.js?v=004"
 	Const URL_FILE__CONST_JS = "../Global/const.js?v=001"
 	Const URL_FILE__CONSTXL_JS = "../Global/constXL.js?v=001"
@@ -503,11 +503,24 @@
 	Const COD_SISTEMA_RESPONSAVEL_CADASTRO__UNIS = 3
 	Const COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP_WEBAPI = 4
 
+	Const VERSAO_API_MAGENTO_V1_SOAP_XML = 0
+	Const VERSAO_API_MAGENTO_V2_REST_JSON = 2
+
+	Const COD_MAGENTO_PRODUCT_TYPE__SIMPLE = "simple"
+	Const COD_MAGENTO_PRODUCT_TYPE__VIRTUAL = "virtual"
+	Const COD_MAGENTO_PRODUCT_TYPE__CONFIGURABLE = "configurable"
+
+
   ' CÓDIGOS PARA NÍVEL DOS USUÁRIOS
 	Const ID_VENDEDOR		= "V"
 	Const ID_SEPARADOR		= "S"
 	Const ID_ADMINISTRADOR	= "A" 
 	Const ID_GERENCIAL		= "G" 
+
+  ' CÓDIGOS PARA NÍVEL DE EDIÇÃO
+	Const COD_NIVEL_EDICAO_LIBERADA_TOTAL = 100
+	Const COD_NIVEL_EDICAO_LIBERADA_PARCIAL = 50
+	Const COD_NIVEL_EDICAO_BLOQUEADA = 0
 
   ' CÓDIGOS PARA TIPOS DE PAGAMENTO
 	Const COD_PAGTO_QUITACAO = "Q"
@@ -527,6 +540,15 @@
 	Const COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO = "9"
 	Const COD_AN_CREDITO_NAO_ANALISADO = "10"  ' PEDIDOS ANTIGOS QUE JÁ ESTAVAM NA BASE
 	Const COD_AN_CREDITO_PENDENTE_CARTAO = "PEND_CARTAO" ' CONSTANTE USADA P/ UNIFORMIZAR O TRATAMENTO DO STATUS NA TELA (PRINCIPALMENTE A DECODIFICAÇÃO DA DESCRIÇÃO), JÁ QUE ESSE STATUS NÃO EXISTE NO BD, POIS ESSE STATUS LÓGICO É DEFINIDO NO PEDIDO PELA COMBINAÇÃO DO STATUS DA ANÁLISE DE CRÉDITO 'COD_AN_CREDITO_ST_INICIAL' + FORMA DE PAGAMENTO USANDO SOMENTE PAGAMENTO POR CARTÃO
+	Const COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV = "11"
+	Const COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO = "12"
+
+  ' CÓDIGOS PARA PAGAMENTO ANTECIPADO
+	Const COD_PAGTO_ANTECIPADO_STATUS_NORMAL = "0"
+	Const COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO = "1"
+
+	Const COD_PAGTO_ANTECIPADO_QUITADO_STATUS_PENDENTE = "0"
+	Const COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO = "1"
 
   ' CÓDIGOS P/ STATUS DA ANÁLISE DE ENDEREÇO
 	Const COD_ANALISE_ENDERECO_TRATADO_STATUS_INICIAL = "0"
@@ -610,6 +632,7 @@
 	Const CTRL_PAGTO_MODULO__BRASPAG_CARTAO = "4"
 	Const CTRL_PAGTO_MODULO__BRASPAG_CLEARSALE = "5"
 	Const CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK = "6"
+	Const CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK_V2 = "7"
 	
 	Const CTRL_PAGTO_STATUS__CONTROLE_MANUAL = "0"
 	Const CTRL_PAGTO_STATUS__CADASTRADO_INICIAL = "1"
@@ -670,6 +693,8 @@
 	Const COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_EDICAO_ENDERECO = 1100
 	Const COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_EDICAO_FORMA_PAGTO = 1200
 	Const COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_EDICAO_INDICADOR = 1300
+	Const COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_SPLIT_MANUAL = 1400
+	Const COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_SPLIT_AUTOMATICO = 1500
 
 '	NÍVEL DE ACESSO DO BLOCO DE NOTAS DO PEDIDO
 	Const COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__NAO_DEFINIDO = 0
@@ -741,7 +766,7 @@
 
 
 '	PERÍODO MÁXIMO EM QUE O DANFE FICA ACESSÍVEL NO PEDIDO
-	Const MAX_PERIODO_LINK_DANFE_DISPONIVEL_NO_PEDIDO_EM_DIAS = 60
+	Const MAX_PERIODO_LINK_DANFE_DISPONIVEL_NO_PEDIDO_EM_DIAS = 90
 
   ' TAMANHO MÁXIMO DO CAMPO NO BD
 	Const MAX_OBS_2 = 10
@@ -860,7 +885,12 @@
 	Const ID_PARAM_VlLimiteMensalIndicadorParaCadastroFeitoNaLoja = "VlLimiteMensalIndicadorParaCadastroFeitoNaLoja"  ' NESTE CASO, O REGISTRO É USADO P/ ARMAZENAR UM PARÂMETRO E NÃO P/ GERAR UM NSU!!
 	Const ID_PARAM_PercDesagioRAIndicadorParaCadastroFeitoNaLoja = "PercDesagioRAIndicadorParaCadastroFeitoNaLoja"    ' NESTE CASO, O REGISTRO É USADO P/ ARMAZENAR UM PARÂMETRO E NÃO P/ GERAR UM NSU!!
 	Const ID_PARAM_PercVlPedidoLimiteRA					= "PercVlPedidoLimiteRA"			' NESTE CASO, O REGISTRO É USADO P/ ARMAZENAR UM PARÂMETRO E NÃO P/ GERAR UM NSU!!
-	
+	Const ID_XLOCK_SYNC_PEDIDO = "XLOCK_SYNC_PEDIDO"   ' NESTE CASO, O REGISTRO É USADO PARA SINCRONIZAR (SERIALIZAR) A OPERAÇÃO E EVITAR ACESSO CONCORRENTE
+	Const ID_XLOCK_SYNC_ORCAMENTO = "XLOCK_SYNC_ORCAMENTO"   ' NESTE CASO, O REGISTRO É USADO PARA SINCRONIZAR (SERIALIZAR) A OPERAÇÃO E EVITAR ACESSO CONCORRENTE
+	Const ID_XLOCK_SYNC_CLIENTE = "XLOCK_SYNC_CLIENTE"   ' NESTE CASO, O REGISTRO É USADO PARA SINCRONIZAR (SERIALIZAR) A OPERAÇÃO E EVITAR ACESSO CONCORRENTE
+	Const ID_XLOCK_SYNC_ORCAMENTISTA_E_INDICADOR = "XLOCK_SYNC_ORCAMENTISTA_E_INDICADOR"   ' NESTE CASO, O REGISTRO É USADO PARA SINCRONIZAR (SERIALIZAR) A OPERAÇÃO E EVITAR ACESSO CONCORRENTE
+
+
 '	CONSTANTES QUE IDENTIFICAM PARÂMETROS ARMAZENADOS NA TABELA "t_PARAMETRO"
 	Const ID_PARAMETRO_PercMaxComissaoEDesconto_Nivel2_MeiosPagto = "PercMaxComissaoEDesconto_Nivel2_MeiosPagto"
 	Const ID_PARAMETRO_NF_FlagOperacaoTriangular = "NF_FlagOperacaoTriangular"
@@ -869,6 +899,8 @@
 	Const ID_PARAMETRO_MagentoPedidoComIndicadorListaLojaErp = "MagentoPedidoComIndicadorListaLojaErp"
 	Const ID_PARAMETRO_EmailDestinatarioAlertaEdicaoCadastroClienteComPedidoCreditoOkEntregaPendente = "EmailDestinatarioAlertaEdicaoCadastroClienteComPedidoCreditoOkEntregaPendente"
 	Const ID_PARAMETRO_EmailDestinatarioAlertaEdicaoFormaPagtoEmPedidoCreditoOk = "EmailDestinatarioAlertaEdicaoFormaPagtoEmPedidoCreditoOk"
+	Const ID_PARAMETRO_EmailDestinatarioAlertaEdicaoFormaPagtoPassouPossuirMeioPagtoMonitorado = "EmailDestinatarioAlertaEdicaoFormaPagtoPassouPossuirMeioPagtoMonitorado"
+	Const ID_PARAMETRO_EmailDestinatarioAlertaEdicaoFormaPagtoComBoletoAV = "EmailDestinatarioAlertaEdicaoFormaPagtoComBoletoAV"
 	Const ID_PARAMETRO_EmailDestinatarioAlertaAlteracaoIndicadorEmPedidoCreditoOk = "EmailDestinatarioAlertaAlteracaoIndicadorEmPedidoCreditoOk"
 	Const ID_PARAMETRO_CtrlRelatorio_RelControleImpostos_TimeoutLockEmMinutos = "CtrlRelatorio_RelControleImpostos_TimeoutLockEmMinutos"
     Const ID_PARAMETRO_CtrlRelatorio_RelControleImpostos_MaxQtdeResultadoPorConsulta = "CtrlRelatorio_RelControleImpostos_MaxQtdeResultadoPorConsulta"
@@ -1789,6 +1821,22 @@
 		dim PercMaxSenhaDesconto
 		dim PercMaxDescSemZerarRT
 		dim unidade_negocio
+		dim id_plano_contas_empresa
+		dim id_plano_contas_grupo
+		dim id_plano_contas_conta
+		dim natureza
+		dim perc_max_comissao
+		dim perc_max_comissao_e_desconto
+		dim perc_max_comissao_e_desconto_nivel2
+		dim perc_max_comissao_e_desconto_nivel2_pj
+		dim perc_max_comissao_e_desconto_pj
+		dim magento_api_urlWebService
+		dim magento_api_username
+		dim magento_api_password
+		dim magento_api_versao
+		dim magento_api_rest_endpoint
+		dim magento_api_rest_access_token
+		dim magento_api_rest_force_get_sales_order_by_entity_id
 		end class
 	
 	class cl_CLIENTE
@@ -1917,6 +1965,7 @@
 		dim obs_1
 		dim obs_2
 		dim obs_3
+		dim obs_4
 		dim qtde_parcelas
 		dim forma_pagto
 		dim vl_total_familia
@@ -2092,9 +2141,50 @@
 		dim PrevisaoEntregaData
 		dim PrevisaoEntregaUsuarioUltAtualiz
 		dim PrevisaoEntregaDtHrUltAtualiz
+		dim PagtoAntecipadoStatus
+		dim PagtoAntecipadoDataHora
+		dim PagtoAntecipadoUsuario
+		dim PagtoAntecipadoQuitadoStatus
+		dim PagtoAntecipadoQuitadoDataHora
+		dim PagtoAntecipadoQuitadoUsuario
 		end class
 
 	class cl_ITEM_PEDIDO
+		dim pedido
+		dim fabricante
+		dim produto
+		dim qtde
+		dim desc_dado
+		dim preco_venda
+		dim preco_NF
+		dim preco_fabricante
+		dim preco_lista
+		dim margem
+		dim desc_max
+		dim comissao
+		dim descricao
+		dim descricao_html
+		dim ean
+		dim grupo
+        dim subgrupo
+		dim peso
+		dim qtde_volumes
+		dim abaixo_min_status
+		dim abaixo_min_autorizacao
+		dim abaixo_min_autorizador
+		dim sequencia
+		dim markup_fabricante
+		dim abaixo_min_superv_autorizador
+		dim vl_custo2
+		dim custoFinancFornecCoeficiente
+		dim custoFinancFornecPrecoListaBase
+		dim cubagem
+		dim ncm
+		dim cst
+		dim descontinuado
+		end class
+
+	class cl_ITEM_PEDIDO_SERVICO
 		dim pedido
 		dim fabricante
 		dim produto

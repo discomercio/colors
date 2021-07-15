@@ -58,6 +58,8 @@
 			this.DiferencaValor = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.DiferencaPerc = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.ColHiddenValorOrdenacaoPadrao = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.cbPlataforma = new System.Windows.Forms.ComboBox();
+			this.lblPlataforma = new System.Windows.Forms.Label();
 			this.pnBotoes.SuspendLayout();
 			this.pnCampos.SuspendLayout();
 			this.gboxMsgErro.SuspendLayout();
@@ -75,6 +77,8 @@
 			// 
 			// pnCampos
 			// 
+			this.pnCampos.Controls.Add(this.cbPlataforma);
+			this.pnCampos.Controls.Add(this.lblPlataforma);
 			this.pnCampos.Controls.Add(this.grid);
 			this.pnCampos.Controls.Add(this.btnAbreArquivo);
 			this.pnCampos.Controls.Add(this.gboxMsgErro);
@@ -102,7 +106,7 @@
 			this.gboxMsgErro.Location = new System.Drawing.Point(12, 506);
 			this.gboxMsgErro.Name = "gboxMsgErro";
 			this.gboxMsgErro.Size = new System.Drawing.Size(987, 95);
-			this.gboxMsgErro.TabIndex = 24;
+			this.gboxMsgErro.TabIndex = 8;
 			this.gboxMsgErro.TabStop = false;
 			this.gboxMsgErro.Text = "Mensagens de Erro";
 			// 
@@ -123,7 +127,7 @@
 			this.gboxMensagensInformativas.Location = new System.Drawing.Point(12, 400);
 			this.gboxMensagensInformativas.Name = "gboxMensagensInformativas";
 			this.gboxMensagensInformativas.Size = new System.Drawing.Size(987, 95);
-			this.gboxMensagensInformativas.TabIndex = 25;
+			this.gboxMensagensInformativas.TabIndex = 7;
 			this.gboxMensagensInformativas.TabStop = false;
 			this.gboxMensagensInformativas.Text = "Mensagens Informativas";
 			// 
@@ -238,7 +242,7 @@
 			dataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
 			dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
 			this.grid.DefaultCellStyle = dataGridViewCellStyle9;
-			this.grid.Location = new System.Drawing.Point(12, 78);
+			this.grid.Location = new System.Drawing.Point(12, 108);
 			this.grid.MultiSelect = false;
 			this.grid.Name = "grid";
 			this.grid.ReadOnly = true;
@@ -246,8 +250,8 @@
 			this.grid.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
 			this.grid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
 			this.grid.ShowEditingIcon = false;
-			this.grid.Size = new System.Drawing.Size(987, 312);
-			this.grid.TabIndex = 4;
+			this.grid.Size = new System.Drawing.Size(987, 282);
+			this.grid.TabIndex = 6;
 			this.grid.SortCompare += new System.Windows.Forms.DataGridViewSortCompareEventHandler(this.grid_SortCompare);
 			// 
 			// ColVisibleOrdenacaoPadrao
@@ -341,6 +345,28 @@
 			this.ColHiddenValorOrdenacaoPadrao.ReadOnly = true;
 			this.ColHiddenValorOrdenacaoPadrao.Visible = false;
 			// 
+			// cbPlataforma
+			// 
+			this.cbPlataforma.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+			this.cbPlataforma.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+			this.cbPlataforma.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.cbPlataforma.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.cbPlataforma.FormattingEnabled = true;
+			this.cbPlataforma.Location = new System.Drawing.Point(94, 78);
+			this.cbPlataforma.Name = "cbPlataforma";
+			this.cbPlataforma.Size = new System.Drawing.Size(150, 24);
+			this.cbPlataforma.TabIndex = 5;
+			// 
+			// lblPlataforma
+			// 
+			this.lblPlataforma.AutoSize = true;
+			this.lblPlataforma.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblPlataforma.Location = new System.Drawing.Point(31, 83);
+			this.lblPlataforma.Name = "lblPlataforma";
+			this.lblPlataforma.Size = new System.Drawing.Size(57, 13);
+			this.lblPlataforma.TabIndex = 4;
+			this.lblPlataforma.Text = "Plataforma";
+			// 
 			// FConferenciaPreco
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -384,5 +410,7 @@
 		private System.Windows.Forms.DataGridViewTextBoxColumn DiferencaValor;
 		private System.Windows.Forms.DataGridViewTextBoxColumn DiferencaPerc;
 		private System.Windows.Forms.DataGridViewTextBoxColumn ColHiddenValorOrdenacaoPadrao;
+		private System.Windows.Forms.ComboBox cbPlataforma;
+		private System.Windows.Forms.Label lblPlataforma;
 	}
 }

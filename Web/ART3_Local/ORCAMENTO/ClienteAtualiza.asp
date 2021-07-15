@@ -639,6 +639,16 @@
 			'	~~~~~~~~~~~~~
 				cn.BeginTrans
 			'	~~~~~~~~~~~~~
+				if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+				'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				'	OBS: TODOS OS MÓDULOS DO SISTEMA QUE REALIZEM ESTA OPERAÇÃO DE CADASTRAMENTO DEVEM SINCRONIZAR O ACESSO OBTENDO O LOCK EXCLUSIVO DO REGISTRO DE CONTROLE DESIGNADO
+					s = "UPDATE t_CONTROLE SET" & _
+							" dummy = ~dummy" & _
+						" WHERE" & _
+							" id_nsu = '" & ID_XLOCK_SYNC_CLIENTE & "'"
+					cn.Execute(s)
+					end if
+
 				s = "SELECT * FROM t_CLIENTE WHERE id = '" & cliente_selecionado & "'"
 				r.Open s, cn
 				if r.EOF then 
@@ -1100,6 +1110,16 @@
 			'	~~~~~~~~~~~~~
 				cn.BeginTrans
 			'	~~~~~~~~~~~~~
+				if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+				'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				'	OBS: TODOS OS MÓDULOS DO SISTEMA QUE REALIZEM ESTA OPERAÇÃO DE CADASTRAMENTO DEVEM SINCRONIZAR O ACESSO OBTENDO O LOCK EXCLUSIVO DO REGISTRO DE CONTROLE DESIGNADO
+					s = "UPDATE t_CONTROLE SET" & _
+							" dummy = ~dummy" & _
+						" WHERE" & _
+							" id_nsu = '" & ID_XLOCK_SYNC_CLIENTE & "'"
+					cn.Execute(s)
+					end if
+
 				s = "SELECT * FROM t_CLIENTE WHERE id = '" & cliente_selecionado & "'"
 				r.Open s, cn
 				if r.EOF then 

@@ -186,6 +186,20 @@ Dim qtde_movimentada
         end if
 
 '	OBTÉM OS "LOTES" DO PRODUTO DISPONÍVEIS NO ESTOQUE (POLÍTICA FIFO)
+	if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+	'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+		s_sql = "UPDATE t_ESTOQUE_ITEM SET" & _
+					" t_ESTOQUE_ITEM.dummy = ~t_ESTOQUE_ITEM.dummy" & _
+				" FROM t_ESTOQUE" & _
+					" INNER JOIN t_ESTOQUE_ITEM ON" & " (t_ESTOQUE.id_estoque=t_ESTOQUE_ITEM.id_estoque)" & _
+				" WHERE" & _
+					" (t_ESTOQUE.id_nfe_emitente = " & Trim("" & id_nfe_emitente) & ")" & _
+					" AND (t_ESTOQUE_ITEM.fabricante='" & id_fabricante & "')" & _
+					" AND (produto='" & id_produto & "')" & _
+					" AND ((qtde - qtde_utilizada) > 0)"
+		cn.Execute(s_sql)
+		end if
+
 	s_sql = "SELECT" & _
 				" t_ESTOQUE.id_estoque," & _
 				" (qtde - qtde_utilizada) AS saldo" & _
@@ -239,6 +253,17 @@ Dim qtde_movimentada
         If Trim(v_estoque(iv)) <> "" Then
           ' A QUANTIDADE NECESSÁRIA JÁ FOI RETIRADA DO ESTOQUE!!
             If qtde_movimentada >= qtde_a_sair Then Exit For
+
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s_sql = "UPDATE t_ESTOQUE_ITEM SET" & _
+							" dummy = ~dummy" & _
+						" WHERE" & _
+						" (id_estoque = '" & Trim(v_estoque(iv)) & "')" & _
+						" AND (fabricante = '" & id_fabricante & "')" & _
+						" AND (produto = '" & id_produto & "')"
+				cn.Execute(s_sql)
+				end if
 
           ' T_ESTOQUE_ITEM: SAÍDA DE PRODUTOS
             s_sql = "SELECT qtde, qtde_utilizada, data_ult_movimento FROM t_ESTOQUE_ITEM WHERE" & _
@@ -300,9 +325,17 @@ Dim qtde_movimentada
 				end if
 
           ' T_ESTOQUE: ATUALIZA DATA DO ÚLTIMO MOVIMENTO
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s_sql = "UPDATE t_ESTOQUE SET" & _
+							" dummy = ~dummy" & _
+						" WHERE" & _
+							" (id_estoque = '" & v_estoque(iv) & "')"
+				cn.Execute(s_sql)
+				end if
+
             s_sql = "SELECT id_estoque, data_ult_movimento FROM t_ESTOQUE WHERE" & _
                     " (id_estoque = '" & v_estoque(iv) & "')"
-
 			rs.Open s_sql, cn
 			if Not rs.EOF then
 				rs("data_ult_movimento")=Date
@@ -482,6 +515,19 @@ dim id_nfe_emitente
     ReDim v_estoque(0)
     v_estoque(UBound(v_estoque)) = ""
 	
+	if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+	'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+		s_sql = "UPDATE t_ESTOQUE_MOVIMENTO SET" & _
+					" t_ESTOQUE_MOVIMENTO.dummy = ~t_ESTOQUE_MOVIMENTO.dummy" & _
+				" FROM t_ESTOQUE INNER JOIN t_ESTOQUE_MOVIMENTO ON (t_ESTOQUE.id_estoque = t_ESTOQUE_MOVIMENTO.id_estoque)" & _
+				" WHERE (anulado_status = 0)" & _
+					" AND (estoque = '" & ID_ESTOQUE_VENDIDO & "')" & _
+					" AND (pedido = '" & id_pedido & "')" & _
+					" AND (t_ESTOQUE_MOVIMENTO.fabricante = '" & id_fabricante & "')" & _
+					" AND (produto = '" & id_produto & "')"
+		cn.Execute(s_sql)
+		end if
+
     s_sql = "SELECT id_movimento FROM t_ESTOQUE INNER JOIN t_ESTOQUE_MOVIMENTO ON (t_ESTOQUE.id_estoque = t_ESTOQUE_MOVIMENTO.id_estoque)" & _
 			" WHERE (anulado_status = 0)" & _
             " AND (estoque = '" & ID_ESTOQUE_VENDIDO & "')" & _
@@ -517,8 +563,17 @@ dim id_nfe_emitente
                 If qtde_estornada >= qtde_a_estornar Then Exit For
                 End If
 			
-		  ' T_ESTOQUE_MOVIMENTO: ANULA O MOVIMENTO	
+		  ' T_ESTOQUE_MOVIMENTO: ANULA O MOVIMENTO
 		  ' ======================================
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s_sql = "UPDATE t_ESTOQUE_MOVIMENTO SET" & _
+							" dummy = ~dummy" & _
+						" WHERE (anulado_status = 0)" & _
+							" AND (id_movimento = '" & Trim(v_estoque(iv)) & "')"
+				cn.Execute(s_sql)
+				end if
+
             s_sql = "SELECT *" & _
 					" FROM t_ESTOQUE_MOVIMENTO" & _
 					" WHERE (anulado_status = 0)" & _
@@ -594,6 +649,17 @@ dim id_nfe_emitente
 		  
 		  ' T_ESTOQUE_ITEM: ESTORNA PRODUTOS AO SALDO
 		  ' =========================================
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s_sql = "UPDATE t_ESTOQUE_ITEM SET" & _
+							" dummy = ~dummy" & _
+						" WHERE" & _
+							" (id_estoque = '" & id_estoque_aux & "') AND" & _
+							" (fabricante = '" & id_fabricante & "') AND" & _
+							" (produto = '" & id_produto & "')"
+				cn.Execute(s_sql)
+				end if
+
             s_sql = "SELECT data_ult_movimento, qtde_utilizada FROM t_ESTOQUE_ITEM WHERE" & _
                     " (id_estoque = '" & id_estoque_aux & "') AND" & _
                     " (fabricante = '" & id_fabricante & "') AND" & _
@@ -631,6 +697,15 @@ dim id_nfe_emitente
           
           ' T_ESTOQUE: ATUALIZA DATA DO ÚLTIMO MOVIMENTO
           ' ============================================
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s_sql = "UPDATE t_ESTOQUE SET" & _
+							" dummy = ~dummy" & _
+						" WHERE" & _
+							" (id_estoque = '" & id_estoque_aux & "')"
+				cn.Execute(s_sql)
+				end if
+
             s_sql = "SELECT data_ult_movimento, id_nfe_emitente FROM t_ESTOQUE WHERE" & _
                     " (id_estoque = '" & id_estoque_aux & "')"
             
@@ -727,6 +802,18 @@ dim id_nfe_emitente
     ReDim v_estoque(0)
     v_estoque(UBound(v_estoque)) = ""
 	
+	if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+	'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+		s_sql = "UPDATE t_ESTOQUE_MOVIMENTO SET" & _
+					" dummy = ~dummy" & _
+				" WHERE (anulado_status = 0)" & _
+					" AND (estoque = '" & ID_ESTOQUE_SEM_PRESENCA & "')" & _
+					" AND (pedido = '" & id_pedido & "')" & _
+					" AND (fabricante = '" & id_fabricante & "')" & _
+					" AND (produto = '" & id_produto & "')"
+		cn.Execute(s_sql)
+		end if
+
     s_sql = "SELECT id_movimento FROM t_ESTOQUE_MOVIMENTO" & _
 			" WHERE (anulado_status = 0)" & _
             " AND (estoque = '" & ID_ESTOQUE_SEM_PRESENCA & "')" & _
@@ -758,8 +845,17 @@ dim id_nfe_emitente
                 If qtde_cancelada >= qtde_a_cancelar Then Exit For
                 End If
 			
-		  ' T_ESTOQUE_MOVIMENTO: ANULA O MOVIMENTO	
+		  ' T_ESTOQUE_MOVIMENTO: ANULA O MOVIMENTO
 		  ' ======================================
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s_sql = "UPDATE t_ESTOQUE_MOVIMENTO SET" & _
+							" dummy = ~dummy" & _
+						" WHERE (anulado_status = 0)" & _
+						" AND (id_movimento = '" & Trim(v_estoque(iv)) & "')"
+				cn.Execute(s_sql)
+				end if
+
             s_sql = "SELECT *" & _
 					" FROM t_ESTOQUE_MOVIMENTO" & _
 					" WHERE (anulado_status = 0)" & _
@@ -1017,6 +1113,19 @@ dim id_nfe_emitente_pedido, id_nfe_emitente_pedido_filhote
 '   SERÃO TRANSFERIDOS PARA O PEDIDO FILHOTE OS PRODUTOS QUE ENTRARAM HÁ MAIS 
 '   TEMPO NO ESTOQUE (FIFO), JÁ QUE O PEDIDO FILHOTE SERÁ ENTREGUE ANTES QUE
 '   O PEDIDO ORIGINAL.
+	if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+	'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+		s_sql = "UPDATE t_ESTOQUE_MOVIMENTO SET" & _
+					" t_ESTOQUE_MOVIMENTO.dummy = ~t_ESTOQUE_MOVIMENTO.dummy" & _
+				" FROM t_ESTOQUE INNER JOIN t_ESTOQUE_MOVIMENTO ON (t_ESTOQUE.id_estoque = t_ESTOQUE_MOVIMENTO.id_estoque)" & _
+				" WHERE (anulado_status = 0)" & _
+					" AND (estoque = '" & ID_ESTOQUE_VENDIDO & "')" & _
+					" AND (pedido = '" & id_pedido & "')" & _
+					" AND (t_ESTOQUE_MOVIMENTO.fabricante = '" & id_fabricante & "')" & _
+					" AND (produto = '" & id_produto & "')"
+		cn.Execute(s_sql)
+		end if
+
     s_sql = "SELECT id_movimento FROM t_ESTOQUE INNER JOIN t_ESTOQUE_MOVIMENTO ON (t_ESTOQUE.id_estoque = t_ESTOQUE_MOVIMENTO.id_estoque)" & _
 			" WHERE (anulado_status = 0)" & _
             " AND (estoque = '" & ID_ESTOQUE_VENDIDO & "')" & _
@@ -1053,6 +1162,15 @@ dim id_nfe_emitente_pedido, id_nfe_emitente_pedido_filhote
 
 		  ' T_ESTOQUE_MOVIMENTO: ANULA O MOVIMENTO
 		  ' ======================================
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s_sql = "UPDATE t_ESTOQUE_MOVIMENTO SET" & _
+							" dummy = ~dummy" & _
+						" WHERE (anulado_status = 0)" & _
+						" AND (id_movimento = '" & Trim(v_estoque(iv)) & "')"
+				cn.Execute(s_sql)
+				end if
+
             s_sql = "SELECT *" & _
 					" FROM t_ESTOQUE_MOVIMENTO" & _
 					" WHERE (anulado_status = 0)" & _
@@ -1157,6 +1275,17 @@ dim id_nfe_emitente_pedido, id_nfe_emitente_pedido_filhote
 			
 		  ' T_ESTOQUE_ITEM: ATUALIZA DATA DO ÚLTIMO MOVIMENTO
 		  ' =================================================
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s_sql = "UPDATE t_ESTOQUE_ITEM SET" & _
+							" dummy = ~dummy" & _
+						" WHERE" & _
+							" (id_estoque = '" & id_estoque_aux & "') AND" & _
+							" (fabricante = '" & id_fabricante & "') AND" & _
+							" (produto = '" & id_produto & "')"
+				cn.Execute(s_sql)
+				end if
+
             s_sql = "SELECT data_ult_movimento FROM t_ESTOQUE_ITEM WHERE" & _
                     " (id_estoque = '" & id_estoque_aux & "') AND" & _
                     " (fabricante = '" & id_fabricante & "') AND" & _
@@ -1183,6 +1312,15 @@ dim id_nfe_emitente_pedido, id_nfe_emitente_pedido_filhote
 		  
           ' T_ESTOQUE: ATUALIZA DATA DO ÚLTIMO MOVIMENTO
           ' ============================================
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s_sql = "UPDATE t_ESTOQUE SET" & _
+							" dummy = ~dummy" & _
+						" WHERE" & _
+							" (id_estoque = '" & id_estoque_aux & "')"
+				cn.Execute(s_sql)
+				end if
+
             s_sql = "SELECT data_ult_movimento FROM t_ESTOQUE WHERE" & _
                     " (id_estoque = '" & id_estoque_aux & "')"
             
@@ -1563,6 +1701,14 @@ dim id_nfe_emitente
 	strComplemento=""	
 	id_estoque = Trim("" & id_estoque)
 	
+	if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+	'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+		s = "UPDATE t_ESTOQUE SET" & _
+				" dummy = ~dummy" & _
+			" WHERE (id_estoque='" & id_estoque & "')"
+		cn.Execute(s)
+		end if
+
 	s = "SELECT * FROM t_ESTOQUE WHERE (id_estoque='" & id_estoque & "')"
 	set rs = cn.execute(s)
 	if Err <> 0 then
@@ -1598,6 +1744,15 @@ dim id_nfe_emitente
 
 	if blnEntradaEspecial then strComplemento="ENTRADA_ESPECIAL"
 	
+	if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+	'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+		s = "UPDATE t_ESTOQUE_ITEM SET" & _
+				" dummy = ~dummy" & _
+			" WHERE" & _
+				" (id_estoque='" & id_estoque & "') AND (qtde_utilizada > 0)"
+		cn.Execute(s)
+		end if
+
     s = "SELECT fabricante, produto, qtde_utilizada FROM t_ESTOQUE_ITEM WHERE" & _
         " (id_estoque='" & id_estoque & "') AND (qtde_utilizada > 0)"
 	set rs = cn.execute(s)
@@ -1896,6 +2051,17 @@ dim strComplemento
 				   (v_item(i).ncm <> v_item_bd(i_ref).ncm) Or _
 				   (v_item(i).cst <> v_item_bd(i_ref).cst) then
 					with v_item(i)
+						if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+						'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+							s = "UPDATE t_ESTOQUE_ITEM SET" & _
+									" dummy = ~dummy" & _
+								" WHERE" & _
+									" (id_estoque='" & r_estoque.id_estoque & "')" & _
+									" AND (fabricante='" & .fabricante & "')" & _
+									" AND (produto='" & .produto & "')"
+							cn.Execute(s)
+							end if
+
 						s = "SELECT * FROM t_ESTOQUE_ITEM WHERE" & _
 							" (id_estoque='" & r_estoque.id_estoque & "')" & _
 							" AND (fabricante='" & .fabricante & "')" & _
@@ -2107,6 +2273,16 @@ dim strComplemento
 		   (Trim(r_estoque.documento)<>Trim(r_estoque_bd.documento)) Or _
 		   (Trim(r_estoque.obs)<>Trim(r_estoque_bd.obs)) Or _
 		   (r_estoque.entrada_especial<>r_estoque_bd.entrada_especial) then
+			
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s = "UPDATE t_ESTOQUE SET" & _
+						" dummy = ~dummy" & _
+					" WHERE" & _
+						" (id_estoque='" & Trim(r_estoque.id_estoque) & "')"
+				cn.Execute(s)
+				end if
+
 			s = "SELECT * FROM t_ESTOQUE WHERE" & _
 				" (id_estoque='" & Trim(r_estoque.id_estoque) & "')"
 			if rs.State <> 0 then rs.Close
@@ -2138,6 +2314,15 @@ dim strComplemento
 			end if
 		
 	'	COMPACTA A SEQUÊNCIA
+		if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+		'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+			s = "UPDATE t_ESTOQUE_ITEM SET" & _
+					" dummy = ~dummy" & _
+				" WHERE" & _
+					" (id_estoque='" & Trim(r_estoque.id_estoque) & "')"
+			cn.Execute(s)
+			end if
+
 		i_seq = 0
 		s = "SELECT * FROM t_ESTOQUE_ITEM WHERE (id_estoque='" & Trim(r_estoque.id_estoque) & "') ORDER BY sequencia"
 		if rs.State <> 0 then rs.Close
@@ -2352,6 +2537,17 @@ dim strComplemento
 				   (v_item(i).aliq_icms <> v_item_bd(i_ref).aliq_icms) Or _
 				   (v_item(i).vl_ipi <> v_item_bd(i_ref).vl_ipi) then
 					with v_item(i)
+						if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+						'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+							s = "UPDATE t_ESTOQUE_ITEM SET" & _
+									" dummy = ~dummy" & _
+								" WHERE" & _
+									" (id_estoque='" & r_estoque.id_estoque & "')" & _
+									" AND (fabricante='" & .fabricante & "')" & _
+									" AND (produto='" & .produto & "')"
+							cn.Execute(s)
+							end if
+
 						s = "SELECT * FROM t_ESTOQUE_ITEM WHERE" & _
 							" (id_estoque='" & r_estoque.id_estoque & "')" & _
 							" AND (fabricante='" & .fabricante & "')" & _
@@ -2559,6 +2755,16 @@ dim strComplemento
 		   (Trim(r_estoque.obs)<>Trim(r_estoque_bd.obs)) Or _
 		   (r_estoque.entrada_especial<>r_estoque_bd.entrada_especial) Or _
 		   (r_estoque.perc_agio<>r_estoque_bd.perc_agio) then
+
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s = "UPDATE t_ESTOQUE SET" & _
+						" dummy = ~dummy" & _
+					" WHERE" & _
+						" (id_estoque='" & Trim(r_estoque.id_estoque) & "')"
+				cn.Execute(s)
+				end if
+
 			s = "SELECT * FROM t_ESTOQUE WHERE" & _
 				" (id_estoque='" & Trim(r_estoque.id_estoque) & "')"
 			if rs.State <> 0 then rs.Close
@@ -2591,6 +2797,15 @@ dim strComplemento
 			end if
 		
 	'	COMPACTA A SEQUÊNCIA
+		if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+		'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+			s = "UPDATE t_ESTOQUE_ITEM SET" & _
+					" dummy = ~dummy" & _
+				" WHERE" & _
+					" (id_estoque='" & Trim(r_estoque.id_estoque) & "')"
+			cn.Execute(s)
+			end if
+
 		i_seq = 0
 		s = "SELECT * FROM t_ESTOQUE_ITEM WHERE (id_estoque='" & Trim(r_estoque.id_estoque) & "') ORDER BY sequencia"
 		if rs.State <> 0 then rs.Close
@@ -2808,6 +3023,17 @@ dim strComplemento
 				   (v_item(i).vl_ipi <> v_item_bd(i_ref).vl_ipi) Or _
 				   (v_item(i).aliq_icms <> v_item_bd(i_ref).aliq_icms) then
 					with v_item(i)
+						if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+						'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+							s = "UPDATE t_ESTOQUE_ITEM SET" & _
+									" dummy = ~dummy" & _
+								" WHERE" & _
+									" (id_estoque='" & r_estoque.id_estoque & "')" & _
+									" AND (fabricante='" & .fabricante & "')" & _
+									" AND (produto='" & .produto & "')"
+							cn.Execute(s)
+							end if
+
 						s = "SELECT * FROM t_ESTOQUE_ITEM WHERE" & _
 							" (id_estoque='" & r_estoque.id_estoque & "')" & _
 							" AND (fabricante='" & .fabricante & "')" & _
@@ -3022,6 +3248,16 @@ dim strComplemento
 		   (Trim(r_estoque.obs)<>Trim(r_estoque_bd.obs)) Or _
 		   (r_estoque.entrada_especial<>r_estoque_bd.entrada_especial) Or _
 		   (r_estoque.perc_agio<>r_estoque_bd.perc_agio) then
+
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s = "UPDATE t_ESTOQUE SET" & _
+						" dummy = ~dummy" & _
+					" WHERE" & _
+						" (id_estoque='" & Trim(r_estoque.id_estoque) & "')"
+				cn.Execute(s)
+				end if
+
 			s = "SELECT * FROM t_ESTOQUE WHERE" & _
 				" (id_estoque='" & Trim(r_estoque.id_estoque) & "')"
 			if rs.State <> 0 then rs.Close
@@ -3054,6 +3290,15 @@ dim strComplemento
 			end if
 		
 	'	COMPACTA A SEQUÊNCIA
+		if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+		'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+			s = "UPDATE t_ESTOQUE_ITEM SET" & _
+					" dummy = ~dummy" & _
+				" WHERE" & _
+					" (id_estoque='" & Trim(r_estoque.id_estoque) & "')"
+			cn.Execute(s)
+			end if
+
 		i_seq = 0
 		s = "SELECT * FROM t_ESTOQUE_ITEM WHERE (id_estoque='" & Trim(r_estoque.id_estoque) & "') ORDER BY sequencia"
 		if rs.State <> 0 then rs.Close
@@ -3156,6 +3401,19 @@ dim s_chave
 	if Not cria_recordset_pessimista(rs, msg_erro) then exit function
 
 '	OBTÉM OS "LOTES" DO PRODUTO DISPONÍVEIS NO ESTOQUE (POLÍTICA FIFO)
+	if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+	'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+		s = "UPDATE t_ESTOQUE_ITEM SET" & _
+				" t_ESTOQUE_ITEM.dummy = ~t_ESTOQUE_ITEM.dummy" & _
+			" FROM t_ESTOQUE INNER JOIN t_ESTOQUE_ITEM ON (t_ESTOQUE.id_estoque=t_ESTOQUE_ITEM.id_estoque)" & _
+			" WHERE" & _
+				" (t_ESTOQUE.id_nfe_emitente = " & Trim("" & id_nfe_emitente) & ")" & _
+				" AND (t_ESTOQUE_ITEM.fabricante='" & id_fabricante & "')" & _
+				" AND (produto='" & id_produto & "')" & _
+				" AND ((qtde-qtde_utilizada) > 0)"
+		cn.Execute(s)
+		end if
+
 	s = "SELECT" & _
 			" t_ESTOQUE.id_estoque, (qtde-qtde_utilizada) AS saldo" & _
 		" FROM t_ESTOQUE INNER JOIN t_ESTOQUE_ITEM ON (t_ESTOQUE.id_estoque=t_ESTOQUE_ITEM.id_estoque)" & _
@@ -3200,6 +3458,17 @@ dim s_chave
 			If qtde_movimentada >= qtde_a_sair Then Exit For
 			
 		'	T_ESTOQUE_ITEM: SAÍDA DE PRODUTOS
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s = "UPDATE t_ESTOQUE_ITEM SET" & _
+						" dummy = ~dummy" & _
+					" WHERE" & _
+						" (id_estoque = '" & Trim(v_estoque(iv)) & "')" & _
+						" AND (fabricante = '" & id_fabricante & "')" & _
+						" AND (produto = '" & id_produto & "')"
+				cn.Execute(s)
+				end if
+
 			s = "SELECT " & _
 					"*" & _
 				" FROM t_ESTOQUE_ITEM" & _
@@ -3283,6 +3552,15 @@ dim s_chave
 				end if
 
 		'	T_ESTOQUE: ATUALIZA DATA DO ÚLTIMO MOVIMENTO
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s = "UPDATE t_ESTOQUE SET" & _
+						" dummy = ~dummy" & _
+					" WHERE" & _
+						" (id_estoque = '" & v_estoque(iv) & "')"
+				cn.Execute(s)
+				end if
+
 			s = "SELECT " & _
 					"*" & _
 				" FROM t_ESTOQUE" & _
@@ -3814,6 +4092,19 @@ dim id_nfe_emitente
 		end if
 
 '	OBTÉM A QUANTIDADE VENDIDA SEM PRESENÇA NO ESTOQUE
+	if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+	'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+		s = "UPDATE t_ESTOQUE_MOVIMENTO SET" & _
+				" dummy = ~dummy" & _
+			" WHERE" & _
+				" (anulado_status = 0)" & _
+				" AND (estoque='" & ID_ESTOQUE_SEM_PRESENCA & "')" & _
+				" AND (pedido='" & id_pedido & "')" & _
+				" AND (fabricante='" & id_fabricante & "')" & _
+				" AND (produto='" & id_produto & "')"
+		cn.Execute(s)
+		end if
+
 	s = "SELECT" & _
 			" Sum(qtde) AS total" & _
 		" FROM t_ESTOQUE_MOVIMENTO" & _
@@ -3858,6 +4149,20 @@ dim id_nfe_emitente
 '	OBTÉM OS "LOTES" DO PRODUTO DISPONÍVEIS NO ESTOQUE (POLÍTICA FIFO)
 	ReDim v_estoque(0)
 	v_estoque(UBound(v_estoque)) = ""
+
+	if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+	'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+		s = "UPDATE t_ESTOQUE_ITEM SET" & _
+				" t_ESTOQUE_ITEM.dummy = ~t_ESTOQUE_ITEM.dummy" & _
+			" FROM t_ESTOQUE" & _
+				" INNER JOIN t_ESTOQUE_ITEM ON (t_ESTOQUE.id_estoque=t_ESTOQUE_ITEM.id_estoque)" & _
+			" WHERE" & _
+				" (t_ESTOQUE.id_nfe_emitente = " & id_nfe_emitente & ") AND" & _
+				" (t_ESTOQUE.fabricante='" & id_fabricante & "') AND" & _
+				" (produto='" & id_produto & "') AND" & _
+				" ((qtde - qtde_utilizada) > 0)"
+		cn.Execute(s)
+		end if
 
 	s = "SELECT" & _
 			" t_ESTOQUE.id_estoque," & _
@@ -3911,6 +4216,17 @@ dim id_nfe_emitente
             If qtde_movimentada >= qtde_a_sair Then Exit For
 
           ' T_ESTOQUE_ITEM: SAÍDA DE PRODUTOS
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s = "UPDATE t_ESTOQUE_ITEM SET" & _
+						" dummy = ~dummy" & _
+					" WHERE" & _
+						" (id_estoque = '" & Trim(v_estoque(iv)) & "')" & _
+						" AND (fabricante = '" & id_fabricante & "')" & _
+						" AND (produto = '" & id_produto & "')"
+				cn.Execute(s)
+				end if
+
             s = "SELECT" & _
 					" qtde," & _
 					" qtde_utilizada," & _
@@ -3977,6 +4293,15 @@ dim id_nfe_emitente
 				end if
 
           ' T_ESTOQUE: ATUALIZA DATA DO ÚLTIMO MOVIMENTO
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s = "UPDATE t_ESTOQUE SET" & _
+						" dummy = ~dummy" & _
+					" WHERE" & _
+						" (id_estoque = '" & v_estoque(iv) & "')"
+				cn.Execute(s)
+				end if
+
 			s = "SELECT" & _
 					" data_ult_movimento" & _
 				" FROM t_ESTOQUE" & _
@@ -4310,7 +4635,7 @@ Dim qtde_movimentada
 	id_nfe_emitente = converte_numero(id_nfe_emitente)
     
     If (qtde_a_sair <= 0) Or (id_produto = "") Then
-        estoque_produto_saida_por_transferencia = True
+        estoque_produto_saida_por_transferencia_v2 = True
         exit function
         end if
 
@@ -4325,6 +4650,20 @@ Dim qtde_movimentada
 		end if
 
 '	OBTÉM OS "LOTES" DO PRODUTO DISPONÍVEIS NO ESTOQUE (POLÍTICA FIFO)
+	if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+	'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+		s_sql = "UPDATE t_ESTOQUE_ITEM SET" & _
+					" t_ESTOQUE_ITEM.dummy = ~t_ESTOQUE_ITEM.dummy" & _
+				" FROM t_ESTOQUE INNER JOIN t_ESTOQUE_ITEM ON" & _
+					" (t_ESTOQUE.id_estoque=t_ESTOQUE_ITEM.id_estoque)" & _
+				" WHERE" & _
+					" (t_ESTOQUE.id_nfe_emitente = " & id_nfe_emitente & ") AND" & _
+					" (t_ESTOQUE.fabricante='" & id_fabricante & "') AND" & _
+					" (produto='" & id_produto & "') AND" & _
+					" ((qtde - qtde_utilizada) > 0)"
+		cn.Execute(s_sql)
+		end if
+
 	s_sql = "SELECT" & _
 				" t_ESTOQUE.id_estoque," & _
 				" (qtde - qtde_utilizada) AS saldo" & _
@@ -4378,6 +4717,17 @@ Dim qtde_movimentada
 			If qtde_movimentada >= qtde_a_sair Then Exit For
 
 		  ' T_ESTOQUE_ITEM: SAÍDA DE PRODUTOS
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s_sql = "UPDATE t_ESTOQUE_ITEM SET" & _
+							" dummy = ~dummy" & _
+						" WHERE" & _
+							" (id_estoque = '" & Trim(v_estoque(iv)) & "')" & _
+							" AND (fabricante = '" & id_fabricante & "')" & _
+							" AND (produto = '" & id_produto & "')"
+				cn.Execute(s_sql)
+				end if
+
 			s_sql = "SELECT" & _
 						" qtde," & _
 						" qtde_utilizada," & _
@@ -4460,6 +4810,15 @@ Dim qtde_movimentada
 				end if
 
 		  ' T_ESTOQUE: ATUALIZA DATA DO ÚLTIMO MOVIMENTO
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s_sql = "UPDATE t_ESTOQUE SET" & _
+							" dummy = ~dummy" & _
+						" WHERE" & _
+							" (id_estoque = '" & v_estoque(iv) & "')"
+				cn.Execute(s_sql)
+				end if
+
 			s_sql = "SELECT data_ult_movimento FROM t_ESTOQUE WHERE" & _
 					" (id_estoque = '" & v_estoque(iv) & "')"
 
@@ -4615,8 +4974,18 @@ dim blnGravarLog
 				If qtde_estornada >= qtde_a_estornar Then Exit For
 				End If
 			
-		  ' T_ESTOQUE_MOVIMENTO: ANULA O MOVIMENTO	
+		  ' T_ESTOQUE_MOVIMENTO: ANULA O MOVIMENTO
 		  ' ======================================
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s_sql = "UPDATE t_ESTOQUE_MOVIMENTO SET" & _
+							" dummy = ~dummy" & _
+						" WHERE" & _
+							" (anulado_status = 0)" & _
+							" AND (id_movimento = '" & Trim(v_estoque(iv)) & "')"
+				cn.Execute(s_sql)
+				end if
+
 			s_sql = "SELECT " & _
 						"*" & _
 					" FROM t_ESTOQUE_MOVIMENTO" & _
@@ -4701,6 +5070,17 @@ dim blnGravarLog
 		  
 		  ' T_ESTOQUE_ITEM: ESTORNA PRODUTOS AO SALDO
 		  ' =========================================
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s_sql = "UPDATE t_ESTOQUE_ITEM SET" & _
+							" dummy = ~dummy" & _
+						" WHERE" & _
+							" (id_estoque = '" & id_estoque_aux & "') AND" & _
+							" (fabricante = '" & id_fabricante & "') AND" & _
+							" (produto = '" & id_produto & "')"
+				cn.Execute(s_sql)
+				end if
+
 			s_sql = "SELECT" & _
 						" data_ult_movimento," & _
 						" qtde_utilizada" & _
@@ -4744,6 +5124,15 @@ dim blnGravarLog
 		  
 		  ' T_ESTOQUE: ATUALIZA DATA DO ÚLTIMO MOVIMENTO
 		  ' ============================================
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s_sql = "UPDATE t_ESTOQUE SET" & _
+							" dummy = ~dummy" & _
+						" WHERE" & _
+							" (id_estoque = '" & id_estoque_aux & "')"
+				cn.Execute(s_sql)
+				end if
+
 			s_sql = "SELECT" & _
 						" data_ult_movimento" & _
 					" FROM t_ESTOQUE" & _
@@ -4930,6 +5319,16 @@ dim id_ordem_servico_log
 			
 		  ' T_ESTOQUE_MOVIMENTO: ANULA O MOVIMENTO
 		  ' ======================================
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s_sql = "UPDATE t_ESTOQUE_MOVIMENTO SET" & _
+							" dummy = ~dummy" & _
+						" WHERE" & _
+							" (anulado_status = 0)" & _
+							" AND (id_movimento = '" & Trim(v_estoque(iv)) & "')"
+				cn.Execute(s_sql)
+				end if
+
 			s_sql = "SELECT " & _
 						"*" & _
 					" FROM t_ESTOQUE_MOVIMENTO" & _
@@ -5048,6 +5447,17 @@ dim id_ordem_servico_log
 		  
 		  ' T_ESTOQUE_ITEM: DATA DO ÚLTIMO MOVIMENTO
 		  ' ========================================
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s_sql = "UPDATE t_ESTOQUE_ITEM SET" & _
+							" dummy = ~dummy" & _
+						" WHERE" & _
+							" (id_estoque = '" & id_estoque_aux & "') AND" & _
+							" (fabricante = '" & id_fabricante & "') AND" & _
+							" (produto = '" & id_produto & "')"
+				cn.Execute(s_sql)
+				end if
+
 			s_sql = "SELECT" & _
 						" data_ult_movimento" & _
 					" FROM t_ESTOQUE_ITEM" & _
@@ -5076,6 +5486,15 @@ dim id_ordem_servico_log
 			
 		  ' T_ESTOQUE: ATUALIZA DATA DO ÚLTIMO MOVIMENTO
 		  ' ============================================
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s_sql = "UPDATE t_ESTOQUE SET" & _
+							" dummy = ~dummy" & _
+						" WHERE" & _
+							" (id_estoque = '" & id_estoque_aux & "')"
+				cn.Execute(s_sql)
+				end if
+
 			s_sql = "SELECT" & _
 						" data_ult_movimento" & _
 					" FROM t_ESTOQUE" & _
@@ -5168,6 +5587,16 @@ dim id_nfe_emitente
 ' 	OBS: LEMBRE-SE DE INCLUIR A RESTRIÇÃO "anulado_status=0" P/ SELECIONAR APENAS 
 '		 OS MOVIMENTOS VÁLIDOS, POIS "anulado_status<>0" INDICAM MOVIMENTOS QUE 
 '		 FORAM CANCELADOS E QUE ESTÃO NO BD APENAS POR QUESTÃO DE HISTÓRICO.
+	if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+	'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+		s_sql = "UPDATE t_ESTOQUE_MOVIMENTO SET" & _
+					" dummy = ~dummy" & _
+				" WHERE (anulado_status = 0)" & _
+					" AND (pedido='" & id_pedido & "')" & _
+					" AND (estoque='" & ID_ESTOQUE_VENDIDO & "')"
+		cn.Execute(s_sql)
+		end if
+
 	s_sql = "SELECT id_movimento" & _
             " FROM t_ESTOQUE_MOVIMENTO" & _
             " WHERE (anulado_status = 0)" & _
@@ -5208,6 +5637,15 @@ dim id_nfe_emitente
 				exit function
 				end if
           
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s_sql = "UPDATE t_ESTOQUE_MOVIMENTO SET" & _
+							" dummy = ~dummy" & _
+						" WHERE" & _
+							" (id_movimento='" & v_lista(iv) & "')"
+				cn.Execute(s_sql)
+				end if
+
 			s_sql = "SELECT * FROM t_ESTOQUE_MOVIMENTO WHERE" & _
 					" (id_movimento='" & v_lista(iv) & "')"
 			if rs.State <> 0 then rs.Close
@@ -5352,6 +5790,19 @@ dim id_nfe_emitente_pedido_origem, id_nfe_emitente_pedido_destino
     ReDim v_estoque(0)
     v_estoque(UBound(v_estoque)) = ""
 	
+	if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+	'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+		s_sql = "UPDATE t_ESTOQUE_MOVIMENTO SET" & _
+					" t_ESTOQUE_MOVIMENTO.dummy = ~t_ESTOQUE_MOVIMENTO.dummy" & _
+				" FROM t_ESTOQUE INNER JOIN t_ESTOQUE_MOVIMENTO ON (t_ESTOQUE.id_estoque = t_ESTOQUE_MOVIMENTO.id_estoque)" & _
+				" WHERE (anulado_status = 0)" & _
+					" AND (estoque = '" & ID_ESTOQUE_VENDIDO & "')" & _
+					" AND (pedido = '" & pedido_origem & "')" & _
+					" AND (t_ESTOQUE_MOVIMENTO.fabricante = '" & id_fabricante & "')" & _
+					" AND (produto = '" & id_produto & "')"
+		cn.Execute(s_sql)
+		end if
+
     s_sql = "SELECT id_movimento, qtde FROM t_ESTOQUE INNER JOIN t_ESTOQUE_MOVIMENTO ON (t_ESTOQUE.id_estoque = t_ESTOQUE_MOVIMENTO.id_estoque)" & _
 			" WHERE (anulado_status = 0)" & _
             " AND (estoque = '" & ID_ESTOQUE_VENDIDO & "')" & _
@@ -5389,6 +5840,18 @@ dim id_nfe_emitente_pedido_origem, id_nfe_emitente_pedido_destino
 		end if
 
 '   VERIFICA SE O PEDIDO DE DESTINO NECESSITA DA QUANTIDADE ESPECIFICADA
+	if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+	'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+		s_sql = "UPDATE t_ESTOQUE_MOVIMENTO SET" & _
+					" dummy = ~dummy" & _
+				" WHERE (anulado_status=0)" & _
+					" AND (pedido='" & pedido_destino & "')" & _
+					" AND (fabricante='" & id_fabricante & "')" & _
+					" AND (produto='" & id_produto & "')" & _
+					" AND (estoque='" & ID_ESTOQUE_SEM_PRESENCA & "')"
+		cn.Execute(s_sql)
+		end if
+
 	s_sql = "SELECT Sum(qtde) AS total FROM t_ESTOQUE_MOVIMENTO WHERE (anulado_status=0)" & _
 			" AND (pedido='" & pedido_destino & "')" & _
 			" AND (fabricante='" & id_fabricante & "')" & _
@@ -5424,6 +5887,15 @@ dim id_nfe_emitente_pedido_origem, id_nfe_emitente_pedido_destino
 			
 		  ' PEDIDO ORIGEM: REGISTRO DE MOVIMENTO DO ESTOQUE VENDIDO
 		  ' =======================================================
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s_sql = "UPDATE t_ESTOQUE_MOVIMENTO SET" & _
+							" dummy = ~dummy" & _
+						" WHERE (anulado_status = 0)" & _
+							" AND (id_movimento = '" & Trim(v_estoque(iv)) & "')"
+				cn.Execute(s_sql)
+				end if
+
             s_sql = "SELECT *" & _
 					" FROM t_ESTOQUE_MOVIMENTO" & _
 					" WHERE (anulado_status = 0)" & _
@@ -5538,6 +6010,15 @@ dim id_nfe_emitente_pedido_origem, id_nfe_emitente_pedido_destino
 		
           ' T_ESTOQUE: ATUALIZA DATA DO ÚLTIMO MOVIMENTO
           ' ============================================
+			if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+			'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+				s_sql = "UPDATE t_ESTOQUE SET" & _
+							" dummy = ~dummy" & _
+						" WHERE" & _
+							" (id_estoque = '" & id_estoque_aux & "')"
+				cn.Execute(s_sql)
+				end if
+
             s_sql = "SELECT data_ult_movimento FROM t_ESTOQUE WHERE" & _
                     " (id_estoque = '" & id_estoque_aux & "')"
 			if rs.State <> 0 then rs.Close
@@ -5573,6 +6054,18 @@ dim id_nfe_emitente_pedido_origem, id_nfe_emitente_pedido_destino
 '	PEDIDO ORIGEM: LISTA DE PRODUTOS SEM PRESENÇA NO ESTOQUE
 '   ========================================================
 '	OBTÉM A QUANTIDADE DE PRODUTOS EM ESPERA
+	if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+	'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+		s_sql = "UPDATE t_ESTOQUE_MOVIMENTO SET" & _
+					" dummy = ~dummy" & _
+				" WHERE (anulado_status = 0)" & _
+					" AND (estoque='" & ID_ESTOQUE_SEM_PRESENCA & "')" & _
+					" AND (pedido='" & pedido_origem & "')" & _
+					" AND (fabricante='" & id_fabricante & "')" & _
+					" AND (produto='" & id_produto & "')"
+		cn.Execute(s_sql)
+		end if
+
 	s_sql = "SELECT Sum(qtde) AS total FROM t_ESTOQUE_MOVIMENTO" & _
 			" WHERE (anulado_status = 0)" & _
 			" AND (estoque='" & ID_ESTOQUE_SEM_PRESENCA & "')" & _
@@ -5637,6 +6130,18 @@ dim id_nfe_emitente_pedido_origem, id_nfe_emitente_pedido_destino
 '	PEDIDO DESTINO: LISTA DE PRODUTOS SEM PRESENÇA NO ESTOQUE
 '   =========================================================
 '	DECREMENTA A QUANTIDADE DE PRODUTOS EM ESPERA NA LISTA DE PRODUTOS VENDIDOS SEM PRESENÇA NO ESTOQUE
+	if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+	'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+		s_sql = "UPDATE t_ESTOQUE_MOVIMENTO SET" & _
+					" dummy = ~dummy" & _
+				" WHERE (anulado_status=0)" & _
+					" AND (estoque='" & ID_ESTOQUE_SEM_PRESENCA & "')" & _
+					" AND (pedido='" & pedido_destino & "')" & _
+					" AND (fabricante='" & id_fabricante & "')" & _
+					" AND (produto='" & id_produto & "')"
+		cn.Execute(s_sql)
+		end if
+
 	s_sql = "SELECT Sum(qtde) AS total FROM t_ESTOQUE_MOVIMENTO" & _
 			" WHERE (anulado_status=0)" & _
 			" AND (estoque='" & ID_ESTOQUE_SEM_PRESENCA & "')" & _
@@ -5970,6 +6475,18 @@ dim id_nfe_emitente
 	set v_devolvido(UBound(v_devolvido)) = New cl_DUAS_COLUNAS
 	v_devolvido(UBound(v_devolvido)).c1 = ""
 	
+	if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+	'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+		s = "UPDATE t_ESTOQUE_ITEM SET" & _
+				" t_ESTOQUE_ITEM.dummy = ~t_ESTOQUE_ITEM.dummy" & _
+			" FROM t_ESTOQUE INNER JOIN t_ESTOQUE_ITEM ON t_ESTOQUE.id_estoque=t_ESTOQUE_ITEM.id_estoque" & _
+			" WHERE (devolucao_status<>0)" & _
+				" AND (devolucao_pedido='" & id_pedido & "')" & _
+				" AND (t_ESTOQUE_ITEM.fabricante='" & id_fabricante & "')" & _
+				" AND (produto='" & id_produto & "')"
+		cn.Execute(s)
+		end if
+
 	s = "SELECT devolucao_id_estoque, Sum(qtde) AS total" & _
 		" FROM t_ESTOQUE INNER JOIN t_ESTOQUE_ITEM ON t_ESTOQUE.id_estoque=t_ESTOQUE_ITEM.id_estoque" & _
 		" WHERE (devolucao_status<>0)" & _
@@ -6004,6 +6521,18 @@ dim id_nfe_emitente
 	ReDim v_estoque(0)
 	set v_estoque(UBound(v_estoque)) = New cl_DUAS_COLUNAS
 	v_estoque(UBound(v_estoque)).c1 = ""
+
+	if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+	'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+		s = "UPDATE t_ESTOQUE_MOVIMENTO SET" & _
+				" dummy = ~dummy" & _
+			" WHERE (anulado_status = 0)" & _
+				" AND (estoque = '" & ID_ESTOQUE_ENTREGUE & "')" & _
+				" AND (pedido = '" & id_pedido & "')" & _
+				" AND (fabricante = '" & id_fabricante & "')" & _
+				" AND (produto = '" & id_produto & "')"
+		cn.Execute(s)
+		end if
 
 	s = "SELECT id_estoque, Sum(qtde) AS total" & _
 		" FROM t_ESTOQUE_MOVIMENTO" & _
@@ -6080,6 +6609,16 @@ dim id_nfe_emitente
 				id_nfe_emitente = CLng(rs("id_nfe_emitente"))
 
 			'	OBTÉM DADOS DO PRODUTO P/ REGISTRAR A NOVA ENTRADA C/ OS MESMOS VALORES
+				if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+				'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+					s = "UPDATE t_ESTOQUE_ITEM SET" & _
+							" dummy = ~dummy" & _
+						" WHERE (id_estoque='" & v_estoque(iv).c1 & "')" & _
+							" AND (fabricante='" & id_fabricante & "')" & _
+							" AND (produto='" & id_produto & "')"
+					cn.Execute(s)
+					end if
+
 				s = "SELECT * FROM t_ESTOQUE_ITEM" & _
 					" WHERE (id_estoque='" & v_estoque(iv).c1 & "')" & _
 					" AND (fabricante='" & id_fabricante & "')" & _

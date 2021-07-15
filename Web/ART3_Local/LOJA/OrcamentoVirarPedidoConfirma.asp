@@ -1238,6 +1238,16 @@
 	'	~~~~~~~~~~~~~
 		cn.BeginTrans
 	'	~~~~~~~~~~~~~
+		if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+		'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+		'	OBS: TODOS OS MÓDULOS DO SISTEMA QUE REALIZEM ESTA OPERAÇÃO DE CADASTRAMENTO DEVEM SINCRONIZAR O ACESSO OBTENDO O LOCK EXCLUSIVO DO REGISTRO DE CONTROLE DESIGNADO
+			s = "UPDATE t_CONTROLE SET" & _
+					" dummy = ~dummy" & _
+				" WHERE" & _
+					" id_nsu = '" & ID_XLOCK_SYNC_PEDIDO & "'"
+			cn.Execute(s)
+			end if
+
 		if Not cria_recordset_pessimista(t_CLIENTE, msg_erro) then
 		'	~~~~~~~~~~~~~~~~
 			cn.RollbackTrans
@@ -1342,6 +1352,13 @@
 						rs("analise_credito")=Clng(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO)
 						rs("analise_credito_data")=Now
 						rs("analise_credito_usuario")="AUTOMÁTICO"
+					elseif (rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA) And (CStr(op_av_forma_pagto) = CStr(ID_FORMA_PAGTO_BOLETO_AV)) then
+						rs("analise_credito")=Clng(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)
+						rs("analise_credito_data")=Now
+						rs("analise_credito_usuario")="AUTOMÁTICO"
+						'OBSERVAÇÃO: no caso do 'parcelado com entrada' quando a entrada é 'Boleto AV', o pedido deve continuar sendo cadastrado com o status de análise de crédito
+						'seguindo a lógica já existente. Quando o depto de análise de crédito aprovar o pedido, irá se encarregar de alterar manualmente o pedido para
+						'"Crédito OK (aguardando pagto boleto AV)"
 					elseif Cstr(loja) = Cstr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) And (rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA) And (CStr(op_av_forma_pagto) = Cstr(ID_FORMA_PAGTO_DINHEIRO)) then
 						rs("analise_credito")=Clng(COD_AN_CREDITO_PENDENTE_VENDAS)
 						rs("analise_credito_data")=Now
@@ -2179,6 +2196,16 @@
 							end if
 						end if
 					end if 'if indice_pedido = 1
+
+				'Registra no bloco de notas que o pedido-filhote foi gerado por split automático
+				if alerta = "" then
+					if indice_pedido > 1 then
+						sBlocoNotasMsg = "Pedido gerado através de split automático durante o cadastramento inicial"
+						if Not grava_bloco_notas_pedido(id_pedido, ID_USUARIO_SISTEMA, loja, COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__RESTRITO, sBlocoNotasMsg, COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_SPLIT_AUTOMATICO, msg_erro) then
+							alerta = "Falha ao gravar bloco de notas com mensagem automática no pedido (" & id_pedido & ")"
+							end if
+						end if
+					end if
 
 				'Registra no bloco de notas os dados do endereço inicial
 				if alerta = "" then

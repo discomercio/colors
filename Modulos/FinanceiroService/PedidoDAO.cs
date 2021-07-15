@@ -253,7 +253,8 @@ namespace FinanceiroService
 						"valor, " +
 						"tipo_pagto, " +
 						"usuario, " +
-						"id_braspag_webhook_complementar" +
+						"id_braspag_webhook_complementar, " +
+						"id_braspag_webhook_v2_complementar" +
 					") VALUES (" +
 						"@id, " +
 						"@pedido, " +
@@ -262,7 +263,8 @@ namespace FinanceiroService
 						"@valor, " +
 						"@tipo_pagto, " +
 						"@usuario, " +
-						"@id_braspag_webhook_complementar" +
+						"@id_braspag_webhook_complementar, " +
+						"@id_braspag_webhook_v2_complementar" +
 					")";
 			cmInsertPedidoPagamentoBoletoEC = BD.criaSqlCommand();
 			cmInsertPedidoPagamentoBoletoEC.CommandText = strSql;
@@ -274,6 +276,7 @@ namespace FinanceiroService
 			cmInsertPedidoPagamentoBoletoEC.Parameters.Add("@tipo_pagto", SqlDbType.VarChar, 1);
 			cmInsertPedidoPagamentoBoletoEC.Parameters.Add("@usuario", SqlDbType.VarChar, 10);
 			cmInsertPedidoPagamentoBoletoEC.Parameters.Add("@id_braspag_webhook_complementar", SqlDbType.Int);
+			cmInsertPedidoPagamentoBoletoEC.Parameters.Add("@id_braspag_webhook_v2_complementar", SqlDbType.Int);
 			cmInsertPedidoPagamentoBoletoEC.Prepare();
 			#endregion
 
@@ -3316,6 +3319,7 @@ namespace FinanceiroService
 				cmInsertPedidoPagamentoBoletoEC.Parameters["@tipo_pagto"].Value = pedidoPagto.tipo_pagto;
 				cmInsertPedidoPagamentoBoletoEC.Parameters["@usuario"].Value = pedidoPagto.usuario;
 				cmInsertPedidoPagamentoBoletoEC.Parameters["@id_braspag_webhook_complementar"].Value = pedidoPagto.id_braspag_webhook_complementar;
+				cmInsertPedidoPagamentoBoletoEC.Parameters["@id_braspag_webhook_v2_complementar"].Value = pedidoPagto.id_braspag_webhook_v2_complementar;
 				#endregion
 
 				#region [ Tenta inserir o registro ]
@@ -3992,6 +3996,7 @@ namespace FinanceiroService
 			const string NOME_DESTA_ROTINA = "PedidoDAO.getPedidoPagamentoByPedido()";
 			string msg_erro_aux;
 			string strSql = "";
+			string numeroPedidoBase;
 			PedidoPagamento pagto = new PedidoPagamento();
 			List<PedidoPagamento> listaPagto = new List<PedidoPagamento>();
 			SqlCommand cmCommand;
@@ -4016,11 +4021,13 @@ namespace FinanceiroService
 					return null;
 				}
 
+				numeroPedidoBase = Global.retornaNumeroPedidoBase(pedido);
+
 				strSql = "SELECT " +
 							"id" +
 						" FROM t_PEDIDO_PAGAMENTO" +
 						" WHERE" +
-							" (pedido = '" + pedido + "')" +
+							" (pedido LIKE '" + numeroPedidoBase + BD.CARACTER_CURINGA_TODOS + "')" +
 						" ORDER BY" +
 							" id";
 				cmCommand.CommandText = strSql;

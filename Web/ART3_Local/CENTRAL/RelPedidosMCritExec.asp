@@ -72,6 +72,8 @@
 	dim ckb_st_pagto_pago, ckb_st_pagto_nao_pago, ckb_st_pagto_pago_parcial
 	dim ckb_periodo_cadastro, c_dt_cadastro_inicio, c_dt_cadastro_termino
 	dim ckb_entrega_marcada_para, c_dt_entrega_inicio, c_dt_entrega_termino
+	dim ckb_periodo_emissao_NF_venda, c_dt_NF_venda_inicio, c_dt_NF_venda_termino
+	dim ckb_periodo_emissao_NF_remessa, c_dt_NF_remessa_inicio, c_dt_NF_remessa_termino
 	dim ckb_produto, c_fabricante, c_produto, c_grupo, v_grupos, ckb_somente_pedidos_produto_alocado
 	dim rb_loja, c_loja, c_loja_de, c_loja_ate, vLoja, vLojaAux
 	dim c_cliente_cnpj_cpf, c_cliente_uf
@@ -79,16 +81,18 @@
 	dim ckb_visanet
 	dim ckb_analise_credito_st_inicial, ckb_analise_credito_pendente_vendas, ckb_analise_credito_pendente_endereco, ckb_analise_credito_pendente, ckb_analise_credito_pendente_cartao
 	dim ckb_analise_credito_ok, ckb_analise_credito_ok_aguardando_deposito, ckb_analise_credito_ok_deposito_aguardando_desbloqueio
+	dim ckb_analise_credito_pendente_pagto_antecipado_boleto, ckb_analise_credito_ok_aguardando_pagto_boleto_av
 	dim ckb_entrega_imediata_sim, ckb_entrega_imediata_nao, c_dt_previsao_entrega_inicio, c_dt_previsao_entrega_termino
 	dim op_forma_pagto, c_forma_pagto_qtde_parc
 	dim c_vendedor, c_indicador
-	dim ckb_obs2_preenchido, ckb_obs2_nao_preenchido, ckb_indicador_preenchido, ckb_indicador_nao_preenchido, ckb_nao_exibir_rastreio
+	dim ckb_obs2_preenchido, ckb_obs2_nao_preenchido, ckb_indicador_preenchido, ckb_indicador_nao_preenchido, ckb_nao_exibir_links
 	dim rb_saida
 	dim data_pedido
     dim c_pedido_origem, c_grupo_pedido_origem,c_empresa
 	dim c_FormFieldValues
     dim blnMostraMotivoCancelado, c_cancelados_ordena
 	dim ckb_exibir_vendedor, ckb_exibir_parceiro, ckb_exibir_uf, ckb_exibir_data_previsao_entrega
+	dim ckb_pagto_antecipado_status_nao, ckb_pagto_antecipado_status_sim, ckb_pagto_antecipado_quitado_status_pendente, ckb_pagto_antecipado_quitado_status_quitado
 
 	alerta = ""
 
@@ -121,6 +125,12 @@
 	ckb_entrega_marcada_para = Trim(Request.Form("ckb_entrega_marcada_para"))
 	c_dt_entrega_inicio = Trim(Request.Form("c_dt_entrega_inicio"))
 	c_dt_entrega_termino = Trim(Request.Form("c_dt_entrega_termino"))
+	ckb_periodo_emissao_NF_venda = Trim(Request.Form("ckb_periodo_emissao_NF_venda"))
+	c_dt_NF_venda_inicio = Trim(Request.Form("c_dt_NF_venda_inicio"))
+	c_dt_NF_venda_termino = Trim(Request.Form("c_dt_NF_venda_termino"))
+	ckb_periodo_emissao_NF_remessa = Trim(Request.Form("ckb_periodo_emissao_NF_remessa"))
+	c_dt_NF_remessa_inicio = Trim(Request.Form("c_dt_NF_remessa_inicio"))
+	c_dt_NF_remessa_termino = Trim(Request.Form("c_dt_NF_remessa_termino"))
 	ckb_produto = Trim(Request.Form("ckb_produto"))
 	c_fabricante = retorna_so_digitos(Trim(Request.Form("c_fabricante")))
 	c_produto = Ucase(Trim(Request.Form("c_produto")))
@@ -138,9 +148,11 @@
 	ckb_analise_credito_pendente_endereco = Trim(Request.Form("ckb_analise_credito_pendente_endereco"))
 	ckb_analise_credito_pendente = Trim(Request.Form("ckb_analise_credito_pendente"))
 	ckb_analise_credito_pendente_cartao = Trim(Request.Form("ckb_analise_credito_pendente_cartao"))
+	ckb_analise_credito_pendente_pagto_antecipado_boleto = Trim(Request.Form("ckb_analise_credito_pendente_pagto_antecipado_boleto"))
 	ckb_analise_credito_ok = Trim(Request.Form("ckb_analise_credito_ok"))
 	ckb_analise_credito_ok_aguardando_deposito = Trim(Request.Form("ckb_analise_credito_ok_aguardando_deposito"))
 	ckb_analise_credito_ok_deposito_aguardando_desbloqueio = Trim(Request.Form("ckb_analise_credito_ok_deposito_aguardando_desbloqueio"))
+	ckb_analise_credito_ok_aguardando_pagto_boleto_av = Trim(Request.Form("ckb_analise_credito_ok_aguardando_pagto_boleto_av"))
 	ckb_entrega_imediata_sim = Trim(Request.Form("ckb_entrega_imediata_sim"))
 	ckb_entrega_imediata_nao = Trim(Request.Form("ckb_entrega_imediata_nao"))
 	c_dt_previsao_entrega_inicio = Trim(Request.Form("c_dt_previsao_entrega_inicio"))
@@ -151,7 +163,7 @@
 	c_indicador = Trim(Request.Form("c_indicador"))
 	ckb_obs2_preenchido = Trim(Request.Form("ckb_obs2_preenchido"))
 	ckb_obs2_nao_preenchido = Trim(Request.Form("ckb_obs2_nao_preenchido"))
-	ckb_nao_exibir_rastreio = Trim(Request.Form("ckb_nao_exibir_rastreio"))
+	ckb_nao_exibir_links = Trim(Request.Form("ckb_nao_exibir_links"))
 	ckb_indicador_preenchido = Trim(Request.Form("ckb_indicador_preenchido"))
 	ckb_indicador_nao_preenchido = Trim(Request.Form("ckb_indicador_nao_preenchido"))
 	rb_saida = Ucase(Trim(Request.Form("rb_saida")))
@@ -165,9 +177,13 @@
 	ckb_exibir_parceiro = Trim(Request.Form("ckb_exibir_parceiro"))
 	ckb_exibir_uf = Trim(Request.Form("ckb_exibir_uf"))
 	ckb_exibir_data_previsao_entrega = Trim(Request.Form("ckb_exibir_data_previsao_entrega"))
+	ckb_pagto_antecipado_status_nao = Trim(Request.Form("ckb_pagto_antecipado_status_nao"))
+	ckb_pagto_antecipado_status_sim = Trim(Request.Form("ckb_pagto_antecipado_status_sim"))
+	ckb_pagto_antecipado_quitado_status_pendente = Trim(Request.Form("ckb_pagto_antecipado_quitado_status_pendente"))
+	ckb_pagto_antecipado_quitado_status_quitado = Trim(Request.Form("ckb_pagto_antecipado_quitado_status_quitado"))
 
 	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|FormFields", c_FormFieldValues)
-	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_nao_exibir_rastreio", ckb_nao_exibir_rastreio)
+	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_nao_exibir_links", ckb_nao_exibir_links)
 	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_vendedor", ckb_exibir_vendedor)
 	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_parceiro", ckb_exibir_parceiro)
 	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_uf", ckb_exibir_uf)
@@ -425,6 +441,56 @@
 				end if
 			end if
 		
+	'	PERÍODO DE EMISSÃO DA NF DE VENDA
+		if ckb_periodo_emissao_NF_venda <> "" then
+			if alerta = "" then
+				strDtRefDDMMYYYY = c_dt_NF_venda_inicio
+				if strDtRefDDMMYYYY <> "" then
+					if StrToDate(strDtRefDDMMYYYY) < dtMinDtInicialFiltroPeriodo then
+						alerta = "Data inválida para consulta: " & strDtRefDDMMYYYY & ".  O período de consulta não pode compreender datas anteriores a " & strMinDtInicialFiltroPeriodoDDMMYYYY
+						end if
+					end if
+				end if
+
+			if alerta = "" then
+				strDtRefDDMMYYYY = c_dt_NF_venda_termino
+				if strDtRefDDMMYYYY <> "" then
+					if StrToDate(strDtRefDDMMYYYY) < dtMinDtInicialFiltroPeriodo then
+						alerta = "Data inválida para consulta: " & strDtRefDDMMYYYY & ".  O período de consulta não pode compreender datas anteriores a " & strMinDtInicialFiltroPeriodoDDMMYYYY
+						end if
+					end if
+				end if
+
+			if alerta = "" then
+				if c_dt_NF_venda_inicio = "" then c_dt_NF_venda_inicio = strMinDtInicialFiltroPeriodoDDMMYYYY
+				end if
+			end if
+
+	'	PERÍODO DE EMISSÃO DA NF DE REMESSA
+		if ckb_periodo_emissao_NF_remessa <> "" then
+			if alerta = "" then
+				strDtRefDDMMYYYY = c_dt_NF_remessa_inicio
+				if strDtRefDDMMYYYY <> "" then
+					if StrToDate(strDtRefDDMMYYYY) < dtMinDtInicialFiltroPeriodo then
+						alerta = "Data inválida para consulta: " & strDtRefDDMMYYYY & ".  O período de consulta não pode compreender datas anteriores a " & strMinDtInicialFiltroPeriodoDDMMYYYY
+						end if
+					end if
+				end if
+
+			if alerta = "" then
+				strDtRefDDMMYYYY = c_dt_NF_remessa_termino
+				if strDtRefDDMMYYYY <> "" then
+					if StrToDate(strDtRefDDMMYYYY) < dtMinDtInicialFiltroPeriodo then
+						alerta = "Data inválida para consulta: " & strDtRefDDMMYYYY & ".  O período de consulta não pode compreender datas anteriores a " & strMinDtInicialFiltroPeriodoDDMMYYYY
+						end if
+					end if
+				end if
+
+			if alerta = "" then
+				if c_dt_NF_remessa_inicio = "" then c_dt_NF_remessa_inicio = strMinDtInicialFiltroPeriodoDDMMYYYY
+				end if
+			end if
+
 	else
 		strMinDtInicialFiltroPeriodoYYYYMMDD = ""
 		strMinDtInicialFiltroPeriodoDDMMYYYY = ""
@@ -455,6 +521,21 @@
 '
 '									F  U  N  Ç  Õ  E  S 
 ' _____________________________________________________________________________________________
+
+function monta_link_view_pedido(byval id_pedido, byval usuario)
+dim strLink
+	monta_link_view_pedido = ""
+	id_pedido = Trim("" & id_pedido)
+	if id_pedido = "" then exit function
+	strLink = "<a href='javascript:fPEDConsultaView(" & _
+				chr(34) & id_pedido & chr(34) & _
+				"," & _
+				chr(34) & usuario & chr(34) & _
+				")' title='clique para consultar o pedido " & id_pedido & "'>" & _
+				"&nbsp;<img id='imgClienteConsultaView' src='../imagem/doc_preview_12.png' class='notPrint' />" & _
+				"</a>"
+	monta_link_view_pedido=strLink
+end function
 
 ' _____________________________________
 ' EXCEL MONTA TEXTO FILTRO
@@ -602,7 +683,38 @@ dim s, s_aux, s_resp
 		end if
 
 	s = ""
-	
+	if ckb_pagto_antecipado_status_nao <> "" then
+		if s <> "" then s = s & ", "
+		s = s & "Não"
+		end if
+
+	if ckb_pagto_antecipado_status_sim <> "" then
+		if s <> "" then s = s & ", "
+		s = s & "Sim"
+		end if
+
+	if s <> "" then
+		s_resp = s_resp & "Pagamento Antecipado: " & s
+		s_resp = s_resp & "<br>"
+		end if
+
+	s = ""
+	if ckb_pagto_antecipado_quitado_status_pendente <> "" then
+		if s <> "" then s = s & ", "
+		s = s & pagto_antecipado_quitado_descricao(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO, COD_PAGTO_ANTECIPADO_QUITADO_STATUS_PENDENTE)
+		end if
+
+	if ckb_pagto_antecipado_quitado_status_quitado <> "" then
+		if s <> "" then s = s & ", "
+		s = s & pagto_antecipado_quitado_descricao(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO, COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO)
+		end if
+
+	if s <> "" then
+		s_resp = s_resp & "Status Pagamento Antecipado: " & s
+		s_resp = s_resp & "<br>"
+		end if
+
+	s = ""
 	if ckb_analise_credito_st_inicial <> "" then
 		s_aux = "status inicial"
 		if s <> "" then s = s & ", "
@@ -633,6 +745,12 @@ dim s, s_aux, s_resp
 		s = s & s_aux
 		end if
 	
+	s_aux = Lcase(x_analise_credito(ckb_analise_credito_pendente_pagto_antecipado_boleto))
+	if s_aux<>"" then
+		if s <> "" then s = s & ", "
+		s = s & s_aux
+		end if
+
 	s_aux = Lcase(x_analise_credito(ckb_analise_credito_ok))
 	if s_aux<>"" then
 		if s <> "" then s = s & ", "
@@ -646,6 +764,12 @@ dim s, s_aux, s_resp
 		end if
 
 	s_aux = Lcase(x_analise_credito(ckb_analise_credito_ok_deposito_aguardando_desbloqueio))
+	if s_aux<>"" then
+		if s <> "" then s = s & ", "
+		s = s & s_aux
+		end if
+
+	s_aux = Lcase(x_analise_credito(ckb_analise_credito_ok_aguardando_pagto_boleto_av))
 	if s_aux<>"" then
 		if s <> "" then s = s & ", "
 		s = s & s_aux
@@ -688,14 +812,14 @@ dim s, s_aux, s_resp
 	'Geral: campo Obs II
 	s = ""
 	s_aux = ""
-	if ckb_obs2_preenchido <> "" then s_aux = "OBS II preenchido"
+	if ckb_obs2_preenchido <> "" then s_aux = "Nº NF preenchido"
 	if s_aux<>"" then
 		if s <> "" then s = s & ", "
 		s = s & s_aux
 		end if
 	
 	s_aux = ""
-	if ckb_obs2_nao_preenchido <> "" then s_aux = "OBS II não preenchido"
+	if ckb_obs2_nao_preenchido <> "" then s_aux = "Nº NF não preenchido"
 	if s_aux<>"" then
 		if s <> "" then s = s & ", "
 		s = s & s_aux
@@ -751,6 +875,30 @@ dim s, s_aux, s_resp
 		s_resp = s_resp & "<br>"
 		end if
 	
+	if ckb_periodo_emissao_NF_venda <> "" then
+		s = ""
+		s_aux = c_dt_NF_venda_inicio
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux & " a "
+		s_aux = c_dt_NF_venda_termino
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux
+		s_resp = s_resp & "Emissão NF Venda: " & s
+		s_resp = s_resp & "<br>"
+		end if
+
+	if ckb_periodo_emissao_NF_remessa <> "" then
+		s = ""
+		s_aux = c_dt_NF_remessa_inicio
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux & " a "
+		s_aux = c_dt_NF_remessa_termino
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux
+		s_resp = s_resp & "Emissão NF Remessa: " & s
+		s_resp = s_resp & "<br>"
+		end if
+
 	if ckb_produto <> "" then 
 		s_aux = c_fabricante
 		if s_aux = "" then s_aux = "todos"
@@ -857,7 +1005,7 @@ sub consulta_executa
 dim r
 dim blnPorFornecedor
 dim s, s_aux, s_periodo_aux, s_cor, s_bkg_color, s_nbsp, s_align, s_nowrap, s_sql, cab_table, cab, n_reg, n_reg_total, n_colspan, n_colspan_final, s_colspan_final, s_loja
-dim s_where, s_where_aux, s_from, cont
+dim s_where, s_where_aux, s_where_ext, s_from, cont
 dim vl_total_faturamento, vl_sub_total_faturamento, vl_total_pago, vl_sub_total_pago
 dim vl_total_faturamento_NF, vl_sub_total_faturamento_NF
 dim vl_a_pagar, vl_sub_total_a_pagar, vl_total_a_pagar
@@ -871,6 +1019,7 @@ dim intNumLinha
 dim s_grupo_origem
 dim s_link_rastreio, s_link_rastreio2, s_numero_NF
 dim rPSSW
+dim sLinkView
 	
 	set rPSSW = get_registro_t_parametro(ID_PARAMETRO_SSW_Rastreamento_Lista_Transportadoras)
 
@@ -890,6 +1039,7 @@ dim rPSSW
 
 '	MONTA CLÁUSULA WHERE
 	s_where = ""
+	s_where_ext = ""
 
 '	CRITÉRIO: STATUS DE ENTREGA
 	s = ""
@@ -1050,6 +1200,44 @@ dim rPSSW
 		s_where = s_where & " (" & s & ")"
 		end if
 
+'	CRITÉRIO: PAGAMENTO ANTECIPADO
+	s = ""
+	s_aux = ckb_pagto_antecipado_status_nao
+	if s_aux <> "" then
+		if s <> "" then s = s & " OR"
+		s = s & " (t_PEDIDO__BASE.PagtoAntecipadoStatus = '" & s_aux & "')"
+		end if
+
+	s_aux = ckb_pagto_antecipado_status_sim
+	if s_aux <> "" then
+		if s <> "" then s = s & " OR"
+		s = s & " (t_PEDIDO__BASE.PagtoAntecipadoStatus = '" & s_aux & "')"
+		end if
+
+	if s <> "" then
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (" & s & ")"
+		end if
+
+'	CRITÉRIO: STATUS PAGAMENTO ANTECIPADO
+	s = ""
+	s_aux = ckb_pagto_antecipado_quitado_status_pendente
+	if s_aux <> "" then
+		if s <> "" then s = s & " OR"
+		s = s & " (t_PEDIDO.PagtoAntecipadoQuitadoStatus = '" & s_aux & "')"
+		end if
+
+	s_aux = ckb_pagto_antecipado_quitado_status_quitado
+	if s_aux <> "" then
+		if s <> "" then s = s & " OR"
+		s = s & " (t_PEDIDO.PagtoAntecipadoQuitadoStatus = '" & s_aux & "')"
+		end if
+
+	if s <> "" then
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " ((t_PEDIDO__BASE.PagtoAntecipadoStatus = " & COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO & ") AND (" & s & "))"
+		end if
+
 '	CRITÉRIO: ANÁLISE DE CRÉDITO
 	s = ""
 
@@ -1077,6 +1265,12 @@ dim rPSSW
 		s = s & " (t_PEDIDO__BASE.analise_credito = " & s_aux & ")"
 		end if
 	
+	s_aux = ckb_analise_credito_pendente_pagto_antecipado_boleto
+	if s_aux <> "" then
+		if s <> "" then s = s & " OR"
+		s = s & " (t_PEDIDO__BASE.analise_credito = " & s_aux & ")"
+		end if
+
 	s_aux = ckb_analise_credito_ok
 	if s_aux <> "" then
 		if s <> "" then s = s & " OR"
@@ -1090,6 +1284,12 @@ dim rPSSW
 		end if
 
 	s_aux = ckb_analise_credito_ok_deposito_aguardando_desbloqueio
+	if s_aux <> "" then
+		if s <> "" then s = s & " OR"
+		s = s & " (t_PEDIDO__BASE.analise_credito = " & s_aux & ")"
+		end if
+
+	s_aux = ckb_analise_credito_ok_aguardando_pagto_boleto_av
 	if s_aux <> "" then
 		if s <> "" then s = s & " OR"
 		s = s & " (t_PEDIDO__BASE.analise_credito = " & s_aux & ")"
@@ -1201,7 +1401,73 @@ dim rPSSW
 			s_where = s_where & " (" & s & ")"
 			end if
 		end if
-		
+	
+'	CRITÉRIO: PERÍODO DE EMISSÃO DA NF DE VENDA
+	if ckb_periodo_emissao_NF_venda <> "" then
+		'PERÍODO NF
+		'DEVIDO À FORMA COMO A DATA DE EMISSÃO DA NF É OBTIDA, NÃO É POSSÍVEL APLICAR A RESTRIÇÃO POR DATA NA CONSULTA BASE
+		'PORTANTO, PARA MINIMIZAR A QUANTIDADE DE REGISTROS SELECIONADOS, FORAM ADOTADOS OS SEGUINTES CRITÉRIOS:
+		'	1) AS RESTRIÇÕES SÃO APLICADAS EM 2 MOMENTOS DISTINTOS: NA CONSULTA BASE (INTERNA) E NA CONSULTA GERAL (EXTERNA)
+		'	2) CONSULTA BASE:
+		'		2a) RESTRINGE POR PEDIDOS QUE TENHAM NÚMERO DE NF
+		'		2b) EXCLUI OS PEDIDOS CANCELADOS
+		'	3) CONSULTA GERAL
+		'		3a) AS DATAS DE INÍCIO E FIM DO PERÍODO SÃO APLICADAS SOBRE A DATA DE EMISSÃO RETORNADA PELA CONSULTA BASE
+		s = ""
+		if IsDate(c_dt_NF_venda_inicio) Or IsDate(c_dt_NF_venda_termino) then
+			if s <> "" then s = s & " AND"
+			s = s & " (t_PEDIDO.num_obs_2 > 0) AND (t_PEDIDO.st_entrega <> '" & ST_ENTREGA_CANCELADO & "')"
+			end if
+
+		if s <> "" then 
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (" & s & ")"
+			end if
+
+		if IsDate(c_dt_NF_venda_inicio) then
+			if s_where_ext <> "" then s_where_ext = s_where_ext & " AND"
+			s_where_ext = s_where_ext & " (dt_emissao_venda >= " & bd_formata_data(StrToDate(c_dt_NF_venda_inicio)) & ")"
+			end if
+
+		if IsDate(c_dt_NF_venda_termino) then
+			if s_where_ext <> "" then s_where_ext = s_where_ext & " AND"
+			s_where_ext = s_where_ext & " (dt_emissao_venda < " & bd_formata_data(StrToDate(c_dt_NF_venda_termino)+1) & ")"
+			end if
+		end if
+
+'	CRITÉRIO: PERÍODO DE EMISSÃO DA NF DE REMESSA
+	if ckb_periodo_emissao_NF_remessa <> "" then
+		'PERÍODO NF
+		'DEVIDO À FORMA COMO A DATA DE EMISSÃO DA NF É OBTIDA, NÃO É POSSÍVEL APLICAR A RESTRIÇÃO POR DATA NA CONSULTA BASE
+		'PORTANTO, PARA MINIMIZAR A QUANTIDADE DE REGISTROS SELECIONADOS, FORAM ADOTADOS OS SEGUINTES CRITÉRIOS:
+		'	1) AS RESTRIÇÕES SÃO APLICADAS EM 2 MOMENTOS DISTINTOS: NA CONSULTA BASE (INTERNA) E NA CONSULTA GERAL (EXTERNA)
+		'	2) CONSULTA BASE:
+		'		2a) RESTRINGE POR PEDIDOS QUE TENHAM NÚMERO DE NF
+		'		2b) EXCLUI OS PEDIDOS CANCELADOS
+		'	3) CONSULTA GERAL
+		'		3a) AS DATAS DE INÍCIO E FIM DO PERÍODO SÃO APLICADAS SOBRE A DATA DE EMISSÃO RETORNADA PELA CONSULTA BASE
+		s = ""
+		if IsDate(c_dt_NF_remessa_inicio) Or IsDate(c_dt_NF_remessa_termino) then
+			if s <> "" then s = s & " AND"
+			s = s & " (t_PEDIDO.num_obs_3 > 0) AND (t_PEDIDO.st_entrega <> '" & ST_ENTREGA_CANCELADO & "')"
+			end if
+
+		if s <> "" then 
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (" & s & ")"
+			end if
+
+		if IsDate(c_dt_NF_remessa_inicio) then
+			if s_where_ext <> "" then s_where_ext = s_where_ext & " AND"
+			s_where_ext = s_where_ext & " (dt_emissao_remessa >= " & bd_formata_data(StrToDate(c_dt_NF_remessa_inicio)) & ")"
+			end if
+
+		if IsDate(c_dt_NF_remessa_termino) then
+			if s_where_ext <> "" then s_where_ext = s_where_ext & " AND"
+			s_where_ext = s_where_ext & " (dt_emissao_remessa < " & bd_formata_data(StrToDate(c_dt_NF_remessa_termino)+1) & ")"
+			end if
+		end if
+
 '	CRITÉRIO: PRODUTO
 	blnPorFornecedor = False
 	if ckb_produto <> "" then
@@ -1536,6 +1802,16 @@ dim rPSSW
 			" t_PEDIDO.data, t_PEDIDO.pedido, t_PEDIDO.pedido_bs_x_ac, t_PEDIDO.obs_2, t_PEDIDO.obs_3," & _
 			" t_PEDIDO.st_entrega, t_PEDIDO.PrevisaoEntregaData, t_PEDIDO.transportadora_id,"
 
+	if ckb_periodo_emissao_NF_venda <> "" then
+		s_sql = s_sql & _
+				" (SELECT TOP 1 Convert(datetime, ide__dEmi, 121) FROM t_NFe_IMAGEM WHERE (t_NFe_IMAGEM.NFe_numero_NF = t_PEDIDO.num_obs_2) AND (t_NFe_IMAGEM.id_nfe_emitente = t_PEDIDO.id_nfe_emitente) AND (t_NFe_IMAGEM.ide__tpNF = '1') AND (t_NFe_IMAGEM.st_anulado = 0) AND (t_NFe_IMAGEM.codigo_retorno_NFe_T1 = 1) ORDER BY id DESC) AS dt_emissao_venda,"
+		end if
+
+	if ckb_periodo_emissao_NF_remessa <> "" then
+		s_sql = s_sql & _
+				" (SELECT TOP 1 Convert(datetime, ide__dEmi, 121) FROM t_NFe_IMAGEM WHERE (t_NFe_IMAGEM.NFe_numero_NF = t_PEDIDO.num_obs_3) AND (t_NFe_IMAGEM.id_nfe_emitente = t_PEDIDO.id_nfe_emitente) AND (t_NFe_IMAGEM.ide__tpNF = '1') AND (t_NFe_IMAGEM.st_anulado = 0) AND (t_NFe_IMAGEM.codigo_retorno_NFe_T1 = 1) ORDER BY id DESC) AS dt_emissao_remessa,"
+		end if
+
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
 				" t_PEDIDO.endereco_nome AS nome," & _
@@ -1575,14 +1851,24 @@ dim rPSSW
 			s_from & _
 			s_where
 
+	s_sql = "SELECT " & _
+				"*" & _
+			" FROM (" & s_sql & ") t"
+
+	if s_where_ext <> "" then
+		s_sql = s_sql & _
+				" WHERE" & _
+				s_where_ext
+		end if
+
     if ckb_st_entrega_cancelado <> "" then
         if c_cancelados_ordena = "VENDEDOR" then
-            s_sql = s_sql & " ORDER BY numero_loja, vendedor, indicador, t_PEDIDO.data, t_PEDIDO.pedido"
+            s_sql = s_sql & " ORDER BY numero_loja, vendedor, indicador, data, pedido"
         else
-	        s_sql = s_sql & " ORDER BY numero_loja, t_PEDIDO.data, t_PEDIDO.pedido"
+	        s_sql = s_sql & " ORDER BY numero_loja, data, pedido"
         end if
     else
-	    s_sql = s_sql & " ORDER BY numero_loja, t_PEDIDO.data, t_PEDIDO.pedido"
+	    s_sql = s_sql & " ORDER BY numero_loja, data, pedido"
     end if
 
   ' CABEÇALHO
@@ -1623,80 +1909,80 @@ dim rPSSW
 	cab_table = "<TABLE cellSpacing=0>" & chr(13)
 	cab = "	<TR style='background:azure'>" & chr(13) & _
 		  "		<TD valign='bottom' style='background:white;' NOWRAP>&nbsp;</TD>" & chr(13) & _
-		  "     <TD class='MT' style='width:" & Cstr(w_pedido) & "px' valign='bottom' NOWRAP><P class='R' style='font-weight:bold;'>Nº Pedido</P></TD>" & chr(13) & _
+		  "     <TD class='MT' style='width:" & Cstr(w_pedido) & "px' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>Nº Pedido</span></TD>" & chr(13) & _
           "<!--Magento-->" & chr(13) & _
-		  "		<TD class='MTBD' align='center' style='width:" & Cstr(w_data) & "px' valign='bottom'><P class='R' style='font-weight:bold;'>Data</P></TD>" & chr(13) & _
-		  "		<td class='MTBD' align='center' style='width:" & Cstr(w_NF) & "px' valign='bottom'><P class='R' style='font-weight:bold;'>NF</P></TD>" & chr(13) & _
-		  "		<TD class='MTBD' style='width:" & Cstr(w_cliente) & "px' valign='bottom'><P class='R' style='font-weight:bold;'>Cliente</P></TD>" & chr(13)
+		  "		<TD class='MTBD' align='center' style='width:" & Cstr(w_data) & "px' valign='bottom'><span class='R' style='font-weight:bold;'>Data</span></TD>" & chr(13) & _
+		  "		<td class='MTBD' align='center' style='width:" & Cstr(w_NF) & "px' valign='bottom'><span class='R' style='font-weight:bold;'>NF</span></TD>" & chr(13) & _
+		  "		<TD class='MTBD' style='width:" & Cstr(w_cliente) & "px' valign='bottom'><span class='R' style='font-weight:bold;'>Cliente</span></TD>" & chr(13)
 	
 	if blnPorFornecedor then
 		if blnRelAnalitico then
 			cab = cab & _ 
-				  "		<TD class='MTBD' style='width:" & Cstr(w_valor) & "px' align='right' valign='bottom'><P class='Rd' style='font-weight:bold;'>VL Fornec</P></TD>" & chr(13) & _
-				  "		<TD class='MTBD' style='width:" & Cstr(w_valor) & "px' align='right' valign='bottom'><P class='Rd' style='font-weight:bold;'>VL Fornec (RA)</P></TD>" & chr(13) & _
-				  "		<TD class='MTBD' style='width:" & Cstr(w_valor) & "px' align='right' valign='bottom'><P class='Rd' style='font-weight:bold;'>VL Pedido</P></TD>" & chr(13) & _
-				  "		<TD class='MTBD' style='width:" & Cstr(w_valor) & "px' align='right' valign='bottom'><P class='Rd' style='font-weight:bold;'>VL Pedido (RA)</P></TD>" & chr(13)
+				  "		<TD class='MTBD' style='width:" & Cstr(w_valor) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;'>VL Fornec</span></TD>" & chr(13) & _
+				  "		<TD class='MTBD' style='width:" & Cstr(w_valor) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;'>VL Fornec (RA)</span></TD>" & chr(13) & _
+				  "		<TD class='MTBD' style='width:" & Cstr(w_valor) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;'>VL Pedido</span></TD>" & chr(13) & _
+				  "		<TD class='MTBD' style='width:" & Cstr(w_valor) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;'>VL Pedido (RA)</span></TD>" & chr(13)
 			end if
 	else
 		if blnRelAnalitico then
 			cab = cab & _ 
-				  "		<TD class='MTBD' style='width:" & Cstr(w_valor) & "px' align='right' valign='bottom'><P class='Rd' style='font-weight:bold;'>Valor</P></TD>" & chr(13) & _
-				  "		<TD class='MTBD' style='width:" & Cstr(w_valor) & "px' align='right' valign='bottom'><P class='Rd' style='font-weight:bold;'>Valor (RA)</P></TD>" & chr(13)
+				  "		<TD class='MTBD' style='width:" & Cstr(w_valor) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;'>Valor</span></TD>" & chr(13) & _
+				  "		<TD class='MTBD' style='width:" & Cstr(w_valor) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;'>Valor (RA)</span></TD>" & chr(13)
 			end if
 		end if
 	
 	if blnRelAnalitico then
 		cab = cab & _ 
-			  "		<TD class='MTBD' style='width:" & Cstr(w_valor) & "px' align='right' valign='bottom'><P class='Rd' style='font-weight:bold;'>VL Pago</P></TD>" & chr(13) & _
-			  "		<TD class='MTBD' style='width:" & Cstr(w_valor) & "px' align='right' valign='bottom'><P class='Rd' style='font-weight:bold;'>VL A Pagar</P></TD>" & chr(13)
+			  "		<TD class='MTBD' style='width:" & Cstr(w_valor) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;'>VL Pago</span></TD>" & chr(13) & _
+			  "		<TD class='MTBD' style='width:" & Cstr(w_valor) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;'>VL A Pagar</span></TD>" & chr(13)
 		end if
 	
 	if blnSaidaExcel then
 		cab = cab & _
-			  "		<TD class='MTBD' style='width:" & Cstr(w_st_entrega) & "px' valign='bottom'><P class='R' style='font-weight:bold;'>Status de<br style='mso-data-placement:same-cell;' />Entrega</P></TD>" & chr(13)
+			  "		<TD class='MTBD' style='width:" & Cstr(w_st_entrega) & "px' valign='bottom'><span class='R' style='font-weight:bold;'>Status de<br style='mso-data-placement:same-cell;' />Entrega</span></TD>" & chr(13)
 	else
 		cab = cab & _
-			  "		<TD class='MTBD' style='width:" & Cstr(w_st_entrega) & "px' valign='bottom' NOWRAP><P class='R' style='font-weight:bold;'>Status de Entrega</P></TD>" & chr(13)
+			  "		<TD class='MTBD' style='width:" & Cstr(w_st_entrega) & "px' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>Status de Entrega</span></TD>" & chr(13)
 		end if
 
     if ckb_exibir_data_previsao_entrega <> "" then
 		if blnSaidaExcel then
 			cab = cab & _
-					"		<TD class='MTBD' style='width:" & Cstr(w_data) & "px' align='center' valign='bottom'><P class='R' style='font-weight:bold;'>Previsão de<br style='mso-data-placement:same-cell;' />Entrega</P></TD>" & chr(13)
+					"		<TD class='MTBD' style='width:" & Cstr(w_data) & "px' align='center' valign='bottom'><span class='R' style='font-weight:bold;'>Previsão de<br style='mso-data-placement:same-cell;' />Entrega</span></TD>" & chr(13)
 		else
 			cab = cab & _
-				"		<td class='MTBD' style='width:" & Cstr(w_data) & "px' align='center' valign='bottom' NOWRAP><p class='R' style='font-weight:bold;'>Previsão de Entrega</p></td>" & chr(13)
+				"		<td class='MTBD' style='width:" & Cstr(w_data) & "px' align='center' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>Previsão de Entrega</span></td>" & chr(13)
 			end if
 		end if
 
     if blnMostraMotivoCancelado then
         cab = cab & _
-                "		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><p class='R' style='font-weight:bold;'>Vendedor</p></td>" & chr(13) & _
-                "		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><p class='R' style='font-weight:bold;'>Indicador</p></td>" & chr(13)
+                "		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>Vendedor</span></td>" & chr(13) & _
+                "		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>Indicador</span></td>" & chr(13)
         if ckb_exibir_uf <> "" then
 			cab = cab & _
-				"		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><p class='R' style='font-weight:bold;'>UF</p></td>" & chr(13)
+				"		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>UF</span></td>" & chr(13)
 			end if
 		if blnRelAnalitico then
             cab = cab & _
-                "		<TD class='MTBD' style='width:" & Cstr(w_valor) & "px' align='right' valign='bottom' NOWRAP><P class='Rd' style='font-weight:bold;'>VL Original</P></TD>" & chr(13)
+                "		<TD class='MTBD' style='width:" & Cstr(w_valor) & "px' align='right' valign='bottom' NOWRAP><span class='Rd' style='font-weight:bold;'>VL Original</span></TD>" & chr(13)
         end if
         cab = cab & _
-            "		<TD class='MTBD' style='width:" & Cstr(w_motivo_cancelamento) & "px' valign='bottom' NOWRAP><P class='R' style='font-weight:bold;'>Motivo Cancelamento</P></TD>" & chr(13)
+            "		<TD class='MTBD' style='width:" & Cstr(w_motivo_cancelamento) & "px' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>Motivo Cancelamento</span></TD>" & chr(13)
     else
 		if ckb_exibir_vendedor <> "" then
 			cab = cab & _
-					"		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><p class='R' style='font-weight:bold;'>Vendedor</p></td>" & chr(13)
+					"		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>Vendedor</span></td>" & chr(13)
 			end if
 
 		if ckb_exibir_parceiro <> "" then
 			cab = cab & _
-                "		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><p class='R' style='font-weight:bold;'>Indicador</p></td>" & chr(13)
+                "		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>Indicador</span></td>" & chr(13)
 			end if
 
 		if ckb_exibir_uf <> "" then
 			cab = cab & _
-                "		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><p class='R' style='font-weight:bold;'>UF</p></td>" & chr(13)
+                "		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>UF</span></td>" & chr(13)
 			end if
 	end if
 	
@@ -1741,36 +2027,36 @@ dim rPSSW
 					x = x & "	<TR style='background: #FFFFDD'>" & chr(13) & _
 							"		<TD style='background:white;'>&nbsp;</td>" & chr(13)
                     if s_loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
-							x = x & "		<TD class='MEB' align='right' COLSPAN='5' NOWRAP><p class='Cd' style='font-weight:bold;'>TOTAL:</p></td>" & chr(13)
+							x = x & "		<TD class='MEB' align='right' COLSPAN='5' NOWRAP><span class='Cd' style='font-weight:bold;'>TOTAL:</span></td>" & chr(13)
 					else
-                            x = x & "		<TD class='MEB' align='right' COLSPAN='4' NOWRAP><p class='Cd' style='font-weight:bold;'>TOTAL:</p></td>" & chr(13)
+                            x = x & "		<TD class='MEB' align='right' COLSPAN='4' NOWRAP><span class='Cd' style='font-weight:bold;'>TOTAL:</span></td>" & chr(13)
                     end if
 					if blnPorFornecedor then
 						x = x & _
-							"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_fornecedor) & "</p></td>" & chr(13) & _
-							"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_fornecedor_NF) & "</p></td>" & chr(13)
+							"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_fornecedor) & "</span></td>" & chr(13) & _
+							"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_fornecedor_NF) & "</span></td>" & chr(13)
 						end if
 					
 					x = x & _
-							"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_faturamento) & "</p></td>" & chr(13) & _
-							"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_faturamento_NF) & "</p></td>" & chr(13) & _
-							"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_pago) & "</p></td>" & chr(13) & _
-							"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><p class='Cd'" & s_cor & " style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_a_pagar) & "</p></td>" & chr(13)
+							"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_faturamento) & "</span></td>" & chr(13) & _
+							"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_faturamento_NF) & "</span></td>" & chr(13) & _
+							"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_pago) & "</span></td>" & chr(13) & _
+							"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><span class='Cd'" & s_cor & " style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_a_pagar) & "</span></td>" & chr(13)
 
 					x = x & _
-							"		<TD class='" & s_class & "'" & s_colspan_final & "><p class='C'>&nbsp;</p></td>" & chr(13)
+							"		<TD class='" & s_class & "'" & s_colspan_final & "><span class='C'>&nbsp;</span></td>" & chr(13)
 
                     if blnMostraMotivoCancelado then
                         x = x & _
-                            "		<TD class='MB'><p class='C'>&nbsp;</p></td>" & chr(13) & _
-                            "       <TD class='MB'><p class='C'>&nbsp;</p></td>" & chr(13)
+                            "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13) & _
+                            "       <TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
 						if ckb_exibir_uf <> "" then
 							x = x & _
-								"       <TD class='MB'><p class='C'>&nbsp;</p></td>" & chr(13)
+								"       <TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
 							end if
 						x = x & _
-							"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_pedido_original) & "</p></td>" & chr(13) & _
-							"		<TD class='MDB'><p class='C'>&nbsp;</p></td>" & chr(13)
+							"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_pedido_original) & "</span></td>" & chr(13) & _
+							"		<TD class='MDB'><span class='C'>&nbsp;</span></td>" & chr(13)
                         end if
 
                     x = x & _
@@ -1859,15 +2145,15 @@ dim rPSSW
 				x = x & _
 					"	<TR>" & chr(13) & _
 					"		<TD style='background:white;'>" & s_nbsp & "</td>" & chr(13) & _
-					"		<TD class='MDTE' COLSPAN='" & Cstr(n_colspan) & "'" & s_align & " valign='bottom' style='background:" & s_bkg_color & ";'><p class='N' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s_nbsp & s & "</p></td>" & chr(13) & _
+					"		<TD class='MDTE' COLSPAN='" & Cstr(n_colspan) & "'" & s_align & " valign='bottom' style='background:" & s_bkg_color & ";'><span class='N' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s_nbsp & s & "</span></td>" & chr(13) & _
 					"	</TR>" & chr(13)
 				end if
 
             
             if s_loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
-                cab = Replace(cab, "<!--Magento-->", "		<td class='MTBD' style='width:" & Cstr(w_pedido_magento) & "px;font-weight:bold' align='left' valign='bottom'><p class='R'>Número Magento</p></td>")
+                cab = Replace(cab, "<!--Magento-->", "		<td class='MTBD' style='width:" & Cstr(w_pedido_magento) & "px;font-weight:bold' align='left' valign='bottom'><span class='R'>Número Magento</span></td>")
             else
-                cab = Replace(cab,"		<td class='MTBD' style='width:" & Cstr(w_pedido_magento) & "px;font-weight:bold' align='left' valign='bottom'><p class='R'>Número Magento</p></td>", "<!--Magento-->")
+                cab = Replace(cab,"		<td class='MTBD' style='width:" & Cstr(w_pedido_magento) & "px;font-weight:bold' align='left' valign='bottom'><span class='R'>Número Magento</span></td>", "<!--Magento-->")
             end if
 			x = x & cab
 			end if
@@ -1881,31 +2167,48 @@ dim rPSSW
 
 	'> Nº DA LINHA
 		if blnSaidaExcel then
-			x = x & "		<TD valign='top' align='right' NOWRAP><P class='Rd' style='margin-right:2px;color:gray;font-style:italic;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & Cstr(intNumLinha) & ". </P></TD>" & chr(13)
+			x = x & "		<TD valign='top' align='right' NOWRAP><span class='Rd' style='margin-right:2px;color:gray;font-style:italic;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & Cstr(intNumLinha) & ". </span></TD>" & chr(13)
 		else
-			x = x & "		<TD valign='top' align='right' NOWRAP><P class='Rd' style='margin-right:2px;'>" & Cstr(intNumLinha) & ".</P></TD>" & chr(13)
+			x = x & "		<TD valign='top' align='right' NOWRAP><span class='Rd' style='margin-right:2px;'>" & Cstr(intNumLinha) & ".</span></TD>" & chr(13)
 			end if
 			
 			
 	'> Nº PEDIDO
 		if blnSaidaExcel then
-			x = x & "		<TD valign='top' class='MDBE'><P class='C' style='font-weight:bold;'>" & Trim("" & r("pedido")) & "</P></TD>" & chr(13)
+			x = x & "		<TD valign='top' class='MDBE'><span class='C' style='font-weight:bold;'>" & Trim("" & r("pedido")) & "</span></TD>" & chr(13)
 		else
-			x = x & "		<TD valign='top' class='MDBE'><P class='C'>&nbsp;<a href='javascript:fRELConcluir(" & _
-					chr(34) & Trim("" & r("pedido")) & chr(34) & _
-					")' title='clique para consultar o pedido'>" & Trim("" & r("pedido")) & "</a></P></TD>" & chr(13)
+			if ckb_nao_exibir_links <> "" then
+				sLinkView = ""
+			else
+				sLinkView = monta_link_view_pedido(Trim("" & r("pedido")), usuario)
+				end if
+			if sLinkView = "" then
+				x = x & "		<TD valign='top' class='MDBE' nowrap>" & _
+						"<span class='C'>&nbsp;<a href='javascript:fRELConcluir(" & chr(34) & Trim("" & r("pedido")) & chr(34) & ")' title='clique para consultar o pedido'>" & Trim("" & r("pedido")) & "</a></span>" & _
+						"</TD>" & chr(13)
+			else
+				x = x & "		<TD valign='top' class='MDBE' nowrap>" & chr(13) & _
+						"			<table with='100%' cellpadding='0' cellspacing='0'>" & chr(13) & _
+						"				<tr>" & chr(13) & _
+						"					<td width='90%' align='left'>" & chr(13) & _
+						"<span class='C'>&nbsp;<a href='javascript:fRELConcluir(" & chr(34) & Trim("" & r("pedido")) & chr(34) & ")' title='clique para consultar o pedido'>" & Trim("" & r("pedido")) & "</a></span>" & "</td>" & chr(13) & _
+						"					<td align='right'>" & sLinkView & "</td>" & chr(13) & _
+						"				</tr>" & chr(13) & _
+						"			</table>" & chr(13) & _
+						"</TD>" & chr(13)
+				end if
 			end if
 
     '> PEDIDO MAGENTO
         if Trim("" & r("loja")) = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
-		    x = x & "		<td align='left' valign='top' class='MDB'><p class='C' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>&nbsp;" & Trim("" & r("pedido_bs_x_ac")) & "</p></td>" & chr(13)
+		    x = x & "		<td align='left' valign='top' class='MDB'><span class='C' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>&nbsp;" & Trim("" & r("pedido_bs_x_ac")) & "</span></td>" & chr(13)
         end if
 	
 	'> DATA DO PEDIDO
-	    x = x & "		<TD align='center' valign='top' class='MDB'><P class='Cn''>" & formata_data(r("data")) & "</P></TD>" & chr(13)
+	    x = x & "		<TD align='center' valign='top' class='MDB'><span class='Cn''>" & formata_data(r("data")) & "</span></TD>" & chr(13)
 		
 	'> NF
-		if (ckb_nao_exibir_rastreio <> "") Or blnSaidaExcel then
+		if (ckb_nao_exibir_links <> "") Or blnSaidaExcel then
 			s_numero_NF = Trim("" & r("obs_2"))
 			if (s_numero_NF <> "") And (Trim("" & r("obs_3")) <> "") then s_numero_NF = s_numero_NF & ", "
 			s_numero_NF = s_numero_NF & Trim("" & r("obs_3"))
@@ -1919,19 +2222,19 @@ dim rPSSW
 			if (s_link_rastreio <> "") And (s_link_rastreio2 <> "") then s_link_rastreio = s_link_rastreio & "<br />"
 			s_numero_NF = s_link_rastreio & s_link_rastreio2
 			end if
-		x = x & "		<TD align='left' valign='top' class='MDB'><P class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s_numero_NF & "</P></TD>" & chr(13)
+		x = x & "		<TD align='left' valign='top' class='MDB'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s_numero_NF & "</span></TD>" & chr(13)
 		
 	'> CLIENTE
 		if blnSaidaExcel then s_nowrap = " NOWRAP" else s_nowrap = ""
 		s = Trim("" & r("nome_iniciais_em_maiusculas"))
 		if (s = "") And (Not blnSaidaExcel) then s = "&nbsp;"
-		x = x & "		<TD valign='top' style='width:" & Cstr(w_cliente) & "px' class='MDB'" & s_nowrap & "><P class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</P></TD>" & chr(13)
+		x = x & "		<TD valign='top' style='width:" & Cstr(w_cliente) & "px' class='MDB'" & s_nowrap & "><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
 
 	'> VALOR DO FORNECEDOR
 		if blnPorFornecedor then
 			if blnRelAnalitico then
 				s = formata_moeda(r("vl_total_fornecedor"))
-				x = x & "		<TD valign='top' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><P class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</P></TD>" & chr(13)
+				x = x & "		<TD valign='top' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
 				end if
 			end if
 		
@@ -1939,26 +2242,26 @@ dim rPSSW
 		if blnPorFornecedor then
 			if blnRelAnalitico then
 				s = formata_moeda(r("vl_total_fornecedor_NF"))
-				x = x & "		<TD valign='top' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><P class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</P></TD>" & chr(13)
+				x = x & "		<TD valign='top' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
 				end if
 			end if
 		
 	'> VALOR DO PEDIDO
 		if blnRelAnalitico then
 			s = formata_moeda(r("vl_total_pedido"))
-			x = x & "		<TD valign='top' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><P class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</P></TD>" & chr(13)
+			x = x & "		<TD valign='top' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
 			end if
 		
 	'> VALOR DO PEDIDO COM RA
 		if blnRelAnalitico then
 			s = formata_moeda(r("vl_total_pedido_NF"))
-			x = x & "		<TD valign='top' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><P class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</P></TD>" & chr(13)
+			x = x & "		<TD valign='top' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
 			end if
 		
 	'> VALOR JÁ PAGO
 		if blnRelAnalitico then
 			s = formata_moeda(r("vl_pago_pedido"))
-			x = x & "		<TD valign='top' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><P class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</P></TD>" & chr(13)
+			x = x & "		<TD valign='top' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
 			end if
 		
 	'> VALOR A PAGAR
@@ -1970,7 +2273,7 @@ dim rPSSW
 		s = formata_moeda(vl_a_pagar)
 		if blnRelAnalitico then
 			if vl_a_pagar < 0 then s_cor = "color:red;"
-			x = x & "		<TD valign='top' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><P class='Cnd' style='" & s_cor & "mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</P></TD>" & chr(13)
+			x = x & "		<TD valign='top' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cnd' style='" & s_cor & "mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
 			end if
 
 	'> STATUS DE ENTREGA
@@ -1980,31 +2283,31 @@ dim rPSSW
 			if (Trim("" & r("st_entrega"))=ST_ENTREGA_ENTREGUE) And (converte_numero(r("qtde_produtos_devolvidos"))>0) then s = s & " (*)"
 			end if
 		if (s = "") And (Not blnSaidaExcel) then s = "&nbsp;"
-		x = x & "		<TD valign='top' style='width:" & Cstr(w_st_entrega) & "px' class='MDB'><P class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</P></TD>" & chr(13)
+		x = x & "		<TD valign='top' style='width:" & Cstr(w_st_entrega) & "px' class='MDB'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
 	
 	'> DATA PREVISÃO DE ENTREGA (OPCIONAL)
 		if ckb_exibir_data_previsao_entrega <> "" then
 			s = formata_data(r("PrevisaoEntregaData"))
-			x = x & "		<TD align='center' valign='top' style='width:" & Cstr(w_data) & "px' class='MDB'><P class='Cn'>" & s & "</P></TD>" & chr(13)
+			x = x & "		<TD align='center' valign='top' style='width:" & Cstr(w_data) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
 			end if
 
     '> VENDEDOR
         if blnMostraMotivoCancelado then
             s = Trim("" & r("vendedor"))
-            x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><P class='Cn'>" & s & "</P></TD>" & chr(13)
+            x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
         end if
 
     '> INDICADOR
         if blnMostraMotivoCancelado then
             s = Trim("" & r("indicador"))
-            x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><P class='Cn'>" & s & "</P></TD>" & chr(13)
+            x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
         end if
 
 	'> UF (OPCIONAL)
 		if blnMostraMotivoCancelado then
 			if ckb_exibir_uf <> "" then
 				s = Trim("" & r("uf_cliente"))
-				x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><P class='Cn'>" & s & "</P></TD>" & chr(13)
+				x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
 				end if
 			end if
 
@@ -2012,7 +2315,7 @@ dim rPSSW
         if blnMostraMotivoCancelado then
             if blnRelAnalitico then
                 s = formata_moeda(r("vl_total_original"))
-                x = x & "		<TD valign='top' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><P class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</P></TD>" & chr(13)
+                x = x & "		<TD valign='top' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
             end if
         end if
 
@@ -2024,7 +2327,7 @@ dim rPSSW
             if Trim("" & r("cancelado_codigo_sub_motivo")) <> "" then
                 s = s & " (" & obtem_descricao_tabela_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__CANCELAMENTOPEDIDO_MOTIVO_SUB, Trim("" & r("cancelado_codigo_sub_motivo"))) & ")"
             end if
-		    x = x & "		<TD valign='top' style='width:" & Cstr(w_motivo_cancelamento) & "px' class='MDB'><P class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</P></TD>" & chr(13)            
+		    x = x & "		<TD valign='top' style='width:" & Cstr(w_motivo_cancelamento) & "px' class='MDB'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</span></TD>" & chr(13)            
         end if
 
 	'> CAMPOS OPCIONAIS
@@ -2032,19 +2335,19 @@ dim rPSSW
 			'> VENDEDOR
 			if ckb_exibir_vendedor <> "" then
 				s = Trim("" & r("vendedor"))
-				x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><P class='Cn'>" & s & "</P></TD>" & chr(13)
+				x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
 				end if
 
 			'> PARCEIRO
 			if ckb_exibir_parceiro <> "" then
 				s = Trim("" & r("indicador"))
-				x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><P class='Cn'>" & s & "</P></TD>" & chr(13)
+				x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
 				end if
 
 			'> UF
 			if ckb_exibir_uf <> "" then
 				s = Trim("" & r("uf_cliente"))
-				x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><P class='Cn'>" & s & "</P></TD>" & chr(13)
+				x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
 				end if
 			end if
 
@@ -2093,34 +2396,34 @@ dim rPSSW
 			x = x & "	<TR style='background: #FFFFDD'>" & chr(13) & _
 					"		<TD style='background:white;'>&nbsp;</td>" & chr(13)
             if s_loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
-					x = x & "		<TD COLSPAN='5' align='right' class='MEB' NOWRAP><p class='Cd' style='font-weight:bold;'>TOTAL:</p></td>" & chr(13)
+					x = x & "		<TD COLSPAN='5' align='right' class='MEB' NOWRAP><span class='Cd' style='font-weight:bold;'>TOTAL:</span></td>" & chr(13)
 			else    
-                    x = x & "		<TD COLSPAN='4' align='right' class='MEB' NOWRAP><p class='Cd' style='font-weight:bold;'>TOTAL:</p></td>" & chr(13)
+                    x = x & "		<TD COLSPAN='4' align='right' class='MEB' NOWRAP><span class='Cd' style='font-weight:bold;'>TOTAL:</span></td>" & chr(13)
             end if
 			if blnPorFornecedor then
 				x = x & _
-					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_fornecedor) & "</p></td>" & chr(13) & _
-					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_fornecedor_NF) & "</p></td>" & chr(13)
+					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_fornecedor) & "</span></td>" & chr(13) & _
+					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_fornecedor_NF) & "</span></td>" & chr(13)
 				end if
 			
 			x = x & _
-					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_faturamento) & "</p></td>" & chr(13) & _
-					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_faturamento_NF) & "</p></td>" & chr(13) & _
-					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_pago) & "</p></td>" & chr(13) & _
-					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><p class='Cd' style='" & s_cor & "font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_a_pagar) & "</p></td>" & chr(13) & _
-					"		<TD class='" & s_class & "'" & s_colspan_final & "><p class='C'>&nbsp;</p></td>" & chr(13)
+					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_faturamento) & "</span></td>" & chr(13) & _
+					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_faturamento_NF) & "</span></td>" & chr(13) & _
+					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_pago) & "</span></td>" & chr(13) & _
+					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><span class='Cd' style='" & s_cor & "font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_a_pagar) & "</span></td>" & chr(13) & _
+					"		<TD class='" & s_class & "'" & s_colspan_final & "><span class='C'>&nbsp;</span></td>" & chr(13)
 
             if blnMostraMotivoCancelado then
                 x = x & _
-                    "		<TD class='MB'><p class='C'>&nbsp;</p></td>" & chr(13) & _
-                    "		<TD class='MB'><p class='C'>&nbsp;</p></td>" & chr(13)
+                    "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13) & _
+                    "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
 				if ckb_exibir_uf <> "" then
 					x = x & _
-						"		<TD class='MB'><p class='C'>&nbsp;</p></td>" & chr(13)
+						"		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
 					end if
 				x = x & _
-					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_pedido_original) & "</p></td>" & chr(13) & _
-					"		<TD class='MDB'><p class='C'>&nbsp;</p></td>" & chr(13)
+					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_pedido_original) & "</span></td>" & chr(13) & _
+					"		<TD class='MDB'><span class='C'>&nbsp;</span></td>" & chr(13)
                 end if
 
             x = x & _
@@ -2147,15 +2450,15 @@ dim rPSSW
 					"	<TR style='background:honeydew'>" & chr(13) & _
 					"		<TD style='background:white;'>&nbsp;</td>" & chr(13)
                 if s_loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
-					x = x & "		<TD class='MTBE' align='right' COLSPAN='5' NOWRAP><p class='Cd' style='font-weight:bold;'>TOTAL GERAL:</p></td>" & chr(13)
+					x = x & "		<TD class='MTBE' align='right' COLSPAN='5' NOWRAP><span class='Cd' style='font-weight:bold;'>TOTAL GERAL:</span></td>" & chr(13)
                 else
-                    x = x & "		<TD class='MTBE' align='right' COLSPAN='4' NOWRAP><p class='Cd' style='font-weight:bold;'>TOTAL GERAL:</p></td>" & chr(13)
+                    x = x & "		<TD class='MTBE' align='right' COLSPAN='4' NOWRAP><span class='Cd' style='font-weight:bold;'>TOTAL GERAL:</span></td>" & chr(13)
                 end if
 					
 				if blnPorFornecedor then
 					x = x & _
-						"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_fornecedor) & "</p></td>" & chr(13) & _
-						"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_fornecedor_NF) & "</p></td>" & chr(13)
+						"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_fornecedor) & "</span></td>" & chr(13) & _
+						"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_fornecedor_NF) & "</span></td>" & chr(13)
 					end if
 				
                 s_class = ""
@@ -2167,23 +2470,23 @@ dim rPSSW
                 
 
 				x = x & _
-					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_faturamento) & "</p></td>" & chr(13) & _
-					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_faturamento_NF) & "</p></td>" & chr(13) & _
-					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_pago) & "</p></td>" & chr(13) & _
-					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><p class='Cd' style='" & s_cor & "font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_a_pagar) & "</p></td>" & chr(13) & _
-					"		<TD class='" & s_class & "'" & s_colspan_final & "><p class='C'>&nbsp;</p></td>" & chr(13)
+					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_faturamento) & "</span></td>" & chr(13) & _
+					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_faturamento_NF) & "</span></td>" & chr(13) & _
+					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_pago) & "</span></td>" & chr(13) & _
+					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><span class='Cd' style='" & s_cor & "font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_a_pagar) & "</span></td>" & chr(13) & _
+					"		<TD class='" & s_class & "'" & s_colspan_final & "><span class='C'>&nbsp;</span></td>" & chr(13)
 
                 if blnMostraMotivoCancelado then
                     x = x & _
-                    "		<td class='MTB'><p class='C'>&nbsp;</p></td>" & chr(13) & _
-                    "		<td class='MTB'><p class='C'>&nbsp;</p></td>" & chr(13)
+                    "		<td class='MTB'><span class='C'>&nbsp;</span></td>" & chr(13) & _
+                    "		<td class='MTB'><span class='C'>&nbsp;</span></td>" & chr(13)
 					if ckb_exibir_uf <> "" then
 						x = x & _
-							"		<td class='MTB'><p class='C'>&nbsp;</p></td>" & chr(13)
+							"		<td class='MTB'><span class='C'>&nbsp;</span></td>" & chr(13)
 						end if
 					x = x & _
-					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><p class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_pedido_original) & "</p></td>" & chr(13) & _
-					"		<TD class='MTBD'><p class='C'>&nbsp;</p></td>" & chr(13)
+					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_pedido_original) & "</span></td>" & chr(13) & _
+					"		<TD class='MTBD'><span class='C'>&nbsp;</span></td>" & chr(13)
                 end if
 
                 x = x & _
@@ -2238,7 +2541,7 @@ dim rPSSW
 		x = cab_table & cab
 		x = x & "	<TR>" & chr(13) & _
 				"		<TD style='background:white;'>&nbsp;</td>" & chr(13) & _
-				"		<TD class='MDBE' align='center' colspan='" & Cstr(n_colspan) & "'><P class='ALERTA'>&nbsp;NENHUM PEDIDO ENCONTRADO&nbsp;</P></TD>" & chr(13) & _
+				"		<TD class='MDBE ALERTA' align='center' colspan='" & Cstr(n_colspan) & "'><span class='ALERTA'>&nbsp;NENHUM PEDIDO ENCONTRADO&nbsp;</span></TD>" & chr(13) & _
 				"	</TR>" & chr(13)
 		end if
 
@@ -2270,6 +2573,7 @@ end sub
 %>
 
 
+<%=DOCTYPE_LEGADO%>
 
 <html>
 
@@ -2291,36 +2595,62 @@ end sub
 
 <script language="JavaScript" type="text/javascript">
     var historyBackCount = 1;
+	var windowScrollTopAnterior;
 
-    $(document).ready(function () {
-        $("#divRastreioConsultaView").hide();
-        $('#divInternoRastreioConsultaView').addClass('divFixo');
-        sizeDivRastreioConsultaView();
+	$(document).ready(function () {
+		$("#divPedidoConsultaView").hide();
+		$("#divRastreioConsultaView").hide();
+		$('#divInternoRastreioConsultaView').addClass('divFixo');
+		sizeDivPedidoConsultaView();
+		sizeDivRastreioConsultaView();
 
-        $(document).keyup(function (e) {
-            if (e.keyCode == 27) {
-                fechaDivRastreioConsultaView();
-            }
-        });
+		$('#divInternoPedidoConsultaView').addClass('divFixo');
 
-        $("#divRastreioConsultaView").click(function () {
-            fechaDivRastreioConsultaView();
-        });
+		$(document).keyup(function (e) {
+			if (e.keyCode == 27) {
+				fechaDivRastreioConsultaView();
+				fechaDivPedidoConsultaView();
+			}
+		});
 
-        $("#imgFechaDivRastreioConsultaView").click(function () {
-            fechaDivRastreioConsultaView();
-        });
-    });
+		$("#divPedidoConsultaView").click(function () {
+			fechaDivPedidoConsultaView();
+		});
 
-    //Every resize of window
-    $(window).resize(function () {
-        sizeDivRastreioConsultaView();
-    });
+		$("#imgFechaDivPedidoConsultaView").click(function () {
+			fechaDivPedidoConsultaView();
+		});
+
+		$("#divRastreioConsultaView").click(function () {
+			fechaDivRastreioConsultaView();
+		});
+
+		$("#imgFechaDivRastreioConsultaView").click(function () {
+			fechaDivRastreioConsultaView();
+		});
+	});
+
+	//Every resize of window
+	$(window).resize(function () {
+		sizeDivRastreioConsultaView();
+		sizeDivPedidoConsultaView();
+	});
+
+	function sizeDivPedidoConsultaView() {
+		var newHeight = $(document).height() + "px";
+		$("#divPedidoConsultaView").css("height", newHeight);
+	}
 
     function sizeDivRastreioConsultaView() {
         var newHeight = $(document).height() + "px";
         $("#divRastreioConsultaView").css("height", newHeight);
     }
+
+	function fechaDivPedidoConsultaView() {
+		$(window).scrollTop(windowScrollTopAnterior);
+		$("#divPedidoConsultaView").fadeOut();
+		$("#iframePedidoConsultaView").attr("src", "");
+	}
 
     function fechaDivRastreioConsultaView() {
         $("#divRastreioConsultaView").fadeOut();
@@ -2334,6 +2664,13 @@ end sub
         $("#divRastreioConsultaView").fadeIn();
     }
 
+	function fPEDConsultaView(id_pedido, usuario) {
+		historyBackCount++;
+		windowScrollTopAnterior = $(window).scrollTop();
+		sizeDivPedidoConsultaView();
+		$("#iframePedidoConsultaView").attr("src", "PedidoConsultaView.asp?pedido_selecionado=" + id_pedido + "&pedido_selecionado_inicial=" + id_pedido + "&usuario=" + usuario);
+		$("#divPedidoConsultaView").fadeIn();
+	}
 </script>
 
 <script language="JavaScript" type="text/javascript">
@@ -2363,8 +2700,64 @@ function fRELConcluir( id_pedido ){
 
 <link href="<%=URL_FILE__E_CSS%>" Rel="stylesheet" Type="text/css">
 <link href="<%=URL_FILE__EPRINTER_CSS%>" Rel="stylesheet" Type="text/css" media="print">
+<link href="<%=URL_FILE__ESCREEN_CSS%>" rel="stylesheet" type="text/css" media="screen">
 
 <style type="text/css">
+html
+{
+	overflow-y: scroll;
+	height:100%;
+	margin:0px;
+}
+body
+{
+	height:100%;
+	margin:0px;
+}
+#divPedidoConsultaView
+{
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	z-index:1000;
+	background-color:#808080;
+	opacity: 1;
+}
+#divInternoPedidoConsultaView
+{
+	position:absolute;
+	top:6%;
+	left:5%;
+	width:90%;
+	height:90%;
+	z-index:1000;
+	background-color:#808080;
+	opacity: 1;
+}
+#divInternoPedidoConsultaView.divFixo
+{
+	position:fixed;
+	top:6%;
+}
+#imgFechaDivPedidoConsultaView
+{
+	position:fixed;
+	top:6%;
+	left: 50%;
+	margin-left: -16px; /* -1 * image width / 2 */
+	margin-top: -32px;
+	z-index:1001;
+}
+#iframePedidoConsultaView
+{
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	border: solid 4px black;
+}
 #divRastreioConsultaView
 {
 	position:absolute;
@@ -2564,8 +2957,8 @@ function fRELConcluir( id_pedido ){
 	if s <> "" then
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
-					"		<td align='right' valign='top' NOWRAP><p class='N'>Status de Entrega:&nbsp;</p></td>" & chr(13) & _
-					"		<td valign='top' width='99%'><p class='N'>" & s & "</p></td>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Status de Entrega:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
 
@@ -2585,8 +2978,8 @@ function fRELConcluir( id_pedido ){
 	if s <> "" then
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
-					"		<td align='right' valign='top' NOWRAP><p class='N'>Pedidos Recebidos pelo Cliente:&nbsp;</p></td>" & chr(13) & _
-					"		<td valign='top' width='99%'><p class='N'>" & s & "</p></td>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Pedidos Recebidos pelo Cliente:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
 
@@ -2612,8 +3005,46 @@ function fRELConcluir( id_pedido ){
 	if s <> "" then
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
-					"		<td align='right' valign='top' NOWRAP><p class='N'>Status de Pagamento:&nbsp;</p></td>" & chr(13) & _
-					"		<td valign='top' width='99%'><p class='N'>" & s & "</p></td>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Status de Pagamento:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
+					"	</tr>" & chr(13)
+		end if
+
+	s = ""
+	if ckb_pagto_antecipado_status_nao <> "" then
+		if s <> "" then s = s & ",&nbsp;&nbsp;"
+		s = s & "Não"
+		end if
+
+	if ckb_pagto_antecipado_status_sim <> "" then
+		if s <> "" then s = s & ",&nbsp;&nbsp;"
+		s = s & "Sim"
+		end if
+
+	if s <> "" then
+		s_filtro = s_filtro & _
+					"	<tr>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Pagamento Antecipado:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
+					"	</tr>" & chr(13)
+		end if
+
+	s = ""
+	if ckb_pagto_antecipado_quitado_status_pendente <> "" then
+		if s <> "" then s = s & ",&nbsp;&nbsp;"
+		s = s & pagto_antecipado_quitado_descricao(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO, COD_PAGTO_ANTECIPADO_QUITADO_STATUS_PENDENTE)
+		end if
+
+	if ckb_pagto_antecipado_quitado_status_quitado <> "" then
+		if s <> "" then s = s & ",&nbsp;&nbsp;"
+		s = s & pagto_antecipado_quitado_descricao(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO, COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO)
+		end if
+
+	if s <> "" then
+		s_filtro = s_filtro & _
+					"	<tr>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Status Pagamento Antecipado:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
 
@@ -2649,6 +3080,12 @@ function fRELConcluir( id_pedido ){
 		s = s & s_aux
 		end if
 	
+	s_aux = Lcase(x_analise_credito(ckb_analise_credito_pendente_pagto_antecipado_boleto))
+	if s_aux<>"" then
+		if s <> "" then s = s & ",&nbsp;&nbsp;"
+		s = s & s_aux
+		end if
+
 	s_aux = Lcase(x_analise_credito(ckb_analise_credito_ok))
 	if s_aux<>"" then
 		if s <> "" then s = s & ",&nbsp;&nbsp;"
@@ -2667,11 +3104,17 @@ function fRELConcluir( id_pedido ){
 		s = s & s_aux
 		end if
 
+	s_aux = Lcase(x_analise_credito(ckb_analise_credito_ok_aguardando_pagto_boleto_av))
+	if s_aux<>"" then
+		if s <> "" then s = s & ",&nbsp;&nbsp;"
+		s = s & s_aux
+		end if
+
 	if s <> "" then
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
-					"		<td align='right' valign='top' NOWRAP><p class='N'>Análise de Crédito:&nbsp;</p></td>" & chr(13) & _
-					"		<td valign='top' width='99%'><p class='N'>" & s & "</p></td>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Análise de Crédito:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
 
@@ -2702,22 +3145,22 @@ function fRELConcluir( id_pedido ){
 	if s <> "" then
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
-					"		<td align='right' valign='top' NOWRAP><p class='N'>Entrega Imediata:&nbsp;</p></td>" & chr(13) & _
-					"		<td valign='top' width='99%'><p class='N'>" & s & "</p></td>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Entrega Imediata:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
 		
 	'Geral: campo Obs II
 	s = ""
 	s_aux = ""
-	if ckb_obs2_preenchido <> "" then s_aux = "OBS II preenchido"
+	if ckb_obs2_preenchido <> "" then s_aux = "Nº NF preenchido"
 	if s_aux<>"" then
 		if s <> "" then s = s & ",&nbsp;&nbsp;"
 		s = s & s_aux
 		end if
 	
 	s_aux = ""
-	if ckb_obs2_nao_preenchido <> "" then s_aux = "OBS II não preenchido"
+	if ckb_obs2_nao_preenchido <> "" then s_aux = "Nº NF não preenchido"
 	if s_aux<>"" then
 		if s <> "" then s = s & ",&nbsp;&nbsp;"
 		s = s & s_aux
@@ -2726,8 +3169,8 @@ function fRELConcluir( id_pedido ){
 	if s <> "" then
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
-					"		<td align='right' valign='top' NOWRAP><p class='N'>Geral:&nbsp;</p></td>" & chr(13) & _
-					"		<td valign='top' width='99%'><p class='N'>" & s & "</p></td>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Geral:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
 
@@ -2750,8 +3193,8 @@ function fRELConcluir( id_pedido ){
 	if s <> "" then
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
-					"		<td align='right' valign='top' NOWRAP><p class='N'>Indicador:&nbsp;</p></td>" & chr(13) & _
-					"		<td valign='top' width='99%'><p class='N'>" & s & "</p></td>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Indicador:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
 
@@ -2765,8 +3208,8 @@ function fRELConcluir( id_pedido ){
 		s = s & s_aux
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
-					"		<td align='right' valign='top' NOWRAP><p class='N'>Pedidos colocados entre:&nbsp;</p></td>" & chr(13) & _
-					"		<td valign='top' width='99%'><p class='N'>" & s & "</p></td>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Pedidos colocados entre:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
 
@@ -2780,8 +3223,38 @@ function fRELConcluir( id_pedido ){
 		s = s & s_aux
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
-					"		<td align='right' valign='top' NOWRAP><p class='N'>Data de coleta:&nbsp;</p></td>" & chr(13) & _
-					"		<td valign='top' width='99%'><p class='N'>" & s & "</p></td>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Data de coleta:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
+					"	</tr>" & chr(13)
+		end if
+
+	if ckb_periodo_emissao_NF_venda <> "" then
+		s = ""
+		s_aux = c_dt_NF_venda_inicio
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux & " a "
+		s_aux = c_dt_NF_venda_termino
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux
+		s_filtro = s_filtro & _
+					"	<tr>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Emissão NF Venda:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
+					"	</tr>" & chr(13)
+		end if
+
+	if ckb_periodo_emissao_NF_remessa <> "" then
+		s = ""
+		s_aux = c_dt_NF_remessa_inicio
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux & " a "
+		s_aux = c_dt_NF_remessa_termino
+		if s_aux = "" then s_aux = "N.I."
+		s = s & s_aux
+		s_filtro = s_filtro & _
+					"	<tr>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Emissão NF Remessa:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
 
@@ -2795,8 +3268,8 @@ function fRELConcluir( id_pedido ){
 		if ckb_somente_pedidos_produto_alocado <> "" then s = s & "&nbsp;&nbsp;(somente pedidos que possuam o produto alocado)"
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
-					"		<td align='right' valign='top' NOWRAP><p class='N'>Somente pedidos que incluam:&nbsp;</p></td>" & chr(13) & _
-					"		<td valign='top'><p class='N'>" & s & "</p></td>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Somente pedidos que incluam:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top'><span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
 
@@ -2804,9 +3277,13 @@ function fRELConcluir( id_pedido ){
 	if s = "" then 
 		s = "todos"
 	else
-        s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
-			   "<span class='N'>Grupo(s) de Produtos:&nbsp;</span></td><td align='left' valign='top'>" & _
-			   "<span class='N'>" & s & "</span></td></tr>"
+        s_filtro = s_filtro & _
+			"	<tr>" & chr(13) & _
+			"		<td align='right' valign='top' nowrap>" & _
+			"<span class='N'>Grupo(s) de Produtos:&nbsp;</span></td>" & chr(13) & _
+			"		<td align='left' valign='top'>" & _
+			"<span class='N'>" & s & "</span></td>" & chr(13) & _
+			"	</tr>" & chr(13)
 	end if
 
     s = c_grupo_pedido_origem
@@ -2814,9 +3291,13 @@ function fRELConcluir( id_pedido ){
 		s = "todos"
 	else
 		s = obtem_descricao_tabela_t_codigo_descricao("PedidoECommerce_Origem_Grupo", c_grupo_pedido_origem)
-        s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
-			   "<span class='N'>Origem Pedido (Grupo):&nbsp;</span></td><td align='left' valign='top'>" & _
-			   "<span class='N'>" & s & "</span></td></tr>"
+        s_filtro = s_filtro & _
+			"	<tr>" & chr(13) & _
+			"		<td align='right' valign='top' nowrap>" & _
+			"<span class='N'>Origem Pedido (Grupo):&nbsp;</span></td>" & chr(13) & _
+			"		<td align='left' valign='top'>" & _
+			"<span class='N'>" & s & "</span></td>" & chr(13) & _
+			"	</tr>" & chr(13)
 	end if
 
     s = c_pedido_origem
@@ -2824,9 +3305,13 @@ function fRELConcluir( id_pedido ){
 		s = "todos"
 	else
 		s = obtem_descricao_tabela_t_codigo_descricao("PedidoECommerce_Origem", c_pedido_origem)
-        s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
-			   "<span class='N'>Origem do Pedido:&nbsp;</span></td><td align='left' valign='top'>" & _
-			   "<span class='N'>" & s & "</span></td></tr>"
+        s_filtro = s_filtro & _
+			"	<tr>" & chr(13) & _
+			"		<td align='right' valign='top' nowrap>" & _
+			"<span class='N'>Origem do Pedido:&nbsp;</span></td>" & chr(13) & _
+			"		<td align='left' valign='top'>" & _
+			"<span class='N'>" & s & "</span></td>" & chr(13) & _
+			"	</tr>" & chr(13)
     end if
     
     s = c_empresa
@@ -2835,9 +3320,13 @@ function fRELConcluir( id_pedido ){
 	else
 		s =  obtem_apelido_empresa_NFe_emitente(c_empresa)
 		end if
-	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
-			"<span class='N'>Empresa:&nbsp;</span></td><td align='left' valign='top'>" & _
-			"<span class='N'>" & s & "</span></td></tr>"
+	s_filtro = s_filtro & _
+			"	<tr>" & chr(13) & _
+			"		<td align='right' valign='top' nowrap>" & _
+			"<span class='N'>Empresa:&nbsp;</span></td>" & chr(13) & _
+			"		<td align='left' valign='top'>" & _
+			"<span class='N'>" & s & "</span></td>" & chr(13) & _
+			"	</tr>" & chr(13)
 
 	select case rb_loja
 		case "TODAS": s = "todas"
@@ -2860,8 +3349,8 @@ function fRELConcluir( id_pedido ){
 	
 	s_filtro = s_filtro & _
 				"	<tr>" & chr(13) & _
-				"		<td align='right' valign='top' NOWRAP><p class='N'>Lojas:&nbsp;</p></td>" & chr(13) & _
-				"		<td valign='top'><p class='N'>" & s & "</p></td>" & chr(13) & _
+				"		<td align='right' valign='top' NOWRAP><span class='N'>Lojas:&nbsp;</span></td>" & chr(13) & _
+				"		<td valign='top'><span class='N'>" & s & "</span></td>" & chr(13) & _
 				"	</tr>" & chr(13)
 
 	if op_forma_pagto <> "" then
@@ -2869,8 +3358,8 @@ function fRELConcluir( id_pedido ){
 		if s = "" then s = "&nbsp;"
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
-					"		<td align='right' valign='top' NOWRAP><p class='N'>Forma Pagto:&nbsp;</p></td>" & chr(13) & _
-					"		<td valign='top'><p class='N'>" & s & "</p></td>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Forma Pagto:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top'><span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
 
@@ -2879,8 +3368,8 @@ function fRELConcluir( id_pedido ){
 		if s = "" then s = "&nbsp;"
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
-					"		<td align='right' valign='top' NOWRAP><p class='N'>Nº Parcelas:&nbsp;</p></td>" & chr(13) & _
-					"		<td valign='top'><p class='N'>" & s & "</p></td>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Nº Parcelas:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top'><span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
 
@@ -2893,8 +3382,8 @@ function fRELConcluir( id_pedido ){
 		if s = "" then s = "&nbsp;"
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
-					"		<td align='right' valign='top' NOWRAP><p class='N'>Cliente:&nbsp;</p></td>" & chr(13) & _
-					"		<td valign='top'><p class='N'>" & s & "</p></td>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Cliente:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top'><span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
 
@@ -2903,16 +3392,16 @@ function fRELConcluir( id_pedido ){
 		if s = "" then s = "&nbsp;"
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
-					"		<td align='right' valign='top' nowrap><p class='N'>UF do Cliente:&nbsp;</p></td>" & chr(13) & _
-					"		<td align='left' valign='top'><p class='N'>" & s & "</p></td>" & chr(13) & _
+					"		<td align='right' valign='top' nowrap><span class='N'>UF do Cliente:&nbsp;</span></td>" & chr(13) & _
+					"		<td align='left' valign='top'><span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
 
 	if ckb_visanet <> "" then
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
-					"		<td align='right' valign='top' NOWRAP><p class='N'>Cartão de Crédito:&nbsp;</p></td>" & chr(13) & _
-					"		<td valign='top' width='99%'><p class='N'>somente pedidos pagos usando cartão de crédito</p></td>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Cartão de Crédito:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top' width='99%'><span class='N'>somente pedidos pagos usando cartão de crédito</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
 	
@@ -2923,8 +3412,8 @@ function fRELConcluir( id_pedido ){
 		s = s & s_aux
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
-					"		<td align='right' valign='top' NOWRAP><p class='N'>Transportadora:&nbsp;</p></td>" & chr(13) & _
-					"		<td valign='top' width='99%'><p class='N'>" & s & "</p></td>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Transportadora:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
 
@@ -2935,8 +3424,8 @@ function fRELConcluir( id_pedido ){
 		s = s & s_aux
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
-					"		<td align='right' valign='top' NOWRAP><p class='N'>Vendedor:&nbsp;</p></td>" & chr(13) & _
-					"		<td valign='top' width='99%'><p class='N'>" & s & "</p></td>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Vendedor:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
 
@@ -2947,15 +3436,15 @@ function fRELConcluir( id_pedido ){
 		s = s & s_aux
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
-					"		<td align='right' valign='top' NOWRAP><p class='N'>Indicador:&nbsp;</p></td>" & chr(13) & _
-					"		<td valign='top' width='99%'><p class='N'>" & s & "</p></td>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Indicador:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
 	
 	s_filtro = s_filtro & _
 				"	<tr>" & chr(13) & _
-				"		<td align='right' valign='top' NOWRAP><p class='N'>Emissão:&nbsp;</p></td>" & chr(13) & _
-				"		<td valign='top' width='99%'><p class='N'>" & formata_data_hora(Now) & "</p></td>" & chr(13) & _
+				"		<td align='right' valign='top' NOWRAP><span class='N'>Emissão:&nbsp;</span></td>" & chr(13) & _
+				"		<td valign='top' width='99%'><span class='N'>" & formata_data_hora(Now) & "</span></td>" & chr(13) & _
 				"	</tr>" & chr(13)
 
 	s_filtro = s_filtro & "</table>" & chr(13)
@@ -2984,6 +3473,7 @@ function fRELConcluir( id_pedido ){
 </center>
 
 <div id="divRastreioConsultaView"><center><div id="divInternoRastreioConsultaView"><img id="imgFechaDivRastreioConsultaView" src="../imagem/close_button_32.png" title="clique para fechar o painel de consulta" /><iframe id="iframeRastreioConsultaView"></iframe></div></center></div>
+<div id="divPedidoConsultaView"><center><div id="divInternoPedidoConsultaView"><img id="imgFechaDivPedidoConsultaView" src="../imagem/close_button_32.png" title="clique para fechar o painel de consulta" /><iframe id="iframePedidoConsultaView"></iframe></div></center></div>
 
 </body>
 

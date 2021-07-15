@@ -602,6 +602,23 @@ dim r
 			.PercMaxSenhaDesconto = r("PercMaxSenhaDesconto")
 			.PercMaxDescSemZerarRT = r("PercMaxDescSemZerarRT")
 			.unidade_negocio = Trim("" & r("unidade_negocio"))
+			.id_plano_contas_empresa = r("id_plano_contas_empresa")
+			.id_plano_contas_grupo = r("id_plano_contas_grupo")
+			.id_plano_contas_conta = r("id_plano_contas_conta")
+			.natureza = Trim("" & r("natureza"))
+			.unidade_negocio = Trim("" & r("unidade_negocio"))
+			.perc_max_comissao = r("perc_max_comissao")
+			.perc_max_comissao_e_desconto = r("perc_max_comissao_e_desconto")
+			.perc_max_comissao_e_desconto_nivel2 = r("perc_max_comissao_e_desconto_nivel2")
+			.perc_max_comissao_e_desconto_nivel2_pj = r("perc_max_comissao_e_desconto_nivel2_pj")
+			.perc_max_comissao_e_desconto_pj = r("perc_max_comissao_e_desconto_pj")
+			.magento_api_urlWebService = Trim("" & r("magento_api_urlWebService"))
+			.magento_api_username = Trim("" & r("magento_api_username"))
+			.magento_api_password = Trim("" & r("magento_api_password"))
+			.magento_api_versao = r("magento_api_versao")
+			.magento_api_rest_endpoint = Trim("" & r("magento_api_rest_endpoint"))
+			.magento_api_rest_access_token = Trim("" & r("magento_api_rest_access_token"))
+			.magento_api_rest_force_get_sales_order_by_entity_id = r("magento_api_rest_force_get_sales_order_by_entity_id")
 			end with
 		end if
 
@@ -1273,6 +1290,12 @@ dim r, s, n_nsu, s_nsu, n_tentativas, update_OK
 		Err.Clear 
 		msg_erro = ""
 		
+		if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+		'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+			s = "UPDATE t_CONTROLE SET dummy = ~dummy WHERE id_nsu='" & id_nsu & "'"
+			cn.Execute(s)
+			end if
+
 		n_nsu = -1
 		s = "SELECT * FROM t_CONTROLE WHERE id_nsu='" & id_nsu & "'"
 		if Not cria_recordset_pessimista(r, msg_erro) then exit function
@@ -1394,6 +1417,15 @@ dim intQtdeTentativas, intNsuUltimo, intNsuNovo, blnSucesso
 	do 
 		intQtdeTentativas = intQtdeTentativas + 1
 		
+		if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+		'	BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+			strSql = "UPDATE t_FIN_CONTROLE SET" & _
+						" dummy = ~dummy" & _
+					" WHERE" & _
+						" id = '" & idNsu & "'"
+			cn.Execute(strSql)
+			end if
+
 	'	OBTÉM O ÚLTIMO NSU USADO
 		strSql = "SELECT" & _
 					" nsu" & _
@@ -1607,14 +1639,15 @@ dim blnUsarMemorizacaoCompletaEnderecos
 	msg_erro = ""
 	id_pedido=Trim("" & id_pedido)
 	set r_pedido = New cl_PEDIDO
+
+	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
 	s="SELECT * FROM t_PEDIDO WHERE (pedido='" & id_pedido & "')"
 	set rs=cn.Execute(s)
 	if Err <> 0 then
 		msg_erro=Cstr(Err) & ": " & Err.Description
 		exit function
 		end if
-		
-	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 
 	if rs.EOF then
 		msg_erro="Pedido nº " & id_pedido & " não está cadastrado."
@@ -1642,6 +1675,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.obs_1						= Trim("" & rs("obs_1"))
 			.obs_2						= Trim("" & rs("obs_2"))
 			.obs_3						= Trim("" & rs("obs_3"))
+			.obs_4						= Trim("" & rs("obs_4"))
 			.qtde_parcelas				= rs("qtde_parcelas")
 			.forma_pagto				= Trim("" & rs("forma_pagto"))
 			.vl_total_familia			= rs("vl_total_familia")
@@ -1886,6 +1920,12 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.st_forma_pagto_possui_parcela_cartao_maquineta = rs("st_forma_pagto_possui_parcela_cartao_maquineta")
 			.usuario_cadastro = Trim("" & rs("usuario_cadastro"))
 			.plataforma_origem_pedido = rs("plataforma_origem_pedido")
+			.PagtoAntecipadoStatus = rs("PagtoAntecipadoStatus")
+			.PagtoAntecipadoDataHora = rs("PagtoAntecipadoDataHora")
+			.PagtoAntecipadoUsuario = Trim("" & rs("PagtoAntecipadoUsuario"))
+			.PagtoAntecipadoQuitadoStatus = rs("PagtoAntecipadoQuitadoStatus")
+			.PagtoAntecipadoQuitadoDataHora = rs("PagtoAntecipadoQuitadoDataHora")
+			.PagtoAntecipadoQuitadoUsuario = Trim("" & rs("PagtoAntecipadoQuitadoUsuario"))
 			end with
 		end if
 
@@ -1989,6 +2029,14 @@ dim blnUsarMemorizacaoCompletaEnderecos
 				.pedido_ac_reverso          = Trim("" & rs("pedido_bs_x_ac_reverso"))
 				.usuario_cadastro = Trim("" & rs("usuario_cadastro"))
 				.plataforma_origem_pedido = rs("plataforma_origem_pedido")
+				'O status que indica se o pedido será pago através de pagamento antecipado é único para toda a família de pedidos
+				'e está atrelado ao processo de análise de crédito, que também é único por família de pedidos. Por esse motivo,
+				'a informação deve ser sempre armazenada e lida do pedido-base, mesmo que este esteja cancelado e o(s) pedido(s)-filhote não.
+				'Já a informação que indica se o pagamento antecipado foi quitado é armazenado em cada pedido individualmente, pois pode
+				'ocorrer de serem gerados conjuntos de boletos separados para o pedido-pai e o(s) pedido(s)-filhote.
+				.PagtoAntecipadoStatus = rs("PagtoAntecipadoStatus")
+				.PagtoAntecipadoDataHora = rs("PagtoAntecipadoDataHora")
+				.PagtoAntecipadoUsuario = Trim("" & rs("PagtoAntecipadoUsuario"))
 				end with
 			end if
 		end if
@@ -2073,6 +2121,83 @@ dim rs
 	if rs.State <> 0 then rs.Close
 
 	if msg_erro = "" then le_pedido_item=True
+end function
+
+
+
+' ___________________________________________
+' LE PEDIDO ITEM SERVICO
+'
+function le_pedido_item_servico(byval id_pedido, byref v_pedido_item_servico, byref msg_erro)
+dim s
+dim rs
+	le_pedido_item_servico = False
+	msg_erro = ""
+	id_pedido=Trim("" & id_pedido)
+	redim v_pedido_item_servico(0)
+	set v_pedido_item_servico(0) = New cl_ITEM_PEDIDO_SERVICO
+	
+	s="SELECT * FROM t_PEDIDO_ITEM_SERVICO WHERE (pedido='" & id_pedido & "') ORDER BY sequencia"
+	set rs=cn.Execute(s)
+	if Err <> 0 then
+		msg_erro=Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+		
+	if rs.EOF then
+		msg_erro="Não há itens de serviço cadastrados para o pedido nº " & id_pedido & "."
+	else
+		do while Not rs.EOF 
+			if Trim(v_pedido_item_servico(Ubound(v_pedido_item_servico)).produto)<>"" then
+				redim preserve v_pedido_item_servico(Ubound(v_pedido_item_servico)+1)
+				set v_pedido_item_servico(ubound(v_pedido_item_servico)) = New cl_ITEM_PEDIDO_SERVICO
+				end if
+			with v_pedido_item_servico(Ubound(v_pedido_item_servico))
+				.pedido					= Trim("" & rs("pedido"))
+				.fabricante				= Trim("" & rs("fabricante"))
+				.produto				= Trim("" & rs("produto"))
+				.qtde					= rs("qtde")
+				.desc_dado				= rs("desc_dado")
+				.preco_venda			= rs("preco_venda")
+				.preco_NF				= rs("preco_NF")
+				.preco_fabricante		= rs("preco_fabricante")
+				.vl_custo2				= rs("vl_custo2")
+				.preco_lista			= rs("preco_lista")
+				.margem					= rs("margem")
+				.desc_max				= rs("desc_max")
+				.comissao				= rs("comissao")
+				.descricao				= Trim("" & rs("descricao"))
+				.descricao_html			= Trim("" & rs("descricao_html"))
+				.ean					= Trim("" & rs("ean"))
+				.grupo					= Trim("" & rs("grupo"))
+                .subgrupo				= Trim("" & rs("subgrupo"))
+				.peso					= rs("peso")
+				.qtde_volumes			= rs("qtde_volumes")
+				.abaixo_min_status		= rs("abaixo_min_status")
+				.abaixo_min_autorizacao	= Trim("" & rs("abaixo_min_autorizacao"))
+				.abaixo_min_autorizador	= Trim("" & rs("abaixo_min_autorizador"))
+				.abaixo_min_superv_autorizador	= Trim("" & rs("abaixo_min_superv_autorizador"))
+				.sequencia				= rs("sequencia")
+				.markup_fabricante		= rs("markup_fabricante")
+				.custoFinancFornecCoeficiente = rs("custoFinancFornecCoeficiente")
+				.custoFinancFornecPrecoListaBase = rs("custoFinancFornecPrecoListaBase")
+				.cubagem				= rs("cubagem")
+				.ncm					= Trim("" & rs("ncm"))
+				.cst					= Trim("" & rs("cst"))
+				.descontinuado			= Trim("" & rs("descontinuado"))
+				end with
+			rs.MoveNext 
+			Loop
+		end if
+
+	if Err <> 0 then
+		msg_erro=Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+
+	if rs.State <> 0 then rs.Close
+
+	if msg_erro = "" then le_pedido_item_servico=True
 end function
 
 
@@ -3182,6 +3307,77 @@ dim id_pedido_base
 end function
 
 
+' ___________________________________________________________
+' CALCULA TOTAIS FAMILIA PEDIDO
+'
+function calcula_totais_familia_pedido(byval id_pedido, _
+										byref vl_NF_deste_pedido, byref vl_venda_deste_pedido, _
+										byref vl_total_NF_com_cancelado, byref vl_total_NF_sem_cancelado, _
+										byref vl_total_venda_com_cancelado, byref vl_total_venda_sem_cancelado, _
+										byref qtde_pedidos_familia, byref qtde_pedidos_cancelados, byref msg_erro)
+dim s
+dim rs
+dim id_pedido_base
+	calcula_totais_familia_pedido = False
+	
+	id_pedido = Trim("" & id_pedido)
+	vl_NF_deste_pedido = 0
+	vl_venda_deste_pedido = 0
+	vl_total_NF_com_cancelado = 0
+	vl_total_NF_sem_cancelado = 0
+	vl_total_venda_com_cancelado = 0
+	vl_total_venda_sem_cancelado = 0
+	qtde_pedidos_familia = 0
+	qtde_pedidos_cancelados = 0
+	msg_erro = ""
+	
+	id_pedido_base = retorna_num_pedido_base(id_pedido)
+
+	s = "SELECT" & _
+			" t_PEDIDO.pedido," & _
+			" t_PEDIDO.st_entrega," & _
+			" Coalesce(SUM(qtde*preco_NF),0) AS vl_NF," & _
+			" Coalesce(SUM(qtde*preco_venda),0) AS vl_venda" & _
+		" FROM t_PEDIDO INNER JOIN t_PEDIDO_ITEM" & _
+			" ON (t_PEDIDO.pedido=t_PEDIDO_ITEM.pedido)" & _
+		" WHERE" & _
+			" (t_PEDIDO.pedido_base = '" & id_pedido_base & "')" & _
+		" GROUP BY" & _
+			" t_PEDIDO.pedido," & _
+			" t_PEDIDO.st_entrega" & _
+		" ORDER BY" & _
+			" t_PEDIDO.pedido"
+	set rs = cn.Execute(s)
+	if Err <> 0 then
+		msg_erro = Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+
+	do while Not rs.Eof
+		qtde_pedidos_familia = qtde_pedidos_familia + 1
+		if Trim("" & rs("st_entrega")) = ST_ENTREGA_CANCELADO then qtde_pedidos_cancelados = qtde_pedidos_cancelados + 1
+
+		if Trim("" & rs("pedido")) = id_pedido then
+			vl_NF_deste_pedido = vl_NF_deste_pedido + rs("vl_NF")
+			vl_venda_deste_pedido = vl_venda_deste_pedido + rs("vl_venda")
+			end if
+
+		vl_total_NF_com_cancelado = vl_total_NF_com_cancelado + rs("vl_NF")
+		vl_total_venda_com_cancelado = vl_total_venda_com_cancelado + rs("vl_venda")
+
+		if Trim("" & rs("st_entrega")) <> ST_ENTREGA_CANCELADO then
+			vl_total_NF_sem_cancelado = vl_total_NF_sem_cancelado + rs("vl_NF")
+			vl_total_venda_sem_cancelado = vl_total_venda_sem_cancelado + rs("vl_venda")
+			end if
+
+		rs.MoveNext
+		loop
+		
+	if rs.State <> 0 then rs.Close
+	calcula_totais_familia_pedido = True
+end function
+
+
 ' ___________________________________________
 ' CALCULA VALOR EM PERDAS
 '
@@ -3909,6 +4105,8 @@ dim s
 		case COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO: s="Crédito OK (aguardando depósito)"
 		case COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO: s="Crédito OK (depósito aguardando desbloqueio)"
 		case COD_AN_CREDITO_NAO_ANALISADO: s="Pedido Sem Análise de Crédito"
+		case COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV: s = "Crédito OK (aguardando pagto boleto AV)"
+		case COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO: s = "Pendente - Pagto Antecipado Boleto"
 		case else s=""
 		end select
 	descricao_analise_credito=s
@@ -3932,6 +4130,8 @@ dim s
 		case COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO: s="Crédito OK (depósito aguardando desbloqueio)"
 		case COD_AN_CREDITO_NAO_ANALISADO: s=""
 		case COD_AN_CREDITO_PENDENTE_CARTAO: s="Pendente Cartão de Crédito"
+		case COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV: s = "Crédito OK (aguardando pagto boleto AV)"
+		case COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO: s = "Pendente - Pagto Antecipado Boleto"
 		case else s=""
 		end select
 	x_analise_credito=s
@@ -3952,6 +4152,8 @@ dim s_cor
 		case COD_AN_CREDITO_OK: s_cor="green"
 		case COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO: s_cor="darkorange"
 		case COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO: s_cor="darkorange"
+		case COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV: s_cor="darkorange"
+		case COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO: s_cor="blue"
 		case else s_cor="black"
 		end select
 	x_analise_credito_cor=s_cor
@@ -3973,6 +4175,21 @@ dim s
 		case else s=""
 		end select
 	x_etg_imediata=s
+end function
+
+
+
+function decodifica_etg_imediata(byval codigo)
+dim s
+	codigo = Trim("" & codigo)
+	select case codigo
+		case COD_ETG_IMEDIATA_ST_INICIAL: s=""
+		case COD_ETG_IMEDIATA_NAO: s="Não"
+		case COD_ETG_IMEDIATA_SIM: s="Sim"
+		case COD_ETG_IMEDIATA_NAO_DEFINIDO: s=""
+		case else s=""
+		end select
+	decodifica_etg_imediata=s
 end function
 
 

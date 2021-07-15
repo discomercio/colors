@@ -54,7 +54,7 @@
 	exibir_botao_history_back = Trim(Request("exibir_botao_history_back"))
 	
 	dim i, n, s_fabricante, s_produto, s_descricao, s_descricao_html, s_qtde, s_preco_lista, s_desc_dado
-	dim s_vl_unitario, s_vl_TotalItem, m_TotalItem, m_TotalDestePedido, m_TotalItemComRA, m_TotalDestePedidoComRA
+	dim s_vl_unitario, s_vl_TotalItem, m_TotalItem, m_TotalDestePedido, m_TotalItemComRA, m_TotalDestePedidoComRA, m_TotalServicos
 	dim s_preco_NF, m_TotalFamiliaParcelaRA
 	dim intQtdePedido, intQtdeLinhasPedido, intResto
 	dim x, strInfoAnEnd
@@ -89,12 +89,23 @@
 		Session("nivel_acesso_chamado") = nivel_acesso_chamado
 		end if
 	
-	dim r_pedido, v_item, alerta
+	dim r_pedido, v_item, v_item_servico, qtdeItemServico, alerta
 	alerta=""
 	if Not le_pedido(pedido_selecionado, r_pedido, msg_erro) then 
 		alerta = msg_erro
 	else
 		if Not le_pedido_item(pedido_selecionado, v_item, msg_erro) then alerta = msg_erro
+		end if
+
+	qtdeItemServico = 0
+	if r_pedido.loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
+		if le_pedido_item_servico(pedido_selecionado, v_item_servico, msg_erro) then
+			for i=LBound(v_item_servico) to UBound(v_item_servico)
+				if Trim(v_item_servico(i).produto) <> "" then
+					qtdeItemServico = qtdeItemServico + 1
+					end if
+				next
+			end if
 		end if
 
 	dim blnTemRA
@@ -118,6 +129,7 @@
 	dim vl_saldo_a_pagar, s_vl_saldo_a_pagar, st_pagto
 	dim v_item_devolvido, s_devolucoes
 	dim v_pedido_perda, s_perdas, vl_total_perdas, vl_total_frete, frete_transportadora_id, frete_numero_NF, intQtdeFrete, frete_serie_NF
+	dim qtdeColProd
 	s_devolucoes = ""
 	s_perdas = ""
 	vl_total_perdas = 0
@@ -221,6 +233,22 @@
 	blnEnderecoAlterado = False
 
 	dim s_link_rastreio
+
+	dim blnPossuiFormaPagtoProporcional, sDescricaoFormaPagtoProporcional, blnFormaPagtoProporcionalNaoSeAplica, blnFormaPagtoProporcionalFalhaCalculo, msgFormaPagtoProporcionalFalhaCalculo
+	if alerta = "" then
+		blnPossuiFormaPagtoProporcional = monta_descricao_forma_pagto_proporcional(r_pedido, sDescricaoFormaPagtoProporcional, blnFormaPagtoProporcionalNaoSeAplica, blnFormaPagtoProporcionalFalhaCalculo, msgFormaPagtoProporcionalFalhaCalculo, msg_erro)
+		if blnPossuiFormaPagtoProporcional then
+			if blnFormaPagtoProporcionalNaoSeAplica then blnPossuiFormaPagtoProporcional = False
+			end if
+		if blnPossuiFormaPagtoProporcional then
+			'Se houve falha no cálculo e foi retornada uma mensagem da falha, pode-se exibi-la ou não para o usuário
+			if blnFormaPagtoProporcionalFalhaCalculo then sDescricaoFormaPagtoProporcional = msgFormaPagtoProporcionalFalhaCalculo
+			end if
+		if blnPossuiFormaPagtoProporcional then
+			'Situação inesperada: não há descrição para ser exibida
+			if Trim(sDescricaoFormaPagtoProporcional) = "" then blnPossuiFormaPagtoProporcional = False
+			end if
+		end if
 
 
 
@@ -1191,7 +1219,9 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 	<td class="MB" align="right" valign="bottom"><span class="PLTd">VL Total</span></td>
 	</tr>
 
-<% m_TotalDestePedido=0
+<% qtdeColProd = 9
+   if blnTemRA Or ((r_pedido.permite_RA_status = 1) And (r_pedido.opcao_possui_RA = "S")) then qtdeColProd = qtdeColProd + 1
+   m_TotalDestePedido=0
    m_TotalDestePedidoComRA=0
    n = Lbound(v_item)-1
    for i=1 to MAX_ITENS 
@@ -1318,6 +1348,78 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 	<td class="MDB" align="right"><input name="c_total_geral" id="c_total_geral" class="PLLd" style="width:70px;color:blue;" 
 		value='<%=formata_moeda(m_TotalDestePedido)%>' readonly tabindex=-1></td>
 	</tr>
+
+	<%
+		if r_pedido.loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
+			if qtdeItemServico > 0 then
+				m_TotalServicos = 0
+	%>
+	<tr><td colspan="<%=CStr(qtdeColProd)%>">&nbsp;</td></tr>
+	<tr><td class="MB" colspan="<%=CStr(qtdeColProd)%>" align="left"><span class="PLTe">Serviços</span></td></tr>
+	<%
+				for i=LBound(v_item_servico) to UBound(v_item_servico)
+					if Trim(v_item_servico(i).produto) <> "" then
+						s_cor = "black"
+						with v_item_servico(i)
+							s_fabricante=.fabricante
+							s_produto=.produto
+							s_descricao=.descricao
+							s_descricao_html=produto_formata_descricao_em_html(.descricao_html)
+							s_qtde=.qtde
+							s_preco_lista=formata_moeda(.preco_lista)
+							if .desc_dado=0 then s_desc_dado="" else s_desc_dado=formata_perc_desc(.desc_dado)
+							s_vl_unitario=formata_moeda(.preco_venda)
+							if .preco_NF <> 0 then s_preco_NF=formata_moeda(.preco_NF) else s_preco_NF=""
+							m_TotalItem=.qtde * .preco_venda
+							m_TotalItemComRA=.qtde * .preco_NF
+							s_vl_TotalItem=formata_moeda(m_TotalItem)
+							m_TotalServicos = m_TotalServicos + m_TotalItem
+							end with
+
+	%>
+	<tr>
+		<td class="MB ME" align="left">
+			&nbsp;
+		</td>
+		<td class="MDB" align="left">
+			<input name="c_servico_sku" class="PLLe" style="width:54px;color:<%=s_cor%>" value="<%=s_produto%>" readonly tabindex="-1" />
+		</td>
+		<td class="MDB" align="left" style="width:269px;">
+			<span class="PLLe" style="color:<%=s_cor%>"><%=s_descricao_html%></span>
+			<input type="hidden" name="c_servico_descricao" value="<%=s_descricao%>" />
+		</td>
+		<td class="MDB" align="right">
+			<input name="c_servico_qtde" class="PLLd" style="width:21px;color:<%=s_cor%>" value="<%=s_qtde%>" readonly tabindex="-1" />
+		</td>
+		<td class="MDB" align="right">&nbsp;</td>
+		<% if blnTemRA Or ((r_pedido.permite_RA_status = 1) And (r_pedido.opcao_possui_RA = "S")) then %>
+		<td class="MDB" align="right">
+			<input name="c_servico_vl_NF" class="PLLd" style="width:62px;color:<%=s_cor%>" value="<%=s_preco_NF%>" readonly tabindex="-1" />
+		</td>
+		<% end if %>
+		<td class="MDB" align="right">
+			<input name="c_servico_preco_lista" class="PLLd" style="width:62px;color:<%=s_cor%>" value="<%=s_preco_lista%>" readonly tabindex="-1" />
+		</td>
+		<td class="MDB" align="right">
+			<input name="c_servico_desc" class="PLLd" style="width:28px;color:<%=s_cor%>" value="<%=s_desc_dado%>" readonly tabindex="-1" />
+		</td>
+		<td class="MDB" align="right">
+			<input name="c_servico_vl_unitario" class="PLLd" style="width:62px;color:<%=s_cor%>" value="<%=s_vl_unitario%>" readonly tabindex="-1" />
+		</td>
+		<td class="MDB" align="right">
+			<input name="c_servico_vl_total" class="PLLd" style="width:70px;color:<%=s_cor%>" value="<%=s_vl_TotalItem%>" readonly tabindex="-1" />
+		</td>
+	</tr>
+	<%				end if 'if Trim(v_item_servico(i).produto) <> ""
+				next %>
+	<tr>
+		<td class="MD" colspan="<%=CStr(qtdeColProd-1)%>">&nbsp;</td>
+		<td class="MDB" align="right"><input name="c_total_servicos" id="c_total_servicos" class="PLLd" style="width:70px;color:blue;" value="<%=formata_moeda(m_TotalServicos)%>" readonly tabindex="-1" /></td>
+	</tr>
+	<%
+			end if 'if qtdeItemServico > 0
+		end if
+	%>
 </table>
 
 <% if r_pedido.tipo_parcelamento = 0 then %>
@@ -1420,7 +1522,7 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 <br>
 <table class="Q" style="width:649px;" cellspacing="0">
 	<tr>
-		<td class="MB" colspan="6" align="left"><p class="Rf">Observações </p>
+		<td class="MB" align="left"><p class="Rf">Observações </p>
 			<textarea name="c_obs1" id="c_obs1" class="PLLe notPrint" rows="<%=Cstr(MAX_LINHAS_OBS1)%>" 
 				style="width:99%;margin-left:2pt;" 
 				readonly tabindex=-1><%=r_pedido.obs_1%></textarea>
@@ -1431,7 +1533,7 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 		</td>
 	</tr>
     <tr>
-		<td class="MB" colspan="6" align="left"><p class="Rf">Constar na NF</p>
+		<td class="MB" align="left"><p class="Rf">Constar na NF</p>
 			<textarea name="c_nf_texto" id="c_nf_texto" class="PLLe notPrint" rows="<%=Cstr(MAX_LINHAS_NF_TEXTO_CONSTAR)%>" 
 				style="width:99%;margin-left:2pt;"
 				readonly tabindex=-1><%=r_pedido.NFe_texto_constar%></textarea>
@@ -1442,85 +1544,109 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 		</td>
 	</tr>
     <tr>
-        <td class="MB MD" align="left" colspan="2" nowrap><p class="Rf">xPed</p>
-			<input name="c_num_pedido_compra" id="c_num_pedido_compra" class="PLLe" maxlength="15" style="width:100px;margin-left:2pt;" onkeypress="filtra_nome_identificador();" onblur="this.value=trim(this.value);"
-				value='<%=r_pedido.NFe_xPed%>' readonly tabindex=-1>
-		</td>
-		<td class="MB" align="left" colspan="4">
-			<p class="Rf">Previsão de Entrega</p>
-			<% s = formata_data_e_talvez_hora_hhmm(r_pedido.PrevisaoEntregaData)
-				if s <> "" then s = s & " &nbsp; (" & iniciais_em_maiusculas(r_pedido.PrevisaoEntregaUsuarioUltAtualiz) & " - " & formata_data_e_talvez_hora_hhmm(r_pedido.PrevisaoEntregaDtHrUltAtualiz) & ")"
-				if s="" then s="&nbsp;"
-			%>
-			<p class="C"><%=s%></p>
+		<td width="100%">
+			<table width="100%" cellspacing="0" cellpadding="0">
+				<tr>
+					<td class="MB MD" align="left" nowrap width="40%"><p class="Rf">xPed</p>
+						<input name="c_num_pedido_compra" id="c_num_pedido_compra" class="PLLe" maxlength="15" style="width:100px;margin-left:2pt;" onkeypress="filtra_nome_identificador();" onblur="this.value=trim(this.value);"
+							value='<%=r_pedido.NFe_xPed%>' readonly tabindex=-1>
+					</td>
+					<td class="MB" align="left">
+						<p class="Rf">Previsão de Entrega</p>
+						<% s = formata_data_e_talvez_hora_hhmm(r_pedido.PrevisaoEntregaData)
+							if s <> "" then s = s & " &nbsp; (" & iniciais_em_maiusculas(r_pedido.PrevisaoEntregaUsuarioUltAtualiz) & " - " & formata_data_e_talvez_hora_hhmm(r_pedido.PrevisaoEntregaDtHrUltAtualiz) & ")"
+							if s="" then s="&nbsp;"
+						%>
+						<p class="C"><%=s%></p>
+					</td>
+				</tr>
+			</table>
 		</td>
     </tr>
 	<tr>
-		<td class="MD" nowrap align="left"><p class="Rf">Nº Nota Fiscal</p>
-			<% s_link_rastreio = monta_link_rastreio(pedido_selecionado, r_pedido.obs_2, r_pedido.transportadora_id, r_pedido.loja) %>
-			<input name="c_obs2" id="c_obs2" class="PLLe" style="width:75px;margin-left:2pt;" 
-				readonly tabindex=-1 value='<%=r_pedido.obs_2%>'><%=s_link_rastreio%>
-		</td>
-		<td class="MD" nowrap align="left"><p class="Rf">NF Simples Remessa</p>
-			<% s_link_rastreio = monta_link_rastreio(pedido_selecionado, r_pedido.obs_3, r_pedido.transportadora_id, r_pedido.loja) %>
-			<input name="c_obs3" id="c_obs3" class="PLLe" style="width:75px;margin-left:2pt;" 
-				readonly tabindex=-1 value='<%=r_pedido.obs_3%>'><%=s_link_rastreio%>
-		</td>
-		<td class="MD" nowrap align="left" valign="top"><p class="Rf">Entrega Imediata</p>
-		<% 	if Cstr(r_pedido.st_etg_imediata) = Cstr(COD_ETG_IMEDIATA_NAO) then
-				s = "NÃO"
-			elseif Cstr(r_pedido.st_etg_imediata) = Cstr(COD_ETG_IMEDIATA_SIM) then
-				s = "SIM"
-			else
-				s = ""
-				end if
+		<td width="100%">
+			<table width="100%" cellspacing="0" cellpadding="0">
+				<tr>
+					<td class="MB MD" nowrap align="left" valign="top" width="40%"><p class="Rf">Entrega Imediata</p>
+					<% 	if Cstr(r_pedido.st_etg_imediata) = Cstr(COD_ETG_IMEDIATA_NAO) then
+							s = "NÃO"
+						elseif Cstr(r_pedido.st_etg_imediata) = Cstr(COD_ETG_IMEDIATA_SIM) then
+							s = "SIM"
+						else
+							s = ""
+							end if
 			
-			if s <> "" then
-				s_aux=formata_data_e_talvez_hora_hhmm(r_pedido.etg_imediata_data)
-				if s_aux <> "" then s = s & " &nbsp; (" & iniciais_em_maiusculas(r_pedido.etg_imediata_usuario) & " - " & s_aux & ")"
-				end if
-			if s="" then s="&nbsp;"
-		%>
-		<p class="C" style="margin-top:3px;"><%=s%></p>
-		</td>
-		<td class="MD" nowrap align="left" valign="top"><p class="Rf">Bem Uso/Consumo</p>
-		<% 	if Cstr(r_pedido.StBemUsoConsumo) = Cstr(COD_ST_BEM_USO_CONSUMO_NAO) then
-				s = "NÃO"
-			elseif Cstr(r_pedido.StBemUsoConsumo) = Cstr(COD_ST_BEM_USO_CONSUMO_SIM) then
-				s = "SIM"
-			else
-				s = ""
-				end if
+						if s <> "" then
+							s_aux=formata_data_e_talvez_hora_hhmm(r_pedido.etg_imediata_data)
+							if s_aux <> "" then s = s & " &nbsp; (" & iniciais_em_maiusculas(r_pedido.etg_imediata_usuario) & " - " & s_aux & ")"
+							end if
+						if s="" then s="&nbsp;"
+					%>
+					<span class="C" style="margin-top:3px;"><%=s%></span>
+					</td>
+					<td class="MB MD" nowrap align="left" valign="top" width="20%"><p class="Rf">Bem Uso/Consumo</p>
+					<% 	if Cstr(r_pedido.StBemUsoConsumo) = Cstr(COD_ST_BEM_USO_CONSUMO_NAO) then
+							s = "NÃO"
+						elseif Cstr(r_pedido.StBemUsoConsumo) = Cstr(COD_ST_BEM_USO_CONSUMO_SIM) then
+							s = "SIM"
+						else
+							s = ""
+							end if
 			
-			if s="" then s="&nbsp;"
-		%>
-		<p class="C" style="margin-top:3px;"><%=s%></p>
-		</td>
-		<td class="MD" nowrap align="left" valign="top"><p class="Rf">Instalador Instala</p>
-		<% 	if Cstr(r_pedido.InstaladorInstalaStatus) = Cstr(COD_INSTALADOR_INSTALA_NAO) then
-				s = "NÃO"
-			elseif Cstr(r_pedido.InstaladorInstalaStatus) = Cstr(COD_INSTALADOR_INSTALA_SIM) then
-				s = "SIM"
-			else
-				s = ""
-				end if
+						if s="" then s="&nbsp;"
+					%>
+					<span class="C" style="margin-top:3px;"><%=s%></span>
+					</td>
+					<td class="MB MD" nowrap align="left" valign="top" width="20%"><p class="Rf">Instalador Instala</p>
+					<% 	if Cstr(r_pedido.InstaladorInstalaStatus) = Cstr(COD_INSTALADOR_INSTALA_NAO) then
+							s = "NÃO"
+						elseif Cstr(r_pedido.InstaladorInstalaStatus) = Cstr(COD_INSTALADOR_INSTALA_SIM) then
+							s = "SIM"
+						else
+							s = ""
+							end if
 			
-			if s="" then s="&nbsp;"
-		%>
-		<p class="C" style="margin-top:3px;"><%=s%></p>
-		</td>
-		<td class="tdGarInd" nowrap align="left" valign="top"><p class="Rf">Garantia Indicador</p>
-		<% 	if Cstr(r_pedido.GarantiaIndicadorStatus) = Cstr(COD_GARANTIA_INDICADOR_STATUS__NAO) then
-				s = "NÃO"
-			elseif Cstr(r_pedido.GarantiaIndicadorStatus) = Cstr(COD_GARANTIA_INDICADOR_STATUS__SIM) then
-				s = "SIM"
-			else
-				s = ""
-				end if
+						if s="" then s="&nbsp;"
+					%>
+					<span class="C" style="margin-top:3px;"><%=s%></span>
+					</td>
+					<td class="MB tdGarInd" nowrap align="left" valign="top" width="20%"><p class="Rf">Garantia Indicador</p>
+					<% 	if Cstr(r_pedido.GarantiaIndicadorStatus) = Cstr(COD_GARANTIA_INDICADOR_STATUS__NAO) then
+							s = "NÃO"
+						elseif Cstr(r_pedido.GarantiaIndicadorStatus) = Cstr(COD_GARANTIA_INDICADOR_STATUS__SIM) then
+							s = "SIM"
+						else
+							s = ""
+							end if
 			
-			if s="" then s="&nbsp;"
-		%>
-		<p class="C" style="margin-top:3px;"><%=s%></p>
+						if s="" then s="&nbsp;"
+					%>
+					<span class="C" style="margin-top:3px;"><%=s%></span>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td width="100%">
+			<table width="100%" cellspacing="0" cellpadding="0">
+				<tr>
+					<td class="MD" nowrap align="left" width="33.3%"><p class="Rf">Nº Nota Fiscal</p>
+						<% s_link_rastreio = monta_link_rastreio(pedido_selecionado, r_pedido.obs_2, r_pedido.transportadora_id, r_pedido.loja) %>
+						<input name="c_obs2" id="c_obs2" class="PLLe" style="width:75px;margin-left:2pt;" 
+							readonly tabindex=-1 value='<%=r_pedido.obs_2%>'><%=s_link_rastreio%>
+					</td>
+					<td class="MD" nowrap align="left" width="33.3%"><p class="Rf">NF Simples Remessa</p>
+						<% s_link_rastreio = monta_link_rastreio(pedido_selecionado, r_pedido.obs_3, r_pedido.transportadora_id, r_pedido.loja) %>
+						<input name="c_obs3" id="c_obs3" class="PLLe" style="width:75px;margin-left:2pt;" 
+							readonly tabindex=-1 value='<%=r_pedido.obs_3%>'><%=s_link_rastreio%>
+					</td>
+					<td nowrap align="left" width="33.3%"><p class="Rf">NF Entrega Futura</p>
+						<input name="c_obs4" id="c_obs4" class="PLLe" style="width:75px;margin-left:2pt;" 
+							readonly tabindex=-1 value='<%=r_pedido.obs_4%>'>
+					</td>
+				</tr>
+			</table>
 		</td>
 	</tr>
 </table>
@@ -1608,6 +1734,26 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 	  </table>
 	</td>
   </tr>
+  <% if blnPossuiFormaPagtoProporcional then %>
+  <tr>
+	<td align="left" class="MC"><span class="Rf">Forma de Pagamento Proporcional Deste Pedido</span></td>
+  </tr>
+  <tr>
+	<td align="left">
+	  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+		<tr>
+		  <td align="left">
+			<table cellspacing="0" cellpadding="0" border="0">
+			  <tr>
+				<td align="left"><span class="C" style="display:inline-block;"><%=sDescricaoFormaPagtoProporcional%></span></td>
+			  </tr>
+			</table>
+		  </td>
+		</tr>
+	  </table>
+	</td>
+  </tr>
+  <% end if %>
   <tr>
 	<td class="MC" align="left"><p class="Rf">Informações Sobre Análise de crédito</p>
 	  <textarea name="c_forma_pagto" id="c_forma_pagto" class="PLLe notPrint" rows="<%=Cstr(MAX_LINHAS_FORMA_PAGTO)%>"
@@ -1652,6 +1798,16 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 		if vl_saldo_a_pagar >= 0 then Response.Write "black" else Response.Write "red" 
 		%>;"><%=s_vl_saldo_a_pagar%></span></td>
 </tr>
+<% if r_pedido.PagtoAntecipadoStatus <> 0 then %>
+<tr>
+	<td colspan="3" class="MC MD" align="left" valign="bottom"><span class="Rf">Condição Pagto</span></td>
+	<td colspan="3" class="MC" align="left" valign="bottom"><span class="Rf">Status Pagto Antecipado</span></td>
+</tr>
+<tr>
+	<td colspan="3" class="MD" align="left"><span class="C"><%=pagto_antecipado_descricao(r_pedido.PagtoAntecipadoStatus)%></span></td>
+	<td colspan="3" align="left"><span class="C" style="color:<%=pagto_antecipado_quitado_cor(r_pedido.PagtoAntecipadoStatus, r_pedido.PagtoAntecipadoQuitadoStatus)%>;"><%=pagto_antecipado_quitado_descricao(r_pedido.PagtoAntecipadoStatus, r_pedido.PagtoAntecipadoQuitadoStatus)%></span></td>
+</tr>
+<% end if %>
 </table>
 
 
@@ -2610,7 +2766,7 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 '	EM 22/08/2018, A LILIAN SOLICITOU A LIBERAÇÃO DA EXIBIÇÃO DAS PARCELAS DE BOLETO C/ AUTORIZAÇÃO DO ROGÉRIO RASGA
 '	if r_pedido.loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
 '		s = s & _
-'				" AND ((tFPHP.ctrl_pagto_modulo = " & CTRL_PAGTO_MODULO__BRASPAG_CLEARSALE & ") OR (tFPHP.ctrl_pagto_modulo = " & CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK & "))"
+'				" AND ((tFPHP.ctrl_pagto_modulo = " & CTRL_PAGTO_MODULO__BRASPAG_CLEARSALE & ") OR (tFPHP.ctrl_pagto_modulo = " & CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK & ") OR (tFPHP.ctrl_pagto_modulo = " & CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK_V2 & "))"
 '	else
 '		s = s & _
 '				" AND (tFPHP.ctrl_pagto_modulo = " & CTRL_PAGTO_MODULO__BRASPAG_CLEARSALE & ")"
@@ -2659,6 +2815,11 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 			strHistPagtoVlParcela = formata_moeda(rs("valor_total"))
 			strHistPagtoDtPagto = formata_data(rs("dt_credito"))
 			if strHistPagtoDescricao = "" then strHistPagtoDescricao = Trim("" & rs("descricao"))
+		elseif Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK_V2 then
+			strHistPagtoDtVencto = formata_data(rs("dt_vencto"))
+			strHistPagtoVlParcela = formata_moeda(rs("valor_total"))
+			strHistPagtoDtPagto = formata_data(rs("dt_credito"))
+			if strHistPagtoDescricao = "" then strHistPagtoDescricao = Trim("" & rs("descricao"))
 		elseif (Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BRASPAG_CARTAO) Or (Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BRASPAG_CLEARSALE) then
 			strHistPagtoDtPagto = formata_data(rs("dt_operacao"))
 			if strHistPagtoDescricao = "" then strHistPagtoDescricao = Trim("" & rs("descricao"))
@@ -2680,6 +2841,8 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 			if Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BOLETO then
 				strHistPagtoValorPago = formata_moeda(rs("vl_pago_FC"))
 			elseif Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK then
+				strHistPagtoValorPago = formata_moeda(rs("valor_pago"))
+			elseif Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK_V2 then
 				strHistPagtoValorPago = formata_moeda(rs("valor_pago"))
 			elseif (Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BRASPAG_CARTAO) Or (Trim("" & rs("ctrl_pagto_modulo")) = CTRL_PAGTO_MODULO__BRASPAG_CLEARSALE) then
 				strHistPagtoValorPago = formata_moeda(rs("valor_total"))

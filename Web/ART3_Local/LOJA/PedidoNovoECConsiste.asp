@@ -32,6 +32,7 @@
 
 	class cl_MAP_ITEM
 		dim sku
+		dim product_type
 		dim qty_ordered
 		dim price
 		dim name
@@ -138,7 +139,7 @@
 			" FROM t_MAGENTO_API_PEDIDO_XML_DECODE_ITEM" & _
 			" WHERE" & _
 				" (id_magento_api_pedido_xml = " & tMAP_XML("id") & ")" & _
-				" AND (product_type <> 'configurable')" & _
+				" AND (product_type <> '" & COD_MAGENTO_PRODUCT_TYPE__CONFIGURABLE & "')" & _
 			" ORDER BY" & _
 				" id"
 		if tMAP_ITEM.State <> 0 then tMAP_ITEM.Close
@@ -153,6 +154,7 @@
 					end if
 
 				v_map_item(UBound(v_map_item)).sku = Trim("" & tMAP_ITEM("sku"))
+				v_map_item(UBound(v_map_item)).product_type = Trim("" & tMAP_ITEM("product_type"))
 				v_map_item(UBound(v_map_item)).qty_ordered = CLng(tMAP_ITEM("qty_ordered"))
 				v_map_item(UBound(v_map_item)).price = converte_numero(formata_moeda(tMAP_ITEM("price")))
 				v_map_item(UBound(v_map_item)).name = Trim("" & tMAP_ITEM("name"))
@@ -179,7 +181,7 @@
 	if alerta = "" then
 		' Verifica se todos os SKU's existem no sistema
 		for iv=LBound(v_map_item) to UBound(v_map_item)
-			if Trim("" & v_map_item(iv).sku) <> "" then
+			if (Trim("" & v_map_item(iv).sku) <> "") And ((UCase(Trim("" & v_map_item(iv).product_type)) = UCase(COD_MAGENTO_PRODUCT_TYPE__SIMPLE)) OR (Trim("" & v_map_item(iv).product_type) = "")) then
 				s = "SELECT" & _
 						" fabricante," & _
 						" produto" & _
@@ -808,7 +810,7 @@ function fPNEC2Confirma(f) {
 <% if blnFlagCadSemiAutoPedMagento_FluxoOtimizado then %>
 <!-- LISTA DE PRODUTOS -->
 <% for iv=LBound(v_map_item) to Ubound(v_map_item) 
-		if Trim(v_map_item(iv).sku) <> "" then %>
+		if (Trim(v_map_item(iv).sku) <> "") And ((UCase(Trim("" & v_map_item(iv).product_type)) = UCase(COD_MAGENTO_PRODUCT_TYPE__SIMPLE)) OR (Trim("" & v_map_item(iv).product_type) = "")) then %>
 <input type="hidden" name="c_fabricante" value="" />
 <input type="hidden" name="c_produto" value="<%=v_map_item(iv).sku%>" />
 <input type="hidden" name="c_qtde" value="<%=Cstr(v_map_item(iv).qty_ordered)%>" />
@@ -908,7 +910,7 @@ function fPNEC2Confirma(f) {
 	</tr>
 <%
 	for iv=LBound(v_map_item) to UBound(v_map_item)
-		if Trim("" & v_map_item(iv).sku) <> "" then
+		if (Trim("" & v_map_item(iv).sku) <> "") And ((UCase(Trim("" & v_map_item(iv).product_type)) = UCase(COD_MAGENTO_PRODUCT_TYPE__SIMPLE)) OR (Trim("" & v_map_item(iv).product_type) = "")) then
 			qtde_rowspan = 0
 			s_row = "	<tr>" & chr(13) & _
 					"		<td" & rowspan_placeholder & " class=""MB ME MD TdPedSku""><span class=""C SpnPedSku"">" & v_map_item(iv).sku & "</span></td>" & chr(13) & _
@@ -967,6 +969,25 @@ function fPNEC2Confirma(f) {
 			else
 				s_row = Replace(s_row, rowspan_placeholder, " rowspan=" & chr(34) & Cstr(qtde_rowspan) & chr(34))
 				end if
+
+			Response.Write s_row
+			end if
+		next
+
+	for iv=LBound(v_map_item) to UBound(v_map_item)
+		if (Trim("" & v_map_item(iv).sku) <> "") And (UCase(Trim("" & v_map_item(iv).product_type)) = UCase(COD_MAGENTO_PRODUCT_TYPE__VIRTUAL)) then
+			s_row = "	<tr>" & chr(13) & _
+					"		<td" & rowspan_placeholder & " class=""MB ME MD TdPedSku""><span class=""C SpnPedSku"">" & v_map_item(iv).sku & "</span></td>" & chr(13) & _
+					"		<td" & rowspan_placeholder & " class=""MB MD TdPedQty""><span class=""C SpnPedQty"">" & v_map_item(iv).qty_ordered & "</span></td>" & chr(13) & _
+					"		<td" & rowspan_placeholder & " class=""MB MD TdPedDescrMag""><span class=""C SpnPedDescrMag"">" & v_map_item(iv).name & "</span></td>" & chr(13)
+			
+			s_row = s_row & _
+					"		<td class=""MB MD TdPedCodSist""><span class=""C SpnPedCodSist"">" & "&nbsp;" & "</span></td>" & chr(13) & _
+					"		<td class=""MB MD TdPedQtde""><span class=""C SpnPedQtde"">" & "&nbsp;" & "</span></td>" & chr(13) & _
+					"		<td class=""MB MD TdPedDescrSist""><span class=""C SpnPedDescrSist"">" & "&nbsp;" & "</span></td>" & chr(13)
+
+			s_row = s_row & _
+					"	</tr>" & chr(13)
 
 			Response.Write s_row
 			end if

@@ -28,8 +28,8 @@ namespace ConsolidadorXlsEC
 			{
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "ConsolidadorXlsEC";
-				public const string VERSAO_NUMERO = "1.13";
-				public const string VERSAO_DATA = "25.NOV.2020";
+				public const string VERSAO_NUMERO = "1.14";
+				public const string VERSAO_DATA = "14.MAI.2021";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Módulo para processos do e-commerce";
@@ -109,8 +109,32 @@ namespace ConsolidadorXlsEC
 			 * v 1.13 - 25.11.2020 - por HHO
 			 *		  Inclusão da Amazon como origem de pedido aceito no painel de integração Marketplace.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.14 - XX.XX.20XX - por XXX
-			 *		  
+			 * v 1.14 - 14.05.2021 - por HHO
+			 *		  Implementação de tratamento para a API REST (JSON) do Magento 2
+			 *		  O tratamento implementado foi ajustado antes de entrar em produção para que seja
+			 *		  possível tratar os pedidos de Magento v1.8 e v2 através da seleção da plataforma.
+			 *		  Devido ao tratamento desenvolvido para os pedidos de Magento v1.8 e v2, foram eliminados
+			 *		  os parâmetros MagentoApiUrl, MagentoApiUser e MagentoApiPassword da App.config usados
+			 *		  para o Magento v1.8. Os parâmetros para acessar a API do Magento agora são todos obtidos
+			 *		  do banco de dados, tanto para o Magento v1.8 quanto o v2
+			 *		  OBSERVAÇÃO: no painel FIntegracaoMarketplace foi adicionada uma nova coluna no grid para
+			 *		  armazenar o ID do pedido usado internamente pelo Magento. Entretanto, ao fazer isso, o
+			 *		  Visual Studio removeu automaticamente o seguinte comando:
+			 *			this.grdDados.AutoGenerateColumns = false;  (FIntegracaoMarketplace.Designer.cs)
+			 *		  Devido a isso, passou a ocorrer um problema quando o grid é limpo (várias colunas desa-
+			 *		  parecem) e carregado novamente posteriormente (as colunas são exibidas com os nomes dos
+			 *		  campos da consulta SQL no header).
+			 *		  Por precaução, a propriedade AutoGenerateColumns passou a ser configurada também na
+			 *		  inicialização do form no evento Shown.
+			 *		  Além disso, é necessário verificar se há necessidade de incluir essa mesma coluna no
+			 *		  grid existente no form FConfirmaPedidoStatus
+			 *		  Foi desenvolvido também o tratamento no painel FIntegracaoMarketplace para finalizar
+			 *		  os pedidos de venda direta (vendas geradas diretamente no site Arclube).
+			 *		  Foram convertidos em parâmetros armazenados no banco de dados as seguintes constantes
+			 *		  de FIntegracaoMarketplace: PEDIDO_MAGENTO_STATUS_VALIDOS, ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_SKYHUB,
+			 *		  ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_INTEGRACOMMERCE, ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_ANYMARKET
+			 *		  Também foram parametrizados os status de finalização do pedido no Magento de acordo
+			 *		  com o hub de integração e a plataforma (Magento v1 ou v2).
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.15 - XX.XX.20XX - por XXX
 			 *		  
@@ -376,6 +400,20 @@ namespace ConsolidadorXlsEC
 				{
 					public const string OwnerPedido_ModoSelecao = "OwnerPedido_ModoSelecao";
 					public const string ID_PARAMETRO_FLAG_PEDIDO_MEMORIZACAOCOMPLETAENDERECOS = "Flag_Pedido_MemorizacaoCompletaEnderecos";
+					public const string ID_PARAMETRO_CXLSEC_INTEGRACAOMKTP_PEDIDO_MAGENTO_V1_STATUS_VALIDOS = "CXLSEC_IntegracaoMktp_Pedido_Magento_v1_Status_Validos";
+					public const string ID_PARAMETRO_CXLSEC_INTEGRACAOMKTP_PEDIDO_MAGENTO_V2_STATUS_VALIDOS = "CXLSEC_IntegracaoMktp_Pedido_Magento_v2_Status_Validos";
+					public const string ID_PARAMETRO_CXLSEC_INTEGRACAOMKTP_ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_SKYHUB = "CXLSEC_IntegracaoMktp_Ecommerce_Pedido_Origem_Integracao_Skyhub";
+					public const string ID_PARAMETRO_CXLSEC_INTEGRACAOMKTP_ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_INTEGRACOMMERCE = "CXLSEC_IntegracaoMktp_Ecommerce_Pedido_Origem_Integracao_Integracommerce";
+					public const string ID_PARAMETRO_CXLSEC_INTEGRACAOMKTP_ECOMMERCE_PEDIDO_ORIGEM_INTEGRACAO_ANYMARKET = "CXLSEC_IntegracaoMktp_Ecommerce_Pedido_Origem_Integracao_Anymarket";
+					public const string ID_PARAMETRO_CXLSEC_INTEGRACAOMKTP_ECOMMERCE_PEDIDO_ORIGEM_VENDA_DIRETA = "CXLSEC_IntegracaoMktp_Ecommerce_Pedido_Origem_Venda_Direta";
+					public const string ID_PARAMETRO_CXLSEC_INTEGRACAOMKTP_PEDIDO_MAGENTO_V1_STATUS_FINALIZACAO_SKYHUB = "CXLSEC_IntegracaoMktp_Pedido_Magento_v1_Status_Finalizacao_Skyhub";
+					public const string ID_PARAMETRO_CXLSEC_INTEGRACAOMKTP_PEDIDO_MAGENTO_V1_STATUS_FINALIZACAO_INTEGRACOMMERCE = "CXLSEC_IntegracaoMktp_Pedido_Magento_v1_Status_Finalizacao_Integracommerce";
+					public const string ID_PARAMETRO_CXLSEC_INTEGRACAOMKTP_PEDIDO_MAGENTO_V1_STATUS_FINALIZACAO_ANYMARKET = "CXLSEC_IntegracaoMktp_Pedido_Magento_v1_Status_Finalizacao_Anymarket";
+					public const string ID_PARAMETRO_CXLSEC_INTEGRACAOMKTP_PEDIDO_MAGENTO_V1_STATUS_FINALIZACAO_VENDA_DIRETA = "CXLSEC_IntegracaoMktp_Pedido_Magento_v1_Status_Finalizacao_Venda_Direta";
+					public const string ID_PARAMETRO_CXLSEC_INTEGRACAOMKTP_PEDIDO_MAGENTO_V2_STATUS_FINALIZACAO_SKYHUB = "CXLSEC_IntegracaoMktp_Pedido_Magento_v2_Status_Finalizacao_Skyhub";
+					public const string ID_PARAMETRO_CXLSEC_INTEGRACAOMKTP_PEDIDO_MAGENTO_V2_STATUS_FINALIZACAO_INTEGRACOMMERCE = "CXLSEC_IntegracaoMktp_Pedido_Magento_v2_Status_Finalizacao_Integracommerce";
+					public const string ID_PARAMETRO_CXLSEC_INTEGRACAOMKTP_PEDIDO_MAGENTO_V2_STATUS_FINALIZACAO_ANYMARKET = "CXLSEC_IntegracaoMktp_Pedido_Magento_v2_Status_Finalizacao_Anymarket";
+					public const string ID_PARAMETRO_CXLSEC_INTEGRACAOMKTP_PEDIDO_MAGENTO_V2_STATUS_FINALIZACAO_VENDA_DIRETA = "CXLSEC_IntegracaoMktp_Pedido_Magento_v2_Status_Finalizacao_Venda_Direta";
 				}
 				#endregion
 
@@ -463,10 +501,6 @@ namespace ConsolidadorXlsEC
 			#region [ Magento ]
 			public static class Magento
 			{
-				public static readonly string USER_NAME = GetConfigurationValue("MagentoApiUser");
-				public static readonly string PASSWORD = Criptografia.Descriptografa(GetConfigurationValue("MagentoApiPassword"));
-				public static readonly string URL_API = GetConfigurationValue("MagentoApiUrl");
-
 				#region [ Transacao ]
 				public sealed class Transacao
 				{
@@ -476,9 +510,9 @@ namespace ConsolidadorXlsEC
 					private readonly string enderecoWebService;
 					private readonly string soapAction;
 
-					public static readonly Transacao login = new Transacao("login", "login", URL_API, "urn:Mage_Api_Model_Server_HandlerAction");
-					public static readonly Transacao call = new Transacao("call", "call", URL_API, "urn:Mage_Api_Model_Server_HandlerAction");
-					public static readonly Transacao endSession = new Transacao("endSession", "endSession", URL_API, "urn:Mage_Api_Model_Server_HandlerAction");
+					public static readonly Transacao login = new Transacao("login", "login", FMain.lojaLoginParameters.magento_api_urlWebService, "urn:Mage_Api_Model_Server_HandlerAction");
+					public static readonly Transacao call = new Transacao("call", "call", FMain.lojaLoginParameters.magento_api_urlWebService, "urn:Mage_Api_Model_Server_HandlerAction");
+					public static readonly Transacao endSession = new Transacao("endSession", "endSession", FMain.lojaLoginParameters.magento_api_urlWebService, "urn:Mage_Api_Model_Server_HandlerAction");
 
 					private Transacao(string methodName, string codOpLog, string enderecoWebService, string soapAction)
 					{
@@ -514,6 +548,26 @@ namespace ConsolidadorXlsEC
 					}
 				}
 				#endregion
+			}
+			#endregion
+
+			#region [ MagentoApiIntegracao ]
+			public static class MagentoApiIntegracao
+			{
+				public const int VERSAO_API_MAGENTO_V1_SOAP_XML = 0;
+				public const int VERSAO_API_MAGENTO_V2_REST_JSON = 2;
+			}
+			#endregion
+
+			#region [ Magento2RestApi ]
+			public static class Magento2RestApi
+			{
+				// The Timeout applies to the entire request and response, not individually to the GetRequestStream and GetResponse method calls
+				public static readonly int REQUEST_TIMEOUT_EM_MS = 3 * 60 * 1000;
+				public static readonly int TIMEOUT_READER_WRITER_LOCK_EM_MS = 60 * 1000;
+
+				public static readonly string TIPO_ENDERECO__COBRANCA = "COB";
+				public static readonly string TIPO_ENDERECO__ENTREGA = "ETG";
 			}
 			#endregion
 		}
@@ -2344,6 +2398,18 @@ namespace ConsolidadorXlsEC
 		#endregion
 
 		#region[ gravaLogAtividade ]
+		public static void gravaLogAtividade(string mensagem, int maxSize)
+		{
+			if ((maxSize > 0) && ((mensagem ?? "").Length > maxSize))
+			{
+				gravaLogAtividade(mensagem.Substring(0, maxSize) + " ... (truncated)");
+			}
+			else
+			{
+				gravaLogAtividade(mensagem);
+			}
+		}
+
 		/// <summary>
 		/// Grava a informação do parâmetro no arquivo de log, junto com a data/hora
 		/// Se o parâmetro for 'null', será gravada uma linha em branco no arquivo

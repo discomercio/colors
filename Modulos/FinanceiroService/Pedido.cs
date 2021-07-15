@@ -549,7 +549,8 @@ namespace FinanceiroService
         public int id_pagto_gw_pag_payment { get; set; }
 
         public int id_braspag_webhook_complementar { get; set; }
-    }
+		public int id_braspag_webhook_v2_complementar { get; set; }
+	}
     #endregion
 
     #region [ PedidoHistPagto ]

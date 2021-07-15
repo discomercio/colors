@@ -154,7 +154,12 @@ dim rNfeEmitente
 				" (t_PEDIDO.st_entrega='" & ST_ENTREGA_SEPARAR & "')" & _
 				" AND (t_PEDIDO.a_entregar_data_marcada IS NOT NULL)" & _
 				" AND (t_PEDIDO.st_etg_imediata = " & COD_ETG_IMEDIATA_SIM & ")" & _
-				" AND (t_PEDIDO__BASE.analise_credito = " & COD_AN_CREDITO_OK & ")"
+				" AND (t_PEDIDO__BASE.analise_credito = " & COD_AN_CREDITO_OK & ")" & _
+				" AND (" & _
+						"(t_PEDIDO__BASE.PagtoAntecipadoStatus = " & COD_PAGTO_ANTECIPADO_STATUS_NORMAL & ")" & _
+						" OR " & _
+						"((t_PEDIDO__BASE.PagtoAntecipadoStatus = " & COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO & ") AND (t_PEDIDO.PagtoAntecipadoQuitadoStatus = " & COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO & "))" & _
+					")"
 	
 	if IsDate(c_dt_inicio) then
 		s_sql = s_sql & " AND (t_PEDIDO.a_entregar_data_marcada >= " & bd_formata_data(StrToDate(c_dt_inicio)) & ")"

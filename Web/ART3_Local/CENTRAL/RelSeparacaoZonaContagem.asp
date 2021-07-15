@@ -38,6 +38,7 @@
 
 	class cl_NFe_CHECK
 		dim pedido
+		dim st_nfe_verificada
 		dim st_pedido_emissao_nfe_ok
 		dim nfe_fatura
 		dim st_nfe_fatura
@@ -143,7 +144,12 @@
 				" (t_PEDIDO.st_entrega='" & ST_ENTREGA_SEPARAR & "')" & _
 				" AND (t_PEDIDO.a_entregar_data_marcada IS NOT NULL)" & _
 				" AND (t_PEDIDO.st_etg_imediata = " & COD_ETG_IMEDIATA_SIM & ")" & _
-				" AND (t_PEDIDO__BASE.analise_credito = " & COD_AN_CREDITO_OK & ")"
+				" AND (t_PEDIDO__BASE.analise_credito = " & COD_AN_CREDITO_OK & ")" & _
+				" AND (" & _
+						"(t_PEDIDO__BASE.PagtoAntecipadoStatus = " & COD_PAGTO_ANTECIPADO_STATUS_NORMAL & ")" & _
+						" OR " & _
+						"((t_PEDIDO__BASE.PagtoAntecipadoStatus = " & COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO & ") AND (t_PEDIDO.PagtoAntecipadoQuitadoStatus = " & COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO & "))" & _
+					")"
 		
 		s = "SELECT " & _
 				"*" & _
@@ -252,6 +258,7 @@
 
 sub inicializa_cl_NFe_CHECK(byref o)
 	o.pedido = ""
+	o.st_nfe_verificada = False
 	o.st_pedido_emissao_nfe_ok = False
 	o.nfe_fatura = ""
 	o.st_nfe_fatura = ""
@@ -415,7 +422,12 @@ dim blnPedidoComNFeInvalida
 					" (t_PEDIDO.st_entrega='" & ST_ENTREGA_SEPARAR & "')" & _
 					" AND (t_PEDIDO.a_entregar_data_marcada IS NOT NULL)" & _
 					" AND (t_PEDIDO.st_etg_imediata = " & COD_ETG_IMEDIATA_SIM & ")" & _
-					" AND (t_PEDIDO__BASE.analise_credito = " & COD_AN_CREDITO_OK & ")"
+					" AND (t_PEDIDO__BASE.analise_credito = " & COD_AN_CREDITO_OK & ")" & _
+					" AND (" & _
+							"(t_PEDIDO__BASE.PagtoAntecipadoStatus = " & COD_PAGTO_ANTECIPADO_STATUS_NORMAL & ")" & _
+							" OR " & _
+							"((t_PEDIDO__BASE.PagtoAntecipadoStatus = " & COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO & ") AND (t_PEDIDO.PagtoAntecipadoQuitadoStatus = " & COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO & "))" & _
+						")"
 		
 		if IsDate(c_dt_inicio) then
 			s_sql = s_sql & " AND (t_PEDIDO.a_entregar_data_marcada >= " & bd_formata_data(StrToDate(c_dt_inicio)) & ")"
@@ -435,6 +447,10 @@ dim blnPedidoComNFeInvalida
 		if iStep = 2 then
 			if s_sql_lista_pedidos <> "" then
 				s_sql = s_sql & " AND (t_PEDIDO.pedido IN (" & s_sql_lista_pedidos & "))"
+			else
+				'Nenhum pedido em situação válida foi encontrado no passo 1
+				'Isso pode ocorrer se nenhum pedido estiver com a NFe em situação válida
+				s_sql = s_sql & " AND (t_PEDIDO.pedido IN ('XXXXXXXXXXXX'))"
 				end if
 			end if
 		
@@ -528,6 +544,7 @@ dim blnPedidoComNFeInvalida
 					idxNFe = -1
 					for iNFe=LBound(vNFe) to UBound(vNFe)
 						if Trim("" & tNFE("Nfe")) = vNFe(iNFe).nfe_fatura then
+							vNFe(iNFe).st_nfe_verificada = True
 							if Trim("" & tNFE("CANCELADA")) = "1" then
 								vNFe(iNFe).st_nfe_fatura = ST_NFE_CANCELADA
 							elseif Trim("" & tNFE("CodProcAtual")) = "100" then
@@ -535,6 +552,7 @@ dim blnPedidoComNFeInvalida
 								end if
 							exit for
 						elseif Trim("" & tNFE("Nfe")) = vNFe(iNFe).nfe_remessa then
+							vNFe(iNFe).st_nfe_verificada = True
 							if Trim("" & tNFE("CANCELADA")) = "1" then
 								vNFe(iNFe).st_nfe_remessa = ST_NFE_CANCELADA
 							elseif Trim("" & tNFE("CodProcAtual")) = "100" then
@@ -553,19 +571,23 @@ dim blnPedidoComNFeInvalida
 				'Consolida o status de emissão da NFe do pedido, lembrando que um pedido pode ter duas NFes (fatura e remessa)
 				for iNFe=LBound(vNFe) to UBound(vNFe)
 					if vNFe(iNFe).pedido <> "" then
-						blnPedidoComNFeInvalida = False
-						if vNFe(iNFe).nfe_fatura <> "" then
-							if vNFe(iNFe).st_nfe_fatura <> ST_NFE_AUTORIZADA then blnPedidoComNFeInvalida = True
-							end if
-						
-						if vNFe(iNFe).nfe_remessa <> "" then
-							if vNFe(iNFe).st_nfe_remessa <> ST_NFE_AUTORIZADA then blnPedidoComNFeInvalida = True
-							end if
-						
-						if blnPedidoComNFeInvalida then
+						if Not vNFe(iNFe).st_nfe_verificada then
 							vNFe(iNFe).st_pedido_emissao_nfe_ok = False
 						else
-							vNFe(iNFe).st_pedido_emissao_nfe_ok = True
+							blnPedidoComNFeInvalida = False
+							if vNFe(iNFe).nfe_fatura <> "" then
+								if vNFe(iNFe).st_nfe_fatura <> ST_NFE_AUTORIZADA then blnPedidoComNFeInvalida = True
+								end if
+						
+							if vNFe(iNFe).nfe_remessa <> "" then
+								if vNFe(iNFe).st_nfe_remessa <> ST_NFE_AUTORIZADA then blnPedidoComNFeInvalida = True
+								end if
+						
+							if blnPedidoComNFeInvalida then
+								vNFe(iNFe).st_pedido_emissao_nfe_ok = False
+							else
+								vNFe(iNFe).st_pedido_emissao_nfe_ok = True
+								end if
 							end if
 						end if
 					next

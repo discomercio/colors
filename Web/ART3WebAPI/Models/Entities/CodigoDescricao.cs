@@ -34,7 +34,8 @@ namespace ART3WebAPI.Models.Entities
 		public string parametro_campo_texto { get; set; }
 		public string parametro_2_campo_texto { get; set; }
         public string parametro_3_campo_texto { get; set; }
-        public string descricao_parametro { get; set; }
+		public string parametro_4_campo_texto { get; set; }
+		public string descricao_parametro { get; set; }
 	}
 	#endregion
 }

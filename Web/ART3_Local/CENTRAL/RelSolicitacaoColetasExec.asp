@@ -251,7 +251,12 @@ total_valor = 0
 				")" & _
 			  " AND (t_PEDIDO.danfe_a_imprimir_status<>" & COD_DANFE_A_IMPRIMIR_STATUS__IMPRESSA & ")" & _
 			  " AND (t_PEDIDO__BASE.analise_credito = " & COD_AN_CREDITO_OK & ")" & _
-			  " AND (t_PEDIDO.st_etg_imediata = " & COD_ETG_IMEDIATA_SIM & ")"
+			  " AND (t_PEDIDO.st_etg_imediata = " & COD_ETG_IMEDIATA_SIM & ")" & _
+			  " AND (" & _
+						"(t_PEDIDO__BASE.PagtoAntecipadoStatus = " & COD_PAGTO_ANTECIPADO_STATUS_NORMAL & ")" & _
+						" OR " & _
+						"((t_PEDIDO__BASE.PagtoAntecipadoStatus = " & COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO & ") AND (t_PEDIDO.PagtoAntecipadoQuitadoStatus = " & COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO & "))" & _
+					")"
 
 '	IGNORA PEDIDOS DA LOJA OLD03
 	s = " t_PEDIDO.numero_loja NOT IN (" & NUMERO_LOJA_OLD03 & "," & NUMERO_LOJA_OLD03_BONIFICACAO & "," & NUMERO_LOJA_OLD03_ASSISTENCIA & ")"

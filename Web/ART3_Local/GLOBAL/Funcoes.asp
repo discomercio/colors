@@ -4791,6 +4791,21 @@ end function
 
 
 ' ------------------------------------------------------------------------
+'   MONTA DESCRICAO FORMA PAGTO PEDIDO
+'   Monta a descrição para a forma de pagamento especificada.
+'	O parâmetro deve ser um objeto da classe cl_PEDIDO contendo os campos
+'	que armazenam os dados da forma de pagamento.
+function monta_descricao_forma_pagto_pedido(byref r)
+dim strResp, quebraLinha
+
+	quebraLinha = chr(13) & "<br />" & chr(13)
+	strResp = monta_descricao_forma_pagto_pedido_com_quebra_linha(r, quebraLinha)
+	monta_descricao_forma_pagto_pedido = strResp
+end function
+
+
+
+' ------------------------------------------------------------------------
 '   MONTA DESCRICAO FORMA PAGTO COM QUEBRA LINHA
 '   Monta a descrição para a forma de pagamento especificada.
 '	O parâmetro 'r' deve ser um recordset contendo os campos que armazenam os
@@ -4830,6 +4845,282 @@ dim strResp
 		
 	monta_descricao_forma_pagto_com_quebra_linha = strResp
 end function
+
+
+
+' ------------------------------------------------------------------------
+'   MONTA DESCRICAO FORMA PAGTO PEDIDO COM QUEBRA LINHA
+'   Monta a descrição para a forma de pagamento especificada.
+'	O parâmetro 'r' deve ser um objeto da classe cl_PEDIDO contendo os
+'	campos que armazenam os dados da forma de pagamento.
+'	O parâmetro 'quebraLinha' deve ser uma string com a quebra de linha
+'	desejada para situações como:
+'		Entrada:  R$ 2.149,47   (Depósito)
+'		Prestações:  9 x R$ 2.149,47   (Boleto)  vencendo a cada 28 dias
+function monta_descricao_forma_pagto_pedido_com_quebra_linha(byref r, byval quebraLinha)
+dim strResp
+
+	strResp = ""
+
+	if Trim("" & quebraLinha) = "" then quebraLinha = ", "
+	
+	if Trim("" & r.tipo_parcelamento) = COD_FORMA_PAGTO_A_VISTA then
+		strResp = "À Vista  (" & x_opcao_forma_pagamento(r.av_forma_pagto) & ")"
+	elseif Trim("" & r.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELA_UNICA then
+		strResp = "Parcela Única:  " & SIMBOLO_MONETARIO & " " & formata_moeda(r.pu_valor) & "  (" & x_opcao_forma_pagamento(r.pu_forma_pagto) & ")  vencendo após " & Cstr(r.pu_vencto_apos) & " dias"
+	elseif Trim("" & r.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO then
+		strResp = "Parcelado no Cartão (internet) em " & Cstr(r.pc_qtde_parcelas) & " x  " & SIMBOLO_MONETARIO & " " & formata_moeda(r.pc_valor_parcela)
+	elseif Trim("" & r.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA then
+		strResp = "Parcelado no Cartão (maquineta) em " & Cstr(r.pc_maquineta_qtde_parcelas) & " x  " & SIMBOLO_MONETARIO & " " & formata_moeda(r.pc_maquineta_valor_parcela)
+	elseif Trim("" & r.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
+		strResp = "Entrada:  " & SIMBOLO_MONETARIO & " " & formata_moeda(r.pce_entrada_valor) & "  (" & x_opcao_forma_pagamento(r.pce_forma_pagto_entrada) & ")" & _
+				  quebraLinha & _
+				  "Prestações:  " & Cstr(r.pce_prestacao_qtde) & " x  " & SIMBOLO_MONETARIO & " " & formata_moeda(r.pce_prestacao_valor) & _
+				  "  (" & x_opcao_forma_pagamento(r.pce_forma_pagto_prestacao) & ")  vencendo a cada " & _
+				  Cstr(r.pce_prestacao_periodo) & " dias"
+	elseif Trim("" & r.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
+		strResp = "1ª Prestação:  " & SIMBOLO_MONETARIO & " " & formata_moeda(r.pse_prim_prest_valor) & "  (" & x_opcao_forma_pagamento(r.pse_forma_pagto_prim_prest) & ")  vencendo após " & Cstr(r.pse_prim_prest_apos) & " dias" & _
+				  quebraLinha & _
+				  "Demais Prestações:  " & Cstr(r.pse_demais_prest_qtde) & " x  " & SIMBOLO_MONETARIO & " " & formata_moeda(r.pse_demais_prest_valor) & _
+				  "  (" & x_opcao_forma_pagamento(r.pse_forma_pagto_demais_prest) & ")  vencendo a cada " & _
+				  Cstr(r.pse_demais_prest_periodo) & " dias"
+		end if
+	
+	monta_descricao_forma_pagto_pedido_com_quebra_linha = strResp
+end function
+
+
+
+'HOUVE EDICAO FORMA PAGTO PEDIDO
+'Analisa se houve edição na forma de pagamento
+'	Os parâmetros 'rPedOriginal' e 'rPedAtualizado' devem ser objetos da classe cl_PEDIDO contendo os
+'	campos que armazenam os dados da forma de pagamento.
+function houve_edicao_forma_pagto_pedido(byref rPedOriginal, byref rPedAtualizado)
+dim blnHouveEdicao
+	houve_edicao_forma_pagto_pedido = False
+	blnHouveEdicao = False
+
+	if Trim("" & rPedOriginal.tipo_parcelamento) <> Trim("" & rPedAtualizado.tipo_parcelamento) then
+		blnHouveEdicao = True
+	else
+		if Trim("" & rPedOriginal.tipo_parcelamento) = COD_FORMA_PAGTO_A_VISTA then
+			if Trim("" & rPedOriginal.av_forma_pagto) <> Trim("" & rPedAtualizado.av_forma_pagto) then blnHouveEdicao = True
+		elseif Trim("" & rPedOriginal.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELA_UNICA then
+			if Trim("" & rPedOriginal.pu_valor) <> Trim("" & rPedAtualizado.pu_valor) then blnHouveEdicao = True
+			if Trim("" & rPedOriginal.pu_forma_pagto) <> Trim("" & rPedAtualizado.pu_forma_pagto) then blnHouveEdicao = True
+			if Trim("" & rPedOriginal.pu_vencto_apos) <> Trim("" & rPedAtualizado.pu_vencto_apos) then blnHouveEdicao = True
+		elseif Trim("" & rPedOriginal.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO then
+			if Trim("" & rPedOriginal.pc_qtde_parcelas) <> Trim("" & rPedAtualizado.pc_qtde_parcelas) then blnHouveEdicao = True
+			if Trim("" & rPedOriginal.pc_valor_parcela) <> Trim("" & rPedAtualizado.pc_valor_parcela) then blnHouveEdicao = True
+		elseif Trim("" & rPedOriginal.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA then
+			if Trim("" & rPedOriginal.pc_maquineta_qtde_parcelas) <> Trim("" & rPedAtualizado.pc_maquineta_qtde_parcelas) then blnHouveEdicao = True
+			if Trim("" & rPedOriginal.pc_maquineta_valor_parcela) <> Trim("" & rPedAtualizado.pc_maquineta_valor_parcela) then blnHouveEdicao = True
+		elseif Trim("" & rPedOriginal.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
+			if Trim("" & rPedOriginal.pce_entrada_valor) <> Trim("" & rPedAtualizado.pce_entrada_valor) then blnHouveEdicao = True
+			if Trim("" & rPedOriginal.pce_forma_pagto_entrada) <> Trim("" & rPedAtualizado.pce_forma_pagto_entrada) then blnHouveEdicao = True
+			if Trim("" & rPedOriginal.pce_prestacao_qtde) <> Trim("" & rPedAtualizado.pce_prestacao_qtde) then blnHouveEdicao = True
+			if Trim("" & rPedOriginal.pce_prestacao_valor) <> Trim("" & rPedAtualizado.pce_prestacao_valor) then blnHouveEdicao = True
+			if Trim("" & rPedOriginal.pce_forma_pagto_prestacao) <> Trim("" & rPedAtualizado.pce_forma_pagto_prestacao) then blnHouveEdicao = True
+			if Trim("" & rPedOriginal.pce_prestacao_periodo) <> Trim("" & rPedAtualizado.pce_prestacao_periodo) then blnHouveEdicao = True
+		elseif Trim("" & rPedOriginal.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
+			if Trim("" & rPedOriginal.pse_prim_prest_valor) <> Trim("" & rPedAtualizado.pse_prim_prest_valor) then blnHouveEdicao = True
+			if Trim("" & rPedOriginal.pse_forma_pagto_prim_prest) <> Trim("" & rPedAtualizado.pse_forma_pagto_prim_prest) then blnHouveEdicao = True
+			if Trim("" & rPedOriginal.pse_prim_prest_apos) <> Trim("" & rPedAtualizado.pse_prim_prest_apos) then blnHouveEdicao = True
+			if Trim("" & rPedOriginal.pse_demais_prest_qtde) <> Trim("" & rPedAtualizado.pse_demais_prest_qtde) then blnHouveEdicao = True
+			if Trim("" & rPedOriginal.pse_demais_prest_valor) <> Trim("" & rPedAtualizado.pse_demais_prest_valor) then blnHouveEdicao = True
+			if Trim("" & rPedOriginal.pse_forma_pagto_demais_prest) <> Trim("" & rPedAtualizado.pse_forma_pagto_demais_prest) then blnHouveEdicao = True
+			if Trim("" & rPedOriginal.pse_demais_prest_periodo) <> Trim("" & rPedAtualizado.pse_demais_prest_periodo) then blnHouveEdicao = True
+			end if
+		end if
+
+	houve_edicao_forma_pagto_pedido = blnHouveEdicao
+end function
+
+
+
+' ------------------------------------------------------------------------
+'   CALCULA VALOR FORMA PAGAMENTO
+'	-> A função retorna:
+'		   False: se ocorrer falha no processamento
+'		   True: sucesso no processamento
+'	-> O parâmetro rPed deve ser do tipo: class cl_PEDIDO
+function calcula_valor_forma_pagamento(ByRef rPed, ByRef vl_total_forma_pagto)
+	calcula_valor_forma_pagamento = False
+	vl_total_forma_pagto = 0
+
+	if CStr(rPed.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELA_UNICA then
+		vl_total_forma_pagto = rPed.pu_valor
+	elseif CStr(rPed.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO then
+		vl_total_forma_pagto = rPed.pc_qtde_parcelas * rPed.pc_valor_parcela
+	elseif CStr(rPed.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA then
+		vl_total_forma_pagto = rPed.pc_maquineta_qtde_parcelas * rPed.pc_maquineta_valor_parcela
+	elseif CStr(rPed.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
+		vl_total_forma_pagto = rPed.pce_entrada_valor + (rPed.pce_prestacao_qtde * rPed.pce_prestacao_valor)
+	elseif CStr(rPed.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
+		vl_total_forma_pagto = rPed.pse_prim_prest_valor + (rPed.pse_demais_prest_qtde * rPed.pse_demais_prest_valor)
+	else
+		exit function
+		end if
+
+	calcula_valor_forma_pagamento = True
+end function
+
+
+
+' ------------------------------------------------------------------------
+'   MONTA DESCRICAO FORMA PAGTO PROPORCIONAL
+'   Monta a descrição para a forma de pagamento especificada com valores
+'   proporcionais ao pedido em questão quando se trata de uma família
+'   de pedidos.
+'	-> A função retorna:
+'		   False: se ocorrer erro inesperado no processamento
+'		   True: sucesso no processamento
+'	-> O parâmetro rPed deve ser do tipo: class cl_PEDIDO
+'	-> O parâmetro 'descricaoFormaPagtoProporcional' retorna o texto com a descrição da forma de pagamento proporcional
+'	-> O parâmetro 'blnProporcaoNaoSeAplica' retorna:
+'		       False: o pedido se enquadra no cálculo dos valores proporcionais
+'		       True: o pedido NÃO se enquadra no cálculo dos valores proporcionais (ex: não se trata de família de pedidos OU a forma de pagamento é "À Vista")
+'	-> O parâmetro 'blnFalhaCalculo' retorna:
+'		       False: o processamento foi realizado normalmente
+'		       True: o cálculo dos valores proporcionais deveria ser realizado, mas não foi concluído devido à alguma inconsistência
+'	-> O parâmetro 'msgFalhaCalculo' retorna a mensagem de erro descrevendo o motivo da falha
+'	-> O parâmetro 'msg_erro' retorna a mensagem de erro caso ocorra um erro inesperado no processamento
+function monta_descricao_forma_pagto_proporcional(byref rPed, ByRef descricaoFormaPagtoProporcional, ByRef blnProporcaoNaoSeAplica, ByRef blnFalhaCalculo, ByRef msgFalhaCalculo, ByRef msg_erro)
+dim bResult, quebraLinha
+
+	descricaoFormaPagtoProporcional = ""
+	blnProporcaoNaoSeAplica = False
+	blnFalhaCalculo = False
+	msgFalhaCalculo = ""
+	msg_erro = ""
+
+	quebraLinha = chr(13) & "<br />" & chr(13)
+	bResult = monta_descricao_forma_pagto_proporcional_com_quebra_linha(rPed, quebraLinha, descricaoFormaPagtoProporcional, blnProporcaoNaoSeAplica, blnFalhaCalculo, msgFalhaCalculo, msg_erro)
+	monta_descricao_forma_pagto_proporcional = bResult
+end function
+
+
+
+' ------------------------------------------------------------------------
+'   MONTA DESCRICAO FORMA PAGTO PROPORCIONAL COM QUEBRA LINHA
+'   Monta a descrição para a forma de pagamento especificada com valores
+'   proporcionais ao pedido em questão quando se trata de uma família
+'   de pedidos.
+'	-> A função retorna:
+'		   False: se ocorrer erro inesperado no processamento
+'		   True: sucesso no processamento
+'	-> O parâmetro rPed deve ser do tipo: class cl_PEDIDO
+'	-> O parâmetro 'quebraLinha' deve ser uma string com a quebra de linha
+'	   desejada para situações como:
+'		   Entrada:  R$ 2.149,47   (Depósito)
+'		   Prestações:  9 x R$ 2.149,47   (Boleto)  vencendo a cada 28 dias
+'	-> O parâmetro 'descricaoFormaPagtoProporcional' retorna o texto com a descrição da forma de pagamento proporcional
+'	-> O parâmetro 'blnProporcaoNaoSeAplica' retorna:
+'		   False: o pedido se enquadra no cálculo dos valores proporcionais
+'		   True: o pedido NÃO se enquadra no cálculo dos valores proporcionais (ex: não se trata de família de pedidos OU a forma de pagamento é "À Vista")
+'	-> O parâmetro 'blnFalhaCalculo' retorna:
+'		   False: o processamento foi realizado normalmente
+'		   True: o cálculo dos valores proporcionais deveria ser realizado, mas não foi concluído devido à alguma inconsistência
+'	-> O parâmetro 'msgFalhaCalculo' retorna a mensagem de erro descrevendo o motivo da falha
+'	-> O parâmetro 'msg_erro' retorna a mensagem de erro caso ocorra um erro inesperado no processamento
+function monta_descricao_forma_pagto_proporcional_com_quebra_linha(byref rPed, byval quebraLinha, ByRef descricaoFormaPagtoProporcional, ByRef blnProporcaoNaoSeAplica, ByRef blnFalhaCalculo, ByRef msgFalhaCalculo, ByRef msg_erro)
+dim strResp, bResult
+dim vl_NF_deste_pedido, vl_venda_deste_pedido, vl_total_NF_com_cancelado, vl_total_NF_sem_cancelado, vl_total_venda_com_cancelado, vl_total_venda_sem_cancelado, qtde_pedidos_familia, qtde_pedidos_cancelados
+dim vl_total_forma_pagto
+dim razao
+
+	monta_descricao_forma_pagto_proporcional_com_quebra_linha = False
+	descricaoFormaPagtoProporcional = ""
+	blnProporcaoNaoSeAplica = False
+	blnFalhaCalculo = False
+	msgFalhaCalculo = ""
+	msg_erro = ""
+
+	strResp = ""
+	if Trim("" & quebraLinha) = "" then quebraLinha = ", "
+	razao = 0
+
+	if CStr(rPed.tipo_parcelamento) = COD_FORMA_PAGTO_A_VISTA then
+		blnProporcaoNaoSeAplica = True
+		monta_descricao_forma_pagto_proporcional_com_quebra_linha = True
+		exit function
+		end if
+
+	bResult = calcula_totais_familia_pedido(rPed.pedido, vl_NF_deste_pedido, vl_venda_deste_pedido, vl_total_NF_com_cancelado, vl_total_NF_sem_cancelado, vl_total_venda_com_cancelado, vl_total_venda_sem_cancelado, qtde_pedidos_familia, qtde_pedidos_cancelados, msg_erro)
+	if Not bResult then exit function
+
+	if qtde_pedidos_familia = 1 then
+		blnProporcaoNaoSeAplica = True
+		monta_descricao_forma_pagto_proporcional_com_quebra_linha = True
+		exit function
+		end if
+	
+	if Not calcula_valor_forma_pagamento(rPed, vl_total_forma_pagto) then
+		blnFalhaCalculo = True
+		msgFalhaCalculo = "Não foi possível obter a forma de pagamento proporcional deste pedido devido à uma falha ao calcular o valor total descrito na forma de pagamento"
+		msg_erro = msgFalhaCalculo
+		'A função retorna True para indicar que a forma de pagamento proporcional se aplica, mas ocorreu um erro no processamento
+		monta_descricao_forma_pagto_proporcional_com_quebra_linha = True
+		exit function
+		end if
+
+	'Analisa se a forma de pagamento está descrevendo os valores incluindo os pedidos cancelados ou não (se houver pedidos cancelados na família)
+	if qtde_pedidos_cancelados = 0 then
+		'Não há nenhum pedido cancelado na família de pedidos
+		if Abs(vl_total_forma_pagto - vl_total_NF_sem_cancelado) > MAX_VALOR_MARGEM_ERRO_PAGAMENTO then
+			blnFalhaCalculo = True
+			msgFalhaCalculo = "Não foi possível obter a forma de pagamento proporcional deste pedido devido à divergência entre o valor total descrito na forma de pagamento e o valor total da família de pedidos"
+			msg_erro = msgFalhaCalculo
+			'A função retorna True para indicar que a forma de pagamento proporcional se aplica, mas ocorreu um erro no processamento
+			monta_descricao_forma_pagto_proporcional_com_quebra_linha = True
+			exit function
+			end if
+		razao = vl_NF_deste_pedido / vl_total_NF_sem_cancelado
+	else
+		'Há pedido cancelado na família de pedidos: verifica se a forma de pagamento inclui os pedidos cancelados ou não
+		if Abs(vl_total_forma_pagto - vl_total_NF_com_cancelado) < MAX_VALOR_MARGEM_ERRO_PAGAMENTO then
+			razao = vl_NF_deste_pedido / vl_total_NF_com_cancelado
+		elseif Abs(vl_total_forma_pagto - vl_total_NF_sem_cancelado) < MAX_VALOR_MARGEM_ERRO_PAGAMENTO then
+			'A forma de pagamento exclui os pedidos cancelados, então verifica se este pedido está cancelado ou não
+			if rPed.st_entrega = ST_ENTREGA_CANCELADO then
+				razao = 0
+			else
+				razao = vl_NF_deste_pedido / vl_total_NF_sem_cancelado
+				end if
+		else
+			blnFalhaCalculo = True
+			msgFalhaCalculo = "Não foi possível obter a forma de pagamento proporcional deste pedido devido à divergência entre o valor total descrito na forma de pagamento e o valor total da família de pedidos"
+			msg_erro = msgFalhaCalculo
+			'A função retorna True para indicar que a forma de pagamento proporcional se aplica, mas ocorreu um erro no processamento
+			monta_descricao_forma_pagto_proporcional_com_quebra_linha = True
+			exit function
+			end if
+		end if
+
+	if CStr(rPed.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELA_UNICA then
+		strResp = "Parcela Única:  " & SIMBOLO_MONETARIO & " " & formata_moeda(razao * rPed.pu_valor) & "  (" & x_opcao_forma_pagamento(rPed.pu_forma_pagto) & ")  vencendo após " & Cstr(rPed.pu_vencto_apos) & " dias"
+	elseif CStr(rPed.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO then
+		strResp = "Parcelado no Cartão (internet) em " & Cstr(rPed.pc_qtde_parcelas) & " x  " & SIMBOLO_MONETARIO & " " & formata_moeda(razao * rPed.pc_valor_parcela)
+	elseif CStr(rPed.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA then
+		strResp = "Parcelado no Cartão (maquineta) em " & Cstr(rPed.pc_maquineta_qtde_parcelas) & " x  " & SIMBOLO_MONETARIO & " " & formata_moeda(razao * rPed.pc_maquineta_valor_parcela)
+	elseif CStr(rPed.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
+		strResp = "Entrada:  " & SIMBOLO_MONETARIO & " " & formata_moeda(razao * rPed.pce_entrada_valor) & "  (" & x_opcao_forma_pagamento(rPed.pce_forma_pagto_entrada) & ")" & _
+				  quebraLinha & _
+				  "Prestações:  " & Cstr(rPed.pce_prestacao_qtde) & " x  " & SIMBOLO_MONETARIO & " " & formata_moeda(razao * rPed.pce_prestacao_valor) & _
+				  "  (" & x_opcao_forma_pagamento(rPed.pce_forma_pagto_prestacao) & ")  vencendo a cada " & _
+				  Cstr(rPed.pce_prestacao_periodo) & " dias"
+	elseif CStr(rPed.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
+		strResp = "1ª Prestação:  " & SIMBOLO_MONETARIO & " " & formata_moeda(razao * rPed.pse_prim_prest_valor) & "  (" & x_opcao_forma_pagamento(rPed.pse_forma_pagto_prim_prest) & ")  vencendo após " & Cstr(rPed.pse_prim_prest_apos) & " dias" & _
+				  quebraLinha & _
+				  "Demais Prestações:  " & Cstr(rPed.pse_demais_prest_qtde) & " x  " & SIMBOLO_MONETARIO & " " & formata_moeda(razao * rPed.pse_demais_prest_valor) & _
+				  "  (" & x_opcao_forma_pagamento(rPed.pse_forma_pagto_demais_prest) & ")  vencendo a cada " & _
+				  Cstr(rPed.pse_demais_prest_periodo) & " dias"
+		end if
+		
+	descricaoFormaPagtoProporcional = strResp
+	monta_descricao_forma_pagto_proporcional_com_quebra_linha = True
+end function
+
 
 
 ' ------------------------------------------------------------------------
@@ -5778,6 +6069,8 @@ dim strCodigo, strResp
 		strResp = "Cartão"
 	elseif strCodigo = CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK then
 		strResp = "Boleto (EC)"
+	elseif strCodigo = CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK_V2 then
+		strResp = "Boleto (EC)"
 	else
 		if strCodigo <> "" then
 			strResp = strCodigo & " - Código Desconhecido"
@@ -6418,5 +6711,171 @@ dim vServerName, vHttpHost
 
 	urlHttps = sUrlHttps
 	isHttpsRedirectionMandatory = True
+end function
+
+
+function pagto_antecipado_descricao(byval PagtoAntecipadoStatus)
+dim sResp
+
+	select case CStr(PagtoAntecipadoStatus)
+		case COD_PAGTO_ANTECIPADO_STATUS_NORMAL: sResp = "Pagamento Normal"
+		case COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO: sResp = "Pagamento Antecipado"
+		case else: sResp = ""
+	end select
+
+	pagto_antecipado_descricao = sResp
+end function
+
+
+function pagto_antecipado_quitado_descricao(byval PagtoAntecipadoStatus, byval PagtoAntecipadoQuitadoStatus)
+dim sResp
+	pagto_antecipado_quitado_descricao = ""
+	if CStr(PagtoAntecipadoStatus) <> COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO then exit function
+	
+	select case CStr(PagtoAntecipadoQuitadoStatus)
+		case COD_PAGTO_ANTECIPADO_QUITADO_STATUS_PENDENTE: sResp = "Pendente"
+		case COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO: sResp = "Quitado"
+		case else: sResp = ""
+	end select
+
+	pagto_antecipado_quitado_descricao = sResp
+end function
+
+
+function pagto_antecipado_quitado_cor(byval PagtoAntecipadoStatus, byval PagtoAntecipadoQuitadoStatus)
+dim sResp
+	pagto_antecipado_quitado_cor = "black"
+	if CStr(PagtoAntecipadoStatus) <> COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO then exit function
+	
+	select case CStr(PagtoAntecipadoQuitadoStatus)
+		case COD_PAGTO_ANTECIPADO_QUITADO_STATUS_PENDENTE: sResp = "red"
+		case COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO: sResp = "green"
+		case else: sResp = "black"
+	end select
+
+	pagto_antecipado_quitado_cor = sResp
+end function
+
+'parcelamentoPossuiMeioPagamento
+'Verifica se o tipo de parcelamento usado no pedido usa em alguma parcela o meio de pagamento especificado no parâmetro
+'O parâmetro rPed deve ser do tipo: class cl_PEDIDO
+'O parâmetro idMeioPagto deve ser um código que está definido através das constantes:
+'	ID_FORMA_PAGTO_DINHEIRO, ID_FORMA_PAGTO_DEPOSITO, ID_FORMA_PAGTO_CHEQUE, ID_FORMA_PAGTO_BOLETO, ID_FORMA_PAGTO_CARTAO, ID_FORMA_PAGTO_BOLETO_AV, ID_FORMA_PAGTO_CARTAO_MAQUINETA
+function parcelamentoPossuiMeioPagamento(byref rPed, byval idMeioPagto)
+dim blnResultado
+
+	parcelamentoPossuiMeioPagamento = False
+	blnResultado = False
+
+	idMeioPagto = Trim("" & idMeioPagto)
+	if idMeioPagto = "" then exit function
+
+	if CStr(rPed.tipo_parcelamento) = (COD_FORMA_PAGTO_A_VISTA) then
+		if Trim("" & rPed.av_forma_pagto) = idMeioPagto then blnResultado = True
+	elseif CStr(rPed.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELA_UNICA) then
+		if Trim("" & rPed.pu_forma_pagto) = idMeioPagto then blnResultado = True
+	elseif CStr(rPed.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA) then
+		if Trim("" & rPed.pce_forma_pagto_entrada) = idMeioPagto then blnResultado = True
+		if Trim("" & rPed.pce_forma_pagto_prestacao) = idMeioPagto then blnResultado = True
+	elseif CStr(rPed.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA) then
+		if Trim("" & rPed.pse_forma_pagto_prim_prest) = idMeioPagto then blnResultado = True
+		if Trim("" & rPed.pse_forma_pagto_demais_prest) = idMeioPagto then blnResultado = True
+	elseif CStr(rPed.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_CARTAO) then
+		if CStr(idMeioPagto) = CStr(ID_FORMA_PAGTO_CARTAO) then blnResultado = True
+	elseif CStr(rPed.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA) then
+		if CStr(idMeioPagto) = CStr(ID_FORMA_PAGTO_CARTAO_MAQUINETA) then blnResultado = True
+		end if
+
+	parcelamentoPossuiMeioPagamento = blnResultado
+end function
+
+'parcelamentoPassouPossuirMeioPagamento
+'Verifica se houve edição na forma de pagamento de modo que passou a incluir o meio de pagamento especificado
+'Os parâmetros rPedOriginal e rPedAtualizado devem ser do tipo: class cl_PEDIDO
+'O parâmetro idMeioPagto deve ser um código que está definido através das constantes:
+'	ID_FORMA_PAGTO_DINHEIRO, ID_FORMA_PAGTO_DEPOSITO, ID_FORMA_PAGTO_CHEQUE, ID_FORMA_PAGTO_BOLETO, ID_FORMA_PAGTO_CARTAO, ID_FORMA_PAGTO_BOLETO_AV, ID_FORMA_PAGTO_CARTAO_MAQUINETA
+'O parâmetro blnSomenteSeNaoPossuiaAntes define o comportamento da análise:
+'	True = a análise retorna que a alteração passou a incluir o meio de pagamento somente se esse meio de pagamento não era usado antes em nenhuma das parcelas
+'			Ex: Meio de pagamento monitorado = Cartão
+'				Antes: À Vista no Depósito
+'				Atual: Parcelado no Cartão
+'				Retorno da função: True
+'			Ex: Meio de pagamento monitorado = Cartão
+'				Antes: Parcelado com Entrada (Entrada com Depósito e parcelas no Cartão)
+'				Depois: Parcelado no Cartão
+'				Retorno da função: False
+'	False = a análise retorna que a alteração passou a incluir o meio de pagamento se:
+'			A) O meio de pagamento não era usado antes em nenhuma das parcelas e agora passou a ser usado
+'			B) Ou a forma de pagamento anterior usava o meio de pagamento em alguma das parcelas, mas a forma de pagamento foi alterada 
+'				e a nova forma de pagamento continua usando o meio de pagamento em alguma das parcelas.
+'			Ex: Meio de pagamento monitorado = Cartão
+'				Antes: Parcelado com Entrada (Entrada com Depósito e parcelas no Cartão)
+'				Depois: Parcelado no Cartão
+'				Retorno da função: True
+function parcelamentoPassouPossuirMeioPagamento(byref rPedOriginal, byref rPedAtualizado, byval idMeioPagto, byval blnSomenteSeNaoPossuiaAntes)
+dim blnResultado
+	
+	parcelamentoPassouPossuirMeioPagamento = False
+	blnResultado = False
+
+	idMeioPagto = Trim("" & idMeioPagto)
+	if idMeioPagto = "" then exit function
+
+	'O parcelamento atualizado não possui o meio de pagamento especificado
+	if Not parcelamentoPossuiMeioPagamento(rPedAtualizado, idMeioPagto) then exit function
+
+	if blnSomenteSeNaoPossuiaAntes then
+		if (Not parcelamentoPossuiMeioPagamento(rPedOriginal, idMeioPagto)) And parcelamentoPossuiMeioPagamento(rPedAtualizado, idMeioPagto) then blnResultado = True
+	else
+		if CStr(rPedAtualizado.tipo_parcelamento) = (COD_FORMA_PAGTO_A_VISTA) then
+			if CStr(rPedAtualizado.tipo_parcelamento) <> CStr(rPedOriginal.tipo_parcelamento) then
+				if Trim("" & rPedAtualizado.av_forma_pagto) = idMeioPagto then blnResultado = True
+			else
+				if (Trim("" & rPedAtualizado.av_forma_pagto) = idMeioPagto) And (Trim("" & rPedOriginal.av_forma_pagto) <> idMeioPagto) then blnResultado = True
+				end if
+		elseif CStr(rPedAtualizado.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELA_UNICA) then
+			if CStr(rPedAtualizado.tipo_parcelamento) <> CStr(rPedOriginal.tipo_parcelamento) then
+				if Trim("" & rPedAtualizado.pu_forma_pagto) = idMeioPagto then blnResultado = True
+			else
+				if (Trim("" & rPedAtualizado.pu_forma_pagto) = idMeioPagto) And (Trim("" & rPedOriginal.pu_forma_pagto) <> idMeioPagto) then blnResultado = True
+				end if
+		elseif CStr(rPedAtualizado.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA) then
+			if CStr(rPedAtualizado.tipo_parcelamento) <> CStr(rPedOriginal.tipo_parcelamento) then
+				if Trim("" & rPedAtualizado.pce_forma_pagto_entrada) = idMeioPagto then blnResultado = True
+				if Trim("" & rPedAtualizado.pce_forma_pagto_prestacao) = idMeioPagto then blnResultado = True
+			else
+				if (Trim("" & rPedAtualizado.pce_forma_pagto_entrada) = idMeioPagto) And (Trim("" & rPedOriginal.pce_forma_pagto_entrada) <> idMeioPagto) then blnResultado = True
+				if (Trim("" & rPedAtualizado.pce_forma_pagto_prestacao) = idMeioPagto) And (Trim("" & rPedOriginal.pce_forma_pagto_prestacao) <> idMeioPagto) then blnResultado = True
+				end if
+		elseif CStr(rPedAtualizado.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA) then
+			if CStr(rPedAtualizado.tipo_parcelamento) <> CStr(rPedOriginal.tipo_parcelamento) then
+				if Trim("" & rPedAtualizado.pse_forma_pagto_prim_prest) = idMeioPagto then blnResultado = True
+				if Trim("" & rPedAtualizado.pse_forma_pagto_demais_prest) = idMeioPagto then blnResultado = True
+			else
+				if (Trim("" & rPedAtualizado.pse_forma_pagto_prim_prest) = idMeioPagto) And (Trim("" & rPedOriginal.pse_forma_pagto_prim_prest) <> idMeioPagto) then blnResultado = True
+				if (Trim("" & rPedAtualizado.pse_forma_pagto_demais_prest) = idMeioPagto) And (Trim("" & rPedOriginal.pse_forma_pagto_demais_prest) <> idMeioPagto) then blnResultado = True
+				end if
+		elseif CStr(rPedAtualizado.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_CARTAO) then
+			if CStr(rPedAtualizado.tipo_parcelamento) <> CStr(rPedOriginal.tipo_parcelamento) then
+				if CStr(idMeioPagto) = CStr(ID_FORMA_PAGTO_CARTAO) then blnResultado = True
+			else
+				'NOP
+				'Em qualquer caso o resultado será False
+				'	1) Se a forma de pagamento anterior também era Parcelado no Cartão, não houve alteração
+				'	2) Se o meio de pagamento especificado por idMeioPagto não for Cartão, então a forma de pagamento atualizada não possui o meio de pagamento especificado
+				end if
+		elseif CStr(rPedAtualizado.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA) then
+			if CStr(rPedAtualizado.tipo_parcelamento) <> CStr(rPedOriginal.tipo_parcelamento) then
+				if CStr(idMeioPagto) = CStr(ID_FORMA_PAGTO_CARTAO_MAQUINETA) then blnResultado = True
+			else
+				'NOP
+				'Em qualquer caso o resultado será False
+				'	1) Se a forma de pagamento anterior também era Parcelado no Cartão Maquineta, não houve alteração
+				'	2) Se o meio de pagamento especificado por idMeioPagto não for Cartão Maquineta, então a forma de pagamento atualizada não possui o meio de pagamento especificado
+				end if
+			end if
+		end if
+
+	parcelamentoPassouPossuirMeioPagamento = blnResultado
 end function
 %>

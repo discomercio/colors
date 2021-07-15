@@ -346,7 +346,7 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 	<tr bgcolor="#FFFFFF">
 	<td class="MDBE" align="left" nowrap><span class="PLTe">GRUPO DE PRODUTOS</span>
 	<br>
-		<input maxlength="2" class="PLLe" style="width:60px;" name="c_grupo" id="c_grupo" onkeypress="if (digitou_enter(true)) fFILTRO.c_vendedor.focus();" onblur="this.value=ucase(this.value);">
+		<input maxlength="4" class="PLLe" style="width:60px;" name="c_grupo" id="c_grupo" onkeypress="if (digitou_enter(true)) fFILTRO.c_vendedor.focus();" onblur="this.value=ucase(this.value);">
 		</td></tr>
 
 <!--  VENDEDOR  -->

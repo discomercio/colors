@@ -16,6 +16,7 @@ namespace FinanceiroService
 		#region [ Atributos ]
 		private static SqlCommand cmUpdateTabelaControleNsu;
 		private static SqlCommand cmUpdateTabelaControleNsuComLetraSeq;
+		private static SqlCommand cmUpdateTabelaControleNsuAcquireXLock;
 		private static SqlCommand cmUpdateUploadFileAsDeleted;
 		private static SqlCommand cmInsereLog;
 		private static SqlCommand cmInsereFinSvcLog;
@@ -85,6 +86,18 @@ namespace FinanceiroService
 			cmUpdateTabelaControleNsuComLetraSeq.Parameters.Add("@nsu_atual", SqlDbType.VarChar, 12);
 			cmUpdateTabelaControleNsuComLetraSeq.Parameters.Add("@ano_letra_seq_novo", SqlDbType.VarChar, 1);
 			cmUpdateTabelaControleNsuComLetraSeq.Prepare();
+			#endregion
+
+			#region [ cmUpdateTabelaControleNsuAcquireXLock ]
+			// Usado para bloquear o registro de forma a evitar o acesso concorrente (realiza o flip em um campo bit apenas p/ adquirir o lock exclusivo)
+			strSql = "UPDATE t_CONTROLE SET" +
+						" dummy = ~dummy" +
+					" WHERE"+
+						" (id_nsu = @id_nsu)";
+			cmUpdateTabelaControleNsuAcquireXLock = BD.criaSqlCommand();
+			cmUpdateTabelaControleNsuAcquireXLock.CommandText = strSql;
+			cmUpdateTabelaControleNsuAcquireXLock.Parameters.Add("@id_nsu", SqlDbType.VarChar, 80);
+			cmUpdateTabelaControleNsuAcquireXLock.Prepare();
 			#endregion
 
 			#region [ cmUpdateUploadFileAsDeleted ]
@@ -1103,6 +1116,14 @@ namespace FinanceiroService
 
 				strMsgErro = "";
 				n_nsu = -1;
+
+				#region [ Bloqueia registro p/ evitar acesso concorrente ]
+				if (Global.Parametros.Geral.TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO)
+				{
+					cmUpdateTabelaControleNsuAcquireXLock.Parameters["@id_nsu"].Value = id_nsu;
+					BD.executaNonQuery(ref cmUpdateTabelaControleNsuAcquireXLock);
+				}
+				#endregion
 
 				strSql = "SELECT * FROM t_CONTROLE WHERE (id_nsu = '" + id_nsu + "')";
 

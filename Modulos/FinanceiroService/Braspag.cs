@@ -5121,6 +5121,114 @@ namespace FinanceiroService
 		}
 		#endregion
 
+		#region [ consultaDadosConsolidadosBoletoParaWebhookV2 ]
+		public static BraspagWebhookV2DadosConsolidadosBoleto consultaDadosConsolidadosBoletoParaWebhookV2(string merchantId, string braspagTransactionId,out BraspagGetTransactionDataResponse rGetTransactionData, out string msg_erro)
+		{
+			#region [ Declarações ]
+			const String NOME_DESTA_ROTINA = "Braspag.consultaDadosConsolidadosBoletoParaWebhookV2()";
+			bool blnSucesso = false;
+			string msg_erro_aux;
+			string strReceivedDate;
+			string strCapturedDate;
+			string strBoletoExpirationDate;
+			DateTime? dtReceivedDate;
+			DateTime? dtCapturedDate;
+			DateTime? dtBoletoExpirationDate;
+			BraspagWebhookV2DadosConsolidadosBoleto rRESP = null;
+			BraspagGetBoletoDataResponse rGetBoletoData;
+			#endregion
+
+			msg_erro = "";
+			rGetTransactionData = null;
+			try
+			{
+				#region [ Consulta GetTransactionData p/ obter 'Status', 'CapturedDate' e 'ReceivedDate' ]
+				rGetTransactionData = consultaGetTransactionData(merchantId, braspagTransactionId, out msg_erro_aux);
+				if (rGetTransactionData == null)
+				{
+					msg_erro = "Falha na consulta ao método GetTransactionData (MerchantId=" + merchantId + ", BraspagTransactionId=" + braspagTransactionId + ")" + (msg_erro_aux.Length > 0 ? ": " + msg_erro_aux : "");
+					Global.gravaLogAtividade(NOME_DESTA_ROTINA + ": " + msg_erro);
+					return null;
+				}
+				#endregion
+
+				#region [ Consulta GetBoletoData p/ obter 'CustomerName', 'BoletoExpirationDate', 'Amount' e 'PaidAmount' ]
+				if (
+					(rGetTransactionData.PaymentMethod.Equals(Global.Cte.Braspag.PaymentMethod.Boleto_Bradesco_SPS.GetValue()) || rGetTransactionData.PaymentMethod.Equals(Global.Cte.Braspag.PaymentMethod.Boleto_Registrado_Bradesco.GetValue()))
+					&&
+					((rGetTransactionData.CapturedDate ?? "").Length > 0)
+					)
+				{
+					rGetBoletoData = consultaGetBoletoData(merchantId, braspagTransactionId, out msg_erro_aux);
+					if (rGetBoletoData == null)
+					{
+						msg_erro = "Falha na consulta ao método GetBoletoData (MerchantId=" + merchantId + ", BraspagTransactionId=" + braspagTransactionId + ")" + (msg_erro_aux.Length > 0 ? ": " + msg_erro_aux : "");
+						Global.gravaLogAtividade(NOME_DESTA_ROTINA + ": " + msg_erro);
+						return null;
+					}
+
+					if (rGetBoletoData.Success.ToLower().Equals("true"))
+					{
+						dtReceivedDate = null;
+						dtCapturedDate = null;
+						dtBoletoExpirationDate = null;
+
+						#region [ ReceivedDate ]
+						strReceivedDate = (rGetTransactionData.ReceivedDate ?? "").Trim();
+						if (strReceivedDate.Length > 0) dtReceivedDate = Global.converteMmDdYyyyHhMmSsAmPmParaDateTime(strReceivedDate);
+						#endregion
+
+						#region [ CapturedDate ]
+						strCapturedDate = (rGetTransactionData.CapturedDate ?? "").Trim();
+						if (strCapturedDate.Length > 0) dtCapturedDate = Global.converteMmDdYyyyHhMmSsAmPmParaDateTime(strCapturedDate);
+						#endregion
+
+						#region [ BoletoExpirationDate ]
+						strBoletoExpirationDate = (rGetBoletoData.BoletoExpirationDate ?? "").Trim();
+						if (strBoletoExpirationDate.Length > 0) dtBoletoExpirationDate = Global.converteMmDdYyyyHhMmSsAmPmParaDateTime(strBoletoExpirationDate);
+						#endregion
+
+						rRESP = new BraspagWebhookV2DadosConsolidadosBoleto();
+						rRESP.MerchantId = merchantId;
+						rRESP.OrderId = rGetTransactionData.OrderId;
+						rRESP.BraspagTransactionId = rGetTransactionData.BraspagTransactionId;
+						rRESP.BraspagOrderId = "";
+						rRESP.PaymentMethod = rGetTransactionData.PaymentMethod;
+						rRESP.GlobalStatus = decodifica_GetTransactionDataResponseStatus_para_GlobalStatus(rGetTransactionData.Status);
+						rRESP.ReceivedDate = dtReceivedDate;
+						rRESP.CapturedDate = dtCapturedDate;
+						rRESP.CustomerName = rGetBoletoData.CustomerName;
+						rRESP.BoletoExpirationDate = dtBoletoExpirationDate;
+						rRESP.Amount = rGetBoletoData.Amount;
+						rRESP.ValorAmount = ((decimal)Global.converteInteiro(rGetBoletoData.Amount)) / 100m;
+						rRESP.PaidAmount = rGetBoletoData.PaidAmount;
+						rRESP.ValorPaidAmount = ((decimal)Global.converteInteiro(rGetBoletoData.PaidAmount)) / 100m;
+
+						blnSucesso = true;
+					}
+				}
+				#endregion
+
+				if (!blnSucesso) return null;
+
+				return rRESP;
+			}
+			catch (Exception ex)
+			{
+				msg_erro = NOME_DESTA_ROTINA + "\n" + ex.ToString();
+
+				#region [ Registra detalhes em t_FINSVC_LOG (chama gravaLogAtividade() automaticamente) ]
+				FinSvcLog svcLog = new FinSvcLog();
+				svcLog.operacao = NOME_DESTA_ROTINA;
+				svcLog.descricao = ex.ToString();
+				GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
+				#endregion
+
+				return null;
+			}
+		}
+		#endregion
+
 		#region [ executaProcessamentoWebhook ]
 		public static bool executaProcessamentoWebhook(out bool blnEmailAlertaEnviado, out string strMsgInformativa, out string msg_erro)
 		{
@@ -6077,6 +6185,1118 @@ namespace FinanceiroService
 				return false;
 			}
 
+		}
+		#endregion
+
+		#region [ executaProcessamentoWebhookV2 ]
+		public static bool executaProcessamentoWebhookV2(out bool blnEmailAlertaEnviado, out string strMsgInformativa, out string msg_erro)
+		{
+			#region [ Declarações ]
+			const String NOME_DESTA_ROTINA = "Braspag.executaProcessamentoWebhookV2()";
+			bool blnWebhookV2QueryComplSucesso;
+			bool blnWebhookV2QueryComplPaymentMethodIdentificadoTransacaoIgnorada;
+			bool blnWebhookV2QueryComplFalhaDefinitiva;
+			bool blnWebhookV2QueryComplFalhaTemporaria;
+			bool blnRegistrouPagtoPedido;
+			bool blnRegistrouLancamento;
+			bool blnPagtoRegistradoManualmente;
+			bool blnSucesso;
+			byte processadoStatusResultado;
+			int id_emailsndsvc_mensagem;
+			decimal percDif;
+			string msg_erro_aux;
+			string msg_erro_requisicao;
+			string strMsg;
+			string strSql;
+			string msg_erro_last_op;
+			string msg_erro_send_email;
+			string strSubject;
+			string strBody;
+			string strMerchantId;
+			string strNumPedidoERP;
+			string strNumPedidoERPAux;
+			string strPaymentMethod;
+			string s_log;
+			String strLinhaSeparadora = new String('=', 80);
+			List<StringBuilder> vDadosEmail = new List<StringBuilder>();
+			StringBuilder sbDadosEmail;
+			StringBuilder sbBody;
+			List<int> vBraspagWebhookV2IdEmailEnviadoStatusUpdate = new List<int>();
+			LancamentoFluxoCaixaInsertDevidoBoletoEC lancamento;
+			Pedido pedido;
+			Cliente cliente;
+			List<PedidoPagamento> listaPagto;
+			PedidoPagamento pagtoManual;
+			Global.Parametros.Braspag.WebhookBraspagV2MerchantId webhookBraspagV2MerchantId;
+			Global.Parametros.Braspag.WebhookBraspagV2PlanoContasBoletoEC webhookBraspagV2PlanoContasBoletoEC;
+			BraspagWebhookV2DadosConsolidadosBoleto rBoleto;
+			BraspagGetTransactionDataResponse rGetTransactionData;
+			List<BraspagWebhookV2> listaWebhookV2 = new List<BraspagWebhookV2>();
+			BraspagWebhookV2 pedidoWebhookV2;
+			SqlCommand cmCommand;
+			SqlDataAdapter daAdapter;
+			DataTable dtbResultado = new DataTable();
+			DataRow row;
+			BraspagUpdateWebhookV2PaymentMethodIdentificado updateWebhookV2PaymentMethodIdentificado;
+			BraspagUpdateWebhookV2QueryDadosComplementaresFalhaDefinitiva updateWebhookV2QueryComplFalhaDefinitiva = null;
+			BraspagUpdateWebhookV2QueryDadosComplementaresFalhaTemporaria updateWebhookV2QueryComplFalhaTemporaria = null;
+			BraspagUpdateWebhookV2QueryDadosComplementaresSucesso updateWebhookV2QueryComplSucesso = null;
+			BraspagInsertWebhookV2QueryDadosComplementares insertWebhookV2QueryCompl;
+			BraspagUpdateWebhookV2QueryDadosComplementaresQtdeTentativas updateWebhookV2QueryComplQtdeTentativas = null;
+			BraspagWebhookV2Complementar braspagWebhookV2ComplementarAtualizado;
+			BraspagWebhookV2Complementar braspagWebhookV2Complementar;
+			#endregion
+
+			blnEmailAlertaEnviado = false;
+			strMsgInformativa = "";
+			msg_erro = "";
+			try
+			{
+				#region [ Cria objetos de BD ]
+				cmCommand = BD.criaSqlCommand();
+				daAdapter = BD.criaSqlDataAdapter();
+				daAdapter.SelectCommand = cmCommand;
+				daAdapter.MissingSchemaAction = MissingSchemaAction.Add;
+				#endregion
+
+				#region [ Subsídios ]
+				/*
+				Documentação da Braspag em: https://braspag.github.io//manual/braspag-pagador#post-de-notificação
+				Post de notificação
+				PROPRIEDADE				DESCRIÇÃO																							TIPO	TAMANHO		OBRIGATÓRIO?
+				RecurrentPaymentId		Identificador que representa o pedido recorrente (aplicável somente para ChangeType "2" ou "4").	GUID	36			Não
+				PaymentId				Identificador que representa a transação.															GUID	36			Sim
+				ChangeType				Especifica o tipo de notificação. Obs.: Consulte a tabela abaixo.									Número	1			Sim
+				
+				CHANGETYPE	DESCRIÇÃO
+				"1"			Mudança de status do pagamento.
+				"2"			Recorrência criada.
+				"3"			Mudança de status do Antifraude.
+				"4"			Mudança de status do pagamento recorrente (Ex.: desativação automática).
+				"5"			Estorno negado (aplicável para Rede).
+				"6"			Boleto registrado pago a menor.
+				"7"			Notificação de chargeback. Para mais detalhes, consulte o manual de Risk Notification.
+				"8"			Alerta de fraude.
+				
+				Portanto, para processar a notificação referente aos boletos, o primeiro passo é identificar o PaymentMethod de cada PaymentId
+				Observações:
+					1) O campo PaymentId se refere ao mesmo valor do campo BraspagTransactionId
+					2) Na versão anterior do post de notificação, a Braspag informava o valor do PaymentMethod na própria notificação através do campo CODPAGAMENTO, mas,
+					   por outro lado, não informava o PaymentId e sim o OrderId (nº pedido definido pelo lojista). Isso criava a necessidade de se realizar uma consulta
+					   através do OrderId para identificar o BraspagTransactionId, o que deixou de ser necessário.
+				*/
+				#endregion
+
+				#region [ Processa as novas transações notificadas ]
+
+				#region [ Atualiza o status das notificações referentes a pagamento por cartão p/ que sejam ignoradas ]
+				// Com base nos dados armazenados no sistema das transações de pagamento com cartão, identifica o PaymentMethod usando a tabela t_PAGTO_GW_PAG_PAYMENT
+				if (!BraspagDAO.updateWebhookV2PaymentMethodIdentificadoCartao(out msg_erro_aux))
+				{
+					strMsg = NOME_DESTA_ROTINA + ": Falha no processamento que tenta identificar o PaymentMethod das transações de cartão usando a tabela t_PAGTO_GW_PAG_PAYMENT";
+					if ((msg_erro_aux ?? "").Length > 0) strMsg += "\n" + msg_erro_aux;
+					Global.gravaLogAtividade(strMsg);
+				}
+				#endregion
+
+				#region [ Seleciona as novas transações notificadas que necessitam de análise individual ]
+				strSql = "SELECT" +
+							" *" +
+						" FROM t_BRASPAG_WEBHOOK_V2" +
+						" WHERE" +
+							" (ProcessadoStatus = " + Global.Cte.Braspag.WebhookV2.NotificacaoProcessadoStatus.Inicial.ToString() + ")" +
+							" OR " +
+							"(" +
+								" (ProcessadoStatus = " + Global.Cte.Braspag.WebhookV2.NotificacaoProcessadoStatus.PaymentMethodIdentificado.ToString() + ")" +
+								" AND (ProcessamentoErpStatus = 0)" +
+								" AND (PaymentMethodIdentificado IN ('" + Global.Cte.Braspag.PaymentMethod.Boleto_Bradesco_SPS.GetValue() + "','" + Global.Cte.Braspag.PaymentMethod.Boleto_Registrado_Bradesco.GetValue() + "'))" +
+							")";
+				cmCommand.CommandText = strSql;
+				daAdapter.Fill(dtbResultado);
+				for (int i = 0; i < dtbResultado.Rows.Count; i++)
+				{
+					row = dtbResultado.Rows[i];
+					pedidoWebhookV2 = new BraspagWebhookV2();
+					pedidoWebhookV2.Id = BD.readToInt(row["Id"]);
+					pedidoWebhookV2.Empresa = BD.readToString(row["Empresa"]);
+					pedidoWebhookV2.RecurrentPaymentId = BD.readToString(row["RecurrentPaymentId"]);
+					pedidoWebhookV2.PaymentId = BD.readToString(row["PaymentId"]);
+					pedidoWebhookV2.ChangeType = BD.readToByte(row["ChangeType"]);
+					pedidoWebhookV2.ProcessadoStatus = BD.readToByte(row["ProcessadoStatus"]);
+					pedidoWebhookV2.BraspagDadosComplementaresQueryStatus = BD.readToByte(row["BraspagDadosComplementaresQueryStatus"]);
+					pedidoWebhookV2.BraspagDadosComplementaresQueryTentativas = BD.readToInt(row["BraspagDadosComplementaresQueryTentativas"]);
+					pedidoWebhookV2.ProcessamentoErpStatus = BD.readToInt(row["ProcessamentoErpStatus"]);
+					listaWebhookV2.Add(pedidoWebhookV2);
+				}
+				#endregion
+
+				#region [ Há dados? ]
+				if (listaWebhookV2.Count == 0)
+				{
+					strMsgInformativa = "Não há dados para processar";
+					return true;
+				}
+				#endregion
+
+				#region [ Processa cada uma das novas notificações que necessitam de análise individual ]
+				foreach (var pedidoWHV2 in listaWebhookV2)
+				{
+					#region [ Contador de tentativas ]
+					pedidoWHV2.BraspagDadosComplementaresQueryTentativas++;
+					#endregion
+
+					#region [ Inicialização de variáveis a cada iteração ]
+					strMerchantId = "";
+					webhookBraspagV2PlanoContasBoletoEC = null;
+					blnWebhookV2QueryComplSucesso = false;
+					blnWebhookV2QueryComplPaymentMethodIdentificadoTransacaoIgnorada = false;
+					blnWebhookV2QueryComplFalhaDefinitiva = false;
+					blnWebhookV2QueryComplFalhaTemporaria = false;
+					strNumPedidoERP = "";
+					pedido = null;
+					cliente = null;
+					pagtoManual = null;
+					blnRegistrouPagtoPedido = false;
+					blnRegistrouLancamento = false;
+					blnPagtoRegistradoManualmente = false;
+					processadoStatusResultado = Global.Cte.Braspag.WebhookV2.NotificacaoProcessadoStatus.Inicial;
+					#endregion
+
+					#region [ Consulta a Braspag para obter dados complementares ]
+					try // Try-Finally: tratamento para falhas, principalmente se excedeu quantidade máxima de tentativas
+					{
+						#region [ Obtém o MerchantId p/ o pedido em questão ]
+						if ((pedidoWHV2.Empresa ?? "").Length > 0)
+						{
+							try
+							{
+								webhookBraspagV2MerchantId = Global.Parametros.Braspag.webhookBraspagV2MerchantIdList.Single(p => p.Empresa.ToUpper().Equals(pedidoWHV2.Empresa.ToUpper()));
+								if (webhookBraspagV2MerchantId != null)
+								{
+									strMerchantId = webhookBraspagV2MerchantId.MerchantId;
+								}
+							}
+							catch (Exception ex)
+							{
+								strMerchantId = "";
+								strMsg = NOME_DESTA_ROTINA + ": exception ao tentar obter o MerchantId para a empresa '" + pedidoWHV2.Empresa + "'!!" +
+										"\r\n" + ex.ToString();
+								Global.gravaLogAtividade(strMsg);
+							}
+						}
+
+						if ((strMerchantId ?? "").Length == 0)
+						{
+							blnWebhookV2QueryComplFalhaDefinitiva = true;
+							updateWebhookV2QueryComplFalhaDefinitiva = new BraspagUpdateWebhookV2QueryDadosComplementaresFalhaDefinitiva();
+							updateWebhookV2QueryComplFalhaDefinitiva.id_braspag_webhook_v2 = pedidoWHV2.Id;
+							updateWebhookV2QueryComplFalhaDefinitiva.BraspagDadosComplementaresQueryTentativas = pedidoWHV2.BraspagDadosComplementaresQueryTentativas;
+							updateWebhookV2QueryComplFalhaDefinitiva.EmailEnviadoStatus = Global.Cte.Braspag.WebhookV2.EmailEnviadoStatus.EmpresaInvalida;
+							updateWebhookV2QueryComplFalhaDefinitiva.BraspagDadosComplementaresQueryStatus = Global.Cte.Braspag.WebhookV2.BraspagDadosComplementaresQueryStatus.EmpresaInvalida;
+							updateWebhookV2QueryComplFalhaDefinitiva.MsgErro = "Falha ao tentar obter o MerchantId para a empresa '" + pedidoWHV2.Empresa + "'";
+
+							// Prossegue para o próximo pedido da lista (o bloco finally irá registrar o código e mensagem da falha)
+							continue;
+						}
+						#endregion
+
+						#region [ Obtém o plano de contas para gravar o lançamento no fluxo de caixa ]
+						if ((pedidoWHV2.Empresa ?? "").Length > 0)
+						{
+							try
+							{
+								webhookBraspagV2PlanoContasBoletoEC = Global.Parametros.Braspag.webhookBraspagV2PlanoContasBoletoECList.Single(p => p.Empresa.ToUpper().Equals(pedidoWHV2.Empresa.ToUpper()));
+							}
+							catch (Exception ex)
+							{
+								strMsg = NOME_DESTA_ROTINA + ": exception ao tentar obter o plano de contas para gravação de lançamentos no fluxo de caixa dos boletos de e-commerce da empresa '" + pedidoWHV2.Empresa + "'!!" +
+										"\r\n" + ex.ToString();
+								Global.gravaLogAtividade(strMsg);
+							}
+						}
+						#endregion
+
+						#region [ Obtém dados consolidados do boleto ]
+						rBoleto = consultaDadosConsolidadosBoletoParaWebhookV2(strMerchantId, pedidoWHV2.PaymentId, out rGetTransactionData, out msg_erro_aux);
+						if (rBoleto == null)
+						{
+							msg_erro_requisicao = (msg_erro_aux ?? "");
+
+							strPaymentMethod = "";
+							if (rGetTransactionData == null)
+							{
+								// Houve falha na consulta inicial GetTransactionData
+								blnWebhookV2QueryComplFalhaTemporaria = true;
+							}
+							else
+							{
+								strPaymentMethod = (rGetTransactionData.PaymentMethod ?? "");
+								if (strPaymentMethod.Equals(Global.Cte.Braspag.PaymentMethod.Boleto_Bradesco_SPS.GetValue()) || strPaymentMethod.Equals(Global.Cte.Braspag.PaymentMethod.Boleto_Registrado_Bradesco.GetValue()))
+								{
+									// É transação de boleto e houve falha na consulta GetBoletoData
+									blnWebhookV2QueryComplFalhaTemporaria = true;
+								}
+								else
+								{
+									if (strPaymentMethod.Trim().Length > 0)
+									{
+										// Transação não é de boleto, então deve ser transação de cartão realizada no site de e-commerce, ou seja, realizada fora do sistema
+										// Esta situação não é erro
+										blnWebhookV2QueryComplPaymentMethodIdentificadoTransacaoIgnorada = true;
+										strMsg = NOME_DESTA_ROTINA + ": Identificado o PaymentMethod de transação que não é de boleto: PaymentId = " + pedidoWHV2.PaymentId + ", PaymentMethod = " + strPaymentMethod + ", " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString();
+										Global.gravaLogAtividade(strMsg);
+
+										#region [ Atualiza o PaymentMethod no registro ]
+										updateWebhookV2PaymentMethodIdentificado = new BraspagUpdateWebhookV2PaymentMethodIdentificado();
+										updateWebhookV2PaymentMethodIdentificado.Id = pedidoWHV2.Id;
+										updateWebhookV2PaymentMethodIdentificado.OrderIdIdentificado = rGetTransactionData.OrderId;
+										updateWebhookV2PaymentMethodIdentificado.PaymentMethodIdentificado = rGetTransactionData.PaymentMethod;
+										updateWebhookV2PaymentMethodIdentificado.ProcessadoStatus = Global.Cte.Braspag.WebhookV2.NotificacaoProcessadoStatus.NaoProcessado;
+										if (!BraspagDAO.updateWebhookV2PaymentMethodIdentificado(updateWebhookV2PaymentMethodIdentificado, out msg_erro_aux))
+										{
+											msg_erro_last_op = msg_erro_aux;
+
+											strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Falha ao tentar atualizar o PaymentMethod e OrderId no registro da transação " + pedidoWHV2.PaymentId + " [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+											strBody = "Mensagem de Financeiro Service\nFalha ao tentar atualizar o PaymentMethod e OrderId no registro da transação " + pedidoWHV2.PaymentId + " (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")\r\n" + msg_erro_last_op;
+											if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+											{
+												strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+												Global.gravaLogAtividade(strMsg);
+											}
+										}
+										#endregion
+									}
+								}
+							}
+
+							if (blnWebhookV2QueryComplFalhaTemporaria)
+							{
+								updateWebhookV2QueryComplFalhaTemporaria = new BraspagUpdateWebhookV2QueryDadosComplementaresFalhaTemporaria();
+								updateWebhookV2QueryComplFalhaTemporaria.id_braspag_webhook_v2 = pedidoWHV2.Id;
+								updateWebhookV2QueryComplFalhaTemporaria.BraspagDadosComplementaresQueryStatus = Global.Cte.Braspag.WebhookV2.BraspagDadosComplementaresQueryStatus.FalhaConsultaBraspag;
+								updateWebhookV2QueryComplFalhaTemporaria.BraspagDadosComplementaresQueryTentativas = pedidoWHV2.BraspagDadosComplementaresQueryTentativas;
+								updateWebhookV2QueryComplFalhaTemporaria.MsgErroTemporario = "Falha ao consultar dados complementares na Braspag (MerchantId = " + strMerchantId + ", PaymentId = " + pedidoWHV2.PaymentId + ")" + (msg_erro_requisicao.Length > 0 ? ": " + msg_erro_requisicao : "");
+							}
+
+							// Prossegue para o próximo pedido da lista (o bloco finally irá registrar o código e mensagem da falha)
+							continue;
+						}
+						#endregion
+
+						#region [ Atualiza os campos identificados (PaymentMethod e OrderId ]
+						updateWebhookV2PaymentMethodIdentificado = new BraspagUpdateWebhookV2PaymentMethodIdentificado();
+						updateWebhookV2PaymentMethodIdentificado.Id = pedidoWHV2.Id;
+						updateWebhookV2PaymentMethodIdentificado.OrderIdIdentificado = rBoleto.OrderId;
+						updateWebhookV2PaymentMethodIdentificado.PaymentMethodIdentificado = rBoleto.PaymentMethod;
+						if (updateWebhookV2PaymentMethodIdentificado.PaymentMethodIdentificado.Equals(Global.Cte.Braspag.PaymentMethod.Boleto_Bradesco_SPS.GetValue())
+							|| updateWebhookV2PaymentMethodIdentificado.PaymentMethodIdentificado.Equals(Global.Cte.Braspag.PaymentMethod.Boleto_Registrado_Bradesco.GetValue()))
+						{
+							updateWebhookV2PaymentMethodIdentificado.ProcessadoStatus = Global.Cte.Braspag.WebhookV2.NotificacaoProcessadoStatus.PaymentMethodIdentificado;
+						}
+						else
+						{
+							updateWebhookV2PaymentMethodIdentificado.ProcessadoStatus = Global.Cte.Braspag.WebhookV2.NotificacaoProcessadoStatus.NaoProcessado;
+						}
+
+						if (!BraspagDAO.updateWebhookV2PaymentMethodIdentificado(updateWebhookV2PaymentMethodIdentificado, out msg_erro_aux))
+						{
+							msg_erro_last_op = msg_erro_aux;
+
+							strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Falha ao tentar atualizar o PaymentMethod e OrderId no registro da transação " + pedidoWHV2.PaymentId + " [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+							strBody = "Mensagem de Financeiro Service\nFalha ao tentar atualizar o PaymentMethod e OrderId no registro da transação " + pedidoWHV2.PaymentId + " (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")\r\n" + msg_erro_last_op;
+							if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+							{
+								strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+								Global.gravaLogAtividade(strMsg);
+							}
+
+							// Prossegue para o próximo da lista (o bloco finally irá registrar o código e mensagem da falha)
+							continue;
+						}
+
+						pedidoWHV2.PaymentMethodIdentificado = updateWebhookV2PaymentMethodIdentificado.PaymentMethodIdentificado;
+						pedidoWHV2.OrderIdIdentificado = updateWebhookV2PaymentMethodIdentificado.OrderIdIdentificado;
+						#endregion
+
+						#region [ Se não for boleto, segue p/ o próximo da lista ]
+						if ((!pedidoWHV2.PaymentMethodIdentificado.Equals(Global.Cte.Braspag.PaymentMethod.Boleto_Bradesco_SPS.GetValue()))
+							&& (!pedidoWHV2.PaymentMethodIdentificado.Equals(Global.Cte.Braspag.PaymentMethod.Boleto_Registrado_Bradesco.GetValue())))
+						{
+							continue;
+						}
+						#endregion
+
+						#region [ Tenta localizar nº pedido ERP ]
+						if (BraspagDAO.isPedidoERPDesteAmbiente(rBoleto.OrderId, strMerchantId, out strNumPedidoERPAux)) strNumPedidoERP = strNumPedidoERPAux;
+						if (strNumPedidoERP.Length == 0)
+						{
+							if (GeralDAO.isPedidoECommerce(rBoleto.OrderId, out strNumPedidoERPAux)) strNumPedidoERP = strNumPedidoERPAux;
+						}
+						#endregion
+
+						#region [ Se encontrou pedido ERP, carrega os dados ]
+						if (strNumPedidoERP.Length > 0)
+						{
+							pedido = PedidoDAO.getPedido(strNumPedidoERP);
+							if (pedido != null) cliente = ClienteDAO.getCliente(pedido.id_cliente);
+						}
+						#endregion
+
+						#region [ Grava os dados complementares ]
+						insertWebhookV2QueryCompl = new BraspagInsertWebhookV2QueryDadosComplementares();
+						insertWebhookV2QueryCompl.id_braspag_webhook_v2 = pedidoWHV2.Id;
+						insertWebhookV2QueryCompl.BraspagTransactionId = rBoleto.BraspagTransactionId;
+						insertWebhookV2QueryCompl.BraspagOrderId = rBoleto.BraspagOrderId;
+						insertWebhookV2QueryCompl.PaymentMethod = rBoleto.PaymentMethod;
+						insertWebhookV2QueryCompl.GlobalStatus = rBoleto.GlobalStatus;
+						insertWebhookV2QueryCompl.ReceivedDate = rBoleto.ReceivedDate;
+						insertWebhookV2QueryCompl.CapturedDate = rBoleto.CapturedDate;
+						insertWebhookV2QueryCompl.CustomerName = rBoleto.CustomerName;
+						insertWebhookV2QueryCompl.BoletoExpirationDate = rBoleto.BoletoExpirationDate;
+						insertWebhookV2QueryCompl.Amount = rBoleto.Amount;
+						insertWebhookV2QueryCompl.ValorAmount = rBoleto.ValorAmount;
+						insertWebhookV2QueryCompl.PaidAmount = rBoleto.PaidAmount;
+						insertWebhookV2QueryCompl.ValorPaidAmount = rBoleto.ValorPaidAmount;
+						insertWebhookV2QueryCompl.pedido = strNumPedidoERP;
+						if (!BraspagDAO.insereWebhookV2QueryDadosComplementares(insertWebhookV2QueryCompl, out msg_erro_aux))
+						{
+							msg_erro_last_op = msg_erro_aux;
+
+							strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Falha ao tentar gravar registro com dados complementares da transação " + pedidoWHV2.PaymentId + " [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+							strBody = "Mensagem de Financeiro Service\nFalha ao tentar gravar registro com dados complementares da transação " + pedidoWHV2.PaymentId + " (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")\r\n" + msg_erro_last_op;
+							if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+							{
+								strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+								Global.gravaLogAtividade(strMsg);
+							}
+						}
+						#endregion
+
+						#region [ Se chegou até este ponto, a consulta dos dados complementares foi bem sucedida ]
+						blnWebhookV2QueryComplSucesso = true;
+						#endregion
+					}
+					finally
+					{
+						#region [ Altera o status da consulta de dados complementares em t_BRASPAG_WEBHOOK_V2 (BraspagDadosComplementaresQueryStatus) ]
+						if (blnWebhookV2QueryComplSucesso)
+						{
+							#region [ Atualiza c/ status de sucesso ]
+							updateWebhookV2QueryComplSucesso = new BraspagUpdateWebhookV2QueryDadosComplementaresSucesso();
+							updateWebhookV2QueryComplSucesso.id_braspag_webhook_v2 = pedidoWHV2.Id;
+							updateWebhookV2QueryComplSucesso.BraspagDadosComplementaresQueryTentativas = pedidoWHV2.BraspagDadosComplementaresQueryTentativas;
+							updateWebhookV2QueryComplSucesso.BraspagDadosComplementaresQueryStatus = Global.Cte.Braspag.WebhookV2.BraspagDadosComplementaresQueryStatus.ProcessadoComSucesso;
+							if (!BraspagDAO.updateWebhookV2QueryDadosComplementaresSucesso(updateWebhookV2QueryComplSucesso, out msg_erro_aux))
+							{
+								msg_erro_last_op = msg_erro_aux;
+
+								#region [ Registra detalhes em t_FINSVC_LOG (chama gravaLogAtividade() automaticamente) ]
+								FinSvcLog svcLog = new FinSvcLog();
+								svcLog.operacao = NOME_DESTA_ROTINA;
+								svcLog.descricao = "Falha ao tentar atualizar o registro da tabela " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + " com as informações indicando sucesso na obtenção dos dados complementares (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")\n" + msg_erro_last_op;
+								svcLog.complemento_1 = Global.serializaObjectToXml(updateWebhookV2QueryComplSucesso);
+								GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
+								#endregion
+
+								strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Falha ao tentar atualizar o banco de dados com o status de sucesso ao obter os dados complementares da transação " + pedidoWHV2.PaymentId + " [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+								strBody = "Mensagem de Financeiro Service\nFalha ao tentar atualizar o banco de dados com o status de sucesso ao obter os dados complementares da transação " + pedidoWHV2.PaymentId + " (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")\r\n" + msg_erro_last_op;
+								if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+								{
+									strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+									Global.gravaLogAtividade(strMsg);
+								}
+							}
+							#endregion
+						}
+						else if (blnWebhookV2QueryComplPaymentMethodIdentificadoTransacaoIgnorada)
+						{
+							// Não realiza nenhuma operação adicional
+							// O PaymentMethod foi identificado e atualizado já durante o processamento de identificação
+							// Esse caso ocorre no processamento de transações de cartão realizadas fora do sistema, ou seja, no site de e-commerce
+						}
+						else
+						{
+							#region [ Atualiza c/ status de falha (definitiva ou temporária) ]
+							if (pedidoWHV2.BraspagDadosComplementaresQueryTentativas >= Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_MaxTentativasQueryDadosComplementares)
+							{
+								#region [ Excedeu quantidade máxima de tentativas (falha definitiva) ]
+
+								#region [ Atualiza o registro c/ o status de falha definitiva ]
+								updateWebhookV2QueryComplFalhaDefinitiva = new BraspagUpdateWebhookV2QueryDadosComplementaresFalhaDefinitiva();
+								updateWebhookV2QueryComplFalhaDefinitiva.id_braspag_webhook_v2 = pedidoWHV2.Id;
+								updateWebhookV2QueryComplFalhaDefinitiva.BraspagDadosComplementaresQueryTentativas = pedidoWHV2.BraspagDadosComplementaresQueryTentativas;
+								updateWebhookV2QueryComplFalhaDefinitiva.EmailEnviadoStatus = Global.Cte.Braspag.WebhookV2.EmailEnviadoStatus.ExcedeuMaxTentativasQueryDadosComplementares;
+								updateWebhookV2QueryComplFalhaDefinitiva.BraspagDadosComplementaresQueryStatus = Global.Cte.Braspag.WebhookV2.BraspagDadosComplementaresQueryStatus.ExcedeuMaxTentativasQueryDadosComplementares;
+								updateWebhookV2QueryComplFalhaDefinitiva.MsgErro = "Excedeu quantidade máxima de tentativas: " + Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_MaxTentativasQueryDadosComplementares.ToString();
+								// Altera o status e registra mensagem de erro
+								if (!BraspagDAO.updateWebhookV2QueryDadosComplementaresFalhaDefinitiva(updateWebhookV2QueryComplFalhaDefinitiva, out msg_erro_aux))
+								{
+									msg_erro_last_op = msg_erro_aux;
+
+									#region [ Registra detalhes em t_FINSVC_LOG (chama gravaLogAtividade() automaticamente) ]
+									FinSvcLog svcLog = new FinSvcLog();
+									svcLog.operacao = NOME_DESTA_ROTINA;
+									svcLog.descricao = "Falha ao tentar atualizar o registro da tabela " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + " com as informações indicando falha definitiva na obtenção dos dados complementares (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")\n" + msg_erro_last_op;
+									svcLog.complemento_1 = Global.serializaObjectToXml(updateWebhookV2QueryComplFalhaDefinitiva);
+									GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
+									#endregion
+
+									#region [ Envia email de alerta sobre a falha na atualização do BD ]
+									strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Falha ao tentar atualizar o banco de dados com o status de falha definitiva ao obter os dados complementares da transação " + pedidoWHV2.PaymentId + " [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+									strBody = "Mensagem de Financeiro Service\nFalha ao tentar atualizar o banco de dados com o status de falha definitiva por exceder o limite máximo de " +
+												Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_MaxTentativasQueryDadosComplementares.ToString() +
+												" tentativas de obter os dados complementares da transação " + pedidoWHV2.PaymentId + " (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")\r\n" + msg_erro_last_op;
+									if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+									{
+										strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+										Global.gravaLogAtividade(strMsg);
+									}
+									#endregion
+								}
+								#endregion
+
+								#region [ Envia email informando da falha definitiva na consulta dos dados complementares ]
+								strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Falha definitiva ao tentar obter os dados complementares da transação " + pedidoWHV2.PaymentId + " [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+								strBody = "Mensagem de Financeiro Service\nFalha definitiva por exceder o limite máximo de " +
+											Global.Parametros.Geral.FinSvc_ProcessamentoWebhookBraspagV2_MaxTentativasQueryDadosComplementares.ToString() +
+											" tentativas de obter os dados complementares da transação " + pedidoWHV2.PaymentId + " (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")";
+								if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+								{
+									strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+									Global.gravaLogAtividade(strMsg);
+								}
+								#endregion
+
+								#endregion
+							}
+							else if (blnWebhookV2QueryComplFalhaDefinitiva)
+							{
+								#region [ Ocorreu uma falha definitiva ]
+
+								#region [ Atualiza o banco de dados c/ o status de falha definitiva ]
+								// Altera o status e registra mensagem de erro
+								if (!BraspagDAO.updateWebhookV2QueryDadosComplementaresFalhaDefinitiva(updateWebhookV2QueryComplFalhaDefinitiva, out msg_erro_aux))
+								{
+									msg_erro_last_op = msg_erro_aux;
+
+									#region [ Registra detalhes em t_FINSVC_LOG (chama gravaLogAtividade() automaticamente) ]
+									FinSvcLog svcLog = new FinSvcLog();
+									svcLog.operacao = NOME_DESTA_ROTINA;
+									svcLog.descricao = "Falha ao tentar atualizar o registro da tabela " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + " com as informações indicando falha definitiva na obtenção dos dados complementares (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")\n" + msg_erro_last_op;
+									svcLog.complemento_1 = Global.serializaObjectToXml(updateWebhookV2QueryComplFalhaDefinitiva);
+									GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
+									#endregion
+
+									strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Falha ao tentar atualizar o banco de dados com o status de falha definitiva ao obter os dados complementares da transação " + pedidoWHV2.PaymentId + " [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+									strBody = "Mensagem de Financeiro Service\nFalha ao tentar atualizar o banco de dados com o status de falha definitiva ao obter os dados complementares da transação " + pedidoWHV2.PaymentId + " (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")\r\n" + msg_erro_last_op;
+									if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+									{
+										strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+										Global.gravaLogAtividade(strMsg);
+									}
+								}
+								#endregion
+
+								#region [ Envia email de alerta sobre a falha definitiva ]
+								strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Falha definitiva ao tentar obter os dados complementares da transação " + pedidoWHV2.PaymentId + " [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+								strBody = "Mensagem de Financeiro Service\nFalha definitiva ao tentar obter os dados complementares da transação " + pedidoWHV2.PaymentId + " (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")";
+								if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+								{
+									strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+									Global.gravaLogAtividade(strMsg);
+								}
+								#endregion
+								#endregion
+							}
+							else if (blnWebhookV2QueryComplFalhaTemporaria)
+							{
+								#region [ Falha temporária, apenas incrementa o contador de tentativas ]
+								if (!BraspagDAO.updateWebhookV2QueryDadosComplementaresFalhaTemporaria(updateWebhookV2QueryComplFalhaTemporaria, out msg_erro_aux))
+								{
+									msg_erro_last_op = msg_erro_aux;
+
+									#region [ Registra detalhes em t_FINSVC_LOG (chama gravaLogAtividade() automaticamente) ]
+									FinSvcLog svcLog = new FinSvcLog();
+									svcLog.operacao = NOME_DESTA_ROTINA;
+									svcLog.descricao = "Falha ao tentar atualizar o registro da tabela " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + " com as informações indicando falha temporária na obtenção dos dados complementares (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")\n" + msg_erro_last_op;
+									svcLog.complemento_1 = Global.serializaObjectToXml(updateWebhookV2QueryComplFalhaTemporaria);
+									GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
+									#endregion
+
+									strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Falha ao tentar atualizar o banco de dados com o status de falha temporária ao obter os dados complementares da transação " + pedidoWHV2.PaymentId + " [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+									strBody = "Mensagem de Financeiro Service\nFalha ao tentar atualizar o banco de dados com o status de falha temporária ao obter os dados complementares da transação " + pedidoWHV2.PaymentId + " (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")\r\n" + msg_erro_last_op;
+									if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+									{
+										strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+										Global.gravaLogAtividade(strMsg);
+									}
+								}
+								#endregion
+							}
+							else
+							{
+								#region [ Precaução: esta situação não deve ocorrer, mas caso ocorra, apenas atualiza o contador de tentativas ]
+								updateWebhookV2QueryComplQtdeTentativas = new BraspagUpdateWebhookV2QueryDadosComplementaresQtdeTentativas();
+								updateWebhookV2QueryComplQtdeTentativas.id_braspag_webhook_v2 = pedidoWHV2.Id;
+								updateWebhookV2QueryComplQtdeTentativas.BraspagDadosComplementaresQueryTentativas = pedidoWHV2.BraspagDadosComplementaresQueryTentativas;
+								if (!BraspagDAO.updateWebhookV2QueryDadosComplementaresQtdeTentativas(updateWebhookV2QueryComplQtdeTentativas, out msg_erro_aux))
+								{
+									msg_erro_last_op = msg_erro_aux;
+
+									#region [ Registra detalhes em t_FINSVC_LOG (chama gravaLogAtividade() automaticamente) ]
+									FinSvcLog svcLog = new FinSvcLog();
+									svcLog.operacao = NOME_DESTA_ROTINA;
+									svcLog.descricao = "Falha ao tentar atualizar o registro da tabela " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + " com as informações indicando falha temporária desconhecida na obtenção dos dados complementares (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")\n" + msg_erro_last_op;
+									svcLog.complemento_1 = Global.serializaObjectToXml(updateWebhookV2QueryComplQtdeTentativas);
+									GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
+									#endregion
+
+									strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Falha ao tentar atualizar o banco de dados com o status de falha temporária desconhecida ao obter os dados complementares da transação " + pedidoWHV2.PaymentId + " [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+									strBody = "Mensagem de Financeiro Service\nFalha ao tentar atualizar o banco de dados com o status de falha temporária desconhecida ao obter os dados complementares da transação " + pedidoWHV2.PaymentId + " (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")\r\n" + msg_erro_last_op;
+									if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+									{
+										strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+										Global.gravaLogAtividade(strMsg);
+									}
+								}
+
+								#region [ Envia email de alerta sobre falha desconhecida ]
+								strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Falha temporária desconhecida ao tentar obter os dados complementares da transação " + pedidoWHV2.PaymentId + " [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+								strBody = "Mensagem de Financeiro Service\nFalha temporária desconhecida ao tentar obter os dados complementares da transação " + pedidoWHV2.PaymentId + " (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")";
+								if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+								{
+									strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+									Global.gravaLogAtividade(strMsg);
+								}
+								#endregion
+								#endregion
+							}
+							#endregion
+						}
+						#endregion
+					} // Finally
+					#endregion
+
+					#region [ Falha na obtenção dos dados complementares? ]
+					if (!blnWebhookV2QueryComplSucesso)
+					{
+						// Prossegue para o próximo pedido da lista (o bloco finally anterior já registrou o código e mensagem da falha)
+						continue;
+					}
+					#endregion
+
+					#region [ Calcula variação percentual do valor pago ]
+					percDif = 0m;
+					if (rBoleto.ValorAmount > 0)
+					{
+						percDif = (rBoleto.ValorPaidAmount - rBoleto.ValorAmount) / rBoleto.ValorAmount;
+					}
+					#endregion
+
+					#region [ Analisa e processa o registro do pagamento no pedido e alteração do status da análise de crédito ]
+					if (BraspagDAO.transacaoJaRegistrouPagtoNoPedidoV2(rBoleto.BraspagTransactionId, out braspagWebhookV2Complementar, out msg_erro_aux))
+					{
+						#region [ BraspagTransactionId já foi processado anteriormente (status 'Capturado') ]
+						processadoStatusResultado = Global.Cte.Braspag.WebhookV2.NotificacaoProcessadoStatus.TransacaoJaProcessadaAnteriormente;
+
+						#region [ Atualiza o banco de dados c/ o status de falha definitiva ]
+						// Altera o status e registra mensagem de erro
+						updateWebhookV2QueryComplFalhaDefinitiva = new BraspagUpdateWebhookV2QueryDadosComplementaresFalhaDefinitiva();
+						updateWebhookV2QueryComplFalhaDefinitiva.id_braspag_webhook_v2 = pedidoWHV2.Id;
+						updateWebhookV2QueryComplFalhaDefinitiva.BraspagDadosComplementaresQueryTentativas = pedidoWHV2.BraspagDadosComplementaresQueryTentativas;
+						updateWebhookV2QueryComplFalhaDefinitiva.EmailEnviadoStatus = Global.Cte.Braspag.WebhookV2.EmailEnviadoStatus.TransacaoJaProcessadaAnteriormente;
+						updateWebhookV2QueryComplFalhaDefinitiva.BraspagDadosComplementaresQueryStatus = Global.Cte.Braspag.WebhookV2.BraspagDadosComplementaresQueryStatus.TransacaoJaProcessadaAnteriormente;
+						updateWebhookV2QueryComplFalhaDefinitiva.MsgErro = "A transação BraspagTransactionId=" + braspagWebhookV2Complementar.BraspagTransactionId + " já foi processada anteriormente registrando o pagamento no pedido (data: " + Global.formataDataDdMmYyyyHhMmSsComSeparador(braspagWebhookV2Complementar.DataHora) + ", " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + braspagWebhookV2Complementar.id_braspag_webhook_v2.ToString() + ")";
+						if (!BraspagDAO.updateWebhookV2QueryDadosComplementaresFalhaDefinitiva(updateWebhookV2QueryComplFalhaDefinitiva, out msg_erro_aux))
+						{
+							msg_erro_last_op = msg_erro_aux;
+
+							#region [ Registra detalhes em t_FINSVC_LOG (chama gravaLogAtividade() automaticamente) ]
+							FinSvcLog svcLog = new FinSvcLog();
+							svcLog.operacao = NOME_DESTA_ROTINA;
+							svcLog.descricao = "Falha ao tentar atualizar o registro da tabela " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + " com o status indicando que a transação já foi processada anteriormente (pedido=" + pedidoWHV2.OrderIdIdentificado + ", " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")\n" + msg_erro_last_op;
+							svcLog.complemento_1 = Global.serializaObjectToXml(updateWebhookV2QueryComplFalhaDefinitiva);
+							GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
+							#endregion
+
+							strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Falha ao tentar atualizar o banco de dados com o status indicando que a transação já foi processada anteriormente (pedido: " + pedidoWHV2.OrderIdIdentificado + ") [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+							strBody = "Mensagem de Financeiro Service\nFalha ao tentar atualizar o banco de dados com o status indicando que a transação já foi processada anteriormente (pedido=" + pedidoWHV2.OrderIdIdentificado + ", " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")\r\n" + msg_erro_last_op;
+							if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+							{
+								strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+								Global.gravaLogAtividade(strMsg);
+							}
+						}
+						#endregion
+
+						#region [ Envia email de alerta sobre a falha definitiva ]
+						strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): transação já foi processada anteriormente (pedido: " + pedidoWHV2.OrderIdIdentificado + ", BraspagTransactionId=" + rBoleto.BraspagTransactionId + ") [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+						strBody = "Mensagem de Financeiro Service\nTransação já foi processada anteriormente (BraspagTransactionId=" + rBoleto.BraspagTransactionId + ")\r\n" +
+									"Registro atual: pedido=" + pedidoWHV2.OrderIdIdentificado + ", " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + "\r\n" +
+									"Processamento anterior: data=" + Global.formataDataDdMmYyyyHhMmSsComSeparador(braspagWebhookV2Complementar.DataHora) + ", " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + braspagWebhookV2Complementar.id_braspag_webhook_v2.ToString();
+						if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+						{
+							strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+							Global.gravaLogAtividade(strMsg);
+						}
+						#endregion
+
+						#region [ Monta os dados para email informativo ]
+						sbDadosEmail = new StringBuilder("");
+						sbDadosEmail.AppendLine("Pedido: " + pedidoWHV2.OrderIdIdentificado);
+						if (!pedidoWHV2.OrderIdIdentificado.Equals(strNumPedidoERP)) sbDadosEmail.AppendLine("Pedido (ERP): " + (strNumPedidoERP.Length > 0 ? strNumPedidoERP : "não localizado"));
+						sbDadosEmail.AppendLine("Cliente: " + rBoleto.CustomerName.ToUpper());
+						sbDadosEmail.AppendLine("Meio de Pagamento: " + pedidoWHV2.PaymentMethodIdentificado + " - " + Global.Cte.Braspag.PaymentMethod.GetDescription(pedidoWHV2.PaymentMethodIdentificado));
+						sbDadosEmail.AppendLine("Cedente: " + pedidoWHV2.Empresa);
+						sbDadosEmail.AppendLine("Data Vencto:  " + Global.formataDataDdMmYyyyComSeparador(rBoleto.BoletoExpirationDate));
+						sbDadosEmail.AppendLine("Data Crédito: " + Global.formataDataDdMmYyyyComSeparador(rBoleto.CapturedDate));
+						sbDadosEmail.AppendLine("Valor Face: " + Global.formataMoeda(rBoleto.ValorAmount));
+						sbDadosEmail.AppendLine("Valor Pago: " + Global.formataMoeda(rBoleto.ValorPaidAmount));
+						sbDadosEmail.AppendLine("Variação Valor: " + Global.formataMoeda(rBoleto.ValorPaidAmount - rBoleto.ValorAmount) + "  (" + Global.formataPercentualCom2Decimais(100m * percDif) + "%)");
+						sbDadosEmail.AppendLine("Observação: este pagamento já foi processado anteriormente em " + Global.formataDataDdMmYyyyHhMmSsComSeparador(braspagWebhookV2Complementar.DataHora));
+						vDadosEmail.Add(sbDadosEmail);
+						#endregion
+						#endregion
+					}
+					else
+					{
+						#region [ Processa o pagamento no pedido ]
+						if (strNumPedidoERP.Length > 0)
+						{
+							#region [ Verifica se o pagamento já foi registrado manualmente ]
+							listaPagto = PedidoDAO.getPedidoPagamentoByPedido(strNumPedidoERP, out msg_erro_aux);
+							if (listaPagto != null)
+							{
+								foreach (PedidoPagamento pagto in listaPagto)
+								{
+									// Analisa somente valores positivos
+									if (pagto.valor > 0)
+									{
+										if (Math.Abs(rBoleto.ValorPaidAmount - pagto.valor) <= Global.Cte.Etc.MAX_VALOR_MARGEM_ERRO_PAGAMENTO)
+										{
+											blnPagtoRegistradoManualmente = true;
+											pagtoManual = pagto;
+											break;
+										}
+									}
+								}
+							}
+
+							// Se não encontrou um registro de pagamento equivalente ao valor do boleto, analisa pelo status de pagamento do pedido
+							if (!blnPagtoRegistradoManualmente)
+							{
+								if (pedido.st_pagto.Equals(Global.Cte.StPagtoPedido.ST_PAGTO_PAGO))
+								{
+									blnPagtoRegistradoManualmente = true;
+								}
+							}
+
+							if (blnPagtoRegistradoManualmente) processadoStatusResultado = Global.Cte.Braspag.WebhookV2.NotificacaoProcessadoStatus.PagamentoJaRegistrado;
+							#endregion
+
+							if (!blnPagtoRegistradoManualmente)
+							{
+								#region [ Registra o pagamento no pedido + lançamento no fluxo de caixa ]
+								blnSucesso = false;
+								BD.iniciaTransacao();
+								try
+								{
+									#region [ Registra o pagamento no pedido ]
+									// Obs: a própria rotina já grava um registro no log geral
+									blnSucesso = BraspagDAO.registraPagamentoBoletoECNoPedidoV2(insertWebhookV2QueryCompl.Id, out msg_erro_aux);
+									if (blnSucesso)
+									{
+										blnRegistrouPagtoPedido = true;
+									}
+									else
+									{
+										msg_erro_last_op = msg_erro_aux;
+
+										#region [ Registra detalhes em t_FINSVC_LOG (chama gravaLogAtividade() automaticamente) ]
+										FinSvcLog svcLog = new FinSvcLog();
+										svcLog.operacao = NOME_DESTA_ROTINA;
+										svcLog.descricao = "Falha ao tentar registrar pagamento no pedido " + strNumPedidoERP + " (OrderId=" + pedidoWHV2.OrderIdIdentificado + ", " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ", " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2_COMPLEMENTAR + ".Id=" + insertWebhookV2QueryCompl.Id.ToString() + ")\n" + msg_erro_last_op;
+										svcLog.complemento_1 = Global.serializaObjectToXml(pedidoWHV2);
+										svcLog.complemento_2 = Global.serializaObjectToXml(insertWebhookV2QueryCompl);
+										GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
+										#endregion
+
+										strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Falha ao tentar registrar pagamento no pedido " + strNumPedidoERP + " [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+										strBody = "Mensagem de Financeiro Service\nFalha ao tentar registrar pagamento no pedido " + strNumPedidoERP + " (OrderId=" + pedidoWHV2.OrderIdIdentificado + ", " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ", " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2_COMPLEMENTAR + ".Id=" + insertWebhookV2QueryCompl.Id.ToString() + ")\r\n" + msg_erro_last_op;
+										if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+										{
+											strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+											Global.gravaLogAtividade(strMsg);
+										}
+									}
+									#endregion
+
+									#region [ Registra lançamento no fluxo de caixa ]
+									if (blnRegistrouPagtoPedido)
+									{
+										if (webhookBraspagV2PlanoContasBoletoEC != null)
+										{
+											lancamento = new LancamentoFluxoCaixaInsertDevidoBoletoEC();
+											lancamento.id_conta_corrente = webhookBraspagV2PlanoContasBoletoEC.id_conta_corrente;
+											lancamento.id_plano_contas_empresa = webhookBraspagV2PlanoContasBoletoEC.id_plano_contas_empresa;
+											lancamento.id_plano_contas_grupo = webhookBraspagV2PlanoContasBoletoEC.id_plano_contas_grupo;
+											lancamento.id_plano_contas_conta = webhookBraspagV2PlanoContasBoletoEC.id_plano_contas_conta;
+											lancamento.dt_competencia = (DateTime)rBoleto.CapturedDate;
+											lancamento.valor = rBoleto.ValorPaidAmount;
+											lancamento.descricao = "PED " + strNumPedidoERP;
+											lancamento.ctrl_pagto_id_parcela = insertWebhookV2QueryCompl.Id;
+											lancamento.ctrl_pagto_modulo = Global.Cte.FIN.CtrlPagtoModulo.BRASPAG_WEBHOOK_V2;
+											if (pedido != null) lancamento.id_cliente = pedido.id_cliente;
+											if (cliente != null) lancamento.cnpj_cpf = cliente.cnpj_cpf;
+
+											blnSucesso = LancamentoFluxoCaixaDAO.insereLancamentoDevidoBoletoEC(lancamento, out msg_erro_aux);
+											if (blnSucesso)
+											{
+												blnRegistrouLancamento = true;
+
+												#region [ Grava registro no log geral ]
+												// Obs: a rotina de inserção do lançamento grava um registro no log financeiro
+												s_log = "Inserção do registro em t_FIN_FLUXO_CAIXA.id=" + lancamento.id.ToString() + " devido a boleto de e-commerce (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2_COMPLEMENTAR + ".Id=" + insertWebhookV2QueryCompl.Id.ToString() + "): dt_competencia=" + Global.formataDataYyyyMmDdComSeparador(lancamento.dt_competencia) + ", valor=" + Global.formataMoeda(lancamento.valor) + ", descricao=" + lancamento.descricao;
+												GeralDAO.gravaLog(Global.Cte.LogBd.Operacao.OP_LOG_FLUXO_CAIXA_INSERE_DEVIDO_BOLETO_ECOMMERCE, strNumPedidoERP, s_log, out msg_erro_aux);
+												#endregion
+											}
+										}
+									}
+									#endregion
+
+									if (blnSucesso) processadoStatusResultado = Global.Cte.Braspag.WebhookV2.NotificacaoProcessadoStatus.Sucesso;
+								}
+								catch (Exception ex)
+								{
+									blnSucesso = false;
+									msg_erro = ex.ToString();
+								}
+								finally
+								{
+									if (blnSucesso)
+									{
+										#region [ Commit ]
+										try
+										{
+											BD.commitTransacao();
+										}
+										catch (Exception ex)
+										{
+											blnSucesso = false;
+											blnRegistrouPagtoPedido = false;
+											blnRegistrouLancamento = false;
+
+											msg_erro_last_op = ex.ToString();
+
+											#region [ Registra detalhes em t_FINSVC_LOG (chama gravaLogAtividade() automaticamente) ]
+											FinSvcLog svcLog = new FinSvcLog();
+											svcLog.operacao = NOME_DESTA_ROTINA;
+											svcLog.descricao = "Falha ao tentar executar o commit no banco de dados ao registrar o pagamento no pedido " + strNumPedidoERP + " (OrderId=" + pedidoWHV2.OrderIdIdentificado + ", " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ", " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2_COMPLEMENTAR + ".Id=" + insertWebhookV2QueryCompl.Id.ToString() + ")\n" + msg_erro_last_op;
+											svcLog.complemento_1 = Global.serializaObjectToXml(pedidoWHV2);
+											svcLog.complemento_2 = Global.serializaObjectToXml(insertWebhookV2QueryCompl);
+											GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
+											#endregion
+
+											strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Falha ao tentar executar o commit no banco de dados ao registrar o pagamento no pedido " + strNumPedidoERP + " [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+											strBody = "Mensagem de Financeiro Service\nFalha ao tentar executar o commit no banco de dados ao registrar o pagamento no pedido " + strNumPedidoERP + " (OrderId=" + pedidoWHV2.OrderIdIdentificado + ", " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ", " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2_COMPLEMENTAR + ".Id=" + insertWebhookV2QueryCompl.Id.ToString() + ")\r\n" + msg_erro_last_op;
+											if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+											{
+												strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+												Global.gravaLogAtividade(strMsg);
+											}
+										}
+										#endregion
+									}
+									else
+									{
+										#region [ Rollback ]
+										try
+										{
+											BD.rollbackTransacao();
+										}
+										catch (Exception ex)
+										{
+											msg_erro_last_op = ex.ToString();
+
+											#region [ Registra detalhes em t_FINSVC_LOG (chama gravaLogAtividade() automaticamente) ]
+											FinSvcLog svcLog = new FinSvcLog();
+											svcLog.operacao = NOME_DESTA_ROTINA;
+											svcLog.descricao = "Falha ao tentar executar o rollback no banco de dados ao registrar o pagamento no pedido " + strNumPedidoERP + " (OrderId=" + pedidoWHV2.OrderIdIdentificado + ", " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ", " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2_COMPLEMENTAR + ".Id=" + insertWebhookV2QueryCompl.Id.ToString() + ")\n" + msg_erro_last_op;
+											svcLog.complemento_1 = Global.serializaObjectToXml(pedidoWHV2);
+											svcLog.complemento_2 = Global.serializaObjectToXml(insertWebhookV2QueryCompl);
+											GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
+											#endregion
+
+											strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Falha ao tentar executar o rollback no banco de dados ao registrar o pagamento no pedido " + strNumPedidoERP + " [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+											strBody = "Mensagem de Financeiro Service\nFalha ao tentar executar o rollback no banco de dados ao registrar o pagamento no pedido " + strNumPedidoERP + " (OrderId=" + pedidoWHV2.OrderIdIdentificado + ", " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ", " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2_COMPLEMENTAR + ".Id=" + insertWebhookV2QueryCompl.Id.ToString() + ")\r\n" + msg_erro_last_op;
+											if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+											{
+												strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+												Global.gravaLogAtividade(strMsg);
+											}
+										}
+										finally
+										{
+											blnRegistrouPagtoPedido = false;
+											blnRegistrouLancamento = false;
+										}
+										#endregion
+									}
+								}
+								#endregion
+							}
+						}
+
+						#region [ Atualiza campo t_BRASPAG_WEBHOOK_V2.ProcessamentoErpStatus ]
+						if (blnRegistrouPagtoPedido)
+						{
+							if (!BraspagDAO.updateWebhookV2ProcessamentoErpStatusSucesso(pedidoWHV2.Id, out msg_erro_aux))
+							{
+								msg_erro_last_op = msg_erro_aux;
+
+								#region [ Registra detalhes em t_FINSVC_LOG (chama gravaLogAtividade() automaticamente) ]
+								FinSvcLog svcLog = new FinSvcLog();
+								svcLog.operacao = NOME_DESTA_ROTINA;
+								svcLog.descricao = "Falha ao tentar atualizar o registro da tabela " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + " com o status de sucesso no processamento ERP (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")\n" + msg_erro_last_op;
+								GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
+								#endregion
+
+								strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Falha ao tentar atualizar o registro da tabela " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + " com o status de sucesso no processamento ERP (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ") [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+								strBody = "Mensagem de Financeiro Service\nFalha ao tentar atualizar o registro da tabela " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + " com o status de sucesso no processamento ERP (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")\r\n" + msg_erro_last_op;
+								if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+								{
+									strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+									Global.gravaLogAtividade(strMsg);
+								}
+							}
+						}
+						#endregion
+
+						#region [ Obtém dados atualizados de t_BRASPAG_WEBHOOK_V2_COMPLEMENTAR ]
+						braspagWebhookV2ComplementarAtualizado = BraspagDAO.getBraspagWebhookV2ComplementarById(insertWebhookV2QueryCompl.Id, out msg_erro_aux);
+						if (braspagWebhookV2ComplementarAtualizado == null)
+						{
+							msg_erro_last_op = msg_erro_aux;
+
+							#region [ Registra detalhes em t_FINSVC_LOG (chama gravaLogAtividade() automaticamente) ]
+							FinSvcLog svcLog = new FinSvcLog();
+							svcLog.operacao = NOME_DESTA_ROTINA;
+							svcLog.descricao = "Falha ao tentar obter os dados complementares atualizados do banco de dados (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2_COMPLEMENTAR + ".Id=" + insertWebhookV2QueryCompl.Id.ToString() + ")\n" + msg_erro_last_op;
+							GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
+							#endregion
+
+							strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Falha ao tentar obter os dados complementares atualizados do banco de dados (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2_COMPLEMENTAR + ".Id=" + insertWebhookV2QueryCompl.Id.ToString() + ") [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+							strBody = "Mensagem de Financeiro Service\nFalha ao tentar obter os dados complementares atualizados do banco de dados (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2_COMPLEMENTAR + ".Id=" + insertWebhookV2QueryCompl.Id.ToString() + ")\r\n" + msg_erro_last_op;
+							if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+							{
+								strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+								Global.gravaLogAtividade(strMsg);
+							}
+						}
+						#endregion
+
+						#region [ Monta os dados para email informativo ]
+						sbDadosEmail = new StringBuilder("");
+						sbDadosEmail.AppendLine("Pedido: " + pedidoWHV2.OrderIdIdentificado);
+						if (!pedidoWHV2.OrderIdIdentificado.Equals(strNumPedidoERP)) sbDadosEmail.AppendLine("Pedido (ERP): " + (strNumPedidoERP.Length > 0 ? strNumPedidoERP : "não localizado"));
+						sbDadosEmail.AppendLine("Cliente: " + rBoleto.CustomerName.ToUpper());
+						sbDadosEmail.AppendLine("Meio de Pagamento: " + pedidoWHV2.PaymentMethodIdentificado + " - " + Global.Cte.Braspag.PaymentMethod.GetDescription(pedidoWHV2.PaymentMethodIdentificado));
+						sbDadosEmail.AppendLine("Cedente: " + pedidoWHV2.Empresa);
+						sbDadosEmail.AppendLine("Data Vencto:  " + Global.formataDataDdMmYyyyComSeparador(rBoleto.BoletoExpirationDate));
+						sbDadosEmail.AppendLine("Data Crédito: " + Global.formataDataDdMmYyyyComSeparador(rBoleto.CapturedDate));
+						sbDadosEmail.AppendLine("Valor Face: " + Global.formataMoeda(rBoleto.ValorAmount));
+						sbDadosEmail.AppendLine("Valor Pago: " + Global.formataMoeda(rBoleto.ValorPaidAmount));
+						sbDadosEmail.AppendLine("Variação Valor: " + Global.formataMoeda(rBoleto.ValorPaidAmount - rBoleto.ValorAmount) + "  (" + Global.formataPercentualCom2Decimais(100m * percDif) + "%)");
+						if (blnRegistrouPagtoPedido)
+						{
+							#region [ Informações referentes ao pagamento registrado automaticamente ]
+							strMsg = "Pagamento registrado automaticamente no pedido: SIM";
+							sbDadosEmail.AppendLine(strMsg);
+
+							if (braspagWebhookV2ComplementarAtualizado != null)
+							{
+								if (braspagWebhookV2ComplementarAtualizado.PagtoRegistradoNoPedidoStPagtoNovo.Equals(braspagWebhookV2ComplementarAtualizado.PagtoRegistradoNoPedidoStPagtoAnterior))
+								{
+									strMsg = "Não houve alteração do status de pagamento: '" + Global.stPagtoPedidoDescricao(braspagWebhookV2ComplementarAtualizado.PagtoRegistradoNoPedidoStPagtoNovo) + "'";
+								}
+								else
+								{
+									strMsg = "Alteração do status de pagamento: de '" + Global.stPagtoPedidoDescricao(braspagWebhookV2ComplementarAtualizado.PagtoRegistradoNoPedidoStPagtoAnterior) + "' para '" + Global.stPagtoPedidoDescricao(braspagWebhookV2ComplementarAtualizado.PagtoRegistradoNoPedidoStPagtoNovo) + "'";
+								}
+								sbDadosEmail.AppendLine(strMsg);
+
+								if (braspagWebhookV2ComplementarAtualizado.AnaliseCreditoStatusNovo == braspagWebhookV2ComplementarAtualizado.AnaliseCreditoStatusAnterior)
+								{
+									strMsg = "Não houve alteração do status da análise de crédito: '" + Global.obtemDescricaoAnaliseCredito(braspagWebhookV2ComplementarAtualizado.AnaliseCreditoStatusNovo) + "'";
+								}
+								else
+								{
+									strMsg = "Alteração do status da análise de crédito: de '" + Global.obtemDescricaoAnaliseCredito(braspagWebhookV2ComplementarAtualizado.AnaliseCreditoStatusAnterior) + "' para '" + Global.obtemDescricaoAnaliseCredito(braspagWebhookV2ComplementarAtualizado.AnaliseCreditoStatusNovo) + "'";
+								}
+								sbDadosEmail.AppendLine(strMsg);
+							}
+							#endregion
+						}
+						else if (blnPagtoRegistradoManualmente)
+						{
+							if (pagtoManual != null)
+							{
+								strMsg = "Pagamento já havia sido registrado no pedido pelo usuário '" + (pagtoManual.usuario ?? "") + "' em " + Global.formataDataDdMmYyyyComSeparador(pagtoManual.data) + " " + Global.formata_hhnnss_para_hh_nn(pagtoManual.hora) + " com o valor de " + Global.formataMoeda(pagtoManual.valor);
+								sbDadosEmail.AppendLine(strMsg);
+							}
+							else
+							{
+								strMsg = "Pedido já estava com o status de pagamento '" + Global.stPagtoPedidoDescricao(pedido.st_pagto) + "'";
+								sbDadosEmail.AppendLine(strMsg);
+							}
+						}
+						else
+						{
+							strMsg = "Pagamento registrado automaticamente no pedido: NÃO";
+							sbDadosEmail.AppendLine(strMsg);
+						}
+
+						if (blnRegistrouLancamento)
+						{
+							strMsg = "Lançamento do fluxo de caixa registrado automaticamente: SIM";
+							sbDadosEmail.AppendLine(strMsg);
+						}
+						else
+						{
+							strMsg = "Lançamento do fluxo de caixa registrado automaticamente: NÃO";
+							sbDadosEmail.AppendLine(strMsg);
+						}
+
+						vDadosEmail.Add(sbDadosEmail);
+						vBraspagWebhookV2IdEmailEnviadoStatusUpdate.Add(pedidoWHV2.Id);
+						#endregion
+
+						#endregion
+					}
+					#endregion
+
+					#region [ Atualiza o status de processamento da notificação ]
+					if (processadoStatusResultado != Global.Cte.Braspag.WebhookV2.NotificacaoProcessadoStatus.Inicial)
+					{
+						if (!BraspagDAO.updateWebhookV2ProcessadoStatus(pedidoWHV2.Id, processadoStatusResultado, out msg_erro_aux))
+						{
+							msg_erro_last_op = msg_erro_aux;
+
+							strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Falha ao tentar atualizar o status do campo ProcessadoStatus em " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + " [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+							strBody = "Mensagem de Financeiro Service\nFalha ao tentar atualizar o status do campo ProcessadoStatus em " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + " no registro da transação " + pedidoWHV2.PaymentId + " (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + pedidoWHV2.Id.ToString() + ")\r\n" + msg_erro_last_op;
+							if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+							{
+								strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+								Global.gravaLogAtividade(strMsg);
+							}
+						}
+					}
+					#endregion
+				} // foreach (var pedidoWHV2 in listaWebhookV2)
+				#endregion
+
+				#region [ Há dados? ]
+				if (vDadosEmail.Count == 0)
+				{
+					strMsgInformativa = "Nenhum boleto processado";
+					return true;
+				}
+				#endregion
+
+				#region [ Envia o email ]
+				sbBody = new StringBuilder("");
+				strMsg = "Processamento automático dos boletos de e-commerce";
+				sbBody.AppendLine(strMsg);
+				sbBody.AppendLine("");
+				sbBody.AppendLine(strLinhaSeparadora);
+				sbBody.AppendLine("");
+				for (int i = 0; i < vDadosEmail.Count; i++)
+				{
+					if (i > 0) sbBody.AppendLine("");
+					sbBody.AppendLine(vDadosEmail[i].ToString());
+					sbBody.AppendLine(strLinhaSeparadora);
+				}
+
+				sbBody.AppendLine("");
+				strMsg = "Total de boletos: " + vDadosEmail.Count.ToString();
+				sbBody.AppendLine(strMsg);
+
+				strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Processamento de boletos de e-commerce [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+				if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Parametros.Geral.DESTINATARIO_MSG_ALERTA_WEBHOOK_BRASPAG_V2, null, null, strSubject, sbBody.ToString(), DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+				{
+					msg_erro_send_email = "Falha ao tentar inserir email na fila de mensagens: " + msg_erro_aux;
+					strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+					Global.gravaLogAtividade(strMsg);
+					foreach (int id_braspag_webhook_v2 in vBraspagWebhookV2IdEmailEnviadoStatusUpdate)
+					{
+						if (!BraspagDAO.updateWebhookV2EmailEnviadoStatusFalha(id_braspag_webhook_v2, Global.Cte.Braspag.WebhookV2.EmailEnviadoStatus.ErroERP, msg_erro_send_email, out msg_erro_aux))
+						{
+							msg_erro_last_op = msg_erro_aux;
+
+							#region [ Registra detalhes em t_FINSVC_LOG (chama gravaLogAtividade() automaticamente) ]
+							FinSvcLog svcLog = new FinSvcLog();
+							svcLog.operacao = NOME_DESTA_ROTINA;
+							svcLog.descricao = "Falha ao tentar atualizar o registro da tabela " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + " com o status de falha no envio do email informativo (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + id_braspag_webhook_v2.ToString() + ")\n" + msg_erro_last_op;
+							GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
+							#endregion
+
+							strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Falha ao tentar atualizar o registro da tabela " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + " com o status de falha no envio do email informativo (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + id_braspag_webhook_v2.ToString() + ") [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+							strBody = "Mensagem de Financeiro Service\nFalha ao tentar atualizar o registro da tabela " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + " com o status de falha no envio do email informativo (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + id_braspag_webhook_v2.ToString() + ")\r\n" + msg_erro_last_op;
+							if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+							{
+								strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+								Global.gravaLogAtividade(strMsg);
+							}
+						}
+					}
+				}
+				else
+				{
+					blnEmailAlertaEnviado = true;
+
+					foreach (int id_braspag_webhook_v2 in vBraspagWebhookV2IdEmailEnviadoStatusUpdate)
+					{
+						if (!BraspagDAO.updateWebhookV2EmailEnviadoStatusSucesso(id_braspag_webhook_v2, out msg_erro_aux))
+						{
+							msg_erro_last_op = msg_erro_aux;
+
+							#region [ Registra detalhes em t_FINSVC_LOG (chama gravaLogAtividade() automaticamente) ]
+							FinSvcLog svcLog = new FinSvcLog();
+							svcLog.operacao = NOME_DESTA_ROTINA;
+							svcLog.descricao = "Falha ao tentar atualizar o registro da tabela " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + " com o status de sucesso no envio do email informativo (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + id_braspag_webhook_v2.ToString() + ")\n" + msg_erro_last_op;
+							GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
+							#endregion
+
+							strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag (Webhook V2): Falha ao tentar atualizar o registro da tabela " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + " com o status de sucesso no envio do email informativo (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + id_braspag_webhook_v2.ToString() + ") [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+							strBody = "Mensagem de Financeiro Service\nFalha ao tentar atualizar o registro da tabela " + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + " com o status de sucesso no envio do email informativo (" + Global.Cte.FIN.NSU.T_BRASPAG_WEBHOOK_V2 + ".Id=" + id_braspag_webhook_v2.ToString() + ")\r\n" + msg_erro_last_op;
+							if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+							{
+								strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+								Global.gravaLogAtividade(strMsg);
+							}
+						}
+					}
+				}
+				#endregion
+
+				strMsgInformativa = vDadosEmail.Count.ToString() + " boleto(s) processado(s)";
+				#endregion
+
+				return true;
+			}
+			catch (Exception ex)
+			{
+				msg_erro = NOME_DESTA_ROTINA + "\n" + ex.ToString();
+
+				#region [ Registra detalhes em t_FINSVC_LOG (chama gravaLogAtividade() automaticamente) ]
+				FinSvcLog svcLog = new FinSvcLog();
+				svcLog.operacao = NOME_DESTA_ROTINA;
+				svcLog.descricao = ex.ToString();
+				GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
+				#endregion
+
+				return false;
+			}
 		}
 		#endregion
 
@@ -9316,6 +10536,172 @@ namespace FinanceiroService
 	public class BraspagWebhookComplementarUpdatePagtoRegPedido
 	{
 		public int id_braspag_webhook_complementar { get; set; }
+		public byte PagtoRegistradoNoPedidoStatus { get; set; }
+		public string PagtoRegistradoNoPedidoTipoOperacao { get; set; }
+		public string PagtoRegistradoNoPedido_id_pedido_pagamento { get; set; }
+		public string PagtoRegistradoNoPedidoStPagtoAnterior { get; set; }
+		public string PagtoRegistradoNoPedidoStPagtoNovo { get; set; }
+		public int AnaliseCreditoStatusAnterior { get; set; }
+		public int AnaliseCreditoStatusNovo { get; set; }
+	}
+	#endregion
+
+	#region [ BraspagWebhookV2 ]
+	public class BraspagWebhookV2
+	{
+		public int Id { get; set; }
+		public DateTime DataCadastro { get; set; }
+		public DateTime DataHoraCadastro { get; set; }
+		public string Empresa { get; set; }
+		public string RecurrentPaymentId { get; set; }
+		public string PaymentId { get; set; }
+		public byte ChangeType { get; set; }
+		public string OrderIdIdentificado { get; set; }
+		public string PaymentMethodIdentificado { get; set; }
+		public byte ProcessadoStatus { get; set; }
+		public DateTime ProcessadoDataHora { get; set; }
+		public byte BraspagDadosComplementaresQueryStatus { get; set; }
+		public DateTime? BraspagDadosComplementaresQueryDataHora { get; set; }
+		public byte EmailEnviadoStatus { get; set; }
+		public DateTime? EmailEnviadoDataHora { get; set; }
+		public int ProcessamentoErpStatus { get; set; }
+		public DateTime? ProcessamentoErpDataHora { get; set; }
+		public int BraspagDadosComplementaresQueryTentativas { get; set; }
+		public DateTime? BraspagDadosComplementaresQueryDtHrUltTentativa { get; set; }
+		public string MsgErro { get; set; }
+		public string MsgErroTemporario { get; set; }
+	}
+	#endregion
+
+	#region [ BraspagWebhookV2Complementar ]
+	public class BraspagWebhookV2Complementar
+	{
+		public int Id { get; set; }
+		public int id_braspag_webhook_v2 { get; set; }
+		public DateTime Data { get; set; }
+		public DateTime DataHora { get; set; }
+		public string BraspagTransactionId { get; set; }
+		public string BraspagOrderId { get; set; }
+		public string PaymentMethod { get; set; }
+		public string GlobalStatus { get; set; }
+		public DateTime? ReceivedDate { get; set; }
+		public DateTime? CapturedDate { get; set; }
+		public string CustomerName { get; set; }
+		public DateTime? BoletoExpirationDate { get; set; }
+		public string Amount { get; set; }
+		public decimal ValorAmount { get; set; }
+		public string PaidAmount { get; set; }
+		public decimal ValorPaidAmount { get; set; }
+		public string pedido { get; set; }
+		public byte PagtoRegistradoNoPedidoStatus { get; set; }
+		public string PagtoRegistradoNoPedidoTipoOperacao { get; set; }
+		public DateTime? PagtoRegistradoNoPedidoData { get; set; }
+		public DateTime? PagtoRegistradoNoPedidoDataHora { get; set; }
+		public string PagtoRegistradoNoPedido_id_pedido_pagamento { get; set; }
+		public string PagtoRegistradoNoPedidoStPagtoAnterior { get; set; }
+		public string PagtoRegistradoNoPedidoStPagtoNovo { get; set; }
+		public int AnaliseCreditoStatusAnterior { get; set; }
+		public int AnaliseCreditoStatusNovo { get; set; }
+		public byte PedidoHistPagtoGravadoStatus { get; set; }
+		public DateTime? PedidoHistPagtoGravadoData { get; set; }
+		public DateTime? PedidoHistPagtoGravadoDataHora { get; set; }
+		public string MsgErro { get; set; }
+	}
+	#endregion
+
+	#region [ BraspagWebhookV2DadosConsolidadosBoleto ]
+	public class BraspagWebhookV2DadosConsolidadosBoleto
+	{
+		public string MerchantId { get; set; }
+		public string OrderId { get; set; }
+		public string BraspagTransactionId { get; set; }
+		public string BraspagOrderId { get; set; }
+		public string PaymentMethod { get; set; }
+		public string GlobalStatus { get; set; }
+		public DateTime? ReceivedDate { get; set; }
+		public DateTime? CapturedDate { get; set; }
+		public string CustomerName { get; set; }
+		public DateTime? BoletoExpirationDate { get; set; }
+		public string Amount { get; set; }
+		public decimal ValorAmount { get; set; }
+		public string PaidAmount { get; set; }
+		public decimal ValorPaidAmount { get; set; }
+	}
+	#endregion
+
+	#region [ BraspagUpdateWebhookV2PaymentMethodIdentificado ]
+	public class BraspagUpdateWebhookV2PaymentMethodIdentificado
+	{
+		public int Id { get; set; }
+		public string OrderIdIdentificado { get; set; }
+		public string PaymentMethodIdentificado { get; set; }
+		public byte ProcessadoStatus { get; set; }
+	}
+	#endregion
+
+	#region [ BraspagUpdateWebhookV2QueryDadosComplementaresFalhaDefinitiva ]
+	public class BraspagUpdateWebhookV2QueryDadosComplementaresFalhaDefinitiva
+	{
+		public int id_braspag_webhook_v2 { get; set; }
+		public byte EmailEnviadoStatus { get; set; }
+		public byte BraspagDadosComplementaresQueryStatus { get; set; }
+		public int BraspagDadosComplementaresQueryTentativas { get; set; }
+		public string MsgErro { get; set; }
+	}
+	#endregion
+
+	#region [ BraspagUpdateWebhookV2QueryDadosComplementaresFalhaTemporaria ]
+	public class BraspagUpdateWebhookV2QueryDadosComplementaresFalhaTemporaria
+	{
+		public int id_braspag_webhook_v2 { get; set; }
+		public byte BraspagDadosComplementaresQueryStatus { get; set; }
+		public int BraspagDadosComplementaresQueryTentativas { get; set; }
+		public string MsgErroTemporario { get; set; }
+	}
+	#endregion
+
+	#region [ BraspagUpdateWebhookV2QueryDadosComplementaresQtdeTentativas ]
+	public class BraspagUpdateWebhookV2QueryDadosComplementaresQtdeTentativas
+	{
+		public int id_braspag_webhook_v2 { get; set; }
+		public int BraspagDadosComplementaresQueryTentativas { get; set; }
+	}
+	#endregion
+
+	#region [ BraspagUpdateWebhookV2QueryDadosComplementaresSucesso ]
+	public class BraspagUpdateWebhookV2QueryDadosComplementaresSucesso
+	{
+		public int id_braspag_webhook_v2 { get; set; }
+		public byte BraspagDadosComplementaresQueryStatus { get; set; }
+		public int BraspagDadosComplementaresQueryTentativas { get; set; }
+	}
+	#endregion
+
+	#region [ BraspagInsertWebhookV2QueryDadosComplementares ]
+	public class BraspagInsertWebhookV2QueryDadosComplementares
+	{
+		public int Id { get; set; }
+		public int id_braspag_webhook_v2 { get; set; }
+		public string BraspagTransactionId { get; set; }
+		public string BraspagOrderId { get; set; }
+		public string PaymentMethod { get; set; }
+		public string GlobalStatus { get; set; }
+		public DateTime? ReceivedDate { get; set; }
+		public DateTime? CapturedDate { get; set; }
+		public string CustomerName { get; set; }
+		public DateTime? BoletoExpirationDate { get; set; }
+		public string Amount { get; set; }
+		public decimal ValorAmount { get; set; }
+		public string PaidAmount { get; set; }
+		public decimal ValorPaidAmount { get; set; }
+		public string pedido { get; set; }
+	}
+	#endregion
+
+	#region [ BraspagWebhookV2ComplementarUpdatePagtoRegPedido ]
+	public class BraspagWebhookV2ComplementarUpdatePagtoRegPedido
+	{
+		public int id_braspag_webhook_v2_complementar { get; set; }
 		public byte PagtoRegistradoNoPedidoStatus { get; set; }
 		public string PagtoRegistradoNoPedidoTipoOperacao { get; set; }
 		public string PagtoRegistradoNoPedido_id_pedido_pagamento { get; set; }

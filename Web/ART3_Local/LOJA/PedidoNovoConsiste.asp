@@ -49,7 +49,7 @@
 
 '	CONECTA AO BANCO DE DADOS
 '	=========================
-	dim cn, rs, tMAP_XML, tMAP_END_COB, tMAP_END_ETG, tOI, t_CLIENTE
+	dim cn, rs, tMAP_XML, tMAP_ITEM, tMAP_END_COB, tMAP_END_ETG, tOI, t_CLIENTE
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	If Not cria_recordset_otimista(t_CLIENTE, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
@@ -101,10 +101,10 @@
 	dim EndEtg_ie, EndEtg_rg
 
 	dim s_fabricante, s_produto, s_descricao, s_descricao_html, s_qtde, s_readonly, s_vl_NF_readonly, s_vl_NF
-	dim s_preco_lista, s_vl_TotalItem, m_TotalItem, m_TotalDestePedido, m_TotalItemComRA
+	dim s_preco_lista, s_vl_TotalItem, m_TotalItem, m_TotalDestePedido, m_TotalItemComRA, m_TotalServicos
 	dim s_campo_focus
 	dim m_TotalDestePedidoComRA, s_TotalDestePedidoComRA
-	dim intIdx
+	dim intIdx, qtdeColProd, percDescServico, sPercDescServico, sColorPercDescServico, vl_servico_original_price, vl_servico_price, vl_total_produto_magento, vl_total_servico_magento, vl_frete_magento
 	dim s_qtde_dias
 	
 '	OBTÉM PARÂMETROS DE COMISSÃO E DESCONTO
@@ -197,6 +197,7 @@
 		id_magento_api_pedido_xml = Trim(Request("id_magento_api_pedido_xml"))
 		
 		If Not cria_recordset_otimista(tMAP_XML, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+		If Not cria_recordset_otimista(tMAP_ITEM, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 		If Not cria_recordset_otimista(tMAP_END_COB, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 		If Not cria_recordset_otimista(tMAP_END_ETG, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
@@ -2783,12 +2784,12 @@ var perc_max_comissao_e_desconto_a_utilizar;
 }
 .TdCliLbl
 {
-	width:130px;
+	width:200px;
 	text-align:right;
 }
 .TdCliCel
 {
-	width:520px;
+	width:450px;
 	text-align:left;
 }
 .TdCliBtn
@@ -2970,7 +2971,37 @@ var perc_max_comissao_e_desconto_a_utilizar;
 			<br /><span class="C"><%=sIdIndicador & " - " & sNomeIndicador%></span>
 		</td>
 	</tr>
-	<% elseif (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1") Or (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "9") then %>
+	<% elseif (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1") Or (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "9") then 
+			vl_frete_magento = converte_numero(tMAP_XML("shipping_amount")) - converte_numero(tMAP_XML("shipping_discount_amount"))
+			vl_total_produto_magento = 0
+			vl_total_servico_magento = 0
+			if Trim("" & tMAP_XML("magento_api_versao")) = CStr(VERSAO_API_MAGENTO_V1_SOAP_XML) then
+				vl_total_produto_magento = converte_numero(tMAP_XML("grand_total")) - vl_frete_magento
+			elseif Trim("" & tMAP_XML("magento_api_versao")) = CStr(VERSAO_API_MAGENTO_V2_REST_JSON) then
+				s = "SELECT " & _
+						"tMAP_ITEM.*" & _
+					" FROM t_MAGENTO_API_PEDIDO_XML tMAP" & _
+						" INNER JOIN t_MAGENTO_API_PEDIDO_XML_DECODE_ITEM tMAP_ITEM ON (tMAP.id = tMAP_ITEM.id_magento_api_pedido_xml)" & _
+					" WHERE" & _
+						" (tMAP_ITEM.id_magento_api_pedido_xml = " & id_magento_api_pedido_xml & ")" & _
+						" AND (" & _
+							"(tMAP.magento_api_versao = " & VERSAO_API_MAGENTO_V2_REST_JSON & ") AND (tMAP_ITEM.product_type IN ('" & COD_MAGENTO_PRODUCT_TYPE__SIMPLE & "', '" & COD_MAGENTO_PRODUCT_TYPE__VIRTUAL & "'))" & _
+							")" & _
+					" ORDER BY" & _
+						" tMAP_ITEM.id"
+				if tMAP_ITEM.State <> 0 then tMAP_ITEM.Close
+				tMAP_ITEM.open s, cn
+				do while Not tMAP_ITEM.Eof
+					if (UCase(Trim("" & tMAP_ITEM("product_type"))) = UCase(COD_MAGENTO_PRODUCT_TYPE__SIMPLE)) OR (Trim("" & tMAP_ITEM("product_type")) = "") then
+						'O campo row_total informa o valor total do item já calculado com os descontos e multiplicado pela quantidade
+						vl_total_produto_magento = vl_total_produto_magento + converte_numero(tMAP_ITEM("row_total"))
+					elseif UCase(Trim("" & tMAP_ITEM("product_type"))) = UCase(COD_MAGENTO_PRODUCT_TYPE__VIRTUAL) then
+						vl_total_servico_magento = vl_total_servico_magento + converte_numero(tMAP_ITEM("row_total"))
+						end if
+					tMAP_ITEM.MoveNext
+					loop
+				end if 'elseif Trim("" & tMAP_XML("magento_api_versao")) = CStr(VERSAO_API_MAGENTO_V2_REST_JSON)
+	%>
 	<tr>
 		<td class="MB ME MD TdCliLbl"><span class="PLTd">Indicador</span></td>
 		<td class="MB MD TdCliCel">
@@ -2980,19 +3011,31 @@ var perc_max_comissao_e_desconto_a_utilizar;
 	<tr>
 		<td class="MB ME MD TdCliLbl"><span class="PLTd">VL Frete</span></td>
 		<td class="MB MD TdCliCel">
-			<span class="C"><%=formata_moeda(tMAP_XML("shipping_amount"))%></span>
+			<span class="C"><%=formata_moeda(vl_frete_magento)%></span>
 		</td>
 	</tr>
 	<tr>
-		<td class="MB ME MD TdCliLbl"><span class="PLTd">VL Itens c/ Desc</span></td>
+		<td class="MB ME MD TdCliLbl"><span class="PLTd">VL Produtos c/ Desc</span></td>
 		<td class="MB MD TdCliCel">
-			<span class="C"><%=formata_moeda(converte_numero(tMAP_XML("grand_total"))-converte_numero(tMAP_XML("shipping_amount")))%></span>
+			<span class="C"><%=formata_moeda(vl_total_produto_magento)%></span>
 		</td>
 	</tr>
 	<tr>
-		<td class="MB ME MD TdCliLbl"><span class="PLTd">VL Total</span></td>
+		<td class="MB ME MD TdCliLbl"><span class="PLTd">VL Serviços c/ Desc</span></td>
 		<td class="MB MD TdCliCel">
-			<span class="C"><%=formata_moeda(tMAP_XML("grand_total"))%></span>
+			<span class="C"><%=formata_moeda(vl_total_servico_magento)%></span>
+		</td>
+	</tr>
+	<tr>
+		<td class="MB ME MD TdCliLbl"><span class="PLTd">VL Total (produtos e frete)</span></td>
+		<td class="MB MD TdCliCel">
+			<span class="C" style="color:blue;"><%=formata_moeda(vl_total_produto_magento+vl_frete_magento)%></span>
+		</td>
+	</tr>
+	<tr>
+		<td class="MB ME MD TdCliLbl"><span class="PLTd">VL Total (produtos, serviços e frete)</span></td>
+		<td class="MB MD TdCliCel">
+			<span class="C"><%=formata_moeda(vl_total_produto_magento+vl_total_servico_magento+vl_frete_magento)%></span>
 		</td>
 	</tr>
 
@@ -3090,7 +3133,9 @@ var perc_max_comissao_e_desconto_a_utilizar;
 	<td class="MB" align="right" valign="bottom"><span class="PLTd">VL Total</span></td>
 	</tr>
 
-<%	m_TotalDestePedido=0
+<%	qtdeColProd = 8
+	if (permite_RA_status = 1) And (rb_RA = "S") then qtdeColProd = qtdeColProd + 1
+	m_TotalDestePedido=0
 	m_TotalDestePedidoComRA=0
 	n = Lbound(v_item)-1
 	for i=1 to MAX_ITENS 
@@ -3258,6 +3303,85 @@ var perc_max_comissao_e_desconto_a_utilizar;
 			value='<%=formata_moeda(m_TotalDestePedido)%>' readonly tabindex=-1 />
 	</td>
 	</tr>
+
+	<%
+		if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then
+			s = "SELECT " & _
+					"*" & _
+				" FROM t_MAGENTO_API_PEDIDO_XML_DECODE_ITEM" & _
+				" WHERE" & _
+					" (id_magento_api_pedido_xml = " & id_magento_api_pedido_xml & ")" & _
+					" AND (product_type = '" & COD_MAGENTO_PRODUCT_TYPE__VIRTUAL & "')" & _
+				" ORDER BY" & _
+					" id"
+			if tMAP_ITEM.State <> 0 then tMAP_ITEM.Close
+			tMAP_ITEM.open s, cn
+			if Not tMAP_ITEM.Eof then
+				m_TotalServicos = 0
+	%>
+	<tr><td colspan="<%=CStr(qtdeColProd)%>">&nbsp;</td></tr>
+	<tr><td class="MB" colspan="<%=CStr(qtdeColProd)%>" align="left"><span class="PLTe">Serviços</span></td></tr>
+	<%
+				do while Not tMAP_ITEM.Eof
+					vl_servico_original_price = converte_numero(tMAP_ITEM("original_price"))
+					'O campo discount_amount informa o valor total do desconto já multiplicado pela quantidade, ou seja, não há campo com o valor unitário do desconto aplicado e
+					'nem o valor unitário de venda do item já com o desconto aplicado.
+					'Já o campo row_total informa o valor total do item já calculado com os descontos e multiplicado pela quantidade
+					vl_servico_price = 0
+					if converte_numero(tMAP_ITEM("qty_ordered")) > 0 then
+						vl_servico_price = converte_numero(tMAP_ITEM("row_total")) / converte_numero(tMAP_ITEM("qty_ordered"))
+						end if
+	%>
+	<tr>
+		<td class="MB ME" align="left">
+			&nbsp;
+		</td>
+		<td class="MDB" align="left">
+			<input name="c_servico_sku" class="PLLe" style="width:55px;" value="<%=Trim("" & tMAP_ITEM("sku"))%>" readonly tabindex="-1" />
+		</td>
+		<td class="MDB" align="left" style="width:277px;">
+			<input name="c_servico_descricao" class="PLLe" style="width:277px;" value="<%=Trim("" & tMAP_ITEM("name"))%>" readonly tabindex="-1" />
+		</td>
+		<td class="MDB" align="right">
+			<input name="c_servico_qtde" class="PLLd" style="width:27px;" value="<%=Trim("" & tMAP_ITEM("qty_ordered"))%>" readonly tabindex="-1" />
+		</td>
+		<% if (permite_RA_status = 1) And (rb_RA = "S") then %>
+		<td class="MDB" align="right">
+			<input name="c_servico_vl_NF" class="PLLd" style="width:62px;" value="<%=formata_moeda(vl_servico_price)%>" readonly tabindex="-1" />
+		</td>
+		<% end if %>
+		<td class="MDB" align="right">
+			<input name="c_servico_preco_lista" class="PLLd" style="width:62px;" value="<%=formata_moeda(vl_servico_original_price)%>" readonly tabindex="-1" />
+		</td>
+		<td class="MDB" align="right">
+		<% percDescServico = 0
+			sPercDescServico = ""
+			sColorPercDescServico = "green"
+			if vl_servico_original_price <> 0 then
+				percDescServico = 100*((vl_servico_original_price - vl_servico_price)/vl_servico_original_price)
+				if percDescServico <> 0 then sPercDescServico = formata_perc(percDescServico)
+				if percDescServico < 0 then sColorPercDescServico = "red"
+				end if%>
+			<input name="c_servico_desc" class="PLLd" style="width:36px;color:<%=sColorPercDescServico%>;" value="<%=sPercDescServico%>" readonly tabindex="-1" />
+		</td>
+		<td class="MDB" align="right">
+			<input name="c_servico_vl_unitario" class="PLLd" style="width:62px;" value="<%=formata_moeda(vl_servico_price)%>" readonly tabindex="-1" />
+		</td>
+		<td class="MDB" align="right">
+			<input name="c_servico_vl_total" class="PLLd" style="width:70px;" value="<%=formata_moeda(tMAP_ITEM("row_total"))%>" readonly tabindex="-1" />
+		</td>
+	</tr>
+	<%
+				m_TotalServicos = m_TotalServicos + converte_numero(tMAP_ITEM("row_total"))
+				tMAP_ITEM.MoveNext
+				loop %>
+	<tr>
+		<td class="MD" colspan="<%=CStr(qtdeColProd-1)%>">&nbsp;</td>
+		<td class="MDB" align="right"><input name="c_total_servicos" id="c_total_servicos" class="PLLd" style="width:70px;color:blue;" value="<%=formata_moeda(m_TotalServicos)%>" readonly tabindex="-1" /></td>
+	</tr>
+	<%
+			end if 'if Not tMAP_ITEM.Eof
+		end if %>
 </table>
 
 <%	intColSpan=3
@@ -3746,6 +3870,9 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		if tMAP_END_ETG.State <> 0 then tMAP_END_ETG.Close
 		set tMAP_END_ETG = nothing
 		
+		if tMAP_ITEM.State <> 0 then tMAP_ITEM.Close
+		set tMAP_ITEM = nothing
+
 		if tMAP_XML.State <> 0 then tMAP_XML.Close
 		set tMAP_XML = nothing
 		end if

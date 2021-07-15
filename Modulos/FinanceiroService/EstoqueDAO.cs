@@ -1135,6 +1135,7 @@ namespace FinanceiroService
 			String strComplemento;
 			String strIdOrdemServico;
 			SqlCommand cmCommand;
+			SqlCommand cmCommandXLock;
 			SqlDataAdapter daAdapter;
 			DataTable dtbConsulta = new DataTable();
 			DataRow rowConsulta;
@@ -1157,12 +1158,30 @@ namespace FinanceiroService
 
 				#region [ Cria objetos de BD ]
 				cmCommand = BD.criaSqlCommand();
+				cmCommandXLock = BD.criaSqlCommand();
 				daAdapter = BD.criaSqlDataAdapter();
 				daAdapter.SelectCommand = cmCommand;
 				daAdapter.MissingSchemaAction = MissingSchemaAction.Add;
 				#endregion
 
 				#region [ Obtém a quantidade vendida sem presença no estoque ]
+
+				#region [ Bloqueia registro p/ evitar acesso concorrente ]
+				if (Global.Parametros.Geral.TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO)
+				{
+					strSql = "UPDATE t_ESTOQUE_MOVIMENTO SET" +
+								" dummy = ~dummy" +
+							" WHERE" +
+								" (anulado_status = 0)" +
+								" AND (estoque = '" + Global.Cte.TipoEstoque.ID_ESTOQUE_SEM_PRESENCA + "')" +
+								" AND (pedido = '" + pedido + "')" +
+								" AND (fabricante = '" + fabricante + "')" +
+								" AND (produto = '" + produto + "')";
+					cmCommandXLock.CommandText = strSql;
+					BD.executaNonQuery(ref cmCommandXLock);
+				}
+				#endregion
+
 				strSql = "SELECT" +
 							" Coalesce(Sum(qtde), 0) AS total" +
 						" FROM t_ESTOQUE_MOVIMENTO" +
@@ -1206,6 +1225,24 @@ namespace FinanceiroService
 				#endregion
 
 				#region [ Obtém os "lotes" do produto disponíveis no estoque (política FIFO) ]
+
+				#region [ Bloqueia registro p/ evitar acesso concorrente ]
+				if (Global.Parametros.Geral.TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO)
+				{
+					strSql = "UPDATE t_ESTOQUE_ITEM SET" +
+								" t_ESTOQUE_ITEM.dummy = ~t_ESTOQUE_ITEM.dummy" +
+							" FROM t_ESTOQUE" +
+								" INNER JOIN t_ESTOQUE_ITEM ON (t_ESTOQUE.id_estoque=t_ESTOQUE_ITEM.id_estoque)" +
+							" WHERE" +
+								" (t_ESTOQUE.id_nfe_emitente = " + id_nfe_emitente.ToString() + ")" +
+								" AND (t_ESTOQUE.fabricante = '" + fabricante + "')" +
+								" AND (produto = '" + produto + "')" +
+								" AND ((qtde - qtde_utilizada) > 0)";
+					cmCommandXLock.CommandText = strSql;
+					BD.executaNonQuery(ref cmCommandXLock);
+				}
+				#endregion
+
 				strSql = "SELECT" +
 							" t_ESTOQUE.id_estoque," +
 							" (qtde - qtde_utilizada) AS saldo" +
@@ -1248,6 +1285,21 @@ namespace FinanceiroService
 					#endregion
 
 					#region [ t_ESTOQUE_ITEM: saída de produtos ]
+
+					#region [ Bloqueia registro p/ evitar acesso concorrente ]
+					if (Global.Parametros.Geral.TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO)
+					{
+						strSql = "UPDATE t_ESTOQUE_ITEM SET" +
+									" dummy = ~dummy" +
+								" WHERE" +
+									" (id_estoque = '" + v_estoque[iv] + "')" +
+									" AND (fabricante = '" + fabricante + "')" +
+									" AND (produto = '" + produto + "')";
+						cmCommandXLock.CommandText = strSql;
+						BD.executaNonQuery(ref cmCommandXLock);
+					}
+					#endregion
+
 					strSql = "SELECT" +
 								" qtde," +
 								" qtde_utilizada," +
@@ -1453,6 +1505,7 @@ namespace FinanceiroService
 			String strIdOrdemServico;
 			List<String> v_estoque = new List<String>();
 			SqlCommand cmCommand;
+			SqlCommand cmCommandXLock;
 			SqlDataAdapter daAdapter;
 			DataTable dtbConsulta = new DataTable();
 			DataRow rowConsulta;
@@ -1464,6 +1517,7 @@ namespace FinanceiroService
 			{
 				#region [ Cria objetos de BD ]
 				cmCommand = BD.criaSqlCommand();
+				cmCommandXLock = BD.criaSqlCommand();
 				daAdapter = BD.criaSqlDataAdapter();
 				daAdapter.SelectCommand = cmCommand;
 				daAdapter.MissingSchemaAction = MissingSchemaAction.Add;
@@ -1480,6 +1534,24 @@ namespace FinanceiroService
 				}
 				rowConsulta = dtbConsulta.Rows[0];
 				id_nfe_emitente = BD.readToInt(rowConsulta["id_nfe_emitente"]);
+				#endregion
+
+				#region [ Bloqueia registro p/ evitar acesso concorrente ]
+				if (Global.Parametros.Geral.TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO)
+				{
+					strSql = "UPDATE t_ESTOQUE_MOVIMENTO SET" +
+								" t_ESTOQUE_MOVIMENTO.dummy = ~t_ESTOQUE_MOVIMENTO.dummy" +
+							" FROM t_ESTOQUE" +
+								" INNER JOIN t_ESTOQUE_MOVIMENTO ON (t_ESTOQUE.id_estoque = t_ESTOQUE_MOVIMENTO.id_estoque)" +
+							" WHERE" +
+								" (anulado_status = 0)" +
+								" AND (estoque = '" + Global.Cte.TipoEstoque.ID_ESTOQUE_VENDIDO + "')" +
+								" AND (pedido = '" + pedido + "')" +
+								" AND (t_ESTOQUE_MOVIMENTO.fabricante = '" + fabricante + "')" +
+								" AND (produto = '" + produto + "')";
+					cmCommandXLock.CommandText = strSql;
+					BD.executaNonQuery(ref cmCommandXLock);
+				}
 				#endregion
 
 				// 1) LEMBRE-SE DE QUE PODE HAVER MAIS DE UM REGISTRO EM T_ESTOQUE_MOVIMENTO 
@@ -1524,6 +1596,20 @@ namespace FinanceiroService
 					#endregion
 
 					#region [ Recupera o registro do movimento ]
+
+					#region [ Bloqueia registro p/ evitar acesso concorrente ]
+					if (Global.Parametros.Geral.TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO)
+					{
+						strSql = "UPDATE t_ESTOQUE_MOVIMENTO SET" +
+									" dummy = ~dummy" +
+								" WHERE" +
+									" (anulado_status = 0)" +
+									" AND (id_movimento = '" + v_estoque[i] + "')";
+						cmCommandXLock.CommandText = strSql;
+						BD.executaNonQuery(ref cmCommandXLock);
+					}
+					#endregion
+
 					strSql = "SELECT " +
 								"*" +
 							" FROM t_ESTOQUE_MOVIMENTO" +
@@ -1597,6 +1683,21 @@ namespace FinanceiroService
 					#endregion
 
 					#region [ t_ESTOQUE_ITEM: estorna produtos ao saldo ]
+
+					#region [ Bloqueia registro p/ evitar acesso concorrente ]
+					if (Global.Parametros.Geral.TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO)
+					{
+						strSql = "UPDATE t_ESTOQUE_ITEM SET" +
+									" dummy = ~dummy" +
+								" WHERE" +
+									" (id_estoque = '" + id_estoque_aux + "')" +
+									" AND (fabricante = '" + fabricante + "')" +
+									" AND (produto = '" + produto + "')";
+						cmCommandXLock.CommandText = strSql;
+						BD.executaNonQuery(ref cmCommandXLock);
+					}
+					#endregion
+
 					strSql = "SELECT" +
 								" data_ult_movimento," +
 								" qtde_utilizada" +
@@ -1725,6 +1826,7 @@ namespace FinanceiroService
 			String strIdOrdemServico;
 			List<String> v_estoque = new List<String>();
 			SqlCommand cmCommand;
+			SqlCommand cmCommandXLock;
 			SqlDataAdapter daAdapter;
 			DataTable dtbConsulta = new DataTable();
 			DataRow rowConsulta;
@@ -1736,6 +1838,7 @@ namespace FinanceiroService
 			{
 				#region [ Cria objetos de BD ]
 				cmCommand = BD.criaSqlCommand();
+				cmCommandXLock = BD.criaSqlCommand();
 				daAdapter = BD.criaSqlDataAdapter();
 				daAdapter.SelectCommand = cmCommand;
 				daAdapter.MissingSchemaAction = MissingSchemaAction.Add;
@@ -1758,6 +1861,23 @@ namespace FinanceiroService
 				// LEMBRE-SE DE INCLUIR A RESTRIÇÃO "anulado_status=0" P/ SELECIONAR APENAS 
 				// OS MOVIMENTOS VÁLIDOS, POIS "anulado_status<>0" INDICAM MOVIMENTOS QUE 
 				// FORAM CANCELADOS E QUE ESTÃO NO BD APENAS POR QUESTÃO DE HISTÓRICO.
+
+				#region [ Bloqueia registro p/ evitar acesso concorrente ]
+				if (Global.Parametros.Geral.TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO)
+				{
+					strSql = "UPDATE t_ESTOQUE_MOVIMENTO SET" +
+								" dummy = ~dummy" +
+							" WHERE" +
+								" (anulado_status = 0)" +
+								" AND (estoque = '" + Global.Cte.TipoEstoque.ID_ESTOQUE_SEM_PRESENCA + "')" +
+								" AND (pedido = '" + pedido + "')" +
+								" AND (fabricante = '" + fabricante + "')" +
+								" AND (produto = '" + produto + "')";
+					cmCommandXLock.CommandText = strSql;
+					BD.executaNonQuery(ref cmCommandXLock);
+				}
+				#endregion
+
 				strSql = "SELECT" +
 							" id_movimento" +
 						" FROM t_ESTOQUE_MOVIMENTO" +
@@ -1790,6 +1910,20 @@ namespace FinanceiroService
 					#endregion
 
 					#region [ Obtém o registro do movimento ]
+
+					#region [ Bloqueia registro p/ evitar acesso concorrente ]
+					if (Global.Parametros.Geral.TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO)
+					{
+						strSql = "UPDATE t_ESTOQUE_MOVIMENTO SET" +
+									" dummy = ~dummy" +
+								" WHERE" +
+									" (anulado_status = 0)" +
+									" AND (id_movimento = '" + v_estoque[i] + "')";
+						cmCommandXLock.CommandText = strSql;
+						BD.executaNonQuery(ref cmCommandXLock);
+					}
+					#endregion
+
 					strSql = "SELECT " +
 								"*" +
 							" FROM t_ESTOQUE_MOVIMENTO" +

@@ -1899,6 +1899,17 @@ dim rP
 						" AND e.NFe_serie_NF = t.Nfe_serie_remessa AND e.NFe_numero_NF = t.Nfe_numero_remessa)"
 			end if
 		end if
+	'Para assegurar que não haverá nenhum risco de obter um número de NFe errado (de outro pedido) devido a cancelamento de NFe e
+	'reaproveitamento desse número em outro pedido, verifica se o número da NFe consta no pedido
+	s = s & _
+			" AND (" & _
+				"(NFe_numero_NF IN (SELECT num_obs_2 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+				" OR " & _
+				"(NFe_numero_NF IN (SELECT num_obs_3 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+				" OR " & _
+				"(NFe_numero_NF IN (SELECT num_obs_4 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+			")"
+
 	s = s & " ORDER BY" & _
 			" id DESC"
 	set r = cn.Execute(s)
@@ -2040,6 +2051,207 @@ end function
 
 
 ' ___________________________________________________________________________________
+' MONTA LINK PARA DANFE NFE
+' Monta o link para a DANFE da NFe especificada, se existir
+function monta_link_para_DANFE_NFe(byval pedido, byval numero_NFe, byval max_dias_emissao, byval html_elemento_interno_anchor)
+dim s, strSerieNFe, strNumeroNFe
+dim strArqDanfe, strArqDanfeNovo, strArqDanfeAntigo, strArqDanfeCompletoNovo, strArqDanfeCompletoAntigo, strPathArqDanfe, strLinkDanfe
+dim intIdNFeEmitente, lngSerieNFe, lngNumeroNFe, lngQtdeDiasEmissao, lngMaxDiasEmissao
+dim blnArqDanfeExiste
+dim fso
+dim r
+dim tNE, tNFE
+dim dbcNFe
+dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptografadaBd
+dim chave
+dim senha_decodificada
+dim strFlagCancelada
+dim blnQtdeDiasOK
+	
+	monta_link_para_DANFE_NFe = ""
+	
+	pedido = Trim("" & pedido)
+	if pedido = "" then exit function
+	
+	numero_NFe = Trim("" & numero_NFe)
+	if numero_NFe = "" then exit function
+
+	lngMaxDiasEmissao = 0
+	if IsNumeric(max_dias_emissao) then lngMaxDiasEmissao = CLng(max_dias_emissao)
+	
+	s = "SELECT id_nfe_emitente FROM t_PEDIDO WHERE (pedido = '" & pedido & "')"
+	set r = cn.Execute(s)
+	if r.Eof then exit function
+
+	intIdNFeEmitente = r("id_nfe_emitente")
+
+'	LOCALIZA O REGISTRO DA ÚLTIMA EMISSÃO DESSA NFE
+'	NÃO RESTRINGE POR Nº DE PEDIDO P/ NÃO EXCLUIR AS EMISSÕES MANUAIS EM QUE NÃO SE INFORMOU O Nº PEDIDO
+'   Tipo de NFe: 0-Entrada  1-Saída
+	s = "SELECT" & _
+			" e.id_nfe_emitente," & _
+			" e.NFe_serie_NF," & _
+			" e.NFe_numero_NF," & _
+			" DateDiff(d, e.dt_emissao, getdate()) AS qtde_dias_emissao" & _
+		" FROM t_NFe_EMISSAO e" & _
+		" WHERE" & _
+			" (id_nfe_emitente = " & intIdNFeEmitente & ")" & _
+			" AND (NFe_numero_NF = " & numero_NFe & ")" & _
+			" AND (e.tipo_NF = '1')" & _
+			" AND (e.st_anulado = 0)" & _
+			" AND (e.codigo_retorno_NFe_T1 = 1)"
+	'Para assegurar que não haverá nenhum risco de obter um número de NFe errado (de outro pedido) devido a cancelamento de NFe e
+	'reaproveitamento desse número em outro pedido, verifica se o número da NFe consta no pedido
+	s = s & _
+			" AND (" & _
+				"(NFe_numero_NF IN (SELECT num_obs_2 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+				" OR " & _
+				"(NFe_numero_NF IN (SELECT num_obs_3 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+				" OR " & _
+				"(NFe_numero_NF IN (SELECT num_obs_4 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+			")"
+
+	s = s & " ORDER BY" & _
+			" id DESC"
+	set r = cn.Execute(s)
+	if r.Eof then 
+		r.Close
+		set r = nothing
+		exit function
+		end if
+	
+	blnArqDanfeExiste = false
+	do while (Not r.Eof) And (Not blnArqDanfeExiste)
+		intIdNFeEmitente = CInt(r("id_nfe_emitente"))
+		lngSerieNFe = CLng(r("NFe_serie_NF"))
+		strSerieNFe = NFeFormataSerieNF(lngSerieNFe)
+		lngNumeroNFe = CLng(r("NFe_numero_NF"))
+		strNumeroNFe = NFeFormataNumeroNF(lngNumeroNFe)
+		lngQtdeDiasEmissao = CLng(r("qtde_dias_emissao"))
+	
+		'r.Close
+		'set r = nothing
+
+	'	EXCEDE PERÍODO MÁXIMO EM QUE O DANFE FICA ACESSÍVEL NO PEDIDO?
+		blnQtdeDiasOK = true
+		if lngMaxDiasEmissao > 0 then
+			if lngQtdeDiasEmissao > lngMaxDiasEmissao then blnQtdeDiasOK = false 'exit function
+			end if
+			
+		if blnQtdeDiasOK then
+		'	MONTA O NOME DO ARQUIVO DA DANFE
+			strArqDanfe = ""
+			strArqDanfeAntigo = "NFe_" & strNumeroNFe & "_Série_" & strSerieNFe & ".PDF"
+			strArqDanfeNovo = "NFe_" & strNumeroNFe & "_Serie_" & strSerieNFe & ".PDF"
+			if intIdNFeEmitente = ID_NFE_EMITENTE__OLD01_01 then
+				strArqDanfeAntigo = "OLD01_" & strArqDanfeAntigo
+				strArqDanfeNovo = "OLD01_" & strArqDanfeNovo
+			elseif intIdNFeEmitente = ID_NFE_EMITENTE__OLD02_02 then
+				strArqDanfeAntigo = "OLD02_" & strArqDanfeAntigo
+				strArqDanfeNovo = "OLD02_" & strArqDanfeNovo
+			elseif intIdNFeEmitente = ID_NFE_EMITENTE__OLD03_01 then
+				strArqDanfeAntigo = "OLD03_" & strArqDanfeAntigo
+				strArqDanfeNovo = "OLD03_" & strArqDanfeNovo
+			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_01 then
+				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
+				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
+			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_03 then
+				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
+                strArqDanfeNovo = "DIS_" & strArqDanfeNovo
+			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_903 then
+				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
+				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
+			else
+				exit function
+				end if
+
+			strPathArqDanfe = obtem_path_pdf_danfe(intIdNFeEmitente)
+			strArqDanfeCompletoAntigo = strPathArqDanfe & "\" & strArqDanfeAntigo
+			strArqDanfeCompletoNovo = strPathArqDanfe & "\" & strArqDanfeNovo
+	
+			set fso = Server.CreateObject("Scripting.FileSystemObject")
+			blnArqDanfeExiste = fso.FileExists(strArqDanfeCompletoNovo)
+			if blnArqDanfeExiste then strArqDanfe = strArqDanfeNovo
+			if Not blnArqDanfeExiste then
+				blnArqDanfeExiste = fso.FileExists(strArqDanfeCompletoAntigo)
+				if blnArqDanfeExiste then strArqDanfe = strArqDanfeAntigo
+				end if
+			set fso = nothing
+			end if
+		r.MoveNext
+		loop
+
+	r.Close
+	set r = nothing
+	if Not blnArqDanfeExiste then exit function
+	
+'	VERIFICA SE A NFe FOI CANCELADA
+	s = "SELECT" & _
+			" NFe_T1_servidor_BD," & _
+			" NFe_T1_nome_BD," & _
+			" NFe_T1_usuario_BD," & _
+			" NFe_T1_senha_BD" & _
+		" FROM t_NFe_EMITENTE" & _
+		" WHERE" & _
+			" (id = " & Cstr(intIdNFeEmitente) & ")"
+	set tNE = cn.Execute(s)
+	if tNE.Eof then exit function
+	
+	strNfeT1ServidorBd = Trim("" & tNE("NFe_T1_servidor_BD"))
+	strNfeT1NomeBd = Trim("" & tNE("NFe_T1_nome_BD"))
+	strNfeT1UsuarioBd = Trim("" & tNE("NFe_T1_usuario_BD"))
+	strNfeT1SenhaCriptografadaBd = Trim("" & tNE("NFe_T1_senha_BD"))
+	
+	tNE.Close
+	set tNE = nothing
+	
+	chave = gera_chave(FATOR_BD)
+	decodifica_dado strNfeT1SenhaCriptografadaBd, senha_decodificada, chave
+	s = "Provider=SQLOLEDB;" & _
+		"Data Source=" & strNfeT1ServidorBd & ";" & _
+		"Initial Catalog=" & strNfeT1NomeBd & ";" & _
+		"User ID=" & strNfeT1UsuarioBd & ";" & _
+		"Password=" & senha_decodificada & ";"
+	set dbcNFe = server.CreateObject("ADODB.Connection")
+	dbcNFe.ConnectionTimeout = 45
+	dbcNFe.CommandTimeout = 900
+	dbcNFe.ConnectionString = s
+	dbcNFe.Open
+
+	s = "SELECT" & _
+			" Nfe," & _
+			" Serie," & _
+			" Convert(tinyint, Coalesce(CANCELADA,0)) AS CANCELADA" & _
+		" FROM NFE" & _
+		" WHERE" & _
+			" (Serie = '" & NFeFormataSerieNF(lngSerieNFe) & "')" & _
+			" AND (Nfe = '" & NFeFormataNumeroNF(lngNumeroNFe) & "')"
+	set tNFE = dbcNFe.Execute(s)
+	strFlagCancelada = ""
+	if tNFE.Eof then
+		dbcNFe.Close
+		set dbcNFe = nothing
+		exit function
+		end if
+		
+	strFlagCancelada = Trim("" & tNFE("CANCELADA"))
+	
+	tNFE.Close
+	set tNFE = nothing
+	
+	dbcNFe.Close
+	set dbcNFe = nothing
+	
+'	NFE FOI CANCELADA?
+	if strFlagCancelada = "1" then exit function
+
+	strLinkDanfe = "<a name='lnkDanfePedido' href='../Global/DownloadDanfe.asp?file=" & strArqDanfe & "&emitente=" & Cstr(intIdNFeEmitente) & "&force=true" & "' title='Clique para consultar o PDF da NFe'>" & html_elemento_interno_anchor & "</a>"
+	monta_link_para_DANFE_NFe = strLinkDanfe
+end function
+
+
+
+' ___________________________________________________________________________________
 ' MONTA LINK PARA ULTIMA DANFE
 ' - traz a última nota fiscal de um pedido (seja de venda ou de remessa), se houver
 
@@ -2080,6 +2292,23 @@ dim blnLocalizouRemessa
 			s = "SELECT * FROM t_NFe_TRIANGULAR t WHERE t.pedido = '" & pedido & "'" & _
 				" AND (t.Nfe_venda_emissao_status = 2)" & _
 				" AND (t.emissao_status IN (1, 2))"
+			'Para assegurar que não haverá nenhum risco de obter um número de NFe errado (de outro pedido) devido a cancelamento de NFe e
+			'reaproveitamento desse número em outro pedido, verifica se o número da NFe consta no pedido
+			s = s & _
+				" AND (" & _
+					"(Nfe_numero_remessa IN (SELECT num_obs_2 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+					" OR " & _
+					"(Nfe_numero_remessa IN (SELECT num_obs_3 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+					" OR " & _
+					"(Nfe_numero_remessa IN (SELECT num_obs_4 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+				")" & _
+				" AND (" & _
+					"(Nfe_numero_venda IN (SELECT num_obs_2 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+					" OR " & _
+					"(Nfe_numero_venda IN (SELECT num_obs_3 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+					" OR " & _
+					"(Nfe_numero_venda IN (SELECT num_obs_4 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+				")"
 			set r = cn.Execute(s)
 			if Not r.Eof then 
 				lngNumVenda = CLng(r("Nfe_numero_venda"))
@@ -2108,7 +2337,18 @@ dim blnLocalizouRemessa
 				" AND (st_anulado = 0)" & _
 				" AND (codigo_retorno_NFe_T1 = 1)" & _
 				" AND (NFe_numero_NF = " & CStr(lngNumRemessa) & ")" & _
-				" AND (id_nfe_emitente = " & CStr(intIdEmitenteRemessa) & ")" & _
+				" AND (id_nfe_emitente = " & CStr(intIdEmitenteRemessa) & ")"
+		'Para assegurar que não haverá nenhum risco de obter um número de NFe errado (de outro pedido) devido a cancelamento de NFe e
+		'reaproveitamento desse número em outro pedido, verifica se o número da NFe consta no pedido
+		s = s & _
+				" AND (" & _
+					"(NFe_numero_NF IN (SELECT num_obs_2 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+					" OR " & _
+					"(NFe_numero_NF IN (SELECT num_obs_3 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+					" OR " & _
+					"(NFe_numero_NF IN (SELECT num_obs_4 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+				")"
+		s = s & _
 			" ORDER BY" & _
 				" id DESC"
 		set r = cn.Execute(s)
@@ -2131,6 +2371,16 @@ dim blnLocalizouRemessa
 				" AND (tipo_NF = '1')" & _
 				" AND (st_anulado = 0)" & _
 				" AND (codigo_retorno_NFe_T1 = 1)"
+		'Para assegurar que não haverá nenhum risco de obter um número de NFe errado (de outro pedido) devido a cancelamento de NFe e
+		'reaproveitamento desse número em outro pedido, verifica se o número da NFe consta no pedido
+		s = s & _
+				" AND (" & _
+					"(NFe_numero_NF IN (SELECT num_obs_2 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+					" OR " & _
+					"(NFe_numero_NF IN (SELECT num_obs_3 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+					" OR " & _
+					"(NFe_numero_NF IN (SELECT num_obs_4 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+				")"
 
 		if lngNumVenda > 0 then
 			s = s & " AND (NFe_numero_NF <> " & CStr(lngNumVenda) & ")"
@@ -2315,6 +2565,23 @@ dim rP
 			s = "SELECT * FROM t_NFe_TRIANGULAR t WHERE t.pedido = '" & pedido & "'" & _
 				" AND (t.Nfe_venda_emissao_status = 2)" & _
 				" AND (t.emissao_status IN (1, 2))"
+			'Para assegurar que não haverá nenhum risco de obter um número de NFe errado (de outro pedido) devido a cancelamento de NFe e
+			'reaproveitamento desse número em outro pedido, verifica se o número da NFe consta no pedido
+			s = s & _
+				" AND (" & _
+					"(Nfe_numero_remessa IN (SELECT num_obs_2 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+					" OR " & _
+					"(Nfe_numero_remessa IN (SELECT num_obs_3 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+					" OR " & _
+					"(Nfe_numero_remessa IN (SELECT num_obs_4 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+				")" & _
+				" AND (" & _
+					"(Nfe_numero_venda IN (SELECT num_obs_2 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+					" OR " & _
+					"(Nfe_numero_venda IN (SELECT num_obs_3 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+					" OR " & _
+					"(Nfe_numero_venda IN (SELECT num_obs_4 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+				")"
 			set r = cn.Execute(s)
 			if Not r.Eof then 
 				lngNumVenda = CLng(r("Nfe_numero_venda"))
@@ -2347,7 +2614,18 @@ dim rP
 				" AND (st_anulado = 0)" & _
 				" AND (codigo_retorno_NFe_T1 = 1)" & _
 				" AND (NFe_numero_NF = " & CStr(lngNumRemessa) & ")" & _
-				" AND (id_nfe_emitente = " & CStr(intIdEmitenteRemessa) & ")" & _
+				" AND (id_nfe_emitente = " & CStr(intIdEmitenteRemessa) & ")"
+		'Para assegurar que não haverá nenhum risco de obter um número de NFe errado (de outro pedido) devido a cancelamento de NFe e
+		'reaproveitamento desse número em outro pedido, verifica se o número da NFe consta no pedido
+		s = s & _
+				" AND (" & _
+					"(NFe_numero_NF IN (SELECT num_obs_2 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+					" OR " & _
+					"(NFe_numero_NF IN (SELECT num_obs_3 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+					" OR " & _
+					"(NFe_numero_NF IN (SELECT num_obs_4 FROM t_PEDIDO WHERE pedido = '" & pedido & "'))" & _
+				")"
+		s = s & _
 			" ORDER BY" & _
 				" id DESC"
 		set r = cn.Execute(s)
@@ -2494,7 +2772,23 @@ end function
 ' MONTA LINK PARA DANFE COM ICONE PDF
 '
 function monta_link_para_DANFE_com_icone_PDF(byval pedido, byval max_dias_emissao)
-	monta_link_para_DANFE_com_icone_PDF = monta_link_para_DANFE(pedido, max_dias_emissao, "<img src='../botao/pdf.png' border='0'>")
+	monta_link_para_DANFE_com_icone_PDF = monta_link_para_DANFE(pedido, max_dias_emissao, "<img class='notPrint' src='../botao/pdf.png' border='0'>")
+end function
+
+
+' ___________________________________________________________________________________
+' MONTA LINK PARA DANFE NFE COM ICONE PDF
+'
+function monta_link_para_DANFE_NFe_com_icone_PDF(byval pedido, byval numero_NFe, byval max_dias_emissao)
+	monta_link_para_DANFE_NFe_com_icone_PDF = monta_link_para_DANFE_NFe(pedido, numero_NFe, max_dias_emissao, "<img class='notPrint' src='../botao/pdf.png' border='0'>")
+end function
+
+
+' ___________________________________________________________________________________
+' MONTA LINK PARA DANFE NFE COM ICONE PDF PEQ
+'
+function monta_link_para_DANFE_NFe_com_icone_PDF_peq(byval pedido, byval numero_NFe, byval max_dias_emissao)
+	monta_link_para_DANFE_NFe_com_icone_PDF_peq = monta_link_para_DANFE_NFe(pedido, numero_NFe, max_dias_emissao, "<img class='notPrint' src='../botao/pdf_12.png' border='0'>")
 end function
 
 
@@ -2502,14 +2796,14 @@ end function
 ' MONTA LINK PARA ULTIMA DANFE COM ICONE PDF
 '
 function monta_link_para_ultima_DANFE_com_icone_PDF(byval pedido, byval max_dias_emissao)
-	monta_link_para_ultima_DANFE_com_icone_PDF = monta_link_para_ultima_DANFE(pedido, max_dias_emissao, "<img src='../botao/pdf_truck_22.png' border='0'>")
+	monta_link_para_ultima_DANFE_com_icone_PDF = monta_link_para_ultima_DANFE(pedido, max_dias_emissao, "<img class='notPrint' src='../botao/pdf_truck_22.png' border='0'>")
 end function
 
 ' ___________________________________________________________________________________
 ' MONTA LINK PARA DANFE REMESSA COM ICONE PDF
 '
 function monta_link_para_DANFE_remessa_com_icone_PDF(byval pedido, byval max_dias_emissao)
-	monta_link_para_DANFE_remessa_com_icone_PDF = monta_link_para_DANFE_remessa(pedido, max_dias_emissao, "<img src='../botao/pdf_truck_22.png' border='0'>")
+	monta_link_para_DANFE_remessa_com_icone_PDF = monta_link_para_DANFE_remessa(pedido, max_dias_emissao, "<img class='notPrint' src='../botao/pdf_truck_22.png' border='0'>")
 end function
 
 

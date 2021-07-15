@@ -1330,9 +1330,20 @@ function fPNECConcluir(f)
 	f.submit();
 }
 
+function NormalizaNumeroPedidoMagento(numeroMagento) {
+	var sNumeroNormalizado;
+	sNumeroNormalizado = retorna_so_digitos(numeroMagento);
+	if (sNumeroNormalizado.length == 0) return "";
+	while (sNumeroNormalizado.length < 9) {
+		sNumeroNormalizado = "0" + sNumeroNormalizado;
+	}
+	return sNumeroNormalizado;
+}
+
 function ConsultaPedidoMagentoAjax(f)
 {
 	var c, numero_magento, operationControlTicket, loja, usuario, sessionToken;
+	f.c_numero_magento.value = NormalizaNumeroPedidoMagento(f.c_numero_magento.value);
 	numero_magento=f.c_numero_magento.value;
 	numero_magento=retorna_so_digitos(numero_magento);
 	if (numero_magento.length!=9)
@@ -1368,7 +1379,16 @@ function ConsultaPedidoMagentoAjax(f)
 	.fail(function (jqXHR, textStatus) {
 		$("#divAjaxRunning").hide();
 		var msgErro = "";
-		if (textStatus.toString().length > 0) msgErro = "Mensagem de Status: " + textStatus.toString();
+		var blnOmitirCampoResponseTextCompleto = false;
+		try {
+			if (jqXHR.responseText.toString().length > 0) {
+				var jsonResponseError = JSON.parse(jqXHR.responseText);
+				if (jsonResponseError.ExceptionMessage.toString().length > 0) { if (msgErro.length > 0) msgErro += "\n\n"; msgErro += jsonResponseError.ExceptionMessage.toString(); blnOmitirCampoResponseTextCompleto = true;}
+			}
+		} catch (e) { }
+
+		if (textStatus.toString().length > 0) { if (msgErro.length > 0) msgErro += "\n\n"; msgErro += "Mensagem de Status: " + textStatus.toString(); }
+
 		try {
 			if (jqXHR.status.toString().length > 0) {if (msgErro.length > 0) msgErro += "\n\n"; msgErro += "Status: " + jqXHR.status.toString();}
 		} catch (e) { }
@@ -1376,11 +1396,13 @@ function ConsultaPedidoMagentoAjax(f)
 		try {
 			if (jqXHR.statusText.toString().length > 0) {if (msgErro.length > 0) msgErro += "\n\n"; msgErro += "Descrição do Status: " + jqXHR.statusText.toString();}
 		} catch (e) { }
-		
-		try {
-			if (jqXHR.responseText.toString().length > 0) {if (msgErro.length > 0) msgErro += "\n\n"; msgErro += "Mensagem de Resposta: " + jqXHR.responseText.toString();}
-		} catch (e) { }
-		
+
+		if (!blnOmitirCampoResponseTextCompleto) {
+			try {
+				if (jqXHR.responseText.toString().length > 0) { if (msgErro.length > 0) msgErro += "\n\n"; msgErro += "Mensagem de Resposta: " + jqXHR.responseText.toString(); }
+			} catch (e) { }
+		}
+
 		alert("Falha ao tentar processar a requisição!!\n\n" + msgErro);
 	});
 }
@@ -2147,7 +2169,7 @@ if operacao_permitida(OP_LJA_CADASTRA_NOVO_PEDIDO_EC_SEMI_AUTOMATICO, s_lista_op
 				<p class="C" style="margin-top:5px;">Nº MAGENTO&nbsp;</p>
 			</td>
 			<td align="left">
-				<input name="c_numero_magento" id="c_numero_magento" type="text" maxlength="9" size="20" onblur="this.value=trim(this.value);" onkeypress="if (digitou_enter(true) && tem_info(this.value)) {this.value=trim(this.value); fPNEC.bPNECConcluir.click();} filtra_numerico();">
+				<input name="c_numero_magento" id="c_numero_magento" type="text" maxlength="9" size="20" onblur="this.value=NormalizaNumeroPedidoMagento(this.value);" onkeypress="if (digitou_enter(true) && tem_info(this.value)) {this.value=trim(this.value); fPNEC.bPNECConcluir.click();} filtra_numerico();">
 			</td>
 		</tr>
 	</table>

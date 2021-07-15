@@ -25,6 +25,7 @@ namespace ConsolidadorXlsEC
 		public GeralDAO geralDAO;
 		public PedidoDAO pedidoDAO;
 		public UsuarioDAO usuarioDAO;
+		public LojaDAO lojaDAO;
 		public ProdutoDAO produtoDAO;
         public ComboDAO comboDAO;
 		public List<PercentualCustoFinanceiroFornecedor> tabelaPercCustoFinanceiroFornecedor = null;
@@ -167,6 +168,7 @@ namespace ConsolidadorXlsEC
 				geralDAO = new GeralDAO(ref BD);
 				pedidoDAO = new PedidoDAO(ref BD);
 				usuarioDAO = new UsuarioDAO(ref BD);
+				lojaDAO = new LojaDAO(ref BD);
 				produtoDAO = new ProdutoDAO(ref BD);
                 comboDAO = new ComboDAO(ref BD);
 				tabelaPercCustoFinanceiroFornecedor = produtoDAO.GetTabelaPercentualCustoFinanceiroFornecedor(out msg_erro_aux);

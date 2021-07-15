@@ -57,6 +57,8 @@
 		strMinDtInicialFiltroPeriodoDDMMYYYY = ""
 		end if
 
+	dim s_memoria
+
 	dim url_origem
 	url_origem = Trim(Request("url_origem"))
 
@@ -374,6 +376,29 @@ end function
 
 		$("#c_dt_coleta_st_a_entregar_inicio").hUtilUI('datepicker_peq_filtro_inicial');
 		$("#c_dt_coleta_st_a_entregar_termino").hUtilUI('datepicker_peq_filtro_final');
+
+		$(".CkbPagAntQuitSt").change(function () {
+			if ($(this).is(":checked")) {
+				$("#ckb_pagto_antecipado_status_nao").prop("checked", false);
+				$("#ckb_pagto_antecipado_status_sim").prop("checked", true);
+			}
+		});
+
+		$("#ckb_pagto_antecipado_status_nao").change(function () {
+			if ($(this).is(":checked")) {
+				$("#ckb_pagto_antecipado_status_sim").prop("checked", false);
+				$(".CkbPagAntQuitSt").prop("checked", false);
+			}
+		});
+
+		$("#ckb_pagto_antecipado_status_sim").change(function () {
+			if ($(this).is(":checked")) {
+				$("#ckb_pagto_antecipado_status_nao").prop("checked", false);
+			}
+			else {
+				$(".CkbPagAntQuitSt").prop("checked", false);
+			}
+		});
 
 		//Every resize of window
 		$(window).resize(function() {
@@ -763,7 +788,11 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 			onclick="fFILTRO.ckb_st_entrega_separar_com_marc.click();">A Separar (com data de coleta)</span
 			><input class="Cc" maxlength="10" style="width:70px;" name="c_dt_coleta_a_separar_inicio" id="c_dt_coleta_a_separar_inicio" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_coleta_a_separar_termino.focus(); else fFILTRO.ckb_st_entrega_separar_com_marc.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_separar_com_marc.checked=true;" onchange="fFILTRO.ckb_st_entrega_separar_com_marc.checked=true;"
 			/>&nbsp;<span class="C">a</span>&nbsp;<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_coleta_a_separar_termino" id="c_dt_coleta_a_separar_termino" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_st_entrega_separar_com_marc.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_separar_com_marc.checked=true;" onchange="fFILTRO.ckb_st_entrega_separar_com_marc.checked=true;" />
-		</td></tr>
+		<span style="display:inline-block;width:2px;"></span>
+		<a name="bLimparStEtgSeparar" id="bLimparStEtgSeparar" href="javascript:limpaMultiplosCampos(fFILTRO.ckb_st_entrega_separar_com_marc,fFILTRO.c_dt_coleta_a_separar_inicio,fFILTRO.c_dt_coleta_a_separar_termino);" title="limpa os campos deste filtro">
+					<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+		</td>
+	</tr>
 	<tr bgcolor="#FFFFFF"><td align="left">
 		<input type="checkbox" tabindex="-1" id="ckb_st_entrega_a_entregar_sem_marc" name="ckb_st_entrega_a_entregar_sem_marc"
 			value="<%=ST_ENTREGA_A_ENTREGAR%>"><span class="C" style="cursor:default" 
@@ -775,7 +804,11 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 			onclick="fFILTRO.ckb_st_entrega_a_entregar_com_marc.click();">A Entregar (com data de coleta)</span
 			><input class="Cc" maxlength="10" style="width:70px;" name="c_dt_coleta_st_a_entregar_inicio" id="c_dt_coleta_st_a_entregar_inicio" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_coleta_st_a_entregar_termino.focus(); else fFILTRO.ckb_st_entrega_a_entregar_com_marc.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_a_entregar_com_marc.checked=true;" onchange="fFILTRO.ckb_st_entrega_a_entregar_com_marc.checked=true;"
 			/>&nbsp;<span class="C">a</span>&nbsp;<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_coleta_st_a_entregar_termino" id="c_dt_coleta_st_a_entregar_termino" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_st_entrega_a_entregar_com_marc.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_a_entregar_com_marc.checked=true;" onchange="fFILTRO.ckb_st_entrega_a_entregar_com_marc.checked=true;" />
-		</td></tr>
+		<span style="display:inline-block;width:2px;"></span>
+		<a name="bLimparStEtgAEntregar" id="bLimparStEtgAEntregar" href="javascript:limpaMultiplosCampos(fFILTRO.ckb_st_entrega_a_entregar_com_marc,fFILTRO.c_dt_coleta_st_a_entregar_inicio,fFILTRO.c_dt_coleta_st_a_entregar_termino);" title="limpa os campos deste filtro">
+					<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+		</td>
+	</tr>
 	<tr bgcolor="#FFFFFF"><td align="left">
 		<input type="checkbox" tabindex="-1" id="ckb_st_entrega_entregue" name="ckb_st_entrega_entregue"
 			onclick="if (fFILTRO.ckb_st_entrega_entregue.checked) fFILTRO.c_dt_entregue_inicio.focus();"
@@ -783,7 +816,11 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 			onclick="fFILTRO.ckb_st_entrega_entregue.click();">Entregue entre</span
 			><input class="Cc" maxlength="10" style="width:70px;" name="c_dt_entregue_inicio" id="c_dt_entregue_inicio" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_entregue_termino.focus(); else fFILTRO.ckb_st_entrega_entregue.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_entregue.checked=true;" onchange="fFILTRO.ckb_st_entrega_entregue.checked=true;"
 			>&nbsp;<span class="C">e</span>&nbsp;<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_entregue_termino" id="c_dt_entregue_termino" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_st_entrega_entregue.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_entregue.checked=true;" onchange="fFILTRO.ckb_st_entrega_entregue.checked=true;">
-		</td></tr>
+		<span style="display:inline-block;width:2px;"></span>
+		<a name="bLimparStEtgEntregue" id="bLimparStEtgEntregue" href="javascript:limpaMultiplosCampos(fFILTRO.ckb_st_entrega_entregue,fFILTRO.c_dt_entregue_inicio,fFILTRO.c_dt_entregue_termino);" title="limpa os campos deste filtro">
+					<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+		</td>
+	</tr>
 	<tr bgcolor="#FFFFFF"><td align="left">
 		<input type="checkbox" tabindex="-1" id="ckb_st_entrega_cancelado" name="ckb_st_entrega_cancelado" onclick="if (fFILTRO.ckb_st_entrega_cancelado.checked) fFILTRO.c_dt_cancelado_inicio.focus();"
 			value="<%=ST_ENTREGA_CANCELADO%>"><span class="C" style="cursor:default" 
@@ -794,8 +831,12 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
         <select name="c_cancelados_ordena">
             <option value="VENDEDOR" selected>Vendedor</option>
             <option value="PEDIDO">Pedido</option>
-        </select>	
-    </td></tr>
+        </select>
+		<span style="display:inline-block;width:2px;"></span>
+		<a name="bLimparStEtgCancelado" id="bLimparStEtgCancelado" href="javascript:limpaMultiplosCampos(fFILTRO.ckb_st_entrega_cancelado,fFILTRO.c_dt_cancelado_inicio,fFILTRO.c_dt_cancelado_termino);" title="limpa os campos deste filtro">
+					<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+    </td>
+	</tr>
 	<tr bgcolor="#FFFFFF"><td align="left">
 		<input type="checkbox" tabindex="-1" id="ckb_st_entrega_exceto_cancelados" name="ckb_st_entrega_exceto_cancelados"
 			value="<%=ST_ENTREGA_CANCELADO%>"><span class="C" style="cursor:default" 
@@ -845,46 +886,112 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 	</table>
 </td></tr>
 
+<!--  PAGAMENTO ANTECIPADO  -->
+<tr bgcolor="#FFFFFF">
+<td class="MDBE" align="left" nowrap>
+	<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;" width="100%">
+	<tr>
+		<td width="50%" valign="top">
+			<span class="PLTe">PAGAMENTO ANTECIPADO</span>
+			<br />
+			<table cellspacing="0" cellpadding="0">
+			<tr bgcolor="#FFFFFF"><td align="left">
+				<input type="checkbox" tabindex="-1" id="ckb_pagto_antecipado_status_nao" name="ckb_pagto_antecipado_status_nao"
+					value="0"><span class="C" style="cursor:default" 
+					onclick="fFILTRO.ckb_pagto_antecipado_status_nao.click();">Não</span>
+				</td></tr>
+			<tr bgcolor="#FFFFFF"><td align="left">
+				<input type="checkbox" tabindex="-1" id="ckb_pagto_antecipado_status_sim" name="ckb_pagto_antecipado_status_sim"
+					value="1"><span class="C" style="cursor:default" 
+					onclick="fFILTRO.ckb_pagto_antecipado_status_sim.click();">Sim</span>
+				</td></tr>
+			</table>
+		</td>
+		<td width="50%" valign="top">
+			<span class="PLTe">STATUS PAGAMENTO ANTECIPADO</span>
+			<br />
+			<table cellspacing="0" cellpadding="0">
+			<tr bgcolor="#FFFFFF"><td align="left">
+				<input type="checkbox" class="CkbPagAntQuitSt" tabindex="-1" id="ckb_pagto_antecipado_quitado_status_pendente" name="ckb_pagto_antecipado_quitado_status_pendente"
+					value="<%=COD_PAGTO_ANTECIPADO_QUITADO_STATUS_PENDENTE%>"><span class="C" style="cursor:default;color:<%=pagto_antecipado_quitado_cor(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO, COD_PAGTO_ANTECIPADO_QUITADO_STATUS_PENDENTE)%>;" 
+					onclick="fFILTRO.ckb_pagto_antecipado_quitado_status_pendente.click();"><%=pagto_antecipado_quitado_descricao(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO, COD_PAGTO_ANTECIPADO_QUITADO_STATUS_PENDENTE)%></span>
+				</td></tr>
+			<tr bgcolor="#FFFFFF"><td align="left">
+				<input type="checkbox" class="CkbPagAntQuitSt" tabindex="-1" id="ckb_pagto_antecipado_quitado_status_quitado" name="ckb_pagto_antecipado_quitado_status_quitado"
+					value="<%=COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO%>"><span class="C" style="cursor:default;color:<%=pagto_antecipado_quitado_cor(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO, COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO)%>;" 
+					onclick="fFILTRO.ckb_pagto_antecipado_quitado_status_quitado.click();"><%=pagto_antecipado_quitado_descricao(COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO, COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO)%></span>
+				</td></tr>
+			</table>
+		</td>
+	</tr>
+	</table>
+</td></tr>
+
 <!--  ANÁLISE DE CRÉDITO  -->
 <tr bgcolor="#FFFFFF">
 <td class="MDBE" align="left" nowrap><span class="PLTe">ANÁLISE DE CRÉDITO</span>
 	<br>
-	<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;">
-	<tr bgcolor="#FFFFFF"><td align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_analise_credito_pendente_vendas" name="ckb_analise_credito_pendente_vendas"
-			value="<%=COD_AN_CREDITO_PENDENTE_VENDAS%>"><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_analise_credito_pendente_vendas.click();">Pendente Vendas</span>
-		</td></tr>
-	<tr bgcolor="#FFFFFF"><td align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_analise_credito_pendente_endereco" name="ckb_analise_credito_pendente_endereco"
-			value="<%=COD_AN_CREDITO_PENDENTE_ENDERECO%>"><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_analise_credito_pendente_endereco.click();">Pendente Endereço</span>
-		</td></tr>
-	<tr bgcolor="#FFFFFF"><td align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_analise_credito_pendente" name="ckb_analise_credito_pendente"
-			value="<%=COD_AN_CREDITO_PENDENTE%>"><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_analise_credito_pendente.click();">Pendente</span>
-		</td></tr>
-	<tr bgcolor="#FFFFFF"><td align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_analise_credito_pendente_cartao" name="ckb_analise_credito_pendente_cartao"
-			value="<%=COD_AN_CREDITO_PENDENTE_CARTAO%>"><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_analise_credito_pendente_cartao.click();">Pendente Cartão de Crédito</span>
-		</td></tr>
-	<tr bgcolor="#FFFFFF"><td align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_analise_credito_ok_aguardando_deposito" name="ckb_analise_credito_ok_aguardando_deposito"
-			value="<%=COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO%>"><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_analise_credito_ok_aguardando_deposito.click();">Crédito OK (aguardando depósito)</span>
-		</td></tr>
-	<tr bgcolor="#FFFFFF"><td align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_analise_credito_ok_deposito_aguardando_desbloqueio" name="ckb_analise_credito_ok_deposito_aguardando_desbloqueio"
-			value="<%=COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO%>"><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_analise_credito_ok_deposito_aguardando_desbloqueio.click();">Crédito OK (depósito aguardando desbloqueio)</span>
-		</td></tr>
-	<tr bgcolor="#FFFFFF"><td align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_analise_credito_ok" name="ckb_analise_credito_ok"
-			value="<%=COD_AN_CREDITO_OK%>"><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_analise_credito_ok.click();">Crédito OK</span>
-		</td></tr>
+	<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;" width="100%">
+	<tr>
+		<td width="50%" valign="top">
+			<table cellspacing="0" cellpadding="0">
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<input type="checkbox" tabindex="-1" id="ckb_analise_credito_st_inicial" name="ckb_analise_credito_st_inicial"
+						value="<%=COD_AN_CREDITO_ST_INICIAL%>"><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_ST_INICIAL)%>;" 
+						onclick="fFILTRO.ckb_analise_credito_st_inicial.click();">Status Inicial</span>
+					</td></tr>
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<input type="checkbox" tabindex="-1" id="ckb_analise_credito_pendente_vendas" name="ckb_analise_credito_pendente_vendas"
+						value="<%=COD_AN_CREDITO_PENDENTE_VENDAS%>"><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_PENDENTE_VENDAS)%>;" 
+						onclick="fFILTRO.ckb_analise_credito_pendente_vendas.click();">Pendente Vendas</span>
+					</td></tr>
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<input type="checkbox" tabindex="-1" id="ckb_analise_credito_pendente_endereco" name="ckb_analise_credito_pendente_endereco"
+						value="<%=COD_AN_CREDITO_PENDENTE_ENDERECO%>"><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_PENDENTE_ENDERECO)%>;" 
+						onclick="fFILTRO.ckb_analise_credito_pendente_endereco.click();">Pendente Endereço</span>
+					</td></tr>
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<input type="checkbox" tabindex="-1" id="ckb_analise_credito_pendente" name="ckb_analise_credito_pendente"
+						value="<%=COD_AN_CREDITO_PENDENTE%>"><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_PENDENTE)%>;" 
+						onclick="fFILTRO.ckb_analise_credito_pendente.click();">Pendente</span>
+					</td></tr>
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<input type="checkbox" tabindex="-1" id="ckb_analise_credito_pendente_cartao" name="ckb_analise_credito_pendente_cartao"
+						value="<%=COD_AN_CREDITO_PENDENTE_CARTAO%>"><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_PENDENTE_CARTAO)%>;" 
+						onclick="fFILTRO.ckb_analise_credito_pendente_cartao.click();">Pendente Cartão de Crédito</span>
+					</td></tr>
+			</table>
+		</td>
+		<td width="50%" valign="top">
+			<table cellspacing="0" cellpadding="0">
+				<tr bgcolor="#FFFFFF"><td align="left">
+				<input type="checkbox" tabindex="-1" id="ckb_analise_credito_pendente_pagto_antecipado_boleto" name="ckb_analise_credito_pendente_pagto_antecipado_boleto"
+					value="<%=COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO%>" /><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)%>;"
+					onclick="fFILTRO.ckb_analise_credito_pendente_pagto_antecipado_boleto.click();"><%=x_analise_credito(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)%></span>
+				</td></tr>
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<input type="checkbox" tabindex="-1" id="ckb_analise_credito_ok_aguardando_deposito" name="ckb_analise_credito_ok_aguardando_deposito"
+						value="<%=COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO%>"><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO)%>;" 
+						onclick="fFILTRO.ckb_analise_credito_ok_aguardando_deposito.click();">Crédito OK (aguardando depósito)</span>
+					</td></tr>
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<input type="checkbox" tabindex="-1" id="ckb_analise_credito_ok_deposito_aguardando_desbloqueio" name="ckb_analise_credito_ok_deposito_aguardando_desbloqueio"
+						value="<%=COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO%>"><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO)%>;" 
+						onclick="fFILTRO.ckb_analise_credito_ok_deposito_aguardando_desbloqueio.click();">Crédito OK (depósito aguardando desbloqueio)</span>
+					</td></tr>
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<input type="checkbox" tabindex="-1" id="ckb_analise_credito_ok_aguardando_pagto_boleto_av" name="ckb_analise_credito_ok_aguardando_pagto_boleto_av"
+						value="<%=COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV%>" /><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)%>;"
+						onclick="fFILTRO.ckb_analise_credito_ok_aguardando_pagto_boleto_av.click();"><%=x_analise_credito(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)%></span>
+					</td></tr>
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<input type="checkbox" tabindex="-1" id="ckb_analise_credito_ok" name="ckb_analise_credito_ok"
+						value="<%=COD_AN_CREDITO_OK%>"><span class="C" style="cursor:default;color:<%=x_analise_credito_cor(COD_AN_CREDITO_OK)%>;" 
+						onclick="fFILTRO.ckb_analise_credito_ok.click();">Crédito OK</span>
+					</td></tr>
+			</table>
+		</td>
+	</tr>
 	</table>
 </td></tr>
 
@@ -906,7 +1013,31 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 			<span class="C" style="cursor:default;" onclick="fFILTRO.ckb_entrega_imediata_nao.click();">Previsão de Entrega entre</span>
 			<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_previsao_entrega_inicio" id="c_dt_previsao_entrega_inicio" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_previsao_entrega_termino.focus(); else fFILTRO.ckb_entrega_imediata_nao.checked=true; filtra_data();" onclick="fFILTRO.ckb_entrega_imediata_nao.checked = true;" onchange="fFILTRO.ckb_entrega_imediata_nao.checked=true;"
 			/>&nbsp;<span class="C">e</span>&nbsp;<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_previsao_entrega_termino" id="c_dt_previsao_entrega_termino" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_entrega_imediata_nao.checked=true; filtra_data();" onclick="fFILTRO.ckb_entrega_imediata_nao.checked = true;" onchange="fFILTRO.ckb_entrega_imediata_nao.checked=true;" />
-		</td></tr>
+			<span style="display:inline-block;width:2px;"></span>
+			<a name="bLimparEtgImediataNao" id="bLimparEtgImediataNao" href="javascript:limpaMultiplosCampos(fFILTRO.ckb_entrega_imediata_nao,fFILTRO.c_dt_previsao_entrega_inicio,fFILTRO.c_dt_previsao_entrega_termino);" title="limpa os campos deste filtro">
+						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+		</td>
+	</tr>
+	</table>
+</td></tr>
+
+<!--  GERAL  -->
+<tr bgcolor="#FFFFFF">
+<td class="MDBE" align="left" nowrap><span class="PLTe">GERAL</span>
+	<br>
+	<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;" width="100%">
+	<tr>
+		<td width="50%" valign="top">
+			<table cellspacing="0" cellpadding="0">
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<%	s_memoria = get_default_valor_texto_bd(usuario, "LOJA/RelPedidosMCrit|ckb_nao_exibir_links") %>
+					<input type="checkbox" tabindex="-1" id="ckb_nao_exibir_links" name="ckb_nao_exibir_links"
+						value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+						onclick="fFILTRO.ckb_nao_exibir_links.click();">Não exibir links</span>
+					</td></tr>
+			</table>
+		</td>
+	</tr>
 	</table>
 </td></tr>
 
@@ -939,14 +1070,22 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 			onclick="fFILTRO.ckb_periodo_cadastro.click();">Somente pedidos colocados entre</span
 			><input class="Cc" maxlength="10" style="width:70px;" name="c_dt_cadastro_inicio" id="c_dt_cadastro_inicio" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_cadastro_termino.focus(); else fFILTRO.ckb_periodo_cadastro.checked=true; filtra_data();" onclick="fFILTRO.ckb_periodo_cadastro.checked=true;" onchange="fFILTRO.ckb_periodo_cadastro.checked=true;"
 			>&nbsp;<span class="C">e</span>&nbsp;<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_cadastro_termino" id="c_dt_cadastro_termino" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_periodo_cadastro.checked=true; filtra_data();" onclick="fFILTRO.ckb_periodo_cadastro.checked=true;" onchange="fFILTRO.ckb_periodo_cadastro.checked=true;">
-		</td></tr>
+		<span style="display:inline-block;width:2px;"></span>
+		<a name="bLimparPeriodoCadastro" id="bLimparPeriodoCadastro" href="javascript:limpaMultiplosCampos(fFILTRO.ckb_periodo_cadastro,fFILTRO.c_dt_cadastro_inicio,fFILTRO.c_dt_cadastro_termino);" title="limpa os campos deste filtro">
+					<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+		</td>
+	</tr>
 	<tr bgcolor="#FFFFFF"><td align="left">
 		<input type="checkbox" tabindex="-1" id="ckb_entrega_marcada_para" name="ckb_entrega_marcada_para" onclick="if (fFILTRO.ckb_entrega_marcada_para.checked) fFILTRO.c_dt_entrega_inicio.focus();"
 			value="ENTREGA_MARCADA_PARA_ON"><span class="C" style="cursor:default" 
 			onclick="fFILTRO.ckb_entrega_marcada_para.click();">Data de coleta no período entre</span
 			><input class="Cc" maxlength="10" style="width:70px;" name="c_dt_entrega_inicio" id="c_dt_entrega_inicio" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_entrega_termino.focus(); else fFILTRO.ckb_entrega_marcada_para.checked=true; filtra_data();" onclick="fFILTRO.ckb_entrega_marcada_para.checked=true;" onchange="fFILTRO.ckb_entrega_marcada_para.checked=true;"
 			>&nbsp;<span class="C">e</span>&nbsp;<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_entrega_termino" id="c_dt_entrega_termino" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_entrega_marcada_para.checked=true; filtra_data();" onclick="fFILTRO.ckb_entrega_marcada_para.checked=true;" onchange="fFILTRO.ckb_entrega_marcada_para.checked=true;">
-		</td></tr>
+		<span style="display:inline-block;width:2px;"></span>
+		<a name="bLimparPeriodoColeta" id="bLimparPeriodoColeta" href="javascript:limpaMultiplosCampos(fFILTRO.ckb_entrega_marcada_para,fFILTRO.c_dt_entrega_inicio,fFILTRO.c_dt_entrega_termino);" title="limpa os campos deste filtro">
+					<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+		</td>
+	</tr>
 	</table>
 </td></tr>
 
@@ -961,7 +1100,11 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 			onclick="fFILTRO.ckb_produto.click();">Somente pedidos que incluam:</span
 			><br><span class="C" style="margin-left:30px;">Fabricante</span><input maxlength="4" class="Cc" style="width:50px;" name="c_fabricante" id="c_fabricante" onblur="this.value=normaliza_codigo(this.value,TAM_MIN_FABRICANTE);" onkeypress="if (digitou_enter(true)) fFILTRO.c_produto.focus(); else fFILTRO.ckb_produto.checked=true; filtra_fabricante();" onclick="fFILTRO.ckb_produto.checked=true;">
 			<span class="C">&nbsp;&nbsp;&nbsp;Produto</span><input maxlength="13" class="Cc" style="width:100px;" name="c_produto" id="c_produto" onblur="this.value=ucase(normaliza_codigo(this.value,TAM_MIN_PRODUTO));" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_produto.checked=true; filtra_produto();" onclick="fFILTRO.ckb_produto.checked=true;">
-		</td></tr>
+		<span style="display:inline-block;width:2px;"></span>
+		<a name="bLimparProduto" id="bLimparProduto" href="javascript:limpaMultiplosCampos(fFILTRO.ckb_produto,fFILTRO.c_fabricante,fFILTRO.c_produto);" title="limpa os campos deste filtro">
+					<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+		</td>
+	</tr>
 	</table>
 </td></tr>
 

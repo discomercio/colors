@@ -1652,7 +1652,11 @@ dim s_ult_AF_GlobalStatus
 		dim blnCreditoOkAutomaticoDesativado
 		blnCreditoOkAutomaticoDesativado = True
 		if blnCreditoOkAutomaticoDesativado then
-			if CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_VENDAS) then
+			if CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_VENDAS) And _
+				(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO)) And _
+				(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO)) And _
+				(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)) And _
+				(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)) then
 				if s_log <> "" then s_log = s_log & "; "
 				s_log = s_log & " Análise de crédito: " & descricao_analise_credito(rs("analise_credito")) & " => " & descricao_analise_credito(COD_AN_CREDITO_PENDENTE_VENDAS)
 				rs("analise_credito") = CLng(COD_AN_CREDITO_PENDENTE_VENDAS)
@@ -1663,7 +1667,11 @@ dim s_ult_AF_GlobalStatus
 		'	TRANSAÇÕES INDICADAS P/ REVISÃO MANUAL DE PEDIDOS A PARTIR DE 5.000,00 SÃO COLOCADOS NO STATUS 'PENDENTE VENDAS'
 		'	04/05/2015: TEMPORARIAMENTE, DEVIDO AO ELEVADO NÚMERO DE FRAUDES, O LIMITE DE 5.000,00 SERÁ ZERADO
 			if (s_ult_AF_GlobalStatus = BRASPAG_ANTIFRAUDE_CARTAO_GLOBAL_STATUS__REVIEW) And (vl_TotalFamiliaPrecoNF >= 0) then
-				if CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_VENDAS) then
+				if CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_VENDAS) And _
+					(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO)) And _
+					(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO)) And _
+					(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)) And _
+					(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)) then
 					if s_log <> "" then s_log = s_log & "; "
 					s_log = s_log & " Análise de crédito: " & descricao_analise_credito(rs("analise_credito")) & " => " & descricao_analise_credito(COD_AN_CREDITO_PENDENTE_VENDAS)
 					rs("analise_credito") = CLng(COD_AN_CREDITO_PENDENTE_VENDAS)
@@ -1671,7 +1679,11 @@ dim s_ult_AF_GlobalStatus
 					rs("analise_credito_usuario") = ID_USUARIO_SISTEMA
 					end if
 			else
-				if Trim("" & rs("indicador")) = "" then
+				if (Trim("" & rs("indicador")) = "") And _
+					(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO)) And _
+					(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO)) And _
+					(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)) And _
+					(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)) then
 				'	TODO PEDIDO SEM INDICADOR DEVE PASSAR PELA ANÁLISE MANUAL
 					if s_log <> "" then s_log = s_log & "; "
 					s_log = s_log & " Análise de crédito: " & descricao_analise_credito(rs("analise_credito")) & " => " & descricao_analise_credito(COD_AN_CREDITO_PENDENTE_VENDAS) & " (motivo: pedido não possui indicador)"
@@ -1679,7 +1691,11 @@ dim s_ult_AF_GlobalStatus
 					rs("analise_credito_data") = Now
 					rs("analise_credito_usuario") = ID_USUARIO_SISTEMA
 				elseif (CLng(rs("analise_credito")) = CLng(COD_AN_CREDITO_ST_INICIAL)) Or (CLng(rs("analise_credito")) = CLng(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO)) And _
-					(CLng(rs("st_forma_pagto_somente_cartao")) = 1) then
+					(CLng(rs("st_forma_pagto_somente_cartao")) = 1) And _ 
+					(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO)) And _
+					(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO)) And _
+					(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)) And _
+					(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)) then
 					if s_log <> "" then s_log = s_log & "; "
 					s_log = s_log & " Análise de crédito: " & descricao_analise_credito(rs("analise_credito")) & " => " & descricao_analise_credito(COD_AN_CREDITO_OK)
 					rs("analise_credito") = CLng(COD_AN_CREDITO_OK)
@@ -1698,7 +1714,11 @@ dim s_ult_AF_GlobalStatus
 			end if
 		rs("st_pagto") = ST_PAGTO_PARCIAL
 		s_log = "pago parcial"
-		if CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_VENDAS) then
+		if (CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_VENDAS)) And _
+			(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO)) And _
+			(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO)) And _
+			(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)) And _
+			(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)) then
 			if s_log <> "" then s_log = s_log & "; "
 			s_log = s_log & " Análise de crédito: " & descricao_analise_credito(rs("analise_credito")) & " => " & descricao_analise_credito(COD_AN_CREDITO_PENDENTE_VENDAS)
 			rs("analise_credito") = CLng(COD_AN_CREDITO_PENDENTE_VENDAS)

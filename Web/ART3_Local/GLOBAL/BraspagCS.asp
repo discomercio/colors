@@ -1727,7 +1727,11 @@ dim id_fin_pedido_hist_pagto
 			dim blnCreditoOkAutomaticoDesativado
 			blnCreditoOkAutomaticoDesativado = False
 			if blnCreditoOkAutomaticoDesativado then
-				if (CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_VENDAS)) And (CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK)) then
+				if (CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_VENDAS)) And (CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK)) And _
+					(CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO)) And _
+					(CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO)) And _
+					(CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)) And _
+					(CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)) then
 					if s_log <> "" then s_log = s_log & "; "
 					s_log = s_log & " Análise de crédito: " & descricao_analise_credito(tPedidoBase("analise_credito")) & " => " & descricao_analise_credito(COD_AN_CREDITO_PENDENTE_VENDAS) & " (motivo: crédito Ok automático está desativado)"
 					tPedidoBase("analise_credito") = CLng(COD_AN_CREDITO_PENDENTE_VENDAS)
@@ -1753,7 +1757,11 @@ dim id_fin_pedido_hist_pagto
 							(CLng(tPedidoBase("analise_credito")) = CLng(COD_AN_CREDITO_PENDENTE_VENDAS)) _
 						) _
 						And _
-						(CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK)) then
+						( CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK) And _
+							(CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO)) And _
+							(CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO)) And _
+							(CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)) And _
+							(CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)) ) then
 						if s_log <> "" then s_log = s_log & "; "
 						s_log = s_log & " Análise de crédito: " & descricao_analise_credito(tPedidoBase("analise_credito")) & " => " & descricao_analise_credito(COD_AN_CREDITO_OK) & " (status AF Clearsale: '" & s_descricao_ult_AF_GlobalStatus & "')"
 						tPedidoBase("analise_credito") = CLng(COD_AN_CREDITO_OK)
@@ -1763,7 +1771,11 @@ dim id_fin_pedido_hist_pagto
 						s_log = s_log & " Análise de crédito: status não foi alterado porque pedido encontra-se em " & descricao_analise_credito(tPedidoBase("analise_credito")) & " (status AF Clearsale: '" & s_descricao_ult_AF_GlobalStatus & "')"
 						end if
 				else
-					if (CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_VENDAS)) And (CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK)) then
+					if (CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_VENDAS)) And (CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK)) And _
+						(CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO)) And _
+						(CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO)) And _
+						(CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)) And _
+						(CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)) then
 					'	EM CASO DE APROVAÇÃO AUTOMÁTICA, COLOCA-SE EM 'PENDENTE VENDAS' PARA DAR OPORTUNIDADE AO ANALISTA CONFERIR A TITULARIDADE DO CARTÃO
 						if s_log <> "" then s_log = s_log & "; "
 						s_log = s_log & " Análise de crédito: " & descricao_analise_credito(tPedidoBase("analise_credito")) & " => " & descricao_analise_credito(COD_AN_CREDITO_PENDENTE_VENDAS) & " (status AF Clearsale: '" & s_descricao_ult_AF_GlobalStatus & "')"
@@ -1789,7 +1801,11 @@ dim id_fin_pedido_hist_pagto
 		'	SE O STATUS É 'PAGO PARCIAL', PODE TER HAVIDO UMA OPERAÇÃO DE CAPTURA OU DE CANCELAMENTO/ESTORNO. NESTE CASO, AS SEGUINTES PREMISSAS SÃO SEGUIDAS:
 		'		1) SE O PEDIDO ESTIVER COM 'CRÉDITO OK', NÃO SERÁ ALTERADO DEVIDO A CANCELAMENTO/ESTORNO (DEFINIDO PELA ROSE EM 22/06/2016)
 		'		2) SE O PEDIDO ESTIVER COM 'PENDENTE VENDAS', NÃO SERÁ ALTERADO. NÃO HÁ NECESSIDADE DE ATUALIZAR A DATA DA ÚLTIMA ALTERAÇÃO DE STATUS, POIS PEDIDOS C/ STATUS DE PAGTO 'PAGO PARCIAL' NÃO SÃO CANCELADOS AUTOMATICAMENTE
-			if (CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_VENDAS)) And (CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK)) then
+			if (CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_VENDAS)) And (CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK)) And _
+				(CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO)) And _
+				(CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO)) And _
+				(CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)) And _
+				(CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)) then
 				if s_log <> "" then s_log = s_log & "; "
 				s_log = s_log & " Análise de crédito: " & descricao_analise_credito(tPedidoBase("analise_credito")) & " => " & descricao_analise_credito(COD_AN_CREDITO_PENDENTE_VENDAS) & " (status AF Clearsale: '" & s_descricao_ult_AF_GlobalStatus & "')"
 				tPedidoBase("analise_credito") = CLng(COD_AN_CREDITO_PENDENTE_VENDAS)
@@ -1812,7 +1828,11 @@ dim id_fin_pedido_hist_pagto
 		'	SE O STATUS É 'NÃO PAGO', ENTÃO OCORREU UMA OPERAÇÃO DE CANCELAMENTO/ESTORNO. NESTE CASO, AS SEGUINTES PREMISSAS SÃO SEGUIDAS:
 		'		1) SE O PEDIDO ESTIVER COM 'CRÉDITO OK', NÃO SERÁ ALTERADO DEVIDO A CANCELAMENTO/ESTORNO (DEFINIDO PELA ROSE EM 22/06/2016)
 		'		2) SE O PEDIDO ESTIVER COMO 'PENDENTE VENDAS', CONTINUA COMO ESTÁ E A DATA DA ÚLTIMA ALTERAÇÃO DE STATUS NÃO É ALTERADA, MANTENDO A CONTAGEM ORIGINAL DO PERÍODO DE CANCELAMENTO AUTOMÁTICO DE PEDIDOS
-			if (CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_VENDAS)) And (CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK)) then
+			if (CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_VENDAS)) And (CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK)) And _
+				(CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK_DEPOSITO_AGUARDANDO_DESBLOQUEIO)) And _
+				(CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO)) And _
+				(CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)) And _
+				(CLng(tPedidoBase("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)) then
 				if s_log <> "" then s_log = s_log & "; "
 				s_log = s_log & " Análise de crédito: " & descricao_analise_credito(tPedidoBase("analise_credito")) & " => " & descricao_analise_credito(COD_AN_CREDITO_PENDENTE_VENDAS) & " (status AF Clearsale: '" & s_descricao_ult_AF_GlobalStatus & "')"
 				tPedidoBase("analise_credito") = CLng(COD_AN_CREDITO_PENDENTE_VENDAS)

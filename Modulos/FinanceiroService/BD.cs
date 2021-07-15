@@ -237,6 +237,18 @@ namespace FinanceiroService
 				#endregion
 				#endregion
 
+				#region [ Bloqueia registro p/ evitar acesso concorrente ]
+				if (Global.Parametros.Geral.TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO)
+				{
+					strSql = "UPDATE t_FIN_CONTROLE SET" +
+								" dummy = ~dummy" +
+							" WHERE" +
+								" (id='" + idNsu + "')";
+					cmCommand.CommandText = strSql;
+					BD.executaNonQuery(ref cmCommand);
+				}
+				#endregion
+
 				#region [ Laço de tentativas para gerar o NSU (devido a acesso concorrente ]
 				do
 				{
