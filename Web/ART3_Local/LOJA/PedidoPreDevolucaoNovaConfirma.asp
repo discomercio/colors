@@ -42,7 +42,9 @@
 	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
 
 '	VERIFICA PERMISSÃO DE ACESSO DO USUÁRIO
-	if Not operacao_permitida(OP_LJA_PRE_DEVOLUCAO_CADASTRAMENTO, s_lista_operacoes_permitidas) then 
+	if (Not operacao_permitida(OP_LJA_PRE_DEVOLUCAO_CADASTRAMENTO, s_lista_operacoes_permitidas)) _
+		And _
+		(Not operacao_permitida(OP_LJA_PRE_DEVOLUCAO_CADASTRAMENTO_GESTOR, s_lista_operacoes_permitidas)) then 
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 
@@ -85,7 +87,7 @@
     c_credito_transacao = Request.Form("c_credito_transacao")
     c_pedido_novo = Trim(Request.Form("c_pedido_novo"))
     c_observacoes = Trim(Request.Form("c_observacoes"))
-    c_cliente_banco = Trim(Request.Form("c_cliente_banco"))
+    c_cliente_banco = retorna_so_digitos(Trim(Request.Form("c_cliente_banco")))
     c_cliente_agencia = Trim(Request.Form("c_cliente_agencia"))
     c_cliente_conta = Trim(Request.Form("c_cliente_conta"))
     c_cliente_favorecido = Trim(Request.Form("c_cliente_favorecido"))
@@ -305,6 +307,18 @@
 			end if
 		end if
 
+	dim rMaxPrazoDevolucao
+	if alerta = "" then
+		set rMaxPrazoDevolucao = get_registro_t_parametro(ID_PARAMETRO_PEDIDO_DEVOLUCAO_MAX_PRAZO_CAD_LOJA)
+		if rMaxPrazoDevolucao.campo_inteiro > 0 then
+			if (r_pedido.entregue_data + rMaxPrazoDevolucao.campo_inteiro) < Date then
+				if Not operacao_permitida(OP_LJA_PRE_DEVOLUCAO_CADASTRAMENTO_GESTOR, s_lista_operacoes_permitidas) then
+					alerta = texto_add_br(alerta)
+					alerta = alerta & "Nível de acesso insuficiente para cadastrar pré-devolução em pedido entregue há mais de " & CStr(rMaxPrazoDevolucao.campo_inteiro) & " dias."
+					end if
+				end if
+			end if
+		end if
 
 	if alerta = "" then
 	'	~~~~~~~~~~~~~

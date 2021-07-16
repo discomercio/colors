@@ -444,11 +444,16 @@ serverVariableUrl = serverVariableUrl.substring(0, serverVariableUrl.indexOf("LO
     }
 
 	if (f.c_credito_transacao.value == CREDITO_TRANSACAO__REEMBOLSO) {
-	    if (f.c_cliente_banco.value==""){
+		if (retorna_so_digitos(f.c_cliente_banco.value)==""){
 	        alert("Preencha o código do banco!!");
 	        f.c_cliente_banco.focus();
 	        return;
-	    }
+		}
+		if (f.c_cliente_banco.value != retorna_so_digitos(f.c_cliente_banco.value)) {
+			alert("Código do banco é inválido!!");
+			f.c_cliente_banco.focus();
+			return;
+		}
 	    if (f.c_cliente_agencia.value==""){
 	        alert("Preencha o número da agência!!");
 	        f.c_cliente_agencia.focus();
@@ -868,7 +873,7 @@ serverVariableUrl = serverVariableUrl.substring(0, serverVariableUrl.indexOf("LO
         <td colspan="4">
             <table style="width: 649px;" cellpadding="0" cellspacing="0">
                 <tr>
-                    <td style="padding: 5px;" class="MC"><p class="Cd">Banco:</p></td>
+                    <td style="padding: 5px;" class="MC"><p class="Cd">Nº Banco:</p></td>
                     <td align="left" style="padding:5px;" class="MC">
                         <input type="text" maxlength="4" name="c_cliente_banco" id="c_cliente_banco" class="PLLe" style="width:60px; margin-left: 10px;">
                     </td>
