@@ -276,6 +276,9 @@
 	dim blnExibeBotaoPagamento
 	blnExibeBotaoPagamento = False
 
+	dim rMaxPrazoDevolucao
+	set rMaxPrazoDevolucao = get_registro_t_parametro(ID_PARAMETRO_PEDIDO_DEVOLUCAO_MAX_PRAZO_CAD_LOJA)
+
 	dim strHistPagtoModulo
 	dim strHistPagtoStatusDescricao
 	dim strHistPagtoStatusImg
@@ -3920,8 +3923,14 @@ function fPEDPagto(f) {
 		if r_pedido.st_entrega = ST_ENTREGA_ENTREGUE then blnExibeBotaoDevolucao = True
 		end if
 
-    if operacao_permitida(OP_LJA_PRE_DEVOLUCAO_CADASTRAMENTO, s_lista_operacoes_permitidas) then
-		if r_pedido.st_entrega = ST_ENTREGA_ENTREGUE then blnExibeBotaoPreDevolucao = True
+    if operacao_permitida(OP_LJA_PRE_DEVOLUCAO_CADASTRAMENTO, s_lista_operacoes_permitidas) Or operacao_permitida(OP_LJA_PRE_DEVOLUCAO_CADASTRAMENTO_GESTOR, s_lista_operacoes_permitidas) then
+		if r_pedido.st_entrega = ST_ENTREGA_ENTREGUE then
+			if (r_pedido.entregue_data + rMaxPrazoDevolucao.campo_inteiro) < Date then
+				if operacao_permitida(OP_LJA_PRE_DEVOLUCAO_CADASTRAMENTO_GESTOR, s_lista_operacoes_permitidas) then blnExibeBotaoPreDevolucao = True
+			else
+				blnExibeBotaoPreDevolucao = True
+				end if
+			end if
 		end if
 		
 	if ((r_pedido.st_entrega<>ST_ENTREGA_CANCELADO) Or blnFamiliaPossuiPedidoNaoCancelado) And (s_devolucoes="") And (Not pedido_splitado_manual) then

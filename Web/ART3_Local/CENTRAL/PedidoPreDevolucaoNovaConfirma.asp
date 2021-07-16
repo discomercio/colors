@@ -55,7 +55,7 @@
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
 	dim vl_TotalFamiliaPrecoVenda, vl_TotalFamiliaPrecoNF, vl_TotalFamiliaPago, vl_TotalFamiliaDevolucaoPrecoVenda, vl_TotalFamiliaDevolucaoPrecoNF, vl_saldo_a_pagar, st_pagto, st_pagto_a
-	dim iv, j, k, n, v_devol, alerta, deve_devolver, s_log, msg_erro, id_item_devolvido, id_pedido_devolucao
+	dim iv, j, k, n, v_devol, alerta, deve_devolver, s_log, s_log_aux, s_log_upload_file, msg_erro, id_item_devolvido, id_pedido_devolucao
     dim c_procedimento, c_local_coleta, c_coleta_endereco, c_coleta_endereco_numero, c_coleta_bairro, c_coleta_cep, c_coleta_cidade, c_coleta_uf, c_coleta_complemento
     dim c_motivo_devolucao, c_motivo_descricao, c_taxa, c_taxa_forma_pagto, c_taxa_percentual, c_taxa_valor, c_taxa_responsavel, c_credito_transacao, c_pedido_novo, c_observacoes
     dim c_cliente_banco, c_cliente_agencia, c_cliente_conta, c_cliente_favorecido, c_total_devolucao, c_pedido_cliente, c_pedido_indicador, upload_file_guid, v_upload_file_guid, guid_item, id_upload_file
@@ -63,7 +63,8 @@
     dim c_pedido_possui_parcela_cartao
     dim c_taxa_observacoes, c_credito_observacoes
     dim r_pedido
-	
+	dim vLog(), campos_a_omitir
+
     c_procedimento = Request.Form("c_procedimento")
     c_local_coleta = Request.Form("c_local_coleta")
     c_coleta_endereco = Trim(Request.Form("c_coleta_endereco"))
@@ -83,7 +84,7 @@
     c_credito_transacao = Request.Form("c_credito_transacao")
     c_pedido_novo = Trim(Request.Form("c_pedido_novo"))
     c_observacoes = Trim(Request.Form("c_observacoes"))
-    c_cliente_banco = Trim(Request.Form("c_cliente_banco"))
+    c_cliente_banco = retorna_so_digitos(Trim(Request.Form("c_cliente_banco")))
     c_cliente_agencia = Trim(Request.Form("c_cliente_agencia"))
     c_cliente_conta = Trim(Request.Form("c_cliente_conta"))
     c_cliente_favorecido = Trim(Request.Form("c_cliente_favorecido"))
@@ -102,7 +103,9 @@
 	v_devol(Ubound(v_devol)).motivo = ""
     v_devol(Ubound(v_devol)).vl_unitario = 0
 
+	campos_a_omitir = "|usuario_cadastro|dt_cadastro|dt_hr_cadastro|usuario_ult_atualizacao|dt_ult_atualizacao|dt_hr_ult_atualizacao|"
 	s_log = ""
+	s_log_upload_file = ""
 	alerta = ""
 	deve_devolver = False
 
@@ -356,6 +359,8 @@
                 rs("cod_taxa_responsavel") = c_taxa_responsavel
                 end if
             rs("vl_devolucao") = converte_numero(c_total_devolucao)
+			rs("credito_usuario_ult_atualizacao") = usuario
+			rs("credito_dt_hr_ult_atualizacao") = Now
             rs("cod_credito_transacao") = c_credito_transacao
             if c_credito_transacao = CREDITO_TRANSACAO__REEMBOLSO then
                 rs("banco") = c_cliente_banco
@@ -367,7 +372,8 @@
             if c_taxa_observacoes <> "" then rs("taxa_observacoes") = c_taxa_observacoes
             if c_credito_observacoes <> "" then rs("credito_observacoes") = c_credito_observacoes
             rs("observacao") = c_observacoes
-            rs.Update
+            log_via_vetor_carrega_do_recordset rs, vLog, campos_a_omitir
+			rs.Update
             if Err <> 0 then
 				'	~~~~~~~~~~~~~~~~
 					cn.RollbackTrans
@@ -434,6 +440,8 @@
 			        rs.Open s, cn
                     if Not rs.Eof then
                         id_upload_file = rs("id")
+						if s_log_upload_file <> "" then s_log_upload_file = s_log_upload_file & ", "
+						s_log_upload_file = s_log_upload_file & "id_upload_file=" & id_upload_file & " (" & guid_item & ")"
                         s = "SELECT * FROM t_PEDIDO_DEVOLUCAO_IMAGEM WHERE (id_pedido_devolucao=-1)"
                         if rs.State <> 0 then rs.Close
 			            rs.Open s, cn
@@ -544,7 +552,10 @@
 					end if 'if UCase(usuario) <> UCase(r_pedido.vendedor)
 				end if 'if isLojaBonshop(r_pedido.loja) Or isLojaVrf(r_pedido.loja)
 
+			s_log_aux = log_via_vetor_monta_inclusao(vLog)
 			s_log = "Cadastro de pré-devolução:" & s_log
+			if s_log_aux <> "" then s_log = s_log & "; " & vbCrLf & s_log_aux
+			if s_log_upload_file <> "" then s_log = s_log & "; " & vbCrLf & s_log_upload_file
 			grava_log usuario, "", pedido_selecionado, "", OP_LOG_PEDIDO_DEVOLUCAO, s_log
 		'	~~~~~~~~~~~~~~
 			cn.CommitTrans

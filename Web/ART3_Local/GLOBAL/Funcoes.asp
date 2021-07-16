@@ -5836,6 +5836,7 @@ sub limpa_cl_t_PARAMETRO(ByRef rx)
 	rx.campo_real = 0
 	rx.campo_data = Null
 	rx.campo_texto = ""
+	rx.campo_2_texto = ""
 	rx.dt_hr_ult_atualizacao = Null
 	rx.usuario_ult_atualizacao = ""
 end sub
