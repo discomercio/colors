@@ -467,19 +467,27 @@ namespace ART3WebAPI.Models.Repository
 			cmCommand.Connection = cn;
 			#endregion
 
-			strSql = "SELECT " +
-						Global.sqlMontaDateTimeParaYyyyMmDdHhMmSsComSeparador("campo_data") +
-					" FROM t_PARAMETRO" +
-					" WHERE" +
-						" (id = '" + nomeParametro + "')";
-			cmCommand.CommandText = strSql;
-			objResultado = cmCommand.ExecuteScalar();
-			if (objResultado != null)
+			try // Finally: cn.Close()
 			{
-				strResultado = objResultado.ToString();
-				if ((strResultado != null) && (strResultado.Length > 0)) dtHrResultado = Global.converteYyyyMmDdHhMmSsParaDateTime(strResultado);
+				strSql = "SELECT " +
+							Global.sqlMontaDateTimeParaYyyyMmDdHhMmSsComSeparador("campo_data") +
+						" FROM t_PARAMETRO" +
+						" WHERE" +
+							" (id = '" + nomeParametro + "')";
+				cmCommand.CommandText = strSql;
+				objResultado = cmCommand.ExecuteScalar();
+				if (objResultado != null)
+				{
+					strResultado = objResultado.ToString();
+					if ((strResultado != null) && (strResultado.Length > 0)) dtHrResultado = Global.converteYyyyMmDdHhMmSsParaDateTime(strResultado);
+				}
+
+				return dtHrResultado;
 			}
-			return dtHrResultado;
+			finally
+			{
+				cn.Close();
+			}
 		}
 		#endregion
 
@@ -508,18 +516,26 @@ namespace ART3WebAPI.Models.Repository
 			cmCommand.Connection = cn;
 			#endregion
 
-			strSql = "SELECT " +
-						"campo_inteiro" +
-					" FROM t_PARAMETRO" +
-					" WHERE" +
-						" (id = '" + nomeParametro + "')";
-			cmCommand.CommandText = strSql;
-			objResultado = cmCommand.ExecuteScalar();
-			if (objResultado != null)
+			try // Finally: cn.Close()
 			{
-				intResultado = BD.readToInt(objResultado);
+				strSql = "SELECT " +
+							"campo_inteiro" +
+						" FROM t_PARAMETRO" +
+						" WHERE" +
+							" (id = '" + nomeParametro + "')";
+				cmCommand.CommandText = strSql;
+				objResultado = cmCommand.ExecuteScalar();
+				if (objResultado != null)
+				{
+					intResultado = BD.readToInt(objResultado);
+				}
+
+				return intResultado;
 			}
-			return intResultado;
+			finally
+			{
+				cn.Close();
+			}
 		}
 		#endregion
 
@@ -548,18 +564,26 @@ namespace ART3WebAPI.Models.Repository
 			cmCommand.Connection = cn;
 			#endregion
 
-			strSql = "SELECT " +
-						"campo_texto" +
-					" FROM t_PARAMETRO" +
-					" WHERE" +
-						" (id = '" + nomeParametro + "')";
-			cmCommand.CommandText = strSql;
-			objResultado = cmCommand.ExecuteScalar();
-			if (objResultado != null)
+			try // Finally: cn.Close()
 			{
-				strResultado = BD.readToString(objResultado);
+				strSql = "SELECT " +
+							"campo_texto" +
+						" FROM t_PARAMETRO" +
+						" WHERE" +
+							" (id = '" + nomeParametro + "')";
+				cmCommand.CommandText = strSql;
+				objResultado = cmCommand.ExecuteScalar();
+				if (objResultado != null)
+				{
+					strResultado = BD.readToString(objResultado);
+				}
+
+				return strResultado;
 			}
-			return strResultado;
+			finally
+			{
+				cn.Close();
+			}
 		}
 		#endregion
 
@@ -584,60 +608,67 @@ namespace ART3WebAPI.Models.Repository
 				cmCommand.Connection = cn;
 				#endregion
 
-				#region [ Registro existe? ]
-				strSql = "SELECT" +
-							" Count(*)" +
-						" FROM t_PARAMETRO" +
-						" WHERE" +
-							" (id = '" + nomeParametro + "')";
-				cmCommand.CommandText = strSql;
-				intQtdeCount = (int)cmCommand.ExecuteScalar();
-				#endregion
-
-				#region [ Prepara o valor do parâmetro p/ o SQL ]
-				if (dtHrValorParametro == DateTime.MinValue)
+				try // Finally: cn.Close()
 				{
-					strValorParametro = "NULL";
-				}
-				else
-				{
-					strValorParametro = Global.sqlMontaDateTimeParaSqlDateTime(dtHrValorParametro);
-				}
-				#endregion
-
-				#region [ Grava o novo valor do parâmetro ]
-				if (intQtdeCount == 1)
-				{
-					strSql = "UPDATE" +
-								" t_PARAMETRO" +
-							" SET" +
-								" campo_data = " + strValorParametro +
-								", dt_hr_ult_atualizacao = getdate()" +
+					#region [ Registro existe? ]
+					strSql = "SELECT" +
+								" Count(*)" +
+							" FROM t_PARAMETRO" +
 							" WHERE" +
 								" (id = '" + nomeParametro + "')";
-				}
-				else
-				{
-					strSql = "INSERT INTO t_PARAMETRO (" +
-								"id, " +
-								"campo_data, " +
-								"dt_hr_ult_atualizacao" +
-							") VALUES (" +
-								"'" + nomeParametro + "', " +
-								strValorParametro + ", " +
-								"getdate()" +
-							")";
-				}
-				cmCommand.CommandText = strSql;
-				intQtdeUpdated = cmCommand.ExecuteNonQuery();
-				#endregion
+					cmCommand.CommandText = strSql;
+					intQtdeCount = (int)cmCommand.ExecuteScalar();
+					#endregion
 
-				#region [ Sucesso ou falha? ]
-				if (intQtdeUpdated == 1)
-					return true;
-				else
-					return false;
-				#endregion
+					#region [ Prepara o valor do parâmetro p/ o SQL ]
+					if (dtHrValorParametro == DateTime.MinValue)
+					{
+						strValorParametro = "NULL";
+					}
+					else
+					{
+						strValorParametro = Global.sqlMontaDateTimeParaSqlDateTime(dtHrValorParametro);
+					}
+					#endregion
+
+					#region [ Grava o novo valor do parâmetro ]
+					if (intQtdeCount == 1)
+					{
+						strSql = "UPDATE" +
+									" t_PARAMETRO" +
+								" SET" +
+									" campo_data = " + strValorParametro +
+									", dt_hr_ult_atualizacao = getdate()" +
+								" WHERE" +
+									" (id = '" + nomeParametro + "')";
+					}
+					else
+					{
+						strSql = "INSERT INTO t_PARAMETRO (" +
+									"id, " +
+									"campo_data, " +
+									"dt_hr_ult_atualizacao" +
+								") VALUES (" +
+									"'" + nomeParametro + "', " +
+									strValorParametro + ", " +
+									"getdate()" +
+								")";
+					}
+					cmCommand.CommandText = strSql;
+					intQtdeUpdated = cmCommand.ExecuteNonQuery();
+					#endregion
+
+					#region [ Sucesso ou falha? ]
+					if (intQtdeUpdated == 1)
+						return true;
+					else
+						return false;
+					#endregion
+				}
+				finally
+				{
+					cn.Close();
+				}
 			}
 			catch (Exception ex)
 			{
@@ -667,49 +698,56 @@ namespace ART3WebAPI.Models.Repository
 				cmCommand.Connection = cn;
 				#endregion
 
-				#region [ Registro existe? ]
-				strSql = "SELECT" +
-							" Count(*)" +
-						" FROM t_PARAMETRO" +
-						" WHERE" +
-							" (id = '" + nomeParametro + "')";
-				cmCommand.CommandText = strSql;
-				intQtdeCount = (int)cmCommand.ExecuteScalar();
-				#endregion
-
-				#region [ Grava o novo valor do parâmetro ]
-				if (intQtdeCount == 1)
+				try // Finally: cn.Close()
 				{
-					strSql = "UPDATE" +
-								" t_PARAMETRO" +
-							" SET" +
-								" campo_inteiro = " + valorParametro.ToString() +
-								", dt_hr_ult_atualizacao = getdate()" +
+					#region [ Registro existe? ]
+					strSql = "SELECT" +
+								" Count(*)" +
+							" FROM t_PARAMETRO" +
 							" WHERE" +
 								" (id = '" + nomeParametro + "')";
-				}
-				else
-				{
-					strSql = "INSERT INTO t_PARAMETRO (" +
-								"id, " +
-								"campo_inteiro, " +
-								"dt_hr_ult_atualizacao" +
-							") VALUES (" +
-								"'" + nomeParametro + "', " +
-								valorParametro.ToString() + ", " +
-								"getdate()" +
-							")";
-				}
-				cmCommand.CommandText = strSql;
-				intQtdeUpdated = cmCommand.ExecuteNonQuery();
-				#endregion
+					cmCommand.CommandText = strSql;
+					intQtdeCount = (int)cmCommand.ExecuteScalar();
+					#endregion
 
-				#region [ Sucesso ou falha? ]
-				if (intQtdeUpdated == 1)
-					return true;
-				else
-					return false;
-				#endregion
+					#region [ Grava o novo valor do parâmetro ]
+					if (intQtdeCount == 1)
+					{
+						strSql = "UPDATE" +
+									" t_PARAMETRO" +
+								" SET" +
+									" campo_inteiro = " + valorParametro.ToString() +
+									", dt_hr_ult_atualizacao = getdate()" +
+								" WHERE" +
+									" (id = '" + nomeParametro + "')";
+					}
+					else
+					{
+						strSql = "INSERT INTO t_PARAMETRO (" +
+									"id, " +
+									"campo_inteiro, " +
+									"dt_hr_ult_atualizacao" +
+								") VALUES (" +
+									"'" + nomeParametro + "', " +
+									valorParametro.ToString() + ", " +
+									"getdate()" +
+								")";
+					}
+					cmCommand.CommandText = strSql;
+					intQtdeUpdated = cmCommand.ExecuteNonQuery();
+					#endregion
+
+					#region [ Sucesso ou falha? ]
+					if (intQtdeUpdated == 1)
+						return true;
+					else
+						return false;
+					#endregion
+				}
+				finally
+				{
+					cn.Close();
+				}
 			}
 			catch (Exception ex)
 			{
@@ -739,51 +777,58 @@ namespace ART3WebAPI.Models.Repository
 				cmCommand.Connection = cn;
 				#endregion
 
-				#region [ Registro existe? ]
-				strSql = "SELECT" +
-							" Count(*)" +
-						" FROM t_PARAMETRO" +
-						" WHERE" +
-							" (id = '" + nomeParametro + "')";
-				cmCommand.CommandText = strSql;
-				intQtdeCount = (int)cmCommand.ExecuteScalar();
-				#endregion
-
-				#region [ Grava o novo valor do parâmetro ]
-				if (intQtdeCount == 1)
+				try // Finally: cn.Close()
 				{
-					strSql = "UPDATE" +
-								" t_PARAMETRO" +
-							" SET" +
-								" campo_texto = @campo_texto," +
-								" dt_hr_ult_atualizacao = getdate()" +
+					#region [ Registro existe? ]
+					strSql = "SELECT" +
+								" Count(*)" +
+							" FROM t_PARAMETRO" +
 							" WHERE" +
 								" (id = '" + nomeParametro + "')";
-				}
-				else
-				{
-					strSql = "INSERT INTO t_PARAMETRO (" +
-								"id, " +
-								"campo_texto, " +
-								"dt_hr_ult_atualizacao" +
-							") VALUES (" +
-								"'" + nomeParametro + "', " +
-								"@campo_texto, " +
-								"getdate()" +
-							")";
-				}
-				cmCommand.CommandText = strSql;
-				cmCommand.Parameters.Add("@campo_texto", SqlDbType.VarChar, 1024);
-				cmCommand.Parameters["@campo_texto"].Value = valorParametro;
-				intQtdeUpdated = cmCommand.ExecuteNonQuery();
-				#endregion
+					cmCommand.CommandText = strSql;
+					intQtdeCount = (int)cmCommand.ExecuteScalar();
+					#endregion
 
-				#region [ Sucesso ou falha? ]
-				if (intQtdeUpdated == 1)
-					return true;
-				else
-					return false;
-				#endregion
+					#region [ Grava o novo valor do parâmetro ]
+					if (intQtdeCount == 1)
+					{
+						strSql = "UPDATE" +
+									" t_PARAMETRO" +
+								" SET" +
+									" campo_texto = @campo_texto," +
+									" dt_hr_ult_atualizacao = getdate()" +
+								" WHERE" +
+									" (id = '" + nomeParametro + "')";
+					}
+					else
+					{
+						strSql = "INSERT INTO t_PARAMETRO (" +
+									"id, " +
+									"campo_texto, " +
+									"dt_hr_ult_atualizacao" +
+								") VALUES (" +
+									"'" + nomeParametro + "', " +
+									"@campo_texto, " +
+									"getdate()" +
+								")";
+					}
+					cmCommand.CommandText = strSql;
+					cmCommand.Parameters.Add("@campo_texto", SqlDbType.VarChar, 1024);
+					cmCommand.Parameters["@campo_texto"].Value = valorParametro;
+					intQtdeUpdated = cmCommand.ExecuteNonQuery();
+					#endregion
+
+					#region [ Sucesso ou falha? ]
+					if (intQtdeUpdated == 1)
+						return true;
+					else
+						return false;
+					#endregion
+				}
+				finally
+				{
+					cn.Close();
+				}
 			}
 			catch (Exception ex)
 			{

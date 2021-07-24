@@ -63,9 +63,8 @@ namespace ART3WebAPI.Models.Repository
 
             SqlConnection cn = new SqlConnection(BD.getConnectionString());
             cn.Open();
-            try
-            {
-
+			try // Finally: cn.Close()
+			{
                 #region [ cmInsereFinLog ]
                 strSql = "INSERT INTO t_LOG (" +
                             "data, " +
@@ -95,7 +94,6 @@ namespace ART3WebAPI.Models.Repository
                 cmInsereLog.Parameters.Add("@complemento", SqlDbType.Text, -1);
                 cmInsereLog.Prepare();
                 #endregion
-
 
                 #region [ Declarações ]
                 bool blnSucesso = false;

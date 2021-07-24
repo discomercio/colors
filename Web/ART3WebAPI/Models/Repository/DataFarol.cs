@@ -412,9 +412,8 @@ namespace ART3WebAPI.Models.Repository
             #endregion
 
             cn.Open();
-
-            try
-            {
+			try // Finally: cn.Close()
+			{
                 SqlCommand cmd = new SqlCommand();
                 cmd.Connection = cn;
                 cmd.CommandText = sqlString.ToString();
@@ -887,9 +886,8 @@ namespace ART3WebAPI.Models.Repository
             #endregion
 
             cn.Open();
-
-            try
-            {
+			try // Finally: cn.Close()
+			{
                 SqlCommand cmd = new SqlCommand();
                 cmd.Connection = cn;
                 cmd.CommandText = sqlString.ToString();

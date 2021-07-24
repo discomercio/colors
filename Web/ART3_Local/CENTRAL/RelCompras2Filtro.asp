@@ -65,6 +65,17 @@
 	strDtHojeYYYYMMDD = formata_data_yyyymmdd(Date)
 	strDtHojeDDMMYYYY = formata_data(Date)
 
+	dim s_rb_opcao_default, s_checked
+	s_rb_opcao_default = get_default_valor_texto_bd(usuario, "RelCompras2Filtro|rb_periodo")
+
+	dim strScript
+	strScript = _
+		"<script language='JavaScript'>" & chr(13) & _
+        "var COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE = '" & COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE & "';" & chr(13) & _
+        "var COD_CONSULTA_POR_PERIODO_EMISSAO_NF_ENTRADA = '" & COD_CONSULTA_POR_PERIODO_EMISSAO_NF_ENTRADA & "';" & chr(13) & _
+		"</script>" & chr(13)
+
+
 
 
 ' _____________________________________________________________________________________________
@@ -95,11 +106,11 @@ dim v
 	    
 		x = Trim("" & r("fabricante"))
 		strResp = strResp & "<option "
-            for i=LBound(v) to UBound(v) 
-		        if (id_default<>"") And (v(i)=x) then
-		            strResp = strResp & "selected"
-		         end if
-		   	 next
+		for i=LBound(v) to UBound(v) 
+			if (id_default<>"") And (v(i)=x) then
+				strResp = strResp & "selected"
+				end if
+			next
 		strResp = strResp & " value='" & x & "'>"
 		strResp = strResp & Trim("" & r("fabricante")) & "&nbsp;&nbsp;"
 		strResp = strResp & "</option>" & chr(13)
@@ -134,15 +145,15 @@ dim x, r, strResp, ha_default, strSql, v, i
 	    
 		x = Trim("" & r("grupo"))
 		strResp = strResp & "<option "
-            for i=LBound(v) to UBound(v) 
-		        if (id_default<>"") And (v(i)=x) then
-		            strResp = strResp & "selected"
-		         end if
-		   	 next
+		for i=LBound(v) to UBound(v) 
+			if (id_default<>"") And (v(i)=x) then
+				strResp = strResp & "selected"
+				end if
+			next
 		strResp = strResp & " value='" & x & "'>"
 		strResp = strResp & Trim("" & r("grupo")) & "&nbsp;&nbsp;"
 		strResp = strResp & "</option>" & chr(13)
-		r.MoveNext	
+		r.MoveNext
  	loop
 		
 	grupo_monta_itens_select = strResp
@@ -154,8 +165,9 @@ end function
 '----------------------------------------------------------------------------------------------
 ' SUBGRUPOS MONTA ITENS SELECT
 function subgrupos_monta_itens_select(byval id_default)
-dim x, r, strSql, strResp, ha_default, sDescricao
+dim x, r, strSql, strResp, ha_default, sDescricao, v, i
 	id_default = Trim("" & id_default)
+	v = split(id_default, ", ")
 	ha_default=False
 	strSql = "SELECT DISTINCT tP.subgrupo, tPS.descricao FROM t_PRODUTO tP LEFT JOIN t_PRODUTO_SUBGRUPO tPS ON (tP.subgrupo = tPS.codigo) WHERE LEN(Coalesce(tP.subgrupo,'')) > 0 ORDER by tP.subgrupo"
 	set r = cn.Execute(strSql)
@@ -163,16 +175,16 @@ dim x, r, strSql, strResp, ha_default, sDescricao
 	do while Not r.eof 
 		x = UCase(Trim("" & r("subgrupo")))
 		sDescricao = Trim("" & r("descricao"))
-		if (id_default<>"") And (id_default=x) then
-			strResp = strResp & "<OPTION SELECTED"
-			ha_default=True
-		else
-			strResp = strResp & "<OPTION"
-			end if
-		strResp = strResp & " VALUE='" & x & "'>"
+		strResp = strResp & "<option "
+		for i=LBound(v) to UBound(v) 
+			if (id_default<>"") And (v(i)=x) then
+				strResp = strResp & "selected"
+				end if
+			next
+		strResp = strResp & " value='" & x & "'>"
 		strResp = strResp & x
 		if sDescricao <> "" then strResp = strResp & " &nbsp;(" & sDescricao & ")"
-		strResp = strResp & "</OPTION>" & chr(13)
+		strResp = strResp & "</option>" & chr(13)
 		r.MoveNext
 		loop
 
@@ -339,6 +351,8 @@ end function
 <script src="<%=URL_FILE__GLOBAL_JS%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__AJAX_JS%>" language="JavaScript" type="text/javascript"></script>
 
+<%=strScript%>
+
 <script language="JavaScript" type="text/javascript">
     $(function () {
         $("#c_dt_inicio").hUtilUI('datepicker_filtro_inicial');
@@ -348,7 +362,39 @@ end function
         $("#c_dt_nf_termino").hUtilUI('datepicker_filtro_final');
 
         $("#divMsgAguardeObtendoDados").css('filter', 'alpha(opacity=50)');
-    });
+
+		$("#c_fabricante").change(function () {
+			$("#spnCounterFabricante").text($("#c_fabricante :selected").length);
+		});
+
+		$("#c_grupo").change(function () {
+			$("#spnCounterGrupo").text($("#c_grupo :selected").length);
+		});
+
+		$("#c_subgrupo").change(function () {
+			$("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
+		});
+
+		$("#spnCounterFabricante").text($("#c_fabricante :selected").length);
+		$("#spnCounterGrupo").text($("#c_grupo :selected").length);
+		$("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
+
+		//Every resize of window
+		$(window).resize(function () {
+			sizeDivAjaxRunning();
+		});
+
+		//Every scroll of window
+		$(window).scroll(function () {
+			sizeDivAjaxRunning();
+		});
+
+		//Dynamically assign height
+		function sizeDivAjaxRunning() {
+			var newTop = $(window).scrollTop() + "px";
+			$("#divMsgAguardeObtendoDados").css("top", newTop);
+		}
+	});
 
 
 function fFILTROConsulta( f ) {
@@ -485,12 +531,15 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 }
 function limpaCampoSelectFabricante() {
     $("#c_fabricante").children().prop('selected', false);
+	$("#spnCounterFabricante").text($("#c_fabricante :selected").length);
 }
 function limpaCampoSelectProduto() {
     $("#c_grupo").children().prop('selected', false);
+	$("#spnCounterGrupo").text($("#c_grupo :selected").length);
 }
 function limpaCampoSelectSubgrupo() {
     $("#c_subgrupo").children().prop('selected', false);
+	$("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
 }
 function limpaCampoSelect(c) {
     c.options[0].selected = true;
@@ -791,7 +840,9 @@ function limpaCampoSelect(c) {
 		<table cellspacing="0" cellpadding="0">
 		<tr>
 			<td align="left">
-				<input type="radio" id="rb_periodo" name="rb_periodo" value="<%=COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE%>">
+				<% s_checked = ""
+					if s_rb_opcao_default = COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE then s_checked = " checked" %>
+				<input type="radio" id="rb_periodo" name="rb_periodo" value="<%=COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE%>" <%=s_checked%> />
 			</td>
 			<td align="left" valign="bottom">
 				<% intIdx=intIdx+1 %>
@@ -814,7 +865,9 @@ function limpaCampoSelect(c) {
 		<table cellspacing="0" cellpadding="0">
 		<tr>
 			<td align="left">
-				<input type="radio" id="rb_periodo" name="rb_periodo" value="<%=COD_CONSULTA_POR_PERIODO_EMISSAO_NF_ENTRADA%>">
+				<% s_checked = ""
+					if s_rb_opcao_default = COD_CONSULTA_POR_PERIODO_EMISSAO_NF_ENTRADA then s_checked = " checked" %>
+				<input type="radio" id="rb_periodo" name="rb_periodo" value="<%=COD_CONSULTA_POR_PERIODO_EMISSAO_NF_ENTRADA%>" <%=s_checked%> />
 			</td>
 			<td align="left" valign="bottom">
 				<% intIdx=intIdx+1 %>
@@ -847,6 +900,8 @@ function limpaCampoSelect(c) {
 		<td align="left" valign="top">
 			<a name="bLimparFabricante" id="bLimparFabricante" href="javascript:limpaCampoSelectFabricante()" title="limpa o filtro 'Fabricante'">
 						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterFabricante"></span>)
 		</td>
 		</tr>
 		</table>
@@ -873,6 +928,8 @@ function limpaCampoSelect(c) {
 		<td align="left" valign="top">
 			<a name="bLimparGrupo" id="bLimparGrupo" href="javascript:limpaCampoSelectProduto()" title="limpa o filtro 'Grupo de Produtos'">
 						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;margin-top:2px" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterGrupo"></span>)
 		</td>
 		</tr>
 		</table>
@@ -895,6 +952,8 @@ function limpaCampoSelect(c) {
 		<td align="left" valign="top">
 			<a name="bLimparSubGrupo" id="bLimparSubGrupo" href="javascript:limpaCampoSelectSubgrupo()" title="limpa o filtro 'Subgrupo'">
 						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterSubgrupo"></span>)
 		</td>
 		</tr>
 		</table>

@@ -369,6 +369,22 @@ end function
         $("#spnCounterFabricante").text($("#c_fabricante :selected").length);
         $("#spnCounterGrupo").text($("#c_grupo :selected").length);
         $("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
+
+		//Every resize of window
+		$(window).resize(function () {
+			sizeDivAjaxRunning();
+		});
+
+		//Every scroll of window
+		$(window).scroll(function () {
+			sizeDivAjaxRunning();
+		});
+
+		//Dynamically assign height
+		function sizeDivAjaxRunning() {
+			var newTop = $(window).scrollTop() + "px";
+			$("#divMsgAguardeObtendoDados").css("top", newTop);
+		}
 	});
 </script>
 
