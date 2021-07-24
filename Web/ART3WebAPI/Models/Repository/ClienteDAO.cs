@@ -39,7 +39,7 @@ namespace ART3WebAPI.Models.Repository
 			daDataAdapter = new SqlDataAdapter();
 			#endregion
 
-			try
+			try // Finally: BD.fechaConexao(ref cn)
 			{
 				#region [ Monta Select ]
 				strSql = "SELECT " +

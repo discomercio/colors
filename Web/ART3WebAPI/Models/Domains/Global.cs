@@ -60,8 +60,8 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.26";
-				public const string Data = "26.MAI.2021";
+				public const string Numero = "2.27";
+				public const string Data = "23.JUL.2021";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
 			#endregion
@@ -205,15 +205,51 @@ namespace ART3WebAPI.Models.Domains
 			 *      A ativação do tratamento de acesso concorrente é feita através do novo parâmetro no
 			 *      arquivo de configuração: TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.27 - XX.XX.20XX - por XXX
+			 * v 2.27 - 23.07.2021 - por HHO
+			 *      Ajustes e correções no relatório Compras II (RelatoriosController.GetCompras2CSV).
+			 *      Revisão das rotinas que abrem conexão com o BD para assegurar a execução do fechamento.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.28 - XX.XX.20XX - por XXX
+			 *      
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.29 - XX.XX.20XX - por XXX
+			 *      
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.30 - XX.XX.20XX - por XXX
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.31 - XX.XX.20XX - por XXX
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.32 - XX.XX.20XX - por XXX
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.33 - XX.XX.20XX - por XXX
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.34 - XX.XX.20XX - por XXX
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.35 - XX.XX.20XX - por XXX
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.36 - XX.XX.20XX - por XXX
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.37 - XX.XX.20XX - por XXX
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.38 - XX.XX.20XX - por XXX
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.39 - XX.XX.20XX - por XXX
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 * v 2.40 - XX.XX.20XX - por XXX
+			 *      
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.XX - XX.XX.20XX - por XXX
+			 *      
 			* ===============================================================================================
 			*/
 			#endregion
@@ -508,6 +544,12 @@ namespace ART3WebAPI.Models.Domains
 				{
 					public const string COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE = "ENT_ESTOQ";
 					public const string COD_CONSULTA_POR_PERIODO_EMISSAO_NF_ENTRADA = "EMI_NF";
+					public const string COD_SAIDA_SINTETICO_NF = "SINTETICO_NF";
+					public const string COD_SAIDA_SINTETICO_FABR = "SINTETICO_FABR";
+					public const string COD_SAIDA_SINTETICO_PROD = "SINTETICO_PROD";
+					public const string COD_SAIDA_CUSTO_MEDIO = "CUSTO_MEDIO";
+					public const string COD_SAIDA_CUSTO_INDIVIDUAL = "CUSTO_INDIVIDUAL";
+					public const string COD_VISAO_ANALITICA = "ANALITICA";
 				}
 				#endregion
 			}
@@ -1499,9 +1541,9 @@ namespace ART3WebAPI.Models.Domains
 			string sqlString;
 
 			sqlString = "SELECT * FROM t_FABRICANTE WHERE (fabricante = '" + fabricante + "')";
-			cn.Open();
 
-			try
+			cn.Open();
+			try // Finally: cn.Close()
 			{
 
 				SqlCommand cmd = new SqlCommand(sqlString, cn);
@@ -1513,7 +1555,6 @@ namespace ART3WebAPI.Models.Domains
 					{
 						descricao = reader.GetString(idxDescricao);
 					}
-
 				}
 				finally
 				{
@@ -1537,9 +1578,9 @@ namespace ART3WebAPI.Models.Domains
 			string sqlString;
 
 			sqlString = "SELECT * FROM t_PRODUTO WHERE (produto = '" + produto + "')";
-			cn.Open();
 
-			try
+			cn.Open();
+			try // Finally: cn.Close()
 			{
 
 				SqlCommand cmd = new SqlCommand(sqlString, cn);
@@ -1551,7 +1592,6 @@ namespace ART3WebAPI.Models.Domains
 					{
 						descricao = reader.GetString(idxDescricao);
 					}
-
 				}
 				finally
 				{
@@ -2361,9 +2401,9 @@ namespace ART3WebAPI.Models.Domains
 			SqlConnection cn = new SqlConnection(Repository.BD.getConnectionString());
 
 			sqlString = "SELECT * FROM t_DEFAULT WHERE (usuario = '" + usuario + "') AND (nome_chave = '" + nome_chave + "')";
-			cn.Open();
 
-			try
+			cn.Open();
+			try // Finally: cn.Close()
 			{
 
 				SqlCommand cmd = new SqlCommand(sqlString, cn);

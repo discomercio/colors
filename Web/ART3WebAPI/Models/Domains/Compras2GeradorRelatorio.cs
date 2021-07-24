@@ -11,630 +11,776 @@ using System;
 
 namespace ART3WebAPI.Models.Domains
 {
-    public class Compras2GeradorRelatorio
-    {
+	public class Compras2GeradorRelatorio
+	{
+		public static Task GenerateXLS(List<Compras> datasource, string filePath, string tipo_periodo, string dt_inicio, string dt_termino, string fabricante, string produto, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string nf, string dt_nf_inicio, string dt_nf_termino, string visao, string detalhamento)
+		{
+			return Task.Run(() =>
+			{
+				const int COL_INICIAL = 2;
+				const int ROW_INICIAL = 2;
+				int ROW_CABECALHO, ROW_INICIO_DADOS;
+				int colFabricante = 0, colProduto = 0, colDescricao = 0, colGrupo = 0, colSubgrupo = 0, colBTU = 0, colCiclo = 0, colNF = 0, colVlReferencia = 0, colMesInicial = 0, colMesAux, colQtdeTotal = 0, colVlTotal = 0;
+				int rowTotal, rowUltLinhaDados;
+				int totalMeses = 0;
+				int nLinha = 0;
+				int NumRegistros = datasource.Count;
+				DateTime dti, dtf;
+				string periodoentrada = "";
+				string emissaoNF = "";
+				string cellsIndex;
 
-        #region [ Constantes ]
-        private const int LIN_INICIO_REGISTROS = 16;
-        private const int LIN_CABECALHO = 15; 
-        #endregion
-        
+				if (visao.Equals(Global.Cte.Relatorio.Compras2.COD_VISAO_ANALITICA))
+				{
+					if (!detalhamento.Equals(Global.Cte.Relatorio.Compras2.COD_SAIDA_SINTETICO_NF))
+					{
+						if (tipo_periodo.Equals(Global.Cte.Relatorio.Compras2.COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE))
+						{
+							totalMeses = ((Global.converteDdMmYyyyParaDateTime(dt_termino).Year - Global.converteDdMmYyyyParaDateTime(dt_inicio).Year) * 12) + (Global.converteDdMmYyyyParaDateTime(dt_termino).Month - Global.converteDdMmYyyyParaDateTime(dt_inicio).Month) + 1;
+						}
+						else
+						{
+							totalMeses = ((Global.converteDdMmYyyyParaDateTime(dt_nf_termino).Year - Global.converteDdMmYyyyParaDateTime(dt_nf_inicio).Year) * 12) + (Global.converteDdMmYyyyParaDateTime(dt_nf_termino).Month - Global.converteDdMmYyyyParaDateTime(dt_nf_inicio).Month) + 1;
+						}
+					}
+				}
 
-        public static Task GenerateXLS(List<Compras> datasource, string filePath, string tipo_periodo, string dt_inicio, string dt_termino, string fabricante,string produto, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string nf, string dt_nf_inicio, string dt_nf_termino, string visao, string detalhamento)
-        {
-            return Task.Run(() =>
-            {
-                int totalMeses = 0;
-                if (visao.Equals("ANALITICA"))
-                {
-                    if (detalhamento != "SINTETICO_NF")
-                    {
-                        if (tipo_periodo.Equals(Global.Cte.Relatorio.Compras2.COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE))
-                        {
-                            totalMeses = ((Global.converteDdMmYyyyParaDateTime(dt_termino).Year - Global.converteDdMmYyyyParaDateTime(dt_inicio).Year) * 12) + (Global.converteDdMmYyyyParaDateTime(dt_termino).Month - Global.converteDdMmYyyyParaDateTime(dt_inicio).Month) + 1;
-                        }
-                        else
-                        {
-                            totalMeses = ((Global.converteDdMmYyyyParaDateTime(dt_nf_termino).Year - Global.converteDdMmYyyyParaDateTime(dt_nf_inicio).Year) * 12) + (Global.converteDdMmYyyyParaDateTime(dt_nf_termino).Month - Global.converteDdMmYyyyParaDateTime(dt_nf_inicio).Month) + 1;
-                        }
-                    }
-                }
+				if (tipo_periodo.Equals(Global.Cte.Relatorio.Compras2.COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE))
+				{
+					dti = Global.converteDdMmYyyyParaDateTime(dt_inicio);
+					dtf = Global.converteDdMmYyyyParaDateTime(dt_termino);
+				}
+				else
+				{
+					dti = Global.converteDdMmYyyyParaDateTime(dt_nf_inicio);
+					dtf = Global.converteDdMmYyyyParaDateTime(dt_nf_termino);
+				}
 
-                int NumRegistros = datasource.Count;
-                DateTime dt1, dt2;
-                if (tipo_periodo.Equals(Global.Cte.Relatorio.Compras2.COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE))
-                {
-                    dt1 = Global.converteDdMmYyyyParaDateTime(dt_inicio);
-                    dt2 = Global.converteDdMmYyyyParaDateTime(dt_termino);
-                }
-                else
-                {
-                    dt1 = Global.converteDdMmYyyyParaDateTime(dt_nf_inicio);
-                    dt2 = Global.converteDdMmYyyyParaDateTime(dt_nf_termino);
-                }
-
-                string periodoentrada = "";
 				if (tipo_periodo.Equals(Global.Cte.Relatorio.Compras2.COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE))
 				{
 					periodoentrada = "de " + dt_inicio + " a " + dt_termino;
 				}
+
 				if (periodoentrada == "") periodoentrada = "N.I";
 
-                if (!string.IsNullOrEmpty(fabricante))
-                    fabricante = fabricante.Replace("_", ", ");
-                else
-                    fabricante = "N.I";
-                if (!string.IsNullOrEmpty(grupo))
-                    grupo = grupo.Replace("_", ", ");
-                else
-                    grupo = "N.I";
-                if (!string.IsNullOrEmpty(subgrupo))
-                    subgrupo = subgrupo.Replace("_", ", ");
-                else
-                    subgrupo = "N.I";
-                if (string.IsNullOrEmpty(produto))
-                    produto = "N.I";
-                if (string.IsNullOrEmpty(btu))
-                    btu = "N.I";
-                if (string.IsNullOrEmpty(ciclo))
-                    ciclo = "N.I";
-                if (string.IsNullOrEmpty(pos_mercado))
-                    pos_mercado = "N.I";
-                if (string.IsNullOrEmpty(nf))
-                    nf = "N.I";
+				if (!string.IsNullOrEmpty(fabricante))
+					fabricante = fabricante.Replace("_", ", ");
+				else
+					fabricante = "N.I";
 
-				string emissaoNF = "";
+				if (!string.IsNullOrEmpty(grupo))
+					grupo = grupo.Replace("_", ", ");
+				else
+					grupo = "N.I";
+
+				if (!string.IsNullOrEmpty(subgrupo))
+					subgrupo = subgrupo.Replace("_", ", ");
+				else
+					subgrupo = "N.I";
+
+				if (string.IsNullOrEmpty(produto)) produto = "N.I";
+
+				if (string.IsNullOrEmpty(btu)) btu = "N.I";
+
+				if (string.IsNullOrEmpty(ciclo)) ciclo = "N.I";
+
+				if (string.IsNullOrEmpty(pos_mercado)) pos_mercado = "N.I";
+
+				if (string.IsNullOrEmpty(nf)) nf = "N.I";
+
 				if (tipo_periodo.Equals(Global.Cte.Relatorio.Compras2.COD_CONSULTA_POR_PERIODO_EMISSAO_NF_ENTRADA))
 				{
 					emissaoNF = "de " + dt_nf_inicio + " a " + dt_nf_termino;
 				}
+
 				if (emissaoNF == "") emissaoNF = "N.I";
 
-                using (ExcelPackage pck = new ExcelPackage())
-                {
-                    //Cria uma planilha com nome
-                    ExcelWorksheet ws = pck.Workbook.Worksheets.Add("Compras 2");
+				using (ExcelPackage pck = new ExcelPackage())
+				{
+					//Cria uma planilha com nome
+					ExcelWorksheet ws = pck.Workbook.Worksheets.Add("Compras 2");
 
-                    #region [ Config Gerais ]
-                    //configurações gerais da planilha
-                    ws.Cells["A:XFD"].Style.Font.Name = "Arial";
-                    ws.Cells["A:XFD"].Style.Font.Size = 10;
-                    ws.View.ShowGridLines = false;
-                    ws.View.FreezePanes(16, 1);
-                    ws.Column(1).Width = 2;
-                    if (detalhamento == "SINTETICO_FABR")
-                    {
-                        ws.Column(2).Width = 6;
-                        ws.Column(3).Width = 51;
-                        ws.Column(4).Width = 11;
-                        ws.Column(4 + totalMeses).Width = 15;
-                        ws.Column(5 + totalMeses).Width = 15;
-                    }
-                    else
-                    {
-                        if (detalhamento == "SINTETICO_NF")
-                        {
-                            ws.Column(2).Width = 12;
-                            ws.Column(3).Width = 58;
-                            ws.Column(4 + totalMeses).Width = 11;
-                            ws.Column(5 + totalMeses).Width = 15;
-                        }
-                        else
-                        {
-                            ws.Column(2).Width = 6;
-                            ws.Column(3).Width = 9;
-                            ws.Column(4).Width = 51;
-                            ws.Column(5).Width = 11;
-                            ws.Column(6 + totalMeses).Width = 11;
-                            ws.Column(7 + totalMeses).Width = 15;
-                        }
-                    }
+					#region [ Config Gerais ]
+					//configurações gerais da planilha
+					ws.Cells["A:XFD"].Style.Font.Name = "Arial";
+					ws.Cells["A:XFD"].Style.Font.Size = 10;
+					ws.View.ShowGridLines = false;
+					ws.Column(1).Width = 2;
+					if (detalhamento.Equals(Global.Cte.Relatorio.Compras2.COD_SAIDA_SINTETICO_FABR))
+					{
+						colFabricante = COL_INICIAL;
+						colDescricao = colFabricante + 1;
+						colMesInicial = colDescricao + 1;
+						colVlTotal = colMesInicial + totalMeses;
+						ws.Column(colFabricante).Width = 6;
+						ws.Column(colDescricao).Width = 51;
+						ws.Column(colMesInicial).Width = 12;
+						ws.Column(colVlTotal).Width = 15;
+					}
+					else if (detalhamento.Equals(Global.Cte.Relatorio.Compras2.COD_SAIDA_SINTETICO_NF))
+					{
+						colNF = COL_INICIAL;
+						colFabricante = colNF + 1;
+						colQtdeTotal = colFabricante + 1;
+						colVlTotal = colQtdeTotal + 1;
+						ws.Column(colNF).Width = 18;
+						ws.Column(colFabricante).Width = 58;
+						ws.Column(colQtdeTotal).Width = 11;
+						ws.Column(colVlTotal).Width = 15;
+					}
+					else if (detalhamento.Equals(Global.Cte.Relatorio.Compras2.COD_SAIDA_SINTETICO_PROD))
+					{
+						colFabricante = COL_INICIAL;
+						colProduto = colFabricante + 1;
+						colDescricao = colProduto + 1;
+						colGrupo = colDescricao + 1;
+						colSubgrupo = colGrupo + 1;
+						colBTU = colSubgrupo + 1;
+						colCiclo = colBTU + 1;
+						colMesInicial = colCiclo + 1;
+						colQtdeTotal = colMesInicial + totalMeses;
 
-                    ws.Row(1).Height = 1;
+						ws.Column(colFabricante).Width = 6;
+						ws.Column(colProduto).Width = 9;
+						ws.Column(colDescricao).Width = 51;
+						ws.Column(colGrupo).Width = 8;
+						ws.Column(colSubgrupo).Width = 10;
+						ws.Column(colBTU).Width = 9;
+						ws.Column(colCiclo).Width = 7;
+						ws.Column(colMesInicial).Width = 9;
+						ws.Column(colQtdeTotal).Width = 9;
+					}
+					else if (detalhamento.Equals(Global.Cte.Relatorio.Compras2.COD_SAIDA_CUSTO_MEDIO))
+					{
+						colFabricante = COL_INICIAL;
+						colProduto = colFabricante + 1;
+						colDescricao = colProduto + 1;
+						colGrupo = colDescricao + 1;
+						colSubgrupo = colGrupo + 1;
+						colBTU = colSubgrupo + 1;
+						colCiclo = colBTU + 1;
+						colVlReferencia = colCiclo + 1;
+						colMesInicial = colVlReferencia + 1;
+						colQtdeTotal = colMesInicial + totalMeses;
+						colVlTotal = colQtdeTotal + 1;
 
-                    #endregion
+						ws.Column(colFabricante).Width = 6;
+						ws.Column(colProduto).Width = 9;
+						ws.Column(colDescricao).Width = 51;
+						ws.Column(colGrupo).Width = 8;
+						ws.Column(colSubgrupo).Width = 10;
+						ws.Column(colBTU).Width = 9;
+						ws.Column(colCiclo).Width = 7;
+						ws.Column(colVlReferencia).Width = 12;
+						ws.Column(colMesInicial).Width = 9;
+						ws.Column(colQtdeTotal).Width = 9;
+						ws.Column(colVlTotal).Width = 15;
+					}
+					else if (detalhamento.Equals(Global.Cte.Relatorio.Compras2.COD_SAIDA_CUSTO_INDIVIDUAL))
+					{
+						colFabricante = COL_INICIAL;
+						colProduto = colFabricante + 1;
+						colDescricao = colProduto + 1;
+						colGrupo = colDescricao + 1;
+						colSubgrupo = colGrupo + 1;
+						colBTU = colSubgrupo + 1;
+						colCiclo = colBTU + 1;
+						colVlReferencia = colCiclo + 1;
+						colMesInicial = colVlReferencia + 1;
+						colQtdeTotal = colMesInicial + totalMeses;
+						colVlTotal = colQtdeTotal + 1;
 
+						ws.Column(colFabricante).Width = 6;
+						ws.Column(colProduto).Width = 9;
+						ws.Column(colDescricao).Width = 51;
+						ws.Column(colGrupo).Width = 8;
+						ws.Column(colSubgrupo).Width = 10;
+						ws.Column(colBTU).Width = 9;
+						ws.Column(colCiclo).Width = 7;
+						ws.Column(colVlReferencia).Width = 12;
+						ws.Column(colMesInicial).Width = 9;
+						ws.Column(colQtdeTotal).Width = 9;
+						ws.Column(colVlTotal).Width = 15;
+					}
 
-                    #region [ Filtro ]
-                    ws.Cells["B2:M13"].Style.Font.Bold = true;
-                    ws.Cells["B2"].Style.Font.Size = 12;
-                    ws.Cells["B2"].Value = "Compras II";
+					ws.Row(1).Height = 1;
+					#endregion
+
+					#region [ Filtro ]
+					nLinha = ROW_INICIAL;
+					cellsIndex = Excel.CellAddress(COL_INICIAL, nLinha);
+					ws.Cells[cellsIndex].Style.Font.Size = 12;
+					ws.Cells[cellsIndex].Value = "Compras II";
+					nLinha++; cellsIndex = Excel.CellAddress(COL_INICIAL, nLinha);
 					if (tipo_periodo.Equals(Global.Cte.Relatorio.Compras2.COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE))
 					{
-						ws.Cells["B3"].Value = "Período da Entrada no Estoque: " + periodoentrada;
+						ws.Cells[cellsIndex].Value = "Período da Entrada no Estoque: " + periodoentrada;
 					}
 					else
 					{
-						ws.Cells["B3"].Value = "Período da Emissão NF Entrada: " + emissaoNF;
+						ws.Cells[cellsIndex].Value = "Período da Emissão NF Entrada: " + emissaoNF;
 					}
-                    ws.Cells["B4"].Value = "Fabricante(s): " + fabricante;
-                    ws.Cells["B5"].Value = "Grupo(s) de produtos: " + grupo;
-                    ws.Cells["B6"].Value = "Subgrupo(s) de produtos: " + subgrupo;
-                    ws.Cells["B7"].Value = "Produto: " + produto;
-                    ws.Cells["B8"].Value = "BTU/h: " + btu;
-                    ws.Cells["B9"].Value = "Ciclo: " + ciclo;
-                    ws.Cells["B10"].Value = "Posição Mercado: " + pos_mercado;
-                    ws.Cells["B11"].Value = "Nº Nota Fiscal: " + nf;
-                    ws.Cells["B12"].Value = "Tipo de Detalhamento: " + Global.getDetalhamento(detalhamento);
-                    ws.Cells["B13"].Value = "Emissão: " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
-                    ws.Cells["L14:M14"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-                    #endregion
-
-                    #region [ Cabeçalho ]
-
-                    #region [ Sintético por NF ]
-                    if (detalhamento == "SINTETICO_NF")
-                    {
-                        using (ExcelRange rng1 = ws.Cells["B" + (LIN_INICIO_REGISTROS - 1) + ":" + ws.Cells[LIN_INICIO_REGISTROS - 1, 5 + totalMeses]])
-                        {
-                            rng1.Style.WrapText = true;
-                            rng1.Style.Font.Bold = true;
-                            rng1.Style.VerticalAlignment = ExcelVerticalAlignment.Bottom;
-                            rng1.Style.Border.Top.Style = ExcelBorderStyle.Medium;
-                            rng1.Style.Border.Bottom.Style = ExcelBorderStyle.Medium;
-                            rng1.Style.Border.Left.Style = ExcelBorderStyle.Thin;
-                        }
-                        ws.Cells[LIN_CABECALHO, 5 + totalMeses].Style.Border.Right.Style = ExcelBorderStyle.Medium;
-                        
-                        ws.Cells[LIN_CABECALHO, 2].Value = "Nº NF";
-                        ws.Cells[LIN_CABECALHO, 3].Value = "Fabr";
-                        ws.Cells[LIN_CABECALHO, 4 + totalMeses].Value = "Qtde Total";
-                        ws.Cells[LIN_CABECALHO, 5 + totalMeses].Value = "Valor Total";
-                        ws.Cells[LIN_CABECALHO, 2].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                        ws.Cells[LIN_CABECALHO, 3].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                        ws.Cells[LIN_CABECALHO, 4 + totalMeses].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-                        ws.Cells[LIN_CABECALHO, 5 + totalMeses].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-                    }
-                    #endregion
-
-                    #region [ Sintético por Fabricante ]
-                    if (detalhamento == "SINTETICO_FABR")
-                    {
-
-                        using (ExcelRange rng1 = ws.Cells["B" + (LIN_INICIO_REGISTROS - 1) + ":" + ws.Cells[LIN_INICIO_REGISTROS - 1, 4 + totalMeses]])
-                        {
-                            rng1.Style.WrapText = true;
-                            rng1.Style.Font.Bold = true;
-                            rng1.Style.VerticalAlignment = ExcelVerticalAlignment.Bottom;
-                            rng1.Style.Border.Top.Style = ExcelBorderStyle.Medium;
-                            rng1.Style.Border.Bottom.Style = ExcelBorderStyle.Medium;
-                            rng1.Style.Border.Left.Style = ExcelBorderStyle.Thin;
-                        }
-                        ws.Cells[LIN_CABECALHO, 4 + totalMeses].Style.Border.Right.Style = ExcelBorderStyle.Medium;
-
-                        ws.Cells[LIN_CABECALHO, 2].Value = "Fabr";
-                        ws.Cells[LIN_CABECALHO, 3].Value = "Descrição";
-                        ws.Cells[LIN_CABECALHO, 4 + totalMeses].Value = "Valor Total";
-                        ws.Cells[LIN_CABECALHO, 2].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                        ws.Cells[LIN_CABECALHO, 3].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                        ws.Cells[LIN_CABECALHO, 4 + totalMeses].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-
-                        for (int i = 1; i <= totalMeses; i++)
-                        {
-                            string mes = "", ano = "";
-                            if (i == 1)
-                            {
-                                mes = dt1.ToString("MM");
-                                ano = dt1.ToString("yyyy");
-                            }
-                            else
-                            {
-                                mes = (dt1.AddMonths(i - 1)).ToString("MM");
-                                ano = (dt1.AddMonths(i - 1)).ToString("yyyy");
-                            }
-
-                            ws.Cells[LIN_CABECALHO, (3 + i)].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-                            ws.Column(3 + i).Width = 15;
-                            ws.Cells[LIN_CABECALHO, (3 + i)].Value = Global.mesPorExtenso(int.Parse(mes)) + "/" + ano.Substring(2, 2);
-                            //Total
-                            ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 3 + i].Formula = string.Format("SUM({0})", new ExcelAddress(LIN_INICIO_REGISTROS, (3 + i), NumRegistros + LIN_INICIO_REGISTROS - 1, (3 + i)));
-                            ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 3 + i].Style.Numberformat.Format = "###,###,##0.00;[Red]-###,###,##0.00";
-                        }
-                    } 
-                    #endregion
-
-                    #region [ Sintético por Produto ]
-                    else if (detalhamento == "SINTETICO_PROD")
-                    {
-
-                        using (ExcelRange rng1 = ws.Cells["B" + (LIN_INICIO_REGISTROS - 1) + ":" + ws.Cells[LIN_INICIO_REGISTROS - 1, 5 + totalMeses]])
-                        {
-                            rng1.Style.WrapText = true;
-                            rng1.Style.Font.Bold = true;
-                            rng1.Style.VerticalAlignment = ExcelVerticalAlignment.Bottom;
-                            rng1.Style.Border.Top.Style = ExcelBorderStyle.Medium;
-                            rng1.Style.Border.Bottom.Style = ExcelBorderStyle.Medium;
-                            rng1.Style.Border.Left.Style = ExcelBorderStyle.Thin;
-                        }
-                        ws.Cells[LIN_CABECALHO, 5 + totalMeses].Style.Border.Right.Style = ExcelBorderStyle.Medium;
-
-                        ws.Cells[LIN_CABECALHO, 2].Value = "Fabr";
-                        ws.Cells[LIN_CABECALHO, 3].Value = "Produto";
-                        ws.Cells[LIN_CABECALHO, 4].Value = "Descrição";
-                        ws.Cells[LIN_CABECALHO, 5 + totalMeses].Value = " Qtde Total";
-                        ws.Cells[LIN_CABECALHO, 2].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                        ws.Cells[LIN_CABECALHO, 3].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                        ws.Cells[LIN_CABECALHO, 4].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                        ws.Cells[LIN_CABECALHO, 5].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-                        ws.Cells[LIN_CABECALHO, 5 + totalMeses].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-                        ws.Cells[LIN_CABECALHO, 5 + totalMeses].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-
-
-                        for (int i = 1; i <= totalMeses; i++)
-                        {
-                            string mes = "", ano = "";
-                            if (i == 1)
-                            {
-                                mes = dt1.ToString("MM");
-                                ano = dt1.ToString("yyyy");
-                            }
-                            else
-                            {
-                                mes = (dt1.AddMonths(i - 1)).ToString("MM");
-                                ano = (dt1.AddMonths(i - 1)).ToString("yyyy");
-                            }
-
-                            ws.Cells[LIN_CABECALHO, (4 + i)].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-                            ws.Column(4 + i).Width = 8;
-                            ws.Cells[LIN_CABECALHO, (4 + i)].Value = Global.mesPorExtenso(int.Parse(mes)) + "/" + ano.Substring(2, 2);
-                            //Total
-                            ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 4 + i].Formula = string.Format("SUM({0})", new ExcelAddress(LIN_INICIO_REGISTROS, (4 + i), NumRegistros + LIN_INICIO_REGISTROS - 1, (4 + i)));
-
-                        }
-
-                    } 
-                    #endregion
-
-                    #region [ Valor Referência Médio ]
-                    else if (detalhamento == "CUSTO_MEDIO")
-                    {
-
-                        using (ExcelRange rng1 = ws.Cells["B" + (LIN_INICIO_REGISTROS - 1) + ":" + ws.Cells[LIN_INICIO_REGISTROS - 1, 7 + totalMeses]])
-                        {
-                            rng1.Style.WrapText = true;
-                            rng1.Style.Font.Bold = true;
-                            rng1.Style.VerticalAlignment = ExcelVerticalAlignment.Bottom;
-                            rng1.Style.Border.Top.Style = ExcelBorderStyle.Medium;
-                            rng1.Style.Border.Bottom.Style = ExcelBorderStyle.Medium;
-                            rng1.Style.Border.Left.Style = ExcelBorderStyle.Thin;
-                        }
-                        ws.Cells[LIN_CABECALHO, 7 + totalMeses].Style.Border.Right.Style = ExcelBorderStyle.Medium;
-
-
-                        ws.Cells[LIN_CABECALHO, 2].Value = "Fabr";
-                        ws.Cells[LIN_CABECALHO, 3].Value = "Produto";
-                        ws.Cells[LIN_CABECALHO, 4].Value = "Descrição";
-                        ws.Cells[LIN_CABECALHO, 5].Value = "Referência Médio";
-                        ws.Cells[LIN_CABECALHO, 6 + totalMeses].Value = "Total";
-                        ws.Cells[LIN_CABECALHO, 7 + totalMeses].Value = "Valor Total";
-                        ws.Cells[LIN_CABECALHO, 2].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                        ws.Cells[LIN_CABECALHO, 3].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                        ws.Cells[LIN_CABECALHO, 4].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                        ws.Cells[LIN_CABECALHO, 5].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-                        ws.Cells[LIN_CABECALHO, 6 + totalMeses].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-                        ws.Cells[LIN_CABECALHO, 7 + totalMeses].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-
-
-                        for (int i = 1; i <= totalMeses; i++)
-                        {
-                            string mes = "", ano = "";
-                            if (i == 1)
-                            {
-                                mes = dt1.ToString("MM");
-                                ano = dt1.ToString("yyyy");
-                            }
-                            else
-                            {
-                                mes = (dt1.AddMonths(i - 1)).ToString("MM");
-                                ano = (dt1.AddMonths(i - 1)).ToString("yyyy");
-                            }
-
-                            ws.Cells[LIN_CABECALHO, (5 + i)].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-                            ws.Column(5 + i).Width = 8;
-                            ws.Cells[LIN_CABECALHO, (5 + i)].Value = Global.mesPorExtenso(int.Parse(mes)) + "/" + ano.Substring(2, 2);
-                            //Total
-                            ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 5 + i].Formula = string.Format("SUM({0})", new ExcelAddress(LIN_INICIO_REGISTROS, (5 + i), NumRegistros + LIN_INICIO_REGISTROS - 1, (5 + i)));
-
-                        }
-
-                    } 
-                    #endregion
-
-                    #region [ Valor Referência Individual ]
-                    else if (detalhamento == "CUSTO_INDIVIDUAL")
-                    {
-
-                        using (ExcelRange rng1 = ws.Cells["B" + (LIN_INICIO_REGISTROS - 1) + ":" + ws.Cells[LIN_INICIO_REGISTROS - 1, 7 + totalMeses]])
-                        {
-                            rng1.Style.WrapText = true;
-                            rng1.Style.Font.Bold = true;
-                            rng1.Style.VerticalAlignment = ExcelVerticalAlignment.Bottom;
-                            rng1.Style.Border.Top.Style = ExcelBorderStyle.Medium;
-                            rng1.Style.Border.Bottom.Style = ExcelBorderStyle.Medium;
-                            rng1.Style.Border.Left.Style = ExcelBorderStyle.Thin;
-                        }
-                        ws.Cells[LIN_CABECALHO, 7 + totalMeses].Style.Border.Right.Style = ExcelBorderStyle.Medium;
-
-
-
-                        ws.Cells[LIN_CABECALHO, 2].Value = "Fabr";
-                        ws.Cells[LIN_CABECALHO, 3].Value = "Produto";
-                        ws.Cells[LIN_CABECALHO, 4].Value = "Descrição";
-                        ws.Cells[LIN_CABECALHO, 5].Value = "Referência Individual";
-                        ws.Cells[LIN_CABECALHO, 6 + totalMeses].Value = "Total";
-                        ws.Cells[LIN_CABECALHO, 7 + totalMeses].Value = "Valor Total";
-                        ws.Cells[LIN_CABECALHO, 2].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                        ws.Cells[LIN_CABECALHO, 3].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                        ws.Cells[LIN_CABECALHO, 4].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                        ws.Cells[LIN_CABECALHO, 5].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-                        ws.Cells[LIN_CABECALHO, 6 + totalMeses].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-                        ws.Cells[LIN_CABECALHO, 7 + totalMeses].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-
-
-
-                        for (int i = 1; i <= totalMeses; i++)
-                        {
-                            string mes = "", ano = "";
-                            if (i == 1)
-                            {
-                                mes = dt1.ToString("MM");
-                                ano = dt1.ToString("yyyy");
-                            }
-                            else
-                            {
-                                mes = (dt1.AddMonths(i - 1)).ToString("MM");
-                                ano = (dt1.AddMonths(i - 1)).ToString("yyyy");
-                            }
-
-                            ws.Cells[LIN_CABECALHO, (5 + i)].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-                            ws.Column(5 + i).Width = 8;
-                            ws.Cells[LIN_CABECALHO, (5 + i)].Value = Global.mesPorExtenso(int.Parse(mes)) + "/" + ano.Substring(2, 2);
-                            //Total
-                            ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 5 + i].Formula = string.Format("SUM({0})", new ExcelAddress(LIN_INICIO_REGISTROS, (5 + i), NumRegistros + LIN_INICIO_REGISTROS - 1, (5 + i)));
-
-                        }
-
-
-                    }
-                    #endregion
-
-                    #endregion
-
-                    #region [ Registros ]
-
-                    #region [ Sintético por NF ]
-                    if (detalhamento == "SINTETICO_NF")
-                    {
-                        using (ExcelRange rng2 = ws.Cells["B" + LIN_INICIO_REGISTROS + ":" + ws.Cells[NumRegistros + LIN_INICIO_REGISTROS - 1, 5 + totalMeses]])
-                        {
-                            rng2.Style.Border.Bottom.Style = ExcelBorderStyle.Hair;
-                            rng2.Style.Border.Left.Style = ExcelBorderStyle.Thin;
-                            rng2.Style.Border.Right.Style = ExcelBorderStyle.Thin;
-                        }
-
-                        for (int i = 0; i < NumRegistros; i++)
-                        {
-
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 2].Value = datasource.ElementAt(i).NF;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 2].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 3].Value = datasource.ElementAt(i).Fabricante + " - " + Global.getDescFabricante(datasource.ElementAt(i).Fabricante);
-                            if (visao.Equals("ANALITICA"))
-                            {
-                                if (detalhamento != "SINTETICO_NF")
-                                {
-                                    for (int j = 0; j < totalMeses; j++)
-                                    {
-                                        ws.Cells[i + LIN_INICIO_REGISTROS, (3 + j + 1)].Value = datasource.ElementAt(i).Meses[j];
-                                        ws.Cells[i + LIN_INICIO_REGISTROS, (3 + j + 1)].Style.Numberformat.Format = "###,###,##0.00";
-                                    } 
-                                }
-                            }
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 4 + totalMeses].Value = datasource.ElementAt(i).Qtde;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 5 + totalMeses].Value = datasource.ElementAt(i).Valor;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 5 + totalMeses].Style.Numberformat.Format = "###,###,##0.00";
-
-                        }
-                        #region [ Total ]
-
-                        ws.Cells[(NumRegistros + LIN_INICIO_REGISTROS + 1), 2, (NumRegistros + LIN_INICIO_REGISTROS + 1), 5 + totalMeses].Style.Font.Bold = true;
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 3].Value = "TOTAL";
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 3].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 4 + totalMeses].Formula = string.Format("SUM({0})", new ExcelAddress(LIN_INICIO_REGISTROS, 4 + totalMeses, NumRegistros + LIN_INICIO_REGISTROS - 1, 4 + totalMeses));
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 5 + totalMeses].Formula = string.Format("SUM({0})", new ExcelAddress(LIN_INICIO_REGISTROS, 5 + totalMeses, NumRegistros + LIN_INICIO_REGISTROS - 1, 5 + totalMeses));
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 5 + totalMeses].Style.Numberformat.Format = "###,###,##0.00;[Red]-###,###,##0.00";
-                        #endregion
-
-
-
-                    }
-                    #endregion
-
-                    #region [ Sintético por Fabricante ]
-                    if (detalhamento == "SINTETICO_FABR")
-                    {
-                        using (ExcelRange rng2 = ws.Cells["B" + LIN_INICIO_REGISTROS + ":" + ws.Cells[NumRegistros + LIN_INICIO_REGISTROS - 1, 4 + totalMeses]])
-                        {
-                            rng2.Style.Border.Bottom.Style = ExcelBorderStyle.Hair;
-                            rng2.Style.Border.Left.Style = ExcelBorderStyle.Thin;
-                            rng2.Style.Border.Right.Style = ExcelBorderStyle.Thin;
-                        }
-
-                        for (int i = 0; i < NumRegistros; i++)
-                        {
-                            
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 2].Value = datasource.ElementAt(i).Fabricante;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 2].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 3].Value = Global.getDescFabricante(datasource.ElementAt(i).Fabricante);
-                            if (visao.Equals("ANALITICA"))
-                            {
-                                for (int j = 0; j < totalMeses; j++)
-                                {
-                                    ws.Cells[i + LIN_INICIO_REGISTROS, (3 + j + 1)].Value = datasource.ElementAt(i).Meses[j];
-                                    ws.Cells[i + LIN_INICIO_REGISTROS, (3 + j + 1)].Style.Numberformat.Format = "###,###,##0.00";
-                                }
-                            }
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 4 + totalMeses].Value = datasource.ElementAt(i).Valor;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 4 + totalMeses].Style.Numberformat.Format = "###,###,##0.00";
-
-                        }
-                        #region [ Total ]
-
-                        ws.Cells[(NumRegistros + LIN_INICIO_REGISTROS + 1), 2, (NumRegistros + LIN_INICIO_REGISTROS + 1), 5 + totalMeses].Style.Font.Bold = true;
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 3].Value = "TOTAL";
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 3].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 4 + totalMeses].Formula = string.Format("SUM({0})", new ExcelAddress(LIN_INICIO_REGISTROS, 4 + totalMeses, NumRegistros + LIN_INICIO_REGISTROS - 1, 4 + totalMeses));
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 4 + totalMeses].Style.Numberformat.Format = "###,###,##0.00;[Red]-###,###,##0.00";
-                        #endregion
-
-
-
-                    } 
-                    #endregion
-
-                    #region [ Sintético por Produto ]
-                    else if (detalhamento == "SINTETICO_PROD")
-                    {
-                        using (ExcelRange rng2 = ws.Cells["B" + LIN_INICIO_REGISTROS + ":" + ws.Cells[NumRegistros + LIN_INICIO_REGISTROS - 1, 5 + totalMeses]])
-                        {
-                            rng2.Style.Border.Bottom.Style = ExcelBorderStyle.Hair;
-                            rng2.Style.Border.Left.Style = ExcelBorderStyle.Thin;
-                            rng2.Style.Border.Right.Style = ExcelBorderStyle.Thin;
-                        }
-
-                        for (int i = 0; i < NumRegistros; i++)
-                        {
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 2].Value = datasource.ElementAt(i).Fabricante;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 2].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 3].Value = datasource.ElementAt(i).Produto;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 3].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 4].Value = Global.getDescProduto(datasource.ElementAt(i).Produto);
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 4].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                            if (visao.Equals("ANALITICA"))
-                            {
-                                for (int j = 0; j < totalMeses; j++)
-                                {
-                                    ws.Cells[i + LIN_INICIO_REGISTROS, (4 + j + 1)].Value = datasource.ElementAt(i).Meses[j];
-                                }
-                            }
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 5 + totalMeses].Value = datasource.ElementAt(i).Qtde;                         
-
-                        }
-
-                        #region [ Total ]
-
-                        ws.Cells[(NumRegistros + LIN_INICIO_REGISTROS + 1), 2, (NumRegistros + LIN_INICIO_REGISTROS + 1), 5 + totalMeses].Style.Font.Bold = true;
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 4].Value = "TOTAL";
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 4].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 4 + totalMeses].Formula = string.Format("SUM({0})", new ExcelAddress(LIN_INICIO_REGISTROS, 4 + totalMeses, NumRegistros + LIN_INICIO_REGISTROS - 1, 4 + totalMeses));
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 5 + totalMeses].Formula = string.Format("SUM({0})", new ExcelAddress(LIN_INICIO_REGISTROS, 5 + totalMeses, NumRegistros + LIN_INICIO_REGISTROS - 1, 5 + totalMeses));
-                        #endregion
-
-                    } 
-                    #endregion
-
-                    #region [ Valor Referência Médio ]
-                    else if (detalhamento == "CUSTO_MEDIO")
-                    {
-                        using (ExcelRange rng2 = ws.Cells["B" + LIN_INICIO_REGISTROS + ":" + ws.Cells[NumRegistros + LIN_INICIO_REGISTROS - 1, 7 + totalMeses]])
-                        {
-                            rng2.Style.Border.Bottom.Style = ExcelBorderStyle.Hair;
-                            rng2.Style.Border.Left.Style = ExcelBorderStyle.Thin;
-                            rng2.Style.Border.Right.Style = ExcelBorderStyle.Thin;
-                        }
-
-                        for (int i = 0; i < NumRegistros; i++)
-                        {
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 2].Value = datasource.ElementAt(i).Fabricante;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 2].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 3].Value = datasource.ElementAt(i).Produto;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 3].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 4].Value = Global.getDescProduto(datasource.ElementAt(i).Produto);
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 4].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 5].Value = datasource.ElementAt(i).Valor / datasource.ElementAt(i).Qtde;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 5].Style.Numberformat.Format = "###,###,##0.00";
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 6].Value = datasource.ElementAt(i).Qtde;
-
-
-                            if (visao.Equals("ANALITICA"))
-                            {
-                                for (int j = 0; j < totalMeses; j++)
-                                {
-                                    ws.Cells[i + LIN_INICIO_REGISTROS, (5 + j + 1)].Value = datasource.ElementAt(i).Meses[j];
-                                    
-                                }
-                            }
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 6 + totalMeses].Value = datasource.ElementAt(i).Qtde;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 7 + totalMeses].Value = datasource.ElementAt(i).Valor;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 7 + totalMeses].Style.Numberformat.Format = "###,###,##0.00";
-
-                        }
-
-                        #region [ Total ]
-                        ws.Cells[(NumRegistros + LIN_INICIO_REGISTROS + 1), 2, (NumRegistros + LIN_INICIO_REGISTROS + 1), 7 + totalMeses].Style.Font.Bold = true;
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 4].Value = "TOTAL";
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 4].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 6 + totalMeses].Formula = string.Format("SUM({0})", new ExcelAddress(LIN_INICIO_REGISTROS, 6 + totalMeses, NumRegistros + LIN_INICIO_REGISTROS - 1, 6 + totalMeses));
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 7 + totalMeses].Formula = string.Format("SUM({0})", new ExcelAddress(LIN_INICIO_REGISTROS, 7 + totalMeses, NumRegistros + LIN_INICIO_REGISTROS - 1, 7 + totalMeses));
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 7 + totalMeses].Style.Numberformat.Format = "###,###,##0.00;[Red]-###,###,##0.00";
-                        #endregion
-
-
-                    } 
-                    #endregion
-
-                    #region [ Valor Referência Individual ]
-                    else if (detalhamento == "CUSTO_INDIVIDUAL")
-                    {
-                        using (ExcelRange rng2 = ws.Cells["B" + LIN_INICIO_REGISTROS + ":" + ws.Cells[NumRegistros + LIN_INICIO_REGISTROS - 1, 7 + totalMeses]])
-                        {
-                            rng2.Style.Border.Bottom.Style = ExcelBorderStyle.Hair;
-                            rng2.Style.Border.Left.Style = ExcelBorderStyle.Thin;
-                            rng2.Style.Border.Right.Style = ExcelBorderStyle.Thin;
-                        }
-
-                        for (int i = 0; i < NumRegistros; i++)
-                        {
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 2].Value = datasource.ElementAt(i).Fabricante;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 2].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 3].Value = datasource.ElementAt(i).Produto;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 3].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 4].Value = Global.getDescProduto(datasource.ElementAt(i).Produto);
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 4].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 5].Value = datasource.ElementAt(i).Valor;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 5].Style.Numberformat.Format = "###,###,##0.00";
-                            if (visao.Equals("ANALITICA"))
-                            {
-                                for (int j = 0; j < totalMeses; j++)
-                                {
-                                    ws.Cells[i + LIN_INICIO_REGISTROS, (5 + j + 1)].Value = datasource.ElementAt(i).Meses[j];
-                                   
-                                }
-                            }
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 6 + totalMeses].Value = datasource.ElementAt(i).Qtde;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 7 + totalMeses].Value = datasource.ElementAt(i).Valor * datasource.ElementAt(i).Qtde;
-                            ws.Cells[i + LIN_INICIO_REGISTROS, 7 + totalMeses].Style.Numberformat.Format = "###,###,##0.00";
-
-                           
-                          
-                        }
-
-                        #region [ Total ]
-                        ws.Cells[(NumRegistros + LIN_INICIO_REGISTROS + 1), 2, (NumRegistros + LIN_INICIO_REGISTROS + 1), 7 + totalMeses].Style.Font.Bold = true;
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 4].Value = "TOTAL";
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 4].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 6 + totalMeses].Formula = string.Format("SUM({0})", new ExcelAddress(LIN_INICIO_REGISTROS, 6 + totalMeses, NumRegistros + LIN_INICIO_REGISTROS - 1, 6 + totalMeses));
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 7 + totalMeses].Formula = string.Format("SUM({0})", new ExcelAddress(LIN_INICIO_REGISTROS, 7 + totalMeses, NumRegistros + LIN_INICIO_REGISTROS - 1, 7 + totalMeses));
-                        ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, 7 + totalMeses].Style.Numberformat.Format = "###,###,##0.00;[Red]-###,###,##0.00";
-                        #endregion
-
-                    } 
-                    #endregion
-                    
-                    #endregion                 
-
-                    pck.SaveAs(new FileInfo(filePath));
-                }
-            });
-        }
-    }
+					nLinha++; cellsIndex = Excel.CellAddress(COL_INICIAL, nLinha);
+					ws.Cells[cellsIndex].Value = "Fabricante(s): " + fabricante;
+					nLinha++; cellsIndex = Excel.CellAddress(COL_INICIAL, nLinha);
+					ws.Cells[cellsIndex].Value = "Grupo(s) de produtos: " + grupo;
+					nLinha++; cellsIndex = Excel.CellAddress(COL_INICIAL, nLinha);
+					ws.Cells[cellsIndex].Value = "Subgrupo(s) de produtos: " + subgrupo;
+					nLinha++; cellsIndex = Excel.CellAddress(COL_INICIAL, nLinha);
+					ws.Cells[cellsIndex].Value = "Produto: " + produto;
+					nLinha++; cellsIndex = Excel.CellAddress(COL_INICIAL, nLinha);
+					ws.Cells[cellsIndex].Value = "BTU/h: " + btu;
+					nLinha++; cellsIndex = Excel.CellAddress(COL_INICIAL, nLinha);
+					ws.Cells[cellsIndex].Value = "Ciclo: " + ciclo;
+					nLinha++; cellsIndex = Excel.CellAddress(COL_INICIAL, nLinha);
+					ws.Cells[cellsIndex].Value = "Posição Mercado: " + pos_mercado;
+					nLinha++; cellsIndex = Excel.CellAddress(COL_INICIAL, nLinha);
+					ws.Cells[cellsIndex].Value = "Nº Nota Fiscal: " + nf;
+					nLinha++; cellsIndex = Excel.CellAddress(COL_INICIAL, nLinha);
+					ws.Cells[cellsIndex].Value = "Tipo de Detalhamento: " + Global.getDetalhamento(detalhamento);
+					nLinha++; cellsIndex = Excel.CellAddress(COL_INICIAL, nLinha);
+					ws.Cells[cellsIndex].Value = "Emissão: " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+
+					cellsIndex = Excel.RangeAddress(COL_INICIAL, ROW_INICIAL, (COL_INICIAL + 11), nLinha);
+					ws.Cells[cellsIndex].Style.Font.Bold = true;
+
+					nLinha++;
+					ROW_CABECALHO = nLinha + 1;
+					ROW_INICIO_DADOS = ROW_CABECALHO + 1;
+					#endregion
+
+					#region [ Cabeçalho ]
+
+					#region [ Sintético por NF ]
+					if (detalhamento.Equals(Global.Cte.Relatorio.Compras2.COD_SAIDA_SINTETICO_NF))
+					{
+						cellsIndex = Excel.RangeAddress(COL_INICIAL, ROW_CABECALHO, colVlTotal, ROW_CABECALHO);
+						using (ExcelRange rng1 = ws.Cells[cellsIndex])
+						{
+							rng1.Style.WrapText = true;
+							rng1.Style.Font.Bold = true;
+							rng1.Style.VerticalAlignment = ExcelVerticalAlignment.Bottom;
+							rng1.Style.Border.Top.Style = ExcelBorderStyle.Medium;
+							rng1.Style.Border.Bottom.Style = ExcelBorderStyle.Medium;
+							rng1.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+						}
+
+						ws.Cells[ROW_CABECALHO, colVlTotal].Style.Border.Right.Style = ExcelBorderStyle.Medium;
+						ws.Cells[ROW_CABECALHO, colNF].Value = "Nº NF";
+						ws.Cells[ROW_CABECALHO, colFabricante].Value = "Fabr";
+						ws.Cells[ROW_CABECALHO, colQtdeTotal].Value = "Qtde Total";
+						ws.Cells[ROW_CABECALHO, colVlTotal].Value = "Valor Total";
+						ws.Cells[ROW_CABECALHO, colNF].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+						ws.Cells[ROW_CABECALHO, colFabricante].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+						ws.Cells[ROW_CABECALHO, colQtdeTotal].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+						ws.Cells[ROW_CABECALHO, colVlTotal].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+					}
+					#endregion
+
+					#region [ Sintético por Fabricante ]
+					else if (detalhamento.Equals(Global.Cte.Relatorio.Compras2.COD_SAIDA_SINTETICO_FABR))
+					{
+						cellsIndex = Excel.RangeAddress(COL_INICIAL, ROW_CABECALHO, colVlTotal, ROW_CABECALHO);
+						using (ExcelRange rng1 = ws.Cells[cellsIndex])
+						{
+							rng1.Style.WrapText = true;
+							rng1.Style.Font.Bold = true;
+							rng1.Style.VerticalAlignment = ExcelVerticalAlignment.Bottom;
+							rng1.Style.Border.Top.Style = ExcelBorderStyle.Medium;
+							rng1.Style.Border.Bottom.Style = ExcelBorderStyle.Medium;
+							rng1.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+						}
+
+						ws.Cells[ROW_CABECALHO, colVlTotal].Style.Border.Right.Style = ExcelBorderStyle.Medium;
+						ws.Cells[ROW_CABECALHO, colFabricante].Value = "Fabr";
+						ws.Cells[ROW_CABECALHO, colDescricao].Value = "Descrição";
+						ws.Cells[ROW_CABECALHO, colVlTotal].Value = "Valor Total";
+						ws.Cells[ROW_CABECALHO, colFabricante].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+						ws.Cells[ROW_CABECALHO, colDescricao].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+						ws.Cells[ROW_CABECALHO, colVlTotal].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+
+						for (int i = 1; i <= totalMeses; i++)
+						{
+							string mes = "", ano = "";
+							if (i == 1)
+							{
+								mes = dti.ToString("MM");
+								ano = dti.ToString("yyyy");
+							}
+							else
+							{
+								mes = (dti.AddMonths(i - 1)).ToString("MM");
+								ano = (dti.AddMonths(i - 1)).ToString("yyyy");
+							}
+
+							colMesAux = colMesInicial + (i - 1);
+							ws.Column(colMesAux).Width = 15;
+							cellsIndex = Excel.CellAddress(colMesAux, ROW_CABECALHO);
+							ws.Cells[cellsIndex].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+							ws.Cells[cellsIndex].Value = Global.mesPorExtenso(int.Parse(mes)) + "/" + ano.Substring(2, 2);
+							//Total
+							rowTotal = ROW_INICIO_DADOS + NumRegistros + 1;
+							rowUltLinhaDados = ROW_INICIO_DADOS + NumRegistros - 1;
+							ws.Cells[rowTotal, colMesAux].Formula = string.Format("SUM({0})", new ExcelAddress(ROW_INICIO_DADOS, colMesAux, rowUltLinhaDados, colMesAux));
+							ws.Cells[rowTotal, colMesAux].Style.Numberformat.Format = "###,###,##0.00;[Red]-###,###,##0.00";
+						}
+					}
+					#endregion
+
+					#region [ Sintético por Produto ]
+					else if (detalhamento.Equals(Global.Cte.Relatorio.Compras2.COD_SAIDA_SINTETICO_PROD))
+					{
+						cellsIndex = Excel.RangeAddress(COL_INICIAL, ROW_CABECALHO, colQtdeTotal, ROW_CABECALHO);
+						using (ExcelRange rng1 = ws.Cells[cellsIndex])
+						{
+							rng1.Style.WrapText = true;
+							rng1.Style.Font.Bold = true;
+							rng1.Style.VerticalAlignment = ExcelVerticalAlignment.Bottom;
+							rng1.Style.Border.Top.Style = ExcelBorderStyle.Medium;
+							rng1.Style.Border.Bottom.Style = ExcelBorderStyle.Medium;
+							rng1.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+						}
+
+						ws.Cells[ROW_CABECALHO, colQtdeTotal].Style.Border.Right.Style = ExcelBorderStyle.Medium;
+						ws.Cells[ROW_CABECALHO, colFabricante].Value = "Fabr";
+						ws.Cells[ROW_CABECALHO, colProduto].Value = "Produto";
+						ws.Cells[ROW_CABECALHO, colDescricao].Value = "Descrição";
+						ws.Cells[ROW_CABECALHO, colGrupo].Value = "Grupo";
+						ws.Cells[ROW_CABECALHO, colSubgrupo].Value = "Subgrupo";
+						ws.Cells[ROW_CABECALHO, colBTU].Value = "BTU/h";
+						ws.Cells[ROW_CABECALHO, colCiclo].Value = "Ciclo";
+						ws.Cells[ROW_CABECALHO, colQtdeTotal].Value = " Qtde Total";
+						ws.Cells[ROW_CABECALHO, colFabricante].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+						ws.Cells[ROW_CABECALHO, colProduto].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+						ws.Cells[ROW_CABECALHO, colDescricao].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+						ws.Cells[ROW_CABECALHO, colGrupo].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+						ws.Cells[ROW_CABECALHO, colSubgrupo].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+						ws.Cells[ROW_CABECALHO, colBTU].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+						ws.Cells[ROW_CABECALHO, colCiclo].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+						ws.Cells[ROW_CABECALHO, colMesInicial].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+						ws.Cells[ROW_CABECALHO, colQtdeTotal].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+
+						for (int i = 1; i <= totalMeses; i++)
+						{
+							string mes = "", ano = "";
+							if (i == 1)
+							{
+								mes = dti.ToString("MM");
+								ano = dti.ToString("yyyy");
+							}
+							else
+							{
+								mes = (dti.AddMonths(i - 1)).ToString("MM");
+								ano = (dti.AddMonths(i - 1)).ToString("yyyy");
+							}
+
+							colMesAux = colMesInicial + (i - 1);
+							ws.Column(colMesAux).Width = 9;
+							ws.Cells[ROW_CABECALHO, colMesAux].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+							ws.Cells[ROW_CABECALHO, colMesAux].Value = Global.mesPorExtenso(int.Parse(mes)) + "/" + ano.Substring(2, 2);
+							//Total
+							rowTotal = ROW_INICIO_DADOS + NumRegistros + 1;
+							rowUltLinhaDados = ROW_INICIO_DADOS + NumRegistros - 1;
+							ws.Cells[rowTotal, colMesAux].Formula = string.Format("SUM({0})", new ExcelAddress(ROW_INICIO_DADOS, colMesAux, rowUltLinhaDados, colMesAux));
+						}
+					}
+					#endregion
+
+					#region [ Valor Referência Médio ]
+					else if (detalhamento.Equals(Global.Cte.Relatorio.Compras2.COD_SAIDA_CUSTO_MEDIO))
+					{
+						cellsIndex = Excel.RangeAddress(COL_INICIAL, ROW_CABECALHO, colVlTotal, ROW_CABECALHO);
+						using (ExcelRange rng1 = ws.Cells[cellsIndex])
+						{
+							rng1.Style.WrapText = true;
+							rng1.Style.Font.Bold = true;
+							rng1.Style.VerticalAlignment = ExcelVerticalAlignment.Bottom;
+							rng1.Style.Border.Top.Style = ExcelBorderStyle.Medium;
+							rng1.Style.Border.Bottom.Style = ExcelBorderStyle.Medium;
+							rng1.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+						}
+
+						ws.Cells[ROW_CABECALHO, colVlTotal].Style.Border.Right.Style = ExcelBorderStyle.Medium;
+						ws.Cells[ROW_CABECALHO, colFabricante].Value = "Fabr";
+						ws.Cells[ROW_CABECALHO, colProduto].Value = "Produto";
+						ws.Cells[ROW_CABECALHO, colDescricao].Value = "Descrição";
+						ws.Cells[ROW_CABECALHO, colGrupo].Value = "Grupo";
+						ws.Cells[ROW_CABECALHO, colSubgrupo].Value = "Subgrupo";
+						ws.Cells[ROW_CABECALHO, colBTU].Value = "BTU/h";
+						ws.Cells[ROW_CABECALHO, colCiclo].Value = "Ciclo";
+						ws.Cells[ROW_CABECALHO, colVlReferencia].Value = "Referência Médio";
+						ws.Cells[ROW_CABECALHO, colQtdeTotal].Value = "Qtde Total";
+						ws.Cells[ROW_CABECALHO, colVlTotal].Value = "Valor Total";
+						ws.Cells[ROW_CABECALHO, colFabricante].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+						ws.Cells[ROW_CABECALHO, colProduto].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+						ws.Cells[ROW_CABECALHO, colDescricao].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+						ws.Cells[ROW_CABECALHO, colGrupo].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+						ws.Cells[ROW_CABECALHO, colSubgrupo].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+						ws.Cells[ROW_CABECALHO, colBTU].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+						ws.Cells[ROW_CABECALHO, colCiclo].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+						ws.Cells[ROW_CABECALHO, colVlReferencia].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+						ws.Cells[ROW_CABECALHO, colQtdeTotal].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+						ws.Cells[ROW_CABECALHO, colVlTotal].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+
+						for (int i = 1; i <= totalMeses; i++)
+						{
+							string mes = "", ano = "";
+							if (i == 1)
+							{
+								mes = dti.ToString("MM");
+								ano = dti.ToString("yyyy");
+							}
+							else
+							{
+								mes = (dti.AddMonths(i - 1)).ToString("MM");
+								ano = (dti.AddMonths(i - 1)).ToString("yyyy");
+							}
+
+							colMesAux = colMesInicial + (i - 1);
+							ws.Cells[ROW_CABECALHO, colMesAux].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+							ws.Column(colMesAux).Width = 9;
+							ws.Cells[ROW_CABECALHO, colMesAux].Value = Global.mesPorExtenso(int.Parse(mes)) + "/" + ano.Substring(2, 2);
+							//Total
+							rowTotal = ROW_INICIO_DADOS + NumRegistros + 1;
+							rowUltLinhaDados = ROW_INICIO_DADOS + NumRegistros - 1;
+							ws.Cells[rowTotal, colMesAux].Formula = string.Format("SUM({0})", new ExcelAddress(ROW_INICIO_DADOS, colMesAux, rowUltLinhaDados, colMesAux));
+						}
+					}
+					#endregion
+
+					#region [ Valor Referência Individual ]
+					else if (detalhamento.Equals(Global.Cte.Relatorio.Compras2.COD_SAIDA_CUSTO_INDIVIDUAL))
+					{
+						cellsIndex = Excel.RangeAddress(COL_INICIAL, ROW_CABECALHO, colVlTotal, ROW_CABECALHO);
+						using (ExcelRange rng1 = ws.Cells[cellsIndex])
+						{
+							rng1.Style.WrapText = true;
+							rng1.Style.Font.Bold = true;
+							rng1.Style.VerticalAlignment = ExcelVerticalAlignment.Bottom;
+							rng1.Style.Border.Top.Style = ExcelBorderStyle.Medium;
+							rng1.Style.Border.Bottom.Style = ExcelBorderStyle.Medium;
+							rng1.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+						}
+
+						ws.Cells[ROW_CABECALHO, colVlTotal].Style.Border.Right.Style = ExcelBorderStyle.Medium;
+						ws.Cells[ROW_CABECALHO, colFabricante].Value = "Fabr";
+						ws.Cells[ROW_CABECALHO, colProduto].Value = "Produto";
+						ws.Cells[ROW_CABECALHO, colDescricao].Value = "Descrição";
+						ws.Cells[ROW_CABECALHO, colGrupo].Value = "Grupo";
+						ws.Cells[ROW_CABECALHO, colSubgrupo].Value = "Subgrupo";
+						ws.Cells[ROW_CABECALHO, colBTU].Value = "BTU/h";
+						ws.Cells[ROW_CABECALHO, colCiclo].Value = "Ciclo";
+						ws.Cells[ROW_CABECALHO, colVlReferencia].Value = "Referência Individual";
+						ws.Cells[ROW_CABECALHO, colQtdeTotal].Value = "Qtde Total";
+						ws.Cells[ROW_CABECALHO, colVlTotal].Value = "Valor Total";
+						ws.Cells[ROW_CABECALHO, colFabricante].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+						ws.Cells[ROW_CABECALHO, colProduto].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+						ws.Cells[ROW_CABECALHO, colDescricao].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+						ws.Cells[ROW_CABECALHO, colGrupo].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+						ws.Cells[ROW_CABECALHO, colSubgrupo].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+						ws.Cells[ROW_CABECALHO, colBTU].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+						ws.Cells[ROW_CABECALHO, colCiclo].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+						ws.Cells[ROW_CABECALHO, colVlReferencia].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+						ws.Cells[ROW_CABECALHO, colQtdeTotal].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+						ws.Cells[ROW_CABECALHO, colVlTotal].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+
+						for (int i = 1; i <= totalMeses; i++)
+						{
+							string mes = "", ano = "";
+							if (i == 1)
+							{
+								mes = dti.ToString("MM");
+								ano = dti.ToString("yyyy");
+							}
+							else
+							{
+								mes = (dti.AddMonths(i - 1)).ToString("MM");
+								ano = (dti.AddMonths(i - 1)).ToString("yyyy");
+							}
+
+							colMesAux = colMesInicial + (i - 1);
+							ws.Cells[ROW_CABECALHO, colMesAux].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+							ws.Column(colMesAux).Width = 9;
+							ws.Cells[ROW_CABECALHO, colMesAux].Value = Global.mesPorExtenso(int.Parse(mes)) + "/" + ano.Substring(2, 2);
+							//Total
+							rowTotal = ROW_INICIO_DADOS + NumRegistros + 1;
+							rowUltLinhaDados = ROW_INICIO_DADOS + NumRegistros - 1;
+							ws.Cells[rowTotal, colMesAux].Formula = string.Format("SUM({0})", new ExcelAddress(ROW_INICIO_DADOS, colMesAux, rowUltLinhaDados, colMesAux));
+						}
+					}
+					#endregion
+
+					#endregion
+
+					ws.View.FreezePanes((ROW_CABECALHO + 1), 1);
+
+					#region [ Registros ]
+
+					#region [ Sintético por NF ]
+					if (detalhamento.Equals(Global.Cte.Relatorio.Compras2.COD_SAIDA_SINTETICO_NF))
+					{
+						rowUltLinhaDados = ROW_INICIO_DADOS + NumRegistros - 1;
+						cellsIndex = Excel.RangeAddress(COL_INICIAL, ROW_INICIO_DADOS, colVlTotal, rowUltLinhaDados);
+						using (ExcelRange rng2 = ws.Cells[cellsIndex])
+						{
+							rng2.Style.Border.Bottom.Style = ExcelBorderStyle.Hair;
+							rng2.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+							rng2.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+						}
+
+						#region [ Preenche linhas de dados ]
+						for (int i = 0; i < NumRegistros; i++)
+						{
+							ws.Cells[i + ROW_INICIO_DADOS, colNF].Value = datasource.ElementAt(i).NF;
+							ws.Cells[i + ROW_INICIO_DADOS, colNF].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+							ws.Cells[i + ROW_INICIO_DADOS, colFabricante].Value = datasource.ElementAt(i).Fabricante + " - " + datasource.ElementAt(i).FabricanteNome;
+							ws.Cells[i + ROW_INICIO_DADOS, colQtdeTotal].Value = datasource.ElementAt(i).Qtde;
+							ws.Cells[i + ROW_INICIO_DADOS, colVlTotal].Value = datasource.ElementAt(i).Valor;
+							ws.Cells[i + ROW_INICIO_DADOS, colVlTotal].Style.Numberformat.Format = "###,###,##0.00";
+						}
+						#endregion
+
+						#region [ Total ]
+						rowTotal = ROW_INICIO_DADOS + NumRegistros + 1;
+						rowUltLinhaDados = ROW_INICIO_DADOS + NumRegistros - 1;
+						ws.Cells[rowTotal, COL_INICIAL, rowTotal, colVlTotal].Style.Font.Bold = true;
+						ws.Cells[rowTotal, colQtdeTotal - 1].Value = "TOTAL";
+						ws.Cells[rowTotal, colQtdeTotal - 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+						ws.Cells[rowTotal, colQtdeTotal].Formula = string.Format("SUM({0})", new ExcelAddress(ROW_INICIO_DADOS, colQtdeTotal, rowUltLinhaDados, colQtdeTotal));
+						ws.Cells[rowTotal, colVlTotal].Formula = string.Format("SUM({0})", new ExcelAddress(ROW_INICIO_DADOS, colVlTotal, rowUltLinhaDados, colVlTotal));
+						ws.Cells[rowTotal, colVlTotal].Style.Numberformat.Format = "###,###,##0.00;[Red]-###,###,##0.00";
+						#endregion
+					}
+					#endregion
+
+					#region [ Sintético por Fabricante ]
+					if (detalhamento.Equals(Global.Cte.Relatorio.Compras2.COD_SAIDA_SINTETICO_FABR))
+					{
+						rowUltLinhaDados = ROW_INICIO_DADOS + NumRegistros - 1;
+						cellsIndex = Excel.RangeAddress(COL_INICIAL, ROW_INICIO_DADOS, colVlTotal, rowUltLinhaDados);
+						using (ExcelRange rng2 = ws.Cells[cellsIndex])
+						{
+							rng2.Style.Border.Bottom.Style = ExcelBorderStyle.Hair;
+							rng2.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+							rng2.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+						}
+
+						#region [ Preenche linhas de dados ]
+						for (int i = 0; i < NumRegistros; i++)
+						{
+							ws.Cells[i + ROW_INICIO_DADOS, colFabricante].Value = datasource.ElementAt(i).Fabricante;
+							ws.Cells[i + ROW_INICIO_DADOS, colFabricante].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+							ws.Cells[i + ROW_INICIO_DADOS, colDescricao].Value = datasource.ElementAt(i).FabricanteNome;
+							if (visao.Equals(Global.Cte.Relatorio.Compras2.COD_VISAO_ANALITICA))
+							{
+								for (int j = 0; j < totalMeses; j++)
+								{
+									colMesAux = colMesInicial + j;
+									ws.Cells[i + ROW_INICIO_DADOS, colMesAux].Value = datasource.ElementAt(i).Meses[j];
+									ws.Cells[i + ROW_INICIO_DADOS, colMesAux].Style.Numberformat.Format = "###,###,##0.00";
+								}
+							}
+							ws.Cells[i + ROW_INICIO_DADOS, colVlTotal].Value = datasource.ElementAt(i).Valor;
+							ws.Cells[i + ROW_INICIO_DADOS, colVlTotal].Style.Numberformat.Format = "###,###,##0.00";
+						}
+						#endregion
+
+						#region [ Total ]
+						rowTotal = ROW_INICIO_DADOS + NumRegistros + 1;
+						rowUltLinhaDados = ROW_INICIO_DADOS + NumRegistros - 1;
+						ws.Cells[rowTotal, COL_INICIAL, rowTotal, colVlTotal].Style.Font.Bold = true;
+						ws.Cells[rowTotal, colMesInicial - 1].Value = "TOTAL";
+						ws.Cells[rowTotal, colMesInicial - 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+						ws.Cells[rowTotal, colVlTotal].Formula = string.Format("SUM({0})", new ExcelAddress(ROW_INICIO_DADOS, colVlTotal, rowUltLinhaDados, colVlTotal));
+						ws.Cells[rowTotal, colVlTotal].Style.Numberformat.Format = "###,###,##0.00;[Red]-###,###,##0.00";
+						#endregion
+					}
+					#endregion
+
+					#region [ Sintético por Produto ]
+					else if (detalhamento.Equals(Global.Cte.Relatorio.Compras2.COD_SAIDA_SINTETICO_PROD))
+					{
+						rowUltLinhaDados = ROW_INICIO_DADOS + NumRegistros - 1;
+						cellsIndex = Excel.RangeAddress(COL_INICIAL, ROW_INICIO_DADOS, colQtdeTotal, rowUltLinhaDados);
+						using (ExcelRange rng2 = ws.Cells[cellsIndex])
+						{
+							rng2.Style.Border.Bottom.Style = ExcelBorderStyle.Hair;
+							rng2.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+							rng2.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+						}
+
+						#region [ Preenche linhas de dados ]
+						for (int i = 0; i < NumRegistros; i++)
+						{
+							ws.Cells[i + ROW_INICIO_DADOS, colFabricante].Value = datasource.ElementAt(i).Fabricante;
+							ws.Cells[i + ROW_INICIO_DADOS, colFabricante].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+							ws.Cells[i + ROW_INICIO_DADOS, colProduto].Value = datasource.ElementAt(i).Produto;
+							ws.Cells[i + ROW_INICIO_DADOS, colProduto].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+							ws.Cells[i + ROW_INICIO_DADOS, colDescricao].Value = datasource.ElementAt(i).ProdutoDescricao;
+							ws.Cells[i + ROW_INICIO_DADOS, colDescricao].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+							ws.Cells[i + ROW_INICIO_DADOS, colGrupo].Value = datasource.ElementAt(i).Grupo;
+							ws.Cells[i + ROW_INICIO_DADOS, colGrupo].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+							ws.Cells[i + ROW_INICIO_DADOS, colSubgrupo].Value = datasource.ElementAt(i).Subgrupo;
+							ws.Cells[i + ROW_INICIO_DADOS, colSubgrupo].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+							if (datasource.ElementAt(i).Potencia_BTU != 0) ws.Cells[i + ROW_INICIO_DADOS, colBTU].Value = datasource.ElementAt(i).Potencia_BTU;
+							ws.Cells[i + ROW_INICIO_DADOS, colBTU].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+							ws.Cells[i + ROW_INICIO_DADOS, colBTU].Style.Numberformat.Format = "##,###";
+							ws.Cells[i + ROW_INICIO_DADOS, colCiclo].Value = datasource.ElementAt(i).Ciclo;
+							ws.Cells[i + ROW_INICIO_DADOS, colCiclo].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+							if (visao.Equals(Global.Cte.Relatorio.Compras2.COD_VISAO_ANALITICA))
+							{
+								for (int j = 0; j < totalMeses; j++)
+								{
+									colMesAux = colMesInicial + j;
+									ws.Cells[i + ROW_INICIO_DADOS, colMesAux].Value = datasource.ElementAt(i).Meses[j];
+								}
+							}
+
+							ws.Cells[i + ROW_INICIO_DADOS, colQtdeTotal].Value = datasource.ElementAt(i).Qtde;
+						}
+						#endregion
+
+						#region [ Total ]
+						rowTotal = ROW_INICIO_DADOS + NumRegistros + 1;
+						rowUltLinhaDados = ROW_INICIO_DADOS + NumRegistros - 1;
+						ws.Cells[rowTotal, colFabricante, rowTotal, colQtdeTotal].Style.Font.Bold = true;
+						ws.Cells[rowTotal, colMesInicial - 1].Value = "TOTAL";
+						ws.Cells[rowTotal, colMesInicial - 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+						ws.Cells[rowTotal, colQtdeTotal].Formula = string.Format("SUM({0})", new ExcelAddress(ROW_INICIO_DADOS, colQtdeTotal, rowUltLinhaDados, colQtdeTotal));
+						for (int k = 0; k < totalMeses; k++)
+						{
+							colMesAux = colMesInicial + k;
+							ws.Cells[rowTotal, colMesAux].Formula = string.Format("SUM({0})", new ExcelAddress(ROW_INICIO_DADOS, colMesAux, rowUltLinhaDados, colMesAux));
+						}
+						#endregion
+					}
+					#endregion
+
+					#region [ Valor Referência Médio ]
+					else if (detalhamento.Equals(Global.Cte.Relatorio.Compras2.COD_SAIDA_CUSTO_MEDIO))
+					{
+						rowUltLinhaDados = ROW_INICIO_DADOS + NumRegistros - 1;
+						cellsIndex = Excel.RangeAddress(COL_INICIAL, ROW_INICIO_DADOS, colVlTotal, rowUltLinhaDados);
+						using (ExcelRange rng2 = ws.Cells[cellsIndex])
+						{
+							rng2.Style.Border.Bottom.Style = ExcelBorderStyle.Hair;
+							rng2.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+							rng2.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+						}
+
+						#region [ Preenche linhas de dados ]
+						for (int i = 0; i < NumRegistros; i++)
+						{
+							ws.Cells[i + ROW_INICIO_DADOS, colFabricante].Value = datasource.ElementAt(i).Fabricante;
+							ws.Cells[i + ROW_INICIO_DADOS, colFabricante].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+							ws.Cells[i + ROW_INICIO_DADOS, colProduto].Value = datasource.ElementAt(i).Produto;
+							ws.Cells[i + ROW_INICIO_DADOS, colProduto].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+							ws.Cells[i + ROW_INICIO_DADOS, colDescricao].Value = datasource.ElementAt(i).ProdutoDescricao;
+							ws.Cells[i + ROW_INICIO_DADOS, colDescricao].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+							ws.Cells[i + ROW_INICIO_DADOS, colGrupo].Value = datasource.ElementAt(i).Grupo;
+							ws.Cells[i + ROW_INICIO_DADOS, colGrupo].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+							ws.Cells[i + ROW_INICIO_DADOS, colSubgrupo].Value = datasource.ElementAt(i).Subgrupo;
+							ws.Cells[i + ROW_INICIO_DADOS, colSubgrupo].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+							if (datasource.ElementAt(i).Potencia_BTU != 0) ws.Cells[i + ROW_INICIO_DADOS, colBTU].Value = datasource.ElementAt(i).Potencia_BTU;
+							ws.Cells[i + ROW_INICIO_DADOS, colBTU].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+							ws.Cells[i + ROW_INICIO_DADOS, colBTU].Style.Numberformat.Format = "##,###";
+							ws.Cells[i + ROW_INICIO_DADOS, colCiclo].Value = datasource.ElementAt(i).Ciclo;
+							ws.Cells[i + ROW_INICIO_DADOS, colCiclo].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+							ws.Cells[i + ROW_INICIO_DADOS, colVlReferencia].Value = datasource.ElementAt(i).Valor / datasource.ElementAt(i).Qtde;
+							ws.Cells[i + ROW_INICIO_DADOS, colVlReferencia].Style.Numberformat.Format = "###,###,##0.00";
+
+							if (visao.Equals(Global.Cte.Relatorio.Compras2.COD_VISAO_ANALITICA))
+							{
+								for (int j = 0; j < totalMeses; j++)
+								{
+									colMesAux = colMesInicial + j;
+									ws.Cells[i + ROW_INICIO_DADOS, colMesAux].Value = datasource.ElementAt(i).Meses[j];
+								}
+							}
+							ws.Cells[i + ROW_INICIO_DADOS, colQtdeTotal].Value = datasource.ElementAt(i).Qtde;
+							ws.Cells[i + ROW_INICIO_DADOS, colVlTotal].Value = datasource.ElementAt(i).Valor;
+							ws.Cells[i + ROW_INICIO_DADOS, colVlTotal].Style.Numberformat.Format = "###,###,##0.00";
+						}
+						#endregion
+
+						#region [ Total ]
+						rowTotal = ROW_INICIO_DADOS + NumRegistros + 1;
+						rowUltLinhaDados = ROW_INICIO_DADOS + NumRegistros - 1;
+						ws.Cells[rowTotal, COL_INICIAL, rowTotal, colVlTotal].Style.Font.Bold = true;
+						ws.Cells[rowTotal, colVlReferencia - 1].Value = "TOTAL";
+						ws.Cells[rowTotal, colVlReferencia - 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+						ws.Cells[rowTotal, colQtdeTotal].Formula = string.Format("SUM({0})", new ExcelAddress(ROW_INICIO_DADOS, colQtdeTotal, rowUltLinhaDados, colQtdeTotal));
+						ws.Cells[rowTotal, colVlTotal].Formula = string.Format("SUM({0})", new ExcelAddress(ROW_INICIO_DADOS, colVlTotal, rowUltLinhaDados, colVlTotal));
+						ws.Cells[rowTotal, colVlTotal].Style.Numberformat.Format = "###,###,##0.00;[Red]-###,###,##0.00";
+						#endregion
+					}
+					#endregion
+
+					#region [ Valor Referência Individual ]
+					else if (detalhamento.Equals(Global.Cte.Relatorio.Compras2.COD_SAIDA_CUSTO_INDIVIDUAL))
+					{
+						rowUltLinhaDados = ROW_INICIO_DADOS + NumRegistros - 1;
+						cellsIndex = Excel.RangeAddress(COL_INICIAL, ROW_INICIO_DADOS, colVlTotal, rowUltLinhaDados);
+						using (ExcelRange rng2 = ws.Cells[cellsIndex])
+						{
+							rng2.Style.Border.Bottom.Style = ExcelBorderStyle.Hair;
+							rng2.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+							rng2.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+						}
+
+						#region [ Preenche linhas de dados ]
+						for (int i = 0; i < NumRegistros; i++)
+						{
+							ws.Cells[i + ROW_INICIO_DADOS, colFabricante].Value = datasource.ElementAt(i).Fabricante;
+							ws.Cells[i + ROW_INICIO_DADOS, colFabricante].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+							ws.Cells[i + ROW_INICIO_DADOS, colProduto].Value = datasource.ElementAt(i).Produto;
+							ws.Cells[i + ROW_INICIO_DADOS, colProduto].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+							ws.Cells[i + ROW_INICIO_DADOS, colDescricao].Value = datasource.ElementAt(i).ProdutoDescricao;
+							ws.Cells[i + ROW_INICIO_DADOS, colDescricao].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+							ws.Cells[i + ROW_INICIO_DADOS, colGrupo].Value = datasource.ElementAt(i).Grupo;
+							ws.Cells[i + ROW_INICIO_DADOS, colGrupo].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+							ws.Cells[i + ROW_INICIO_DADOS, colSubgrupo].Value = datasource.ElementAt(i).Subgrupo;
+							ws.Cells[i + ROW_INICIO_DADOS, colSubgrupo].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+							if (datasource.ElementAt(i).Potencia_BTU != 0) ws.Cells[i + ROW_INICIO_DADOS, colBTU].Value = datasource.ElementAt(i).Potencia_BTU;
+							ws.Cells[i + ROW_INICIO_DADOS, colBTU].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+							ws.Cells[i + ROW_INICIO_DADOS, colBTU].Style.Numberformat.Format = "##,###";
+							ws.Cells[i + ROW_INICIO_DADOS, colCiclo].Value = datasource.ElementAt(i).Ciclo;
+							ws.Cells[i + ROW_INICIO_DADOS, colCiclo].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+							ws.Cells[i + ROW_INICIO_DADOS, colVlReferencia].Value = datasource.ElementAt(i).Valor;
+							ws.Cells[i + ROW_INICIO_DADOS, colVlReferencia].Style.Numberformat.Format = "###,###,##0.00";
+							if (visao.Equals(Global.Cte.Relatorio.Compras2.COD_VISAO_ANALITICA))
+							{
+								for (int j = 0; j < totalMeses; j++)
+								{
+									colMesAux = colMesInicial + j;
+									ws.Cells[i + ROW_INICIO_DADOS, colMesAux].Value = datasource.ElementAt(i).Meses[j];
+								}
+							}
+							ws.Cells[i + ROW_INICIO_DADOS, colQtdeTotal].Value = datasource.ElementAt(i).Qtde;
+							ws.Cells[i + ROW_INICIO_DADOS, colVlTotal].Value = datasource.ElementAt(i).Valor * datasource.ElementAt(i).Qtde;
+							ws.Cells[i + ROW_INICIO_DADOS, colVlTotal].Style.Numberformat.Format = "###,###,##0.00";
+						}
+						#endregion
+
+						#region [ Total ]
+						rowTotal = ROW_INICIO_DADOS + NumRegistros + 1;
+						rowUltLinhaDados = ROW_INICIO_DADOS + NumRegistros - 1;
+						ws.Cells[rowTotal, COL_INICIAL, rowTotal, colVlTotal].Style.Font.Bold = true;
+						ws.Cells[rowTotal, colVlReferencia - 1].Value = "TOTAL";
+						ws.Cells[rowTotal, colVlReferencia - 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+						ws.Cells[rowTotal, colQtdeTotal].Formula = string.Format("SUM({0})", new ExcelAddress(ROW_INICIO_DADOS, colQtdeTotal, rowUltLinhaDados, colQtdeTotal));
+						ws.Cells[rowTotal, colVlTotal].Formula = string.Format("SUM({0})", new ExcelAddress(ROW_INICIO_DADOS, colVlTotal, rowUltLinhaDados, colVlTotal));
+						ws.Cells[rowTotal, colVlTotal].Style.Numberformat.Format = "###,###,##0.00;[Red]-###,###,##0.00";
+						#endregion
+					}
+					#endregion
+
+					#endregion
+
+					pck.SaveAs(new FileInfo(filePath));
+				}
+			});
+		}
+	}
 }

@@ -19,10 +19,10 @@ namespace ART3WebAPI.Models.Repository
         {
             List<Indicador> listaInd = new List<Indicador>();
             SqlConnection cn = new SqlConnection(BD.getConnectionString());
-            cn.Open();
 
-            try
-            {
+            cn.Open();
+			try // Finally: cn.Close()
+			{
                 StringBuilder sqlString = new StringBuilder();
 
                 sqlString.AppendLine("SELECT t_ORCAMENTISTA_E_INDICADOR.favorecido, t_ORCAMENTISTA_E_INDICADOR.favorecido_cnpj_cpf, t_ORCAMENTISTA_E_INDICADOR.banco, ");
@@ -112,10 +112,10 @@ namespace ART3WebAPI.Models.Repository
         {
             Empresa empresa = new Empresa();
             SqlConnection cn = new SqlConnection(BD.getConnectionString());
-            cn.Open();
 
-            try
-            {
+            cn.Open();
+			try // Finally: cn.Close()
+			{
 
                 StringBuilder sqlString = new StringBuilder();
 

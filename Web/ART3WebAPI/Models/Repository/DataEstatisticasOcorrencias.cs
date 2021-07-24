@@ -179,10 +179,10 @@ namespace ART3WebAPI.Models.Repository
 
             sqlString = "SELECT * FROM (" + sqlString + ") t ORDER BY dt_hr_cadastro, id";
             #endregion
-            cn.Open();
 
-            try
-            {
+            cn.Open();
+			try // Finally: cn.Close()
+			{
                 SqlCommand cmd = new SqlCommand();
                 cmd.Connection = cn;
                 cmd.CommandText = sqlString.ToString();
