@@ -63,22 +63,29 @@ namespace ART3WebAPI.Models.Repository
 				#region [ Prepara acesso ao BD ]
 				cn = new SqlConnection(BD.getConnectionString());
 				cn.Open();
-				cmCommand = new SqlCommand();
-				cmCommand.Connection = cn;
-				daDataAdapter = new SqlDataAdapter();
-				#endregion
-
-				strSql = "SELECT Convert(varchar(36), NEWID()) AS uid";
-				cmCommand.CommandText = strSql;
-				daDataAdapter.SelectCommand = cmCommand;
-				daDataAdapter.MissingSchemaAction = MissingSchemaAction.Add;
-				daDataAdapter.Fill(dtbResultado);
-				if (dtbResultado.Rows.Count > 0)
+				try // Finally: cn.Close()
 				{
-					strUID = BD.readToString(dtbResultado.Rows[0]["uid"]);
-				}
+					cmCommand = new SqlCommand();
+					cmCommand.Connection = cn;
+					daDataAdapter = new SqlDataAdapter();
+					#endregion
 
-				return strUID;
+					strSql = "SELECT Convert(varchar(36), NEWID()) AS uid";
+					cmCommand.CommandText = strSql;
+					daDataAdapter.SelectCommand = cmCommand;
+					daDataAdapter.MissingSchemaAction = MissingSchemaAction.Add;
+					daDataAdapter.Fill(dtbResultado);
+					if (dtbResultado.Rows.Count > 0)
+					{
+						strUID = BD.readToString(dtbResultado.Rows[0]["uid"]);
+					}
+
+					return strUID;
+				}
+				finally
+				{
+					cn.Close();
+				}
 			}
 			catch (Exception ex)
 			{
@@ -96,7 +103,7 @@ namespace ART3WebAPI.Models.Repository
 			sql = "SELECT descricao FROM t_CODIGO_DESCRICAO WHERE (grupo='" + grupo + "') AND (codigo='" + codigo + "')";
 			_novo = "";
 			cn.Open();
-			try
+			try // Finally: cn.Close()
 			{
 				SqlCommand cmd = new SqlCommand();
 				cmd.Connection = cn;
@@ -106,7 +113,6 @@ namespace ART3WebAPI.Models.Repository
 				try
 				{
 					int idxDescricao = reader.GetOrdinal("descricao");
-
 
 					while (reader.Read())
 					{

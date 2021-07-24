@@ -38,10 +38,10 @@ namespace ART3WebAPI.Models.Repository
             cn.Open();
             cmd = new SqlCommand();
             cmd.Connection = cn;
-            #endregion
+			#endregion
 
-            try
-            {
+			try // Finally: BD.fechaConexao(ref cn)
+			{
                 #region [ Formata datas para consulta no BD ]
                 if (!string.IsNullOrEmpty(dt_devolucao_inicio))
                     dtDevolucaoInicioSqlDateTime = Global.sqlMontaDateTimeParaSqlDateTimeSomenteData(Global.converteDdMmYyyyParaDateTime(dt_devolucao_inicio));

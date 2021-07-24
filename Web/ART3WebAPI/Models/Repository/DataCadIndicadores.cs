@@ -12,7 +12,6 @@ namespace ART3WebAPI.Models.Repository
         {
             List<Indicador> listaInd = new List<Indicador>();
             SqlConnection cn = new SqlConnection(BD.getConnectionString());
-            cn.Open();
             string s_where;
 
             if ((loja != "") && (loja != "vazio"))
@@ -23,8 +22,10 @@ namespace ART3WebAPI.Models.Repository
             {
                 s_where = "";
             }
-            try
-            {
+
+			cn.Open();
+			try // Finally: cn.Close()
+			{
                 StringBuilder sqlString = new StringBuilder();
                 sqlString.AppendLine("SELECT razao_social_nome,uf,email,vendedor FROM t_ORCAMENTISTA_E_INDICADOR WHERE " + s_where + " status='A' ORDER BY razao_social_nome");
                 

@@ -226,13 +226,12 @@ namespace ART3WebAPI.Controllers
 
         #region [ Compras 2 ]
 
-        #region [ Get CSV COMPRAS ]
+        #region [ Requisição ]
         [HttpPost]
         public async Task<HttpResponseMessage> GetCompras2CSV(string usuario, string tipo_periodo, string dt_inicio, string dt_termino, string fabricante, string produto, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string nf, string dt_nf_inicio, string dt_nf_termino, string visao, string detalhamento)
         {
-
-
-            DateTime data = DateTime.Now;
+			#region [ Declarações ]
+			DateTime data = DateTime.Now;
             string fileName = "Compras2_" + data.ToString("yyyyMMdd_HHmmss");
             fileName = fileName + ".xlsx";
             string filePath = HttpContext.Current.Server.MapPath("~/Report/Relatorios/" + fileName);
@@ -245,6 +244,7 @@ namespace ART3WebAPI.Controllers
             string statusResponse = "";
             string MsgErroException = "";
             HttpResponseMessage result = null;
+			#endregion
 
 			try
 			{
@@ -291,6 +291,7 @@ namespace ART3WebAPI.Controllers
 
 				if (MsgErroException.Length == 0)
 				{
+					#region [ Salva parâmetros no BD como valores default do usuário ]
 					Global.setDefaultBD(usuario, "RelCompras2Filtro|rb_periodo", string.IsNullOrEmpty(tipo_periodo) ? "" : tipo_periodo);
 					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_dt_periodo_inicio", string.IsNullOrEmpty(dt_inicio) ? "" : dt_inicio);
 					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_dt_periodo_termino", string.IsNullOrEmpty(dt_termino) ? "" : dt_termino);
@@ -303,6 +304,7 @@ namespace ART3WebAPI.Controllers
 					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_dt_nf_inicio", string.IsNullOrEmpty(dt_nf_inicio) ? "" : dt_nf_inicio);
 					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_dt_nf_termino", string.IsNullOrEmpty(dt_nf_termino) ? "" : dt_nf_termino);
 					Global.setDefaultBD(usuario, "RelCompras2Filtro|rb_detalhe", detalhamento);
+					#endregion
 
 					DataCompras2 datasource = new DataCompras2();
 					List<Compras> relCompras2List = datasource.Get(tipo_periodo, dt_inicio, dt_termino, fabricante, produto, grupo, subgrupo, btu, ciclo, pos_mercado, nf, dt_nf_inicio, dt_nf_termino, visao, detalhamento).ToList();
@@ -349,12 +351,14 @@ namespace ART3WebAPI.Controllers
 
             return result;
         }
-        #endregion
+		#endregion
 
-        #endregion
+		#endregion
 
-        #region [ Devolução de Produtos 2 ]
-        [HttpPost]
+		#region [ Devolução de Produtos 2 ]
+
+		#region [ Requisição ]
+		[HttpPost]
         public async Task<HttpResponseMessage> GeraDevolucaoProdutos2XLS(string usuario, string dt_devolucao_inicio, string dt_devolucao_termino, string fabricante, string produto, string pedido, string vendedor, string indicador, string captador, string lojas)
         {
             #region [ Declarações ]
@@ -410,9 +414,10 @@ namespace ART3WebAPI.Controllers
 
             return result;
         }
+		#endregion
 
-        #region [ Download ]
-        [HttpPost]
+		#region [ Download ]
+		[HttpPost]
         public HttpResponseMessage downloadDevolucaoProdutos2XLS(string fileName)
         {
             string filePath = HttpContext.Current.Server.MapPath("~/Report/Relatorios/" + fileName);
@@ -427,6 +432,7 @@ namespace ART3WebAPI.Controllers
             return result;
         }
         #endregion
+
         #endregion
 
     }

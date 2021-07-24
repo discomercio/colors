@@ -164,6 +164,7 @@
     <Compile Include="Models\Domains\DataHora.cs" />
     <Compile Include="Models\Domains\DevolucaoProdutos2GeradorRelatorio.cs" />
     <Compile Include="Models\Domains\EstOcorrenciasGeradorRelatorio.cs" />
+    <Compile Include="Models\Domains\Excel.cs" />
     <Compile Include="Models\Domains\FarolGeradorRelatorio.cs" />
     <Compile Include="Models\Domains\Global.cs" />
     <Compile Include="Models\Domains\Magento2RestApi.cs" />
