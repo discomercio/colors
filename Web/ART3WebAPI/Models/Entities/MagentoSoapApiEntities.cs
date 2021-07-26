@@ -491,7 +491,7 @@ namespace ART3WebAPI.Models.Entities
 		public string quote_address_id { get; set; }
 		public string region_id { get; set; }
 		public string customer_id { get; set; }
-		public string fax { get; set; }
+		public string fax { get; set; } = "";
 		public string region { get; set; }
 		public string postcode { get; set; }
 		public string firstname { get; set; }
@@ -500,7 +500,7 @@ namespace ART3WebAPI.Models.Entities
 		public string street { get; set; }
 		public string city { get; set; }
 		public string email { get; set; }
-		public string telephone { get; set; }
+		public string telephone { get; set; } = "";
 		public string country_id { get; set; }
 		public string address_type { get; set; }
 		public string prefix { get; set; }
@@ -515,7 +515,7 @@ namespace ART3WebAPI.Models.Entities
 		public string rg { get; set; }
 		public string ie { get; set; }
 		public string cpfcnpj { get; set; }
-		public string celular { get; set; }
+		public string celular { get; set; } = "";
 		public string empresa { get; set; }
 		public string nomefantasia { get; set; }
 		public string cpf { get; set; }
@@ -575,7 +575,7 @@ namespace ART3WebAPI.Models.Entities
 		public string quote_address_id { get; set; }
 		public string region_id { get; set; }
 		public string customer_id { get; set; }
-		public string fax { get; set; }
+		public string fax { get; set; } = "";
 		public string region { get; set; }
 		public string postcode { get; set; }
 		public string firstname { get; set; }
@@ -584,7 +584,7 @@ namespace ART3WebAPI.Models.Entities
 		public string street { get; set; }
 		public string city { get; set; }
 		public string email { get; set; }
-		public string telephone { get; set; }
+		public string telephone { get; set; } = "";
 		public string country_id { get; set; }
 		public string address_type { get; set; }
 		public string prefix { get; set; }
@@ -599,7 +599,7 @@ namespace ART3WebAPI.Models.Entities
 		public string rg { get; set; }
 		public string ie { get; set; }
 		public string cpfcnpj { get; set; }
-		public string celular { get; set; }
+		public string celular { get; set; } = "";
 		public string empresa { get; set; }
 		public string nomefantasia { get; set; }
 		public string cpf { get; set; }
