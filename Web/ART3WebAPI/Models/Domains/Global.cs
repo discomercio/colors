@@ -60,8 +60,8 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.27";
-				public const string Data = "23.JUL.2021";
+				public const string Numero = "2.28";
+				public const string Data = "25.JUL.2021";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
 			#endregion
@@ -209,8 +209,10 @@ namespace ART3WebAPI.Models.Domains
 			 *      Ajustes e correções no relatório Compras II (RelatoriosController.GetCompras2CSV).
 			 *      Revisão das rotinas que abrem conexão com o BD para assegurar a execução do fechamento.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.28 - XX.XX.20XX - por XXX
-			 *      
+			 * v 2.28 - 25.07.2021 - por HHO
+			 *      Ajustes na rotina de consulta de pedidos do Magento p/ tratar telefones fictícios ou
+			 *      mascarados devido à forma como os marketplaces estão restringindo informações p/ atender
+			 *      a LGPD.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.29 - XX.XX.20XX - por XXX
 			 *      
@@ -1058,6 +1060,7 @@ namespace ART3WebAPI.Models.Domains
 			#region [ Declarações ]
 			string sTelefoneFormatado;
 			string sTelAux;
+			string sTelSomenteDigitos;
 			string[] v;
 			#endregion
 
@@ -1105,6 +1108,30 @@ namespace ART3WebAPI.Models.Domains
 				ddd = v[0].Trim();
 				telefone = v[1].Trim();
 			}
+
+			#region [ Verifica se o telefone é fictício ou se há dígitos mascarados ]
+			sTelSomenteDigitos = digitos(telefone);
+
+			// Há caracteres mascarando parte dos dígitos?
+			if (sTelSomenteDigitos.Length <= 6)
+			{
+				ddd = "";
+				telefone = "";
+				return false;
+			}
+
+			if ((sTelSomenteDigitos ?? "").Length > 0)
+			{
+				// Os dígitos são todos repetidos?
+				sTelAux = new string(sTelSomenteDigitos[0], sTelSomenteDigitos.Length);
+				if (sTelSomenteDigitos.Equals(sTelAux))
+				{
+					ddd = "";
+					telefone = "";
+					return false;
+				}
+			}
+			#endregion
 
 			return true;
 		}
