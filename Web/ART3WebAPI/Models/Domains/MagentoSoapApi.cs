@@ -2438,9 +2438,10 @@ namespace ART3WebAPI.Models.Domains
 				decodeEndereco.middlename = (salesOrder.magentoSalesOrderInfo.billing_address.middlename ?? "");
 				decodeEndereco.lastname = (salesOrder.magentoSalesOrderInfo.billing_address.lastname ?? "");
 				decodeEndereco.email = (salesOrder.magentoSalesOrderInfo.billing_address.email ?? "");
-				decodeEndereco.telephone = (salesOrder.magentoSalesOrderInfo.billing_address.telephone ?? "");
-				decodeEndereco.celular = (salesOrder.magentoSalesOrderInfo.billing_address.celular ?? "");
-				decodeEndereco.fax = (salesOrder.magentoSalesOrderInfo.billing_address.fax ?? "");
+				// Retorna os telefones somente se não forem fictícios ou se não estiverem com os dígitos mascarados
+				if (Global.ecDadosDecodificaTelefoneFormatado((salesOrder.magentoSalesOrderInfo.billing_address.telephone ?? ""), out sDDD, out sTelefone)) decodeEndereco.telephone = (salesOrder.magentoSalesOrderInfo.billing_address.telephone ?? "");
+				if (Global.ecDadosDecodificaTelefoneFormatado((salesOrder.magentoSalesOrderInfo.billing_address.celular ?? ""), out sDDD, out sTelefone)) decodeEndereco.celular = (salesOrder.magentoSalesOrderInfo.billing_address.celular ?? "");
+				if (Global.ecDadosDecodificaTelefoneFormatado((salesOrder.magentoSalesOrderInfo.billing_address.fax ?? ""), out sDDD, out sTelefone)) decodeEndereco.fax = (salesOrder.magentoSalesOrderInfo.billing_address.fax ?? "");
 				decodeEndereco.tipopessoa = (salesOrder.magentoSalesOrderInfo.billing_address.tipopessoa ?? "");
 				decodeEndereco.rg = (salesOrder.magentoSalesOrderInfo.billing_address.rg ?? "");
 				decodeEndereco.ie = (salesOrder.magentoSalesOrderInfo.billing_address.ie ?? "");
@@ -2491,9 +2492,10 @@ namespace ART3WebAPI.Models.Domains
 				decodeEndereco.middlename = (salesOrder.magentoSalesOrderInfo.shipping_address.middlename ?? "");
 				decodeEndereco.lastname = (salesOrder.magentoSalesOrderInfo.shipping_address.lastname ?? "");
 				decodeEndereco.email = (salesOrder.magentoSalesOrderInfo.shipping_address.email ?? "");
-				decodeEndereco.telephone = (salesOrder.magentoSalesOrderInfo.shipping_address.telephone ?? "");
-				decodeEndereco.celular = (salesOrder.magentoSalesOrderInfo.shipping_address.celular ?? "");
-				decodeEndereco.fax = (salesOrder.magentoSalesOrderInfo.shipping_address.fax ?? "");
+				// Retorna os telefones somente se não forem fictícios ou se não estiverem com os dígitos mascarados
+				if (Global.ecDadosDecodificaTelefoneFormatado((salesOrder.magentoSalesOrderInfo.shipping_address.telephone ?? ""), out sDDD, out sTelefone)) decodeEndereco.telephone = (salesOrder.magentoSalesOrderInfo.shipping_address.telephone ?? "");
+				if (Global.ecDadosDecodificaTelefoneFormatado((salesOrder.magentoSalesOrderInfo.shipping_address.celular ?? ""), out sDDD, out sTelefone)) decodeEndereco.celular = (salesOrder.magentoSalesOrderInfo.shipping_address.celular ?? "");
+				if (Global.ecDadosDecodificaTelefoneFormatado((salesOrder.magentoSalesOrderInfo.shipping_address.fax ?? ""), out sDDD, out sTelefone)) decodeEndereco.fax = (salesOrder.magentoSalesOrderInfo.shipping_address.fax ?? "");
 				decodeEndereco.tipopessoa = (salesOrder.magentoSalesOrderInfo.shipping_address.tipopessoa ?? "");
 				decodeEndereco.rg = (salesOrder.magentoSalesOrderInfo.shipping_address.rg ?? "");
 				decodeEndereco.ie = (salesOrder.magentoSalesOrderInfo.shipping_address.ie ?? "");
