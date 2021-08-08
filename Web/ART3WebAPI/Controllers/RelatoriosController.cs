@@ -22,7 +22,14 @@ namespace ART3WebAPI.Controllers
         [HttpPost]
         public async Task<HttpResponseMessage> GetCadIndicadoresListagemCSV(string loja, string usuario)
         {
-            DataCadIndicadores datasource = new DataCadIndicadores();
+			const string NOME_DESTA_ROTINA = "RelatoriosController.GetCadIndicadoresListagemCSV()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			string msg;
+
+			msg = NOME_DESTA_ROTINA + ": Requisição recebida (usuario=" + (usuario ?? "") + ", loja=" + (loja ?? "") + ")";
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			DataCadIndicadores datasource = new DataCadIndicadores();
             List<Indicador> indicadorList = datasource.GetIndicador(loja).ToList();
 
             DateTime data = DateTime.Now;
@@ -48,7 +55,7 @@ namespace ART3WebAPI.Controllers
 
                 statusResponse = "OK";
 
-                LogDAO.insere(usuario, s_log, out strMsgErro);
+                LogDAO.insere(httpRequestId, usuario, s_log, out strMsgErro);
 
             }
             catch (Exception e)
@@ -63,7 +70,10 @@ namespace ART3WebAPI.Controllers
             result = Request.CreateResponse(HttpStatusCode.OK);
             result.Content = new StringContent(xmlResponse.ToString(), Encoding.UTF8, "text/html");
 
-            return result;
+			msg = NOME_DESTA_ROTINA + ": Status=" + statusResponse + ", fileName=" + fileName;
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			return result;
         }
         #endregion
 
@@ -71,7 +81,14 @@ namespace ART3WebAPI.Controllers
         [HttpPost]
         public HttpResponseMessage downloadCadIndicadoresListagemCSV(string fileName)
         {
-            string filePath = HttpContext.Current.Server.MapPath("~/Report/Relatorios/" + fileName);
+			const string NOME_DESTA_ROTINA = "RelatoriosController.downloadCadIndicadoresListagemCSV()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			string msg;
+
+			msg = NOME_DESTA_ROTINA + ": fileName=" + (fileName ?? "");
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			string filePath = HttpContext.Current.Server.MapPath("~/Report/Relatorios/" + fileName);
 
             HttpResponseMessage result = null;
             result = Request.CreateResponse(HttpStatusCode.OK);
@@ -89,11 +106,15 @@ namespace ART3WebAPI.Controllers
         [HttpPost]
         public async Task<HttpResponseMessage> GetXLSReport(string usuario, string dt_inicio, string dt_termino, string motivo_ocorrencia, string tp_ocorrencia, string transportadora, string vendedor, string indicador, string UF, string loja)
         {
+			const string NOME_DESTA_ROTINA = "RelatoriosController.GetXLSReport()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			string msg;
 
-            if (string.IsNullOrEmpty(dt_inicio.ToString())) throw new Exception("Não foi informada a data inicial do período de vendas.");
+			msg = NOME_DESTA_ROTINA + ": Requisição recebida (usuario=" + (usuario ?? "") + ", dt_inicio=" + (dt_inicio ?? "") + ", dt_termino=" + (dt_termino ?? "") + ", motivo_ocorrencia=" + (motivo_ocorrencia ?? "") + ", tp_ocorrencia=" + (tp_ocorrencia ?? "") + ", transportadora=" + (transportadora ?? "") + ", vendedor=" + (vendedor ?? "") + ", indicador=" + (indicador ?? "") + ", UF=" + (UF ?? "") + ", loja=" + (loja ?? "") + ")";
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			if (string.IsNullOrEmpty(dt_inicio.ToString())) throw new Exception("Não foi informada a data inicial do período de vendas.");
             if (string.IsNullOrEmpty(dt_termino.ToString())) throw new Exception("Não foi informada a data final do período de vendas.");
-
-
 
             DateTime data = DateTime.Now;
             string fileName = "EstatisticasOcorrencias_" + data.ToString("yyyyMMdd_HHmmss");
@@ -111,14 +132,13 @@ namespace ART3WebAPI.Controllers
 
             try
             {
-
                 DataEstatisticasOcorrencias datasource = new DataEstatisticasOcorrencias();
                 List<Ocorrencias> relEstOcorrenciasList = datasource.Get(dt_inicio, dt_termino, motivo_ocorrencia, tp_ocorrencia, transportadora, vendedor, indicador, UF, loja).ToList();
                 if (relEstOcorrenciasList.Count != 0)
                 {
                     await ART3WebAPI.Models.Domains.EstOcorrenciasGeradorRelatorio.GenerateXLS(relEstOcorrenciasList, filePath, dt_inicio, dt_termino, motivo_ocorrencia, tp_ocorrencia, transportadora, vendedor, indicador, UF, loja);
                     statusResponse = "OK";
-                    LogDAO.insere(usuario, s_log, out strMsgErro);
+                    LogDAO.insere(httpRequestId, usuario, s_log, out strMsgErro);
                 }
                 else
                 {
@@ -137,13 +157,23 @@ namespace ART3WebAPI.Controllers
             result = Request.CreateResponse(HttpStatusCode.OK);
             result.Content = new StringContent(xmlResponse.ToString(), Encoding.UTF8, "application/json");
 
-            return result;
+			msg = NOME_DESTA_ROTINA + ": Status=" + statusResponse + ", fileName=" + fileName;
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			return result;
         }
 
         [HttpPost]
         public HttpResponseMessage downloadXLS(string fileName)
         {
-            string filePath = HttpContext.Current.Server.MapPath("~/Report/Relatorios/" + fileName);
+			const string NOME_DESTA_ROTINA = "RelatoriosController.downloadXLS()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			string msg;
+
+			msg = NOME_DESTA_ROTINA + ": fileName=" + (fileName ?? "");
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			string filePath = HttpContext.Current.Server.MapPath("~/Report/Relatorios/" + fileName);
 
             HttpResponseMessage result = null;
             result = Request.CreateResponse(HttpStatusCode.OK);
@@ -156,15 +186,15 @@ namespace ART3WebAPI.Controllers
         }
         #endregion
 
-
         #region [ OcorrenciaStatus ]
         [HttpPost]
         public async Task<HttpResponseMessage> GetXLSReport2(string usuario, string oc_status, string transportadora, string loja)
         {
-
-
-            DateTime data = DateTime.Now;
-            string fileName = "Ocorrencias_" + data.ToString("yyyyMMdd_HHmmss");
+			const string NOME_DESTA_ROTINA = "RelatoriosController.GetXLSReport2()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			DateTime data = DateTime.Now;
+			string msg;
+			string fileName = "Ocorrencias_" + data.ToString("yyyyMMdd_HHmmss");
             fileName = fileName + ".xlsx";
             string filePath = HttpContext.Current.Server.MapPath("~/Report/Relatorios/" + fileName);
             StringBuilder xmlResponse = new StringBuilder();
@@ -179,14 +209,16 @@ namespace ART3WebAPI.Controllers
 
             try
             {
+				msg = NOME_DESTA_ROTINA + ": Requisição recebida (usuario=" + (usuario ?? "") + ", oc_status=" + (oc_status ?? "") + ", loja=" + (loja ?? "") + ")";
+				Global.gravaLogAtividade(httpRequestId, msg);
 
-                DataOcorrencias datasource = new DataOcorrencias();
+				DataOcorrencias datasource = new DataOcorrencias();
                 List<OcorrenciasStatus> relOcorrenciasList = datasource.Get(oc_status, transportadora, loja).ToList();
                 if (relOcorrenciasList.Count != 0)
                 {
                     await ART3WebAPI.Models.Domains.OcorrenciasGeradorRelatorio.GenerateXLS(relOcorrenciasList, filePath, oc_status, loja, transportadora);
                     statusResponse = "OK";
-                    LogDAO.insere(usuario, s_log, out strMsgErro);
+                    LogDAO.insere(httpRequestId, usuario, s_log, out strMsgErro);
                 }
                 else
                 {
@@ -205,13 +237,23 @@ namespace ART3WebAPI.Controllers
             result = Request.CreateResponse(HttpStatusCode.OK);
             result.Content = new StringContent(xmlResponse.ToString(), Encoding.UTF8, "application/json");
 
-            return result;
+			msg = NOME_DESTA_ROTINA + ": Status=" + statusResponse + ", fileName=" + fileName;
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			return result;
         }
 
         [HttpPost]
         public HttpResponseMessage downloadXLS2(string fileName)
         {
-            string filePath = HttpContext.Current.Server.MapPath("~/Report/Relatorios/" + fileName);
+			const string NOME_DESTA_ROTINA = "RelatoriosController.downloadXLS2()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			string msg;
+
+			msg = NOME_DESTA_ROTINA + ": fileName=" + (fileName ?? "");
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			string filePath = HttpContext.Current.Server.MapPath("~/Report/Relatorios/" + fileName);
 
             HttpResponseMessage result = null;
             result = Request.CreateResponse(HttpStatusCode.OK);
@@ -231,8 +273,11 @@ namespace ART3WebAPI.Controllers
         public async Task<HttpResponseMessage> GetCompras2CSV(string usuario, string tipo_periodo, string dt_inicio, string dt_termino, string fabricante, string produto, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string nf, string dt_nf_inicio, string dt_nf_termino, string visao, string detalhamento)
         {
 			#region [ Declarações ]
+			const string NOME_DESTA_ROTINA = "RelatoriosController.GetCompras2CSV()";
+			Guid httpRequestId = Request.GetCorrelationId();
 			DateTime data = DateTime.Now;
-            string fileName = "Compras2_" + data.ToString("yyyyMMdd_HHmmss");
+			string msg;
+			string fileName = "Compras2_" + data.ToString("yyyyMMdd_HHmmss");
             fileName = fileName + ".xlsx";
             string filePath = HttpContext.Current.Server.MapPath("~/Report/Relatorios/" + fileName);
             StringBuilder xmlResponse = new StringBuilder();
@@ -248,6 +293,9 @@ namespace ART3WebAPI.Controllers
 
 			try
 			{
+				msg = NOME_DESTA_ROTINA + ": Requisição recebida (usuario=" + (usuario ?? "") + ", tipo_periodo=" + (tipo_periodo ?? "") + ", dt_inicio=" + (dt_inicio ?? "") + ", dt_termino=" + (dt_termino ?? "") + ", fabricante=" + (fabricante ?? "") + ", produto=" + (produto ?? "") + ", grupo=" + (grupo ?? "") + ", subgrupo=" + (subgrupo ?? "") + ", btu=" + (btu ?? "") + ", ciclo=" + (ciclo ?? "") + ", pos_mercado=" + (pos_mercado ?? "") + ", nf=" + (nf ?? "") + ", dt_nf_inicio=" + (dt_nf_inicio ?? "") + ", dt_nf_termino=" + (dt_nf_termino ?? "") + ", visao=" + (visao ?? "") + ", detalhamento=" + (detalhamento ?? "") + ")";
+				Global.gravaLogAtividade(httpRequestId, msg);
+
 				#region [ Consistências ]
 				if ((tipo_periodo ?? "").Length == 0)
 				{
@@ -312,7 +360,7 @@ namespace ART3WebAPI.Controllers
 					{
 						await ART3WebAPI.Models.Domains.Compras2GeradorRelatorio.GenerateXLS(relCompras2List, filePath, tipo_periodo, dt_inicio, dt_termino, fabricante, produto, grupo, subgrupo, btu, ciclo, pos_mercado, nf, dt_nf_inicio, dt_nf_termino, visao, detalhamento);
 						statusResponse = "OK";
-						LogDAO.insere(usuario, s_log, out strMsgErro);
+						LogDAO.insere(httpRequestId, usuario, s_log, out strMsgErro);
 					}
 					else
 					{
@@ -331,7 +379,10 @@ namespace ART3WebAPI.Controllers
             result = Request.CreateResponse(HttpStatusCode.OK);
             result.Content = new StringContent(xmlResponse.ToString(), Encoding.UTF8, "application/json");
 
-            return result;
+			msg = NOME_DESTA_ROTINA + ": Status=" + statusResponse + ", fileName=" + fileName;
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			return result;
         }
         
         #endregion
@@ -340,7 +391,14 @@ namespace ART3WebAPI.Controllers
         [HttpPost]
         public HttpResponseMessage downloadCompras2CSV(string fileName)
         {
-            string filePath = HttpContext.Current.Server.MapPath("~/Report/Relatorios/" + fileName);
+			const string NOME_DESTA_ROTINA = "RelatoriosController.downloadCompras2CSV()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			string msg;
+
+			msg = NOME_DESTA_ROTINA + ": fileName=" + (fileName ?? "");
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			string filePath = HttpContext.Current.Server.MapPath("~/Report/Relatorios/" + fileName);
 
             HttpResponseMessage result = null;
             result = Request.CreateResponse(HttpStatusCode.OK);
@@ -361,9 +419,12 @@ namespace ART3WebAPI.Controllers
 		[HttpPost]
         public async Task<HttpResponseMessage> GeraDevolucaoProdutos2XLS(string usuario, string dt_devolucao_inicio, string dt_devolucao_termino, string fabricante, string produto, string pedido, string vendedor, string indicador, string captador, string lojas)
         {
-            #region [ Declarações ]
-            DateTime dataAtual;
-            string fileName;
+			#region [ Declarações ]
+			const string NOME_DESTA_ROTINA = "RelatoriosController.GeraDevolucaoProdutos2XLS()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			DateTime dataAtual;
+			string msg;
+			string fileName;
             string filePath;
             StringBuilder sbXmlResponse = new StringBuilder();
             Log s_log = new Log();
@@ -373,10 +434,13 @@ namespace ART3WebAPI.Controllers
             HttpResponseMessage result = null;
             List<DevolucaoProduto2Entity> DevolProd2Lista;
             DataDevolucaoProdutos2 datasource;
-            #endregion
+			#endregion
 
-            #region [ Gera nome do arquivo ]
-            dataAtual = DateTime.Now;
+			msg = NOME_DESTA_ROTINA + ": Requisição recebida (usuario=" + (usuario ?? "") + ", dt_devolucao_inicio=" + (dt_devolucao_inicio ?? "") + ", dt_devolucao_termino=" + (dt_devolucao_termino ?? "") + ", fabricante=" + (fabricante ?? "") + ", produto=" + (produto ?? "") + ", pedido=" + (pedido ?? "") + ", vendedor=" + (vendedor ?? "") + ", indicador=" + (indicador ?? "") + ", captador=" + (captador ?? "") + ", lojas=" + (lojas ?? "") + ")";
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			#region [ Gera nome do arquivo ]
+			dataAtual = DateTime.Now;
             fileName = "DevolucaoProdutos2_" + dataAtual.ToString("yyyyMMdd_HHmmss");
             fileName = fileName + ".xlsx";
             filePath = HttpContext.Current.Server.MapPath("~/Report/Relatorios/" + fileName);
@@ -394,7 +458,7 @@ namespace ART3WebAPI.Controllers
                 {
                     await DevolucaoProdutos2GeradorRelatorio.GeraXLS(DevolProd2Lista, filePath, dt_devolucao_inicio, dt_devolucao_termino, fabricante, produto, pedido, vendedor, indicador, captador, lojas);
                     statusResponse = "OK";
-                    LogDAO.insere(usuario, s_log, out strMsgErro);
+                    LogDAO.insere(httpRequestId, usuario, s_log, out strMsgErro);
                 }
                 else
                 {
@@ -412,7 +476,10 @@ namespace ART3WebAPI.Controllers
             result = Request.CreateResponse(HttpStatusCode.OK);
             result.Content = new StringContent(sbXmlResponse.ToString(), Encoding.UTF8, "application/json");
 
-            return result;
+			msg = NOME_DESTA_ROTINA + ": Status=" + statusResponse + ", fileName=" + fileName;
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			return result;
         }
 		#endregion
 
@@ -420,7 +487,14 @@ namespace ART3WebAPI.Controllers
 		[HttpPost]
         public HttpResponseMessage downloadDevolucaoProdutos2XLS(string fileName)
         {
-            string filePath = HttpContext.Current.Server.MapPath("~/Report/Relatorios/" + fileName);
+			const string NOME_DESTA_ROTINA = "RelatoriosController.downloadDevolucaoProdutos2XLS()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			string msg;
+
+			msg = NOME_DESTA_ROTINA + ": fileName=" + (fileName ?? "");
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			string filePath = HttpContext.Current.Server.MapPath("~/Report/Relatorios/" + fileName);
 
             HttpResponseMessage result = null;
             result = Request.CreateResponse(HttpStatusCode.OK);
@@ -431,9 +505,142 @@ namespace ART3WebAPI.Controllers
 
             return result;
         }
-        #endregion
+		#endregion
 
-        #endregion
+		#endregion
 
-    }
+		#region [ Relatório de Pré-Devolução ]
+
+		#region [ Requisição ]
+		[HttpGet]
+		public async Task<HttpResponseMessage> RelPedidoPreDevolucaoXLS(string usuario, string loja, string sessionToken, string filtro_status, string filtro_data_inicio, string filtro_data_termino, string filtro_lojas)
+		{
+			#region [ Declarações ]
+			const string NOME_DESTA_ROTINA = "RelatoriosController.RelPedidoPreDevolucaoXLS()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			DateTime dataAtual;
+			string msg;
+			string msg_erro;
+			string fileName;
+			string filePath;
+			StringBuilder sbResponse = new StringBuilder();
+			string statusResponse = "";
+			string strMsgErro = "";
+			string MsgErroException = "";
+			HttpResponseMessage result = null;
+			Usuario usuarioBD;
+			DataRelPreDevolucao datasource;
+			List<RelPreDevolucaoEntity> dataRel;
+			Log log = new Log();
+			#endregion
+
+			msg = NOME_DESTA_ROTINA + ": Requisição recebida (usuario=" + (usuario ?? "") + ", loja=" + (loja ?? "") + ", sessionToken=" + (sessionToken ?? "") + ", filtro_status=" + (filtro_status ?? "") + ", filtro_data_inicio=" + (filtro_data_inicio ?? "") + ", filtro_data_termino=" + (filtro_data_termino ?? "") + ", filtro_lojas=" + (filtro_lojas ?? "") + ")";
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			#region [ Validação de segurança: session token confere? ]
+			if ((usuario ?? "").Trim().Length == 0)
+			{
+				msg = "Não foi informada a identificação do usuário!";
+				Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + ": " + msg);
+				throw new Exception(msg);
+			}
+
+			if ((sessionToken ?? "").Trim().Length == 0)
+			{
+				msg = "Não foi informado o token da sessão do usuário!";
+				Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + ": " + msg);
+				throw new Exception(msg);
+			}
+
+			usuarioBD = GeralDAO.getUsuario(usuario, out msg_erro);
+			if (usuarioBD == null)
+			{
+				msg = "Falha ao tentar validar usuário!";
+				Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + ": " + msg);
+				throw new Exception(msg);
+			}
+
+			if ((!usuarioBD.SessionTokenModuloCentral.Equals(sessionToken)) && (!usuarioBD.SessionTokenModuloLoja.Equals(sessionToken)))
+			{
+				msg = "Token de sessão inválido!";
+				Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + ": " + msg);
+				throw new Exception(msg);
+			}
+			#endregion
+
+			#region [ Gera nome do arquivo ]
+			dataAtual = DateTime.Now;
+			fileName = "RelPreDevolucao_" + dataAtual.ToString("yyyyMMdd_HHmmss");
+			fileName = fileName + ".xlsx";
+			filePath = HttpContext.Current.Server.MapPath("~/Report/Relatorios/" + fileName);
+			#endregion
+
+			log.operacao = "RelPedPreDevolXLS";
+			log.complemento = " Nome do arquivo: " + fileName + " (filtro_status=" + filtro_status + ", filtro_data_inicio=" + filtro_data_inicio + ", filtro_data_termino=" + filtro_data_termino + ", filtro_lojas=" + filtro_lojas + ")";
+			log.usuario = usuario;
+			log.loja = loja;
+
+			try
+			{
+				datasource = new DataRelPreDevolucao();
+				dataRel = datasource.Get(httpRequestId, usuario, loja, filtro_status, filtro_data_inicio, filtro_data_termino, filtro_lojas);
+				if (dataRel.Count > 0)
+				{
+					await RelPreDevolucaoGeradorRelatorio.GeraXLS(dataRel, filePath, usuario, loja, filtro_status, filtro_data_inicio, filtro_data_termino, filtro_lojas);
+					statusResponse = "OK";
+					LogDAO.insere(httpRequestId, usuario, log, out strMsgErro);
+				}
+				else
+				{
+					statusResponse = "Vazio";
+					MsgErroException = "Nenhum registro foi encontrado!";
+					msg = NOME_DESTA_ROTINA + ": " + MsgErroException;
+					Global.gravaLogAtividade(httpRequestId, msg);
+				}
+			}
+			catch (Exception ex)
+			{
+				statusResponse = "Falha";
+				MsgErroException = ex.Message;
+				msg = NOME_DESTA_ROTINA + ": Exception - " + ex.ToString();
+				Global.gravaLogAtividade(httpRequestId, msg);
+			}
+
+			sbResponse.Append("{ \"fileName\" : \"" + fileName + "\", " + "\"Status\" : \"" + statusResponse + "\", " + "\"Exception\" : " + System.Web.Helpers.Json.Encode(MsgErroException) + "}");
+			result = Request.CreateResponse(HttpStatusCode.OK);
+			result.Content = new StringContent(sbResponse.ToString(), Encoding.UTF8, "application/json");
+
+			msg = NOME_DESTA_ROTINA + ": Status=" + statusResponse + ", fileName=" + fileName;
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			return result;
+		}
+		#endregion
+
+		#region [ Download ]
+		[HttpPost]
+		public HttpResponseMessage DownloadRelPedidoPreDevolucaoXLS(string fileName)
+		{
+			const string NOME_DESTA_ROTINA = "RelatoriosController.DownloadRelPedidoPreDevolucaoXLS()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			string msg;
+
+			msg = NOME_DESTA_ROTINA + ": fileName=" + (fileName ?? "");
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			string filePath = HttpContext.Current.Server.MapPath("~/Report/Relatorios/" + fileName);
+
+			HttpResponseMessage result = null;
+			result = Request.CreateResponse(HttpStatusCode.OK);
+			result.Content = new StreamContent(new FileStream(filePath, FileMode.Open));
+			result.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment");
+			result.Content.Headers.ContentDisposition.FileName = fileName;
+			result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.ms-excel");
+
+			return result;
+		}
+		#endregion
+
+		#endregion
+	}
 }

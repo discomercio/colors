@@ -530,6 +530,7 @@ function fFILTROConfirma( f ) {
         }
     }
 
+	var visaoValor = "";
     var visao = document.getElementsByName('rb_visao');
        i = 0;
        for(i; i<visao.length; i++){
@@ -538,7 +539,12 @@ function fFILTROConfirma( f ) {
              break;
           }
         }
-    
+
+	if (trim(visaoValor).length == 0) {
+		alert("Selecione o tipo de visão do relatório!");
+		return;
+	}
+
     fabricante = "";
 	grupo = "";
     subgrupo = "";
@@ -760,6 +766,7 @@ function fFILTROConfirma( f ) {
         dt_termino = f.c_dt_entregue_termino.value;
 	}
 
+	var visaoValor = "";
     var visao = document.getElementsByName('rb_visao');
        i = 0;
        for(i; i<visao.length; i++){
@@ -768,7 +775,12 @@ function fFILTROConfirma( f ) {
              break;
           }
         }
-    
+
+	if (trim(visaoValor).length == 0) {
+		alert("Selecione o tipo de visão do relatório!");
+		return;
+	}
+
     fabricante = "";
     grupo = "";
     subgrupo = "";

@@ -309,10 +309,18 @@
 		' Analisa situações em que a edição da forma de pagamento deve ser bloqueada totalmente
 		'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		if Trim("" & r_pedido.st_entrega) = ST_ENTREGA_ENTREGUE then
-			if IsMesmoAnoEMes(r_pedido.entregue_data, Date) then
-				nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_PARCIAL
-			else
-				nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_BLOQUEADA
+			if Not ( _
+				operacao_permitida(OP_CEN_EDITA_ANALISE_CREDITO, s_lista_operacoes_permitidas) _
+				OR _
+				operacao_permitida(OP_CEN_PAGTO_PARCIAL, s_lista_operacoes_permitidas) _
+				OR _
+				operacao_permitida(OP_CEN_PAGTO_QUITACAO, s_lista_operacoes_permitidas) _
+				) then
+				if IsMesmoAnoEMes(r_pedido.entregue_data, Date) then
+					nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_PARCIAL
+				else
+					nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_BLOQUEADA
+					end if
 				end if
 			end if
 
@@ -1219,10 +1227,60 @@ var f, n, t, p, s;
 	else f.c_forma_pagto.value="";
 }
 
+function houve_edicao_forma_pagto() {
+	var f, tipo_parcelamento_selecionado;
+	f = fPED;
+
+	if ((f.versao_forma_pagamento.value == '2') && (nivelEdicaoFormaPagto == COD_NIVEL_EDICAO_BLOQUEADA)) return false;
+
+	// Mudou o tipo de parcelamento?
+	tipo_parcelamento_selecionado = $("input[name='rb_forma_pagto']:checked").val();
+	if (tipo_parcelamento_selecionado != $("#tipo_parcelamento_original").val()) return true;
+
+	if (tipo_parcelamento_selecionado == "<%=COD_FORMA_PAGTO_A_VISTA%>") {
+		if ($("select[name='op_av_forma_pagto'] option").filter(':selected').val() != $("#av_forma_pagto_original").val()) return true;
+	}
+	else if (tipo_parcelamento_selecionado == "<%=COD_FORMA_PAGTO_PARCELA_UNICA%>") {
+		if ($("select[name='op_pu_forma_pagto'] option").filter(':selected').val() != $("#pu_forma_pagto_original").val()) return true;
+		if (converte_numero($("#c_pu_valor").val()) != converte_numero($("#pu_valor_original").val())) return true;
+		if (converte_numero($("#c_pu_vencto_apos").val()) != converte_numero($("#pu_vencto_apos_original").val())) return true;
+	}
+	else if (tipo_parcelamento_selecionado == "<%=COD_FORMA_PAGTO_PARCELADO_CARTAO%>") {
+		if (converte_numero($("#c_pc_qtde").val()) != converte_numero($("#pc_qtde_parcelas_original").val())) return true;
+		if (converte_numero($("#c_pc_valor").val()) != converte_numero($("#pc_valor_parcela_original").val())) return true;
+	}
+	else if (tipo_parcelamento_selecionado == "<%=COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA%>") {
+		if (converte_numero($("#c_pc_maquineta_qtde").val()) != converte_numero($("#pc_maquineta_qtde_parcelas_original").val())) return true;
+		if (converte_numero($("#c_pc_maquineta_valor").val()) != converte_numero($("#pc_maquineta_valor_parcela_original").val())) return true;
+	}
+	else if (tipo_parcelamento_selecionado == "<%=COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA%>") {
+		if ($("select[name='op_pce_entrada_forma_pagto'] option").filter(':selected').val() != $("#pce_forma_pagto_entrada_original").val()) return true;
+		if (converte_numero($("#c_pce_entrada_valor").val()) != converte_numero($("#pce_entrada_valor_original").val())) return true;
+		if ($("select[name='op_pce_prestacao_forma_pagto'] option").filter(':selected').val() != $("#pce_forma_pagto_prestacao_original").val()) return true;
+		if (converte_numero($("#c_pce_prestacao_qtde").val()) != converte_numero($("#pce_prestacao_qtde_original").val())) return true;
+		if (converte_numero($("#c_pce_prestacao_valor").val()) != converte_numero($("#pce_prestacao_valor_original").val())) return true;
+		if (converte_numero($("#c_pce_prestacao_periodo").val()) != converte_numero($("#pce_prestacao_periodo_original").val())) return true;
+	}
+	else if (tipo_parcelamento_selecionado == "<%=COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA%>") {
+		if ($("select[name='op_pse_prim_prest_forma_pagto'] option").filter(':selected').val() != $("#pse_forma_pagto_prim_prest_original").val()) return true;
+		if (converte_numero($("#c_pse_prim_prest_valor").val()) != converte_numero($("#pse_prim_prest_valor_original").val())) return true;
+		if (converte_numero($("#c_pse_prim_prest_apos").val()) != converte_numero($("#pse_prim_prest_apos_original").val())) return true;
+		if ($("select[name='op_pse_demais_prest_forma_pagto'] option").filter(':selected').val() != $("#pse_forma_pagto_demais_prest_original").val()) return true;
+		if (converte_numero($("#c_pse_demais_prest_qtde").val()) != converte_numero($("#pse_demais_prest_qtde_original").val())) return true;
+		if (converte_numero($("#c_pse_demais_prest_valor").val()) != converte_numero($("#pse_demais_prest_valor_original").val())) return true;
+		if (converte_numero($("#c_pse_demais_prest_periodo").val()) != converte_numero($("#pse_demais_prest_periodo_original").val())) return true;
+	}
+
+	return false;
+}
+
 function consiste_forma_pagto( blnComAvisos ) {
 var f,idx,vtNF,vtFP,ve,ni,nip,n,vp;
 var MAX_ERRO_ARREDONDAMENTO = 0.1;
-	f=fPED;
+	f = fPED;
+
+	if (!houve_edicao_forma_pagto()) return true;
+
 	vtNF=fp_vl_total_pedido();
 	vtFP=0;
 	idx=-1;
@@ -1688,6 +1746,13 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 	if ((f.versao_forma_pagamento.value == '2') && (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL)) {
 		if (!consiste_forma_pagto(true)) return;
 		}
+
+	if (houve_edicao_forma_pagto()) {
+		$("#flag_forma_pagto_editada").val("1");
+	}
+	else {
+		$("#flag_forma_pagto_editada").val("0");
+	}
 
 	recalcula_RA();
 	recalcula_RA_Liquido();
@@ -2673,6 +2738,29 @@ function setarValorRadio(array, valor)
 <input type="hidden" name="c_obs2_original" id="c_obs2_original" value="<%=r_pedido.obs_2%>" />
 <input type="hidden" name="c_obs3_original" id="c_obs3_original" value="<%=r_pedido.obs_3%>" />
 <input type="hidden" name="c_obs4_original" id="c_obs4_original" value="<%=r_pedido.obs_4%>" />
+<input type="hidden" name="tipo_parcelamento_original" id="tipo_parcelamento_original" value="<%=r_pedido.tipo_parcelamento%>" />
+<input type="hidden" name="av_forma_pagto_original" id="av_forma_pagto_original" value="<%=r_pedido.av_forma_pagto%>" />
+<input type="hidden" name="pu_forma_pagto_original" id="pu_forma_pagto_original" value="<%=r_pedido.pu_forma_pagto%>" />
+<input type="hidden" name="pu_valor_original" id="pu_valor_original" value="<%=r_pedido.pu_valor%>" />
+<input type="hidden" name="pu_vencto_apos_original" id="pu_vencto_apos_original" value="<%=r_pedido.pu_vencto_apos%>" />
+<input type="hidden" name="pc_qtde_parcelas_original" id="pc_qtde_parcelas_original" value="<%=r_pedido.pc_qtde_parcelas%>" />
+<input type="hidden" name="pc_valor_parcela_original" id="pc_valor_parcela_original" value="<%=r_pedido.pc_valor_parcela%>" />
+<input type="hidden" name="pc_maquineta_qtde_parcelas_original" id="pc_maquineta_qtde_parcelas_original" value="<%=r_pedido.pc_maquineta_qtde_parcelas%>" />
+<input type="hidden" name="pc_maquineta_valor_parcela_original" id="pc_maquineta_valor_parcela_original" value="<%=r_pedido.pc_maquineta_valor_parcela%>" />
+<input type="hidden" name="pce_forma_pagto_entrada_original" id="pce_forma_pagto_entrada_original" value="<%=r_pedido.pce_forma_pagto_entrada%>" />
+<input type="hidden" name="pce_forma_pagto_prestacao_original" id="pce_forma_pagto_prestacao_original" value="<%=r_pedido.pce_forma_pagto_prestacao%>" />
+<input type="hidden" name="pce_entrada_valor_original" id="pce_entrada_valor_original" value="<%=r_pedido.pce_entrada_valor%>" />
+<input type="hidden" name="pce_prestacao_qtde_original" id="pce_prestacao_qtde_original" value="<%=r_pedido.pce_prestacao_qtde%>" />
+<input type="hidden" name="pce_prestacao_valor_original" id="pce_prestacao_valor_original" value="<%=r_pedido.pce_prestacao_valor%>" />
+<input type="hidden" name="pce_prestacao_periodo_original" id="pce_prestacao_periodo_original" value="<%=r_pedido.pce_prestacao_periodo%>" />
+<input type="hidden" name="pse_forma_pagto_prim_prest_original" id="pse_forma_pagto_prim_prest_original" value="<%=r_pedido.pse_forma_pagto_prim_prest%>" />
+<input type="hidden" name="pse_forma_pagto_demais_prest_original" id="pse_forma_pagto_demais_prest_original" value="<%=r_pedido.pse_forma_pagto_demais_prest%>" />
+<input type="hidden" name="pse_prim_prest_valor_original" id="pse_prim_prest_valor_original" value="<%=r_pedido.pse_prim_prest_valor%>" />
+<input type="hidden" name="pse_prim_prest_apos_original" id="pse_prim_prest_apos_original" value="<%=r_pedido.pse_prim_prest_apos%>" />
+<input type="hidden" name="pse_demais_prest_qtde_original" id="pse_demais_prest_qtde_original" value="<%=r_pedido.pse_demais_prest_qtde%>" />
+<input type="hidden" name="pse_demais_prest_valor_original" id="pse_demais_prest_valor_original" value="<%=r_pedido.pse_demais_prest_valor%>" />
+<input type="hidden" name="pse_demais_prest_periodo_original" id="pse_demais_prest_periodo_original" value="<%=r_pedido.pse_demais_prest_periodo%>" />
+<input type="hidden" name="flag_forma_pagto_editada" id="flag_forma_pagto_editada" value="0" />
 
 <!-- AJAX EM ANDAMENTO -->
 <div id="divAjaxRunning" style="display:none;"><img src="../Imagem/ajax_loader_gray_256.gif" class="AjaxImgLoader"/></div>

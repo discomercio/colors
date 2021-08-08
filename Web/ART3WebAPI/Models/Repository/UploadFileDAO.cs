@@ -185,7 +185,7 @@ namespace ART3WebAPI.Models.Repository
 		#endregion
 
 		#region [ insertUploadedFileInfo ]
-		public static bool insertUploadedFileInfo(UploadStoredFileInfo storedFileInfo, out string msg_erro)
+		public static bool insertUploadedFileInfo(Guid? httpRequestId, UploadStoredFileInfo storedFileInfo, out string msg_erro)
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "UploadFileDAO.insertUploadedFileInfo()";
@@ -272,7 +272,7 @@ namespace ART3WebAPI.Models.Repository
 							intQtdeTentativas++;
 							msg_erro = "";
 
-							if ((storedFileInfo.guid ?? "").Trim().Length == 0) storedFileInfo.guid = BD.gera_uid();
+							if ((storedFileInfo.guid ?? "").Trim().Length == 0) storedFileInfo.guid = BD.gera_uid(httpRequestId);
 
 							#region [ Preenche o valor dos parâmetros ]
 							cmInsert.Parameters["@guid"].Value = new Guid(storedFileInfo.guid);
@@ -310,7 +310,7 @@ namespace ART3WebAPI.Models.Repository
 							catch (Exception ex)
 							{
 								generatedId = 0;
-								Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - Exception:\n" + ex.ToString());
+								Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - Exception:\n" + ex.ToString());
 							}
 							#endregion
 
@@ -340,7 +340,7 @@ namespace ART3WebAPI.Models.Repository
 							log.usuario = storedFileInfo.usuario_cadastro;
 							log.operacao = "UploadFile";
 							log.complemento = sbLog.ToString();
-							LogDAO.insere(storedFileInfo.usuario_cadastro, log, out msg_erro_aux);
+							LogDAO.insere(httpRequestId, storedFileInfo.usuario_cadastro, log, out msg_erro_aux);
 						}
 						#endregion
 
@@ -463,7 +463,7 @@ namespace ART3WebAPI.Models.Repository
 		#endregion
 
 		#region [ insertUploadFileModuleFolderName ]
-		public static bool insertUploadFileModuleFolderName(UploadFileModuleFolderName uploadFileModuleFolderName, out string msg_erro)
+		public static bool insertUploadFileModuleFolderName(Guid? httpRequestId, UploadFileModuleFolderName uploadFileModuleFolderName, out string msg_erro)
 		{
 			#region [ Declarações ]
 			bool blnSucesso = false;
@@ -555,7 +555,7 @@ namespace ART3WebAPI.Models.Repository
 							log.usuario = Global.Cte.Usuario.ID_USUARIO_SISTEMA;
 							log.operacao = "UpFileModFolderName";
 							log.complemento = sbLog.ToString();
-							LogDAO.insere(Global.Cte.Usuario.ID_USUARIO_SISTEMA, log, out msg_erro_aux);
+							LogDAO.insere(httpRequestId, Global.Cte.Usuario.ID_USUARIO_SISTEMA, log, out msg_erro_aux);
 						}
 						#endregion
 
