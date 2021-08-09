@@ -415,8 +415,8 @@ function preencheForm()
 	        $("#c_nfe_ncm_sh_" + sIdx).val(vetnfe.NFe.infNFe.det.prod.NCM);
 	        $("#c_nfe_cfop_" + sIdx).val(vetnfe.NFe.infNFe.det.prod.CFOP);
 	        $("#c_nfe_qtde_" + sIdx).val(formata_numero(vetnfe.NFe.infNFe.det.prod.qCom, 1));
-	        $("#c_nfe_vl_unitario_nota_" + sIdx).val(formata_moeda(vetnfe.NFe.infNFe.det.prod.vUnCom));
-	        $("#c_nfe_vl_unitario_" + sIdx).val(formata_moeda(vetnfe.NFe.infNFe.det.prod.vUnCom));
+            $("#c_nfe_vl_unitario_nota_" + sIdx).val(formata_moeda_xml(vetnfe.NFe.infNFe.det.prod.vUnCom));
+            $("#c_nfe_vl_unitario_" + sIdx).val(formata_moeda_xml(vetnfe.NFe.infNFe.det.prod.vUnCom));
 	        $("#c_nfe_vl_total_nota_" + sIdx).text(formata_numero(vetnfe.NFe.infNFe.det.prod.vProd, 2));
             $("#c_nfe_vl_total_" + sIdx).val(formata_numero(vetnfe.NFe.infNFe.det.prod.vProd, 2));
             if (vetnfe.NFe.infNFe.det.prod.hasOwnProperty('vFrete')) {
@@ -518,8 +518,8 @@ function preencheForm()
 	            $("#c_nfe_qtde_" + sIdx).val(formata_numero(vetnfe.NFe.infNFe.det[i].prod.qCom, 1));
 	            //$("#c_nfe_vl_unitario_" + sIdx).text(formata_numero(nfe.nfeProc.NFe.infNFe.det[i].prod.vUnCom, 4));
 	            //$("#c_nfe_vl_unitario_nota_" + sIdx).val(formata_numero(nfe.nfeProc.NFe.infNFe.det[i].prod.vUnCom, 4));
-	            $("#c_nfe_vl_unitario_nota_" + sIdx).val(formata_moeda(vetnfe.NFe.infNFe.det[i].prod.vUnCom));
-	            $("#c_nfe_vl_unitario_" + sIdx).val(formata_moeda(vetnfe.NFe.infNFe.det[i].prod.vUnCom));
+                $("#c_nfe_vl_unitario_nota_" + sIdx).val(formata_moeda_xml(vetnfe.NFe.infNFe.det[i].prod.vUnCom));
+                $("#c_nfe_vl_unitario_" + sIdx).val(formata_moeda_xml(vetnfe.NFe.infNFe.det[i].prod.vUnCom));
 	            $("#c_nfe_vl_total_nota_" + sIdx).text(formata_numero(vetnfe.NFe.infNFe.det[i].prod.vProd, 2));
                 $("#c_nfe_vl_total_" + sIdx).val(formata_numero(vetnfe.NFe.infNFe.det[i].prod.vProd, 2));
                 if (vetnfe.NFe.infNFe.det[i].prod.hasOwnProperty('vFrete')) {
@@ -919,7 +919,7 @@ function recalcula_itens() {
 	for (var i = 1; i <= iQtdeItens; i++) {
 		if ($("#ckb_importa_" + trim(i.toString())).is(":checked")) {
 			//calculo do valor do produto com IPI, frete e ágio
-		    v_calculo = converte_numero(formata_moeda($("#c_nfe_vl_unitario_nota_" + trim(i.toString())).val()));
+            v_calculo = converte_numero(formata_moeda_xml($("#c_nfe_vl_unitario_nota_" + trim(i.toString())).val()));
             v_frete = converte_numero($("#c_nfe_vl_frete_" + trim(i.toString())).val());
             v_frete = v_frete / converte_numero($("#c_nfe_qtde_" + trim(i.toString())).val());
             v_calculo = v_calculo + v_frete;
