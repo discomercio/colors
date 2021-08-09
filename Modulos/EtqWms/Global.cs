@@ -29,8 +29,8 @@ namespace EtqWms
 			{
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "EtqWms";
-				public const string VERSAO_NUMERO = "1.12";
-				public const string VERSAO_DATA = "31.AGO.2020";
+				public const string VERSAO_NUMERO = "1.13";
+				public const string VERSAO_DATA = "09.AGO.2021";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Módulo Etiqueta (WMS)";
@@ -118,10 +118,30 @@ namespace EtqWms
 			 *		  usar os dados que estão gravados no próprio pedido. O tratamento que já ocorria com o
 			 *		  endereço de entrega deve passar a ser feito p/ o endereço de cobrança/cadastro.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.13 - XX.XX.20XX - por XXX
-			 *		  
+			 * v 1.13 - 09.08.2021 - por HHO
+			 *		  Ajustes para obter o nome e CNPJ/CPF do cliente nos dados gravados no próprio pedido
+			 *		  (t_PEDIDO.endereco_nome_iniciais_em_maiusculas) e não mais no cadastro básico
+			 *		  (t_CLIENTE.nome_iniciais_em_maiusculas).
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.14 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.15 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.16 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.17 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.18 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.19 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.20 - XX.XX.20XX - por XXX
 			 *		  
 			 * ===============================================================================================
 			 */
