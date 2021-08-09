@@ -919,7 +919,7 @@ function recalcula_itens() {
 	for (var i = 1; i <= iQtdeItens; i++) {
 		if ($("#ckb_importa_" + trim(i.toString())).is(":checked")) {
 			//calculo do valor do produto com IPI, frete e ágio
-            v_calculo = converte_numero(formata_moeda_xml($("#c_nfe_vl_unitario_nota_" + trim(i.toString())).val()));
+            v_calculo = converte_numero(formata_moeda($("#c_nfe_vl_unitario_nota_" + trim(i.toString())).val()));
             v_frete = converte_numero($("#c_nfe_vl_frete_" + trim(i.toString())).val());
             v_frete = v_frete / converte_numero($("#c_nfe_qtde_" + trim(i.toString())).val());
             v_calculo = v_calculo + v_frete;
