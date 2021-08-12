@@ -843,7 +843,7 @@ var s, c, s_valor, s_sep, i;
 }
 
 function formata_moeda_xml(in_valor) {
-    var sinal, valor, decimais, fator, i, j, n, c, s, s_valor, s_int, s_dec, s_resp, achou;
+    var sinal, valor, decimais, valor_decimal, fator, i, j, n, c, s, s_valor, s_int, s_dec, s_resp, achou;
     valor = in_valor;
     s_valor = in_valor;
     decimais = 2;
@@ -863,12 +863,16 @@ function formata_moeda_xml(in_valor) {
             achou = true;
         }
         else {
-            if (!achou) s_int = s_int + c; else s_dec = s_dec + c;
+            if (!achou) s_int = s_int + c; else if (s_dec.length <= decimais) s_dec = s_dec + c;
         }
     }
 
-    /*  Formata parte decimal */
+    /*  Formata parte decimal com arredondamento */
     while (s_dec.length < decimais) s_dec = s_dec + "0";
+    valor_decimal = converte_numero(s_dec);
+    if (s_dec.length > decimais) valor_decimal = valor_decimal + 5;
+    s_dec = valor_decimal.toString().trim().substring(0, decimais);
+
 
     /*  Formata parte inteira */
     s = "";
