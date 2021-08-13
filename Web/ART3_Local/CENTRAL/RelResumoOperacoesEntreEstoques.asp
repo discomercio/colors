@@ -31,6 +31,8 @@
 	On Error GoTo 0
 	Err.Clear
 
+	const ID_RELATORIO = "CENTRAL/ResumoOperacoesEntreEstoques"
+
 	dim usuario
 	usuario = Trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
@@ -54,6 +56,8 @@
 		strMinDtInicialFiltroPeriodoDDMMYYYY = ""
 		end if
 
+	dim s_ckb_operacoes_selecionadas
+	s_ckb_operacoes_selecionadas = get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "ckb_OPERACOES_SELECIONADAS")
 %>
 
 
@@ -71,6 +75,7 @@
 '      CCCCCCC   LLLLLLLLL  IIIII  EEEEEEEEE  NNN   NNN     TTT    EEEEEEEEE
 %>
 
+<%=DOCTYPE_LEGADO%>
 
 
 <html>
@@ -81,10 +86,23 @@
 	</head>
 
 
+<% if False then 'APENAS P/ HABILITAR O INTELLISENSE DURANTE O DESENVOLVIMENTO!! %>
+<script src="../Global/jquery.js" language="JavaScript" type="text/javascript"></script>
+<% end if %>
 
+<script src="<%=URL_FILE__JQUERY%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI_I18N%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_UI_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__GLOBAL_JS%>" Language="JavaScript" Type="text/javascript"></script>
 
 <script language="JavaScript" type="text/javascript">
+	$(function () {
+		$("#c_dt_inicio").hUtilUI('datepicker_peq_filtro_inicial');
+		$("#c_dt_termino").hUtilUI('datepicker_peq_filtro_final');
+	});
+
 function marcar_todos() {
 	fFILTRO.ckb_OP_ESTOQUE_LOG_ENTRADA.checked=true;
 	fFILTRO.ckb_OP_ESTOQUE_LOG_VENDA.checked = true;
@@ -146,6 +164,13 @@ var n;
 	if (fFILTRO.ckb_OP_ESTOQUE_LOG_PRODUTO_VENDIDO_SEM_PRESENCA_SAIDA.checked) n++;
 	if (fFILTRO.ckb_OP_ESTOQUE_LOG_TRANSF_PRODUTO_VENDIDO_ENTRE_PEDIDOS.checked) n++;
 	return n;
+}
+
+function limparTodosFiltros(f) {
+	$(".FiltroTXT").val("");
+	$(".FiltroTA").val("");
+	$(".FiltroSEL")[0].selectedIndex = 0;
+	$(".FiltroCKB").prop("checked", false);
 }
 
 function fFILTROConfirma( f ) {
@@ -245,6 +270,7 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 -->
 
 <link href="<%=URL_FILE__E_CSS%>" Rel="stylesheet" Type="text/css">
+<link href="<%=URL_FILE__JQUERY_UI_CSS%>" rel="stylesheet" type="text/css">
 
 
 <body onload="fFILTRO.c_dt_inicio.focus();">
@@ -272,9 +298,13 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 	<tr bgColor="#FFFFFF">
 	<td class="MT" NOWRAP><span class="PLTe">PERÍODO</span>
 	<br>
-		<table cellSpacing="0" cellPadding="0"><tr bgColor="#FFFFFF"><td>
-		<input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_inicio" id="c_dt_inicio" onblur="if (!isDate(this)) {alert('Data de início inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_termino.focus(); filtra_data();"
-			>&nbsp;<span class="PLLc" style="color:#808080;">&nbsp;até&nbsp;</span>&nbsp;<input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_termino" id="c_dt_termino" onblur="if (!isDate(this)) {alert('Data de término inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_fabricante.focus(); filtra_data();">
+		<table cellSpacing="0" style="padding:5px;"><tr bgColor="#FFFFFF"><td>
+		<input class="PLLc FiltroTXT" maxlength="10" style="width:70px;" name="c_dt_inicio" id="c_dt_inicio"
+			value='<%=get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_dt_inicio")%>'
+			onblur="if (!isDate(this)) {alert('Data de início inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_termino.focus(); filtra_data();"
+			>&nbsp;<span class="PLLc" style="color:#808080;">&nbsp;até&nbsp;</span>&nbsp;<input class="PLLc FiltroTXT" maxlength="10" style="width:70px;" name="c_dt_termino" id="c_dt_termino"
+				value='<%=get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_dt_termino")%>'
+				onblur="if (!isDate(this)) {alert('Data de término inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_fabricante.focus(); filtra_data();">
 			</td></tr>
 		</table>
 		</td></tr>
@@ -283,8 +313,8 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 	<tr bgColor="#FFFFFF">
 	<td class="MDBE" NOWRAP><span class="PLTe">EMPRESA (CD)</span>
 	<br>
-		<select id="c_id_nfe_emitente" name="c_id_nfe_emitente" style="margin:4px 4px 4px 4px;">
-		<% =apelido_empresa_nfe_emitente_monta_itens_select(Null) %>
+		<select id="c_id_nfe_emitente" name="c_id_nfe_emitente" class="FiltroSEL" style="margin:4px 4px 4px 4px;">
+		<% =apelido_empresa_nfe_emitente_monta_itens_select(get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_id_nfe_emitente")) %>
 		</select>
 		</td></tr>
 
@@ -292,21 +322,43 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 	<tr bgColor="#FFFFFF">
 	<td class="MDBE" NOWRAP><span class="PLTe">FABRICANTE</span>
 	<br>
-		<input maxlength="4" class="PLLe" style="width:50px;" name="c_fabricante" id="c_fabricante" onblur="this.value=normaliza_codigo(this.value,TAM_MIN_FABRICANTE);" onkeypress="if (digitou_enter(true)) fFILTRO.c_produto.focus(); filtra_fabricante();">
+		<input maxlength="4" class="PLLe FiltroTXT" style="width:120px;" name="c_fabricante" id="c_fabricante"
+			value='<%=get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_fabricante")%>'
+			onblur="this.value=normaliza_codigo(this.value,TAM_MIN_FABRICANTE);" onkeypress="if (digitou_enter(true)) fFILTRO.c_produto.focus(); filtra_fabricante();">
 		</td></tr>
 
 <!--  PRODUTO  -->
 	<tr bgColor="#FFFFFF">
 	<td class="MDBE" NOWRAP><span class="PLTe">PRODUTO</span>
 	<br>
-		<input maxlength="13" class="PLLe" style="width:100px;" name="c_produto" id="c_produto" onblur="this.value=ucase(normaliza_codigo(this.value,TAM_MIN_PRODUTO));" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); filtra_produto();">
+		<input maxlength="13" class="PLLe FiltroTXT" style="width:120px;" name="c_produto" id="c_produto"
+			value='<%=get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_produto")%>'
+			onblur="this.value=ucase(normaliza_codigo(this.value,TAM_MIN_PRODUTO));" onkeypress="if (digitou_enter(true)) fFILTRO.c_pedido_origem.focus(); filtra_produto();">
+		</td></tr>
+
+<!--  PEDIDO (ORIGEM)  -->
+	<tr bgColor="#FFFFFF">
+	<td class="MDBE" NOWRAP><span class="PLTe">PEDIDO (ORIGEM)</span>
+	<br>
+		<input maxlength="10" class="PLLe FiltroTXT" style="width:120px;" name="c_pedido_origem" id="c_pedido_origem"
+			value='<%=get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_pedido_origem")%>'
+			onblur="if (normaliza_num_pedido(this.value)!='') this.value=normaliza_num_pedido(this.value);" onkeypress="if (digitou_enter(true)) fFILTRO.c_pedido_destino.focus(); filtra_pedido();">
+		</td></tr>
+
+<!--  PEDIDO (DESTINO)  -->
+	<tr bgColor="#FFFFFF">
+	<td class="MDBE" NOWRAP><span class="PLTe">PEDIDO (DESTINO)</span>
+	<br>
+		<input maxlength="10" class="PLLe FiltroTXT" style="width:120px;" name="c_pedido_destino" id="c_pedido_destino"
+			value='<%=get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_pedido_destino")%>'
+			onblur="if (normaliza_num_pedido(this.value)!='') this.value=normaliza_num_pedido(this.value);" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); filtra_pedido();">
 		</td></tr>
 
 <!-- ************   LOJAS   ************ -->
 	<tr bgColor="#FFFFFF">
 	<td class="MDBE" NOWRAP><span class="PLTe">LOJA(S)</span>
 		<br><center>
-			<textarea class="PLBe" style="font-size:9pt;width:110px;margin-bottom:4px;" rows="6" name="c_lista_loja" id="c_lista_loja" onkeypress="if (!digitou_enter(false) && !digitou_char('-')) filtra_numerico();" onblur="this.value=normaliza_lista_lojas(this.value);"></textarea>
+			<textarea class="PLBe FiltroTA" style="font-size:9pt;width:110px;margin-bottom:4px;" rows="6" name="c_lista_loja" id="c_lista_loja" onkeypress="if (!digitou_enter(false) && !digitou_char('-')) filtra_numerico();" onblur="this.value=normaliza_lista_lojas(this.value);"><%=get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_lista_loja")%></textarea>
 		</center>
 	</td></tr>
 
@@ -316,87 +368,104 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 		<br>
 		<table cellSpacing="0" cellPadding="0" style="margin-bottom:10px;">
 		<tr bgColor="#FFFFFF"><td>
-			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_ENTRADA" name="ckb_OP_ESTOQUE_LOG_ENTRADA"
+			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_ENTRADA" name="ckb_OP_ESTOQUE_LOG_ENTRADA" class="FiltroCKB"
+				<% if Instr(s_ckb_operacoes_selecionadas, "|" & "ckb_OP_ESTOQUE_LOG_ENTRADA" & "|") <> 0 then Response.Write " checked" %>
 				value="<%=OP_ESTOQUE_LOG_ENTRADA%>"><span class="C" style="cursor:default" 
 				onclick="fFILTRO.ckb_OP_ESTOQUE_LOG_ENTRADA.click();"><%=x_operacao_log_estoque(OP_ESTOQUE_LOG_ENTRADA)%></span>
 			</td></tr>
 		<tr bgColor="#FFFFFF"><td>
-			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_VENDA" name="ckb_OP_ESTOQUE_LOG_VENDA"
+			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_VENDA" name="ckb_OP_ESTOQUE_LOG_VENDA" class="FiltroCKB"
+				<% if Instr(s_ckb_operacoes_selecionadas, "|" & "ckb_OP_ESTOQUE_LOG_VENDA" & "|") <> 0 then Response.Write " checked" %>
 				value="<%=OP_ESTOQUE_LOG_VENDA%>"><span class="C" style="cursor:default" 
 				onclick="fFILTRO.ckb_OP_ESTOQUE_LOG_VENDA.click();"><%=x_operacao_log_estoque(OP_ESTOQUE_LOG_VENDA)%></span>
 			</td></tr>
 		<tr bgColor="#FFFFFF"><td>
-			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_VENDA_SEM_PRESENCA" name="ckb_OP_ESTOQUE_LOG_VENDA_SEM_PRESENCA"
+			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_VENDA_SEM_PRESENCA" name="ckb_OP_ESTOQUE_LOG_VENDA_SEM_PRESENCA" class="FiltroCKB"
+				<% if Instr(s_ckb_operacoes_selecionadas, "|" & "ckb_OP_ESTOQUE_LOG_VENDA_SEM_PRESENCA" & "|") <> 0 then Response.Write " checked" %>
 				value="<%=OP_ESTOQUE_LOG_VENDA_SEM_PRESENCA%>"><span class="C" style="cursor:default" 
 				onclick="fFILTRO.ckb_OP_ESTOQUE_LOG_VENDA_SEM_PRESENCA.click();"><%=x_operacao_log_estoque(OP_ESTOQUE_LOG_VENDA_SEM_PRESENCA)%></span>
 			</td></tr>
 		<tr bgColor="#FFFFFF"><td>
-			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_TRANSFERENCIA" name="ckb_OP_ESTOQUE_LOG_TRANSFERENCIA"
+			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_TRANSFERENCIA" name="ckb_OP_ESTOQUE_LOG_TRANSFERENCIA" class="FiltroCKB"
+				<% if Instr(s_ckb_operacoes_selecionadas, "|" & "ckb_OP_ESTOQUE_LOG_TRANSFERENCIA" & "|") <> 0 then Response.Write " checked" %>
 				value="<%=OP_ESTOQUE_LOG_TRANSFERENCIA%>"><span class="C" style="cursor:default" 
 				onclick="fFILTRO.ckb_OP_ESTOQUE_LOG_TRANSFERENCIA.click();"><%=x_operacao_log_estoque(OP_ESTOQUE_LOG_TRANSFERENCIA)%></span>
 			</td></tr>
 		<tr bgColor="#FFFFFF"><td>
-			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_DEVOLUCAO" name="ckb_OP_ESTOQUE_LOG_DEVOLUCAO"
+			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_DEVOLUCAO" name="ckb_OP_ESTOQUE_LOG_DEVOLUCAO" class="FiltroCKB"
+				<% if Instr(s_ckb_operacoes_selecionadas, "|" & "ckb_OP_ESTOQUE_LOG_DEVOLUCAO" & "|") <> 0 then Response.Write " checked" %>
 				value="<%=OP_ESTOQUE_LOG_DEVOLUCAO%>"><span class="C" style="cursor:default" 
 				onclick="fFILTRO.ckb_OP_ESTOQUE_LOG_DEVOLUCAO.click();"><%=x_operacao_log_estoque(OP_ESTOQUE_LOG_DEVOLUCAO)%></span>
 			</td></tr>
 		<tr bgColor="#FFFFFF"><td>
-			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_TRANSF_PRODUTO_VENDIDO_ENTRE_PEDIDOS" name="ckb_OP_ESTOQUE_LOG_TRANSF_PRODUTO_VENDIDO_ENTRE_PEDIDOS"
+			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_TRANSF_PRODUTO_VENDIDO_ENTRE_PEDIDOS" name="ckb_OP_ESTOQUE_LOG_TRANSF_PRODUTO_VENDIDO_ENTRE_PEDIDOS" class="FiltroCKB"
+				<% if Instr(s_ckb_operacoes_selecionadas, "|" & "ckb_OP_ESTOQUE_LOG_TRANSF_PRODUTO_VENDIDO_ENTRE_PEDIDOS" & "|") <> 0 then Response.Write " checked" %>
 				value="<%=OP_ESTOQUE_LOG_TRANSF_PRODUTO_VENDIDO_ENTRE_PEDIDOS%>"><span class="C" style="cursor:default" 
 				onclick="fFILTRO.ckb_OP_ESTOQUE_LOG_TRANSF_PRODUTO_VENDIDO_ENTRE_PEDIDOS.click();"><%=x_operacao_log_estoque(OP_ESTOQUE_LOG_TRANSF_PRODUTO_VENDIDO_ENTRE_PEDIDOS)%></span>
 			</td></tr>
 		<tr bgColor="#FFFFFF"><td>
-			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_SPLIT" name="ckb_OP_ESTOQUE_LOG_SPLIT"
+			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_SPLIT" name="ckb_OP_ESTOQUE_LOG_SPLIT" class="FiltroCKB"
+				<% if Instr(s_ckb_operacoes_selecionadas, "|" & "ckb_OP_ESTOQUE_LOG_SPLIT" & "|") <> 0 then Response.Write " checked" %>
 				value="<%=OP_ESTOQUE_LOG_SPLIT%>"><span class="C" style="cursor:default" 
 				onclick="fFILTRO.ckb_OP_ESTOQUE_LOG_SPLIT.click();"><%=x_operacao_log_estoque(OP_ESTOQUE_LOG_SPLIT)%></span>
 			</td></tr>
 		<tr bgColor="#FFFFFF"><td>
-			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_PRODUTO_VENDIDO_SEM_PRESENCA_SAIDA" name="ckb_OP_ESTOQUE_LOG_PRODUTO_VENDIDO_SEM_PRESENCA_SAIDA"
+			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_PRODUTO_VENDIDO_SEM_PRESENCA_SAIDA" name="ckb_OP_ESTOQUE_LOG_PRODUTO_VENDIDO_SEM_PRESENCA_SAIDA" class="FiltroCKB"
+				<% if Instr(s_ckb_operacoes_selecionadas, "|" & "ckb_OP_ESTOQUE_LOG_PRODUTO_VENDIDO_SEM_PRESENCA_SAIDA" & "|") <> 0 then Response.Write " checked" %>
 				value="<%=OP_ESTOQUE_LOG_PRODUTO_VENDIDO_SEM_PRESENCA_SAIDA%>"><span class="C" style="cursor:default" 
 				onclick="fFILTRO.ckb_OP_ESTOQUE_LOG_PRODUTO_VENDIDO_SEM_PRESENCA_SAIDA.click();"><%=x_operacao_log_estoque(OP_ESTOQUE_LOG_PRODUTO_VENDIDO_SEM_PRESENCA_SAIDA)%></span>
 			</td></tr>
 		<tr bgColor="#FFFFFF"><td>
-			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_ESTORNO" name="ckb_OP_ESTOQUE_LOG_ESTORNO"
+			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_ESTORNO" name="ckb_OP_ESTOQUE_LOG_ESTORNO" class="FiltroCKB"
+				<% if Instr(s_ckb_operacoes_selecionadas, "|" & "ckb_OP_ESTOQUE_LOG_ESTORNO" & "|") <> 0 then Response.Write " checked" %>
 				value="<%=OP_ESTOQUE_LOG_ESTORNO%>"><span class="C" style="cursor:default" 
 				onclick="fFILTRO.ckb_OP_ESTOQUE_LOG_ESTORNO.click();"><%=x_operacao_log_estoque(OP_ESTOQUE_LOG_ESTORNO)%></span>
 			</td></tr>
 		<tr bgColor="#FFFFFF"><td>
-			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_CANCELA_SEM_PRESENCA" name="ckb_OP_ESTOQUE_LOG_CANCELA_SEM_PRESENCA"
+			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_CANCELA_SEM_PRESENCA" name="ckb_OP_ESTOQUE_LOG_CANCELA_SEM_PRESENCA" class="FiltroCKB"
+				<% if Instr(s_ckb_operacoes_selecionadas, "|" & "ckb_OP_ESTOQUE_LOG_CANCELA_SEM_PRESENCA" & "|") <> 0 then Response.Write " checked" %>
 				value="<%=OP_ESTOQUE_LOG_CANCELA_SEM_PRESENCA%>"><span class="C" style="cursor:default" 
 				onclick="fFILTRO.ckb_OP_ESTOQUE_LOG_CANCELA_SEM_PRESENCA.click();"><%=x_operacao_log_estoque(OP_ESTOQUE_LOG_CANCELA_SEM_PRESENCA)%></span>
 			</td></tr>
 		<tr bgColor="#FFFFFF"><td>
-			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_ENTREGA" name="ckb_OP_ESTOQUE_LOG_ENTREGA"
+			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_ENTREGA" name="ckb_OP_ESTOQUE_LOG_ENTREGA" class="FiltroCKB"
+				<% if Instr(s_ckb_operacoes_selecionadas, "|" & "ckb_OP_ESTOQUE_LOG_ENTREGA" & "|") <> 0 then Response.Write " checked" %>
 				value="<%=OP_ESTOQUE_LOG_ENTREGA%>"><span class="C" style="cursor:default" 
 				onclick="fFILTRO.ckb_OP_ESTOQUE_LOG_ENTREGA.click();"><%=x_operacao_log_estoque(OP_ESTOQUE_LOG_ENTREGA)%></span>
 			</td></tr>
 		<tr bgColor="#FFFFFF"><td>
-			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_TRANSFERENCIA_ROUBO_PERDA" name="ckb_OP_ESTOQUE_LOG_TRANSFERENCIA_ROUBO_PERDA"
+			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_TRANSFERENCIA_ROUBO_PERDA" name="ckb_OP_ESTOQUE_LOG_TRANSFERENCIA_ROUBO_PERDA" class="FiltroCKB"
+				<% if Instr(s_ckb_operacoes_selecionadas, "|" & "ckb_OP_ESTOQUE_LOG_TRANSFERENCIA_ROUBO_PERDA" & "|") <> 0 then Response.Write " checked" %>
 				value="ON"><span class="C" style="cursor:default" 
 				onclick="fFILTRO.ckb_OP_ESTOQUE_LOG_TRANSFERENCIA_ROUBO_PERDA.click();">Roubo ou Perda Total</span>
 			</td></tr>
 		<tr bgColor="#FFFFFF"><td>
-			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_CONVERSAO_KIT" name="ckb_OP_ESTOQUE_LOG_CONVERSAO_KIT"
+			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_CONVERSAO_KIT" name="ckb_OP_ESTOQUE_LOG_CONVERSAO_KIT" class="FiltroCKB"
+				<% if Instr(s_ckb_operacoes_selecionadas, "|" & "ckb_OP_ESTOQUE_LOG_CONVERSAO_KIT" & "|") <> 0 then Response.Write " checked" %>
 				value="<%=OP_ESTOQUE_LOG_CONVERSAO_KIT%>"><span class="C" style="cursor:default" 
 				onclick="fFILTRO.ckb_OP_ESTOQUE_LOG_CONVERSAO_KIT.click();"><%=x_operacao_log_estoque(OP_ESTOQUE_LOG_CONVERSAO_KIT)%></span>
 			</td></tr>
 		<tr bgColor="#FFFFFF"><td>
-			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_REMOVE_ENTRADA_ESTOQUE" name="ckb_OP_ESTOQUE_LOG_REMOVE_ENTRADA_ESTOQUE"
+			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_REMOVE_ENTRADA_ESTOQUE" name="ckb_OP_ESTOQUE_LOG_REMOVE_ENTRADA_ESTOQUE" class="FiltroCKB"
+				<% if Instr(s_ckb_operacoes_selecionadas, "|" & "ckb_OP_ESTOQUE_LOG_REMOVE_ENTRADA_ESTOQUE" & "|") <> 0 then Response.Write " checked" %>
 				value="<%=OP_ESTOQUE_LOG_REMOVE_ENTRADA_ESTOQUE%>"><span class="C" style="cursor:default" 
 				onclick="fFILTRO.ckb_OP_ESTOQUE_LOG_REMOVE_ENTRADA_ESTOQUE.click();"><%=x_operacao_log_estoque(OP_ESTOQUE_LOG_REMOVE_ENTRADA_ESTOQUE)%></span>
 			</td></tr>
 		<tr bgColor="#FFFFFF"><td>
-			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_NOVO_ITEM" name="ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_NOVO_ITEM"
+			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_NOVO_ITEM" name="ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_NOVO_ITEM" class="FiltroCKB"
+				<% if Instr(s_ckb_operacoes_selecionadas, "|" & "ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_NOVO_ITEM" & "|") <> 0 then Response.Write " checked" %>
 				value="<%=OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_NOVO_ITEM%>"><span class="C" style="cursor:default" 
 				onclick="fFILTRO.ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_NOVO_ITEM.click();"><%=x_operacao_log_estoque(OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_NOVO_ITEM)%></span>
 			</td></tr>
 		<tr bgColor="#FFFFFF"><td>
-			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_INCREMENTA" name="ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_INCREMENTA"
+			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_INCREMENTA" name="ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_INCREMENTA" class="FiltroCKB"
+				<% if Instr(s_ckb_operacoes_selecionadas, "|" & "ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_INCREMENTA" & "|") <> 0 then Response.Write " checked" %>
 				value="<%=OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_INCREMENTA%>"><span class="C" style="cursor:default" 
 				onclick="fFILTRO.ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_INCREMENTA.click();"><%=x_operacao_log_estoque(OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_INCREMENTA)%></span>
 			</td></tr>
 		<tr bgColor="#FFFFFF"><td>
-			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_DECREMENTA" name="ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_DECREMENTA"
+			<input type="checkbox" tabindex="-1" id="ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_DECREMENTA" name="ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_DECREMENTA" class="FiltroCKB"
+				<% if Instr(s_ckb_operacoes_selecionadas, "|" & "ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_DECREMENTA" & "|") <> 0 then Response.Write " checked" %>
 				value="<%=OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_DECREMENTA%>"><span class="C" style="cursor:default" 
 				onclick="fFILTRO.ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_DECREMENTA.click();"><%=x_operacao_log_estoque(OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_DECREMENTA)%></span>
 			</td></tr>
@@ -404,6 +473,12 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 		<input name="bMarcarTodos" id="bMarcarTodos" type="button" class="Button" onclick="marcar_todos();" value="Marcar todos" title="assinala todas as operações" style="margin-left:6px;margin-bottom:10px">
 		<input name="bDesmarcarTodos" id="bDesmarcarTodos" type="button" class="Button" onclick="desmarcar_todos();" value="Desmarcar todos" title="desmarca todas as operações" style="margin-left:6px;margin-right:6px;margin-bottom:10px">
 	</td></tr>
+	<tr>
+		<td class="MDBE" valign="middle">
+			<a name="bLimparTodosFiltros" id="bLimparTodosFiltros" href="javascript:limparTodosFiltros(fFILTRO)" title="limpa todos os filtros">
+			<img src="../botao/botao_x_red.gif" style="vertical-align:middle;margin-bottom:1px;" width="20" height="20" border="0"><span class="PLTe" style="vertical-align:middle;font-size:9pt;">Limpar todos os filtros</span></a>
+		</td>
+	</tr>
 </table>
 
 <!-- ************   SEPARADOR   ************ -->
