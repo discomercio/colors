@@ -1504,7 +1504,13 @@ function exibe_botao_confirmar() {
 
 <table width="649" cellspacing="0">
 <tr>
-	<td align="left"><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()">
+	<td align="left"><a name="bVOLTAR" id="bVOLTAR"
+		<% if url_back <> "" then %>
+		href="Resumo.asp<%= "?" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>"
+		<% else %>
+		href="javascript:history.back()"
+		<% end if %>
+		>
 		<img src="../botao/voltar.gif" width="176" height="55" border="0" title="volta para a página anterior"></a></td>
 	<td align="right"><div name="dCONFIRMA" id="dCONFIRMA"><a name="bCONFIRMA" id="bCONFIRMA" href="javascript:fFILTROConfirma(fFILTRO)">
 		<img src="../botao/confirmar.gif" width="176" height="55" border="0" title="executa a consulta"></a></div>
