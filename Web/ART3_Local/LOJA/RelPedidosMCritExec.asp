@@ -400,7 +400,7 @@ dim strLink
 				"," & _
 				chr(34) & usuario & chr(34) & _
 				")' title='clique para consultar o pedido " & id_pedido & "'>" & _
-				"&nbsp;<img id='imgClienteConsultaView' src='../imagem/doc_preview_12.png' class='notPrint' />" & _
+				"&nbsp;<img id='imgPedidoConsultaView' src='../imagem/doc_preview_12.png' class='notPrint' />" & _
 				"</a>"
 	monta_link_view_pedido=strLink
 end function
@@ -1569,7 +1569,7 @@ dim sLinkView
 		if blnPorFornecedor then 
 			if blnRelAnalitico then
 				if blnMostraMotivoCancelado then
-                    s_colspan = "13"
+                    s_colspan = "14"
                 else
 					s_colspan = "11" 
                 end if 
@@ -1584,13 +1584,13 @@ dim sLinkView
 			if blnRelAnalitico then
 				if loja=NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
 					if blnMostraMotivoCancelado then
-                    s_colspan = "11"
-                else
-					s_colspan = "9" 
-                    end if
+						s_colspan = "11"
+					else
+						s_colspan = "9" 
+						end if
 				else
 					if blnMostraMotivoCancelado then
-                        s_colspan = "10"
+                        s_colspan = "12"
                     else
 					    s_colspan = "8" 
                         end if
@@ -2373,7 +2373,7 @@ body
 
 <table class="notPrint" width="849" cellspacing="0">
 <tr>
-	<td align="center"><a name="bVOLTA" id="bVOLTA" href="javascript:history.go(-historyBackCount);" title="volta para a página anterior">
+	<td align="center"><a name="bVOLTA" id="bVOLTA" href="RelPedidosMCrit.asp<%= "?" & "url_back=X&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>" title="volta para a página anterior">
 		<img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
 </tr>
 </table>

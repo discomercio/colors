@@ -62,6 +62,9 @@
 	dim url_origem
 	url_origem = Trim(Request("url_origem"))
 
+	dim url_back
+	url_back = Trim(Request("url_back"))
+
 	' PREENCHIMENTO DA LISTA DE INDICADORES: GRAVA ÚLTIMA OPÇÃO DE CONSULTA NO BD
     dim lst_indicadores_carrega
     lst_indicadores_carrega = Request.Form("ckb_carrega_indicadores")
@@ -74,7 +77,7 @@
 	dim strJS, c_FormFieldValues
 	strJS = ""
 	c_FormFieldValues = ""
-	if url_origem <> "" then
+	if (url_origem <> "") Or (url_back <> "") then
 		c_FormFieldValues = get_default_valor_texto_bd(usuario, "LOJA/RelPedidosMCrit|FormFields")
 		if c_FormFieldValues <> "" then
 			strJS = "	var formString = '" & c_FormFieldValues & "';" & chr(13) & _
@@ -400,6 +403,12 @@ end function
 			}
 		});
 
+		$("#c_grupo").change(function () {
+			$("#spnCounterGrupo").text($("#c_grupo :selected").length);
+		});
+
+		$("#spnCounterGrupo").text($("#c_grupo :selected").length);
+
 		//Every resize of window
 		$(window).resize(function() {
 		    sizeDivAjaxRunning();
@@ -445,8 +454,9 @@ end function
         oOption.selected = true;
     }
 
-    function limpaCampoSelectProduto() {
-        $("#c_grupo").children().prop("selected", false);
+	function limpaCampoSelectGrupo() {
+		$("#c_grupo").children().prop("selected", false);
+		$("#spnCounterGrupo").text($("#c_grupo :selected").length);
     }
 
     function TrataRespostaAjaxListaIndicadores() {
@@ -828,7 +838,7 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 			><input class="Cc" maxlength="10" style="width:70px;" name="c_dt_cancelado_inicio" id="c_dt_cancelado_inicio" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_cancelado_termino.focus(); else fFILTRO.ckb_st_entrega_cancelado.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_cancelado.checked=true;" onchange="fFILTRO.ckb_st_entrega_cancelado.checked=true;"
 			>&nbsp;<span class="C">e</span>&nbsp;<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_cancelado_termino" id="c_dt_cancelado_termino" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_st_entrega_cancelado.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_cancelado.checked=true;" onchange="fFILTRO.ckb_st_entrega_cancelado.checked=true;">
 	    <span class="C" style="cursor:default">ordenado por</span>
-        <select name="c_cancelados_ordena">
+        <select name="c_cancelados_ordena" id="c_cancelados_ordena">
             <option value="VENDEDOR" selected>Vendedor</option>
             <option value="PEDIDO">Pedido</option>
         </select>
@@ -1122,8 +1132,10 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 		</td>
 		<td style="width:1px;"></td>
 		<td align="left" valign="top">
-			<a name="bLimparGrupo" id="bLimparGrupo" href="javascript:limpaCampoSelectProduto()" title="limpa o filtro 'Grupo de Produtos'">
+			<a name="bLimparGrupo" id="bLimparGrupo" href="javascript:limpaCampoSelectGrupo()" title="limpa o filtro 'Grupo de Produtos'">
 						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterGrupo"></span>)
 		</td>
 		</tr>
 		</table>
@@ -1279,8 +1291,9 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 </table>
 
 <!-- ************   SEPARADOR   ************ -->
-<table width="649" cellpadding="4" cellspacing="0" style="border-bottom:1px solid black">
-<tr><td class="Rc" align="left">&nbsp;</td></tr>
+<table width="649" cellpadding="4" cellspacing="0">
+<tr><td class="Rc" align="left" style="border-bottom:1px solid black">&nbsp;</td></tr>
+<tr><td align="right"><a href="RelPedidosMCrit.asp<%= "?" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>" title="Limpar filtros" class="LSessaoEncerra">Limpar filtros</a></td></tr>
 </table>
 <br>
 
