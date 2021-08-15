@@ -31,6 +31,8 @@
 	On Error GoTo 0
 	Err.Clear
 
+	const ID_RELATORIO = "CENTRAL/EstoqueConsultaMCrit"
+
 	dim usuario
 	usuario = Trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO)
@@ -60,6 +62,81 @@
 		strMinDtInicialFiltroPeriodoDDMMYYYY = ""
 		end if
 
+
+
+
+
+
+' ____________________________________________________________________________
+' GRUPO MONTA ITENS SELECT
+'
+function grupo_monta_itens_select(byval id_default)
+dim x, r, strResp, ha_default, strSql, v, i, sDescricao
+	id_default = Trim("" & id_default)
+	v = split(id_default, ", ")
+	ha_default=False
+	strSql = "SELECT DISTINCT" & _
+				" tP.grupo," & _
+				" tPG.descricao" & _
+			" FROM t_PRODUTO tP" & _
+				" LEFT JOIN t_PRODUTO_GRUPO tPG ON (tP.grupo = tPG.codigo)" & _
+			" WHERE" & _
+				" (LEN(Coalesce(tP.grupo,'')) > 0)" & _
+			" ORDER BY" & _
+				" tP.grupo"
+	set r = cn.Execute(strSql)
+	strResp = ""
+	do while Not r.eof 
+		x = Trim("" & r("grupo"))
+		sDescricao = Trim("" & r("descricao"))
+		strResp = strResp & "<option "
+		for i=LBound(v) to UBound(v) 
+			if (id_default<>"") And (v(i)=x) then
+				strResp = strResp & "selected"
+				end if
+			next
+		strResp = strResp & " value='" & x & "'>"
+		strResp = strResp & Trim("" & r("grupo"))
+		if sDescricao <> "" then strResp = strResp & " &nbsp;(" & sDescricao & ")"
+		strResp = strResp & "</option>" & chr(13)
+		r.MoveNext	
+ 	loop
+		
+	grupo_monta_itens_select = strResp
+	r.close
+	set r=nothing
+end function
+
+'----------------------------------------------------------------------------------------------
+' SUBGRUPO MONTA ITENS SELECT
+function subgrupo_monta_itens_select(byval id_default)
+dim x, r, strSql, strResp, ha_default, v, i, sDescricao
+	id_default = Trim("" & id_default)
+	v = split(id_default, ", ")
+	ha_default=False
+	strSql = "SELECT DISTINCT tP.subgrupo, tPS.descricao FROM t_PRODUTO tP LEFT JOIN t_PRODUTO_SUBGRUPO tPS ON (tP.subgrupo = tPS.codigo) WHERE LEN(Coalesce(tP.subgrupo,'')) > 0 ORDER by tP.subgrupo"
+	set r = cn.Execute(strSql)
+	strResp = ""
+	do while Not r.eof 
+		x = UCase(Trim("" & r("subgrupo")))
+		sDescricao = Trim("" & r("descricao"))
+		strResp = strResp & "<option "
+		for i=LBound(v) to UBound(v) 
+			if (id_default<>"") And (v(i)=x) then
+				strResp = strResp & "selected"
+				end if
+			next
+		strResp = strResp & " VALUE='" & x & "'>"
+		strResp = strResp & x
+		if sDescricao <> "" then strResp = strResp & " &nbsp;(" & sDescricao & ")"
+		strResp = strResp & "</OPTION>" & chr(13)
+		r.MoveNext
+		loop
+	
+	subgrupo_monta_itens_select = strResp
+	r.close
+	set r=nothing
+end function
 %>
 
 
@@ -101,11 +178,32 @@
 
 <script type="text/javascript">
 	$(function() {
-		$("#c_entrada_de").hUtilUI('datepicker_filtro_inicial');
-		$("#c_entrada_ate").hUtilUI('datepicker_filtro_final');
-        $("#c_nf_entrada_de").hUtilUI('datepicker_filtro_inicial');
-        $("#c_nf_entrada_ate").hUtilUI('datepicker_filtro_final');
+		$("#c_entrada_de").hUtilUI('datepicker_peq_filtro_inicial');
+		$("#c_entrada_ate").hUtilUI('datepicker_peq_filtro_final');
+		$("#c_nf_entrada_de").hUtilUI('datepicker_peq_filtro_inicial');
+		$("#c_nf_entrada_ate").hUtilUI('datepicker_peq_filtro_final');
+
+		$("#c_grupo").change(function () {
+			$("#spnCounterGrupo").text($("#c_grupo :selected").length);
+		});
+
+		$("#c_subgrupo").change(function () {
+			$("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
+		});
+
+		$("#spnCounterGrupo").text($("#c_grupo :selected").length);
+		$("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
 	});
+
+
+	function limpaCampoSelectGrupo() {
+		$("#c_grupo").children().prop('selected', false);
+		$("#spnCounterGrupo").text($("#c_grupo :selected").length);
+	}
+	function limpaCampoSelectSubgrupo() {
+		$("#c_subgrupo").children().prop('selected', false);
+		$("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
+	}
 </script>
 
 <script language="JavaScript" type="text/javascript">
@@ -231,6 +329,10 @@ function exibe_botao_confirmar() {
 {
 	vertical-align:bottom;
 }
+.LST
+{
+	margin:6px 6px 6px 6px;
+}
 </style>
 
 
@@ -322,6 +424,53 @@ function exibe_botao_confirmar() {
 	<td colspan="2" class="MDBE" align="left" valign="bottom" nowrap><span class="PLTe">Data NF Entrada Entre</span>
 		<br><input name="c_nf_entrada_de" id="c_nf_entrada_de" class="PLLc" maxlength="10" style="margin-left:2pt;width:80px;" onkeypress="if (digitou_enter(true)) fESTOQ.c_nf_entrada_ate.focus(); filtra_data();" onblur="this.value=trim(this.value); if (!isDate(this)) {alert('Data inválida!!'); this.focus();}"
 			><span class="PLTe" style="vertical-align:baseline;">&nbsp;&nbsp;e&nbsp;</span><input name="c_nf_entrada_ate" id="c_nf_entrada_ate" class="PLLc" maxlength="10" style="margin-left:2pt;width:80px;" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); filtra_data();" onblur="this.value=trim(this.value); if (!isDate(this)) {alert('Data inválida!!'); this.focus();}"></td>
+	</tr>
+
+	<!-- GRUPO DE PRODUTOS -->
+	<tr bgcolor="#FFFFFF">
+	<td colspan="2" class="ME MD MB" align="left" nowrap>
+		<span class="PLTe">GRUPO DE PRODUTOS</span>
+		<br>
+		<table cellpadding="0" cellspacing="0">
+		<tr>
+		<td>
+			<select id="c_grupo" name="c_grupo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="10" style="min-width:250px" multiple>
+			<% =grupo_monta_itens_select(get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_grupo")) %>
+			</select>
+		</td>
+		<td style="width:1px;"></td>
+		<td align="left" valign="top">
+			<a name="bLimparGrupo" id="bLimparGrupo" href="javascript:limpaCampoSelectGrupo()" title="limpa o filtro 'Grupo de Produtos'">
+						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterGrupo"></span>)
+		</td>
+		</tr>
+		</table>
+	</td>
+	</tr>
+	<!-- SUBGRUPO DE PRODUTOS -->
+	<tr bgcolor="#FFFFFF">
+	<td colspan="2" class="ME MD MB" align="left" nowrap>
+		<span class="PLTe">SUBGRUPO DE PRODUTOS</span>
+		<br>
+		<table cellpadding="0" cellspacing="0">
+		<tr>
+		<td>
+			<select id="c_subgrupo" name="c_subgrupo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="10" style="min-width:250px" multiple>
+			<% =subgrupo_monta_itens_select(get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_subgrupo")) %>
+			</select>
+		</td>
+		<td style="width:1px;"></td>
+		<td align="left" valign="top">
+			<a name="bLimparSubgrupo" id="bLimparSubgrupo" href="javascript:limpaCampoSelectSubgrupo()" title="limpa o filtro 'Subgrupo de Produtos'">
+						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterSubgrupo"></span>)
+		</td>
+		</tr>
+		</table>
+	</td>
 	</tr>
 
 <!--  SAÍDA DO RELATÓRIO  -->
