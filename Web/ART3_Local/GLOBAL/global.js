@@ -863,7 +863,7 @@ function formata_moeda_xml(in_valor) {
             achou = true;
         }
         else {
-            if (!achou) s_int = s_int + c; else if (s_dec.length <= decimais) s_dec = s_dec + c;
+            if (!achou) s_int = s_int + c; else if (s_dec.length <= decimais + 1) s_dec = s_dec + c;
         }
     }
 
