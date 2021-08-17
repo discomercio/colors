@@ -21,7 +21,18 @@ namespace ART3WebAPI.Controllers
 		[HttpGet]
 		public HttpResponseMessage Teste()
 		{
+			const string NOME_DESTA_ROTINA = "OrcamentistaIndicadorController.Teste()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			string msg;
+
+			msg = NOME_DESTA_ROTINA + ": Requisição recebida";
+			Global.gravaLogAtividade(httpRequestId, msg);
+
 			HttpResponseMessage result = Request.CreateResponse<string>(HttpStatusCode.OK, "Versão: " + Global.Cte.Versao.M_ID);
+
+			msg = NOME_DESTA_ROTINA + ": Status=" + result.StatusCode.ToString();
+			Global.gravaLogAtividade(httpRequestId, msg);
+
 			return result;
 		}
 		#endregion
@@ -54,6 +65,7 @@ namespace ART3WebAPI.Controllers
 			#region [ Declarações ]
 			Guid opGuid = Guid.NewGuid();
 			string NOME_DESTA_ROTINA = "OrcamentistaIndicadorController.PesquisaPorCnpjCpf() [" + opGuid.ToString() + "]";
+			Guid httpRequestId = Request.GetCorrelationId();
 			string msg;
 			string msg_erro;
 			string lojaParamEstatico;
@@ -75,7 +87,7 @@ namespace ART3WebAPI.Controllers
 
 			#region [ Log atividade ]
 			msg = NOME_DESTA_ROTINA + " - Parâmetros: cnpjCpf=" + (cnpjCpf ?? "") + ", loja=" + (loja ?? "") + ", vendedor=" + (vendedor ?? "") + ", status=" + (status ?? "") + ", parametrosEstaticos=" + (parametrosEstaticos ?? "") + ", sessionToken=" + (sessionToken ?? "");
-			Global.gravaLogAtividade(msg);
+			Global.gravaLogAtividade(httpRequestId, msg);
 			#endregion
 
 			#region [ CNPJ/CPF válido? ]
@@ -196,7 +208,7 @@ namespace ART3WebAPI.Controllers
 
 			#region [ Log atividade ]
 			msg = NOME_DESTA_ROTINA + " - Parâmetros: cnpjCpf=" + (cnpjCpf ?? "") + ", parâmetros estáticos decodificados: loja=" + (lojaParamEstatico ?? "") + ", vendedor=" + (vendedorParamEstatico ?? "") + ", status=" + statusParamEstatico + ", usuario=" + (usuario ?? "") + ", sessionToken=" + (sessionToken ?? "");
-			Global.gravaLogAtividade(msg);
+			Global.gravaLogAtividade(httpRequestId, msg);
 			#endregion
 
 			listaOrcamentistaIndicador = OrcamentistaIndicadorDAO.getOrcamentistaIndicadorResumoPesquisaByCnpjCpf(cnpjCpf, loja, lojaParamEstatico, vendedor, vendedorParamEstatico, status, statusParamEstatico, out msg_erro);
@@ -215,6 +227,9 @@ namespace ART3WebAPI.Controllers
 				result.Content = new StringContent(serializedResult, Encoding.UTF8, "text/html");
 			}
 			#endregion
+
+			msg = NOME_DESTA_ROTINA + ": Status=" + result.StatusCode.ToString();
+			Global.gravaLogAtividade(httpRequestId, msg);
 
 			return result;
 		}
@@ -248,6 +263,7 @@ namespace ART3WebAPI.Controllers
 			#region [ Declarações ]
 			Guid opGuid = Guid.NewGuid();
 			string NOME_DESTA_ROTINA = "OrcamentistaIndicadorController.PesquisaPorCnpjCpfParcial() [" + opGuid.ToString() + "]";
+			Guid httpRequestId = Request.GetCorrelationId();
 			string msg;
 			string msg_erro;
 			string lojaParamEstatico;
@@ -269,7 +285,7 @@ namespace ART3WebAPI.Controllers
 
 			#region [ Log atividade ]
 			msg = NOME_DESTA_ROTINA + " - Parâmetros: cnpjCpfParcial=" + (cnpjCpfParcial ?? "") + ", loja=" + (loja ?? "") + ", vendedor=" + (vendedor ?? "") + ", status=" + (status ?? "") + ", parametrosEstaticos=" + (parametrosEstaticos ?? "") + ", sessionToken=" + (sessionToken ?? "");
-			Global.gravaLogAtividade(msg);
+			Global.gravaLogAtividade(httpRequestId, msg);
 			#endregion
 
 			#region [ CNPJ/CPF válido? ]
@@ -390,7 +406,7 @@ namespace ART3WebAPI.Controllers
 
 			#region [ Log atividade ]
 			msg = NOME_DESTA_ROTINA + " - Parâmetros: cnpjCpfParcial=" + (cnpjCpfParcial ?? "") + ", parâmetros estáticos decodificados: loja=" + (lojaParamEstatico ?? "") + ", vendedor=" + (vendedorParamEstatico ?? "") + ", status=" + statusParamEstatico + ", usuario=" + (usuario ?? "") + ", sessionToken=" + (sessionToken ?? "");
-			Global.gravaLogAtividade(msg);
+			Global.gravaLogAtividade(httpRequestId, msg);
 			#endregion
 
 			listaOrcamentistaIndicador = OrcamentistaIndicadorDAO.getOrcamentistaIndicadorResumoPesquisaByCnpjCpfParcial(cnpjCpfParcial, loja, lojaParamEstatico, vendedor, vendedorParamEstatico, status, statusParamEstatico, out msg_erro);
@@ -409,6 +425,9 @@ namespace ART3WebAPI.Controllers
 				result.Content = new StringContent(serializedResult, Encoding.UTF8, "text/html");
 			}
 			#endregion
+
+			msg = NOME_DESTA_ROTINA + ": Status=" + result.StatusCode.ToString();
+			Global.gravaLogAtividade(httpRequestId, msg);
 
 			return result;
 		}
@@ -442,6 +461,7 @@ namespace ART3WebAPI.Controllers
 			#region [ Declarações ]
 			Guid opGuid = Guid.NewGuid();
 			string NOME_DESTA_ROTINA = "OrcamentistaIndicadorController.PesquisaPorApelido() [" + opGuid.ToString() + "]";
+			Guid httpRequestId = Request.GetCorrelationId();
 			string msg;
 			string msg_erro;
 			string lojaParamEstatico;
@@ -463,7 +483,7 @@ namespace ART3WebAPI.Controllers
 
 			#region [ Log atividade ]
 			msg = NOME_DESTA_ROTINA + " - Parâmetros: apelido=" + (apelido ?? "") + ", loja=" + (loja ?? "") + ", vendedor=" + (vendedor ?? "") + ", status=" + (status ?? "") + ", parametrosEstaticos=" + (parametrosEstaticos ?? "") + ", sessionToken=" + (sessionToken ?? "");
-			Global.gravaLogAtividade(msg);
+			Global.gravaLogAtividade(httpRequestId, msg);
 			#endregion
 
 			#region [ Apelido válido? ]
@@ -579,7 +599,7 @@ namespace ART3WebAPI.Controllers
 
 			#region [ Log atividade ]
 			msg = NOME_DESTA_ROTINA + " - Parâmetros: apelido=" + (apelido ?? "") + ", parâmetros estáticos decodificados: loja=" + (lojaParamEstatico ?? "") + ", vendedor=" + (vendedorParamEstatico ?? "") + ", status=" + statusParamEstatico + ", usuario=" + (usuario ?? "") + ", sessionToken=" + (sessionToken ?? "");
-			Global.gravaLogAtividade(msg);
+			Global.gravaLogAtividade(httpRequestId, msg);
 			#endregion
 
 			orcamentistaIndicador = OrcamentistaIndicadorDAO.getOrcamentistaIndicadorResumoPesquisaByApelido(apelido, loja, lojaParamEstatico, vendedor, vendedorParamEstatico, status, statusParamEstatico, out msg_erro);
@@ -598,6 +618,9 @@ namespace ART3WebAPI.Controllers
 				result.Content = new StringContent(serializedResult, Encoding.UTF8, "text/html");
 			}
 			#endregion
+
+			msg = NOME_DESTA_ROTINA + ": Status=" + result.StatusCode.ToString();
+			Global.gravaLogAtividade(httpRequestId, msg);
 
 			return result;
 		}
@@ -631,6 +654,7 @@ namespace ART3WebAPI.Controllers
 			#region [ Declarações ]
 			Guid opGuid = Guid.NewGuid();
 			string NOME_DESTA_ROTINA = "OrcamentistaIndicadorController.PesquisaPorApelidoParcial() [" + opGuid.ToString() + "]";
+			Guid httpRequestId = Request.GetCorrelationId();
 			string msg;
 			string msg_erro;
 			string lojaParamEstatico;
@@ -652,7 +676,7 @@ namespace ART3WebAPI.Controllers
 
 			#region [ Log atividade ]
 			msg = NOME_DESTA_ROTINA + " - Parâmetros: apelidoParcial=" + (apelidoParcial ?? "") + ", loja=" + (loja ?? "") + ", vendedor=" + (vendedor ?? "") + ", status=" + (status ?? "") + ", parametrosEstaticos=" + (parametrosEstaticos ?? "") + ", sessionToken=" + (sessionToken ?? "");
-			Global.gravaLogAtividade(msg);
+			Global.gravaLogAtividade(httpRequestId, msg);
 			#endregion
 
 			#region [ Apelido válido? ]
@@ -768,7 +792,7 @@ namespace ART3WebAPI.Controllers
 
 			#region [ Log atividade ]
 			msg = NOME_DESTA_ROTINA + " - Parâmetros: apelidoParcial=" + (apelidoParcial ?? "") + ", parâmetros estáticos decodificados: loja=" + (lojaParamEstatico ?? "") + ", vendedor=" + (vendedorParamEstatico ?? "") + ", status=" + statusParamEstatico + ", usuario=" + (usuario ?? "") + ", sessionToken=" + (sessionToken ?? "");
-			Global.gravaLogAtividade(msg);
+			Global.gravaLogAtividade(httpRequestId, msg);
 			#endregion
 
 			listaOrcamentistaIndicador = OrcamentistaIndicadorDAO.getOrcamentistaIndicadorResumoPesquisaByApelidoParcial(apelidoParcial, loja, lojaParamEstatico, vendedor, vendedorParamEstatico, status, statusParamEstatico, out msg_erro);
@@ -787,6 +811,9 @@ namespace ART3WebAPI.Controllers
 				result.Content = new StringContent(serializedResult, Encoding.UTF8, "text/html");
 			}
 			#endregion
+
+			msg = NOME_DESTA_ROTINA + ": Status=" + result.StatusCode.ToString();
+			Global.gravaLogAtividade(httpRequestId, msg);
 
 			return result;
 		}
@@ -820,6 +847,7 @@ namespace ART3WebAPI.Controllers
 			#region [ Declarações ]
 			Guid opGuid = Guid.NewGuid();
 			string NOME_DESTA_ROTINA = "OrcamentistaIndicadorController.PesquisaPorNomeParcial() [" + opGuid.ToString() + "]";
+			Guid httpRequestId = Request.GetCorrelationId();
 			string msg;
 			string msg_erro;
 			string lojaParamEstatico;
@@ -841,7 +869,7 @@ namespace ART3WebAPI.Controllers
 
 			#region [ Log atividade ]
 			msg = NOME_DESTA_ROTINA + " - Parâmetros: nomeParcial=" + (nomeParcial ?? "") + ", loja=" + (loja ?? "") + ", vendedor=" + (vendedor ?? "") + ", status=" + (status ?? "") + ", parametrosEstaticos=" + (parametrosEstaticos ?? "") + ", sessionToken=" + (sessionToken ?? "");
-			Global.gravaLogAtividade(msg);
+			Global.gravaLogAtividade(httpRequestId, msg);
 			#endregion
 
 			#region [ Nome parcial válido? ]
@@ -962,7 +990,7 @@ namespace ART3WebAPI.Controllers
 
 			#region [ Log atividade ]
 			msg = NOME_DESTA_ROTINA + " - Parâmetros: nomeParcial=" + (nomeParcial ?? "") + ", parâmetros estáticos decodificados: loja=" + (lojaParamEstatico ?? "") + ", vendedor=" + (vendedorParamEstatico ?? "") + ", status=" + statusParamEstatico + ", usuario=" + (usuario ?? "") + ", sessionToken=" + (sessionToken ?? "");
-			Global.gravaLogAtividade(msg);
+			Global.gravaLogAtividade(httpRequestId, msg);
 			#endregion
 
 			listaOrcamentistaIndicador = OrcamentistaIndicadorDAO.getOrcamentistaIndicadorResumoPesquisaByNomeParcial(nomeParcial, loja, lojaParamEstatico, vendedor, vendedorParamEstatico, status, statusParamEstatico, out msg_erro);
@@ -981,6 +1009,9 @@ namespace ART3WebAPI.Controllers
 				result.Content = new StringContent(serializedResult, Encoding.UTF8, "text/html");
 			}
 			#endregion
+
+			msg = NOME_DESTA_ROTINA + ": Status=" + result.StatusCode.ToString();
+			Global.gravaLogAtividade(httpRequestId, msg);
 
 			return result;
 		}

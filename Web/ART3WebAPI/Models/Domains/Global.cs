@@ -27,10 +27,10 @@ namespace ART3WebAPI.Models.Domains
 			string msg_erro;
 			#endregion
 
-			gravaLogAtividade(Cte.Versao.M_ID);
+			gravaLogAtividade(httpRequestId: null, Cte.Versao.M_ID);
 
 			#region [ Configuração do parâmetro que define o tratamento para evitar acesso concorrente nas operações com o BD ]
-			strValue = getConfigurationValue("TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO");
+			strValue = getConfigurationValue(httpRequestId: null, "TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO");
 			if ((strValue ?? "").Length > 0)
 			{
 				if (strValue.ToUpper().Equals("TRUE")
@@ -60,8 +60,8 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.28";
-				public const string Data = "25.JUL.2021";
+				public const string Numero = "2.29";
+				public const string Data = "07.AGO.2021";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
 			#endregion
@@ -214,8 +214,12 @@ namespace ART3WebAPI.Models.Domains
 			 *      mascarados devido à forma como os marketplaces estão restringindo informações p/ atender
 			 *      a LGPD.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.29 - XX.XX.20XX - por XXX
-			 *      
+			 * v 2.29 - 07.08.2021 - por HHO
+			 *      Implementação do relatório de Pré-Devoluções em planilha Excel.
+			 *      Revisão dos métodos da WebAPI p/ registrar no log de atividades as requisições recebidas.
+			 *      Revisão da WebAPI p/ que os registros de log de atividades contenham o ID da requisição
+			 *      de forma a possibilitar a identificação de todos os registros pertencentes a uma mesma
+			 *      requisição.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.30 - XX.XX.20XX - por XXX
 			 *      
@@ -267,6 +271,15 @@ namespace ART3WebAPI.Models.Domains
 			public const string COD_FLUXO_MENSAGEM_OCORRENCIAS_EM_PEDIDOS__CENTRAL_PARA_LOJA = "CE->LJ";
 			public const string GRUPO_T_CODIGO_DESCRICAO__OCORRENCIAS_EM_PEDIDOS__TIPO_OCORRENCIA = "OcorrenciasEmPedidos_TipoOcorrencia";
 			public const string GRUPO_T_CODIGO_DESCRICAO__OCORRENCIAS_EM_PEDIDOS__MOTIVO_ABERTURA = "OcorrenciaPedido_MotivoAbertura";
+			#endregion
+
+			#region [ Pré-Devolução ]
+			public const string GRUPO_T_CODIGO_DESCRICAO__PEDIDO_DEVOLUCAO__CREDITO_TRANSACAO = "DevolucaoPedido_CreditoTransacao";
+			public const string GRUPO_T_CODIGO_DESCRICAO__PEDIDO_DEVOLUCAO__LOCAL_COLETA = "DevolucaoPedido_LocalColeta";
+			public const string GRUPO_T_CODIGO_DESCRICAO__PEDIDO_DEVOLUCAO__MOTIVO = "DevolucaoPedido_Motivo";
+			public const string GRUPO_T_CODIGO_DESCRICAO__PEDIDO_DEVOLUCAO__PROCEDIMENTO = "DevolucaoPedido_Procedimento";
+			public const string GRUPO_T_CODIGO_DESCRICAO__PEDIDO_DEVOLUCAO__TAXA_FORMA_PAGAMENTO = "DevolucaoPedido_TaxaFormaDePagamento";
+			public const string GRUPO_T_CODIGO_DESCRICAO__PEDIDO_DEVOLUCAO__TAXA_RESPONSAVEL = "DevolucaoPedido_TaxaResponsavel";
 			#endregion
 
 			#region [ Parâmetros ]
@@ -487,8 +500,8 @@ namespace ART3WebAPI.Models.Domains
 			#region [ Loja ]
 			public static class Loja
 			{
-				public static readonly string ArClube = getConfigurationValue("LojaArclube");
-				public static readonly string Bonshop = getConfigurationValue("LojaBonshop");
+				public static readonly string ArClube = getConfigurationValue(httpRequestId: null, "LojaArclube");
+				public static readonly string Bonshop = getConfigurationValue(httpRequestId: null, "LojaBonshop");
 			}
 			#endregion
 
@@ -552,6 +565,32 @@ namespace ART3WebAPI.Models.Domains
 					public const string COD_SAIDA_CUSTO_MEDIO = "CUSTO_MEDIO";
 					public const string COD_SAIDA_CUSTO_INDIVIDUAL = "CUSTO_INDIVIDUAL";
 					public const string COD_VISAO_ANALITICA = "ANALITICA";
+				}
+				#endregion
+
+				#region [ RelPreDevolucao ]
+				public static class RelPreDevolucao
+				{
+					public static class FILTRO_STATUS
+					{
+						public const string CADASTRADA = "CADASTRADA";
+						public const string EM_ANDAMENTO = "EM_ANDAMENTO";
+						public const string MERCADORIA_RECEBIDA = "MERCADORIA_RECEBIDA";
+						public const string FINALIZADA = "FINALIZADA";
+						public const string REPROVADA = "REPROVADA";
+						public const string CANCELADA = "CANCELADA";
+					}
+
+					public static class ST_PEDIDO_DEVOLUCAO
+					{
+						public const byte CADASTRADA = 1;
+						public const byte EM_ANDAMENTO = 2;
+						public const byte MERCADORIA_RECEBIDA = 3;
+						public const byte FINALIZADA = 4;
+						public const byte REPROVADA = 5;
+						public const byte CANCELADA = 6;
+						public const byte INDEFINIDO = 0;
+					}
 				}
 				#endregion
 			}
@@ -1195,7 +1234,7 @@ namespace ART3WebAPI.Models.Domains
 			try
 			{
 				strMsg = "Rotina " + NOME_DESTA_ROTINA + " iniciada (data de corte: " + formataDataDdMmYyyyComSeparador(dtCorte) + ")";
-				Global.gravaLogAtividade(strMsg);
+				Global.gravaLogAtividade(httpRequestId: null, strMsg);
 
 				#region[ Apaga arquivos de log de atividade antigos ]
 				ListaArqLog = Directory.GetFiles(Global.Cte.LogAtividade.PathLogAtividade, "*." + Global.Cte.LogAtividade.ExtensaoArqLog, SearchOption.TopDirectoryOnly);
@@ -1212,7 +1251,7 @@ namespace ART3WebAPI.Models.Domains
 				#endregion
 
 				strMsg = "Rotina " + NOME_DESTA_ROTINA + " concluída com sucesso: " + intQtdeApagada.ToString() + " arquivos excluídos (duração: " + Global.formataDuracaoHMS(DateTime.Now - dtHrInicio) + ")";
-				Global.gravaLogAtividade(strMsg);
+				Global.gravaLogAtividade(httpRequestId: null, strMsg);
 
 				return true;
 			}
@@ -1526,7 +1565,7 @@ namespace ART3WebAPI.Models.Domains
 		#endregion
 
 		#region [ getConfigurationValue ]
-		public static string getConfigurationValue(string key)
+		public static string getConfigurationValue(Guid? httpRequestId, string key)
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "getConfigurationValue()";
@@ -1543,18 +1582,18 @@ namespace ART3WebAPI.Models.Domains
 					if (customSetting != null)
 					{
 						msg = NOME_DESTA_ROTINA + " - Parâmetro '" + key + "' = " + customSetting.Value;
-						gravaLogAtividade(msg);
+						gravaLogAtividade(httpRequestId, msg);
 						return customSetting.Value;
 					}
 				}
 				msg = NOME_DESTA_ROTINA + " - Parâmetro '" + key + "' não encontrado no arquivo de configuração!";
-				gravaLogAtividade(msg);
+				gravaLogAtividade(httpRequestId, msg);
 				return null;
 			}
 			catch (Exception ex)
 			{
 				msg = NOME_DESTA_ROTINA + " - Exception: " + ex.ToString();
-				gravaLogAtividade(msg);
+				gravaLogAtividade(httpRequestId, msg);
 				return null;
 			}
 		}
@@ -1634,6 +1673,43 @@ namespace ART3WebAPI.Models.Domains
 		}
 		#endregion
 
+		#region [ getDescricaoStPedidoDevolucao ]
+		public static string getDescricaoStPedidoDevolucao(byte status)
+		{
+			string sResp;
+
+			switch (status)
+			{
+				case Cte.Relatorio.RelPreDevolucao.ST_PEDIDO_DEVOLUCAO.CADASTRADA:
+					sResp = "Cadastrada";
+					break;
+				case Cte.Relatorio.RelPreDevolucao.ST_PEDIDO_DEVOLUCAO.EM_ANDAMENTO:
+					sResp = "Em Andamento";
+					break;
+				case Cte.Relatorio.RelPreDevolucao.ST_PEDIDO_DEVOLUCAO.MERCADORIA_RECEBIDA:
+					sResp = "Mercadoria Recebida";
+					break;
+				case Cte.Relatorio.RelPreDevolucao.ST_PEDIDO_DEVOLUCAO.FINALIZADA:
+					sResp = "Finalizada";
+					break;
+				case Cte.Relatorio.RelPreDevolucao.ST_PEDIDO_DEVOLUCAO.REPROVADA:
+					sResp = "Reprovada";
+					break;
+				case Cte.Relatorio.RelPreDevolucao.ST_PEDIDO_DEVOLUCAO.CANCELADA:
+					sResp = "Cancelada";
+					break;
+				case Cte.Relatorio.RelPreDevolucao.ST_PEDIDO_DEVOLUCAO.INDEFINIDO:
+					sResp = "Indefinido";
+					break;
+				default:
+					sResp = "";
+					break;
+			}
+
+			return sResp;
+		}
+		#endregion
+
 		#region [ getDetalhamento ]
 		public static string getDetalhamento(string detalhamento)
 		{
@@ -1671,21 +1747,25 @@ namespace ART3WebAPI.Models.Domains
 		/// Se o parâmetro uma string vazia, será gravada uma linha apenas com a data/hora
 		/// </summary>
 		/// <param name="mensagem"></param>
-		public static void gravaLogAtividade(string mensagem)
+		public static void gravaLogAtividade(Guid? httpRequestId, string mensagem)
 		{
 			string linha;
 			DateTime dataHora = DateTime.Now;
 			const string FmtHHMMSS = Cte.DataHora.FmtHora + ":" + Cte.DataHora.FmtMin + ":" + Cte.DataHora.FmtSeg + "." + Cte.DataHora.FmtMiliSeg;
 			Encoding encode = Encoding.GetEncoding("Windows-1252");
 			const string FmtYYYYMMDD = Cte.DataHora.FmtAno + Cte.DataHora.FmtMes + Cte.DataHora.FmtDia;
+			string sHttpRequestId = "";
 			string strArqLog = Global.barraInvertidaAdd(Global.Cte.LogAtividade.PathLogAtividade) +
 							   DateTime.Now.ToString(FmtYYYYMMDD) +
 							   "." +
 							   Global.Cte.LogAtividade.ExtensaoArqLog;
+
+			if (httpRequestId != null) sHttpRequestId = httpRequestId.ToString();
+
 			if (mensagem == null)
 				linha = "";
 			else
-				linha = dataHora.ToString(FmtHHMMSS) + ": " + mensagem;
+				linha = dataHora.ToString(FmtHHMMSS) + (sHttpRequestId.Length > 0 ? " [" + sHttpRequestId + "]" : "") + ": " + mensagem;
 
 			try
 			{
@@ -2395,7 +2475,7 @@ namespace ART3WebAPI.Models.Domains
 		#endregion
 
 		#region [ serializaObjectToXml ]
-		public static string serializaObjectToXml(object obj)
+		public static string serializaObjectToXml(Guid? httpRequestId, object obj)
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "Global.serializaObjectToXml()";
@@ -2413,7 +2493,7 @@ namespace ART3WebAPI.Models.Domains
 			}
 			catch (Exception ex)
 			{
-				Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - Exception\n" + ex.ToString());
+				Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - Exception\n" + ex.ToString());
 				return "";
 			}
 		}

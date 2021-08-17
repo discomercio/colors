@@ -31,7 +31,7 @@ namespace ART3WebAPI.Models.Domains
 		/// <param name="respRest"></param>
 		/// <param name="msg_erro"></param>
 		/// <returns></returns>
-		public static bool enviaRequisicaoGetComRetry(string urlParameters, string accessToken, string urlBaseAddress, out string respRest, out string msg_erro)
+		public static bool enviaRequisicaoGetComRetry(Guid? httpRequestId, string urlParameters, string accessToken, string urlBaseAddress, out string respRest, out string msg_erro)
 		{
 			#region [ Declarações ]
 			const int MAX_TENTATIVAS = 5;
@@ -43,7 +43,7 @@ namespace ART3WebAPI.Models.Domains
 			{
 				qtdeTentativasRealizadas++;
 
-				blnResposta = enviaRequisicaoGet(urlParameters, accessToken, urlBaseAddress, out respRest, out msg_erro);
+				blnResposta = enviaRequisicaoGet(httpRequestId, urlParameters, accessToken, urlBaseAddress, out respRest, out msg_erro);
 				if (blnResposta) break;
 
 				Thread.Sleep(1000);
@@ -54,7 +54,7 @@ namespace ART3WebAPI.Models.Domains
 		#endregion
 
 		#region [ enviaRequisicaoGet ]
-		public static bool enviaRequisicaoGet(string urlParameters, string accessToken, string urlBaseAddress, out string respRest, out string msg_erro)
+		public static bool enviaRequisicaoGet(Guid? httpRequestId, string urlParameters, string accessToken, string urlBaseAddress, out string respRest, out string msg_erro)
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "Magento2RestApi.enviaRequisicaoGet()";
@@ -69,7 +69,7 @@ namespace ART3WebAPI.Models.Domains
 			{
 				strMsg = NOME_DESTA_ROTINA + " - TX\n" + urlBaseAddress;
 				if ((urlParameters ?? "").Length > 0) strMsg += urlParameters;
-				Global.gravaLogAtividade(strMsg);
+				Global.gravaLogAtividade(httpRequestId, strMsg);
 
 				using (HttpClient client = new HttpClient())
 				{
@@ -94,14 +94,14 @@ namespace ART3WebAPI.Models.Domains
 
 				strMsg = NOME_DESTA_ROTINA + " - RX\nSucesso: " + blnSucesso.ToString();
 				if (blnSucesso) strMsg += "\n" + respRest;
-				Global.gravaLogAtividade(strMsg);
+				Global.gravaLogAtividade(httpRequestId, strMsg);
 
 				return blnSucesso;
 			}
 			catch (Exception ex)
 			{
 				msg_erro = ex.ToString();
-				Global.gravaLogAtividade(NOME_DESTA_ROTINA + "\n" + ex.ToString());
+				Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + "\n" + ex.ToString());
 				return false;
 			}
 		}
@@ -136,7 +136,7 @@ namespace ART3WebAPI.Models.Domains
 		#endregion
 
 		#region [ getSalesOrderInfo ]
-		public static Magento2SalesOrderInfo getSalesOrderInfo(string numeroPedidoMagento, MagentoApiLoginParameters loginParameters, out string jsonResponse, out string msg_erro)
+		public static Magento2SalesOrderInfo getSalesOrderInfo(Guid? httpRequestId, string numeroPedidoMagento, MagentoApiLoginParameters loginParameters, out string jsonResponse, out string msg_erro)
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "Magento2RestApi.getSalesOrderInfo()";
@@ -195,7 +195,7 @@ namespace ART3WebAPI.Models.Domains
 						// havia somente um pedido na resposta quanto quando havia vários. Essa verificação foi feita através da comparação dos campos retornados pela consulta [GET] orders/{id}
 
 						urlParamReqRest = Magento2RestApi.montaRequisicaoGetSalesOrderInfoByIncrementId(numeroPedidoMagento, loginParameters.api_rest_endpoint, out urlBaseAddress);
-						blnEnviouOk = Magento2RestApi.enviaRequisicaoGetComRetry(urlParamReqRest, loginParameters.api_rest_access_token, urlBaseAddress, out respJson, out msg_erro_aux);
+						blnEnviouOk = Magento2RestApi.enviaRequisicaoGetComRetry(httpRequestId, urlParamReqRest, loginParameters.api_rest_access_token, urlBaseAddress, out respJson, out msg_erro_aux);
 						if (!blnEnviouOk)
 						{
 							msg_erro = "Falha ao tentar consultar o pedido Magento " + numeroPedidoMagento + " através da API REST!";
@@ -233,7 +233,7 @@ namespace ART3WebAPI.Models.Domains
 						else
 						{
 							urlParamReqRest = Magento2RestApi.montaRequisicaoGetSalesOrderInfoByEntityId(salesOrderInfo.entity_id, loginParameters.api_rest_endpoint, out urlBaseAddress);
-							blnEnviouOk = Magento2RestApi.enviaRequisicaoGetComRetry(urlParamReqRest, loginParameters.api_rest_access_token, urlBaseAddress, out respJson, out msg_erro_aux);
+							blnEnviouOk = Magento2RestApi.enviaRequisicaoGetComRetry(httpRequestId, urlParamReqRest, loginParameters.api_rest_access_token, urlBaseAddress, out respJson, out msg_erro_aux);
 
 							if (!blnEnviouOk)
 							{
@@ -264,14 +264,14 @@ namespace ART3WebAPI.Models.Domains
 				{
 					// Tratamento para exception gerada no timeout do AcquireWriterLock
 					msg = NOME_DESTA_ROTINA + " - Exception: " + ex.ToString();
-					Global.gravaLogAtividade(msg);
+					Global.gravaLogAtividade(httpRequestId, msg);
 					return null;
 				}
 			}
 			catch (Exception ex)
 			{
 				msg_erro = ex.ToString();
-				Global.gravaLogAtividade(NOME_DESTA_ROTINA + "\n" + ex.ToString());
+				Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + "\n" + ex.ToString());
 				return null;
 			}
 		}
@@ -1007,7 +1007,7 @@ namespace ART3WebAPI.Models.Domains
 		#endregion
 
 		#region [ processaGetPedido ]
-		public static string processaGetPedido(string numeroPedidoMagento, string operationControlTicket, string loja, string usuario, string sessionToken, MagentoApiLoginParameters loginParameters)
+		public static string processaGetPedido(Guid? httpRequestId, string numeroPedidoMagento, string operationControlTicket, string loja, string usuario, string sessionToken, MagentoApiLoginParameters loginParameters)
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "Magento2RestApi.processaGetPedido()";
@@ -1051,7 +1051,7 @@ namespace ART3WebAPI.Models.Domains
 				if ((numeroPedidoMagento ?? "").Trim().Length == 0)
 				{
 					msg = "O número do pedido Magento não foi informado!";
-					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+					Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 
@@ -1061,7 +1061,7 @@ namespace ART3WebAPI.Models.Domains
 				if (readPedidoApiBd != null)
 				{
 					msg = "Pedido Magento nº " + numeroPedidoMagento + " localizado no BD";
-					Global.gravaLogAtividade(msg);
+					Global.gravaLogAtividade(httpRequestId, msg);
 
 					salesOrder.cpfCnpjIdentificado = readPedidoApiBd.cpfCnpjIdentificado;
 
@@ -1083,7 +1083,7 @@ namespace ART3WebAPI.Models.Domains
 						{
 							msg = "Falha ao tentar decodificar o JSON de resposta da API do Magento!";
 							if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-							Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+							Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 							throw new Exception(msg);
 						}
 						#endregion
@@ -1100,7 +1100,7 @@ namespace ART3WebAPI.Models.Domains
 				{
 					msg = "Falha ao tentar recuperar os parâmetros de acesso à API do Magento: o endpoint da API não está cadastrado para a loja " + loja + "!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+					Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 
@@ -1108,15 +1108,15 @@ namespace ART3WebAPI.Models.Domains
 				{
 					msg = "Falha ao tentar recuperar os parâmetros de acesso à API do Magento: o access token não está cadastrado para a loja " + loja + "!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+					Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 				#endregion
 
 				#region [ Executa a consulta via API ]
 				msg = "Consulta do pedido Magento nº " + numeroPedidoMagento + " via API REST";
-				Global.gravaLogAtividade(msg);
-				mage2SalesOrderInfo = Magento2RestApi.getSalesOrderInfo(numeroPedidoMagento, loginParameters, out sJson, out msg_erro);
+				Global.gravaLogAtividade(httpRequestId, msg);
+				mage2SalesOrderInfo = Magento2RestApi.getSalesOrderInfo(httpRequestId, numeroPedidoMagento, loginParameters, out sJson, out msg_erro);
 				#endregion
 
 				#region [ Falha ao obter os dados do pedido Magento ]
@@ -1124,7 +1124,7 @@ namespace ART3WebAPI.Models.Domains
 				{
 					msg = "Falha ao tentar consultar os dados do pedido Magento " + numeroPedidoMagento + " via API REST!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+					Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 				#endregion
@@ -1135,7 +1135,7 @@ namespace ART3WebAPI.Models.Domains
 				{
 					msg = "Falha ao tentar processar a resposta com os dados do pedido Magento " + numeroPedidoMagento + " via API REST!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+					Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 				#endregion
@@ -1345,11 +1345,11 @@ namespace ART3WebAPI.Models.Domains
 								#endregion
 
 								#region [ Grava cliente no banco de dados ]
-								if (!ClienteDAO.insere(cliente, loja, usuario, out msg_erro))
+								if (!ClienteDAO.insere(httpRequestId, cliente, loja, usuario, out msg_erro))
 								{
 									msg = "Falha ao tentar cadastrar o cliente no banco de dados do sistema!";
 									if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-									Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+									Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 									throw new Exception(msg);
 								}
 								#endregion
@@ -1357,7 +1357,7 @@ namespace ART3WebAPI.Models.Domains
 							catch (Exception ex)
 							{
 								msg = NOME_DESTA_ROTINA + " - Exception: " + ex.ToString();
-								Global.gravaLogAtividade(msg);
+								Global.gravaLogAtividade(httpRequestId, msg);
 								throw new Exception(msg);
 							}
 						} // if (intParametroFlagCadSemiAutoPedMagentoCadastrarAutomaticamenteClienteNovo == 1)
@@ -1592,12 +1592,12 @@ namespace ART3WebAPI.Models.Domains
 					insertPedidoXml.marketplace_codigo_origem = sOrigemMktpIdentificado;
 				}
 
-				blnInserted = MagentoApiDAO.insertMagentoPedidoXml(insertPedidoXml, out msg_erro);
+				blnInserted = MagentoApiDAO.insertMagentoPedidoXml(httpRequestId, insertPedidoXml, out msg_erro);
 				if (!blnInserted)
 				{
 					msg = "Falha ao tentar gravar no BD os dados do pedido Magento!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+					Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 				#endregion
@@ -1652,11 +1652,11 @@ namespace ART3WebAPI.Models.Domains
 				decodeEndereco.empresa = (salesOrder.magentoSalesOrderInfo.billing_address.empresa ?? "");
 				decodeEndereco.nomefantasia = (salesOrder.magentoSalesOrderInfo.billing_address.nomefantasia ?? "");
 				decodeEndereco.street_detail = (salesOrder.magentoSalesOrderInfo.billing_address.street_detail ?? "");
-				if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeEndereco(decodeEndereco, out msg_erro))
+				if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeEndereco(httpRequestId, decodeEndereco, out msg_erro))
 				{
 					msg = "Falha ao tentar gravar no BD os dados do endereço de cobrança!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+					Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 				#endregion
@@ -1706,11 +1706,11 @@ namespace ART3WebAPI.Models.Domains
 				decodeEndereco.empresa = (salesOrder.magentoSalesOrderInfo.shipping_address.empresa ?? "");
 				decodeEndereco.nomefantasia = (salesOrder.magentoSalesOrderInfo.shipping_address.nomefantasia ?? "");
 				decodeEndereco.street_detail = (salesOrder.magentoSalesOrderInfo.shipping_address.street_detail ?? "");
-				if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeEndereco(decodeEndereco, out msg_erro))
+				if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeEndereco(httpRequestId, decodeEndereco, out msg_erro))
 				{
 					msg = "Falha ao tentar gravar no BD os dados do endereço de entrega!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+					Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 				#endregion
@@ -1765,11 +1765,11 @@ namespace ART3WebAPI.Models.Domains
 					decodeItem.row_total_incl_tax = Global.converteNumeroDecimal((item.row_total_incl_tax ?? ""));
 					decodeItem.base_row_total_incl_tax = Global.converteNumeroDecimal((item.base_row_total_incl_tax ?? ""));
 
-					if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeItem(decodeItem, out msg_erro))
+					if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeItem(httpRequestId, decodeItem, out msg_erro))
 					{
 						msg = "Falha ao tentar gravar no BD os dados do item do pedido (sku=" + decodeItem.sku + ")!";
 						if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-						Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+						Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 						throw new Exception(msg);
 					}
 				}
@@ -1788,11 +1788,11 @@ namespace ART3WebAPI.Models.Domains
 					decodeStatusHistory.created_at = (item.created_at ?? "");
 					decodeStatusHistory.entity_name = (item.entity_name ?? "");
 					decodeStatusHistory.store_id = (int)Global.converteInteiro((item.store_id ?? ""));
-					if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeStatusHistory(decodeStatusHistory, out msg_erro))
+					if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeStatusHistory(httpRequestId, decodeStatusHistory, out msg_erro))
 					{
 						msg = "Falha ao tentar gravar no BD os dados do status history do pedido (created_at=" + decodeStatusHistory.created_at + ")!";
 						if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-						Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+						Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 						throw new Exception(msg);
 					}
 				}

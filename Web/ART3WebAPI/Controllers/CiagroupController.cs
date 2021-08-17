@@ -20,7 +20,14 @@ namespace ART3WebAPI.Controllers
         [HttpPost]
         public async Task<HttpResponseMessage> GetCSVReport(int id, string usuario)
         {
-            DataCiagroup datasource = new DataCiagroup();
+			const string NOME_DESTA_ROTINA = "CiagroupController.GetCSVReport()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			string msg;
+
+			msg = NOME_DESTA_ROTINA + ": Requisição recebida (usuario=" + (usuario ?? "") + ", id=" + id.ToString() + ")";
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			DataCiagroup datasource = new DataCiagroup();
             List<Indicador> indicadorList = datasource.Get(id).ToList();
             List<string> vendedoresList = new List<string>();
 
@@ -78,7 +85,7 @@ namespace ART3WebAPI.Controllers
 
                 statusResponse = "OK";
 
-                LogDAO.insere(usuario, s_log, out strMsgErro);
+                LogDAO.insere(httpRequestId, usuario, s_log, out strMsgErro);
 
             }
             catch (Exception e)
@@ -93,13 +100,23 @@ namespace ART3WebAPI.Controllers
             result = Request.CreateResponse(HttpStatusCode.OK);
             result.Content = new StringContent(xmlResponse.ToString(), Encoding.UTF8, "text/html");
 
-            return result;
+			msg = NOME_DESTA_ROTINA + ": Status=" + statusResponse + ", fileName=" + fileName;
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			return result;
         }
 
         [HttpPost]
         public HttpResponseMessage downloadCSV(string fileName)
         {
-            string filePath = HttpContext.Current.Server.MapPath("~/Report/Ciagroup/" + fileName);
+			const string NOME_DESTA_ROTINA = "CiagroupController.downloadCSV()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			string msg;
+
+			msg = NOME_DESTA_ROTINA + ": fileName=" + (fileName ?? "");
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			string filePath = HttpContext.Current.Server.MapPath("~/Report/Ciagroup/" + fileName);
 
             HttpResponseMessage result = null;
             result = Request.CreateResponse(HttpStatusCode.OK);
@@ -114,7 +131,14 @@ namespace ART3WebAPI.Controllers
         [HttpPost]
         public async Task<HttpResponseMessage> GetXLSReport(int id, string usuario)
         {
-            DataCiagroup datasource = new DataCiagroup();
+			const string NOME_DESTA_ROTINA = "CiagroupController.GetXLSReport()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			string msg;
+
+			msg = NOME_DESTA_ROTINA + ": Requisição recebida (usuario=" + (usuario ?? "") + ", id=" + id.ToString() + ")";
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			DataCiagroup datasource = new DataCiagroup();
             List<Indicador> indicadorList = datasource.Get(id).ToList();
             List<string> vendedoresList = new List<string>();
 
@@ -174,7 +198,7 @@ namespace ART3WebAPI.Controllers
 
                 statusResponse = "OK";
 
-                LogDAO.insere(usuario, s_log, out strMsgErro);
+                LogDAO.insere(httpRequestId, usuario, s_log, out strMsgErro);
 
             }
             catch (Exception e)
@@ -189,13 +213,23 @@ namespace ART3WebAPI.Controllers
             result = Request.CreateResponse(HttpStatusCode.OK);
             result.Content = new StringContent(xmlResponse.ToString(), Encoding.UTF8, "text/html");
 
-            return result;
+			msg = NOME_DESTA_ROTINA + ": Status=" + statusResponse + ", fileName=" + fileName;
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			return result;
         }
 
         [HttpPost]
         public HttpResponseMessage downloadXLS(string fileName)
         {
-            string filePath = HttpContext.Current.Server.MapPath("~/Report/Ciagroup/" + fileName);
+			const string NOME_DESTA_ROTINA = "CiagroupController.downloadXLS()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			string msg;
+
+			msg = NOME_DESTA_ROTINA + ": fileName=" + (fileName ?? "");
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			string filePath = HttpContext.Current.Server.MapPath("~/Report/Ciagroup/" + fileName);
 
             HttpResponseMessage result = null;
             result = Request.CreateResponse(HttpStatusCode.OK);

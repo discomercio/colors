@@ -171,6 +171,7 @@
     <Compile Include="Models\Domains\MagentoSoapApi.cs" />
     <Compile Include="Models\Domains\OcorrenciasGeradorRelatorio.cs" />
     <Compile Include="Models\Domains\RelatorioProdutoFlagBD.cs" />
+    <Compile Include="Models\Domains\RelPreDevolucaoGeradorRelatorio.cs" />
     <Compile Include="Models\Domains\Texto.cs" />
     <Compile Include="Models\Domains\WebApiException.cs" />
     <Compile Include="Models\Entities\Cliente.cs" />
@@ -190,6 +191,7 @@
     <Compile Include="Models\Entities\OrcamentistaIndicador.cs" />
     <Compile Include="Models\Entities\Pedido.cs" />
     <Compile Include="Models\Entities\Produto.cs" />
+    <Compile Include="Models\Entities\RelPreDevolucaoEntity.cs" />
     <Compile Include="Models\Entities\UploadedFileInfo.cs" />
     <Compile Include="Models\Entities\UploadFileModuleFolderName.cs" />
     <Compile Include="Models\Entities\UploadFileResponse.cs" />
@@ -203,6 +205,7 @@
     <Compile Include="Models\Repository\DataEstatisticasOcorrencias.cs" />
     <Compile Include="Models\Repository\DataFarol.cs" />
     <Compile Include="Models\Repository\DataOcorrencias.cs" />
+    <Compile Include="Models\Repository\DataRelPreDevolucao.cs" />
     <Compile Include="Models\Repository\GeralDAO.cs" />
     <Compile Include="Models\Repository\LogDAO.cs" />
     <Compile Include="Models\Repository\MagentoApiDAO.cs" />

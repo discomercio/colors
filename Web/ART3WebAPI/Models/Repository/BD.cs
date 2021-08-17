@@ -45,7 +45,7 @@ namespace ART3WebAPI.Models.Repository
 		#endregion
 
 		#region [ gera_uid ]
-		public static string gera_uid()
+		public static string gera_uid(Guid? httpRequestId)
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "gera_uid()";
@@ -59,7 +59,6 @@ namespace ART3WebAPI.Models.Repository
 
 			try
 			{
-
 				#region [ Prepara acesso ao BD ]
 				cn = new SqlConnection(BD.getConnectionString());
 				cn.Open();
@@ -89,7 +88,7 @@ namespace ART3WebAPI.Models.Repository
 			}
 			catch (Exception ex)
 			{
-				Global.gravaLogAtividade(NOME_DESTA_ROTINA + ": " + ex.Message);
+				Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + ": " + ex.Message);
 				return "";
 			}
 		}

@@ -20,7 +20,18 @@ namespace ART3WebAPI.Controllers
 		[HttpGet]
 		public HttpResponseMessage Teste()
 		{
+			const string NOME_DESTA_ROTINA = "UploadedFileController.Teste()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			string msg;
+
+			msg = NOME_DESTA_ROTINA + ": Requisição recebida";
+			Global.gravaLogAtividade(httpRequestId, msg);
+
 			HttpResponseMessage result = Request.CreateResponse<string>(HttpStatusCode.OK, "Versão: " + Global.Cte.Versao.M_ID);
+
+			msg = NOME_DESTA_ROTINA + ": Status=" + result.StatusCode.ToString();
+			Global.gravaLogAtividade(httpRequestId, msg);
+
 			return result;
 		}
 		#endregion
@@ -31,6 +42,8 @@ namespace ART3WebAPI.Controllers
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "UploadedFileController.ConvertXmlToJson()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			string msg;
 			string guid = "";
 			string s;
 			string msg_erro_aux;
@@ -43,6 +56,9 @@ namespace ART3WebAPI.Controllers
 
 			try
 			{
+				msg = NOME_DESTA_ROTINA + ": Requisição recebida (id=" + (id != null ? id.ToString() : "") + ")";
+				Global.gravaLogAtividade(httpRequestId, msg);
+
 				if (id != null) guid = id.ToString();
 
 				if (guid.Length == 0)
@@ -97,6 +113,10 @@ namespace ART3WebAPI.Controllers
 
 				result = Request.CreateResponse(HttpStatusCode.OK);
 				result.Content = new StringContent(sJson, Encoding.UTF8, "text/html");
+
+				msg = NOME_DESTA_ROTINA + ": Status=" + result.StatusCode.ToString();
+				Global.gravaLogAtividade(httpRequestId, msg);
+
 				return result;
 			}
 			catch (Exception e)
@@ -104,7 +124,7 @@ namespace ART3WebAPI.Controllers
 				s = "";
 				if (fileInfo != null) s = ", arquivo=" + fileInfo.original_file_name;
 				s = NOME_DESTA_ROTINA + " - [t_UPLOAD_FILE.guid=" + guid + s + "] - Exception: " + e.ToString();
-				Global.gravaLogAtividade(s);
+				Global.gravaLogAtividade(httpRequestId, s);
 				return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, e);
 			}
 		}

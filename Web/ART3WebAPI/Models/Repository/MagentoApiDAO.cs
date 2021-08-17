@@ -163,7 +163,7 @@ namespace ART3WebAPI.Models.Repository
 		#endregion
 
 		#region [ insertMagentoPedidoXml ]
-		public static bool insertMagentoPedidoXml(MagentoErpPedidoXml pedidoXml, out string msg_erro)
+		public static bool insertMagentoPedidoXml(Guid? httpRequestId, MagentoErpPedidoXml pedidoXml, out string msg_erro)
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "insertMagentoPedidoXml()";
@@ -415,7 +415,7 @@ namespace ART3WebAPI.Models.Repository
 							{
 								generatedId = 0;
 								msg = NOME_DESTA_ROTINA + " - Exception: " + ex.ToString();
-								Global.gravaLogAtividade(msg);
+								Global.gravaLogAtividade(httpRequestId, msg);
 							}
 							#endregion
 
@@ -469,7 +469,7 @@ namespace ART3WebAPI.Models.Repository
 		#endregion
 
 		#region [ insertMagentoPedidoXmlDecodeEndereco ]
-		public static bool insertMagentoPedidoXmlDecodeEndereco(MagentoErpPedidoXmlDecodeEndereco endereco, out string msg_erro)
+		public static bool insertMagentoPedidoXmlDecodeEndereco(Guid? httpRequestId, MagentoErpPedidoXmlDecodeEndereco endereco, out string msg_erro)
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "insertMagentoPedidoXmlDecodeEndereco()";
@@ -670,7 +670,7 @@ namespace ART3WebAPI.Models.Repository
 							{
 								generatedId = 0;
 								msg = NOME_DESTA_ROTINA + " - Exception: " + ex.ToString();
-								Global.gravaLogAtividade(msg);
+								Global.gravaLogAtividade(httpRequestId, msg);
 							}
 							#endregion
 
@@ -719,7 +719,7 @@ namespace ART3WebAPI.Models.Repository
 		#endregion
 
 		#region [ insertMagentoPedidoXmlDecodeItem ]
-		public static bool insertMagentoPedidoXmlDecodeItem(MagentoErpPedidoXmlDecodeItem produtoItem, out string msg_erro)
+		public static bool insertMagentoPedidoXmlDecodeItem(Guid? httpRequestId, MagentoErpPedidoXmlDecodeItem produtoItem, out string msg_erro)
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "insertMagentoPedidoXmlDecodeItem()";
@@ -964,7 +964,7 @@ namespace ART3WebAPI.Models.Repository
 							{
 								generatedId = 0;
 								msg = NOME_DESTA_ROTINA + " - Exception: " + ex.ToString();
-								Global.gravaLogAtividade(msg);
+								Global.gravaLogAtividade(httpRequestId, msg);
 							}
 							#endregion
 
@@ -1013,7 +1013,7 @@ namespace ART3WebAPI.Models.Repository
 		#endregion
 
 		#region [ insertMagentoPedidoXmlDecodeStatusHistory ]
-		public static bool insertMagentoPedidoXmlDecodeStatusHistory(MagentoErpPedidoXmlDecodeStatusHistory statusHistory, out string msg_erro)
+		public static bool insertMagentoPedidoXmlDecodeStatusHistory(Guid? httpRequestId, MagentoErpPedidoXmlDecodeStatusHistory statusHistory, out string msg_erro)
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "insertMagentoPedidoXmlDecodeStatusHistory()";
@@ -1114,7 +1114,7 @@ namespace ART3WebAPI.Models.Repository
 							{
 								generatedId = 0;
 								msg = NOME_DESTA_ROTINA + " - Exception: " + ex.ToString();
-								Global.gravaLogAtividade(msg);
+								Global.gravaLogAtividade(httpRequestId, msg);
 							}
 							#endregion
 

@@ -73,7 +73,7 @@
 	emailSndSvcRemetenteMensagemSistema = getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__MENSAGEM_SISTEMA)
 
 '	FORMA DE PAGAMENTO (NOVA VERSÃO)
-	dim versao_forma_pagamento 
+	dim versao_forma_pagamento, flag_forma_pagto_editada
 	dim rb_forma_pagto, op_av_forma_pagto, c_pc_qtde, c_pc_valor, c_pc_maquineta_qtde, c_pc_maquineta_valor
 	dim op_pu_forma_pagto, c_pu_valor, c_pu_vencto_apos
 	dim op_pce_entrada_forma_pagto, c_pce_entrada_valor, op_pce_prestacao_forma_pagto, c_pce_prestacao_qtde, c_pce_prestacao_valor, c_pce_prestacao_periodo
@@ -83,6 +83,7 @@
 	dim idMeioPagtoMonitorado, sMeioPagtoMonitoradoIdentificado
 
 	versao_forma_pagamento = Trim(Request.Form("versao_forma_pagamento"))
+	flag_forma_pagto_editada = CInt(Trim(Request.Form("flag_forma_pagto_editada")))
 	vlTotalFormaPagto = 0
 	
 	dim blnEditouIndicador
@@ -300,10 +301,18 @@
 		' Analisa situações em que a edição da forma de pagamento deve ser bloqueada totalmente
 		'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		if Trim("" & r_pedido.st_entrega) = ST_ENTREGA_ENTREGUE then
-			if IsMesmoAnoEMes(r_pedido.entregue_data, Date) then
-				nivelEdicaoFormaPagtoConferencia = COD_NIVEL_EDICAO_LIBERADA_PARCIAL
-			else
-				nivelEdicaoFormaPagtoConferencia = COD_NIVEL_EDICAO_BLOQUEADA
+			if Not ( _
+				operacao_permitida(OP_CEN_EDITA_ANALISE_CREDITO, s_lista_operacoes_permitidas) _
+				OR _
+				operacao_permitida(OP_CEN_PAGTO_PARCIAL, s_lista_operacoes_permitidas) _
+				OR _
+				operacao_permitida(OP_CEN_PAGTO_QUITACAO, s_lista_operacoes_permitidas) _
+				) then
+				if IsMesmoAnoEMes(r_pedido.entregue_data, Date) then
+					nivelEdicaoFormaPagtoConferencia = COD_NIVEL_EDICAO_LIBERADA_PARCIAL
+				else
+					nivelEdicaoFormaPagtoConferencia = COD_NIVEL_EDICAO_BLOQUEADA
+					end if
 				end if
 			end if
 
@@ -663,7 +672,7 @@
 '	FORMA DE PAGAMENTO (NOVA VERSÃO)
 '	PARA OS CAMPOS BLOQUEADOS P/ EDIÇÃO, ASSUME O VALOR CADASTRADO ATUALMENTE
 	if alerta = "" then
-		if (versao_forma_pagamento = "2") And (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL) then
+		if (versao_forma_pagamento = "2") And (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL) And (flag_forma_pagto_editada = 1) then
 			rb_forma_pagto = Trim(Request.Form("rb_forma_pagto"))
 			if rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA then
 				if nivelEdicaoFormaPagto = COD_NIVEL_EDICAO_LIBERADA_TOTAL then
@@ -841,7 +850,7 @@
 	
 '	O PEDIDO FOI CADASTRADO JÁ DENTRO DA POLÍTICA DE PERCENTUAL DE CUSTO FINANCEIRO POR FORNECEDOR?
 	if versao_forma_pagamento = "2" then
-		if (c_custoFinancFornecTipoParcelamentoOriginal <> "") And (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL) then
+		if (c_custoFinancFornecTipoParcelamentoOriginal <> "") And (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL) And (flag_forma_pagto_editada = 1) then
 			if rb_forma_pagto=COD_FORMA_PAGTO_A_VISTA then
 				c_custoFinancFornecTipoParcelamentoConferencia=COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__A_VISTA
 				c_custoFinancFornecQtdeParcelasConferencia="0"
@@ -1512,7 +1521,7 @@
 					end if
 
 			'	Forma de Pagamento (nova versão)
-				if (versao_forma_pagamento = "2") And (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL) then
+				if (versao_forma_pagamento = "2") And (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL) And (flag_forma_pagto_editada = 1) then
 					s_descricao_forma_pagto_anterior = monta_descricao_forma_pagto_com_quebra_linha(rs, quebraLinhaFormaPagto)
 
 					rs("tipo_parcelamento")=CLng(rb_forma_pagto)
@@ -1616,7 +1625,7 @@
 								end if
 							end if
 						end if
-					end if
+					end if 'if (versao_forma_pagamento = "2") And (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL) And (flag_forma_pagto_editada = 1)
 					
 				if bln_RT_e_RA_EdicaoLiberada then rs("perc_RT") = converte_numero(s_perc_RT)
 				
@@ -1775,7 +1784,7 @@
 						end if
 
 				'	Forma de Pagamento (nova versão)
-					if (versao_forma_pagamento = "2") And (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL) then
+					if (versao_forma_pagamento = "2") And (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL) And (flag_forma_pagto_editada = 1) then
 						s_descricao_forma_pagto_anterior = monta_descricao_forma_pagto_com_quebra_linha(rs, quebraLinhaFormaPagto)
 
 						rs("tipo_parcelamento")=CLng(rb_forma_pagto)
@@ -1879,7 +1888,7 @@
 									end if
 								end if
 							end if
-						end if 'if (versao_forma_pagamento = "2") And (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL)
+						end if 'if (versao_forma_pagamento = "2") And (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL) And (flag_forma_pagto_editada = 1)
 					
 					if blnIndicadorEdicaoLiberada then
 						s_indicador_anterior = Trim("" & rs("indicador"))
@@ -2366,7 +2375,7 @@
 		if alerta = "" then
 		'	O PEDIDO FOI CADASTRADO JÁ DENTRO DA POLÍTICA DE PERCENTUAL DE CUSTO FINANCEIRO POR FORNECEDOR?
 			if c_custoFinancFornecTipoParcelamentoOriginal <> "" then
-				if (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL) then
+				if (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL) And (flag_forma_pagto_editada = 1) then
 					if (c_custoFinancFornecTipoParcelamentoOriginal <> c_custoFinancFornecTipoParcelamento) Or _
 					   (c_custoFinancFornecQtdeParcelasOriginal <> c_custoFinancFornecQtdeParcelas) then
 						for i=Lbound(v_item) to Ubound(v_item)
@@ -2579,7 +2588,7 @@
 			
 		'	CONSISTÊNCIA DO VALOR TOTAL DA FORMA DE PAGAMENTO
 			if alerta = "" then
-				if (versao_forma_pagamento = "2") And (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL) then
+				if (versao_forma_pagamento = "2") And (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL) And (flag_forma_pagto_editada = 1) then
 					vl_totalFamiliaPrecoNFLiquido = vl_TotalFamiliaPrecoNF - vl_TotalFamiliaDevolucaoPrecoNF
 					if rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA then vlTotalFormaPagto = vl_totalFamiliaPrecoNFLiquido
 					if Abs(vlTotalFormaPagto-vl_totalFamiliaPrecoNFLiquido) > 0.1 then

@@ -51,8 +51,8 @@
 		end if
 
 	dim alerta
-	dim s, s_aux, s_filtro, s_filtro_loja, flag_ok, s_filtro_operacao
-	dim c_dt_inicio, c_dt_termino, c_fabricante, c_produto, c_id_nfe_emitente
+	dim s, s_aux, s_filtro, s_filtro_loja, flag_ok, s_filtro_operacao, s_ckb_operacoes
+	dim c_dt_inicio, c_dt_termino, c_fabricante, c_produto, c_id_nfe_emitente, c_pedido_origem, c_pedido_destino
 	dim c_lista_loja, s_lista_loja, v_loja, v, i
 
 	dim ckb_OP_ESTOQUE_LOG_ENTRADA
@@ -79,6 +79,8 @@
 	c_dt_termino = Trim(Request.Form("c_dt_termino"))
 	c_fabricante = retorna_so_digitos(Trim(Request.Form("c_fabricante")))
 	c_produto = Ucase(Trim(Request.Form("c_produto")))
+	c_pedido_origem = Ucase(Trim(Request.Form("c_pedido_origem")))
+	c_pedido_destino = Ucase(Trim(Request.Form("c_pedido_destino")))
 	c_lista_loja = Trim(Request.Form("c_lista_loja"))
 	s_lista_loja = substitui_caracteres(c_lista_loja,chr(10),"")
 	v_loja = split(s_lista_loja,chr(13),-1)
@@ -147,6 +149,29 @@
 			end if
 		end if
 
+	if alerta = "" then
+		if c_pedido_origem <> "" then
+			s = "SELECT pedido FROM t_PEDIDO WHERE (pedido = '" & c_pedido_origem & "')"
+			if rs.State <> 0 then rs.Close
+			rs.open s, cn
+			if rs.Eof then 
+				alerta=texto_add_br(alerta)
+				alerta = "PEDIDO (ORIGEM) " & c_pedido_origem & " NÃO ESTÁ CADASTRADO."
+				end if
+			end if
+		end if
+
+	if alerta = "" then
+		if c_pedido_destino <> "" then
+			s = "SELECT pedido FROM t_PEDIDO WHERE (pedido = '" & c_pedido_destino & "')"
+			if rs.State <> 0 then rs.Close
+			rs.open s, cn
+			if rs.Eof then 
+				alerta=texto_add_br(alerta)
+				alerta = "PEDIDO (DESTINO) " & c_pedido_destino & " NÃO ESTÁ CADASTRADO."
+				end if
+			end if
+		end if
 
 '	Período de consulta está restrito por perfil de acesso?
 	dim dtMinDtInicialFiltroPeriodo, intMaxDiasDtInicialFiltroPeriodo
@@ -184,6 +209,37 @@
 		strMinDtInicialFiltroPeriodoDDMMYYYY = ""
 		end if
 
+	const ID_RELATORIO = "CENTRAL/ResumoOperacoesEntreEstoques"
+	if alerta = "" then
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_dt_inicio", c_dt_inicio)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_dt_termino", c_dt_termino)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_id_nfe_emitente", c_id_nfe_emitente)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_fabricante", c_fabricante)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_produto", c_produto)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_pedido_origem", c_pedido_origem)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_pedido_destino", c_pedido_destino)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_lista_loja", c_lista_loja)
+		s_ckb_operacoes = ""
+		if ckb_OP_ESTOQUE_LOG_ENTRADA <> "" then s_ckb_operacoes = s_ckb_operacoes & "|ckb_OP_ESTOQUE_LOG_ENTRADA"
+		if ckb_OP_ESTOQUE_LOG_VENDA <> "" then s_ckb_operacoes = s_ckb_operacoes & "|ckb_OP_ESTOQUE_LOG_VENDA"
+		if ckb_OP_ESTOQUE_LOG_TRANSFERENCIA_ROUBO_PERDA <> "" then s_ckb_operacoes = s_ckb_operacoes & "|ckb_OP_ESTOQUE_LOG_TRANSFERENCIA_ROUBO_PERDA"
+		if ckb_OP_ESTOQUE_LOG_CONVERSAO_KIT <> "" then s_ckb_operacoes = s_ckb_operacoes & "|ckb_OP_ESTOQUE_LOG_CONVERSAO_KIT"
+		if ckb_OP_ESTOQUE_LOG_TRANSFERENCIA <> "" then s_ckb_operacoes = s_ckb_operacoes & "|ckb_OP_ESTOQUE_LOG_TRANSFERENCIA"
+		if ckb_OP_ESTOQUE_LOG_ENTREGA <> "" then s_ckb_operacoes = s_ckb_operacoes & "|ckb_OP_ESTOQUE_LOG_ENTREGA"
+		if ckb_OP_ESTOQUE_LOG_DEVOLUCAO <> "" then s_ckb_operacoes = s_ckb_operacoes & "|ckb_OP_ESTOQUE_LOG_DEVOLUCAO"
+		if ckb_OP_ESTOQUE_LOG_ESTORNO <> "" then s_ckb_operacoes = s_ckb_operacoes & "|ckb_OP_ESTOQUE_LOG_ESTORNO"
+		if ckb_OP_ESTOQUE_LOG_CANCELA_SEM_PRESENCA <> "" then s_ckb_operacoes = s_ckb_operacoes & "|ckb_OP_ESTOQUE_LOG_CANCELA_SEM_PRESENCA"
+		if ckb_OP_ESTOQUE_LOG_SPLIT <> "" then s_ckb_operacoes = s_ckb_operacoes & "|ckb_OP_ESTOQUE_LOG_SPLIT"
+		if ckb_OP_ESTOQUE_LOG_VENDA_SEM_PRESENCA <> "" then s_ckb_operacoes = s_ckb_operacoes & "|ckb_OP_ESTOQUE_LOG_VENDA_SEM_PRESENCA"
+		if ckb_OP_ESTOQUE_LOG_REMOVE_ENTRADA_ESTOQUE <> "" then s_ckb_operacoes = s_ckb_operacoes & "|ckb_OP_ESTOQUE_LOG_REMOVE_ENTRADA_ESTOQUE"
+		if ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_NOVO_ITEM <> "" then s_ckb_operacoes = s_ckb_operacoes & "|ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_NOVO_ITEM"
+		if ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_INCREMENTA <> "" then s_ckb_operacoes = s_ckb_operacoes & "|ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_INCREMENTA"
+		if ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_DECREMENTA <> "" then s_ckb_operacoes = s_ckb_operacoes & "|ckb_OP_ESTOQUE_LOG_ENTRADA_ESTOQUE_ALTERA_DECREMENTA"
+		if ckb_OP_ESTOQUE_LOG_PRODUTO_VENDIDO_SEM_PRESENCA_SAIDA <> "" then s_ckb_operacoes = s_ckb_operacoes & "|ckb_OP_ESTOQUE_LOG_PRODUTO_VENDIDO_SEM_PRESENCA_SAIDA"
+		if ckb_OP_ESTOQUE_LOG_TRANSF_PRODUTO_VENDIDO_ENTRE_PEDIDOS <> "" then s_ckb_operacoes = s_ckb_operacoes & "|ckb_OP_ESTOQUE_LOG_TRANSF_PRODUTO_VENDIDO_ENTRE_PEDIDOS"
+		if s_ckb_operacoes <> "" then s_ckb_operacoes = s_ckb_operacoes & "|"
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "ckb_OPERACOES_SELECIONADAS", s_ckb_operacoes)
+		end if
 
 
 
@@ -203,6 +259,22 @@ dim strLink
 				")' title='clique para consultar o pedido'>" & _
 				id_pedido & "</a>"
 	monta_link_pedido=strLink
+end function
+
+
+function monta_link_view_pedido(byval id_pedido, byval usuario)
+dim strLink
+	monta_link_view_pedido = ""
+	id_pedido = Trim("" & id_pedido)
+	if id_pedido = "" then exit function
+	strLink = "<a href='javascript:fPEDConsultaView(" & _
+				chr(34) & id_pedido & chr(34) & _
+				"," & _
+				chr(34) & usuario & chr(34) & _
+				")' title='clique para consultar o pedido " & id_pedido & "'>" & _
+				id_pedido & _
+				"</a>"
+	monta_link_view_pedido=strLink
 end function
 
 
@@ -263,6 +335,18 @@ dim dtSaldoInicio, dtSaldoFim
 	if c_produto <> "" then
 		if s_where <> "" then s_where = s_where & " AND"
 		s_where = s_where & " (tELog.produto = '" & c_produto & "')"
+		end if
+
+'	PEDIDO (ORIGEM)
+	if c_pedido_origem <> "" then
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (tELog.pedido_estoque_origem = '" & c_pedido_origem & "')"
+		end if
+
+'	PEDIDO (DESTINO)
+	if c_pedido_destino <> "" then
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (tELog.pedido_estoque_destino = '" & c_pedido_destino & "')"
 		end if
 
 '	EMPRESA (CD)
@@ -467,16 +551,16 @@ dim dtSaldoInicio, dtSaldoFim
   ' CABEÇALHO
 	cab_table = "<TABLE class='Q' style='border-bottom:0px;' CellSpacing=0 CellPadding=0>" & chr(13)
 	cab = "	<TR style='background:azure' NOWRAP>" & chr(13) & _
-		  "		<TD class='MDB tdData' style='vertical-align:bottom'><P class='R'>Data</P></TD>" & chr(13) & _
-		  "		<TD class='MDB tdCD' style='vertical-align:bottom'><P class='R'>CD</P></TD>" & chr(13) & _
-		  "		<TD class='MDB tdProd' style='vertical-align:bottom'><P class='R'>Produto</P></TD>" & chr(13) & _
-		  "		<TD class='MDB tdQtd' style='vertical-align:bottom'><P class='Rd' style='font-weight:bold;'>Qtde</P></TD>" & chr(13) & _
-		  "		<TD class='MDB tdOp' style='vertical-align:bottom'><P class='R'>Operação</P></TD>" & chr(13) & _
-		  "		<TD class='MDB tdEstOrigem' style='vertical-align:bottom'><P class='R'>Estoque Origem</P></TD>" & chr(13) & _
-		  "		<TD class='MDB tdEstDestino' style='vertical-align:bottom'><P class='R'>Estoque Destino</P></TD>" & chr(13) & _
-		  "		<TD class='MDB tdLoja' style='vertical-align:bottom'><P class='R'>Loja</P></TD>" & chr(13) & _
-		  "		<TD class='MDB tdPedido' style='vertical-align:bottom'><P class='R'>Pedido</P></TD>" & chr(13) & _
-		  "		<TD class='MB tdOperador' style='vertical-align:bottom'><P class='R'>Operador</P></TD>" & chr(13) & _
+		  "		<TD class='MDB tdData' style='vertical-align:bottom'><span class='R spnTit'>Data</span></TD>" & chr(13) & _
+		  "		<TD class='MDB tdCD' style='vertical-align:bottom'><span class='R spnTit'>CD</span></TD>" & chr(13) & _
+		  "		<TD class='MDB tdProd' style='vertical-align:bottom'><span class='R spnTit'>Produto</span></TD>" & chr(13) & _
+		  "		<TD class='MDB tdQtd' style='vertical-align:bottom'><span class='Rd spnTit' style='font-weight:bold;'>Qtde</span></TD>" & chr(13) & _
+		  "		<TD class='MDB tdOp' style='vertical-align:bottom'><span class='R spnTit'>Operação</span></TD>" & chr(13) & _
+		  "		<TD class='MDB tdEstOrigem' style='vertical-align:bottom'><span class='R spnTit'>Estoque Origem</span></TD>" & chr(13) & _
+		  "		<TD class='MDB tdEstDestino' style='vertical-align:bottom'><span class='R spnTit'>Estoque Destino</span></TD>" & chr(13) & _
+		  "		<TD class='MDB tdLoja' style='vertical-align:bottom'><span class='R spnTit'>Loja</span></TD>" & chr(13) & _
+		  "		<TD class='MDB tdPedido' style='vertical-align:bottom'><span class='R spnTit'>Pedido</span></TD>" & chr(13) & _
+		  "		<TD class='MB tdOperador' style='vertical-align:bottom'><span class='R spnTit'>Operador</span></TD>" & chr(13) & _
 		  "	</TR>" & chr(13)
 
 	n_reg = 0
@@ -512,7 +596,7 @@ dim dtSaldoInicio, dtSaldoFim
 			s_aux = formata_hora(r("data_hora"))
 			if (s<>"") And (s_aux<>"") then s = s & "<br>"
 			s = s & s_aux
-			x = x & "		<TD class='MDB tdData'><P class='Cn'>" & s & "</P></TD>" & chr(13)
+			x = x & "		<TD class='MDB tdData'><span class='Cn spnData'>" & s & "</span></TD>" & chr(13)
 
 		'> CD
 			s = ""
@@ -524,7 +608,7 @@ dim dtSaldoInicio, dtSaldoFim
 				s = Trim("" & r("id_nfe_emitente_pedido_destino_descricao"))
 				end if
 			if s = "" then s = "&nbsp;"
-			x = x & "		<TD class='MDB tdCD'><P class='Cn'>" & s & "</P></TD>" & chr(13)
+			x = x & "		<TD class='MDB tdCD'><span class='Cn'>" & s & "</span></TD>" & chr(13)
 
 		'> PRODUTO
 			s_aux = Trim("" & r("fabricante"))
@@ -532,7 +616,7 @@ dim dtSaldoInicio, dtSaldoFim
 			s = Trim("" & r("produto"))
 			s = s_aux & s
 			if s = "" then s = "&nbsp;"
-			x = x & "		<TD class='MDB tdProd'><P class='Cn'>" & s & "</P></TD>" & chr(13)
+			x = x & "		<TD class='MDB tdProd'><span class='Cn spnProd'>" & s & "</span></TD>" & chr(13)
 
 		'> QUANTIDADE
 			if s_op = OP_ESTOQUE_LOG_VENDA then
@@ -546,22 +630,22 @@ dim dtSaldoInicio, dtSaldoFim
 					end if
 				end if
 		
-			x = x & "		<TD class='MDB tdQtd'><P class='Cd'>" & formata_inteiro(intQtde) & "</P></TD>" & chr(13)
+			x = x & "		<TD class='MDB tdQtd'><span class='Cd'>" & formata_inteiro(intQtde) & "</span></TD>" & chr(13)
 
 		'> OPERAÇÃO
 			s = x_operacao_log_estoque(Trim("" & r("operacao")))
 			if s = "" then s = "&nbsp;"
-			x = x & "		<TD class='MDB tdOp'><P class='Cn'>" & s & "</P></TD>" & chr(13)
+			x = x & "		<TD class='MDB tdOp'><span class='Cn spnOp'>" & s & "</span></TD>" & chr(13)
 
 		'> ESTOQUE ORIGEM
 			s = x_estoque(Trim("" & r("cod_estoque_origem")))
 			if s = "" then s = "&nbsp;"
-			x = x & "		<TD class='MDB tdEstOrigem'><P class='Cn'>" & s & "</P></TD>" & chr(13)
+			x = x & "		<TD class='MDB tdEstOrigem'><span class='Cn'>" & s & "</span></TD>" & chr(13)
 
 		'> ESTOQUE DESTINO
 			s = x_estoque(Trim("" & r("cod_estoque_destino")))
 			if s = "" then s = "&nbsp;"
-			x = x & "		<TD class='MDB tdEstDestino'><P class='Cn'>" & s & "</P></TD>" & chr(13)
+			x = x & "		<TD class='MDB tdEstDestino'><span class='Cn'>" & s & "</span></TD>" & chr(13)
 
 		'> LOJA
 			s_loja_origem = Trim("" & r("loja_estoque_origem"))
@@ -577,29 +661,29 @@ dim dtSaldoInicio, dtSaldoFim
 				s = s_loja_origem & s_loja_destino
 				end if
 			if s = "" then s = "&nbsp;"
-			x = x & "		<TD class='MDB tdLoja'><P class='Cn'>" & s & "</P></TD>" & chr(13)
+			x = x & "		<TD class='MDB tdLoja'><span class='Cn'>" & s & "</span></TD>" & chr(13)
 
 		'> PEDIDO
 			s_pedido_origem = Trim("" & r("pedido_estoque_origem"))
 			s_pedido_destino = Trim("" & r("pedido_estoque_destino"))
 			if (s_pedido_origem <> "") And (s_pedido_destino <> "") then
 				if s_pedido_origem = s_pedido_destino then
-					s = monta_link_pedido(s_pedido_origem)
+					s = monta_link_view_pedido(s_pedido_origem, usuario)
 				else
-					s = monta_link_pedido(s_pedido_origem) & " => " & monta_link_pedido(s_pedido_destino)
+					s = monta_link_view_pedido(s_pedido_origem, usuario) & " => " & monta_link_view_pedido(s_pedido_destino, usuario)
 					end if
 			else
 			'	'Um dos dois ou ambos estão vazios
-				s = monta_link_pedido(s_pedido_origem) & monta_link_pedido(s_pedido_destino)
+				s = monta_link_view_pedido(s_pedido_origem, usuario) & monta_link_view_pedido(s_pedido_destino, usuario)
 				end if
 			if s = "" then s = "&nbsp;"
-			x = x & "		<TD class='MDB tdPedido'><P class='Cn'>" & s & "</P></TD>" & chr(13)
+			x = x & "		<TD class='MDB tdPedido'><span class='Cn spnPedido'>" & s & "</span></TD>" & chr(13)
 
 		'> OPERADOR
 			s = Trim("" & r("usuario"))
 			if s <> "" then s = iniciais_em_maiusculas(s)
 			if s = "" then s = "&nbsp;"
-			x = x & "		<TD class='MB tdOperador'><P class='Cn'>" & s & "</P></TD>" & chr(13)
+			x = x & "		<TD class='MB tdOperador'><span class='Cn'>" & s & "</span></TD>" & chr(13)
 
 			x = x & "	</TR>" & chr(13)
 
@@ -618,7 +702,7 @@ dim dtSaldoInicio, dtSaldoFim
 	if n_reg_total = 0 then
 		x = cab_table & cab
 		x = x & "	<TR NOWRAP>" & chr(13) & _
-				"		<TD class='MB' colspan='9'><P class='ALERTA'>&nbsp;NENHUM REGISTRO ENCONTRADO&nbsp;</P></TD>" & chr(13) & _
+				"		<TD class='MB ALERTA' align='center' colspan='10'><span class='ALERTA'>&nbsp;NENHUM REGISTRO ENCONTRADO&nbsp;</span></TD>" & chr(13) & _
 				"	</TR>" & chr(13)
 		end if
 
@@ -822,14 +906,14 @@ dim dtSaldoInicio, dtSaldoFim
 
 		cab_table = "<TABLE class='Q' style='border-bottom:0px;' CellSpacing=0 CellPadding=0>" & chr(13)
 		cab = "	<TR style='background:azure' NOWRAP>" & chr(13) & _
-			  "		<TD class='MDB tdSaldoEstoque' style='vertical-align:bottom'><P class='R'>Estoque</P></TD>" & chr(13) & _
-			  "		<TD class='MDB tdSaldoQtdInicio' style='vertical-align:bottom'><P class='Rd'>Saldo Inicial em " & c_dt_inicio & "</P></TD>" & chr(13)
+			  "		<TD class='MDB tdSaldoEstoque' style='vertical-align:bottom'><span class='R spnTit'>Estoque</span></TD>" & chr(13) & _
+			  "		<TD class='MDB tdSaldoQtdInicio' style='vertical-align:bottom'><span class='Rd spnTit'>Saldo Inicial em " & c_dt_inicio & "</span></TD>" & chr(13)
 		if (dtSaldoFim = Date) then
 			cab = cab & _
-			  "		<TD class='MB tdSaldoQtdFim' style='vertical-align:bottom'><P class='Rd'>Saldo Atual em " & formata_data_hora(Now) & "</P></TD>" & chr(13)
+			  "		<TD class='MB tdSaldoQtdFim' style='vertical-align:bottom'><span class='Rd spnTit'>Saldo Atual em " & formata_data_hora(Now) & "</span></TD>" & chr(13)
 		else
 			cab = cab & _
-			  "		<TD class='MB tdSaldoQtdFim' style='vertical-align:bottom'><P class='Rd'>Saldo Final em " & c_dt_termino & "</P></TD>" & chr(13)
+			  "		<TD class='MB tdSaldoQtdFim' style='vertical-align:bottom'><span class='Rd spnTit'>Saldo Final em " & c_dt_termino & "</span></TD>" & chr(13)
 			end if
 			
 		cab = cab & _
@@ -843,57 +927,57 @@ dim dtSaldoInicio, dtSaldoFim
 		'Estoque de Venda
 		x = x & _
 			"	<TR NOWRAP>" & chr(13) & _
-				"		<TD class='MDB tdSaldoEstoque'><P class='Cn'>" & x_estoque(ID_ESTOQUE_VENDA) & "</P></TD>" & chr(13) & _
-				"		<TD class='MDB tdSaldoQtdInicio'><P class='Cd'>" & strQtdeInicioEstoqueVenda & "</P></TD>" & chr(13) & _
-				"		<TD class='MB tdSaldoQtdFim'><P class='Cd'>" & strQtdeFimEstoqueVenda & "</P></TD>" & chr(13) & _
+				"		<TD class='MDB tdSaldoEstoque'><span class='Cn'>" & x_estoque(ID_ESTOQUE_VENDA) & "</span></TD>" & chr(13) & _
+				"		<TD class='MDB tdSaldoQtdInicio'><span class='Cd'>" & strQtdeInicioEstoqueVenda & "</span></TD>" & chr(13) & _
+				"		<TD class='MB tdSaldoQtdFim'><span class='Cd'>" & strQtdeFimEstoqueVenda & "</span></TD>" & chr(13) & _
 				"	</TR>" & chr(13)
 				
 		'Estoque Vendido
 		x = x & _
 			"	<TR NOWRAP>" & chr(13) & _
-				"		<TD class='MDB tdSaldoEstoque'><P class='Cn'>" & x_estoque(ID_ESTOQUE_VENDIDO) & "</P></TD>" & chr(13) & _
-				"		<TD class='MDB tdSaldoQtdInicio'><P class='Cd'>" & strQtdeInicioEstoqueVendido & "</P></TD>" & chr(13) & _
-				"		<TD class='MB tdSaldoQtdFim'><P class='Cd'>" & strQtdeFimEstoqueVendido & "</P></TD>" & chr(13) & _
+				"		<TD class='MDB tdSaldoEstoque'><span class='Cn'>" & x_estoque(ID_ESTOQUE_VENDIDO) & "</span></TD>" & chr(13) & _
+				"		<TD class='MDB tdSaldoQtdInicio'><span class='Cd'>" & strQtdeInicioEstoqueVendido & "</span></TD>" & chr(13) & _
+				"		<TD class='MB tdSaldoQtdFim'><span class='Cd'>" & strQtdeFimEstoqueVendido & "</span></TD>" & chr(13) & _
 				"	</TR>" & chr(13)
 		
 		'Show-room
 		x = x & _
 			"	<TR NOWRAP>" & chr(13) & _
-				"		<TD class='MDB tdSaldoEstoque'><P class='Cn'>" & x_estoque(ID_ESTOQUE_SHOW_ROOM) & "</P></TD>" & chr(13) & _
-				"		<TD class='MDB tdSaldoQtdInicio'><P class='Cd'>" & strQtdeInicioEstoqueShowRoom & "</P></TD>" & chr(13) & _
-				"		<TD class='MB tdSaldoQtdFim'><P class='Cd'>" & strQtdeFimEstoqueShowRoom & "</P></TD>" & chr(13) & _
+				"		<TD class='MDB tdSaldoEstoque'><span class='Cn'>" & x_estoque(ID_ESTOQUE_SHOW_ROOM) & "</span></TD>" & chr(13) & _
+				"		<TD class='MDB tdSaldoQtdInicio'><span class='Cd'>" & strQtdeInicioEstoqueShowRoom & "</span></TD>" & chr(13) & _
+				"		<TD class='MB tdSaldoQtdFim'><span class='Cd'>" & strQtdeFimEstoqueShowRoom & "</span></TD>" & chr(13) & _
 				"	</TR>" & chr(13)
 			
 		'Danificados
 		x = x & _
 			"	<TR NOWRAP>" & chr(13) & _
-				"		<TD class='MDB tdSaldoEstoque'><P class='Cn'>" & x_estoque(ID_ESTOQUE_DANIFICADOS) & "</P></TD>" & chr(13) & _
-				"		<TD class='MDB tdSaldoQtdInicio'><P class='Cd'>" & strQtdeInicioEstoqueDanificado & "</P></TD>" & chr(13) & _
-				"		<TD class='MB tdSaldoQtdFim'><P class='Cd'>" & strQtdeFimEstoqueDanificado & "</P></TD>" & chr(13) & _
+				"		<TD class='MDB tdSaldoEstoque'><span class='Cn'>" & x_estoque(ID_ESTOQUE_DANIFICADOS) & "</span></TD>" & chr(13) & _
+				"		<TD class='MDB tdSaldoQtdInicio'><span class='Cd'>" & strQtdeInicioEstoqueDanificado & "</span></TD>" & chr(13) & _
+				"		<TD class='MB tdSaldoQtdFim'><span class='Cd'>" & strQtdeFimEstoqueDanificado & "</span></TD>" & chr(13) & _
 				"	</TR>" & chr(13)
 
 		'Devolução
 		x = x & _
 			"	<TR NOWRAP>" & chr(13) & _
-				"		<TD class='MDB tdSaldoEstoque'><P class='Cn'>" & x_estoque(ID_ESTOQUE_DEVOLUCAO) & "</P></TD>" & chr(13) & _
-				"		<TD class='MDB tdSaldoQtdInicio'><P class='Cd'>" & strQtdeInicioEstoqueDevolucao & "</P></TD>" & chr(13) & _
-				"		<TD class='MB tdSaldoQtdFim'><P class='Cd'>" & strQtdeFimEstoqueDevolucao & "</P></TD>" & chr(13) & _
+				"		<TD class='MDB tdSaldoEstoque'><span class='Cn'>" & x_estoque(ID_ESTOQUE_DEVOLUCAO) & "</span></TD>" & chr(13) & _
+				"		<TD class='MDB tdSaldoQtdInicio'><span class='Cd'>" & strQtdeInicioEstoqueDevolucao & "</span></TD>" & chr(13) & _
+				"		<TD class='MB tdSaldoQtdFim'><span class='Cd'>" & strQtdeFimEstoqueDevolucao & "</span></TD>" & chr(13) & _
 				"	</TR>" & chr(13)
 
 		'Roubo/Perda
 		x = x & _
 			"	<TR NOWRAP>" & chr(13) & _
-				"		<TD class='MDB tdSaldoEstoque'><P class='Cn'>" & x_estoque(ID_ESTOQUE_ROUBO) & "</P></TD>" & chr(13) & _
-				"		<TD class='MDB tdSaldoQtdInicio'><P class='Cd'>" & strQtdeInicioEstoqueRouboPerda & "</P></TD>" & chr(13) & _
-				"		<TD class='MB tdSaldoQtdFim'><P class='Cd'>" & strQtdeFimEstoqueRouboPerda & "</P></TD>" & chr(13) & _
+				"		<TD class='MDB tdSaldoEstoque'><span class='Cn'>" & x_estoque(ID_ESTOQUE_ROUBO) & "</span></TD>" & chr(13) & _
+				"		<TD class='MDB tdSaldoQtdInicio'><span class='Cd'>" & strQtdeInicioEstoqueRouboPerda & "</span></TD>" & chr(13) & _
+				"		<TD class='MB tdSaldoQtdFim'><span class='Cd'>" & strQtdeFimEstoqueRouboPerda & "</span></TD>" & chr(13) & _
 				"	</TR>" & chr(13)
 
 		'Sem Presença
 		x = x & _
 			"	<TR NOWRAP>" & chr(13) & _
-				"		<TD class='MDB tdSaldoEstoque'><P class='Cn'>" & x_estoque(ID_ESTOQUE_SEM_PRESENCA) & "</P></TD>" & chr(13) & _
-				"		<TD class='MDB tdSaldoQtdInicio'><P class='Cd'>" & strQtdeInicioEstoqueSemPresenca & "</P></TD>" & chr(13) & _
-				"		<TD class='MB tdSaldoQtdFim'><P class='Cd'>" & strQtdeFimEstoqueSemPresenca & "</P></TD>" & chr(13) & _
+				"		<TD class='MDB tdSaldoEstoque'><span class='Cn'>" & x_estoque(ID_ESTOQUE_SEM_PRESENCA) & "</span></TD>" & chr(13) & _
+				"		<TD class='MDB tdSaldoQtdInicio'><span class='Cd'>" & strQtdeInicioEstoqueSemPresenca & "</span></TD>" & chr(13) & _
+				"		<TD class='MB tdSaldoQtdFim'><span class='Cd'>" & strQtdeFimEstoqueSemPresenca & "</span></TD>" & chr(13) & _
 				"	</TR>" & chr(13)
 
 		x = x & _
@@ -926,6 +1010,8 @@ end sub
 %>
 
 
+<%=DOCTYPE_LEGADO%>
+
 
 <html>
 
@@ -935,11 +1021,64 @@ end sub
 	</head>
 
 
+<% if False then 'APENAS P/ HABILITAR O INTELLISENSE DURANTE O DESENVOLVIMENTO!! %>
+<script src="../Global/jquery.js" language="JavaScript" type="text/javascript"></script>
+<% end if %>
 
+<script src="<%=URL_FILE__JQUERY%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__GLOBAL_JS%>" Language="JavaScript" Type="text/javascript"></script>
+<script src="<%=URL_FILE__AJAX_JS%>" language="JavaScript" type="text/javascript"></script>
 
 <script language="JavaScript" type="text/javascript">
-window.status='Aguarde, executando a consulta ...';
+	var historyBackCount = 1;
+	var windowScrollTopAnterior;
+
+	window.status = 'Aguarde, executando a consulta ...';
+
+	$(document).ready(function () {
+		$("#divPedidoConsultaView").hide();
+		$('#divInternoPedidoConsultaView').addClass('divFixo');
+		sizeDivPedidoConsultaView();
+
+		$(document).keyup(function (e) {
+			if (e.keyCode == 27) {
+				fechaDivPedidoConsultaView();
+			}
+		});
+
+		$("#divPedidoConsultaView").click(function () {
+			fechaDivPedidoConsultaView();
+		});
+
+		$("#imgFechaDivPedidoConsultaView").click(function () {
+			fechaDivPedidoConsultaView();
+		});
+	});
+
+	//Every resize of window
+	$(window).resize(function () {
+		sizeDivPedidoConsultaView();
+	});
+
+	function sizeDivPedidoConsultaView() {
+		var newHeight = $(document).height() + "px";
+		$("#divPedidoConsultaView").css("height", newHeight);
+	}
+
+	function fechaDivPedidoConsultaView() {
+		$(window).scrollTop(windowScrollTopAnterior);
+		$("#divPedidoConsultaView").fadeOut();
+		$("#iframePedidoConsultaView").attr("src", "");
+	}
+
+	function fPEDConsultaView(id_pedido, usuario) {
+		historyBackCount++;
+		windowScrollTopAnterior = $(window).scrollTop();
+		sizeDivPedidoConsultaView();
+		$("#iframePedidoConsultaView").attr("src", "PedidoConsultaView.asp?pedido_selecionado=" + id_pedido + "&pedido_selecionado_inicial=" + id_pedido + "&usuario=" + usuario);
+		$("#divPedidoConsultaView").fadeIn();
+	}
 
 function fRELConcluir( id_pedido ){
 	window.status = "Aguarde ...";
@@ -965,8 +1104,64 @@ function fRELConcluir( id_pedido ){
 
 <link href="<%=URL_FILE__E_CSS%>" Rel="stylesheet" Type="text/css">
 <link href="<%=URL_FILE__EPRINTER_CSS%>" Rel="stylesheet" Type="text/css" media="print">
+<link href="<%=URL_FILE__ESCREEN_CSS%>" rel="stylesheet" type="text/css" media="screen">
 
 <style type="text/css">
+html
+{
+	overflow-y: scroll;
+	height:100%;
+	margin:0px;
+}
+body
+{
+	height:100%;
+	margin:0px;
+}
+#divPedidoConsultaView
+{
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	z-index:1000;
+	background-color:#808080;
+	opacity: 1;
+}
+#divInternoPedidoConsultaView
+{
+	position:absolute;
+	top:6%;
+	left:5%;
+	width:90%;
+	height:90%;
+	z-index:1000;
+	background-color:#808080;
+	opacity: 1;
+}
+#divInternoPedidoConsultaView.divFixo
+{
+	position:fixed;
+	top:6%;
+}
+#imgFechaDivPedidoConsultaView
+{
+	position:fixed;
+	top:6%;
+	left: 50%;
+	margin-left: -16px; /* -1 * image width / 2 */
+	margin-top: -32px;
+	z-index:1001;
+}
+#iframePedidoConsultaView
+{
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	border: solid 4px black;
+}
 .tdData{
 	vertical-align: top;
 	width: 60px;
@@ -986,6 +1181,7 @@ function fRELConcluir( id_pedido ){
 .tdPedido{
 	vertical-align: top;
 	width: 70px;
+	padding-left:2px;
 	}
 .tdOperador{
 	vertical-align: top;
@@ -1006,6 +1202,7 @@ function fRELConcluir( id_pedido ){
 .tdQtd{
 	vertical-align: top;
 	width: 36px;
+	text-align:right;
 	}
 .tdSaldoEstoque{
 	vertical-align: top;
@@ -1014,11 +1211,16 @@ function fRELConcluir( id_pedido ){
 .tdSaldoQtdInicio{
 	vertical-align: top;
 	width: 80px;
+	text-align:right;
 	}
 .tdSaldoQtdFim{
 	vertical-align: top;
 	width: 80px;
+	text-align:right;
 	}
+.spnTit, .spnData, .spnOp, .spnProd, .spnPedido {
+	display:block;
+}
 </style>
 
 
@@ -1059,6 +1261,8 @@ function fRELConcluir( id_pedido ){
 <input type="hidden" name="c_dt_termino" id="c_dt_termino" value="<%=c_dt_termino%>">
 <input type="hidden" name="c_fabricante" id="c_fabricante" value="<%=c_fabricante%>">
 <input type="hidden" name="c_produto" id="c_produto" value="<%=c_produto%>">
+<input type="hidden" name="c_pedido_origem" id="c_pedido_origem" value="<%=c_pedido_origem%>" />
+<input type="hidden" name="c_pedido_destino" id="c_pedido_destino" value="<%=c_pedido_destino%>" />
 <input type="hidden" name="c_lista_loja" id="c_lista_loja" value="<%=c_lista_loja%>">
 <input type="hidden" name="ckb_OP_ESTOQUE_LOG_ENTRADA" id="ckb_OP_ESTOQUE_LOG_ENTRADA" value="<%=ckb_OP_ESTOQUE_LOG_ENTRADA%>">
 <input type="hidden" name="ckb_OP_ESTOQUE_LOG_VENDA" id="ckb_OP_ESTOQUE_LOG_VENDA" value="<%=ckb_OP_ESTOQUE_LOG_VENDA%>">
@@ -1103,8 +1307,8 @@ function fRELConcluir( id_pedido ){
 	s_filtro = s_filtro & _
 				"	<tr>" & chr(13) & _
 				"		<td align='right' valign='top' NOWRAP>" & _
-				"<p class='N'>Período:&nbsp;</p></td><td valign='top' width='99%'>" & _
-				"<p class='N'>" & s & "</p></td>" & chr(13) & _
+				"<span class='N'>Período:&nbsp;</span></td><td valign='top' width='99%'>" & _
+				"<span class='N'>" & s & "</span></td>" & chr(13) & _
 				"	</tr>" & chr(13)
 
 ' EMPRESA
@@ -1116,8 +1320,8 @@ function fRELConcluir( id_pedido ){
 	s_filtro = s_filtro & _
 				"	<tr>" & chr(13) & _
 				"		<td align='right' valign='top' NOWRAP>" & _
-				"<p class='N'>Empresa (CD):&nbsp;</p></td><td valign='top'>" & _
-				"<p class='N'>" & s & "</p></td>" & chr(13) & _
+				"<span class='N'>Empresa (CD):&nbsp;</span></td><td valign='top'>" & _
+				"<span class='N'>" & s & "</span></td>" & chr(13) & _
 				"	</tr>" & chr(13)
 
 	s = c_fabricante
@@ -1130,8 +1334,8 @@ function fRELConcluir( id_pedido ){
 	s_filtro = s_filtro & _
 				"	<tr>" & chr(13) & _
 				"		<td align='right' valign='top' NOWRAP>" & _
-				"<p class='N'>Fabricante:&nbsp;</p></td><td valign='top'>" & _
-				"<p class='N'>" & s & "</p></td>" & chr(13) & _
+				"<span class='N'>Fabricante:&nbsp;</span></td><td valign='top'>" & _
+				"<span class='N'>" & s & "</span></td>" & chr(13) & _
 				"	</tr>" & chr(13)
 	
 	s = c_produto
@@ -1144,8 +1348,26 @@ function fRELConcluir( id_pedido ){
 	s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
 					"		<td align='right' valign='baseline' NOWRAP>" & _
-					"<p class='N'>Produto:&nbsp;</p></td><td valign='baseline'>" & _
-					"<p class='N'>" & s & "</p></td>" & chr(13) & _
+					"<span class='N'>Produto:&nbsp;</span></td><td valign='baseline'>" & _
+					"<span class='N'>" & s & "</span></td>" & chr(13) & _
+					"	</tr>" & chr(13)
+
+	s = c_pedido_origem
+	if s = "" then s = "N.I."
+	s_filtro = s_filtro & _
+					"	<tr>" & chr(13) & _
+					"		<td align='right' valign='baseline' NOWRAP>" & _
+					"<span class='N'>Pedido (origem):&nbsp;</span></td><td valign='baseline'>" & _
+					"<span class='N'>" & s & "</span></td>" & chr(13) & _
+					"	</tr>" & chr(13)
+
+	s = c_pedido_destino
+	if s = "" then s = "N.I."
+	s_filtro = s_filtro & _
+					"	<tr>" & chr(13) & _
+					"		<td align='right' valign='baseline' NOWRAP>" & _
+					"<span class='N'>Pedido (destino):&nbsp;</span></td><td valign='baseline'>" & _
+					"<span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 
 '	LISTA DE LOJAS
@@ -1173,8 +1395,8 @@ function fRELConcluir( id_pedido ){
 	s = s_filtro_loja
 	if s = "" then s = "todas"
 	s_filtro = s_filtro & "<tr><td align='right' valign='top' NOWRAP>" & _
-			   "<p class='N'>Loja(s):&nbsp;</p></td><td valign='top'>" & _
-			   "<p class='N'>" & s & "</p></td></tr>" & chr(13)
+			   "<span class='N'>Loja(s):&nbsp;</span></td><td valign='top'>" & _
+			   "<span class='N'>" & s & "</span></td></tr>" & chr(13)
 
 '	OPERAÇÕES
 	s_filtro_operacao = ""
@@ -1317,14 +1539,14 @@ function fRELConcluir( id_pedido ){
 
 	if s_filtro_operacao = "" then s_filtro_operacao = "nenhuma"
 	s_filtro = s_filtro & "<tr><td align='right' valign='top' NOWRAP>" & _
-			   "<p class='N'>Operações:&nbsp;</p></td><td valign='top'>" & _
-			   "<p class='N'>" & s_filtro_operacao & "</p></td></tr>" & chr(13)
+			   "<span class='N'>Operações:&nbsp;</span></td><td valign='top'>" & _
+			   "<span class='N'>" & s_filtro_operacao & "</span></td></tr>" & chr(13)
 
 	s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
 					"		<td align='right' valign='top' NOWRAP>" & _
-					"<p class='N'>Emissão:&nbsp;</p></td><td valign='top' width='99%'>" & _
-					"<p class='N'>" & formata_data_hora(Now) & "</p></td>" & chr(13) & _
+					"<span class='N'>Emissão:&nbsp;</span></td><td valign='top' width='99%'>" & _
+					"<span class='N'>" & formata_data_hora(Now) & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 	
 	s_filtro = s_filtro & "</table>" & chr(13)
@@ -1344,13 +1566,16 @@ function fRELConcluir( id_pedido ){
 
 <table class="notPrint" width="704" cellSpacing="0">
 <tr>
-	<td align="center"><a name="bVOLTA" id="bVOLTA" href="javascript:history.back()" title="volta para a página anterior">
+	<td align="center"><a name="bVOLTA" id="bVOLTA" href="RelResumoOperacoesEntreEstoques.asp<%= "?" & "url_back=X&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>" title="volta para a página anterior">
 		<img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
 </tr>
 </table>
 </form>
 
 </center>
+
+<div id="divPedidoConsultaView"><center><div id="divInternoPedidoConsultaView"><img id="imgFechaDivPedidoConsultaView" src="../imagem/close_button_32.png" title="clique para fechar o painel de consulta" /><iframe id="iframePedidoConsultaView"></iframe></div></center></div>
+
 </body>
 
 <% end if %>

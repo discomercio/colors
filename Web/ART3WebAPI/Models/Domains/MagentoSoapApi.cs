@@ -33,7 +33,7 @@ namespace ART3WebAPI.Models.Domains
 		/// <param name="xmlRespSoap"></param>
 		/// <param name="msg_erro"></param>
 		/// <returns></returns>
-		public static bool enviaRequisicaoComRetry(string xmlReqSoap, Global.Cte.MagentoSoapApi.Transacao trxParam, string urlWebService, out string xmlRespSoap, out string msg_erro)
+		public static bool enviaRequisicaoComRetry(Guid? httpRequestId, string xmlReqSoap, Global.Cte.MagentoSoapApi.Transacao trxParam, string urlWebService, out string xmlRespSoap, out string msg_erro)
 		{
 			#region [ Declarações ]
 			const int MAX_TENTATIVAS = 5;
@@ -45,7 +45,7 @@ namespace ART3WebAPI.Models.Domains
 			{
 				qtdeTentativasRealizadas++;
 
-				blnResposta = enviaRequisicao(xmlReqSoap, trxParam, urlWebService, out xmlRespSoap, out msg_erro);
+				blnResposta = enviaRequisicao(httpRequestId, xmlReqSoap, trxParam, urlWebService, out xmlRespSoap, out msg_erro);
 				if (blnResposta) break;
 
 				Thread.Sleep(1000);
@@ -56,7 +56,7 @@ namespace ART3WebAPI.Models.Domains
 		#endregion
 
 		#region [ enviaRequisicao ]
-		public static bool enviaRequisicao(string xmlReqSoap, Global.Cte.MagentoSoapApi.Transacao trxParam, string urlWebService, out string xmlRespSoap, out string msg_erro)
+		public static bool enviaRequisicao(Guid? httpRequestId, string xmlReqSoap, Global.Cte.MagentoSoapApi.Transacao trxParam, string urlWebService, out string xmlRespSoap, out string msg_erro)
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "enviaRequisicao()";
@@ -71,7 +71,7 @@ namespace ART3WebAPI.Models.Domains
 			try
 			{
 				strMsg = NOME_DESTA_ROTINA + " - TX\n" + xmlReqSoap;
-				Global.gravaLogAtividade(strMsg);
+				Global.gravaLogAtividade(httpRequestId, strMsg);
 
 				req = (HttpWebRequest)WebRequest.Create(urlWebService);
 				// The Timeout applies to the entire request and response, not individually to the GetRequestStream and GetResponse method calls
@@ -97,14 +97,14 @@ namespace ART3WebAPI.Models.Domains
 				}
 
 				strMsg = NOME_DESTA_ROTINA + " - RX\n" + xmlRespSoap;
-				Global.gravaLogAtividade(strMsg);
+				Global.gravaLogAtividade(httpRequestId, strMsg);
 
 				return true;
 			}
 			catch (Exception ex)
 			{
 				msg_erro = ex.ToString();
-				Global.gravaLogAtividade(NOME_DESTA_ROTINA + "\n" + ex.ToString());
+				Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + "\n" + ex.ToString());
 				return false;
 			}
 		}
@@ -1702,7 +1702,7 @@ namespace ART3WebAPI.Models.Domains
 		#endregion
 
 		#region [ getSalesOrderInfo ]
-		public static string getSalesOrderInfo(string numeroPedidoMagento, MagentoApiLoginParameters loginParameters, out string msg_erro)
+		public static string getSalesOrderInfo(Guid? httpRequestId, string numeroPedidoMagento, MagentoApiLoginParameters loginParameters, out string msg_erro)
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "MagentoSoapApi.getSalesOrderInfo()";
@@ -1750,7 +1750,7 @@ namespace ART3WebAPI.Models.Domains
 					{
 						xmlReqSoap = montaRequisicaoLogin(loginParameters.username, loginParameters.password);
 
-						blnEnviouOk = enviaRequisicaoComRetry(xmlReqSoap, Global.Cte.MagentoSoapApi.Transacao.login, loginParameters.urlWebService, out xmlRespSoap, out msg_erro_aux);
+						blnEnviouOk = enviaRequisicaoComRetry(httpRequestId, xmlReqSoap, Global.Cte.MagentoSoapApi.Transacao.login, loginParameters.urlWebService, out xmlRespSoap, out msg_erro_aux);
 						if (!blnEnviouOk)
 						{
 							msg_erro = msg_erro_aux;
@@ -1768,7 +1768,7 @@ namespace ART3WebAPI.Models.Domains
 						try // Finally: Encerra sessão
 						{
 							xmlReqSoap = montaRequisicaoCallSalesOrderInfo(sessionId, numeroPedidoMagento);
-							blnEnviouOk = MagentoSoapApi.enviaRequisicaoComRetry(xmlReqSoap, Global.Cte.MagentoSoapApi.Transacao.call, loginParameters.urlWebService, out xmlRespSoap, out msg_erro_aux);
+							blnEnviouOk = MagentoSoapApi.enviaRequisicaoComRetry(httpRequestId, xmlReqSoap, Global.Cte.MagentoSoapApi.Transacao.call, loginParameters.urlWebService, out xmlRespSoap, out msg_erro_aux);
 							if (!blnEnviouOk)
 							{
 								msg_erro = "Falha ao tentar consultar o pedido Magento " + numeroPedidoMagento + " através da API!";
@@ -1781,7 +1781,7 @@ namespace ART3WebAPI.Models.Domains
 						finally
 						{
 							xmlReqSoap = montaRequisicaoEndSession(sessionId);
-							blnEnviouOk = MagentoSoapApi.enviaRequisicaoComRetry(xmlReqSoap, Global.Cte.MagentoSoapApi.Transacao.endSession, loginParameters.urlWebService, out xmlRespSoap, out msg_erro_aux);
+							blnEnviouOk = MagentoSoapApi.enviaRequisicaoComRetry(httpRequestId, xmlReqSoap, Global.Cte.MagentoSoapApi.Transacao.endSession, loginParameters.urlWebService, out xmlRespSoap, out msg_erro_aux);
 						}
 					}
 					finally
@@ -1793,21 +1793,21 @@ namespace ART3WebAPI.Models.Domains
 				{
 					// Tratamento para exception gerada no timeout do AcquireWriterLock
 					msg = NOME_DESTA_ROTINA + " - Exception: " + ex.ToString();
-					Global.gravaLogAtividade(msg);
+					Global.gravaLogAtividade(httpRequestId, msg);
 					return null;
 				}
 			}
 			catch (Exception ex)
 			{
 				msg_erro = ex.ToString();
-				Global.gravaLogAtividade(NOME_DESTA_ROTINA + "\n" + ex.ToString());
+				Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + "\n" + ex.ToString());
 				return null;
 			}
 		}
 		#endregion
 
 		#region [ processaGetPedido ]
-		public static string processaGetPedido(string numeroPedidoMagento, string operationControlTicket, string loja, string usuario, string sessionToken, MagentoApiLoginParameters loginParameters)
+		public static string processaGetPedido(Guid? httpRequestId, string numeroPedidoMagento, string operationControlTicket, string loja, string usuario, string sessionToken, MagentoApiLoginParameters loginParameters)
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "MagentoSoapApi.processaGetPedido()";
@@ -1850,7 +1850,7 @@ namespace ART3WebAPI.Models.Domains
 				if ((numeroPedidoMagento ?? "").Trim().Length == 0)
 				{
 					msg = "O número do pedido Magento não foi informado!";
-					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+					Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 
@@ -1858,7 +1858,7 @@ namespace ART3WebAPI.Models.Domains
 				if (readPedidoXml != null)
 				{
 					msg = "Pedido Magento nº " + numeroPedidoMagento + " localizado no BD";
-					Global.gravaLogAtividade(msg);
+					Global.gravaLogAtividade(httpRequestId, msg);
 
 					salesOrder.cpfCnpjIdentificado = readPedidoXml.cpfCnpjIdentificado;
 
@@ -1872,7 +1872,7 @@ namespace ART3WebAPI.Models.Domains
 						{
 							msg = "Falha ao tentar decodificar o XML de resposta da API do Magento!";
 							if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-							Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+							Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 							throw new Exception(msg);
 						}
 						#endregion
@@ -1889,7 +1889,7 @@ namespace ART3WebAPI.Models.Domains
 				{
 					msg = "Falha ao tentar recuperar os parâmetros de login da API do Magento: a URL da API não está cadastrada para a loja " + loja + "!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+					Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 
@@ -1897,7 +1897,7 @@ namespace ART3WebAPI.Models.Domains
 				{
 					msg = "Falha ao tentar recuperar os parâmetros de login da API do Magento: o usuário para login não está cadastrado para a loja " + loja + "!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+					Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 
@@ -1905,15 +1905,15 @@ namespace ART3WebAPI.Models.Domains
 				{
 					msg = "Falha ao tentar recuperar os parâmetros de login da API do Magento: a senha para login não está cadastrada para a loja " + loja + "!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+					Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 				#endregion
 
 				#region [ Executa a consulta via API ]
 				msg = "Consulta do pedido Magento nº " + numeroPedidoMagento + " via API";
-				Global.gravaLogAtividade(msg);
-				sXml = MagentoSoapApi.getSalesOrderInfo(numeroPedidoMagento, loginParameters, out msg_erro);
+				Global.gravaLogAtividade(httpRequestId, msg);
+				sXml = MagentoSoapApi.getSalesOrderInfo(httpRequestId, numeroPedidoMagento, loginParameters, out msg_erro);
 				#endregion
 
 				#region [ Falha ao obter os dados do pedido Magento ]
@@ -1921,7 +1921,7 @@ namespace ART3WebAPI.Models.Domains
 				{
 					msg = "Falha desconhecida ao tentar recuperar os dados do pedido Magento " + numeroPedidoMagento + "!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+					Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 				#endregion
@@ -1932,7 +1932,7 @@ namespace ART3WebAPI.Models.Domains
 				{
 					msg = "Falha ao tentar decodificar o XML de resposta da API do Magento!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+					Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 				#endregion
@@ -2142,11 +2142,11 @@ namespace ART3WebAPI.Models.Domains
 								#endregion
 
 								#region [ Grava cliente no banco de dados ]
-								if (!ClienteDAO.insere(cliente, loja, usuario, out msg_erro))
+								if (!ClienteDAO.insere(httpRequestId, cliente, loja, usuario, out msg_erro))
 								{
 									msg = "Falha ao tentar cadastrar o cliente no banco de dados do sistema!";
 									if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-									Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+									Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 									throw new Exception(msg);
 								}
 								#endregion
@@ -2154,7 +2154,7 @@ namespace ART3WebAPI.Models.Domains
 							catch (Exception ex)
 							{
 								msg = NOME_DESTA_ROTINA + " - Exception: " + ex.ToString();
-								Global.gravaLogAtividade(msg);
+								Global.gravaLogAtividade(httpRequestId, msg);
 								throw new Exception(msg);
 							}
 						} // if (intParametroFlagCadSemiAutoPedMagentoCadastrarAutomaticamenteClienteNovo == 1)
@@ -2389,12 +2389,12 @@ namespace ART3WebAPI.Models.Domains
 					insertPedidoXml.marketplace_codigo_origem = sOrigemMktpIdentificado;
 				}
 
-				blnInserted = MagentoApiDAO.insertMagentoPedidoXml(insertPedidoXml, out msg_erro);
+				blnInserted = MagentoApiDAO.insertMagentoPedidoXml(httpRequestId, insertPedidoXml, out msg_erro);
 				if (!blnInserted)
 				{
 					msg = "Falha ao tentar gravar no BD os dados do pedido Magento!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+					Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 				#endregion
@@ -2449,11 +2449,11 @@ namespace ART3WebAPI.Models.Domains
 				decodeEndereco.empresa = (salesOrder.magentoSalesOrderInfo.billing_address.empresa ?? "");
 				decodeEndereco.nomefantasia = (salesOrder.magentoSalesOrderInfo.billing_address.nomefantasia ?? "");
 				decodeEndereco.street_detail = (salesOrder.magentoSalesOrderInfo.billing_address.street_detail ?? "");
-				if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeEndereco(decodeEndereco, out msg_erro))
+				if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeEndereco(httpRequestId, decodeEndereco, out msg_erro))
 				{
 					msg = "Falha ao tentar gravar no BD os dados do endereço de cobrança!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+					Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 				#endregion
@@ -2503,11 +2503,11 @@ namespace ART3WebAPI.Models.Domains
 				decodeEndereco.empresa = (salesOrder.magentoSalesOrderInfo.shipping_address.empresa ?? "");
 				decodeEndereco.nomefantasia = (salesOrder.magentoSalesOrderInfo.shipping_address.nomefantasia ?? "");
 				decodeEndereco.street_detail = (salesOrder.magentoSalesOrderInfo.shipping_address.street_detail ?? "");
-				if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeEndereco(decodeEndereco, out msg_erro))
+				if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeEndereco(httpRequestId, decodeEndereco, out msg_erro))
 				{
 					msg = "Falha ao tentar gravar no BD os dados do endereço de entrega!";
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+					Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
 				}
 				#endregion
@@ -2534,11 +2534,11 @@ namespace ART3WebAPI.Models.Domains
 					decodeItem.product_type = (item.product_type ?? "");
 					decodeItem.has_children = (item.has_children ?? "");
 					decodeItem.parent_item_id = (int)Global.converteInteiro((item.parent_item_id ?? ""));
-					if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeItem(decodeItem, out msg_erro))
+					if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeItem(httpRequestId, decodeItem, out msg_erro))
 					{
 						msg = "Falha ao tentar gravar no BD os dados do item do pedido (sku=" + decodeItem.sku + ")!";
 						if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-						Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+						Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 						throw new Exception(msg);
 					}
 				}
@@ -2557,11 +2557,11 @@ namespace ART3WebAPI.Models.Domains
 					decodeStatusHistory.created_at = (item.created_at ?? "");
 					decodeStatusHistory.entity_name = (item.entity_name ?? "");
 					decodeStatusHistory.store_id = (int)Global.converteInteiro((item.store_id ?? ""));
-					if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeStatusHistory(decodeStatusHistory, out msg_erro))
+					if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeStatusHistory(httpRequestId, decodeStatusHistory, out msg_erro))
 					{
 						msg = "Falha ao tentar gravar no BD os dados do status history do pedido (created_at=" + decodeStatusHistory.created_at + ")!";
 						if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-						Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+						Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 						throw new Exception(msg);
 					}
 				}

@@ -588,7 +588,7 @@ namespace ART3WebAPI.Models.Repository
 		#endregion
 
 		#region [ setCampoDataTabelaParametro ]
-		public static bool setCampoDataTabelaParametro(String nomeParametro, DateTime dtHrValorParametro)
+		public static bool setCampoDataTabelaParametro(Guid? httpRequestId, String nomeParametro, DateTime dtHrValorParametro)
 		{
 			#region [ Declarações ]
 			String strSql;
@@ -672,14 +672,14 @@ namespace ART3WebAPI.Models.Repository
 			}
 			catch (Exception ex)
 			{
-				Global.gravaLogAtividade("Falha ao gravar em t_PARAMETRO.campo_data no registro '" + nomeParametro + "'\n" + ex.ToString());
+				Global.gravaLogAtividade(httpRequestId, "Falha ao gravar em t_PARAMETRO.campo_data no registro '" + nomeParametro + "'\n" + ex.ToString());
 				return false;
 			}
 		}
 		#endregion
 
 		#region [ setCampoInteiroTabelaParametro ]
-		public static bool setCampoInteiroTabelaParametro(String nomeParametro, int valorParametro)
+		public static bool setCampoInteiroTabelaParametro(Guid? httpRequestId, String nomeParametro, int valorParametro)
 		{
 			#region [ Declarações ]
 			String strSql;
@@ -751,14 +751,14 @@ namespace ART3WebAPI.Models.Repository
 			}
 			catch (Exception ex)
 			{
-				Global.gravaLogAtividade("Falha ao gravar em t_PARAMETRO.campo_inteiro no registro '" + nomeParametro + "'\n" + ex.ToString());
+				Global.gravaLogAtividade(httpRequestId, "Falha ao gravar em t_PARAMETRO.campo_inteiro no registro '" + nomeParametro + "'\n" + ex.ToString());
 				return false;
 			}
 		}
 		#endregion
 
 		#region [ setCampoTextoTabelaParametro ]
-		public static bool setCampoTextoTabelaParametro(String nomeParametro, String valorParametro)
+		public static bool setCampoTextoTabelaParametro(Guid? httpRequestId, String nomeParametro, String valorParametro)
 		{
 			#region [ Declarações ]
 			String strSql;
@@ -832,14 +832,14 @@ namespace ART3WebAPI.Models.Repository
 			}
 			catch (Exception ex)
 			{
-				Global.gravaLogAtividade("Falha ao gravar em t_PARAMETRO.campo_texto no registro '" + nomeParametro + "'\n" + ex.ToString());
+				Global.gravaLogAtividade(httpRequestId, "Falha ao gravar em t_PARAMETRO.campo_texto no registro '" + nomeParametro + "'\n" + ex.ToString());
 				return false;
 			}
 		}
 		#endregion
 
 		#region [ atualizaTabelaControleNsu ]
-		private static bool atualizaTabelaControleNsu(ref SqlConnection cn, ref SqlTransaction trx,
+		private static bool atualizaTabelaControleNsu(Guid? httpRequestId, ref SqlConnection cn, ref SqlTransaction trx,
 													String id_nsu,
 													String nsu_novo,
 													String nsu_atual,
@@ -932,7 +932,7 @@ namespace ART3WebAPI.Models.Repository
 					{
 						intRetorno = 0;
 						strMsgErro = NOME_DESTA_ROTINA + " - Tentativa resultou em exception!!\n" + ex.ToString();
-						Global.gravaLogAtividade(strMsgErro);
+						Global.gravaLogAtividade(httpRequestId, strMsgErro);
 					}
 
 					if (intRetorno == 1)
@@ -966,14 +966,14 @@ namespace ART3WebAPI.Models.Repository
 			catch (Exception ex)
 			{
 				strMsgErro = NOME_DESTA_ROTINA + "\n" + ex.ToString();
-				Global.gravaLogAtividade(strMsgErro);
+				Global.gravaLogAtividade(httpRequestId, strMsgErro);
 				return false;
 			}
 		}
 		#endregion
 
 		#region [ atualizaTabelaControleNsuComLetraSeq ]
-		private static bool atualizaTabelaControleNsuComLetraSeq(ref SqlConnection cn, ref SqlTransaction trx,
+		private static bool atualizaTabelaControleNsuComLetraSeq(Guid? httpRequestId, ref SqlConnection cn, ref SqlTransaction trx,
 													String id_nsu,
 													String nsu_novo,
 													String nsu_atual,
@@ -1070,7 +1070,7 @@ namespace ART3WebAPI.Models.Repository
 					{
 						intRetorno = 0;
 						strMsgErro = NOME_DESTA_ROTINA + " - Tentativa resultou em exception!!\n" + ex.ToString();
-						Global.gravaLogAtividade(strMsgErro);
+						Global.gravaLogAtividade(httpRequestId, strMsgErro);
 					}
 
 					if (intRetorno == 1)
@@ -1104,14 +1104,14 @@ namespace ART3WebAPI.Models.Repository
 			catch (Exception ex)
 			{
 				strMsgErro = NOME_DESTA_ROTINA + "\n" + ex.ToString();
-				Global.gravaLogAtividade(strMsgErro);
+				Global.gravaLogAtividade(httpRequestId, strMsgErro);
 				return false;
 			}
 		}
 		#endregion
 
 		#region [ geraNsuUsandoTabelaControle ]
-		public static bool geraNsuUsandoTabelaControle(ref SqlConnection cn, ref SqlTransaction trx, String id_nsu, out String nsu_novo, out String strMsgErro)
+		public static bool geraNsuUsandoTabelaControle(Guid? httpRequestId, ref SqlConnection cn, ref SqlTransaction trx, String id_nsu, out String nsu_novo, out String strMsgErro)
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "GeralDAO.geraNsuUsandoTabelaControle()";
@@ -1129,7 +1129,7 @@ namespace ART3WebAPI.Models.Repository
 				{
 					intQtdeTentativas++;
 
-					blnRetorno = executaGeraNsuUsandoTabelaControle(ref cn, ref trx, id_nsu, out nsu_novo, out strMsgErro);
+					blnRetorno = executaGeraNsuUsandoTabelaControle(httpRequestId, ref cn, ref trx, id_nsu, out nsu_novo, out strMsgErro);
 					if (blnRetorno) return true;
 
 					if (intQtdeTentativas > MAX_TENTATIVAS)
@@ -1145,14 +1145,14 @@ namespace ART3WebAPI.Models.Repository
 			catch (Exception ex)
 			{
 				strMsgErro = NOME_DESTA_ROTINA + "\n" + ex.ToString();
-				Global.gravaLogAtividade(strMsgErro);
+				Global.gravaLogAtividade(httpRequestId, strMsgErro);
 				return false;
 			}
 		}
 		#endregion
 
 		#region [ executaGeraNsuUsandoTabelaControle ]
-		private static bool executaGeraNsuUsandoTabelaControle(ref SqlConnection cn, ref SqlTransaction trx, String id_nsu, out String nsu_novo, out String strMsgErro)
+		private static bool executaGeraNsuUsandoTabelaControle(Guid? httpRequestId, ref SqlConnection cn, ref SqlTransaction trx, String id_nsu, out String nsu_novo, out String strMsgErro)
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "GeralDAO.executaGeraNsuUsandoTabelaControle()";
@@ -1260,7 +1260,7 @@ namespace ART3WebAPI.Models.Repository
 									{
 										strLetraSeqNovo = BD.readToString(rowConsulta["ano_letra_seq"]);
 										strLetraSeqNovo = Texto.chr((short)(Texto.asc(strLetraSeqNovo[0]) + BD.readToInt(rowConsulta["ano_letra_step"]))).ToString();
-										if (!atualizaTabelaControleNsuComLetraSeq(ref cn, ref trx, id_nsu, strNsuNovo, strNsuAtual, strLetraSeqNovo, out strMsgErro))
+										if (!atualizaTabelaControleNsuComLetraSeq(httpRequestId, ref cn, ref trx, id_nsu, strNsuNovo, strNsuAtual, strLetraSeqNovo, out strMsgErro))
 										{
 											if (strMsgErro.Length > 0) strMsgErro = "\n" + strMsgErro;
 											strMsgErro = "Falha ao tentar atualizar o registro da tabela de controle (id_nsu=" + id_nsu + ")!!" + strMsgErro;
@@ -1269,7 +1269,7 @@ namespace ART3WebAPI.Models.Repository
 									}
 									else
 									{
-										if (!atualizaTabelaControleNsu(ref cn, ref trx, id_nsu, strNsuNovo, strNsuAtual, out strMsgErro))
+										if (!atualizaTabelaControleNsu(httpRequestId, ref cn, ref trx, id_nsu, strNsuNovo, strNsuAtual, out strMsgErro))
 										{
 											if (strMsgErro.Length > 0) strMsgErro = "\n" + strMsgErro;
 											strMsgErro = "Falha ao tentar atualizar o registro da tabela de controle (id_nsu=" + id_nsu + ")!!" + strMsgErro;
@@ -1289,7 +1289,7 @@ namespace ART3WebAPI.Models.Repository
 
 					n_nsu++;
 					strNsuNovo = n_nsu.ToString().PadLeft(Global.Cte.Etc.TAM_MAX_NSU, '0');
-					if (!atualizaTabelaControleNsu(ref cn, ref trx, id_nsu, strNsuNovo, strNsuAtual, out strMsgErro))
+					if (!atualizaTabelaControleNsu(httpRequestId, ref cn, ref trx, id_nsu, strNsuNovo, strNsuAtual, out strMsgErro))
 					{
 						if (strMsgErro.Length > 0) strMsgErro = "\n" + strMsgErro;
 						strMsgErro = "Falha ao tentar atualizar a tabela de controle (id_nsu=" + id_nsu + ")!!" + strMsgErro;
@@ -1307,7 +1307,7 @@ namespace ART3WebAPI.Models.Repository
 			catch (Exception ex)
 			{
 				strMsgErro = NOME_DESTA_ROTINA + "\n" + ex.ToString();
-				Global.gravaLogAtividade(strMsgErro);
+				Global.gravaLogAtividade(httpRequestId, strMsgErro);
 				return false;
 			}
 		}

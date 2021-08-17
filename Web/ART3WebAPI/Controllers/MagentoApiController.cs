@@ -18,7 +18,18 @@ namespace ART3WebAPI.Controllers
 		[HttpGet]
 		public HttpResponseMessage Teste()
 		{
+			const string NOME_DESTA_ROTINA = "MagentoApiController.Teste()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			string msg;
+
+			msg = NOME_DESTA_ROTINA + ": Requisição recebida";
+			Global.gravaLogAtividade(httpRequestId, msg);
+
 			HttpResponseMessage result = Request.CreateResponse<string>(HttpStatusCode.OK, "Versão: " + Global.Cte.Versao.M_ID);
+
+			msg = NOME_DESTA_ROTINA + ": Status=" + result.StatusCode.ToString();
+			Global.gravaLogAtividade(httpRequestId, msg);
+
 			return result;
 		}
 		#endregion
@@ -46,6 +57,7 @@ namespace ART3WebAPI.Controllers
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "MagentoApiController.GetPedido()";
+			Guid httpRequestId = Request.GetCorrelationId();
 			string msg;
 			string msg_erro;
 			string serializedResult;
@@ -62,7 +74,7 @@ namespace ART3WebAPI.Controllers
 
 			#region [ Log atividade ]
 			msg = "MagentoApi.GetPedido() - numeroPedidoMagento = " + numeroPedidoMagento + ", operationControlTicket = " + operationControlTicket + ", loja = " + loja + ", usuario = " + usuario + ", sessionToken = " + sessionToken;
-			Global.gravaLogAtividade(msg);
+			Global.gravaLogAtividade(httpRequestId, msg);
 			#endregion
 
 			#region [ Validação de segurança: session token confere? ]
@@ -99,7 +111,7 @@ namespace ART3WebAPI.Controllers
 			{
 				msg = "Falha ao tentar recuperar os parâmetros de login da API do Magento para a loja " + loja + "!";
 				if (msg_erro.Length > 0) msg += "\n" + msg_erro;
-				Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + msg);
+				Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 				throw new Exception(msg);
 			}
 			#endregion
@@ -109,7 +121,7 @@ namespace ART3WebAPI.Controllers
 			if (loginParameters.magento_api_rest_prefixo_num_magento.Equals(prefixoNumPedidoMagento))
 			{
 				#region [ Tratamento para API REST (JSON) do Magento 2 ]
-				serializedResult = Magento2RestApi.processaGetPedido(numeroPedidoMagento, operationControlTicket, loja, usuario, sessionToken, loginParameters);
+				serializedResult = Magento2RestApi.processaGetPedido(httpRequestId, numeroPedidoMagento, operationControlTicket, loja, usuario, sessionToken, loginParameters);
 				result = Request.CreateResponse(HttpStatusCode.OK);
 				result.Content = new StringContent(serializedResult, Encoding.UTF8, "text/html");
 				#endregion
@@ -117,13 +129,13 @@ namespace ART3WebAPI.Controllers
 			else
 			{
 				#region [ Tratamento para API SOAP (XML) do Magento 1.8 ]
-				serializedResult = MagentoSoapApi.processaGetPedido(numeroPedidoMagento, operationControlTicket, loja, usuario, sessionToken, loginParameters);
+				serializedResult = MagentoSoapApi.processaGetPedido(httpRequestId, numeroPedidoMagento, operationControlTicket, loja, usuario, sessionToken, loginParameters);
 				result = Request.CreateResponse(HttpStatusCode.OK);
 				result.Content = new StringContent(serializedResult, Encoding.UTF8, "text/html");
 				#endregion
 			}
 
-			Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + "Retorno da requisição:\n" + result.ToString());
+			Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + "Retorno da requisição:\n" + result.ToString());
 
 			return result;
 		}

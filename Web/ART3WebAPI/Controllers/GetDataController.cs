@@ -19,6 +19,9 @@ namespace ART3WebAPI.Controllers
 		public HttpResponseMessage Produto(string codFabricante, string codProduto, string usuario, string sessionToken)
 		{
 			#region [ Declarações ]
+			const string NOME_DESTA_ROTINA = "GetDataController.Produto()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			string msg;
 			string msg_erro;
 			Produto produto;
 			Usuario usuarioBD;
@@ -27,6 +30,9 @@ namespace ART3WebAPI.Controllers
 
 			try
 			{
+				msg = NOME_DESTA_ROTINA + ": Requisição recebida (usuario=" + (usuario ?? "") + ", sessionToken=" + (sessionToken ?? "") + ", codFabricante=" + (codFabricante ?? "") + ", codProduto=" + (codProduto ?? "") + ")";
+				Global.gravaLogAtividade(httpRequestId, msg);
+
 				if ((usuario ?? "").Trim().Length == 0)
 				{
 					throw new Exception("Não foi informada a identificação do usuário!");
@@ -72,10 +78,17 @@ namespace ART3WebAPI.Controllers
 
 				result = Request.CreateResponse(HttpStatusCode.OK);
 				result.Content = new StringContent(serializedResult, Encoding.UTF8, "text/html");
+
+				msg = NOME_DESTA_ROTINA + ": Status=" + result.StatusCode.ToString();
+				Global.gravaLogAtividade(httpRequestId, msg);
+
 				return result;
 			}
 			catch (Exception ex)
 			{
+				msg = NOME_DESTA_ROTINA + ": Exception = " + ex.ToString();
+				Global.gravaLogAtividade(httpRequestId, msg);
+
 				return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex);
 			}
 		}
@@ -86,6 +99,9 @@ namespace ART3WebAPI.Controllers
 		public HttpResponseMessage ProdutoBySku(string codProduto, string usuario, string sessionToken)
 		{
 			#region [ Declarações ]
+			const string NOME_DESTA_ROTINA = "GetDataController.ProdutoBySku()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			string msg;
 			string msg_erro;
 			Produto produto;
 			Usuario usuarioBD;
@@ -94,6 +110,9 @@ namespace ART3WebAPI.Controllers
 
 			try
 			{
+				msg = NOME_DESTA_ROTINA + ": Requisição recebida (usuario=" + (usuario ?? "") + ", sessionToken=" + (sessionToken ?? "") + ", codProduto=" + (codProduto ?? "") + ")";
+				Global.gravaLogAtividade(httpRequestId, msg);
+
 				if ((usuario ?? "").Trim().Length == 0)
 				{
 					throw new Exception("Não foi informada a identificação do usuário!");
@@ -134,10 +153,17 @@ namespace ART3WebAPI.Controllers
 
 				result = Request.CreateResponse(HttpStatusCode.OK);
 				result.Content = new StringContent(serializedResult, Encoding.UTF8, "text/html");
+
+				msg = NOME_DESTA_ROTINA + ": Status=" + result.StatusCode.ToString();
+				Global.gravaLogAtividade(httpRequestId, msg);
+
 				return result;
 			}
 			catch (Exception ex)
 			{
+				msg = NOME_DESTA_ROTINA + ": Exception = " + ex.ToString();
+				Global.gravaLogAtividade(httpRequestId, msg);
+
 				return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex);
 			}
 		}

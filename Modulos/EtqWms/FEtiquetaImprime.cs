@@ -204,9 +204,22 @@ namespace EtqWms
 							" tN2.obs_3," +
 							" tN2.loja," +
 							" tN2.transportadora_id," +
-							" tN2.id_cliente," +
+							" tN2.id_cliente,";
+
+				if (flagPedidoUsarMemorizacaoCompletaEnderecos == 0)
+				{
+					strSql +=
 							" tCli.cnpj_cpf AS cnpj_cpf_cliente," +
-							" tCli.nome_iniciais_em_maiusculas AS nome_cliente," +
+							" tCli.nome_iniciais_em_maiusculas AS nome_cliente,";
+				}
+				else
+				{
+					strSql +=
+							" (CASE tPed.st_memorizacao_completa_enderecos WHEN 0 THEN tCli.cnpj_cpf ELSE tPed.endereco_cnpj_cpf END) AS cnpj_cpf_cliente," +
+							" (CASE tPed.st_memorizacao_completa_enderecos WHEN 0 THEN tCli.nome_iniciais_em_maiusculas ELSE tPed.endereco_nome_iniciais_em_maiusculas END) AS nome_cliente,";
+				}
+
+				strSql +=
 							" tFab.nome AS nome_fabricante," +
 							" tFab.razao_social AS razao_social_fabricante," +
 							" tN3.fabricante," +

@@ -30,6 +30,8 @@
 	On Error GoTo 0
 	Err.Clear
 
+	const ID_RELATORIO = "CENTRAL/EstoqueConsultaMCrit"
+
 	const MSO_NUMBER_FORMAT_PERC = "\#\#0\.0%"
 	const MSO_NUMBER_FORMAT_INTEIRO = "\#\#\#\,\#\#\#\,\#\#0"
 	const MSO_NUMBER_FORMAT_MOEDA = "\#\#\#\,\#\#\#\,\#\#0\.00"
@@ -58,6 +60,7 @@
 	dim s_entrada_de, s_entrada_ate, ckb_especial, ckb_saldo, ckb_compras, ckb_kit, ckb_devolucao, s_nf_entrada_de, s_nf_entrada_ate
 	dim rb_saida
     dim c_empresa
+	dim c_grupo, c_subgrupo
 
 	s_fabricante = retorna_so_digitos(Request.Form("c_fabricante"))
 	if s_fabricante <> "" then s_fabricante = normaliza_codigo(s_fabricante, TAM_MIN_FABRICANTE)
@@ -74,6 +77,8 @@
 	s_nf_entrada_ate = Trim(Request.Form("c_nf_entrada_ate"))
 	rb_saida = Ucase(Trim(Request.Form("rb_saida")))
 	c_empresa = Trim(Request.Form("c_empresa"))
+	c_grupo = Ucase(Trim(Request.Form("c_grupo")))
+	c_subgrupo = Ucase(Trim(Request.Form("c_subgrupo")))
 
 	alerta = ""
 	if (s_produto<>"") And (Not IsEAN(s_produto)) then
@@ -132,6 +137,11 @@
 		strMinDtInicialFiltroPeriodoDDMMYYYY = ""
 		end if
 
+	if alerta = "" then
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_grupo", c_grupo)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_subgrupo", c_subgrupo)
+		end if
+
 	dim blnSaidaExcel
 	blnSaidaExcel = False
 	if alerta = "" then
@@ -187,6 +197,16 @@
 				Response.Write "Data de entrada no estoque entre " & s
 				Response.Write "<br>"
 				end if
+
+			s = c_grupo
+			if s = "" then s = "N.I."
+			Response.Write "Grupo de Produtos: " & s
+			Response.Write "<br>"
+
+			s = c_subgrupo
+			if s = "" then s = "N.I."
+			Response.Write "Subgrupo de Produtos: " & s
+			Response.Write "<br>"
 
 			s = ""
 			if ckb_compras <> "" then
@@ -255,8 +275,9 @@
 ' EXECUTA CONSULTA
 '
 Sub executa_consulta ()
-dim s, h, x, s_sql, s_where, s_where_tipo_or, s_where_tipo_and, n_reg, rs, s_link_open, s_link_close, s_nowrap
+dim s, h, x, s_sql, s_where, s_where_temp, s_where_tipo_or, s_where_tipo_and, n_reg, rs, s_link_open, s_link_close, s_nowrap
 dim w_dt_entrada, w_documento, w_dt_nf_entrada, w_empresa, w_fabricante, w_produto, w_qtde, w_saldo, w_vl_unitario, w_vl_referencia, w_operador
+dim v, i
 
 	if blnSaidaExcel then
 		w_dt_entrada = 90
@@ -288,50 +309,50 @@ dim w_dt_entrada, w_documento, w_dt_nf_entrada, w_empresa, w_fabricante, w_produ
 	if blnSaidaExcel then
 		h = h & _
 			"<TR style='background:azure'>" & _
-			chr(13) & "	<TD style='width:" & w_dt_entrada & "px;' align='center'><P class='R' style='font-weight:bold;'>Entrada</P></TD>" & _
-			chr(13) & "	<TD style='width:" & w_documento & "px;' NOWRAP><P class='R' style='font-weight:bold;margin-right:2pt;'>Documento</P></TD>" & _
-			chr(13) & "	<TD style='width:" & w_dt_nf_entrada & "px;' align='center'><P class='R' style='font-weight:bold;'>Data NF</P></TD>" & _
-			chr(13) & "	<TD style='width:" & w_empresa & "px;'><P class='R' style='font-weight:bold;'>Empresa</P></TD>" & _
-			chr(13) & "	<TD style='width:" & w_fabricante & "px;'><P class='R' style='font-weight:bold;'>Fabricante</P></TD>" & _
-			chr(13) & "	<TD style='width:" & w_produto & "px;'><P class='R' style='font-weight:bold;'>Produto</P></TD>" & _
-			chr(13) & "	<TD style='width:" & w_qtde & "px;' align='right'><P class='R' style='font-weight:bold;text-align:right;margin-left:2pt;margin-right:2pt;'>Qtde</P></TD>" & _
-			chr(13) & "	<TD style='width:" & w_saldo & "px;' align='right'><P class='R' style='font-weight:bold;text-align:right;margin-left:2pt;margin-right:2pt;'>Saldo</P></TD>" & _
-			chr(13) & "	<TD style='width:" & w_vl_unitario & "px;' align='right' NOWRAP><P class='R' style='font-weight:bold;text-align:right;margin-left:2pt;margin-right:2pt;'>Valor Unit</P></TD>" & _
-			chr(13) & "	<TD style='width:" & w_vl_referencia & "px;' align='right' NOWRAP><P class='R' style='font-weight:bold;text-align:right;margin-left:2pt;margin-right:2pt;'>Valor Ref</P></TD>" & _
-			chr(13) & "	<TD style='width:" & w_operador & "px;' NOWRAP><P class='R' style='font-weight:bold;margin-right:2pt;'>Operador</P></TD>" & _
+			chr(13) & "	<TD style='width:" & w_dt_entrada & "px;' align='center'><span class='R' style='font-weight:bold;'>Entrada</span></TD>" & _
+			chr(13) & "	<TD style='width:" & w_documento & "px;' NOWRAP><span class='R' style='font-weight:bold;margin-right:2pt;'>Documento</span></TD>" & _
+			chr(13) & "	<TD style='width:" & w_dt_nf_entrada & "px;' align='center'><span class='R' style='font-weight:bold;'>Data NF</span></TD>" & _
+			chr(13) & "	<TD style='width:" & w_empresa & "px;'><span class='R' style='font-weight:bold;'>Empresa</span></TD>" & _
+			chr(13) & "	<TD style='width:" & w_fabricante & "px;'><span class='R' style='font-weight:bold;'>Fabricante</span></TD>" & _
+			chr(13) & "	<TD style='width:" & w_produto & "px;'><span class='R' style='font-weight:bold;'>Produto</span></TD>" & _
+			chr(13) & "	<TD style='width:" & w_qtde & "px;' align='right'><span class='R' style='font-weight:bold;text-align:right;margin-left:2pt;margin-right:2pt;'>Qtde</span></TD>" & _
+			chr(13) & "	<TD style='width:" & w_saldo & "px;' align='right'><span class='R' style='font-weight:bold;text-align:right;margin-left:2pt;margin-right:2pt;'>Saldo</span></TD>" & _
+			chr(13) & "	<TD style='width:" & w_vl_unitario & "px;' align='right' NOWRAP><span class='R' style='font-weight:bold;text-align:right;margin-left:2pt;margin-right:2pt;'>Valor Unit</span></TD>" & _
+			chr(13) & "	<TD style='width:" & w_vl_referencia & "px;' align='right' NOWRAP><span class='R' style='font-weight:bold;text-align:right;margin-left:2pt;margin-right:2pt;'>Valor Ref</span></TD>" & _
+			chr(13) & "	<TD style='width:" & w_operador & "px;' NOWRAP><span class='R' style='font-weight:bold;margin-right:2pt;'>Operador</span></TD>" & _
 			"</TR>" & chr(13)
 	else
 		h = h & _
 			"<TR style='background:azure'>" & _
-			chr(13) & "	<TD align='center' valign='bottom' class='MD MB' style='width:" & w_dt_entrada & "px;'><P class='R' style='font-weight:bold;'>entrada</P></TD>" & _
-			chr(13) & "	<TD valign='bottom' class='MD MB' style='width:" & w_documento & "px;' NOWRAP><P class='R' style='font-weight:bold;margin-right:2pt;'>documento</P></TD>" & _
-			chr(13) & "	<TD align='center' valign='bottom' class='MD MB' style='width:" & w_dt_nf_entrada & "px;' NOWRAP><P class='R' style='font-weight:bold;margin-right:2pt;'>data nf</P></TD>" & _
-			chr(13) & "	<TD valign='bottom' class='MD MB' style='width:" & w_empresa & "px;'><P class='R' style='font-weight:bold;'>empresa</P></TD>" & _
-			chr(13) & "	<TD valign='bottom' class='MD MB' style='width:" & w_fabricante & "px;'><P class='R' style='font-weight:bold;'>fabricante</P></TD>" & _
-			chr(13) & "	<TD valign='bottom' class='MD MB' style='width:" & w_produto & "px;'><P class='R' style='font-weight:bold;'>produto</P></TD>" & _
-			chr(13) & "	<TD valign='bottom' class='MD MB' style='width:" & w_qtde & "px;' align='right'><P class='R' style='font-weight:bold;text-align:right;margin-left:2pt;margin-right:2pt;'>qtde</P></TD>" & _
-			chr(13) & "	<TD valign='bottom' class='MD MB' style='width:" & w_saldo & "px;' align='right'><P class='R' style='font-weight:bold;text-align:right;margin-left:2pt;margin-right:2pt;'>saldo</P></TD>" & _
-			chr(13) & "	<TD valign='bottom' class='MD MB' style='width:" & w_vl_unitario & "px;' align='right' NOWRAP><P class='R' style='font-weight:bold;text-align:right;margin-left:2pt;margin-right:2pt;'>valor unit</P></TD>" & _
-			chr(13) & "	<TD valign='bottom' class='MD MB' style='width:" & w_vl_referencia & "px;' align='right' NOWRAP><P class='R' style='font-weight:bold;text-align:right;margin-left:2pt;margin-right:2pt;'>valor ref</P></TD>" & _
-			chr(13) & "	<TD valign='bottom' class='MB' style='width:" & w_operador & "px;' NOWRAP><P class='R' style='font-weight:bold;margin-right:2pt;'>operador</P></TD>" & _
+			chr(13) & "	<TD align='center' valign='bottom' class='MD MB' style='width:" & w_dt_entrada & "px;'><span class='R' style='font-weight:bold;'>entrada</span></TD>" & _
+			chr(13) & "	<TD valign='bottom' class='MD MB' style='width:" & w_documento & "px;' NOWRAP><span class='R' style='font-weight:bold;margin-right:2pt;'>documento</span></TD>" & _
+			chr(13) & "	<TD align='center' valign='bottom' class='MD MB' style='width:" & w_dt_nf_entrada & "px;' NOWRAP><span class='R' style='font-weight:bold;margin-right:2pt;'>data nf</span></TD>" & _
+			chr(13) & "	<TD valign='bottom' class='MD MB' style='width:" & w_empresa & "px;'><span class='R' style='font-weight:bold;'>empresa</span></TD>" & _
+			chr(13) & "	<TD valign='bottom' class='MD MB' style='width:" & w_fabricante & "px;'><span class='R' style='font-weight:bold;'>fabricante</span></TD>" & _
+			chr(13) & "	<TD valign='bottom' class='MD MB' style='width:" & w_produto & "px;'><span class='R' style='font-weight:bold;'>produto</span></TD>" & _
+			chr(13) & "	<TD valign='bottom' class='MD MB' style='width:" & w_qtde & "px;' align='right'><span class='R' style='font-weight:bold;text-align:right;margin-left:2pt;margin-right:2pt;'>qtde</span></TD>" & _
+			chr(13) & "	<TD valign='bottom' class='MD MB' style='width:" & w_saldo & "px;' align='right'><span class='R' style='font-weight:bold;text-align:right;margin-left:2pt;margin-right:2pt;'>saldo</span></TD>" & _
+			chr(13) & "	<TD valign='bottom' class='MD MB' style='width:" & w_vl_unitario & "px;' align='right' NOWRAP><span class='R' style='font-weight:bold;text-align:right;margin-left:2pt;margin-right:2pt;'>valor unit</span></TD>" & _
+			chr(13) & "	<TD valign='bottom' class='MD MB' style='width:" & w_vl_referencia & "px;' align='right' NOWRAP><span class='R' style='font-weight:bold;text-align:right;margin-left:2pt;margin-right:2pt;'>valor ref</span></TD>" & _
+			chr(13) & "	<TD valign='bottom' class='MB' style='width:" & w_operador & "px;' NOWRAP><span class='R' style='font-weight:bold;margin-right:2pt;'>operador</span></TD>" & _
 			"</TR>" & chr(13)
 		end if
 	
 	s_sql = "SELECT" & _
-			" t_ESTOQUE.id_estoque, t_ESTOQUE.data_entrada," & _
-			" t_ESTOQUE.id_nfe_emitente, t_NFe_EMITENTE.apelido AS empresa_apelido," & _
-			" t_ESTOQUE.fabricante," & _
-			" t_ESTOQUE.documento, t_ESTOQUE.usuario," & _
-			" t_ESTOQUE_ITEM.produto, t_ESTOQUE_ITEM.preco_fabricante, t_ESTOQUE_ITEM.vl_custo2," & _
-			" t_ESTOQUE_ITEM.qtde, t_ESTOQUE_ITEM.qtde_utilizada," & _
-			" t_PRODUTO.descricao," & _
-			" t_PRODUTO.descricao_html," & _
-			" t_FABRICANTE.razao_social, t_FABRICANTE.nome," & _
-			" t_ESTOQUE.data_emissao_NF_entrada" & _
+				" t_ESTOQUE.id_estoque, t_ESTOQUE.data_entrada," & _
+				" t_ESTOQUE.id_nfe_emitente, t_NFe_EMITENTE.apelido AS empresa_apelido," & _
+				" t_ESTOQUE.fabricante," & _
+				" t_ESTOQUE.documento, t_ESTOQUE.usuario," & _
+				" t_ESTOQUE_ITEM.produto, t_ESTOQUE_ITEM.preco_fabricante, t_ESTOQUE_ITEM.vl_custo2," & _
+				" t_ESTOQUE_ITEM.qtde, t_ESTOQUE_ITEM.qtde_utilizada," & _
+				" t_PRODUTO.descricao," & _
+				" t_PRODUTO.descricao_html," & _
+				" t_FABRICANTE.razao_social, t_FABRICANTE.nome," & _
+				" t_ESTOQUE.data_emissao_NF_entrada" & _
             " FROM t_ESTOQUE INNER JOIN t_ESTOQUE_ITEM ON (t_ESTOQUE.id_estoque=t_ESTOQUE_ITEM.id_estoque)" & _
-			" LEFT JOIN t_PRODUTO ON ((t_ESTOQUE_ITEM.fabricante=t_PRODUTO.fabricante) AND (t_ESTOQUE_ITEM.produto=t_PRODUTO.produto))" & _
-			" LEFT JOIN t_FABRICANTE ON (t_ESTOQUE.fabricante=t_FABRICANTE.fabricante)" & _
-			" LEFT JOIN t_NFe_EMITENTE ON (t_ESTOQUE.id_nfe_emitente=t_NFe_EMITENTE.id)"
+				" LEFT JOIN t_PRODUTO ON ((t_ESTOQUE_ITEM.fabricante=t_PRODUTO.fabricante) AND (t_ESTOQUE_ITEM.produto=t_PRODUTO.produto))" & _
+				" LEFT JOIN t_FABRICANTE ON (t_ESTOQUE.fabricante=t_FABRICANTE.fabricante)" & _
+				" LEFT JOIN t_NFe_EMITENTE ON (t_ESTOQUE.id_nfe_emitente=t_NFe_EMITENTE.id)"
 
 	s_where = ""
 	if s_fabricante <> "" then
@@ -434,6 +455,36 @@ dim w_dt_entrada, w_documento, w_dt_nf_entrada, w_empresa, w_fabricante, w_produ
 		s_where = s_where & " (t_ESTOQUE.data_emissao_NF_entrada <= " & bd_formata_data(StrToDate(s_nf_entrada_ate)) & ")"
 		end if
 
+	s_where_temp = ""
+	if c_grupo <> "" then
+		v = split(c_grupo, ", ")
+		for i=LBound(v) to UBound(v)
+			if Trim("" & v(i)) <> "" then
+				if s_where_temp <> "" then s_where_temp = s_where_temp & ","
+				s_where_temp = s_where_temp & "'" & Trim("" & v(i)) & "'"
+				end if
+			next
+		if s_where_temp <> "" then
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (t_PRODUTO.grupo IN (" & s_where_temp & "))"
+			end if
+		end if
+
+	s_where_temp = ""
+	if c_subgrupo <> "" then
+		v = split(c_subgrupo, ", ")
+		for i=LBound(v) to UBound(v)
+			if Trim("" & v(i)) <> "" then
+				if s_where_temp <> "" then s_where_temp = s_where_temp & ","
+				s_where_temp = s_where_temp & "'" & Trim("" & v(i)) & "'"
+				end if
+			next
+		if s_where_temp <> "" then
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (t_PRODUTO.subgrupo IN (" & s_where_temp & "))"
+			end if
+		end if
+
 	if s_where <> "" then s_where = " WHERE" & s_where
 	s_sql = s_sql & s_where
 	s_sql = s_sql & " ORDER BY t_ESTOQUE.data_entrada, t_ESTOQUE.id_estoque, t_ESTOQUE.documento, t_ESTOQUE.fabricante, t_ESTOQUE_ITEM.sequencia"
@@ -462,7 +513,7 @@ dim w_dt_entrada, w_documento, w_dt_nf_entrada, w_empresa, w_fabricante, w_produ
 			end if
 		
 	'	DATA ENTRADA
-		x = x & chr(13) & "	<TD align='center' valign='middle' class='MDB' NOWRAP style='width:" & w_dt_entrada & "px;'><P class='Cn'>" & s_link_open & formata_data(rs("data_entrada")) & s_link_close & "</P>" & "</TD>"
+		x = x & chr(13) & "	<TD align='center' valign='middle' class='MDB' NOWRAP style='width:" & w_dt_entrada & "px;'><span class='Cn'>" & s_link_open & formata_data(rs("data_entrada")) & s_link_close & "</span>" & "</TD>"
 		
 	'	DOCUMENTO
 		if blnSaidaExcel then s_nowrap = " NOWRAP" else s_nowrap = ""
@@ -470,7 +521,7 @@ dim w_dt_entrada, w_documento, w_dt_nf_entrada, w_empresa, w_fabricante, w_produ
 		if Not blnSaidaExcel then
 			if s = "" then s = "&nbsp;"
 			end if
-		x = x & chr(13) & "	<TD valign='middle' class='MDB'" & s_nowrap & " style='width:" & w_documento & "px;'><P class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s_link_open & s & s_link_close & "</P></TD>"
+		x = x & chr(13) & "	<TD valign='middle' class='MDB'" & s_nowrap & " style='width:" & w_documento & "px;'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s_link_open & s & s_link_close & "</span></TD>"
 
 	'	DATA NF
 		'if blnSaidaExcel then s_nowrap = " NOWRAP" else s_nowrap = ""
@@ -478,12 +529,12 @@ dim w_dt_entrada, w_documento, w_dt_nf_entrada, w_empresa, w_fabricante, w_produ
 		'if Not blnSaidaExcel then
 		'	if s = "" then s = "&nbsp;"
 		'	end if
-		x = x & chr(13) & "	<TD valign='middle' class='MDB'" & s_nowrap & " style='width:" & w_dt_nf_entrada & "px;'><P class='Cn'>" & s_link_open & formata_data(rs("data_emissao_NF_entrada")) & s_link_close & "</P></TD>"
+		x = x & chr(13) & "	<TD valign='middle' class='MDB'" & s_nowrap & " style='width:" & w_dt_nf_entrada & "px;'><span class='Cn'>" & s_link_open & formata_data(rs("data_emissao_NF_entrada")) & s_link_close & "</span></TD>"
 
 	'	EMPRESA
 		if blnSaidaExcel then s_nowrap = " NOWRAP" else s_nowrap = ""
 		s = Trim("" & rs("empresa_apelido"))
-		x = x & chr(13) & "	<TD valign='middle' class='MDB'" & s_nowrap & " style='width:" & w_empresa & "px;'><P class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</P></TD>"
+		x = x & chr(13) & "	<TD valign='middle' class='MDB'" & s_nowrap & " style='width:" & w_empresa & "px;'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</span></TD>"
 
 	'	FABRICANTE
 		if blnSaidaExcel then s_nowrap = " NOWRAP" else s_nowrap = ""
@@ -494,7 +545,7 @@ dim w_dt_entrada, w_documento, w_dt_nf_entrada, w_empresa, w_fabricante, w_produ
 			s = " - " & s
 			end if
 		s = Trim("" & rs("fabricante")) & s
-		x = x & chr(13) & "	<TD valign='middle' class='MDB'" & s_nowrap & " style='width:" & w_fabricante & "px;'><P class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</P></TD>"
+		x = x & chr(13) & "	<TD valign='middle' class='MDB'" & s_nowrap & " style='width:" & w_fabricante & "px;'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</span></TD>"
 
 	'	PRODUTO
 		if blnSaidaExcel then s_nowrap = " NOWRAP" else s_nowrap = ""
@@ -504,23 +555,23 @@ dim w_dt_entrada, w_documento, w_dt_nf_entrada, w_empresa, w_fabricante, w_produ
 			s = " - " & s
 			end if
 		s = Trim("" & rs("produto")) & s
-		x = x & chr(13) & "	<TD valign='middle' class='MDB'" & s_nowrap & " style='width:" & w_produto & "px;'><P class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</P></TD>"
+		x = x & chr(13) & "	<TD valign='middle' class='MDB'" & s_nowrap & " style='width:" & w_produto & "px;'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</span></TD>"
 
 	'	QTDE
-		x = x & chr(13) & "	<TD align='right' valign='middle' class='MDB' NOWRAP style='width:" & w_qtde & "px;'><P class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_INTEIRO & chr(34) & ";'>" & Cstr(rs("qtde")) & "</P></TD>"
+		x = x & chr(13) & "	<TD align='right' valign='middle' class='MDB' NOWRAP style='width:" & w_qtde & "px;'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_INTEIRO & chr(34) & ";'>" & Cstr(rs("qtde")) & "</span></TD>"
 
 	'	SALDO
-		x = x & chr(13) & "	<TD align='right' valign='middle' class='MDB' NOWRAP style='width:" & w_saldo & "px;'><P class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_INTEIRO & chr(34) & ";'>" & Cstr(CLng(rs("qtde"))-CLng(rs("qtde_utilizada"))) & "</P></TD>"
+		x = x & chr(13) & "	<TD align='right' valign='middle' class='MDB' NOWRAP style='width:" & w_saldo & "px;'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_INTEIRO & chr(34) & ";'>" & Cstr(CLng(rs("qtde"))-CLng(rs("qtde_utilizada"))) & "</span></TD>"
 
 	'	VALOR UNITÁRIO
-		x = x & chr(13) & "	<TD align='right' valign='middle' class='MDB' NOWRAP style='width:" & w_vl_unitario & "px;'><P class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(rs("preco_fabricante")) & "</P></TD>"
+		x = x & chr(13) & "	<TD align='right' valign='middle' class='MDB' NOWRAP style='width:" & w_vl_unitario & "px;'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(rs("preco_fabricante")) & "</span></TD>"
 
 	'	VALOR REFERÊNCIA
-		x = x & chr(13) & "	<TD align='right' valign='middle' class='MDB' NOWRAP style='width:" & w_vl_referencia & "px;'><P class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(rs("vl_custo2")) & "</P></TD>"
+		x = x & chr(13) & "	<TD align='right' valign='middle' class='MDB' NOWRAP style='width:" & w_vl_referencia & "px;'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(rs("vl_custo2")) & "</span></TD>"
 
 	'	OPERADOR
 		if blnSaidaExcel then s_nowrap = " NOWRAP" else s_nowrap = ""
-		x = x & chr(13) & "	<TD valign='middle' class='MB'" & s_nowrap & " style='width:" & w_operador & "px;'><P class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & Trim("" & rs("usuario")) & "</P></TD>"
+		x = x & chr(13) & "	<TD valign='middle' class='MB'" & s_nowrap & " style='width:" & w_operador & "px;'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & Trim("" & rs("usuario")) & "</span></TD>"
 
 		x = x & "</TR>" & chr(13)
 
@@ -534,7 +585,7 @@ dim w_dt_entrada, w_documento, w_dt_nf_entrada, w_empresa, w_fabricante, w_produ
 
 	if n_reg = 0 then 
 		x = h & "<TR NOWRAP >" & _
-			"<TD colspan='10' align='center' class='MB'><P class='ALERTA'>&nbsp;NENHUM REGISTRO DO ESTOQUE SATISFAZ AS CONDIÇÕES ESPECIFICADAS&nbsp;</P></TD>" & _
+			"<TD colspan='11' align='center' class='MB ALERTA'><span class='ALERTA'>&nbsp;NENHUM REGISTRO DO ESTOQUE SATISFAZ AS CONDIÇÕES ESPECIFICADAS&nbsp;</span></TD>" & _
 			"</TR>"
 		end if
 
@@ -562,6 +613,8 @@ end sub
 '      CCCCCCC   LLLLLLLLL  IIIII  EEEEEEEEE  NNN   NNN     TTT    EEEEEEEEE
 %>
 
+
+<%=DOCTYPE_LEGADO%>
 
 
 <html>
@@ -629,6 +682,12 @@ a
 	margin: 0pt 2pt 1pt 15pt;
 	vertical-align: top;
 	}
+#spnGrupo, #spnSubgrupo{
+	margin-left:3pt;
+	margin-right:3pt;
+	display:block;
+	word-wrap: break-word;
+}
 </style>
 
 
@@ -672,6 +731,9 @@ a
 <input type=HIDDEN name="ckb_compras" id="ckb_compras" value="<%=ckb_compras%>">
 <input type=HIDDEN name="ckb_kit" id="ckb_kit" value="<%=ckb_kit%>">
 <input type=HIDDEN name="ckb_devolucao" id="ckb_devolucao" value="<%=ckb_devolucao%>">
+<input type="hidden" name="c_grupo" id="c_grupo" value="<%=c_grupo%>" />
+<input type="hidden" name="c_subgrupo" id="c_subgrupo" value="<%=c_subgrupo%>" />
+
 
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->
 <table width="884" cellPadding="4" CellSpacing="0" style="border-bottom:1px solid black">
@@ -686,7 +748,7 @@ a
 <br>
 
 <!--  PARÂMETROS DA CONSULTA MULTICRITÉRIOS  -->
-<table class="Qx" cellSpacing="0">
+<table class="Qx" cellSpacing="0" style="width:500px;">
 <!--  EMPRESA  -->
 	<tr bgColor="#FFFFFF">
 	<td class="MT" NOWRAP><span class="PLTe">Empresa</span>
@@ -732,6 +794,24 @@ a
 						value="<%=s_entrada_de%>"
 			><span class="PLTe">&nbsp;e&nbsp;</span><input name="c_entrada_ate" id="c_entrada_ate" readonly tabindex=-1 class="PLLc" style="margin-left:2pt;width:150px;"
 						value="<%=s_entrada_ate%>"></td>
+	</tr>
+
+<!--  GRUPO  -->
+	<tr bgColor="#FFFFFF">
+	<td class="MDBE" NOWRAP><span class="PLTe">Grupo de Produtos</span>
+		<%	s = c_grupo
+			if s = "" then s = "N.I."%>
+		<br><span name="spnGrupo" id="spnGrupo" class="N"><%=s%></span>
+	</td>
+	</tr>
+
+<!--  SUBGRUPO  -->
+	<tr bgColor="#FFFFFF">
+	<td class="MDBE"><span class="PLTe">Subgrupo de Produtos</span>
+		<%	s = c_subgrupo
+			if s = "" then s = "N.I."%>
+		<br><span name="spnSubgrupo" id="spnSubgrupo" class="N"><%=s%></span>
+	</td>
 	</tr>
 
 <!--  TIPO DE CADASTRAMENTO  -->

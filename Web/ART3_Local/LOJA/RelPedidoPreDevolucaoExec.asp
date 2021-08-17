@@ -31,9 +31,11 @@
 	On Error GoTo 0
 	Err.Clear
 
-	dim usuario
+	dim usuario, loja
 	usuario = Trim(Session("usuario_atual"))
+	loja = Trim(Session("loja_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO)
+	If (loja = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO)
 
 '	CONECTA COM O BANCO DE DADOS
 	dim cn, rs, msg_erro
@@ -53,9 +55,11 @@
 	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 
 	dim s_filtro, intQtdePreDevolucoes
-	dim s, rb_status, origem, c_loja
+	dim s, s_aux, rb_status, origem, c_loja, c_dt_inicio, c_dt_termino
 	origem = ucase(Trim(request("origem")))
-    c_loja = Trim(Session("loja_atual"))
+	c_loja = Trim(Request.Form("c_loja"))
+	c_dt_inicio = Trim(Request.Form("c_dt_inicio"))
+	c_dt_termino = Trim(Request.Form("c_dt_termino"))
 	intQtdePreDevolucoes = 0
     
 	if origem="A" then
@@ -64,6 +68,20 @@
 	else
 		rb_status = Trim(Request.Form("rb_status"))
 		end if
+
+	dim alerta
+	alerta = ""
+
+	if alerta = "" then
+		if ((rb_status = "FINALIZADA") Or (rb_status = "REPROVADA")) _
+			And _
+			((c_dt_inicio = "") Or (c_dt_termino = "")) then
+			alerta=texto_add_br(alerta)
+			alerta=alerta & "É necessário informar o período da consulta para o status selecionado!"
+			end if
+		end if
+
+
 
 
 ' _____________________________________________________________________________________________
@@ -127,7 +145,7 @@ end function
 ' CONSULTA EXECUTA
 '
 sub consulta_executa
-dim s, s2, s_aux, s_sql, x
+dim s, s2, s_aux, s_sql, s_where, s_where_campo_dt_periodo, x
 dim r
 dim cab_table, cab
 dim id_devolucao
@@ -161,29 +179,59 @@ dim st_devolucao_descricao, st_devolucao_cor
 		end if
 
 	s_sql = s_sql & _
+			", (SELECT SUM(qtde * preco_NF) FROM t_PEDIDO_ITEM WHERE t_PEDIDO_ITEM.pedido = tP.pedido) AS vl_pedido"
+
+	s_sql = s_sql & _
         " FROM t_PEDIDO_DEVOLUCAO tPD" & _
         " INNER JOIN t_PEDIDO tP ON (tPD.pedido = tP.pedido)" & _
-        " INNER JOIN t_CLIENTE tC ON (tP.id_cliente=tC.id)" & _
-        " WHERE (" & _
-		        "1 = 1" & _
-		        ")"
+        " INNER JOIN t_CLIENTE tC ON (tP.id_cliente=tC.id)"
+
+	s_where = ""
+	s_where_campo_dt_periodo = ""
 
 	if rb_status = "CADASTRADA" then
-		s_sql = s_sql & " AND (status = " & COD_ST_PEDIDO_DEVOLUCAO__CADASTRADA & ")"
+		s_where_campo_dt_periodo = "tPD.dt_cadastro"
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (tPD.status = " & COD_ST_PEDIDO_DEVOLUCAO__CADASTRADA & ")"
 	elseif rb_status = "EM_ANDAMENTO" then
-		s_sql = s_sql & " AND (status = " & COD_ST_PEDIDO_DEVOLUCAO__EM_ANDAMENTO & ")"
+		s_where_campo_dt_periodo = "tPD.dt_cadastro"
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (tPD.status = " & COD_ST_PEDIDO_DEVOLUCAO__EM_ANDAMENTO & ")"
 	elseif rb_status = "MERCADORIA_RECEBIDA" then
-		s_sql = s_sql & " AND (status = " & COD_ST_PEDIDO_DEVOLUCAO__MERCADORIA_RECEBIDA & ")"
+		s_where_campo_dt_periodo = "tPD.dt_mercadoria_recebida"
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (tPD.status = " & COD_ST_PEDIDO_DEVOLUCAO__MERCADORIA_RECEBIDA & ")"
     elseif rb_status = "REPROVADA" then
-		s_sql = s_sql & " AND (status = " & COD_ST_PEDIDO_DEVOLUCAO__REPROVADA & ")"
+		s_where_campo_dt_periodo = "tPD.dt_reprovado"
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (tPD.status = " & COD_ST_PEDIDO_DEVOLUCAO__REPROVADA & ")"
     elseif rb_status = "FINALIZADA" then
-		s_sql = s_sql & " AND (status = " & COD_ST_PEDIDO_DEVOLUCAO__FINALIZADA & ")"
+		s_where_campo_dt_periodo = "tPD.dt_finalizado"
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (tPD.status = " & COD_ST_PEDIDO_DEVOLUCAO__FINALIZADA & ")"
     elseif rb_status = "CANCELADA" then
-		s_sql = s_sql & " AND (status = " & COD_ST_PEDIDO_DEVOLUCAO__CANCELADA & ")"
+		s_where_campo_dt_periodo = "tPD.dt_cancelado"
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (tPD.status = " & COD_ST_PEDIDO_DEVOLUCAO__CANCELADA & ")"
 		end if
 
-	s_sql = s_sql & " AND (tP.numero_loja = " & c_loja & ")"
-    s_sql = s_sql & " ORDER BY status_data_hora DESC"
+	if (c_dt_inicio <> "") And (s_where_campo_dt_periodo <> "") then
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (" & s_where_campo_dt_periodo & " >= " & bd_formata_data(StrToDate(c_dt_inicio)) & ")"
+		end if
+
+	if (c_dt_termino <> "") And (s_where_campo_dt_periodo <> "") then
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (" & s_where_campo_dt_periodo & " < " & bd_formata_data(StrToDate(c_dt_termino)+1) & ")"
+		end if
+
+	if s_where <> "" then s_where = s_where & " AND"
+	s_where = s_where & " (tP.numero_loja = " & c_loja & ")"
+
+	if s_where <> "" then s_where = " WHERE" & s_where
+	s_sql = s_sql & s_where
+
+    s_sql = s_sql & " ORDER BY tPD.status_data_hora DESC"
 
 	cab_table = "<TABLE cellSpacing=0 cellPadding=0>" & chr(13)
 	cab = "	<TR style='background:azure' NOWRAP>" & chr(13) & _
@@ -196,6 +244,7 @@ dim st_devolucao_descricao, st_devolucao_cor
 		  "		<TD class='MTD tdCliente' style='vertical-align:bottom'><P class='R'>Cliente</P></TD>" & chr(13) & _
 		  "		<TD class='MTD tdTransp' style='vertical-align:bottom'><P class='R'>Transp</P></TD>" & chr(13) & _
 		  "		<TD class='MTD tdMotivo' style='vertical-align:bottom'><P class='R'>Motivo</P></TD>" & chr(13) & _
+          "     <TD class='MTD tdVlPedido' style='vertical-align:bottom'><P class='R'>VL Pedido</P></TD>" & chr(13) & _
           "     <TD class='MTD tdVlDevolucao' style='vertical-align:bottom'><P class='R'>VL Devolução</P></TD>" & chr(13) & _
 		  "		<TD class='MTD tdStatus' style='vertical-align:bottom'><P class='Rc'>Status</P></TD>" & chr(13) & _
 		  "		<TD style='background:white;'>&nbsp;</TD>" & chr(13) & _
@@ -254,6 +303,10 @@ dim st_devolucao_descricao, st_devolucao_cor
             end if
 		x = x & "		<TD class='MTD tdMotivo'><P class='Cn'>" & s & "</P></TD>" & chr(13)
 
+	'> VALOR DO PEDIDO
+		s = formata_moeda(Trim("" & r("vl_pedido")))
+		x = x & "		<TD class='MTD tdVlPedido'><P class='Cn'>" & SIMBOLO_MONETARIO & " " & s & "</P></TD>" & chr(13)
+
     '> VALOR DA DEVOLUÇÃO
         s = formata_moeda(Trim("" & r("vl_devolucao")))
         x = x & "		<TD class='MTD tdVlDevolucao'><P class='Cn'>" & SIMBOLO_MONETARIO & " " & s & "</P></TD>" & chr(13)
@@ -289,7 +342,7 @@ dim st_devolucao_descricao, st_devolucao_cor
 		rs.open s_sql, cn
 		x = x & "	<TR style='display:none;' id='TR_ITENS_" & Cstr(intQtdePreDevolucoes) & "'>" & chr(13) & _
 				"		<TD class='ME MD'>&nbsp;</TD>" & chr(13) & _
-				"		<TD colspan='10' class='MC MD'>" & chr(13) & _
+				"		<TD colspan='11' class='MC MD'>" & chr(13) & _
 				"			<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
 				"				<TR>" & chr(13) & _
 				"					<td class='Rf tdWithPadding'>ITENS A SEREM DEVOLVIDOS</td>" & chr(13) & _
@@ -390,7 +443,7 @@ dim st_devolucao_descricao, st_devolucao_cor
 		rs.open s_sql, cn
 		x = x & "	<TR style='display:none;' id='TR_MSGS_" & Cstr(intQtdePreDevolucoes) & "'>" & chr(13) & _
 				"		<TD class='ME MD'>&nbsp;</TD>" & chr(13) & _
-				"		<TD colspan='10' class='MC MD'>" & chr(13) & _
+				"		<TD colspan='11' class='MC MD'>" & chr(13) & _
 				"			<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
 				"				<TR>" & chr(13) & _
 				"					<td class='Rf tdWithPadding'>MENSAGENS</td>" & chr(13) & _
@@ -443,10 +496,10 @@ dim st_devolucao_descricao, st_devolucao_cor
 '	TOTAL GERAL
 	if intQtdePreDevolucoes > 0 then
 		x = x & "	<TR>" & chr(13) & _
-				"		<TD COLSPAN='11' class='MC' style='border-left:0px;border-right:0px;'>&nbsp;</TD>" & chr(13) & _
+				"		<TD COLSPAN='12' class='MC' style='border-left:0px;border-right:0px;'>&nbsp;</TD>" & chr(13) & _
 				"	</TR>" & chr(13) & _
 				"	<TR NOWRAP style='background:honeydew'>" & chr(13) & _
-				"		<TD COLSPAN='11' class='MT'><p class='C'>TOTAL: &nbsp; " & cstr(intQtdePreDevolucoes) & " pré-devoluções</p></TD>" & chr(13) & _
+				"		<TD COLSPAN='12' class='MT'><p class='C'>TOTAL: &nbsp; " & cstr(intQtdePreDevolucoes) & " pré-devoluções</p></TD>" & chr(13) & _
 				"	</TR>" & chr(13)
 		end if
 	
@@ -454,7 +507,7 @@ dim st_devolucao_descricao, st_devolucao_cor
 	if intQtdePreDevolucoes = 0 then
 		x = cab_table & cab
 		x = x & "	<TR NOWRAP>" & chr(13) & _
-				"		<TD class='MT' colspan='11'><P class='ALERTA'>&nbsp;NENHUM REGISTRO ENCONTRADO&nbsp;</P></TD>" & chr(13) & _
+				"		<TD class='MT' colspan='12'><P class='ALERTA'>&nbsp;NENHUM REGISTRO ENCONTRADO&nbsp;</P></TD>" & chr(13) & _
 				"	</TR>" & chr(13)
 		end if
 
@@ -609,6 +662,11 @@ html
 	vertical-align: top;
 	width: 260px;
 	}
+.tdVlPedido{
+    vertical-align: top;
+    width: 80px;
+    text-align: right;
+}
 .tdVlDevolucao{
     vertical-align: top;
     width: 80px;
@@ -653,6 +711,29 @@ html
 </style>
 
 
+<% if alerta <> "" then %>
+<!-- ************************************************************ -->
+<!-- **********  PÁGINA PARA EXIBIR MENSAGENS DE ERRO  ********** -->
+<!-- ************************************************************ -->
+<body onload="bVOLTAR.focus();">
+<center>
+<br>
+<!--  T E L A  -->
+<p class="T">A V I S O</p>
+<div class="MtAlerta" style="width:600px;font-weight:bold;" align="center"><p style='margin:5px 2px 5px 2px;'><%=alerta%></p></div>
+<br><br>
+<p class="TracoBottom"></p>
+<table cellSpacing="0">
+<tr>
+	<td align="center"><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()"><img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
+</tr>
+</table>
+</center>
+</body>
+
+
+
+<% else %>
 <body onload="window.status='Concluído';focus();" link=#000000 alink=#000000 vlink=#000000>
 <center>
 
@@ -666,13 +747,15 @@ html
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
 <input type="hidden" name="rb_status" id="rb_status" value="<%=rb_status%>">
 <input type="hidden" name="c_loja" id="c_loja" value="<%=c_loja%>">
+<input type="hidden" name="c_dt_inicio" id="c_dt_inicio" value="<%=c_dt_inicio%>">
+<input type="hidden" name="c_dt_termino" id="c_dt_termino" value="<%=c_dt_termino%>">
 <input type="hidden" name="id_devolucao" id="id_devolucao" value="" />
 <input type="hidden" name="pedido_selecionado" id="pedido_selecionado" value="">
 <input type="hidden" name="url_back" id="url_back" value="RelPedidoPreDevolucaoExec.asp" />
 
 
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->
-<table width="1024" cellPadding="4" CellSpacing="0" style="border-bottom:1px solid black">
+<table width="1130" cellPadding="4" CellSpacing="0" style="border-bottom:1px solid black">
 <tr>
 	<td align="right" valign="bottom"><span class="PEDIDO">Relatório de Pré-Devoluções</span>
 	<br><span class="Rc">
@@ -684,7 +767,21 @@ html
 
 <!-- FILTROS -->
 <% 
-	s_filtro = "<table width='1024' cellPadding='0' CellSpacing='0' style='border-bottom:1px solid black' border='0'>" & chr(13)
+	s_filtro = "<table width='1130' cellPadding='0' CellSpacing='0' style='border-bottom:1px solid black' border='0'>" & chr(13)
+
+	s = ""
+	s_aux = c_dt_inicio
+	if s_aux = "" then s_aux = "N.I."
+	s = s & s_aux & " a "
+	s_aux = c_dt_termino
+	if s_aux = "" then s_aux = "N.I."
+	s = s & s_aux
+	s_filtro = s_filtro & _
+				"	<tr>" & chr(13) & _
+				"		<td align='right' valign='top' NOWRAP>" & _
+				"<p class='N'>Período:&nbsp;</p></td><td valign='top'>" & _
+				"<p class='N'>" & s & "</p></td>" & chr(13) & _
+				"	</tr>" & chr(13)
 
 	s = rb_status
 	if s = "CADASTRADA" then
@@ -729,15 +826,15 @@ html
 <% consulta_executa %>
 
 <!-- ************   SEPARADOR   ************ -->
-<table width="1024" cellPadding="4" CellSpacing="0" style="border-bottom:1px solid black">
+<table width="1130" cellPadding="4" CellSpacing="0" style="border-bottom:1px solid black">
 <tr><td class="Rc">&nbsp;</td></tr>
 </table>
 <br>
 
 
-<table class="notPrint" width="1024" cellSpacing="0">
+<table class="notPrint" width="1130" cellSpacing="0">
 <tr>
-	<td><a name="bVOLTAR" id="bVOLTAR"
+	<td align="center"><a name="bVOLTAR" id="bVOLTAR"
 		<% if origem="A" then %>
 			href="RelPedidoPreDevolucao.asp"
 		<% else %>
@@ -752,6 +849,8 @@ html
 </center>
 
 </body>
+
+<% end if %>
 
 </html>
 

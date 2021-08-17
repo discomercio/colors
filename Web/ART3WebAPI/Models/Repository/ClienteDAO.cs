@@ -194,7 +194,7 @@ namespace ART3WebAPI.Models.Repository
 		#endregion
 
 		#region [ insere ]
-		public static bool insere(Cliente cliente, string loja, string usuario, out string msg_erro)
+		public static bool insere(Guid? httpRequestId, Cliente cliente, string loja, string usuario, out string msg_erro)
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "ClienteDAO.insere()";
@@ -259,7 +259,7 @@ namespace ART3WebAPI.Models.Repository
 					}
 					#endregion
 
-					if (!GeralDAO.geraNsuUsandoTabelaControle(ref cn, ref trx, Global.Cte.ID_T_CONTROLE.NSU_CADASTRO_CLIENTES, out id_cliente, out msg_erro))
+					if (!GeralDAO.geraNsuUsandoTabelaControle(httpRequestId, ref cn, ref trx, Global.Cte.ID_T_CONTROLE.NSU_CADASTRO_CLIENTES, out id_cliente, out msg_erro))
 					{
 						if (msg_erro.Length > 0) msg_erro = "\n" + msg_erro;
 						msg_erro = "Falha ao tentar gerar o identificador do registro para o cadastro de novo cliente!" +
@@ -442,21 +442,21 @@ namespace ART3WebAPI.Models.Repository
 					log.loja = loja;
 					log.operacao = Global.Cte.LogOperacao.OP_LOG_CLIENTE_INCLUSAO;
 					log.complemento = sbLog.ToString();
-					LogDAO.insere(usuario, log, out msg_erro_aux);
+					LogDAO.insere(httpRequestId, usuario, log, out msg_erro_aux);
 				}
 				#endregion
 
 				#region [ Processamento final de sucesso ou falha ]
 				if (blnSucesso)
 				{
-					Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - Cliente cadastrado com sucesso - Detalhes:\n" + sbLog.ToString());
+					Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - Cliente cadastrado com sucesso - Detalhes:\n" + sbLog.ToString());
 					return true;
 				}
 				else
 				{
 					msg_erro = "Falha ao tentar inserir o registro do novo cliente!";
-					msg = NOME_DESTA_ROTINA + " - " + msg_erro + "\nDetalhes:\n" + Global.serializaObjectToXml(cliente);
-					Global.gravaLogAtividade(msg);
+					msg = NOME_DESTA_ROTINA + " - " + msg_erro + "\nDetalhes:\n" + Global.serializaObjectToXml(httpRequestId, cliente);
+					Global.gravaLogAtividade(httpRequestId, msg);
 					return false;
 				}
 				#endregion
@@ -464,8 +464,8 @@ namespace ART3WebAPI.Models.Repository
 			catch (Exception ex)
 			{
 				msg_erro = "Falha ao tentar cadastrar novo cliente: " + ex.Message;
-				msg = NOME_DESTA_ROTINA + " - Exception: " + ex.ToString() + "\nDetalhes:\n" + Global.serializaObjectToXml(cliente);
-				Global.gravaLogAtividade(msg);
+				msg = NOME_DESTA_ROTINA + " - Exception: " + ex.ToString() + "\nDetalhes:\n" + Global.serializaObjectToXml(httpRequestId, cliente);
+				Global.gravaLogAtividade(httpRequestId, msg);
 				return false;
 			}
 			finally

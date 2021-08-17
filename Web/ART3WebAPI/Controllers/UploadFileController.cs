@@ -54,7 +54,18 @@ namespace ART3WebAPI.Controllers
 		[HttpGet]
 		public HttpResponseMessage Teste()
 		{
+			const string NOME_DESTA_ROTINA = "UploadFileController.Teste()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			string msg;
+
+			msg = NOME_DESTA_ROTINA + ": Requisição recebida";
+			Global.gravaLogAtividade(httpRequestId, msg);
+
 			HttpResponseMessage result = Request.CreateResponse<string>(HttpStatusCode.OK, "Versão: " + Global.Cte.Versao.M_ID);
+
+			msg = NOME_DESTA_ROTINA + ": Status=" + result.StatusCode.ToString();
+			Global.gravaLogAtividade(httpRequestId, msg);
+
 			return result;
 		}
 		#endregion
@@ -108,6 +119,7 @@ namespace ART3WebAPI.Controllers
 		{
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "UploadFile.PostFile()";
+			Guid httpRequestId = Request.GetCorrelationId();
 			int qtdeTentativas;
 			int intParametro;
 			int id_module_folder_name;
@@ -121,6 +133,7 @@ namespace ART3WebAPI.Controllers
 			bool blnSaveFileContentInDbAsText = false;
 			bool blnBackupRecentFiles;
 			string s;
+			string msg;
 			string msg_erro_aux;
 			string fileName = "";
 			string fullFileName = "";
@@ -153,6 +166,9 @@ namespace ART3WebAPI.Controllers
 
 			try
 			{
+				msg = NOME_DESTA_ROTINA + ": Requisição recebida";
+				Global.gravaLogAtividade(httpRequestId, msg);
+
 				// Check if the request contains multipart/form-data.
 				if (!Request.Content.IsMimeMultipartContent())
 				{
@@ -251,7 +267,7 @@ namespace ART3WebAPI.Controllers
 						}
 						catch (Exception ex)
 						{
-							Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - Exception: " + ex.Message);
+							Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - Exception: " + ex.Message);
 							// Path.Combine() e Path.GetFullPath() throw exceptions if the path is invalid
 							throw new WebApiException("O nome da pasta informado é inválido!\n" + ex.Message);
 						}
@@ -327,7 +343,7 @@ namespace ART3WebAPI.Controllers
 					{
 						insertUploadFileModuleFolderName = new UploadFileModuleFolderName();
 						insertUploadFileModuleFolderName.module_folder_name = sModuleFolderName;
-						UploadFileDAO.insertUploadFileModuleFolderName(insertUploadFileModuleFolderName, out msg_erro_aux);
+						UploadFileDAO.insertUploadFileModuleFolderName(httpRequestId, insertUploadFileModuleFolderName, out msg_erro_aux);
 						id_module_folder_name = insertUploadFileModuleFolderName.id;
 					}
 					#endregion
@@ -346,7 +362,7 @@ namespace ART3WebAPI.Controllers
 							while (true)
 							{
 								qtdeTentativas++;
-								sGuid = BD.gera_uid();
+								sGuid = BD.gera_uid(httpRequestId);
 								if ((sGuid ?? "").Trim().Length > 0)
 								{
 									fileName = System.DateTime.Now.ToString("yyyyMMdd_HHmmss_fff") + "__" + sGuid + Path.GetExtension(fileInfo.Name);
@@ -373,7 +389,7 @@ namespace ART3WebAPI.Controllers
 								catch (Exception ex)
 								{
 									s = NOME_DESTA_ROTINA + " - Exception ao tentar ler o conteúdo do arquivo como texto (arquivo: " + fileInfo.Name + "): " + ex.Message;
-									Global.gravaLogAtividade(s);
+									Global.gravaLogAtividade(httpRequestId, s);
 									throw new WebApiException("Falha ao tentar ler o conteúdo do arquivo como texto (" + fileInfo.Name + ")");
 								}
 							}
@@ -385,7 +401,7 @@ namespace ART3WebAPI.Controllers
 								if (localFileSizeBytes > maxSizeInBytesToSaveFileContentInDb)
 								{
 									s = NOME_DESTA_ROTINA + ": arquivo " + fileInfo.Name + " excede o limite máximo permitido para salvar no banco de dados (" + maxSizeInBytesToSaveFileContentInDb.ToString() + " bytes)";
-									Global.gravaLogAtividade(s);
+									Global.gravaLogAtividade(httpRequestId, s);
 									throw new WebApiException("O tamanho do arquivo excede o limite máximo permitido para salvar no banco de dados (" + maxSizeInBytesToSaveFileContentInDb.ToString() + " bytes)!");
 								}
 							}
@@ -395,7 +411,7 @@ namespace ART3WebAPI.Controllers
 								if (localFileSizeChars > maxSizeInCharsToSaveFileContentInDbAsText)
 								{
 									s = NOME_DESTA_ROTINA + ": arquivo " + fileInfo.Name + " excede o limite máximo permitido para salvar no banco de dados como texto (" + maxSizeInCharsToSaveFileContentInDbAsText.ToString() + " caracteres)";
-									Global.gravaLogAtividade(s);
+									Global.gravaLogAtividade(httpRequestId, s);
 									throw new WebApiException("O tamanho do arquivo excede o limite máximo permitido para salvar no banco de dados como texto (" + maxSizeInCharsToSaveFileContentInDbAsText.ToString() + " caracteres)!");
 								}
 							}
@@ -404,12 +420,18 @@ namespace ART3WebAPI.Controllers
 							// Copia o arquivo para o destino final
 							File.Copy(fileData.LocalFileName, fullFileName);
 
+							msg = NOME_DESTA_ROTINA + ": Arquivo salvo: " + fileData.LocalFileName + " => " + fullFileName + " (nome original: " + fileInfo.FullName + ")";
+							Global.gravaLogAtividade(httpRequestId, msg);
+
 							if (!blnTempFile)
 							{
 								fullBackupFileName = Path.Combine(dirBackupFull, fileName);
 								if (blnBackupRecentFiles)
 								{
 									File.Copy(fileData.LocalFileName, fullBackupFileName);
+
+									msg = NOME_DESTA_ROTINA + ": Arquivo salvo: " + fileData.LocalFileName + " => " + fullBackupFileName + " (nome original: " + fileInfo.FullName + ")";
+									Global.gravaLogAtividade(httpRequestId, msg);
 								}
 							}
 
@@ -457,7 +479,7 @@ namespace ART3WebAPI.Controllers
 							}
 							#endregion
 
-							if (UploadFileDAO.insertUploadedFileInfo(storedFileInfo, out msg_erro_aux))
+							if (UploadFileDAO.insertUploadedFileInfo(httpRequestId, storedFileInfo, out msg_erro_aux))
 							{
 								uploadFileItem.stored_file_guid = storedFileInfo.guid;
 							}
@@ -511,11 +533,14 @@ namespace ART3WebAPI.Controllers
 				}
 				#endregion
 
+				msg = NOME_DESTA_ROTINA + ": Status=" + result.StatusCode.ToString();
+				Global.gravaLogAtividade(httpRequestId, msg);
+
 				return result;
 			}
 			catch (System.Exception e)
 			{
-				Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - Exception: " + e.Message);
+				Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - Exception: " + e.Message);
 
 				if (e is WebApiException)
 				{

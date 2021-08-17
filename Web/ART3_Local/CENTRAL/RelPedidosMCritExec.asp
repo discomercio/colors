@@ -532,7 +532,7 @@ dim strLink
 				"," & _
 				chr(34) & usuario & chr(34) & _
 				")' title='clique para consultar o pedido " & id_pedido & "'>" & _
-				"&nbsp;<img id='imgClienteConsultaView' src='../imagem/doc_preview_12.png' class='notPrint' />" & _
+				"&nbsp;<img id='imgPedidoConsultaView' src='../imagem/doc_preview_12.png' class='notPrint' />" & _
 				"</a>"
 	monta_link_view_pedido=strLink
 end function
@@ -3464,7 +3464,7 @@ body
 
 <table class="notPrint" width="849" cellSpacing="0">
 <tr>
-	<td align="center"><a name="bVOLTA" id="bVOLTA" href="javascript:history.go(-historyBackCount);" title="volta para a página anterior">
+	<td align="center"><a name="bVOLTA" id="bVOLTA" href="RelPedidosMCrit.asp<%= "?" & "url_back=X&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>" title="volta para a página anterior">
 		<img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
 </tr>
 </table>
