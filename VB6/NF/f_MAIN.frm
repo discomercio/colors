@@ -13606,6 +13606,12 @@ Dim cor_inicial As String
     '   OBTER O PARÂMETRO DO TIPO DE PAGAMENTO
         get_registro_t_parametro "NF_TipoPagamentoObrigatorio", param_nftipopag
     
+    '   OBTER O PARÂMETRO DO INTERMEDIADOR
+        get_registro_t_parametro "NF_BC_Pis_Cofins_Excluir_ICMS", param_bc_pis_cofins_icms
+    
+    '   OBTER O PARÂMETRO DO TIPO DE PAGAMENTO
+        get_registro_t_parametro "NF_BC_Pis_Cofins_Excluir_DIFAL", param_bc_pis_cofins_difal
+    
     '   SELEÇÃO DO EMITENTE A SER UTILIZADO
         If obtem_emitentes_usuario(usuario.id, vEmitsUsuario, qtdEmits) Then
             If qtdEmits = 1 Then

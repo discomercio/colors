@@ -765,14 +765,15 @@ Option Explicit
 '|          |      | - Venda Futura / Pagamento Antecipado                     |
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
-'|XX.XX.XXXX| LHGX |V 2.20                                                     |
+'|15.07.2021| LHGX |V 2.20                                                     |
 '|          |      | - Venda Futura (ajuste painel triangular)                 |
 '|          |      | - Obrigatoriedade de preenchimento do campo xBairro       |
 '|          |      |   para não haver rejeição na SEFAZ                        |
 '|__________|______|___________________________________________________________|
-'|XX.XX.XXXX| XXXX |V X.XX                                                     |
-'|          |      |                                                           |
-'|          |      |                                                           |
+'|18.08.2021| LHGX |V 2.21                                                     |
+'|          |      | - Criação de parâmetros e alterações para excluir o ICMS  |
+'|          |      |   e o DIFAL das bases de cálculo de PIS e COFINS - de     |
+'|          |      |   acordo com decisão do STF                               |
 '|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
@@ -789,8 +790,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.20"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  15/07/2021"
+Global Const m_id_versao = "2.21"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  18/08/2021"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"
