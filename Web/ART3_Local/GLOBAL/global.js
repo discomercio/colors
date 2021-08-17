@@ -842,7 +842,60 @@ var s, c, s_valor, s_sep, i;
 	return (s_valor * 1);
 }
 
-function formata_numero( in_valor, in_decimais ) {
+function formata_moeda_xml(in_valor) {
+    var sinal, valor, decimais, valor_decimal, fator, i, j, n, c, s, s_valor, s_int, s_dec, s_resp, achou;
+    valor = in_valor;
+    s_valor = in_valor;
+    decimais = 2;
+    if (trim("" + valor) == "") return "";
+    /* Verifca se o número é positivo ou negativo. */
+    valor = converte_numero(valor);
+    if (valor < 0) sinal = -1; else sinal = 1;
+    valor = Math.abs(valor);
+    if (isNaN(valor)) return "";
+    /*  Separa a parte inteira e decimal */
+    s_int = "";
+    s_dec = "";
+    achou = false;
+    for (i = 0; i < s_valor.length; i++) {
+        c = s_valor.charAt(i);
+        if (c == ".") {
+            achou = true;
+        }
+        else {
+            if (!achou) s_int = s_int + c; else if (s_dec.length <= decimais + 1) s_dec = s_dec + c;
+        }
+    }
+
+    /*  Formata parte decimal com arredondamento */
+    while (s_dec.length < decimais) s_dec = s_dec + "0";
+    valor_decimal = converte_numero(s_dec);
+    if (s_dec.length > decimais) valor_decimal = valor_decimal + 5;
+    s_dec = valor_decimal.toString().trim().substring(0, decimais);
+
+
+    /*  Formata parte inteira */
+    s = "";
+    j = 0;
+    for (i = s_int.length; i >= 0; i--) {
+        s = s_int.charAt(i) + s;
+        if (((j % 3) == 0) && (i != s_int.length) && (i != 0)) s = "." + s;
+        j = j + 1;
+    }
+    s_int = s;
+
+    /*  Monta número formatado final */
+    s = s_int;
+    if (s_dec != "") {
+        s = s + ",";
+        s = s + s_dec;
+    }
+    if (sinal == -1) s = "-" + s;
+    return s;
+}
+
+
+function formata_numero(in_valor, in_decimais) {
 var sinal, valor, decimais, fator, i, j, n, c, s, s_valor, s_int, s_dec, s_resp, achou;
 	valor=in_valor;
 	decimais=in_decimais;
