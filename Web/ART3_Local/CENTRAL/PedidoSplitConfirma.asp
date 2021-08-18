@@ -186,7 +186,11 @@
 			rs("st_pagto") = ""
 			rs("usuario_st_pagto") = ""
 			rs("st_recebido") = ""
-			rs("obs_1") = ""
+
+			'Campos que passaram a ser copiados a pedido do Mário em 18/08/2021
+			rs("obs_1") = Trim("" & sx("obs_1"))
+			rs("NFe_texto_constar") = Trim("" & sx("NFe_texto_constar"))
+
 			rs("obs_2") = ""
 			rs("qtde_parcelas") = 0
 			rs("forma_pagto") = ""
