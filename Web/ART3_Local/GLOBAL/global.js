@@ -863,15 +863,21 @@ function formata_moeda_xml(in_valor) {
             achou = true;
         }
         else {
-            if (!achou) s_int = s_int + c; else if (s_dec.length <= decimais + 1) s_dec = s_dec + c;
+            if (!achou) s_int = s_int + c; else if (s_dec.length < decimais + 1) s_dec = s_dec + c;
         }
     }
 
     /*  Formata parte decimal com arredondamento */
     while (s_dec.length < decimais) s_dec = s_dec + "0";
-    valor_decimal = converte_numero(s_dec);
-    if (s_dec.length > decimais) valor_decimal = valor_decimal + 5;
-    s_dec = valor_decimal.toString().trim().substring(0, decimais);
+    if (s_dec.length > decimais) {
+        valor_decimal = s_dec;
+        valor_decimal = converte_numero(valor_decimal);
+        n = Math.round(valor_decimal/10)*10
+        s = "" + n;
+        //se o valor convertido for menor que 100, significa que a primeira casa decimal é 0
+        if (n < 100) s = "0" + s;
+        s_dec = left(s, decimais);
+    }    
 
 
     /*  Formata parte inteira */
