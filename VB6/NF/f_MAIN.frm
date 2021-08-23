@@ -9146,85 +9146,13 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     GoTo NFE_EMITE_ENCERRA_POR_ERRO_CONSISTENCIA
                     End If
                     
-            '   TAG IPI
-            '   ~~~~~~~
-            '   OBS: EXISTE IPI APENAS NA EMISSÃO DE NFe PARA DEVOLUÇÃO AO FORNECEDOR
-                If IsNumeric(c_ipi) Then
-                    perc_IPI = CSng(c_ipi)
-                Else
-                    perc_IPI = 0
-                    End If
-                
-            '   TRAVA DE PROTEÇÃO ENQUANTO NÃO HÁ A IMPLEMENTAÇÃO DO TRATAMENTO
-                If perc_IPI <> 0 Then
-                    s_erro = "Não há tratamento definido no sistema para a alíquota de IPI!!"
-                    GoTo NFE_EMITE_ENCERRA_POR_ERRO_CONSISTENCIA
-                    End If
+            '   OS CÁLCULOS DE PARTILHA FORAM MOVIDOS PARA CÁ DEVIDO À EXCLUSÃO DE ICMS E DIFAL DAS BASES DE CÁLCULO
+            '   DE PIS E COFINS, CONFORME DECISÃO DO STF
             
-                vl_IPI = .valor_total * (perc_IPI / 100)
-                vl_IPI = CCur(Format$(vl_IPI, FORMATO_MOEDA))
-                
-            '   TAG PIS
-            '   ~~~~~~~
-                vl_PIS = 0
-                vl_BC_PIS = 0
-                
-                strZerarPisCst = Trim$(left$(cb_zerar_PIS, 2))
-                
-                If strZerarPisCst = "" Then
-                    vl_BC_PIS = .valor_total
-                    perc_PIS = PERC_PIS_ALIQUOTA_NORMAL
-                    vl_PIS = vl_BC_PIS * (perc_PIS / 100)
-                    vl_PIS = CCur(Format$(vl_PIS, FORMATO_MOEDA))
-                    vNFeImgItem(UBound(vNFeImgItem)).PIS__CST = "01"
-                    strNFeTagPis = vbTab & NFeFormataCampo("CST", vNFeImgItem(UBound(vNFeImgItem)).PIS__CST)
-                    vNFeImgItem(UBound(vNFeImgItem)).PIS__vBC = NFeFormataMoeda2Dec(vl_BC_PIS)
-                    strNFeTagPis = strNFeTagPis & vbTab & NFeFormataCampo("vBC", vNFeImgItem(UBound(vNFeImgItem)).PIS__vBC)
-                    vNFeImgItem(UBound(vNFeImgItem)).PIS__pPIS = NFeFormataPercentual2Dec(perc_PIS)
-                    strNFeTagPis = strNFeTagPis & vbTab & NFeFormataCampo("pPIS", vNFeImgItem(UBound(vNFeImgItem)).PIS__pPIS)
-                    vNFeImgItem(UBound(vNFeImgItem)).PIS__vPIS = NFeFormataMoeda2Dec(vl_PIS)
-                    strNFeTagPis = strNFeTagPis & vbTab & NFeFormataCampo("vPIS", vNFeImgItem(UBound(vNFeImgItem)).PIS__vPIS)
-                Else
-                    vNFeImgItem(UBound(vNFeImgItem)).PIS__CST = strZerarPisCst
-                    strNFeTagPis = vbTab & NFeFormataCampo("CST", vNFeImgItem(UBound(vNFeImgItem)).PIS__CST)
-                    End If
-            
-            '   TAG COFINS
-            '   ~~~~~~~~~~
-                vl_COFINS = 0
-                vl_BC_COFINS = 0
-                
-                strZerarCofinsCst = Trim$(left$(cb_zerar_COFINS, 2))
-                
-                If strZerarCofinsCst = "" Then
-                    vl_BC_COFINS = .valor_total
-                    perc_COFINS = PERC_COFINS_ALIQUOTA_NORMAL
-                    vl_COFINS = vl_BC_COFINS * (perc_COFINS / 100)
-                    vl_COFINS = CCur(Format$(vl_COFINS, FORMATO_MOEDA))
-                    vNFeImgItem(UBound(vNFeImgItem)).COFINS__CST = "01"
-                    strNFeTagCofins = vbTab & NFeFormataCampo("CST", vNFeImgItem(UBound(vNFeImgItem)).COFINS__CST)
-                    vNFeImgItem(UBound(vNFeImgItem)).COFINS__vBC = NFeFormataMoeda2Dec(vl_BC_COFINS)
-                    strNFeTagCofins = strNFeTagCofins & vbTab & NFeFormataCampo("vBC", vNFeImgItem(UBound(vNFeImgItem)).COFINS__vBC)
-                    vNFeImgItem(UBound(vNFeImgItem)).COFINS__pCOFINS = NFeFormataPercentual2Dec(perc_COFINS)
-                    strNFeTagCofins = strNFeTagCofins & vbTab & NFeFormataCampo("pCOFINS", vNFeImgItem(UBound(vNFeImgItem)).COFINS__pCOFINS)
-                    vNFeImgItem(UBound(vNFeImgItem)).COFINS__vCOFINS = NFeFormataMoeda2Dec(vl_COFINS)
-                    strNFeTagCofins = strNFeTagCofins & vbTab & NFeFormataCampo("vCOFINS", vNFeImgItem(UBound(vNFeImgItem)).COFINS__vCOFINS)
-                Else
-                    vNFeImgItem(UBound(vNFeImgItem)).COFINS__CST = strZerarCofinsCst
-                    strNFeTagCofins = vbTab & NFeFormataCampo("CST", vNFeImgItem(UBound(vNFeImgItem)).COFINS__CST)
-                    End If
-                
-            '   TAG ICMSUFDest
-            '   ~~~~~~~~~~~~~~
-'                If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
-'                    ((rNFeImg.dest__indIEDest = "9") Or _
-'                     ((rNFeImg.dest__indIEDest = "2") And (rNFeImg.dest__IE = ""))) Then
                 If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
                     (rNFeImg.dest__indIEDest = "9") And _
                     Not cfop_eh_de_remessa(strCfopCodigo) And _
                     (vl_ICMS > 0) Then
-                
-                    strNFeTagIcmsUFDest = ""
                     
                     If IsNumeric(.fcp) Then
                         perc_fcp = CSng(.fcp)
@@ -9253,7 +9181,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                         perc_ICMS_UF_dest = 100
                         perc_ICMS_UF_remet = 0
                         End If
-                        
+                    
                     'os cálculos abaixo se baseiam em um vídeo publicado pela Inventti Soluções
                     '(https://www.youtube.com/watch?v=MEoI88y-qNs)
                     perc_ICMS_diferencial_interestadual = perc_ICMS_interna_UF_dest + perc_fcp - perc_ICMS
@@ -9266,6 +9194,107 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     vl_ICMS_diferencial_aux = vl_ICMS_diferencial_aux - vl_ICMS_UF_dest
                     vl_ICMS_UF_remet = arredonda_para_monetario(vl_ICMS_diferencial_aux)
                     If vl_ICMS_UF_remet < 0 Then vl_ICMS_UF_remet = 0
+                    
+                    End If
+            
+            
+            '   TAG IPI
+            '   ~~~~~~~
+            '   OBS: EXISTE IPI APENAS NA EMISSÃO DE NFe PARA DEVOLUÇÃO AO FORNECEDOR
+                If IsNumeric(c_ipi) Then
+                    perc_IPI = CSng(c_ipi)
+                Else
+                    perc_IPI = 0
+                    End If
+                
+            '   TRAVA DE PROTEÇÃO ENQUANTO NÃO HÁ A IMPLEMENTAÇÃO DO TRATAMENTO
+                If perc_IPI <> 0 Then
+                    s_erro = "Não há tratamento definido no sistema para a alíquota de IPI!!"
+                    GoTo NFE_EMITE_ENCERRA_POR_ERRO_CONSISTENCIA
+                    End If
+            
+                vl_IPI = .valor_total * (perc_IPI / 100)
+                vl_IPI = CCur(Format$(vl_IPI, FORMATO_MOEDA))
+                
+            '   TAG PIS
+            '   ~~~~~~~
+                vl_PIS = 0
+                vl_BC_PIS = 0
+                
+                strZerarPisCst = Trim$(left$(cb_zerar_PIS, 2))
+                
+                If strZerarPisCst = "" Then
+                    vl_BC_PIS = .valor_total
+                    
+                    If param_bc_pis_cofins_icms.campo_inteiro = 1 Then
+                        vl_BC_PIS = vl_BC_PIS - vl_ICMS
+                        End If
+                    
+                    If param_bc_pis_cofins_difal.campo_inteiro = 1 Then
+                        vl_BC_PIS = vl_BC_PIS - vl_ICMS_UF_remet - vl_ICMS_UF_dest
+                        End If
+                    
+                    perc_PIS = PERC_PIS_ALIQUOTA_NORMAL
+                    vl_PIS = vl_BC_PIS * (perc_PIS / 100)
+                    vl_PIS = CCur(Format$(vl_PIS, FORMATO_MOEDA))
+                    vNFeImgItem(UBound(vNFeImgItem)).PIS__CST = "01"
+                    strNFeTagPis = vbTab & NFeFormataCampo("CST", vNFeImgItem(UBound(vNFeImgItem)).PIS__CST)
+                    vNFeImgItem(UBound(vNFeImgItem)).PIS__vBC = NFeFormataMoeda2Dec(vl_BC_PIS)
+                    strNFeTagPis = strNFeTagPis & vbTab & NFeFormataCampo("vBC", vNFeImgItem(UBound(vNFeImgItem)).PIS__vBC)
+                    vNFeImgItem(UBound(vNFeImgItem)).PIS__pPIS = NFeFormataPercentual2Dec(perc_PIS)
+                    strNFeTagPis = strNFeTagPis & vbTab & NFeFormataCampo("pPIS", vNFeImgItem(UBound(vNFeImgItem)).PIS__pPIS)
+                    vNFeImgItem(UBound(vNFeImgItem)).PIS__vPIS = NFeFormataMoeda2Dec(vl_PIS)
+                    strNFeTagPis = strNFeTagPis & vbTab & NFeFormataCampo("vPIS", vNFeImgItem(UBound(vNFeImgItem)).PIS__vPIS)
+                Else
+                    vNFeImgItem(UBound(vNFeImgItem)).PIS__CST = strZerarPisCst
+                    strNFeTagPis = vbTab & NFeFormataCampo("CST", vNFeImgItem(UBound(vNFeImgItem)).PIS__CST)
+                    End If
+            
+            '   TAG COFINS
+            '   ~~~~~~~~~~
+                vl_COFINS = 0
+                vl_BC_COFINS = 0
+                
+                strZerarCofinsCst = Trim$(left$(cb_zerar_COFINS, 2))
+                
+                If strZerarCofinsCst = "" Then
+                    vl_BC_COFINS = .valor_total
+                    
+                    If param_bc_pis_cofins_icms.campo_inteiro = 1 Then
+                        vl_BC_COFINS = vl_BC_COFINS - vl_ICMS
+                        End If
+                        
+                    If param_bc_pis_cofins_difal.campo_inteiro = 1 Then
+                        vl_BC_COFINS = vl_BC_COFINS - vl_ICMS_UF_remet - vl_ICMS_UF_dest
+                        End If
+                    
+                    perc_COFINS = PERC_COFINS_ALIQUOTA_NORMAL
+                    vl_COFINS = vl_BC_COFINS * (perc_COFINS / 100)
+                    vl_COFINS = CCur(Format$(vl_COFINS, FORMATO_MOEDA))
+                    vNFeImgItem(UBound(vNFeImgItem)).COFINS__CST = "01"
+                    strNFeTagCofins = vbTab & NFeFormataCampo("CST", vNFeImgItem(UBound(vNFeImgItem)).COFINS__CST)
+                    vNFeImgItem(UBound(vNFeImgItem)).COFINS__vBC = NFeFormataMoeda2Dec(vl_BC_COFINS)
+                    strNFeTagCofins = strNFeTagCofins & vbTab & NFeFormataCampo("vBC", vNFeImgItem(UBound(vNFeImgItem)).COFINS__vBC)
+                    vNFeImgItem(UBound(vNFeImgItem)).COFINS__pCOFINS = NFeFormataPercentual2Dec(perc_COFINS)
+                    strNFeTagCofins = strNFeTagCofins & vbTab & NFeFormataCampo("pCOFINS", vNFeImgItem(UBound(vNFeImgItem)).COFINS__pCOFINS)
+                    vNFeImgItem(UBound(vNFeImgItem)).COFINS__vCOFINS = NFeFormataMoeda2Dec(vl_COFINS)
+                    strNFeTagCofins = strNFeTagCofins & vbTab & NFeFormataCampo("vCOFINS", vNFeImgItem(UBound(vNFeImgItem)).COFINS__vCOFINS)
+                Else
+                    vNFeImgItem(UBound(vNFeImgItem)).COFINS__CST = strZerarCofinsCst
+                    strNFeTagCofins = vbTab & NFeFormataCampo("CST", vNFeImgItem(UBound(vNFeImgItem)).COFINS__CST)
+                    End If
+                
+            '   TAG ICMSUFDest
+            '   ~~~~~~~~~~~~~~
+'                If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
+'                    ((rNFeImg.dest__indIEDest = "9") Or _
+'                     ((rNFeImg.dest__indIEDest = "2") And (rNFeImg.dest__IE = ""))) Then
+                If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
+                    (rNFeImg.dest__indIEDest = "9") And _
+                    Not cfop_eh_de_remessa(strCfopCodigo) And _
+                    (vl_ICMS > 0) Then
+                
+                    strNFeTagIcmsUFDest = ""
                     
                 '   VALOR DA BC DO ICMS NA UF DE DESTINO
                     vNFeImgItem(UBound(vNFeImgItem)).ICMSUFDest__vBCUFDest = NFeFormataMoeda2Dec(vl_BC_ICMS)
