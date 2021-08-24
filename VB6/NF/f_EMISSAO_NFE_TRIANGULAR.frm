@@ -11889,8 +11889,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
 '                     ((rNFeImg.dest__indIEDest = "2") And (rNFeImg.dest__IE = ""))) Then
                 If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
                     (rNFeImg.dest__indIEDest = "9") And _
-                    Not cfop_eh_de_remessa(strCfopCodigo) And _
-                    (vl_ICMS > 0) Then
+                    Not cfop_eh_de_remessa(strCfopCodigo) Then
                 
                     strNFeTagIcmsUFDest = ""
                     
