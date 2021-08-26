@@ -642,5 +642,199 @@ namespace ART3WebAPI.Controllers
 		#endregion
 
 		#endregion
+
+		#region [ Relatório Estoque de Venda ]
+
+		#region [ Requisição ]
+		[HttpGet]
+		public async Task<HttpResponseMessage> RelEstoqueVendaXLS(string usuario, string loja, string sessionToken, string filtro_estoque, string filtro_detalhe, string filtro_consolidacao_codigos, string filtro_empresa, string filtro_fabricante, string filtro_produto, string filtro_fabricante_multiplo, string filtro_grupo, string filtro_subgrupo, string filtro_potencia_BTU, string filtro_ciclo, string filtro_posicao_mercado)
+		{
+			#region [ Declarações ]
+			const string NOME_DESTA_ROTINA = "RelatoriosController.RelEstoqueVendaXLS()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			DateTime dataAtual;
+			string ID_RELATORIO;
+			string msg;
+			string msg_erro;
+			string fileName;
+			string filePath;
+			StringBuilder sbResponse = new StringBuilder();
+			string statusResponse = "";
+			string strMsgErro = "";
+			string MsgErroException = "";
+			HttpResponseMessage result = null;
+			Usuario usuarioBD;
+			DataRelEstoqueVenda datasource;
+			List<RelEstoqueVendaEntity> dataRel;
+			Log log = new Log();
+			#endregion
+
+			msg = NOME_DESTA_ROTINA + ": Requisição recebida (usuario=" + (usuario ?? "") + ", loja=" + (loja ?? "") + ", sessionToken=" + (sessionToken ?? "") + ", filtro_estoque=" + (filtro_estoque ?? "") + ", filtro_detalhe=" + (filtro_detalhe ?? "") + ", filtro_consolidacao_codigos=" + (filtro_consolidacao_codigos ?? "") + ", filtro_empresa=" + (filtro_empresa ?? "") + ", filtro_fabricante=" + (filtro_fabricante ?? "") + ", filtro_produto=" + (filtro_produto ?? "") + ", filtro_fabricante_multiplo=" + (filtro_fabricante_multiplo ?? "") + ", filtro_grupo=" + (filtro_grupo ?? "") + ", filtro_subgrupo=" + (filtro_subgrupo ?? "") + ", filtro_potencia_BTU=" + (filtro_potencia_BTU ?? "") + ", filtro_ciclo=" + (filtro_ciclo ?? "") + ", filtro_posicao_mercado=" + (filtro_posicao_mercado ?? "") + ")";
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			#region [ Validação de segurança: session token confere? ]
+			if ((usuario ?? "").Trim().Length == 0)
+			{
+				msg = "Não foi informada a identificação do usuário!";
+				Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + ": " + msg);
+				throw new Exception(msg);
+			}
+
+			if ((sessionToken ?? "").Trim().Length == 0)
+			{
+				msg = "Não foi informado o token da sessão do usuário!";
+				Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + ": " + msg);
+				throw new Exception(msg);
+			}
+
+			usuarioBD = GeralDAO.getUsuario(usuario, out msg_erro);
+			if (usuarioBD == null)
+			{
+				msg = "Falha ao tentar validar usuário!";
+				Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + ": " + msg);
+				throw new Exception(msg);
+			}
+
+			if ((!usuarioBD.SessionTokenModuloCentral.Equals(sessionToken)) && (!usuarioBD.SessionTokenModuloLoja.Equals(sessionToken)))
+			{
+				msg = "Token de sessão inválido!";
+				Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + ": " + msg);
+				throw new Exception(msg);
+			}
+			#endregion
+
+			#region [ Validação dos filtros obrigatórios ]
+
+			#region [ filtro_estoque ]
+			if (!(filtro_estoque ?? "").Equals(Global.Cte.Relatorio.RelEstoqueVenda.FILTRO_ESTOQUE.ESTOQUE_VENDA))
+			{
+				msg = "Filtro com valor inválido: filtro_estoque=" + (filtro_estoque ?? "");
+				Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + ": " + msg);
+				throw new Exception(msg);
+			}
+			#endregion
+
+			#region [ filtro_detalhe ]
+			if (
+				(!(filtro_detalhe ?? "").Equals(Global.Cte.Relatorio.RelEstoqueVenda.FILTRO_DETALHE.SINTETICO))
+				&&
+				(!(filtro_detalhe ?? "").Equals(Global.Cte.Relatorio.RelEstoqueVenda.FILTRO_DETALHE.INTERMEDIARIO))
+				)
+			{
+				msg = "Filtro com valor inválido: filtro_detalhe=" + (filtro_detalhe ?? "");
+				Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + ": " + msg);
+				throw new Exception(msg);
+			}
+			#endregion
+
+			#region [ filtro_consolidacao_codigos ]
+			if (
+				(!(filtro_consolidacao_codigos ?? "").Equals(Global.Cte.Relatorio.RelEstoqueVenda.FILTRO_CONSOLIDACAO_CODIGOS.NORMAIS))
+				&&
+				(!(filtro_consolidacao_codigos ?? "").Equals(Global.Cte.Relatorio.RelEstoqueVenda.FILTRO_CONSOLIDACAO_CODIGOS.UNIFICADOS))
+				)
+			{
+				msg = "Filtro com valor inválido: filtro_consolidacao_codigos=" + (filtro_consolidacao_codigos ?? "");
+				Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + ": " + msg);
+				throw new Exception(msg);
+			}
+			#endregion
+			#endregion
+
+			#region [ Salva parâmetros no BD como valores default do usuário ]
+			if ((loja ?? "").Length > 0)
+			{
+				ID_RELATORIO = "LOJA/RelEstoqueVendaCmvPv";
+			}
+			else
+			{
+				ID_RELATORIO = "CENTRAL/RelEstoqueVendaCmvPv";
+			}
+
+			Global.setDefaultBD(usuario, ID_RELATORIO + "|" + "rb_detalhe", (filtro_detalhe ?? ""));
+			Global.setDefaultBD(usuario, ID_RELATORIO + "|" + "rb_exportacao", (filtro_consolidacao_codigos ?? ""));
+			Global.setDefaultBD(usuario, ID_RELATORIO + "|" + "c_fabricante_multiplo", (filtro_fabricante_multiplo ?? "").Replace("_", ", "));
+			Global.setDefaultBD(usuario, ID_RELATORIO + "|" + "c_grupo", (filtro_grupo ?? "").Replace("_", ", "));
+			Global.setDefaultBD(usuario, ID_RELATORIO + "|" + "c_subgrupo", (filtro_subgrupo ?? "").Replace("_", ", "));
+			Global.setDefaultBD(usuario, ID_RELATORIO + "|" + "c_potencia_BTU", (filtro_potencia_BTU ?? ""));
+			Global.setDefaultBD(usuario, ID_RELATORIO + "|" + "c_ciclo", (filtro_ciclo ?? ""));
+			Global.setDefaultBD(usuario, ID_RELATORIO + "|" + "c_posicao_mercado", (filtro_posicao_mercado ?? ""));
+			Global.setDefaultBD(usuario, ID_RELATORIO + "|" + "rb_saida", "XLS");
+			#endregion
+
+			#region [ Gera nome do arquivo ]
+			dataAtual = DateTime.Now;
+			fileName = "RelEstoqueVenda_" + dataAtual.ToString("yyyyMMdd_HHmmss");
+			fileName = fileName + ".xlsx";
+			filePath = HttpContext.Current.Server.MapPath("~/Report/Relatorios/" + fileName);
+			#endregion
+
+			log.operacao = "RelEstoqueVendaXLS";
+			log.complemento = " Nome do arquivo: " + fileName + " (filtro_estoque=" + (filtro_estoque ?? "") + ", filtro_detalhe=" + (filtro_detalhe ?? "") + ", filtro_consolidacao_codigos=" + (filtro_consolidacao_codigos ?? "") + ", filtro_empresa=" + (filtro_empresa ?? "") + ", filtro_fabricante=" + (filtro_fabricante ?? "") + ", filtro_produto=" + (filtro_produto ?? "") + ", filtro_fabricante_multiplo=" + (filtro_fabricante_multiplo ?? "") + ", filtro_grupo=" + (filtro_grupo ?? "") + ", filtro_subgrupo=" + (filtro_subgrupo ?? "") + ", filtro_potencia_BTU=" + (filtro_potencia_BTU ?? "") + ", filtro_ciclo=" + (filtro_ciclo ?? "") + ", filtro_posicao_mercado=" + (filtro_posicao_mercado ?? "") + ")";
+			log.usuario = usuario;
+			log.loja = loja;
+
+			try
+			{
+				datasource = new DataRelEstoqueVenda();
+				dataRel = datasource.Get(httpRequestId, usuario, loja, filtro_estoque, filtro_detalhe, filtro_consolidacao_codigos, filtro_empresa, filtro_fabricante, filtro_produto, filtro_fabricante_multiplo, filtro_grupo, filtro_subgrupo, filtro_potencia_BTU, filtro_ciclo, filtro_posicao_mercado);
+				if (dataRel.Count > 0)
+				{
+					await RelEstoqueVendaGeradorRelatorio.GeraXLS(dataRel, filePath, usuario, loja, filtro_estoque, filtro_detalhe, filtro_consolidacao_codigos, filtro_empresa, filtro_fabricante, filtro_produto, filtro_fabricante_multiplo, filtro_grupo, filtro_subgrupo, filtro_potencia_BTU, filtro_ciclo, filtro_posicao_mercado);
+					statusResponse = "OK";
+					LogDAO.insere(httpRequestId, usuario, log, out strMsgErro);
+				}
+				else
+				{
+					statusResponse = "Vazio";
+					MsgErroException = "Nenhum registro foi encontrado!";
+					msg = NOME_DESTA_ROTINA + ": " + MsgErroException;
+					Global.gravaLogAtividade(httpRequestId, msg);
+				}
+			}
+			catch (Exception ex)
+			{
+				statusResponse = "Falha";
+				MsgErroException = ex.Message;
+				msg = NOME_DESTA_ROTINA + ": Exception - " + ex.ToString();
+				Global.gravaLogAtividade(httpRequestId, msg);
+			}
+
+			sbResponse.Append("{ \"fileName\" : \"" + fileName + "\", " + "\"Status\" : \"" + statusResponse + "\", " + "\"Exception\" : " + System.Web.Helpers.Json.Encode(MsgErroException) + "}");
+			result = Request.CreateResponse(HttpStatusCode.OK);
+			result.Content = new StringContent(sbResponse.ToString(), Encoding.UTF8, "application/json");
+
+			msg = NOME_DESTA_ROTINA + ": Status=" + statusResponse + ", fileName=" + fileName;
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			return result;
+		}
+		#endregion
+
+		#region [ Download ]
+		[HttpPost]
+		public HttpResponseMessage DownloadRelEstoqueVendaXLS(string fileName)
+		{
+			const string NOME_DESTA_ROTINA = "RelatoriosController.DownloadRelEstoqueVendaXLS()";
+			Guid httpRequestId = Request.GetCorrelationId();
+			string msg;
+
+			msg = NOME_DESTA_ROTINA + ": fileName=" + (fileName ?? "");
+			Global.gravaLogAtividade(httpRequestId, msg);
+
+			string filePath = HttpContext.Current.Server.MapPath("~/Report/Relatorios/" + fileName);
+
+			HttpResponseMessage result = null;
+			result = Request.CreateResponse(HttpStatusCode.OK);
+			result.Content = new StreamContent(new FileStream(filePath, FileMode.Open));
+			result.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment");
+			result.Content.Headers.ContentDisposition.FileName = fileName;
+			result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.ms-excel");
+
+			return result;
+		}
+		#endregion
+
+		#endregion
 	}
 }

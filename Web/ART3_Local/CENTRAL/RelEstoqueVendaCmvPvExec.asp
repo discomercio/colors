@@ -30,6 +30,8 @@
 	On Error GoTo 0
 	Err.Clear
 
+	const ID_RELATORIO = "CENTRAL/RelEstoqueVendaCmvPv"
+
 	dim usuario
 	usuario = Trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
@@ -147,11 +149,15 @@
     end if
 
     if alerta = "" then
-		call set_default_valor_texto_bd(usuario, "CENTRAL/RelEstoqueVendaCmvPv|rb_detalhe", rb_detalhe)
-		call set_default_valor_texto_bd(usuario, "CENTRAL/RelEstoqueVendaCmvPv|rb_exportacao", rb_exportacao)
-		call set_default_valor_texto_bd(usuario, "CENTRAL/RelEstoqueVendaCmvPv|c_fabricante_multiplo", c_fabricante_multiplo)
-		call set_default_valor_texto_bd(usuario, "CENTRAL/RelEstoqueVendaCmvPv|c_grupo", c_grupo)
-		call set_default_valor_texto_bd(usuario, "CENTRAL/RelEstoqueVendaCmvPv|c_subgrupo", c_subgrupo)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "rb_detalhe", rb_detalhe)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "rb_exportacao", rb_exportacao)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_fabricante_multiplo", c_fabricante_multiplo)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_grupo", c_grupo)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_subgrupo", c_subgrupo)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_potencia_BTU", c_potencia_BTU)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_ciclo", c_ciclo)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_posicao_mercado", c_posicao_mercado)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "rb_saida", "Html")
 		end if
 
 
@@ -1550,7 +1556,7 @@ P.F { font-size:11pt; }
 		</tr>
 	<% end if %>
 
-<!--  CLICO  -->
+<!--  CICLO  -->
 	<% if c_ciclo <> "" then %>
 		<tr bgColor="#FFFFFF">
 		<td class="MDBE" NOWRAP colspan="2"><span class="PLTe">Ciclo</span>

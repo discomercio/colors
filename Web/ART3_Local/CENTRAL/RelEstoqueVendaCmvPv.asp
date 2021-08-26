@@ -31,6 +31,8 @@
 	On Error GoTo 0
 	Err.Clear
 
+	const ID_RELATORIO = "CENTRAL/RelEstoqueVendaCmvPv"
+
 	dim usuario, s
 	usuario = Trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
@@ -46,8 +48,22 @@
 			) then 
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
-    dim cn
+
+    dim cn, rs, msg_erro
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
+    If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+
+	dim s_sessionToken
+	s_sessionToken = ""
+	s = "SELECT Convert(varchar(36), SessionTokenModuloCentral) AS SessionTokenModuloCentral FROM t_USUARIO WHERE (usuario = '" & usuario & "')"
+    if rs.State <> 0 then rs.Close
+    rs.Open s, cn
+	if Not rs.Eof then s_sessionToken = Trim("" & rs("SessionTokenModuloCentral"))
+	if rs.State <> 0 then rs.Close
+
+
+
+
 
 
 ' _____________________________________________________________________________________________
@@ -335,39 +351,187 @@ end function
         $("#spnCounterFabricante").text($("#c_fabricante_multiplo :selected").length);
         $("#spnCounterGrupo").text($("#c_grupo :selected").length);
         $("#spnCounterSubgrupo").text($("#c_subgrupo :selected").length);
+
+		$("#divAjaxRunning").hide();
+
+		$("#divAjaxRunning").css('filter', 'alpha(opacity=60)'); // TRANSPARÊNCIA NO IE8
+
+		$(document).ajaxStart(function () {
+			$("#divAjaxRunning").show();
+		})
+			.ajaxStop(function () {
+				$("#divAjaxRunning").hide();
+			});
+
+		//Every resize of window
+		$(window).resize(function () {
+			sizeDivAjaxRunning();
+		});
+
+		//Every scroll of window
+		$(window).scroll(function () {
+			sizeDivAjaxRunning();
+		});
 	});
 
-function fESTOQConsulta( f ) {
-var i, b;
-	b=false;
-	for (i=0; i<f.rb_detalhe.length; i++) {
-		if (f.rb_detalhe[i].checked) {
-			b=true;
-			break;
+//Dynamically assign height
+function sizeDivAjaxRunning() {
+	var newTop = $(window).scrollTop() + "px";
+	$("#divAjaxRunning").css("top", newTop);
+}
+
+	function geraArquivoXLS(f) {
+		var estoque, detalhe, consolidacao_codigos;
+		var fabricante, produto, empresa, potencia_BTU, ciclo, posicao_mercado;
+		var fabricante_multiplo, grupo, subgrupo;
+		var usuario, sessionToken;
+		var serverVariableUrl, strUrl, strUrlDownload;
+
+		if (!consisteCamposFiltro(f)) return;
+
+		estoque = $("input[name='rb_estoque']:checked").val();
+		detalhe = $("input[name='rb_detalhe']:checked").val();
+		consolidacao_codigos = $("input[name='rb_exportacao']:checked").val();
+
+		fabricante = trim($("#c_fabricante").val());
+		produto = trim($("#c_produto").val());
+		empresa = trim($("#c_empresa").val());
+		potencia_BTU = trim($("#c_potencia_BTU").val());
+		ciclo = trim($("#c_ciclo").val());
+		posicao_mercado = trim($("#c_posicao_mercado").val());
+
+		fabricante_multiplo = "";
+		for (i = 0; i < f.c_fabricante_multiplo.length; i++) {
+			if (f.c_fabricante_multiplo[i].selected) {
+				if (fabricante_multiplo != "") fabricante_multiplo += "_";
+				fabricante_multiplo += f.c_fabricante_multiplo[i].value;
 			}
-		}
-	if (!b) {
-		alert("Selecione o tipo de detalhamento da consulta!!");
-		return;
 		}
 
-	if (trim(f.c_produto.value)!="") {
-		if (!isEAN(trim(f.c_produto.value))) {
-			if (trim(f.c_fabricante.value)=="") {
-				alert("Informe o fabricante do produto!!");
-				f.c_fabricante.focus();
-				return;
-				}
+		grupo = "";
+		for (i = 0; i < f.c_grupo.length; i++) {
+			if (f.c_grupo[i].selected) {
+				if (grupo != "") grupo += "_";
+				grupo += f.c_grupo[i].value;
 			}
 		}
-	
-	dCONFIRMA.style.visibility="hidden";
-	window.status = "Aguarde ...";
-	f.submit();
+
+		subgrupo = "";
+		for (i = 0; i < f.c_subgrupo.length; i++) {
+			if (f.c_subgrupo[i].selected) {
+				if (subgrupo != "") subgrupo += "_";
+				subgrupo += f.c_subgrupo[i].value;
+			}
+		}
+
+		usuario = "<%=usuario%>";
+		sessionToken = $("#sessionToken").val();
+
+		serverVariableUrl = '<%=Request.ServerVariables("URL")%>';
+		serverVariableUrl = serverVariableUrl.toUpperCase();
+		serverVariableUrl = serverVariableUrl.substring(0, serverVariableUrl.indexOf("CENTRAL"));
+
+		strUrl = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/RelEstoqueVendaXLS/';
+		strUrlDownload = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/Relatorios/DownloadRelEstoqueVendaXLS/';
+
+		$("#divAjaxRunning").show();
+		var jqxhr = $.ajax({
+			url: strUrl,
+			type: "GET",
+			async: true,
+			dataType: "json",
+			data: {
+				usuario: usuario,
+				loja: "",
+				sessionToken: sessionToken,
+				filtro_estoque: estoque,
+				filtro_detalhe: detalhe,
+				filtro_consolidacao_codigos: consolidacao_codigos,
+				filtro_empresa: empresa,
+				filtro_fabricante: fabricante,
+				filtro_produto: produto,
+				filtro_fabricante_multiplo: fabricante_multiplo,
+				filtro_grupo: grupo,
+				filtro_subgrupo: subgrupo,
+				filtro_potencia_BTU: potencia_BTU,
+				filtro_ciclo: ciclo,
+				filtro_posicao_mercado: posicao_mercado
+			}
+		})
+			.success(function (response) {
+				$("#divAjaxRunning").hide();
+				if (response.Status == "OK") {
+					fDOWNLOAD.action = strUrlDownload + "?fileName=" + response.fileName;
+					fDOWNLOAD.submit();
+				}
+				else if (response.Status == "Falha") {
+					alert("Falha ao gerar o arquivo XLS!\n" + response.Exception);
+				}
+				else if (response.Status == "Vazio") {
+					alert("Nenhum registro encontrado!");
+				}
+			})
+			.fail(function (jqXHR, textStatus) {
+				$("#divAjaxRunning").hide();
+				var msgErro = "";
+				if (textStatus.toString().length > 0) msgErro = "Mensagem de Status: " + textStatus.toString();
+				try {
+					if (jqXHR.status.toString().length > 0) { if (msgErro.length > 0) msgErro += "\n\n"; msgErro += "Status: " + jqXHR.status.toString(); }
+				} catch (e) { }
+
+				try {
+					if (jqXHR.statusText.toString().length > 0) { if (msgErro.length > 0) msgErro += "\n\n"; msgErro += "Descrição do Status: " + jqXHR.statusText.toString(); }
+				} catch (e) { }
+
+				try {
+					if (jqXHR.responseText.toString().length > 0) { if (msgErro.length > 0) msgErro += "\n\n"; msgErro += "Mensagem de Resposta: " + jqXHR.responseText.toString(); }
+				} catch (e) { }
+
+				alert("Falha ao tentar processar a consulta!!\n\n" + msgErro);
+			});
+	}
+
+function consisteCamposFiltro(f) {
+var i, b;
+	b = false;
+	for (i = 0; i < f.rb_detalhe.length; i++) {
+		if (f.rb_detalhe[i].checked) {
+			b = true;
+			break;
+		}
+	}
+	if (!b) {
+		alert("Selecione o tipo de detalhamento da consulta!!");
+		return false;
+	}
+
+	if (trim(f.c_produto.value) != "") {
+		if (!isEAN(trim(f.c_produto.value))) {
+			if (trim(f.c_fabricante.value) == "") {
+				alert("Informe o fabricante do produto!!");
+				f.c_fabricante.focus();
+				return false;
+			}
+		}
+	}
+
+	return true;
 }
-</script>
-<script type="text/javascript">
-function limpaCampoSelect(c) {
+
+function fESTOQConsulta( f ) {
+	if (!consisteCamposFiltro(f)) return;
+
+	if (f.rb_saida[1].checked) {
+		geraArquivoXLS(f);
+	}
+	else {
+		dCONFIRMA.style.visibility = "hidden";
+		window.status = "Aguarde ...";
+		f.submit();
+	}
+}
+
+	function limpaCampoSelect(c) {
 	c.options[0].selected = true;
 }
 function limpaCampoSelectFabricante() {
@@ -401,21 +565,53 @@ function limpaCampoSelectSubgrupo() {
 <link href="<%=URL_FILE__E_CSS%>" Rel="stylesheet" Type="text/css">
 
 <style TYPE="text/css">
+#divAjaxRunning
+{
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	z-index:1001;
+	background-color:grey;
+	opacity: .6;
+}
+.AjaxImgLoader
+{
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	margin-left: -128px; /* -1 * image width / 2 */
+	margin-top: -128px;  /* -1 * image height / 2 */
+	display: block;
+}
 #rb_estoque {
-	margin: 0pt 0pt 0pt 15pt;
+	margin: 0px 0px 0px 20px;
 	vertical-align: top;
 	}
 #rb_detalhe {
-	margin: 0pt 0pt 0pt 15pt;
+	margin: 0px 0px 0px 20px;
 	vertical-align: top;
 	}
+.rbOpt {
+	margin-left:20px;
+}
+.LST
+{
+	margin:6px 6px 6px 6px;
+}
 </style>
 
 
 <body onload="if (trim(fESTOQ.c_fabricante.value)=='') fESTOQ.c_fabricante.focus();">
+
+<!-- AJAX EM ANDAMENTO -->
+<div id="divAjaxRunning" style="display:none;"><img src="../Imagem/ajax_loader_gray_256.gif" class="AjaxImgLoader"/></div>
+
 <center>
 
 <form id="fESTOQ" name="fESTOQ" method="post" action="RelEstoqueVendaCmvPvExec.asp">
+<input type="hidden" name="sessionToken" id="sessionToken" value="<%=s_sessionToken%>" />
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
 
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->
@@ -460,11 +656,11 @@ function limpaCampoSelectSubgrupo() {
 			if operacao_permitida(OP_CEN_REL_ESTOQUE_VISAO_COMPLETA_CMVPV, s_lista_operacoes_permitidas) then s=""
 			if operacao_permitida(OP_CEN_REL_ESTOQUE_VISAO_BASICA_CMVPV, s_lista_operacoes_permitidas) And (Not operacao_permitida(OP_CEN_REL_ESTOQUE_VISAO_COMPLETA_CMVPV, s_lista_operacoes_permitidas)) then s=" checked"
 		%>
-		<br><input type="radio" <%=s%> tabindex="-1" id="rb_detalhe" name="rb_detalhe" value="SINTETICO" <% if get_default_valor_texto_bd(usuario, "CENTRAL/RelEstoqueVendaCmvPv|rb_detalhe") = "SINTETICO" then Response.Write " checked" %>>
+		<br><input type="radio" <%=s%> tabindex="-1" id="rb_detalhe" name="rb_detalhe" value="SINTETICO" <% if get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "rb_detalhe") = "SINTETICO" then Response.Write " checked" %>>
 			<span class="C" style="cursor:default" onclick="fESTOQ.rb_detalhe[0].click();">Sintético (sem custos)</span>
 			
 		<%	if operacao_permitida(OP_CEN_REL_ESTOQUE2, s_lista_operacoes_permitidas) Or operacao_permitida(OP_CEN_REL_ESTOQUE_VISAO_COMPLETA_CMVPV, s_lista_operacoes_permitidas) then s="" else s=" disabled" %>
-		<br><input type="radio" <%=s%> tabindex="-1" id="rb_detalhe" name="rb_detalhe" value="INTERMEDIARIO" <% if get_default_valor_texto_bd(usuario, "CENTRAL/RelEstoqueVendaCmvPv|rb_detalhe") = "INTERMEDIARIO" then Response.Write " checked" %>>
+		<br><input type="radio" <%=s%> tabindex="-1" id="rb_detalhe" name="rb_detalhe" value="INTERMEDIARIO" <% if get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "rb_detalhe") = "INTERMEDIARIO" then Response.Write " checked" %>>
 			<span class="C" style="cursor:default" onclick="fESTOQ.rb_detalhe[1].click();">Intermediário (custos médios)</span>
 	</td>
 	</tr>
@@ -486,7 +682,7 @@ function limpaCampoSelectSubgrupo() {
 		<tr>
 		<td>
 			<select id="c_fabricante_multiplo" name="c_fabricante_multiplo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="5"style="width:250px" multiple>
-			<% =fabricante_monta_itens_select(get_default_valor_texto_bd(usuario, "CENTRAL/RelEstoqueVendaCmvPv|c_fabricante_multiplo")) %>
+			<% =fabricante_monta_itens_select(get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_fabricante_multiplo")) %>
 			</select>
 		</td>
 		<td style="width:1px;"></td>
@@ -509,7 +705,7 @@ function limpaCampoSelectSubgrupo() {
 		<tr>
 		<td>
 			<select id="c_grupo" name="c_grupo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="5"style="width:200px" multiple>
-			<% =t_produto_grupo_monta_itens_select(get_default_valor_texto_bd(usuario, "CENTRAL/RelEstoqueVendaCmvPv|c_grupo")) %>
+			<% =t_produto_grupo_monta_itens_select(get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_grupo")) %>
 			</select>
 		</td>
 		<td style="width:1px;"></td>
@@ -532,7 +728,7 @@ function limpaCampoSelectSubgrupo() {
 		<tr>
 		<td>
 			<select id="c_subgrupo" name="c_subgrupo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="6" style="min-width:250px" multiple>
-			<% =t_produto_subgrupo_monta_itens_select(get_default_valor_texto_bd(usuario, "CENTRAL/RelEstoqueVendaCmvPv|c_subgrupo")) %>
+			<% =t_produto_subgrupo_monta_itens_select(get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_subgrupo")) %>
 			</select>
 		</td>
 		<td style="width:1px;"></td>
@@ -609,18 +805,27 @@ function limpaCampoSelectSubgrupo() {
 		</table>
 	</td>
 	</tr>
-
 <!--  OPÇÕES DE CONSULTA  -->
     <tr bgcolor="#FFFFFF">
 	<td colspan="2" class="MDBE" nowrap><span class="PLTe">Opções de Consulta</span>
-		<br><input type="radio"  style="margin-left:20px;" tabindex="-1" id="rb_exportacao" name="rb_exportacao" value="Normais"<% if get_default_valor_texto_bd(usuario, "CENTRAL/RelEstoqueVendaCmvPv|rb_exportacao") = "Normais" then Response.Write " checked" %>>
+		<br><input type="radio" class="rbOpt" tabindex="-1" id="rb_exportacao" name="rb_exportacao" value="Normais"<% if get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "rb_exportacao") = "Normais" then Response.Write " checked" %>>
 			<span class="C" style="cursor:default" onclick="fESTOQ.rb_exportacao[0].click();" >Códigos normais</span>			
         	
-		<br><input type="radio" style="margin-left:20px;" tabindex="-1" id="rb_exportacao" name="rb_exportacao" value="Compostos" <% if get_default_valor_texto_bd(usuario, "CENTRAL/RelEstoqueVendaCmvPv|rb_exportacao") = "Compostos" then Response.Write " checked" %>>
+		<br><input type="radio" class="rbOpt" tabindex="-1" id="rb_exportacao" name="rb_exportacao" value="Compostos" <% if get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "rb_exportacao") = "Compostos" then Response.Write " checked" %>>
 			<span class="C" style="cursor:default" onclick="fESTOQ.rb_exportacao[1].click();">Códigos unificados</span>
 	</td>
 	</tr>
-
+<!--  SAÍDA DO RELATÓRIO  -->
+	<tr bgColor="#FFFFFF" NOWRAP>
+		<td colspan="2" class="ME MB MD">
+		<span class="PLTe">Saída</span>
+		<br />
+		<input type="radio" class="rbOpt" tabindex="-1" id="rb_saida" name="rb_saida" value="Html" <% if get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "rb_saida") = "Html" then Response.Write " checked" %>><span class="C lblOpt" style="cursor:default" onclick="fESTOQ.rb_saida[0].click();"
+			>Html</span>
+		<br><input type="radio" class="rbOpt" tabindex="-1" id="rb_saida" name="rb_saida" value="XLS" <% if get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "rb_saida") = "XLS" then Response.Write " checked" %>><span class="C lblOpt" style="cursor:default" onclick="fESTOQ.rb_saida[1].click();"
+			>Excel</span>
+		</td>
+	</tr>
 </table>
 
 
@@ -643,5 +848,13 @@ function limpaCampoSelectSubgrupo() {
 </form>
 
 </center>
+
+<form method="POST" name="fDOWNLOAD" id="fDOWNLOAD">
+<input type="hidden" name="usuario" value="<%=usuario%>" />
+<input type="hidden" name="loja" value="" />
+<input type="hidden" name="sessionToken" value="<%=s_sessionToken%>" />
+<input type="hidden" name="fileName" />
+</form>
+
 </body>
 </html>

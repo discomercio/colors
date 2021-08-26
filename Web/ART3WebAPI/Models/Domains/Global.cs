@@ -60,8 +60,8 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.29";
-				public const string Data = "07.AGO.2021";
+				public const string Numero = "2.30";
+				public const string Data = "25.AGO.2021";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
 			#endregion
@@ -221,8 +221,8 @@ namespace ART3WebAPI.Models.Domains
 			 *      de forma a possibilitar a identificação de todos os registros pertencentes a uma mesma
 			 *      requisição.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.30 - XX.XX.20XX - por XXX
-			 *      
+			 * v 2.30 - 25.08.2021 - por HHO
+			 *      Desenvolvimento do relatório Estoque de Venda em planilha Excel.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.31 - XX.XX.20XX - por XXX
 			 *      
@@ -505,6 +505,21 @@ namespace ART3WebAPI.Models.Domains
 			}
 			#endregion
 
+			#region [ Tipos de Estoque ]
+			public class TipoEstoque
+			{
+				public const String ID_ESTOQUE_VENDA = "VDA";
+				public const String ID_ESTOQUE_VENDIDO = "VDO";
+				public const String ID_ESTOQUE_SEM_PRESENCA = "SPE";
+				public const String ID_ESTOQUE_KIT = "KIT";
+				public const String ID_ESTOQUE_SHOW_ROOM = "SHR";
+				public const String ID_ESTOQUE_DANIFICADOS = "DAN";
+				public const String ID_ESTOQUE_DEVOLUCAO = "DEV";
+				public const String ID_ESTOQUE_ROUBO = "ROU";
+				public const String ID_ESTOQUE_ENTREGUE = "ETG";
+			}
+			#endregion
+
 			#region [ TipoPessoa ]
 			public static class TipoPessoa
 			{
@@ -590,6 +605,28 @@ namespace ART3WebAPI.Models.Domains
 						public const byte REPROVADA = 5;
 						public const byte CANCELADA = 6;
 						public const byte INDEFINIDO = 0;
+					}
+				}
+				#endregion
+
+				#region [ RelEstoqueVenda ]
+				public static class RelEstoqueVenda
+				{
+					public static class FILTRO_ESTOQUE
+					{
+						public const string ESTOQUE_VENDA = "VDA";
+					}
+
+					public static class FILTRO_DETALHE
+					{
+						public const string SINTETICO = "SINTETICO";
+						public const string INTERMEDIARIO = "INTERMEDIARIO";
+					}
+
+					public static class FILTRO_CONSOLIDACAO_CODIGOS
+					{
+						public const string NORMAIS = "Normais";
+						public const string UNIFICADOS = "Compostos";
 					}
 				}
 				#endregion
@@ -1596,6 +1633,49 @@ namespace ART3WebAPI.Models.Domains
 				gravaLogAtividade(httpRequestId, msg);
 				return null;
 			}
+		}
+		#endregion
+
+		#region [ getDescricaoEstoque ]
+		public static string getDescricaoEstoque(string tipoEstoque)
+		{
+			string descricao;
+
+			switch (tipoEstoque)
+			{
+				case Global.Cte.TipoEstoque.ID_ESTOQUE_VENDA:
+					descricao = "Venda";
+					break;
+				case Global.Cte.TipoEstoque.ID_ESTOQUE_VENDIDO:
+					descricao = "Vendido";
+					break;
+				case Global.Cte.TipoEstoque.ID_ESTOQUE_SEM_PRESENCA:
+					descricao = "Sem Presença";
+					break;
+				case Global.Cte.TipoEstoque.ID_ESTOQUE_KIT:
+					descricao = "Kits Convertidos";
+					break;
+				case Global.Cte.TipoEstoque.ID_ESTOQUE_SHOW_ROOM:
+					descricao = "Show-Room";
+					break;
+				case Global.Cte.TipoEstoque.ID_ESTOQUE_DANIFICADOS:
+					descricao = "Danificado";
+					break;
+				case Global.Cte.TipoEstoque.ID_ESTOQUE_DEVOLUCAO:
+					descricao = "Devolvido";
+					break;
+				case Global.Cte.TipoEstoque.ID_ESTOQUE_ROUBO:
+					descricao = "Roubo/Dano";
+					break;
+				case Global.Cte.TipoEstoque.ID_ESTOQUE_ENTREGUE:
+					descricao = "Entregue";
+					break;
+				default:
+					descricao = "";
+					break;
+			}
+
+			return descricao;
 		}
 		#endregion
 

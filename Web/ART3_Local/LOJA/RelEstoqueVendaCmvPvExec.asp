@@ -32,6 +32,8 @@
 	On Error GoTo 0
 	Err.Clear
 
+	const ID_RELATORIO = "LOJA/RelEstoqueVendaCmvPv"
+
 	dim usuario, loja
 	usuario = Trim(Session("usuario_atual"))
 	loja = Trim(Session("loja_atual"))
@@ -62,9 +64,9 @@
 	dim s, c_fabricante, c_produto, rb_estoque, rb_detalhe, c_empresa
 	dim cod_fabricante, cod_produto,cont 
 	dim s_nome_fabricante, s_nome_produto, s_nome_produto_html,rb_exportacao
-    dim v_fabricante(),v_codigo(),v_descricao(),v_qtde(),v_valor(),v_produtos()
-    dim qtde_estoque_venda_aux,n_reg_total,vRelat(),vl_custo2_composto,qtde_estoque_venda_composto,i,blnPularProdutoComposto
-    dim c_fabricante_multiplo, c_grupo, c_subgrupo, v_fabricantes, v_grupos, v_subgrupos
+    dim v_fabricante(),v_codigo(),v_descricao(),v_qtde(),v_valor(),v_produtos(),v_cubagem()
+    dim qtde_estoque_venda_aux,n_reg_total,vRelat(),vl_custo2_composto,qtde_estoque_venda_composto,cubagem_composto,i,blnPularProdutoComposto
+    dim c_fabricante_multiplo, c_grupo, c_subgrupo, c_potencia_BTU, c_ciclo, c_posicao_mercado, v_fabricantes, v_grupos, v_subgrupos
 	dim s_where_compostos
 
     redim v_codigo(0)
@@ -72,13 +74,16 @@
 	c_fabricante = retorna_so_digitos(Request.Form("c_fabricante"))
 	if c_fabricante <> "" then c_fabricante = normaliza_codigo(c_fabricante, TAM_MIN_FABRICANTE)
 	c_produto = UCase(Trim(Request.Form("c_produto")))
-    c_fabricante_multiplo = Trim(Request.Form("c_fabricante_multiplo"))
-	c_grupo = Ucase(Trim(Request.Form("c_grupo")))
-	c_subgrupo = Ucase(Trim(Request.Form("c_subgrupo")))
 	rb_estoque = Trim(Request.Form("rb_estoque"))
 	rb_detalhe = Trim(Request.Form("rb_detalhe"))
 	rb_exportacao = Trim(Request.Form("rb_exportacao"))
     c_empresa = Trim(Request.Form("c_empresa"))
+    c_fabricante_multiplo = Trim(Request.Form("c_fabricante_multiplo"))
+	c_grupo = Ucase(Trim(Request.Form("c_grupo")))
+	c_subgrupo = Ucase(Trim(Request.Form("c_subgrupo")))
+	c_potencia_BTU = Trim(Request.Form("c_potencia_BTU"))
+	c_ciclo = Trim(Request.Form("c_ciclo"))
+	c_posicao_mercado = Trim(Request.Form("c_posicao_mercado"))
 
 	alerta = ""
 	if (c_produto<>"") And (Not IsEAN(c_produto)) then
@@ -147,11 +152,15 @@
     end if
 
     if alerta = "" then
-		call set_default_valor_texto_bd(usuario, "LOJA/RelEstoqueVendaCmvPv|rb_detalhe", rb_detalhe)
-		call set_default_valor_texto_bd(usuario, "LOJA/RelEstoqueVendaCmvPv|rb_exportacao", rb_exportacao)
-		call set_default_valor_texto_bd(usuario, "LOJA/RelEstoqueVendaCmvPv|c_fabricante_multiplo", c_fabricante_multiplo)
-		call set_default_valor_texto_bd(usuario, "LOJA/RelEstoqueVendaCmvPv|c_grupo", c_grupo)
-		call set_default_valor_texto_bd(usuario, "LOJA/RelEstoqueVendaCmvPv|c_subgrupo", c_subgrupo)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "rb_detalhe", rb_detalhe)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "rb_exportacao", rb_exportacao)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_fabricante_multiplo", c_fabricante_multiplo)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_grupo", c_grupo)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_subgrupo", c_subgrupo)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_potencia_BTU", c_potencia_BTU)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_ciclo", c_ciclo)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_posicao_mercado", c_posicao_mercado)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "rb_saida", "Html")
 		end if
 
 
@@ -165,11 +174,11 @@
 ' 
 sub consulta_estoque_venda_detalhe_sintetico
 dim r
-dim s, s_aux, s_sql, x, cab_table, cab, fabricante_a, s_where, s_where_temp
-dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
-	
-	cont = 0
+dim s, s_aux, s_sql, x, cab_table, cab, fabricante_a
+dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes, s_where, s_where_temp
+dim s_color
 
+	cont = 0
 
     if rb_exportacao = "Normais" then
 
@@ -178,6 +187,7 @@ dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
 				    " t_ESTOQUE_ITEM.produto," & _
 				    " descricao," & _
 				    " descricao_html," & _
+					" cubagem," & _
 				    " Sum(qtde-qtde_utilizada) AS saldo" & _
 			    " FROM t_ESTOQUE_ITEM" & _
 				    " LEFT JOIN t_PRODUTO ON" & _
@@ -234,17 +244,34 @@ dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
 	        s_sql = s_sql & "(" & s_where_temp & ")"
         end if
 
+        if c_potencia_BTU <> "" then
+		    s_sql = s_sql & _
+			    " AND (t_PRODUTO.potencia_BTU = " & c_potencia_BTU & ")"
+		    end if
+
+        if c_ciclo <> "" then
+		    s_sql = s_sql & _
+			    " AND (t_PRODUTO.ciclo = '" & c_ciclo & "')"
+		    end if
+	
+	    if c_posicao_mercado <> "" then
+		    s_sql = s_sql & _
+			    " AND (t_PRODUTO.posicao_mercado = '" & c_posicao_mercado & "')"
+		    end if
+
 	    s_sql = s_sql & _
 			    " GROUP BY" & _
 				    " t_ESTOQUE_ITEM.fabricante," & _
 				    " t_ESTOQUE_ITEM.produto," & _
 				    " descricao," & _
-				    " descricao_html" & _
+				    " descricao_html," & _
+					" cubagem" & _
 			    " ORDER BY" & _
 				    " t_ESTOQUE_ITEM.fabricante," & _
 				    " t_ESTOQUE_ITEM.produto," & _
 				    " descricao," & _
-				    " descricao_html"      
+				    " descricao_html," & _
+					" cubagem"
 	
 	    set r = cn.execute(s_sql)
 	    do while Not r.Eof
@@ -254,11 +281,13 @@ dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
                 redim preserve v_descricao(cont)
                 redim preserve v_qtde(cont)
                 redim preserve v_valor(cont)
-                redim preserve v_preco_lista(cont)               
+                redim preserve v_preco_lista(cont)
+				redim preserve v_cubagem(cont)
                 v_fabricante(cont) =  r("fabricante")
                 v_codigo(cont)  =  r("produto")
                 v_descricao(cont) = r("descricao")
-                v_qtde(cont) = r("saldo")          
+                v_qtde(cont) = r("saldo")
+				v_cubagem(cont) = r("cubagem")
                 cont = cont + 1
                 r.MoveNext
 			
@@ -315,6 +344,7 @@ dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
 		do while Not r.Eof
 			blnPularProdutoComposto = False
 			qtde_estoque_venda_composto = -1
+			cubagem_composto = 0
 			
 			s_sql =         "SELECT " & _
 						        " fabricante_item," & _
@@ -355,7 +385,8 @@ dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
             
 				s_sql = " SELECT" & _
 							" tP.fabricante," & _
-							" tP.produto," & _							
+							" tP.produto," & _
+							" tP.cubagem," & _
 							" Coalesce((SELECT Sum(qtde-qtde_utilizada) FROM t_ESTOQUE_ITEM tEI LEFT JOIN t_ESTOQUE tE ON (tEI.id_estoque=tE.id_estoque) WHERE (tEI.fabricante=tP.fabricante) AND (tEI.produto=tP.produto) AND ((qtde-qtde_utilizada)>0)"
                 if c_empresa <> "" then s_sql = s_sql & " AND (tE.id_nfe_emitente = '" & c_empresa & "')"    
                 s_sql = s_sql & "), 0) AS qtde_estoque_venda," & _
@@ -366,6 +397,21 @@ dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
 						" WHERE " & _
                         " (tP.fabricante = '" & Trim("" & tPCI("fabricante_item")) & "')" & _
                        	" AND (tP.produto = '" & Trim("" & tPCI("produto_item")) & "') "   
+
+                if c_potencia_BTU <> "" then
+		            s_sql = s_sql & _
+			            " AND (tP.potencia_BTU = " & c_potencia_BTU & ")"
+		            end if
+
+                if c_ciclo <> "" then
+		            s_sql = s_sql & _
+			            " AND (tP.ciclo = '" & c_ciclo & "')"
+		            end if
+	
+	            if c_posicao_mercado <> "" then
+		            s_sql = s_sql & _
+			            " AND (tP.posicao_mercado = '" & c_posicao_mercado & "')"
+		            end if
 
 				s_sql = " SELECT " & _
 							"*" & _
@@ -382,6 +428,7 @@ dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
               
 				else                                 
 					qtde_estoque_venda_aux = t("qtde_estoque_venda") \ tPCI("qtde")
+					cubagem_composto = cubagem_composto + (t("cubagem") * tPCI("qtde"))
 					if qtde_estoque_venda_composto = -1 then
 						qtde_estoque_venda_composto = qtde_estoque_venda_aux
 					else
@@ -413,7 +460,11 @@ dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
                     redim preserve v_fabricante(cont)
 				    v_fabricante(cont) = Trim("" & r("fabricante_composto"))	
     
-                    cont = cont + 1    			                                   
+					'CUBAGEM
+					redim preserve v_cubagem(cont)
+					v_cubagem(cont) = cubagem_composto
+
+                    cont = cont + 1
 		        end if
 			end if
 			r.MoveNext
@@ -424,6 +475,7 @@ dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
 				    " t_ESTOQUE_ITEM.produto," & _
 				    " descricao," & _
 				    " descricao_html," & _
+					" cubagem," & _
 				    " Sum(qtde-qtde_utilizada) AS saldo" & _
 			    " FROM t_ESTOQUE_ITEM" & _
 				    " LEFT JOIN t_PRODUTO ON" & _
@@ -480,6 +532,21 @@ dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
 	        s_sql = s_sql & "(" & s_where_temp & ")"
         end if
 
+        if c_potencia_BTU <> "" then
+		    s_sql = s_sql & _
+			    " AND (t_PRODUTO.potencia_BTU = " & c_potencia_BTU & ")"
+		    end if
+
+        if c_ciclo <> "" then
+		    s_sql = s_sql & _
+			    " AND (t_PRODUTO.ciclo = '" & c_ciclo & "')"
+		    end if
+	
+	    if c_posicao_mercado <> "" then
+		    s_sql = s_sql & _
+			    " AND (t_PRODUTO.posicao_mercado = '" & c_posicao_mercado & "')"
+		    end if
+
         if c_empresa <> "" then
             s_sql = s_sql & " AND (t_ESTOQUE.id_nfe_emitente='" & c_empresa & "')"
         end if
@@ -489,12 +556,14 @@ dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
 				    " t_ESTOQUE_ITEM.fabricante," & _
 				    " t_ESTOQUE_ITEM.produto," & _
 				    " descricao," & _
-				    " descricao_html" & _
+				    " descricao_html," & _
+					" cubagem" & _
 			    " ORDER BY" & _
 				    " t_ESTOQUE_ITEM.fabricante," & _
 				    " t_ESTOQUE_ITEM.produto," & _
 				    " descricao," & _
-				    " descricao_html"
+				    " descricao_html," & _
+					" cubagem"
         
         set r = cn.execute(s_sql)
 	    do while Not r.Eof    
@@ -503,10 +572,12 @@ dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
                 redim preserve v_codigo(cont)
                 redim preserve v_descricao(cont)
                 redim preserve v_qtde(cont)         
+				redim preserve v_cubagem(cont)
                 v_fabricante(cont) =  r("fabricante")
                 v_codigo(cont)  =  r("produto")
                 v_descricao(cont) = r("descricao")
                 v_qtde(cont) = r("saldo")          
+                v_cubagem(cont) = r("cubagem")
                 cont = cont + 1
                 r.MoveNext
 			
@@ -523,6 +594,7 @@ dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
 		    .c2 = ""
 		    .c3 = ""
 		    .c4 = ""
+			.c5 = 0
 		end with
     if v_codigo(Ubound(v_codigo)) <> "" then
         for cont = 0 to Ubound(v_codigo)
@@ -535,6 +607,7 @@ dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
                 .c2 =  v_fabricante(cont)
                 .c3 =  v_descricao(cont)
                 .c4 =  v_qtde(cont)
+				.c5 = v_cubagem(cont)
 			end with
         next
     end if
@@ -547,6 +620,7 @@ dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
 	    cab = "	<TR style='background:azure' nowrap>" & chr(13) & _
 		      "		<TD width='75' valign='bottom' nowrap class='MD MB'><P class='R'>PRODUTO</P></TD>" & chr(13) & _
 		      "		<TD width='480' valign='bottom' nowrap class='MD MB'><P class='R'>DESCRIÇÃO</P></TD>" & chr(13) & _
+			  "		<TD width='80' valign='bottom' nowrap class='MD MB'><P class='Rd'>CUBAGEM (UN)</P></TD>" & chr(13) & _
 		      "		<TD width='60' valign='bottom' nowrap class='MB'><P class='Rd' style='font-weight:bold;'>QTDE</P></TD>" & chr(13) & _
 		      "	</TR>" & chr(13)
 	
@@ -567,11 +641,11 @@ dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
 		    '	SUB-TOTAL POR FORNECEDOR
 			    if n_reg > 0 then
 				    x = x & "	<TR NOWRAP>" & chr(13) & _
-						    "		<TD class='MB' colspan='2'><P class='Cd'>Total:</P></TD>" & chr(13) & _
+						    "		<TD class='MB' colspan='3'><P class='Cd'>Total:</P></TD>" & chr(13) & _
 						    "		<TD class='MB'><P class='Cd'>" & formata_inteiro(n_saldo_parcial) & "</P></TD>" & chr(13) & _
 						    "	</TR>" & chr(13) & _
 						    "	<TR NOWRAP>" & chr(13) & _
-						    "		<TD colspan='3' class='MB'>&nbsp;</TD>" & _
+						    "		<TD colspan='4' class='MB'>&nbsp;</TD>" & _
 						    "	</TR>" & chr(13)
 				    end if
 			    qtde_fabricantes = qtde_fabricantes + 1
@@ -581,7 +655,7 @@ dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
 			    if (s<>"") And (s_aux<>"") then s = s & " - "
 			    s = s & s_aux
 			    x = x & "	<TR NOWRAP>" & chr(13) & _
-					    "		<TD class='MB' align='center' colspan='3' style='background: honeydew'><P class='C'>&nbsp;" & s & "</P></TD>" & chr(13) & _
+					    "		<TD class='MB' align='center' colspan='4' style='background: honeydew'><P class='C'>&nbsp;" & s & "</P></TD>" & chr(13) & _
 					    "	</TR>" & chr(13)
 			    n_saldo_parcial = 0
 			    end if
@@ -596,6 +670,11 @@ dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
 
 	     '> DESCRIÇÃO
 		    x = x & "		<TD class='MDB' valign='bottom'><P class='C' NOWRAP>&nbsp;" & produto_formata_descricao_em_html(vRelat(cont).c3) & "</P></TD>" & chr(13)
+
+	     '> CUBAGEM
+			s_color = "black"
+			if vRelat(cont).c5 = 0 then s_color = "darkgray"
+		    x = x & "		<TD class='MDB' valign='bottom'><P class='Cd' style='color:" & s_color & ";' NOWRAP>&nbsp;" & formata_numero6dec(vRelat(cont).c5) & "</P></TD>" & chr(13)
 
 	     '> SALDO  
 		    x = x & "		<TD class='MB' valign='bottom' NOWRAP><P class='Cd'>&nbsp;" & formata_inteiro(vRelat(cont).c4) & "</P></TD>" & chr(13)
@@ -616,15 +695,15 @@ dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
 	if n_reg <> 0 then 
 	'	TOTAL DO ÚLTIMO FORNECEDOR
 		x = x & "	<TR NOWRAP>" & chr(13) & _
-				"		<TD colspan='2'><P class='Cd'>Total:</P></TD>" & chr(13) & _
+				"		<TD colspan='3'><P class='Cd'>Total:</P></TD>" & chr(13) & _
 				"		<TD><P class='Cd'>" & formata_inteiro(n_saldo_parcial) & "</P></TD>" & chr(13) & _
 				"	</TR>" & chr(13)
 		
 		if qtde_fabricantes > 1 then
 		'	TOTAL GERAL
-			x = x & "	<TR NOWRAP><TD COLSPAN='3' class='MC'>&nbsp;</TD></TR>" & chr(13) & _
+			x = x & "	<TR NOWRAP><TD COLSPAN='4' class='MC'>&nbsp;</TD></TR>" & chr(13) & _
 					"	<TR NOWRAP style='background: #FFFFDD'>" & chr(13) & _
-					"		<TD COLSPAN='2' NOWRAP class='MC'><P class='Cd'>" & "TOTAL GERAL:" & "</P></TD>" & chr(13) & _
+					"		<TD COLSPAN='3' NOWRAP class='MC'><P class='Cd'>" & "TOTAL GERAL:" & "</P></TD>" & chr(13) & _
 					"		<TD NOWRAP class='MC'><P class='Cd'>" & formata_inteiro(n_saldo_total) & "</P></TD>" & chr(13) & _
 					"	</TR>" & chr(13)
 			end if
@@ -634,7 +713,7 @@ dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
 	if n_reg = 0 then
 		x = cab_table & cab & _
 			"	<TR NOWRAP>" & chr(13) & _
-			"		<TD colspan='3'><P class='ALERTA'>&nbsp;NENHUM PRODUTO DO ESTOQUE SATISFAZ AS CONDIÇÕES ESPECIFICADAS&nbsp;</P></TD>" & chr(13) & _
+			"		<TD colspan='4'><P class='ALERTA'>&nbsp;NENHUM PRODUTO DO ESTOQUE SATISFAZ AS CONDIÇÕES ESPECIFICADAS&nbsp;</P></TD>" & chr(13) & _
 			"	</TR>" & chr(13)
 		end if
 
@@ -656,15 +735,16 @@ end sub
 ' 
 sub consulta_estoque_venda_detalhe_intermediario
 dim r
-dim s, s_aux, s_sql, x, cab_table, cab, fabricante_a, s_where, s_where_temp
-dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes
+dim s, s_aux, s_sql, x, cab_table, cab, fabricante_a
+dim n_reg, n_saldo_total, n_saldo_parcial, qtde_fabricantes, s_where, s_where_temp
 dim vl, vl_total_geral, vl_sub_total
+dim s_color
+
+	cont = 0
 
 '	IMPORTANTE: O VALOR ATUAL DE CMV_PV ESTÁ EM T_PRODUTO.PRECO_FABRICANTE
 '	==========  O HISTÓRICO DO VALOR DE CMV_PV ESTÁ EM T_PEDIDO_ITEM.PRECO_FABRICANTE (E T_PEDIDO_ITEM_DEVOLVIDO.PRECO_FABRICANTE)
 '				O HISTÓRICO DO CUSTO REAL PAGO AO FABRICANTE ESTÁ EM T_ESTOQUE_ITEM.VL_CUSTO2
-
-	cont = 0
 
     if rb_exportacao = "Normais" then
 
@@ -673,6 +753,7 @@ dim vl, vl_total_geral, vl_sub_total
 				    " t_ESTOQUE_ITEM.produto," & _
 				    " descricao," & _
 				    " descricao_html," & _
+					" cubagem," & _
 				    " Sum(qtde-qtde_utilizada) AS saldo," & _
 				    " Sum((qtde-qtde_utilizada)*t_ESTOQUE_ITEM.vl_custo2) AS preco_total" & _
 			    " FROM t_ESTOQUE_ITEM" & _
@@ -731,17 +812,34 @@ dim vl, vl_total_geral, vl_sub_total
 	        s_sql = s_sql & "(" & s_where_temp & ")"
         end if
 
+        if c_potencia_BTU <> "" then
+		    s_sql = s_sql & _
+			    " AND (t_PRODUTO.potencia_BTU = " & c_potencia_BTU & ")"
+		    end if
+
+        if c_ciclo <> "" then
+		    s_sql = s_sql & _
+			    " AND (t_PRODUTO.ciclo = '" & c_ciclo & "')"
+		    end if
+	
+	    if c_posicao_mercado <> "" then
+		    s_sql = s_sql & _
+			    " AND (t_PRODUTO.posicao_mercado = '" & c_posicao_mercado & "')"
+		    end if
+
 	    s_sql = s_sql & _
 			    " GROUP BY" & _
 				    " t_ESTOQUE_ITEM.fabricante," & _
 				    " t_ESTOQUE_ITEM.produto," & _
 				    " descricao," & _
-				    " descricao_html" & _
+				    " descricao_html," & _
+					" cubagem" & _
 			    " ORDER BY" & _
 				    " t_ESTOQUE_ITEM.fabricante," & _
 				    " t_ESTOQUE_ITEM.produto," & _
 				    " descricao," & _
-				    " descricao_html"      
+				    " descricao_html," & _
+					" cubagem"
 	
 	    set r = cn.execute(s_sql)
 	    do while Not r.Eof
@@ -752,11 +850,13 @@ dim vl, vl_total_geral, vl_sub_total
                 redim preserve v_qtde(cont)
                 redim preserve v_valor(cont)
                 redim preserve v_preco_lista(cont)               
+				redim preserve v_cubagem(cont)
                 v_fabricante(cont) =  r("fabricante")
                 v_codigo(cont)  =  r("produto")
                 v_descricao(cont) = r("descricao")
                 v_qtde(cont) = r("saldo")
                 v_valor(cont) = r("preco_total")                
+				v_cubagem(cont) = r("cubagem")
                 cont = cont + 1
 			
 		    r.movenext
@@ -815,6 +915,7 @@ dim vl, vl_total_geral, vl_sub_total
 			blnPularProdutoComposto = False
             vl_custo2_composto = 0
 			qtde_estoque_venda_composto = -1
+			cubagem_composto = 0
 			
 			s_sql =         "SELECT " & _
 						        " fabricante_item," & _
@@ -855,18 +956,33 @@ dim vl, vl_total_geral, vl_sub_total
             
 				s_sql = " SELECT" & _
 							" tP.fabricante," & _
-							" tP.produto," & _							
+							" tP.produto," & _
+							" tP.cubagem," & _
 							" Coalesce((SELECT Sum(qtde-qtde_utilizada) FROM t_ESTOQUE_ITEM tEI LEFT JOIN t_ESTOQUE tE ON (tEI.id_estoque=tE.id_estoque) WHERE (tEI.fabricante=tP.fabricante) AND (tEI.produto=tP.produto) AND ((qtde-qtde_utilizada)>0)"
                 if c_empresa <> "" then s_sql = s_sql & " AND (tE.id_nfe_emitente = '" & c_empresa & "')"    
                 s_sql = s_sql & "), 0) AS qtde_estoque_venda," & _
                             " Coalesce((SELECT Sum((tEI.qtde-qtde_utilizada)* vl_custo2) AS saldo FROM t_ESTOQUE_ITEM tEI LEFT JOIN t_ESTOQUE tE ON (tEI.id_estoque=tE.id_estoque) WHERE (tEI.fabricante=tP.fabricante) AND (tEI.produto=tP.produto)"
                 if c_empresa <> "" then s_sql = s_sql & " AND (tE.id_nfe_emitente = '" & c_empresa & "')"
                 s_sql = s_sql & "), 0) AS vl_custo2" & _                                                               
-						" FROM t_PRODUTO tPL" & _
-							" INNER JOIN t_PRODUTO tP ON (tPL.fabricante = tP.fabricante) AND (tPL.produto = tP.produto)" & _                                                                  
+						" FROM t_PRODUTO tP" & _
 						" WHERE " & _
                         " (tP.fabricante = '" & Trim("" & tPCI("fabricante_item")) & "')" & _
                        	" AND (tP.produto = '" & Trim("" & tPCI("produto_item")) & "') "   
+
+                if c_potencia_BTU <> "" then
+		            s_sql = s_sql & _
+			            " AND (tP.potencia_BTU = " & c_potencia_BTU & ")"
+		            end if
+
+                if c_ciclo <> "" then
+		            s_sql = s_sql & _
+			            " AND (tP.ciclo = '" & c_ciclo & "')"
+		            end if
+	
+	            if c_posicao_mercado <> "" then
+		            s_sql = s_sql & _
+			            " AND (tP.posicao_mercado = '" & c_posicao_mercado & "')"
+		            end if
 
 				s_sql = " SELECT " & _
 							"*" & _
@@ -884,6 +1000,7 @@ dim vl, vl_total_geral, vl_sub_total
 				else
                     vl_custo2_composto = vl_custo2_composto + (tPCI("qtde") * (t("vl_custo2") / t("qtde_estoque_venda")))                                 
 					qtde_estoque_venda_aux = t("qtde_estoque_venda") \ tPCI("qtde")
+					cubagem_composto = cubagem_composto + (t("cubagem") * tPCI("qtde"))
 					if qtde_estoque_venda_composto = -1 then
 						qtde_estoque_venda_composto = qtde_estoque_venda_aux
 					else
@@ -920,7 +1037,11 @@ dim vl, vl_total_geral, vl_sub_total
                     redim preserve v_fabricante(cont)
 				    v_fabricante(cont) = Trim("" & r("fabricante_composto"))	
     
-                    cont = cont + 1    			                                   
+					'CUBAGEM
+					redim preserve v_cubagem(cont)
+					v_cubagem(cont) = cubagem_composto
+
+                    cont = cont + 1
 		        end if
 			end if
 			r.MoveNext
@@ -931,6 +1052,7 @@ dim vl, vl_total_geral, vl_sub_total
 				    " t_ESTOQUE_ITEM.produto," & _
 				    " descricao," & _
 				    " descricao_html," & _
+					" cubagem," & _
 				    " Sum(qtde-qtde_utilizada) AS saldo," & _
                     " Sum((qtde-qtde_utilizada)*t_ESTOQUE_ITEM.vl_custo2) AS preco_total" & _
 			    " FROM t_ESTOQUE_ITEM" & _
@@ -988,6 +1110,21 @@ dim vl, vl_total_geral, vl_sub_total
 	        s_sql = s_sql & "(" & s_where_temp & ")"
         end if
 
+        if c_potencia_BTU <> "" then
+		    s_sql = s_sql & _
+			    " AND (t_PRODUTO.potencia_BTU = " & c_potencia_BTU & ")"
+		    end if
+
+        if c_ciclo <> "" then
+		    s_sql = s_sql & _
+			    " AND (t_PRODUTO.ciclo = '" & c_ciclo & "')"
+		    end if
+	
+	    if c_posicao_mercado <> "" then
+		    s_sql = s_sql & _
+			    " AND (t_PRODUTO.posicao_mercado = '" & c_posicao_mercado & "')"
+		    end if
+
         if c_empresa <> "" then
             s_sql = s_sql & " AND (t_ESTOQUE.id_nfe_emitente='" & c_empresa & "')"
         end if
@@ -997,12 +1134,14 @@ dim vl, vl_total_geral, vl_sub_total
 				    " t_ESTOQUE_ITEM.fabricante," & _
 				    " t_ESTOQUE_ITEM.produto," & _
 				    " descricao," & _
-				    " descricao_html" & _
+				    " descricao_html," & _
+					" cubagem" & _
 			    " ORDER BY" & _
 				    " t_ESTOQUE_ITEM.fabricante," & _
 				    " t_ESTOQUE_ITEM.produto," & _
 				    " descricao," & _
-				    " descricao_html"
+				    " descricao_html," & _
+					" cubagem"
         
         set r = cn.execute(s_sql)
 	    do while Not r.Eof    
@@ -1013,11 +1152,13 @@ dim vl, vl_total_geral, vl_sub_total
                 redim preserve v_qtde(cont)
                 redim preserve v_valor(cont)
                 redim preserve v_preco_lista(cont)               
+				redim preserve v_cubagem(cont)
                 v_fabricante(cont) =  r("fabricante")
                 v_codigo(cont)  =  r("produto")
                 v_descricao(cont) = r("descricao")
                 v_qtde(cont) = r("saldo")
                 v_valor(cont) = r("preco_total")                
+				v_cubagem(cont) = r("cubagem")
                 cont = cont + 1
 
                 r.MoveNext		
@@ -1037,6 +1178,7 @@ dim vl, vl_total_geral, vl_sub_total
 		    .c3 = ""
 		    .c4 = ""
 		    .c5 = ""
+			.c6 = 0
 		end with
     if v_codigo(Ubound(v_codigo)) <> "" then
         for cont = 0 to Ubound(v_codigo)
@@ -1050,6 +1192,7 @@ dim vl, vl_total_geral, vl_sub_total
                 .c3 =  v_descricao(cont)
                 .c4 =  v_qtde(cont)
                 .c5 =  v_valor(cont)
+				.c6 = v_cubagem(cont)
 			end with
         next
     end if
@@ -1062,6 +1205,7 @@ dim vl, vl_total_geral, vl_sub_total
 	    cab = "	<TR style='background:azure' nowrap>" & chr(13) & _
 		      "		<TD width='60' valign='bottom' nowrap class='MD MB'><P class='R'>PRODUTO</P></TD>" & chr(13) & _
 		      "		<TD width='274' valign='bottom' class='MD MB'><P class='R'>DESCRIÇÃO</P></TD>" & chr(13) & _
+		      "		<TD width='70' valign='bottom' nowrap class='MD MB'><P class='Rd' style='font-weight:bold;'>CUBAGEM (UN)</P></TD>" & chr(13) & _
 		      "		<TD width='60' valign='bottom' nowrap class='MD MB'><P class='Rd' style='font-weight:bold;'>QTDE</P></TD>" & chr(13) & _
 		      "		<TD width='100' valign='bottom' nowrap class='MD MB'><P class='Rd' style='font-weight:bold;'>CUSTO ENTRADA UNITÁRIO MÉDIO</P></TD>" & chr(13) & _
 		      "		<TD width='100' valign='bottom' nowrap class='MB'><P class='Rd' style='font-weight:bold;'>CUSTO ENTRADA TOTAL</P></TD>" & chr(13) & _
@@ -1084,13 +1228,13 @@ dim vl, vl_total_geral, vl_sub_total
 		    '	SUB-TOTAL POR FORNECEDOR
 			    if n_reg > 0 then
 				    x = x & "	<TR NOWRAP>" & chr(13) & _
-						    "		<TD class='MB' colspan='2'><P class='Cd'>Total:</P></TD>" & chr(13) & _
+						    "		<TD class='MB' colspan='3'><P class='Cd'>Total:</P></TD>" & chr(13) & _
 						    "		<TD class='MB'><P class='Cd'>" & formata_inteiro(n_saldo_parcial) & "</P></TD>" & chr(13) & _
 						    "		<TD class='MB'>&nbsp;</TD>" & chr(13) & _
 						    "		<TD class='MB'><P class='Cd'>" & formata_moeda(vl_sub_total) & "</P></TD>" & chr(13) & _
 						    "	</TR>" & chr(13) & _
 						    "	<TR NOWRAP>" & chr(13) & _
-						    "		<TD colspan='5' class='MB'>&nbsp;</TD>" & _
+						    "		<TD colspan='6' class='MB'>&nbsp;</TD>" & _
 						    "	</TR>" & chr(13)
 				    end if
 			    qtde_fabricantes = qtde_fabricantes + 1
@@ -1100,7 +1244,7 @@ dim vl, vl_total_geral, vl_sub_total
 			    if (s<>"") And (s_aux<>"") then s = s & " - "
 			    s = s & s_aux
 			    x = x & "	<TR NOWRAP>" & chr(13) & _
-					    "		<TD class='MB' align='center' colspan='5' style='background: honeydew'><P class='C'>&nbsp;" & s & "</P></TD>" & chr(13) & _
+					    "		<TD class='MB' align='center' colspan='6' style='background: honeydew'><P class='C'>&nbsp;" & s & "</P></TD>" & chr(13) & _
 					    "	</TR>" & chr(13)
 			    n_saldo_parcial = 0
 			    vl_sub_total = 0
@@ -1116,6 +1260,11 @@ dim vl, vl_total_geral, vl_sub_total
 
 	     '> DESCRIÇÃO
 		    x = x & "		<TD class='MDB' valign='bottom'><P class='C'>&nbsp;" & produto_formata_descricao_em_html(vRelat(cont).c3) & "</P></TD>" & chr(13)
+
+	     '> CUBAGEM
+			s_color = "black"
+			if vRelat(cont).c6 = 0 then s_color = "darkgray"
+		    x = x & "		<TD class='MDB' valign='bottom'><P class='Cd' style='color:" & s_color & ";' NOWRAP>&nbsp;" & formata_numero6dec(vRelat(cont).c6) & "</P></TD>" & chr(13)
 
 	     '> SALDO
 		    x = x & "		<TD class='MDB' valign='bottom' NOWRAP><P class='Cd'>&nbsp;" & formata_inteiro(vRelat(cont).c4) & "</P></TD>" & chr(13)
@@ -1149,7 +1298,7 @@ dim vl, vl_total_geral, vl_sub_total
 	if n_reg <> 0 then 
 	'	TOTAL DO ÚLTIMO FORNECEDOR
 		x = x & "	<TR NOWRAP>" & chr(13) & _
-						"		<TD colspan='2'><P class='Cd'>Total:</P></TD>" & chr(13) & _
+						"		<TD colspan='3'><P class='Cd'>Total:</P></TD>" & chr(13) & _
 						"		<TD><P class='Cd'>" & formata_inteiro(n_saldo_parcial) & "</P></TD>" & chr(13) & _
 						"		<TD>&nbsp;</TD>" & chr(13) & _
 						"		<TD><P class='Cd'>" & formata_moeda(vl_sub_total) & "</P></TD>" & chr(13) & _
@@ -1157,9 +1306,9 @@ dim vl, vl_total_geral, vl_sub_total
 
 		if qtde_fabricantes > 1 then
 		'	TOTAL GERAL
-			x = x & "	<TR NOWRAP><TD COLSPAN='5' class='MC'>&nbsp;</TD></TR>" & chr(13) & _
+			x = x & "	<TR NOWRAP><TD COLSPAN='6' class='MC'>&nbsp;</TD></TR>" & chr(13) & _
 					"	<TR NOWRAP style='background: #FFFFDD'>" & chr(13) & _
-					"		<TD COLSPAN='2' NOWRAP class='MC'><P class='Cd'>TOTAL GERAL:</P></TD>" & chr(13) & _
+					"		<TD COLSPAN='3' NOWRAP class='MC'><P class='Cd'>TOTAL GERAL:</P></TD>" & chr(13) & _
 					"		<TD NOWRAP class='MC'><P class='Cd'>" & formata_inteiro(n_saldo_total) & "</P></TD>" & chr(13) & _
 					"		<TD class='MC'>&nbsp;</TD>" & chr(13) & _
 					"		<TD NOWRAP class='MC'><P class='Cd'>" & formata_moeda(vl_total_geral) & "</P></TD>" & chr(13) & _
@@ -1171,7 +1320,7 @@ dim vl, vl_total_geral, vl_sub_total
 	if n_reg = 0 then
 		x = cab_table & cab & _
 			"	<TR NOWRAP>" & chr(13) & _
-			"		<TD colspan='5'><P class='ALERTA'>&nbsp;NENHUM PRODUTO DO ESTOQUE SATISFAZ AS CONDIÇÕES ESPECIFICADAS&nbsp;</P></TD>" & chr(13) & _
+			"		<TD colspan='6'><P class='ALERTA'>&nbsp;NENHUM PRODUTO DO ESTOQUE SATISFAZ AS CONDIÇÕES ESPECIFICADAS&nbsp;</P></TD>" & chr(13) & _
 			"	</TR>" & chr(13)
 		end if
 
@@ -1393,6 +1542,39 @@ P.F { font-size:11pt; }
 		<tr bgColor="#FFFFFF">
 		<td class="MDBE" NOWRAP colspan="2"><span class="PLTe">Subgrupo(s)</span>
 			<%	s = c_subgrupo %>
+			<br>
+				<span class="PLLe" style="width:460px;margin-left:2pt;"><%=s%></span>
+			</td>
+		</tr>
+	<% end if %>
+
+<!--  BTU/H  -->
+	<% if c_potencia_BTU <> "" then %>
+		<tr bgColor="#FFFFFF">
+		<td class="MDBE" NOWRAP colspan="2"><span class="PLTe">BTU/H</span>
+			<%	s = c_potencia_BTU %>
+			<br>
+				<span class="PLLe" style="width:460px;margin-left:2pt;"><%=s%></span>
+			</td>
+		</tr>
+	<% end if %>
+
+<!--  CICLO  -->
+	<% if c_ciclo <> "" then %>
+		<tr bgColor="#FFFFFF">
+		<td class="MDBE" NOWRAP colspan="2"><span class="PLTe">Ciclo</span>
+			<%	s = c_ciclo %>
+			<br>
+				<span class="PLLe" style="width:460px;margin-left:2pt;"><%=s%></span>
+			</td>
+		</tr>
+	<% end if %>
+
+<!--  POSIÇÃO MERCADO  -->
+	<% if c_posicao_mercado <> "" then %>
+		<tr bgColor="#FFFFFF">
+		<td class="MDBE" NOWRAP colspan="2"><span class="PLTe">Posição Mercado</span>
+			<%	s = c_posicao_mercado %>
 			<br>
 				<span class="PLLe" style="width:460px;margin-left:2pt;"><%=s%></span>
 			</td>
