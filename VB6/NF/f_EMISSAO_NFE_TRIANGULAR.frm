@@ -12242,7 +12242,27 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     'Segundo informado pelo Valter (Target) em e-mail de 27/06/2017, não deve ser informada no arquivo de integração,
     'ela é inserida automaticamente pelo sistema
     'strNFeTagPag = strNFeTagPag & "detpag;" & vbCrLf
+    'Os códigos de pagamento usados abaixo estão presente na nota técnica da SEFAZ
+    'NT2020.006 v1.10 de Fevereiro de 2021:
+    '   01=Dinheiro
+    '   02=Cheque
+    '   03=Cartão de Crédito
+    '   04=Cartão de Débito
+    '   05=Crédito Loja
+    '   10=Vale Alimentação
+    '   11=Vale Refeição
+    '   12=Vale Presente
+    '   13=Vale Combustível
+    '   15=Boleto Bancário
+    '   16=Depósito Bancário
+    '   17=Pagamento Instantâneo (PIX)
+    '   18=Transferência bancária, Carteira Digital
+    '   19=Programa de fidelidade, Cashback, Crédito Virtual
+    '   90=Sem pagamento
+    '   99=Outros
+
     s_aux = param_nftipopag.campo_texto
+    s = ""
     'Se a nota é de entrada ou ajuste/devolução - sem pagamento
     If rNFeImg.ide__tpNF = "0" Or _
         strNFeCodFinalidade = "3" Or _
@@ -12252,24 +12272,90 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         vNFeImgPag(UBound(vNFeImgPag)).pag__vPag = NFeFormataMoeda2Dec(0)
     'Se o pagamento é à vista
     ElseIf strTipoParcelamento = COD_FORMA_PAGTO_A_VISTA Then
+        'Para cada meio de pagamento abaixo:
+        '   - Se for obrigatório informar um meio de pagamento diferente de "99-Outros" sem descrição:
+        '       - Se o sistema estiver operando em contingência, informa "99-Outros" e fornece uma descrição
+        '       - Se não estiver operando em contingência, informa o código da lista acima
+        '   - Se não for obrigatório informar um meio de pagamento, informa "99-Outros" sem descrição
         Select Case t_PEDIDO("av_forma_pagto")
             Case ID_FORMA_PAGTO_DINHEIRO
-                    s_aux = "01"
-                Case ID_FORMA_PAGTO_CHEQUE
+                    If param_contingencia_meio_pagamento_geral.campo_inteiro = 1 Then
+                        s_aux = "99"
+                        s = "Dinheiro"
+                    Else
+                        s_aux = "01"
+                        End If
+            Case ID_FORMA_PAGTO_CHEQUE
+                If param_contingencia_meio_pagamento_geral.campo_inteiro = 1 Then
+                    s_aux = "99"
+                    s = "Cheque"
+                Else
                     s_aux = "02"
-                Case ID_FORMA_PAGTO_BOLETO
-                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "15" Else s_aux = "99"
-                Case ID_FORMA_PAGTO_BOLETO_AV
-                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "15" Else s_aux = "99"
-                Case ID_FORMA_PAGTO_CARTAO
+                    End If
+            Case ID_FORMA_PAGTO_BOLETO
+                If (param_nftipopag.campo_inteiro = 1) Then
+                    s_aux = "15"
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Boleto"
+                        End If
+                Else
+                    s_aux = "99"
+                    End If
+            Case ID_FORMA_PAGTO_BOLETO_AV
+                If (param_nftipopag.campo_inteiro = 1) Then
+                    s_aux = "15"
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Boleto"
+                        End If
+                Else
+                    s_aux = "99"
+                    End If
+            Case ID_FORMA_PAGTO_CARTAO
+                If (param_nftipopag.campo_inteiro = 1) Then
                     s_aux = "03"
-                Case ID_FORMA_PAGTO_CARTAO_MAQUINETA
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Or _
+                        (param_contingencia_meio_pagamento_cartao.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Cartão"
+                        End If
+                Else
+                    s_aux = "99"
+                    End If
+            Case ID_FORMA_PAGTO_CARTAO_MAQUINETA
+                If (param_nftipopag.campo_inteiro = 1) Then
                     s_aux = "03"
-                Case ID_FORMA_PAGTO_DEPOSITO
-                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "16" Else s_aux = "99"
-                Case Else
-                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = param_nftipopag.campo_texto Else s_aux = "99" 'Outros
-                End Select
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Or _
+                        (param_contingencia_meio_pagamento_cartao.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Cartão"
+                        End If
+                Else
+                    s_aux = "99"
+                    End If
+            Case ID_FORMA_PAGTO_DEPOSITO
+                If (param_nftipopag.campo_inteiro = 1) Then
+                    s_aux = "16"
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Depósito"
+                        End If
+                Else
+                    s_aux = "99"
+                    End If
+            Case Else
+                If (param_nftipopag.campo_inteiro = 1) Then
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Meio de pagamento não identificado"
+                    Else
+                        s_aux = param_nftipopag.campo_texto
+                        End If
+                    Else
+                        s_aux = "99" 'Outros
+                        End If
+            End Select
         
         vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "0"
         vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = s_aux
@@ -12277,8 +12363,17 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     'Se o pagamento é à prazo
     ElseIf (strTipoParcelamento = COD_FORMA_PAGTO_PARCELADO_CARTAO) Or _
            (strTipoParcelamento = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA) Then
-        s_aux = "03"
-    'obtém o total a prazo (retira o valor da entrada,se houver)
+        If (param_nftipopag.campo_inteiro = 1) Then
+            s_aux = "03"
+            If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Or _
+                (param_contingencia_meio_pagamento_cartao.campo_inteiro = 1) Then
+                s_aux = "99"
+                s = "Cartão"
+                End If
+        Else
+            s_aux = "99"
+            End If
+        'obtém o total a prazo (retira o valor da entrada,se houver)
         vl_aux = vl_total_NF - vl_aux
         vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "1"
         vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = s_aux
@@ -12287,21 +12382,82 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         vl_aux = 0
         Select Case t_PEDIDO("pce_forma_pagto_prestacao")
             Case ID_FORMA_PAGTO_DINHEIRO
-                s_aux = "01"
+                If param_contingencia_meio_pagamento_geral.campo_inteiro = 1 Then
+                    s_aux = "99"
+                    s = "Dinheiro"
+                Else
+                    s_aux = "01"
+                    End If
             Case ID_FORMA_PAGTO_CHEQUE
-                s_aux = "02"
+                If param_contingencia_meio_pagamento_geral.campo_inteiro = 1 Then
+                    s_aux = "99"
+                    s = "Cheque"
+                Else
+                    s_aux = "02"
+                    End If
             Case ID_FORMA_PAGTO_BOLETO
-                If (param_nftipopag.campo_inteiro = 1) Then s_aux = "15" Else s_aux = "99"
+                If (param_nftipopag.campo_inteiro = 1) Then
+                    s_aux = "15"
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Boleto"
+                        End If
+                Else
+                    s_aux = "99"
+                    End If
             Case ID_FORMA_PAGTO_BOLETO_AV
-                If (param_nftipopag.campo_inteiro = 1) Then s_aux = "15" Else s_aux = "99"
+                If (param_nftipopag.campo_inteiro = 1) Then
+                    s_aux = "15"
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Boleto"
+                        End If
+                Else
+                    s_aux = "99"
+                    End If
             Case ID_FORMA_PAGTO_CARTAO
-                s_aux = "03"
+                If (param_nftipopag.campo_inteiro = 1) Then
+                    s_aux = "03"
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Or _
+                        (param_contingencia_meio_pagamento_cartao.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Cartão"
+                        End If
+                Else
+                    s_aux = "99"
+                    End If
             Case ID_FORMA_PAGTO_CARTAO_MAQUINETA
-                s_aux = "03"
+                If (param_nftipopag.campo_inteiro = 1) Then
+                    s_aux = "03"
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Or _
+                        (param_contingencia_meio_pagamento_cartao.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Cartão"
+                        End If
+                Else
+                    s_aux = "99"
+                    End If
             Case ID_FORMA_PAGTO_DEPOSITO
-                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "16" Else s_aux = "99"
+                If (param_nftipopag.campo_inteiro = 1) Then
+                    s_aux = "16"
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Depósito"
+                        End If
+                Else
+                    s_aux = "99"
+                    End If
             Case Else
-                If (param_nftipopag.campo_inteiro = 1) Then s_aux = param_nftipopag.campo_texto Else s_aux = "99" 'Outros
+                If (param_nftipopag.campo_inteiro = 1) Then
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Meio de pagamento não identificado"
+                    Else
+                        s_aux = param_nftipopag.campo_texto
+                        End If
+                    Else
+                        s_aux = "99" 'Outros
+                        End If
             End Select
         'obtém o total a prazo (retira o valor da entrada,se houver)
         vl_aux = vl_total_NF - vl_aux
@@ -12312,6 +12468,10 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     
     strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("indPag", vNFeImgPag(UBound(vNFeImgPag)).pag__indPag)
     strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("tPag", vNFeImgPag(UBound(vNFeImgPag)).pag__tPag)
+    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Or _
+        (param_contingencia_meio_pagamento_cartao.campo_inteiro = 1) Then
+        If s <> "" Then strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("xPag", s)
+        End If
     strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("vPag", vNFeImgPag(UBound(vNFeImgPag)).pag__vPag)
     'Segundo informado pelo Valter (Target) em e-mail de 27/07/2017, o grupo vcard não deve ser informado no arquivo texto,
     'ele é preenchido pelo sistema
@@ -16144,7 +16304,27 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     'Segundo informado pelo Valter (Target) em e-mail de 27/06/2017, não deve ser informada no arquivo de integração,
     'ela é inserida automaticamente pelo sistema
     'strNFeTagPag = strNFeTagPag & "detpag;" & vbCrLf
+    'Os códigos de pagamento usados abaixo estão presente na nota técnica da SEFAZ
+    'NT2020.006 v1.10 de Fevereiro de 2021:
+    '   01=Dinheiro
+    '   02=Cheque
+    '   03=Cartão de Crédito
+    '   04=Cartão de Débito
+    '   05=Crédito Loja
+    '   10=Vale Alimentação
+    '   11=Vale Refeição
+    '   12=Vale Presente
+    '   13=Vale Combustível
+    '   15=Boleto Bancário
+    '   16=Depósito Bancário
+    '   17=Pagamento Instantâneo (PIX)
+    '   18=Transferência bancária, Carteira Digital
+    '   19=Programa de fidelidade, Cashback, Crédito Virtual
+    '   90=Sem pagamento
+    '   99=Outros
+
     s_aux = param_nftipopag.campo_texto
+    s = ""
     'Se a nota é de entrada ou ajuste/devolução - sem pagamento
     If rNFeImg.ide__tpNF = "0" Or _
         strNFeCodFinalidade = "3" Or _
@@ -16154,24 +16334,90 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         vNFeImgPag(UBound(vNFeImgPag)).pag__vPag = NFeFormataMoeda2Dec(0)
     'Se o pagamento é à vista
     ElseIf strTipoParcelamento = COD_FORMA_PAGTO_A_VISTA Then
+        'Para cada meio de pagamento abaixo:
+        '   - Se for obrigatório informar um meio de pagamento diferente de "99-Outros" sem descrição:
+        '       - Se o sistema estiver operando em contingência, informa "99-Outros" e fornece uma descrição
+        '       - Se não estiver operando em contingência, informa o código da lista acima
+        '   - Se não for obrigatório informar um meio de pagamento, informa "99-Outros" sem descrição
         Select Case t_PEDIDO("av_forma_pagto")
             Case ID_FORMA_PAGTO_DINHEIRO
-                    s_aux = "01"
-                Case ID_FORMA_PAGTO_CHEQUE
+                    If param_contingencia_meio_pagamento_geral.campo_inteiro = 1 Then
+                        s_aux = "99"
+                        s = "Dinheiro"
+                    Else
+                        s_aux = "01"
+                        End If
+            Case ID_FORMA_PAGTO_CHEQUE
+                If param_contingencia_meio_pagamento_geral.campo_inteiro = 1 Then
+                    s_aux = "99"
+                    s = "Cheque"
+                Else
                     s_aux = "02"
-                Case ID_FORMA_PAGTO_BOLETO
-                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "15" Else s_aux = "99"
-                Case ID_FORMA_PAGTO_BOLETO_AV
-                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "15" Else s_aux = "99"
-                Case ID_FORMA_PAGTO_CARTAO
+                    End If
+            Case ID_FORMA_PAGTO_BOLETO
+                If (param_nftipopag.campo_inteiro = 1) Then
+                    s_aux = "15"
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Boleto"
+                        End If
+                Else
+                    s_aux = "99"
+                    End If
+            Case ID_FORMA_PAGTO_BOLETO_AV
+                If (param_nftipopag.campo_inteiro = 1) Then
+                    s_aux = "15"
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Boleto"
+                        End If
+                Else
+                    s_aux = "99"
+                    End If
+            Case ID_FORMA_PAGTO_CARTAO
+                If (param_nftipopag.campo_inteiro = 1) Then
                     s_aux = "03"
-                Case ID_FORMA_PAGTO_CARTAO_MAQUINETA
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Or _
+                        (param_contingencia_meio_pagamento_cartao.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Cartão"
+                        End If
+                Else
+                    s_aux = "99"
+                    End If
+            Case ID_FORMA_PAGTO_CARTAO_MAQUINETA
+                If (param_nftipopag.campo_inteiro = 1) Then
                     s_aux = "03"
-                Case ID_FORMA_PAGTO_DEPOSITO
-                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = "16" Else s_aux = "99"
-                Case Else
-                    If (param_nftipopag.campo_inteiro = 1) Then s_aux = param_nftipopag.campo_texto Else s_aux = "99" 'Outros
-                End Select
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Or _
+                        (param_contingencia_meio_pagamento_cartao.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Cartão"
+                        End If
+                Else
+                    s_aux = "99"
+                    End If
+            Case ID_FORMA_PAGTO_DEPOSITO
+                If (param_nftipopag.campo_inteiro = 1) Then
+                    s_aux = "16"
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Depósito"
+                        End If
+                Else
+                    s_aux = "99"
+                    End If
+            Case Else
+                If (param_nftipopag.campo_inteiro = 1) Then
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Meio de pagamento não identificado"
+                    Else
+                        s_aux = param_nftipopag.campo_texto
+                        End If
+                    Else
+                        s_aux = "99" 'Outros
+                        End If
+            End Select
         
         vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "0"
         vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = s_aux
@@ -16179,7 +16425,16 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     'Se o pagamento é à prazo
     ElseIf (strTipoParcelamento = COD_FORMA_PAGTO_PARCELADO_CARTAO) Or _
            (strTipoParcelamento = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA) Then
-        s_aux = "03"
+        If (param_nftipopag.campo_inteiro = 1) Then
+            s_aux = "03"
+            If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Or _
+                (param_contingencia_meio_pagamento_cartao.campo_inteiro = 1) Then
+                s_aux = "99"
+                s = "Cartão"
+                End If
+        Else
+            s_aux = "99"
+            End If
         'obtém o total a prazo (retira o valor da entrada,se houver)
         vl_aux = vl_total_NF - vl_aux
         vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "1"
@@ -16189,21 +16444,82 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         vl_aux = 0
         Select Case t_PEDIDO("pce_forma_pagto_prestacao")
             Case ID_FORMA_PAGTO_DINHEIRO
-                s_aux = "01"
+                If param_contingencia_meio_pagamento_geral.campo_inteiro = 1 Then
+                    s_aux = "99"
+                    s = "Dinheiro"
+                Else
+                    s_aux = "01"
+                    End If
             Case ID_FORMA_PAGTO_CHEQUE
-                s_aux = "02"
+                If param_contingencia_meio_pagamento_geral.campo_inteiro = 1 Then
+                    s_aux = "99"
+                    s = "Cheque"
+                Else
+                    s_aux = "02"
+                    End If
             Case ID_FORMA_PAGTO_BOLETO
-                If (param_nftipopag.campo_inteiro = 1) Then s_aux = "15" Else s_aux = "99"
+                If (param_nftipopag.campo_inteiro = 1) Then
+                    s_aux = "15"
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Boleto"
+                        End If
+                Else
+                    s_aux = "99"
+                    End If
             Case ID_FORMA_PAGTO_BOLETO_AV
-                If (param_nftipopag.campo_inteiro = 1) Then s_aux = "15" Else s_aux = "99"
+                If (param_nftipopag.campo_inteiro = 1) Then
+                    s_aux = "15"
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Boleto"
+                        End If
+                Else
+                    s_aux = "99"
+                    End If
             Case ID_FORMA_PAGTO_CARTAO
-                s_aux = "03"
+                If (param_nftipopag.campo_inteiro = 1) Then
+                    s_aux = "03"
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Or _
+                        (param_contingencia_meio_pagamento_cartao.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Cartão"
+                        End If
+                Else
+                    s_aux = "99"
+                    End If
             Case ID_FORMA_PAGTO_CARTAO_MAQUINETA
-                s_aux = "03"
+                If (param_nftipopag.campo_inteiro = 1) Then
+                    s_aux = "03"
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Or _
+                        (param_contingencia_meio_pagamento_cartao.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Cartão"
+                        End If
+                Else
+                    s_aux = "99"
+                    End If
             Case ID_FORMA_PAGTO_DEPOSITO
-                If (param_nftipopag.campo_inteiro = 1) Then s_aux = "16" Else s_aux = "99"
+                If (param_nftipopag.campo_inteiro = 1) Then
+                    s_aux = "16"
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Depósito"
+                        End If
+                Else
+                    s_aux = "99"
+                    End If
             Case Else
-                If (param_nftipopag.campo_inteiro = 1) Then s_aux = param_nftipopag.campo_texto Else s_aux = "99" 'Outros
+                If (param_nftipopag.campo_inteiro = 1) Then
+                    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Then
+                        s_aux = "99"
+                        s = "Meio de pagamento não identificado"
+                    Else
+                        s_aux = param_nftipopag.campo_texto
+                        End If
+                    Else
+                        s_aux = "99" 'Outros
+                        End If
             End Select
         'obtém o total a prazo (retira o valor da entrada,se houver)
         vl_aux = vl_total_NF - vl_aux
@@ -16214,6 +16530,10 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     
     strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("indPag", vNFeImgPag(UBound(vNFeImgPag)).pag__indPag)
     strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("tPag", vNFeImgPag(UBound(vNFeImgPag)).pag__tPag)
+    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Or _
+        (param_contingencia_meio_pagamento_cartao.campo_inteiro = 1) Then
+        If s <> "" Then strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("xPag", s)
+        End If
     strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("vPag", vNFeImgPag(UBound(vNFeImgPag)).pag__vPag)
     'Segundo informado pelo Valter (Target) em e-mail de 27/07/2017, o grupo vcard não deve ser informado no arquivo texto,
     'ele é preenchido pelo sistema
