@@ -427,8 +427,7 @@ dim v_desconto_descricao(),v_desconto_valor(),contador
                  Erase v_desconto_valor
                 rs2.Open "SELECT SUM(valor) AS valor,descricao,valor,ordenacao  FROM t_ORCAMENTISTA_E_INDICADOR_DESCONTO WHERE (apelido = '" & ind_anterior & "') GROUP BY  descricao,valor,ordenacao ORDER BY ordenacao", cn
                 if Not rs2.Eof then
-                    if rs2("valor") > 0 then
-                    msg_desconto =  "Possui Pendência" 
+                    msg_desconto =  "Possui Pendência/Observação" 
                         contador = 0
                         do while Not rs2.EoF         
                             redim preserve v_desconto_descricao(contador) 
@@ -438,10 +437,6 @@ dim v_desconto_descricao(),v_desconto_valor(),contador
                             contador = contador + 1
                             rs2.MoveNext
 		                loop  
-                                
-                    else
-                    msg_desconto= ""
-                    end if
                 end if
 				s_cor="black"
 				if vl_sub_total_preco_venda < 0 then s_cor="red"
@@ -707,8 +702,7 @@ dim v_desconto_descricao(),v_desconto_valor(),contador
                  Erase v_desconto_valor
                 rs2.Open "SELECT SUM(valor) AS valor,descricao,valor,ordenacao  FROM t_ORCAMENTISTA_E_INDICADOR_DESCONTO WHERE (apelido = '" & ind_anterior & "') GROUP BY  descricao,valor,ordenacao ORDER BY ordenacao", cn
                 if Not rs2.Eof then
-                    if rs2("valor") > 0 then
-                    msg_desconto =  "Possui Pendência" 
+                    msg_desconto =  "Possui Pendência/Observação" 
                         contador = 0
                         do while Not rs2.EoF         
                             redim preserve v_desconto_descricao(contador) 
@@ -718,10 +712,7 @@ dim v_desconto_descricao(),v_desconto_valor(),contador
                             contador = contador + 1
                             rs2.MoveNext
 		                loop               
-           else
-              msg_desconto= ""
-            end if
-        end if 
+                end if 
 		x = x & "	<tr nowrap style='background: #FFFFDD'>" & chr(13) & _
 				"		<td colspan='4' class='MTBE' align='right' nowrap><span class='Cd' style='color:" & s_cor & ";'>" & _
 										"TOTAL:</span></td>" & chr(13) & _
