@@ -245,6 +245,7 @@ dim blnTitularCartaoDivergente
 
 	s_sql = s_sql & _
 				" t_PEDIDO.numero_loja," & _
+				" Coalesce(t_PEDIDO.obs_2,'') AS numeroNFe," & _
 				" t_PEDIDO.st_end_entrega," & _
 				" t_PEDIDO.EndEtg_endereco AS EndEtg_endereco," & _
 				" t_PEDIDO.EndEtg_endereco_numero AS EndEtg_endereco_numero," & _
@@ -351,6 +352,7 @@ dim blnTitularCartaoDivergente
 		"		<td class='MDTE tdDataHora' style='vertical-align:bottom'><span class='Rc'>Data</span></td>" & chr(13) & _
 		"		<td class='MTD tdUsuario' style='vertical-align:bottom'><span class='Rc'>Usuário</span></td>" & chr(13) & _
 		"		<td class='MTD tdPedido' style='vertical-align:bottom'><span class='R'>Pedido</span></td>" & chr(13) & _
+		"		<td class='MTD tdNFe' style='vertical-align:bottom'><span class='R'>NFe</span></td>" & chr(13) & _
 		"		<td class='MTD tdVlPedido' style='vertical-align:bottom;padding-right:0px;'><span class='Rd'>Valor</span><br /><span class='Rd'>Pedido</span></td>" & chr(13) & _
 		"		<td class='MTD tdVlTransacao' style='vertical-align:bottom;padding-right:0px;'><span class='Rd'>Valor</span><br /><span class='Rd'>Transação</span></td>" & chr(13) & _
 		"		<td class='MTD tdBandeira' style='vertical-align:bottom'><span class='Rc'>Bandeira</span></td>" & chr(13) & _
@@ -387,6 +389,11 @@ dim blnTitularCartaoDivergente
 	'> PEDIDO
 		s = monta_link_pedido(Trim("" & r("pedido")), usuario)
 		x = x & "		<td class='MTD tdPedido'><span class='Cn'>" & s & "</span></td>" & chr(13)
+
+	'> NFe
+		s = Trim("" & r("numeroNFe"))
+		if s = "" then s = "&nbsp;"
+		x = x & "		<td class='MTD tdNFe'><span class='Cn'>" & s & "</span></td>" & chr(13)
 
 	'> VALOR DO PEDIDO
 		s = formata_moeda(r("valor_pedido"))
@@ -462,7 +469,7 @@ dim blnTitularCartaoDivergente
 	'> OUTRAS INFORMAÇÕES
 		x = x & "	<tr style='display:none;' id='TR_MORE_INFO_" & Cstr(intQtdeTransacoes) & "'>" & chr(13) & _
 				"		<td class='ME MD' align='left'>&nbsp;</td>" & chr(13) & _
-				"		<td colspan='9' class='MC MD' align='left'>" & chr(13) & _
+				"		<td colspan='10' class='MC MD' align='left'>" & chr(13) & _
 				"			<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
 				"				<tr>" & chr(13) & _
 				"					<td class='Rf tdWithPadding' align='left'>OUTRAS INFORMAÇÕES</td>" & chr(13) & _
@@ -729,15 +736,15 @@ dim blnTitularCartaoDivergente
 '	TOTAL GERAL
 	if intQtdeTransacoes > 0 then
 		x = x & "	<tr>" & chr(13) & _
-				"		<td colspan='4' align='right' class='MC ME'><span class='C'>TOTAL GERAL (" & SIMBOLO_MONETARIO & ")</span></td>" & chr(13) & _
+				"		<td colspan='5' align='right' class='MC ME'><span class='C'>TOTAL GERAL (" & SIMBOLO_MONETARIO & ")</span></td>" & chr(13) & _
 				"		<td class='MC' align='right'><span class='Cd'>" & formata_moeda(vl_total_geral) & "</span></td>" & chr(13) & _
 				"		<td colspan='5' class='MC MD' align='left'>&nbsp;</td>" & chr(13) & _
 				"	</tr>" & chr(13) & _
 				"	<tr>" & chr(13) & _
-				"		<td colspan='10' class='MC' style='border-left:0px;border-right:0px;' align='left'>&nbsp;</td>" & chr(13) & _
+				"		<td colspan='11' class='MC' style='border-left:0px;border-right:0px;' align='left'>&nbsp;</td>" & chr(13) & _
 				"	</tr>" & chr(13) & _
 				"	<tr nowrap style='background:#F0FFF0;'>" & chr(13) & _
-				"		<td colspan='10' class='MT' align='left'><span class='C'>TOTAL: &nbsp; " & Cstr(intQtdeTransacoes) & iif((intQtdeTransacoes=1), " transação", " transações") & "</span></td>" & chr(13) & _
+				"		<td colspan='11' class='MT' align='left'><span class='C'>TOTAL: &nbsp; " & Cstr(intQtdeTransacoes) & iif((intQtdeTransacoes=1), " transação", " transações") & "</span></td>" & chr(13) & _
 				"	</tr>" & chr(13)
 		end if
 	
@@ -745,7 +752,7 @@ dim blnTitularCartaoDivergente
 	if intQtdeTransacoes = 0 then
 		x = cab_table & cab
 		x = x & "	<tr nowrap>" & chr(13) & _
-				"		<td class='MT ALERTA' align='center' colspan='10'><span class='ALERTA'>&nbsp;NENHUM REGISTRO ENCONTRADO&nbsp;</span></td>" & chr(13) & _
+				"		<td class='MT ALERTA' align='center' colspan='11'><span class='ALERTA'>&nbsp;NENHUM REGISTRO ENCONTRADO&nbsp;</span></td>" & chr(13) & _
 				"	</tr>" & chr(13)
 		end if
 
@@ -1319,6 +1326,12 @@ body
 	font-weight: bold;
 	width: 65px;
 }
+.tdNFe{
+	text-align: center;
+	vertical-align: middle;
+	font-weight: bold;
+	width: 50px;
+}
 .tdVlPedido
 {
 	text-align: right;
@@ -1502,7 +1515,7 @@ body
 
 
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->
-<table width="920" cellpadding="4" cellspacing="0" style="border-bottom:1px solid black;">
+<table width="980" cellpadding="4" cellspacing="0" style="border-bottom:1px solid black;">
 <tr>
 	<td align="right" valign="bottom"><span class="PEDIDO">Transações Braspag/Clearsale</span>
 	<br><span class="Rc">
@@ -1514,7 +1527,7 @@ body
 
 <!-- FILTROS -->
 <% 
-	s_filtro = "<table width='920' cellpadding='0' cellspacing='0' style='border-bottom:1px solid black;' border='0'>" & chr(13)
+	s_filtro = "<table width='980' cellpadding='0' cellspacing='0' style='border-bottom:1px solid black;' border='0'>" & chr(13)
 
 '	PERÍODO
 	s = ""
@@ -1635,11 +1648,11 @@ var intQtdeTransacoes=<%=Cstr(intQtdeTransacoes)%>;
 
 
 <!-- ************   SEPARADOR   ************ -->
-<table width="920" cellpadding="0" cellspacing="0" style="border-bottom:1px solid black;">
+<table width="980" cellpadding="0" cellspacing="0" style="border-bottom:1px solid black;">
 <tr><td class="Rc" align="left">&nbsp;</td></tr>
 </table>
 
-<table class="notPrint" width='920' cellpadding='0' cellspacing='0' border='0' style="margin-top:5px;">
+<table class="notPrint" width='980' cellpadding='0' cellspacing='0' border='0' style="margin-top:5px;">
 <tr>
 	<td width="25%" align="left" nowrap>&nbsp;</td>
 	<td align="right" nowrap><a id="linkMarcarTudo" href="javascript:marcarTodas();"><p class="Button BtnAll" style="margin-bottom:0px;">Marcar Todas</p></a></td>
@@ -1655,7 +1668,7 @@ var intQtdeTransacoes=<%=Cstr(intQtdeTransacoes)%>;
 </table>
 
 <br />
-<table class="notPrint" width="920" cellspacing="0" border="0">
+<table class="notPrint" width="980" cellspacing="0" border="0">
 <tr>
 	<% if qtde_transacoes > 0 then %>
 	<td align="left">
