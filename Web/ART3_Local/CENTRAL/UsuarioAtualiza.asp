@@ -124,6 +124,11 @@
 			end if
 		next
 	
+	dim msg_erro
+	if Not cria_recordset_otimista(r, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+	if Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+	if Not cria_recordset_otimista(rsi, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+
 	dim erro_consistencia, erro_fatal
 	
 	erro_consistencia=false
@@ -146,7 +151,21 @@
 		alerta="NENHUM PERFIL DE ACESSO FOI SELECIONADO."
 		end if
 	
-	if alerta <> "" then erro_consistencia=True	
+	'VALIDAÇÃO SE O IDENTIFICADOR JÁ ESTÁ EM USO NO CADASTRO DE INDICADORES (ASSEGURA QUE NÃO EXISTA USUÁRIO E INDICADOR COM MESMO IDENTIFICADOR)
+	if alerta = "" then
+		if operacao_selecionada = OP_INCLUI then
+			s = "SELECT apelido, cnpj_cpf, razao_social_nome FROM t_ORCAMENTISTA_E_INDICADOR WHERE apelido = '" & s_usuario & "'"
+			if rs.State <> 0 then rs.Close
+			rs.Open s, cn
+			if Not rs.Eof then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Não é possível usar o identificador '" & s_usuario & "' porque já está em uso no cadastro de orçamentista/indicador"
+				end if
+			rs.Close
+			end if
+		end if
+
+	if alerta <> "" then erro_consistencia=True
 		
 		
 	chave = gera_chave(FATOR_BD)
@@ -154,11 +173,6 @@
 	
 	Err.Clear
 	
-	dim msg_erro
-	if Not cria_recordset_otimista(r, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
-	if Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
-	if Not cria_recordset_otimista(rsi, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
-
 '	EXECUTA OPERAÇÃO NO BD
 	select case operacao_selecionada
 		case OP_EXCLUI

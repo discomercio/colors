@@ -52,8 +52,19 @@
 	dim s_lista_operacoes_permitidas
 	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
 	
+	dim blnPossuiPermissaoFinanceiro
+	blnPossuiPermissaoFinanceiro = False
+	if operacao_permitida(OP_CEN_EDITA_ANALISE_CREDITO, s_lista_operacoes_permitidas) _
+		OR _
+		operacao_permitida(OP_CEN_PAGTO_PARCIAL, s_lista_operacoes_permitidas) _
+		OR _
+		operacao_permitida(OP_CEN_PAGTO_QUITACAO, s_lista_operacoes_permitidas) then
+		blnPossuiPermissaoFinanceiro = True
+		end if
+
 	if (Not operacao_permitida(OP_CEN_CADASTRO_ORCAMENTISTAS_E_INDICADORES, s_lista_operacoes_permitidas)) And _
-	   (Not operacao_permitida(OP_CEN_REL_CHECAGEM_NOVOS_PARCEIROS, s_lista_operacoes_permitidas)) then 
+	   (Not operacao_permitida(OP_CEN_REL_CHECAGEM_NOVOS_PARCEIROS, s_lista_operacoes_permitidas)) And _
+	   (Not blnPossuiPermissaoFinanceiro) then 
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 	
@@ -192,6 +203,28 @@ end function
 			}
 			else {
 				$("#" + s_spn_id).css('color', 'darkgreen');
+			}
+		});
+
+		$(".CKB_COM_CAR").each(function () {
+			s_ckb_id = $(this).attr('id');
+			s_spn_id = s_ckb_id.replace("ckb_", "spn_");
+			if ($(this).is(':checked')) {
+				$("#" + s_spn_id).css('color', 'darkgreen');
+			}
+			else {
+				$("#" + s_spn_id).css('color', 'dimgray');
+			}
+		});
+
+		$(".CKB_COM_CAR").change(function () {
+			s_ckb_id = $(this).attr('id');
+			s_spn_id = s_ckb_id.replace("ckb_", "spn_");
+			if ($(this).is(':checked')) {
+				$("#" + s_spn_id).css('color', 'darkgreen');
+			}
+			else {
+				$("#" + s_spn_id).css('color', 'dimgray');
 			}
 		});
 	});
@@ -977,9 +1010,9 @@ var s, s_senha, cont;
 	<td class="MD" width="50%" align="left"><p class="R"><%=s_label%></p><p class="C">
 		<input id="cnpj_cpf" name="cnpj_cpf" class="TA" value="<%=s%>" maxlength="18" size="24" 
 		<% if tipo_PJ_PF = ID_PJ then %>
-			onblur="if (!cnpj_ok(this.value)) {alert('CNPJ inválido'); this.focus();} else this.value=cnpj_formata(this.value);" onkeypress="if (digitou_enter(true) && cnpj_ok(this.value)) fCAD.ie_rg.focus(); filtra_cnpj();"
+			onblur="if (!cnpj_ok(this.value)) {alert('CNPJ inválido!'); this.focus();} else this.value=cnpj_formata(this.value);" onkeypress="if (digitou_enter(true) && cnpj_ok(this.value)) fCAD.ie_rg.focus(); filtra_cnpj();"
 		<% else %>
-			onblur="if (!cpf_ok(this.value)) {alert('CPF inválido'); this.focus();} else this.value=cpf_formata(this.value);" onkeypress="if (digitou_enter(true) && cpf_ok(this.value)) fCAD.ie_rg.focus(); filtra_cpf();"
+			onblur="if (!cpf_ok(this.value)) {alert('CPF inválido!'); this.focus();} else this.value=cpf_formata(this.value);" onkeypress="if (digitou_enter(true) && cpf_ok(this.value)) fCAD.ie_rg.focus(); filtra_cpf();"
 		<% end if %>
 		></p></td>
 <%if tipo_PJ_PF=ID_PJ then s_label = "IE" else s_label="RG" %>
@@ -1094,32 +1127,101 @@ var s, s_senha, cont;
 	</tr>
 </table>
 
-<!-- ************   FAVORECIDO    *******************  -->
+<!-- ************   FAVORECIDO / CPF CNPJ FAVORECIDO   *******************  -->
 <table width="649" class="QS" cellspacing="0">
     <tr>
 <%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("favorecido")) else s=""%>
-		<td width="1%" align="left"><p class="R">FAVORECIDO</p><p class="C"><input id="favorecido" name="favorecido" class="TA" value="<%=s%>" maxlength="40" size="80" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.favorecido_cnpjcpf.focus(); filtra_nome_identificador();" onblur="this.value=trim(this.value);"></p></td>
+		<td class="MD" width="70%" align="left"><p class="R">FAVORECIDO</p><p class="C"><input id="favorecido" name="favorecido" class="TA" value="<%=s%>" maxlength="40" size="60" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.favorecido_cnpjcpf.focus(); filtra_nome_identificador();" onblur="this.value=trim(this.value);"></p></td>
+<%if operacao_selecionada=OP_CONSULTA then s=cnpj_cpf_formata(Trim("" & rs("favorecido_cnpj_cpf"))) else s="" %>
+		<td width="30%" align="left"><p class="R">CPF/CNPJ DO FAVORECIDO</p><p class="C"><input id="favorecido_cnpjcpf" name="favorecido_cnpjcpf" class="TA" type="text" maxlength="18" size="25" value="<%=s%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.c_perc_desagio_RA.focus();"
+        			onblur="if (retorna_so_digitos(this.value).length==14) { this.value=cnpj_formata(this.value);} else if (retorna_so_digitos(this.value).length==11){ this.value=cpf_formata(this.value);} else alert('Formato de CPF/CNPJ inválido!');"></p></td>
     </tr>
 </table>
 
-<!-- ************   CPF CNPJ FAVORECIDO/ SENHA / CONFIRMAÇÃO DA SENHA   ************ -->
+<!-- ************   DADOS P/ PAGTO COMISSÃO: CARTÃO / NFSe   *******************  -->
+<% if blnPossuiPermissaoFinanceiro then %>
 <table width="649" class="QS" cellspacing="0">
 	<tr>
-<%if operacao_selecionada=OP_CONSULTA then s=cnpj_cpf_formata(Trim("" & rs("favorecido_cnpj_cpf"))) else s="" %>
- <td class="MD" width="40%" align="left"><p class="R">CPF/CNPJ DO FAVORECIDO</p><p class="C"><input id="favorecido_cnpjcpf" name="favorecido_cnpjcpf" class="TA" type="text" maxlength="18" size="25" value="<%=s%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.senha.focus();"
-        			onblur="if (retorna_so_digitos(this.value).length==14) { this.value=cnpj_formata(this.value);} else if (retorna_so_digitos(this.value).length==11){ this.value=cpf_formata(this.value);} else alert('Formato de CPF/CNPJ inválido!');"></p></td>
-<%
-	senha_descripto= ""
-	if operacao_selecionada=OP_CONSULTA then
-		s = Trim("" & rs("datastamp"))
-		chave = gera_chave(FATOR_BD)
-		decodifica_dado s, senha_descripto, chave
-		end if
-%>       
-		<td class="MD" width="30%" align="left"><p class="R">SENHA</p><p class="C"><input id="senha" name="senha" class="TA" type="password" maxlength="15" size="18" value="<%=senha_descripto%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.senha2.focus();"></p></td>
-		<td width="30%" align="left"><p class="R">SENHA (CONFIRMAÇÃO)</p><p class="C"><input id="senha2" name="senha2" class="TA" type="password" maxlength="15" size="18" value="<%=senha_descripto%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.loja.focus();"></p></td>
+		<td width="100%" style="padding-bottom:10px;" align="left">
+			<p class="R" style="padding-bottom:8px;">PAGAMENTO DA COMISSÃO</p>
+			<table width="607" class="Q" cellspacing="0" style="margin-left:20px;">
+			<tr>
+				<td width="100%">
+					<p class="R">CARTÃO</p>
+					<table width="100%" border="0">
+					<tr>
+						<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("comissao_cartao_status")) else s=""%>
+						<td colspan="2" align="left">
+							<input type="checkbox" id="ckb_comissao_cartao_status" name="ckb_comissao_cartao_status" value="ON" class="TA CKB_COM_CAR"
+								<% if s = "1" then Response.Write " checked"%>
+								/><span id="spn_comissao_cartao_status" class="C" style="cursor:default;" onclick="fCAD.ckb_comissao_cartao_status.click();">Pagamento Via Cartão</span>
+						</td>
+					</tr>
+					<tr>
+						<td style="width:20px;">&nbsp;</td>
+						<td width="95%" style="padding-bottom:8px;padding-right:12px;">
+							<table class="Q" width="100%" cellspacing="0">
+								<tr>
+									<%if operacao_selecionada=OP_CONSULTA then s=cnpj_cpf_formata(Trim("" & rs("comissao_cartao_cpf"))) else s=""%>
+									<td>
+									<p class="R">CPF</p>
+									<input type="text" id="c_comissao_cartao_cpf" name="c_comissao_cartao_cpf" class="TA" value="<%=s%>" maxlength="14" size="18" 
+										onblur="if (!cpf_ok(this.value)) {alert('CPF inválido!'); this.focus();} else this.value=cpf_formata(this.value);"
+										onkeypress="if (digitou_enter(true) && cpf_ok(this.value)) fCAD.c_comissao_cartao_titular.focus(); filtra_cpf();" />
+									</td>
+								</tr>
+								<tr>
+									<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("comissao_cartao_titular")) else s=""%>
+									<td class="MC">
+									<p class="R">TITULAR DO CARTÃO</p>
+									<input type="text" id="c_comissao_cartao_titular" name="c_comissao_cartao_titular" class="TA" value="<%=s%>" maxlength="60" size="70"
+										onblur="this.value=trim(this.value);"
+										onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.c_perc_desagio_RA.focus(); filtra_nome_identificador();" />
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					</table>
+				</td>
+			</tr>
+			<tr>
+				<td width="100%" class="MC">
+					<p class="R">EMITENTE NFSe</p>
+					<table width="100%" border="0">
+					<tr>
+						<td style="width:20px;">&nbsp;</td>
+						<td width="95%" style="padding-bottom:8px;padding-right:12px;">
+							<table class="Q" width="100%" cellspacing="0">
+								<tr>
+									<%if operacao_selecionada=OP_CONSULTA then s=cnpj_cpf_formata(Trim("" & rs("comissao_NFSe_cnpj"))) else s=""%>
+									<td>
+									<p class="R">CNPJ</p>
+									<input type="text" id="c_comissao_NFSe_cnpj" name="c_comissao_NFSe_cnpj" class="TA" value="<%=s%>" maxlength="18" size="24"
+										onblur="if (!cnpj_ok(this.value)) {alert('CNPJ inválido!'); this.focus();} else this.value=cnpj_formata(this.value);"
+										onkeypress="if (digitou_enter(true) && cnpj_ok(this.value)) fCAD.c_comissao_NFSe_razao_social.focus(); filtra_cnpj();" />
+									</td>
+								</tr>
+								<tr>
+									<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("comissao_NFSe_razao_social")) else s=""%>
+									<td class="MC">
+									<p class="R">RAZÃO SOCIAL DO EMITENTE</p>
+									<input type="text" id="c_comissao_NFSe_razao_social" name="c_comissao_NFSe_razao_social" class="TA" value="<%=s%>" maxlength="60" size="70"
+										onblur="this.value=trim(this.value);"
+										onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.c_perc_desagio_RA.focus(); filtra_nome_identificador();" />
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					</table>
+				</td>
+			</tr>
+			</table>
+		</td>
 	</tr>
 </table>
+<% end if %>
 
 <!-- ************   LOJA (DO ORÇAMENTISTA)   ************ -->
 <table width="649" class="QS" cellspacing="0">
@@ -1172,6 +1274,22 @@ var s, s_senha, cont;
 	</tr>
 </table>
 
+<!-- ************  SENHA / CONFIRMAÇÃO DA SENHA   ************ -->
+<table width="649" class="QS" cellspacing="0">
+	<tr>
+<%
+	senha_descripto= ""
+	if operacao_selecionada=OP_CONSULTA then
+		s = Trim("" & rs("datastamp"))
+		chave = gera_chave(FATOR_BD)
+		decodifica_dado s, senha_descripto, chave
+		end if
+%>       
+		<td class="MD" width="50%" align="left"><p class="R">SENHA</p><p class="C"><input id="senha" name="senha" class="TA" type="password" maxlength="15" size="18" value="<%=senha_descripto%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.senha2.focus();"></p></td>
+		<td width="50%" align="left"><p class="R">SENHA (CONFIRMAÇÃO)</p><p class="C"><input id="senha2" name="senha2" class="TA" type="password" maxlength="15" size="18" value="<%=senha_descripto%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.c_perc_desagio_RA.focus();"></p></td>
+	</tr>
+</table>
+
 <!-- ************   PERCENTUAL DE DESÁGIO DO RA / LIMITE MENSAL COMPRAS   ************ -->
 <table width="649" class="QS" cellspacing="0">
 	<tr>
@@ -1220,7 +1338,7 @@ var s, s_senha, cont;
 		<td class="MC" align="left"><p class="R">E-MAIL (3)</p><p class="C">
 			<input id="c_email3" name="c_email3" class="TA" value="<%=s%>" maxlength="60" 
 			style="text-align:left;" size="74"
-			onkeypress="if (digitou_enter(true)) fCAD.c_obs.focus(); filtra_email();"
+			onkeypress="filtra_email();"
 			onblur="this.value=trim(this.value);">
 		</p></td>
 	</tr>
@@ -1267,7 +1385,7 @@ var s, s_senha, cont;
 <!-- ************   VENDEDORES   **************** -->
 
 <% set rs2 = cn.Execute("SELECT * FROM t_ORCAMENTISTA_E_INDICADOR_CONTATOS WHERE (indicador='" & id_selecionado & "') ORDER BY dt_cadastro DESC") %>
-<table width="649" class="QS" cellspacing="0">
+<table width="649" class="QS" cellspacing="0" style="padding-bottom:6px;">
 	<tr>
 		<td align="left" class="MB" colspan="2"><p class="R">VENDEDORES</p></td>
 	</tr>
