@@ -767,26 +767,85 @@ var tipo_PJ_PF = ID_PJ;
 	</tr>
 </table>
 
-<!-- ************   FAVORECIDO    *******************  -->
+<!-- ************   FAVORECIDO / CPF/CNPJ DO FAVORECIDO   *******************  -->
 <table width="649" class="QS" cellspacing="0">
     <tr>
-		<td width="65%" align="left"><p class="R">FAVORECIDO</p><p class="C"><input id="favorecido" name="favorecido" size="80" class="TA" value="<%=rs("favorecido")%>" readonly tabindex=-1></p></td>
+		<td class="MD" width="70%" align="left"><p class="R">FAVORECIDO</p><p class="C"><input id="favorecido" name="favorecido" size="60" class="TA" value="<%=rs("favorecido")%>" readonly tabindex=-1></p></td>
+        <td width="30%" align="left"><p class="R">CPF/CNPJ DO FAVORECIDO</p><p class="C"><input id="favorecido_cnpjcpf" name="favorecido_cnpjcpf" class="TA" readonly tabindex=-1 maxlength="18" size="25" value="<%=cnpj_cpf_formata(Trim("" & rs("favorecido_cnpj_cpf")))%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.senha.focus();"></p></td>
     </tr>
 </table>
 
-<!-- ************  CPF/CNPJ DO FAVORECIDO - SENHA / CONFIRMAÇÃO DA SENHA   ************ -->
-<table width="649" class="QS notPrint" cellspacing="0">
+<!-- ************   DADOS P/ PAGTO COMISSÃO: CARTÃO / NFSe   *******************  -->
+<table width="649" class="QS" cellspacing="0">
 	<tr>
-<%
-	senha_descripto= ""
-	s = Trim("" & rs("datastamp"))
-	chave = gera_chave(FATOR_BD)
-	decodifica_dado s, senha_descripto, chave
-%>
-        <td class="MD" width="40%" align="left"><p class="R">CPF/CNPJ DO FAVORECIDO</p><p class="C"><input id="favorecido_cnpjcpf" name="favorecido_cnpjcpf" class="TA" readonly tabindex=-1 maxlength="18" size="25" value="<%=cnpj_cpf_formata(Trim("" & rs("favorecido_cnpj_cpf")))%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.senha.focus();"></p></td>
-		<td class="MD" width="30%" align="left"><p class="R">SENHA</p><p class="C"><input id="senha" name="senha" class="TA" type="password" maxlength="15" size="18" value="<%=senha_descripto%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.senha2.focus();"></p></td>
-		<td width="30%" align="left"><p class="R">SENHA (CONFIRMAÇÃO)</p><p class="C"><input id="senha2" name="senha2" class="TA" type="password" maxlength="15" size="18" value="<%=senha_descripto%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.loja.focus();"></p></td>
-		
+		<td width="100%" style="padding-bottom:10px;" align="left">
+			<p class="R" style="padding-bottom:8px;">PAGAMENTO DA COMISSÃO</p>
+			<table width="607" class="Q" cellspacing="0" style="margin-left:20px;">
+			<tr>
+				<td width="100%">
+					<p class="R">CARTÃO</p>
+					<table width="100%" border="0">
+					<tr>
+						<td colspan="2" align="left">
+							<input type="checkbox" id="ckb_comissao_cartao_status" name="ckb_comissao_cartao_status" value="ON" class="TA CKB_COM_CAR" disabled
+								<% if Trim("" & rs("comissao_cartao_status")) = "1" then Response.Write " checked"%>
+								/><span id="spn_comissao_cartao_status" class="C" style="cursor:default;">Pagamento Via Cartão</span>
+						</td>
+					</tr>
+					<tr>
+						<td style="width:20px;">&nbsp;</td>
+						<td width="95%" style="padding-bottom:8px;padding-right:12px;">
+							<table class="Q" width="100%" cellspacing="0">
+								<tr>
+									<td>
+									<p class="R">CPF</p>
+									<input type="text" id="c_comissao_cartao_cpf" name="c_comissao_cartao_cpf" class="TA" value="<%=cnpj_cpf_formata(Trim("" & rs("comissao_cartao_cpf")))%>" maxlength="14" size="18" 
+										readonly tabindex=-1 />
+									</td>
+								</tr>
+								<tr>
+									<td class="MC">
+									<p class="R">TITULAR DO CARTÃO</p>
+									<input type="text" id="c_comissao_cartao_titular" name="c_comissao_cartao_titular" class="TA" value="<%=Trim("" & rs("comissao_cartao_titular"))%>" maxlength="60" size="70"
+										readonly tabindex=-1 />
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					</table>
+				</td>
+			</tr>
+			<tr>
+				<td width="100%" class="MC">
+					<p class="R">EMITENTE NFSe</p>
+					<table width="100%" border="0">
+					<tr>
+						<td style="width:20px;">&nbsp;</td>
+						<td width="95%" style="padding-bottom:8px;padding-right:12px;">
+							<table class="Q" width="100%" cellspacing="0">
+								<tr>
+									<td>
+									<p class="R">CNPJ</p>
+									<input type="text" id="c_comissao_NFSe_cnpj" name="c_comissao_NFSe_cnpj" class="TA" value="<%=cnpj_cpf_formata(Trim("" & rs("comissao_NFSe_cnpj")))%>" maxlength="18" size="24"
+										readonly tabindex=-1 />
+									</td>
+								</tr>
+								<tr>
+									<td class="MC">
+									<p class="R">RAZÃO SOCIAL DO EMITENTE</p>
+									<input type="text" id="c_comissao_NFSe_razao_social" name="c_comissao_NFSe_razao_social" class="TA" value="<%=Trim("" & rs("comissao_NFSe_razao_social"))%>" maxlength="60" size="70"
+										readonly tabindex=-1 />
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					</table>
+				</td>
+			</tr>
+			</table>
+		</td>
 	</tr>
 </table>
 
@@ -854,6 +913,21 @@ var tipo_PJ_PF = ID_PJ;
 				<% =desempenho_nota_monta_itens_select(s_parametro) %>
 			</select>
 		</p></td>
+	</tr>
+</table>
+
+<!-- ************   SENHA / CONFIRMAÇÃO DA SENHA   ************ -->
+<table width="649" class="QS notPrint" cellspacing="0">
+	<tr>
+<%
+	senha_descripto= ""
+	s = Trim("" & rs("datastamp"))
+	chave = gera_chave(FATOR_BD)
+	decodifica_dado s, senha_descripto, chave
+%>
+		<td class="MD" width="50%" align="left"><p class="R">SENHA</p><p class="C"><input id="senha" name="senha" class="TA" type="password" maxlength="15" size="18" value="<%=senha_descripto%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.senha2.focus();"></p></td>
+		<td width="50%" align="left"><p class="R">SENHA (CONFIRMAÇÃO)</p><p class="C"><input id="senha2" name="senha2" class="TA" type="password" maxlength="15" size="18" value="<%=senha_descripto%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.loja.focus();"></p></td>
+		
 	</tr>
 </table>
 
