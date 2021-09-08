@@ -743,24 +743,15 @@ var s, s_senha;
 	</tr>
 </table>
 
-<!-- ************   FAVORECIDO    *******************  -->
+<!-- ************   FAVORECIDO / CPF CNPJ FAVORECIDO   *******************  -->
 <table width="649" class="QS" cellspacing="0">
     <tr>
 <%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("favorecido")) else s=""%>
-		<td width="1%" align="left"><p class="R">FAVORECIDO</p><p class="C"><input id="favorecido" name="favorecido" class="TA" value="<%=s%>" maxlength="40" size="80" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.favorecido_cnpjcpf.focus(); filtra_nome_identificador();" onblur="this.value=trim(this.value);"></p></td>
-    </tr>
-</table>
-
-<!-- ************   CPF CNPJ FAVORECIDO/ SENHA / CONFIRMAÇÃO DA SENHA   ************ -->
-<table width="649" class="QS" cellspacing="0">
-	<tr>
+		<td class="MD" width="70%" align="left"><p class="R">FAVORECIDO</p><p class="C"><input id="favorecido" name="favorecido" class="TA" value="<%=s%>" maxlength="40" size="60" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.favorecido_cnpjcpf.focus(); filtra_nome_identificador();" onblur="this.value=trim(this.value);"></p></td>
 <%if operacao_selecionada=OP_CONSULTA then s=cnpj_cpf_formata(Trim("" & rs("favorecido_cnpj_cpf"))) else s="" %>
- <td class="MD" width="40%" align="left"><p class="R">CPF/CNPJ DO FAVORECIDO</p><p class="C"><input id="favorecido_cnpjcpf" name="favorecido_cnpjcpf" class="TA" type="text" maxlength="18" size="25" value="<%=s%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.senha.focus();"
+		<td width="30%" align="left"><p class="R">CPF/CNPJ DO FAVORECIDO</p><p class="C"><input id="favorecido_cnpjcpf" name="favorecido_cnpjcpf" class="TA" type="text" maxlength="18" size="25" value="<%=s%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.senha.focus();"
         			onblur="if (retorna_so_digitos(this.value).length==14) { this.value=cnpj_formata(this.value);} else if (retorna_so_digitos(this.value).length==11){ this.value=cpf_formata(this.value);} else alert('Formato de CPF/CNPJ inválido!');"></p></td>
-
-		<td class="MD" width="30%" align="left"><p class="R">SENHA</p><p class="C"><input id="senha" name="senha" class="TA" type="password" maxlength="15" size="18" value="" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.senha2.focus();"></p></td>
-		<td width="30%" align="left"><p class="R">SENHA (CONFIRMAÇÃO)</p><p class="C"><input id="senha2" name="senha2" class="TA" type="password" maxlength="15" size="18" value="" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.loja.focus();"></p></td>
-	</tr>
+    </tr>
 </table>
 
 <!-- ************   ACESSO AO SISTEMA/STATUS   ************ -->
@@ -776,6 +767,14 @@ var s, s_senha;
 			</p></td>
         </tr>
     </table>
+
+<!-- ************   SENHA / CONFIRMAÇÃO DA SENHA   ************ -->
+<table width="649" class="QS" cellspacing="0">
+	<tr>
+		<td class="MD" width="50%" align="left"><p class="R">SENHA</p><p class="C"><input id="senha" name="senha" class="TA" type="password" maxlength="15" size="18" value="" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.senha2.focus();"></p></td>
+		<td width="50%" align="left"><p class="R">SENHA (CONFIRMAÇÃO)</p><p class="C"><input id="senha2" name="senha2" class="TA" type="password" maxlength="15" size="18" value="" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.c_email.focus();"></p></td>
+	</tr>
+</table>
 
 <!-- ************   E-MAILS   ************ -->
 <table width="649" class="QS" cellSpacing="0">
@@ -802,7 +801,7 @@ var s, s_senha;
 		<td class="MC" align="left"><p class="R">E-MAIL (3)</p><p class="C">
 			<input id="c_email3" name="c_email3" class="TA" value="<%=s%>" maxlength="60" 
 			style="text-align:left;" size="74"
-			onkeypress="if (digitou_enter(true)) fCAD.c_obs.focus(); filtra_email();"
+			onkeypress="filtra_email();"
 			onblur="this.value=trim(this.value);">
 		</p></td>
 	</tr>
@@ -836,7 +835,7 @@ var s, s_senha;
 </table>
 
 <!-- ************   VENDEDORES   **************** -->
-<table width="649" class="QS" cellspacing="0">
+<table width="649" class="QS" cellspacing="0" style="padding-bottom:6px;">
 	<tr>
 		<td align="left" class="MB" colspan="2"><p class="R">VENDEDORES</p></td>
 	</tr>

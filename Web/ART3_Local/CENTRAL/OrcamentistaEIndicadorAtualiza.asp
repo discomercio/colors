@@ -44,6 +44,26 @@
 	usuario = trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
 
+'	VERIFICA PERMISSÃO DE ACESSO DO USUÁRIO
+	dim s_lista_operacoes_permitidas
+	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
+	
+	dim blnPossuiPermissaoFinanceiro
+	blnPossuiPermissaoFinanceiro = False
+	if operacao_permitida(OP_CEN_EDITA_ANALISE_CREDITO, s_lista_operacoes_permitidas) _
+		OR _
+		operacao_permitida(OP_CEN_PAGTO_PARCIAL, s_lista_operacoes_permitidas) _
+		OR _
+		operacao_permitida(OP_CEN_PAGTO_QUITACAO, s_lista_operacoes_permitidas) then
+		blnPossuiPermissaoFinanceiro = True
+		end if
+
+	if (Not operacao_permitida(OP_CEN_CADASTRO_ORCAMENTISTAS_E_INDICADORES, s_lista_operacoes_permitidas)) And _
+	   (Not operacao_permitida(OP_CEN_REL_CHECAGEM_NOVOS_PARCEIROS, s_lista_operacoes_permitidas)) And _
+	   (Not blnPossuiPermissaoFinanceiro) then 
+		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
+		end if
+
 '	CONECTA AO BANCO DE DADOS
 '	=========================
 	dim cn, r, rs, t, rs2, s2
@@ -71,6 +91,7 @@
 	ChecadoStatusBloqueado = Trim(Request.Form("ChecadoStatusBloqueado"))
 	blnChecadoStatusBloqueado = CBool(ChecadoStatusBloqueado)
 	
+	dim valorAux
 	dim operacao_selecionada, s_id_selecionado, s_tipo_PJ_PF, s_razao_social_nome, s_nome_fantasia, s_cnpj_cpf, s_ie_rg, s_responsavel_principal
 	dim s_endereco, s_endereco_numero, s_endereco_complemento, s_bairro, s_cidade, s_uf, s_cep, s_ddd, s_telefone, s_fax, url_origem
 	dim s_ddd_cel, s_tel_cel, s_contato
@@ -89,7 +110,8 @@
     dim msg,s_favorecido_cnpjcpf, conta_dv, agencia_dv, tipo_conta, tipo_operacao
     dim n, cont, s_id_desc, s_desc_desc, s_val_desc
     dim s_contato_nome, s_contato_id, s_contato_data, s_contato_log_inclusao, s_contato_log_exclusao, s_contato_log_edicao
-	
+	dim ckb_comissao_cartao_status, c_comissao_cartao_cpf, c_comissao_cartao_titular, c_comissao_NFSe_cnpj, c_comissao_NFSe_razao_social
+
 	operacao_selecionada = request("operacao_selecionada")
 	s_id_selecionado = UCase(trim(Request.Form("id_selecionado")))
 	s_tipo_PJ_PF = trim(Request.Form("tipo_PJ_PF"))
@@ -152,7 +174,12 @@
     agencia_dv = trim(Request.Form("agencia_dv"))
     tipo_conta = trim(Request.Form("tipo_conta"))
     tipo_operacao = trim(Request.Form("tipo_operacao"))
-    
+	ckb_comissao_cartao_status = Trim(Request.Form("ckb_comissao_cartao_status"))
+	c_comissao_cartao_cpf = retorna_so_digitos(Trim(Request.Form("c_comissao_cartao_cpf")))
+	c_comissao_cartao_titular = Trim(Request.Form("c_comissao_cartao_titular"))
+	c_comissao_NFSe_cnpj = retorna_so_digitos(Trim(Request.Form("c_comissao_NFSe_cnpj")))
+	c_comissao_NFSe_razao_social = Trim(Request.Form("c_comissao_NFSe_razao_social"))
+
     url_origem = Request("url_origem")
 
 	v_lista_id_forma_pagto = Split(c_lista_id_forma_pagto, "|")
@@ -277,6 +304,46 @@
 			end if
 		end if
 	
+	if (alerta = "") And blnPossuiPermissaoFinanceiro then
+		'Dados de pagamento da comissão: Cartão
+		if ckb_comissao_cartao_status <> "" then
+			'Se o checkbox "Pagamento Via Cartão" estiver assinalado, o preenchimento dos campos é obrigatório
+			if (c_comissao_cartao_cpf = "") Or (Not cpf_ok(c_comissao_cartao_cpf)) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Informe o CPF do titular do cartão nos dados para pagamento da comissão"
+				end if
+			if c_comissao_cartao_titular = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Informe o nome do titular do cartão nos dados para pagamento da comissão"
+				end if
+		else
+			'Se o checkbox "Pagamento Via Cartão" estiver desmarcado, o preenchimento dos campos é opcional de modo a não obrigar a apagar as informações,
+			'mas ou todos os campos devem estar preenchidos ou todos devem estar vazios
+			if (c_comissao_cartao_cpf <> "") Or (c_comissao_cartao_titular <> "") then
+				if (c_comissao_cartao_cpf = "") Or (Not cpf_ok(c_comissao_cartao_cpf)) then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "Informe o CPF do titular do cartão nos dados para pagamento da comissão"
+					end if
+				if c_comissao_cartao_titular = "" then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "Informe o nome do titular do cartão nos dados para pagamento da comissão"
+					end if
+				end if
+			end if
+		
+		'Dados de pagamento da comissão: Emitente da NFSe
+		if (c_comissao_NFSe_cnpj <> "") Or (c_comissao_NFSe_razao_social <> "") then
+			if (c_comissao_NFSe_cnpj = "") Or (Not cnpj_ok(c_comissao_NFSe_cnpj)) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Informe o CNPJ do emitente da NFSe nos dados para pagamento da comissão"
+				end if
+			if c_comissao_NFSe_razao_social = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Informe a razão social do emitente da NFSe nos dados para pagamento da comissão"
+				end if
+			end if
+		end if 'if (alerta = "") And blnPossuiPermissaoFinanceiro
+
 	if alerta <> "" then erro_consistencia=True
 	
 	
@@ -362,6 +429,17 @@
 			end if
 		end if
 
+	'VALIDAÇÃO SE O IDENTIFICADOR JÁ ESTÁ EM USO NO CADASTRO DE USUÁRIOS (ASSEGURA QUE NÃO EXISTA USUÁRIO E INDICADOR COM MESMO IDENTIFICADOR)
+	if alerta = "" then
+		if operacao_selecionada = OP_INCLUI then
+			s = "SELECT usuario, nome FROM t_USUARIO WHERE usuario = '" & s_id_selecionado & "'"
+			set rs = cn.Execute(s)
+			if Not rs.Eof then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Não é possível usar o identificador '" & s_id_selecionado & "' porque já está em uso no cadastro de usuários"
+				end if
+			end if
+		end if
 
 	Err.Clear
 	
@@ -769,6 +847,41 @@
                         msg = msg & "CPF/CNPJ do favorecido alterado <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
                     end if    
                     
+					'Dados para pagamento da comissão
+					if blnPossuiPermissaoFinanceiro then
+						'Checkbox Pagamento Via Cartão
+						if ckb_comissao_cartao_status = "" then valorAux = 0 else valorAux = 1
+						if r("comissao_cartao_status") <> valorAux then
+							if r("comissao_cartao_status") = 0 then x1 = "Desmarcado" else x1 = "Marcado"
+							if ckb_comissao_cartao_status = "" then x2 = "Desmarcado" else x2 = "Marcado"
+							msg = msg & "[Pagamento da Comissão] Pagamento Via Cartão alterado <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
+							end if
+						'CPF
+						if c_comissao_cartao_cpf <> Trim("" & r("comissao_cartao_cpf")) then
+							if Trim("" & r("comissao_cartao_cpf")) = "" then x1 = "VAZIO" else x1 = cnpj_cpf_formata(Trim("" & r("comissao_cartao_cpf")))
+							if c_comissao_cartao_cpf = "" then x2 = "VAZIO" else x2 = cnpj_cpf_formata(c_comissao_cartao_cpf)
+							msg = msg & "[Pagamento da Comissão] CPF do Titular do Cartão alterado <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
+							end if
+						'Nome do Titular do Cartão
+						if UCase(c_comissao_cartao_titular) <> UCase(Trim("" & r("comissao_cartao_titular"))) then
+							if Trim("" & r("comissao_cartao_titular")) = "" then x1 = "VAZIO" else x1 = Trim("" & r("comissao_cartao_titular"))
+							if c_comissao_cartao_titular = "" then x2 = "VAZIO" else x2 = c_comissao_cartao_titular
+							msg = msg & "[Pagamento da Comissão] Nome do Titular do Cartão alterado <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
+							end if
+						'CNPJ do Emitente da NFSe
+						if c_comissao_NFSe_cnpj <> Trim("" & r("comissao_NFSe_cnpj")) then
+							if Trim("" & r("comissao_NFSe_cnpj")) = "" then x1 = "VAZIO" else x1 = cnpj_cpf_formata(Trim("" & r("comissao_NFSe_cnpj")))
+							if c_comissao_NFSe_cnpj = "" then x2 = "VAZIO" else x2 = cnpj_cpf_formata(c_comissao_NFSe_cnpj)
+							msg = msg & "[Pagamento da Comissão] CNPJ do Emitente da NFSe alterado <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
+							end if
+						'Razão Social do Emitente da NFSe
+						if UCase(c_comissao_NFSe_razao_social) <> UCase(Trim("" & r("comissao_NFSe_razao_social"))) then
+							if Trim("" & r("comissao_NFSe_razao_social")) = "" then x1 = "VAZIO" else x1 = Trim("" & r("comissao_NFSe_razao_social"))
+							if c_comissao_NFSe_razao_social = "" then x2 = "VAZIO" else x2 = c_comissao_NFSe_razao_social
+							msg = msg & "[Pagamento da Comissão] Razão Social do Emitente da NFSe alterado <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
+							end if
+						end if
+
                     ' log status
                     if (s_status <> r("status")) then
                         function tipoStatus(x) 
@@ -1164,6 +1277,15 @@
 				r("nextel") = s_nextel
 				
 				if rb_estabelecimento <> "" then r("tipo_estabelecimento") = CLng(rb_estabelecimento)
+
+				if blnPossuiPermissaoFinanceiro then
+					if ckb_comissao_cartao_status = "" then valorAux = 0 else valorAux = 1
+					r("comissao_cartao_status") = valorAux
+					r("comissao_cartao_cpf") = c_comissao_cartao_cpf
+					r("comissao_cartao_titular") = c_comissao_cartao_titular
+					r("comissao_NFSe_cnpj") = c_comissao_NFSe_cnpj
+					r("comissao_NFSe_razao_social") = c_comissao_NFSe_razao_social
+					end if
 
 				r("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
 
