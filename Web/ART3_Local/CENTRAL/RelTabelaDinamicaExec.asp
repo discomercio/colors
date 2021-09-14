@@ -1245,17 +1245,26 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 				"*" & _
 			" FROM (" & s_sql & ") t"
 	
+	s_where_aux = ""
+
 	' Tratamento para evitar erro que ocorre quando há registro do estoque com o campo 'qtde' com valor zerado.
 	' Essa situação em que a 'qtde' é zero não deveria ocorrer, entretanto, devido a algumas correções de problemas ocorridos anteriormente em operações no estoque,
 	' há alguns registros de entrada no estoque em que a 'qtde' foi ajustada para zero através de intervenção manual no banco de dados.
 	' Lembrando que as devoluções são tratadas com valores negativos de qtde.
 	if ckb_CONSOLIDAR_PEDIDO = "" then
-		s_sql = s_sql & _
-				" WHERE (qtde <> 0)"
+		if s_where_aux <> "" then s_where_aux = s_where_aux & " AND"
+		s_where_aux = s_where_aux & " (qtde <> 0)"
 		end if
 
-	if s_where_periodo_NF <> "" then s_where_periodo_NF = " AND" & s_where_periodo_NF
-	s_sql = s_sql & s_where_periodo_NF
+	if s_where_periodo_NF <> "" then
+		if s_where_aux <> "" then s_where_aux = s_where_aux & " AND"
+		s_where_aux = s_where_aux & s_where_periodo_NF
+		end if
+
+	if s_where_aux <> "" then s_where_aux = " WHERE" & s_where_aux
+
+	s_sql = s_sql & _
+			s_where_aux
 
 	s_sql = s_sql & _
 			" ORDER BY" & _
