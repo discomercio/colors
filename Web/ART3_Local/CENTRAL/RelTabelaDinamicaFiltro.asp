@@ -30,6 +30,8 @@
 	On Error GoTo 0
 	Err.Clear
 
+	const ID_RELATORIO = "RelTabelaDinamicaFiltro"
+
 	dim usuario
 	usuario = Trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO)
@@ -44,7 +46,7 @@
 	dim intIdx
 	
 	dim s_campos_saida_default, s_checked
-	s_campos_saida_default = get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|campos_saida_selecionados")
+	s_campos_saida_default = get_default_valor_texto_bd(usuario, ID_RELATORIO & "|campos_saida_selecionados")
 
 
 
@@ -413,13 +415,31 @@ end function
 		$("#c_dt_NF_remessa_inicio").hUtilUI('datepicker_peq_filtro_inicial');
 		$("#c_dt_NF_remessa_termino").hUtilUI('datepicker_peq_filtro_final');
 
-		$(document).tooltip();
-
         $("#c_grupo_pedido_origem").change(function () {
             $("#spnCounterGrupoOrigemPedido").text($("#c_grupo_pedido_origem :selected").length);
         });
 
         $("#spnCounterGrupoOrigemPedido").text($("#c_grupo_pedido_origem :selected").length);
+
+		if ($("#ckb_CONSOLIDAR_PEDIDO").is(":checked")) {
+			$(".SpnDETPROD").css("color", "red");
+			$(".SpnDETPED").css("color", "black");
+		}
+		else {
+			$(".SpnDETPROD").css("color", "black");
+			$(".SpnDETPED").css("color", "red");
+		}
+
+		$("#ckb_CONSOLIDAR_PEDIDO").change(function () {
+			if ($(this).is(":checked")) {
+				$(".SpnDETPROD").css("color", "red");
+				$(".SpnDETPED").css("color", "black");
+			}
+			else {
+				$(".SpnDETPROD").css("color", "black");
+				$(".SpnDETPED").css("color", "red");
+			}
+		});
 	});
 </script>
 
@@ -672,12 +692,12 @@ function exibe_botao_confirmar() {
 				<input class="PLLc" maxlength="10" style="width:76px;" name="c_dt_faturamento_inicio" id="c_dt_faturamento_inicio"
 					onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" 
 					onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_faturamento_termino.focus(); filtra_data();"
-					value="<%=get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|c_dt_faturamento_inicio")%>"
+					value="<%=get_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_dt_faturamento_inicio")%>"
 					>&nbsp;<span class="PLLc" style="color:#808080;">&nbsp;até&nbsp;</span>&nbsp;
 					<input class="PLLc" maxlength="10" style="width:76px;" name="c_dt_faturamento_termino" id="c_dt_faturamento_termino"
 					onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" 
 					onkeypress="if (digitou_enter(true)) fFILTRO.c_fabricante.focus(); filtra_data();"
-					value="<%=get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|c_dt_faturamento_termino")%>"
+					value="<%=get_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_dt_faturamento_termino")%>"
 					/>
 			</td>
 			<td style="width:10px;"></td>
@@ -705,12 +725,12 @@ function exibe_botao_confirmar() {
 				<input class="PLLc" maxlength="10" style="width:76px;" name="c_dt_NF_venda_inicio" id="c_dt_NF_venda_inicio"
 					onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" 
 					onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_NF_venda_termino.focus(); filtra_data();"
-					value="<%=get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|c_dt_NF_venda_inicio")%>"
+					value="<%=get_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_dt_NF_venda_inicio")%>"
 					>&nbsp;<span class="PLLc" style="color:#808080;">&nbsp;até&nbsp;</span>&nbsp;
 					<input class="PLLc" maxlength="10" style="width:76px;" name="c_dt_NF_venda_termino" id="c_dt_NF_venda_termino"
 					onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" 
 					onkeypress="if (digitou_enter(true)) fFILTRO.c_fabricante.focus(); filtra_data();"
-					value="<%=get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|c_dt_NF_venda_termino")%>"
+					value="<%=get_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_dt_NF_venda_termino")%>"
 					/>
 			</td>
 			<td style="width:10px;"></td>
@@ -738,12 +758,12 @@ function exibe_botao_confirmar() {
 				<input class="PLLc" maxlength="10" style="width:76px;" name="c_dt_NF_remessa_inicio" id="c_dt_NF_remessa_inicio"
 					onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" 
 					onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_NF_remessa_termino.focus(); filtra_data();"
-					value="<%=get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|c_dt_NF_remessa_inicio")%>"
+					value="<%=get_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_dt_NF_remessa_inicio")%>"
 					>&nbsp;<span class="PLLc" style="color:#808080;">&nbsp;até&nbsp;</span>&nbsp;
 					<input class="PLLc" maxlength="10" style="width:76px;" name="c_dt_NF_remessa_termino" id="c_dt_NF_remessa_termino"
 					onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" 
 					onkeypress="if (digitou_enter(true)) fFILTRO.c_fabricante.focus(); filtra_data();"
-					value="<%=get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|c_dt_NF_remessa_termino")%>"
+					value="<%=get_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_dt_NF_remessa_termino")%>"
 					/>
 			</td>
 			<td style="width:10px;"></td>
@@ -765,7 +785,7 @@ function exibe_botao_confirmar() {
 		<tr>
 		<td>
 			<select id="c_fabricante" name="c_fabricante" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;">
-			<% =fabricante_monta_itens_select(get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|c_fabricante")) %>
+			<% =fabricante_monta_itens_select(get_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_fabricante")) %>
 			</select>
 		</td>
 		<td style="width:1px;"></td>
@@ -786,7 +806,7 @@ function exibe_botao_confirmar() {
 		<tr>
 		<td>
 			<select id="c_grupo" name="c_grupo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;">
-			<% =grupo_monta_itens_select(get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|c_grupo")) %>
+			<% =grupo_monta_itens_select(get_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_grupo")) %>
 			</select>
 		</td>
 		<td style="width:1px;"></td>
@@ -807,7 +827,7 @@ function exibe_botao_confirmar() {
 		<tr>
 		<td>
 			<select id="c_potencia_BTU" name="c_potencia_BTU" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;">
-			<% =potencia_BTU_monta_itens_select(get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|c_potencia_BTU")) %>
+			<% =potencia_BTU_monta_itens_select(get_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_potencia_BTU")) %>
 			</select>
 		</td>
 		<td style="width:1px;"></td>
@@ -828,7 +848,7 @@ function exibe_botao_confirmar() {
 		<tr>
 		<td>
 			<select id="c_ciclo" name="c_ciclo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;">
-			<% =ciclo_monta_itens_select(get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|c_ciclo")) %>
+			<% =ciclo_monta_itens_select(get_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_ciclo")) %>
 			</select>
 		</td>
 		<td style="width:1px;"></td>
@@ -849,7 +869,7 @@ function exibe_botao_confirmar() {
 		<tr>
 		<td>
 			<select id="c_posicao_mercado" name="c_posicao_mercado" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;">
-			<% =posicao_mercado_monta_itens_select(get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|c_posicao_mercado")) %>
+			<% =posicao_mercado_monta_itens_select(get_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_posicao_mercado")) %>
 			</select>
 		</td>
 		<td style="width:1px;"></td>
@@ -870,7 +890,7 @@ function exibe_botao_confirmar() {
 		<tr>
 		<td>
 			<select id="c_entrega_imediata" name="c_entrega_imediata" class="LST" style="min-width:70px;" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;">
-			<% =entrega_imediata_monta_itens_select(get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|c_entrega_imediata")) %>
+			<% =entrega_imediata_monta_itens_select(get_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_entrega_imediata")) %>
 			</select>
 		</td>
 		<td style="width:1px;"></td>
@@ -929,14 +949,42 @@ function exibe_botao_confirmar() {
 		</td></tr></table>
         </td></tr>
 
+<!-- PEDIDOS COM VALOR PAGO ATRAVÉS DE CARTÃO INTERNET -->
+	<tr bgcolor="#FFFFFF">
+	<td class="MDBE" align="left" nowrap>
+		
+				<span class="PLTe">CARTÃO (INTERNET)</span>
+				<br />
+				<% s_checked = ""
+					if get_default_valor_texto_bd(usuario, ID_RELATORIO & "|ckb_PEDIDOS_VL_PAGO_CARTAO_INTERNET") = "ON" then s_checked = " checked"
+				%>
+				<input type="checkbox" tabindex="-1" id="ckb_PEDIDOS_VL_PAGO_CARTAO_INTERNET" name="ckb_PEDIDOS_VL_PAGO_CARTAO_INTERNET" class="DETPED"
+						value="ON" <%=s_checked%> style="margin-left:30px;margin-bottom: 5px;margin-top: 5px;" /><span class="C SpnDETPED" style="cursor:default" onclick="fFILTRO.ckb_PEDIDOS_VL_PAGO_CARTAO_INTERNET.click();">Somente pedidos com valor pago através de cartão internet</span><br />
+	</td>
+	</tr>
+
 <!--  AGRUPAMENTO  -->
 	<tr bgcolor="#FFFFFF">
 	<td class="MDBE" align="left" nowrap>
 		
 				<span class="PLTe">AGRUPAMENTO</span>
 				<br />
-				<input type="checkbox" tabindex="-1" id="ckb_AGRUPAMENTO" name="ckb_AGRUPAMENTO"
-						value="ON" style="margin-left:30px;margin-bottom: 5px;margin-top: 5px;" /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_AGRUPAMENTO.click();">Desagrupar itens por quantidade</span><br />
+				<input type="checkbox" tabindex="-1" id="ckb_AGRUPAMENTO" name="ckb_AGRUPAMENTO" class="DETPROD"
+						value="ON" style="margin-left:30px;margin-bottom: 5px;margin-top: 5px;" /><span class="C SpnDETPROD" style="cursor:default" onclick="fFILTRO.ckb_AGRUPAMENTO.click();">Desagrupar itens por quantidade</span><br />
+	</td>
+	</tr>
+
+<!--  CONSOLIDAR POR PEDIDO  -->
+	<tr bgcolor="#FFFFFF">
+	<td class="MDBE" align="left" nowrap>
+
+				<span class="PLTe">CONSOLIDAR POR PEDIDO</span>
+				<br />
+				<% s_checked = ""
+					if get_default_valor_texto_bd(usuario, ID_RELATORIO & "|ckb_CONSOLIDAR_PEDIDO") = "ON" then s_checked = " checked"
+				%>
+				<input type="checkbox" tabindex="-1" id="ckb_CONSOLIDAR_PEDIDO" name="ckb_CONSOLIDAR_PEDIDO"
+					value="ON" <%=s_checked%> style="margin-left:30px;margin-bottom: 5px;margin-top: 5px;" /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_CONSOLIDAR_PEDIDO.click();">Consolidar por pedido</span><img src="../IMAGEM/exclamacao_14x14.png" id="optConsolidarPedidoExclamacao" style="cursor:pointer" title="Esta opção impossibilita a exibição no resultado de dados específicos do produto" /><br />
 	</td>
 	</tr>
 
@@ -947,7 +995,7 @@ function exibe_botao_confirmar() {
 				<span class="PLTe">COMPATIBILIDADE DO EXCEL</span>
 				<br />
 				<% s_checked = ""
-					if get_default_valor_texto_bd(usuario, "RelTabelaDinamicaFiltro|ckb_COMPATIBILIDADE") = "ON" then s_checked = " checked"
+					if get_default_valor_texto_bd(usuario, ID_RELATORIO & "|ckb_COMPATIBILIDADE") = "ON" then s_checked = " checked"
 				%>
 				<input type="checkbox" tabindex="-1" id="ckb_COMPATIBILIDADE" name="ckb_COMPATIBILIDADE"
 						value="ON" <%=s_checked%> style="margin-left:30px;margin-bottom: 5px;margin-top: 5px;" /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COMPATIBILIDADE.click();">Compatibilidade com versões anteriores do Excel</span><br />
@@ -1090,53 +1138,53 @@ function exibe_botao_confirmar() {
 				
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_MARCA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
-							<input type="checkbox" class="CKB_COMERCIAL" tabindex="-1" id="ckb_COL_MARCA" name="ckb_COL_MARCA"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_MARCA.click();">Marca</span><br />
+							<input type="checkbox" class="CKB_COMERCIAL DETPROD" tabindex="-1" id="ckb_COL_MARCA" name="ckb_COL_MARCA"
+						    value="ON" <%=s_checked%> /><span class="C SpnDETPROD" style="cursor:default" onclick="fFILTRO.ckb_COL_MARCA.click();">Marca</span><br />
 						
 			            <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_GRUPO|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
-					        <input type="checkbox" class="CKB_COMERCIAL" tabindex="-1" id="ckb_COL_GRUPO" name="ckb_COL_GRUPO"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_GRUPO.click();">Grupo</span><br />
+					        <input type="checkbox" class="CKB_COMERCIAL DETPROD" tabindex="-1" id="ckb_COL_GRUPO" name="ckb_COL_GRUPO"
+						    value="ON" <%=s_checked%> /><span class="C SpnDETPROD" style="cursor:default" onclick="fFILTRO.ckb_COL_GRUPO.click();">Grupo</span><br />
 						
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_POTENCIA_BTU|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
-					        <input type="checkbox" class="CKB_COMERCIAL" tabindex="-1" id="ckb_COL_POTENCIA_BTU" name="ckb_COL_POTENCIA_BTU"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_POTENCIA_BTU.click();">BTU/h</span><br />
+					        <input type="checkbox" class="CKB_COMERCIAL DETPROD" tabindex="-1" id="ckb_COL_POTENCIA_BTU" name="ckb_COL_POTENCIA_BTU"
+						    value="ON" <%=s_checked%> /><span class="C SpnDETPROD" style="cursor:default" onclick="fFILTRO.ckb_COL_POTENCIA_BTU.click();">BTU/h</span><br />
 						
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_CICLO|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
-					        <input type="checkbox" class="CKB_COMERCIAL" tabindex="-1" id="ckb_COL_CICLO" name="ckb_COL_CICLO"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_CICLO.click();">Ciclo</span><br />
+					        <input type="checkbox" class="CKB_COMERCIAL DETPROD" tabindex="-1" id="ckb_COL_CICLO" name="ckb_COL_CICLO"
+						    value="ON" <%=s_checked%> /><span class="C SpnDETPROD" style="cursor:default" onclick="fFILTRO.ckb_COL_CICLO.click();">Ciclo</span><br />
 						
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_POSICAO_MERCADO|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
-					        <input type="checkbox" class="CKB_COMERCIAL" tabindex="-1" id="ckb_COL_POSICAO_MERCADO" name="ckb_COL_POSICAO_MERCADO"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_POSICAO_MERCADO.click();">Posição Mercado</span><br />
+					        <input type="checkbox" class="CKB_COMERCIAL DETPROD" tabindex="-1" id="ckb_COL_POSICAO_MERCADO" name="ckb_COL_POSICAO_MERCADO"
+						    value="ON" <%=s_checked%> /><span class="C SpnDETPROD" style="cursor:default" onclick="fFILTRO.ckb_COL_POSICAO_MERCADO.click();">Posição Mercado</span><br />
 						
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_PRODUTO|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
-					        <input type="checkbox" class="CKB_COMERCIAL" tabindex="-1" id="ckb_COL_PRODUTO" name="ckb_COL_PRODUTO"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_PRODUTO.click();">Produto</span><br />
+					        <input type="checkbox" class="CKB_COMERCIAL DETPROD" tabindex="-1" id="ckb_COL_PRODUTO" name="ckb_COL_PRODUTO"
+						    value="ON" <%=s_checked%> /><span class="C SpnDETPROD" style="cursor:default" onclick="fFILTRO.ckb_COL_PRODUTO.click();">Produto</span><br />
 						
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_NAC_IMP|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
-					        <input type="checkbox" class="CKB_COMERCIAL" tabindex="-1" id="ckb_COL_NAC_IMP" name="ckb_COL_NAC_IMP"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_NAC_IMP.click();">Nacional/Importado</span><br />
+					        <input type="checkbox" class="CKB_COMERCIAL DETPROD" tabindex="-1" id="ckb_COL_NAC_IMP" name="ckb_COL_NAC_IMP"
+						    value="ON" <%=s_checked%> /><span class="C SpnDETPROD" style="cursor:default" onclick="fFILTRO.ckb_COL_NAC_IMP.click();">Nacional/Importado</span><br />
 
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_DESCRICAO_PRODUTO|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
-					        <input type="checkbox" class="CKB_COMERCIAL" tabindex="-1" id="ckb_COL_DESCRICAO_PRODUTO" name="ckb_COL_DESCRICAO_PRODUTO"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_DESCRICAO_PRODUTO.click();">Descrição Produto</span><br />
+					        <input type="checkbox" class="CKB_COMERCIAL DETPROD" tabindex="-1" id="ckb_COL_DESCRICAO_PRODUTO" name="ckb_COL_DESCRICAO_PRODUTO"
+						    value="ON" <%=s_checked%> /><span class="C SpnDETPROD" style="cursor:default" onclick="fFILTRO.ckb_COL_DESCRICAO_PRODUTO.click();">Descrição Produto</span><br />
 						
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_QTDE|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
-					        <input type="checkbox" class="CKB_COMERCIAL" tabindex="-1" id="ckb_COL_QTDE" name="ckb_COL_QTDE"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_QTDE.click();">Quantidade</span><br />
+					        <input type="checkbox" class="CKB_COMERCIAL DETPROD" tabindex="-1" id="ckb_COL_QTDE" name="ckb_COL_QTDE"
+						    value="ON" <%=s_checked%> /><span class="C SpnDETPROD" style="cursor:default" onclick="fFILTRO.ckb_COL_QTDE.click();">Quantidade</span><br />
 
                         <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_PERC_DESC|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
-					        <input type="checkbox" class="CKB_COMERCIAL" tabindex="-1" id="ckb_COL_PERC_DESC" name="ckb_COL_PERC_DESC"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_PERC_DESC.click();">Percentual Desconto</span><br />
+					        <input type="checkbox" class="CKB_COMERCIAL DETPROD" tabindex="-1" id="ckb_COL_PERC_DESC" name="ckb_COL_PERC_DESC"
+						    value="ON" <%=s_checked%> /><span class="C SpnDETPROD" style="cursor:default" onclick="fFILTRO.ckb_COL_PERC_DESC.click();">Percentual Desconto</span><br />
 			
                         <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_CUBAGEM|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
@@ -1161,28 +1209,28 @@ function exibe_botao_confirmar() {
 				    
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_CUSTO_ULT_ENTRADA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
-					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_CUSTO_ULT_ENTRADA" name="ckb_COL_VL_CUSTO_ULT_ENTRADA"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_CUSTO_ULT_ENTRADA.click();">VL Custo (Últ Entrada)</span><br />
+					        <input type="checkbox" class="CKB_FINANCEIRO DETPROD" tabindex="-1" id="ckb_COL_VL_CUSTO_ULT_ENTRADA" name="ckb_COL_VL_CUSTO_ULT_ENTRADA"
+						    value="ON" <%=s_checked%> /><span class="C SpnDETPROD" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_CUSTO_ULT_ENTRADA.click();">VL Custo (Últ Entrada)</span><br />
 						
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_CUSTO_REAL|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
-					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_CUSTO_REAL" name="ckb_COL_VL_CUSTO_REAL"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_CUSTO_REAL.click();">VL Custo (Real)</span><br />
+					        <input type="checkbox" class="CKB_FINANCEIRO DETPROD" tabindex="-1" id="ckb_COL_VL_CUSTO_REAL" name="ckb_COL_VL_CUSTO_REAL"
+						    value="ON" <%=s_checked%> /><span class="C SpnDETPROD" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_CUSTO_REAL.click();">VL Custo (Real)</span><br />
 
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_LISTA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
-			    	        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_LISTA" name="ckb_COL_VL_LISTA"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_LISTA.click();">VL Lista</span><br />
+			    	        <input type="checkbox" class="CKB_FINANCEIRO DETPROD" tabindex="-1" id="ckb_COL_VL_LISTA" name="ckb_COL_VL_LISTA"
+						    value="ON" <%=s_checked%> /><span class="C SpnDETPROD" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_LISTA.click();">VL Lista</span><br />
 						
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_NF|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
-					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_NF" name="ckb_COL_VL_NF"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_NF.click();">VL NF</span><br />
+					        <input type="checkbox" class="CKB_FINANCEIRO DETPROD" tabindex="-1" id="ckb_COL_VL_NF" name="ckb_COL_VL_NF"
+						    value="ON" <%=s_checked%> /><span class="C SpnDETPROD" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_NF.click();">VL NF</span><br />
 
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_UNITARIO|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
-					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_VL_UNITARIO" name="ckb_COL_VL_UNITARIO"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_UNITARIO.click();">VL Unitário</span><br />
+					        <input type="checkbox" class="CKB_FINANCEIRO DETPROD" tabindex="-1" id="ckb_COL_VL_UNITARIO" name="ckb_COL_VL_UNITARIO"
+						    value="ON" <%=s_checked%> /><span class="C SpnDETPROD" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_UNITARIO.click();">VL Unitário</span><br />
 						
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_VL_CUSTO_REAL_TOTAL|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
@@ -1223,6 +1271,11 @@ function exibe_botao_confirmar() {
 					        if (InStr(s_campos_saida_default, "|ckb_COL_MEIO_PAGAMENTO|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_FINANCEIRO" tabindex="-1" id="ckb_COL_MEIO_PAGAMENTO" name="ckb_COL_MEIO_PAGAMENTO"
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_MEIO_PAGAMENTO.click();">Meio de Pagamento</span><br />
+
+				        <%	s_checked = ""
+					        if InStr(s_campos_saida_default, "|ckb_COL_VL_PAGO_CARTAO_INTERNET|") <> 0 then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_FINANCEIRO DETPED" tabindex="-1" id="ckb_COL_VL_PAGO_CARTAO_INTERNET" name="ckb_COL_VL_PAGO_CARTAO_INTERNET"
+						    value="ON" <%=s_checked%> /><span class="C SpnDETPED" style="cursor:default" onclick="fFILTRO.ckb_COL_VL_PAGO_CARTAO_INTERNET.click();">VL Pago Cartão (Internet)</span><br />
 
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_CHAVE_NFE|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
