@@ -264,6 +264,49 @@ dim x, r, strResp
 	set r=nothing 
 end function
 
+
+' ____________________________________________________________________________
+' TRANSPORTADORA MONTA ITENS SELECT
+'
+function transportadora_monta_itens_select(byval id_default)
+dim x, r, strResp, strNome, ha_default, strSql, i
+dim v
+	id_default = Trim("" & id_default)
+	v = split(id_default, ", ")
+	ha_default=False
+	strSql = "SELECT" & _
+				" id" & _
+				", nome" & _
+				", razao_social" & _
+			" FROM t_TRANSPORTADORA" & _
+			" WHERE" & _
+				" Len(id) > 1" & _
+			" ORDER BY" & _
+				" id"
+	set r = cn.Execute(strSql)
+	strResp = ""
+  
+	do while Not r.Eof
+		x = Trim("" & r("id"))
+		strResp = strResp & "<option "
+            for i=LBound(v) to UBound(v) 
+		        if (id_default<>"") And (v(i)=x) then
+		            strResp = strResp & "selected"
+		         end if
+		   	 next
+		strResp = strResp & " value='" & x & "'>"
+		strNome = Trim("" & r("nome"))
+		if strNome = "" then strNome = Trim("" & r("razao_social"))
+		strResp = strResp & Trim("" & r("id")) & " - " & iniciais_em_maiusculas(strNome)
+		strResp = strResp & "</option>" & chr(13)
+		r.MoveNext	
+ 	loop
+
+	transportadora_monta_itens_select = strResp
+	r.close
+	set r=nothing
+end function
+
 %>
 
 
@@ -363,6 +406,12 @@ end function
 
 		$("#spnCounterGrupo").text($("#c_grupo :selected").length);
 
+		$("#c_transportadora_multiplo").change(function () {
+			$("#spnCounterTransportadora").text($("#c_transportadora_multiplo :selected").length);
+		});
+
+		$("#spnCounterTransportadora").text($("#c_transportadora_multiplo :selected").length);
+
 		//Every resize of window
 	    $(window).resize(function() {
 		    sizeDivAjaxRunning();
@@ -414,6 +463,11 @@ end function
 	function limpaCampoSelectGrupo() {
 		$("#c_grupo").children().prop("selected", false);
 		$("#spnCounterGrupo").text($("#c_grupo :selected").length);
+	}
+
+	function limpaCampoSelectTransportadora() {
+		$("#c_transportadora_multiplo").children().prop("selected", false);
+		$("#spnCounterTransportadora").text($("#c_transportadora_multiplo :selected").length);
 	}
 </script>
 
@@ -815,7 +869,6 @@ function exibe_botao_confirmar() {
 <link href="<%=URL_FILE__JQUERY_UI_CSS%>" rel="stylesheet" type="text/css">
 
 <style type="text/css">
- 
  .aviso {
     font-family: Arial, Helvetica, sans-serif;
 	font-size: 8pt;
@@ -825,7 +878,10 @@ function exibe_botao_confirmar() {
 	color: #f00;
     display: none;
  }
-
+.LST
+{
+	margin:6px 6px 6px 6px;
+}
 </style>
 
 <body>
@@ -1412,13 +1468,23 @@ function exibe_botao_confirmar() {
 
 <!--  TRANSPORTADORA  -->
 <tr bgcolor="#FFFFFF">
-<td class="MDBE" align="left" nowrap><span class="PLTe">TRANSPORTADORA</span>
+<td class="MDBE" align="left" nowrap><span class="PLTe">TRANSPORTADORA(S)</span>
 	<br>
-	<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;">
-	<tr bgcolor="#FFFFFF"><td align="left">
-		<span class="C" style="margin-left:30px;">Identificação</span>
-			<input class="C" maxlength="10" style="width:110px;" name="c_transportadora" id="c_transportadora" onblur="this.value=trim(this.value);" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); filtra_nome_identificador();">
-		</td></tr>
+	<table cellpadding="0" cellspacing="0">
+	<tr>
+	<td>
+		<select id="c_transportadora_multiplo" name="c_transportadora_multiplo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="5"style="width:400px" multiple>
+		<% =transportadora_monta_itens_select(Null) %>
+		</select>
+	</td>
+	<td style="width:1px;"></td>
+	<td align="left" valign="top">
+		<a name="bLimparTransportadora" id="bLimparTransportadora" href="javascript:limpaCampoSelectTransportadora()" title="limpa o filtro 'Transportadora'">
+					<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                    <br />
+                    (<span class="Lbl" id="spnCounterTransportadora"></span>)
+	</td>
+	</tr>
 	</table>
 </td></tr>
 
