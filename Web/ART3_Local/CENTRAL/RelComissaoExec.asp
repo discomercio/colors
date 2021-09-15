@@ -50,7 +50,7 @@
 
 	dim alerta
 	dim s, s_aux, s_filtro
-	dim c_dt_inicio, c_dt_termino, c_vendedor
+	dim c_dt_inicio, c_dt_termino, c_vendedor, c_lojas
 	dim rb_visao, blnVisaoSintetica
 	
 	alerta = ""
@@ -58,6 +58,7 @@
 	c_dt_inicio = Trim(Request.Form("c_dt_inicio"))
 	c_dt_termino = Trim(Request.Form("c_dt_termino"))
 	c_vendedor = Ucase(Trim(Request.Form("c_vendedor")))
+	c_lojas = Trim(Request.Form("c_lojas"))
 	rb_visao = Trim(Request.Form("rb_visao"))
 	
 	blnVisaoSintetica = False
@@ -125,8 +126,9 @@ sub consulta_executa
 dim r
 dim s, s_aux, s_sql, x, cab_table, cab, vendedor_a, n_reg, n_reg_total, qtde_vendedores
 dim vl_comissao, vl_saida, vl_total_saida, vl_total_comissao, vl_sub_total_saida, vl_sub_total_comissao
-dim s_where, s_where_venda, s_where_devolucao, s_where_perdas, s_cor, s_sinal, s_cor_sinal
+dim s_where, s_where_venda, s_where_devolucao, s_where_perdas, s_where_lista_lojas, s_cor, s_sinal, s_cor_sinal
 dim s_new_cab, idx_bloco
+dim v_lojas, i
 
 '	CRITÉRIOS COMUNS
 	s_where = ""
@@ -138,6 +140,21 @@ dim s_new_cab, idx_bloco
 		s_where = s_where & " (t_PEDIDO.vendedor " & s_aux & " '" & s & "'" & SQL_COLLATE_CASE_ACCENT & ")"
 		end if
 	
+	if c_lojas <> "" then
+		v_lojas = Split(c_lojas, ", ")
+		s_where_lista_lojas = ""
+		for i=LBound(v_lojas) to UBound(v_lojas)
+			if Trim("" & v_lojas(i)) <> "" then
+				if s_where_lista_lojas <> "" then s_where_lista_lojas = s_where_lista_lojas & ", "
+				s_where_lista_lojas = s_where_lista_lojas & "'" & Trim("" & v_lojas(i)) & "'"
+				end if
+			next
+		if s_where_lista_lojas <> "" then
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (t_PEDIDO.loja IN (" & s_where_lista_lojas & "))"
+			end if
+		end if
+
 '	CRITÉRIOS PARA PEDIDOS DE VENDA NORMAIS
 	s_where_venda = ""
 	if IsDate(c_dt_inicio) then
@@ -607,6 +624,12 @@ function fRELConcluir( id_pedido ) {
 		end if
 	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
 			   "<span class='N'>Vendedor:&nbsp;</span></td><td align='left' valign='top'>" & _
+			   "<span class='N'>" & s & "</span></td></tr>" & chr(13)
+
+	s = c_lojas
+	if s = "" then s = "N.I."
+	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
+			   "<span class='N'>Loja(s):&nbsp;</span></td><td align='left' valign='top'>" & _
 			   "<span class='N'>" & s & "</span></td></tr>" & chr(13)
 
 	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
