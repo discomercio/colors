@@ -77,7 +77,7 @@
 	dim ckb_produto, c_fabricante, c_produto, c_grupo, v_grupos, ckb_somente_pedidos_produto_alocado
 	dim rb_loja, c_loja, c_loja_de, c_loja_ate, vLoja, vLojaAux
 	dim c_cliente_cnpj_cpf, c_cliente_uf
-	dim c_transportadora
+	dim c_transportadora, c_transportadora_multiplo
 	dim ckb_visanet
 	dim ckb_analise_credito_st_inicial, ckb_analise_credito_pendente_vendas, ckb_analise_credito_pendente_endereco, ckb_analise_credito_pendente, ckb_analise_credito_pendente_cartao
 	dim ckb_analise_credito_ok, ckb_analise_credito_ok_aguardando_deposito, ckb_analise_credito_ok_deposito_aguardando_desbloqueio
@@ -142,6 +142,7 @@
 	c_cliente_cnpj_cpf=retorna_so_digitos(trim(request("c_cliente_cnpj_cpf")))
     c_cliente_uf=trim(request("c_cliente_uf"))
 	c_transportadora = filtra_nome_identificador(UCase(Trim(Request.Form("c_transportadora"))))
+	c_transportadora_multiplo = Trim(Request.Form("c_transportadora_multiplo"))
 	ckb_visanet = Trim(Request.Form("ckb_visanet"))
 	ckb_analise_credito_st_inicial = Trim(Request.Form("ckb_analise_credito_st_inicial"))
 	ckb_analise_credito_pendente_vendas = Trim(Request.Form("ckb_analise_credito_pendente_vendas"))
@@ -972,6 +973,11 @@ dim s, s_aux, s_resp
 		s_resp = s_resp & "<br>"
 		end if
 
+	if c_transportadora_multiplo <> "" then
+		s_resp = s_resp & "Transportadora(s): " & c_transportadora_multiplo
+		s_resp = s_resp & "<br>"
+		end if
+
 	if c_vendedor <> "" then
 		s = c_vendedor
 		s_aux = x_usuario(c_vendedor)
@@ -1020,6 +1026,7 @@ dim s_grupo_origem
 dim s_link_rastreio, s_link_rastreio2, s_numero_NF
 dim rPSSW
 dim sLinkView
+dim vTransportadora
 	
 	set rPSSW = get_registro_t_parametro(ID_PARAMETRO_SSW_Rastreamento_Lista_Transportadoras)
 
@@ -1587,6 +1594,22 @@ dim sLinkView
 		s_where = s_where & " (t_PEDIDO.transportadora_id = '" & c_transportadora & "')"
 		end if
 	
+'	CRITÉRIO: TRANSPORTADORAS
+	if c_transportadora_multiplo <> "" then
+		s_where_aux = ""
+		vTransportadora = Split(c_transportadora_multiplo, ", ")
+		for i=LBound(vTransportadora) to UBound(vTransportadora)
+			if Trim(vTransportadora(i)) <> "" then
+				if s_where_aux <> "" then s_where_aux = s_where_aux & ", "
+				s_where_aux = s_where_aux & "'" & Trim(vTransportadora(i)) & "'"
+				end if
+			next
+		if s_where_aux <> "" then
+			if s_where <> "" then s_where = s_where & " AND"
+			s_where = s_where & " (t_PEDIDO.transportadora_id IN (" & s_where_aux & "))"
+			end if
+		end if
+
 '	CRITÉRIO: CLIENTE
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		if c_cliente_cnpj_cpf <> "" then
@@ -3414,6 +3437,14 @@ body
 					"	<tr>" & chr(13) & _
 					"		<td align='right' valign='top' NOWRAP><span class='N'>Transportadora:&nbsp;</span></td>" & chr(13) & _
 					"		<td valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
+					"	</tr>" & chr(13)
+		end if
+
+	if c_transportadora_multiplo <> "" then
+		s_filtro = s_filtro & _
+					"	<tr>" & chr(13) & _
+					"		<td align='right' valign='top' NOWRAP><span class='N'>Transportadora(s):&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top' width='99%'><span class='N'>" & c_transportadora_multiplo & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
 

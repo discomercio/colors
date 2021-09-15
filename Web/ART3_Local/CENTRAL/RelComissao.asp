@@ -30,6 +30,8 @@
 	On Error GoTo 0
 	Err.Clear
 
+	const ID_RELATORIO = "CENTRAL/RelComissaoVendedores"
+
 	dim usuario
 	usuario = Trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
@@ -52,6 +54,52 @@
 		strMinDtInicialFiltroPeriodoYYYYMMDD = ""
 		strMinDtInicialFiltroPeriodoDDMMYYYY = ""
 		end if
+
+
+
+
+
+' ____________________________________________________________________________
+' LOJAS MONTA ITENS SELECT
+'
+function lojas_monta_itens_select(byval id_default)
+dim x, r, strResp, strLoja, strNome, ha_default, strSql, i
+dim v
+	id_default = Trim("" & id_default)
+	v = split(id_default, ", ")
+	ha_default=False
+	strSql = "SELECT" & _
+				" loja" & _
+				", nome" & _
+				", razao_social" & _
+			" FROM t_LOJA" & _
+			" ORDER BY" & _
+				" Convert(smallint, loja)"
+	set r = cn.Execute(strSql)
+	strResp = ""
+  
+	do while Not r.Eof
+		x = Trim("" & r("loja"))
+		strResp = strResp & "<option "
+            for i=LBound(v) to UBound(v) 
+		        if (id_default<>"") And (v(i)=x) then
+		            strResp = strResp & "selected"
+		         end if
+		   	 next
+		strResp = strResp & " value='" & x & "'>"
+		strLoja = Trim("" & r("loja"))
+		while Len(strLoja) < 3 : strLoja = "&nbsp;&nbsp;" & strLoja : Wend
+		strNome = Trim("" & r("nome"))
+		if strNome = "" then strNome = Trim("" & r("razao_social"))
+		strResp = strResp & strLoja & " - " & strNome
+		strResp = strResp & "</option>" & chr(13)
+		r.MoveNext
+ 	loop
+
+	lojas_monta_itens_select = strResp
+	r.close
+	set r=nothing
+end function
 
 %>
 
@@ -93,10 +141,21 @@
 	$(function() {
 		$("#c_dt_inicio").hUtilUI('datepicker_filtro_inicial');
 		$("#c_dt_termino").hUtilUI('datepicker_filtro_final');
+
+		$("#c_lojas").change(function () {
+			$("#spnCounterLojas").text($("#c_lojas :selected").length);
+		});
+
+		$("#spnCounterLojas").text($("#c_lojas :selected").length);
 	});
 </script>
 
 <script language="JavaScript" type="text/javascript">
+function limpaCampoSelectLojas() {
+    $("#c_lojas").children().prop("selected", false);
+    $("#spnCounterLojas").text($("#c_lojas :selected").length);
+}
+
 function fFILTROConfirma( f ) {
 var s_de, s_ate;
 var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
@@ -185,6 +244,13 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 <link href="<%=URL_FILE__E_CSS%>" rel="stylesheet" type="text/css">
 <link href="<%=URL_FILE__JQUERY_UI_CSS%>" rel="stylesheet" type="text/css">
 
+<style TYPE="text/css">
+.LST
+{
+	margin:6px 6px 6px 6px;
+}
+</style>
+
 
 <body onload="fFILTRO.c_dt_inicio.focus();">
 <center>
@@ -233,6 +299,28 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 	<td class="MDBE" align="left" nowrap><span class="PLTe">VENDEDOR</span>
 	<br>
 		<input maxlength="10" class="PLLe" style="width:150px;" name="c_vendedor" id="c_vendedor" onblur="this.value=ucase(this.value);" onkeypress="if (digitou_enter(true)) bCONFIRMA.click(); filtra_nome_identificador();">
+		</td></tr>
+
+<!--  LOJAS  -->
+	<tr bgcolor="#FFFFFF">
+	<td class="MDBE" align="left" nowrap><span class="PLTe">LOJA(S)</span>
+	<br>
+		<table cellpadding="0" cellspacing="0">
+		<tr>
+		<td>
+			<select id="c_lojas" name="c_lojas" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="10"style="width:250px" multiple>
+			<% =lojas_monta_itens_select(get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_lojas")) %>
+			</select>
+		</td>
+		<td style="width:1px;"></td>
+		<td align="left" valign="top">
+			<a name="bLimparLojas" id="bLimparLojas" href="javascript:limpaCampoSelectLojas()" title="limpa o filtro 'Loja(s)'">
+						<img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
+                        <br />
+                        (<span class="Lbl" id="spnCounterLojas"></span>)
+		</td>
+		</tr>
+		</table>
 		</td></tr>
 
 <!--  VISÃO: SINTÉTICA/ANALÍTICA  -->
