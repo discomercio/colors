@@ -58,6 +58,7 @@
 	dim alerta
 	dim s, s_aux, s_fabricante, s_nome_fabricante, s_produto, s_nome_produto, s_nome_produto_html, s_cadastrado_por
 	dim s_entrada_de, s_entrada_ate, ckb_especial, ckb_saldo, ckb_compras, ckb_kit, ckb_devolucao, s_nf_entrada_de, s_nf_entrada_ate
+	dim ckb_documento_semelhanca, c_documento
 	dim rb_saida
     dim c_empresa
 	dim c_grupo, c_subgrupo
@@ -65,6 +66,8 @@
 	s_fabricante = retorna_so_digitos(Request.Form("c_fabricante"))
 	if s_fabricante <> "" then s_fabricante = normaliza_codigo(s_fabricante, TAM_MIN_FABRICANTE)
 	s_produto = UCase(Trim(Request.Form("c_produto")))
+	c_documento = Trim(Request.Form("c_documento"))
+	ckb_documento_semelhanca = Trim(Request.Form("ckb_documento_semelhanca"))
 	s_cadastrado_por = UCase(Trim(Request.Form("c_cadastrado_por")))
 	s_entrada_de = Trim(Request.Form("c_entrada_de"))
 	s_entrada_ate = Trim(Request.Form("c_entrada_ate"))
@@ -176,6 +179,17 @@
 				end if
 			if (s<>"") then
 				Response.Write "Empresa: " & s
+				Response.Write "<br>"
+				end if
+
+			s = c_documento
+			if (s<>"") then
+				if ckb_documento_semelhanca <> "" then
+					s = s & " (pesquisa por semelhança)"
+				else
+					s = s & " (pesquisa por igualdade)"
+					end if
+				Response.Write "Documento: " & s
 				Response.Write "<br>"
 				end if
 
@@ -367,6 +381,15 @@ dim v, i
 		else
 		'	PESQUISA PELO CÓDIGO INTERNO: OBRIGA RESTRIÇÃO PELO FABRICANTE, QUE É PARTE DA CHAVE PRIMÁRIA DO PRODUTO
 			s_where = s_where & " ((t_ESTOQUE_ITEM.fabricante='" & s_fabricante & "') AND (t_ESTOQUE_ITEM.produto='" & s_produto & "'))"
+			end if
+		end if
+
+	if c_documento <> "" then
+		if s_where <> "" then s_where = s_where & " AND"
+		if ckb_documento_semelhanca <> "" then
+			s_where = s_where & " (t_ESTOQUE.documento LIKE '" & BD_CURINGA_TODOS & c_documento & BD_CURINGA_TODOS & "')"
+		else
+			s_where = s_where & " (t_ESTOQUE.documento = '" & c_documento & "')"
 			end if
 		end if
 
@@ -777,6 +800,22 @@ a
 		<%	s = s_produto
 			if (s<>"") And (s_nome_produto<>"") then s = s & " - " & s_nome_produto %>
 		<input type=hidden name="c_produto_aux" id="c_produto_aux" value="<%=s%>">
+	</td>
+	</tr>
+
+<!--  DOCUMENTO  -->
+	<tr bgColor="#FFFFFF">
+	<td class="MDBE" NOWRAP><span class="PLTe">Documento</span>
+		<br><input name="c_documento" id="c_documento" readonly tabindex=-1 class="PLLe" style="margin-left:2pt;width:220px;"
+				value="<%=c_documento%>"></td>
+	</tr>
+
+<!--  OPÇÃO DE PESQUISA POR DOCUMENTO  -->
+	<tr bgColor="#FFFFFF">
+	<td class="MDBE" NOWRAP><span class="PLTe">Opção de Pesquisa por Documento</span>
+		<br><input type="checkbox" name="ckb_documento_semelhanca" id="ckb_documento_semelhanca" disabled tabindex=-1 value="ON"
+			<% if ckb_documento_semelhanca <> "" then Response.Write " checked" %>
+		/><span class="C" style="cursor:default">Pesquisar documento por semelhança</span>
 	</td>
 	</tr>
 
