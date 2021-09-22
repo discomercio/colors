@@ -252,7 +252,15 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 				}
 			}
 		}
-	
+
+	if ($("#ckb_documento_semelhanca").is(":checked")) {
+		if (trim($("#c_documento").val()).length == 0) {
+			alert("Informe o texto ou número a ser pesquisado por semelhança!");
+			$("#c_documento").focus();
+			return;
+		}
+	}
+
 	b = false;
 	for (i = 0; i < f.rb_saida.length; i++) {
 		if (f.rb_saida[i].checked) {
@@ -373,7 +381,23 @@ function exibe_botao_confirmar() {
 	<td class="MDBE" align="left" nowrap><span class="PLTe">Fabricante</span>
 		<br><input name="c_fabricante" id="c_fabricante" class="PLLe" maxlength="4" style="margin-left:2pt;width:120px;" onkeypress="if (digitou_enter(true)) fESTOQ.c_produto.focus(); filtra_fabricante();" onblur="this.value=normaliza_codigo(this.value,TAM_MIN_FABRICANTE);"></td>
 	<td class="MDBE" align="left" style="border-left:0pt;"><span class="PLTe">Produto</span>
-		<br><input name="c_produto" id="c_produto" class="PLLe" maxlength="13" style="margin-left:2pt;width:160px;" onkeypress="if (digitou_enter(true)) fESTOQ.c_cadastrado_por.focus(); filtra_produto();" onblur="this.value=ucase(normaliza_codigo(this.value,TAM_MIN_PRODUTO));"></td>
+		<br><input name="c_produto" id="c_produto" class="PLLe" maxlength="13" style="margin-left:2pt;width:160px;" onkeypress="if (digitou_enter(true)) fESTOQ.c_documento.focus(); filtra_produto();" onblur="this.value=ucase(normaliza_codigo(this.value,TAM_MIN_PRODUTO));"></td>
+	</tr>
+
+<!--  DOCUMENTO  -->
+	<tr bgColor="#FFFFFF">
+	<td colspan="2" class="MDBE" align="left" nowrap><span class="PLTe">Documento</span>
+		<br />
+		<input name="c_documento" id="c_documento" class="PLLe" maxlength="30" style="margin-left:2pt;width:220px;" onkeypress="if (digitou_enter(true)) fESTOQ.c_cadastrado_por.focus();" onblur="this.value=ucase(trim(this.value));" />
+	</td>
+	</tr>
+
+<!--  OPÇÃO DE PESQUISA POR DOCUMENTO  -->
+	<tr bgColor="#FFFFFF">
+	<td colspan="2" class="MDBE" align="left" nowrap><span class="PLTe">Opção de Pesquisa por Documento</span>
+		<br />
+		<input type="checkbox" name="ckb_documento_semelhanca" id="ckb_documento_semelhanca" value="ON" /><span class="C" style="cursor:default" onclick="fESTOQ.ckb_documento_semelhanca.click();">Pesquisar documento por semelhança</span>
+	</td>
 	</tr>
 
 <!--  CADASTRADO POR  -->
