@@ -1203,16 +1203,19 @@
 		log_endereco_um_vetor v2, nome, c2
     end function
 
-	dim blnHaPedidoAprovadoComEntregaPendente				
-	dim sLogEmail
+	dim blnHaPedidoAprovadoComEntregaPendente, blnEditouEndEtgPedidoAprovadoComEntregaPendente
+	dim sLogEmail, sLogEndEtgEmail
     dim sLogVetor1
     dim sLogVetor2
 	blnHaPedidoAprovadoComEntregaPendente = False
+	blnEditouEndEtgPedidoAprovadoComEntregaPendente = False
     sLogEmail = ""
+	sLogEndEtgEmail = ""
 	if alerta = "" then
 		if r_pedido.st_entrega <> "ETG" and r_pedido.st_entrega <> "CAN" and CLng(r_pedido.analise_credito) = CLng(COD_AN_CREDITO_OK) then
+			'Monitora edição no endereço de cobrança
 			if r_pedido.endereco_logradouro  <> endereco__endereco or r_pedido.endereco_bairro  <> endereco__bairro or r_pedido.endereco_numero  <> endereco__numero or r_pedido.endereco_complemento  <> endereco__complemento or r_pedido.endereco_cidade  <> endereco__cidade or r_pedido.endereco_uf  <> endereco__uf or r_pedido.endereco_cep  <> endereco__cep then 
-				blnHaPedidoAprovadoComEntregaPendente = true							
+				blnHaPedidoAprovadoComEntregaPendente = true
 	            redim sLogVetor1(0)
 	            set sLogVetor1(0) = new cl_LOG_VIA_VETOR
 	            redim sLogVetor2(0)
@@ -1230,6 +1233,7 @@
     			sLogEmail = sLogEmail & ";;Endereço novo: " & endereco__endereco & ", " & endereco__numero & " " & endereco__complemento & " - " & endereco__bairro  & " - " & endereco__cidade & "/" & endereco__uf & " " & cep_formata(endereco__cep)
     			sLogEmail = sLogEmail & ";Endereço anterior: " & r_pedido.endereco_logradouro & ", " & r_pedido.endereco_numero & " " & r_pedido.endereco_complemento & " - " & r_pedido.endereco_bairro  & " - " & r_pedido.endereco_cidade & "/" & r_pedido.endereco_uf & " " & cep_formata(r_pedido.endereco_cep)
 
+			'Monitora edição no endereço de entrega: coleta de informações p/ mensagem de alerta feita no trecho que monta texto p/ registrar no bloco de notas
 			end if
 		end if
 	end if
@@ -2111,6 +2115,13 @@
 						sBlocoNotasEndEtg = "Endereço de entrega: " & vbCrLf & _
 											String(4, " ") & "Anterior: " & sEnderecoOriginal & vbCrLf & _
 											String(4, " ") & "Novo: " & sEnderecoNovo
+
+						'Monitora edição no endereço de entrega
+						if r_pedido.st_entrega <> "ETG" and r_pedido.st_entrega <> "CAN" and CLng(r_pedido.analise_credito) = CLng(COD_AN_CREDITO_OK) then
+							blnEditouEndEtgPedidoAprovadoComEntregaPendente = True
+							sLogEndEtgEmail = vbTab & "Endereço de entrega anterior: " & sEnderecoOriginal & vbCrLf & _
+												vbTab & "Endereço de entrega novo: " & sEnderecoNovo
+							end if
 						end if
 					
 					rs("EndEtg_endereco") = EndEtg_endereco
@@ -2851,7 +2862,41 @@
 																		Now, _
 																		id_email, _
 																		msg_erro_grava_email
-					'alerta = msg_erro_grava_email   & " | " & id_email  & " | " & getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__SENTINELA_SISTEMA)
+				end if
+			end if
+		end if
+
+		if alerta = "" then
+			if blnEditouEndEtgPedidoAprovadoComEntregaPendente then
+				''Envia alerta de que houve edição no endereço de entrega em pedido com status de análise de crédito 'crédito ok' e com entrega pendente
+				set rEmailDestinatario = get_registro_t_parametro(ID_PARAMETRO_EmailDestinatarioAlertaEdicaoCadastroClienteComPedidoCreditoOkEntregaPendente)
+				if Trim("" & rEmailDestinatario.campo_texto) <> "" then
+					if r_pedido.st_memorizacao_completa_enderecos <> 0 And blnUsarMemorizacaoCompletaEnderecos then
+						s = cnpj_cpf_formata(r_pedido.endereco_cnpj_cpf) & " - " & r_pedido.endereco_nome
+					else
+						s = cnpj_cpf_formata(r_cliente.cnpj_cpf) & " - " & r_cliente.nome
+						end if
+					
+					corpo_mensagem = "O usuário '" & usuario & "' editou em " & formata_data_hora_sem_seg(Now) & " no módulo Loja o endereço de entrega do pedido " & r_pedido.pedido & ":" & _
+									vbCrLf & _
+										"Cliente: " & s & _
+										vbCrLf & _
+										"A alteração foi realizada para o pedido: '" & r_pedido.pedido & "' que possui o status de análise de crédito 'Crédito OK' e com entrega pendente." & _
+										vbCrLf & _
+										vbCrLf & _
+										"Informações detalhadas sobre as alterações:" & vbCrLf & _
+										substitui_caracteres(sLogEndEtgEmail, vbTab, String(4, " "))
+									
+										EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__SENTINELA_SISTEMA), _
+																		"", _
+																		rEmailDestinatario.campo_texto, _
+																		"", _
+																		"", _
+																		"Edição no endereço de entrega do pedido " & r_pedido.pedido & " com status 'Crédito OK' e entrega pendente", _
+																		corpo_mensagem, _
+																		Now, _
+																		id_email, _
+																		msg_erro_grava_email
 				end if
 			end if
 		end if
