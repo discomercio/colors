@@ -6419,6 +6419,25 @@ dim rP
 end function
 
 
+' ___________________________________________________________
+' getParametroPrazoAcessoRelPedidosIndicadoresLojaRtPendente
+'
+function getParametroPrazoAcessoRelPedidosIndicadoresLojaRtPendente(byval unidade_negocio)
+dim rP
+	getParametroPrazoAcessoRelPedidosIndicadoresLojaRtPendente = 0
+	
+	if Trim("" & unidade_negocio) = "" then exit function
+
+	set rP = get_registro_t_parametro(ID_PARAMETRO_PRAZO_ACESSO_REL_PEDIDOS_INDICADORES_LOJA_RT_PENDENTE)
+	if Trim("" & rP.campo_inteiro) <> "" then
+		if Instr(Ucase(Trim("" & rP.campo_texto)), "|" & Ucase(unidade_negocio) & "|") <> 0 then
+			getParametroPrazoAcessoRelPedidosIndicadoresLojaRtPendente = rP.campo_inteiro
+			end if
+		end if
+	set rP = Nothing
+end function
+
+
 ' ___________________________________
 ' isLojaVrf
 '

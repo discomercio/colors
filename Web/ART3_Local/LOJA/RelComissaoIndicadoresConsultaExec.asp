@@ -31,9 +31,11 @@
 	
 	Server.ScriptTimeout = MAX_SERVER_SCRIPT_TIMEOUT_EM_SEG
 	
-	dim usuario
+	dim usuario, loja
 	usuario = Trim(Session("usuario_atual"))
+	loja = Trim(Session("loja_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
+	If (loja = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
 
 '	CONECTA COM O BANCO DE DADOS
 	dim cn, rs, rs2, msg_erro
@@ -53,12 +55,19 @@
     
 	alerta = ""
 
-	dim nPrazoAcessoRelPedidosIndicadoresLoja
+	dim r_loja
+	set r_loja = New cl_LOJA
+	call x_loja_bd(loja, r_loja)
+
+	dim nPrazoAcessoRelPedidosIndicadoresLoja, nPrazoAcessoRelPedidosIndicadoresLojaRtPendente
 	nPrazoAcessoRelPedidosIndicadoresLoja = getParametroPrazoAcessoRelPedidosIndicadoresLoja
+	nPrazoAcessoRelPedidosIndicadoresLojaRtPendente = getParametroPrazoAcessoRelPedidosIndicadoresLojaRtPendente(r_loja.unidade_negocio)
 
     if Day(Date) > nPrazoAcessoRelPedidosIndicadoresLoja then 
-        alerta="NÃO É POSSÍVEL ACESSAR O RELATÓRIO.<br>O relatório fica disponível apenas nos primeiros " & nPrazoAcessoRelPedidosIndicadoresLoja & " dias de cada mês."
-    end if
+		if (nPrazoAcessoRelPedidosIndicadoresLojaRtPendente <= 0) Or (Day(Date) < nPrazoAcessoRelPedidosIndicadoresLojaRtPendente) then
+			alerta="NÃO É POSSÍVEL ACESSAR O RELATÓRIO.<br>O relatório fica disponível apenas nos primeiros " & nPrazoAcessoRelPedidosIndicadoresLoja & " dias de cada mês."
+			end if
+		end if
 
 	c_dt_entregue_mes = Month(Date)
 	c_dt_entregue_ano = Year(Date)
@@ -79,13 +88,15 @@
         mes=mes-1
     end if
 
-    if alerta="" then
-        rs.Open "SELECT * FROM t_COMISSAO_INDICADOR_N2 WHERE vendedor='" & usuario & "' AND competencia_ano='" & ano & "' AND competencia_mes='" & mes & "'", cn
-        if Not rs.Eof then
-            alerta="O RELATÓRIO JÁ FOI PROCESSADO"
-        end if
-        if rs.State <> 0 then rs.Close
-    end if
+	if alerta="" then
+		rs.Open "SELECT * FROM t_COMISSAO_INDICADOR_N2 WHERE vendedor='" & usuario & "' AND competencia_ano='" & ano & "' AND competencia_mes='" & mes & "'", cn
+		if Not rs.Eof then
+			if (nPrazoAcessoRelPedidosIndicadoresLojaRtPendente <= 0) Or (Day(Date) < nPrazoAcessoRelPedidosIndicadoresLojaRtPendente) then
+				alerta="O RELATÓRIO JÁ FOI PROCESSADO"
+				end if
+		end if
+		if rs.State <> 0 then rs.Close
+	end if
 
 ' _____________________________________________________________________________________________
 '
@@ -135,7 +146,7 @@ dim v_desconto_descricao(),v_desconto_valor(),contador
 	s = ""
 
 		if s <> "" then s = s & " OR"
-		s = s & " (t_PEDIDO.comissao_paga = '0')"
+		s = s & " (t_PEDIDO.comissao_paga = 0)"
 
 	if s <> "" then 
 		if s_where_comissao_paga <> "" then s_where_comissao_paga = s_where_comissao_paga & " AND"
@@ -147,7 +158,7 @@ dim v_desconto_descricao(),v_desconto_valor(),contador
 	s = ""
 
 		if s <> "" then s = s & " OR"
-		s = s & " (comissao_descontada = '0')"
+		s = s & " (comissao_descontada = 0)"
 	
 	if s <> "" then 
 		if s_where_comissao_descontada <> "" then s_where_comissao_descontada = s_where_comissao_descontada & " AND"
@@ -775,7 +786,7 @@ dim v_desconto_descricao(),v_desconto_valor(),contador
 	if n_reg_total = 0 then
 		x = cab_table & cab
 		x = x & "	<tr nowrap>" & chr(13) & _
-				"		<td class='MT ALERTA' colspan='12' align='center'><span class='ALERTA'>&nbsp;NÃO HÁ PEDIDOS NO PERÍODO ESPECIFICADO&nbsp;</span></td>" & chr(13) & _
+				"		<td class='MT ALERTA' colspan='11' align='center'><span class='ALERTA'>&nbsp;NÃO HÁ PEDIDOS NO PERÍODO ESPECIFICADO&nbsp;</span></td>" & chr(13) & _
 				"		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
 				"	</tr>" & chr(13)
 		end if
@@ -1125,7 +1136,12 @@ function fRELGravaDados(f) {
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->
 <table width="709" cellpadding="4" cellspacing="0" style="border-bottom:1px solid black">
 <tr>
-	<td align="right" valign="bottom"><span class="PEDIDO">Relatório de Pedidos Indicadores (Preview)</span>
+	<td align="right" valign="bottom">
+	<% if (nPrazoAcessoRelPedidosIndicadoresLojaRtPendente > 0) And (Day(Date) >= nPrazoAcessoRelPedidosIndicadoresLojaRtPendente) then %>
+		<span class="PEDIDO">Relatório de Pedidos Indicadores (RT Pendentes)</span>
+	<% else %>
+		<span class="PEDIDO">Relatório de Pedidos Indicadores (Preview)</span>
+	<% end if %>
 	<br><span class="Rc">
 		<a href="resumo.asp<%= "?" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>" title="retorna para página inicial" class="LPagInicial">página inicial</a>&nbsp;&nbsp;&nbsp;
 		<a href="sessaoencerra.asp<%= "?" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>" title="encerra a sessão do usuário" class="LSessaoEncerra">encerra</a>

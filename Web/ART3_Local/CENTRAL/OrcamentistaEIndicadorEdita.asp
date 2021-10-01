@@ -1198,8 +1198,8 @@ var s, s_senha, cont;
 									<td>
 									<p class="R">CNPJ</p>
 									<input type="text" id="c_comissao_NFSe_cnpj" name="c_comissao_NFSe_cnpj" class="TA" value="<%=s%>" maxlength="18" size="24"
-										onblur="if (!cnpj_ok(this.value)) {alert('CNPJ inválido!'); this.focus();} else this.value=cnpj_formata(this.value);"
-										onkeypress="if (digitou_enter(true) && cnpj_ok(this.value)) fCAD.c_comissao_NFSe_razao_social.focus(); filtra_cnpj();" />
+										onblur="if (!cnpj_cpf_ok(this.value)) {alert('CNPJ/CPF inválido!'); this.focus();} else this.value=cnpj_cpf_formata(this.value);"
+										onkeypress="if (digitou_enter(true) && cnpj_ok(this.value)) fCAD.c_comissao_NFSe_razao_social.focus(); filtra_cnpj_cpf();" />
 									</td>
 								</tr>
 								<tr>
