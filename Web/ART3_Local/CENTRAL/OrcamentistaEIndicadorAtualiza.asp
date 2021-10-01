@@ -333,7 +333,7 @@
 		
 		'Dados de pagamento da comissão: Emitente da NFSe
 		if (c_comissao_NFSe_cnpj <> "") Or (c_comissao_NFSe_razao_social <> "") then
-			if (c_comissao_NFSe_cnpj = "") Or (Not cnpj_ok(c_comissao_NFSe_cnpj)) then
+			if (c_comissao_NFSe_cnpj = "") Or (Not cnpj_cpf_ok(c_comissao_NFSe_cnpj)) then
 				alerta=texto_add_br(alerta)
 				alerta=alerta & "Informe o CNPJ do emitente da NFSe nos dados para pagamento da comissão"
 				end if

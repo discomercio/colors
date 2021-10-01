@@ -648,6 +648,7 @@ end if
 				if vl_sub_total_RA < 0 then s_cor="red"
 				if vl_sub_total_RA_liquido < 0 then s_cor="red"
 
+                if rs2.State <> 0 then rs2.Close 
                 rs2.Open "SELECT COUNT(*) qtde_Desconto, descricao,valor,ordenacao  FROM t_ORCAMENTISTA_E_INDICADOR_DESCONTO WHERE (apelido = '" & ind_anterior & "') GROUP BY  descricao,valor,ordenacao ORDER BY ordenacao", cn
                 msg_desconto = ""
                 if Not rs2.Eof then
@@ -763,7 +764,6 @@ end if
 
 			s_sql = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (apelido = '" & Trim("" & r("indicador")) & "')"
 			if rs.State <> 0 then rs.Close
-            if rs2.State <> 0 then rs2.Close 
 			rs.Open s_sql, cn
 			if Not rs.Eof then
 				s_banco = Trim("" & rs("banco"))
@@ -798,6 +798,37 @@ end if
 			if s <> "" then x = x & "	<tr>" & chr(13) & _
 									"		<td class='MDTE' colspan='12' align='left' valign='bottom' class='MB' style='background:azure;'><span class='N'>&nbsp;" & s_desempenho_nota & s & "</span></td>" & chr(13) & _
 									"		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
+									"	</tr>" & chr(13) & _
+									"	<tr>" & chr(13) & _
+									"		<td class='MDTE' colspan='12' align='left' valign='bottom' class='MB' style='background:white;'>" & chr(13) & _
+									"			<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
+									"				<tr>" & chr(13) & _
+									"					<td align='right' valign='bottom' nowrap><span class='Cn'>Pagamento da Comissão via Cartão:</span></td>" & chr(13) & _
+									"					<td width='90%' align='left' valign='bottom' nowrap><span class='Cn'>"
+				if rs("comissao_cartao_status") = 1 then
+					x = x & "Sim" & " &nbsp; " & cnpj_cpf_formata(Trim("" & rs("comissao_cartao_cpf"))) & " - " & Trim("" & rs("comissao_cartao_titular"))
+				else
+					x = x & "Não"
+					end if
+
+				x = x & _
+									"</span></td>" & chr(13) & _
+									"				</tr>" & chr(13) & _
+									"				<tr>" & chr(13) & _
+									"					<td class='MC' align='right' valign='bottom' nowrap><span class='Cn'>Pagamento da Comissão via NFSe:</span></td>" & chr(13) & _
+									"					<td class='MC' width='90%' align='left' valign='bottom' nowrap><span class='Cn'>" & chr(13)
+
+				if Trim("" & rs("comissao_NFSe_cnpj")) <> "" then
+					x = x & cnpj_cpf_formata(Trim("" & rs("comissao_NFSe_cnpj"))) & " - " & Trim("" & rs("comissao_NFSe_razao_social"))
+				else
+					x = x & "N.I."
+					end if
+
+				x = x & _
+									"</span></td>" & chr(13) & _
+									"				</tr>" & chr(13) & _
+									"			</table>" & chr(13) & _
+									"		</td>" & chr(13) & _
 									"	</tr>" & chr(13) & _
 									"	<tr>" & chr(13) & _
 									"		<td class='MDTE' colspan='12' align='left' valign='bottom' class='MB' style='background:whitesmoke;'>" & chr(13) & _
@@ -1060,6 +1091,7 @@ end if
                 end if
             next 
         end if
+        if rs2.State <> 0 then rs2.Close 
         rs2.Open "SELECT COUNT(*) qtde_Desconto, descricao,valor,ordenacao  FROM t_ORCAMENTISTA_E_INDICADOR_DESCONTO WHERE (apelido = '" & ind_anterior & "') GROUP BY  descricao,valor,ordenacao ORDER BY ordenacao", cn
         msg_desconto = ""
         if Not rs2.Eof then
