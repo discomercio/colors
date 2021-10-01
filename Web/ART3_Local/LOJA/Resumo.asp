@@ -274,8 +274,13 @@
         PRAZO_EXIBICAO_CANCEL_AUTO_PEDIDO = 2
     end if
 
-	dim nPrazoAcessoRelPedidosIndicadoresLoja
+	dim r_loja
+	set r_loja = New cl_LOJA
+	call x_loja_bd(loja, r_loja)
+
+	dim nPrazoAcessoRelPedidosIndicadoresLoja, nPrazoAcessoRelPedidosIndicadoresLojaRtPendente
 	nPrazoAcessoRelPedidosIndicadoresLoja = getParametroPrazoAcessoRelPedidosIndicadoresLoja
+	nPrazoAcessoRelPedidosIndicadoresLojaRtPendente = getParametroPrazoAcessoRelPedidosIndicadoresLojaRtPendente(r_loja.unidade_negocio)
 
 	s_sessionToken = ""
 	s = "SELECT Convert(varchar(36), SessionTokenModuloLoja) AS SessionTokenModuloLoja FROM t_USUARIO WHERE (usuario = '" & usuario & "')"
@@ -1547,16 +1552,24 @@ function fPesqPrePedido(orcamento) {
 			"		}" & chr(13) & _
 			"" & chr(13)
     end if
-    if Day(Date) <= nPrazoAcessoRelPedidosIndicadoresLoja then
-        if operacao_permitida(OP_LJA_REL_COMISSAO_INDICADORES, s_lista_operacoes_permitidas) then
-    strScript = strScript & _
-			" // Relatorio pedidos indicadores (Preview)" & chr(13) & _
-			"	iop++;" & chr(13) & _
-			"	if (f.rb_rel[iop].checked) {" & chr(13) & _
-			"		s_dest='RelComissaoIndicadoresConsultaExec.asp';" & chr(13) & _
-			"		}" & chr(13) & _
-			"" & chr(13)
-        end if
+    if operacao_permitida(OP_LJA_REL_COMISSAO_INDICADORES, s_lista_operacoes_permitidas) then
+        if Day(Date) <= nPrazoAcessoRelPedidosIndicadoresLoja then
+			strScript = strScript & _
+					" // Relatorio pedidos indicadores (Preview)" & chr(13) & _
+					"	iop++;" & chr(13) & _
+					"	if (f.rb_rel[iop].checked) {" & chr(13) & _
+					"		s_dest='RelComissaoIndicadoresConsultaExec.asp';" & chr(13) & _
+					"		}" & chr(13) & _
+					"" & chr(13)
+       elseif (nPrazoAcessoRelPedidosIndicadoresLojaRtPendente > 0) And (Day(Date) >= nPrazoAcessoRelPedidosIndicadoresLojaRtPendente) then
+			strScript = strScript & _
+					" // Relatorio pedidos indicadores (RT Pendentes)" & chr(13) & _
+					"	iop++;" & chr(13) & _
+					"	if (f.rb_rel[iop].checked) {" & chr(13) & _
+					"		s_dest='RelComissaoIndicadoresConsultaExec.asp';" & chr(13) & _
+					"		}" & chr(13) & _
+					"" & chr(13)
+		end if
     end if
 	if operacao_permitida(OP_LJA_REL_FATURAMENTO, s_lista_operacoes_permitidas) then
 		strScript = strScript & _
@@ -2905,7 +2918,7 @@ if operacao_permitida(OP_LJA_EDITA_CAD_ORCAMENTISTAS_E_INDICADORES, s_lista_oper
    
 	<% end if %>
 
-    	<%	'RELATÓRIO DE PEDIDOS INDICADORES (Preview)
+    	<%	'RELATÓRIO DE PEDIDOS INDICADORES (Preview) ou RELATÓRIO DE PEDIDOS INDICADORES (RT Pendentes)
 
 		 if operacao_permitida(OP_LJA_REL_COMISSAO_INDICADORES, s_lista_operacoes_permitidas) then
             if Day(Date) <= nPrazoAcessoRelPedidosIndicadoresLoja then
@@ -2918,7 +2931,15 @@ if operacao_permitida(OP_LJA_EDITA_CAD_ORCAMENTISTAS_E_INDICADORES, s_lista_oper
 			<input type="radio" id="rb_rel" name="rb_rel" value="<%=Cstr(idx)%>" class="CBOX" <%=s%>><span class="rbLink" onclick="fREL.rb_rel[<%=Cstr(idx)%>].click(); if (fREL.rb_rel[<%=Cstr(idx)%>].checked) fREL.bEXECUTAR.click();"
 				>Relatório de Pedidos Indicadores (Preview)</span>
    
-	<% end if %>
+		<% elseif (nPrazoAcessoRelPedidosIndicadoresLojaRtPendente > 0) And (Day(Date) >= nPrazoAcessoRelPedidosIndicadoresLojaRtPendente) then
+			idx=idx+1
+			Response.Write s_separacao
+			s_separacao = "<br>" 
+			if (qtde_relatorios = 1) then s=" checked" else s=""
+		%>
+			<input type="radio" id="rb_rel" name="rb_rel" value="<%=Cstr(idx)%>" class="CBOX" <%=s%>><span class="rbLink" onclick="fREL.rb_rel[<%=Cstr(idx)%>].click(); if (fREL.rb_rel[<%=Cstr(idx)%>].checked) fREL.bEXECUTAR.click();"
+				>Relatório de Pedidos Indicadores (RT Pendentes)</span>
+		<% end if %>
     <% end if %>
 
 	<%	' RELATÓRIO: FATURAMENTO (ANTIGO)
