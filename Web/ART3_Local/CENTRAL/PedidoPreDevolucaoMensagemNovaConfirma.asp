@@ -75,6 +75,8 @@
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	if Not cria_recordset_otimista(rsMail, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
+	dim emailAdministradorDevolucoes
+	dim dtHrMensagem
 	dim corpo_mensagem, id_email, msg_erro_grava_email
 	dim r_pedido
 	if alerta = "" then
@@ -131,8 +133,67 @@
 			end if
 		
 		if alerta = "" then
+			dtHrMensagem = Now
 			'Foi encontrado o email para ser usado como remetente da mensagem?
 			if s_email_remetente <> "" then
+				'Obtém dados do cliente
+				s = "SELECT" & _
+						" p.st_memorizacao_completa_enderecos," & _
+						" p.endereco_nome_iniciais_em_maiusculas AS endereco_nome," & _
+						" p.endereco_cnpj_cpf," & _
+						" c.nome_iniciais_em_maiusculas AS cliente_nome," & _
+						" c.cnpj_cpf AS cliente_cnpj_cpf," & _
+						" p.loja," & _
+						" lj.unidade_negocio" & _
+					" FROM t_PEDIDO p" & _
+						" INNER JOIN t_CLIENTE c ON (p.id_cliente = c.id)" & _
+						" INNER JOIN t_LOJA lj ON (p.loja = lj.loja)" & _
+					" WHERE" & _
+						" (p.pedido = '" & pedido_selecionado & "')"
+				if rsMail.State <> 0 then rsMail.Close
+				rsMail.Open s, cn
+				if Not rsMail.Eof then
+					s_unidade_negocio = Trim("" & rsMail("unidade_negocio"))
+					if rsMail("st_memorizacao_completa_enderecos") <> 0 then
+						s_dados_cliente = "Cliente: " & Trim("" & rsMail("endereco_nome")) & " (" & cnpj_cpf_formata(Trim("" & rsMail("endereco_cnpj_cpf"))) & ")"
+					else
+						s_dados_cliente = "Cliente: " & Trim("" & rsMail("cliente_nome")) & " (" & cnpj_cpf_formata(Trim("" & rsMail("cliente_cnpj_cpf"))) & ")"
+						end if
+					end if
+				
+				'Envia mensagem de aviso para o administrador de devoluções
+				set emailAdministradorDevolucoes = get_registro_t_parametro(ID_PARAMETRO_PEDIDO_DEVOLUCAO_EMAIL_ADMINISTRADOR)
+				if Trim("" & emailAdministradorDevolucoes.campo_texto) <> "" then
+					if (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__BS) Or (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__VRF) then
+						corpo_mensagem = "Nova mensagem registrada no bloco de notas da devolução nº " & id_devolucao & " do pedido " & pedido_selecionado & " por " & usuario & " em " & formata_data_hora_sem_seg(dtHrMensagem) & _
+										vbCrLf & _
+										"Pedido: " & pedido_selecionado & _
+										vbCrLf & _
+										"Devolução nº " & id_devolucao & _
+										vbCrLf & _
+										s_dados_cliente & _
+										vbCrLf & vbCrLf & _
+										String(30, "-") & "( Início )" & String(30, "-") & _
+										vbCrLf & _
+										c_texto & _
+										vbCrLf & _
+										String(31, "-") & "( Fim )" & String(32, "-") & _
+										vbCrLf & vbCrLf & _
+										"Atenção: esta é uma mensagem automática, NÃO responda a este e-mail!"
+						EmailSndSvcGravaMensagemParaEnvio s_email_remetente, _
+														"", _
+														emailAdministradorDevolucoes.campo_texto, _
+														"", _
+														"", _
+														"Nova mensagem registrada no bloco de notas da devolução nº " & id_devolucao & " do pedido " & pedido_selecionado, _
+														corpo_mensagem, _
+														Now, _
+														id_email, _
+														msg_erro_grava_email
+						end if 'if (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__BS) Or (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__VRF)
+					end if 'if Trim("" & emailAdministradorDevolucoes.campo_texto) <> ""
+
+				'Tenta obter e-mail do vendedor
 				s = "SELECT" & _
 						" tP.vendedor," & _
 						" tU.email" & _
@@ -148,34 +209,10 @@
 
 				'Se encontrou e-mail do vendedor para enviar mensagem de aviso, obtém demais informações para a montagem da mensagem
 				if s_email_vendedor <> "" then
-					s = "SELECT" & _
-							" p.st_memorizacao_completa_enderecos," & _
-							" p.endereco_nome_iniciais_em_maiusculas AS endereco_nome," & _
-							" p.endereco_cnpj_cpf," & _
-							" c.nome_iniciais_em_maiusculas AS cliente_nome," & _
-							" c.cnpj_cpf AS cliente_cnpj_cpf," & _
-							" p.loja," & _
-							" lj.unidade_negocio" & _
-						" FROM t_PEDIDO p" & _
-							" INNER JOIN t_CLIENTE c ON (p.id_cliente = c.id)" & _
-							" INNER JOIN t_LOJA lj ON (p.loja = lj.loja)" & _
-						" WHERE" & _
-							" (p.pedido = '" & pedido_selecionado & "')"
-					if rsMail.State <> 0 then rsMail.Close
-					rsMail.Open s, cn
-					if Not rsMail.Eof then
-						s_unidade_negocio = Trim("" & rsMail("unidade_negocio"))
-						if rsMail("st_memorizacao_completa_enderecos") <> 0 then
-							s_dados_cliente = "Cliente: " & Trim("" & rsMail("endereco_nome")) & " (" & cnpj_cpf_formata(Trim("" & rsMail("endereco_cnpj_cpf"))) & ")"
-						else
-							s_dados_cliente = "Cliente: " & Trim("" & rsMail("cliente_nome")) & " (" & cnpj_cpf_formata(Trim("" & rsMail("cliente_cnpj_cpf"))) & ")"
-							end if
-						end if
-					
 					'Envia email de aviso para o vendedor
 					if UCase(usuario) <> UCase(r_pedido.vendedor) then
 						if (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__BS) Or (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__VRF) then
-							corpo_mensagem = "Nova mensagem registrada no bloco de notas da devolução nº " & id_devolucao & " do pedido " & pedido_selecionado & " por " & usuario & " em " & formata_data_hora_sem_seg(Now) & _
+							corpo_mensagem = "Nova mensagem registrada no bloco de notas da devolução nº " & id_devolucao & " do pedido " & pedido_selecionado & " por " & usuario & " em " & formata_data_hora_sem_seg(dtHrMensagem) & _
 											vbCrLf & _
 											"Pedido: " & pedido_selecionado & _
 											vbCrLf & _
@@ -296,6 +333,9 @@
 
 
 <%
+	if rsMail.State <> 0 then rsMail.Close
+	set rsMail = nothing
+
 '	FECHA CONEXAO COM O BANCO DE DADOS
 	cn.Close
 	set cn = nothing
