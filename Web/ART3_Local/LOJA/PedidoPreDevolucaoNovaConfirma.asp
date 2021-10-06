@@ -511,7 +511,7 @@
             ' envia e-mail para o operador das devoluções
             if isLojaBonshop(loja) Or isLojaVrf(loja) then
                 dim strEmailAdministrador
-                set strEmailAdministrador = get_registro_t_parametro("PEDIDO_DEVOLUCAO_EMAIL_ADMINISTRADOR")
+                set strEmailAdministrador = get_registro_t_parametro(ID_PARAMETRO_PEDIDO_DEVOLUCAO_EMAIL_ADMINISTRADOR)
                 if Trim("" & strEmailAdministrador.campo_texto) <> "" then
 					corpo_mensagem = "Usuário '" & usuario & "' (" & r_usuario.nome_iniciais_em_maiusculas & ") cadastrou uma nova pré-devolução no pedido " & pedido_selecionado & " em " & formata_data_hora_sem_seg(dtHrMensagem) & _
 									vbCrLf & _
