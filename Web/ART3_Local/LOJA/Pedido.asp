@@ -4081,7 +4081,7 @@ function fPEDPagto(f) {
             </td>
 			<td>&nbsp;</td>
 			<td valign="bottom" align="left">
-				<input name="c_chave_acesso_venda_com_prefixo" id="c_chave_acesso_venda_com_prefixo" class="PLLe" style="font-size:10pt;width:400px;" readonly onfocus="this.select();" onclick="this.select();" value="Chave NFE:<%=s_chave_acesso_nf_venda%>" />
+				<input name="c_chave_acesso_venda_com_prefixo" id="c_chave_acesso_venda_com_prefixo" class="PLLe" style="font-size:10pt;width:400px;" readonly onfocus="this.select();" onclick="this.select();" value="<%=s_chave_acesso_nf_venda%>" />
 			</td>
 		</tr>
 		<tr style="display:none;">
@@ -4125,7 +4125,7 @@ function fPEDPagto(f) {
             </td>
 			<td>&nbsp;</td>
 			<td valign="bottom" align="left">
-				<input name="c_chave_acesso_remessa_com_prefixo" id="c_chave_acesso_remessa_com_prefixo" class="PLLe" style="font-size:10pt;width:400px;" readonly onfocus="this.select();" onclick="this.select();" value="Chave NFE:<%=s_chave_acesso_nf_remessa%>" />
+				<input name="c_chave_acesso_remessa_com_prefixo" id="c_chave_acesso_remessa_com_prefixo" class="PLLe" style="font-size:10pt;width:400px;" readonly onfocus="this.select();" onclick="this.select();" value="<%=s_chave_acesso_nf_remessa%>" />
 			</td>
 		</tr>
 		<tr style="display:none;">
