@@ -32,9 +32,38 @@
 	On Error GoTo 0
 	Err.Clear
 
+	class cl_ITEM_CAD_SEMI_AUTO_PED_MAGE_RATEIO_FRETE_ANALISE
+		dim sku
+		dim qtde_vendida_sku
+		dim isProdutoComposto
+		dim fabricante_composto
+		dim produto_composto
+		dim fabricante_item
+		dim produto_item
+		dim qtde_produto_item
+		dim preco_lista_sku
+		dim preco_venda_sku
+		dim preco_lista_produto_item
+		dim preco_venda_produto_item
+		dim vl_frete_rateado_produto_item
+		dim preco_nf_produto_item
+		end class
+
+	class cl_ITEM_CAD_SEMI_AUTO_PED_MAGE_RATEIO_FRETE_CONSOLIDADO
+		dim fabricante
+		dim produto
+		dim qtde_totalizada
+		dim preco_lista_totalizado
+		dim preco_venda_totalizado
+		dim preco_nf_totalizado
+		dim preco_lista_medio
+		dim preco_venda_medio
+		dim preco_nf_medio
+		end class
+
 	dim msg_erro
 	dim usuario, loja, cliente_selecionado
-	dim s, s_value, i, j, n, intColSpan, qtde_estoque_total_disponivel, blnAchou, blnDesativado
+	dim s, s_value, i, j, n, idx, intColSpan, qtde_estoque_total_disponivel, blnAchou, blnDesativado
 	usuario = Trim(Session("usuario_atual"))
 	loja = Trim(Session("loja_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
@@ -49,12 +78,25 @@
 
 '	CONECTA AO BANCO DE DADOS
 '	=========================
-	dim cn, rs, tMAP_XML, tMAP_ITEM, tMAP_END_COB, tMAP_END_ETG, tOI, t_CLIENTE
+	dim cn, rs, tMAP_XML, tMAP_ITEM, tMAP_END_COB, tMAP_END_ETG, tOI, t_CLIENTE, tPL, tPCI
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	If Not cria_recordset_otimista(t_CLIENTE, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+	If Not cria_recordset_otimista(tPCI, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+	If Not cria_recordset_otimista(tPL, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
 	dim blnLojaHabilitadaProdCompostoECommerce
 	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
+
+	dim blnFlagCadSemiAutoPedMagentoUsarCamposValorMktpDataSource
+	blnFlagCadSemiAutoPedMagentoUsarCamposValorMktpDataSource = isActivatedFlagCadSemiAutoPedMagentoUsarCamposValorMktpDataSource
+
+	dim blnFlagCadSemiAutoPedMagentoRateioFreteAutomatico, blnExecutarCadSemiAutoPedMagentoRateioFreteAutomatico
+	blnFlagCadSemiAutoPedMagentoRateioFreteAutomatico = isActivatedFlagCadSemiAutoPedMagentoRateioFreteAutomatico
+	blnExecutarCadSemiAutoPedMagentoRateioFreteAutomatico = False
+
+	dim vItemCadSemiAutoPedMageRateioFreteAnalise, vItemCadSemiAutoPedMageRateioFreteConsolidado, vlRateioFreteProdCompPrecoListaTotal
+	dim vlRateioFretePrecoVendaTotal, vlRateioFretePrecoNfTotal, vlRateioFretePrecoVendaDif, vlRateioFretePrecoNfDif, sinalAjuste, blnAjusteRateioOk
+	dim vlRateioFretePrecoAux, vlRateioFretePrecoAtualAux, vlRateioFretePrecoNovoAux, vlRateioFretePrecoMenorDif, vlRateioFretePrecoMenorDifAux
 
 	dim s_lista_operacoes_permitidas
 	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
@@ -101,7 +143,7 @@
 	dim EndEtg_ie, EndEtg_rg
 
 	dim s_fabricante, s_produto, s_descricao, s_descricao_html, s_qtde, s_readonly, s_vl_NF_readonly, s_vl_NF
-	dim s_preco_lista, s_vl_TotalItem, m_TotalItem, m_TotalDestePedido, m_TotalItemComRA, m_TotalServicos
+	dim s_preco_lista, s_preco_venda, s_vl_TotalItem, m_TotalItem, m_TotalDestePedido, m_TotalItemComRA, m_TotalServicos
 	dim s_campo_focus
 	dim m_TotalDestePedidoComRA, s_TotalDestePedidoComRA
 	dim intIdx, qtdeColProd, percDescServico, sPercDescServico, sColorPercDescServico, vl_servico_original_price, vl_servico_price, vl_total_produto_magento, vl_total_servico_magento, vl_frete_magento
@@ -233,6 +275,7 @@
 				c_mag_installer_document = retorna_so_digitos(Trim("" & tMAP_XML("installer_document")))
 				percCommissionValue = tMAP_XML("commission_value")
 				percCommissionDiscount = tMAP_XML("commission_discount")
+				vl_frete_magento = converte_numero(tMAP_XML("shipping_amount")) - converte_numero(tMAP_XML("shipping_discount_amount"))
 
 				if blnMagentoPedidoComIndicador then
 					if c_mag_installer_document = "" then
@@ -686,38 +729,39 @@
 						" (t_PRODUTO.fabricante='" & .fabricante & "')" & _
 						" AND (t_PRODUTO.produto='" & .produto & "')" & _
 						" AND (loja='" & loja & "')"
-				set rs = cn.execute(s)
-				if rs.Eof then
+				if tPL.State <> 0 then tPL.Close
+				tPL.open s, cn
+				if tPL.Eof then
 					alerta=texto_add_br(alerta)
 					alerta=alerta & "Produto " & .produto & " do fabricante " & .fabricante & " NÃO está cadastrado."
 				else
-					if Ucase(Trim("" & rs("vendavel"))) <> "S" then
+					if Ucase(Trim("" & tPL("vendavel"))) <> "S" then
 						alerta=texto_add_br(alerta)
 						alerta=alerta & "Produto " & .produto & " do fabricante " & .fabricante & " NÃO está disponível para venda."
-					elseif .qtde > rs("qtde_max_venda") then
+					elseif .qtde > tPL("qtde_max_venda") then
 						alerta=texto_add_br(alerta)
 						alerta=alerta & "Produto " & .produto & " do fabricante " & .fabricante & ": quantidade " & cstr(.qtde) & " excede o máximo permitido."
 					else
-						.preco_lista = rs("preco_lista")
-						.margem = rs("margem")
-						.desc_max = rs("desc_max")
-						.comissao = rs("comissao")
-						.preco_fabricante = rs("preco_fabricante")
-						.vl_custo2 = rs("vl_custo2")
-						.descricao = Trim("" & rs("descricao"))
-						.descricao_html = Trim("" & rs("descricao_html"))
-						.ean = Trim("" & rs("ean"))
-						.grupo = Trim("" & rs("grupo"))
-                        .subgrupo = Trim("" & rs("subgrupo"))
-						.peso = rs("peso")
-						.qtde_volumes = Trim("" & rs("qtde_volumes"))
-						.cubagem = rs("cubagem")
-						.ncm = Trim("" & rs("ncm"))
-						.cst = Trim("" & rs("cst"))
-						.descontinuado = Trim("" & rs("descontinuado"))
+						.preco_lista = tPL("preco_lista")
+						.margem = tPL("margem")
+						.desc_max = tPL("desc_max")
+						.comissao = tPL("comissao")
+						.preco_fabricante = tPL("preco_fabricante")
+						.vl_custo2 = tPL("vl_custo2")
+						.descricao = Trim("" & tPL("descricao"))
+						.descricao_html = Trim("" & tPL("descricao_html"))
+						.ean = Trim("" & tPL("ean"))
+						.grupo = Trim("" & tPL("grupo"))
+						.subgrupo = Trim("" & tPL("subgrupo"))
+						.peso = tPL("peso")
+						.qtde_volumes = Trim("" & tPL("qtde_volumes"))
+						.cubagem = tPL("cubagem")
+						.ncm = Trim("" & tPL("ncm"))
+						.cst = Trim("" & tPL("cst"))
+						.descontinuado = Trim("" & tPL("descontinuado"))
 						end if
 					end if
-				rs.Close
+				tPL.Close
 				end with
 			next
 		end if
@@ -733,19 +777,342 @@
 				" ORDER BY" & _
 					" fabricante_item," & _
 					" produto_item"
-			set rs = cn.execute(s)
-			if Not rs.Eof then
+			if tPCI.State <> 0 then tPCI.Close
+			tPCI.open s, cn
+			if Not tPCI.Eof then
 				s = ""
-				do while Not rs.Eof
+				do while Not tPCI.Eof
 					if s <> "" then s = s & ", "
-					s = s & Trim("" & rs("produto_item"))
-					rs.MoveNext
+					s = s & Trim("" & tPCI("produto_item"))
+					tPCI.MoveNext
 					loop
 				alerta=texto_add_br(alerta)
 				alerta=alerta & "O código de produto " & v_item(i).produto & " do fabricante " & v_item(i).fabricante & " é somente um código auxiliar para agrupar os produtos " & s & " e não pode ser usado diretamente no pedido!"
 				end if
 			next
 		end if
+
+	if alerta = "" then
+		'Calcula o rateio do frete automaticamente?
+		if (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO) then
+			if blnFlagCadSemiAutoPedMagentoRateioFreteAutomatico _
+				And (Trim("" & tMAP_XML("magento_api_versao")) = CStr(VERSAO_API_MAGENTO_V2_REST_JSON)) _
+				And (vl_frete_magento > 0) then
+				blnExecutarCadSemiAutoPedMagentoRateioFreteAutomatico = True
+				vl_total_produto_magento = 0
+				redim vItemCadSemiAutoPedMageRateioFreteAnalise(0)
+				set vItemCadSemiAutoPedMageRateioFreteAnalise(0) = New cl_ITEM_CAD_SEMI_AUTO_PED_MAGE_RATEIO_FRETE_ANALISE
+				vItemCadSemiAutoPedMageRateioFreteAnalise(Ubound(vItemCadSemiAutoPedMageRateioFreteAnalise)).produto_item = ""
+				'Para cada item, verifica se faz parte de um produto composto
+				'	1) Se for um produto composto:
+				'		1a) Calcula o preço de lista do conjunto
+				'		1b) Localiza o preço de venda nos dados do Magento (corresponde ao preço de venda do produto composto)
+				'		1c) Calcula o preço de venda de cada parte da composição com base na proporção do preço de lista
+				'		1d) Calcula o rateio do frete com base na proporção do preço de venda do item em relação ao preço total de venda do pedido
+				'	2) Se for um produto normal
+				'		2a) Armazena o preço de lista do produto
+				'		2b) Localiza o preço de venda nos dados do Magento
+				'		2c) Calcula o rateio do frete com base na proporção do preço de venda do item em relação ao preço total de venda do pedido
+
+				s = "SELECT " & _
+						"tMAP_ITEM.*" & _
+					" FROM t_MAGENTO_API_PEDIDO_XML tMAP" & _
+						" INNER JOIN t_MAGENTO_API_PEDIDO_XML_DECODE_ITEM tMAP_ITEM ON (tMAP.id = tMAP_ITEM.id_magento_api_pedido_xml)" & _
+					" WHERE" & _
+						" (tMAP_ITEM.id_magento_api_pedido_xml = " & id_magento_api_pedido_xml & ")" & _
+						" AND (" & _
+							"(tMAP.magento_api_versao = " & VERSAO_API_MAGENTO_V2_REST_JSON & ") AND (tMAP_ITEM.product_type IN ('" & COD_MAGENTO_PRODUCT_TYPE__SIMPLE & "'))" & _
+							")" & _
+					" ORDER BY" & _
+						" tMAP_ITEM.id"
+				if tMAP_ITEM.State <> 0 then tMAP_ITEM.Close
+				tMAP_ITEM.open s, cn
+				do while Not tMAP_ITEM.Eof
+					'Verifica se é um produto composto
+					s = "SELECT" & _
+							" t_EC_PRODUTO_COMPOSTO_ITEM.*" & _
+							", Coalesce((SELECT TOP 1 preco_lista FROM t_PRODUTO_LOJA WHERE (fabricante=t_EC_PRODUTO_COMPOSTO_ITEM.fabricante_item) AND (produto=t_EC_PRODUTO_COMPOSTO_ITEM.produto_item) AND (loja='" & loja & "')), 0) AS preco_lista" & _
+						" FROM t_EC_PRODUTO_COMPOSTO_ITEM" & _
+						" WHERE" & _
+							" (produto_composto = '" & normaliza_codigo(Trim("" & tMAP_ITEM("sku")), TAM_MIN_PRODUTO) & "')" & _
+							" AND (excluido_status = 0)" & _
+						" ORDER BY" & _
+							" fabricante_item," & _
+							" produto_item"
+					if tPCI.State <> 0 then tPCI.Close
+					tPCI.open s, cn
+					if Not tPCI.Eof then
+						'É produto composto!
+						'Passo 1) Calcula o preço de lista total
+						vlRateioFreteProdCompPrecoListaTotal = 0
+						do while Not tPCI.Eof
+							vlRateioFreteProdCompPrecoListaTotal = vlRateioFreteProdCompPrecoListaTotal + (converte_numero(tPCI("qtde")) * converte_numero(tPCI("preco_lista")))
+							tPCI.MoveNext
+							loop
+
+						'Passo 2) Calcula o preço de venda unitário rateado de cada item da composição com base na proporção do preço de lista
+						if vlRateioFreteProdCompPrecoListaTotal > 0 then
+							tPCI.MoveFirst
+							do while Not tPCI.Eof
+								if vItemCadSemiAutoPedMageRateioFreteAnalise(Ubound(vItemCadSemiAutoPedMageRateioFreteAnalise)).produto_item <> "" then
+									redim preserve vItemCadSemiAutoPedMageRateioFreteAnalise(Ubound(vItemCadSemiAutoPedMageRateioFreteAnalise)+1)
+									set vItemCadSemiAutoPedMageRateioFreteAnalise(Ubound(vItemCadSemiAutoPedMageRateioFreteAnalise)) = New cl_ITEM_CAD_SEMI_AUTO_PED_MAGE_RATEIO_FRETE_ANALISE
+									end if
+
+								with vItemCadSemiAutoPedMageRateioFreteAnalise(Ubound(vItemCadSemiAutoPedMageRateioFreteAnalise))
+									.sku = normaliza_codigo(Trim("" & tMAP_ITEM("sku")), TAM_MIN_PRODUTO)
+									.qtde_vendida_sku = converte_numero(tMAP_ITEM("qty_ordered"))
+									.isProdutoComposto = True
+									.fabricante_composto = Trim("" & tPCI("fabricante_composto"))
+									.produto_composto = Trim("" & tPCI("produto_composto"))
+									.fabricante_item = Trim("" & tPCI("fabricante_item"))
+									.produto_item = Trim("" & tPCI("produto_item"))
+									.qtde_produto_item = converte_numero(tPCI("qtde"))
+									.preco_lista_sku = vlRateioFreteProdCompPrecoListaTotal
+									if blnFlagCadSemiAutoPedMagentoUsarCamposValorMktpDataSource And (tMAP_XML("mktp_datasource_status") = 1) then
+										'O campo mktp_datasource_special_price informa o valor unitário do item já contabilizando o desconto
+										.preco_venda_sku = converte_numero(tMAP_ITEM("mktp_datasource_special_price"))
+									else
+										'O campo row_total informa o valor total do item já calculado com os descontos e multiplicado pela quantidade
+										.preco_venda_sku = converte_numero(tMAP_ITEM("row_total")) / .qtde_vendida_sku
+										end if
+									.preco_lista_produto_item = converte_numero(tPCI("preco_lista"))
+									.preco_venda_produto_item = .preco_venda_sku * (.preco_lista_produto_item / .preco_lista_sku)
+									end with
+
+								tPCI.MoveNext
+								loop
+							end if 'if vlRateioFreteProdCompPrecoListaTotal > 0
+
+					else
+						'É produto normal!
+						s = "SELECT" & _
+								" t_PRODUTO.*" & _
+								", Coalesce((SELECT TOP 1 preco_lista FROM t_PRODUTO_LOJA WHERE (fabricante=t_PRODUTO.fabricante) AND (produto=t_PRODUTO.produto) AND (loja='" & loja & "')), 0) AS preco_lista" & _
+							" FROM t_PRODUTO" & _
+							" WHERE" & _
+								" (produto = '" & normaliza_codigo(Trim("" & tMAP_ITEM("sku")), TAM_MIN_PRODUTO) & "')" & _
+								" AND (excluido_status = 0)"
+						if tPL.State <> 0 then tPL.Close
+						tPL.open s, cn
+						if Not tPL.Eof then
+							if vItemCadSemiAutoPedMageRateioFreteAnalise(Ubound(vItemCadSemiAutoPedMageRateioFreteAnalise)).produto_item <> "" then
+								redim preserve vItemCadSemiAutoPedMageRateioFreteAnalise(Ubound(vItemCadSemiAutoPedMageRateioFreteAnalise)+1)
+								set vItemCadSemiAutoPedMageRateioFreteAnalise(Ubound(vItemCadSemiAutoPedMageRateioFreteAnalise)) = New cl_ITEM_CAD_SEMI_AUTO_PED_MAGE_RATEIO_FRETE_ANALISE
+								end if
+
+							with vItemCadSemiAutoPedMageRateioFreteAnalise(Ubound(vItemCadSemiAutoPedMageRateioFreteAnalise))
+								.sku = normaliza_codigo(Trim("" & tMAP_ITEM("sku")), TAM_MIN_PRODUTO)
+								.qtde_vendida_sku = converte_numero(tMAP_ITEM("qty_ordered"))
+								.isProdutoComposto = False
+								.fabricante_composto = ""
+								.produto_composto = ""
+								.fabricante_item = Trim("" & tPL("fabricante"))
+								.produto_item = Trim("" & tPL("produto"))
+								.qtde_produto_item = 1
+								.preco_lista_sku = converte_numero(tPL("preco_lista"))
+								if blnFlagCadSemiAutoPedMagentoUsarCamposValorMktpDataSource And (tMAP_XML("mktp_datasource_status") = 1) then
+									'O campo mktp_datasource_special_price informa o valor unitário do item já contabilizando o desconto
+									.preco_venda_sku = converte_numero(tMAP_ITEM("mktp_datasource_special_price"))
+								else
+									'O campo row_total informa o valor total do item já calculado com os descontos e multiplicado pela quantidade
+									.preco_venda_sku = converte_numero(tMAP_ITEM("row_total")) / .qtde_vendida_sku
+									end if
+								.preco_lista_produto_item = converte_numero(tPL("preco_lista"))
+								.preco_venda_produto_item = .preco_venda_sku
+								end with
+							end if 'if Not tPL.Eof
+						end if 'if Not tPCI.Eof
+
+					if blnFlagCadSemiAutoPedMagentoUsarCamposValorMktpDataSource And (tMAP_XML("mktp_datasource_status") = 1) then
+						'O campo mktp_datasource_special_price informa o valor unitário do item já contabilizando o desconto
+						vl_total_produto_magento = vl_total_produto_magento + (converte_numero(tMAP_ITEM("qty_ordered")) * converte_numero(tMAP_ITEM("mktp_datasource_special_price")))
+					else
+						'O campo row_total informa o valor total do item já calculado com os descontos e multiplicado pela quantidade
+						vl_total_produto_magento = vl_total_produto_magento + converte_numero(tMAP_ITEM("row_total"))
+						end if
+
+					tMAP_ITEM.MoveNext
+					loop
+
+				for i=LBound(vItemCadSemiAutoPedMageRateioFreteAnalise) to UBound(vItemCadSemiAutoPedMageRateioFreteAnalise)
+					if vItemCadSemiAutoPedMageRateioFreteAnalise(i).produto_item <> "" then
+						with vItemCadSemiAutoPedMageRateioFreteAnalise(i)
+							.vl_frete_rateado_produto_item = vl_frete_magento * (.preco_venda_produto_item / vl_total_produto_magento)
+							.preco_nf_produto_item = .preco_venda_produto_item + .vl_frete_rateado_produto_item
+							end with
+						end if
+					next
+
+				'Como no produto composto podem haver itens que são compartilhados entre vários outros produtos compostos, o processamento
+				'até agora criou uma entrada no vetor p/ cada item da composição, mesmo que ele já pudesse existir devido a outro produto composto
+				'já processado anteriormente.
+				'Agora realiza uma consolidação de forma que cada código de produto seja único e os valores representem a média aritmética
+				redim vItemCadSemiAutoPedMageRateioFreteConsolidado(0)
+				set vItemCadSemiAutoPedMageRateioFreteConsolidado(0) = New cl_ITEM_CAD_SEMI_AUTO_PED_MAGE_RATEIO_FRETE_CONSOLIDADO
+				vItemCadSemiAutoPedMageRateioFreteConsolidado(UBound(vItemCadSemiAutoPedMageRateioFreteConsolidado)).produto = ""
+				for i=LBound(vItemCadSemiAutoPedMageRateioFreteAnalise) to UBound(vItemCadSemiAutoPedMageRateioFreteAnalise)
+					if vItemCadSemiAutoPedMageRateioFreteAnalise(i).produto_item <> "" then
+						blnAchou = False
+						for j=LBound(vItemCadSemiAutoPedMageRateioFreteConsolidado) to UBound(vItemCadSemiAutoPedMageRateioFreteConsolidado)
+							if (vItemCadSemiAutoPedMageRateioFreteAnalise(i).fabricante_item = vItemCadSemiAutoPedMageRateioFreteConsolidado(j).fabricante) _
+								And (vItemCadSemiAutoPedMageRateioFreteAnalise(i).produto_item = vItemCadSemiAutoPedMageRateioFreteConsolidado(j).produto) then
+									blnAchou = True
+									idx = j
+									exit for
+									end if
+							next
+
+						if Not blnAchou then
+							if vItemCadSemiAutoPedMageRateioFreteConsolidado(UBound(vItemCadSemiAutoPedMageRateioFreteConsolidado)).produto <> "" then
+								redim preserve vItemCadSemiAutoPedMageRateioFreteConsolidado(UBound(vItemCadSemiAutoPedMageRateioFreteConsolidado)+1)
+								set vItemCadSemiAutoPedMageRateioFreteConsolidado(UBound(vItemCadSemiAutoPedMageRateioFreteConsolidado)) = New cl_ITEM_CAD_SEMI_AUTO_PED_MAGE_RATEIO_FRETE_CONSOLIDADO
+								end if
+							idx = UBound(vItemCadSemiAutoPedMageRateioFreteConsolidado)
+							vItemCadSemiAutoPedMageRateioFreteConsolidado(idx).fabricante = vItemCadSemiAutoPedMageRateioFreteAnalise(i).fabricante_item
+							vItemCadSemiAutoPedMageRateioFreteConsolidado(idx).produto = vItemCadSemiAutoPedMageRateioFreteAnalise(i).produto_item
+							vItemCadSemiAutoPedMageRateioFreteConsolidado(idx).qtde_totalizada = 0
+							vItemCadSemiAutoPedMageRateioFreteConsolidado(idx).preco_lista_totalizado = 0
+							vItemCadSemiAutoPedMageRateioFreteConsolidado(idx).preco_venda_totalizado = 0
+							vItemCadSemiAutoPedMageRateioFreteConsolidado(idx).preco_nf_totalizado = 0
+							end if
+
+						n = vItemCadSemiAutoPedMageRateioFreteAnalise(i).qtde_vendida_sku * vItemCadSemiAutoPedMageRateioFreteAnalise(i).qtde_produto_item
+						vItemCadSemiAutoPedMageRateioFreteConsolidado(idx).qtde_totalizada = vItemCadSemiAutoPedMageRateioFreteConsolidado(idx).qtde_totalizada + n
+						vItemCadSemiAutoPedMageRateioFreteConsolidado(idx).preco_lista_totalizado = vItemCadSemiAutoPedMageRateioFreteConsolidado(idx).preco_lista_totalizado + (n * vItemCadSemiAutoPedMageRateioFreteAnalise(i).preco_lista_produto_item)
+						vItemCadSemiAutoPedMageRateioFreteConsolidado(idx).preco_venda_totalizado = vItemCadSemiAutoPedMageRateioFreteConsolidado(idx).preco_venda_totalizado + (n * vItemCadSemiAutoPedMageRateioFreteAnalise(i).preco_venda_produto_item)
+						vItemCadSemiAutoPedMageRateioFreteConsolidado(idx).preco_nf_totalizado = vItemCadSemiAutoPedMageRateioFreteConsolidado(idx).preco_nf_totalizado + (n * vItemCadSemiAutoPedMageRateioFreteAnalise(i).preco_nf_produto_item)
+						end if
+					next
+
+				'Calcula valores médios
+				for i=LBound(vItemCadSemiAutoPedMageRateioFreteConsolidado) to UBound(vItemCadSemiAutoPedMageRateioFreteConsolidado)
+					with vItemCadSemiAutoPedMageRateioFreteConsolidado(i)
+						if (.produto <> "") And (.qtde_totalizada <> 0) then
+							.preco_lista_medio = converte_numero(formata_moeda(.preco_lista_totalizado / .qtde_totalizada))
+							.preco_venda_medio = converte_numero(formata_moeda(.preco_venda_totalizado / .qtde_totalizada))
+							.preco_nf_medio = converte_numero(formata_moeda(.preco_nf_totalizado / .qtde_totalizada))
+							end if
+						end with
+					next
+
+				'Verifica se há necessidade de ajustes para chegar no valor total exato
+				vlRateioFretePrecoVendaTotal = 0
+				vlRateioFretePrecoNfTotal = 0
+				for i=LBound(vItemCadSemiAutoPedMageRateioFreteConsolidado) to UBound(vItemCadSemiAutoPedMageRateioFreteConsolidado)
+					with vItemCadSemiAutoPedMageRateioFreteConsolidado(i)
+						if (.produto <> "") And (.qtde_totalizada <> 0) then
+							vlRateioFretePrecoVendaTotal = vlRateioFretePrecoVendaTotal + (.qtde_totalizada * .preco_venda_medio)
+							vlRateioFretePrecoNfTotal = vlRateioFretePrecoNfTotal + (.qtde_totalizada * .preco_nf_medio)
+							end if
+						end with
+					next
+
+				vlRateioFretePrecoVendaDif = vl_total_produto_magento - vlRateioFretePrecoVendaTotal
+				vlRateioFretePrecoNfDif = (vl_total_produto_magento + vl_frete_magento) - vlRateioFretePrecoNfTotal
+
+				'Ajustar preço de venda?
+				blnAjusteRateioOk = False
+				if vlRateioFretePrecoVendaDif <> 0 then
+					if vlRateioFretePrecoVendaDif > 0 then
+						sinalAjuste = 1
+					else
+						sinalAjuste = -1
+						end if
+
+					'Tenta localizar um item em que a quantidade seja divisível pelo valor da diferença
+					for i=LBound(vItemCadSemiAutoPedMageRateioFreteConsolidado) to UBound(vItemCadSemiAutoPedMageRateioFreteConsolidado)
+						with vItemCadSemiAutoPedMageRateioFreteConsolidado(i)
+							if (.produto <> "") And (.qtde_totalizada <> 0) then
+								if (Abs(vlRateioFretePrecoVendaDif) Mod .qtde_totalizada) = 0 then
+									blnAjusteRateioOk = True
+									.preco_venda_medio = .preco_venda_medio + (sinalAjuste * (Abs(vlRateioFretePrecoVendaDif) / .qtde_totalizada))
+									exit for
+									end if
+								end if
+							end with
+						next
+					
+					'Se não conseguiu ajustar, tenta localizar o item que irá ter a menor diferença possível
+					'Lembrando que há casos em que pode ser impossível zerar a diferença devido à forma como o desconto foi aplicado e as quantidades dos itens
+					if Not blnAjusteRateioOk then
+						idx = -1
+						vlRateioFretePrecoMenorDif = Abs(vlRateioFretePrecoVendaDif)
+						for i=LBound(vItemCadSemiAutoPedMageRateioFreteConsolidado) to UBound(vItemCadSemiAutoPedMageRateioFreteConsolidado)
+							with vItemCadSemiAutoPedMageRateioFreteConsolidado(i)
+								if (.produto <> "") And (.qtde_totalizada <> 0) then
+									vlRateioFretePrecoAux = converte_numero(formata_moeda(.preco_venda_medio + (sinalAjuste * (Abs(vlRateioFretePrecoVendaDif) / .qtde_totalizada))))
+									vlRateioFretePrecoAtualAux = .qtde_totalizada * .preco_venda_medio
+									vlRateioFretePrecoNovoAux = .qtde_totalizada * vlRateioFretePrecoAux
+									vlRateioFretePrecoMenorDifAux = Abs(vlRateioFretePrecoAtualAux - vlRateioFretePrecoNovoAux)
+									if vlRateioFretePrecoMenorDifAux < vlRateioFretePrecoMenorDif then
+										vlRateioFretePrecoMenorDif = vlRateioFretePrecoMenorDifAux
+										idx = i
+										end if
+									end if
+								end with
+							next
+						
+						if idx > -1 then
+							with vItemCadSemiAutoPedMageRateioFreteConsolidado(idx)
+								.preco_venda_medio = .preco_venda_medio + (sinalAjuste * (Abs(vlRateioFretePrecoVendaDif) / .qtde_totalizada))
+								end with
+							end if
+						end if
+					end if 'if vlRateioFretePrecoVendaDif <> 0
+
+				'Ajustar preço de NF?
+				blnAjusteRateioOk = False
+				if vlRateioFretePrecoNfDif <> 0 then
+					if vlRateioFretePrecoNfDif > 0 then
+						sinalAjuste = 1
+					else
+						sinalAjuste = -1
+						end if
+
+					'Tenta localizar um item em que a quantidade seja divisível pelo valor da diferença
+					for i=LBound(vItemCadSemiAutoPedMageRateioFreteConsolidado) to UBound(vItemCadSemiAutoPedMageRateioFreteConsolidado)
+						with vItemCadSemiAutoPedMageRateioFreteConsolidado(i)
+							if (.produto <> "") And (.qtde_totalizada <> 0) then
+								if (Abs(vlRateioFretePrecoNfDif) Mod .qtde_totalizada) = 0 then
+									blnAjusteRateioOk = True
+									.preco_nf_medio = .preco_nf_medio + (sinalAjuste * (Abs(vlRateioFretePrecoNfDif) / .qtde_totalizada))
+									exit for
+									end if
+								end if
+							end with
+						next
+					
+					'Se não conseguiu ajustar, tenta localizar o item que irá ter a menor diferença possível
+					'Lembrando que há casos em que pode ser impossível zerar a diferença devido à forma como o desconto foi aplicado e as quantidades dos itens
+					if Not blnAjusteRateioOk then
+						idx = -1
+						vlRateioFretePrecoMenorDif = Abs(vlRateioFretePrecoNfDif)
+						for i=LBound(vItemCadSemiAutoPedMageRateioFreteConsolidado) to UBound(vItemCadSemiAutoPedMageRateioFreteConsolidado)
+							with vItemCadSemiAutoPedMageRateioFreteConsolidado(i)
+								if (.produto <> "") And (.qtde_totalizada <> 0) then
+									vlRateioFretePrecoAux = converte_numero(formata_moeda(.preco_nf_medio + (sinalAjuste * (Abs(vlRateioFretePrecoNfDif) / .qtde_totalizada))))
+									vlRateioFretePrecoAtualAux = .qtde_totalizada * .preco_nf_medio
+									vlRateioFretePrecoNovoAux = .qtde_totalizada * vlRateioFretePrecoAux
+									vlRateioFretePrecoMenorDifAux = Abs(vlRateioFretePrecoAtualAux - vlRateioFretePrecoNovoAux)
+									if vlRateioFretePrecoMenorDifAux < vlRateioFretePrecoMenorDif then
+										vlRateioFretePrecoMenorDif = vlRateioFretePrecoMenorDifAux
+										idx = i
+										end if
+									end if
+								end with
+							next
+						
+						if idx > -1 then
+							with vItemCadSemiAutoPedMageRateioFreteConsolidado(idx)
+								.preco_nf_medio = .preco_nf_medio + (sinalAjuste * (Abs(vlRateioFretePrecoNfDif) / .qtde_totalizada))
+								end with
+							end if
+						end if
+					end if 'if vlRateioFretePrecoNfDif <> 0
+				end if 'if blnFlagCadSemiAutoPedMagentoRateioFreteAutomatico And (Trim("" & tMAP_XML("magento_api_versao")) = CStr(VERSAO_API_MAGENTO_V2_REST_JSON)) And (vl_frete_magento > 0)
+			end if 'if (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO)
+		end if 'if alerta = ""
 
 	if alerta = "" then
 		if (c_custoFinancFornecTipoParcelamento <> COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__A_VISTA) And _
@@ -1350,6 +1717,10 @@ end function
 				$("#c_data_previsao_entrega").datepicker("disable");
             }
 		});
+
+		recalcula_RA();
+		recalcula_RA_Liquido();
+		recalcula_parcelas();
 	});
 
 	//Every resize of window
@@ -2972,7 +3343,6 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		</td>
 	</tr>
 	<% elseif (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1") Or (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "9") then 
-			vl_frete_magento = converte_numero(tMAP_XML("shipping_amount")) - converte_numero(tMAP_XML("shipping_discount_amount"))
 			vl_total_produto_magento = 0
 			vl_total_servico_magento = 0
 			if Trim("" & tMAP_XML("magento_api_versao")) = CStr(VERSAO_API_MAGENTO_V1_SOAP_XML) then
@@ -2993,8 +3363,13 @@ var perc_max_comissao_e_desconto_a_utilizar;
 				tMAP_ITEM.open s, cn
 				do while Not tMAP_ITEM.Eof
 					if (UCase(Trim("" & tMAP_ITEM("product_type"))) = UCase(COD_MAGENTO_PRODUCT_TYPE__SIMPLE)) OR (Trim("" & tMAP_ITEM("product_type")) = "") then
-						'O campo row_total informa o valor total do item já calculado com os descontos e multiplicado pela quantidade
-						vl_total_produto_magento = vl_total_produto_magento + converte_numero(tMAP_ITEM("row_total"))
+						if blnFlagCadSemiAutoPedMagentoUsarCamposValorMktpDataSource And (tMAP_XML("mktp_datasource_status") = 1) then
+							'O campo mktp_datasource_special_price informa o valor unitário do item já contabilizando o desconto
+							vl_total_produto_magento = vl_total_produto_magento + (converte_numero(tMAP_ITEM("qty_ordered")) * converte_numero(tMAP_ITEM("mktp_datasource_special_price")))
+						else
+							'O campo row_total informa o valor total do item já calculado com os descontos e multiplicado pela quantidade
+							vl_total_produto_magento = vl_total_produto_magento + converte_numero(tMAP_ITEM("row_total"))
+							end if
 					elseif UCase(Trim("" & tMAP_ITEM("product_type"))) = UCase(COD_MAGENTO_PRODUCT_TYPE__VIRTUAL) then
 						vl_total_servico_magento = vl_total_servico_magento + converte_numero(tMAP_ITEM("row_total"))
 						end if
@@ -3150,20 +3525,35 @@ var perc_max_comissao_e_desconto_a_utilizar;
 				s_descricao_html=produto_formata_descricao_em_html(.descricao_html)
 				s_qtde=.qtde
 				s_preco_lista=formata_moeda(.preco_lista)
-				m_TotalItem=.qtde * .preco_lista
-			'	INICIALMENTE, O PRECO_NF É O MESMO VALOR DO PRECO_LISTA, FICANDO DIFERENTE APENAS SE FOR EDITADO
-				m_TotalItemComRA=.qtde * .preco_lista
-				s_vl_TotalItem=formata_moeda(m_TotalItem)
-				m_TotalDestePedido=m_TotalDestePedido + m_TotalItem
-				m_TotalDestePedidoComRA=m_TotalDestePedidoComRA + m_TotalItemComRA
+				s_preco_venda = s_preco_lista
 				
 				s_readonly = ""
 				if (permite_RA_status = 1) And (rb_RA = "S") then 
 					s_vl_NF_readonly = ""
-					s_vl_NF = s_preco_lista
+					s_vl_NF = s_preco_venda
 				else
 					s_vl_NF = ""
 					end if
+
+				if blnExecutarCadSemiAutoPedMagentoRateioFreteAutomatico then
+					for j=LBound(vItemCadSemiAutoPedMageRateioFreteConsolidado) to UBound(vItemCadSemiAutoPedMageRateioFreteConsolidado)
+						if (.fabricante = vItemCadSemiAutoPedMageRateioFreteConsolidado(j).fabricante) And (.produto = vItemCadSemiAutoPedMageRateioFreteConsolidado(j).produto) then
+							s_preco_venda = formata_moeda(vItemCadSemiAutoPedMageRateioFreteConsolidado(j).preco_venda_medio)
+							s_vl_NF = formata_moeda(vItemCadSemiAutoPedMageRateioFreteConsolidado(j).preco_nf_medio)
+							exit for
+							end if
+						next
+					end if
+				m_TotalItem=.qtde * converte_numero(s_preco_venda)
+			'	INICIALMENTE, O PRECO_NF É O MESMO VALOR DO PRECO_LISTA, FICANDO DIFERENTE APENAS SE FOR EDITADO
+				if converte_numero(s_vl_NF) > 0 then
+					m_TotalItemComRA=.qtde * converte_numero(s_vl_NF)
+				else
+					m_TotalItemComRA=.qtde * .preco_lista
+					end if
+				s_vl_TotalItem=formata_moeda(m_TotalItem)
+				m_TotalDestePedido=m_TotalDestePedido + m_TotalItem
+				m_TotalDestePedidoComRA=m_TotalDestePedidoComRA + m_TotalItemComRA
 				end with
 		else
 			s_fabricante=""
@@ -3172,6 +3562,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 			s_descricao_html=""
 			s_qtde=""
 			s_preco_lista=""
+			s_preco_venda=""
 			s_vl_NF=""
 			s_vl_TotalItem=""
 			end if
@@ -3224,7 +3615,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		<input name="c_vl_unitario" id="c_vl_unitario" class="PLLd" style="width:62px;"
 			onkeypress="if (digitou_enter(true)) {if ((<%=Cstr(i)%>==fPED.c_vl_unitario.length)||(trim(fPED.c_produto[<%=Cstr(i)%>].value)=='')) fPED.c_obs1.focus(); else <% if (permite_RA_status = 1) And (rb_RA = "S") then Response.Write "fPED.c_vl_NF" else Response.Write "fPED." & s_campo_focus%>[<%=Cstr(i)%>].focus();} filtra_moeda_positivo();"
 			onblur="this.value=formata_moeda(this.value); trata_edicao_RA(<%=Cstr(i-1)%>); recalcula_total_linha(<%=Cstr(i)%>); recalcula_RA(); recalcula_RA_Liquido(); recalcula_parcelas();"
-			value='<%=s_preco_lista%>'
+			value='<%=s_preco_venda%>'
 			<%=s_readonly%>
 			/>
 	</td>
@@ -3876,6 +4267,12 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		if tMAP_XML.State <> 0 then tMAP_XML.Close
 		set tMAP_XML = nothing
 		end if
+
+	if tPL.State <> 0 then tPL.Close
+	set tPL = nothing
+
+	if tPCI.State <> 0 then tPCI.Close
+	set tPCI = nothing
 
 	if t_CLIENTE.State <> 0 then t_CLIENTE.Close
 	set t_CLIENTE = nothing

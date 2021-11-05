@@ -157,6 +157,36 @@ namespace ConsolidadorXlsEC
 			 */
 			#endregion
 
+			#region [ Observações ]
+			/*================================================================================================
+			 *  01) Desserialização de dados JSON quando um campo pode retornar um formato variável (ex: às
+			 *      vezes retorna como string e às vezes como um array de strings)
+			 *      Para exemplificar, na classe Magento2ProductCustomAttributes do projeto ConsolidadorXlsEC
+			 *      foi implementado um tratamento para o campo 'value' em que se usa um conversor customizado
+			 *      chamado JsonSingleOrArrayConverter e que é utilizado especificamente para tratar esse
+			 *      campo.
+			 *          [JsonProperty("value")]
+			 *          [JsonConverter(typeof(JsonSingleOrArrayConverter<string>))]
+			 *          public List<string> value { get; set; }
+			 * -----------------------------------------------------------------------------------------------
+			 *  
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 *  
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 *  
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 *  
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 *  
+			 *      
+			 * ===============================================================================================
+			 */
+			#endregion
+
 			#region [ Etc ]
 			public class Etc
 			{

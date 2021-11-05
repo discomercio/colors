@@ -6395,6 +6395,30 @@ dim rFCSAPMCACN
 end function
 
 
+' __________________________________________________________________
+' isActivatedFlagCadSemiAutoPedMagentoUsarCamposValorMktpDataSource
+'
+function isActivatedFlagCadSemiAutoPedMagentoUsarCamposValorMktpDataSource
+dim rFCSAPMUCVMDS
+	isActivatedFlagCadSemiAutoPedMagentoUsarCamposValorMktpDataSource = False
+	set rFCSAPMUCVMDS = get_registro_t_parametro(ID_PARAMETRO_FLAG_CAD_SEMI_AUTO_PED_MAGENTO_USAR_CAMPOS_VALOR_MKTP_DATASOURCE)
+	if Trim("" & rFCSAPMUCVMDS.campo_inteiro) = "1" then isActivatedFlagCadSemiAutoPedMagentoUsarCamposValorMktpDataSource = True
+	set rFCSAPMUCVMDS = Nothing
+end function
+
+
+' __________________________________________________________________
+' isActivatedFlagCadSemiAutoPedMagentoRateioFreteAutomatico
+'
+function isActivatedFlagCadSemiAutoPedMagentoRateioFreteAutomatico
+dim rFCSAPMRFA
+	isActivatedFlagCadSemiAutoPedMagentoRateioFreteAutomatico = False
+	set rFCSAPMRFA = get_registro_t_parametro(ID_PARAMETRO_FLAG_CAD_SEMI_AUTO_PED_MAGENTO_RATEIO_FRETE_AUTOMATICO)
+	if Trim("" & rFCSAPMRFA.campo_inteiro) = "1" then isActivatedFlagCadSemiAutoPedMagentoRateioFreteAutomatico = True
+	set rFCSAPMRFA = Nothing
+end function
+
+
 ' ________________________________________________________
 ' getParametroPercDesagioRALiquida
 '

@@ -157,6 +157,10 @@ namespace ART3WebAPI.Models.Repository
 			pedidoXml.commission_final_discount = BD.readToDecimal(rowDados["commission_final_discount"]);
 			pedidoXml.commission_final_value = BD.readToDecimal(rowDados["commission_final_value"]);
 			pedidoXml.commission_discount_type = BD.readToString(rowDados["commission_discount_type"]);
+			pedidoXml.mktp_datasource_status = BD.readToByte(rowDados["mktp_datasource_status"]);
+			pedidoXml.mktp_datasource_discount = BD.readToDecimal(rowDados["mktp_datasource_discount"]);
+			pedidoXml.mktp_datasource_total_ordered = BD.readToDecimal(rowDados["mktp_datasource_total_ordered"]);
+			pedidoXml.mktp_datasource_shipping_cost = BD.readToDecimal(rowDados["mktp_datasource_shipping_cost"]);
 
 			return pedidoXml;
 		}
@@ -234,7 +238,11 @@ namespace ART3WebAPI.Models.Repository
 								"commission_discount, " +
 								"commission_final_discount, " +
 								"commission_final_value, " +
-								"commission_discount_type" +
+								"commission_discount_type, " +
+								"mktp_datasource_status, " +
+								"mktp_datasource_discount, " +
+								"mktp_datasource_total_ordered, " +
+								"mktp_datasource_shipping_cost" +
 							")" +
 							" OUTPUT INSERTED.id" +
 							" VALUES " +
@@ -284,7 +292,11 @@ namespace ART3WebAPI.Models.Repository
 								"@commission_discount, " +
 								"@commission_final_discount, " +
 								"@commission_final_value, " +
-								"@commission_discount_type" +
+								"@commission_discount_type, " +
+								"@mktp_datasource_status, " +
+								"@mktp_datasource_discount, " +
+								"@mktp_datasource_total_ordered, " +
+								"@mktp_datasource_shipping_cost" +
 							")";
 					cmInsert = new SqlCommand();
 					cmInsert.Connection = cn;
@@ -335,6 +347,10 @@ namespace ART3WebAPI.Models.Repository
 					cmInsert.Parameters.Add(new SqlParameter("@commission_final_discount", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
 					cmInsert.Parameters.Add(new SqlParameter("@commission_final_value", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
 					cmInsert.Parameters.Add("@commission_discount_type", SqlDbType.VarChar, 10);
+					cmInsert.Parameters.Add("@mktp_datasource_status", SqlDbType.TinyInt);
+					cmInsert.Parameters.Add(new SqlParameter("@mktp_datasource_discount", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@mktp_datasource_total_ordered", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@mktp_datasource_shipping_cost", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
 					cmInsert.Prepare();
 					#endregion
 
@@ -393,6 +409,10 @@ namespace ART3WebAPI.Models.Repository
 							cmInsert.Parameters["@commission_final_discount"].Value = pedidoXml.commission_final_discount;
 							cmInsert.Parameters["@commission_final_value"].Value = pedidoXml.commission_final_value;
 							cmInsert.Parameters["@commission_discount_type"].Value = (pedidoXml.commission_discount_type ?? "");
+							cmInsert.Parameters["@mktp_datasource_status"].Value = pedidoXml.mktp_datasource_status;
+							cmInsert.Parameters["@mktp_datasource_discount"].Value = pedidoXml.mktp_datasource_discount;
+							cmInsert.Parameters["@mktp_datasource_total_ordered"].Value = pedidoXml.mktp_datasource_total_ordered;
+							cmInsert.Parameters["@mktp_datasource_shipping_cost"].Value = pedidoXml.mktp_datasource_shipping_cost;
 							#endregion
 
 							#region [ Monta texto para o log em arquivo ]
@@ -786,7 +806,10 @@ namespace ART3WebAPI.Models.Repository
 								"price_incl_tax," +
 								"base_price_incl_tax," +
 								"row_total_incl_tax," +
-								"base_row_total_incl_tax" +
+								"base_row_total_incl_tax," +
+								"mktp_datasource_special_price,"+
+								"mktp_datasource_shipping_cost,"+
+								"mktp_datasource_original_price"+
 							")" +
 							" OUTPUT INSERTED.id" +
 							" VALUES " +
@@ -835,7 +858,10 @@ namespace ART3WebAPI.Models.Repository
 								"@price_incl_tax," +
 								"@base_price_incl_tax," +
 								"@row_total_incl_tax," +
-								"@base_row_total_incl_tax" +
+								"@base_row_total_incl_tax," +
+								"@mktp_datasource_special_price," +
+								"@mktp_datasource_shipping_cost," +
+								"@mktp_datasource_original_price" +
 							")";
 					cmInsert = new SqlCommand();
 					cmInsert.Connection = cn;
@@ -885,6 +911,9 @@ namespace ART3WebAPI.Models.Repository
 					cmInsert.Parameters.Add(new SqlParameter("@base_price_incl_tax", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
 					cmInsert.Parameters.Add(new SqlParameter("@row_total_incl_tax", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
 					cmInsert.Parameters.Add(new SqlParameter("@base_row_total_incl_tax", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@mktp_datasource_special_price", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@mktp_datasource_shipping_cost", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add(new SqlParameter("@mktp_datasource_original_price", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
 					cmInsert.Prepare();
 					#endregion
 
@@ -942,6 +971,9 @@ namespace ART3WebAPI.Models.Repository
 							cmInsert.Parameters["@base_price_incl_tax"].Value = produtoItem.base_price_incl_tax;
 							cmInsert.Parameters["@row_total_incl_tax"].Value = produtoItem.row_total_incl_tax;
 							cmInsert.Parameters["@base_row_total_incl_tax"].Value = produtoItem.base_row_total_incl_tax;
+							cmInsert.Parameters["@mktp_datasource_special_price"].Value = produtoItem.mktp_datasource_special_price;
+							cmInsert.Parameters["@mktp_datasource_shipping_cost"].Value = produtoItem.mktp_datasource_shipping_cost;
+							cmInsert.Parameters["@mktp_datasource_original_price"].Value = produtoItem.mktp_datasource_original_price;
 							#endregion
 
 							#region [ Monta texto para o log em arquivo ]
