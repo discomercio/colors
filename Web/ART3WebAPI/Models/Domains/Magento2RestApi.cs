@@ -1013,6 +1013,7 @@ namespace ART3WebAPI.Models.Domains
 			const string NOME_DESTA_ROTINA = "Magento2RestApi.processaGetPedido()";
 			bool blnInserted = false;
 			int intParametroFlagCadSemiAutoPedMagentoCadastrarAutomaticamenteClienteNovo;
+			int intParametroFlagCadSemiAutoPedMagentoUsarEnderecoMktpDataSource;
 			string msg;
 			string msg_erro = "";
 			string sJson = null;
@@ -1043,6 +1044,12 @@ namespace ART3WebAPI.Models.Domains
 			List<CodigoDescricao> listaCodigoDescricao;
 			string[] v;
 			Magento2SalesOrderInfo mage2SalesOrderInfo;
+			Magento2SkyhubDataSource skyHubInfo = null;
+			Magento2SkyhubDataSourceItem skyHubInfoItem;
+			#endregion
+
+			#region [ Verifica o parâmetro que define se devem ser usados os dados de endereço originais informados pelo marketplace ]
+			intParametroFlagCadSemiAutoPedMagentoUsarEnderecoMktpDataSource = GeralDAO.getCampoInteiroTabelaParametro(Global.Cte.Parametros.ID_T_PARAMETRO.FLAG_CAD_SEMI_AUTO_PED_MAGENTO_USAR_ENDERECO_MKTP_DATASOURCE);
 			#endregion
 
 			#region [ Verifica se o pedido já foi consultado e a resposta se encontra gravada no BD, desde que se trate da mesma operação ]
@@ -1137,6 +1144,23 @@ namespace ART3WebAPI.Models.Domains
 					if (msg_erro.Length > 0) msg += "\n" + msg_erro;
 					Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 					throw new Exception(msg);
+				}
+				#endregion
+
+				#region [ Se possuir dados no JSON da Skyhub, desserializa ]
+				if ((intParametroFlagCadSemiAutoPedMagentoUsarEnderecoMktpDataSource == 1) && ((salesOrder.magentoSalesOrderInfo.bseller_skyhub_json ?? "").Trim().Length > 0))
+				{
+					try
+					{
+						skyHubInfo = JsonConvert.DeserializeObject<Magento2SkyhubDataSource>(salesOrder.magentoSalesOrderInfo.bseller_skyhub_json);
+					}
+					catch (Exception ex)
+					{
+						skyHubInfo = null;
+						msg = "Exception ao tentar desserializar o JSON da Skyhub da resposta com os dados do pedido Magento " + numeroPedidoMagento + " via API REST!";
+						msg += "\n" + ex.ToString();
+						Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
+					}
 				}
 				#endregion
 
@@ -1246,6 +1270,48 @@ namespace ART3WebAPI.Models.Domains
 										cliente.uf = Global.decodificaUfExtensoParaSigla((salesOrder.magentoSalesOrderInfo.shipping_address.region ?? ""));
 									}
 									cliente.cep = Global.digitos((salesOrder.magentoSalesOrderInfo.shipping_address.postcode ?? ""));
+
+									#region [ Tenta utilizar os dados originais recebidos da Skyhub (pedidos de marketplace), se houver ]
+									try
+									{
+										if ((intParametroFlagCadSemiAutoPedMagentoUsarEnderecoMktpDataSource == 1) && (skyHubInfo != null))
+										{
+											if ((skyHubInfo.shipping_address.street ?? "").Trim().Length > 0)
+											{
+												// Se houver dados de endereço do marketplace, sobreescreve usando esses dados
+												// Essa lógica está sendo feita porque nos dados de marketplace há 3 campos:
+												//     'complement' = complemento do endereço
+												//     'reference' = ponto de referência
+												//     'detail' = concatenação dos campos 'complement' e 'reference'
+												// Na data de hoje (03/11/2021), ainda há um problema no mapeamento dos campos do Magento durante a integração
+												// de pedidos do marketplace em que o campo complemento do endereço está sendo obtido através da concatenação
+												// dos seguintes campos do marketplace: 'complement' + 'reference' + 'detail'
+												// Como isso causa a duplicidade dos dados, o objetivo nesta lógica é usar os dados do marketplace (JSON informado
+												// no campo skyhub_info.data_source)
+												cliente.endereco = (skyHubInfo.shipping_address.street ?? "").Trim();
+												cliente.endereco_numero = (skyHubInfo.shipping_address.number ?? "").Trim();
+												cliente.endereco_complemento = (skyHubInfo.shipping_address.complement ?? "").Trim();
+												cliente.bairro = (skyHubInfo.shipping_address.neighborhood ?? "").Trim();
+												cliente.cidade = (skyHubInfo.shipping_address.city ?? "").Trim();
+												if (Global.isUfOk((skyHubInfo.shipping_address.region ?? "").Trim()))
+												{
+													cliente.uf = (skyHubInfo.shipping_address.region ?? "").Trim();
+												}
+												else
+												{
+													cliente.uf = Global.decodificaUfExtensoParaSigla((skyHubInfo.shipping_address.region ?? "").Trim());
+												}
+												cliente.cep = Global.digitos((skyHubInfo.shipping_address.postcode ?? ""));
+											}
+										}
+									}
+									catch (Exception ex)
+									{
+										msg = "Exception ao tentar acessar o campo 'shipping_address.complement' do JSON da Skyhub na resposta com os dados do pedido Magento " + numeroPedidoMagento + " via API REST!";
+										msg += "\n" + ex.ToString();
+										Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
+									}
+									#endregion
 									#endregion
 								}
 								else
@@ -1266,6 +1332,48 @@ namespace ART3WebAPI.Models.Domains
 										cliente.uf = Global.decodificaUfExtensoParaSigla((salesOrder.magentoSalesOrderInfo.billing_address.region ?? ""));
 									}
 									cliente.cep = Global.digitos((salesOrder.magentoSalesOrderInfo.billing_address.postcode ?? ""));
+
+									#region [ Tenta utilizar os dados originais recebidos da Skyhub (pedidos de marketplace), se houver ]
+									try
+									{
+										if ((intParametroFlagCadSemiAutoPedMagentoUsarEnderecoMktpDataSource == 1) && (skyHubInfo != null))
+										{
+											if ((skyHubInfo.billing_address.street ?? "").Trim().Length > 0)
+											{
+												// Se houver dados de endereço do marketplace, sobreescreve usando esses dados
+												// Essa lógica está sendo feita porque nos dados de marketplace há 3 campos:
+												//     'complement' = complemento do endereço
+												//     'reference' = ponto de referência
+												//     'detail' = concatenação dos campos 'complement' e 'reference'
+												// Na data de hoje (03/11/2021), ainda há um problema no mapeamento dos campos do Magento durante a integração
+												// de pedidos do marketplace em que o campo complemento do endereço está sendo obtido através da concatenação
+												// dos seguintes campos do marketplace: 'complement' + 'reference' + 'detail'
+												// Como isso causa a duplicidade dos dados, o objetivo nesta lógica é usar os dados do marketplace (JSON informado
+												// no campo skyhub_info.data_source)
+												cliente.endereco = (skyHubInfo.billing_address.street ?? "").Trim();
+												cliente.endereco_numero = (skyHubInfo.billing_address.number ?? "").Trim();
+												cliente.endereco_complemento = (skyHubInfo.billing_address.complement ?? "").Trim();
+												cliente.bairro = (skyHubInfo.billing_address.neighborhood ?? "").Trim();
+												cliente.cidade = (skyHubInfo.billing_address.city ?? "").Trim();
+												if (Global.isUfOk((skyHubInfo.billing_address.region ?? "").Trim()))
+												{
+													cliente.uf = (skyHubInfo.billing_address.region ?? "").Trim();
+												}
+												else
+												{
+													cliente.uf = Global.decodificaUfExtensoParaSigla((skyHubInfo.billing_address.region ?? "").Trim());
+												}
+												cliente.cep = Global.digitos((skyHubInfo.billing_address.postcode ?? ""));
+											}
+										}
+									}
+									catch (Exception ex)
+									{
+										msg = "Exception ao tentar acessar o campo 'billing_address.complement' do JSON da Skyhub na resposta com os dados do pedido Magento " + numeroPedidoMagento + " via API REST!";
+										msg += "\n" + ex.ToString();
+										Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
+									}
+									#endregion
 									#endregion
 								}
 								#endregion
@@ -1592,6 +1700,17 @@ namespace ART3WebAPI.Models.Domains
 					insertPedidoXml.marketplace_codigo_origem = sOrigemMktpIdentificado;
 				}
 
+				if (skyHubInfo != null)
+				{
+					if ((skyHubInfo.code ?? "").Trim().Length > 0)
+					{
+						insertPedidoXml.mktp_datasource_status = 1;
+						insertPedidoXml.mktp_datasource_discount = Global.converteNumeroDecimal((skyHubInfo.discount ?? ""));
+						insertPedidoXml.mktp_datasource_total_ordered = Global.converteNumeroDecimal((skyHubInfo.total_ordered ?? ""));
+						insertPedidoXml.mktp_datasource_shipping_cost = Global.converteNumeroDecimal((skyHubInfo.shipping_cost ?? ""));
+					}
+				}
+
 				blnInserted = MagentoApiDAO.insertMagentoPedidoXml(httpRequestId, insertPedidoXml, out msg_erro);
 				if (!blnInserted)
 				{
@@ -1652,6 +1771,41 @@ namespace ART3WebAPI.Models.Domains
 				decodeEndereco.empresa = (salesOrder.magentoSalesOrderInfo.billing_address.empresa ?? "");
 				decodeEndereco.nomefantasia = (salesOrder.magentoSalesOrderInfo.billing_address.nomefantasia ?? "");
 				decodeEndereco.street_detail = (salesOrder.magentoSalesOrderInfo.billing_address.street_detail ?? "");
+
+				#region [ Tenta utilizar os dados originais recebidos da Skyhub (pedidos de marketplace), se houver ]
+				if ((intParametroFlagCadSemiAutoPedMagentoUsarEnderecoMktpDataSource == 1) && (skyHubInfo != null))
+				{
+					if ((skyHubInfo.billing_address.street ?? "").Trim().Length > 0)
+					{
+						// Se houver dados de endereço do marketplace, sobreescreve usando esses dados
+						// Essa lógica está sendo feita porque nos dados de marketplace há 3 campos:
+						//     'complement' = complemento do endereço
+						//     'reference' = ponto de referência
+						//     'detail' = concatenação dos campos 'complement' e 'reference'
+						// Na data de hoje (03/11/2021), ainda há um problema no mapeamento dos campos do Magento durante a integração
+						// de pedidos do marketplace em que o campo complemento do endereço está sendo obtido através da concatenação
+						// dos seguintes campos do marketplace: 'complement' + 'reference' + 'detail'
+						// Como isso causa a duplicidade dos dados, o objetivo nesta lógica é usar os dados do marketplace (JSON informado
+						// no campo skyhub_info.data_source)
+						decodeEndereco.endereco = (skyHubInfo.billing_address.street ?? "").Trim();
+						decodeEndereco.endereco_numero = (skyHubInfo.billing_address.number ?? "").Trim();
+						decodeEndereco.endereco_complemento = (skyHubInfo.billing_address.complement ?? "").Trim();
+						decodeEndereco.street_detail = (skyHubInfo.billing_address.reference ?? "").Trim();
+						decodeEndereco.bairro = (skyHubInfo.billing_address.neighborhood ?? "").Trim();
+						decodeEndereco.cidade = (skyHubInfo.billing_address.city ?? "").Trim();
+						if (Global.isUfOk((skyHubInfo.billing_address.region ?? "").Trim()))
+						{
+							decodeEndereco.uf = (skyHubInfo.billing_address.region ?? "").Trim();
+						}
+						else
+						{
+							decodeEndereco.uf = Global.decodificaUfExtensoParaSigla((skyHubInfo.billing_address.region ?? "").Trim());
+						}
+						decodeEndereco.cep = Global.digitos((skyHubInfo.billing_address.postcode ?? ""));
+					}
+				}
+				#endregion
+
 				if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeEndereco(httpRequestId, decodeEndereco, out msg_erro))
 				{
 					msg = "Falha ao tentar gravar no BD os dados do endereço de cobrança!";
@@ -1706,6 +1860,41 @@ namespace ART3WebAPI.Models.Domains
 				decodeEndereco.empresa = (salesOrder.magentoSalesOrderInfo.shipping_address.empresa ?? "");
 				decodeEndereco.nomefantasia = (salesOrder.magentoSalesOrderInfo.shipping_address.nomefantasia ?? "");
 				decodeEndereco.street_detail = (salesOrder.magentoSalesOrderInfo.shipping_address.street_detail ?? "");
+
+				#region [ Tenta utilizar os dados originais recebidos da Skyhub (pedidos de marketplace), se houver ]
+				if ((intParametroFlagCadSemiAutoPedMagentoUsarEnderecoMktpDataSource == 1) && (skyHubInfo != null))
+				{
+					if ((skyHubInfo.shipping_address.street ?? "").Trim().Length > 0)
+					{
+						// Se houver dados de endereço do marketplace, sobreescreve usando esses dados
+						// Essa lógica está sendo feita porque nos dados de marketplace há 3 campos:
+						//     'complement' = complemento do endereço
+						//     'reference' = ponto de referência
+						//     'detail' = concatenação dos campos 'complement' e 'reference'
+						// Na data de hoje (03/11/2021), ainda há um problema no mapeamento dos campos do Magento durante a integração
+						// de pedidos do marketplace em que o campo complemento do endereço está sendo obtido através da concatenação
+						// dos seguintes campos do marketplace: 'complement' + 'reference' + 'detail'
+						// Como isso causa a duplicidade dos dados, o objetivo nesta lógica é usar os dados do marketplace (JSON informado
+						// no campo skyhub_info.data_source)
+						decodeEndereco.endereco = (skyHubInfo.shipping_address.street ?? "").Trim();
+						decodeEndereco.endereco_numero = (skyHubInfo.shipping_address.number ?? "").Trim();
+						decodeEndereco.endereco_complemento = (skyHubInfo.shipping_address.complement ?? "").Trim();
+						decodeEndereco.street_detail = (skyHubInfo.shipping_address.reference ?? "").Trim();
+						decodeEndereco.bairro = (skyHubInfo.shipping_address.neighborhood ?? "").Trim();
+						decodeEndereco.cidade = (skyHubInfo.shipping_address.city ?? "").Trim();
+						if (Global.isUfOk((skyHubInfo.shipping_address.region ?? "").Trim()))
+						{
+							decodeEndereco.uf = (skyHubInfo.shipping_address.region ?? "").Trim();
+						}
+						else
+						{
+							decodeEndereco.uf = Global.decodificaUfExtensoParaSigla((skyHubInfo.shipping_address.region ?? "").Trim());
+						}
+						decodeEndereco.cep = Global.digitos((skyHubInfo.shipping_address.postcode ?? ""));
+					}
+				}
+				#endregion
+
 				if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeEndereco(httpRequestId, decodeEndereco, out msg_erro))
 				{
 					msg = "Falha ao tentar gravar no BD os dados do endereço de entrega!";
@@ -1764,6 +1953,28 @@ namespace ART3WebAPI.Models.Domains
 					decodeItem.base_price_incl_tax = Global.converteNumeroDecimal((item.base_price_incl_tax ?? ""));
 					decodeItem.row_total_incl_tax = Global.converteNumeroDecimal((item.row_total_incl_tax ?? ""));
 					decodeItem.base_row_total_incl_tax = Global.converteNumeroDecimal((item.base_row_total_incl_tax ?? ""));
+
+					if (skyHubInfo != null)
+					{
+						if ((skyHubInfo.code ?? "").Trim().Length > 0)
+						{
+							try
+							{
+								skyHubInfoItem = skyHubInfo.items.Single(p => p.product_id.Equals((item.sku ?? "")));
+							}
+							catch (Exception)
+							{
+								skyHubInfoItem = null;
+							}
+
+							if (skyHubInfoItem != null)
+							{
+								decodeItem.mktp_datasource_special_price = Global.converteNumeroDecimal((skyHubInfoItem.special_price ?? ""));
+								decodeItem.mktp_datasource_shipping_cost = Global.converteNumeroDecimal((skyHubInfoItem.shipping_cost ?? ""));
+								decodeItem.mktp_datasource_original_price = Global.converteNumeroDecimal((skyHubInfoItem.original_price ?? ""));
+							}
+						}
+					}
 
 					if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeItem(httpRequestId, decodeItem, out msg_erro))
 					{
