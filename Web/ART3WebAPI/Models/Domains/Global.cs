@@ -60,8 +60,8 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.30";
-				public const string Data = "25.AGO.2021";
+				public const string Numero = "2.31";
+				public const string Data = "03.NOV.2021";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
 			#endregion
@@ -224,8 +224,29 @@ namespace ART3WebAPI.Models.Domains
 			 * v 2.30 - 25.08.2021 - por HHO
 			 *      Desenvolvimento do relatório Estoque de Venda em planilha Excel.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.31 - XX.XX.20XX - por XXX
-			 *      
+			 * v 2.31 - 03.11.2021 - por HHO
+			 *      Implementação de tratamento para obter os dados originais do pedido de marketplace (JSON
+			 *      informado no campo skyhub_info.data_source). O objetivo é contornar os problemas que tem
+			 *      ocorrido no mapeamento de campos quando o pedido é gravado no Magento.
+			 *      Neste ajuste, foram tratadas duas questões:
+			 *          1) Dados do endereço: está ocorrendo duplicidade nos dados de complemento e ponto de
+			 *             referência. Nos dados do marketplace, há 3 campos:
+			 *                 'complement' = complemento do endereço
+			 *                 'reference' = ponto de referência
+			 *                 'detail' = concatenação dos campos 'complement' e 'reference'
+			 *             Ao gravar o pedido no Magento, o campo complemento do endereço está concatenando
+			 *             os campos informados pelo marketplace: 'complement' + 'reference' + 'detail'
+			 *          2) Valores do item: ocorreu uma mudança e o campo 'row_total' do item no Magento
+			 *             passou a conter o valor total do item sem contabilizar o desconto, sendo que
+			 *             antes continha o valor já com o desconto computado. Mas essa mudança afetou
+			 *             somente os pedidos de marketplace, pois nos pedidos cadastrados diretamente no
+			 *             Magento, esse campo continua com o valor c/ desconto. Ou seja, passou a existir
+			 *             duas lógicas diferentes, dependendo da origem do pedido. O objetivo do ajuste
+			 *             realizado é recuperar os valores originais informados pelo marketplace e usar
+			 *             o valor com desconto de cada item, já que essa informação deixou de existir no
+			 *             Magento, restando apenas o valor total de desconto do pedido, o que impossibilita
+			 *             a determinação do valor real de venda de cada item individualmente quando o pedido
+			 *             possui mais de um item.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.32 - XX.XX.20XX - por XXX
 			 *      
@@ -260,6 +281,36 @@ namespace ART3WebAPI.Models.Domains
 			*/
 			#endregion
 
+			#region [ Observações ]
+			/*================================================================================================
+			 *  01) Desserialização de dados JSON quando um campo pode retornar um formato variável (ex: às
+			 *      vezes retorna como string e às vezes como um array de strings)
+			 *      Para exemplificar, na classe Magento2ProductCustomAttributes do projeto ConsolidadorXlsEC
+			 *      foi implementado um tratamento para o campo 'value' em que se usa um conversor customizado
+			 *      chamado JsonSingleOrArrayConverter e que é utilizado especificamente para tratar esse
+			 *      campo.
+			 *          [JsonProperty("value")]
+			 *          [JsonConverter(typeof(JsonSingleOrArrayConverter<string>))]
+			 *          public List<string> value { get; set; }
+			 * -----------------------------------------------------------------------------------------------
+			 *  
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 *  
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 *  
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 *  
+			 *      
+			 * -----------------------------------------------------------------------------------------------
+			 *  
+			 *      
+			 * ===============================================================================================
+			 */
+			#endregion
+
 			#region [ Usuario ]
 			public static class Usuario
 			{
@@ -292,6 +343,7 @@ namespace ART3WebAPI.Models.Domains
 					public const string UPLOAD_FILE_SAVE_FILE_CONTENT_IN_DB_MAX_SIZE_IN_BYTES = "WebAPI_UploadFile_SaveFileContentInDb_MaxSizeInBytes";
 					public const string UPLOAD_FILE_SAVE_FILE_CONTENT_IN_DB_AS_TEXT_MAX_SIZE_IN_CHARS = "WebAPI_UploadFile_SaveFileContentInDbAsText_MaxSizeInChars";
 					public const string FLAG_CAD_SEMI_AUTO_PED_MAGENTO_CADASTRAR_AUTOMATICAMENTE_CLIENTE_NOVO = "CadSemiAutomaticoPedidoMagento_FlagWebApiCadastrarAutomaticamenteClienteNovo";
+					public const string FLAG_CAD_SEMI_AUTO_PED_MAGENTO_USAR_ENDERECO_MKTP_DATASOURCE = "CadSemiAutomaticoPedidoMagento_FlagWebApiUsarEnderecoMktpDataSource";
 					public const string FLAG_PEDIDO_MEMORIZACAO_COMPLETA_ENDERECOS = "Flag_Pedido_MemorizacaoCompletaEnderecos";
 				}
 				#endregion

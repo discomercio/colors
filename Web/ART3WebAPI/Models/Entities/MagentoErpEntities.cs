@@ -90,6 +90,10 @@ namespace ART3WebAPI.Models.Entities
 		public decimal commission_final_discount { get; set; }
 		public decimal commission_final_value { get; set; }
 		public string commission_discount_type { get; set; }
+		public byte mktp_datasource_status { get; set; } = 0;
+		public decimal mktp_datasource_discount { get; set; } = 0m;
+		public decimal mktp_datasource_total_ordered { get; set; } = 0m;
+		public decimal mktp_datasource_shipping_cost { get; set; } = 0m;
 	}
 	#endregion
 
@@ -183,6 +187,9 @@ namespace ART3WebAPI.Models.Entities
 		public decimal base_price_incl_tax { get; set; } = 0m;
 		public decimal row_total_incl_tax { get; set; } = 0m;
 		public decimal base_row_total_incl_tax { get; set; } = 0m;
+		public decimal mktp_datasource_special_price { get; set; } = 0m;
+		public decimal mktp_datasource_shipping_cost { get; set; } = 0m;
+		public decimal mktp_datasource_original_price { get; set; } = 0m;
 	}
 	#endregion
 

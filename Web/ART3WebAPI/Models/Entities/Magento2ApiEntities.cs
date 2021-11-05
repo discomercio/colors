@@ -1616,4 +1616,154 @@ namespace ART3WebAPI.Models.Entities
 		public string condition_type { get; set; }
 	}
 	#endregion
+
+	#region [ Magento2 Skyhub (DataSource/JSON) ]
+
+	#region [ Magento2SkyhubDataSource ]
+	public class Magento2SkyhubDataSource
+	{
+		public string code { get; set; }
+		public string delivery_contract_type { get; set; }
+		public string channel { get; set; }
+		public string shipping_cost { get; set; }
+		public string shipping_method { get; set; }
+		public string calculation_type { get; set; }
+		public string shipping_carrier { get; set; }
+		public string estimated_delivery { get; set; }
+		public string updated_at { get; set; }
+		public string placed_at { get; set; }
+		public string available_to_sync { get; set; }
+		public string expedition_limit_date { get; set; }
+		public string shipping_method_id { get; set; }
+		public string sync_status { get; set; }
+		public string discount { get; set; }
+		public string total_ordered { get; set; }
+		public string imported_at { get; set; }
+		public string approved_date { get; set; }
+		public Magento2SkyhubDataSourceBillingAddress billing_address { get; set; } = new Magento2SkyhubDataSourceBillingAddress();
+		public Magento2SkyhubDataSourceShippingAddress shipping_address { get; set; } = new Magento2SkyhubDataSourceShippingAddress();
+		public Magento2SkyhubDataSourceImportInfo import_info { get; set; } = new Magento2SkyhubDataSourceImportInfo();
+		public Magento2SkyhubDataSourceStatus status { get; set; } = new Magento2SkyhubDataSourceStatus();
+		public List<Magento2SkyhubDataSourceItem> items { get; set; }
+		public List<Magento2SkyhubDataSourcePayment> payments { get; set; }
+		public Magento2SkyhubDataSourceCustomer customer { get; set; } = new Magento2SkyhubDataSourceCustomer();
+	}
+	#endregion
+
+	#region [ Magento2SkyhubDataSourceBillingAddress ]
+	public class Magento2SkyhubDataSourceBillingAddress
+	{
+		public string street { get; set; }
+		public string secondary_phone { get; set; }
+		public string region { get; set; }
+		public string reference { get; set; }
+		public string postcode { get; set; }
+		public string phone { get; set; }
+		public string number { get; set; }
+		public string neighborhood { get; set; }
+		public string full_name { get; set; }
+		public string detail { get; set; }
+		public string country { get; set; }
+		public string complement { get; set; }
+		public string city { get; set; }
+	}
+	#endregion
+
+	#region [ Magento2SkyhubDataSourceShippingAddress ]
+	public class Magento2SkyhubDataSourceShippingAddress
+	{
+		public string street { get; set; }
+		public string secondary_phone { get; set; }
+		public string region { get; set; }
+		public string reference { get; set; }
+		public string postcode { get; set; }
+		public string phone { get; set; }
+		public string number { get; set; }
+		public string neighborhood { get; set; }
+		public string full_name { get; set; }
+		public string detail { get; set; }
+		public string country { get; set; }
+		public string complement { get; set; }
+		public string city { get; set; }
+	}
+	#endregion
+
+	#region [ Magento2SkyhubDataSourceImportInfo ]
+	public class Magento2SkyhubDataSourceImportInfo
+	{
+		public string ss_name { get; set; }
+		public string remote_id { get; set; }
+		public string remote_code { get; set; }
+	}
+	#endregion
+
+	#region [ Magento2SkyhubDataSourceStatus ]
+	public class Magento2SkyhubDataSourceStatus
+	{
+		public string type { get; set; }
+		public string label { get; set; }
+		public string code { get; set; }
+	}
+	#endregion
+
+	#region [ Magento2SkyhubDataSourceItem ]
+	public class Magento2SkyhubDataSourceItem
+	{
+		public string special_price { get; set; }
+		public string shipping_cost { get; set; }
+		public string sale_fee { get; set; }
+		public string remote_store_id { get; set; }
+		public string qty { get; set; }
+		public string product_id { get; set; }
+		public string original_price { get; set; }
+		public string name { get; set; }
+		public string listing_type_id { get; set; }
+		public string id { get; set; }
+		public string gift_wrap { get; set; }
+		public string detail { get; set; }
+		public string delivery_line_id { get; set; }
+	}
+	#endregion
+
+	#region [ Magento2SkyhubDataSourcePayment ]
+	public class Magento2SkyhubDataSourcePayment
+	{
+		public string value { get; set; }
+		public string type { get; set; }
+		public string transaction_date { get; set; }
+		public string status { get; set; }
+		public string parcels { get; set; }
+		public string method { get; set; }
+		public string description { get; set; }
+		public string card_issuer { get; set; }
+		public string autorization_id { get; set; }
+		public Magento2SkyhubDataSourcePaymentSefaz sefaz { get; set; }
+	}
+	#endregion
+
+	#region [ Magento2SkyhubDataSourcePaymentSefaz ]
+	public class Magento2SkyhubDataSourcePaymentSefaz
+	{
+		public string type_integration { get; set; }
+		public string payment_indicator { get; set; }
+		public string name_payment { get; set; }
+		public string name_card_issuer { get; set; }
+		public string id_payment { get; set; }
+		public string id_card_issuer { get; set; }
+	}
+	#endregion
+
+	#region [ Magento2SkyhubDataSourceCustomer ]
+	public class Magento2SkyhubDataSourceCustomer
+	{
+		public string vat_number { get; set; }
+		public List<string> phones { get; set; }
+		public string name { get; set; }
+		public string gender { get; set; }
+		public string email { get; set; }
+		public string date_of_birth { get; set; }
+	}
+	#endregion
+
+	#endregion
 }
