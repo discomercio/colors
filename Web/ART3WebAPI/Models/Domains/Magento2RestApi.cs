@@ -1960,11 +1960,26 @@ namespace ART3WebAPI.Models.Domains
 						{
 							try
 							{
-								skyHubInfoItem = skyHubInfo.items.Single(p => p.product_id.Equals((item.sku ?? "")));
+								// O código do produto está no campo 'id' (o campo 'product_id' às vezes também contém o código, mas às vezes
+								// contém um texto. Ex: "Ecoturbo")
+								skyHubInfoItem = skyHubInfo.items.Single(p => p.id.Equals((item.sku ?? "")));
 							}
 							catch (Exception)
 							{
 								skyHubInfoItem = null;
+							}
+
+							// Caso não tenha encontrado usando o campo 'id', tenta com o campo 'product_id'
+							if (skyHubInfoItem == null)
+							{
+								try
+								{
+									skyHubInfoItem = skyHubInfo.items.Single(p => p.product_id.Equals((item.sku ?? "")));
+								}
+								catch (Exception)
+								{
+									skyHubInfoItem = null;
+								}
 							}
 
 							if (skyHubInfoItem != null)

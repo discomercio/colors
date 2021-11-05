@@ -60,8 +60,8 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.31";
-				public const string Data = "03.NOV.2021";
+				public const string Numero = "2.32";
+				public const string Data = "05.NOV.2021";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
 			#endregion
@@ -248,8 +248,29 @@ namespace ART3WebAPI.Models.Domains
 			 *             a determinação do valor real de venda de cada item individualmente quando o pedido
 			 *             possui mais de um item.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.32 - XX.XX.20XX - por XXX
-			 *      
+			 * v 2.32 - 05.11.2021 - por HHO
+			 *      Correção de bug em Magento2RestApi.processaGetPedido() ao recuperar os dados a partir
+			 *      do JSON da Skyhub. Ao localizar o item, estava sendo usado o campo 'product_id', mas
+			 *      esse campo às vezes contém o código do produto e outras vezes contém um texto (ex:
+			 *      "Ecoturbo"). Foi ajustado para que seja usado o campo 'id'.
+			 *      Exemplo detalhado (pedido Magento nº 300012970, Marketplace: Ponto Frio-29605057501)
+			 *          items": [
+			 *              {
+			 *                  "special_price": 1599,
+			 *                  "shipping_cost": 89.9,
+			 *                  "sale_fee": null,
+			 *                  "remote_store_id": null,
+			 *                  "qty": 1,
+			 *                  "product_id": "Ecoturbo",
+			 *                  "original_price": 1599,
+			 *                  "name": "Ar Condicionado Split Electrolux Ecoturbo",
+			 *                  "listing_type_id": null,
+			 *                  "id": "1092",
+			 *                  "gift_wrap": null,
+			 *                  "detail": null,
+			 *                  "delivery_line_id": null
+			 *              }
+			 *          ]
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.33 - XX.XX.20XX - por XXX
 			 *      
