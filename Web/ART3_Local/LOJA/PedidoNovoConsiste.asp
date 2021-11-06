@@ -794,10 +794,18 @@
 
 	if alerta = "" then
 		'Calcula o rateio do frete automaticamente?
+		'Importante: o frete grátis é um caso específico de valor de frete, pois essa rotina irá
+		'=========== calcular 2 valores:
+		' 1) Preço de venda do item: irá preencher automaticamente o preço de venda usando o valor
+		'    informado pelo Magento/marketplace já considerando os descontos. Se o produto for um
+		'    produto composto, irá fazer o rateio do preço de venda com base na proporção do preço
+		'    de lista.
+		' 2) Preço NF: irá calcular o preço de NF de forma que o valor do frete seja distribuído
+		'    entre os itens. No caso de ser um produto composto, também irá fazer o rateio com base
+		'    na proporção do preço de lista.
 		if (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO) then
 			if blnFlagCadSemiAutoPedMagentoRateioFreteAutomatico _
-				And (Trim("" & tMAP_XML("magento_api_versao")) = CStr(VERSAO_API_MAGENTO_V2_REST_JSON)) _
-				And (vl_frete_magento > 0) then
+				And (Trim("" & tMAP_XML("magento_api_versao")) = CStr(VERSAO_API_MAGENTO_V2_REST_JSON)) then
 				blnExecutarCadSemiAutoPedMagentoRateioFreteAutomatico = True
 				vl_total_produto_magento = 0
 				redim vItemCadSemiAutoPedMageRateioFreteAnalise(0)
@@ -1110,9 +1118,10 @@
 							end if
 						end if
 					end if 'if vlRateioFretePrecoNfDif <> 0
-				end if 'if blnFlagCadSemiAutoPedMagentoRateioFreteAutomatico And (Trim("" & tMAP_XML("magento_api_versao")) = CStr(VERSAO_API_MAGENTO_V2_REST_JSON)) And (vl_frete_magento > 0)
+				end if 'if blnFlagCadSemiAutoPedMagentoRateioFreteAutomatico And (Trim("" & tMAP_XML("magento_api_versao")) = CStr(VERSAO_API_MAGENTO_V2_REST_JSON))
 			end if 'if (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO)
 		end if 'if alerta = ""
+
 
 	if alerta = "" then
 		if (c_custoFinancFornecTipoParcelamento <> COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__A_VISTA) And _
@@ -1718,6 +1727,7 @@ end function
             }
 		});
 
+		recalcula_total_todas_linhas();
 		recalcula_RA();
 		recalcula_RA_Liquido();
 		recalcula_parcelas();
@@ -3528,7 +3538,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 				s_preco_venda = s_preco_lista
 				
 				s_readonly = ""
-				if (permite_RA_status = 1) And (rb_RA = "S") then 
+				if (permite_RA_status = 1) And (rb_RA = "S") then
 					s_vl_NF_readonly = ""
 					s_vl_NF = s_preco_venda
 				else
@@ -3539,11 +3549,16 @@ var perc_max_comissao_e_desconto_a_utilizar;
 					for j=LBound(vItemCadSemiAutoPedMageRateioFreteConsolidado) to UBound(vItemCadSemiAutoPedMageRateioFreteConsolidado)
 						if (.fabricante = vItemCadSemiAutoPedMageRateioFreteConsolidado(j).fabricante) And (.produto = vItemCadSemiAutoPedMageRateioFreteConsolidado(j).produto) then
 							s_preco_venda = formata_moeda(vItemCadSemiAutoPedMageRateioFreteConsolidado(j).preco_venda_medio)
-							s_vl_NF = formata_moeda(vItemCadSemiAutoPedMageRateioFreteConsolidado(j).preco_nf_medio)
+							if (permite_RA_status = 1) And (rb_RA = "S") then
+								s_vl_NF = formata_moeda(vItemCadSemiAutoPedMageRateioFreteConsolidado(j).preco_nf_medio)
+							else
+								s_vl_NF = ""
+								end if
 							exit for
 							end if
 						next
-					end if
+					end if 'if blnExecutarCadSemiAutoPedMagentoRateioFreteAutomatico
+
 				m_TotalItem=.qtde * converte_numero(s_preco_venda)
 			'	INICIALMENTE, O PRECO_NF É O MESMO VALOR DO PRECO_LISTA, FICANDO DIFERENTE APENAS SE FOR EDITADO
 				if converte_numero(s_vl_NF) > 0 then

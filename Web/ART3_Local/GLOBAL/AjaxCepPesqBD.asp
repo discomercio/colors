@@ -93,6 +93,32 @@
 		strSql = strSql & _
 				" UNION " & _
 				"SELECT" & _
+					" 'GRANDE_USUARIO' AS tabela_origem," & _
+					" GU.CEP_DIG AS cep," & _
+					" GU.UFE_SG AS uf," & _
+					" Loc.LOC_NOSUB AS localidade," & _
+					" Bai.BAI_NO AS bairro_extenso," & _
+					" Bai.BAI_NO_ABREV AS bairro_abreviado," & _
+					" Logr.LOG_TIPO_LOGRADOURO AS logradouro_tipo," & _
+					" Logr.LOG_NO AS logradouro_nome," & _
+					" GU.GRU_NO AS logradouro_complemento" & _
+				" FROM LOG_GRANDE_USUARIO GU" & _
+					" LEFT JOIN LOG_LOGRADOURO Logr ON (GU.LOG_NU_SEQUENCIAL = Logr.LOG_NU_SEQUENCIAL)" & _
+					" LEFT JOIN LOG_BAIRRO Bai ON (GU.BAI_NU_SEQUENCIAL = Bai.BAI_NU_SEQUENCIAL)" & _
+					" LEFT JOIN LOG_LOCALIDADE Loc ON (GU.LOC_NU_SEQUENCIAL = Loc.LOC_NU_SEQUENCIAL)" & _
+				" WHERE"
+
+		if len(s_cep) = 5 then
+			strSql = strSql & _
+						" (GU.CEP_DIG LIKE '" & s_cep & BD_CURINGA_TODOS & "')"
+		else
+			strSql = strSql & _
+						" (GU.CEP_DIG = '" & s_cep & "')"
+			end if
+
+		strSql = strSql & _
+				" UNION " & _
+				"SELECT" & _
 					" 'LOCALIDADE' AS tabela_origem," & _
 					" CEP_DIG AS cep," & _
 					" UFE_SG AS uf," & _
@@ -166,6 +192,33 @@
 						"(Logr.LOG_NO LIKE '" & BD_CURINGA_TODOS & QuotedStr(s_endereco) & BD_CURINGA_TODOS & "'" & SQL_COLLATE_CASE_ACCENT & ")"
 			end if
 		
+		strSql = strSql & _
+				" UNION " & _
+				"SELECT TOP 300" & _
+					" 'GRANDE_USUARIO' AS tabela_origem," & _
+					" GU.CEP_DIG AS cep," & _
+					" GU.UFE_SG AS uf," & _
+					" Loc.LOC_NOSUB AS localidade," & _
+					" Bai.BAI_NO AS bairro_extenso," & _
+					" Bai.BAI_NO_ABREV AS bairro_abreviado," & _
+					" Logr.LOG_TIPO_LOGRADOURO AS logradouro_tipo," & _
+					" Logr.LOG_NO AS logradouro_nome," & _
+					" GU.GRU_NO AS logradouro_complemento" & _
+				" FROM LOG_GRANDE_USUARIO GU" & _
+					" LEFT JOIN LOG_LOGRADOURO Logr ON (GU.LOG_NU_SEQUENCIAL = Logr.LOG_NU_SEQUENCIAL)" & _
+					" LEFT JOIN LOG_BAIRRO Bai ON (GU.BAI_NU_SEQUENCIAL = Bai.BAI_NU_SEQUENCIAL)" & _
+					" LEFT JOIN LOG_LOCALIDADE Loc ON (GU.LOC_NU_SEQUENCIAL = Loc.LOC_NU_SEQUENCIAL)" & _
+				" WHERE" & _
+					" (GU.UFE_SG = '" & s_uf & "')" & _
+					" AND " & _
+					"(Loc.LOC_NOSUB = '" & QuotedStr(s_localidade) & "'" & SQL_COLLATE_CASE_ACCENT & ")"
+
+		if s_endereco <> "" then
+			strSql = strSql & _
+						" AND " & _
+						"(Logr.LOG_NO LIKE '" & BD_CURINGA_TODOS & QuotedStr(s_endereco) & BD_CURINGA_TODOS & "'" & SQL_COLLATE_CASE_ACCENT & ")"
+			end if
+
 		strSql = strSql & _
 				" UNION " & _
 				"SELECT" & _
