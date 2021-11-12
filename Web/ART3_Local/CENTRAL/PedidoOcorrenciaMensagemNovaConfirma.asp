@@ -108,12 +108,16 @@
 	dim s_unidade_negocio
 	s_unidade_negocio = ""
 
+	dim rParamEmailAdministrador, sEmailAdministrador
+	set rParamEmailAdministrador = get_registro_t_parametro(ID_PARAMETRO_PEDIDO_OCORRENCIA_EMAIL_ADMINISTRADOR)
+	sEmailAdministrador = LCase(Trim("" & rParamEmailAdministrador.campo_texto))
+
 	dim rParamEmailRemetente, r_usuario
 	dim s_dados_cliente
 	s_dados_cliente = ""
 	if alerta = "" then
-		'Se encontrou e-mail do vendedor para enviar mensagem de aviso, obtém demais informações para a montagem da mensagem
-		if s_email_vendedor <> "" then
+		'Se encontrou e-mail do administrador de ocorrências ou do vendedor para enviar mensagem de aviso, obtém demais informações para a montagem da mensagem
+		if (sEmailAdministrador <> "") Or (s_email_vendedor <> "") then
 			set rParamEmailRemetente = get_registro_t_parametro(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__MENSAGEM_SISTEMA)
 			call le_usuario(usuario, r_usuario, msg_erro)
 
@@ -207,6 +211,48 @@
 			end if
 		
 		if alerta = "" then
+			'Envia e-mail para o administrador de ocorrências
+			if sEmailAdministrador <> "" then
+				if Trim("" & rParamEmailRemetente.campo_texto) <> "" then
+					'Verifica se o usuário que está gravando a mensagem é o próprio administrador de ocorrências
+					if LCase(sEmailAdministrador) <> LCase(Trim("" & r_usuario.email)) then
+						if (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__BS) Or (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__VRF) then
+							dtHrMensagem = Now
+
+							corpo_mensagem = "Usuário '" & usuario & "' (" & r_usuario.nome_iniciais_em_maiusculas & ") registrou uma mensagem no bloco de notas de Ocorrências do pedido " & pedido_selecionado & " em " & formata_data_hora_sem_seg(dtHrMensagem) & _
+											vbCrLf & _
+											"Pedido: " & pedido_selecionado & _
+											vbCrLf & _
+											s_dados_cliente & _
+											vbCrLf & _
+											"Ocorrência: " & s_descricao_motivo_abertura & _
+											vbCrLf & vbCrLf & _
+											String(30, "-") & "( Início )" & String(30, "-") & _
+											vbCrLf & _
+											c_texto & _
+											vbCrLf & _
+											String(31, "-") & "( Fim )" & String(32, "-") & _
+											vbCrLf & vbCrLf & _
+											"Atenção: esta é uma mensagem automática, NÃO responda a este e-mail!"
+
+							EmailSndSvcGravaMensagemParaEnvio Trim("" & rParamEmailRemetente.campo_texto), _
+															"", _
+															sEmailAdministrador, _
+															"", _
+															"", _
+															"Nova mensagem registrada no bloco de notas de Ocorrências do pedido " & pedido_selecionado, _
+															corpo_mensagem, _
+															Now, _
+															id_email, _
+															msg_erro_grava_email
+							end if 'if (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__BS) Or (s_unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__VRF)
+						end if 'if LCase(sEmailAdministrador) <> LCase(Trim("" & r_usuario.email))
+					end if 'if Trim("" & rParamEmailRemetente.campo_texto) <> ""
+				end if 'if sEmailAdministrador <> ""
+			end if 'if alerta = ""
+
+		if alerta = "" then
+			'Envia e-mail para o vendedor
 			if s_email_vendedor <> "" then
 				if Trim("" & rParamEmailRemetente.campo_texto) <> "" then
 					if UCase(usuario) <> UCase(r_pedido.vendedor) then
@@ -229,7 +275,6 @@
 											vbCrLf & vbCrLf & _
 											"Atenção: esta é uma mensagem automática, NÃO responda a este e-mail!"
 
-							'Envia e-mail para o vendedor
 							EmailSndSvcGravaMensagemParaEnvio Trim("" & rParamEmailRemetente.campo_texto), _
 															"", _
 															s_email_vendedor, _

@@ -301,7 +301,7 @@
                 if isLojaBonshop(loja) Or isLojaVrf(loja) then
                     dtHrMensagem = Now
 
-                    set strEmailAdministrador = get_registro_t_parametro("PEDIDO_OCORRENCIA_EMAIL_ADMINISTRADOR")
+                    set strEmailAdministrador = get_registro_t_parametro(ID_PARAMETRO_PEDIDO_OCORRENCIA_EMAIL_ADMINISTRADOR)
 					corpo_mensagem = "Usuário '" & usuario & "' (" & r_usuario.nome_iniciais_em_maiusculas & ") cadastrou uma nova ocorrência no pedido " & pedido_selecionado & " em " & formata_data_hora_sem_seg(dtHrMensagem) & _
 									vbCrLf & _
 									"Pedido: " & pedido_selecionado & _
