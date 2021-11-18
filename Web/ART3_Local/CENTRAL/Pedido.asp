@@ -2651,14 +2651,19 @@ function fPEDPreDevolucao(f) {
 <% if r_pedido.transportadora_id <> "" then %>
 <!--  TRANSPORTADORA   -->
 <br>
-<table width="649" class="Q" cellspacing="0">
+<table class="Q" style="width:649px;" cellspacing="0">
 <tr>
 	<%	s=formata_data_e_talvez_hora(r_pedido.transportadora_data)
 		if s <> "" then s = s & " - "
 		s = s & r_pedido.transportadora_id & " (" & x_transportadora(r_pedido.transportadora_id) & ")"
 		if s="" then s="&nbsp;"
 	%>
-	<td class="" align="left"><p class="Rf">TRANSPORTADORA</p><p class="C"><%=s%></p></td>
+	<td class="MD" align="left"><p class="Rf">TRANSPORTADORA</p><p class="C"><%=s%></p></td>
+
+	<%	s = formata_data(r_pedido.PrevisaoEntregaTranspData)
+		if s="" then s="&nbsp;"
+	%>
+	<td align="left" width="20%"><p class="Rf">PREVISÃO ENTREGA</p><p class="C"><%=s%></p></td>
 
 <!--   FRETES   -->
 
@@ -2694,9 +2699,6 @@ function fPEDPreDevolucao(f) {
         loop
         s = formata_moeda(vl_total_frete) 
     %>
-
-	
-	
 
 </tr>
 </table>

@@ -1926,6 +1926,9 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.PagtoAntecipadoQuitadoStatus = rs("PagtoAntecipadoQuitadoStatus")
 			.PagtoAntecipadoQuitadoDataHora = rs("PagtoAntecipadoQuitadoDataHora")
 			.PagtoAntecipadoQuitadoUsuario = Trim("" & rs("PagtoAntecipadoQuitadoUsuario"))
+			.PrevisaoEntregaTranspData = rs("PrevisaoEntregaTranspData")
+			.PrevisaoEntregaTranspUsuarioUltAtualiz = Trim("" & rs("PrevisaoEntregaTranspUsuarioUltAtualiz"))
+			.PrevisaoEntregaTranspDtHrUltAtualiz = rs("PrevisaoEntregaTranspDtHrUltAtualiz")
 			end with
 		end if
 

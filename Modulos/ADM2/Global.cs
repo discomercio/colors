@@ -28,8 +28,8 @@ namespace ADM2
 			{
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "ADM2";
-				public const string VERSAO_NUMERO = "1.10";
-				public const string VERSAO_DATA = "20.AGO.2020";
+				public const string VERSAO_NUMERO = "1.11";
+				public const string VERSAO_DATA = "18.NOV.2021";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Módulo Administrativo";
@@ -100,8 +100,10 @@ namespace ADM2
 			 *		  Ajustes na rotina que registra o recebimento do pedido pelo cliente para tratar a
 			 *		  eventual situação do número de série da NF ser informado com dado inválido no arquivo.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.11 - XX.XX.20XX - por XXX
-			 *		  
+			 * v 1.11 - 18.11.2021 - por HHO
+			 *		  Implementação de tratamento para a data de previsão de entrega informada pela trans-
+			 *		  portadora no mesmo arquivo CSV usado para processar o recebimento do pedido pelo
+			 *		  cliente.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.12 - XX.XX.20XX - por XXX
 			 *		  
@@ -209,6 +211,7 @@ namespace ADM2
 					public const String OP_LOG_PEDIDO_RECEBIDO_VIA_ADM2 = "ADM2-PEDIDO RECEBIDO";
 					public const String OP_LOG_PEDIDO_RECEBIDO = "PEDIDO RECEBIDO";
 					public const String OP_LOG_PEDIDO_RECEBIDO_MARKETPLACE = "PEDIDO RECEBIDO MKTP";
+					public const String OP_LOG_PEDIDO_ATUALIZA_PREVISAO_ENTREGA_TRANSP = "PED PREV ETG TRANSP";
 				}
 				#endregion
 
@@ -224,6 +227,7 @@ namespace ADM2
 				public static class ID_T_PARAMETRO
 				{
 					public const string VERSAO_ULT_ARQ_IBPT_CSV_CARREGADO = "ADM2_VersaoUltArqIbptCsvCarregado";
+					public const string ADM2_PROCESSAR_DATA_PREVISAO_ENTREGA_TRANSPORTADORA = "ADM2_ProcessarDataPrevisaoEntregaTransportadora";
 				}
 				#endregion
 			}
