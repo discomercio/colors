@@ -69,12 +69,13 @@ namespace ADM2
 		/// Retorna um objeto Pedido contendo os dados lidos do BD
 		/// </summary>
 		/// <param name="numeroPedido">
+		/// <param name="flagNaoCarregarItens">Flag que indica para não carregar os dados de itens do pedido quando não forem necessários a fim de agilizar o processamento</param>
 		/// Número do pedido
 		/// </param>
 		/// <returns>
 		/// Retorna um objeto Pedido contendo os dados lidos do BD
 		/// </returns>
-		public Pedido getPedido(String numeroPedido)
+		public Pedido getPedido(String numeroPedido, bool flagNaoCarregarItens)
 		{
 			#region [ Declarações ]
 			String strSql;
@@ -252,6 +253,10 @@ namespace ADM2
 			pedido.MarketplacePedidoRecebidoRegistradoStatus = BD.readToByte(rowResultado["MarketplacePedidoRecebidoRegistradoStatus"]);
 			pedido.MarketplacePedidoRecebidoRegistradoDataHora = BD.readToDateTime(rowResultado["MarketplacePedidoRecebidoRegistradoDataHora"]);
 			pedido.MarketplacePedidoRecebidoRegistradoUsuario = BD.readToString(rowResultado["MarketplacePedidoRecebidoRegistradoUsuario"]);
+			pedido.PrevisaoEntregaTranspData = BD.readToDateTime(rowResultado["PrevisaoEntregaTranspData"]);
+			pedido.PrevisaoEntregaTranspUsuarioUltAtualiz = BD.readToString(rowResultado["PrevisaoEntregaTranspUsuarioUltAtualiz"]);
+			pedido.PrevisaoEntregaTranspDtHrUltAtualiz = BD.readToDateTime(rowResultado["PrevisaoEntregaTranspDtHrUltAtualiz"]);
+			pedido.PrevisaoEntregaTranspDataAnterior = BD.readToDateTime(rowResultado["PrevisaoEntregaTranspDataAnterior"]);
 			#endregion
 
 			#endregion
@@ -330,132 +335,134 @@ namespace ADM2
 			#endregion
 
 			#region [ Pesquisa itens do pedido ]
-
-			#region [ Monta Select ]
-			strSql = "SELECT " +
-						"*" +
-					" FROM t_PEDIDO_ITEM" +
-					" WHERE" +
-						" (pedido = '" + numeroPedido + "')" +
-					" ORDER BY" +
-						" sequencia";
-			#endregion
-
-			#region [ Executa a consulta ]
-			cmCommand.CommandText = strSql;
-			dtbResultado.Reset();
-			daDataAdapter.Fill(dtbResultado);
-			#endregion
-
-			if (dtbResultado.Rows.Count == 0) throw new Exception("Itens do pedido nº " + numeroPedido + " não foram encontrados!!");
-
-			#region [ Carrega os dados ]
-			for (int i = 0; i < dtbResultado.Rows.Count; i++)
+			if (!flagNaoCarregarItens)
 			{
-				rowResultado = dtbResultado.Rows[i];
-				pedidoItem = new PedidoItem();
-				pedidoItem.pedido = BD.readToString(rowResultado["pedido"]);
-				pedidoItem.fabricante = BD.readToString(rowResultado["fabricante"]);
-				pedidoItem.produto = BD.readToString(rowResultado["produto"]);
-				pedidoItem.qtde = BD.readToShort(rowResultado["qtde"]);
-				pedidoItem.desc_dado = BD.readToSingle(rowResultado["desc_dado"]);
-				pedidoItem.preco_venda = BD.readToDecimal(rowResultado["preco_venda"]);
-				pedidoItem.preco_fabricante = BD.readToDecimal(rowResultado["preco_fabricante"]);
-				pedidoItem.preco_lista = BD.readToDecimal(rowResultado["preco_lista"]);
-				pedidoItem.margem = BD.readToSingle(rowResultado["margem"]);
-				pedidoItem.desc_max = BD.readToSingle(rowResultado["desc_max"]);
-				pedidoItem.comissao = BD.readToSingle(rowResultado["comissao"]);
-				pedidoItem.descricao = BD.readToString(rowResultado["descricao"]);
-				pedidoItem.ean = BD.readToString(rowResultado["ean"]);
-				pedidoItem.grupo = BD.readToString(rowResultado["grupo"]);
-				pedidoItem.peso = BD.readToSingle(rowResultado["peso"]);
-				pedidoItem.qtde_volumes = BD.readToShort(rowResultado["qtde_volumes"]);
-				pedidoItem.abaixo_min_status = BD.readToShort(rowResultado["abaixo_min_status"]);
-				pedidoItem.abaixo_min_autorizacao = BD.readToString(rowResultado["abaixo_min_autorizacao"]);
-				pedidoItem.abaixo_min_autorizador = BD.readToString(rowResultado["abaixo_min_autorizador"]);
-				pedidoItem.sequencia = BD.readToShort(rowResultado["sequencia"]);
-				pedidoItem.markup_fabricante = BD.readToSingle(rowResultado["markup_fabricante"]);
-				pedidoItem.preco_NF = BD.readToDecimal(rowResultado["preco_NF"]);
-				pedidoItem.abaixo_min_superv_autorizador = BD.readToString(rowResultado["abaixo_min_superv_autorizador"]);
-				pedidoItem.vl_custo2 = BD.readToDecimal(rowResultado["vl_custo2"]);
-				pedidoItem.descricao_html = BD.readToString(rowResultado["descricao_html"]);
-				pedidoItem.custoFinancFornecCoeficiente = BD.readToSingle(rowResultado["custoFinancFornecCoeficiente"]);
-				pedidoItem.custoFinancFornecPrecoListaBase = BD.readToDecimal(rowResultado["custoFinancFornecPrecoListaBase"]);
-				pedido.listaPedidoItem.Add(pedidoItem);
+				#region [ Monta Select ]
+				strSql = "SELECT " +
+							"*" +
+						" FROM t_PEDIDO_ITEM" +
+						" WHERE" +
+							" (pedido = '" + numeroPedido + "')" +
+						" ORDER BY" +
+							" sequencia";
+				#endregion
 
-				pedido.vlTotalPrecoNfDestePedido += pedidoItem.qtde * pedidoItem.preco_NF;
-				pedido.vlTotalPrecoVendaDestePedido += pedidoItem.qtde * pedidoItem.preco_venda;
+				#region [ Executa a consulta ]
+				cmCommand.CommandText = strSql;
+				dtbResultado.Reset();
+				daDataAdapter.Fill(dtbResultado);
+				#endregion
+
+				if (dtbResultado.Rows.Count == 0) throw new Exception("Itens do pedido nº " + numeroPedido + " não foram encontrados!!");
+
+				#region [ Carrega os dados ]
+				for (int i = 0; i < dtbResultado.Rows.Count; i++)
+				{
+					rowResultado = dtbResultado.Rows[i];
+					pedidoItem = new PedidoItem();
+					pedidoItem.pedido = BD.readToString(rowResultado["pedido"]);
+					pedidoItem.fabricante = BD.readToString(rowResultado["fabricante"]);
+					pedidoItem.produto = BD.readToString(rowResultado["produto"]);
+					pedidoItem.qtde = BD.readToShort(rowResultado["qtde"]);
+					pedidoItem.desc_dado = BD.readToSingle(rowResultado["desc_dado"]);
+					pedidoItem.preco_venda = BD.readToDecimal(rowResultado["preco_venda"]);
+					pedidoItem.preco_fabricante = BD.readToDecimal(rowResultado["preco_fabricante"]);
+					pedidoItem.preco_lista = BD.readToDecimal(rowResultado["preco_lista"]);
+					pedidoItem.margem = BD.readToSingle(rowResultado["margem"]);
+					pedidoItem.desc_max = BD.readToSingle(rowResultado["desc_max"]);
+					pedidoItem.comissao = BD.readToSingle(rowResultado["comissao"]);
+					pedidoItem.descricao = BD.readToString(rowResultado["descricao"]);
+					pedidoItem.ean = BD.readToString(rowResultado["ean"]);
+					pedidoItem.grupo = BD.readToString(rowResultado["grupo"]);
+					pedidoItem.peso = BD.readToSingle(rowResultado["peso"]);
+					pedidoItem.qtde_volumes = BD.readToShort(rowResultado["qtde_volumes"]);
+					pedidoItem.abaixo_min_status = BD.readToShort(rowResultado["abaixo_min_status"]);
+					pedidoItem.abaixo_min_autorizacao = BD.readToString(rowResultado["abaixo_min_autorizacao"]);
+					pedidoItem.abaixo_min_autorizador = BD.readToString(rowResultado["abaixo_min_autorizador"]);
+					pedidoItem.sequencia = BD.readToShort(rowResultado["sequencia"]);
+					pedidoItem.markup_fabricante = BD.readToSingle(rowResultado["markup_fabricante"]);
+					pedidoItem.preco_NF = BD.readToDecimal(rowResultado["preco_NF"]);
+					pedidoItem.abaixo_min_superv_autorizador = BD.readToString(rowResultado["abaixo_min_superv_autorizador"]);
+					pedidoItem.vl_custo2 = BD.readToDecimal(rowResultado["vl_custo2"]);
+					pedidoItem.descricao_html = BD.readToString(rowResultado["descricao_html"]);
+					pedidoItem.custoFinancFornecCoeficiente = BD.readToSingle(rowResultado["custoFinancFornecCoeficiente"]);
+					pedidoItem.custoFinancFornecPrecoListaBase = BD.readToDecimal(rowResultado["custoFinancFornecPrecoListaBase"]);
+					pedido.listaPedidoItem.Add(pedidoItem);
+
+					pedido.vlTotalPrecoNfDestePedido += pedidoItem.qtde * pedidoItem.preco_NF;
+					pedido.vlTotalPrecoVendaDestePedido += pedidoItem.qtde * pedidoItem.preco_venda;
+				}
+				#endregion
 			}
-			#endregion
-
 			#endregion
 
 			#region [ Pesquisa itens devolvidos ]
-
-			#region [ Monta Select ]
-			strSql = "SELECT " +
-						"*" +
-					" FROM t_PEDIDO_ITEM_DEVOLVIDO" +
-					" WHERE" +
-						" (pedido = '" + numeroPedido + "')" +
-					" ORDER BY" +
-						" devolucao_data," +
-						" devolucao_hora";
-			#endregion
-
-			#region [ Executa a consulta ]
-			cmCommand.CommandText = strSql;
-			dtbResultado.Reset();
-			daDataAdapter.Fill(dtbResultado);
-			#endregion
-
-			#region [ Carrega os dados ]
-			for (int i = 0; i < dtbResultado.Rows.Count; i++)
+			if (!flagNaoCarregarItens)
 			{
-				rowResultado = dtbResultado.Rows[i];
-				pedidoItemDevolvido = new PedidoItemDevolvido();
-				pedidoItemDevolvido.id = BD.readToString(rowResultado["id"]);
-				pedidoItemDevolvido.devolucao_data = BD.readToDateTime(rowResultado["devolucao_data"]);
-				pedidoItemDevolvido.devolucao_hora = BD.readToString(rowResultado["devolucao_hora"]);
-				pedidoItemDevolvido.devolucao_usuario = BD.readToString(rowResultado["devolucao_usuario"]);
-				pedidoItemDevolvido.pedido = BD.readToString(rowResultado["pedido"]);
-				pedidoItemDevolvido.fabricante = BD.readToString(rowResultado["fabricante"]);
-				pedidoItemDevolvido.produto = BD.readToString(rowResultado["produto"]);
-				pedidoItemDevolvido.qtde = BD.readToShort(rowResultado["qtde"]);
-				pedidoItemDevolvido.desc_dado = BD.readToSingle(rowResultado["desc_dado"]);
-				pedidoItemDevolvido.preco_venda = BD.readToDecimal(rowResultado["preco_venda"]);
-				pedidoItemDevolvido.preco_fabricante = BD.readToDecimal(rowResultado["preco_fabricante"]);
-				pedidoItemDevolvido.preco_lista = BD.readToDecimal(rowResultado["preco_lista"]);
-				pedidoItemDevolvido.margem = BD.readToSingle(rowResultado["margem"]);
-				pedidoItemDevolvido.desc_max = BD.readToSingle(rowResultado["desc_max"]);
-				pedidoItemDevolvido.comissao = BD.readToSingle(rowResultado["comissao"]);
-				pedidoItemDevolvido.descricao = BD.readToString(rowResultado["descricao"]);
-				pedidoItemDevolvido.ean = BD.readToString(rowResultado["ean"]);
-				pedidoItemDevolvido.grupo = BD.readToString(rowResultado["grupo"]);
-				pedidoItemDevolvido.peso = BD.readToSingle(rowResultado["peso"]);
-				pedidoItemDevolvido.qtde_volumes = BD.readToShort(rowResultado["qtde_volumes"]);
-				pedidoItemDevolvido.abaixo_min_status = BD.readToShort(rowResultado["abaixo_min_status"]);
-				pedidoItemDevolvido.abaixo_min_autorizacao = BD.readToString(rowResultado["abaixo_min_autorizacao"]);
-				pedidoItemDevolvido.abaixo_min_autorizador = BD.readToString(rowResultado["abaixo_min_autorizador"]);
-				pedidoItemDevolvido.markup_fabricante = BD.readToSingle(rowResultado["markup_fabricante"]);
-				pedidoItemDevolvido.motivo = BD.readToString(rowResultado["motivo"]);
-				pedidoItemDevolvido.preco_NF = BD.readToDecimal(rowResultado["preco_NF"]);
-				pedidoItemDevolvido.comissao_descontada = BD.readToShort(rowResultado["comissao_descontada"]);
-				pedidoItemDevolvido.comissao_descontada_ult_op = BD.readToString(rowResultado["comissao_descontada_ult_op"]);
-				pedidoItemDevolvido.comissao_descontada_data = BD.readToDateTime(rowResultado["comissao_descontada_data"]);
-				pedidoItemDevolvido.comissao_descontada_usuario = BD.readToString(rowResultado["comissao_descontada_usuario"]);
-				pedidoItemDevolvido.abaixo_min_superv_autorizador = BD.readToString(rowResultado["abaixo_min_superv_autorizador"]);
-				pedidoItemDevolvido.vl_custo2 = BD.readToDecimal(rowResultado["vl_custo2"]);
-				pedidoItemDevolvido.descricao_html = BD.readToString(rowResultado["descricao_html"]);
-				pedidoItemDevolvido.custoFinancFornecCoeficiente = BD.readToSingle(rowResultado["custoFinancFornecCoeficiente"]);
-				pedidoItemDevolvido.custoFinancFornecPrecoListaBase = BD.readToDecimal(rowResultado["custoFinancFornecPrecoListaBase"]);
-				pedido.listaPedidoItemDevolvido.Add(pedidoItemDevolvido);
+				#region [ Monta Select ]
+				strSql = "SELECT " +
+							"*" +
+						" FROM t_PEDIDO_ITEM_DEVOLVIDO" +
+						" WHERE" +
+							" (pedido = '" + numeroPedido + "')" +
+						" ORDER BY" +
+							" devolucao_data," +
+							" devolucao_hora";
+				#endregion
 
-				pedido.vlTotalPrecoNfDestePedido -= pedidoItemDevolvido.qtde * pedidoItemDevolvido.preco_NF;
-				pedido.vlTotalPrecoVendaDestePedido -= pedidoItemDevolvido.qtde * pedidoItemDevolvido.preco_venda;
+				#region [ Executa a consulta ]
+				cmCommand.CommandText = strSql;
+				dtbResultado.Reset();
+				daDataAdapter.Fill(dtbResultado);
+				#endregion
+
+				#region [ Carrega os dados ]
+				for (int i = 0; i < dtbResultado.Rows.Count; i++)
+				{
+					rowResultado = dtbResultado.Rows[i];
+					pedidoItemDevolvido = new PedidoItemDevolvido();
+					pedidoItemDevolvido.id = BD.readToString(rowResultado["id"]);
+					pedidoItemDevolvido.devolucao_data = BD.readToDateTime(rowResultado["devolucao_data"]);
+					pedidoItemDevolvido.devolucao_hora = BD.readToString(rowResultado["devolucao_hora"]);
+					pedidoItemDevolvido.devolucao_usuario = BD.readToString(rowResultado["devolucao_usuario"]);
+					pedidoItemDevolvido.pedido = BD.readToString(rowResultado["pedido"]);
+					pedidoItemDevolvido.fabricante = BD.readToString(rowResultado["fabricante"]);
+					pedidoItemDevolvido.produto = BD.readToString(rowResultado["produto"]);
+					pedidoItemDevolvido.qtde = BD.readToShort(rowResultado["qtde"]);
+					pedidoItemDevolvido.desc_dado = BD.readToSingle(rowResultado["desc_dado"]);
+					pedidoItemDevolvido.preco_venda = BD.readToDecimal(rowResultado["preco_venda"]);
+					pedidoItemDevolvido.preco_fabricante = BD.readToDecimal(rowResultado["preco_fabricante"]);
+					pedidoItemDevolvido.preco_lista = BD.readToDecimal(rowResultado["preco_lista"]);
+					pedidoItemDevolvido.margem = BD.readToSingle(rowResultado["margem"]);
+					pedidoItemDevolvido.desc_max = BD.readToSingle(rowResultado["desc_max"]);
+					pedidoItemDevolvido.comissao = BD.readToSingle(rowResultado["comissao"]);
+					pedidoItemDevolvido.descricao = BD.readToString(rowResultado["descricao"]);
+					pedidoItemDevolvido.ean = BD.readToString(rowResultado["ean"]);
+					pedidoItemDevolvido.grupo = BD.readToString(rowResultado["grupo"]);
+					pedidoItemDevolvido.peso = BD.readToSingle(rowResultado["peso"]);
+					pedidoItemDevolvido.qtde_volumes = BD.readToShort(rowResultado["qtde_volumes"]);
+					pedidoItemDevolvido.abaixo_min_status = BD.readToShort(rowResultado["abaixo_min_status"]);
+					pedidoItemDevolvido.abaixo_min_autorizacao = BD.readToString(rowResultado["abaixo_min_autorizacao"]);
+					pedidoItemDevolvido.abaixo_min_autorizador = BD.readToString(rowResultado["abaixo_min_autorizador"]);
+					pedidoItemDevolvido.markup_fabricante = BD.readToSingle(rowResultado["markup_fabricante"]);
+					pedidoItemDevolvido.motivo = BD.readToString(rowResultado["motivo"]);
+					pedidoItemDevolvido.preco_NF = BD.readToDecimal(rowResultado["preco_NF"]);
+					pedidoItemDevolvido.comissao_descontada = BD.readToShort(rowResultado["comissao_descontada"]);
+					pedidoItemDevolvido.comissao_descontada_ult_op = BD.readToString(rowResultado["comissao_descontada_ult_op"]);
+					pedidoItemDevolvido.comissao_descontada_data = BD.readToDateTime(rowResultado["comissao_descontada_data"]);
+					pedidoItemDevolvido.comissao_descontada_usuario = BD.readToString(rowResultado["comissao_descontada_usuario"]);
+					pedidoItemDevolvido.abaixo_min_superv_autorizador = BD.readToString(rowResultado["abaixo_min_superv_autorizador"]);
+					pedidoItemDevolvido.vl_custo2 = BD.readToDecimal(rowResultado["vl_custo2"]);
+					pedidoItemDevolvido.descricao_html = BD.readToString(rowResultado["descricao_html"]);
+					pedidoItemDevolvido.custoFinancFornecCoeficiente = BD.readToSingle(rowResultado["custoFinancFornecCoeficiente"]);
+					pedidoItemDevolvido.custoFinancFornecPrecoListaBase = BD.readToDecimal(rowResultado["custoFinancFornecPrecoListaBase"]);
+					pedido.listaPedidoItemDevolvido.Add(pedidoItemDevolvido);
+
+					pedido.vlTotalPrecoNfDestePedido -= pedidoItemDevolvido.qtde * pedidoItemDevolvido.preco_NF;
+					pedido.vlTotalPrecoVendaDestePedido -= pedidoItemDevolvido.qtde * pedidoItemDevolvido.preco_venda;
+				}
+				#endregion
 			}
-			#endregion
-
 			#endregion
 
 			#region [ Calcula valor total já pago ]
@@ -626,18 +633,15 @@ namespace ADM2
 		/// <param name="cnpjEmitente">CNPJ do emitente da NF</param>
 		/// <param name="serieNF">Número da série da NF</param>
 		/// <param name="numeroNF">Número da NF</param>
+		/// <param name="flagNaoCarregarItens">Flag que indica para não carregar os dados de itens do pedido quando não forem necessários a fim de agilizar o processamento</param>
 		/// <returns></returns>
-		public List<Pedido> getPedidoByNF(string cnpjEmitente, int serieNF, int numeroNF)
+		public List<Pedido> getPedidoByNF(string cnpjEmitente, int serieNF, int numeroNF, bool flagNaoCarregarItens)
 		{
 			#region [ Declarações ]
-			const int MAX_TAMANHO_OBS_2 = 10;
-			int iStep = 0;
 			bool blnAchou;
 			String strSql;
 			String strPedido;
 			String strListaIdNfeEmitente = "";
-			String strNfZeroPadding;
-			String strListaNF = "";
 			SqlCommand cmCommand;
 			SqlDataAdapter daDataAdapter;
 			DataTable dtbResultado = new DataTable();
@@ -722,7 +726,7 @@ namespace ADM2
 				{
 					try
 					{
-						pedido = pedidoDAO.getPedido(strPedido);
+						pedido = pedidoDAO.getPedido(strPedido, flagNaoCarregarItens);
 					}
 					catch (Exception)
 					{
@@ -742,18 +746,10 @@ namespace ADM2
 			//		'obs_2': número da NFe de fatura
 			//		'obs_3': número da NFe de remessa, quando houver
 			// Esses campos podem ser preenchidos tanto automaticamente pelo sistema durante a emissão da NFe quanto serem editados manualmente.
-			// E como esses campos armazenam em formato texto, a consulta será feita de forma a tentar maximizar a capacidade de pesquisa p/ os
-			// casos em que foram cadastrados zeros à esquerda
-			strListaNF = "'" + numeroNF.ToString() + "'";
-			while (true)
-			{
-				iStep++;
-				strNfZeroPadding = (new String('0', iStep)) + numeroNF.ToString();
-				if (strListaNF.Length > 0) strListaNF += ", ";
-				strListaNF += "'" + strNfZeroPadding + "'";
-				if (strNfZeroPadding.Length >= MAX_TAMANHO_OBS_2) break;
-			}
-
+			// E como esses campos armazenam em formato texto, foram criados posteriormente os campos 'computed' para disponibilizar a informação
+			// em campos do tipo 'int' a fim de facilitar a pesquisa sem se preocupar com a quantidade de zeros formatados à esquerda do número.
+			//		'num_obs_2': conteúdo do campo 'obs_2' convertido para 'int'
+			//		'num_obs_3': conteúdo do campo 'obs_3' convertido para 'int'
 			#region [ Monta Select ]
 			strSql = "SELECT" +
 						" pedido" +
@@ -763,9 +759,9 @@ namespace ADM2
 						" AND (data >= " + Global.sqlMontaDateTimeParaSqlDateTime(DateTime.Today.AddMonths(-12)) + ")" +
 						" AND " +
 							"(" +
-								"(obs_2 IN (" + strListaNF + "))" +
+								"(num_obs_2 = " + numeroNF.ToString() + ")" +
 								" OR " +
-								"(obs_3 IN (" + strListaNF + "))" +
+								"(num_obs_3 = " + numeroNF.ToString() + ")" +
 							")" +
 					" ORDER BY" +
 						" data DESC";
@@ -784,7 +780,7 @@ namespace ADM2
 				strPedido = BD.readToString(rowResultado["pedido"]);
 				try
 				{
-					pedido = pedidoDAO.getPedido(strPedido);
+					pedido = pedidoDAO.getPedido(strPedido, flagNaoCarregarItens);
 				}
 				catch (Exception)
 				{

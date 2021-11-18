@@ -1246,21 +1246,17 @@ function fCLIConsulta() {
 <% if r_pedido.transportadora_id <> "" then %>
 <!--  TRANSPORTADORA   -->
 <br>
-<table width="649" class="Q" cellspacing="0">
+<table class="Q" style="width:649px;" cellspacing="0">
 <tr>
 	<%	s = r_pedido.transportadora_id & " (" & x_transportadora(r_pedido.transportadora_id) & ")"
 		if s="" then s="&nbsp;"
 	%>
 	<td class="MD" align="left"><p class="Rf">TRANSPORTADORA</p><p class="C"><%=s%></p></td>
 
-	<%	if r_pedido.frete_status <> 0 then
-			s = formata_moeda(r_pedido.frete_valor)
-		else
-			s = ""
-			end if
-		if s = "" then s = "&nbsp;"
+	<%	s = formata_data(r_pedido.PrevisaoEntregaTranspData)
+		if s="" then s="&nbsp;"
 	%>
-	<td align="right" style="width:65px;"><p class="Rf">FRETE (<%=SIMBOLO_MONETARIO%>)&nbsp;</p><p class="Cd"><%=s%></p></td>
+	<td align="left" width="20%"><p class="Rf">PREVISÃO ENTREGA</p><p class="C"><%=s%></p></td>
 </tr>
 </table>
 <% end if %>

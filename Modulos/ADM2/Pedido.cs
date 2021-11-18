@@ -904,6 +904,11 @@ namespace ADM2
 			get { return _MarketplacePedidoRecebidoRegistradoUsuario; }
 			set { _MarketplacePedidoRecebidoRegistradoUsuario = value; }
 		}
+
+		public DateTime PrevisaoEntregaTranspData { get; set; }
+		public string PrevisaoEntregaTranspUsuarioUltAtualiz { get; set; }
+		public DateTime PrevisaoEntregaTranspDtHrUltAtualiz { get; set; }
+		public DateTime PrevisaoEntregaTranspDataAnterior { get; set; }
 		#endregion
 	}
 

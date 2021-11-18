@@ -1893,7 +1893,7 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 <% if r_pedido.transportadora_id <> "" then %>
 <!--  TRANSPORTADORA   -->
 <br>
-<table width="649" class="Q" cellspacing="0">
+<table class="Q" style="width:649px;" cellspacing="0">
 <tr>
 	<%	s=formata_data_e_talvez_hora(r_pedido.transportadora_data)
 		if s <> "" then s = s & " - "
@@ -1901,7 +1901,12 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 		if s="" then s="&nbsp;"
 	%>
 	<td class="MD" align="left"><p class="Rf">TRANSPORTADORA</p><p class="C"><%=s%></p></td>
-	
+
+	<%	s = formata_data(r_pedido.PrevisaoEntregaTranspData)
+		if s="" then s="&nbsp;"
+	%>
+	<td align="left" width="20%"><p class="Rf">PREVISÃO ENTREGA</p><p class="C"><%=s%></p></td>
+
 <!--   FRETES   -->
 
     <%  s = "SELECT * FROM t_PEDIDO_FRETE WHERE pedido='" & r_pedido.pedido & "' ORDER BY dt_cadastro" 
