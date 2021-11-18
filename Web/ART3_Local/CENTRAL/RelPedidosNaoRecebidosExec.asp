@@ -318,8 +318,9 @@ dim strTransportadora, strTransportadoraAnterior, strTransportadoraAux, strPlura
 dim strCidade, strUf, strCidadeUf
 dim intQtdeTotalPedidos, intQtdeTransportadoras
 dim intQtdeSubTotalPedidos, s_grupo_origem, nColSpan
+dim s_cor, s_dias
 
-	nColSpan = 7
+	nColSpan = 9
 	if blnSaidaExcel then nColSpan = nColSpan - 1
 
 '	CRITÉRIOS DE RESTRIÇÃO
@@ -386,6 +387,7 @@ dim intQtdeSubTotalPedidos, s_grupo_origem, nColSpan
 				" p.obs_2," & _
 				" p.obs_3," & _
 				" p.loja," & _
+				" p.PrevisaoEntregaTranspData," & _
 				" p.st_end_entrega," & _
 				" p.EndEtg_cidade," & _
 				" p.EndEtg_uf,"
@@ -420,7 +422,9 @@ dim intQtdeSubTotalPedidos, s_grupo_origem, nColSpan
 		cab = _
 			"	<tr style='background:azure' nowrap>" & chr(13) & _
 			"		<td class='MDTE tdDataEntrega' align='center' valign='bottom' nowrap><span class='Rc'>Data Coleta</span></td>" & chr(13) & _
-			"		<td class='MTD tdRecebido' align='center' valign='bottom' nowrap><span class='Rc'>Receb</span></td>" &  chr(13) & _
+			"		<td class='MTD tdPrevEtg' align='center' valign='bottom' nowrap><span class='Rc'>Prev Etg</span></td>" & chr(13) & _
+			"		<td class='MTD tdAtraso' align='right' valign='bottom' nowrap><span class='Rd' style='font-weight:bold;'>Atraso</span></td>" & chr(13) & _
+			"		<td class='MTD tdRecebido' align='center' valign='bottom' nowrap><span class='Rc'>Receb</span></td>" & chr(13) & _
 			"		<td class='MTD tdPedido' valign='bottom' nowrap><span class='R'>Pedido</span></td>" &  chr(13) & _
 			"		<td class='MTD tdCidade' valign='bottom' nowrap><span class='R' style='text-align:left;'>Cidade</span></td>" &  chr(13) & _
 			"		<td class='MTD tdObs2' valign='bottom' nowrap><span class='R' style='text-align:left;'>NF</span></td>" &  chr(13) & _
@@ -430,7 +434,9 @@ dim intQtdeSubTotalPedidos, s_grupo_origem, nColSpan
 	else
 		cab = _
 			"	<tr style='background:azure' nowrap>" & chr(13) & _
-			"		<td class='MDTE tdDataEntrega' align='center' valign='bottom' nowrap style='width:100px;><span class='Rc' style='font-weight:bold;text-align:center;'>Data Coleta</span></td>" & chr(13) & _
+			"		<td class='MDTE tdDataEntrega' align='center' valign='bottom' nowrap style='width:90px;><span class='Rc' style='font-weight:bold;text-align:center;'>Data Coleta</span></td>" & chr(13) & _
+			"		<td class='MTD tdPrevEtg' align='center' valign='bottom' nowrap style='width:90px;><span class='Rc' style='font-weight:bold;text-align:center;'>Prev Etg</span></td>" & chr(13) & _
+			"		<td class='MTD tdAtraso' align='right' valign='bottom' nowrap style='width:60px;><span class='Rd' style='font-weight:bold;text-align:right;'>Atraso</span></td>" & chr(13) & _
 			"		<td class='MTD tdPedido' valign='bottom' nowrap style='width:90px;><span class='R' style='font-weight:bold;'>Pedido</span></td>" &  chr(13) & _
 			"		<td class='MTD tdCidade' valign='bottom' nowrap style='width:300px;><span class='R' style='font-weight:bold;text-align:left;'>Cidade</span></td>" &  chr(13) & _
 			"		<td class='MTD tdObs2' valign='bottom' nowrap style='width:80px;><span class='R' style='font-weight:bold;text-align:left;'>NF</span></td>" &  chr(13) & _
@@ -514,6 +520,49 @@ dim intQtdeSubTotalPedidos, s_grupo_origem, nColSpan
 				"<p class='Cc' style='text-align:center;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</p>"
 			end if
 
+		x = x & "</td>" & chr(13)
+
+	'>  DATA PREVISÃO DE ENTREGA
+		s_cor = "black"
+		if Trim("" & r("PrevisaoEntregaTranspData")) <> "" then
+			if r("PrevisaoEntregaTranspData") > Date then
+				s_cor = "green"
+			elseif r("PrevisaoEntregaTranspData") < Date then
+				s_cor = "red"
+				end if
+			end if
+
+		x = x & "		<td class='MTD tdPrevEtg' align='center'>"
+		if Not blnSaidaExcel then
+			x = x & _
+					"<input type='text' class='Cc cDtPrevEtg' style='border:0;width:60px;color:" & s_cor & ";' name='c_dt_prev_etg' id='c_dt_prev_etg' " & _
+					"value = '" & formata_data(r("PrevisaoEntregaTranspData")) & "' readonly" & _
+					" />"
+		else
+			s = formata_data(r("PrevisaoEntregaTranspData"))
+			x = x & _
+				"<p class='Cc' style='text-align:center;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";color:" & s_cor & ";'>" & s & "</p>"
+			end if
+		x = x & "</td>" & chr(13)
+
+	'>  ATRASO (EM DIAS)
+		s_dias = ""
+		if Trim("" & r("PrevisaoEntregaTranspData")) <> "" then
+			if r("PrevisaoEntregaTranspData") < Date then
+				s_dias = DateDiff("d", r("PrevisaoEntregaTranspData"), Date)
+				end if
+			end if
+
+		x = x & "		<td class='MTD tdAtraso' align='center'>"
+		if Not blnSaidaExcel then
+			x = x & _
+					"<input type='text' class='Cd cAtraso' style='border:0;width:30px;color:" & s_cor & ";' name='c_atraso' id='c_atraso' " & _
+					"value = '" & s_dias & "' readonly" & _
+					" />"
+		else
+			x = x & _
+				"<p class='Cc' style='text-align:right;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";color:" & s_cor & ";'>" & s_dias & "</p>"
+			end if
 		x = x & "</td>" & chr(13)
 
 	'>  RECEBIDO
@@ -877,8 +926,14 @@ function fRELGravaDados(f) {
 
 <style type="text/css">
 .tdDataEntrega{
-	width: 70px;
+	width: 60px;
 	}
+.tdPrevEtg{
+	width: 60px;
+	}
+.tdAtraso{
+	width: 40px;
+}
 .tdPedido{
 	width: 70px;
 	}
@@ -899,6 +954,14 @@ function fRELGravaDados(f) {
 	width: 40px;
 	}
 .cDtColeta
+{
+	background-color:transparent;
+}
+.cDtPrevEtg
+{
+	background-color:transparent;
+}
+.cAtraso
 {
 	background-color:transparent;
 }

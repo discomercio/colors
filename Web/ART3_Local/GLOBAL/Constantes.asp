@@ -2155,6 +2155,9 @@
 		dim PagtoAntecipadoQuitadoStatus
 		dim PagtoAntecipadoQuitadoDataHora
 		dim PagtoAntecipadoQuitadoUsuario
+		dim PrevisaoEntregaTranspData
+		dim PrevisaoEntregaTranspUsuarioUltAtualiz
+		dim PrevisaoEntregaTranspDtHrUltAtualiz
 		end class
 
 	class cl_ITEM_PEDIDO

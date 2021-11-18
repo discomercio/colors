@@ -216,7 +216,7 @@
 	Const URL_FILE__E_LOGO_TOP_OLD03_CSS = "../Global/eLogoTopOLD03.css?v=002"
 	
 '	URL PARA ACESSO NA PÁGINA DE LOGIN DO PARCEIRO (PÁGINA C/ LOGIN DUPLO)
-	Const URL_BASE_RELATIVA_SITE_ARTVEN3 = "/art3HotFix4"
+	Const URL_BASE_RELATIVA_SITE_ARTVEN3 = "/art3HotFix3"
 	Const URL_BASE_RELATIVA_SITE_ASSISTENCIA_TECNICA = "/assistenciatecnica"
 	
 '	Const URL_SITE_CLIENTE_PAGTO_CIELO = "http://web.bonshop.com.br/pagamento/clientecartao/default.asp"

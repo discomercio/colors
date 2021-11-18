@@ -197,6 +197,9 @@ dim strCidade, strUf, strCidadeUf
 dim intQtdeTotalPedidos, intQtdeTransportadoras
 dim intQtdeSubTotalPedidos, s_grupo_origem
 dim s_link_rastreio
+dim nColSpan, s_cor, s_dias
+
+	nColSpan = 11
 
 '	CRITÉRIOS DE RESTRIÇÃO
 	s_where = "(p.st_entrega = '" & ST_ENTREGA_ENTREGUE & "')" & _
@@ -264,6 +267,7 @@ dim s_link_rastreio
 				" p.obs_2," & _
 				" p.obs_3," & _
 				" p.loja," & _
+				" p.PrevisaoEntregaTranspData," & _
 				" p.st_end_entrega," & _
 				" p.EndEtg_cidade," & _
 				" p.EndEtg_uf,"
@@ -297,6 +301,8 @@ dim s_link_rastreio
 	cab = _
 		"	<tr style='background:azure' nowrap>" & chr(13) & _
 		"		<td class='MDTE tdDataEntrega' align='center' valign='bottom' nowrap><span class='Rc'>Data Coleta</span></td>" & chr(13) & _
+		"		<td class='MTD tdPrevEtg' align='center' valign='bottom' nowrap><span class='Rc'>Prev Etg</span></td>" & chr(13) & _
+		"		<td class='MTD tdAtraso' align='right' valign='bottom' nowrap><span class='Rd' style='font-weight:bold;'>Atraso</span></td>" & chr(13) & _
 		"		<td class='MTD tdRecebido' align='center' valign='bottom' nowrap><span class='Rc'>Receb</span></td>" &  chr(13) & _
 		"		<td class='MTD tdObs2' valign='bottom' nowrap><span class='R' style='text-align:left;'>Nota Fiscal</span></td>" &  chr(13) & _
 		"		<td class='MTD tdDtRecebido' align='center' valign='bottom' nowrap><span class='Rc'>Data Recebido</span></td>" &  chr(13) & _
@@ -328,7 +334,7 @@ dim s_link_rastreio
 				if intQtdeSubTotalPedidos > 1 then strPlural = "s" else strPlural = ""
 				x = x & _
 					"	<tr style='background:ivory;'>" & chr(13) & _
-					"		<td class='MDTE' colspan='9'>" & _
+					"		<td class='MDTE' colspan='" & CStr(nColSpan) & "'>" & _
 								"<span class='C' style='text-align:left;'>" & formata_inteiro(intQtdeSubTotalPedidos) & " pedido" & strPlural & "</span>" & _
 					"		</td>" & chr(13) & _
 					"	</tr>" & chr(13)
@@ -340,13 +346,13 @@ dim s_link_rastreio
 			if intQtdeTotalPedidos > 0 then
 			x = x & _
 					"	<tr>" & chr(13) & _
-					"		<td colspan='9' class='MC'>&nbsp;</td>" & chr(13) & _
+					"		<td colspan='" & CStr(nColSpan) & "' class='MC'>&nbsp;</td>" & chr(13) & _
 					"	</tr>" & chr(13)
 				end if
 				
 			x = x & _
 				"	<tr style='background:azure'>" & chr(13) & _
-				"		<td colspan='9' class='MC ME MD'><span class='C'>" & strTransportadoraAux & "</span></td>" & chr(13) & _
+				"		<td colspan='" & CStr(nColSpan) & "' class='MC ME MD'><span class='C'>" & strTransportadoraAux & "</span></td>" & chr(13) & _
 				"	</tr>" & chr(13)
 			
 		'	TÍTULO DAS COLUNAS
@@ -369,6 +375,36 @@ dim s_link_rastreio
 							"value = '" & formata_data(r("entregue_data")) & "' readonly" & _
 							">" & _
 						"</td>" & chr(13)
+
+	'>  DATA PREVISÃO DE ENTREGA
+		s_cor = "black"
+		if Trim("" & r("PrevisaoEntregaTranspData")) <> "" then
+			if r("PrevisaoEntregaTranspData") > Date then
+				s_cor = "green"
+			elseif r("PrevisaoEntregaTranspData") < Date then
+				s_cor = "red"
+				end if
+			end if
+
+		x = x & "		<td class='MTD tdPrevEtg' align='center'>" & _
+				"<input type='text' class='Cc cDtPrevEtg' style='border:0;width:60px;color:" & s_cor & ";' name='c_dt_prev_etg' id='c_dt_prev_etg' " & _
+				"value = '" & formata_data(r("PrevisaoEntregaTranspData")) & "' readonly" & _
+				" />" & _
+				"</td>" & chr(13)
+
+	'>  ATRASO (EM DIAS)
+		s_dias = ""
+		if Trim("" & r("PrevisaoEntregaTranspData")) <> "" then
+			if r("PrevisaoEntregaTranspData") < Date then
+				s_dias = DateDiff("d", r("PrevisaoEntregaTranspData"), Date)
+				end if
+			end if
+
+		x = x & "		<td class='MTD tdAtraso' align='center'>" & _
+				"<input type='text' class='Cd cAtraso' style='border:0;width:30px;color:" & s_cor & ";' name='c_atraso' id='c_atraso' " & _
+				"value = '" & s_dias & "' readonly" & _
+				" />" & _
+				"</td>" & chr(13)
 
 	'>  RECEBIDO
 		x = x & "		<td class='MTD tdCkb tdRecebido' align='center'>" & _
@@ -479,14 +515,14 @@ dim s_link_rastreio
 		x = cab_table & _
 			cab & _
 			"	<tr nowrap>" & chr(13) & _
-			"		<td class='MC MD ME ALERTA' colspan='9' align='center'><span class='ALERTA'>&nbsp;NENHUM PEDIDO ENCONTRADO&nbsp;</span></td>" & chr(13) & _
+			"		<td class='MC MD ME ALERTA' colspan='" & CStr(nColSpan) & "' align='center'><span class='ALERTA'>&nbsp;NENHUM PEDIDO ENCONTRADO&nbsp;</span></td>" & chr(13) & _
 			"	</tr>" & chr(13)
 	else
 	'	SUB-TOTAL DA ÚLTIMA TRANSPORTADORA
 		if intQtdeSubTotalPedidos > 1 then strPlural = "s" else strPlural = ""
 		x = x & _
 			"	<tr style='background:ivory;'>" & chr(13) & _
-			"		<td class='MDTE' colspan='9' align='left'>" & _
+			"		<td class='MDTE' colspan='" & CStr(nColSpan) & "' align='left'>" & _
 						"<span class='C' style='text-align:left;'>" & formata_inteiro(intQtdeSubTotalPedidos) & " pedido" & strPlural & "</span>" & _
 			"		</td>" & chr(13) & _
 			"	</tr>" & chr(13)
@@ -496,13 +532,13 @@ dim s_link_rastreio
 			if intQtdeTotalPedidos > 1 then strPlural = "s" else strPlural = ""
 			x = x & _
 				"	<tr>" & chr(13) & _
-				"		<td colspan='9' class='MC' align='left'>&nbsp;</td>" & chr(13) & _
+				"		<td colspan='" & CStr(nColSpan) & "' class='MC' align='left'>&nbsp;</td>" & chr(13) & _
 				"	</tr>" & chr(13) & _
 				"	<tr>" & chr(13) & _
-				"		<td colspan='9' align='left'><span class='C' style='text-align:left;'>TOTAL GERAL</span></td>" & chr(13) & _
+				"		<td colspan='" & CStr(nColSpan) & "' align='left'><span class='C' style='text-align:left;'>TOTAL GERAL</span></td>" & chr(13) & _
 				"	</tr>" & chr(13) & _
 				"	<tr style='background:ivory;'>" & chr(13) & _
-				"		<td class='MDTE' colspan='9' align='left'>" & _
+				"		<td class='MDTE' colspan='" & CStr(nColSpan) & "' align='left'>" & _
 							"<span class='C' style='text-align:left;'>" & formata_inteiro(intQtdeTotalPedidos) & " pedido" & strPlural & "</span>" & _
 				"		</td>" & chr(13) & _
 				"	</tr>" & chr(13)
@@ -786,8 +822,14 @@ function fRELGravaDados(f) {
 
 <style type="text/css">
 .tdDataEntrega{
-	width: 70px;
+	width: 60px;
 	}
+.tdPrevEtg{
+	width: 60px;
+	}
+.tdAtraso{
+	width: 40px;
+}
 .tdPedido{
 	width: 70px;
 	}
@@ -808,9 +850,17 @@ function fRELGravaDados(f) {
 	width: 40px;
 	}
 .tdDtRecebido{
-    width: 120px;
+    width: 90px;
 }
 .cDtColeta
+{
+	background-color:transparent;
+}
+.cDtPrevEtg
+{
+	background-color:transparent;
+}
+.cAtraso
 {
 	background-color:transparent;
 }
