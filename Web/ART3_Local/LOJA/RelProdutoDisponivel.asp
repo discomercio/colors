@@ -245,11 +245,13 @@
                 loop
                 
 				'14/12/2020: A pedido do Adailton e autorização do Carlos, foi retirada a restrição que exibe como zero o estoque de um produto bloqueado p/ vendas
-				'if Not blnvendavel then qtde_disponivel = 0
+				'19/11/2021: A pedido do Adailton, foi retornada a restrição que exibe como zero o estoque de um produto bloqueado p/ vendas
+				if Not blnvendavel then qtde_disponivel = 0
                        
             else               	    
 			    '14/12/2020: A pedido do Adailton e autorização do Carlos, foi retirada a restrição que exibe como zero o estoque de um produto bloqueado p/ vendas
-				'if UCase(Trim("" & rs("vendavel"))) <> "S" then qtde_disponivel = 0
+				'19/11/2021: A pedido do Adailton, foi retornada a restrição que exibe como zero o estoque de um produto bloqueado p/ vendas
+				if UCase(Trim("" & rs("vendavel"))) <> "S" then qtde_disponivel = 0
                 if IsNumeric(rs("qtde_max_venda")) then
 				    if CLng(rs("qtde_max_venda")) < qtde_disponivel then
 					    qtde_disponivel = CLng(rs("qtde_max_venda"))                 
