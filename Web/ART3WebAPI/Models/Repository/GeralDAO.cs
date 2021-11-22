@@ -448,6 +448,62 @@ namespace ART3WebAPI.Models.Repository
 		}
 		#endregion
 
+		#region [ getRegistroTabelaParametro ]
+		public static RegistroTabelaParametro getRegistroTabelaParametro(String nomeParametro)
+		{
+			#region [ Declarações ]
+			String strSql;
+			RegistroTabelaParametro parametro = new RegistroTabelaParametro();
+			SqlConnection cn;
+			DataTable dtbResultado = new DataTable();
+			DataRow row;
+			SqlCommand cmCommand;
+			SqlDataAdapter daAdapter;
+			#endregion
+
+			#region [ Prepara acesso ao BD ]
+			cn = new SqlConnection(BD.getConnectionString());
+			cn.Open();
+			cmCommand = new SqlCommand();
+			cmCommand.Connection = cn;
+			daAdapter = new SqlDataAdapter();
+			daAdapter.SelectCommand = cmCommand;
+			daAdapter.MissingSchemaAction = MissingSchemaAction.Add;
+			#endregion
+
+			try // Finally: cn.Close()
+			{
+				strSql = "SELECT " +
+							"*" +
+						" FROM t_PARAMETRO" +
+						" WHERE" +
+							" (id = '" + nomeParametro + "')";
+				cmCommand.CommandText = strSql;
+				daAdapter.Fill(dtbResultado);
+				if (dtbResultado.Rows.Count == 0) return null;
+
+				row = dtbResultado.Rows[0];
+
+				parametro.id = BD.readToString(row["id"]);
+				parametro.campo_inteiro = BD.readToInt(row["campo_inteiro"]);
+				parametro.campo_monetario = BD.readToDecimal(row["campo_monetario"]);
+				parametro.campo_real = BD.readToSingle(row["campo_real"]);
+				parametro.campo_data = BD.readToDateTime(row["campo_data"]);
+				parametro.campo_texto = BD.readToString(row["campo_texto"]);
+				parametro.campo_2_texto = BD.readToString(row["campo_2_texto"]);
+				parametro.dt_hr_ult_atualizacao = BD.readToDateTime(row["dt_hr_ult_atualizacao"]);
+				parametro.usuario_ult_atualizacao = BD.readToString(row["usuario_ult_atualizacao"]);
+				parametro.obs = BD.readToString(row["obs"]);
+
+				return parametro;
+			}
+			finally
+			{
+				cn.Close();
+			}
+		}
+		#endregion
+
 		#region [ getCampoDataTabelaParametro ]
 		public static DateTime getCampoDataTabelaParametro(String nomeParametro)
 		{

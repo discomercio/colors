@@ -40,7 +40,7 @@
 	Const URL_FILE__JQUERY_MY_PLUGIN = "../Global/jquery-my-plugin.js?v=002"
 	Const URL_FILE__JQUERY_UI_MY_PLUGIN = "../Global/jquery-ui-my-plugin.js?v=003"
 	Const URL_FILE__JQUERY_MASKMONEY = "../Global/jquery.maskMoney.min.js?v=001"
-	Const URL_FILE__GLOBAL_JS = "../Global/global.js?v=069"
+	Const URL_FILE__GLOBAL_JS = "../Global/global.js?v=070"
 	Const URL_FILE__SSL_JS = "../Global/SSL.js?v=004"
 	Const URL_FILE__CONST_JS = "../Global/const.js?v=001"
 	Const URL_FILE__CONSTXL_JS = "../Global/constXL.js?v=001"
@@ -56,6 +56,10 @@
 '	ATENÇÃO: SE HOUVER NECESSIDADE DE ALTERAR O CSS, CRIAR UM NOVO ARQUIVO E INCREMENTAR O NÚMERO DA VERSÃO QUE FAZ PARTE DA COMPOSIÇÃO DO NOME
 '	======== ISSO É NECESSÁRIO PORQUE O HTML DO RECIBO É ARMAZENADO NO BD P/ PERMITIR POSTERIOR REIMPRESSÃO E O CSS VINCULADO DEVE ESTAR PRESERVADO!
 	Const URL_FILE__BRASPAG_CARTAO_RECIBO_CSS = "../Global/eBraspagCartaoRecibo_v001.css"
+	Const URL_FILE__RASTREIO_VIA_WEBAPI_JS = "../Global/RastreioViaWebAPI.js?v=001"
+
+	Const URL_SSW_BASE = "https://ssw.inf.br"
+	Const URL_SSW_COMPLETA = "https://ssw.inf.br/cgi-local/tracking/"
 
 '	CÓDIGOS QUE IDENTIFICAM A UNIDADE DE NEGÓCIO A QUE A LOJA PERTENCE
 	Const COD_UNIDADE_NEGOCIO_LOJA__BS = "BS"
@@ -905,6 +909,7 @@
 	Const ID_PARAMETRO_CtrlRelatorio_RelControleImpostos_TimeoutLockEmMinutos = "CtrlRelatorio_RelControleImpostos_TimeoutLockEmMinutos"
     Const ID_PARAMETRO_CtrlRelatorio_RelControleImpostos_MaxQtdeResultadoPorConsulta = "CtrlRelatorio_RelControleImpostos_MaxQtdeResultadoPorConsulta"
 	Const ID_PARAMETRO_SSW_Rastreamento_Lista_Transportadoras = "SSW_Rastreamento_Lista_Transportadoras"
+	Const ID_PARAMETRO_SSW_Rastreamento_via_WebAPI_FlagHabilitacao = "SSW_Rastreamento_via_WebAPI_FlagHabilitacao"
 	Const ID_PARAMETRO_PERC_DESAGIO_RA_LIQUIDA = "PERC_DESAGIO_RA_LIQUIDA"
 	Const ID_PARAMETRO_PRAZO_ACESSO_REL_PEDIDOS_INDICADORES_LOJA = "PRAZO_ACESSO_REL_PEDIDOS_INDICADORES_LOJA"
 	Const ID_PARAMETRO_PRAZO_ACESSO_REL_PEDIDOS_INDICADORES_LOJA_RT_PENDENTE = "PRAZO_ACESSO_REL_PEDIDOS_INDICADORES_LOJA_RT_PENDENTE"
