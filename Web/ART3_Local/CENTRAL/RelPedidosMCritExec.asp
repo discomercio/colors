@@ -311,6 +311,14 @@
 			end if
 		end if
 
+	dim s_sessionToken
+	s_sessionToken = ""
+	s = "SELECT Convert(varchar(36), SessionTokenModuloCentral) AS SessionTokenModuloCentral FROM t_USUARIO WHERE (usuario = '" & usuario & "')"
+	if rs.State <> 0 then rs.Close
+	rs.open s, cn
+	if Not rs.Eof then s_sessionToken = Trim("" & rs("SessionTokenModuloCentral"))
+	if rs.State <> 0 then rs.Close
+
 
 '	Período de consulta está restrito por perfil de acesso?
 	dim dtMinDtInicialFiltroPeriodo, intMaxDiasDtInicialFiltroPeriodo
@@ -2615,10 +2623,19 @@ end sub
 <script src="<%=URL_FILE__JQUERY_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__GLOBAL_JS%>" Language="JavaScript" Type="text/javascript"></script>
 <script src="<%=URL_FILE__AJAX_JS%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__RASTREIO_VIA_WEBAPI_JS%>" language="JavaScript" type="text/javascript"></script>
 
 <script language="JavaScript" type="text/javascript">
     var historyBackCount = 1;
 	var windowScrollTopAnterior;
+
+	var urlBaseSsw = '<%=URL_SSW_BASE%>';
+	var urlWebApiRastreio;
+	var serverVariableUrl;
+	serverVariableUrl = '<%=Request.ServerVariables("URL")%>';
+	serverVariableUrl = serverVariableUrl.toUpperCase();
+	serverVariableUrl = serverVariableUrl.substring(0, serverVariableUrl.indexOf("CENTRAL"));
+	urlWebApiRastreio = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/GetData/PageContentViaHttpGet';
 
 	$(document).ready(function () {
 		$("#divPedidoConsultaView").hide();
@@ -2686,6 +2703,10 @@ end sub
         $("#iframeRastreioConsultaView").attr("src", url);
         $("#divRastreioConsultaView").fadeIn();
     }
+
+	function fRastreioConsultaViaWebApiView(url) {
+		executaRastreioConsultaViaWebApiView(url, urlBaseSsw, urlWebApiRastreio, "<%=usuario%>", "<%=s_sessionToken%>", "#iframeRastreioConsultaView", "#divRastreioConsultaView");
+	}
 
 	function fPEDConsultaView(id_pedido, usuario) {
 		historyBackCount++;

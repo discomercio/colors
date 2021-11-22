@@ -133,6 +133,9 @@ var KEY_APOSTROFE	= String.fromCharCode(39);
 var KEYCODE_DELETE  = 46;
 
 
+function replaceAll(str, find, replace) {
+	return str.replace(new RegExp(find, 'g'), replace);
+}
 
 function trim( texto ){
 var i,s,s_aux,tam;

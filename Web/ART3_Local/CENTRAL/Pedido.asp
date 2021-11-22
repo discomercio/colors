@@ -79,6 +79,13 @@
 		Session("nivel_acesso_chamado") = nivel_acesso_chamado
 		end if
 	
+	dim s_sessionToken
+	s_sessionToken = ""
+	s = "SELECT Convert(varchar(36), SessionTokenModuloCentral) AS SessionTokenModuloCentral FROM t_USUARIO WHERE (usuario = '" & usuario & "')"
+	set rs = cn.Execute(s)
+	if Not rs.Eof then s_sessionToken = Trim("" & rs("SessionTokenModuloCentral"))
+	if rs.State <> 0 then rs.Close
+
 	dim r_pedido, v_item, v_item_servico, qtdeItemServico, alerta
 	alerta=""
 	if Not le_pedido(pedido_selecionado, r_pedido, msg_erro) then 
@@ -375,8 +382,17 @@ end function
 <script src="<%=URL_FILE__JQUERY_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__GLOBAL_JS%>" Language="JavaScript" Type="text/javascript"></script>
 <script src="<%=URL_FILE__AJAX_JS%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__RASTREIO_VIA_WEBAPI_JS%>" language="JavaScript" type="text/javascript"></script>
 
 <script language="JavaScript" type="text/javascript">
+	var urlBaseSsw = '<%=URL_SSW_BASE%>';
+	var urlWebApiRastreio;
+	var serverVariableUrl;
+	serverVariableUrl = '<%=Request.ServerVariables("URL")%>';
+	serverVariableUrl = serverVariableUrl.toUpperCase();
+	serverVariableUrl = serverVariableUrl.substring(0, serverVariableUrl.indexOf("CENTRAL"));
+	urlWebApiRastreio = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/GetData/PageContentViaHttpGet';
+
 	$(document).ready(function() {
 	   
 	    $("#motivo_alternativo").hide();
@@ -510,6 +526,10 @@ end function
 		sizeDivRastreioConsultaView();
 		$("#iframeRastreioConsultaView").attr("src", url);
 		$("#divRastreioConsultaView").fadeIn();
+	}
+
+	function fRastreioConsultaViaWebApiView(url) {
+		executaRastreioConsultaViaWebApiView(url, urlBaseSsw, urlWebApiRastreio, "<%=usuario%>", "<%=s_sessionToken%>", "#iframeRastreioConsultaView", "#divRastreioConsultaView");
 	}
 
 	function abreFormularioMotivo() {

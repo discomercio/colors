@@ -51,8 +51,16 @@
 		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
 		end if
 	
-	dim s_filtro, intQtdeOcorrencias
+	dim s, s_filtro, intQtdeOcorrencias
 	intQtdeOcorrencias = 0
+
+	dim s_sessionToken
+	s_sessionToken = ""
+	s = "SELECT Convert(varchar(36), SessionTokenModuloLoja) AS SessionTokenModuloLoja FROM t_USUARIO WHERE (usuario = '" & usuario & "')"
+	if rs.State <> 0 then rs.Close
+	rs.open s, cn
+	if Not rs.Eof then s_sessionToken = Trim("" & rs("SessionTokenModuloLoja"))
+	if rs.State <> 0 then rs.Close
 
 
 
@@ -373,9 +381,19 @@ end sub
 
 <script src="<%=URL_FILE__GLOBAL_JS%>" Language="JavaScript" Type="text/javascript"></script>
 <script src="<%=URL_FILE__JQUERY%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__AJAX_JS%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__RASTREIO_VIA_WEBAPI_JS%>" language="JavaScript" type="text/javascript"></script>
 
 <script language="JavaScript" type="text/javascript">
 window.status = 'Aguarde, executando a consulta ...';
+
+var urlBaseSsw = '<%=URL_SSW_BASE%>';
+var urlWebApiRastreio;
+var serverVariableUrl;
+serverVariableUrl = '<%=Request.ServerVariables("URL")%>';
+serverVariableUrl = serverVariableUrl.toUpperCase();
+serverVariableUrl = serverVariableUrl.substring(0, serverVariableUrl.indexOf("LOJA"));
+urlWebApiRastreio = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/GetData/PageContentViaHttpGet';
 
 function fExibeOcultaCampos(indice_row) {
 var row_MSGS;
@@ -423,6 +441,9 @@ function fPEDConsulta(id_pedido) {
         frame = document.getElementById("iframeRastreioConsultaView");
         frame.contentWindow.location.replace(url);
     }
+	function fRastreioConsultaViaWebApiView(url) {
+		executaRastreioConsultaViaWebApiView(url, urlBaseSsw, urlWebApiRastreio, "<%=usuario%>", "<%=s_sessionToken%>", "#iframeRastreioConsultaView", "#divRastreioConsultaView");
+	}
     function fechaDivRastreioConsultaView() {
         $("#divRastreioConsultaView").fadeOut();
     }

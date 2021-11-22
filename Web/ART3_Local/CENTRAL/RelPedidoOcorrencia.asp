@@ -71,6 +71,14 @@
 	dim alerta
 	alerta = ""
 
+	dim s_sessionToken
+	s_sessionToken = ""
+	s = "SELECT Convert(varchar(36), SessionTokenModuloCentral) AS SessionTokenModuloCentral FROM t_USUARIO WHERE (usuario = '" & usuario & "')"
+	if rs.State <> 0 then rs.Close
+	rs.open s, cn
+	if Not rs.Eof then s_sessionToken = Trim("" & rs("SessionTokenModuloCentral"))
+	if rs.State <> 0 then rs.Close
+
 	if alerta = "" then
 		if c_loja <> "" then
 			s = "SELECT loja FROM t_LOJA WHERE (loja = '" & c_loja & "')"
@@ -531,9 +539,19 @@ end sub
 
 <script src="<%=URL_FILE__GLOBAL_JS%>" Language="JavaScript" Type="text/javascript"></script>
 <script src="<%=URL_FILE__JQUERY%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__AJAX_JS%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__RASTREIO_VIA_WEBAPI_JS%>" language="JavaScript" type="text/javascript"></script>
 
 <script language="JavaScript" type="text/javascript">
 window.status = 'Aguarde, executando a consulta...';
+
+var urlBaseSsw = '<%=URL_SSW_BASE%>';
+var urlWebApiRastreio;
+var serverVariableUrl;
+serverVariableUrl = '<%=Request.ServerVariables("URL")%>';
+serverVariableUrl = serverVariableUrl.toUpperCase();
+serverVariableUrl = serverVariableUrl.substring(0, serverVariableUrl.indexOf("CENTRAL"));
+urlWebApiRastreio = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/GetData/PageContentViaHttpGet';
 
 function calcula_tamanho_restante_nova_msg(indice_row) {
 var ctr, cnm, s;
@@ -632,7 +650,12 @@ var cqo, cto, cs, cp, i, n, s;
         $("#divRastreioConsultaView").fadeIn();
         frame = document.getElementById("iframeRastreioConsultaView");
         frame.contentWindow.location.replace(url);
-    }
+	}
+
+	function fRastreioConsultaViaWebApiView(url) {
+		executaRastreioConsultaViaWebApiView(url, urlBaseSsw, urlWebApiRastreio, "<%=usuario%>", "<%=s_sessionToken%>", "#iframeRastreioConsultaView", "#divRastreioConsultaView");
+	}
+
     function fechaDivRastreioConsultaView() {
         $("#divRastreioConsultaView").fadeOut();
         //$("#iframeRastreioConsultaView").attr("src", "");
