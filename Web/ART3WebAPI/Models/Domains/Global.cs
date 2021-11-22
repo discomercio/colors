@@ -60,8 +60,8 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.32";
-				public const string Data = "05.NOV.2021";
+				public const string Numero = "2.33";
+				public const string Data = "21.NOV.2021";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
 			#endregion
@@ -272,8 +272,13 @@ namespace ART3WebAPI.Models.Domains
 			 *              }
 			 *          ]
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.33 - XX.XX.20XX - por XXX
-			 *      
+			 * v 2.33 - 21.11.2021 - por HHO
+			 *      Desenvolvimento de método para consultar uma página externa através do método Get e
+			 *      retornar o seu conteúdo em GetDataController.PageContentViaHttpGet().
+			 *      Esse método faz parte de uma solução criada para contornar o problema na consulta da
+			 *      página de rastreamento da SSW devido ao header x-frame-options que impede a exibição da
+			 *      página dentro de frames. A solução consiste em obter o conteúdo da página via WebAPI
+			 *      e carregá-la diretamente no frame.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.34 - XX.XX.20XX - por XXX
 			 *      
@@ -366,6 +371,7 @@ namespace ART3WebAPI.Models.Domains
 					public const string FLAG_CAD_SEMI_AUTO_PED_MAGENTO_CADASTRAR_AUTOMATICAMENTE_CLIENTE_NOVO = "CadSemiAutomaticoPedidoMagento_FlagWebApiCadastrarAutomaticamenteClienteNovo";
 					public const string FLAG_CAD_SEMI_AUTO_PED_MAGENTO_USAR_ENDERECO_MKTP_DATASOURCE = "CadSemiAutomaticoPedidoMagento_FlagWebApiUsarEnderecoMktpDataSource";
 					public const string FLAG_PEDIDO_MEMORIZACAO_COMPLETA_ENDERECOS = "Flag_Pedido_MemorizacaoCompletaEnderecos";
+					public const string SSW_RASTREAMENTO_VIA_WEBAPI_MAX_LOG_ATIVIDADE_PAGE_CONTENT_SIZE = "SSW_Rastreamento_via_WebAPI_MaxLogAtividadePageContentSize";
 				}
 				#endregion
 			}

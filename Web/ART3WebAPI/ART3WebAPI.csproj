@@ -192,6 +192,7 @@
     <Compile Include="Models\Entities\OrcamentistaIndicador.cs" />
     <Compile Include="Models\Entities\Pedido.cs" />
     <Compile Include="Models\Entities\Produto.cs" />
+    <Compile Include="Models\Entities\RegistroTabelaParametro.cs" />
     <Compile Include="Models\Entities\RelEstoqueVendaEntity.cs" />
     <Compile Include="Models\Domains\RelEstoqueVendaGeradorRelatorio.cs" />
     <Compile Include="Models\Entities\RelPreDevolucaoEntity.cs" />

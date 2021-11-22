@@ -4292,6 +4292,7 @@ dim r, rx, s
 		rx.campo_real = r("campo_real")
 		rx.campo_data = r("campo_data")
 		rx.campo_texto = "" & r("campo_texto")
+		rx.campo_2_texto = "" & r("campo_2_texto")
 		rx.dt_hr_ult_atualizacao = r("dt_hr_ult_atualizacao")
 		rx.usuario_ult_atualizacao = Trim("" & r("usuario_ult_atualizacao"))
 		end if

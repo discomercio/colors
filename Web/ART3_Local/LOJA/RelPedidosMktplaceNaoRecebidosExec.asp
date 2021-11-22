@@ -138,6 +138,14 @@
 			end if
 		end if
 		
+	dim s_sessionToken
+	s_sessionToken = ""
+	s = "SELECT Convert(varchar(36), SessionTokenModuloLoja) AS SessionTokenModuloLoja FROM t_USUARIO WHERE (usuario = '" & usuario & "')"
+	if rs.State <> 0 then rs.Close
+	rs.open s, cn
+	if Not rs.Eof then s_sessionToken = Trim("" & rs("SessionTokenModuloLoja"))
+	if rs.State <> 0 then rs.Close
+
 '	Período de consulta está restrito por perfil de acesso?
 	dim dtMinDtInicialFiltroPeriodo, intMaxDiasDtInicialFiltroPeriodo
 	dim strMinDtInicialFiltroPeriodoYYYYMMDD, strMinDtInicialFiltroPeriodoDDMMYYYY
@@ -594,8 +602,18 @@ end sub
 <script src="<%=URL_FILE__JQUERY_UI_I18N%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__JQUERY_UI_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__GLOBAL_JS%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__AJAX_JS%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__RASTREIO_VIA_WEBAPI_JS%>" language="JavaScript" type="text/javascript"></script>
 
 <script type="text/javascript">
+	var urlBaseSsw = '<%=URL_SSW_BASE%>';
+	var urlWebApiRastreio;
+	var serverVariableUrl;
+	serverVariableUrl = '<%=Request.ServerVariables("URL")%>';
+	serverVariableUrl = serverVariableUrl.toUpperCase();
+	serverVariableUrl = serverVariableUrl.substring(0, serverVariableUrl.indexOf("LOJA"));
+	urlWebApiRastreio = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/GetData/PageContentViaHttpGet';
+
 	$(document).ready(function () {
 	    $("#c_dt_recebimento").hUtilUI('datepicker_padrao');
 
@@ -794,6 +812,9 @@ function fRELGravaDados(f) {
         frame = document.getElementById("iframeRastreioConsultaView");
         frame.contentWindow.location.replace(url);
     }
+	function fRastreioConsultaViaWebApiView(url) {
+		executaRastreioConsultaViaWebApiView(url, urlBaseSsw, urlWebApiRastreio, "<%=usuario%>", "<%=s_sessionToken%>", "#iframeRastreioConsultaView", "#divRastreioConsultaView");
+	}
     function fechaDivRastreioConsultaView() {
         $("#divRastreioConsultaView").fadeOut();
     }
