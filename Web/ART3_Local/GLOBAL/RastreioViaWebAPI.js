@@ -20,19 +20,42 @@ function executaRastreioConsultaViaWebApiView(urlRastreioCompleto, urlRastreioBa
 		}
 	})
 		.done(function (response) {
+			if (response.length == 0) {
+				var myFrameView = $(id_iframe_rastreio).contents().find('body');
+				myFrameView.html("Falha ao tentar consultar a página de rastreamento!");
+				$(id_div_rastreio).fadeIn();
+				return;
+			}
+
 			// Remove links de bibliotecas javascript
-			var idxJsStart, idxJsEnd, strToDelete;
-			while (response.indexOf("<script src=") > -1) {
-				idxJsStart = response.indexOf("<script src=");
-				idxJsEnd = response.indexOf("</script>");
-				if ((idxJsStart > -1) && (idxJsEnd > -1)) {
+			var idxJsStart, idxLastJsStart, idxJsEnd, strToDelete;
+			var nIteracoes = 0;
+			idxLastJsStart = 0;
+			while (response.indexOf("<script ", idxLastJsStart) > -1) {
+				// Contador de segurança p/ assegurar que nunca ficará em loop infinito
+				nIteracoes++;
+				idxJsStart = response.indexOf("<script ", idxLastJsStart);
+				if (idxJsStart > -1) idxLastJsStart = idxJsStart;
+				idxJsEnd = response.indexOf("</script>", idxJsStart + 1);
+				if ((idxJsStart > -1) && (idxJsEnd > -1) && (idxJsEnd > idxJsStart)) {
 					strToDelete = response.substring(idxJsStart, idxJsEnd + "</script>".length);
-					response = response.replace(strToDelete, "");
+					if (strToDelete.length > 0) {
+						response = response.replace(strToDelete, "");
+					}
+					else {
+						// Prossegue a partir do ponto em que se encontra
+						idxLastJsStart = idxJsStart + 1;
+					}
 				}
 				else {
-					break;
+					// Prossegue a partir do ponto em que se encontra
+					idxLastJsStart = idxJsStart + 1;
 				}
+
+				if (idxLastJsStart >= (response.length - 1)) break;
+				if (nIteracoes > 20) break;
 			}
+
 			// Acerta as href que não tenham a especificação completa do endereço, caso contrário irão ser direcionadas p/ o site do sistema
 			response = replaceAll(response, 'href="/', 'href="' + urlRastreioBase + '/');
 			// Remove o botão Fechar
