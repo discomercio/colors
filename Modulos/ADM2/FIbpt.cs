@@ -400,7 +400,7 @@ namespace ADM2
 			String strMsgErroLog = "";
 			String strDescricaoLog = "";
 			bool blnSucesso;
-			int intDuracaoProcessamentoEmSeg = 0;
+			long lngDuracaoProcessamentoEmSeg = 0;
 			int intQtdeRegistrosGravadosTotal = 0;
 			int intQtdeRegistrosGravadosNcm = 0;
 			int intQtdeRegistrosGravadosNbs = 0;
@@ -570,7 +570,7 @@ namespace ADM2
 							FMain.contextoBD.AmbienteBase.ibptDadosDAO.dropTabelaTemporaria();
 						}
 
-						intDuracaoProcessamentoEmSeg = Global.calculaTimeSpanSegundos(DateTime.Now - dtInicioProcessamento);
+						lngDuracaoProcessamentoEmSeg = Global.calculaTimeSpanSegundos(DateTime.Now - dtInicioProcessamento);
 						blnSucesso = true;
 					}
 					catch (Exception ex)
@@ -587,7 +587,7 @@ namespace ADM2
 						adicionaDisplay("Arquivo carregado com sucesso!!");
 
 						#region [ Grava o log no BD ]
-						strDescricaoLog = "Sucesso na carga do arquivo do IBPT (versão: " + _linhaHeader.versao + "): " + _nomeArquivoSelecionado + " (duração do processamento: " + intDuracaoProcessamentoEmSeg.ToString() + " segundos; total de registros gravados: " + Global.formataInteiro(intQtdeRegistrosGravadosTotal) + "; registros de NCM gravados: " + Global.formataInteiro(intQtdeRegistrosGravadosNcm) + "; registros de NBS gravados: " + Global.formataInteiro(intQtdeRegistrosGravadosNbs) + "; registros de LC 116 gravados: " + Global.formataInteiro(intQtdeRegistrosGravadosLC116) + ")";
+						strDescricaoLog = "Sucesso na carga do arquivo do IBPT (versão: " + _linhaHeader.versao + "): " + _nomeArquivoSelecionado + " (duração do processamento: " + lngDuracaoProcessamentoEmSeg.ToString() + " segundos; total de registros gravados: " + Global.formataInteiro(intQtdeRegistrosGravadosTotal) + "; registros de NCM gravados: " + Global.formataInteiro(intQtdeRegistrosGravadosNcm) + "; registros de NBS gravados: " + Global.formataInteiro(intQtdeRegistrosGravadosNbs) + "; registros de LC 116 gravados: " + Global.formataInteiro(intQtdeRegistrosGravadosLC116) + ")";
 						log.usuario = Global.Usuario.usuario;
 						log.operacao = Global.Cte.ADM2.LogOperacao.IBPT_CARGA_ARQUIVO_CSV;
 						log.complemento = strDescricaoLog;
