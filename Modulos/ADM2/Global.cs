@@ -29,7 +29,7 @@ namespace ADM2
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "ADM2";
 				public const string VERSAO_NUMERO = "1.11";
-				public const string VERSAO_DATA = "18.NOV.2021";
+				public const string VERSAO_DATA = "02.DEZ.2021";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Módulo Administrativo";
@@ -104,6 +104,16 @@ namespace ADM2
 			 *		  Implementação de tratamento para a data de previsão de entrega informada pela trans-
 			 *		  portadora no mesmo arquivo CSV usado para processar o recebimento do pedido pelo
 			 *		  cliente.
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.11(B) - 02.12.2021 - por HHO
+			 *		  Correção de bug na rotina calculaTimeSpanMiliSegundos() e calculaTimeSpanSegundos()
+			 *		  para que os cálculos fossem realizados com datatype 'long' e não com 'int'.
+			 *		  Ao realizar os cálculos com 'int', poderia ocorrer overflow, como de fato estava
+			 *		  ocorrendo ao calcular o tempo decorrido entre DateTime.Now - dtHrUltProgresso,
+			 *		  pois dtHrUltProgresso estava inicializada com DateTime.MinValue.
+			 *		  Ao ocorrer o overflow, o resultado ficava negativo e a rotina que controlava a exibição
+			 *		  do progresso do processamento não funcionava devido à verificação do intervalo entre
+			 *		  atualizações (lngMiliSegundosDecorridos >= MIN_INTERVALO_DOEVENTS_EM_MILISEGUNDOS).
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.12 - XX.XX.20XX - por XXX
 			 *		  
@@ -801,9 +811,9 @@ namespace ADM2
 		/// <returns>
 		/// Retorna a quantidade milisegundos.
 		/// </returns>
-		public static int calculaTimeSpanMiliSegundos(TimeSpan ts)
+		public static long calculaTimeSpanMiliSegundos(TimeSpan ts)
 		{
-			return ts.Milliseconds + 1000 * (ts.Seconds + (60 * (ts.Minutes + (60 * (ts.Hours + (24 * ts.Days))))));
+			return (long)ts.Milliseconds + (long)1000 * ((long)ts.Seconds + ((long)60 * ((long)ts.Minutes + ((long)60 * ((long)ts.Hours + ((long)24 * (long)ts.Days))))));
 		}
 		#endregion
 
@@ -843,9 +853,9 @@ namespace ADM2
 		/// <returns>
 		/// Retorna a quantidade segundos.
 		/// </returns>
-		public static int calculaTimeSpanSegundos(TimeSpan ts)
+		public static long calculaTimeSpanSegundos(TimeSpan ts)
 		{
-			return ts.Seconds + (60 * (ts.Minutes + (60 * (ts.Hours + (24 * ts.Days)))));
+			return (long)ts.Seconds + ((long)60 * ((long)ts.Minutes + ((long)60 * ((long)ts.Hours + ((long)24 * (long)ts.Days)))));
 		}
 		#endregion
 
