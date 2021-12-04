@@ -8733,8 +8733,13 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     'Segundo informado pelo Valter (Target) em e-mail de 27/06/2017, não deve ser informada no arquivo de integração,
     'ela é inserida automaticamente pelo sistema
     'strNFeTagPag = strNFeTagPag & "detpag;" & vbCrLf
+    'se foi selecionado "90 - Sem pagamento, informar vPag zerado
+    If left(cb_meio_pagto, 2) = "90" Then
+        vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "0"
+        vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = "90"
+        vNFeImgPag(UBound(vNFeImgPag)).pag__vPag = NFeFormataMoeda2Dec(0)
     'Se a nota é de entrada ou ajuste/devolução - sem pagamento
-    If rNFeImg.ide__tpNF = "0" Or _
+    ElseIf rNFeImg.ide__tpNF = "0" Or _
         strNFeCodFinalidade = "3" Or _
         strNFeCodFinalidade = "4" Then
         vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "0"

@@ -778,6 +778,10 @@ Option Explicit
 '|          |      |   emergencialmente o meio de pagamento "99-Outros" no     |
 '|          |      |   campo tPag acompanhado da descrição no campo xPag       |
 '|__________|______|___________________________________________________________|
+'|02.09.2021| LHGX |V 2.22                                                     |
+'|          |      | - Painel de Emissão Manual: correção para sempre informar |
+'|          |      |   vPag=0 quando tPag=90 (sem pagamento)                   |
+'|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
 '|          |      |                                                           |
@@ -793,8 +797,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.21"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  31/08/2021"
+Global Const m_id_versao = "2.22"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  02/09/2021"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"
