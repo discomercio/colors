@@ -77,7 +77,8 @@
     c_nfe_dt_hr_emissao2 = Trim(Request("c_dt_hr_emissao2"))
     
     c_perc_agio = Trim(Request.Form("c_perc_agio"))
-    c_total_nf = Trim(Request.Form("c_total_nf"))
+    'c_total_nf = Trim(Request.Form("c_total_nf"))
+    c_total_nf = Trim(Request("c_total_nf"))
     c_nfe_vl_total_geral = Trim(Request.Form("c_nfe_vl_total_geral"))
 
 	iQtdeItens = converte_numero(c_nfe_qtde_itens)

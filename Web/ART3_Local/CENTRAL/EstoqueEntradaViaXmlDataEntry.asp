@@ -642,7 +642,8 @@ function preencheForm()
 	
 	recalcula_itens();
     //recalcula_total_nf();
-	$("#c_total_nf").val(formata_moeda(vetnfe.NFe.infNFe.total.ICMSTot.vNF));
+    $("#c_total_nf_ori").val(formata_moeda(vetnfe.NFe.infNFe.total.ICMSTot.vNF));
+    $("#c_total_nf").val(formata_moeda(vetnfe.NFe.infNFe.total.ICMSTot.vNF));
     
     // Ajusta a altura dos campos input para ficar na mesma altura da linha da tabela
 	$(".TxtErpCodigo").each(function () {
@@ -936,7 +937,7 @@ function recalcula_itens() {
 		    }
 		    $("#c_nfe_vl_ipi_" + trim(i.toString())).val(formata_moeda(v_ipi.toString()));
             v_calculo = v_calculo + v_ipi;
-            $("#c_nfe_vl_unitario_nota_ori_" + trim(i.toString())).val(formata_moeda(v_calculo.toString()));
+            $("#c_nfe_vl_unitario_nota_" + trim(i.toString())).val(formata_moeda(v_calculo.toString()));
 		    v_agio = converte_numero(formata_moeda(v_calculo  * v_perc_agio));
 		    v_calculo = converte_numero(formata_moeda(v_calculo + v_agio));
 		    $("#c_nfe_vl_unitario_" + trim(i.toString())).val(formata_moeda(v_calculo.toString()));
@@ -954,11 +955,12 @@ function recalcula_itens() {
 }
 
 function recalcula_linha(i) {
-	var v_calculo;
+    var v_calculo;
 
-	v_calculo = converte_numero($("#c_nfe_qtde_" + trim(i.toString())).val()) * 
+
+	v_calculo = converte_numero($("#c_nfe_qtde_" + trim(i.toString())).val()) *
 								converte_numero(formata_moeda($("#c_nfe_vl_unitario_" + trim(i.toString())).val()));
-	$("#c_nfe_vl_total_" + trim(i.toString())).val(formata_moeda(v_calculo.toString()));
+    $("#c_nfe_vl_total_" + trim(i.toString())).val(formata_moeda(v_calculo.toString()));
 	recalcula_total();
 }
 
@@ -968,26 +970,55 @@ function recalcula_total_nf() {
     var iQtdeItens = '<%=iQtdeLinhas%>';
     var f;
     var i;
+    var v_ipi;
+    var s;
+    var aliq_ipi;
+    var blnTemItemIgnorado;
 
     //não recalcular, ao invés disso, pegar o valor direto do XML na rotina preencheForm
     //(20/11/2021) como o valor do ipi e do frete seráo incluídos no total da nf, recalcular
     //return;
 
+    //refazendo os cálculos com mais casas decimais para que o somatório fique igual ou próximo ao valor total presente na nf
+
     v_calculo = 0;
     v_total = 0;
+    blnTemItemIgnorado = false;
     for (i = 1; i <= iQtdeItens; i++)
     {
         if ($("#ckb_importa_" + trim(i.toString())).is(":checked")) {
-            v_calculo = converte_numero($("#c_nfe_qtde_" + trim(i.toString())).val()) *
-                (converte_numero(formata_numero($("#c_nfe_vl_unitario_nota_ori_" + trim(i.toString())).val(), 2)) +
-                    converte_numero(formata_numero($("#c_nfe_vl_ipi_" + trim(i.toString())).val(), 2)) +
-                    converte_numero(formata_numero($("#c_nfe_vl_frete_" + trim(i.toString())).val(), 2)));
+            //v_calculo = converte_numero($("#c_nfe_qtde_" + trim(i.toString())).val()) *
+            //    (converte_numero(formata_numero($("#c_nfe_vl_unitario_nota_ori_" + trim(i.toString())).val(), 2)) +
+            //        converte_numero(formata_numero($("#c_nfe_vl_ipi_" + trim(i.toString())).val(), 2)) +
+            //        converte_numero(formata_numero($("#c_nfe_vl_frete_" + trim(i.toString())).val(), 2)));
+            s = $("#c_nfe_aliq_ipi_" + trim(i.toString())).val();
+            v_aliq_ipi = converte_numero(s) / 100;
+            v_calculo = converte_numero(formata_numero($("#c_nfe_vl_unitario_nota_ori_" + trim(i.toString())).val(), 4));
+            if (v_aliq_ipi > 0) {
+                v_ipi = converte_numero(formata_moeda(v_calculo * v_aliq_ipi));
+            }
+            else {
+                v_ipi = converte_numero($("#c_nfe_vl_ipi_" + trim(i.toString())).val());
+            }
+            v_calculo = v_calculo + v_ipi;
+            v_calculo = v_calculo * converte_numero($("#c_nfe_qtde_" + trim(i.toString())).val());
+
             v_total = v_total + v_calculo;
         }
+        else {
+            blnTemItemIgnorado = true;
+        }
     }
-	$("#c_total_nf").val(formata_moeda(v_total));
-		
 
+    //se há item ignorado, adotar o somatório atual, senão, adotar o campo do XML
+    if (blnTemItemIgnorado) {
+        $("#c_total_nf").val(formata_moeda(v_total));
+    }
+    else {
+        $("#c_total_nf").val($("#c_total_nf_ori").val());
+    }
+    //$("#c_total_nf").val(formata_moeda(v_total));
+		
 }
 
 function recalcula_total() {
@@ -1487,7 +1518,7 @@ select
 	<td align="left">
 		<% if i <= iQtdeItens then %>
 		    <input type="checkbox" name="ckb_importa_<%=Cstr(i)%>" id="ckb_importa_<%=Cstr(i)%>" 
-		    value="IMPORTA_ON" checked="checked">
+		    value="IMPORTA_ON" checked="checked" onchange="recalcula_linha(<%=Cstr(i)%>); recalcula_total_nf(); recalcula_total();">
         <% else %>
             <input type="checkbox" name="ckb_importa_<%=Cstr(i)%>" id="ckb_importa_<%=Cstr(i)%>" 
             value="">
@@ -1554,7 +1585,7 @@ select
 		onblur="recalcula_linha(<%=Cstr(i)%>); recalcula_total_nf(); recalcula_total();" />
 	</td>
 	<td class="MDB TdNfeVlUnit" align="left">
-        <input type="hidden" name="c_nfe_vl_unitario_ori_<%=Cstr(i)%>" id="c_nfe_vl_unitario_ori_<%=Cstr(i)%>" />
+        <input type="hidden" name="c_nfe_vl_unitario_nota_ori_<%=Cstr(i)%>" id="c_nfe_vl_unitario_nota_ori_<%=Cstr(i)%>" />
         <input name="c_nfe_vl_unitario_nota_<%=Cstr(i)%>" id="c_nfe_vl_unitario_nota_<%=Cstr(i)%>" class="PLLe TdNfeVlUnit <%=s_classe_editavel%>" <%=s_valor_readonly%> />
 	</td>
 	<td class="MDB TdNfeVlUnit" align="left">
@@ -1594,8 +1625,10 @@ select
 
 	<td class="MDB" align="left"><p class="Cd">Total NF</p></td>
 	
-	<td class="MDB" align="right"><input name="c_total_nf" id="c_total_nf" class="PLLd" style="width:62px;color:black;" 
-	value=""></td>
+	<td class="MDB" align="right">
+        <input type="hidden" name="c_total_nf_ori" id="c_total_nf_ori" value=""/>
+        <input name="c_total_nf" id="c_total_nf" class="PLLd" style="width:62px;color:black;" value="">
+	</td>
 	<td>&nbsp;</td>
     <td>&nbsp;</td>
 	<td>&nbsp;</td>
