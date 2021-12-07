@@ -104,6 +104,7 @@
 	dim s_nome_nfe_emitente
 	dim s_vl_diferenca, s_total_diferenca, m_vl_diferenca, m_total_diferenca, m_total_geral_diferenca
     dim s_aliq_ipi, s_vl_ipi, s_aliq_icms, s_vl_frete
+    dim s_total_nf, v_total_nf, v_margem_total_nf
 	
 '	CONECTA AO BANCO DE DADOS
 '	=========================
@@ -186,6 +187,21 @@
 			s_nome_nfe_emitente = Trim("" & rs("razao_social"))
 			end if
 		end if
+
+'	Obter o valor total da NF presente no XML para uma exibição mais precisa no caso da importação de todos os itens do arquivo
+'	(se a soma dos itens estiver dentro de um intervalo "chutado" de 10,00 para baixo, utilizar este valor, senão, utilizar a soma dos itens)
+	if alerta = "" then
+        v_margem_total_nf = 10
+		s = "SELECT substring(xml_conteudo, CHARINDEX('<vNF>', xml_conteudo) + 5, CHARINDEX('</vNF>', xml_conteudo) - CHARINDEX('<vNF>', xml_conteudo) - 5) as total_nf_xml " & _
+            " FROM t_ESTOQUE_XML WHERE (id_estoque = '" & estoque_selecionado & "')"
+		if rs.State <> 0 then rs.Close
+		set rs = cn.execute(s)
+		if Not rs.Eof then
+		    s_total_nf = Trim("" & rs("total_nf_xml"))
+            v_total_nf = converte_numero(s_total_nf)
+           end if
+		end if
+
 %>
 
 
@@ -504,6 +520,11 @@ var b;
 		else
 			exit for
 			end if
+    'Comparar a soma dos itens com o valor total da NF presente no XML (para uma exibição mais precisa no caso da importação de todos os itens do arquivo)
+    '(se a soma dos itens estiver dentro de um intervalo "chutado" de 10,00 para baixo, utilizar este valor, senão, utilizar a soma dos itens)
+    if m_total_geral >= (v_total_nf - v_margem_total_nf) then
+       m_total_geral = v_total_nf
+       end if
 %>
 	<tr>
 	<td><input name="c_linha" id="c_linha" readonly tabindex=-1 class="PLLe" maxlength="2" style="width:24px;text-align:right;color:#808080;" value="<%=Cstr(i) & ". " %>"></td>
