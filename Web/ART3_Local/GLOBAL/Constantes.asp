@@ -2198,6 +2198,10 @@
 		dim ncm
 		dim cst
 		dim descontinuado
+		dim cod_produto_xml_fabricante
+		dim cod_produto_alfanum_fabricante
+		dim potencia_valor
+		dim id_unidade_potencia
 		end class
 
 	class cl_ITEM_PEDIDO_SERVICO
@@ -2233,6 +2237,10 @@
 		dim ncm
 		dim cst
 		dim descontinuado
+		dim cod_produto_xml_fabricante
+		dim cod_produto_alfanum_fabricante
+		dim potencia_valor
+		dim id_unidade_potencia
 		end class
 
 	class cl_ITEM_PEDIDO_NOVO
@@ -2271,6 +2279,10 @@
 		dim qtde_estoque_total_disponivel
 		dim qtde_estoque_vendido
 		dim qtde_estoque_sem_presenca
+		dim cod_produto_xml_fabricante
+		dim cod_produto_alfanum_fabricante
+		dim potencia_valor
+		dim id_unidade_potencia
 		end class
 
 	class cl_ITEM_SENHA_DESCONTO
@@ -2552,6 +2564,10 @@
 		dim dt_hr_anotacao_numero_NF
 		dim usuario_anotacao_numero_NF
 		dim descontinuado
+		dim cod_produto_xml_fabricante
+		dim cod_produto_alfanum_fabricante
+		dim potencia_valor
+		dim id_unidade_potencia
 		end class
 
 	class cl_PEDIDO_PERDA

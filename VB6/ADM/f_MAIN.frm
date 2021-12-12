@@ -318,6 +318,8 @@ Private Type TIPO_T_PRODUTO
     descricao As String
     descricao_html As String
     ean As String
+    cod_produto_xml_fabricante As String
+    cod_produto_alfanum_fabricante As String
     grupo As String
     subgrupo As String
     preco_fabricante As Currency
@@ -332,6 +334,8 @@ Private Type TIPO_T_PRODUTO
     perc_MVA_ST As Double
     descontinuado As String
     potencia_BTU As Long
+    potencia_valor As Double
+    id_unidade_potencia As Long
     ciclo As String
     posicao_mercado As String
     dt_cadastro As Variant
@@ -1507,11 +1511,13 @@ Dim blnItalicoAtivado As Boolean
 Dim blnFecharTagItalico As Boolean
 Dim blnSublinhadoAtivado As Boolean
 Dim blnFecharTagSublinhado As Boolean
+Dim blnErroProdutoCodPrecoAIgnorarNaoCadastrado As Boolean
 
 ' ETC.
 Dim q As Variant
 Dim rp As TIPO_T_PRODUTO
 Dim rpl As TIPO_T_PRODUTO_LOJA
+Dim v_unidade_potencia() As TIPO_CODIGO_X_DESCRICAO
 Dim v_fabricante() As TIPO_CODIGO_X_DESCRICAO
 Dim v_produto() As TIPO_CODIGO_X_DESCRICAO
 Dim v_lj_processada() As String
@@ -1800,10 +1806,34 @@ Dim oDescricao As Object
             End If
         Next
         
-    aguarde INFO_EXECUTANDO, "consultando lista de fabricantes"
+'   CARREGA LISTA DE UNIDADE DE POTÊNCIA
+'   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    aguarde INFO_EXECUTANDO, "consultando cadastro de unidade de potência"
     
+    ReDim v_unidade_potencia(0)
+    With v_unidade_potencia(UBound(v_unidade_potencia))
+        .codigo = ""
+        .descricao = ""
+        End With
+    
+    s = "SELECT id, codigo_interno FROM t_UNIDADE_POTENCIA ORDER BY id"
+    If rs.State <> adStateClosed Then rs.Close
+    rs.Open s, dbc, , , adCmdText
+    i = 0
+    Do While Not rs.EOF
+        i = i + 1
+        ReDim Preserve v_unidade_potencia(i)
+        With v_unidade_potencia(i)
+            .codigo = Trim$("" & rs("id"))
+            .descricao = Trim$("" & rs("codigo_interno"))
+            End With
+        rs.MoveNext
+        Loop
+
 '   CARREGA LISTA DE FABRICANTES
 '   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    aguarde INFO_EXECUTANDO, "consultando lista de fabricantes"
+    
     ReDim v_fabricante(0)
     With v_fabricante(UBound(v_fabricante))
         .codigo = ""
@@ -1995,24 +2025,28 @@ Dim oDescricao As Object
         '   B = PRODUTO
         '   C = DESCRIÇÃO
         '   D = EAN
-        '   E = GRUPO
-        '   F = SUBGRUPO
-        '   G = POTÊNCIA (Btu/h)
-        '   H = CICLO (F/QF)
-        '   I = PREÇO FABRICANTE
-        '   J = PESO (KG)
-        '   K = QTDE VOLUMES
-        '   L = CUBAGEM
-        '   M = NCM
-        '   N = CST
-        '   O = POSIÇÃO MERCADO (BÁSICO/PREMIUM)
-        '   P = PERCENTUAL MVA ST
-        '   Q = CUSTO2
-        '   R = ALERTAS
-        '   S = ESTOQUE CRÍTICO
-        '   T = DESCONTINUADO
+        '   E = CÓDIGO DO PRODUTO NO XML DA NFE DO FABRICANTE (VULGO 'COD XML FABRICANTE')
+        '   F = CÓDIGO DO PRODUTO ALFANUMÉRICO (VULGO 'COD LETRAS')
+        '   G = GRUPO
+        '   H = SUBGRUPO
+        '   I = POTÊNCIA (Btu/h)
+        '   J = POTÊNCIA (SOMENTE O VALOR, POIS A UNIDADE DE POTÊNCIA ESTÁ DEFINIDA EM CAMPO ESPECÍFICO)
+        '   K = UNIDADE DE POTÊNCIA
+        '   L = CICLO (F/QF)
+        '   M = PREÇO FABRICANTE
+        '   N = PESO (KG)
+        '   O = QTDE VOLUMES
+        '   P = CUBAGEM
+        '   Q = NCM
+        '   R = CST
+        '   S = POSIÇÃO MERCADO (BÁSICO/PREMIUM)
+        '   T = PERCENTUAL MVA ST
+        '   U = CUSTO2
+        '   V = ALERTAS
+        '   W = ESTOQUE CRÍTICO
+        '   X = DESCONTINUADO
             strPrimeiraColunaPlanilha = "A"
-            strUltimaColunaPlanilha = "T"
+            strUltimaColunaPlanilha = "X"
             strColunaDescricao = "C"
             Set oRANGE = oWS.Range(strPrimeiraColunaPlanilha & CStr(ilinha) & ":" & strUltimaColunaPlanilha & CStr(ilinha))
             matriz = oRANGE.Value
@@ -2128,77 +2162,112 @@ Dim oDescricao As Object
                     icol = icol + 1
                     .ean = Trim$("" & matriz(LBound(matriz, 1), icol))
                     
-                '   COL "E" = GRUPO
+                '   COL "E" = CÓDIGO DO PRODUTO NO XML DA NFE DO FABRICANTE (VULGO 'COD XML FABRICANTE')
+                    icol = icol + 1
+                    .cod_produto_xml_fabricante = Trim$("" & matriz(LBound(matriz, 1), icol))
+                
+                '   COL "F" = CÓDIGO DO PRODUTO ALFANUMÉRICO (VULGO 'COD LETRAS')
+                    icol = icol + 1
+                    .cod_produto_alfanum_fabricante = Trim$("" & matriz(LBound(matriz, 1), icol))
+                
+                '   COL "G" = GRUPO
                     icol = icol + 1
                     .grupo = UCase$(Trim$("" & matriz(LBound(matriz, 1), icol)))
                     
-                '   COL "F" = SUBGRUPO
+                '   COL "H" = SUBGRUPO
                     icol = icol + 1
                     .subgrupo = UCase$(Trim$("" & matriz(LBound(matriz, 1), icol)))
                     
-                '   COL "G" = POTÊNCIA (BTU/H)
+                '   COL "I" = POTÊNCIA (BTU/H)
                     icol = icol + 1
                     q = matriz(LBound(matriz, 1), icol)
                     If IsNumeric(q) Then .potencia_BTU = CLng(q) Else .potencia_BTU = 0
                     
-                '   COL "H" = CICLO (F/QF)
+                '   COL "J" = POTÊNCIA (SOMENTE O VALOR, POIS A UNIDADE DE POTÊNCIA ESTÁ DEFINIDA EM CAMPO ESPECÍFICO)
+                    icol = icol + 1
+                    q = matriz(LBound(matriz, 1), icol)
+                    If IsNumeric(q) Then .potencia_valor = CDbl(q) Else .potencia_valor = 0
+                    
+                '   COL "K" = UNIDADE DE POTÊNCIA
+                    icol = icol + 1
+                    q = matriz(LBound(matriz, 1), icol)
+                    If Trim$("" & q) <> "" Then
+                        cadastrado = False
+                        For intCounterAux = LBound(v_unidade_potencia) To UBound(v_unidade_potencia)
+                            If UCase$(Trim$("" & q)) = UCase$(Trim$("" & v_unidade_potencia(intCounterAux).descricao)) Then
+                                .id_unidade_potencia = CLng(v_unidade_potencia(intCounterAux).codigo)
+                                cadastrado = True
+                                Exit For
+                                End If
+                            Next
+                        
+                        If Not cadastrado Then
+                            msg_erro = "Planilha " & oWS.Name & ", linha " & CStr(ilinha) & _
+                                      vbCrLf & "Produto " & .produto & " possui unidade de potência não cadastrado no sistema (" & Trim$("" & q) & ")!!"
+                            GoTo TPC_ABORTA_PROCESSAMENTO
+                            End If
+                    Else
+                        .id_unidade_potencia = 0
+                        End If
+                
+                '   COL "L" = CICLO (F/QF)
                     icol = icol + 1
                     .ciclo = UCase$(Trim$("" & matriz(LBound(matriz, 1), icol)))
                     
-                '   COL "I" = PREÇO FABRICANTE
+                '   COL "M" = PREÇO FABRICANTE
                     icol = icol + 1
                     q = matriz(LBound(matriz, 1), icol)
                     If IsNumeric(q) Then .preco_fabricante = CCur(q) Else .preco_fabricante = 0
                                 
-                '   COL "J" = PESO (KG)
+                '   COL "N" = PESO (KG)
                     icol = icol + 1
                     q = matriz(LBound(matriz, 1), icol)
                     If IsNumeric(q) Then .peso = CDbl(q) Else .peso = 0
                     
-                '   COL "K" = QTDE VOLUMES
+                '   COL "O" = QTDE VOLUMES
                     icol = icol + 1
                     q = matriz(LBound(matriz, 1), icol)
                     If IsNumeric(q) Then .qtde_volumes = CLng(q) Else .qtde_volumes = 0
                     
-                '   COL "L" = CUBAGEM
+                '   COL "P" = CUBAGEM
                     icol = icol + 1
                     q = matriz(LBound(matriz, 1), icol)
                     If IsNumeric(q) Then .cubagem = CDbl(q) Else .cubagem = 0
                     
-                '   COL "M" = NCM
+                '   COL "Q" = NCM
                     icol = icol + 1
                     .ncm = Trim$("" & matriz(LBound(matriz, 1), icol))
                     
-                '   COL "N" = CST
+                '   COL "R" = CST
                 '   LEMBRANDO QUE NESTE CAMPO ESTÃO CONCATENADOS OS CÓDIGOS 'ORIG' E 'CST'
                     icol = icol + 1
                     .cst = Trim$("" & matriz(LBound(matriz, 1), icol))
                     
-                '   COL "O" = POSIÇÃO MERCADO (BÁSICO/PREMIUM)
+                '   COL "S" = POSIÇÃO MERCADO (BÁSICO/PREMIUM)
                     icol = icol + 1
                     .posicao_mercado = UCase$(Trim$("" & matriz(LBound(matriz, 1), icol)))
                     
-                '   COL "P" = PERCENTUAL MVA ST
+                '   COL "T" = PERCENTUAL MVA ST
                     icol = icol + 1
                     q = matriz(LBound(matriz, 1), icol)
                     If IsNumeric(q) Then .perc_MVA_ST = CDbl(q) Else .perc_MVA_ST = 0
                     .perc_MVA_ST = .perc_MVA_ST * 100
                     
-                '   COL "Q" = CUSTO2
+                '   COL "U" = CUSTO2
                     icol = icol + 1
                     q = matriz(LBound(matriz, 1), icol)
                     If IsNumeric(q) Then .vl_custo2 = CCur(q) Else .vl_custo2 = 0
                     
-                '   COL "R" = ALERTAS
+                '   COL "V" = ALERTAS
                     icol = icol + 1
                     .alertas = Trim$("" & matriz(LBound(matriz, 1), icol))
                                 
-                '   COL "S" = ESTOQUE CRÍTICO
+                '   COL "W" = ESTOQUE CRÍTICO
                     icol = icol + 1
                     q = matriz(LBound(matriz, 1), icol)
                     If IsNumeric(q) Then .estoque_critico = CLng(q) Else .estoque_critico = 0
                     
-                '   COL "T" = DESCONTINUADO
+                '   COL "X" = DESCONTINUADO
                     icol = icol + 1
                     .descontinuado = Trim$("" & matriz(LBound(matriz, 1), icol))
                                         
@@ -2322,6 +2391,8 @@ Dim oDescricao As Object
                     rs("descricao") = .descricao
                     rs("descricao_html") = .descricao_html
                     rs("ean") = .ean
+                    rs("cod_produto_xml_fabricante") = .cod_produto_xml_fabricante
+                    rs("cod_produto_alfanum_fabricante") = .cod_produto_alfanum_fabricante
                     rs("grupo") = .grupo
                     rs("subgrupo") = .subgrupo
                     rs("preco_fabricante") = .preco_fabricante
@@ -2335,6 +2406,8 @@ Dim oDescricao As Object
                     rs("perc_MVA_ST") = .perc_MVA_ST
                     rs("descontinuado") = UCase$(.descontinuado)
                     rs("potencia_BTU") = .potencia_BTU
+                    rs("potencia_valor") = .potencia_valor
+                    rs("id_unidade_potencia") = .id_unidade_potencia
                     rs("ciclo") = .ciclo
                     rs("posicao_mercado") = .posicao_mercado
                     rs("dt_ult_atualizacao") = Date
@@ -2655,6 +2728,7 @@ Dim oDescricao As Object
                                 GoTo TPC_ABORTA_PROCESSAMENTO
                                 End If
                             
+                            blnErroProdutoCodPrecoAIgnorarNaoCadastrado = False
                             If .preco_lista = VL_COD_PRECO_A_IGNORAR Then
                             '   SE FOR UM PRODUTO NOVO, A PRIMEIRA CARGA DEVE INFORMAR UM PREÇO, OU SEJA, A 1ª CARGA NÃO PODE USAR O CÓDIGO ESPECIAL -1,00
                                 s = "SELECT" & _
@@ -2667,11 +2741,14 @@ Dim oDescricao As Object
                                 If tPL.State <> adStateClosed Then tPL.Close
                                 tPL.Open s, dbc, , , adCmdText
                                 If tPL.EOF Then
-                                    msg_erro = "Planilha " & oWS.Name & ", linha " & CStr(ilinha) & _
+                                    blnErroProdutoCodPrecoAIgnorarNaoCadastrado = True
+                                    '06/12/2021: ao invés de abortar a operação inteira no caso de um produto com VL_COD_PRECO_A_IGNORAR, simplesmente
+                                    '            não será feito o seu cadastramento em t_PRODUTO_LOJA
+                                    'msg_erro = "Planilha " & oWS.Name & ", linha " & CStr(ilinha) & _
                                               vbCrLf & "Produto " & .produto & " especifica o preço de lista " & _
                                               Format$(.preco_lista, FORMATO_MOEDA) & " usado p/ indicar que o preço não deve ser atualizado, entretanto, o produto ainda NÃO está cadastrado na tabela de preços no sistema!!" & _
                                               vbCrLf & "O cadastramento de um novo produto sempre deve informar um preço válido na primeira carga!!"
-                                    GoTo TPC_ABORTA_PROCESSAMENTO
+                                    'GoTo TPC_ABORTA_PROCESSAMENTO
                                     End If
                                 End If
                                 
@@ -2679,7 +2756,7 @@ Dim oDescricao As Object
                                 "|" & _
                                 normaliza_codigo(.produto, TAM_MAX_PRODUTO)
                             s = DESCRICAO_retorna(v_produto(), s, cadastrado)
-                            If cadastrado Then
+                            If cadastrado And (Not blnErroProdutoCodPrecoAIgnorarNaoCadastrado) Then
                             '   GRAVA NO BD!!
                                 n_t_produto_loja = n_t_produto_loja + 1
                                 
@@ -3074,7 +3151,7 @@ End Sub
 Private Sub barra_MouseMove(Index As Integer, Button As Integer, Shift As Integer, X As Single, Y As Single)
 Dim i As Integer
 
-    For i = seta.LBound To seta.UBound
+    For i = seta.lbound To seta.ubound
         If i <> Index Then
             seta(i).Visible = False
         Else
@@ -3276,12 +3353,12 @@ Private Sub BARRA_Inicia()
 Dim i As Integer
   
   ' CARREGA SETAS
-    For i = (barra.LBound + 1) To barra.UBound
+    For i = (barra.lbound + 1) To barra.ubound
         Load seta(i)
         seta(i).Picture = seta(0).Picture
         Next
     
-    For i = barra.LBound To barra.UBound
+    For i = barra.lbound To barra.ubound
         If barra(i).Visible Then
             seta(i).Visible = False
             barra(i).BackColor = COR_BARRA
@@ -3370,7 +3447,7 @@ End Sub
 Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
 Dim i As Integer
     
-    For i = seta.LBound To seta.UBound
+    For i = seta.lbound To seta.ubound
         seta(i).Visible = False
         Next
         
