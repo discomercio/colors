@@ -7,8 +7,8 @@ Option Explicit
 '                          ADMINISTRAÇÃO E MANUTENÇÃO
 '                       _______________________________
 ' 
-'                           EDIÇÃO = 029
-'                           DATA   = 10.OUT.2018
+'                           EDIÇÃO = 030
+'                           DATA   = 11.DEZ.2021
 '                       _______________________________
 ' 
 ' 
@@ -255,6 +255,8 @@ Option Explicit
 '|23.03.2020|LHGX  |V1.29 Inclusão de tratamento para a nova coluna Subgrupo   |
 '|          |      |na planilha de importação                                  |
 '|__________|______|___________________________________________________________|
+'|11/12/2021| HHO  |V1.30 Inclusão de tratamento para novos campos na planilha |
+'|          |      |de importação do cadastro de produtos.                     |
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
 '|          |      |                                                           |
@@ -270,8 +272,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "1.29"
-Global Const m_id = "Módulo de Administração e Manutenção - v" & m_id_versao & " - 23.NOV.2020"
+Global Const m_id_versao = "1.30"
+Global Const m_id = "Módulo de Administração e Manutenção - v" & m_id_versao & " - 11.DEZ.2021"
 
 
 

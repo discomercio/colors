@@ -844,7 +844,11 @@
 					.ncm = Trim("" & rs("ncm"))
 					.cst = Trim("" & rs("cst"))
 					.descontinuado = Trim("" & rs("descontinuado"))
-					
+					.cod_produto_xml_fabricante = Trim("" & rs("cod_produto_xml_fabricante"))
+					.cod_produto_alfanum_fabricante = Trim("" & rs("cod_produto_alfanum_fabricante"))
+					.potencia_valor = rs("potencia_valor")
+					.id_unidade_potencia = rs("id_unidade_potencia")
+
 					.custoFinancFornecPrecoListaBase = .preco_lista
 					if c_custoFinancFornecTipoParcelamento = COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__A_VISTA then
 						coeficiente = 1
@@ -2380,6 +2384,10 @@
 										rs("ncm") = .ncm
 										rs("cst") = .cst
 										rs("descontinuado") = .descontinuado
+										rs("cod_produto_xml_fabricante") = .cod_produto_xml_fabricante
+										rs("cod_produto_alfanum_fabricante") = .cod_produto_alfanum_fabricante
+										rs("potencia_valor") = .potencia_valor
+										rs("id_unidade_potencia") = .id_unidade_potencia
 										rs.Update
 										if Err <> 0 then
 										'	~~~~~~~~~~~~~~~~

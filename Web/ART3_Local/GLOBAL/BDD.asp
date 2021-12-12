@@ -2111,8 +2111,12 @@ dim rs
 				.ncm					= Trim("" & rs("ncm"))
 				.cst					= Trim("" & rs("cst"))
 				.descontinuado			= Trim("" & rs("descontinuado"))
+				.cod_produto_xml_fabricante = Trim("" & rs("cod_produto_xml_fabricante"))
+				.cod_produto_alfanum_fabricante = Trim("" & rs("cod_produto_alfanum_fabricante"))
+				.potencia_valor = rs("potencia_valor")
+				.id_unidade_potencia = rs("id_unidade_potencia")
 				end with
-			rs.MoveNext 
+			rs.MoveNext
 			Loop
 		end if
 
@@ -2188,8 +2192,12 @@ dim rs
 				.ncm					= Trim("" & rs("ncm"))
 				.cst					= Trim("" & rs("cst"))
 				.descontinuado			= Trim("" & rs("descontinuado"))
+				.cod_produto_xml_fabricante = Trim("" & rs("cod_produto_xml_fabricante"))
+				.cod_produto_alfanum_fabricante = Trim("" & rs("cod_produto_alfanum_fabricante"))
+				.potencia_valor = rs("potencia_valor")
+				.id_unidade_potencia = rs("id_unidade_potencia")
 				end with
-			rs.MoveNext 
+			rs.MoveNext
 			Loop
 		end if
 
@@ -2310,6 +2318,10 @@ dim rs, rsi
 					.ncm					= Trim("" & rsi("ncm"))
 					.cst					= Trim("" & rsi("cst"))
 					.descontinuado			= Trim("" & rsi("descontinuado"))
+					.cod_produto_xml_fabricante = Trim("" & rsi("cod_produto_xml_fabricante"))
+					.cod_produto_alfanum_fabricante = Trim("" & rsi("cod_produto_alfanum_fabricante"))
+					.potencia_valor = rsi("potencia_valor")
+					.id_unidade_potencia = rsi("id_unidade_potencia")
 					end if
 				end with
 			rs.MoveNext
@@ -3477,8 +3489,12 @@ dim rs
 			.dt_hr_anotacao_numero_NF = rs("dt_hr_anotacao_numero_NF")
 			.usuario_anotacao_numero_NF = Trim("" & rs("usuario_anotacao_numero_NF"))
 			.descontinuado			= Trim("" & rs("descontinuado"))
+			.cod_produto_xml_fabricante = Trim("" & rs("cod_produto_xml_fabricante"))
+			.cod_produto_alfanum_fabricante = Trim("" & rs("cod_produto_alfanum_fabricante"))
+			.potencia_valor = rs("potencia_valor")
+			.id_unidade_potencia = rs("id_unidade_potencia")
 			end with
-		rs.MoveNext 
+		rs.MoveNext
 		Loop
 
 	if Err <> 0 then
@@ -3566,6 +3582,10 @@ dim rs
 			.dt_hr_anotacao_numero_NF = rs("dt_hr_anotacao_numero_NF")
 			.usuario_anotacao_numero_NF = Trim("" & rs("usuario_anotacao_numero_NF"))
 			.descontinuado			= Trim("" & rs("descontinuado"))
+			.cod_produto_xml_fabricante = Trim("" & rs("cod_produto_xml_fabricante"))
+			.cod_produto_alfanum_fabricante = Trim("" & rs("cod_produto_alfanum_fabricante"))
+			.potencia_valor = rs("potencia_valor")
+			.id_unidade_potencia = rs("id_unidade_potencia")
 			end with
 		rs.MoveNext
 		Loop
