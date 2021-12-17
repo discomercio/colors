@@ -408,6 +408,9 @@ namespace ADM2
 			int intLeft;
 			bool blnRestauraPosicaoAnterior;
 			bool blnValidacaoUsuarioOk;
+			string sVersaoPermitida;
+			string[] vListaVersaoPermitida;
+			List<string> listaVersaoPermitida = new List<string>();
 			Color? cor;
 			DateTime dtHrServidor;
 			UsuarioDAO usuarioDAO;
@@ -657,9 +660,20 @@ namespace ADM2
 						return;
 					}
 
-					if (!versaoModulo.versao.Equals(Global.Cte.Aplicativo.VERSAO_NUMERO))
+					sVersaoPermitida = versaoModulo.versao.Trim();
+					sVersaoPermitida = sVersaoPermitida.Replace(';', '|');
+					vListaVersaoPermitida = sVersaoPermitida.Split('|');
+					foreach (string item in vListaVersaoPermitida)
 					{
-						strMsgErro = "Versão inválida do aplicativo!!\n\nVersão deste programa: " + Global.Cte.Aplicativo.VERSAO_NUMERO + "\nVersão permitida: " + versaoModulo.versao;
+						if ((item ?? "").Trim().Length > 0)
+						{
+							listaVersaoPermitida.Add(item.Trim());
+						}
+					}
+
+					if (!listaVersaoPermitida.Contains(Global.Cte.Aplicativo.VERSAO_NUMERO))
+					{
+						strMsgErro = "Versão inválida do aplicativo!!\n\nVersão deste programa: " + Global.Cte.Aplicativo.VERSAO_NUMERO + "\nVersão permitida: " + String.Join(", ", listaVersaoPermitida);
 						Global.gravaLogAtividade(strMsgErro);
 						avisoErro(strMsgErro);
 						Close();

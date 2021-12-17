@@ -62,9 +62,34 @@ namespace ADM2
 		#region [ Construtor ]
 		public FAnotarPedidoRecebidoCliente()
 		{
+			#region [ Declarações ]
+			Parametro paramSituacaoMercadoriaEntregue;
+			string sParametro;
+			string[] vParametro;
+			#endregion
+
 			InitializeComponent();
 
+			#region [ Obtém o parâmetro que define se a data de previsão de entrega deve ser processada ]
 			paramProcDtPrevEntregaTransp = FMain.contextoBD.AmbienteBase.parametroDAO.getParametro(Global.Cte.ADM2.ID_T_PARAMETRO.ADM2_PROCESSAR_DATA_PREVISAO_ENTREGA_TRANSPORTADORA);
+			#endregion
+
+			#region [ Obtém o parâmetro que define os códigos do campo Situacao aceitos p/ considerar que a mercadoria foi entregue ]
+			paramSituacaoMercadoriaEntregue = FMain.contextoBD.AmbienteBase.parametroDAO.getParametro(Global.Cte.ADM2.ID_T_PARAMETRO.ADM2_RASTREIO_PEDIDO_RECEBIDO_CLIENTE_SITUACAO_MERCADORIA_ENTREGUE);
+			sParametro = (paramSituacaoMercadoriaEntregue.campo_texto ?? "").Trim();
+			Global.listaCodigosRastreioSituacaoMercadoriaEntregue.Clear();
+			if (sParametro.Length > 0)
+			{
+				vParametro = sParametro.Split('|');
+				foreach (string item in vParametro)
+				{
+					if ((item ?? "").Trim().Length > 0)
+					{
+						Global.listaCodigosRastreioSituacaoMercadoriaEntregue.Add(item.Trim().ToUpper());
+					}
+				}
+			}
+			#endregion
 		}
 		#endregion
 
@@ -427,7 +452,7 @@ namespace ADM2
 						rastreio.dadosNormalizado.CTRC = rastreio.dadosRaw.CTRC.Trim();
 
 						#region [ NF ]
-						if (rastreio.dadosRaw.NF.Trim().Length > 0)
+						if (rastreio.dadosRaw.hasNF)
 						{
 							v = rastreio.dadosRaw.NF.Split(' ');
 							if (v.Length >= 2)
@@ -444,7 +469,7 @@ namespace ADM2
 						rastreio.dadosNormalizado.NroPedido = rastreio.dadosRaw.NroPedido.Trim();
 
 						#region [ Data Inclusão ]
-						if (rastreio.dadosRaw.DataInclusao.Trim().Length > 0)
+						if (rastreio.dadosRaw.hasDataInclusao)
 						{
 							v = rastreio.dadosRaw.DataInclusao.Split('/');
 							if (v.Length >= 3)
@@ -466,7 +491,7 @@ namespace ADM2
 						rastreio.dadosNormalizado.Unidade = Texto.iniciaisEmMaiusculas(rastreio.dadosRaw.Unidade.Trim());
 
 						#region [ Data/hora da ocorrência ]
-						if (rastreio.dadosRaw.DataHoraOcorrencia.Trim().Length > 0)
+						if (rastreio.dadosRaw.hasDataHoraOcorrencia)
 						{
 							sDia = "";
 							sMes = "";
@@ -550,7 +575,7 @@ namespace ADM2
 						rastreio.dadosNormalizado.Detalhe = Texto.iniciaisEmMaiusculas(rastreio.dadosRaw.Detalhe.Trim());
 
 						#region [ Data Entrega ]
-						if (rastreio.dadosRaw.DataEntrega.Trim().Length > 0)
+						if (rastreio.dadosRaw.hasDataEntrega)
 						{
 							v = rastreio.dadosRaw.DataEntrega.Split('/');
 							if (v.Length >= 3)
@@ -565,10 +590,19 @@ namespace ADM2
 								rastreio.dadosNormalizado.dtDataEntrega = Global.converteDdMmYyyyParaDateTime(rastreio.dadosNormalizado.DataEntrega);
 							}
 						}
+
+						// Há situações em que a mercadoria foi entregue, mas o campo 'Data Entrega' não é informado.
+						// Nesses casos, é usada a data da ocorrência como sendo a data de entrega
+						// Ex: Campo 'Situacao' = MERCADORIA PRE-ENTREGUE (MOBILE)
+						if ((!rastreio.dadosRaw.hasDataEntrega) && rastreio.dadosRaw.isSituacaoMercadoriaEntregue && (rastreio.dadosNormalizado.dtDataHoraOcorrencia != DateTime.MinValue))
+						{
+							rastreio.dadosNormalizado.DataEntrega = Global.formataDataDdMmYyyyComSeparador(rastreio.dadosNormalizado.dtDataHoraOcorrencia);
+							rastreio.dadosNormalizado.dtDataEntrega = rastreio.dadosNormalizado.dtDataHoraOcorrencia.Date;
+						}
 						#endregion
 
 						#region [ Previsão de Entrega ]
-						if (rastreio.dadosRaw.PrevisaoEntrega.Trim().Length > 0)
+						if (rastreio.dadosRaw.hasPrevisaoEntrega)
 						{
 							v = rastreio.dadosRaw.PrevisaoEntrega.Split('/');
 							if (v.Length >= 3)
@@ -616,11 +650,11 @@ namespace ADM2
 					{
 						if (paramProcDtPrevEntregaTransp.campo_inteiro == 0)
 						{
-							if (_vRastreio[iv].dadosNormalizado.DataEntrega.Trim().Length == 0) continue;
+							if (!_vRastreio[iv].dadosNormalizado.hasDataEntrega) continue;
 						}
 						else
 						{
-							if ((_vRastreio[iv].dadosNormalizado.DataEntrega.Trim().Length == 0) && (_vRastreio[iv].dadosNormalizado.PrevisaoEntrega.Trim().Length == 0)) continue;
+							if ((!_vRastreio[iv].dadosNormalizado.hasDataEntrega) && (!_vRastreio[iv].dadosNormalizado.hasPrevisaoEntrega)) continue;
 						}
 
 						blnDevolucao = false;
@@ -678,12 +712,12 @@ namespace ADM2
 					{
 						for (int iv = 0; iv < _vRastreio.Count; iv++)
 						{
-							if (_vRastreio[iv].dadosNormalizado.DataEntrega.Trim().Length == 0) continue;
+							if (!_vRastreio[iv].dadosNormalizado.hasDataEntrega) continue;
 
 							#region [ Verifica se linha está repetida ]
 							for (int jv = 0; jv < _vRastreio.Count; jv++)
 							{
-								if (_vRastreio[jv].dadosNormalizado.DataEntrega.Trim().Length == 0) continue;
+								if (!_vRastreio[jv].dadosNormalizado.hasDataEntrega) continue;
 
 								if ((_vRastreio[iv].processo.Status == eRastreioPedidoRecebidoClienteProcessoStatus.StatusInicial)
 									&& (_vRastreio[jv].processo.Status == eRastreioPedidoRecebidoClienteProcessoStatus.StatusInicial)
@@ -745,7 +779,7 @@ namespace ADM2
 						#region [ Consistências ]
 
 						#region [ Há nº NF? ]
-						if (_vRastreio[iv].dadosRaw.NF.Trim().Length == 0)
+						if (!_vRastreio[iv].dadosRaw.hasNF)
 						{
 							_vRastreio[iv].processo.Status = eRastreioPedidoRecebidoClienteProcessoStatus.ErroInconsistencia;
 							_vRastreio[iv].processo.CodigoErro = eRastreioPedidoRecebidoClienteProcessoCodigoErro.NUMERO_NF_NAO_INFORMADO;
@@ -756,7 +790,8 @@ namespace ADM2
 
 						#region [ Nº NF em formato válido? ]
 						// Considera que o arquivo deve informar no formato: [Nº Série] [Espaço Branco] [Nº NF]
-						if ((_vRastreio[iv].dadosRaw.NF.Trim().Length > 0) && (_vRastreio[iv].dadosNormalizado.NF.Trim().Length == 0))
+						// Portanto, se dadosRaw possui dados da NF e dadosNormalizado está vazio, significa que o formato estava inválido e não foi possível fazer a normalização
+						if ((_vRastreio[iv].dadosRaw.hasNF) && (!_vRastreio[iv].dadosNormalizado.hasNF))
 						{
 							_vRastreio[iv].processo.Status = eRastreioPedidoRecebidoClienteProcessoStatus.ErroInconsistencia;
 							_vRastreio[iv].processo.CodigoErro = eRastreioPedidoRecebidoClienteProcessoCodigoErro.NUMERO_NF_FORMATO_INVALIDO;
@@ -790,7 +825,7 @@ namespace ADM2
 						if (paramProcDtPrevEntregaTransp.campo_inteiro == 0)
 						{
 							#region [ Verifica campo 'Situacao' ]
-							if (!_vRastreio[iv].dadosNormalizado.Situacao.Trim().ToUpper().Equals("MERCADORIA ENTREGUE"))
+							if (!_vRastreio[iv].dadosNormalizado.isSituacaoMercadoriaEntregue)
 							{
 								_vRastreio[iv].processo.Status = eRastreioPedidoRecebidoClienteProcessoStatus.ErroInconsistencia;
 								_vRastreio[iv].processo.CodigoErro = eRastreioPedidoRecebidoClienteProcessoCodigoErro.OCORRENCIA_COM_SITUACAO_INVALIDA;
@@ -800,7 +835,7 @@ namespace ADM2
 							#endregion
 
 							#region [ Ocorrência informa data de recebimento pelo cliente? ]
-							if (_vRastreio[iv].dadosNormalizado.DataEntrega.Trim().Length == 0)
+							if (!_vRastreio[iv].dadosNormalizado.hasDataEntrega)
 							{
 								_vRastreio[iv].processo.Status = eRastreioPedidoRecebidoClienteProcessoStatus.ErroInconsistencia;
 								_vRastreio[iv].processo.CodigoErro = eRastreioPedidoRecebidoClienteProcessoCodigoErro.OCORRENCIA_SEM_DATA_RECEBIMENTO;
@@ -812,7 +847,7 @@ namespace ADM2
 						else
 						{
 							#region [ Ocorrência informa data de recebimento pelo cliente ou data de previsão de entrega? ]
-							if ((_vRastreio[iv].dadosNormalizado.DataEntrega.Trim().Length == 0) && (_vRastreio[iv].dadosNormalizado.PrevisaoEntrega.Trim().Length == 0))
+							if ((!_vRastreio[iv].dadosNormalizado.hasDataEntrega) && (!_vRastreio[iv].dadosNormalizado.hasPrevisaoEntrega))
 							{
 								_vRastreio[iv].processo.Status = eRastreioPedidoRecebidoClienteProcessoStatus.ErroInconsistencia;
 								_vRastreio[iv].processo.CodigoErro = eRastreioPedidoRecebidoClienteProcessoCodigoErro.OCORRENCIA_SEM_DATA_RECEBIMENTO_E_SEM_DATA_PREVISAO_ENTREGA;
@@ -860,7 +895,7 @@ namespace ADM2
 						#endregion
 
 						#region [ Verifica se já consta como recebido pelo cliente ]
-						if ((paramProcDtPrevEntregaTransp.campo_inteiro == 0) || (_vRastreio[iv].dadosNormalizado.DataEntrega.Trim().Length > 0))
+						if ((paramProcDtPrevEntregaTransp.campo_inteiro == 0) || (_vRastreio[iv].dadosNormalizado.hasDataEntrega && _vRastreio[iv].dadosNormalizado.isSituacaoMercadoriaEntregue))
 						{
 							if (pedido.pedidoRecebidoStatus == Global.Cte.StPedidoRecebido.COD_ST_PEDIDO_RECEBIDO_SIM)
 							{
@@ -893,7 +928,7 @@ namespace ADM2
 						#endregion
 
 						#region [ Verifica se a data de recebimento está coerente com a data 'entregue_data' ]
-						if ((paramProcDtPrevEntregaTransp.campo_inteiro == 0) || (_vRastreio[iv].dadosNormalizado.DataEntrega.Trim().Length > 0))
+						if ((paramProcDtPrevEntregaTransp.campo_inteiro == 0) || (_vRastreio[iv].dadosNormalizado.hasDataEntrega && _vRastreio[iv].dadosNormalizado.isSituacaoMercadoriaEntregue))
 						{
 							if (_vRastreio[iv].dadosNormalizado.dtDataEntrega < pedido.entregue_data)
 							{
@@ -981,11 +1016,20 @@ namespace ADM2
 						// Se chegou até este ponto, está apto para registrar os dados de pedido recebido pelo cliente e/ou a data de previsão de entrega
 						if (paramProcDtPrevEntregaTransp.campo_inteiro == 0)
 						{
-							_vRastreio[iv].processo.Status = eRastreioPedidoRecebidoClienteProcessoStatus.LiberadoParaRegistrarPedidoRecebidoCliente;
+							if (_vRastreio[iv].dadosNormalizado.hasDataEntrega && _vRastreio[iv].dadosNormalizado.isSituacaoMercadoriaEntregue)
+							{
+								_vRastreio[iv].processo.Status = eRastreioPedidoRecebidoClienteProcessoStatus.LiberadoParaRegistrarPedidoRecebidoCliente;
+							}
+							else
+							{
+								_vRastreio[iv].processo.Status = eRastreioPedidoRecebidoClienteProcessoStatus.ErroInconsistencia;
+								_vRastreio[iv].processo.CodigoErro = eRastreioPedidoRecebidoClienteProcessoCodigoErro.OCORRENCIA_SEM_DATA_RECEBIMENTO;
+								_vRastreio[iv].processo.MensagemErro = "Ocorrência não informa data de recebimento";
+							}
 						}
 						else
 						{
-							if ((_vRastreio[iv].dadosNormalizado.DataEntrega.Trim().Length > 0) && (_vRastreio[iv].dadosNormalizado.PrevisaoEntrega.Trim().Length > 0))
+							if ((_vRastreio[iv].dadosNormalizado.hasDataEntrega && _vRastreio[iv].dadosNormalizado.isSituacaoMercadoriaEntregue) && _vRastreio[iv].dadosNormalizado.hasPrevisaoEntrega)
 							{
 								if (_vRastreio[iv].dadosNormalizado.dtPrevisaoEntrega != _vRastreio[iv].processo.PrevisaoEntregaTranspDataOriginal)
 								{
@@ -996,11 +1040,11 @@ namespace ADM2
 									_vRastreio[iv].processo.Status = eRastreioPedidoRecebidoClienteProcessoStatus.LiberadoParaRegistrarPedidoRecebidoCliente;
 								}
 							}
-							else if (_vRastreio[iv].dadosNormalizado.DataEntrega.Trim().Length > 0)
+							else if (_vRastreio[iv].dadosNormalizado.hasDataEntrega && _vRastreio[iv].dadosNormalizado.isSituacaoMercadoriaEntregue)
 							{
 								_vRastreio[iv].processo.Status = eRastreioPedidoRecebidoClienteProcessoStatus.LiberadoParaRegistrarPedidoRecebidoCliente;
 							}
-							else if ((_vRastreio[iv].dadosNormalizado.PrevisaoEntrega.Trim().Length > 0) && (_vRastreio[iv].dadosNormalizado.dtPrevisaoEntrega != _vRastreio[iv].processo.PrevisaoEntregaTranspDataOriginal))
+							else if (_vRastreio[iv].dadosNormalizado.hasPrevisaoEntrega && (_vRastreio[iv].dadosNormalizado.dtPrevisaoEntrega != _vRastreio[iv].processo.PrevisaoEntregaTranspDataOriginal))
 							{
 								_vRastreio[iv].processo.Status = eRastreioPedidoRecebidoClienteProcessoStatus.LiberadoParaRegistrarDataPrevisaoEntrega;
 							}
@@ -1108,10 +1152,24 @@ namespace ADM2
 							grid.Rows[iv].Cells[GRID_COL_SITUACAO].Value = vRastreioOrdenado[iv].dadosNormalizado.Situacao;
 							grid.Rows[iv].Cells[GRID_COL_DETALHE].Value = vRastreioOrdenado[iv].dadosNormalizado.Detalhe;
 							grid.Rows[iv].Cells[GRID_COL_DATA_ENTREGA].Value = vRastreioOrdenado[iv].dadosNormalizado.DataEntrega;
+							if ((vRastreioOrdenado[iv].processo.Status == eRastreioPedidoRecebidoClienteProcessoStatus.LiberadoParaRegistrarPedidoRecebidoCliente)
+								|| (vRastreioOrdenado[iv].processo.Status == eRastreioPedidoRecebidoClienteProcessoStatus.LiberadoParaRegistrarPedidoRecebidoCliente_E_LiberadoParaRegistrarDataPrevisaoEntrega))
+							{
+								grid.Rows[iv].Cells[GRID_COL_DATA_ENTREGA].Style.Font = new Font(grid.Columns[GRID_COL_DATA_ENTREGA].DefaultCellStyle.Font, FontStyle.Bold);
+								grid.Rows[iv].Cells[GRID_COL_DATA_ENTREGA].Style.ForeColor = Color.Green;
+							}
+							// Data usada p/ ordenação do grid no evento SortCompare
 							sDatePart = Global.formataDataYyyyMmDdComSeparador(vRastreioOrdenado[iv].dadosNormalizado.dtDataEntrega);
 							if (sDatePart.Length == 0) sDatePart = sYYYYMMDDBrancos;
 							grid.Rows[iv].Cells[GRID_COL_HIDDEN_DATA_ENTREGA].Value = sDatePart + ' ' + Global.normalizaCodigo(iv.ToString(), 6);
 							grid.Rows[iv].Cells[GRID_COL_PREVISAO_ENTREGA].Value = vRastreioOrdenado[iv].dadosNormalizado.PrevisaoEntrega;
+							if ((vRastreioOrdenado[iv].processo.Status == eRastreioPedidoRecebidoClienteProcessoStatus.LiberadoParaRegistrarDataPrevisaoEntrega)
+								|| (vRastreioOrdenado[iv].processo.Status == eRastreioPedidoRecebidoClienteProcessoStatus.LiberadoParaRegistrarPedidoRecebidoCliente_E_LiberadoParaRegistrarDataPrevisaoEntrega))
+							{
+								grid.Rows[iv].Cells[GRID_COL_PREVISAO_ENTREGA].Style.Font = new Font(grid.Columns[GRID_COL_PREVISAO_ENTREGA].DefaultCellStyle.Font, FontStyle.Bold);
+								grid.Rows[iv].Cells[GRID_COL_PREVISAO_ENTREGA].Style.ForeColor = Color.Green;
+							}
+							// Data usada p/ ordenação do grid no evento SortCompare
 							sDatePart = Global.formataDataYyyyMmDdComSeparador(vRastreioOrdenado[iv].dadosNormalizado.dtPrevisaoEntrega);
 							if (sDatePart.Length == 0) sDatePart = sYYYYMMDDBrancos;
 							grid.Rows[iv].Cells[GRID_COL_HIDDEN_PREVISAO_ENTREGA].Value = sDatePart + ' ' + Global.normalizaCodigo(iv.ToString(), 6);
