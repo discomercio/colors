@@ -235,6 +235,10 @@ function trataOnBlurPedido() {
 
 function isPedidoOLD01(pedido) {
 	var c;
+
+	// Evita que se acesse a página destinada ao ambiente antigo e ocorra exception devido ao BD inválido
+	return false;
+
 	if (pedido == null) return false;
 	if (pedido.length == 0) return false;
 	for (var i = 0; i < pedido.length; i++) {

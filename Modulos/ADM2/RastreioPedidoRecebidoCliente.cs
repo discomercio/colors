@@ -105,6 +105,36 @@ namespace ADM2
 		public DateTime dtDataEntrega { get; set; } = DateTime.MinValue;
 		public string PrevisaoEntrega { get; set; } = "";
 		public DateTime dtPrevisaoEntrega { get; set; } = DateTime.MinValue;
+
+		public bool isSituacaoMercadoriaEntregue
+		{
+			get { return Global.listaCodigosRastreioSituacaoMercadoriaEntregue.Contains(Situacao.Trim().ToUpper()); }
+		}
+
+		public bool hasDataInclusao
+		{
+			get { return (DataInclusao.Trim().Length > 0); }
+		}
+
+		public bool hasDataHoraOcorrencia
+		{
+			get { return (DataHoraOcorrencia.Trim().Length > 0); }
+		}
+
+		public bool hasDataEntrega
+		{
+			get { return (DataEntrega.Trim().Length > 0); }
+		}
+
+		public bool hasPrevisaoEntrega
+		{
+			get { return (PrevisaoEntrega.Trim().Length > 0); }
+		}
+
+		public bool hasNF
+		{
+			get { return (NF.Trim().Length > 0); }
+		}
 	}
 	#endregion
 
@@ -128,6 +158,36 @@ namespace ADM2
 		public string Detalhe { get; set; } = "";
 		public string DataEntrega { get; set; } = "";
 		public string PrevisaoEntrega { get; set; } = "";
+
+		public bool isSituacaoMercadoriaEntregue
+		{
+			get { return Global.listaCodigosRastreioSituacaoMercadoriaEntregue.Contains(Situacao.Trim().ToUpper()); }
+		}
+
+		public bool hasDataInclusao
+		{
+			get { return (DataInclusao.Trim().Length > 0); }
+		}
+
+		public bool hasDataHoraOcorrencia
+		{
+			get { return (DataHoraOcorrencia.Trim().Length > 0); }
+		}
+
+		public bool hasDataEntrega
+		{
+			get { return (DataEntrega.Trim().Length > 0); }
+		}
+
+		public bool hasPrevisaoEntrega
+		{
+			get { return (PrevisaoEntrega.Trim().Length > 0); }
+		}
+
+		public bool hasNF
+		{
+			get { return (NF.Trim().Length > 0); }
+		}
 	}
 	#endregion
 
