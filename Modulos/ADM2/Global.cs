@@ -28,8 +28,8 @@ namespace ADM2
 			{
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "ADM2";
-				public const string VERSAO_NUMERO = "1.11";
-				public const string VERSAO_DATA = "02.DEZ.2021";
+				public const string VERSAO_NUMERO = "1.12";
+				public const string VERSAO_DATA = "17.DEZ.2021";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Módulo Administrativo";
@@ -115,8 +115,20 @@ namespace ADM2
 			 *		  do progresso do processamento não funcionava devido à verificação do intervalo entre
 			 *		  atualizações (lngMiliSegundosDecorridos >= MIN_INTERVALO_DOEVENTS_EM_MILISEGUNDOS).
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.12 - XX.XX.20XX - por XXX
-			 *		  
+			 * v 1.12 - 17.12.2021 - por HHO
+			 *		  Ajustes na rotina que registra o recebimento do pedido pelo cliente para tratar a
+			 *		  situação em que é informada a "data entrega", mas o evento não é "MERCADORIA ENTREGUE".
+			 *		  Criação de parâmetro no banco de dados para definir os códigos aceitos no campo
+			 *		  "Situacao" do arquivo CSV de rastreio da transportadora para considerar que a mercadoria
+			 *		  foi entregue ao destinatário (tabela t_PARAMETRO, registro
+			 *		  "ADM2_RastreioPedidoRecebidoCliente_SituacaoMercadoriaEntregue"). Esse tratamento foi
+			 *		  desenvolvido para tratar a situação "MERCADORIA PRE-ENTREGUE (MOBILE)" que também
+			 *		  representa que a mercadoria foi entregue ao destinatário. Mas nesse caso, o campo
+			 *		  "Data Entrega" não está sendo informado, sendo necessário usar a data da ocorrência
+			 *		  como a data da entrega.
+			 *		  Implementação de tratamento para que o módulo aceite múltiplas versões permitidas
+			 *		  na tabela t_VERSAO durante a validação da versão na inicialização do módulo (caso
+			 *		  exista mais de uma versão permitida, deve estar separada pelo caractere pipe "|").
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.13 - XX.XX.20XX - por XXX
 			 *		  
@@ -238,6 +250,7 @@ namespace ADM2
 				{
 					public const string VERSAO_ULT_ARQ_IBPT_CSV_CARREGADO = "ADM2_VersaoUltArqIbptCsvCarregado";
 					public const string ADM2_PROCESSAR_DATA_PREVISAO_ENTREGA_TRANSPORTADORA = "ADM2_ProcessarDataPrevisaoEntregaTransportadora";
+					public const string ADM2_RASTREIO_PEDIDO_RECEBIDO_CLIENTE_SITUACAO_MERCADORIA_ENTREGUE = "ADM2_RastreioPedidoRecebidoCliente_SituacaoMercadoriaEntregue";
 				}
 				#endregion
 			}
@@ -584,6 +597,7 @@ namespace ADM2
 		public static DateTime dtHrInicioRefRelogioServidor;
 		public static DateTime dtHrInicioRefRelogioLocal;
 		public static Color BackColorPainelPadrao = SystemColors.Control;
+		public static List<string> listaCodigosRastreioSituacaoMercadoriaEntregue = new List<string>();
 		#endregion
 
 		#region [ Classe Acesso ]
