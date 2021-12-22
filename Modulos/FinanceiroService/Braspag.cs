@@ -2958,8 +2958,8 @@ namespace FinanceiroService
 									GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
 									#endregion
 
-									strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag: Falha ao tentar confirmar a captura [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
-									strBody = "Mensagem de Financeiro Service\nFalha ao tentar confirmar a captura do pedido " + pag.pedido + " (" + pag.pedido_com_sufixo_nsu + "; t_PAGTO_GW_PAG_PAYMENT.id=" + payment.id.ToString() + ")\r\n" + msg_erro_last_op;
+									strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag: Falha ao tentar registrar no banco de dados a captura bem sucedida da transação [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+									strBody = "Mensagem de Financeiro Service\nFalha ao tentar registrar no banco de dados a captura bem sucedida da transação do pedido " + pag.pedido + " (" + pag.pedido_com_sufixo_nsu + "; t_PAGTO_GW_PAG_PAYMENT.id=" + payment.id.ToString() + ")\r\n" + msg_erro_last_op;
 									if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
 									{
 										strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
@@ -3006,8 +3006,8 @@ namespace FinanceiroService
 									GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
 									#endregion
 
-									strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag: Falha ao tentar registrar dados sobre tentativa fracassada de captura [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
-									strBody = "Mensagem de Financeiro Service\nFalha ao tentar registrar dados sobre tentativa fracassada de captura de pagamento do pedido " + pag.pedido + " (" + pag.pedido_com_sufixo_nsu + "; t_PAGTO_GW_PAG_PAYMENT.id=" + payment.id.ToString() + ")\r\n" + msg_erro_last_op;
+									strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag: Falha ao tentar registrar no banco de dados a tentativa fracassada de captura [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+									strBody = "Mensagem de Financeiro Service\nFalha ao tentar registrar no banco de dados a tentativa fracassada de captura de pagamento do pedido " + pag.pedido + " (" + pag.pedido_com_sufixo_nsu + "; t_PAGTO_GW_PAG_PAYMENT.id=" + payment.id.ToString() + ")\r\n" + msg_erro_last_op;
 									if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
 									{
 										strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
@@ -3016,8 +3016,8 @@ namespace FinanceiroService
 								}
 
 								#region [ Envia e-mail informando a falha na captura ]
-								strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag: Falha ao tentar confirmar a captura [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
-								strBody = "Mensagem de Financeiro Service\nFalha ao tentar confirmar a captura de pagamento do pedido " + pag.pedido + " (" + pag.pedido_com_sufixo_nsu + "; t_PAGTO_GW_PAG_PAYMENT.id=" + payment.id.ToString() + ")\r\n" + (rUpdatePaymentCaptureFalha.captura_confirmada_erro_mensagem ?? "");
+								strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag: Falha ao tentar confirmar a captura de transação do pedido " + pag.pedido + " [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+								strBody = "Mensagem de Financeiro Service\nFalha ao tentar confirmar a captura de pagamento do pedido " + pag.pedido + " (" + pag.pedido_com_sufixo_nsu + "; t_PAGTO_GW_PAG_PAYMENT.id=" + payment.id.ToString() + "; valor=" + Global.formataMoeda(payment.valor_transacao) + ")\r\n" + (rUpdatePaymentCaptureFalha.captura_confirmada_erro_mensagem ?? "");
 								if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Parametros.Geral.DESTINATARIO_MSG_ALERTA_ESTORNOS_PENDENTES_ABORTADOS, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
 								{
 									strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
@@ -3115,6 +3115,7 @@ namespace FinanceiroService
 			Global.Cte.Braspag.Pagador.Transacao trxSelecionada = Global.Cte.Braspag.Pagador.Transacao.VoidCreditCardTransaction;
 			bool blnEnviouOk;
 			bool blnSucesso;
+			bool blnVoidConfirmed = false;
 			int id_emailsndsvc_mensagem;
 			string msg_erro_aux;
 			string msg_erro_requisicao;
@@ -3133,7 +3134,7 @@ namespace FinanceiroService
 			BraspagTransactionDataRequest trxDataRequest;
 			List<BraspagTransactionDataRequest> vTrxDataRequest = new List<BraspagTransactionDataRequest>();
 			BraspagUpdatePagPaymentVoidCreditCardTransactionResponseSucesso rUpdatePaymentVoidSucesso;
-			BraspagUpdatePagPaymentVoidCreditCardTransactionResponseFalha rUpdatePaymentVoidFalha;
+			BraspagUpdatePagPaymentVoidCreditCardTransactionResponseFalha rUpdatePaymentVoidFalha = null;
 			#endregion
 
 			msg_erro = "";
@@ -3299,6 +3300,7 @@ namespace FinanceiroService
 						{
 							if (rRESP.TransactionDataCollection[0].Status.Equals(Global.Cte.Braspag.Pagador.VoidCreditCardTransactionResponseStatus.VOID_CONFIRMED.GetValue()))
 							{
+								blnVoidConfirmed = true;
 								rUpdatePaymentVoidSucesso = new BraspagUpdatePagPaymentVoidCreditCardTransactionResponseSucesso();
 								rUpdatePaymentVoidSucesso.id_pagto_gw_pag_payment = payment.id;
 								rUpdatePaymentVoidSucesso.ult_id_pagto_gw_pag_payment_op_complementar = opCompl.id;
@@ -3322,8 +3324,8 @@ namespace FinanceiroService
 									GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
 									#endregion
 
-									strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag: Falha ao tentar cancelar (void) a transação [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
-									strBody = "Mensagem de Financeiro Service\nFalha ao tentar cancelar (void) a transação do pedido " + pag.pedido + " (" + pag.pedido_com_sufixo_nsu + "; t_PAGTO_GW_PAG_PAYMENT.id=" + payment.id.ToString() + ")\r\n" + msg_erro_last_op;
+									strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag: Falha ao tentar registrar no banco de dados o cancelamento (void) bem sucedido da transação [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+									strBody = "Mensagem de Financeiro Service\nFalha ao tentar registrar no banco de dados o cancelamento (void) bem sucedido da transação do pedido " + pag.pedido + " (" + pag.pedido_com_sufixo_nsu + "; t_PAGTO_GW_PAG_PAYMENT.id=" + payment.id.ToString() + ")\r\n" + msg_erro_last_op;
 									if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
 									{
 										strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
@@ -3370,19 +3372,39 @@ namespace FinanceiroService
 									GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
 									#endregion
 
-									strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag: Falha ao tentar cancelar (void) a transação [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
-									strBody = "Mensagem de Financeiro Service\nFalha ao tentar cancelar (void) a transação do pedido " + pag.pedido + " (" + pag.pedido_com_sufixo_nsu + "; t_PAGTO_GW_PAG_PAYMENT.id=" + payment.id.ToString() + ")\r\n" + msg_erro_last_op;
+									strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag: Falha ao tentar registrar no banco de dados a tentativa fracassada de cancelar (void) a transação [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+									strBody = "Mensagem de Financeiro Service\nFalha ao tentar registrar no banco de dados a tentativa fracassada de cancelar (void) a transação do pedido " + pag.pedido + " (" + pag.pedido_com_sufixo_nsu + "; t_PAGTO_GW_PAG_PAYMENT.id=" + payment.id.ToString() + ")\r\n" + msg_erro_last_op;
 									if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
 									{
 										strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
 										Global.gravaLogAtividade(strMsg);
 									}
 								}
+
+								#region [ Envia e-mail informando a falha na requisição void ]
+								strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag: Falha ao tentar cancelar (void) transação do pedido " + pag.pedido + " [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+								strBody = "Mensagem de Financeiro Service\nFalha ao tentar cancelar (void) transação do pedido " + pag.pedido + " (" + pag.pedido_com_sufixo_nsu + "; t_PAGTO_GW_PAG_PAYMENT.id=" + payment.id.ToString() + "; valor=" + Global.formataMoeda(payment.valor_transacao) + ")\r\n" + (rUpdatePaymentVoidFalha.voided_erro_mensagem ?? "");
+								if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Parametros.Geral.DESTINATARIO_MSG_ALERTA_ESTORNOS_PENDENTES_ABORTADOS, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+								{
+									strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+									Global.gravaLogAtividade(strMsg);
+								}
+								#endregion
 							}
 						}
 					}
 				}
 				#endregion
+
+				if (!blnVoidConfirmed)
+				{
+					if (rUpdatePaymentVoidFalha != null)
+					{
+						if ((msg_erro.Length > 0) && ((rUpdatePaymentVoidFalha.voided_erro_mensagem ?? "").Length > 0)) msg_erro += "\n";
+						msg_erro += (rUpdatePaymentVoidFalha.voided_erro_mensagem ?? "");
+					}
+					return false;
+				}
 
 				#region [ Registra o pagamento no pedido ]
 				blnSucesso = false;
@@ -3459,7 +3481,8 @@ namespace FinanceiroService
 			Global.Cte.Braspag.Pagador.Transacao trxSelecionada = Global.Cte.Braspag.Pagador.Transacao.RefundCreditCardTransaction;
 			bool blnEnviouOk;
 			bool blnSucesso;
-			bool blnEstornoConfirmado = false;
+			bool blnRefundConfirmed = false;
+			bool blnRefundAccepted = false;
 			int id_emailsndsvc_mensagem;
 			string msg_erro_aux;
 			string msg_erro_requisicao;
@@ -3479,7 +3502,7 @@ namespace FinanceiroService
 			List<BraspagTransactionDataRequest> vTrxDataRequest = new List<BraspagTransactionDataRequest>();
 			BraspagUpdatePagPaymentRefundCreditCardTransactionResponseSucesso rUpdatePaymentRefundSucesso;
 			BraspagUpdatePagPaymentRefundCreditCardTransactionResponseRefundAccepted rUpdatePaymentRefundAccepted;
-			BraspagUpdatePagPaymentRefundCreditCardTransactionResponseFalha rUpdatePaymentRefundFalha;
+			BraspagUpdatePagPaymentRefundCreditCardTransactionResponseFalha rUpdatePaymentRefundFalha = null;
 			#endregion
 
 			msg_erro = "";
@@ -3645,7 +3668,7 @@ namespace FinanceiroService
 						{
 							if (rRESP.TransactionDataCollection[0].Status.Equals(Global.Cte.Braspag.Pagador.RefundCreditCardTransactionResponseStatus.REFUND_CONFIRMED.GetValue()))
 							{
-								blnEstornoConfirmado = true;
+								blnRefundConfirmed = true;
 								rUpdatePaymentRefundSucesso = new BraspagUpdatePagPaymentRefundCreditCardTransactionResponseSucesso();
 								rUpdatePaymentRefundSucesso.id_pagto_gw_pag_payment = payment.id;
 								rUpdatePaymentRefundSucesso.ult_id_pagto_gw_pag_payment_op_complementar = opCompl.id;
@@ -3669,8 +3692,8 @@ namespace FinanceiroService
 									GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
 									#endregion
 
-									strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag: Falha ao tentar estornar (refund) a transação [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
-									strBody = "Mensagem de Financeiro Service\nFalha ao tentar estornar (refund) a transação do pedido " + pag.pedido + " (" + pag.pedido_com_sufixo_nsu + "; t_PAGTO_GW_PAG_PAYMENT.id=" + payment.id.ToString() + ")\r\n" + msg_erro_last_op;
+									strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag: Falha ao tentar registrar no banco de dados o estorno (refund) bem sucedido da transação [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+									strBody = "Mensagem de Financeiro Service\nFalha ao tentar registrar no banco de dados o estorno (refund) bem sucedido da transação do pedido " + pag.pedido + " (" + pag.pedido_com_sufixo_nsu + "; t_PAGTO_GW_PAG_PAYMENT.id=" + payment.id.ToString() + ")\r\n" + msg_erro_last_op;
 									if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
 									{
 										strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
@@ -3680,6 +3703,7 @@ namespace FinanceiroService
 							}
 							else if (rRESP.TransactionDataCollection[0].Status.Equals(Global.Cte.Braspag.Pagador.RefundCreditCardTransactionResponseStatus.REFUND_ACCEPTED.GetValue()))
 							{
+								blnRefundAccepted = true;
 								rUpdatePaymentRefundAccepted = new BraspagUpdatePagPaymentRefundCreditCardTransactionResponseRefundAccepted();
 								rUpdatePaymentRefundAccepted.id_pagto_gw_pag_payment = payment.id;
 								rUpdatePaymentRefundAccepted.ult_id_pagto_gw_pag_payment_op_complementar = opCompl.id;
@@ -3745,22 +3769,42 @@ namespace FinanceiroService
 									GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
 									#endregion
 
-									strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag: Falha ao tentar estornar (refund) a transação [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
-									strBody = "Mensagem de Financeiro Service\nFalha ao tentar estornar (refund) a transação do pedido " + pag.pedido + " (" + pag.pedido_com_sufixo_nsu + "; t_PAGTO_GW_PAG_PAYMENT.id=" + payment.id.ToString() + ")\r\n" + msg_erro_last_op;
+									strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag: Falha ao tentar registrar no banco de dados a tentativa fracassada de estornar (refund) a transação [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+									strBody = "Mensagem de Financeiro Service\nFalha ao tentar registrar no banco de dados a tentativa fracassada de estornar (refund) a transação do pedido " + pag.pedido + " (" + pag.pedido_com_sufixo_nsu + "; t_PAGTO_GW_PAG_PAYMENT.id=" + payment.id.ToString() + ")\r\n" + msg_erro_last_op;
 									if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
 									{
 										strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
 										Global.gravaLogAtividade(strMsg);
 									}
 								}
+
+								#region [ Envia e-mail informando a falha na requisição refund ]
+								strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag: Falha ao tentar estornar (refund) transação do pedido " + pag.pedido + " [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+								strBody = "Mensagem de Financeiro Service\nFalha ao tentar estornar (refund) transação do pedido " + pag.pedido + " (" + pag.pedido_com_sufixo_nsu + "; t_PAGTO_GW_PAG_PAYMENT.id=" + payment.id.ToString() + "; valor=" + Global.formataMoeda(payment.valor_transacao) + ")\r\n" + (rUpdatePaymentRefundFalha.refunded_erro_mensagem ?? "");
+								if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Parametros.Geral.DESTINATARIO_MSG_ALERTA_ESTORNOS_PENDENTES_ABORTADOS, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
+								{
+									strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
+									Global.gravaLogAtividade(strMsg);
+								}
+								#endregion
 							}
 						}
 					}
 				}
 				#endregion
 
+				if ((!blnRefundConfirmed) && (!blnRefundAccepted))
+				{
+					if (rUpdatePaymentRefundFalha != null)
+					{
+						if ((msg_erro.Length > 0) && ((rUpdatePaymentRefundFalha.refunded_erro_mensagem ?? "").Length > 0)) msg_erro += "\n";
+						msg_erro += (rUpdatePaymentRefundFalha.refunded_erro_mensagem ?? "");
+					}
+					return false;
+				}
+
 				#region [ Registra o pagamento no pedido ]
-				if (blnEstornoConfirmado)
+				if (blnRefundConfirmed)
 				{
 					blnSucesso = false;
 					BD.iniciaTransacao();
@@ -4150,8 +4194,8 @@ namespace FinanceiroService
 						GeralDAO.gravaFinSvcLog(svcLog, out msg_erro_aux);
 						#endregion
 
-						strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag: Falha ao tentar confirmar o estorno de um estorno pendente [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
-						strBody = "Mensagem de Financeiro Service\nFalha ao tentar confirmar o estorno de um estorno pendente do pedido " + pag.pedido + " (" + pag.pedido_com_sufixo_nsu + "; t_PAGTO_GW_PAG_PAYMENT.id=" + payment.id.ToString() + ")\r\n" + msg_erro_last_op;
+						strSubject = Global.montaIdInstanciaServicoEmailSubject() + " Braspag: Falha ao tentar registrar no banco de dados a confirmação do estorno de um estorno pendente [" + Global.formataDataDdMmYyyyHhMmSsComSeparador(DateTime.Now) + "]";
+						strBody = "Mensagem de Financeiro Service\nFalha ao tentar registrar no banco de dados a confirmação do estorno de um estorno pendente do pedido " + pag.pedido + " (" + pag.pedido_com_sufixo_nsu + "; t_PAGTO_GW_PAG_PAYMENT.id=" + payment.id.ToString() + ")\r\n" + msg_erro_last_op;
 						if (!EmailSndSvcDAO.gravaMensagemParaEnvio(Global.Cte.Clearsale.Email.REMETENTE_MSG_ALERTA_SISTEMA, Global.Cte.Clearsale.Email.DESTINATARIO_MSG_ALERTA_SISTEMA, null, null, strSubject, strBody, DateTime.Now, out id_emailsndsvc_mensagem, out msg_erro_aux))
 						{
 							strMsg = NOME_DESTA_ROTINA + ": Falha ao tentar inserir email de alerta na fila de mensagens!!\n" + msg_erro_aux;
@@ -5122,7 +5166,7 @@ namespace FinanceiroService
 		#endregion
 
 		#region [ consultaDadosConsolidadosBoletoParaWebhookV2 ]
-		public static BraspagWebhookV2DadosConsolidadosBoleto consultaDadosConsolidadosBoletoParaWebhookV2(string merchantId, string braspagTransactionId,out BraspagGetTransactionDataResponse rGetTransactionData, out string msg_erro)
+		public static BraspagWebhookV2DadosConsolidadosBoleto consultaDadosConsolidadosBoletoParaWebhookV2(string merchantId, string braspagTransactionId, out BraspagGetTransactionDataResponse rGetTransactionData, out string msg_erro)
 		{
 			#region [ Declarações ]
 			const String NOME_DESTA_ROTINA = "Braspag.consultaDadosConsolidadosBoletoParaWebhookV2()";
@@ -7470,7 +7514,7 @@ namespace FinanceiroService
 						" WHERE" +
 							" (refund_pending_status = 1)" +
 							" AND (refund_pending_confirmado_status = 0)" +
-							" AND (refund_pending_falha_status = 0)"+
+							" AND (refund_pending_falha_status = 0)" +
 						" ORDER BY" +
 							" tPAG_PAY.refund_pending_data_hora," +
 							" tPAG_PAY.id";
