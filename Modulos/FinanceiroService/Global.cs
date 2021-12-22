@@ -29,8 +29,8 @@ namespace FinanceiroService
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "Financeiro Service";
 				public static readonly string ID_SISTEMA_EVENTLOG = GetConfigurationValue("ServiceName");
-				public const string VERSAO_NUMERO = "1.40";
-				public const string VERSAO_DATA = "12.JUL.2021";
+				public const string VERSAO_NUMERO = "1.41";
+				public const string VERSAO_DATA = "21.DEZ.2021";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Serviço do Windows para execução automática de rotinas financeiras";
@@ -316,8 +316,9 @@ namespace FinanceiroService
 			 *      Implementação de envio de e-mail de alerta para os vendedores sobre pedidos com data de
 			 *      previsão de entrega próxima de expirar ou já expirada.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.41 - XX.XX.20XX - por XXX
-			 *      
+			 * v 1.41 - 21.12.2021 - por HHO
+			 *      Implementação de envio de e-mail de alerta quando ocorrer falha no processamento do
+			 *      cancelamento ou estorno de transações durante o processamento do retorno da Clearsale.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.42 - XX.XX.20XX - por XXX
 			 *      
