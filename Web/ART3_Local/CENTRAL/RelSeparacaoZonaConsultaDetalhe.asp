@@ -183,8 +183,8 @@ dim strJS_AllTablesCollapse, strJS_AllTablesNotPrint
 				" tN3.produto," & _
 				" tN3.qtde," & _
 				" tN3.qtde_volumes," & _
-				" tProd.descricao," & _
-				" tProd.descricao_html," & _
+				" tPedItem.descricao," & _
+				" tPedItem.descricao_html," & _
 				" tN3.zona_id," & _
 				" tN3.zona_codigo," & _
 				" tN2.numeroNFe," & _
@@ -194,6 +194,7 @@ dim strJS_AllTablesCollapse, strJS_AllTablesNotPrint
 				" INNER JOIN t_WMS_ETQ_N3_SEPARACAO_ZONA_PRODUTO tN3 ON (tN2.id = tN3.id_wms_etq_n2)" & _
 				" INNER JOIN t_CLIENTE tCli ON (tN2.id_cliente = tCli.id)" & _
 				" INNER JOIN t_PEDIDO tPed ON (tN2.pedido = tPed.pedido)" & _
+				" INNER JOIN t_PEDIDO_ITEM tPedItem ON (tPed.pedido = tPedItem.pedido) AND (tN3.fabricante = tPedItem.fabricante) AND (tN3.produto = tPedItem.produto)" & _
 				" INNER JOIN t_FABRICANTE tFab ON (tN3.fabricante = tFab.fabricante)" & _
 				" INNER JOIN t_PRODUTO tProd ON ((tN3.fabricante = tProd.fabricante) AND (tN3.produto = tProd.produto))" & _
 			" WHERE" & _
@@ -408,7 +409,7 @@ dim strJS_AllTablesCollapse, strJS_AllTablesNotPrint
 								"		<td class='MDB tdTotCodProd' align='left'><span class='C'>&nbsp;" & _
 								Trim("" & v(1)) & "</span></td>"  & chr(13) & _
 								"		<td class='MDB tdTotDescrProd' align='left' nowrap><span class='C' nowrap>&nbsp;" & _
-								produto_formata_descricao_em_html(.c4) & _
+								produto_formata_descricao_em_html(produto_descricao_html(v(0), v(1))) & _
 								"</span></td>" & chr(13) & _
 								"		<td class='MDB tdTotQtde' align='left'><span class='Cd'>&nbsp;" & _
 								formata_inteiro(.c2) & "</span></td>"  & chr(13) & _

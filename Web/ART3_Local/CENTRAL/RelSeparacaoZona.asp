@@ -128,6 +128,13 @@
 		strMinDtInicialFiltroPeriodoDDMMYYYY = ""
 		end if
 
+	dim rNfeEmitente
+
+	if alerta = "" then
+	'	OWNER DO PEDIDO
+		set rNfeEmitente = le_nfe_emitente(c_nfe_emitente)
+		end if
+
 	if alerta = "" then
 	'	CONSISTÊNCIA: SE ALGUM PRODUTO APTO A APARECER NESTE RELATÓRIO NÃO POSSUIR
 	'	============  A ZONA CADASTRADA, EXIBE UM AVISO E IMPEDE A EXIBIÇÃO DO RELATÓRIO.
@@ -137,8 +144,8 @@
 		s = "SELECT DISTINCT" & _
 				" t_PRODUTO.fabricante," & _
 				" t_PRODUTO.produto," & _
-				" t_PRODUTO.descricao," & _
-				" t_PRODUTO.descricao_html," & _
+				" t_PEDIDO_ITEM.descricao," & _
+				" t_PEDIDO_ITEM.descricao_html," & _
 				" zona_codigo" & _
 			" FROM t_PEDIDO" & _
 				" INNER JOIN t_PEDIDO AS t_PEDIDO__BASE ON (t_PEDIDO.pedido_base=t_PEDIDO__BASE.pedido)" & _
@@ -154,7 +161,20 @@
 						"(t_PEDIDO__BASE.PagtoAntecipadoStatus = " & COD_PAGTO_ANTECIPADO_STATUS_NORMAL & ")" & _
 						" OR " & _
 						"((t_PEDIDO__BASE.PagtoAntecipadoStatus = " & COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO & ") AND (t_PEDIDO.PagtoAntecipadoQuitadoStatus = " & COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO & "))" & _
-					")"
+					")" & _
+				" AND (t_PEDIDO.id_nfe_emitente = " & rNfeEmitente.id & ")"
+		
+		if IsDate(c_dt_inicio) then
+			s = s & " AND (t_PEDIDO.a_entregar_data_marcada >= " & bd_formata_data(StrToDate(c_dt_inicio)) & ")"
+			end if
+		
+		if IsDate(c_dt_termino) then
+			s = s & " AND (t_PEDIDO.a_entregar_data_marcada < " & bd_formata_data(StrToDate(c_dt_termino)+1) & ")"
+			end if
+
+		if c_transportadora <> "" then
+			s = s & " AND (t_PEDIDO.transportadora_id = '" & c_transportadora & "')"
+			end if
 		
 		s = "SELECT " & _
 				"*" & _
@@ -245,7 +265,6 @@ dim blnProcessaRegistro
 dim strJS_AllTablesCollapse, strJS_AllTablesNotPrint
 dim s_log, s_log_filtro
 dim lngRecordsAffected, intSequenciaN2, intSequenciaN3
-dim rNfeEmitente
 
 '	VETOR QUE ARMAZENA TODOS OS REGISTROS (A ORDENAÇÃO DEVE SER FEITA NA CONSULTA SQL)
 	redim vRel(0)
@@ -332,8 +351,8 @@ dim rNfeEmitente
 				" t_PEDIDO_ITEM.produto," & _
 				" t_PEDIDO_ITEM.qtde," & _
 				" t_PEDIDO_ITEM.qtde_volumes," & _
-				" t_PRODUTO.descricao," & _
-				" t_PRODUTO.descricao_html," & _
+				" t_PEDIDO_ITEM.descricao," & _
+				" t_PEDIDO_ITEM.descricao_html," & _
 				" t_PRODUTO.deposito_zona_id AS zona_id," & _
 				" t_WMS_DEPOSITO_MAP_ZONA.zona_codigo," & _
 				" (" & _
@@ -365,7 +384,8 @@ dim rNfeEmitente
 						"(t_PEDIDO__BASE.PagtoAntecipadoStatus = " & COD_PAGTO_ANTECIPADO_STATUS_NORMAL & ")" & _
 						" OR " & _
 						"((t_PEDIDO__BASE.PagtoAntecipadoStatus = " & COD_PAGTO_ANTECIPADO_STATUS_ANTECIPADO & ") AND (t_PEDIDO.PagtoAntecipadoQuitadoStatus = " & COD_PAGTO_ANTECIPADO_QUITADO_STATUS_QUITADO & "))" & _
-					")"
+					")" & _
+				" AND (t_PEDIDO.id_nfe_emitente = " & rNfeEmitente.id & ")"
 	
 	if IsDate(c_dt_inicio) then
 		s_sql = s_sql & " AND (t_PEDIDO.a_entregar_data_marcada >= " & bd_formata_data(StrToDate(c_dt_inicio)) & ")"
@@ -378,10 +398,6 @@ dim rNfeEmitente
 	if c_transportadora <> "" then
 		s_sql = s_sql & " AND (t_PEDIDO.transportadora_id = '" & c_transportadora & "')"
 		end if
-	
-'	OWNER DO PEDIDO
-	set rNfeEmitente = le_nfe_emitente(c_nfe_emitente)
-	s_sql = s_sql & " AND (t_PEDIDO.id_nfe_emitente = " & rNfeEmitente.id & ")"
 	
 	if s_sql_lista_pedidos <> "" then
 		s_sql = s_sql & " AND (t_PEDIDO.pedido IN (" & s_sql_lista_pedidos & "))"
@@ -648,7 +664,7 @@ dim rNfeEmitente
 								"		<td class='MDB tdTotCodProd' align='left'><span class='C'>&nbsp;" & _
 								Trim("" & v(1)) & "</span></td>"  & chr(13) & _
 								"		<td class='MDB tdTotDescrProd' align='left' nowrap><span class='C' nowrap>&nbsp;" & _
-								produto_formata_descricao_em_html(.c4) & _
+								produto_formata_descricao_em_html(produto_descricao_html(v(0), v(1))) & _
 								"</span></td>" & chr(13) & _
 								"		<td class='MDB tdTotQtde' align='left'><span class='Cd'>&nbsp;" & _
 								formata_inteiro(.c2) & "</span></td>"  & chr(13) & _
