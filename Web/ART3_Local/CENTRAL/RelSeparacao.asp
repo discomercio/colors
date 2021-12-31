@@ -143,8 +143,8 @@ dim rNfeEmitente
 		end if
 
 	s_sql = s_sql & _
-				" t_PRODUTO.descricao," & _
-				" t_PRODUTO.descricao_html" & _
+				" t_PEDIDO_ITEM.descricao," & _
+				" t_PEDIDO_ITEM.descricao_html" & _
 			" FROM t_PEDIDO" & _
 				" INNER JOIN t_PEDIDO AS t_PEDIDO__BASE ON (t_PEDIDO.pedido_base=t_PEDIDO__BASE.pedido)" & _
 				" INNER JOIN t_PEDIDO_ITEM ON (t_PEDIDO.pedido=t_PEDIDO_ITEM.pedido)" & _
