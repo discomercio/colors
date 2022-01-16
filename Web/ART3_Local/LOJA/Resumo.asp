@@ -113,6 +113,12 @@
 	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 
+	dim rPedCancelRecenteFlag
+	set rPedCancelRecenteFlag = get_registro_t_parametro(ID_PARAMETRO_PedidoCanceladoRecenteExibirInformativoModuloLojaFlagHabilitacao)
+
+	dim rPedCancelRecentePrazo
+	set rPedCancelRecentePrazo = get_registro_t_parametro(ID_PARAMETRO_PedidoCanceladoRecenteExibirInformativoModuloLojaPrazo)
+
 	strFlagPrimeiraExecucao = Request("FlagPrimeiraExecucao")
 	if strFlagPrimeiraExecucao = "1" then eh_primeira_execucao = True
 
@@ -365,16 +371,16 @@ dim i,r,s,sql, s_aux
 		else
 			s = s & "<tr nowrap>"
 			end if
-		s = s & "	<td class='MD' style='width:40px' align='left' valign='top' nowrap><p class='C'>" & formata_data(r("data")) & "</p></td>" & chr(13)
-		s = s & "	<td class='MD' style='width:40px' align='left' valign='top' nowrap><p class='C'>&nbsp;<a href='pedido.asp?pedido_selecionado=" & Trim("" & r("pedido")) & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "'>" & r("pedido") & "</a></p></td>" & chr(13)
-		s = s & "	<td class='MD' style='width:60px' align='left' valign='top' nowrap><p class='C'>" & iniciais_em_maiusculas(Trim("" & r("vendedor"))) & "</p></td>" & chr(13)
-		s = s & "	<td class='MD' style='width:150px' align='left'><p class='C'>" & Trim("" & r("nome_iniciais_em_maiusculas")) & "</p></td>" & chr(13)
-		s = s & "	<td class='MD' style='width:50px' align='left' valign='top'><p class='C' style='color:" & x_status_entrega_cor(r("st_entrega"), r("pedido")) & "'>" & x_status_entrega(r("st_entrega")) & "</p></td>" & chr(13)
+		s = s & "	<td class='MD' style='width:40px' align='left' valign='middle' nowrap><p class='C'>" & formata_data(r("data")) & "</p></td>" & chr(13)
+		s = s & "	<td class='MD' style='width:40px' align='left' valign='middle' nowrap><p class='C'>&nbsp;<a href='pedido.asp?pedido_selecionado=" & Trim("" & r("pedido")) & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "'>" & r("pedido") & "</a></p></td>" & chr(13)
+		s = s & "	<td class='MD' style='width:60px' align='left' valign='middle' nowrap><p class='C'>" & iniciais_em_maiusculas(Trim("" & r("vendedor"))) & "</p></td>" & chr(13)
+		s = s & "	<td class='MD' style='width:150px' align='left' valign='middle'><p class='C'>" & Trim("" & r("nome_iniciais_em_maiusculas")) & "</p></td>" & chr(13)
+		s = s & "	<td class='MD' style='width:50px' align='left' valign='middle'><p class='C' style='color:" & x_status_entrega_cor(r("st_entrega"), r("pedido")) & "'>" & x_status_entrega(r("st_entrega")) & "</p></td>" & chr(13)
 		s_aux = x_analise_credito(r("analise_credito"))
         if s_aux <> "" And Trim("" & r("analise_credito_pendente_vendas_motivo")) <> "" then
             if Cstr(r("analise_credito"))=Cstr(COD_AN_CREDITO_PENDENTE_VENDAS) then s_aux = s_aux & " (" & obtem_descricao_tabela_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__AC_PENDENTE_VENDAS_MOTIVO, r("analise_credito_pendente_vendas_motivo")) & ")"            
         end if
-        s = s & "	<td style='width:80px' align='left' valign='top'><p class='C'>" & s_aux & "</p></td>" & chr(13)
+        s = s & "	<td style='width:80px' align='left' valign='middle'><p class='C'>" & s_aux & "</p></td>" & chr(13)
         s = s & "</tr>" & chr(13)
 		
 		r.MoveNext
@@ -563,7 +569,7 @@ strSqlVlPagoCartao = " Coalesce(" & _
 
      s = "<table width='600' class='QS' cellSpacing='0' style='border-left:0px;'>" & chr(13) & _
 		        "<tr class='DefaultBkg'>" & chr(13) & _
-                "<td style='background:#FFF' class='MD MB'> &nbsp; </td>" & chr(13) & _
+                "<td style='width:30px;background:#FFF' class='MD MB'> &nbsp; </td>" & chr(13) & _
 		        "<td class='MD MTB' align='left'><p class='R'>DATA FINAL</p></td>" & chr(13) & _
 		        "<td class='MD MTB' align='left'><p class='R'>PEDIDO</p></td>" & chr(13)
     if operacao_permitida(OP_LJA_CONSULTA_UNIVERSAL_PEDIDO_ORCAMENTO, s_lista_operacoes_permitidas) then
@@ -628,7 +634,7 @@ strSqlVlPagoCartao = " Coalesce(" & _
 		            else
 			            s = s & "<tr nowrap>" & chr(13)
 			        end if
-		            s = s & "	<td class='tdReg' style='width:20px' nowrap><p class='Rd'>" & n_reg & ".</p></td>" & chr(13)
+		            s = s & "	<td class='tdReg' nowrap><p class='Rd'>" & n_reg & ".</p></td>" & chr(13)
 		            s = s & "	<td class='tdDataF' nowrap><p class='C'>" & formata_data(vRelat(cont).c1) & "</p></td>" & chr(13)
 		            s = s & "   <td class='tdPedido' nowrap><p class='C'>&nbsp;<a href='javascript:fRELConsul(" & _
 			        chr(34) & vRelat(cont).c2 & chr(34) & _
@@ -658,6 +664,149 @@ strSqlVlPagoCartao = " Coalesce(" & _
 	set r=nothing
 
 end function
+
+
+' _________________________________
+' LISTA_PEDIDO_CANCELADO_RECENTE
+function lista_pedido_cancelado_recente
+dim strSql, strWhereBase, s, r, i, n_reg, n_linha, vRelat
+
+	strWhereBase = " (tPed.st_entrega = '" & ST_ENTREGA_CANCELADO & "')" & _
+				" AND (tPed.cancelado_data >= (DATEADD(day, -" & Trim("" & rPedCancelRecentePrazo.campo_inteiro) & ", CONVERT(date, getdate()))))" & _
+				" AND (tPedBase.loja = '" & loja & "')"
+
+	if Not operacao_permitida(OP_LJA_CONSULTA_UNIVERSAL_PEDIDO_ORCAMENTO, s_lista_operacoes_permitidas) then
+		strWhereBase = strWhereBase & " AND (tPedBase.vendedor = '" & usuario & "')"
+		end if
+
+	strSql = "SELECT " & _
+				"tPed.pedido" & _
+				", tPed.pedido_base" & _
+				", tPed.st_entrega" & _
+				", tPed.cancelado_data" & _
+				", tPed.cancelado_codigo_motivo" & _
+				", tDescrMotivoCancel.descricao AS motivo_cancelamento" & _
+				", tPed.cancelado_codigo_sub_motivo" & _
+				", tDescrSubMotivoCancel.descricao AS sub_motivo_cancelamento" & _
+				", (CASE WHEN (tPedBase.analise_credito = " & COD_AN_CREDITO_ST_INICIAL & ") AND (tPedBase.st_forma_pagto_somente_cartao = 1) THEN '" & COD_AN_CREDITO_PENDENTE_CARTAO & "' ELSE CONVERT(varchar(3), tPedBase.analise_credito) END) AS analise_credito" & _
+				", tPedBase.st_forma_pagto_somente_cartao" & _
+				", tPedBase.data_hora AS analise_credito_data" & _
+				", tPedBase.vendedor"
+
+	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+		strSql = strSql & _
+					", tPed.endereco_nome_iniciais_em_maiusculas AS nome"
+	else
+		strSql = strSql & _
+					", tCli.nome_iniciais_em_maiusculas AS nome"
+		end if
+
+	strSql = strSql & _
+			" FROM t_PEDIDO tPed" & _
+				" INNER JOIN t_PEDIDO tPedBase ON (tPed.pedido_base=tPedBase.pedido)" & _
+				" INNER JOIN t_CLIENTE tCli ON (tPed.id_cliente = tCli.id)" & _
+				" LEFT JOIN t_CODIGO_DESCRICAO tDescrMotivoCancel ON (tDescrMotivoCancel.grupo = '" & GRUPO_T_CODIGO_DESCRICAO__CANCELAMENTOPEDIDO_MOTIVO & "') AND (tDescrMotivoCancel.codigo=tPed.cancelado_codigo_motivo)" & _
+				" LEFT JOIN t_CODIGO_DESCRICAO tDescrSubMotivoCancel ON (tDescrSubMotivoCancel.grupo = '" & GRUPO_T_CODIGO_DESCRICAO__CANCELAMENTOPEDIDO_MOTIVO_SUB & "') AND (tDescrSubMotivoCancel.codigo=tPed.cancelado_codigo_sub_motivo)" & _
+			" WHERE" & _
+				strWhereBase & _
+			" ORDER BY" & _
+				" tPed.cancelado_data DESC," & _
+				" tPed.pedido"
+
+	set r = cn.Execute(strSql)
+
+	s = "<table width='600' class='QS' cellSpacing='0' style='border-left:0px;'>" & chr(13) & _
+				"<tr class='DefaultBkg'>" & chr(13) & _
+				"<td style='width:30px;background:#FFF' class='MD MB'> &nbsp; </td>" & chr(13) & _
+				"<td class='MD MTB' align='left'><p class='R'>DATA CANCEL</p></td>" & chr(13) & _
+				"<td class='MD MTB' align='left'><p class='R'>PEDIDO</p></td>" & chr(13)
+
+	if operacao_permitida(OP_LJA_CONSULTA_UNIVERSAL_PEDIDO_ORCAMENTO, s_lista_operacoes_permitidas) then
+		s = s & "<td class='MD MTB' align='left'><p class='R'>VENDEDOR</p></td>" & chr(13)
+		end if
+	
+	s = s & "<td class='MD MTB' align='left'><p class='R'>NOME DO CLIENTE</p></td>" & chr(13) & _
+		"<td class='MD MTB' align='left'><p class='R'>MOTIVO CANCELAMENTO</p></td>" & chr(13) & _
+		"<td class='MTB' align='left'><p class='R'>ANÁLISE DE CRÉDITO</p></td>" & chr(13) & _
+		"</tr>"
+	
+	redim vRelat(0)
+	set vRelat(0) = New cl_SEIS_COLUNAS
+	with vRelat(0)
+		.c1 = ""
+		.c2 = ""
+		.c3 = ""
+		.c4 = ""
+		.c5 = ""
+		.c6 = ""
+		end with
+
+	n_reg = 0
+	do while Not r.Eof
+		n_reg = n_reg + 1
+
+		if vRelat(Ubound(vRelat)).c1 <> "" then
+			redim preserve vRelat(Ubound(vRelat)+1)
+			set vRelat(ubound(vRelat)) = New cl_SEIS_COLUNAS
+			end if
+
+		with vRelat(Ubound(vRelat))
+			.c1 = Trim("" & r("pedido"))
+			.c2 = formata_data(r("cancelado_data"))
+			.c3 = Trim("" & r("nome"))
+			.c4 = x_analise_credito(Trim("" & r("analise_credito")))
+			.c5 = Trim("" & r("vendedor"))
+			.c6 = Trim("" & r("motivo_cancelamento"))
+			if (.c6 <> "") And (Trim("" & r("sub_motivo_cancelamento")) <> "") then .c6 = .c6 & " (" & Trim("" & r("sub_motivo_cancelamento")) & ")"
+			end with
+
+		r.MoveNext
+		loop
+
+	' PREENCHE A TABELA
+	n_linha = 0
+	for i = Lbound(vRelat) to Ubound(vRelat)
+		if Trim("" & vRelat(i).c1) <> "" then
+			n_linha = n_linha + 1
+			if (n_linha AND 1) = 0 then
+				s = s & "<tr nowrap class='DefaultBkg'>" & chr(13)
+			else
+				s = s & "<tr nowrap>" & chr(13)
+				end if
+
+			s = s & "	<td class='tdReg' nowrap><p class='Rd'>" & CStr(n_linha) & ".</p></td>" & chr(13)
+			s = s & "	<td class='tdDataF' nowrap><p class='C'>" & formata_data(vRelat(i).c2) & "</p></td>" & chr(13)
+			s = s & "   <td class='tdPedido' nowrap><p class='C'>&nbsp;<a href='javascript:fRELPedCancRecConsSubmit(" & _
+					chr(34) & vRelat(i).c1 & chr(34) & _
+			")' title='clique para consultar o pedido'>" & vRelat(i).c1 & "</a></p></td>" & chr(13)
+			if operacao_permitida(OP_LJA_CONSULTA_UNIVERSAL_PEDIDO_ORCAMENTO, s_lista_operacoes_permitidas) then
+				s = s & "	<td class='tdVen' nowrap><p class='C'>" & vRelat(i).c5 & "</p></td>" & chr(13)
+			end if
+			s = s & "	<td class='tdClienteCancel'><p class='C'>" & vRelat(i).c3 & "</p></td>" & chr(13)
+			s = s & "	<td class='tdMotivoCancel'><p class='C'>" & vRelat(i).c6 & "</p></td>" & chr(13)
+			s = s & "	<td class='tdAnaliseCancel'><p class='C'>" & vRelat(i).c4 & "</p></td>" & chr(13)      
+			s = s & "</tr>" & chr(13)
+			end if 'if Trim("" & vRelat(i).c1) <> ""
+		next
+
+	if n_reg = 0 then
+		s = s & "<tr nowrap class='DefaultBkg'>" & _
+				"<td style='width:20px;background: #FFF;' class='MD ME'><p class='Rd'>0.</p></td>" & _
+				"<td align='center' colspan='6'>" & _
+				"<p class='C' style='color:red;letter-spacing:1px;'>NENHUM PEDIDO.</p>" & _
+				"</td></tr>"
+		end if
+		
+	s = s & "</table>" & chr(13)
+
+	lista_pedido_cancelado_recente = s
+
+	r.close
+	set r=nothing
+
+end function
+
+
 '---------------------------------------
 ' _________________________________
 ' INDICADORES SEM ATIVIDADE RECENTE
@@ -724,8 +873,8 @@ n_reg = 0
   
      s = "<table width='600' class='QS' cellSpacing='0' style='border-left:0px;'>" & chr(13) & _
 		        "<tr class='DefaultBkg'>" & chr(13) & _
-                "<td style='background:#FFF' class='MD MB'> &nbsp; </td>" & chr(13) & _
-		        "<td class='MD MTB' align='right'><p class='R'>QTDE <br> DE DIAS</p></td>" & chr(13) & _
+                "<td style='width:30px;background:#FFF' class='MD MB'> &nbsp; </td>" & chr(13) & _
+		        "<td style='width:60px;' class='MD MTB' align='right'><p class='R'>QTDE <br> DE DIAS</p></td>" & chr(13) & _
 		        "<td class='MD MTB' align='left'><p class='R'>PEDIDO</p></td>" & chr(13) & _
 		        "<td class='MD MTB' align='left'><p class='R'>APELIDO</p></td>" & chr(13) & _
                 "<td class='MTB' align='left'><p class='R'>NOME INDICADOR</p></td>" & chr(13) & _               
@@ -1257,6 +1406,12 @@ function fRELConsul(id_pedido) {
     fRELCons.pedido_selecionado.value = id_pedido;
     fRELCons.action = "pedido.asp"
     fRELCons.submit();
+}
+function fRELPedCancRecConsSubmit(id_pedido) {
+	window.status = "Aguarde ...";
+	fRELPedCancRecCons.pedido_selecionado.value = id_pedido;
+	fRELPedCancRecCons.action = "pedido.asp"
+	fRELPedCancRecCons.submit();
 }
 
 function fOFConcluir( f ){
@@ -1926,73 +2081,94 @@ function fPesqPrePedido(orcamento) {
 
 <style type="text/css">
 .tdn_reg{
+	width:30px;
     background:#FFF;
     text-align:right;
+	vertical-align:middle;
     border-right: 1pt solid #C0C0C0;
     border-left: 1pt solid #C0C0C0;
 }
 .tdQtde{
     width:60px;
     text-align:right;
-    vertical-align:top;
+    vertical-align:middle;
     border-right: 1pt solid #C0C0C0;
 }
 .tdPed{
+	width:10%;
     text-align:left;
-    vertical-align:top;
+    vertical-align:middle;
     border-right: 1pt solid #C0C0C0;
 }
 .tdVen{
     width:80px;
     text-align:left;
-    vertical-align:top;
+    vertical-align:middle;
     border-right: 1pt solid #C0C0C0;
 }
 .tdAp{
     width:80px;
     text-align:left;
-    vertical-align:top;
+    vertical-align:middle;
     border-right: 1pt solid #C0C0C0;
 }	  
 .tdInd{
-    width:80px;
     text-align:left;
-    vertical-align:top;
+    vertical-align:middle;
 }
 .tdData{
     border-right:0px;
-    text-align:center;   
+    text-align:center;
+	vertical-align:middle;
 }
 .tdReg{
-    width:5%;
+	width:30px;
     background:#FFF;
     text-align:right;
+	vertical-align:middle;
     border-right: 1pt solid #C0C0C0;
     border-left: 1pt solid #C0C0C0;
 }	 
 .tdDataF{
     width:10%;
     text-align:left;
-    vertical-align:top;
+    vertical-align:middle;
     border-right: 1pt solid #C0C0C0;
 }
 .tdAnalise{
     width:35%;
     text-align:left;
-    vertical-align:top;
+    vertical-align:middle;
 } 	     
 .tdPedido{
     width:10%;
     text-align:left;
-    vertical-align:top;
+    vertical-align:middle;
     border-right: 1pt solid #C0C0C0;
 }
 .tdCliente{
     width:40%;
     text-align:left;
-    vertical-align:top;
+    vertical-align:middle;
     border-right: 1pt solid #C0C0C0;
-}      
+}
+.tdClienteCancel{
+    min-width:30%;
+    text-align:left;
+    vertical-align:middle;
+    border-right: 1pt solid #C0C0C0;
+}
+.tdMotivoCancel{
+    width:20%;
+    text-align:left;
+    vertical-align:middle;
+    border-right: 1pt solid #C0C0C0;
+}
+.tdAnaliseCancel{
+    width:20%;
+    text-align:left;
+    vertical-align:middle;
+} 	     
 #divQuadroOrcamentoWrapper
 {
 	left:1px;
@@ -2271,6 +2447,23 @@ if operacao_permitida(OP_LJA_CADASTRA_NOVO_PEDIDO, s_lista_operacoes_permitidas)
 
 <!-- -------------->
 <br />
+
+<% if Trim("" & rPedCancelRecenteFlag.campo_inteiro) = "1" then %>
+<!--  PEDIDOS CANCELADOS RECENTEMENTE  -->
+	<span class="T">PEDIDOS CANCELADOS RECENTEMENTE</span>
+	<table width="600" class="QS" style="border:0px" cellspacing="0">
+	<tr><td align="left"></td></tr>
+	</table>
+
+<form id="fRELPedCancRecCons" name="fRELPedCancRecCons" method="post">
+<%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
+<input type="hidden" name="pedido_selecionado" value="" />
+        <% Response.Write lista_pedido_cancelado_recente() %>
+</form>
+
+<!-- -------------->
+<br />
+<% end if %>
 
 <!--  INDICADORES SEM ATIVIDADE RECENTE   -->
 	<span class="T">INDICADORES SEM ATIVIDADE RECENTE</span>
