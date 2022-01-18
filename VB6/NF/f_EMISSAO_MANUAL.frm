@@ -4513,6 +4513,7 @@ Dim aliquota_icms As Single
         c_unidade(i) = ""
         c_nItemPed(i) = ""
         c_xPed(i) = ""
+        c_nItemPed(i) = ""
         cb_ICMS_item(i).ListIndex = -1
         cb_ICMS_item(i) = ""
         c_NCM(i) = ""
@@ -4690,6 +4691,7 @@ Dim i As Integer
         c_unidade(i) = ""
         c_nItemPed(i) = ""
         c_xPed(i) = ""
+        c_nItemPed(i) = ""
         cb_ICMS_item(i).ListIndex = -1
         cb_ICMS_item(i) = ""
         c_NCM(i) = ""
@@ -6741,6 +6743,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 .vl_outras_despesas_acessorias = converte_para_currency(Trim$(c_vl_outras_despesas_acessorias(i)))
                 .infAdProd = Trim$(c_produto_obs(i))
                 .xPed = Trim$(c_xPed(i))
+                .nItemPed = Trim$(c_nItemPed(i))
                 .uCom = Trim$(c_unidade(i))
                 .uTrib = Trim$(c_unidade(i))
                 .fcp = Trim$(c_fcp(i))
@@ -7978,6 +7981,12 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 If Trim$(.xPed) <> "" Then
                     vNFeImgItem(UBound(vNFeImgItem)).det__xPed = Trim$(.xPed)
                     strNFeTagDet = strNFeTagDet & vbTab & NFeFormataCampo("xPed", vNFeImgItem(UBound(vNFeImgItem)).det__xPed)
+                    End If
+
+            '   nItemPed (item do pedido de compra)
+                If Trim$(.nItemPed) <> "" Then
+                    vNFeImgItem(UBound(vNFeImgItem)).det__nItemPed = Trim$(.nItemPed)
+                    strNFeTagDet = strNFeTagDet & vbTab & NFeFormataCampo("nItemPed", vNFeImgItem(UBound(vNFeImgItem)).det__nItemPed)
                     End If
 
             '   INFORMA O TOTAL ESTIMADO DE TRIBUTOS?
@@ -9962,6 +9971,7 @@ Dim i As Integer
         c_unidade(i).TabIndex = 0
         c_nItemPed(i).TabIndex = 0
         c_xPed(i).TabIndex = 0
+        c_nItemPed(i).TabIndex = 0
         cb_ICMS_item(i).TabIndex = 0
         c_NCM(i).TabIndex = 0
         cb_CFOP(i).TabIndex = 0
