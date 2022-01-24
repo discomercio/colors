@@ -2607,9 +2607,10 @@ dim vTransportadora
         if blnMostraMotivoCancelado then
             vl_sub_total_pedido_original = vl_sub_total_pedido_original + r("vl_total_original")
         end if
-		sub_total_qtde_vol = sub_total_qtde_vol + r("total_pedido_qtde_volumes")
-		sub_total_cubagem = sub_total_cubagem + r("total_pedido_cubagem")
-		sub_total_peso = sub_total_peso + r("total_pedido_peso")
+		
+		if ckb_exibir_qtde_volumes <> "" then sub_total_qtde_vol = sub_total_qtde_vol + r("total_pedido_qtde_volumes")
+		if ckb_exibir_cubagem <> "" then sub_total_cubagem = sub_total_cubagem + r("total_pedido_cubagem")
+		if ckb_exibir_peso <> "" then sub_total_peso = sub_total_peso + r("total_pedido_peso")
 
 		vl_total_faturamento = vl_total_faturamento + r("vl_total_pedido")
 		vl_total_faturamento_NF = vl_total_faturamento_NF + r("vl_total_pedido_NF")
@@ -2622,9 +2623,10 @@ dim vTransportadora
         if blnMostraMotivoCancelado then
             vl_total_pedido_original = vl_total_pedido_original + r("vl_total_original")
         end if
-		total_qtde_vol = total_qtde_vol + r("total_pedido_qtde_volumes")
-		total_cubagem = total_cubagem + r("total_pedido_cubagem")
-		total_peso = total_peso + r("total_pedido_peso")
+		
+		if ckb_exibir_qtde_volumes <> "" then total_qtde_vol = total_qtde_vol + r("total_pedido_qtde_volumes")
+		if ckb_exibir_cubagem <> "" then total_cubagem = total_cubagem + r("total_pedido_cubagem")
+		if ckb_exibir_peso <> "" then total_peso = total_peso + r("total_pedido_peso")
 
 		x = x & "	</TR>" & chr(13)
 
