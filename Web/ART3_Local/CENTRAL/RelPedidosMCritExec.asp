@@ -36,6 +36,7 @@
 	const MSO_NUMBER_FORMAT_PERC = "\#\#0\.0%"
 	const MSO_NUMBER_FORMAT_INTEIRO = "\#\#\#\,\#\#\#\,\#\#0"
 	const MSO_NUMBER_FORMAT_MOEDA = "\#\#\#\,\#\#\#\,\#\#0\.00"
+	const MSO_NUMBER_FORMAT_DECIMAL = "\#\#\#\,\#\#\#\,\#\#0\.00"
 	const MSO_NUMBER_FORMAT_TEXTO = "\@"
 	
 	dim usuario
@@ -93,6 +94,7 @@
     dim blnMostraMotivoCancelado, c_cancelados_ordena
 	dim ckb_exibir_vendedor, ckb_exibir_parceiro, ckb_exibir_uf, ckb_exibir_data_previsao_entrega
 	dim ckb_pagto_antecipado_status_nao, ckb_pagto_antecipado_status_sim, ckb_pagto_antecipado_quitado_status_pendente, ckb_pagto_antecipado_quitado_status_quitado
+	dim ckb_exibir_cidade_etg, ckb_exibir_uf_etg, ckb_exibir_data_previsao_entrega_transp, ckb_exibir_data_recebido_cliente, ckb_exibir_qtde_volumes, ckb_exibir_peso, ckb_exibir_cubagem
 
 	alerta = ""
 
@@ -182,6 +184,13 @@
 	ckb_pagto_antecipado_status_sim = Trim(Request.Form("ckb_pagto_antecipado_status_sim"))
 	ckb_pagto_antecipado_quitado_status_pendente = Trim(Request.Form("ckb_pagto_antecipado_quitado_status_pendente"))
 	ckb_pagto_antecipado_quitado_status_quitado = Trim(Request.Form("ckb_pagto_antecipado_quitado_status_quitado"))
+	ckb_exibir_cidade_etg = Trim(Request.Form("ckb_exibir_cidade_etg"))
+	ckb_exibir_uf_etg = Trim(Request.Form("ckb_exibir_uf_etg"))
+	ckb_exibir_data_previsao_entrega_transp = Trim(Request.Form("ckb_exibir_data_previsao_entrega_transp"))
+	ckb_exibir_data_recebido_cliente = Trim(Request.Form("ckb_exibir_data_recebido_cliente"))
+	ckb_exibir_qtde_volumes = Trim(Request.Form("ckb_exibir_qtde_volumes"))
+	ckb_exibir_peso = Trim(Request.Form("ckb_exibir_peso"))
+	ckb_exibir_cubagem = Trim(Request.Form("ckb_exibir_cubagem"))
 
 	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|FormFields", c_FormFieldValues)
 	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_nao_exibir_links", ckb_nao_exibir_links)
@@ -189,6 +198,13 @@
 	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_parceiro", ckb_exibir_parceiro)
 	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_uf", ckb_exibir_uf)
 	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_data_previsao_entrega", ckb_exibir_data_previsao_entrega)
+	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_cidade_etg", ckb_exibir_cidade_etg)
+	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_uf_etg", ckb_exibir_uf_etg)
+	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_data_previsao_entrega_transp", ckb_exibir_data_previsao_entrega_transp)
+	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_data_recebido_cliente", ckb_exibir_data_recebido_cliente)
+	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_qtde_volumes", ckb_exibir_qtde_volumes)
+	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_peso", ckb_exibir_peso)
+	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_cubagem", ckb_exibir_cubagem)
 
 	if alerta = "" then
 		if c_fabricante <> "" then
@@ -1025,9 +1041,11 @@ dim vl_total_faturamento_NF, vl_sub_total_faturamento_NF
 dim vl_a_pagar, vl_sub_total_a_pagar, vl_total_a_pagar
 dim vl_total_fornecedor, vl_sub_total_fornecedor
 dim vl_total_fornecedor_NF, vl_sub_total_fornecedor_NF
-dim vl_total_pedido_original, vl_sub_total_pedido_original, vl_pedido_original, s_class
+dim vl_total_pedido_original, vl_sub_total_pedido_original, vl_pedido_original
+dim total_qtde_vol, sub_total_qtde_vol, total_cubagem, sub_total_cubagem, total_peso, sub_total_peso
 dim x, loja_a, qtde_lojas
 dim w_pedido, w_pedido_magento, w_data, w_NF, w_cliente, w_st_entrega, w_valor, w_motivo_cancelamento
+dim w_vendedor, w_indicador, w_uf_cad_cliente, w_cidade_etg, w_uf_etg, w_qtde_vol, w_cubagem, w_peso
 dim blnRelAnalitico
 dim intNumLinha
 dim s_grupo_origem
@@ -1045,6 +1063,14 @@ dim vTransportadora
 	s_colspan_final = ""
 	n_colspan_final = 1
 	if ckb_exibir_data_previsao_entrega <> "" then n_colspan_final = n_colspan_final + 1
+	if ckb_exibir_cidade_etg <> "" then n_colspan_final = n_colspan_final + 1
+	if ckb_exibir_uf_etg <> "" then n_colspan_final = n_colspan_final + 1
+	if ckb_exibir_data_previsao_entrega_transp <> "" then n_colspan_final = n_colspan_final + 1
+	if ckb_exibir_data_recebido_cliente <> "" then n_colspan_final = n_colspan_final + 1
+	if ckb_exibir_qtde_volumes <> "" then n_colspan_final = n_colspan_final + 1
+	if ckb_exibir_peso <> "" then n_colspan_final = n_colspan_final + 1
+	if ckb_exibir_cubagem <> "" then n_colspan_final = n_colspan_final + 1
+	
 	if Not blnMostraMotivoCancelado then
 		if ckb_exibir_vendedor <> "" then n_colspan_final = n_colspan_final + 1
 		if ckb_exibir_parceiro <> "" then n_colspan_final = n_colspan_final + 1
@@ -1853,7 +1879,11 @@ dim vTransportadora
 		end if
 
 	s_sql = s_sql & _
+			" t_PEDIDO.st_end_entrega," & _
+			" t_PEDIDO.endereco_cidade AS cidade_cliente," & _
 			" t_PEDIDO.endereco_uf AS uf_cliente," & _
+			" t_PEDIDO.EndEtg_cidade," & _
+			" t_PEDIDO.EndEtg_uf," & _
 			" t_NFe_EMITENTE.cnpj AS cnpj_emitente," & _
 			" t_PEDIDO__BASE.st_pagto," & _
             " t_PEDIDO__BASE.vendedor," & _
@@ -1878,6 +1908,31 @@ dim vTransportadora
 				", ISNULL(t_PEDIDO__VL_FORNECEDOR.vl_total_fornecedor_NF,0) AS vl_total_fornecedor_NF"
 		end if
 	
+	if ckb_exibir_data_previsao_entrega_transp <> "" then
+		s_sql = s_sql & _
+				", t_PEDIDO.PrevisaoEntregaTranspData"
+		end if
+
+	if ckb_exibir_data_recebido_cliente <> "" then
+		s_sql = s_sql & _
+				", t_PEDIDO.PedidoRecebidoData"
+		end if
+
+	if ckb_exibir_qtde_volumes <> "" then
+		s_sql = s_sql & _
+				", Coalesce((SELECT Sum(qtde*qtde_volumes) FROM t_PEDIDO_ITEM WHERE (pedido = t_PEDIDO.pedido)), 0) AS total_pedido_qtde_volumes"
+		end if
+
+	if ckb_exibir_peso <> "" then
+		s_sql = s_sql & _
+				", Coalesce((SELECT Sum(qtde*peso) FROM t_PEDIDO_ITEM WHERE (pedido = t_PEDIDO.pedido)), 0) AS total_pedido_peso"
+		end if
+
+	if ckb_exibir_cubagem <> "" then
+		s_sql = s_sql & _
+				", Coalesce((SELECT Sum(qtde*cubagem) FROM t_PEDIDO_ITEM WHERE (pedido = t_PEDIDO.pedido)), 0) AS total_pedido_cubagem"
+		end if
+
 	s_sql = s_sql & _
 			s_from & _
 			s_where
@@ -1907,6 +1962,14 @@ dim vTransportadora
 	w_pedido_magento = 70
 	w_data = 70
 	w_NF = 50
+	w_vendedor = 80
+	w_indicador = 80
+	w_uf_cad_cliente = 30
+	w_cidade_etg = 80
+	w_uf_etg = 30
+	w_qtde_vol = 40
+	w_cubagem = 40
+	w_peso = 60
 
 	if blnPorFornecedor then
 		if blnRelAnalitico then
@@ -1973,7 +2036,7 @@ dim vTransportadora
 			  "		<TD class='MTBD' style='width:" & Cstr(w_st_entrega) & "px' valign='bottom'><span class='R' style='font-weight:bold;'>Status de<br style='mso-data-placement:same-cell;' />Entrega</span></TD>" & chr(13)
 	else
 		cab = cab & _
-			  "		<TD class='MTBD' style='width:" & Cstr(w_st_entrega) & "px' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>Status de Entrega</span></TD>" & chr(13)
+			  "		<TD class='MTBD' style='width:" & Cstr(w_st_entrega) & "px' valign='bottom' NOWRAP><span class='R' style='display:block;font-weight:bold;'>Status de<br />Entrega</span></TD>" & chr(13)
 		end if
 
     if ckb_exibir_data_previsao_entrega <> "" then
@@ -1982,17 +2045,77 @@ dim vTransportadora
 					"		<TD class='MTBD' style='width:" & Cstr(w_data) & "px' align='center' valign='bottom'><span class='R' style='font-weight:bold;'>Previsão de<br style='mso-data-placement:same-cell;' />Entrega</span></TD>" & chr(13)
 		else
 			cab = cab & _
-				"		<td class='MTBD' style='width:" & Cstr(w_data) & "px' align='center' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>Previsão de Entrega</span></td>" & chr(13)
+				"		<td class='MTBD' style='width:" & Cstr(w_data) & "px' align='center' valign='bottom' NOWRAP><span class='R' style='display:block;font-weight:bold;'>Previsão de<br />Entrega</span></td>" & chr(13)
 			end if
+		end if
+
+	if ckb_exibir_data_previsao_entrega_transp <> "" then
+		if blnSaidaExcel then
+			cab = cab & _
+					"		<TD class='MTBD' style='width:" & Cstr(w_data) & "px' align='center' valign='bottom'><span class='R' style='font-weight:bold;'>Previsão de<br style='mso-data-placement:same-cell;' />Entrega (Transp)</span></TD>" & chr(13)
+		else
+			cab = cab & _
+				"		<td class='MTBD' style='width:" & Cstr(w_data) & "px' align='center' valign='bottom' NOWRAP><span class='R' style='display:block;font-weight:bold;'>Previsão de<br />Entrega<br />(Transp)</span></td>" & chr(13)
+			end if
+		end if
+
+	if ckb_exibir_data_recebido_cliente <> "" then
+		if blnSaidaExcel then
+			cab = cab & _
+					"		<TD class='MTBD' style='width:" & Cstr(w_data) & "px' align='center' valign='bottom'><span class='R' style='font-weight:bold;'>Receb<br style='mso-data-placement:same-cell;' />Cliente</span></TD>" & chr(13)
+		else
+			cab = cab & _
+				"		<td class='MTBD' style='width:" & Cstr(w_data) & "px' align='center' valign='bottom' NOWRAP><span class='R' style='display:block;font-weight:bold;'>Receb<br />Cliente</span></td>" & chr(13)
+			end if
+		end if
+
+	if ckb_exibir_cidade_etg <> "" then
+		if blnSaidaExcel then
+			cab = cab & _
+					"		<td class='MTBD' style='width:" & Cstr(w_cidade_etg) & "px' valign='bottom'><span class='R' style='font-weight:bold;'>Cidade<br style='mso-data-placement:same-cell;' />(Etg)</span></td>" & chr(13)
+		else
+			cab = cab & _
+					"		<td class='MTBD' style='width:" & Cstr(w_cidade_etg) & "px' valign='bottom' NOWRAP><span class='R' style='display:block;font-weight:bold;'>Cidade<br />(Etg)</span></td>" & chr(13)
+			end if
+		end if
+
+	if ckb_exibir_uf_etg <> "" then
+		if blnSaidaExcel then
+			cab = cab & _
+					"		<td class='MTBD' style='width:" & Cstr(w_uf_etg) & "px' valign='bottom'><span class='R' style='font-weight:bold;'>UF<br style='mso-data-placement:same-cell;' />(Etg)</span></td>" & chr(13)
+		else
+			cab = cab & _
+					"		<td class='MTBD' style='width:" & Cstr(w_uf_etg) & "px' valign='bottom'><span class='R' style='display:block;font-weight:bold;'>UF<br />(Etg)</span></td>" & chr(13)
+			end if
+		end if
+
+	if ckb_exibir_qtde_volumes <> "" then
+		if blnSaidaExcel then
+			cab = cab & _
+					"		<TD class='MTBD' style='width:" & Cstr(w_qtde_vol) & "px' align='right' valign='bottom'><span class='Rd' style='font-weight:bold;'>Qtde<br style='mso-data-placement:same-cell;' />Vol</span></TD>" & chr(13)
+		else
+			cab = cab & _
+				"		<td class='MTBD' style='width:" & Cstr(w_qtde_vol) & "px' align='right' valign='bottom' NOWRAP><span class='Rd' style='display:block;font-weight:bold;'>Qtde<br />Vol</span></td>" & chr(13)
+			end if
+		end if
+
+	if ckb_exibir_cubagem <> "" then
+		cab = cab & _
+			"		<td class='MTBD' style='width:" & Cstr(w_cubagem) & "px' align='right' valign='bottom' NOWRAP><span class='Rd' style='font-weight:bold;'>Cubagem</span></td>" & chr(13)
+		end if
+
+	if ckb_exibir_peso <> "" then
+		cab = cab & _
+			"		<td class='MTBD' style='width:" & Cstr(w_peso) & "px' align='right' valign='bottom' NOWRAP><span class='Rd' style='font-weight:bold;'>Peso</span></td>" & chr(13)
 		end if
 
     if blnMostraMotivoCancelado then
         cab = cab & _
-                "		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>Vendedor</span></td>" & chr(13) & _
-                "		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>Indicador</span></td>" & chr(13)
+                "		<td class='MTBD' style='width:" & Cstr(w_vendedor) & "px' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>Vendedor</span></td>" & chr(13) & _
+                "		<td class='MTBD' style='width:" & Cstr(w_indicador) & "px' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>Indicador</span></td>" & chr(13)
         if ckb_exibir_uf <> "" then
 			cab = cab & _
-				"		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>UF</span></td>" & chr(13)
+				"		<td class='MTBD' style='width:" & Cstr(w_uf_cad_cliente) & "px' valign='bottom' NOWRAP><span class='R' style='display:block;font-weight:bold;'>UF<br />(Cad<br />Cliente)</span></td>" & chr(13)
 			end if
 		if blnRelAnalitico then
             cab = cab & _
@@ -2003,17 +2126,22 @@ dim vTransportadora
     else
 		if ckb_exibir_vendedor <> "" then
 			cab = cab & _
-					"		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>Vendedor</span></td>" & chr(13)
+					"		<td class='MTBD' style='width:" & Cstr(w_vendedor) & "px' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>Vendedor</span></td>" & chr(13)
 			end if
 
 		if ckb_exibir_parceiro <> "" then
 			cab = cab & _
-                "		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>Indicador</span></td>" & chr(13)
+                "		<td class='MTBD' style='width:" & Cstr(w_indicador) & "px' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>Indicador</span></td>" & chr(13)
 			end if
 
 		if ckb_exibir_uf <> "" then
-			cab = cab & _
-                "		<td class='MTBD' style='width:" & Cstr(w_valor) & "px' valign='bottom' NOWRAP><span class='R' style='font-weight:bold;'>UF</span></td>" & chr(13)
+			if blnSaidaExcel then
+				cab = cab & _
+					"		<td class='MTBD' style='width:" & Cstr(w_uf_cad_cliente) & "px' valign='bottom'><span class='R' style='font-weight:bold;'>UF<br style='mso-data-placement:same-cell;' />(Cad<br style='mso-data-placement:same-cell;' />Cliente)</span></td>" & chr(13)
+			else
+				cab = cab & _
+					"		<td class='MTBD' style='width:" & Cstr(w_uf_cad_cliente) & "px' valign='bottom'><span class='R' style='display:block;font-weight:bold;'>UF<br />(Cad<br />Cliente)</span></td>" & chr(13)
+				end if
 			end if
 	end if
 	
@@ -2032,18 +2160,14 @@ dim vTransportadora
 	vl_total_fornecedor = 0
 	vl_total_fornecedor_NF = 0
     vl_total_pedido_original = 0
+	total_qtde_vol = 0
+	total_cubagem = 0
+	total_peso = 0
 	intNumLinha = 0
 	
 	loja_a = "XXXXX"
 	if blnSaidaExcel then s_nbsp = "" else s_nbsp = "&nbsp;"
 
-    s_class = ""
-    if blnMostraMotivoCancelado then 
-        s_class = "MB"
-    else
-        s_class = "MDB"
-    end if
-	
 	set r = cn.execute(s_sql)
 	do while Not r.Eof
 	'	MUDOU DE LOJA?
@@ -2055,7 +2179,7 @@ dim vTransportadora
 				if blnRelAnalitico then
 					s_cor = ""
 					if vl_sub_total_a_pagar < 0 then s_cor = " style='color:red;'"
-					x = x & "	<TR style='background: #FFFFDD'>" & chr(13) & _
+					x = x & "	<TR class='RowTotalizacao' style='background: #FFFFDD'>" & chr(13) & _
 							"		<TD style='background:white;'>&nbsp;</td>" & chr(13)
                     if s_loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
 							x = x & "		<TD class='MEB' align='right' COLSPAN='5' NOWRAP><span class='Cd' style='font-weight:bold;'>TOTAL:</span></td>" & chr(13)
@@ -2075,7 +2199,25 @@ dim vTransportadora
 							"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><span class='Cd'" & s_cor & " style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_a_pagar) & "</span></td>" & chr(13)
 
 					x = x & _
-							"		<TD class='" & s_class & "'" & s_colspan_final & "><span class='C'>&nbsp;</span></td>" & chr(13)
+							"		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
+
+					if ckb_exibir_data_previsao_entrega <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
+					if ckb_exibir_data_previsao_entrega_transp <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
+					if ckb_exibir_data_recebido_cliente <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
+					if ckb_exibir_cidade_etg <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
+					if ckb_exibir_uf_etg <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
+					if ckb_exibir_qtde_volumes <> "" then
+						x = x & _
+							"		<TD align='right' style='width:" & Cstr(w_qtde_vol) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_INTEIRO & chr(34) & ";'>" & formata_inteiro(sub_total_qtde_vol) & "</span></td>" & chr(13)
+						end if
+					if ckb_exibir_cubagem <> "" then
+						x = x & _
+							"		<TD align='right' style='width:" & Cstr(w_cubagem) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_DECIMAL & chr(34) & ";'>" & formata_numero(sub_total_cubagem, 2) & "</span></td>" & chr(13)
+						end if
+					if ckb_exibir_peso <> "" then
+						x = x & _
+							"		<TD align='right' style='width:" & Cstr(w_peso) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_DECIMAL & chr(34) & ";'>" & formata_numero(sub_total_peso, 2) & "</span></td>" & chr(13)
+						end if
 
                     if blnMostraMotivoCancelado then
                         x = x & _
@@ -2088,7 +2230,11 @@ dim vTransportadora
 						x = x & _
 							"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_pedido_original) & "</span></td>" & chr(13) & _
 							"		<TD class='MDB'><span class='C'>&nbsp;</span></td>" & chr(13)
-                        end if
+                    else
+						if ckb_exibir_vendedor <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
+						if ckb_exibir_parceiro <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
+						if ckb_exibir_uf <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
+						end if
 
                     x = x & _
 							"	</TR>" & chr(13)
@@ -2109,6 +2255,9 @@ dim vTransportadora
 			vl_sub_total_fornecedor = 0
             vl_sub_total_pedido_original = 0
 			vl_sub_total_fornecedor_NF = 0
+			sub_total_qtde_vol = 0
+			sub_total_cubagem = 0
+			sub_total_peso = 0
 
             s_loja = Trim("" & r("loja"))
 			if n_reg_total > 0 then x = x & "<BR>" & chr(13)
@@ -2157,6 +2306,13 @@ dim vTransportadora
 					end if
 				
 				if ckb_exibir_data_previsao_entrega <> "" then n_colspan = n_colspan + 1
+				if ckb_exibir_cidade_etg <> "" then n_colspan = n_colspan + 1
+				if ckb_exibir_uf_etg <> "" then n_colspan = n_colspan + 1
+				if ckb_exibir_data_previsao_entrega_transp <> "" then n_colspan = n_colspan + 1
+				if ckb_exibir_data_recebido_cliente <> "" then n_colspan = n_colspan + 1
+				if ckb_exibir_qtde_volumes <> "" then n_colspan = n_colspan + 1
+				if ckb_exibir_peso <> "" then n_colspan = n_colspan + 1
+				if ckb_exibir_cubagem <> "" then n_colspan = n_colspan + 1
 
 				if Not blnMostraMotivoCancelado then
 					if ckb_exibir_vendedor <> "" then n_colspan = n_colspan + 1
@@ -2198,15 +2354,15 @@ dim vTransportadora
 
 	'> Nº DA LINHA
 		if blnSaidaExcel then
-			x = x & "		<TD valign='top' align='right' NOWRAP><span class='Rd' style='margin-right:2px;color:gray;font-style:italic;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & Cstr(intNumLinha) & ". </span></TD>" & chr(13)
+			x = x & "		<TD valign='middle' align='right' NOWRAP><span class='Rd' style='margin-right:2px;color:gray;font-style:italic;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & Cstr(intNumLinha) & ". </span></TD>" & chr(13)
 		else
-			x = x & "		<TD valign='top' align='right' NOWRAP><span class='Rd' style='margin-right:2px;'>" & Cstr(intNumLinha) & ".</span></TD>" & chr(13)
+			x = x & "		<TD valign='middle' align='right' NOWRAP><span class='Rd' style='margin-right:2px;'>" & Cstr(intNumLinha) & ".</span></TD>" & chr(13)
 			end if
 			
 			
 	'> Nº PEDIDO
 		if blnSaidaExcel then
-			x = x & "		<TD valign='top' class='MDBE'><span class='C' style='font-weight:bold;'>" & Trim("" & r("pedido")) & "</span></TD>" & chr(13)
+			x = x & "		<TD valign='middle' class='MDBE'><span class='C' style='font-weight:bold;'>" & Trim("" & r("pedido")) & "</span></TD>" & chr(13)
 		else
 			if ckb_nao_exibir_links <> "" then
 				sLinkView = ""
@@ -2214,11 +2370,11 @@ dim vTransportadora
 				sLinkView = monta_link_view_pedido(Trim("" & r("pedido")), usuario)
 				end if
 			if sLinkView = "" then
-				x = x & "		<TD valign='top' class='MDBE' nowrap>" & _
+				x = x & "		<TD valign='middle' class='MDBE' nowrap>" & _
 						"<span class='C'>&nbsp;<a href='javascript:fRELConcluir(" & chr(34) & Trim("" & r("pedido")) & chr(34) & ")' title='clique para consultar o pedido'>" & Trim("" & r("pedido")) & "</a></span>" & _
 						"</TD>" & chr(13)
 			else
-				x = x & "		<TD valign='top' class='MDBE' nowrap>" & chr(13) & _
+				x = x & "		<TD valign='middle' class='MDBE' nowrap>" & chr(13) & _
 						"			<table with='100%' cellpadding='0' cellspacing='0'>" & chr(13) & _
 						"				<tr>" & chr(13) & _
 						"					<td width='90%' align='left'>" & chr(13) & _
@@ -2232,11 +2388,11 @@ dim vTransportadora
 
     '> PEDIDO MAGENTO
         if Trim("" & r("loja")) = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
-		    x = x & "		<td align='left' valign='top' class='MDB'><span class='C' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>&nbsp;" & Trim("" & r("pedido_bs_x_ac")) & "</span></td>" & chr(13)
+		    x = x & "		<td align='left' valign='middle' class='MDB'><span class='C' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>&nbsp;" & Trim("" & r("pedido_bs_x_ac")) & "</span></td>" & chr(13)
         end if
 	
 	'> DATA DO PEDIDO
-	    x = x & "		<TD align='center' valign='top' class='MDB'><span class='Cn''>" & formata_data(r("data")) & "</span></TD>" & chr(13)
+	    x = x & "		<TD align='center' valign='middle' class='MDB'><span class='Cn''>" & formata_data(r("data")) & "</span></TD>" & chr(13)
 		
 	'> NF
 		if (ckb_nao_exibir_links <> "") Or blnSaidaExcel then
@@ -2253,19 +2409,19 @@ dim vTransportadora
 			if (s_link_rastreio <> "") And (s_link_rastreio2 <> "") then s_link_rastreio = s_link_rastreio & "<br />"
 			s_numero_NF = s_link_rastreio & s_link_rastreio2
 			end if
-		x = x & "		<TD align='left' valign='top' class='MDB'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s_numero_NF & "</span></TD>" & chr(13)
+		x = x & "		<TD align='left' valign='middle' class='MDB'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s_numero_NF & "</span></TD>" & chr(13)
 		
 	'> CLIENTE
 		if blnSaidaExcel then s_nowrap = " NOWRAP" else s_nowrap = ""
 		s = Trim("" & r("nome_iniciais_em_maiusculas"))
 		if (s = "") And (Not blnSaidaExcel) then s = "&nbsp;"
-		x = x & "		<TD valign='top' style='width:" & Cstr(w_cliente) & "px' class='MDB'" & s_nowrap & "><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
+		x = x & "		<TD valign='middle' style='width:" & Cstr(w_cliente) & "px' class='MDB'" & s_nowrap & "><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
 
 	'> VALOR DO FORNECEDOR
 		if blnPorFornecedor then
 			if blnRelAnalitico then
 				s = formata_moeda(r("vl_total_fornecedor"))
-				x = x & "		<TD valign='top' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
+				x = x & "		<TD valign='middle' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
 				end if
 			end if
 		
@@ -2273,26 +2429,26 @@ dim vTransportadora
 		if blnPorFornecedor then
 			if blnRelAnalitico then
 				s = formata_moeda(r("vl_total_fornecedor_NF"))
-				x = x & "		<TD valign='top' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
+				x = x & "		<TD valign='middle' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
 				end if
 			end if
 		
 	'> VALOR DO PEDIDO
 		if blnRelAnalitico then
 			s = formata_moeda(r("vl_total_pedido"))
-			x = x & "		<TD valign='top' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
+			x = x & "		<TD valign='middle' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
 			end if
 		
 	'> VALOR DO PEDIDO COM RA
 		if blnRelAnalitico then
 			s = formata_moeda(r("vl_total_pedido_NF"))
-			x = x & "		<TD valign='top' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
+			x = x & "		<TD valign='middle' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
 			end if
 		
 	'> VALOR JÁ PAGO
 		if blnRelAnalitico then
 			s = formata_moeda(r("vl_pago_pedido"))
-			x = x & "		<TD valign='top' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
+			x = x & "		<TD valign='middle' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
 			end if
 		
 	'> VALOR A PAGAR
@@ -2304,7 +2460,7 @@ dim vTransportadora
 		s = formata_moeda(vl_a_pagar)
 		if blnRelAnalitico then
 			if vl_a_pagar < 0 then s_cor = "color:red;"
-			x = x & "		<TD valign='top' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cnd' style='" & s_cor & "mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
+			x = x & "		<TD valign='middle' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cnd' style='" & s_cor & "mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
 			end if
 
 	'> STATUS DE ENTREGA
@@ -2314,31 +2470,88 @@ dim vTransportadora
 			if (Trim("" & r("st_entrega"))=ST_ENTREGA_ENTREGUE) And (converte_numero(r("qtde_produtos_devolvidos"))>0) then s = s & " (*)"
 			end if
 		if (s = "") And (Not blnSaidaExcel) then s = "&nbsp;"
-		x = x & "		<TD valign='top' style='width:" & Cstr(w_st_entrega) & "px' class='MDB'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
+		x = x & "		<TD valign='middle' style='width:" & Cstr(w_st_entrega) & "px' class='MDB'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
 	
 	'> DATA PREVISÃO DE ENTREGA (OPCIONAL)
 		if ckb_exibir_data_previsao_entrega <> "" then
 			s = formata_data(r("PrevisaoEntregaData"))
-			x = x & "		<TD align='center' valign='top' style='width:" & Cstr(w_data) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
+			x = x & "		<TD align='center' valign='middle' style='width:" & Cstr(w_data) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
+			end if
+
+	'> DATA PREVISÃO ENTREGA TRANSPORTADORA (OPCIONAL)
+		s_cor = ""
+		if (ckb_exibir_data_previsao_entrega_transp <> "") And (ckb_exibir_data_recebido_cliente <> "") then
+			if IsDate(r("PrevisaoEntregaTranspData")) And IsDate(r("PedidoRecebidoData")) then
+				if r("PedidoRecebidoData") > r("PrevisaoEntregaTranspData") then s_cor = " style='color:red;'"
+				end if
+			end if
+
+		if ckb_exibir_data_previsao_entrega_transp <> "" then
+			s = formata_data(r("PrevisaoEntregaTranspData"))
+			x = x & "		<TD align='center' valign='middle' style='width:" & Cstr(w_data) & "px' class='MDB'><span class='Cn' " & s_cor & ">" & s & "</span></TD>" & chr(13)
+			end if
+
+	'> DATA DE RECEBIMENTO DO PEDIDO PELO CLIENTE (OPCIONAL)
+		if ckb_exibir_data_recebido_cliente <> "" then
+			s = formata_data(r("PedidoRecebidoData"))
+			x = x & "		<TD align='center' valign='middle' style='width:" & Cstr(w_data) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
+			end if
+
+	'> CIDADE (ENTREGA) (OPCIONAL)
+		if ckb_exibir_cidade_etg <> "" then
+			if CInt(r("st_end_entrega")) <> 0 then
+				s = Trim("" & r("EndEtg_cidade"))
+			else
+				s = Trim("" & r("cidade_cliente"))
+				end if
+			x = x & "		<TD valign='middle' style='width:" & Cstr(w_cidade_etg) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
+			end if
+
+	'> UF (ENTREGA) (OPCIONAL)
+		if ckb_exibir_uf_etg <> "" then
+			if CInt(r("st_end_entrega")) <> 0 then
+				s = Trim("" & r("EndEtg_uf"))
+			else
+				s = Trim("" & r("uf_cliente"))
+				end if
+			x = x & "		<TD valign='middle' style='width:" & Cstr(w_uf_etg) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
+			end if
+
+	'> QTDE VOLUMES (OPCIONAL)
+		if ckb_exibir_qtde_volumes <> "" then
+			s = formata_inteiro(r("total_pedido_qtde_volumes"))
+			x = x & "		<TD align='right' valign='middle' style='width:" & Cstr(w_qtde_vol) & "px' class='MDB'><span class='Cd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_INTEIRO & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
+			end if
+
+	'> CUBAGEM (OPCIONAL)
+		if ckb_exibir_cubagem <> "" then
+			s = formata_numero(r("total_pedido_cubagem"), 2)
+			x = x & "		<TD align='right' valign='middle' style='width:" & Cstr(w_cubagem) & "px' class='MDB'><span class='Cd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_DECIMAL & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
+			end if
+
+	'> PESO (OPCIONAL)
+		if ckb_exibir_peso <> "" then
+			s = formata_numero(r("total_pedido_peso"), 2)
+			x = x & "		<TD align='right' valign='middle' style='width:" & Cstr(w_peso) & "px' class='MDB'><span class='Cd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_DECIMAL & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
 			end if
 
     '> VENDEDOR
         if blnMostraMotivoCancelado then
             s = Trim("" & r("vendedor"))
-            x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
+            x = x & "		<TD valign='middle' style='width:" & Cstr(w_vendedor) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
         end if
 
     '> INDICADOR
         if blnMostraMotivoCancelado then
             s = Trim("" & r("indicador"))
-            x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
+            x = x & "		<TD valign='middle' style='width:" & Cstr(w_indicador) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
         end if
 
 	'> UF (OPCIONAL)
 		if blnMostraMotivoCancelado then
 			if ckb_exibir_uf <> "" then
 				s = Trim("" & r("uf_cliente"))
-				x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
+				x = x & "		<TD valign='middle' style='width:" & Cstr(w_uf_cad_cliente) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
 				end if
 			end if
 
@@ -2346,7 +2559,7 @@ dim vTransportadora
         if blnMostraMotivoCancelado then
             if blnRelAnalitico then
                 s = formata_moeda(r("vl_total_original"))
-                x = x & "		<TD valign='top' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
+                x = x & "		<TD valign='middle' align='right' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cnd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
             end if
         end if
 
@@ -2358,7 +2571,7 @@ dim vTransportadora
             if Trim("" & r("cancelado_codigo_sub_motivo")) <> "" then
                 s = s & " (" & obtem_descricao_tabela_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__CANCELAMENTOPEDIDO_MOTIVO_SUB, Trim("" & r("cancelado_codigo_sub_motivo"))) & ")"
             end if
-		    x = x & "		<TD valign='top' style='width:" & Cstr(w_motivo_cancelamento) & "px' class='MDB'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</span></TD>" & chr(13)            
+		    x = x & "		<TD valign='middle' style='width:" & Cstr(w_motivo_cancelamento) & "px' class='MDB'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</span></TD>" & chr(13)            
         end if
 
 	'> CAMPOS OPCIONAIS
@@ -2366,19 +2579,19 @@ dim vTransportadora
 			'> VENDEDOR
 			if ckb_exibir_vendedor <> "" then
 				s = Trim("" & r("vendedor"))
-				x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
+				x = x & "		<TD valign='middle' style='width:" & Cstr(w_vendedor) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
 				end if
 
 			'> PARCEIRO
 			if ckb_exibir_parceiro <> "" then
 				s = Trim("" & r("indicador"))
-				x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
+				x = x & "		<TD valign='middle' style='width:" & Cstr(w_indicador) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
 				end if
 
 			'> UF
 			if ckb_exibir_uf <> "" then
 				s = Trim("" & r("uf_cliente"))
-				x = x & "		<TD valign='top' style='width:" & Cstr(w_valor) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
+				x = x & "		<TD valign='middle' style='width:" & Cstr(w_uf_cad_cliente) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
 				end if
 			end if
 
@@ -2394,7 +2607,10 @@ dim vTransportadora
         if blnMostraMotivoCancelado then
             vl_sub_total_pedido_original = vl_sub_total_pedido_original + r("vl_total_original")
         end if
-		
+		sub_total_qtde_vol = sub_total_qtde_vol + r("total_pedido_qtde_volumes")
+		sub_total_cubagem = sub_total_cubagem + r("total_pedido_cubagem")
+		sub_total_peso = sub_total_peso + r("total_pedido_peso")
+
 		vl_total_faturamento = vl_total_faturamento + r("vl_total_pedido")
 		vl_total_faturamento_NF = vl_total_faturamento_NF + r("vl_total_pedido_NF")
 		vl_total_pago = vl_total_pago + r("vl_pago_pedido")
@@ -2406,7 +2622,10 @@ dim vTransportadora
         if blnMostraMotivoCancelado then
             vl_total_pedido_original = vl_total_pedido_original + r("vl_total_original")
         end if
-			
+		total_qtde_vol = total_qtde_vol + r("total_pedido_qtde_volumes")
+		total_cubagem = total_cubagem + r("total_pedido_cubagem")
+		total_peso = total_peso + r("total_pedido_peso")
+
 		x = x & "	</TR>" & chr(13)
 
 		if (n_reg_total mod 100) = 0 then
@@ -2424,7 +2643,7 @@ dim vTransportadora
 		if n_reg <> 0 then 
 			s_cor = ""
 			if vl_sub_total_a_pagar < 0 then s_cor = "color:red;"
-			x = x & "	<TR style='background: #FFFFDD'>" & chr(13) & _
+			x = x & "	<TR class='RowTotalizacao' style='background: #FFFFDD'>" & chr(13) & _
 					"		<TD style='background:white;'>&nbsp;</td>" & chr(13)
             if s_loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
 					x = x & "		<TD COLSPAN='5' align='right' class='MEB' NOWRAP><span class='Cd' style='font-weight:bold;'>TOTAL:</span></td>" & chr(13)
@@ -2442,7 +2661,25 @@ dim vTransportadora
 					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_faturamento_NF) & "</span></td>" & chr(13) & _
 					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_pago) & "</span></td>" & chr(13) & _
 					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><span class='Cd' style='" & s_cor & "font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_a_pagar) & "</span></td>" & chr(13) & _
-					"		<TD class='" & s_class & "'" & s_colspan_final & "><span class='C'>&nbsp;</span></td>" & chr(13)
+					"		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
+
+					if ckb_exibir_data_previsao_entrega <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
+					if ckb_exibir_data_previsao_entrega_transp <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
+					if ckb_exibir_data_recebido_cliente <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
+					if ckb_exibir_cidade_etg <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
+					if ckb_exibir_uf_etg <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
+					if ckb_exibir_qtde_volumes <> "" then
+						x = x & _
+							"		<TD align='right' style='width:" & Cstr(w_qtde_vol) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_INTEIRO & chr(34) & ";'>" & formata_inteiro(sub_total_qtde_vol) & "</span></td>" & chr(13)
+						end if
+					if ckb_exibir_cubagem <> "" then
+						x = x & _
+							"		<TD align='right' style='width:" & Cstr(w_cubagem) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_DECIMAL & chr(34) & ";'>" & formata_numero(sub_total_cubagem, 2) & "</span></td>" & chr(13)
+						end if
+					if ckb_exibir_peso <> "" then
+						x = x & _
+							"		<TD align='right' style='width:" & Cstr(w_peso) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_DECIMAL & chr(34) & ";'>" & formata_numero(sub_total_peso, 2) & "</span></td>" & chr(13)
+						end if
 
             if blnMostraMotivoCancelado then
                 x = x & _
@@ -2455,7 +2692,11 @@ dim vTransportadora
 				x = x & _
 					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_pedido_original) & "</span></td>" & chr(13) & _
 					"		<TD class='MDB'><span class='C'>&nbsp;</span></td>" & chr(13)
-                end if
+            else
+				if ckb_exibir_vendedor <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
+				if ckb_exibir_parceiro <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
+				if ckb_exibir_uf <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
+				end if
 
             x = x & _
 					"	</TR>" & chr(13)
@@ -2466,6 +2707,14 @@ dim vTransportadora
 				if vl_total_a_pagar < 0 then s_cor = "color:red;"
 				if blnPorFornecedor then n_colspan = 11 else n_colspan = 9
 				if ckb_exibir_data_previsao_entrega <> "" then n_colspan = n_colspan + 1
+				if ckb_exibir_cidade_etg <> "" then n_colspan = n_colspan + 1
+				if ckb_exibir_uf_etg <> "" then n_colspan = n_colspan + 1
+				if ckb_exibir_data_previsao_entrega_transp <> "" then n_colspan = n_colspan + 1
+				if ckb_exibir_data_recebido_cliente <> "" then n_colspan = n_colspan + 1
+				if ckb_exibir_qtde_volumes <> "" then n_colspan = n_colspan + 1
+				if ckb_exibir_peso <> "" then n_colspan = n_colspan + 1
+				if ckb_exibir_cubagem <> "" then n_colspan = n_colspan + 1
+
 				if Not blnMostraMotivoCancelado then
 					if ckb_exibir_vendedor <> "" then n_colspan = n_colspan + 1
 					if ckb_exibir_parceiro <> "" then n_colspan = n_colspan + 1
@@ -2478,7 +2727,7 @@ dim vTransportadora
 					"	<TR>" & chr(13) & _
 					"		<TD COLSPAN='" & Cstr(n_colspan) & "' style='border-left:0px;border-right:0px;'>&nbsp;</td>" & chr(13) & _
 					"	</TR>" & chr(13) & _
-					"	<TR style='background:honeydew'>" & chr(13) & _
+					"	<TR class='RowTotalizacao' style='background:honeydew'>" & chr(13) & _
 					"		<TD style='background:white;'>&nbsp;</td>" & chr(13)
                 if s_loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
 					x = x & "		<TD class='MTBE' align='right' COLSPAN='5' NOWRAP><span class='Cd' style='font-weight:bold;'>TOTAL GERAL:</span></td>" & chr(13)
@@ -2492,20 +2741,30 @@ dim vTransportadora
 						"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_fornecedor_NF) & "</span></td>" & chr(13)
 					end if
 				
-                s_class = ""
-                if blnMostraMotivoCancelado then 
-                    s_class = "MTB"
-                else 
-                    s_class = "MTBD"
-                end if
-                
-
 				x = x & _
 					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_faturamento) & "</span></td>" & chr(13) & _
 					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_faturamento_NF) & "</span></td>" & chr(13) & _
 					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_pago) & "</span></td>" & chr(13) & _
 					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><span class='Cd' style='" & s_cor & "font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_a_pagar) & "</span></td>" & chr(13) & _
-					"		<TD class='" & s_class & "'" & s_colspan_final & "><span class='C'>&nbsp;</span></td>" & chr(13)
+					"		<TD class='MTB'><span class='C'>&nbsp;</span></td>" & chr(13)
+
+				if ckb_exibir_data_previsao_entrega <> "" then x = x & "<TD class='MTB'><span class='C'>&nbsp;</span></td>" & chr(13)
+				if ckb_exibir_data_previsao_entrega_transp <> "" then x = x & "<TD class='MTB'><span class='C'>&nbsp;</span></td>" & chr(13)
+				if ckb_exibir_data_recebido_cliente <> "" then x = x & "<TD class='MTB'><span class='C'>&nbsp;</span></td>" & chr(13)
+				if ckb_exibir_cidade_etg <> "" then x = x & "<TD class='MTB'><span class='C'>&nbsp;</span></td>" & chr(13)
+				if ckb_exibir_uf_etg <> "" then x = x & "<TD class='MTB'><span class='C'>&nbsp;</span></td>" & chr(13)
+				if ckb_exibir_qtde_volumes <> "" then
+					x = x & _
+						"		<TD align='right' style='width:" & Cstr(w_qtde_vol) & "px' class='MTB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_INTEIRO & chr(34) & ";'>" & formata_inteiro(total_qtde_vol) & "</span></td>" & chr(13)
+					end if
+				if ckb_exibir_cubagem <> "" then
+					x = x & _
+						"		<TD align='right' style='width:" & Cstr(w_cubagem) & "px' class='MTB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_DECIMAL & chr(34) & ";'>" & formata_numero(total_cubagem, 2) & "</span></td>" & chr(13)
+					end if
+				if ckb_exibir_peso <> "" then
+					x = x & _
+						"		<TD align='right' style='width:" & Cstr(w_peso) & "px' class='MTB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_DECIMAL & chr(34) & ";'>" & formata_numero(total_peso, 2) & "</span></td>" & chr(13)
+					end if
 
                 if blnMostraMotivoCancelado then
                     x = x & _
@@ -2518,7 +2777,11 @@ dim vTransportadora
 					x = x & _
 					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><span class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_pedido_original) & "</span></td>" & chr(13) & _
 					"		<TD class='MTBD'><span class='C'>&nbsp;</span></td>" & chr(13)
-                end if
+                else
+					if ckb_exibir_vendedor <> "" then x = x & "<TD class='MTB'><span class='C'>&nbsp;</span></td>" & chr(13)
+					if ckb_exibir_parceiro <> "" then x = x & "<TD class='MTB'><span class='C'>&nbsp;</span></td>" & chr(13)
+					if ckb_exibir_uf <> "" then x = x & "<TD class='MTB'><span class='C'>&nbsp;</span></td>" & chr(13)
+				end if
 
                 x = x & _
                     "	</TR>" & chr(13)
@@ -2560,6 +2823,13 @@ dim vTransportadora
 			end if
 		
 		if ckb_exibir_data_previsao_entrega <> "" then n_colspan = n_colspan + 1
+		if ckb_exibir_cidade_etg <> "" then n_colspan = n_colspan + 1
+		if ckb_exibir_uf_etg <> "" then n_colspan = n_colspan + 1
+		if ckb_exibir_data_previsao_entrega_transp <> "" then n_colspan = n_colspan + 1
+		if ckb_exibir_data_recebido_cliente <> "" then n_colspan = n_colspan + 1
+		if ckb_exibir_qtde_volumes <> "" then n_colspan = n_colspan + 1
+		if ckb_exibir_peso <> "" then n_colspan = n_colspan + 1
+		if ckb_exibir_cubagem <> "" then n_colspan = n_colspan + 1
 
 		if Not blnMostraMotivoCancelado then
 			if ckb_exibir_vendedor <> "" then n_colspan = n_colspan + 1
@@ -2638,6 +2908,7 @@ end sub
 	urlWebApiRastreio = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/GetData/PageContentViaHttpGet';
 
 	$(document).ready(function () {
+		$(".RowTotalizacao td:last-child").addClass("MD");
 		$("#divPedidoConsultaView").hide();
 		$("#divRastreioConsultaView").hide();
 		$('#divInternoRastreioConsultaView').addClass('divFixo');
