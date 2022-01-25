@@ -94,7 +94,7 @@
     dim blnMostraMotivoCancelado, c_cancelados_ordena
 	dim ckb_exibir_vendedor, ckb_exibir_parceiro, ckb_exibir_uf, ckb_exibir_data_previsao_entrega
 	dim ckb_pagto_antecipado_status_nao, ckb_pagto_antecipado_status_sim, ckb_pagto_antecipado_quitado_status_pendente, ckb_pagto_antecipado_quitado_status_quitado
-	dim ckb_exibir_cidade_etg, ckb_exibir_uf_etg, ckb_exibir_data_previsao_entrega_transp, ckb_exibir_data_recebido_cliente, ckb_exibir_qtde_volumes, ckb_exibir_peso, ckb_exibir_cubagem
+	dim ckb_exibir_cidade_etg, ckb_exibir_uf_etg, ckb_exibir_data_entrega, ckb_exibir_data_previsao_entrega_transp, ckb_exibir_data_recebido_cliente, ckb_exibir_qtde_volumes, ckb_exibir_peso, ckb_exibir_cubagem
 
 	alerta = ""
 
@@ -186,6 +186,7 @@
 	ckb_pagto_antecipado_quitado_status_quitado = Trim(Request.Form("ckb_pagto_antecipado_quitado_status_quitado"))
 	ckb_exibir_cidade_etg = Trim(Request.Form("ckb_exibir_cidade_etg"))
 	ckb_exibir_uf_etg = Trim(Request.Form("ckb_exibir_uf_etg"))
+	ckb_exibir_data_entrega = Trim(Request.Form("ckb_exibir_data_entrega"))
 	ckb_exibir_data_previsao_entrega_transp = Trim(Request.Form("ckb_exibir_data_previsao_entrega_transp"))
 	ckb_exibir_data_recebido_cliente = Trim(Request.Form("ckb_exibir_data_recebido_cliente"))
 	ckb_exibir_qtde_volumes = Trim(Request.Form("ckb_exibir_qtde_volumes"))
@@ -200,6 +201,7 @@
 	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_data_previsao_entrega", ckb_exibir_data_previsao_entrega)
 	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_cidade_etg", ckb_exibir_cidade_etg)
 	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_uf_etg", ckb_exibir_uf_etg)
+	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_data_entrega", ckb_exibir_data_entrega)
 	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_data_previsao_entrega_transp", ckb_exibir_data_previsao_entrega_transp)
 	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_data_recebido_cliente", ckb_exibir_data_recebido_cliente)
 	call set_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_qtde_volumes", ckb_exibir_qtde_volumes)
@@ -1065,6 +1067,7 @@ dim vTransportadora
 	if ckb_exibir_data_previsao_entrega <> "" then n_colspan_final = n_colspan_final + 1
 	if ckb_exibir_cidade_etg <> "" then n_colspan_final = n_colspan_final + 1
 	if ckb_exibir_uf_etg <> "" then n_colspan_final = n_colspan_final + 1
+	if ckb_exibir_data_entrega <> "" then n_colspan_final = n_colspan_final + 1
 	if ckb_exibir_data_previsao_entrega_transp <> "" then n_colspan_final = n_colspan_final + 1
 	if ckb_exibir_data_recebido_cliente <> "" then n_colspan_final = n_colspan_final + 1
 	if ckb_exibir_qtde_volumes <> "" then n_colspan_final = n_colspan_final + 1
@@ -1890,6 +1893,9 @@ dim vTransportadora
             " t_PEDIDO__BASE.indicador," & _
             " t_PEDIDO.cancelado_codigo_motivo," & _
             " t_PEDIDO.cancelado_codigo_sub_motivo," & _
+			" t_PEDIDO.entregue_data," & _
+			" t_PEDIDO.PrevisaoEntregaTranspData," & _
+			" t_PEDIDO.PedidoRecebidoData," & _
 			" ISNULL(t_PEDIDO__VL_TOTAL.vl_total_pedido,0) AS vl_total_pedido," & _
 			" ISNULL(t_PEDIDO__VL_TOTAL.vl_total_pedido_NF,0) AS vl_total_pedido_NF," & _
 			" ISNULL(t_PEDIDO__VL_PAGO.vl_pago_pedido,0) AS vl_pago_pedido," & _
@@ -1908,16 +1914,6 @@ dim vTransportadora
 				", ISNULL(t_PEDIDO__VL_FORNECEDOR.vl_total_fornecedor_NF,0) AS vl_total_fornecedor_NF"
 		end if
 	
-	if ckb_exibir_data_previsao_entrega_transp <> "" then
-		s_sql = s_sql & _
-				", t_PEDIDO.PrevisaoEntregaTranspData"
-		end if
-
-	if ckb_exibir_data_recebido_cliente <> "" then
-		s_sql = s_sql & _
-				", t_PEDIDO.PedidoRecebidoData"
-		end if
-
 	if ckb_exibir_qtde_volumes <> "" then
 		s_sql = s_sql & _
 				", Coalesce((SELECT Sum(qtde*qtde_volumes) FROM t_PEDIDO_ITEM WHERE (pedido = t_PEDIDO.pedido)), 0) AS total_pedido_qtde_volumes"
@@ -2037,6 +2033,16 @@ dim vTransportadora
 	else
 		cab = cab & _
 			  "		<TD class='MTBD' style='width:" & Cstr(w_st_entrega) & "px' valign='bottom' NOWRAP><span class='R' style='display:block;font-weight:bold;'>Status de<br />Entrega</span></TD>" & chr(13)
+		end if
+
+	if ckb_exibir_data_entrega <> "" then
+		if blnSaidaExcel then
+			cab = cab & _
+					"		<td class='MTBD' style='width:" & Cstr(w_data) & "px' align='center' valign='bottom'><span class='R' style='font-weight:bold;'>Data<br style='mso-data-placement:same-cell;' />Entrega</span></td>" & chr(13)
+		else
+			cab = cab & _
+					"		<td class='MTBD' style='width:" & Cstr(w_data) & "px' align='center' valign='bottom'><span class='R' style='display:block;font-weight:bold;'>Data<br />Entrega</span></td>" & chr(13)
+			end if
 		end if
 
     if ckb_exibir_data_previsao_entrega <> "" then
@@ -2201,6 +2207,7 @@ dim vTransportadora
 					x = x & _
 							"		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
 
+					if ckb_exibir_data_entrega <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
 					if ckb_exibir_data_previsao_entrega <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
 					if ckb_exibir_data_previsao_entrega_transp <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
 					if ckb_exibir_data_recebido_cliente <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
@@ -2305,6 +2312,7 @@ dim vTransportadora
 						end if
 					end if
 				
+				if ckb_exibir_data_entrega <> "" then n_colspan = n_colspan + 1
 				if ckb_exibir_data_previsao_entrega <> "" then n_colspan = n_colspan + 1
 				if ckb_exibir_cidade_etg <> "" then n_colspan = n_colspan + 1
 				if ckb_exibir_uf_etg <> "" then n_colspan = n_colspan + 1
@@ -2350,7 +2358,11 @@ dim vTransportadora
 		n_reg_total = n_reg_total + 1
 		intNumLinha = intNumLinha + 1
 
-		x = x & "	<TR>" & chr(13)
+		if blnSaidaExcel OR (ckb_nao_exibir_links <> "") then
+			x = x & "	<TR>" & chr(13)
+		else
+			x = x & "	<TR onmouseover='realca_cor_mouse_over(this);' onmouseout='realca_cor_mouse_out(this);'>" & chr(13)
+			end if
 
 	'> Nº DA LINHA
 		if blnSaidaExcel then
@@ -2472,6 +2484,12 @@ dim vTransportadora
 		if (s = "") And (Not blnSaidaExcel) then s = "&nbsp;"
 		x = x & "		<TD valign='middle' style='width:" & Cstr(w_st_entrega) & "px' class='MDB'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</span></TD>" & chr(13)
 	
+	'> DATA DA ENTREGA (OPCIONAL)
+		if ckb_exibir_data_entrega <> "" then
+			s = formata_data(r("entregue_data"))
+			x = x & "		<TD align='center' valign='middle' style='width:" & Cstr(w_data) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
+			end if
+
 	'> DATA PREVISÃO DE ENTREGA (OPCIONAL)
 		if ckb_exibir_data_previsao_entrega <> "" then
 			s = formata_data(r("PrevisaoEntregaData"))
@@ -2665,6 +2683,7 @@ dim vTransportadora
 					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MB'><span class='Cd' style='" & s_cor & "font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_sub_total_a_pagar) & "</span></td>" & chr(13) & _
 					"		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
 
+					if ckb_exibir_data_entrega <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
 					if ckb_exibir_data_previsao_entrega <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
 					if ckb_exibir_data_previsao_entrega_transp <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
 					if ckb_exibir_data_recebido_cliente <> "" then x = x & "		<TD class='MB'><span class='C'>&nbsp;</span></td>" & chr(13)
@@ -2708,6 +2727,7 @@ dim vTransportadora
 				s_cor = ""
 				if vl_total_a_pagar < 0 then s_cor = "color:red;"
 				if blnPorFornecedor then n_colspan = 11 else n_colspan = 9
+				if ckb_exibir_data_entrega <> "" then n_colspan = n_colspan + 1
 				if ckb_exibir_data_previsao_entrega <> "" then n_colspan = n_colspan + 1
 				if ckb_exibir_cidade_etg <> "" then n_colspan = n_colspan + 1
 				if ckb_exibir_uf_etg <> "" then n_colspan = n_colspan + 1
@@ -2750,6 +2770,7 @@ dim vTransportadora
 					"		<TD align='right' style='width:" & Cstr(w_valor) & "px' class='MTB'><span class='Cd' style='" & s_cor & "font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vl_total_a_pagar) & "</span></td>" & chr(13) & _
 					"		<TD class='MTB'><span class='C'>&nbsp;</span></td>" & chr(13)
 
+				if ckb_exibir_data_entrega <> "" then x = x & "<TD class='MTB'><span class='C'>&nbsp;</span></td>" & chr(13)
 				if ckb_exibir_data_previsao_entrega <> "" then x = x & "<TD class='MTB'><span class='C'>&nbsp;</span></td>" & chr(13)
 				if ckb_exibir_data_previsao_entrega_transp <> "" then x = x & "<TD class='MTB'><span class='C'>&nbsp;</span></td>" & chr(13)
 				if ckb_exibir_data_recebido_cliente <> "" then x = x & "<TD class='MTB'><span class='C'>&nbsp;</span></td>" & chr(13)
@@ -2824,6 +2845,7 @@ dim vTransportadora
 				end if
 			end if
 		
+		if ckb_exibir_data_entrega <> "" then n_colspan = n_colspan + 1
 		if ckb_exibir_data_previsao_entrega <> "" then n_colspan = n_colspan + 1
 		if ckb_exibir_cidade_etg <> "" then n_colspan = n_colspan + 1
 		if ckb_exibir_uf_etg <> "" then n_colspan = n_colspan + 1
@@ -2992,6 +3014,14 @@ end sub
 
 <script language="JavaScript" type="text/javascript">
 window.status='Aguarde, executando a consulta ...';
+
+function realca_cor_mouse_over(c) {
+	c.style.backgroundColor = 'palegreen';
+}
+
+function realca_cor_mouse_out(c) {
+	c.style.backgroundColor = '';
+}
 
 function fRELConcluir( id_pedido ){
 	window.status = "Aguarde ...";
