@@ -9085,6 +9085,7 @@ Dim strMarketPlaceCNPJ As String
 Dim strMarketPlaceCadIntTran As String
 Dim strPagtoAntecipadoStatus As Integer
 Dim strPagtoAntecipadoQuitadoStatus As Integer
+Dim s_Texto_DIFAL_UF As String
 
 ' FLAGS
 Dim blnAchou As Boolean
@@ -9103,6 +9104,7 @@ Dim blnHaProdutoSemDadosIbpt As Boolean
 Dim blnExisteMemorizacaoEndereco As Boolean
 Dim blnNotadeCompromisso As Boolean
 Dim blnRemessaEntregaFutura As Boolean
+Dim blnIgnorarDIFAL As Boolean
 
 ' CONTADORES
 Dim i As Integer
@@ -9151,6 +9153,7 @@ Dim t_NFe_EMISSAO As ADODB.Recordset
 Dim t_NFe_IMAGEM As ADODB.Recordset
 Dim t_T1_NFE_INUTILIZA As ADODB.Recordset
 Dim t_CODIGO_DESCRICAO As ADODB.Recordset
+Dim t_NFe_UF_PARAMETRO As ADODB.Recordset
 Dim rsNFeRetornoSPSituacao As ADODB.Recordset
 Dim rsNFeRetornoSPEmite As ADODB.Recordset
 Dim cmdNFeSituacao As New ADODB.Command
@@ -9492,6 +9495,14 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
   ' T_CODIGO_DESCRICAO
     Set t_CODIGO_DESCRICAO = New ADODB.Recordset
     With t_CODIGO_DESCRICAO
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
+        
+  ' t_NFe_UF_PARAMETRO
+    Set t_NFe_UF_PARAMETRO = New ADODB.Recordset
+    With t_NFe_UF_PARAMETRO
         .CursorType = BD_CURSOR_SOMENTE_LEITURA
         .LockType = BD_POLITICA_LOCKING
         .CacheSize = BD_CACHE_CONSULTA
@@ -11754,12 +11765,32 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     GoTo NFE_EMITE_ENCERRA_POR_ERRO_CONSISTENCIA
                     End If
                     
+            '   VERIFICAR SE A UF DO DESTINATÁRIO TEM LIMINAR PARA NÃO RECOLHER O DIFAL
+                
+                blnIgnorarDIFAL = False
+                s_Texto_DIFAL_UF = ""
+                
+                s = "SELECT " & _
+                    "st_ignorar_difal, " & _
+                    "texto_adicional" & _
+                    " FROM t_NFe_UF_PARAMETRO" & _
+                    " WHERE" & _
+                    " (UF='" & Trim$(strEndClienteUf) & "')"
+                If t_NFe_UF_PARAMETRO.State <> adStateClosed Then t_NFe_UF_PARAMETRO.Close
+                t_NFe_UF_PARAMETRO.Open s, dbc, , , adCmdText
+                If Not t_NFe_UF_PARAMETRO.EOF Then
+                    blnIgnorarDIFAL = t_NFe_UF_PARAMETRO("st_ignorar_difal") = 1
+                    s_Texto_DIFAL_UF = Trim$("" & t_NFe_UF_PARAMETRO("texto_adicional"))
+                    End If
+            
+                    
             '   OS CÁLCULOS DE PARTILHA FORAM MOVIDOS PARA CÁ DEVIDO À EXCLUSÃO DE ICMS E DIFAL DAS BASES DE CÁLCULO
             '   DE PIS E COFINS, CONFORME DECISÃO DO STF
             
                 If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
                     (rNFeImg.dest__indIEDest = "9") And _
                     Not cfop_eh_de_remessa(strCfopCodigo) And _
+                    Not blnIgnorarDIFAL And _
                     (vl_ICMS > 0) Then
                     
                     If IsNumeric(.fcp) Then
@@ -11899,6 +11930,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
 '                     ((rNFeImg.dest__indIEDest = "2") And (rNFeImg.dest__IE = ""))) Then
                 If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
                     (rNFeImg.dest__indIEDest = "9") And _
+                    Not blnIgnorarDIFAL And _
                     Not cfop_eh_de_remessa(strCfopCodigo) Then
                 
                     strNFeTagIcmsUFDest = ""
@@ -11955,6 +11987,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
                     (rNFeImg.dest__indIEDest = "9") And _
                     Not cfop_eh_de_remessa(strCfopCodigo) And _
+                    Not blnIgnorarDIFAL And _
                     (vl_ICMS > 0) Then
                     strNFeTagBlocoProduto = strNFeTagBlocoProduto & _
                                             "ICMSUFDest;" & vbCrLf & strNFeTagIcmsUFDest
@@ -12033,6 +12066,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
 '                     ((rNFeImg.dest__indIEDest = "2") And (rNFeImg.dest__IE = ""))) Then
     If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
         (rNFeImg.dest__indIEDest = "9") And _
+        Not blnIgnorarDIFAL And _
         Not cfop_eh_de_remessa(strCfopCodigo) Then
             rNFeImg.total__vFCPUFDest = NFeFormataMoeda2Dec(vl_total_FCPUFDest)
             strNFeTagValoresTotais = strNFeTagValoresTotais & _
@@ -12568,7 +12602,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeInfAdicQuadroProdutos = Join(v_pedido, ", ") & strTextoCubagem & strNFeInfAdicQuadroProdutos
     
 '   INFORMAÇÕES SOBRE PARTILHA DO ICMS
-    If PARTILHA_ICMS_ATIVA Then
+    If PARTILHA_ICMS_ATIVA And Not blnIgnorarDIFAL Then
         'DIFAL- suprimir texto em notas de entrada/devolução
         If (rNFeImg.ide__tpNF <> "0") And _
             (strNFeCodFinalidade <> "3") And _
@@ -12582,6 +12616,15 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 End If
             End If
         End If
+        
+'   SE UF TEM LIMINAR PARA NÃO RECOLHIMENTO DO DIFAL, INFORMAR
+    If PARTILHA_ICMS_ATIVA And blnIgnorarDIFAL Then
+        If s_Texto_DIFAL_UF <> "" Then
+            If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
+            strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & s_Texto_DIFAL_UF
+            End If
+        End If
+                
 
 '   INFORMAÇÕES SOBRE MEIO DE PAGAMENTO DAS PARCELAS
     If blnImprimeDadosFatura And _
@@ -13194,6 +13237,7 @@ NFE_EMITE_FECHA_TABELAS:
     bd_desaloca_recordset t_NFe_IMAGEM, True
     bd_desaloca_recordset t_T1_NFE_INUTILIZA, True
     bd_desaloca_recordset t_CODIGO_DESCRICAO, True
+    bd_desaloca_recordset t_NFe_UF_PARAMETRO, True
     bd_desaloca_recordset rsNFeRetornoSPSituacao, True
     bd_desaloca_recordset rsNFeRetornoSPEmite, True
   
