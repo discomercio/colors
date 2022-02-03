@@ -786,9 +786,9 @@ Option Explicit
 '|          |      | - Ajuste gravação campo nItemPed                          |
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
-'|XX.XX.XXXX| XXXX |V X.XX                                                     |
-'|          |      |                                                           |
-'|          |      |                                                           |
+'|03.02.2022| LHGX |V 2.24                                                     |
+'|          |      | - Funcionalidade para que o DIFAL não seja calculado      |
+'|          |      |   em caso de liminar a favor                              |
 '|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
@@ -797,8 +797,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.23"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  18/01/2022"
+Global Const m_id_versao = "2.24"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  03/02/2022"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"
