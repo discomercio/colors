@@ -735,9 +735,13 @@ var fCepPopup;
 var COD_NIVEL_EDICAO_LIBERADA_TOTAL = <%=COD_NIVEL_EDICAO_LIBERADA_TOTAL%>;
 var COD_NIVEL_EDICAO_LIBERADA_PARCIAL = <%=COD_NIVEL_EDICAO_LIBERADA_PARCIAL%>;
 var COD_NIVEL_EDICAO_BLOQUEADA = <%=COD_NIVEL_EDICAO_BLOQUEADA%>;
+var vl_total_pedido_original;
 
 $(function() {
-    var f;
+	var f;
+
+	vl_total_pedido_original = fp_vl_total_pedido();
+
     f = fPED;
     if (f.blnEndEntregaEdicaoLiberada.value == "<%=Cstr(True)%>") {
     	$("#EndEtg_obs option[value='<%=r_pedido.EndEtg_cod_justificativa%>']").attr("selected", true);
@@ -1279,9 +1283,10 @@ var f,idx,vtNF,vtFP,ve,ni,nip,n,vp;
 var MAX_ERRO_ARREDONDAMENTO = 0.1;
 	f = fPED;
 
-	if (!houve_edicao_forma_pagto()) return true;
-
 	vtNF=fp_vl_total_pedido();
+
+	if ((!houve_edicao_forma_pagto()) && (vtNF === vl_total_pedido_original)) return true;
+
 	vtFP=0;
 	idx=-1;
 	
