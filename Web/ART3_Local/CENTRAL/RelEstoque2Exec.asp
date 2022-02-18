@@ -3546,6 +3546,7 @@ dim input_Id_Subtotal_Grupo, input_Id_Subtotal_Fabricante, input_Id_Total_Grupo
             " FROM t_ESTOQUE_MOVIMENTO" & _
             " LEFT JOIN t_PRODUTO ON ((t_ESTOQUE_MOVIMENTO.fabricante=t_PRODUTO.fabricante) AND (t_ESTOQUE_MOVIMENTO.produto=t_PRODUTO.produto))" & _
             " LEFT JOIN t_PRODUTO_GRUPO ON (t_PRODUTO.grupo=t_PRODUTO_GRUPO.codigo)" & _
+			" INNER JOIN t_ESTOQUE ON (t_ESTOQUE.id_estoque = t_ESTOQUE_MOVIMENTO.id_estoque)" & _
             " WHERE (anulado_status=0 AND estoque='SHR')"
 
 	if cod_produto <> "" then
@@ -3609,6 +3610,11 @@ dim input_Id_Subtotal_Grupo, input_Id_Subtotal_Fabricante, input_Id_Total_Grupo
 	if c_posicao_mercado <> "" then
 		s_sql = s_sql & _
 			" AND (t_PRODUTO.posicao_mercado = '" & c_posicao_mercado & "')"
+		end if
+
+	if c_empresa <> "" then
+		s_sql = s_sql & _
+			" AND (t_ESTOQUE.id_nfe_emitente = '" & c_empresa & "')"
 		end if
 
             s_sql = s_sql & " GROUP BY t_ESTOQUE_MOVIMENTO.fabricante, t_PRODUTO.grupo, t_PRODUTO_GRUPO.descricao, t_ESTOQUE_MOVIMENTO.produto, t_PRODUTO.descricao, descricao_html) tbl"
@@ -4093,6 +4099,7 @@ dim input_Id_Subtotal_Grupo, input_Id_Subtotal_Fabricante, input_Id_Total_Grupo
                 " AND (t_ESTOQUE_MOVIMENTO.fabricante=t_ESTOQUE_ITEM.fabricante) AND (t_ESTOQUE_MOVIMENTO.produto=t_ESTOQUE_ITEM.produto))" & _
                 " LEFT JOIN t_PRODUTO ON ((t_ESTOQUE_MOVIMENTO.fabricante=t_PRODUTO.fabricante) AND (t_ESTOQUE_MOVIMENTO.produto=t_PRODUTO.produto))" & _
                 " LEFT JOIN t_PRODUTO_GRUPO ON (t_PRODUTO.grupo=t_PRODUTO_GRUPO.codigo)" & _
+				" INNER JOIN t_ESTOQUE ON (t_ESTOQUE.id_estoque = t_ESTOQUE_MOVIMENTO.id_estoque)" & _
                 " WHERE (anulado_status=0 AND estoque='SHR')"
                 
 	if cod_produto <> "" then
@@ -4156,6 +4163,11 @@ dim input_Id_Subtotal_Grupo, input_Id_Subtotal_Fabricante, input_Id_Total_Grupo
 	if c_posicao_mercado <> "" then
 		s_sql = s_sql & _
 			" AND (t_PRODUTO.posicao_mercado = '" & c_posicao_mercado & "')"
+		end if
+
+	if c_empresa <> "" then
+		s_sql = s_sql & _
+			" AND (t_ESTOQUE.id_nfe_emitente = '" & c_empresa & "')"
 		end if
 
     s_sql = s_sql & " GROUP BY t_ESTOQUE_MOVIMENTO.fabricante, t_PRODUTO.grupo, t_PRODUTO_GRUPO.descricao, t_ESTOQUE_MOVIMENTO.produto, t_PRODUTO.descricao, descricao_html) tbl" & _
