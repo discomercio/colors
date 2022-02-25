@@ -93,6 +93,24 @@
 	s_email_remetente = getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__PEDIDO_DEVOLUCAO)
 	call le_usuario(usuario, r_usuario, msg_erro)
 
+	dim sDescricaoStatusAtual, sCorStatusAtual
+	if alerta = "" then
+		'Verificação se o usuário está tentando reprocessar usando o botão voltar do navegador
+		if Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+		s = "SELECT * FROM t_PEDIDO_DEVOLUCAO WHERE (id = " & id_devolucao & ")"
+		rs.Open s, cn
+		if rs.Eof then
+			alerta = "Pré-devolução com ID " & id_devolucao & " do pedido " & pedido_selecionado & " não foi localizada"
+		else
+			if (Trim("" & rs("status")) = Trim("" & COD_ST_PEDIDO_DEVOLUCAO__FINALIZADA)) Or (Trim("" & rs("status")) = Trim("" & COD_ST_PEDIDO_DEVOLUCAO__REPROVADA)) Or (Trim("" & rs("status")) = Trim("" & COD_ST_PEDIDO_DEVOLUCAO__CANCELADA)) then
+				obtem_descricao_status_devolucao Trim("" & rs("status")), sDescricaoStatusAtual, sCorStatusAtual
+				alerta = "Pré-devolução com ID " & id_devolucao & " do pedido " & pedido_selecionado & " já consta com status '" & sDescricaoStatusAtual & "' e não pode ser reprocessada"
+				end if
+			end if
+
+		if rs.State <> 0 then rs.Close
+		set rs = nothing
+		end if 'if alerta = ""
 
 	if alerta = "" then
 	'	INICIA A TRANSAÇÃO
