@@ -313,6 +313,36 @@
 			end if
 		end if
 
+	dim sDescricaoStatusAtual, sCorStatusAtual, sDescricaoStatusNovo, sCorStatusNovo
+	if alerta = "" then
+		'Verificação se o usuário está tentando alterar o status de aprovação/reprovação usando o botão voltar do navegador
+		if Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+
+		s = "SELECT * FROM t_PEDIDO_DEVOLUCAO WHERE (id='" & id_devolucao & "')"
+		if rs.State <> 0 then rs.Close
+		rs.Open s, cn
+		if rs.Eof then
+			alerta = "Pré-devolução com ID " & id_devolucao & " do pedido " & pedido_selecionado & " não foi localizada"
+		else
+			obtem_descricao_status_devolucao Trim("" & rs("status")), sDescricaoStatusAtual, sCorStatusAtual
+			obtem_descricao_status_devolucao rb_status, sDescricaoStatusNovo, sCorStatusNovo
+			if (Trim("" & rs("status")) = Trim("" & COD_ST_PEDIDO_DEVOLUCAO__FINALIZADA)) Or (Trim("" & rs("status")) = Trim("" & COD_ST_PEDIDO_DEVOLUCAO__REPROVADA)) Or (Trim("" & rs("status")) = Trim("" & COD_ST_PEDIDO_DEVOLUCAO__CANCELADA)) then
+				alerta = "Pré-devolução com ID " & id_devolucao & " do pedido " & pedido_selecionado & " já consta com status '" & sDescricaoStatusAtual & "'"
+			else
+				if (rb_status <> "") And ((rs("st_aprovado") = 1) Or (rs("st_reprovado") = 1)) then
+					if Trim("" & rs("status")) <> rb_status then
+						alerta = "Pré-devolução com ID " & id_devolucao & " do pedido " & pedido_selecionado & " já consta com status '" & sDescricaoStatusAtual & "' e não pode ser alterada para '" & sDescricaoStatusNovo & "'"
+					else
+						alerta = "Pré-devolução com ID " & id_devolucao & " do pedido " & pedido_selecionado & " já consta com status '" & sDescricaoStatusAtual & "' e não pode ser reprocessada"
+						end if
+					end if
+				end if
+			end if
+
+		if rs.State <> 0 then rs.Close
+		set rs = nothing
+		end if 'if alerta = ""
+
 
 	if alerta = "" then
 	'	~~~~~~~~~~~~~
