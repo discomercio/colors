@@ -1435,6 +1435,8 @@ function fPEDPagto(f) {
 <input type="hidden" name="id_depto" id="id_depto" />
 <input type="hidden" name="c_id_cliente" id="c_id_cliente" value="<%=r_pedido.id_cliente%>" />
 <input type="hidden" name="id_devolucao" id="id_devolucao" />
+<input type="hidden" name="request_guid" id="request_guid" value="<%=gera_uid%>" />
+
 
 <!--  I D E N T I F I C A Ç Ã O   D O   P E D I D O -->
 <%=MontaHeaderIdentificacaoPedido(pedido_selecionado, r_pedido, 649)%>
