@@ -229,20 +229,34 @@
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
 	dim r_orcamento, v_orcamento_item
-	if Not le_orcamento(orcamento_selecionado, r_orcamento, msg_erro) then 
-		alerta = msg_erro
-	else
-		if Trim(r_orcamento.loja) <> loja then Response.Redirect("aviso.asp?id=" & ERR_ORCAMENTO_INVALIDO)
-		if r_orcamento.st_orc_virou_pedido = 1 then Response.Redirect("aviso.asp?id=" & ERR_ORCAMENTO_INVALIDO)
-	'	TEM ACESSO A ESTE ORÇAMENTO?
-		if Not operacao_permitida(OP_LJA_CONSULTA_UNIVERSAL_PEDIDO_ORCAMENTO, s_lista_operacoes_permitidas) then 
-			if r_orcamento.vendedor <> usuario then Response.Redirect("aviso.asp?id=" & ERR_ORCAMENTO_INVALIDO)
+	if alerta = "" then
+		if Not le_orcamento(orcamento_selecionado, r_orcamento, msg_erro) then 
+			alerta = msg_erro
+		else
+			if Trim(r_orcamento.loja) <> loja then Response.Redirect("aviso.asp?id=" & ERR_ORCAMENTO_INVALIDO)
+		'	TEM ACESSO A ESTE ORÇAMENTO?
+			if Not operacao_permitida(OP_LJA_CONSULTA_UNIVERSAL_PEDIDO_ORCAMENTO, s_lista_operacoes_permitidas) then 
+				if r_orcamento.vendedor <> usuario then Response.Redirect("aviso.asp?id=" & ERR_ORCAMENTO_INVALIDO)
+				end if
+			if Not le_orcamento_item(orcamento_selecionado, v_orcamento_item, msg_erro) then alerta = msg_erro
 			end if
-		if Not le_orcamento_item(orcamento_selecionado, v_orcamento_item, msg_erro) then alerta = msg_erro
-		end if
+		end if 'if alerta = ""
 
 	dim blnUsarMemorizacaoCompletaEnderecos
 	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
+
+	dim insert_request_guid
+	insert_request_guid = Trim(Request.Form("insert_request_guid"))
+
+	if alerta = "" then
+	'	TRATAMENTO P/ OS CASOS EM QUE: USUÁRIO ESTÁ TENTANDO USAR O BOTÃO VOLTAR, OCORREU DUPLO CLIQUE OU USUÁRIO ATUALIZOU A PÁGINA ENQUANTO AINDA ESTAVA PROCESSANDO (DUPLO ACIONAMENTO)
+	'	Esse tratamento está sendo feito através do campo insert_request_guid (t_PEDIDO.InsertRequestGuid), mas se esse campo estiver vazio, continua realizando o controle pelo método antigo
+	'	O tratamento usando o campo t_PEDIDO.InsertRequestGuid é feito dentro da transação para assegurar que não haverá problemas de acesso concorrente
+		if insert_request_guid = "" then
+			'Verifica se já virou pedido
+			if r_orcamento.st_orc_virou_pedido = 1 then Response.Redirect("aviso.asp?id=" & ERR_ORCAMENTO_INVALIDO)
+			end if
+		end if 'if alerta = ""
 
 	dim sBlocoNotasEndCob, sBlocoNotasEndEtg, sBlocoNotasMsg
 	sBlocoNotasEndCob = ""
@@ -1252,762 +1266,578 @@
 			cn.Execute(s)
 			end if
 
-		if Not cria_recordset_pessimista(t_CLIENTE, msg_erro) then
-		'	~~~~~~~~~~~~~~~~
-			cn.RollbackTrans
-		'	~~~~~~~~~~~~~~~~
-			Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
-			end if
+	'	TRATAMENTO P/ OS CASOS EM QUE: USUÁRIO ESTÁ TENTANDO USAR O BOTÃO VOLTAR, OCORREU DUPLO CLIQUE OU USUÁRIO ATUALIZOU A PÁGINA ENQUANTO AINDA ESTAVA PROCESSANDO (DUPLO ACIONAMENTO)
+	'	Esse tratamento está sendo feito através do campo insert_request_guid (t_PEDIDO.InsertRequestGuid), mas se esse campo estiver vazio, continua realizando o controle pelo método antigo
+	'	Realiza a verificação após obter o lock do registro de controle p/ assegurar que não haverá problemas de acesso concorrente
+		if insert_request_guid <> "" then
+			s = "SELECT pedido, vendedor, data_hora FROM t_PEDIDO WHERE (InsertRequestGuid = '" & insert_request_guid & "')"
+			set rs = cn.execute(s)
+			if Not rs.Eof then
+				alerta = "Este pré-pedido já virou o pedido nº " & Trim("" & rs("pedido")) & " em " & formata_data_hora(rs("data_hora"))
+				end if
+			if rs.State <> 0 then rs.Close
+			end if 'if insert_request_guid <> ""
 
-		s = "SELECT * FROM t_CLIENTE WHERE (id='" & r_orcamento.id_cliente & "')"
-		t_CLIENTE.Open s, cn
+		if alerta = "" then
+			if Not cria_recordset_pessimista(t_CLIENTE, msg_erro) then
+			'	~~~~~~~~~~~~~~~~
+				cn.RollbackTrans
+			'	~~~~~~~~~~~~~~~~
+				Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+				end if
 
-		for iv = LBound(vEmpresaAutoSplit) to UBound(vEmpresaAutoSplit)
-			if (vEmpresaAutoSplit(iv) <> 0) then
-				if Not (rs Is nothing) then
-					if rs.State <> 0 then rs.Close
-					set rs=nothing
-					end if
+			s = "SELECT * FROM t_CLIENTE WHERE (id='" & r_orcamento.id_cliente & "')"
+			t_CLIENTE.Open s, cn
+
+			for iv = LBound(vEmpresaAutoSplit) to UBound(vEmpresaAutoSplit)
+				if (vEmpresaAutoSplit(iv) <> 0) then
+					if Not (rs Is nothing) then
+						if rs.State <> 0 then rs.Close
+						set rs=nothing
+						end if
 		
-				if Not cria_recordset_pessimista(rs, msg_erro) then
-				'	~~~~~~~~~~~~~~~~
-					cn.RollbackTrans
-				'	~~~~~~~~~~~~~~~~
-					Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
-					end if
-
-			'	Controla a quantidade de pedidos no auto-split
-			'	pedido-base: indice_pedido=1
-			'	pedido-filhote 'A' => indice_pedido=2
-			'	pedido-filhote 'B' => indice_pedido=3
-			'	etc
-				indice_pedido = indice_pedido + 1
-				if indice_pedido = 1 then
-					id_pedido_temp = id_pedido_temp_base
-				else
-					id_pedido_temp = id_pedido_temp_base & gera_letra_pedido_filhote(indice_pedido-1)
-					end if
-
-				s = "SELECT * FROM t_PEDIDO WHERE pedido='X'"
-				rs.Open s, cn
-				rs.AddNew
-				rs("pedido")=id_pedido_temp
-				rs("loja")=loja
-				rs("data")=Date
-				rs("hora")=s_hora_pedido
-				if indice_pedido = 1 then
-				'	PEDIDO BASE
-				'	===========
-					if qtde_empresa_selecionada > 1 then rs("st_auto_split") = 1
-					if Trim("" & rs("st_pagto")) <> ST_PAGTO_NAO_PAGO then
-						rs("dt_st_pagto") = Date
-						rs("dt_hr_st_pagto") = Now
-						rs("usuario_st_pagto") = usuario
-						end if
-					rs("st_pagto")=ST_PAGTO_NAO_PAGO
-					rs("st_recebido")=s_recebido
-					rs("obs_1")=s_obs1
-					rs("obs_2")=s_obs2
-				'	Forma de Pagamento (nova versão)
-					rs("tipo_parcelamento")=CLng(rb_forma_pagto)
-					if rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA then
-						rs("av_forma_pagto") = CLng(op_av_forma_pagto)
-						rs("qtde_parcelas")=1
-					elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELA_UNICA then
-						rs("pu_forma_pagto") = CLng(op_pu_forma_pagto)
-						rs("pu_valor") = converte_numero(c_pu_valor)
-						rs("pu_vencto_apos") = CLng(c_pu_vencto_apos)
-						rs("qtde_parcelas")=1
-					elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_CARTAO then
-						rs("pc_qtde_parcelas") = CLng(c_pc_qtde)
-						rs("pc_valor_parcela") = converte_numero(c_pc_valor)
-						rs("qtde_parcelas")=CLng(c_pc_qtde)
-					elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA then
-						rs("pc_maquineta_qtde_parcelas") = CLng(c_pc_maquineta_qtde)
-						rs("pc_maquineta_valor_parcela") = converte_numero(c_pc_maquineta_valor)
-						rs("qtde_parcelas")=CLng(c_pc_maquineta_qtde)
-					elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
-						rs("pce_forma_pagto_entrada") = CLng(op_pce_entrada_forma_pagto)
-						rs("pce_forma_pagto_prestacao") = CLng(op_pce_prestacao_forma_pagto)
-						rs("pce_entrada_valor") = converte_numero(c_pce_entrada_valor)
-						rs("pce_prestacao_qtde") = CLng(c_pce_prestacao_qtde)
-						rs("pce_prestacao_valor") = converte_numero(c_pce_prestacao_valor)
-						rs("pce_prestacao_periodo") = CLng(c_pce_prestacao_periodo)
-					'	Entrada + Prestações
-						rs("qtde_parcelas")=CLng(c_pce_prestacao_qtde)+1
-					elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
-						rs("pse_forma_pagto_prim_prest") = CLng(op_pse_prim_prest_forma_pagto)
-						rs("pse_forma_pagto_demais_prest") = CLng(op_pse_demais_prest_forma_pagto)
-						rs("pse_prim_prest_valor") = converte_numero(c_pse_prim_prest_valor)
-						rs("pse_prim_prest_apos") = CLng(c_pse_prim_prest_apos)
-						rs("pse_demais_prest_qtde") = CLng(c_pse_demais_prest_qtde)
-						rs("pse_demais_prest_valor") = converte_numero(c_pse_demais_prest_valor)
-						rs("pse_demais_prest_periodo") = CLng(c_pse_demais_prest_periodo)
-					'	1ª prestação + Demais prestações
-						rs("qtde_parcelas")=CLng(c_pse_demais_prest_qtde)+1
-						end if
-					rs("forma_pagto")=s_forma_pagto
-					rs("vl_total_familia")=vl_total
-					if vl_total <= vl_aprov_auto_analise_credito then
-						rs("analise_credito")=Clng(COD_AN_CREDITO_OK)
-						rs("analise_credito_data")=Now
-						rs("analise_credito_usuario")="AUTOMÁTICO"
-					elseif (rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA) And (CStr(op_av_forma_pagto) = CStr(ID_FORMA_PAGTO_DEPOSITO)) then
-						rs("analise_credito")=Clng(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO)
-						rs("analise_credito_data")=Now
-						rs("analise_credito_usuario")="AUTOMÁTICO"
-					elseif (rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA) And (CStr(op_av_forma_pagto) = CStr(ID_FORMA_PAGTO_BOLETO_AV)) then
-						rs("analise_credito")=Clng(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)
-						rs("analise_credito_data")=Now
-						rs("analise_credito_usuario")="AUTOMÁTICO"
-						'OBSERVAÇÃO: no caso do 'parcelado com entrada' quando a entrada é 'Boleto AV', o pedido deve continuar sendo cadastrado com o status de análise de crédito
-						'seguindo a lógica já existente. Quando o depto de análise de crédito aprovar o pedido, irá se encarregar de alterar manualmente o pedido para
-						'"Crédito OK (aguardando pagto boleto AV)"
-					elseif Cstr(loja) = Cstr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) And (rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA) And (CStr(op_av_forma_pagto) = Cstr(ID_FORMA_PAGTO_DINHEIRO)) then
-						rs("analise_credito")=Clng(COD_AN_CREDITO_PENDENTE_VENDAS)
-						rs("analise_credito_data")=Now
-						rs("analise_credito_usuario")="AUTOMÁTICO"
-					elseif (rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA) then
-						rs("analise_credito")=Clng(COD_AN_CREDITO_PENDENTE_VENDAS)
-						rs("analise_credito_data")=Now
-						rs("analise_credito_usuario")="AUTOMÁTICO"
-						end if
-
-				'	CUSTO FINANCEIRO FORNECEDOR
-					rs("custoFinancFornecTipoParcelamento") = c_custoFinancFornecTipoParcelamento
-					rs("custoFinancFornecQtdeParcelas") = c_custoFinancFornecQtdeParcelas
-					rs("vl_total_NF") = vl_total_NF
-					rs("vl_total_RA") = vl_total_RA
-					rs("perc_RT") = perc_RT
-					rs("perc_desagio_RA") = perc_desagio_RA
-					rs("perc_limite_RA_sem_desagio") = perc_limite_RA_sem_desagio
-
-				else
-				'	PEDIDO FILHOTE
-				'	==============
-					rs("st_auto_split") = 1
-					rs("split_status") = 1
-					rs("split_data") = Date
-					rs("split_hora") = s_hora_pedido
-					rs("split_usuario") = ID_USUARIO_SISTEMA
-					rs("st_pagto")=""
-					rs("usuario_st_pagto")=""
-					rs("st_recebido")=""
-					rs("obs_1")=""
-					rs("obs_2")=""
-					rs("qtde_parcelas")=0
-					rs("forma_pagto")=""
-					end if
-
-			'	CAMPOS ARMAZENADOS TANTO NO PEDIDO-PAI QUANTO NO PEDIDO-FILHOTE
-				rs("st_orc_virou_pedido")=1
-				rs("orcamento")=orcamento_selecionado
-				rs("orcamentista")=r_orcamento.orcamentista
-
-				rs("id_cliente")=r_orcamento.id_cliente
-				rs("midia")=r_orcamento.midia
-				rs("servicos")=""
-				rs("vendedor")=r_orcamento.vendedor
-				rs("usuario_cadastro")=usuario
-				rs("st_entrega")=""
-				if Trim("" & r_orcamento.st_etg_imediata) <> Trim(s_etg_imediata) then
-					rs("st_etg_imediata")=CLng(s_etg_imediata)
-					rs("etg_imediata_data")=Now
-					rs("etg_imediata_usuario")=usuario
-				else
-					rs("st_etg_imediata")=r_orcamento.st_etg_imediata
-					rs("etg_imediata_data")=r_orcamento.etg_imediata_data
-					rs("etg_imediata_usuario")=r_orcamento.etg_imediata_usuario
-					end if
-
-				if CLng(s_etg_imediata) = CLng(COD_ETG_IMEDIATA_NAO) then
-					rs("PrevisaoEntregaData") = StrToDate(c_data_previsao_entrega)
-					if (Trim("" & r_orcamento.st_etg_imediata) <> Trim(s_etg_imediata)) Or (formata_data(r_orcamento.PrevisaoEntregaData) <> formata_data(StrToDate(c_data_previsao_entrega))) then
-					'	SE A DATA DA PREVISÃO DE ENTREGA FOI ALTERADA EM RELAÇÃO AO QUE CONSTAVA NO PRÉ-PEDIDO, ATUALIZA O USUÁRIO RESPONSÁVEL
-						rs("PrevisaoEntregaUsuarioUltAtualiz") = usuario
-						rs("PrevisaoEntregaDtHrUltAtualiz") = Now
-					else
-					'	SE A DATA DA PREVISÃO DE ENTREGA PERMANECE A MESMA QUE CONSTAVA NO PRÉ-PEDIDO, MANTÉM O MESMO USUÁRIO RESPONSÁVEL
-						rs("PrevisaoEntregaUsuarioUltAtualiz") = r_orcamento.PrevisaoEntregaUsuarioUltAtualiz
-						rs("PrevisaoEntregaDtHrUltAtualiz") = r_orcamento.PrevisaoEntregaDtHrUltAtualiz
-						end if
-					end if
-
-				if Trim("" & r_orcamento.StBemUsoConsumo) <> Trim(s_bem_uso_consumo) then
-					rs("StBemUsoConsumo")=CLng(s_bem_uso_consumo)
-				else
-					rs("StBemUsoConsumo")=r_orcamento.StBemUsoConsumo
-					end if
-
-				if s_instalador_instala <> "" then
-					rs("InstaladorInstalaStatus")=CLng(s_instalador_instala)
-					rs("InstaladorInstalaUsuarioUltAtualiz")=usuario
-					rs("InstaladorInstalaDtHrUltAtualiz")=Now
-					end if
-
-				rs("NFe_texto_constar")=s_nf_texto
-				rs("NFe_xPed")=s_num_pedido_compra
-
-				rs("indicador") = r_orcamento.orcamentista
-
-				rs("GarantiaIndicadorStatus") = CLng(rb_garantia_indicador)
-				rs("GarantiaIndicadorUsuarioUltAtualiz") = usuario
-				rs("GarantiaIndicadorDtHrUltAtualiz") = Now
-
-				rs("st_end_entrega") = r_orcamento.st_end_entrega
-				if CLng(r_orcamento.st_end_entrega) <> 0 then
-					rs("EndEtg_endereco") = r_orcamento.EndEtg_endereco
-					rs("EndEtg_endereco_numero") = r_orcamento.EndEtg_endereco_numero
-					rs("EndEtg_endereco_complemento") = r_orcamento.EndEtg_endereco_complemento
-					rs("EndEtg_bairro") = r_orcamento.EndEtg_bairro
-					rs("EndEtg_cidade") = r_orcamento.EndEtg_cidade
-					rs("EndEtg_uf") = r_orcamento.EndEtg_uf
-					rs("EndEtg_cep") = r_orcamento.EndEtg_cep
-					rs("EndEtg_cod_justificativa") = r_orcamento.EndEtg_cod_justificativa
-					
-					if blnUsarMemorizacaoCompletaEnderecos then
-						rs("EndEtg_email") = r_orcamento.EndEtg_email
-						rs("EndEtg_email_xml") = r_orcamento.EndEtg_email_xml
-						rs("EndEtg_nome") = r_orcamento.EndEtg_nome
-						rs("EndEtg_ddd_res") = r_orcamento.EndEtg_ddd_res
-						rs("EndEtg_tel_res") = r_orcamento.EndEtg_tel_res
-						rs("EndEtg_ddd_com") = r_orcamento.EndEtg_ddd_com
-						rs("EndEtg_tel_com") = r_orcamento.EndEtg_tel_com
-						rs("EndEtg_ramal_com") = r_orcamento.EndEtg_ramal_com
-						rs("EndEtg_ddd_cel") = r_orcamento.EndEtg_ddd_cel
-						rs("EndEtg_tel_cel") = r_orcamento.EndEtg_tel_cel
-						rs("EndEtg_ddd_com_2") = r_orcamento.EndEtg_ddd_com_2
-						rs("EndEtg_tel_com_2") = r_orcamento.EndEtg_tel_com_2
-						rs("EndEtg_ramal_com_2") = r_orcamento.EndEtg_ramal_com_2
-						rs("EndEtg_tipo_pessoa") = r_orcamento.EndEtg_tipo_pessoa
-						rs("EndEtg_cnpj_cpf") = r_orcamento.EndEtg_cnpj_cpf
-						rs("EndEtg_contribuinte_icms_status") = converte_numero(r_orcamento.EndEtg_contribuinte_icms_status)
-						rs("EndEtg_produtor_rural_status") = converte_numero(r_orcamento.EndEtg_produtor_rural_status)
-						rs("EndEtg_ie") = r_orcamento.EndEtg_ie
-						rs("EndEtg_rg") = r_orcamento.EndEtg_rg
-						end if
-					
-					sBlocoNotasEndEtg = formata_endereco(Trim("" & rs("EndEtg_endereco")), Trim("" & rs("EndEtg_endereco_numero")), Trim("" & rs("EndEtg_endereco_complemento")), Trim("" & rs("EndEtg_bairro")), Trim("" & rs("EndEtg_cidade")), Trim("" & rs("EndEtg_uf")), Trim("" & rs("EndEtg_cep")))
-					end if
-
-				'OBTENÇÃO DE TRANSPORTADORA QUE ATENDA AO CEP INFORMADO, SE HOUVER
-				if sTranspSelAutoTransportadoraId <> "" then
-					rs("transportadora_id") = sTranspSelAutoTransportadoraId
-					rs("transportadora_data") = Now
-					rs("transportadora_usuario") = usuario
-					rs("transportadora_selecao_auto_status") = iTranspSelAutoStatus
-					rs("transportadora_selecao_auto_cep") = sTranspSelAutoCep
-					rs("transportadora_selecao_auto_transportadora") = sTranspSelAutoTransportadoraId
-					rs("transportadora_selecao_auto_tipo_endereco") = iTranspSelAutoTipoEndereco
-					rs("transportadora_selecao_auto_data_hora") = Now
-					end if
-
-				'01/02/2018: os pedidos do Arclube usam o RA para incluir o valor do frete e, portanto, não devem ter deságio do RA
-				if Cstr(loja) <> Cstr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) then rs("perc_desagio_RA_liquida") = r_orcamento.perc_desagio_RA_liquida
-
-				rs("permite_RA_status") = r_orcamento.permite_RA_status
-
-				if (r_orcamento.permite_RA_status = 1) then
-					if blnTemRA then
-						rs("opcao_possui_RA") = "S"
-					else
-						rs("opcao_possui_RA") = "N"
-						end if
-				else
-					rs("opcao_possui_RA") = "-" ' Não se aplica
-					end if
-
-				rs("st_violado_permite_RA_status") = r_orcamento.st_violado_permite_RA_status
-				rs("dt_hr_violado_permite_RA_status") = r_orcamento.dt_hr_violado_permite_RA_status
-				rs("usuario_violado_permite_RA_status") = r_orcamento.usuario_violado_permite_RA_status
-
-				rs("endereco_memorizado_status") = 1
-
-				if blnUsarMemorizacaoCompletaEnderecos and r_orcamento.st_memorizacao_completa_enderecos <> 0 then
-                    'Definido em 20/03/2020: o orcamento que foi criado sem memorização continua sua vida sem memorização
-					rs("st_memorizacao_completa_enderecos") = r_orcamento.st_memorizacao_completa_enderecos
-				    rs("endereco_logradouro") = r_orcamento.endereco_logradouro
-				    rs("endereco_bairro") = r_orcamento.endereco_bairro
-				    rs("endereco_cidade") = r_orcamento.endereco_cidade
-				    rs("endereco_uf") = r_orcamento.endereco_uf
-				    rs("endereco_cep") = r_orcamento.endereco_cep
-				    rs("endereco_numero") = r_orcamento.endereco_numero
-				    rs("endereco_complemento") = r_orcamento.endereco_complemento
-					rs("endereco_email") = r_orcamento.endereco_email
-					rs("endereco_email_xml") = r_orcamento.endereco_email_xml
-					rs("endereco_nome") = r_orcamento.endereco_nome
-					rs("endereco_ddd_res") = r_orcamento.endereco_ddd_res
-					rs("endereco_tel_res") = r_orcamento.endereco_tel_res
-					rs("endereco_ddd_com") = r_orcamento.endereco_ddd_com
-					rs("endereco_tel_com") = r_orcamento.endereco_tel_com
-					rs("endereco_ramal_com") = r_orcamento.endereco_ramal_com
-					rs("endereco_ddd_cel") = r_orcamento.endereco_ddd_cel
-					rs("endereco_tel_cel") = r_orcamento.endereco_tel_cel
-					rs("endereco_ddd_com_2") = r_orcamento.endereco_ddd_com_2
-					rs("endereco_tel_com_2") = r_orcamento.endereco_tel_com_2
-					rs("endereco_ramal_com_2") = r_orcamento.endereco_ramal_com_2
-					rs("endereco_tipo_pessoa") = r_orcamento.endereco_tipo_pessoa
-					rs("endereco_cnpj_cpf") = r_orcamento.endereco_cnpj_cpf
-					rs("endereco_contribuinte_icms_status") = r_orcamento.endereco_contribuinte_icms_status
-					rs("endereco_produtor_rural_status") = r_orcamento.endereco_produtor_rural_status
-					rs("endereco_ie") = r_orcamento.endereco_ie
-					rs("endereco_rg") = r_orcamento.endereco_rg
-					rs("endereco_contato") = r_orcamento.endereco_contato
-                else
-					rs("st_memorizacao_completa_enderecos") = 0
-                    'estes campos são do rs("endereco_memorizado_status") = 1
-				    rs("endereco_logradouro") = Trim("" & t_CLIENTE("endereco"))
-				    rs("endereco_bairro") = Trim("" & t_CLIENTE("bairro"))
-				    rs("endereco_cidade") = Trim("" & t_CLIENTE("cidade"))
-				    rs("endereco_uf") = Trim("" & t_CLIENTE("uf"))
-				    rs("endereco_cep") = Trim("" & t_CLIENTE("cep"))
-				    rs("endereco_numero") = Trim("" & t_CLIENTE("endereco_numero"))
-				    rs("endereco_complemento") = Trim("" & t_CLIENTE("endereco_complemento"))
-					end if
-
-				sBlocoNotasEndCob = formata_endereco(Trim("" & rs("endereco_logradouro")), Trim("" & rs("endereco_numero")), Trim("" & rs("endereco_complemento")), Trim("" & rs("endereco_bairro")), Trim("" & rs("endereco_cidade")), Trim("" & rs("endereco_uf")), Trim("" & rs("endereco_cep")))
-
-				rs("plataforma_origem_pedido") = COD_PLATAFORMA_ORIGEM_PEDIDO__ERP
-
-				rs("sistema_responsavel_cadastro") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
-				rs("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
-
-				rs("id_nfe_emitente") = vEmpresaAutoSplit(iv)
-
-				rs.Update
-				if Err <> 0 then
-				'	~~~~~~~~~~~~~~~~
-					cn.RollbackTrans
-				'	~~~~~~~~~~~~~~~~
-					Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
-					end if
-
-				if rs.State <> 0 then rs.Close
-
-				sequencia_item = 0
-				total_estoque_vendido=0
-				total_estoque_sem_presenca=0
-				s_log_item_autosplit = ""
-				for iRegra=LBound(vProdRegra) to UBound(vProdRegra)
-					if Trim(vProdRegra(iRegra).produto) <> "" then
-						for iCD=LBound(vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD) to UBound(vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD)
-							if (vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).id_nfe_emitente = vEmpresaAutoSplit(iv)) And (vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.qtde_solicitada > 0) then
-							'	LOCALIZA O PRODUTO EM V_ITEM
-								indice_item = -1
-								for j=LBound(v_item) to UBound(v_item)
-									if (Trim("" & v_item(j).fabricante) = vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.fabricante) And _
-										(Trim("" & v_item(j).produto) = vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.produto) then
-										indice_item = j
-										exit for
-										end if
-									next
-
-								if indice_item > -1 then
-									sequencia_item = sequencia_item + 1
-									with v_item(indice_item)
-										s="SELECT * FROM t_PEDIDO_ITEM WHERE pedido='X'"
-										rs.Open s, cn
-										rs.AddNew
-										rs("pedido") = id_pedido_temp
-										rs("fabricante") = .fabricante
-										rs("produto") = .produto
-										rs("qtde") = vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.qtde_solicitada
-										rs("desc_dado") = .desc_dado
-										rs("preco_venda") = .preco_venda
-										rs("preco_NF") = .preco_NF
-										rs("preco_fabricante") = .preco_fabricante
-										rs("vl_custo2") = .vl_custo2
-										rs("preco_lista") = .preco_lista
-										rs("margem") = .margem
-										rs("desc_max") = .desc_max
-										rs("comissao") = .comissao
-										rs("descricao") = .descricao
-										rs("descricao_html") = .descricao_html
-										rs("ean") = .ean
-										rs("grupo") = .grupo
-                                        rs("subgrupo") = .subgrupo
-                                        rs("peso") = .peso
-										rs("qtde_volumes") = .qtde_volumes
-										rs("abaixo_min_status") = .abaixo_min_status
-										rs("abaixo_min_autorizacao") = .abaixo_min_autorizacao
-										rs("abaixo_min_autorizador") = .abaixo_min_autorizador
-										rs("abaixo_min_superv_autorizador") = .abaixo_min_superv_autorizador
-										rs("sequencia") = sequencia_item
-										rs("markup_fabricante") = .markup_fabricante
-										rs("custoFinancFornecCoeficiente") = .custoFinancFornecCoeficiente
-										rs("custoFinancFornecPrecoListaBase") = .custoFinancFornecPrecoListaBase
-										rs("cubagem") = .cubagem
-										rs("ncm") = .ncm
-										rs("cst") = .cst
-										rs("descontinuado") = .descontinuado
-										rs("cod_produto_xml_fabricante") = .cod_produto_xml_fabricante
-										rs("cod_produto_alfanum_fabricante") = .cod_produto_alfanum_fabricante
-										rs("potencia_valor") = .potencia_valor
-										rs("id_unidade_potencia") = .id_unidade_potencia
-										rs.Update
-										if Err <> 0 then
-										'	~~~~~~~~~~~~~~~~
-											cn.RollbackTrans
-										'	~~~~~~~~~~~~~~~~
-											Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
-											end if
-										if rs.State <> 0 then rs.Close
-
-										if vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.qtde_solicitada > vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.qtde_estoque then
-											qtde_spe = vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.qtde_solicitada - vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.qtde_estoque
-										else
-											qtde_spe = 0
-											end if
-
-										if Not ESTOQUE_produto_saida_v2(usuario, id_pedido_temp, vEmpresaAutoSplit(iv), .fabricante, .produto, vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.qtde_solicitada, qtde_spe, qtde_estoque_vendido_aux, qtde_estoque_sem_presenca_aux, msg_erro) then
-										'	~~~~~~~~~~~~~~~~
-											cn.RollbackTrans
-										'	~~~~~~~~~~~~~~~~
-											Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_MOVIMENTO_ESTOQUE)
-											end if
-
-										.qtde_estoque_vendido = .qtde_estoque_vendido + qtde_estoque_vendido_aux
-										.qtde_estoque_sem_presenca = .qtde_estoque_sem_presenca + qtde_estoque_sem_presenca_aux
-
-										total_estoque_vendido = total_estoque_vendido + qtde_estoque_vendido_aux
-										total_estoque_sem_presenca = total_estoque_sem_presenca + qtde_estoque_sem_presenca_aux
-
-									'	LOG
-										if s_log_item_autosplit <> "" then s_log_item_autosplit = s_log_item_autosplit & chr(13)
-										s_log_item_autosplit = s_log_item_autosplit & "(" & .fabricante & ")" & .produto & ":" & _
-													" Qtde Solicitada = " & vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.qtde_solicitada & "," & _
-													" Qtde Sem Presença Autorizada = " & Cstr(qtde_spe) & "," & _
-													" Qtde Estoque Vendido = " & Cstr(qtde_estoque_vendido_aux) & "," & _
-													" Qtde Sem Presença = " & Cstr(qtde_estoque_sem_presenca_aux)
-										end with
-									end if 'if indice_item > -1
-								end if 'if (vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).id_nfe_emitente = vEmpresaAutoSplit(iv)) And (vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.qtde_solicitada > 0)
-							next 'for iCD=LBound(vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD) to UBound(vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD)
-						end if 'if Trim(vProdRegra(iRegra).produto) <> ""
-					next 'for iRegra=LBound(vProdRegra) to UBound(vProdRegra)
-
-				if indice_pedido = 1 then
-					if Not gera_num_pedido(id_pedido_base, msg_erro) then
+					if Not cria_recordset_pessimista(rs, msg_erro) then
 					'	~~~~~~~~~~~~~~~~
 						cn.RollbackTrans
 					'	~~~~~~~~~~~~~~~~
-						Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_GERAR_NSU)
+						Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 						end if
-					id_pedido = id_pedido_base
-				else
-					id_pedido = id_pedido_base & COD_SEPARADOR_FILHOTE & gera_letra_pedido_filhote(indice_pedido-1)
-					end if
 
-			'	LOG
-				if Trim("" & vLogAutoSplit(UBound(vLogAutoSplit))) <> "" then redim preserve vLogAutoSplit(UBound(vLogAutoSplit)+1)
-				vLogAutoSplit(UBound(vLogAutoSplit)) = id_pedido & " (" & obtem_apelido_empresa_NFe_emitente(vEmpresaAutoSplit(iv)) & ")" & chr(13) & _
-														s_log_item_autosplit
-
-				s="UPDATE t_PEDIDO SET pedido='" & id_pedido & "' WHERE pedido='" & id_pedido_temp & "'"
-				cn.Execute(s)
-
-				s="UPDATE t_PEDIDO_ITEM SET pedido='" & id_pedido & "' WHERE pedido='" & id_pedido_temp & "'"
-				cn.Execute(s)
-
-				s="UPDATE t_ESTOQUE_MOVIMENTO SET pedido='" & id_pedido & "' WHERE pedido='" & id_pedido_temp & "'"
-				cn.Execute(s)
-
-				s="UPDATE t_ORCAMENTO SET st_orc_virou_pedido=1, pedido='" & id_pedido & "' WHERE (orcamento='" & orcamento_selecionado & "') AND (st_orc_virou_pedido=0)"
-				cn.Execute(s)
-
-				s="UPDATE t_ESTOQUE_LOG SET pedido_estoque_origem='" & id_pedido & "' WHERE pedido_estoque_origem='" & id_pedido_temp & "'"
-				cn.Execute(s)
-
-				s="UPDATE t_ESTOQUE_LOG SET pedido_estoque_destino='" & id_pedido & "' WHERE pedido_estoque_destino='" & id_pedido_temp & "'"
-				cn.Execute(s)
-
-				if indice_pedido = 1 then
-				'	INDICADOR: SE ESTE PEDIDO É COM INDICADOR E O CLIENTE AINDA NÃO TEM UM INDICADOR NO CADASTRO, ENTÃO CADASTRA ESTE.
-					if Trim(r_orcamento.orcamentista) <> "" then
-						if Trim(r_cliente.indicador) = "" then
-							s="UPDATE t_CLIENTE SET indicador='" & Trim(r_orcamento.orcamentista) & "' WHERE (id='" & r_orcamento.id_cliente & "')"
-							cn.Execute(s)
-							s_log_cliente_indicador = "Cadastrado o indicador '" & Trim(r_orcamento.orcamentista) & "' no cliente id=" & r_orcamento.id_cliente
-							end if
-						end if
-					end if
-
-		'		STATUS DE ENTREGA
-				if total_estoque_vendido = 0 then
-					s = ST_ENTREGA_ESPERAR
-				elseif total_estoque_sem_presenca = 0 then
-					s = ST_ENTREGA_SEPARAR
-				else
-					s = ST_ENTREGA_SPLIT_POSSIVEL
-					end if
-		
-				s = "UPDATE t_PEDIDO SET st_entrega='" & s & "' WHERE pedido='" & id_pedido & "'"
-				cn.Execute(s)
-
-				if Not calcula_total_RA_liquido_BD(id_pedido, vl_total_RA_liquido, msg_erro) then
-				'	~~~~~~~~~~~~~~~~
-					cn.RollbackTrans
-				'	~~~~~~~~~~~~~~~~
-					Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
-					end if
-
-				if indice_pedido = 1 then
-					s = "SELECT * FROM t_PEDIDO WHERE (pedido='" & id_pedido & "')"
-					if rs.State <> 0 then rs.Close
-					rs.open s, cn
-					if rs.Eof then
-						alerta = "Falha ao consultar o registro do novo pedido (" & id_pedido & ")"
+				'	Controla a quantidade de pedidos no auto-split
+				'	pedido-base: indice_pedido=1
+				'	pedido-filhote 'A' => indice_pedido=2
+				'	pedido-filhote 'B' => indice_pedido=3
+				'	etc
+					indice_pedido = indice_pedido + 1
+					if indice_pedido = 1 then
+						id_pedido_temp = id_pedido_temp_base
 					else
-						rs("vl_total_RA_liquido") = vl_total_RA_liquido
-						rs("qtde_parcelas_desagio_RA") = 0
-						if vl_total_RA <> 0 then
-							rs("st_tem_desagio_RA") = 1
-						else
-							rs("st_tem_desagio_RA") = 0
-							end if
-						rs.Update
+						id_pedido_temp = id_pedido_temp_base & gera_letra_pedido_filhote(indice_pedido-1)
 						end if
-					end if
 
-				if indice_pedido = 1 then
-			'		SENHAS DE AUTORIZAÇÃO PARA DESCONTO SUPERIOR
-					for k = Lbound(v_desconto) to Ubound(v_desconto)
-						if Trim(v_desconto(k)) <> "" then
-							s = "SELECT * FROM t_DESCONTO" & _
-								" WHERE (usado_status=0)" & _
-								" AND (cancelado_status=0)" & _
-								" AND (id='" & Trim(v_desconto(k)) & "')"
-							if rs.State <> 0 then rs.Close
-							rs.open s, cn
-							if rs.Eof then
-								alerta = "Senha de autorização para desconto superior não encontrado."
-								exit for
-							else
-								rs("usado_status") = 1
-								rs("usado_data") = Now
-								rs("vendedor") = r_orcamento.vendedor
-								rs("usado_usuario") = usuario
-								rs.Update
-								if Err <> 0 then
-								'	~~~~~~~~~~~~~~~~
-									cn.RollbackTrans
-								'	~~~~~~~~~~~~~~~~
-									Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
-									end if
-								end if
+					s = "SELECT * FROM t_PEDIDO WHERE pedido='X'"
+					rs.Open s, cn
+					rs.AddNew
+					rs("pedido")=id_pedido_temp
+					rs("loja")=loja
+					rs("data")=Date
+					rs("hora")=s_hora_pedido
+					if indice_pedido = 1 then
+					'	PEDIDO BASE
+					'	===========
+						if qtde_empresa_selecionada > 1 then rs("st_auto_split") = 1
+						if insert_request_guid <> "" then rs("InsertRequestGuid") = "{" & insert_request_guid & "}"
+						if Trim("" & rs("st_pagto")) <> ST_PAGTO_NAO_PAGO then
+							rs("dt_st_pagto") = Date
+							rs("dt_hr_st_pagto") = Now
+							rs("usuario_st_pagto") = usuario
 							end if
-						next
-					end if
+						rs("st_pagto")=ST_PAGTO_NAO_PAGO
+						rs("st_recebido")=s_recebido
+						rs("obs_1")=s_obs1
+						rs("obs_2")=s_obs2
+					'	Forma de Pagamento (nova versão)
+						rs("tipo_parcelamento")=CLng(rb_forma_pagto)
+						if rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA then
+							rs("av_forma_pagto") = CLng(op_av_forma_pagto)
+							rs("qtde_parcelas")=1
+						elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELA_UNICA then
+							rs("pu_forma_pagto") = CLng(op_pu_forma_pagto)
+							rs("pu_valor") = converte_numero(c_pu_valor)
+							rs("pu_vencto_apos") = CLng(c_pu_vencto_apos)
+							rs("qtde_parcelas")=1
+						elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_CARTAO then
+							rs("pc_qtde_parcelas") = CLng(c_pc_qtde)
+							rs("pc_valor_parcela") = converte_numero(c_pc_valor)
+							rs("qtde_parcelas")=CLng(c_pc_qtde)
+						elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA then
+							rs("pc_maquineta_qtde_parcelas") = CLng(c_pc_maquineta_qtde)
+							rs("pc_maquineta_valor_parcela") = converte_numero(c_pc_maquineta_valor)
+							rs("qtde_parcelas")=CLng(c_pc_maquineta_qtde)
+						elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
+							rs("pce_forma_pagto_entrada") = CLng(op_pce_entrada_forma_pagto)
+							rs("pce_forma_pagto_prestacao") = CLng(op_pce_prestacao_forma_pagto)
+							rs("pce_entrada_valor") = converte_numero(c_pce_entrada_valor)
+							rs("pce_prestacao_qtde") = CLng(c_pce_prestacao_qtde)
+							rs("pce_prestacao_valor") = converte_numero(c_pce_prestacao_valor)
+							rs("pce_prestacao_periodo") = CLng(c_pce_prestacao_periodo)
+						'	Entrada + Prestações
+							rs("qtde_parcelas")=CLng(c_pce_prestacao_qtde)+1
+						elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
+							rs("pse_forma_pagto_prim_prest") = CLng(op_pse_prim_prest_forma_pagto)
+							rs("pse_forma_pagto_demais_prest") = CLng(op_pse_demais_prest_forma_pagto)
+							rs("pse_prim_prest_valor") = converte_numero(c_pse_prim_prest_valor)
+							rs("pse_prim_prest_apos") = CLng(c_pse_prim_prest_apos)
+							rs("pse_demais_prest_qtde") = CLng(c_pse_demais_prest_qtde)
+							rs("pse_demais_prest_valor") = converte_numero(c_pse_demais_prest_valor)
+							rs("pse_demais_prest_periodo") = CLng(c_pse_demais_prest_periodo)
+						'	1ª prestação + Demais prestações
+							rs("qtde_parcelas")=CLng(c_pse_demais_prest_qtde)+1
+							end if
+						rs("forma_pagto")=s_forma_pagto
+						rs("vl_total_familia")=vl_total
+						if vl_total <= vl_aprov_auto_analise_credito then
+							rs("analise_credito")=Clng(COD_AN_CREDITO_OK)
+							rs("analise_credito_data")=Now
+							rs("analise_credito_usuario")="AUTOMÁTICO"
+						elseif (rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA) And (CStr(op_av_forma_pagto) = CStr(ID_FORMA_PAGTO_DEPOSITO)) then
+							rs("analise_credito")=Clng(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO)
+							rs("analise_credito_data")=Now
+							rs("analise_credito_usuario")="AUTOMÁTICO"
+						elseif (rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA) And (CStr(op_av_forma_pagto) = CStr(ID_FORMA_PAGTO_BOLETO_AV)) then
+							rs("analise_credito")=Clng(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)
+							rs("analise_credito_data")=Now
+							rs("analise_credito_usuario")="AUTOMÁTICO"
+							'OBSERVAÇÃO: no caso do 'parcelado com entrada' quando a entrada é 'Boleto AV', o pedido deve continuar sendo cadastrado com o status de análise de crédito
+							'seguindo a lógica já existente. Quando o depto de análise de crédito aprovar o pedido, irá se encarregar de alterar manualmente o pedido para
+							'"Crédito OK (aguardando pagto boleto AV)"
+						elseif Cstr(loja) = Cstr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) And (rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA) And (CStr(op_av_forma_pagto) = Cstr(ID_FORMA_PAGTO_DINHEIRO)) then
+							rs("analise_credito")=Clng(COD_AN_CREDITO_PENDENTE_VENDAS)
+							rs("analise_credito_data")=Now
+							rs("analise_credito_usuario")="AUTOMÁTICO"
+						elseif (rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA) then
+							rs("analise_credito")=Clng(COD_AN_CREDITO_PENDENTE_VENDAS)
+							rs("analise_credito_data")=Now
+							rs("analise_credito_usuario")="AUTOMÁTICO"
+							end if
 
-				if indice_pedido = 1 then
-					if alerta = "" then
-					'	VERIFICA SE O ENDEREÇO JÁ FOI USADO ANTERIORMENTE POR OUTRO CLIENTE (POSSÍVEL FRAUDE)
-					'	ENDEREÇO DO CADASTRO
-					'	====================
-					'	1) VERIFICA SE O ENDEREÇO USADO É O DO PARCEIRO
-						if r_orcamento.orcamentista <> "" then
-							if isEnderecoIgual(cliente__endereco, cliente__endereco_numero, cliente__cep, r_orcamentista_e_indicador.endereco, r_orcamentista_e_indicador.endereco_numero, r_orcamentista_e_indicador.cep) then
-								blnAnEnderecoCadClienteUsaEndParceiro = True
-								blnAnalisarEndereco = True
+					'	CUSTO FINANCEIRO FORNECEDOR
+						rs("custoFinancFornecTipoParcelamento") = c_custoFinancFornecTipoParcelamento
+						rs("custoFinancFornecQtdeParcelas") = c_custoFinancFornecQtdeParcelas
+						rs("vl_total_NF") = vl_total_NF
+						rs("vl_total_RA") = vl_total_RA
+						rs("perc_RT") = perc_RT
+						rs("perc_desagio_RA") = perc_desagio_RA
+						rs("perc_limite_RA_sem_desagio") = perc_limite_RA_sem_desagio
+
+					else
+					'	PEDIDO FILHOTE
+					'	==============
+						rs("st_auto_split") = 1
+						rs("split_status") = 1
+						rs("split_data") = Date
+						rs("split_hora") = s_hora_pedido
+						rs("split_usuario") = ID_USUARIO_SISTEMA
+						rs("st_pagto")=""
+						rs("usuario_st_pagto")=""
+						rs("st_recebido")=""
+						rs("obs_1")=""
+						rs("obs_2")=""
+						rs("qtde_parcelas")=0
+						rs("forma_pagto")=""
+						end if
+
+				'	CAMPOS ARMAZENADOS TANTO NO PEDIDO-PAI QUANTO NO PEDIDO-FILHOTE
+					rs("st_orc_virou_pedido")=1
+					rs("orcamento")=orcamento_selecionado
+					rs("orcamentista")=r_orcamento.orcamentista
+
+					rs("id_cliente")=r_orcamento.id_cliente
+					rs("midia")=r_orcamento.midia
+					rs("servicos")=""
+					rs("vendedor")=r_orcamento.vendedor
+					rs("usuario_cadastro")=usuario
+					rs("st_entrega")=""
+					if Trim("" & r_orcamento.st_etg_imediata) <> Trim(s_etg_imediata) then
+						rs("st_etg_imediata")=CLng(s_etg_imediata)
+						rs("etg_imediata_data")=Now
+						rs("etg_imediata_usuario")=usuario
+					else
+						rs("st_etg_imediata")=r_orcamento.st_etg_imediata
+						rs("etg_imediata_data")=r_orcamento.etg_imediata_data
+						rs("etg_imediata_usuario")=r_orcamento.etg_imediata_usuario
+						end if
+
+					if CLng(s_etg_imediata) = CLng(COD_ETG_IMEDIATA_NAO) then
+						rs("PrevisaoEntregaData") = StrToDate(c_data_previsao_entrega)
+						if (Trim("" & r_orcamento.st_etg_imediata) <> Trim(s_etg_imediata)) Or (formata_data(r_orcamento.PrevisaoEntregaData) <> formata_data(StrToDate(c_data_previsao_entrega))) then
+						'	SE A DATA DA PREVISÃO DE ENTREGA FOI ALTERADA EM RELAÇÃO AO QUE CONSTAVA NO PRÉ-PEDIDO, ATUALIZA O USUÁRIO RESPONSÁVEL
+							rs("PrevisaoEntregaUsuarioUltAtualiz") = usuario
+							rs("PrevisaoEntregaDtHrUltAtualiz") = Now
+						else
+						'	SE A DATA DA PREVISÃO DE ENTREGA PERMANECE A MESMA QUE CONSTAVA NO PRÉ-PEDIDO, MANTÉM O MESMO USUÁRIO RESPONSÁVEL
+							rs("PrevisaoEntregaUsuarioUltAtualiz") = r_orcamento.PrevisaoEntregaUsuarioUltAtualiz
+							rs("PrevisaoEntregaDtHrUltAtualiz") = r_orcamento.PrevisaoEntregaDtHrUltAtualiz
+							end if
+						end if
+
+					if Trim("" & r_orcamento.StBemUsoConsumo) <> Trim(s_bem_uso_consumo) then
+						rs("StBemUsoConsumo")=CLng(s_bem_uso_consumo)
+					else
+						rs("StBemUsoConsumo")=r_orcamento.StBemUsoConsumo
+						end if
+
+					if s_instalador_instala <> "" then
+						rs("InstaladorInstalaStatus")=CLng(s_instalador_instala)
+						rs("InstaladorInstalaUsuarioUltAtualiz")=usuario
+						rs("InstaladorInstalaDtHrUltAtualiz")=Now
+						end if
+
+					rs("NFe_texto_constar")=s_nf_texto
+					rs("NFe_xPed")=s_num_pedido_compra
+
+					rs("indicador") = r_orcamento.orcamentista
+
+					rs("GarantiaIndicadorStatus") = CLng(rb_garantia_indicador)
+					rs("GarantiaIndicadorUsuarioUltAtualiz") = usuario
+					rs("GarantiaIndicadorDtHrUltAtualiz") = Now
+
+					rs("st_end_entrega") = r_orcamento.st_end_entrega
+					if CLng(r_orcamento.st_end_entrega) <> 0 then
+						rs("EndEtg_endereco") = r_orcamento.EndEtg_endereco
+						rs("EndEtg_endereco_numero") = r_orcamento.EndEtg_endereco_numero
+						rs("EndEtg_endereco_complemento") = r_orcamento.EndEtg_endereco_complemento
+						rs("EndEtg_bairro") = r_orcamento.EndEtg_bairro
+						rs("EndEtg_cidade") = r_orcamento.EndEtg_cidade
+						rs("EndEtg_uf") = r_orcamento.EndEtg_uf
+						rs("EndEtg_cep") = r_orcamento.EndEtg_cep
+						rs("EndEtg_cod_justificativa") = r_orcamento.EndEtg_cod_justificativa
 					
-								if Not fin_gera_nsu(T_PEDIDO_ANALISE_ENDERECO, intNsuPai, msg_erro) then
-									alerta = "FALHA AO GERAR NSU PARA O NOVO REGISTRO (" & msg_erro & ")"
-								else
-									s = "SELECT * FROM t_PEDIDO_ANALISE_ENDERECO WHERE (id = -1)"
-									if rs.State <> 0 then rs.Close
-									rs.Open s, cn
-									rs.AddNew
-									rs("id") = intNsuPai
-									rs("pedido") = id_pedido
-									rs("id_cliente") = r_orcamento.id_cliente
-									rs("tipo_endereco") = COD_PEDIDO_AN_ENDERECO__CAD_CLIENTE
-									rs("endereco_logradouro") = cliente__endereco
-									rs("endereco_bairro") = cliente__bairro
-									rs("endereco_cidade") = cliente__cidade
-									rs("endereco_uf") = cliente__uf
-									rs("endereco_cep") = cliente__cep
-									rs("endereco_numero") = cliente__endereco_numero
-									rs("endereco_complemento") = cliente__endereco_complemento
-									rs("usuario_cadastro") = usuario
-									rs.Update
-									end if ' if Not fin_gera_nsu()
+						if blnUsarMemorizacaoCompletaEnderecos then
+							rs("EndEtg_email") = r_orcamento.EndEtg_email
+							rs("EndEtg_email_xml") = r_orcamento.EndEtg_email_xml
+							rs("EndEtg_nome") = r_orcamento.EndEtg_nome
+							rs("EndEtg_ddd_res") = r_orcamento.EndEtg_ddd_res
+							rs("EndEtg_tel_res") = r_orcamento.EndEtg_tel_res
+							rs("EndEtg_ddd_com") = r_orcamento.EndEtg_ddd_com
+							rs("EndEtg_tel_com") = r_orcamento.EndEtg_tel_com
+							rs("EndEtg_ramal_com") = r_orcamento.EndEtg_ramal_com
+							rs("EndEtg_ddd_cel") = r_orcamento.EndEtg_ddd_cel
+							rs("EndEtg_tel_cel") = r_orcamento.EndEtg_tel_cel
+							rs("EndEtg_ddd_com_2") = r_orcamento.EndEtg_ddd_com_2
+							rs("EndEtg_tel_com_2") = r_orcamento.EndEtg_tel_com_2
+							rs("EndEtg_ramal_com_2") = r_orcamento.EndEtg_ramal_com_2
+							rs("EndEtg_tipo_pessoa") = r_orcamento.EndEtg_tipo_pessoa
+							rs("EndEtg_cnpj_cpf") = r_orcamento.EndEtg_cnpj_cpf
+							rs("EndEtg_contribuinte_icms_status") = converte_numero(r_orcamento.EndEtg_contribuinte_icms_status)
+							rs("EndEtg_produtor_rural_status") = converte_numero(r_orcamento.EndEtg_produtor_rural_status)
+							rs("EndEtg_ie") = r_orcamento.EndEtg_ie
+							rs("EndEtg_rg") = r_orcamento.EndEtg_rg
+							end if
 					
-								if alerta = "" then
-									if Not fin_gera_nsu(T_PEDIDO_ANALISE_ENDERECO_CONFRONTACAO, intNsu, msg_erro) then
-										alerta = "FALHA AO GERAR NSU PARA O NOVO REGISTRO (" & msg_erro & ")"
-									else
-										s = "SELECT * FROM t_PEDIDO_ANALISE_ENDERECO_CONFRONTACAO WHERE (id = -1)"
-										if rs.State <> 0 then rs.Close
-										rs.Open s, cn
-										rs.AddNew
-										with r_orcamentista_e_indicador
-											rs("id") = intNsu
-											rs("id_pedido_analise_endereco") = intNsuPai
-											rs("pedido") = ""
-											rs("id_cliente") = ""
-											rs("tipo_endereco") = COD_PEDIDO_AN_ENDERECO__END_PARCEIRO
-											rs("endereco_logradouro") = .endereco
-											rs("endereco_bairro") = .bairro
-											rs("endereco_cidade") = .cidade
-											rs("endereco_uf") = .uf
-											rs("endereco_cep") = .cep
-											rs("endereco_numero") = .endereco_numero
-											rs("endereco_complemento") = .endereco_complemento
-											end with
-										rs.Update
-										end if ' if Not fin_gera_nsu()
-									end if ' if alerta = ""
-								end if ' if isEnderecoIgual()
-							end if ' if r_orcamento.orcamentista <> ""
-						end if 'if alerta = ""
-			
-					if alerta = "" then
-					'	2)VERIFICA PEDIDOS DE OUTROS CLIENTES
-						if Not blnAnEnderecoCadClienteUsaEndParceiro then
-							redim vAnEndConfrontacao(0)
-							set vAnEndConfrontacao(Ubound(vAnEndConfrontacao)) = new cl_ANALISE_ENDERECO_CONFRONTACAO
-							intQtdeTotalPedidosAnEndereco = 0
-				
-                            'em 2020-04-16 não temos mais registros com endereco_memorizado_status = 0
-							s = "SELECT DISTINCT * FROM " & _
-									"(" & _
-										"SELECT" & _
-											" '" & COD_PEDIDO_AN_ENDERECO__CAD_CLIENTE_MEMORIZADO & "' AS tipo_endereco," & _
-											" pedido," & _
-											" data_hora," & _
-											" id_cliente," & _
-											" endereco_logradouro," & _
-											" endereco_numero," & _
-											" endereco_complemento," & _
-											" endereco_bairro," & _
-											" endereco_cidade," & _
-											" endereco_uf," & _
-											" endereco_cep" & _
-										" FROM t_PEDIDO" & _
-										" WHERE" & _
-											" (id_cliente <> '" & r_orcamento.id_cliente & "')" & _
-											" AND (endereco_cep = '" & retorna_so_digitos(cliente__cep) & "')" & _
-										" UNION " & _
-										"SELECT" & _
-											" '" & COD_PEDIDO_AN_ENDERECO__END_ENTREGA & "' AS tipo_endereco," & _
-											" pedido," & _
-											" data_hora," & _
-											" id_cliente," & _
-											" EndEtg_endereco AS endereco_logradouro," & _
-											" EndEtg_endereco_numero AS endereco_numero," & _
-											" EndEtg_endereco_complemento AS endereco_complemento," & _
-											" EndEtg_bairro AS endereco_bairro," & _
-											" EndEtg_cidade AS endereco_cidade," & _
-											" EndEtg_uf AS endereco_uf," & _
-											" EndEtg_cep AS endereco_cep" & _
-										" FROM t_PEDIDO" & _
-										" WHERE" & _
-											" (st_end_entrega = 1)" & _
-											" AND (id_cliente <> '" & r_orcamento.id_cliente & "')" & _
-											" AND (EndEtg_cep = '" & retorna_so_digitos(cliente__cep) & "')" & _
-									") t" & _
-								" ORDER BY" & _
-									" data_hora DESC"
-							if rs.State <> 0 then rs.Close
-							rs.Open s, cn
-							do while Not rs.Eof
-								if isEnderecoIgual(cliente__endereco, cliente__endereco_numero, cliente__cep, Trim("" & rs("endereco_logradouro")), Trim("" & rs("endereco_numero")), Trim("" & rs("endereco_cep"))) then
-									if Trim("" & vAnEndConfrontacao(Ubound(vAnEndConfrontacao)).pedido) <> "" then
-										redim preserve vAnEndConfrontacao(UBound(vAnEndConfrontacao)+1)
-										set vAnEndConfrontacao(UBound(vAnEndConfrontacao)) = new cl_ANALISE_ENDERECO_CONFRONTACAO
-										end if
-						
-									with vAnEndConfrontacao(UBound(vAnEndConfrontacao))
-										.pedido = Trim("" & rs("pedido"))
-										.id_cliente = Trim("" & rs("id_cliente"))
-										.tipo_endereco = Trim("" & rs("tipo_endereco"))
-										.endereco_logradouro = Trim("" & rs("endereco_logradouro"))
-										.endereco_bairro = Trim("" & rs("endereco_bairro"))
-										.endereco_cidade = Trim("" & rs("endereco_cidade"))
-										.endereco_uf = Trim("" & rs("endereco_uf"))
-										.endereco_cep = Trim("" & rs("endereco_cep"))
-										.endereco_numero = Trim("" & rs("endereco_numero"))
-										.endereco_complemento = Trim("" & rs("endereco_complemento"))
-										end with
-						
-									intQtdeTotalPedidosAnEndereco = intQtdeTotalPedidosAnEndereco + 1
-									if intQtdeTotalPedidosAnEndereco >= MAX_AN_ENDERECO_QTDE_PEDIDOS_CADASTRAMENTO then exit do
-									end if 'if isEnderecoIgual()
-					
-								rs.MoveNext
-								loop
-							if rs.State <> 0 then rs.Close
-				
-							blnGravouRegPai = False
-							for i=LBound(vAnEndConfrontacao) to UBound(vAnEndConfrontacao)
-								with vAnEndConfrontacao(i)
-									if Trim("" & .pedido) <> "" then
-										blnAnalisarEndereco = True
-									'	JÁ GRAVOU O REGISTRO PAI?
-										if Not blnGravouRegPai then
-											blnGravouRegPai = True
-											if Not fin_gera_nsu(T_PEDIDO_ANALISE_ENDERECO, intNsuPai, msg_erro) then
-												alerta = "FALHA AO GERAR NSU PARA O NOVO REGISTRO (" & msg_erro & ")"
-												exit for
-												end if
-								
-											s = "SELECT * FROM t_PEDIDO_ANALISE_ENDERECO WHERE (id = -1)"
-											if rs.State <> 0 then rs.Close
-											rs.Open s, cn
-											rs.AddNew
-											rs("id") = intNsuPai
-											rs("pedido") = id_pedido
-											rs("id_cliente") = r_orcamento.id_cliente
-											rs("tipo_endereco") = COD_PEDIDO_AN_ENDERECO__CAD_CLIENTE
-									        rs("endereco_logradouro") = cliente__endereco
-									        rs("endereco_bairro") = cliente__bairro
-									        rs("endereco_cidade") = cliente__cidade
-									        rs("endereco_uf") = cliente__uf
-									        rs("endereco_cep") = cliente__cep
-									        rs("endereco_numero") = cliente__endereco_numero
-									        rs("endereco_complemento") = cliente__endereco_complemento
-											rs("usuario_cadastro") = usuario
-											rs.Update
-											end if 'if Not blnGravouRegPai
-							
-										if Not fin_gera_nsu(T_PEDIDO_ANALISE_ENDERECO_CONFRONTACAO, intNsu, msg_erro) then
-											alerta = "FALHA AO GERAR NSU PARA O NOVO REGISTRO (" & msg_erro & ")"
+						sBlocoNotasEndEtg = formata_endereco(Trim("" & rs("EndEtg_endereco")), Trim("" & rs("EndEtg_endereco_numero")), Trim("" & rs("EndEtg_endereco_complemento")), Trim("" & rs("EndEtg_bairro")), Trim("" & rs("EndEtg_cidade")), Trim("" & rs("EndEtg_uf")), Trim("" & rs("EndEtg_cep")))
+						end if
+
+					'OBTENÇÃO DE TRANSPORTADORA QUE ATENDA AO CEP INFORMADO, SE HOUVER
+					if sTranspSelAutoTransportadoraId <> "" then
+						rs("transportadora_id") = sTranspSelAutoTransportadoraId
+						rs("transportadora_data") = Now
+						rs("transportadora_usuario") = usuario
+						rs("transportadora_selecao_auto_status") = iTranspSelAutoStatus
+						rs("transportadora_selecao_auto_cep") = sTranspSelAutoCep
+						rs("transportadora_selecao_auto_transportadora") = sTranspSelAutoTransportadoraId
+						rs("transportadora_selecao_auto_tipo_endereco") = iTranspSelAutoTipoEndereco
+						rs("transportadora_selecao_auto_data_hora") = Now
+						end if
+
+					'01/02/2018: os pedidos do Arclube usam o RA para incluir o valor do frete e, portanto, não devem ter deságio do RA
+					if Cstr(loja) <> Cstr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) then rs("perc_desagio_RA_liquida") = r_orcamento.perc_desagio_RA_liquida
+
+					rs("permite_RA_status") = r_orcamento.permite_RA_status
+
+					if (r_orcamento.permite_RA_status = 1) then
+						if blnTemRA then
+							rs("opcao_possui_RA") = "S"
+						else
+							rs("opcao_possui_RA") = "N"
+							end if
+					else
+						rs("opcao_possui_RA") = "-" ' Não se aplica
+						end if
+
+					rs("st_violado_permite_RA_status") = r_orcamento.st_violado_permite_RA_status
+					rs("dt_hr_violado_permite_RA_status") = r_orcamento.dt_hr_violado_permite_RA_status
+					rs("usuario_violado_permite_RA_status") = r_orcamento.usuario_violado_permite_RA_status
+
+					rs("endereco_memorizado_status") = 1
+
+					if blnUsarMemorizacaoCompletaEnderecos and r_orcamento.st_memorizacao_completa_enderecos <> 0 then
+						'Definido em 20/03/2020: o orcamento que foi criado sem memorização continua sua vida sem memorização
+						rs("st_memorizacao_completa_enderecos") = r_orcamento.st_memorizacao_completa_enderecos
+						rs("endereco_logradouro") = r_orcamento.endereco_logradouro
+						rs("endereco_bairro") = r_orcamento.endereco_bairro
+						rs("endereco_cidade") = r_orcamento.endereco_cidade
+						rs("endereco_uf") = r_orcamento.endereco_uf
+						rs("endereco_cep") = r_orcamento.endereco_cep
+						rs("endereco_numero") = r_orcamento.endereco_numero
+						rs("endereco_complemento") = r_orcamento.endereco_complemento
+						rs("endereco_email") = r_orcamento.endereco_email
+						rs("endereco_email_xml") = r_orcamento.endereco_email_xml
+						rs("endereco_nome") = r_orcamento.endereco_nome
+						rs("endereco_ddd_res") = r_orcamento.endereco_ddd_res
+						rs("endereco_tel_res") = r_orcamento.endereco_tel_res
+						rs("endereco_ddd_com") = r_orcamento.endereco_ddd_com
+						rs("endereco_tel_com") = r_orcamento.endereco_tel_com
+						rs("endereco_ramal_com") = r_orcamento.endereco_ramal_com
+						rs("endereco_ddd_cel") = r_orcamento.endereco_ddd_cel
+						rs("endereco_tel_cel") = r_orcamento.endereco_tel_cel
+						rs("endereco_ddd_com_2") = r_orcamento.endereco_ddd_com_2
+						rs("endereco_tel_com_2") = r_orcamento.endereco_tel_com_2
+						rs("endereco_ramal_com_2") = r_orcamento.endereco_ramal_com_2
+						rs("endereco_tipo_pessoa") = r_orcamento.endereco_tipo_pessoa
+						rs("endereco_cnpj_cpf") = r_orcamento.endereco_cnpj_cpf
+						rs("endereco_contribuinte_icms_status") = r_orcamento.endereco_contribuinte_icms_status
+						rs("endereco_produtor_rural_status") = r_orcamento.endereco_produtor_rural_status
+						rs("endereco_ie") = r_orcamento.endereco_ie
+						rs("endereco_rg") = r_orcamento.endereco_rg
+						rs("endereco_contato") = r_orcamento.endereco_contato
+					else
+						rs("st_memorizacao_completa_enderecos") = 0
+						'estes campos são do rs("endereco_memorizado_status") = 1
+						rs("endereco_logradouro") = Trim("" & t_CLIENTE("endereco"))
+						rs("endereco_bairro") = Trim("" & t_CLIENTE("bairro"))
+						rs("endereco_cidade") = Trim("" & t_CLIENTE("cidade"))
+						rs("endereco_uf") = Trim("" & t_CLIENTE("uf"))
+						rs("endereco_cep") = Trim("" & t_CLIENTE("cep"))
+						rs("endereco_numero") = Trim("" & t_CLIENTE("endereco_numero"))
+						rs("endereco_complemento") = Trim("" & t_CLIENTE("endereco_complemento"))
+						end if
+
+					sBlocoNotasEndCob = formata_endereco(Trim("" & rs("endereco_logradouro")), Trim("" & rs("endereco_numero")), Trim("" & rs("endereco_complemento")), Trim("" & rs("endereco_bairro")), Trim("" & rs("endereco_cidade")), Trim("" & rs("endereco_uf")), Trim("" & rs("endereco_cep")))
+
+					rs("plataforma_origem_pedido") = COD_PLATAFORMA_ORIGEM_PEDIDO__ERP
+
+					rs("sistema_responsavel_cadastro") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
+					rs("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
+
+					rs("id_nfe_emitente") = vEmpresaAutoSplit(iv)
+
+					rs.Update
+					if Err <> 0 then
+					'	~~~~~~~~~~~~~~~~
+						cn.RollbackTrans
+					'	~~~~~~~~~~~~~~~~
+						Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
+						end if
+
+					if rs.State <> 0 then rs.Close
+
+					sequencia_item = 0
+					total_estoque_vendido=0
+					total_estoque_sem_presenca=0
+					s_log_item_autosplit = ""
+					for iRegra=LBound(vProdRegra) to UBound(vProdRegra)
+						if Trim(vProdRegra(iRegra).produto) <> "" then
+							for iCD=LBound(vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD) to UBound(vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD)
+								if (vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).id_nfe_emitente = vEmpresaAutoSplit(iv)) And (vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.qtde_solicitada > 0) then
+								'	LOCALIZA O PRODUTO EM V_ITEM
+									indice_item = -1
+									for j=LBound(v_item) to UBound(v_item)
+										if (Trim("" & v_item(j).fabricante) = vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.fabricante) And _
+											(Trim("" & v_item(j).produto) = vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.produto) then
+											indice_item = j
 											exit for
 											end if
-							
-										s = "SELECT * FROM t_PEDIDO_ANALISE_ENDERECO_CONFRONTACAO WHERE (id = -1)"
-										if rs.State <> 0 then rs.Close
-										rs.Open s, cn
-										rs.AddNew
-										rs("id") = intNsu
-										rs("id_pedido_analise_endereco") = intNsuPai
-										rs("pedido") = .pedido
-										rs("id_cliente") = .id_cliente
-										rs("tipo_endereco") = .tipo_endereco
-										rs("endereco_logradouro") = .endereco_logradouro
-										rs("endereco_bairro") = .endereco_bairro
-										rs("endereco_cidade") = .endereco_cidade
-										rs("endereco_uf") = .endereco_uf
-										rs("endereco_cep") = .endereco_cep
-										rs("endereco_numero") = .endereco_numero
-										rs("endereco_complemento") = .endereco_complemento
-										rs.Update
-										end if 'if Trim("" & .pedido) <> ""
-									end with
-								next
-							end if ' if Not blnAnEnderecoCadClienteUsaEndParceiro
-						end if 'if alerta = ""
+										next
+
+									if indice_item > -1 then
+										sequencia_item = sequencia_item + 1
+										with v_item(indice_item)
+											s="SELECT * FROM t_PEDIDO_ITEM WHERE pedido='X'"
+											rs.Open s, cn
+											rs.AddNew
+											rs("pedido") = id_pedido_temp
+											rs("fabricante") = .fabricante
+											rs("produto") = .produto
+											rs("qtde") = vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.qtde_solicitada
+											rs("desc_dado") = .desc_dado
+											rs("preco_venda") = .preco_venda
+											rs("preco_NF") = .preco_NF
+											rs("preco_fabricante") = .preco_fabricante
+											rs("vl_custo2") = .vl_custo2
+											rs("preco_lista") = .preco_lista
+											rs("margem") = .margem
+											rs("desc_max") = .desc_max
+											rs("comissao") = .comissao
+											rs("descricao") = .descricao
+											rs("descricao_html") = .descricao_html
+											rs("ean") = .ean
+											rs("grupo") = .grupo
+											rs("subgrupo") = .subgrupo
+											rs("peso") = .peso
+											rs("qtde_volumes") = .qtde_volumes
+											rs("abaixo_min_status") = .abaixo_min_status
+											rs("abaixo_min_autorizacao") = .abaixo_min_autorizacao
+											rs("abaixo_min_autorizador") = .abaixo_min_autorizador
+											rs("abaixo_min_superv_autorizador") = .abaixo_min_superv_autorizador
+											rs("sequencia") = sequencia_item
+											rs("markup_fabricante") = .markup_fabricante
+											rs("custoFinancFornecCoeficiente") = .custoFinancFornecCoeficiente
+											rs("custoFinancFornecPrecoListaBase") = .custoFinancFornecPrecoListaBase
+											rs("cubagem") = .cubagem
+											rs("ncm") = .ncm
+											rs("cst") = .cst
+											rs("descontinuado") = .descontinuado
+											rs("cod_produto_xml_fabricante") = .cod_produto_xml_fabricante
+											rs("cod_produto_alfanum_fabricante") = .cod_produto_alfanum_fabricante
+											rs("potencia_valor") = .potencia_valor
+											rs("id_unidade_potencia") = .id_unidade_potencia
+											rs.Update
+											if Err <> 0 then
+											'	~~~~~~~~~~~~~~~~
+												cn.RollbackTrans
+											'	~~~~~~~~~~~~~~~~
+												Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
+												end if
+											if rs.State <> 0 then rs.Close
+
+											if vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.qtde_solicitada > vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.qtde_estoque then
+												qtde_spe = vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.qtde_solicitada - vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.qtde_estoque
+											else
+												qtde_spe = 0
+												end if
+
+											if Not ESTOQUE_produto_saida_v2(usuario, id_pedido_temp, vEmpresaAutoSplit(iv), .fabricante, .produto, vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.qtde_solicitada, qtde_spe, qtde_estoque_vendido_aux, qtde_estoque_sem_presenca_aux, msg_erro) then
+											'	~~~~~~~~~~~~~~~~
+												cn.RollbackTrans
+											'	~~~~~~~~~~~~~~~~
+												Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_MOVIMENTO_ESTOQUE)
+												end if
+
+											.qtde_estoque_vendido = .qtde_estoque_vendido + qtde_estoque_vendido_aux
+											.qtde_estoque_sem_presenca = .qtde_estoque_sem_presenca + qtde_estoque_sem_presenca_aux
+
+											total_estoque_vendido = total_estoque_vendido + qtde_estoque_vendido_aux
+											total_estoque_sem_presenca = total_estoque_sem_presenca + qtde_estoque_sem_presenca_aux
+
+										'	LOG
+											if s_log_item_autosplit <> "" then s_log_item_autosplit = s_log_item_autosplit & chr(13)
+											s_log_item_autosplit = s_log_item_autosplit & "(" & .fabricante & ")" & .produto & ":" & _
+														" Qtde Solicitada = " & vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.qtde_solicitada & "," & _
+														" Qtde Sem Presença Autorizada = " & Cstr(qtde_spe) & "," & _
+														" Qtde Estoque Vendido = " & Cstr(qtde_estoque_vendido_aux) & "," & _
+														" Qtde Sem Presença = " & Cstr(qtde_estoque_sem_presenca_aux)
+											end with
+										end if 'if indice_item > -1
+									end if 'if (vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).id_nfe_emitente = vEmpresaAutoSplit(iv)) And (vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD(iCD).estoque.qtde_solicitada > 0)
+								next 'for iCD=LBound(vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD) to UBound(vProdRegra(iRegra).regra.regraUF.regraPessoa.vCD)
+							end if 'if Trim(vProdRegra(iRegra).produto) <> ""
+						next 'for iRegra=LBound(vProdRegra) to UBound(vProdRegra)
+
+					if indice_pedido = 1 then
+						if Not gera_num_pedido(id_pedido_base, msg_erro) then
+						'	~~~~~~~~~~~~~~~~
+							cn.RollbackTrans
+						'	~~~~~~~~~~~~~~~~
+							Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_GERAR_NSU)
+							end if
+						id_pedido = id_pedido_base
+					else
+						id_pedido = id_pedido_base & COD_SEPARADOR_FILHOTE & gera_letra_pedido_filhote(indice_pedido-1)
+						end if
+
+				'	LOG
+					if Trim("" & vLogAutoSplit(UBound(vLogAutoSplit))) <> "" then redim preserve vLogAutoSplit(UBound(vLogAutoSplit)+1)
+					vLogAutoSplit(UBound(vLogAutoSplit)) = id_pedido & " (" & obtem_apelido_empresa_NFe_emitente(vEmpresaAutoSplit(iv)) & ")" & chr(13) & _
+															s_log_item_autosplit
+
+					s="UPDATE t_PEDIDO SET pedido='" & id_pedido & "' WHERE pedido='" & id_pedido_temp & "'"
+					cn.Execute(s)
+
+					s="UPDATE t_PEDIDO_ITEM SET pedido='" & id_pedido & "' WHERE pedido='" & id_pedido_temp & "'"
+					cn.Execute(s)
+
+					s="UPDATE t_ESTOQUE_MOVIMENTO SET pedido='" & id_pedido & "' WHERE pedido='" & id_pedido_temp & "'"
+					cn.Execute(s)
+
+					s="UPDATE t_ORCAMENTO SET st_orc_virou_pedido=1, pedido='" & id_pedido & "' WHERE (orcamento='" & orcamento_selecionado & "') AND (st_orc_virou_pedido=0)"
+					cn.Execute(s)
+
+					s="UPDATE t_ESTOQUE_LOG SET pedido_estoque_origem='" & id_pedido & "' WHERE pedido_estoque_origem='" & id_pedido_temp & "'"
+					cn.Execute(s)
+
+					s="UPDATE t_ESTOQUE_LOG SET pedido_estoque_destino='" & id_pedido & "' WHERE pedido_estoque_destino='" & id_pedido_temp & "'"
+					cn.Execute(s)
+
+					if indice_pedido = 1 then
+					'	INDICADOR: SE ESTE PEDIDO É COM INDICADOR E O CLIENTE AINDA NÃO TEM UM INDICADOR NO CADASTRO, ENTÃO CADASTRA ESTE.
+						if Trim(r_orcamento.orcamentista) <> "" then
+							if Trim(r_cliente.indicador) = "" then
+								s="UPDATE t_CLIENTE SET indicador='" & Trim(r_orcamento.orcamentista) & "' WHERE (id='" & r_orcamento.id_cliente & "')"
+								cn.Execute(s)
+								s_log_cliente_indicador = "Cadastrado o indicador '" & Trim(r_orcamento.orcamentista) & "' no cliente id=" & r_orcamento.id_cliente
+								end if
+							end if
+						end if
+
+			'		STATUS DE ENTREGA
+					if total_estoque_vendido = 0 then
+						s = ST_ENTREGA_ESPERAR
+					elseif total_estoque_sem_presenca = 0 then
+						s = ST_ENTREGA_SEPARAR
+					else
+						s = ST_ENTREGA_SPLIT_POSSIVEL
+						end if
 		
-					if alerta = "" then
-						if CLng(r_orcamento.st_end_entrega) <> 0 then
-						'	ENDEREÇO DE ENTREGA (SE HOUVER)
-						'	===============================
+					s = "UPDATE t_PEDIDO SET st_entrega='" & s & "' WHERE pedido='" & id_pedido & "'"
+					cn.Execute(s)
+
+					if Not calcula_total_RA_liquido_BD(id_pedido, vl_total_RA_liquido, msg_erro) then
+					'	~~~~~~~~~~~~~~~~
+						cn.RollbackTrans
+					'	~~~~~~~~~~~~~~~~
+						Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
+						end if
+
+					if indice_pedido = 1 then
+						s = "SELECT * FROM t_PEDIDO WHERE (pedido='" & id_pedido & "')"
+						if rs.State <> 0 then rs.Close
+						rs.open s, cn
+						if rs.Eof then
+							alerta = "Falha ao consultar o registro do novo pedido (" & id_pedido & ")"
+						else
+							rs("vl_total_RA_liquido") = vl_total_RA_liquido
+							rs("qtde_parcelas_desagio_RA") = 0
+							if vl_total_RA <> 0 then
+								rs("st_tem_desagio_RA") = 1
+							else
+								rs("st_tem_desagio_RA") = 0
+								end if
+							rs.Update
+							end if
+						end if
+
+					if indice_pedido = 1 then
+				'		SENHAS DE AUTORIZAÇÃO PARA DESCONTO SUPERIOR
+						for k = Lbound(v_desconto) to Ubound(v_desconto)
+							if Trim(v_desconto(k)) <> "" then
+								s = "SELECT * FROM t_DESCONTO" & _
+									" WHERE (usado_status=0)" & _
+									" AND (cancelado_status=0)" & _
+									" AND (id='" & Trim(v_desconto(k)) & "')"
+								if rs.State <> 0 then rs.Close
+								rs.open s, cn
+								if rs.Eof then
+									alerta = "Senha de autorização para desconto superior não encontrado."
+									exit for
+								else
+									rs("usado_status") = 1
+									rs("usado_data") = Now
+									rs("vendedor") = r_orcamento.vendedor
+									rs("usado_usuario") = usuario
+									rs.Update
+									if Err <> 0 then
+									'	~~~~~~~~~~~~~~~~
+										cn.RollbackTrans
+									'	~~~~~~~~~~~~~~~~
+										Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
+										end if
+									end if
+								end if
+							next
+						end if
+
+					if indice_pedido = 1 then
+						if alerta = "" then
+						'	VERIFICA SE O ENDEREÇO JÁ FOI USADO ANTERIORMENTE POR OUTRO CLIENTE (POSSÍVEL FRAUDE)
+						'	ENDEREÇO DO CADASTRO
+						'	====================
 						'	1) VERIFICA SE O ENDEREÇO USADO É O DO PARCEIRO
 							if r_orcamento.orcamentista <> "" then
-								if isEnderecoIgual(r_orcamento.EndEtg_endereco, r_orcamento.EndEtg_endereco_numero, r_orcamento.EndEtg_cep, r_orcamentista_e_indicador.endereco, r_orcamentista_e_indicador.endereco_numero, r_orcamentista_e_indicador.cep) then
-									blnAnEnderecoEndEntregaUsaEndParceiro = True
+								if isEnderecoIgual(cliente__endereco, cliente__endereco_numero, cliente__cep, r_orcamentista_e_indicador.endereco, r_orcamentista_e_indicador.endereco_numero, r_orcamentista_e_indicador.cep) then
+									blnAnEnderecoCadClienteUsaEndParceiro = True
 									blnAnalisarEndereco = True
-						
+					
 									if Not fin_gera_nsu(T_PEDIDO_ANALISE_ENDERECO, intNsuPai, msg_erro) then
 										alerta = "FALHA AO GERAR NSU PARA O NOVO REGISTRO (" & msg_erro & ")"
 									else
@@ -2018,18 +1848,18 @@
 										rs("id") = intNsuPai
 										rs("pedido") = id_pedido
 										rs("id_cliente") = r_orcamento.id_cliente
-										rs("tipo_endereco") = COD_PEDIDO_AN_ENDERECO__END_ENTREGA
-										rs("endereco_logradouro") = r_orcamento.EndEtg_endereco
-										rs("endereco_bairro") = r_orcamento.EndEtg_bairro
-										rs("endereco_cidade") = r_orcamento.EndEtg_cidade
-										rs("endereco_uf") = r_orcamento.EndEtg_uf
-										rs("endereco_cep") = r_orcamento.EndEtg_cep
-										rs("endereco_numero") = r_orcamento.EndEtg_endereco_numero
-										rs("endereco_complemento") = r_orcamento.EndEtg_endereco_complemento
+										rs("tipo_endereco") = COD_PEDIDO_AN_ENDERECO__CAD_CLIENTE
+										rs("endereco_logradouro") = cliente__endereco
+										rs("endereco_bairro") = cliente__bairro
+										rs("endereco_cidade") = cliente__cidade
+										rs("endereco_uf") = cliente__uf
+										rs("endereco_cep") = cliente__cep
+										rs("endereco_numero") = cliente__endereco_numero
+										rs("endereco_complemento") = cliente__endereco_complemento
 										rs("usuario_cadastro") = usuario
 										rs.Update
 										end if ' if Not fin_gera_nsu()
-						
+					
 									if alerta = "" then
 										if Not fin_gera_nsu(T_PEDIDO_ANALISE_ENDERECO_CONFRONTACAO, intNsu, msg_erro) then
 											alerta = "FALHA AO GERAR NSU PARA O NOVO REGISTRO (" & msg_erro & ")"
@@ -2057,186 +1887,385 @@
 										end if ' if alerta = ""
 									end if ' if isEnderecoIgual()
 								end if ' if r_orcamento.orcamentista <> ""
-				
+							end if 'if alerta = ""
+			
+						if alerta = "" then
 						'	2)VERIFICA PEDIDOS DE OUTROS CLIENTES
-							if alerta = "" then
-								if Not blnAnEnderecoEndEntregaUsaEndParceiro then
-									redim vAnEndConfrontacao(0)
-									set vAnEndConfrontacao(Ubound(vAnEndConfrontacao)) = new cl_ANALISE_ENDERECO_CONFRONTACAO
-									intQtdeTotalPedidosAnEndereco = 0
+							if Not blnAnEnderecoCadClienteUsaEndParceiro then
+								redim vAnEndConfrontacao(0)
+								set vAnEndConfrontacao(Ubound(vAnEndConfrontacao)) = new cl_ANALISE_ENDERECO_CONFRONTACAO
+								intQtdeTotalPedidosAnEndereco = 0
+				
+								'em 2020-04-16 não temos mais registros com endereco_memorizado_status = 0
+								s = "SELECT DISTINCT * FROM " & _
+										"(" & _
+											"SELECT" & _
+												" '" & COD_PEDIDO_AN_ENDERECO__CAD_CLIENTE_MEMORIZADO & "' AS tipo_endereco," & _
+												" pedido," & _
+												" data_hora," & _
+												" id_cliente," & _
+												" endereco_logradouro," & _
+												" endereco_numero," & _
+												" endereco_complemento," & _
+												" endereco_bairro," & _
+												" endereco_cidade," & _
+												" endereco_uf," & _
+												" endereco_cep" & _
+											" FROM t_PEDIDO" & _
+											" WHERE" & _
+												" (id_cliente <> '" & r_orcamento.id_cliente & "')" & _
+												" AND (endereco_cep = '" & retorna_so_digitos(cliente__cep) & "')" & _
+											" UNION " & _
+											"SELECT" & _
+												" '" & COD_PEDIDO_AN_ENDERECO__END_ENTREGA & "' AS tipo_endereco," & _
+												" pedido," & _
+												" data_hora," & _
+												" id_cliente," & _
+												" EndEtg_endereco AS endereco_logradouro," & _
+												" EndEtg_endereco_numero AS endereco_numero," & _
+												" EndEtg_endereco_complemento AS endereco_complemento," & _
+												" EndEtg_bairro AS endereco_bairro," & _
+												" EndEtg_cidade AS endereco_cidade," & _
+												" EndEtg_uf AS endereco_uf," & _
+												" EndEtg_cep AS endereco_cep" & _
+											" FROM t_PEDIDO" & _
+											" WHERE" & _
+												" (st_end_entrega = 1)" & _
+												" AND (id_cliente <> '" & r_orcamento.id_cliente & "')" & _
+												" AND (EndEtg_cep = '" & retorna_so_digitos(cliente__cep) & "')" & _
+										") t" & _
+									" ORDER BY" & _
+										" data_hora DESC"
+								if rs.State <> 0 then rs.Close
+								rs.Open s, cn
+								do while Not rs.Eof
+									if isEnderecoIgual(cliente__endereco, cliente__endereco_numero, cliente__cep, Trim("" & rs("endereco_logradouro")), Trim("" & rs("endereco_numero")), Trim("" & rs("endereco_cep"))) then
+										if Trim("" & vAnEndConfrontacao(Ubound(vAnEndConfrontacao)).pedido) <> "" then
+											redim preserve vAnEndConfrontacao(UBound(vAnEndConfrontacao)+1)
+											set vAnEndConfrontacao(UBound(vAnEndConfrontacao)) = new cl_ANALISE_ENDERECO_CONFRONTACAO
+											end if
 						
-                                    'em 2020-04-16 não temos mais registros com endereco_memorizado_status = 0
-									s = "SELECT DISTINCT * FROM " & _
-											"(" & _
-												"SELECT" & _
-													" '" & COD_PEDIDO_AN_ENDERECO__CAD_CLIENTE_MEMORIZADO & "' AS tipo_endereco," & _
-													" pedido," & _
-													" data_hora," & _
-													" id_cliente," & _
-													" endereco_logradouro," & _
-													" endereco_numero," & _
-													" endereco_complemento," & _
-													" endereco_bairro," & _
-													" endereco_cidade," & _
-													" endereco_uf," & _
-													" endereco_cep" & _
-												" FROM t_PEDIDO" & _
-												" WHERE" & _
-													" (id_cliente <> '" & r_orcamento.id_cliente & "')" & _
-													" AND (endereco_cep = '" & retorna_so_digitos(r_orcamento.EndEtg_cep) & "')" & _
-												" UNION " & _
-												"SELECT" & _
-													" '" & COD_PEDIDO_AN_ENDERECO__END_ENTREGA & "' AS tipo_endereco," & _
-													" pedido," & _
-													" data_hora," & _
-													" id_cliente," & _
-													" EndEtg_endereco AS endereco_logradouro," & _
-													" EndEtg_endereco_numero AS endereco_numero," & _
-													" EndEtg_endereco_complemento AS endereco_complemento," & _
-													" EndEtg_bairro AS endereco_bairro," & _
-													" EndEtg_cidade AS endereco_cidade," & _
-													" EndEtg_uf AS endereco_uf," & _
-													" EndEtg_cep AS endereco_cep" & _
-												" FROM t_PEDIDO" & _
-												" WHERE" & _
-													" (st_end_entrega = 1)" & _
-													" AND (id_cliente <> '" & r_orcamento.id_cliente & "')" & _
-													" AND (EndEtg_cep = '" & retorna_so_digitos(r_orcamento.EndEtg_cep) & "')" & _
-											") t" & _
-										" ORDER BY" & _
-											" data_hora DESC"
-									if rs.State <> 0 then rs.Close
-									rs.Open s, cn
-									do while Not rs.Eof
-										if isEnderecoIgual(r_orcamento.EndEtg_endereco, r_orcamento.EndEtg_endereco_numero, r_orcamento.EndEtg_cep, Trim("" & rs("endereco_logradouro")), Trim("" & rs("endereco_numero")), Trim("" & rs("endereco_cep"))) then
-											if Trim("" & vAnEndConfrontacao(Ubound(vAnEndConfrontacao)).pedido) <> "" then
-												redim preserve vAnEndConfrontacao(UBound(vAnEndConfrontacao)+1)
-												set vAnEndConfrontacao(UBound(vAnEndConfrontacao)) = new cl_ANALISE_ENDERECO_CONFRONTACAO
-												end if
-								
-											with vAnEndConfrontacao(UBound(vAnEndConfrontacao))
-												.pedido = Trim("" & rs("pedido"))
-												.id_cliente = Trim("" & rs("id_cliente"))
-												.tipo_endereco = Trim("" & rs("tipo_endereco"))
-												.endereco_logradouro = Trim("" & rs("endereco_logradouro"))
-												.endereco_bairro = Trim("" & rs("endereco_bairro"))
-												.endereco_cidade = Trim("" & rs("endereco_cidade"))
-												.endereco_uf = Trim("" & rs("endereco_uf"))
-												.endereco_cep = Trim("" & rs("endereco_cep"))
-												.endereco_numero = Trim("" & rs("endereco_numero"))
-												.endereco_complemento = Trim("" & rs("endereco_complemento"))
-												end with
-								
-											intQtdeTotalPedidosAnEndereco = intQtdeTotalPedidosAnEndereco + 1
-											if intQtdeTotalPedidosAnEndereco >= MAX_AN_ENDERECO_QTDE_PEDIDOS_CADASTRAMENTO then exit do
-											end if 'if isEnderecoIgual()
-							
-										rs.MoveNext
-										loop
-									if rs.State <> 0 then rs.Close
+										with vAnEndConfrontacao(UBound(vAnEndConfrontacao))
+											.pedido = Trim("" & rs("pedido"))
+											.id_cliente = Trim("" & rs("id_cliente"))
+											.tipo_endereco = Trim("" & rs("tipo_endereco"))
+											.endereco_logradouro = Trim("" & rs("endereco_logradouro"))
+											.endereco_bairro = Trim("" & rs("endereco_bairro"))
+											.endereco_cidade = Trim("" & rs("endereco_cidade"))
+											.endereco_uf = Trim("" & rs("endereco_uf"))
+											.endereco_cep = Trim("" & rs("endereco_cep"))
+											.endereco_numero = Trim("" & rs("endereco_numero"))
+											.endereco_complemento = Trim("" & rs("endereco_complemento"))
+											end with
 						
-									blnGravouRegPai = False
-									for i=LBound(vAnEndConfrontacao) to UBound(vAnEndConfrontacao)
-										with vAnEndConfrontacao(i)
-											if Trim("" & .pedido) <> "" then
-												blnAnalisarEndereco = True
-											'	JÁ GRAVOU O REGISTRO PAI?
-												if Not blnGravouRegPai then
-													blnGravouRegPai = True
-													if Not fin_gera_nsu(T_PEDIDO_ANALISE_ENDERECO, intNsuPai, msg_erro) then
-														alerta = "FALHA AO GERAR NSU PARA O NOVO REGISTRO (" & msg_erro & ")"
-														exit for
-														end if
-										
-													s = "SELECT * FROM t_PEDIDO_ANALISE_ENDERECO WHERE (id = -1)"
-													if rs.State <> 0 then rs.Close
-													rs.Open s, cn
-													rs.AddNew
-													rs("id") = intNsuPai
-													rs("pedido") = id_pedido
-													rs("id_cliente") = r_orcamento.id_cliente
-													rs("tipo_endereco") = COD_PEDIDO_AN_ENDERECO__END_ENTREGA
-													rs("endereco_logradouro") = r_orcamento.EndEtg_endereco
-													rs("endereco_bairro") = r_orcamento.EndEtg_bairro
-													rs("endereco_cidade") = r_orcamento.EndEtg_cidade
-													rs("endereco_uf") = r_orcamento.EndEtg_uf
-													rs("endereco_cep") = r_orcamento.EndEtg_cep
-													rs("endereco_numero") = r_orcamento.EndEtg_endereco_numero
-													rs("endereco_complemento") = r_orcamento.EndEtg_endereco_complemento
-													rs("usuario_cadastro") = usuario
-													rs.Update
-													end if 'if Not blnGravouRegPai
-							
-												if Not fin_gera_nsu(T_PEDIDO_ANALISE_ENDERECO_CONFRONTACAO, intNsu, msg_erro) then
+										intQtdeTotalPedidosAnEndereco = intQtdeTotalPedidosAnEndereco + 1
+										if intQtdeTotalPedidosAnEndereco >= MAX_AN_ENDERECO_QTDE_PEDIDOS_CADASTRAMENTO then exit do
+										end if 'if isEnderecoIgual()
+					
+									rs.MoveNext
+									loop
+								if rs.State <> 0 then rs.Close
+				
+								blnGravouRegPai = False
+								for i=LBound(vAnEndConfrontacao) to UBound(vAnEndConfrontacao)
+									with vAnEndConfrontacao(i)
+										if Trim("" & .pedido) <> "" then
+											blnAnalisarEndereco = True
+										'	JÁ GRAVOU O REGISTRO PAI?
+											if Not blnGravouRegPai then
+												blnGravouRegPai = True
+												if Not fin_gera_nsu(T_PEDIDO_ANALISE_ENDERECO, intNsuPai, msg_erro) then
 													alerta = "FALHA AO GERAR NSU PARA O NOVO REGISTRO (" & msg_erro & ")"
 													exit for
 													end if
-									
+								
+												s = "SELECT * FROM t_PEDIDO_ANALISE_ENDERECO WHERE (id = -1)"
+												if rs.State <> 0 then rs.Close
+												rs.Open s, cn
+												rs.AddNew
+												rs("id") = intNsuPai
+												rs("pedido") = id_pedido
+												rs("id_cliente") = r_orcamento.id_cliente
+												rs("tipo_endereco") = COD_PEDIDO_AN_ENDERECO__CAD_CLIENTE
+												rs("endereco_logradouro") = cliente__endereco
+												rs("endereco_bairro") = cliente__bairro
+												rs("endereco_cidade") = cliente__cidade
+												rs("endereco_uf") = cliente__uf
+												rs("endereco_cep") = cliente__cep
+												rs("endereco_numero") = cliente__endereco_numero
+												rs("endereco_complemento") = cliente__endereco_complemento
+												rs("usuario_cadastro") = usuario
+												rs.Update
+												end if 'if Not blnGravouRegPai
+							
+											if Not fin_gera_nsu(T_PEDIDO_ANALISE_ENDERECO_CONFRONTACAO, intNsu, msg_erro) then
+												alerta = "FALHA AO GERAR NSU PARA O NOVO REGISTRO (" & msg_erro & ")"
+												exit for
+												end if
+							
+											s = "SELECT * FROM t_PEDIDO_ANALISE_ENDERECO_CONFRONTACAO WHERE (id = -1)"
+											if rs.State <> 0 then rs.Close
+											rs.Open s, cn
+											rs.AddNew
+											rs("id") = intNsu
+											rs("id_pedido_analise_endereco") = intNsuPai
+											rs("pedido") = .pedido
+											rs("id_cliente") = .id_cliente
+											rs("tipo_endereco") = .tipo_endereco
+											rs("endereco_logradouro") = .endereco_logradouro
+											rs("endereco_bairro") = .endereco_bairro
+											rs("endereco_cidade") = .endereco_cidade
+											rs("endereco_uf") = .endereco_uf
+											rs("endereco_cep") = .endereco_cep
+											rs("endereco_numero") = .endereco_numero
+											rs("endereco_complemento") = .endereco_complemento
+											rs.Update
+											end if 'if Trim("" & .pedido) <> ""
+										end with
+									next
+								end if ' if Not blnAnEnderecoCadClienteUsaEndParceiro
+							end if 'if alerta = ""
+		
+						if alerta = "" then
+							if CLng(r_orcamento.st_end_entrega) <> 0 then
+							'	ENDEREÇO DE ENTREGA (SE HOUVER)
+							'	===============================
+							'	1) VERIFICA SE O ENDEREÇO USADO É O DO PARCEIRO
+								if r_orcamento.orcamentista <> "" then
+									if isEnderecoIgual(r_orcamento.EndEtg_endereco, r_orcamento.EndEtg_endereco_numero, r_orcamento.EndEtg_cep, r_orcamentista_e_indicador.endereco, r_orcamentista_e_indicador.endereco_numero, r_orcamentista_e_indicador.cep) then
+										blnAnEnderecoEndEntregaUsaEndParceiro = True
+										blnAnalisarEndereco = True
+						
+										if Not fin_gera_nsu(T_PEDIDO_ANALISE_ENDERECO, intNsuPai, msg_erro) then
+											alerta = "FALHA AO GERAR NSU PARA O NOVO REGISTRO (" & msg_erro & ")"
+										else
+											s = "SELECT * FROM t_PEDIDO_ANALISE_ENDERECO WHERE (id = -1)"
+											if rs.State <> 0 then rs.Close
+											rs.Open s, cn
+											rs.AddNew
+											rs("id") = intNsuPai
+											rs("pedido") = id_pedido
+											rs("id_cliente") = r_orcamento.id_cliente
+											rs("tipo_endereco") = COD_PEDIDO_AN_ENDERECO__END_ENTREGA
+											rs("endereco_logradouro") = r_orcamento.EndEtg_endereco
+											rs("endereco_bairro") = r_orcamento.EndEtg_bairro
+											rs("endereco_cidade") = r_orcamento.EndEtg_cidade
+											rs("endereco_uf") = r_orcamento.EndEtg_uf
+											rs("endereco_cep") = r_orcamento.EndEtg_cep
+											rs("endereco_numero") = r_orcamento.EndEtg_endereco_numero
+											rs("endereco_complemento") = r_orcamento.EndEtg_endereco_complemento
+											rs("usuario_cadastro") = usuario
+											rs.Update
+											end if ' if Not fin_gera_nsu()
+						
+										if alerta = "" then
+											if Not fin_gera_nsu(T_PEDIDO_ANALISE_ENDERECO_CONFRONTACAO, intNsu, msg_erro) then
+												alerta = "FALHA AO GERAR NSU PARA O NOVO REGISTRO (" & msg_erro & ")"
+											else
 												s = "SELECT * FROM t_PEDIDO_ANALISE_ENDERECO_CONFRONTACAO WHERE (id = -1)"
 												if rs.State <> 0 then rs.Close
 												rs.Open s, cn
 												rs.AddNew
-												rs("id") = intNsu
-												rs("id_pedido_analise_endereco") = intNsuPai
-												rs("pedido") = .pedido
-												rs("id_cliente") = .id_cliente
-												rs("tipo_endereco") = .tipo_endereco
-												rs("endereco_logradouro") = .endereco_logradouro
-												rs("endereco_bairro") = .endereco_bairro
-												rs("endereco_cidade") = .endereco_cidade
-												rs("endereco_uf") = .endereco_uf
-												rs("endereco_cep") = .endereco_cep
-												rs("endereco_numero") = .endereco_numero
-												rs("endereco_complemento") = .endereco_complemento
+												with r_orcamentista_e_indicador
+													rs("id") = intNsu
+													rs("id_pedido_analise_endereco") = intNsuPai
+													rs("pedido") = ""
+													rs("id_cliente") = ""
+													rs("tipo_endereco") = COD_PEDIDO_AN_ENDERECO__END_PARCEIRO
+													rs("endereco_logradouro") = .endereco
+													rs("endereco_bairro") = .bairro
+													rs("endereco_cidade") = .cidade
+													rs("endereco_uf") = .uf
+													rs("endereco_cep") = .cep
+													rs("endereco_numero") = .endereco_numero
+													rs("endereco_complemento") = .endereco_complemento
+													end with
 												rs.Update
-												end if 'if Trim("" & .pedido) <> ""
-											end with
-										next
-									end if ' if Not blnAnEnderecoEndEntregaUsaEndParceiro
-								end if ' if alerta = ""
-							end if 'if CLng(r_orcamento.st_end_entrega) <> 0
-						end if 'if alerta = ""
+												end if ' if Not fin_gera_nsu()
+											end if ' if alerta = ""
+										end if ' if isEnderecoIgual()
+									end if ' if r_orcamento.orcamentista <> ""
+				
+							'	2)VERIFICA PEDIDOS DE OUTROS CLIENTES
+								if alerta = "" then
+									if Not blnAnEnderecoEndEntregaUsaEndParceiro then
+										redim vAnEndConfrontacao(0)
+										set vAnEndConfrontacao(Ubound(vAnEndConfrontacao)) = new cl_ANALISE_ENDERECO_CONFRONTACAO
+										intQtdeTotalPedidosAnEndereco = 0
+						
+										'em 2020-04-16 não temos mais registros com endereco_memorizado_status = 0
+										s = "SELECT DISTINCT * FROM " & _
+												"(" & _
+													"SELECT" & _
+														" '" & COD_PEDIDO_AN_ENDERECO__CAD_CLIENTE_MEMORIZADO & "' AS tipo_endereco," & _
+														" pedido," & _
+														" data_hora," & _
+														" id_cliente," & _
+														" endereco_logradouro," & _
+														" endereco_numero," & _
+														" endereco_complemento," & _
+														" endereco_bairro," & _
+														" endereco_cidade," & _
+														" endereco_uf," & _
+														" endereco_cep" & _
+													" FROM t_PEDIDO" & _
+													" WHERE" & _
+														" (id_cliente <> '" & r_orcamento.id_cliente & "')" & _
+														" AND (endereco_cep = '" & retorna_so_digitos(r_orcamento.EndEtg_cep) & "')" & _
+													" UNION " & _
+													"SELECT" & _
+														" '" & COD_PEDIDO_AN_ENDERECO__END_ENTREGA & "' AS tipo_endereco," & _
+														" pedido," & _
+														" data_hora," & _
+														" id_cliente," & _
+														" EndEtg_endereco AS endereco_logradouro," & _
+														" EndEtg_endereco_numero AS endereco_numero," & _
+														" EndEtg_endereco_complemento AS endereco_complemento," & _
+														" EndEtg_bairro AS endereco_bairro," & _
+														" EndEtg_cidade AS endereco_cidade," & _
+														" EndEtg_uf AS endereco_uf," & _
+														" EndEtg_cep AS endereco_cep" & _
+													" FROM t_PEDIDO" & _
+													" WHERE" & _
+														" (st_end_entrega = 1)" & _
+														" AND (id_cliente <> '" & r_orcamento.id_cliente & "')" & _
+														" AND (EndEtg_cep = '" & retorna_so_digitos(r_orcamento.EndEtg_cep) & "')" & _
+												") t" & _
+											" ORDER BY" & _
+												" data_hora DESC"
+										if rs.State <> 0 then rs.Close
+										rs.Open s, cn
+										do while Not rs.Eof
+											if isEnderecoIgual(r_orcamento.EndEtg_endereco, r_orcamento.EndEtg_endereco_numero, r_orcamento.EndEtg_cep, Trim("" & rs("endereco_logradouro")), Trim("" & rs("endereco_numero")), Trim("" & rs("endereco_cep"))) then
+												if Trim("" & vAnEndConfrontacao(Ubound(vAnEndConfrontacao)).pedido) <> "" then
+													redim preserve vAnEndConfrontacao(UBound(vAnEndConfrontacao)+1)
+													set vAnEndConfrontacao(UBound(vAnEndConfrontacao)) = new cl_ANALISE_ENDERECO_CONFRONTACAO
+													end if
+								
+												with vAnEndConfrontacao(UBound(vAnEndConfrontacao))
+													.pedido = Trim("" & rs("pedido"))
+													.id_cliente = Trim("" & rs("id_cliente"))
+													.tipo_endereco = Trim("" & rs("tipo_endereco"))
+													.endereco_logradouro = Trim("" & rs("endereco_logradouro"))
+													.endereco_bairro = Trim("" & rs("endereco_bairro"))
+													.endereco_cidade = Trim("" & rs("endereco_cidade"))
+													.endereco_uf = Trim("" & rs("endereco_uf"))
+													.endereco_cep = Trim("" & rs("endereco_cep"))
+													.endereco_numero = Trim("" & rs("endereco_numero"))
+													.endereco_complemento = Trim("" & rs("endereco_complemento"))
+													end with
+								
+												intQtdeTotalPedidosAnEndereco = intQtdeTotalPedidosAnEndereco + 1
+												if intQtdeTotalPedidosAnEndereco >= MAX_AN_ENDERECO_QTDE_PEDIDOS_CADASTRAMENTO then exit do
+												end if 'if isEnderecoIgual()
+							
+											rs.MoveNext
+											loop
+										if rs.State <> 0 then rs.Close
+						
+										blnGravouRegPai = False
+										for i=LBound(vAnEndConfrontacao) to UBound(vAnEndConfrontacao)
+											with vAnEndConfrontacao(i)
+												if Trim("" & .pedido) <> "" then
+													blnAnalisarEndereco = True
+												'	JÁ GRAVOU O REGISTRO PAI?
+													if Not blnGravouRegPai then
+														blnGravouRegPai = True
+														if Not fin_gera_nsu(T_PEDIDO_ANALISE_ENDERECO, intNsuPai, msg_erro) then
+															alerta = "FALHA AO GERAR NSU PARA O NOVO REGISTRO (" & msg_erro & ")"
+															exit for
+															end if
+										
+														s = "SELECT * FROM t_PEDIDO_ANALISE_ENDERECO WHERE (id = -1)"
+														if rs.State <> 0 then rs.Close
+														rs.Open s, cn
+														rs.AddNew
+														rs("id") = intNsuPai
+														rs("pedido") = id_pedido
+														rs("id_cliente") = r_orcamento.id_cliente
+														rs("tipo_endereco") = COD_PEDIDO_AN_ENDERECO__END_ENTREGA
+														rs("endereco_logradouro") = r_orcamento.EndEtg_endereco
+														rs("endereco_bairro") = r_orcamento.EndEtg_bairro
+														rs("endereco_cidade") = r_orcamento.EndEtg_cidade
+														rs("endereco_uf") = r_orcamento.EndEtg_uf
+														rs("endereco_cep") = r_orcamento.EndEtg_cep
+														rs("endereco_numero") = r_orcamento.EndEtg_endereco_numero
+														rs("endereco_complemento") = r_orcamento.EndEtg_endereco_complemento
+														rs("usuario_cadastro") = usuario
+														rs.Update
+														end if 'if Not blnGravouRegPai
+							
+													if Not fin_gera_nsu(T_PEDIDO_ANALISE_ENDERECO_CONFRONTACAO, intNsu, msg_erro) then
+														alerta = "FALHA AO GERAR NSU PARA O NOVO REGISTRO (" & msg_erro & ")"
+														exit for
+														end if
+									
+													s = "SELECT * FROM t_PEDIDO_ANALISE_ENDERECO_CONFRONTACAO WHERE (id = -1)"
+													if rs.State <> 0 then rs.Close
+													rs.Open s, cn
+													rs.AddNew
+													rs("id") = intNsu
+													rs("id_pedido_analise_endereco") = intNsuPai
+													rs("pedido") = .pedido
+													rs("id_cliente") = .id_cliente
+													rs("tipo_endereco") = .tipo_endereco
+													rs("endereco_logradouro") = .endereco_logradouro
+													rs("endereco_bairro") = .endereco_bairro
+													rs("endereco_cidade") = .endereco_cidade
+													rs("endereco_uf") = .endereco_uf
+													rs("endereco_cep") = .endereco_cep
+													rs("endereco_numero") = .endereco_numero
+													rs("endereco_complemento") = .endereco_complemento
+													rs.Update
+													end if 'if Trim("" & .pedido) <> ""
+												end with
+											next
+										end if ' if Not blnAnEnderecoEndEntregaUsaEndParceiro
+									end if ' if alerta = ""
+								end if 'if CLng(r_orcamento.st_end_entrega) <> 0
+							end if 'if alerta = ""
 		
+						if alerta = "" then
+							if blnAnalisarEndereco then
+								s = "UPDATE t_PEDIDO SET analise_endereco_tratar_status = 1 WHERE (pedido = '" & id_pedido & "')"
+								cn.Execute(s)
+								end if
+							end if
+						end if 'if indice_pedido = 1
+
+					'Registra no bloco de notas que o pedido-filhote foi gerado por split automático
 					if alerta = "" then
-						if blnAnalisarEndereco then
-							s = "UPDATE t_PEDIDO SET analise_endereco_tratar_status = 1 WHERE (pedido = '" & id_pedido & "')"
-							cn.Execute(s)
+						if indice_pedido > 1 then
+							sBlocoNotasMsg = "Pedido gerado através de split automático durante o cadastramento inicial"
+							if Not grava_bloco_notas_pedido(id_pedido, ID_USUARIO_SISTEMA, loja, COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__RESTRITO, sBlocoNotasMsg, COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_SPLIT_AUTOMATICO, msg_erro) then
+								alerta = "Falha ao gravar bloco de notas com mensagem automática no pedido (" & id_pedido & ")"
+								end if
 							end if
 						end if
-					end if 'if indice_pedido = 1
 
-				'Registra no bloco de notas que o pedido-filhote foi gerado por split automático
-				if alerta = "" then
-					if indice_pedido > 1 then
-						sBlocoNotasMsg = "Pedido gerado através de split automático durante o cadastramento inicial"
-						if Not grava_bloco_notas_pedido(id_pedido, ID_USUARIO_SISTEMA, loja, COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__RESTRITO, sBlocoNotasMsg, COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_SPLIT_AUTOMATICO, msg_erro) then
+					'Registra no bloco de notas os dados do endereço inicial
+					if alerta = "" then
+						sBlocoNotasMsg = "Endereço de cobrança inicial: " & vbCrLf & _
+										sBlocoNotasEndCob
+
+						sBlocoNotasMsg = sBlocoNotasMsg & vbCrLf & _
+										vbCrLf & _
+										"Endereço de entrega inicial: " & vbCrLf
+						if CLng(r_orcamento.st_end_entrega) <> 0 then
+							sBlocoNotasMsg = sBlocoNotasMsg & sBlocoNotasEndEtg
+						else
+							sBlocoNotasMsg = sBlocoNotasMsg & "(N.I.)"
+							end if
+
+						if Not grava_bloco_notas_pedido(id_pedido, ID_USUARIO_SISTEMA, loja, COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__RESTRITO, sBlocoNotasMsg, COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_EDICAO_ENDERECO, msg_erro) then
 							alerta = "Falha ao gravar bloco de notas com mensagem automática no pedido (" & id_pedido & ")"
 							end if
 						end if
-					end if
-
-				'Registra no bloco de notas os dados do endereço inicial
-				if alerta = "" then
-					sBlocoNotasMsg = "Endereço de cobrança inicial: " & vbCrLf & _
-									sBlocoNotasEndCob
-
-					sBlocoNotasMsg = sBlocoNotasMsg & vbCrLf & _
-									vbCrLf & _
-									"Endereço de entrega inicial: " & vbCrLf
-					if CLng(r_orcamento.st_end_entrega) <> 0 then
-						sBlocoNotasMsg = sBlocoNotasMsg & sBlocoNotasEndEtg
-					else
-						sBlocoNotasMsg = sBlocoNotasMsg & "(N.I.)"
-						end if
-
-					if Not grava_bloco_notas_pedido(id_pedido, ID_USUARIO_SISTEMA, loja, COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__RESTRITO, sBlocoNotasMsg, COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_EDICAO_ENDERECO, msg_erro) then
-						alerta = "Falha ao gravar bloco de notas com mensagem automática no pedido (" & id_pedido & ")"
-						end if
-					end if
-				end if ' if (vEmpresaAutoSplit(iv) <> 0) then
+					end if ' if (vEmpresaAutoSplit(iv) <> 0) then
 			
-			if alerta <> "" then exit for
-			next ' for iv = LBound(vEmpresaAutoSplit) to UBound(vEmpresaAutoSplit)
+				if alerta <> "" then exit for
+				next ' for iv = LBound(vEmpresaAutoSplit) to UBound(vEmpresaAutoSplit)
+			end if 'if alerta = ""
 
 	'	LOG
 		if alerta = "" then
@@ -2300,7 +2329,7 @@
 				s_log = s_log & "; custoFinancFornecQtdeParcelas=" & formata_texto_log(rs("custoFinancFornecQtdeParcelas"))
 	
 				if blnUsarMemorizacaoCompletaEnderecos and r_orcamento.st_memorizacao_completa_enderecos <> 0 then
-				    s_log = s_log & "; Endereço cobrança=" & formata_endereco(r_orcamento.endereco_logradouro, r_orcamento.endereco_numero, r_orcamento.endereco_complemento, r_orcamento.endereco_bairro, r_orcamento.endereco_cidade, r_orcamento.endereco_uf, r_orcamento.endereco_cep)
+					s_log = s_log & "; Endereço cobrança=" & formata_endereco(r_orcamento.endereco_logradouro, r_orcamento.endereco_numero, r_orcamento.endereco_complemento, r_orcamento.endereco_bairro, r_orcamento.endereco_cidade, r_orcamento.endereco_uf, r_orcamento.endereco_cep)
 					s_log = s_log & _
 							" (" & _
 							"email=" & r_orcamento.endereco_email & _
@@ -2323,9 +2352,9 @@
 							", ie=" & r_orcamento.endereco_ie & _
 							", rg=" & r_orcamento.endereco_rg & _
 							")"
-                else
-				    s_log = s_log & "; Endereço cobrança=" & formata_endereco(Trim("" & t_CLIENTE("endereco")), Trim("" & t_CLIENTE("endereco_numero")), Trim("" & t_CLIENTE("endereco_complemento")), Trim("" & t_CLIENTE("bairro")), Trim("" & t_CLIENTE("cidade")), Trim("" & t_CLIENTE("uf")), Trim("" & t_CLIENTE("cep")))
-                    end if
+				else
+					s_log = s_log & "; Endereço cobrança=" & formata_endereco(Trim("" & t_CLIENTE("endereco")), Trim("" & t_CLIENTE("endereco_numero")), Trim("" & t_CLIENTE("endereco_complemento")), Trim("" & t_CLIENTE("bairro")), Trim("" & t_CLIENTE("cidade")), Trim("" & t_CLIENTE("uf")), Trim("" & t_CLIENTE("cep")))
+					end if
 
 				if CLng(r_orcamento.st_end_entrega) <> 0 then
 					s_log = s_log & "; Endereço entrega=" & r_orcamento.EndEtg_endereco
@@ -2495,8 +2524,17 @@
 <!--  T E L A  -->
 <p class="T">A V I S O</p>
 <div class="MtAlerta" style="width:600px;font-weight:bold;" align="center"><p style='margin:5px 2px 5px 2px;'><%=alerta%></p></div>
-<br><br>
-<p class="TracoBottom"></p>
+<br />
+<table class="notPrint" width="649" cellpadding="4" cellspacing="0" style="border-bottom:1px solid black">
+<tr><td class="Rc" align="left">&nbsp;</td></tr>
+</table>
+<table class="notPrint" width="649" cellpadding="0" cellspacing="0">
+<tr><td align="right"><span class="Rc">
+	<a href="resumo.asp<%= "?" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>" title="retorna para página inicial" class="LPagInicial">página inicial</a>&nbsp;&nbsp;&nbsp;
+	<a href="sessaoencerra.asp<%= "?" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>" title="encerra a sessão do usuário" class="LSessaoEncerra">encerra</a>
+	</span>
+</td></tr>
+</table>
 <table cellspacing="0">
 <tr>
 	<% 	if erro_produto_indisponivel then 

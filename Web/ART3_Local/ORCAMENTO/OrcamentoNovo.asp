@@ -1178,6 +1178,8 @@ var i, b, ha_item, strMsgErro;
 <input type="hidden" name="orcamento_endereco_rg" id="orcamento_endereco_rg" value="<%=orcamento_endereco_rg%>" />
 <input type="hidden" name="orcamento_endereco_contato" id="orcamento_endereco_contato" value="<%=orcamento_endereco_contato%>" />
 
+<input type="hidden" name="insert_request_guid" id="insert_request_guid" value="<%=gera_uid%>" />
+
 
 <!-- AJAX EM ANDAMENTO -->
 <div id="divAjaxRunning" style="display:none;"><img src="../Imagem/ajax_loader_gray_256.gif" class="AjaxImgLoader"/></div>

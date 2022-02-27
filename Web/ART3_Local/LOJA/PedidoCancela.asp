@@ -82,8 +82,7 @@
 			cn.Execute(s)
 			end if
 
-        response.Write(c_cod_motivo)
-           
+
 		if Not cria_recordset_pessimista(rs, msg_erro) then
 		'	~~~~~~~~~~~~~~~~
 			cn.RollbackTrans

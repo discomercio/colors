@@ -84,6 +84,10 @@
 	If Not cria_recordset_otimista(tPCI, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	If Not cria_recordset_otimista(tPL, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
+	dim insert_request_guid
+	insert_request_guid = Trim(Request.Form("insert_request_guid"))
+	if insert_request_guid = "" then insert_request_guid = gera_uid
+
 	dim blnLojaHabilitadaProdCompostoECommerce
 	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
 
@@ -3227,6 +3231,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 <input type="hidden" name="c_tipo_cliente" id="c_tipo_cliente" value='<%=EndCob_tipo_pessoa%>'>
 <% if erro_produto_indisponivel then s="S" else s="" %>
 <input type="hidden" name="opcao_venda_sem_estoque" id="opcao_venda_sem_estoque" value='<%=s%>'>
+<input type="hidden" name="insert_request_guid" id="insert_request_guid" value="<%=insert_request_guid%>" />
 
 <input type="hidden" name="rb_indicacao" id="rb_indicacao" value='<%=rb_indicacao%>'>
 <input type="hidden" name="rb_RA" id="rb_RA" value='<%=rb_RA%>'>

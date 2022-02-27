@@ -45,6 +45,10 @@
 	dim cn, rs, msg_erro
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	
+	dim insert_request_guid
+	insert_request_guid = Trim(Request.Form("insert_request_guid"))
+	if insert_request_guid = "" then insert_request_guid = gera_uid
+
 	dim blnLojaHabilitadaProdCompostoECommerce
 	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
 
@@ -2202,6 +2206,7 @@ var blnConfirmaDifRAeValores=false;
 <input type="hidden" name="cliente_selecionado" id="cliente_selecionado" value='<%=cliente_selecionado%>'>
 <% if erro_produto_indisponivel then s="S" else s="" %>
 <input type="hidden" name="opcao_venda_sem_estoque" id="opcao_venda_sem_estoque" value='<%=s%>'>
+<input type="hidden" name="insert_request_guid" id="insert_request_guid" value="<%=insert_request_guid%>" />
 <input type="hidden" name="midia" id="midia" value='<%=midia%>'>
 <input type="hidden" name="vendedor" id="vendedor" value='<%=vendedor%>'>
 <input type="hidden" name="rb_end_entrega" id="rb_end_entrega" value='<%=rb_end_entrega%>'>
