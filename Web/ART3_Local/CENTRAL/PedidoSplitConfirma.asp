@@ -122,7 +122,11 @@
 				end if
 			end if
 		end if
-		
+	
+	dim insert_request_guid
+	insert_request_guid = Trim(Request.Form("insert_request_guid"))
+
+
 	if alerta = "" then
 	'	~~~~~~~~~~~~~
 		cn.BeginTrans
@@ -136,272 +140,289 @@
 					" id_nsu = '" & ID_XLOCK_SYNC_PEDIDO & "'"
 			cn.Execute(s)
 			end if
-
-		if Not gera_num_pedido_filhote(pedido_selecionado, id_pedido_filhote, msg_erro) then 
-		'	~~~~~~~~~~~~~~~~
-			cn.RollbackTrans
-		'	~~~~~~~~~~~~~~~~
-			Response.Redirect("aviso.asp?id=" & ERR_FALHA_GERAR_ID_PEDIDO_FILHOTE)
-			end if
 		
-		if Not cria_recordset_pessimista(rs, msg_erro) then
-		'	~~~~~~~~~~~~~~~~
-			cn.RollbackTrans
-		'	~~~~~~~~~~~~~~~~
-			Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
-			end if
-
-	'	CRIA O PEDIDO FILHOTE
-		s = "SELECT * FROM t_PEDIDO WHERE (pedido='" & pedido_selecionado & "')"
-		set sx = cn.execute(s)
-		if Err <> 0 then
-		'	~~~~~~~~~~~~~~~~
-			cn.RollbackTrans
-		'	~~~~~~~~~~~~~~~~
-			Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
-			end if
-		
-		if sx.Eof then
-			alerta = "Pedido " & pedido_selecionado & " não foi encontrado."
-		else
-			s = "SELECT * FROM t_PEDIDO WHERE (pedido='X')"
+	'	TRATAMENTO P/ OS CASOS EM QUE: USUÁRIO ESTÁ TENTANDO USAR O BOTÃO VOLTAR, OCORREU DUPLO CLIQUE OU USUÁRIO ATUALIZOU A PÁGINA ENQUANTO AINDA ESTAVA PROCESSANDO (DUPLO ACIONAMENTO)
+	'	Esse tratamento é feito através do campo insert_request_guid (t_PEDIDO.InsertRequestGuid)
+	'	Realiza a verificação após obter o lock do registro de controle p/ assegurar que não haverá problemas de acesso concorrente
+		if insert_request_guid <> "" then
+			s = "SELECT pedido, vendedor, data_hora FROM t_PEDIDO WHERE (InsertRequestGuid = '" & insert_request_guid & "')"
+			if Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 			rs.Open s, cn
-			rs.AddNew
-			rs("pedido") = id_pedido_filhote
-			rs("loja") = Trim("" & sx("loja"))
-			rs("data") = sx("data")
-			rs("hora") = Trim("" & sx("hora"))
-			rs("split_status") = 1
-			rs("split_data") = Date
-			rs("split_hora") = retorna_so_digitos(formata_hora(Now))
-			rs("split_usuario") = usuario
-			rs("id_cliente") = Trim("" & sx("id_cliente"))
-			rs("servicos") = ""
-			rs("vendedor") = Trim("" & sx("vendedor"))
-			rs("st_orc_virou_pedido") = sx("st_orc_virou_pedido")
-			rs("orcamento") = Trim("" & sx("orcamento"))
-			rs("orcamentista") = Trim("" & sx("orcamentista"))
-			rs("indicador") = Trim("" & sx("indicador"))
-			rs("st_entrega") = ST_ENTREGA_SEPARAR
-			rs("st_pagto") = ""
-			rs("usuario_st_pagto") = ""
-			rs("st_recebido") = ""
+			if Not rs.Eof then
+				alerta = "Esta operação de split já gerou o pedido-filhote nº " & Trim("" & rs("pedido")) & " em " & formata_data_hora(rs("data_hora"))
+				end if
+			if rs.State <> 0 then rs.Close
+			set rs = nothing
+			end if 'if insert_request_guid <> ""
 
-			'Campos que passaram a ser copiados a pedido do Mário em 18/08/2021
-			rs("obs_1") = Trim("" & sx("obs_1"))
-			rs("NFe_texto_constar") = Trim("" & sx("NFe_texto_constar"))
-
-			rs("obs_2") = ""
-			rs("qtde_parcelas") = 0
-			rs("forma_pagto") = ""
-			rs("midia") = Trim("" & sx("midia"))
-			rs("loja_indicou") = Trim("" & sx("loja_indicou"))
-			rs("comissao_loja_indicou") = sx("comissao_loja_indicou")
-			rs("venda_externa") = sx("venda_externa")
-			
-			rs("st_end_entrega") = sx("st_end_entrega")
-			rs("EndEtg_endereco") = sx("EndEtg_endereco")
-			rs("EndEtg_endereco_numero") = sx("EndEtg_endereco_numero")
-			rs("EndEtg_endereco_complemento") = sx("EndEtg_endereco_complemento")
-			rs("EndEtg_bairro") = sx("EndEtg_bairro")
-			rs("EndEtg_cidade") = sx("EndEtg_cidade")
-			rs("EndEtg_uf") = sx("EndEtg_uf")
-			rs("EndEtg_cep") = sx("EndEtg_cep")
-			rs("EndEtg_cod_justificativa") = sx("EndEtg_cod_justificativa")
-			if blnUsarMemorizacaoCompletaEnderecos then
-				rs("EndEtg_email") = sx("EndEtg_email")
-				rs("EndEtg_email_xml") = sx("EndEtg_email_xml")
-				rs("EndEtg_nome") = sx("EndEtg_nome")
-				rs("EndEtg_ddd_res") = sx("EndEtg_ddd_res")
-				rs("EndEtg_tel_res") = sx("EndEtg_tel_res")
-				rs("EndEtg_ddd_com") = sx("EndEtg_ddd_com")
-				rs("EndEtg_tel_com") = sx("EndEtg_tel_com")
-				rs("EndEtg_ramal_com") = sx("EndEtg_ramal_com")
-				rs("EndEtg_ddd_cel") = sx("EndEtg_ddd_cel")
-				rs("EndEtg_tel_cel") = sx("EndEtg_tel_cel")
-				rs("EndEtg_ddd_com_2") = sx("EndEtg_ddd_com_2")
-				rs("EndEtg_tel_com_2") = sx("EndEtg_tel_com_2")
-				rs("EndEtg_ramal_com_2") = sx("EndEtg_ramal_com_2")
-				rs("EndEtg_tipo_pessoa") = sx("EndEtg_tipo_pessoa")
-				rs("EndEtg_cnpj_cpf") = sx("EndEtg_cnpj_cpf")
-				rs("EndEtg_contribuinte_icms_status") = sx("EndEtg_contribuinte_icms_status")
-				rs("EndEtg_produtor_rural_status") = sx("EndEtg_produtor_rural_status")
-				rs("EndEtg_ie") = sx("EndEtg_ie")
-				rs("EndEtg_rg") = sx("EndEtg_rg")
+		if alerta = "" then
+			if Not gera_num_pedido_filhote(pedido_selecionado, id_pedido_filhote, msg_erro) then 
+			'	~~~~~~~~~~~~~~~~
+				cn.RollbackTrans
+			'	~~~~~~~~~~~~~~~~
+				Response.Redirect("aviso.asp?id=" & ERR_FALHA_GERAR_ID_PEDIDO_FILHOTE)
+				end if
+		
+			if Not cria_recordset_pessimista(rs, msg_erro) then
+			'	~~~~~~~~~~~~~~~~
+				cn.RollbackTrans
+			'	~~~~~~~~~~~~~~~~
+				Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 				end if
 
-			rs("st_etg_imediata") = sx("st_etg_imediata")
-			rs("etg_imediata_data") = sx("etg_imediata_data")
-			rs("etg_imediata_usuario") = sx("etg_imediata_usuario")
-			rs("PrevisaoEntregaData") = sx("PrevisaoEntregaData")
-			rs("PrevisaoEntregaUsuarioUltAtualiz") = sx("PrevisaoEntregaUsuarioUltAtualiz")
-			rs("PrevisaoEntregaDtHrUltAtualiz") = sx("PrevisaoEntregaDtHrUltAtualiz")
-			
-			rs("PagtoAntecipadoQuitadoStatus") = sx("PagtoAntecipadoQuitadoStatus")
-			rs("PagtoAntecipadoQuitadoDataHora") = sx("PagtoAntecipadoQuitadoDataHora")
-			rs("PagtoAntecipadoQuitadoUsuario") = sx("PagtoAntecipadoQuitadoUsuario")
-
-			rs("pedido_bs_x_ac") = sx("pedido_bs_x_ac")
-			rs("pedido_bs_x_marketplace") = sx("pedido_bs_x_marketplace")
-			rs("marketplace_codigo_origem") = sx("marketplace_codigo_origem")
-
-			rs("GarantiaIndicadorStatus") = sx("GarantiaIndicadorStatus")
-			rs("GarantiaIndicadorUsuarioUltAtualiz") = sx("GarantiaIndicadorUsuarioUltAtualiz")
-			rs("GarantiaIndicadorDtHrUltAtualiz") = sx("GarantiaIndicadorDtHrUltAtualiz")
-			
-			rs("perc_desagio_RA_liquida") = sx("perc_desagio_RA_liquida")
-			
-			rs("permite_RA_status") = sx("permite_RA_status")
-			rs("st_violado_permite_RA_status") = sx("st_violado_permite_RA_status")
-			rs("dt_hr_violado_permite_RA_status") = sx("dt_hr_violado_permite_RA_status")
-			rs("usuario_violado_permite_RA_status") = sx("usuario_violado_permite_RA_status")
-			rs("opcao_possui_RA") = sx("opcao_possui_RA")
-			
-			if CInt(sx("transportadora_selecao_auto_status")) <> 0 then
-				rs("transportadora_id") = sx("transportadora_id")
-				rs("transportadora_selecao_auto_status") = sx("transportadora_selecao_auto_status")
-				rs("transportadora_selecao_auto_cep") = sx("transportadora_selecao_auto_cep")
-				rs("transportadora_selecao_auto_tipo_endereco") = sx("transportadora_selecao_auto_tipo_endereco")
-				rs("transportadora_selecao_auto_transportadora") = sx("transportadora_selecao_auto_transportadora")
-				rs("transportadora_selecao_auto_data_hora") = sx("transportadora_selecao_auto_data_hora")
-				end if
-			
-			rs("id_nfe_emitente") = sx("id_nfe_emitente")
-			rs("usuario_cadastro") = sx("usuario_cadastro")
-			
-			rs("plataforma_origem_pedido") = sx("plataforma_origem_pedido")
-
-			rs("endereco_memorizado_status") = sx("endereco_memorizado_status")
-			rs("endereco_logradouro") = sx("endereco_logradouro")
-			rs("endereco_numero") = sx("endereco_numero")
-			rs("endereco_complemento") = sx("endereco_complemento")
-			rs("endereco_bairro") = sx("endereco_bairro")
-			rs("endereco_cidade") = sx("endereco_cidade")
-			rs("endereco_uf") = sx("endereco_uf")
-			rs("endereco_cep") = sx("endereco_cep")
-
-			if blnUsarMemorizacaoCompletaEnderecos then
-				rs("st_memorizacao_completa_enderecos") = sx("st_memorizacao_completa_enderecos")
-				rs("endereco_email") = sx("endereco_email")
-				rs("endereco_email_xml") = sx("endereco_email_xml")
-				rs("endereco_nome") = sx("endereco_nome")
-				rs("endereco_ddd_res") = sx("endereco_ddd_res")
-				rs("endereco_tel_res") = sx("endereco_tel_res")
-				rs("endereco_ddd_com") = sx("endereco_ddd_com")
-				rs("endereco_tel_com") = sx("endereco_tel_com")
-				rs("endereco_ramal_com") = sx("endereco_ramal_com")
-				rs("endereco_ddd_cel") = sx("endereco_ddd_cel")
-				rs("endereco_tel_cel") = sx("endereco_tel_cel")
-				rs("endereco_ddd_com_2") = sx("endereco_ddd_com_2")
-				rs("endereco_tel_com_2") = sx("endereco_tel_com_2")
-				rs("endereco_ramal_com_2") = sx("endereco_ramal_com_2")
-				rs("endereco_tipo_pessoa") = sx("endereco_tipo_pessoa")
-				rs("endereco_cnpj_cpf") = sx("endereco_cnpj_cpf")
-				rs("endereco_contribuinte_icms_status") = sx("endereco_contribuinte_icms_status")
-				rs("endereco_produtor_rural_status") = sx("endereco_produtor_rural_status")
-				rs("endereco_ie") = sx("endereco_ie")
-				rs("endereco_rg") = sx("endereco_rg")
-				rs("endereco_contato") = sx("endereco_contato")
-				end if
-
-			rs("StBemUsoConsumo") = sx("StBemUsoConsumo")
-			rs("InstaladorInstalaStatus") = sx("InstaladorInstalaStatus")
-			rs("InstaladorInstalaUsuarioUltAtualiz") = sx("InstaladorInstalaUsuarioUltAtualiz")
-			rs("InstaladorInstalaDtHrUltAtualiz") = sx("InstaladorInstalaDtHrUltAtualiz")
-
-			rs("sistema_responsavel_cadastro") = sx("sistema_responsavel_cadastro")
-			rs("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
-			
-			rs.Update
+		'	CRIA O PEDIDO FILHOTE
+			s = "SELECT * FROM t_PEDIDO WHERE (pedido='" & pedido_selecionado & "')"
+			set sx = cn.execute(s)
 			if Err <> 0 then
 			'	~~~~~~~~~~~~~~~~
 				cn.RollbackTrans
 			'	~~~~~~~~~~~~~~~~
 				Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
 				end if
+		
+			if sx.Eof then
+				alerta = "Pedido " & pedido_selecionado & " não foi encontrado."
+			else
+				s = "SELECT * FROM t_PEDIDO WHERE (pedido='X')"
+				rs.Open s, cn
+				rs.AddNew
+				rs("pedido") = id_pedido_filhote
+				if insert_request_guid <> "" then rs("InsertRequestGuid") = "{" & insert_request_guid & "}"
+				rs("loja") = Trim("" & sx("loja"))
+				rs("data") = sx("data")
+				rs("hora") = Trim("" & sx("hora"))
+				rs("split_status") = 1
+				rs("split_data") = Date
+				rs("split_hora") = retorna_so_digitos(formata_hora(Now))
+				rs("split_usuario") = usuario
+				rs("id_cliente") = Trim("" & sx("id_cliente"))
+				rs("servicos") = ""
+				rs("vendedor") = Trim("" & sx("vendedor"))
+				rs("st_orc_virou_pedido") = sx("st_orc_virou_pedido")
+				rs("orcamento") = Trim("" & sx("orcamento"))
+				rs("orcamentista") = Trim("" & sx("orcamentista"))
+				rs("indicador") = Trim("" & sx("indicador"))
+				rs("st_entrega") = ST_ENTREGA_SEPARAR
+				rs("st_pagto") = ""
+				rs("usuario_st_pagto") = ""
+				rs("st_recebido") = ""
+
+				'Campos que passaram a ser copiados a pedido do Mário em 18/08/2021
+				rs("obs_1") = Trim("" & sx("obs_1"))
+				rs("NFe_texto_constar") = Trim("" & sx("NFe_texto_constar"))
+
+				rs("obs_2") = ""
+				rs("qtde_parcelas") = 0
+				rs("forma_pagto") = ""
+				rs("midia") = Trim("" & sx("midia"))
+				rs("loja_indicou") = Trim("" & sx("loja_indicou"))
+				rs("comissao_loja_indicou") = sx("comissao_loja_indicou")
+				rs("venda_externa") = sx("venda_externa")
+			
+				rs("st_end_entrega") = sx("st_end_entrega")
+				rs("EndEtg_endereco") = sx("EndEtg_endereco")
+				rs("EndEtg_endereco_numero") = sx("EndEtg_endereco_numero")
+				rs("EndEtg_endereco_complemento") = sx("EndEtg_endereco_complemento")
+				rs("EndEtg_bairro") = sx("EndEtg_bairro")
+				rs("EndEtg_cidade") = sx("EndEtg_cidade")
+				rs("EndEtg_uf") = sx("EndEtg_uf")
+				rs("EndEtg_cep") = sx("EndEtg_cep")
+				rs("EndEtg_cod_justificativa") = sx("EndEtg_cod_justificativa")
+				if blnUsarMemorizacaoCompletaEnderecos then
+					rs("EndEtg_email") = sx("EndEtg_email")
+					rs("EndEtg_email_xml") = sx("EndEtg_email_xml")
+					rs("EndEtg_nome") = sx("EndEtg_nome")
+					rs("EndEtg_ddd_res") = sx("EndEtg_ddd_res")
+					rs("EndEtg_tel_res") = sx("EndEtg_tel_res")
+					rs("EndEtg_ddd_com") = sx("EndEtg_ddd_com")
+					rs("EndEtg_tel_com") = sx("EndEtg_tel_com")
+					rs("EndEtg_ramal_com") = sx("EndEtg_ramal_com")
+					rs("EndEtg_ddd_cel") = sx("EndEtg_ddd_cel")
+					rs("EndEtg_tel_cel") = sx("EndEtg_tel_cel")
+					rs("EndEtg_ddd_com_2") = sx("EndEtg_ddd_com_2")
+					rs("EndEtg_tel_com_2") = sx("EndEtg_tel_com_2")
+					rs("EndEtg_ramal_com_2") = sx("EndEtg_ramal_com_2")
+					rs("EndEtg_tipo_pessoa") = sx("EndEtg_tipo_pessoa")
+					rs("EndEtg_cnpj_cpf") = sx("EndEtg_cnpj_cpf")
+					rs("EndEtg_contribuinte_icms_status") = sx("EndEtg_contribuinte_icms_status")
+					rs("EndEtg_produtor_rural_status") = sx("EndEtg_produtor_rural_status")
+					rs("EndEtg_ie") = sx("EndEtg_ie")
+					rs("EndEtg_rg") = sx("EndEtg_rg")
+					end if
+
+				rs("st_etg_imediata") = sx("st_etg_imediata")
+				rs("etg_imediata_data") = sx("etg_imediata_data")
+				rs("etg_imediata_usuario") = sx("etg_imediata_usuario")
+				rs("PrevisaoEntregaData") = sx("PrevisaoEntregaData")
+				rs("PrevisaoEntregaUsuarioUltAtualiz") = sx("PrevisaoEntregaUsuarioUltAtualiz")
+				rs("PrevisaoEntregaDtHrUltAtualiz") = sx("PrevisaoEntregaDtHrUltAtualiz")
+			
+				rs("PagtoAntecipadoQuitadoStatus") = sx("PagtoAntecipadoQuitadoStatus")
+				rs("PagtoAntecipadoQuitadoDataHora") = sx("PagtoAntecipadoQuitadoDataHora")
+				rs("PagtoAntecipadoQuitadoUsuario") = sx("PagtoAntecipadoQuitadoUsuario")
+
+				rs("pedido_bs_x_ac") = sx("pedido_bs_x_ac")
+				rs("pedido_bs_x_marketplace") = sx("pedido_bs_x_marketplace")
+				rs("marketplace_codigo_origem") = sx("marketplace_codigo_origem")
+
+				rs("GarantiaIndicadorStatus") = sx("GarantiaIndicadorStatus")
+				rs("GarantiaIndicadorUsuarioUltAtualiz") = sx("GarantiaIndicadorUsuarioUltAtualiz")
+				rs("GarantiaIndicadorDtHrUltAtualiz") = sx("GarantiaIndicadorDtHrUltAtualiz")
+			
+				rs("perc_desagio_RA_liquida") = sx("perc_desagio_RA_liquida")
+			
+				rs("permite_RA_status") = sx("permite_RA_status")
+				rs("st_violado_permite_RA_status") = sx("st_violado_permite_RA_status")
+				rs("dt_hr_violado_permite_RA_status") = sx("dt_hr_violado_permite_RA_status")
+				rs("usuario_violado_permite_RA_status") = sx("usuario_violado_permite_RA_status")
+				rs("opcao_possui_RA") = sx("opcao_possui_RA")
+			
+				if CInt(sx("transportadora_selecao_auto_status")) <> 0 then
+					rs("transportadora_id") = sx("transportadora_id")
+					rs("transportadora_selecao_auto_status") = sx("transportadora_selecao_auto_status")
+					rs("transportadora_selecao_auto_cep") = sx("transportadora_selecao_auto_cep")
+					rs("transportadora_selecao_auto_tipo_endereco") = sx("transportadora_selecao_auto_tipo_endereco")
+					rs("transportadora_selecao_auto_transportadora") = sx("transportadora_selecao_auto_transportadora")
+					rs("transportadora_selecao_auto_data_hora") = sx("transportadora_selecao_auto_data_hora")
+					end if
+			
+				rs("id_nfe_emitente") = sx("id_nfe_emitente")
+				rs("usuario_cadastro") = sx("usuario_cadastro")
+			
+				rs("plataforma_origem_pedido") = sx("plataforma_origem_pedido")
+
+				rs("endereco_memorizado_status") = sx("endereco_memorizado_status")
+				rs("endereco_logradouro") = sx("endereco_logradouro")
+				rs("endereco_numero") = sx("endereco_numero")
+				rs("endereco_complemento") = sx("endereco_complemento")
+				rs("endereco_bairro") = sx("endereco_bairro")
+				rs("endereco_cidade") = sx("endereco_cidade")
+				rs("endereco_uf") = sx("endereco_uf")
+				rs("endereco_cep") = sx("endereco_cep")
+
+				if blnUsarMemorizacaoCompletaEnderecos then
+					rs("st_memorizacao_completa_enderecos") = sx("st_memorizacao_completa_enderecos")
+					rs("endereco_email") = sx("endereco_email")
+					rs("endereco_email_xml") = sx("endereco_email_xml")
+					rs("endereco_nome") = sx("endereco_nome")
+					rs("endereco_ddd_res") = sx("endereco_ddd_res")
+					rs("endereco_tel_res") = sx("endereco_tel_res")
+					rs("endereco_ddd_com") = sx("endereco_ddd_com")
+					rs("endereco_tel_com") = sx("endereco_tel_com")
+					rs("endereco_ramal_com") = sx("endereco_ramal_com")
+					rs("endereco_ddd_cel") = sx("endereco_ddd_cel")
+					rs("endereco_tel_cel") = sx("endereco_tel_cel")
+					rs("endereco_ddd_com_2") = sx("endereco_ddd_com_2")
+					rs("endereco_tel_com_2") = sx("endereco_tel_com_2")
+					rs("endereco_ramal_com_2") = sx("endereco_ramal_com_2")
+					rs("endereco_tipo_pessoa") = sx("endereco_tipo_pessoa")
+					rs("endereco_cnpj_cpf") = sx("endereco_cnpj_cpf")
+					rs("endereco_contribuinte_icms_status") = sx("endereco_contribuinte_icms_status")
+					rs("endereco_produtor_rural_status") = sx("endereco_produtor_rural_status")
+					rs("endereco_ie") = sx("endereco_ie")
+					rs("endereco_rg") = sx("endereco_rg")
+					rs("endereco_contato") = sx("endereco_contato")
+					end if
+
+				rs("StBemUsoConsumo") = sx("StBemUsoConsumo")
+				rs("InstaladorInstalaStatus") = sx("InstaladorInstalaStatus")
+				rs("InstaladorInstalaUsuarioUltAtualiz") = sx("InstaladorInstalaUsuarioUltAtualiz")
+				rs("InstaladorInstalaDtHrUltAtualiz") = sx("InstaladorInstalaDtHrUltAtualiz")
+
+				rs("sistema_responsavel_cadastro") = sx("sistema_responsavel_cadastro")
+				rs("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
+			
+				rs.Update
+				if Err <> 0 then
+				'	~~~~~~~~~~~~~~~~
+					cn.RollbackTrans
+				'	~~~~~~~~~~~~~~~~
+					Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
+					end if
 				
 
-			for i=Lbound(v_split) to Ubound(v_split)
-				with v_split(i)
-					if (.produto <> "") And (.qtde_split > 0) then
+				for i=Lbound(v_split) to Ubound(v_split)
+					with v_split(i)
+						if (.produto <> "") And (.qtde_split > 0) then
 
-					'	TRANSFERE OS PRODUTOS DO ESTOQUE "VENDIDO"
-						if Not estoque_produto_split_v2(usuario, pedido_selecionado, id_pedido_filhote, .fabricante, .produto, .qtde_split, msg_erro) then
-						'	~~~~~~~~~~~~~~~~
-							cn.RollbackTrans
-						'	~~~~~~~~~~~~~~~~
-							Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_MOVIMENTO_ESTOQUE)
-							end if
-						
-						s_log = s_log & log_produto_monta(.qtde_split, .fabricante, .produto)
-
-					'	CRIA O ITEM DO PEDIDO FILHOTE
-						s = "SELECT * FROM t_PEDIDO_ITEM WHERE" & _
-							" (pedido='" & pedido_selecionado & "')" & _
-							" AND (fabricante='" & .fabricante & "')" & _
-							" AND (produto='" & .produto & "')"
-						if sx.State <> 0 then sx.Close
-						set sx=cn.execute(s)
-						if Err <> 0 then
-						'	~~~~~~~~~~~~~~~~
-							cn.RollbackTrans
-						'	~~~~~~~~~~~~~~~~
-							Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
-							end if
-						if sx.Eof then
-							alerta = texto_add_br(alerta)
-							alerta = alerta & "Item do pedido " & pedido_selecionado & " não foi encontrado: produto " & .produto & " do fabricante " & .fabricante & "."
-							exit for
-						else
-							if rs.State <> 0 then rs.Close
-							s = "SELECT * FROM t_PEDIDO_ITEM WHERE (pedido='X') AND (fabricante='X') AND (produto='X')"
-							rs.Open s, cn
-							rs.AddNew
-							for n=0 to rs.Fields.Count-1
-								rs.Fields(n).Value = sx.Fields(n).Value
-								next
-							
-							rs("pedido") = id_pedido_filhote
-							rs("qtde") = .qtde_split
-							rs.Update 
-							if Err <> 0 then
+						'	TRANSFERE OS PRODUTOS DO ESTOQUE "VENDIDO"
+							if Not estoque_produto_split_v2(usuario, pedido_selecionado, id_pedido_filhote, .fabricante, .produto, .qtde_split, msg_erro) then
 							'	~~~~~~~~~~~~~~~~
 								cn.RollbackTrans
 							'	~~~~~~~~~~~~~~~~
-								Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
+								Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_MOVIMENTO_ESTOQUE)
 								end if
-							
-						'	ACERTA A QUANTIDADE NO PEDIDO ORIGINAL
-							if rs.State <> 0 then rs.Close
+						
+							s_log = s_log & log_produto_monta(.qtde_split, .fabricante, .produto)
+
+						'	CRIA O ITEM DO PEDIDO FILHOTE
 							s = "SELECT * FROM t_PEDIDO_ITEM WHERE" & _
 								" (pedido='" & pedido_selecionado & "')" & _
 								" AND (fabricante='" & .fabricante & "')" & _
 								" AND (produto='" & .produto & "')"
-							rs.Open s, cn
+							if sx.State <> 0 then sx.Close
+							set sx=cn.execute(s)
 							if Err <> 0 then
 							'	~~~~~~~~~~~~~~~~
 								cn.RollbackTrans
 							'	~~~~~~~~~~~~~~~~
 								Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
 								end if
-							
-							if rs.EOF then
+							if sx.Eof then
 								alerta = texto_add_br(alerta)
 								alerta = alerta & "Item do pedido " & pedido_selecionado & " não foi encontrado: produto " & .produto & " do fabricante " & .fabricante & "."
 								exit for
 							else
-								rs("qtde") = rs("qtde") - .qtde_split
-								if rs("qtde") > 0 then
-									rs.Update 
+								if rs.State <> 0 then rs.Close
+								s = "SELECT * FROM t_PEDIDO_ITEM WHERE (pedido='X') AND (fabricante='X') AND (produto='X')"
+								rs.Open s, cn
+								rs.AddNew
+								for n=0 to rs.Fields.Count-1
+									rs.Fields(n).Value = sx.Fields(n).Value
+									next
+							
+								rs("pedido") = id_pedido_filhote
+								rs("qtde") = .qtde_split
+								rs.Update 
+								if Err <> 0 then
+								'	~~~~~~~~~~~~~~~~
+									cn.RollbackTrans
+								'	~~~~~~~~~~~~~~~~
+									Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
+									end if
+							
+							'	ACERTA A QUANTIDADE NO PEDIDO ORIGINAL
+								if rs.State <> 0 then rs.Close
+								s = "SELECT * FROM t_PEDIDO_ITEM WHERE" & _
+									" (pedido='" & pedido_selecionado & "')" & _
+									" AND (fabricante='" & .fabricante & "')" & _
+									" AND (produto='" & .produto & "')"
+								rs.Open s, cn
+								if Err <> 0 then
+								'	~~~~~~~~~~~~~~~~
+									cn.RollbackTrans
+								'	~~~~~~~~~~~~~~~~
+									Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
+									end if
+							
+								if rs.EOF then
+									alerta = texto_add_br(alerta)
+									alerta = alerta & "Item do pedido " & pedido_selecionado & " não foi encontrado: produto " & .produto & " do fabricante " & .fabricante & "."
+									exit for
 								else
-									rs.Delete
+									rs("qtde") = rs("qtde") - .qtde_split
+									if rs("qtde") > 0 then
+										rs.Update 
+									else
+										rs.Delete
+										end if
 									end if
 								end if
 							end if
-						end if
-					end with
-				next
-			end if
+						end with
+					next
+				end if 'if sx.Eof then-else
+			end if 'if alerta = ""
 		
 		if alerta = "" then
 			sBlocoNotasMsg = "Pedido gerado através de split manual do pedido " & pedido_selecionado & " por '" & usuario & "'"
@@ -478,6 +499,9 @@
 			
 			s_log = "Filhote de pedido nº " & id_pedido_filhote & " criado com:" & s_log
 			grava_log usuario, "", pedido_selecionado, "", OP_LOG_PEDIDO_SPLIT, s_log
+			end if 'if alerta = ""
+		
+		if alerta = "" then
 		'	~~~~~~~~~~~~~~
 			cn.CommitTrans
 		'	~~~~~~~~~~~~~~
@@ -490,12 +514,15 @@
 		'	~~~~~~~~~~~~~~~~
 			cn.RollbackTrans
 		'	~~~~~~~~~~~~~~~~
-			end if
+			end if 'if alerta = "" then-else
 		
-		if sx.State <> 0 then sx.Close
-		set sx = nothing
-		if rs.State <> 0 then rs.Close
-		set rs = nothing
+		if alerta = "" then
+			if sx.State <> 0 then sx.Close
+			set sx = nothing
+
+			if rs.State <> 0 then rs.Close
+			set rs = nothing
+			end if
 		end if
 
 %>
@@ -553,8 +580,17 @@
 <!--  T E L A  -->
 <p class="T">A V I S O</p>
 <div class="MtAlerta" style="width:600px;font-weight:bold;" align="center"><p style='margin:5px 2px 5px 2px;'><%=alerta%></p></div>
-<br><br>
-<p class="TracoBottom"></p>
+<br />
+<table class="notPrint" width="649" cellpadding="4" cellspacing="0" style="border-bottom:1px solid black">
+<tr><td class="Rc" align="left">&nbsp;</td></tr>
+</table>
+<table class="notPrint" width="649" cellpadding="0" cellspacing="0">
+<tr><td align="right"><span class="Rc">
+	<a href="resumo.asp<%= "?" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>" title="retorna para página inicial" class="LPagInicial">página inicial</a>&nbsp;&nbsp;&nbsp;
+	<a href="sessaoencerra.asp<%= "?" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>" title="encerra a sessão do usuário" class="LSessaoEncerra">encerra</a>
+	</span>
+</td></tr>
+</table>
 <table cellSpacing="0">
 <tr>
 	<td align="center"><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()"><img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>

@@ -48,6 +48,9 @@
 	rb_instalador_instala = Trim(Request.Form("rb_instalador_instala"))
 	rb_garantia_indicador = Trim(Request.Form("rb_garantia_indicador"))
 	
+	dim insert_request_guid
+	insert_request_guid = Trim(Request.Form("insert_request_guid"))
+
 '	FORMA DE PAGAMENTO (NOVA VERSÃO)
 	dim rb_forma_pagto, op_av_forma_pagto, c_pc_qtde, c_pc_valor, c_pc_maquineta_qtde, c_pc_maquineta_valor
 	dim op_pu_forma_pagto, c_pu_valor, c_pu_vencto_apos
@@ -357,49 +360,57 @@
 		next
 	
 '	VERIFICA SE ESTE ORÇAMENTO JÁ FOI GRAVADO!!
+'	TRATAMENTO P/ OS CASOS EM QUE: USUÁRIO ESTÁ TENTANDO USAR O BOTÃO VOLTAR, OCORREU DUPLO CLIQUE OU USUÁRIO ATUALIZOU A PÁGINA ENQUANTO AINDA ESTAVA PROCESSANDO (DUPLO ACIONAMENTO)
+'	Esse tratamento está sendo feito através do campo insert_request_guid (t_ORCAMENTO.InsertRequestGuid), mas se esse campo estiver vazio, continua realizando o controle pelo método antigo
+'	O tratamento usando o campo t_ORCAMENTO.InsertRequestGuid é feito dentro da transação para assegurar que não haverá problemas de acesso concorrente
 	dim orcamento_a, vjg
-	s = "SELECT t_ORCAMENTO.orcamento, fabricante, produto, qtde, preco_venda FROM t_ORCAMENTO INNER JOIN t_ORCAMENTO_ITEM ON (t_ORCAMENTO.orcamento=t_ORCAMENTO_ITEM.orcamento)" & _
-		" WHERE (id_cliente='" & cliente_selecionado & "') AND (data=" & bd_formata_data(Date) & ")" & _
-		" AND (loja='" & loja & "') AND (orcamentista='" & usuario & "')" & _
-		" AND (hora>='" & formata_hora_hhnnss(Now-converte_min_to_dec(10))& "')" & _
-		" ORDER BY t_ORCAMENTO_ITEM.orcamento, sequencia"
-	set rs = cn.execute(s)
-	redim vjg(0)
-	set vjg(ubound(vjg)) = New cl_DUAS_COLUNAS
-	vjg(ubound(vjg)).c1=""
-	orcamento_a="--XX--"
-	do while Not rs.EOF 
-		if orcamento_a<>Trim("" & rs("orcamento")) then
-			orcamento_a=Trim("" & rs("orcamento"))
-			if vjg(ubound(vjg)).c1 <> "" then 
-				redim preserve vjg(ubound(vjg)+1)
-				set vjg(ubound(vjg)) = New cl_DUAS_COLUNAS
-				vjg(ubound(vjg)).c1=""
-				end if
-			vjg(ubound(vjg)).c2=orcamento_a
-			end if
+	if alerta = "" then
+		if insert_request_guid = "" then
+			s = "SELECT t_ORCAMENTO.orcamento, fabricante, produto, qtde, preco_venda FROM t_ORCAMENTO INNER JOIN t_ORCAMENTO_ITEM ON (t_ORCAMENTO.orcamento=t_ORCAMENTO_ITEM.orcamento)" & _
+				" WHERE (id_cliente='" & cliente_selecionado & "') AND (data=" & bd_formata_data(Date) & ")" & _
+				" AND (loja='" & loja & "') AND (orcamentista='" & usuario & "')" & _
+				" AND (hora>='" & formata_hora_hhnnss(Now-converte_min_to_dec(10))& "')" & _
+				" ORDER BY t_ORCAMENTO_ITEM.orcamento, sequencia"
+			set rs = cn.execute(s)
+			redim vjg(0)
+			set vjg(ubound(vjg)) = New cl_DUAS_COLUNAS
+			vjg(ubound(vjg)).c1=""
+			orcamento_a="--XX--"
+			do while Not rs.EOF 
+				if orcamento_a<>Trim("" & rs("orcamento")) then
+					orcamento_a=Trim("" & rs("orcamento"))
+					if vjg(ubound(vjg)).c1 <> "" then 
+						redim preserve vjg(ubound(vjg)+1)
+						set vjg(ubound(vjg)) = New cl_DUAS_COLUNAS
+						vjg(ubound(vjg)).c1=""
+						end if
+					vjg(ubound(vjg)).c2=orcamento_a
+					end if
 		
-		vjg(ubound(vjg)).c1=vjg(ubound(vjg)).c1 & Trim("" & rs("fabricante")) & "|" & Trim("" & rs("produto")) & "|" & Trim("" & rs("qtde")) & "|" & formata_moeda(rs("preco_venda")) & "|"
-		rs.MoveNext 
-		Loop
+				vjg(ubound(vjg)).c1=vjg(ubound(vjg)).c1 & Trim("" & rs("fabricante")) & "|" & Trim("" & rs("produto")) & "|" & Trim("" & rs("qtde")) & "|" & formata_moeda(rs("preco_venda")) & "|"
+				rs.MoveNext 
+				Loop
 
-	if rs.State <> 0 then rs.Close
+			if rs.State <> 0 then rs.Close
 	
-	s=""
-	for i=Lbound(v_item) to Ubound(v_item)
-		with v_item(i)
-			if .produto<>"" then
-				s=s & .fabricante & "|" & .produto & "|" & Cstr(.qtde) & "|" & formata_moeda(.preco_venda) & "|"
-				end if
-			end with
-		next
+			s=""
+			for i=Lbound(v_item) to Ubound(v_item)
+				with v_item(i)
+					if .produto<>"" then
+						s=s & .fabricante & "|" & .produto & "|" & Cstr(.qtde) & "|" & formata_moeda(.preco_venda) & "|"
+						end if
+					end with
+				next
 
-	for i=Lbound(vjg) to Ubound(vjg)
-		if s=vjg(i).c1 then
-			alerta="Este pré-pedido já foi gravado com o número " & vjg(i).c2
-			exit for
-			end if
-		next
+			for i=Lbound(vjg) to Ubound(vjg)
+				if s=vjg(i).c1 then
+					alerta="Este pré-pedido já foi gravado com o número " & vjg(i).c2
+					exit for
+					end if
+				next
+			end if 'if insert_request_guid = ""
+		end if 'if alerta = ""
+
 
 '	CUSTO FINANCEIRO FORNECEDOR
 	if alerta = "" then
@@ -421,7 +432,7 @@
 	
 
 '	VERIFICA CADA UM DOS PRODUTOS SELECIONADOS
-	if alerta="" then
+	if alerta = "" then
 		for i=Lbound(v_item) to Ubound(v_item)
 			with v_item(i)
 				s = "SELECT " & _
@@ -810,7 +821,7 @@
 		end if
 
 '	CADASTRA O ORÇAMENTO
-	if alerta="" then
+	if alerta = "" then
 		dim id_orcamento, id_orcamento_temp, s_log, msg_erro
 		s_log=""
 		if Not gera_num_orcamento_temp(id_orcamento_temp, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_GERAR_NSU)
@@ -827,407 +838,359 @@
 			cn.Execute(s)
 			end if
 
-		if Not (rs Is nothing) then
+	'	VERIFICA SE ESTE ORÇAMENTO JÁ FOI GRAVADO!!
+	'	TRATAMENTO P/ OS CASOS EM QUE: USUÁRIO ESTÁ TENTANDO USAR O BOTÃO VOLTAR, OCORREU DUPLO CLIQUE OU USUÁRIO ATUALIZOU A PÁGINA ENQUANTO AINDA ESTAVA PROCESSANDO (DUPLO ACIONAMENTO)
+	'	Esse tratamento está sendo feito através do campo insert_request_guid (t_ORCAMENTO.InsertRequestGuid), mas se esse campo estiver vazio, continua realizando o controle pelo método antigo
+	'	Realiza a verificação após obter o lock do registro de controle p/ assegurar que não haverá problemas de acesso concorrente
+		if insert_request_guid <> "" then
+			s = "SELECT orcamento, orcamentista, data_hora FROM t_ORCAMENTO WHERE (InsertRequestGuid = '" & insert_request_guid & "')"
+			set rs = cn.execute(s)
+			if Not rs.Eof then
+				alerta = "Este pré-pedido já foi gravado com o nº " & Trim("" & rs("orcamento")) & " em " & formata_data_hora(rs("data_hora")) & " por " & Trim("" & rs("orcamentista"))
+				end if
 			if rs.State <> 0 then rs.Close
-			set rs=nothing
-			end if
-		
-		if Not cria_recordset_pessimista(rs, msg_erro) then
-		'	~~~~~~~~~~~~~~~~
-			cn.RollbackTrans
-		'	~~~~~~~~~~~~~~~~
-			Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
-			end if
+			end if 'if insert_request_guid <> ""
 
-		s = "SELECT * FROM t_ORCAMENTO WHERE orcamento='X'"
-		rs.Open s, cn
-		rs.AddNew 
-		rs("orcamento")=id_orcamento_temp
-		rs("loja")=loja
-		rs("data")=Date
-		rs("hora")=retorna_so_digitos(formata_hora(Now))
-		rs("id_cliente")=cliente_selecionado
-		rs("midia")=midia_selecionada
-		rs("servicos")=""
-		rs("orcamentista")=usuario
-		rs("vendedor")=vendedor_selecionado
-		rs("st_orcamento")=""
-		rs("st_fechamento")=""
-		if s_etg_imediata <> "" then 
-			rs("st_etg_imediata")=CLng(s_etg_imediata)
-			rs("etg_imediata_data")=Now
-			rs("etg_imediata_usuario")=usuario
-			end if
-		if CLng(s_etg_imediata) = CLng(COD_ETG_IMEDIATA_NAO) then
-			rs("PrevisaoEntregaData") = StrToDate(c_data_previsao_entrega)
-			rs("PrevisaoEntregaUsuarioUltAtualiz") = usuario
-			rs("PrevisaoEntregaDtHrUltAtualiz") = Now
-			end if
-		if s_bem_uso_consumo <> "" then 
-			rs("StBemUsoConsumo")=CLng(s_bem_uso_consumo)
-			end if
-		rs("obs_1")=s_obs1
-		rs("obs_2")=s_obs2
-		rs("forma_pagto")=s_forma_pagto
-	'	Forma de Pagamento (nova versão)
-		rs("tipo_parcelamento")=CLng(rb_forma_pagto)
-		if rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA then
-			rs("av_forma_pagto") = CLng(op_av_forma_pagto)
-			rs("qtde_parcelas")=1
-		elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELA_UNICA then
-			rs("pu_forma_pagto") = CLng(op_pu_forma_pagto)
-			rs("pu_valor") = converte_numero(c_pu_valor)
-			rs("pu_vencto_apos") = CLng(c_pu_vencto_apos)
-			rs("qtde_parcelas")=1
-		elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_CARTAO then
-			rs("pc_qtde_parcelas") = CLng(c_pc_qtde)
-			rs("pc_valor_parcela") = converte_numero(c_pc_valor)
-			rs("qtde_parcelas")=CLng(c_pc_qtde)
-		elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA then
-			rs("pc_maquineta_qtde_parcelas") = CLng(c_pc_maquineta_qtde)
-			rs("pc_maquineta_valor_parcela") = converte_numero(c_pc_maquineta_valor)
-			rs("qtde_parcelas")=CLng(c_pc_maquineta_qtde)
-		elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
-			rs("pce_forma_pagto_entrada") = CLng(op_pce_entrada_forma_pagto)
-			rs("pce_forma_pagto_prestacao") = CLng(op_pce_prestacao_forma_pagto)
-			rs("pce_entrada_valor") = converte_numero(c_pce_entrada_valor)
-			rs("pce_prestacao_qtde") = CLng(c_pce_prestacao_qtde)
-			rs("pce_prestacao_valor") = converte_numero(c_pce_prestacao_valor)
-			rs("pce_prestacao_periodo") = CLng(c_pce_prestacao_periodo)
-		'	Entrada + Prestações
-			rs("qtde_parcelas")=CLng(c_pce_prestacao_qtde)+1
-		elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
-			rs("pse_forma_pagto_prim_prest") = CLng(op_pse_prim_prest_forma_pagto)
-			rs("pse_forma_pagto_demais_prest") = CLng(op_pse_demais_prest_forma_pagto)
-			rs("pse_prim_prest_valor") = converte_numero(c_pse_prim_prest_valor)
-			rs("pse_prim_prest_apos") = CLng(c_pse_prim_prest_apos)
-			rs("pse_demais_prest_qtde") = CLng(c_pse_demais_prest_qtde)
-			rs("pse_demais_prest_valor") = converte_numero(c_pse_demais_prest_valor)
-			rs("pse_demais_prest_periodo") = CLng(c_pse_demais_prest_periodo)
-		'	1ª prestação + Demais prestações
-			rs("qtde_parcelas")=CLng(c_pse_demais_prest_qtde)+1
-			end if
-
-	'	CUSTO FINANCEIRO FORNECEDOR
-		rs("custoFinancFornecTipoParcelamento") = c_custoFinancFornecTipoParcelamento
-		rs("custoFinancFornecQtdeParcelas") = c_custoFinancFornecQtdeParcelas
-		
-		rs("vl_total") = vl_total
-		rs("vl_total_NF") = vl_total_NF
-		rs("vl_total_RA") = vl_total_RA
-		rs("perc_RT") = converte_numero(s_perc_RT)
-		
-		rs("InstaladorInstalaStatus")=CLng(rb_instalador_instala)
-		rs("InstaladorInstalaUsuarioUltAtualiz")=usuario
-		rs("InstaladorInstalaDtHrUltAtualiz")=Now
-		
-		rs("GarantiaIndicadorStatus") = CLng(rb_garantia_indicador)
-		rs("GarantiaIndicadorUsuarioUltAtualiz") = usuario
-		rs("GarantiaIndicadorDtHrUltAtualiz") = Now
-		
-		if blnUsarMemorizacaoCompletaEnderecos then
-			rs("st_memorizacao_completa_enderecos") = 1
-		    rs("endereco_logradouro") = orcamento_endereco_logradouro
-		    rs("endereco_bairro") = orcamento_endereco_bairro
-		    rs("endereco_cidade") = orcamento_endereco_cidade
-		    rs("endereco_uf") = orcamento_endereco_uf
-		    rs("endereco_cep") = orcamento_endereco_cep
-		    rs("endereco_numero") = orcamento_endereco_numero
-		    rs("endereco_complemento") = orcamento_endereco_complemento
-			rs("endereco_email") = orcamento_endereco_email
-			rs("endereco_email_xml") = orcamento_endereco_email_xml
-			rs("endereco_nome") = orcamento_endereco_nome
-			rs("endereco_ddd_res") = orcamento_endereco_ddd_res
-			rs("endereco_tel_res") = orcamento_endereco_tel_res
-			rs("endereco_ddd_com") = orcamento_endereco_ddd_com
-			rs("endereco_tel_com") = orcamento_endereco_tel_com
-			rs("endereco_ramal_com") = orcamento_endereco_ramal_com
-			rs("endereco_ddd_cel") = orcamento_endereco_ddd_cel
-			rs("endereco_tel_cel") = orcamento_endereco_tel_cel
-			rs("endereco_ddd_com_2") = orcamento_endereco_ddd_com_2
-			rs("endereco_tel_com_2") = orcamento_endereco_tel_com_2
-			rs("endereco_ramal_com_2") = orcamento_endereco_ramal_com_2
-			rs("endereco_tipo_pessoa") = orcamento_endereco_tipo_pessoa
-			rs("endereco_cnpj_cpf") = orcamento_endereco_cnpj_cpf
-			rs("endereco_contribuinte_icms_status") = orcamento_endereco_contribuinte_icms_status
-			rs("endereco_produtor_rural_status") = orcamento_endereco_produtor_rural_status
-			rs("endereco_ie") = orcamento_endereco_ie
-			rs("endereco_rg") = orcamento_endereco_rg
-			rs("endereco_contato") = orcamento_endereco_contato
-			end if
-
-		if rb_end_entrega = "S" then 
-			rs("st_end_entrega") = 1
-			rs("EndEtg_endereco") = EndEtg_endereco
-			rs("EndEtg_endereco_numero") = EndEtg_endereco_numero
-			rs("EndEtg_endereco_complemento") = EndEtg_endereco_complemento
-			rs("EndEtg_bairro") = EndEtg_bairro
-			rs("EndEtg_cidade") = EndEtg_cidade
-			rs("EndEtg_uf") = EndEtg_uf
-            rs("EndEtg_cep") = EndEtg_cep
-			rs("EndEtg_cod_justificativa") = EndEtg_obs          
-			if blnUsarMemorizacaoCompletaEnderecos then
-				rs("EndEtg_email") = EndEtg_email
-				rs("EndEtg_email_xml") = EndEtg_email_xml
-				rs("EndEtg_nome") = EndEtg_nome
-				rs("EndEtg_ddd_res") = EndEtg_ddd_res
-				rs("EndEtg_tel_res") = EndEtg_tel_res
-				rs("EndEtg_ddd_com") = EndEtg_ddd_com
-				rs("EndEtg_tel_com") = EndEtg_tel_com
-				rs("EndEtg_ramal_com") = EndEtg_ramal_com
-				rs("EndEtg_ddd_cel") = EndEtg_ddd_cel
-				rs("EndEtg_tel_cel") = EndEtg_tel_cel
-				rs("EndEtg_ddd_com_2") = EndEtg_ddd_com_2
-				rs("EndEtg_tel_com_2") = EndEtg_tel_com_2
-				rs("EndEtg_ramal_com_2") = EndEtg_ramal_com_2
-				rs("EndEtg_tipo_pessoa") = EndEtg_tipo_pessoa
-				rs("EndEtg_cnpj_cpf") = retorna_so_digitos(EndEtg_cnpj_cpf)
-				rs("EndEtg_contribuinte_icms_status") = converte_numero(EndEtg_contribuinte_icms_status)
-				rs("EndEtg_produtor_rural_status") = converte_numero(EndEtg_produtor_rural_status)
-				rs("EndEtg_ie") = EndEtg_ie
-				rs("EndEtg_rg") = EndEtg_rg
-				end if
-			end if
-		
-		rs("perc_desagio_RA_liquida") = getParametroPercDesagioRALiquida
-		rs("permite_RA_status") = r_orcamentista_e_indicador.permite_RA_status
-
-		rs("sistema_responsavel_cadastro") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
-		rs("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
-		
-		rs.Update 
-		if Err <> 0 then
-		'	~~~~~~~~~~~~~~~~
-			cn.RollbackTrans
-		'	~~~~~~~~~~~~~~~~
-			Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
-			end if
-	'	Valor Total
-		s_log = "vl total=" & formata_moeda(vl_total)
-		s_log = s_log & "; vl_total_NF=" & formata_moeda(rs("vl_total_NF"))
-		s_log = s_log & "; vl_total_RA=" & formata_moeda(rs("vl_total_RA"))
-		s_log = s_log & "; qtde_parcelas=" & formata_texto_log(rs("qtde_parcelas"))
-		s_log = s_log & "; perc_RT=" & formata_texto_log(rs("perc_RT"))
-		s_log = s_log & "; midia=" & formata_texto_log(rs("midia"))
-		if Trim("" & rs("forma_pagto"))<>"" then s_log = s_log & "; forma_pagto=" & formata_texto_log(rs("forma_pagto"))
-		if Trim("" & rs("servicos"))<>"" then s_log = s_log & "; servicos=" & formata_texto_log(rs("servicos")) 
-		if (Trim("" & rs("vl_servicos"))<>"") And (Trim("" & rs("vl_servicos"))<>"0") then s_log = s_log & "; vl_servicos=" & formata_texto_log(rs("vl_servicos")) 
-		if Trim("" & rs("st_etg_imediata"))<> "" then s_log = s_log & "; st_etg_imediata=" & formata_texto_log(rs("st_etg_imediata")) 
-		if Trim("" & rs("st_etg_imediata")) = Trim(COD_ETG_IMEDIATA_NAO) then s_log = s_log & " (previsão de entrega: " & formata_data(rs("PrevisaoEntregaData")) & ")"
-		if Trim("" & rs("StBemUsoConsumo"))<> "" then s_log = s_log & "; StBemUsoConsumo=" & formata_texto_log(rs("StBemUsoConsumo")) 
-		if Trim("" & rs("obs_1"))<>"" then s_log = s_log & "; obs_1=" & formata_texto_log(rs("obs_1")) 
-		if Trim("" & rs("obs_2"))<>"" then s_log = s_log & "; obs_2=" & formata_texto_log(rs("obs_2"))
-	'	Forma de Pagamento (nova versão)
-		s_log = s_log & "; tipo_parcelamento=" & formata_texto_log(rs("tipo_parcelamento"))
-		if rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA then
-			s_log = s_log & "; av_forma_pagto=" & formata_texto_log(rs("av_forma_pagto"))
-		elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELA_UNICA then
-			s_log = s_log & "; pu_forma_pagto=" & formata_texto_log(rs("pu_forma_pagto"))
-			s_log = s_log & "; pu_valor=" & formata_texto_log(rs("pu_valor"))
-			s_log = s_log & "; pu_vencto_apos=" & formata_texto_log(rs("pu_vencto_apos"))
-		elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_CARTAO then
-			s_log = s_log & "; pc_qtde_parcelas=" & formata_texto_log(rs("pc_qtde_parcelas"))
-			s_log = s_log & "; pc_valor_parcela=" & formata_texto_log(rs("pc_valor_parcela"))
-		elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA then
-			s_log = s_log & "; pc_maquineta_qtde_parcelas=" & formata_texto_log(rs("pc_maquineta_qtde_parcelas"))
-			s_log = s_log & "; pc_maquineta_valor_parcela=" & formata_texto_log(rs("pc_maquineta_valor_parcela"))
-		elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
-			s_log = s_log & "; pce_forma_pagto_entrada=" & formata_texto_log(rs("pce_forma_pagto_entrada"))
-			s_log = s_log & "; pce_forma_pagto_prestacao=" & formata_texto_log(rs("pce_forma_pagto_prestacao"))
-			s_log = s_log & "; pce_entrada_valor=" & formata_texto_log(rs("pce_entrada_valor"))
-			s_log = s_log & "; pce_prestacao_qtde=" & formata_texto_log(rs("pce_prestacao_qtde"))
-			s_log = s_log & "; pce_prestacao_valor=" & formata_texto_log(rs("pce_prestacao_valor"))
-			s_log = s_log & "; pce_prestacao_periodo=" & formata_texto_log(rs("pce_prestacao_periodo"))
-		elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
-			s_log = s_log & "; pse_forma_pagto_prim_prest=" & formata_texto_log(rs("pse_forma_pagto_prim_prest"))
-			s_log = s_log & "; pse_forma_pagto_demais_prest=" & formata_texto_log(rs("pse_forma_pagto_demais_prest"))
-			s_log = s_log & "; pse_prim_prest_valor=" & formata_texto_log(rs("pse_prim_prest_valor"))
-			s_log = s_log & "; pse_prim_prest_apos=" & formata_texto_log(rs("pse_prim_prest_apos"))
-			s_log = s_log & "; pse_demais_prest_qtde=" & formata_texto_log(rs("pse_demais_prest_qtde"))
-			s_log = s_log & "; pse_demais_prest_valor=" & formata_texto_log(rs("pse_demais_prest_valor"))
-			s_log = s_log & "; pse_demais_prest_periodo=" & formata_texto_log(rs("pse_demais_prest_periodo"))
-			end if
-
-		s_log = s_log & "; custoFinancFornecTipoParcelamento=" & formata_texto_log(rs("custoFinancFornecTipoParcelamento"))
-		s_log = s_log & "; custoFinancFornecQtdeParcelas=" & formata_texto_log(rs("custoFinancFornecQtdeParcelas"))
-
-
-		if blnUsarMemorizacaoCompletaEnderecos then
-		    s_log = s_log &	"; endereco_logradouro=" &formata_texto_log(rs("endereco_logradouro")) 
-		    s_log = s_log &	"; endereco_bairro=" &  formata_texto_log(rs("endereco_bairro"))
-		    s_log = s_log &	"; endereco_cidade=" & formata_texto_log(rs("endereco_cidade")) 
-		    s_log = s_log &	"; endereco_uf=" &  formata_texto_log(rs("endereco_uf")) 
-		    s_log = s_log &	"; endereco_cep=" & formata_texto_log(rs("endereco_cep")) 
-		    s_log = s_log &	"; endereco_numero=" & formata_texto_log(rs("endereco_numero")) 
-		    s_log = s_log &	"; endereco_email=" & formata_texto_log(rs("endereco_email")) 
-		    s_log = s_log &	"; endereco_email_xml=" & formata_texto_log(rs("endereco_email_xml")) 
-		    s_log = s_log &	"; endereco_nome=" & formata_texto_log(rs("endereco_nome")) 
-		    s_log = s_log &	"; endereco_ddd_res=" & formata_texto_log(rs("endereco_ddd_res")) 
-		    s_log = s_log &	"; endereco_tel_res=" & formata_texto_log(rs("endereco_tel_res")) 
-		    s_log = s_log &	"; endereco_ddd_com=" & formata_texto_log(rs("endereco_ddd_com")) 
-		    s_log = s_log &	"; endereco_tel_com=" & formata_texto_log(rs("endereco_tel_com")) 
-		    s_log = s_log &	"; endereco_ramal_com=" & formata_texto_log(rs("endereco_ramal_com")) 
-		    s_log = s_log &	"; endereco_ddd_cel=" & formata_texto_log(rs("endereco_ddd_cel")) 
-		    s_log = s_log &	"; endereco_tel_cel=" & formata_texto_log(rs("endereco_tel_cel")) 
-		    s_log = s_log &	"; endereco_ddd_com_2=" & formata_texto_log(rs("endereco_ddd_com_2")) 
-		    s_log = s_log &	"; endereco_tel_com_2=" & formata_texto_log(rs("endereco_tel_com_2")) 
-		    s_log = s_log &	"; endereco_ramal_com_2=" & formata_texto_log(rs("endereco_ramal_com_2")) 
-		    s_log = s_log &	"; endereco_tipo_pessoa=" & formata_texto_log(rs("endereco_tipo_pessoa")) 
-		    s_log = s_log &	"; endereco_cnpj_cpf=" & formata_texto_log(rs("endereco_cnpj_cpf")) 
-		    s_log = s_log &	"; endereco_contribuinte_icms_status=" & formata_texto_log(rs("endereco_contribuinte_icms_status")) 
-		    s_log = s_log &	"; endereco_produtor_rural_status=" & formata_texto_log(rs("endereco_produtor_rural_status")) 
-		    s_log = s_log &	"; endereco_ie=" & formata_texto_log(rs("endereco_ie")) 
-		    s_log = s_log &	"; endereco_rg=" & formata_texto_log(rs("endereco_rg")) 
-		    s_log = s_log &	"; endereco_contato=" & formata_texto_log(rs("endereco_contato")) 
-            end if
-
-		
-		if rb_end_entrega = "S" then
-			s_log = s_log & "; Endereço entrega=" & formata_endereco(EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep) & " [EndEtg_cod_justificativa=" & EndEtg_obs & "]"
-			if blnUsarMemorizacaoCompletaEnderecos then
-				s_log = s_log & _
-						" (" & _
-						"email=" & EndEtg_email & _
-						", email_xml=" & EndEtg_email_xml & _
-						", nome=" & EndEtg_nome & _
-						", ddd_res=" & EndEtg_ddd_res & _
-						", tel_res=" & EndEtg_tel_res & _
-						", ddd_com=" & EndEtg_ddd_com & _
-						", tel_com=" & EndEtg_tel_com & _
-						", ramal_com=" & EndEtg_ramal_com & _
-						", ddd_cel=" & EndEtg_ddd_cel & _
-						", tel_cel=" & EndEtg_tel_cel & _
-						", ddd_com_2=" & EndEtg_ddd_com_2 & _
-						", tel_com_2=" & EndEtg_tel_com_2 & _
-						", ramal_com_2=" & EndEtg_ramal_com_2 & _
-						", tipo_pessoa=" & EndEtg_tipo_pessoa & _
-						", cnpj_cpf=" & EndEtg_cnpj_cpf & _
-						", contribuinte_icms_status=" & EndEtg_contribuinte_icms_status & _
-						", produtor_rural_status=" & EndEtg_produtor_rural_status & _
-						", ie=" & EndEtg_ie & _
-						", rg=" & EndEtg_rg & _					
-						")"
-				end if
-		else
-			s_log = s_log & "; Endereço entrega=mesmo do cadastro"
-			end if
-		
-		s_log = s_log & "; InstaladorInstalaStatus=" & rb_instalador_instala
-		s_log = s_log & "; GarantiaIndicadorStatus=" & rb_garantia_indicador
-		s_log = s_log & "; perc_desagio_RA_liquida=" & rs("perc_desagio_RA_liquida")
-		
-		if rs.State <> 0 then rs.Close
-		
-		for i=Lbound(v_item) to Ubound(v_item)
-			with v_item(i)
-				qtde_spe = 0
-				for k=Lbound(v_spe) to Ubound(v_spe)
-					if (v_spe(k).fabricante=.fabricante) And (v_spe(k).produto=.produto) then
-						if v_spe(k).qtde_solicitada > v_spe(k).qtde_estoque then qtde_spe = v_spe(k).qtde_solicitada - v_spe(k).qtde_estoque
-						exit for
-						end if
-					next
-
-				s="SELECT * FROM t_ORCAMENTO_ITEM WHERE orcamento='X'"
-				rs.Open s, cn
-				rs.AddNew 
-				rs("orcamento")=id_orcamento_temp
-				rs("fabricante")=.fabricante
-				rs("produto")=.produto
-				rs("qtde")=.qtde
-				rs("qtde_spe")=qtde_spe
-				rs("desc_dado")=.desc_dado
-				rs("preco_venda")=.preco_venda
-				rs("preco_NF")=.preco_NF
-				rs("preco_fabricante")=.preco_fabricante
-				rs("vl_custo2")=.vl_custo2
-				rs("preco_lista")=.preco_lista
-				rs("margem")=.margem
-				rs("desc_max")=.desc_max
-				rs("comissao")=.comissao
-				rs("descricao")=.descricao
-				rs("descricao_html")=.descricao_html
-				rs("obs")=.obs
-				rs("ean")=.ean
-				rs("grupo")=.grupo
-                rs("subgrupo")=.subgrupo
-				rs("peso")=.peso
-				rs("qtde_volumes")=.qtde_volumes
-				rs("abaixo_min_status")=.abaixo_min_status
-				rs("abaixo_min_autorizacao")=.abaixo_min_autorizacao
-				rs("abaixo_min_autorizador")=.abaixo_min_autorizador
-				rs("abaixo_min_superv_autorizador")=.abaixo_min_superv_autorizador
-				rs("sequencia")=renumera_com_base1(Lbound(v_item), i)
-				rs("markup_fabricante")=.markup_fabricante
-				rs("custoFinancFornecCoeficiente")=.custoFinancFornecCoeficiente
-				rs("custoFinancFornecPrecoListaBase")=.custoFinancFornecPrecoListaBase
-				rs("cubagem")=.cubagem
-				rs("ncm")=.ncm
-				rs("cst")=.cst
-				rs("descontinuado")=.descontinuado
-				rs.Update
-				if Err <> 0 then
-				'	~~~~~~~~~~~~~~~~
-					cn.RollbackTrans
-				'	~~~~~~~~~~~~~~~~
-					Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
-					end if
+		if alerta = "" then
+			if Not (rs Is nothing) then
 				if rs.State <> 0 then rs.Close
+				set rs=nothing
+				end if
+		
+			if Not cria_recordset_pessimista(rs, msg_erro) then
+			'	~~~~~~~~~~~~~~~~
+				cn.RollbackTrans
+			'	~~~~~~~~~~~~~~~~
+				Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+				end if
 
-				if s_log <> "" then s_log=s_log & ";" & chr(13)
-				s_log = s_log & _
-						log_produto_monta(.qtde, .fabricante, .produto) & _
-						"; preco_lista=" & formata_texto_log(.preco_lista) & _
-						"; desc_dado=" & formata_texto_log(.desc_dado) & _
-						"; preco_venda=" & formata_texto_log(.preco_venda) & _
-						"; preco_NF=" & formata_texto_log(.preco_NF) & _
-						"; obs=" & formata_texto_log(.obs) & _
-						"; custoFinancFornecCoeficiente=" & formata_texto_log(.custoFinancFornecCoeficiente) & _
-						"; custoFinancFornecPrecoListaBase=" & formata_texto_log(.custoFinancFornecPrecoListaBase)
-				
-				if qtde_spe > 0 then s_log = s_log & "; spe=" & Cstr(qtde_spe)
-					
-				if converte_numero(.abaixo_min_status) <> 0 then
+			s = "SELECT * FROM t_ORCAMENTO WHERE orcamento='X'"
+			rs.Open s, cn
+			rs.AddNew 
+			rs("orcamento")=id_orcamento_temp
+			if insert_request_guid <> "" then rs("InsertRequestGuid") = "{" & insert_request_guid & "}"
+			rs("loja")=loja
+			rs("data")=Date
+			rs("hora")=retorna_so_digitos(formata_hora(Now))
+			rs("id_cliente")=cliente_selecionado
+			rs("midia")=midia_selecionada
+			rs("servicos")=""
+			rs("orcamentista")=usuario
+			rs("vendedor")=vendedor_selecionado
+			rs("st_orcamento")=""
+			rs("st_fechamento")=""
+			if s_etg_imediata <> "" then 
+				rs("st_etg_imediata")=CLng(s_etg_imediata)
+				rs("etg_imediata_data")=Now
+				rs("etg_imediata_usuario")=usuario
+				end if
+			if CLng(s_etg_imediata) = CLng(COD_ETG_IMEDIATA_NAO) then
+				rs("PrevisaoEntregaData") = StrToDate(c_data_previsao_entrega)
+				rs("PrevisaoEntregaUsuarioUltAtualiz") = usuario
+				rs("PrevisaoEntregaDtHrUltAtualiz") = Now
+				end if
+			if s_bem_uso_consumo <> "" then 
+				rs("StBemUsoConsumo")=CLng(s_bem_uso_consumo)
+				end if
+			rs("obs_1")=s_obs1
+			rs("obs_2")=s_obs2
+			rs("forma_pagto")=s_forma_pagto
+		'	Forma de Pagamento (nova versão)
+			rs("tipo_parcelamento")=CLng(rb_forma_pagto)
+			if rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA then
+				rs("av_forma_pagto") = CLng(op_av_forma_pagto)
+				rs("qtde_parcelas")=1
+			elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELA_UNICA then
+				rs("pu_forma_pagto") = CLng(op_pu_forma_pagto)
+				rs("pu_valor") = converte_numero(c_pu_valor)
+				rs("pu_vencto_apos") = CLng(c_pu_vencto_apos)
+				rs("qtde_parcelas")=1
+			elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_CARTAO then
+				rs("pc_qtde_parcelas") = CLng(c_pc_qtde)
+				rs("pc_valor_parcela") = converte_numero(c_pc_valor)
+				rs("qtde_parcelas")=CLng(c_pc_qtde)
+			elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA then
+				rs("pc_maquineta_qtde_parcelas") = CLng(c_pc_maquineta_qtde)
+				rs("pc_maquineta_valor_parcela") = converte_numero(c_pc_maquineta_valor)
+				rs("qtde_parcelas")=CLng(c_pc_maquineta_qtde)
+			elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
+				rs("pce_forma_pagto_entrada") = CLng(op_pce_entrada_forma_pagto)
+				rs("pce_forma_pagto_prestacao") = CLng(op_pce_prestacao_forma_pagto)
+				rs("pce_entrada_valor") = converte_numero(c_pce_entrada_valor)
+				rs("pce_prestacao_qtde") = CLng(c_pce_prestacao_qtde)
+				rs("pce_prestacao_valor") = converte_numero(c_pce_prestacao_valor)
+				rs("pce_prestacao_periodo") = CLng(c_pce_prestacao_periodo)
+			'	Entrada + Prestações
+				rs("qtde_parcelas")=CLng(c_pce_prestacao_qtde)+1
+			elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
+				rs("pse_forma_pagto_prim_prest") = CLng(op_pse_prim_prest_forma_pagto)
+				rs("pse_forma_pagto_demais_prest") = CLng(op_pse_demais_prest_forma_pagto)
+				rs("pse_prim_prest_valor") = converte_numero(c_pse_prim_prest_valor)
+				rs("pse_prim_prest_apos") = CLng(c_pse_prim_prest_apos)
+				rs("pse_demais_prest_qtde") = CLng(c_pse_demais_prest_qtde)
+				rs("pse_demais_prest_valor") = converte_numero(c_pse_demais_prest_valor)
+				rs("pse_demais_prest_periodo") = CLng(c_pse_demais_prest_periodo)
+			'	1ª prestação + Demais prestações
+				rs("qtde_parcelas")=CLng(c_pse_demais_prest_qtde)+1
+				end if
+
+		'	CUSTO FINANCEIRO FORNECEDOR
+			rs("custoFinancFornecTipoParcelamento") = c_custoFinancFornecTipoParcelamento
+			rs("custoFinancFornecQtdeParcelas") = c_custoFinancFornecQtdeParcelas
+		
+			rs("vl_total") = vl_total
+			rs("vl_total_NF") = vl_total_NF
+			rs("vl_total_RA") = vl_total_RA
+			rs("perc_RT") = converte_numero(s_perc_RT)
+		
+			rs("InstaladorInstalaStatus")=CLng(rb_instalador_instala)
+			rs("InstaladorInstalaUsuarioUltAtualiz")=usuario
+			rs("InstaladorInstalaDtHrUltAtualiz")=Now
+		
+			rs("GarantiaIndicadorStatus") = CLng(rb_garantia_indicador)
+			rs("GarantiaIndicadorUsuarioUltAtualiz") = usuario
+			rs("GarantiaIndicadorDtHrUltAtualiz") = Now
+		
+			if blnUsarMemorizacaoCompletaEnderecos then
+				rs("st_memorizacao_completa_enderecos") = 1
+				rs("endereco_logradouro") = orcamento_endereco_logradouro
+				rs("endereco_bairro") = orcamento_endereco_bairro
+				rs("endereco_cidade") = orcamento_endereco_cidade
+				rs("endereco_uf") = orcamento_endereco_uf
+				rs("endereco_cep") = orcamento_endereco_cep
+				rs("endereco_numero") = orcamento_endereco_numero
+				rs("endereco_complemento") = orcamento_endereco_complemento
+				rs("endereco_email") = orcamento_endereco_email
+				rs("endereco_email_xml") = orcamento_endereco_email_xml
+				rs("endereco_nome") = orcamento_endereco_nome
+				rs("endereco_ddd_res") = orcamento_endereco_ddd_res
+				rs("endereco_tel_res") = orcamento_endereco_tel_res
+				rs("endereco_ddd_com") = orcamento_endereco_ddd_com
+				rs("endereco_tel_com") = orcamento_endereco_tel_com
+				rs("endereco_ramal_com") = orcamento_endereco_ramal_com
+				rs("endereco_ddd_cel") = orcamento_endereco_ddd_cel
+				rs("endereco_tel_cel") = orcamento_endereco_tel_cel
+				rs("endereco_ddd_com_2") = orcamento_endereco_ddd_com_2
+				rs("endereco_tel_com_2") = orcamento_endereco_tel_com_2
+				rs("endereco_ramal_com_2") = orcamento_endereco_ramal_com_2
+				rs("endereco_tipo_pessoa") = orcamento_endereco_tipo_pessoa
+				rs("endereco_cnpj_cpf") = orcamento_endereco_cnpj_cpf
+				rs("endereco_contribuinte_icms_status") = orcamento_endereco_contribuinte_icms_status
+				rs("endereco_produtor_rural_status") = orcamento_endereco_produtor_rural_status
+				rs("endereco_ie") = orcamento_endereco_ie
+				rs("endereco_rg") = orcamento_endereco_rg
+				rs("endereco_contato") = orcamento_endereco_contato
+				end if
+
+			if rb_end_entrega = "S" then 
+				rs("st_end_entrega") = 1
+				rs("EndEtg_endereco") = EndEtg_endereco
+				rs("EndEtg_endereco_numero") = EndEtg_endereco_numero
+				rs("EndEtg_endereco_complemento") = EndEtg_endereco_complemento
+				rs("EndEtg_bairro") = EndEtg_bairro
+				rs("EndEtg_cidade") = EndEtg_cidade
+				rs("EndEtg_uf") = EndEtg_uf
+				rs("EndEtg_cep") = EndEtg_cep
+				rs("EndEtg_cod_justificativa") = EndEtg_obs          
+				if blnUsarMemorizacaoCompletaEnderecos then
+					rs("EndEtg_email") = EndEtg_email
+					rs("EndEtg_email_xml") = EndEtg_email_xml
+					rs("EndEtg_nome") = EndEtg_nome
+					rs("EndEtg_ddd_res") = EndEtg_ddd_res
+					rs("EndEtg_tel_res") = EndEtg_tel_res
+					rs("EndEtg_ddd_com") = EndEtg_ddd_com
+					rs("EndEtg_tel_com") = EndEtg_tel_com
+					rs("EndEtg_ramal_com") = EndEtg_ramal_com
+					rs("EndEtg_ddd_cel") = EndEtg_ddd_cel
+					rs("EndEtg_tel_cel") = EndEtg_tel_cel
+					rs("EndEtg_ddd_com_2") = EndEtg_ddd_com_2
+					rs("EndEtg_tel_com_2") = EndEtg_tel_com_2
+					rs("EndEtg_ramal_com_2") = EndEtg_ramal_com_2
+					rs("EndEtg_tipo_pessoa") = EndEtg_tipo_pessoa
+					rs("EndEtg_cnpj_cpf") = retorna_so_digitos(EndEtg_cnpj_cpf)
+					rs("EndEtg_contribuinte_icms_status") = converte_numero(EndEtg_contribuinte_icms_status)
+					rs("EndEtg_produtor_rural_status") = converte_numero(EndEtg_produtor_rural_status)
+					rs("EndEtg_ie") = EndEtg_ie
+					rs("EndEtg_rg") = EndEtg_rg
+					end if
+				end if
+		
+			rs("perc_desagio_RA_liquida") = getParametroPercDesagioRALiquida
+			rs("permite_RA_status") = r_orcamentista_e_indicador.permite_RA_status
+
+			rs("sistema_responsavel_cadastro") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
+			rs("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
+		
+			rs.Update 
+			if Err <> 0 then
+			'	~~~~~~~~~~~~~~~~
+				cn.RollbackTrans
+			'	~~~~~~~~~~~~~~~~
+				Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
+				end if
+		'	Valor Total
+			s_log = "vl total=" & formata_moeda(vl_total)
+			s_log = s_log & "; vl_total_NF=" & formata_moeda(rs("vl_total_NF"))
+			s_log = s_log & "; vl_total_RA=" & formata_moeda(rs("vl_total_RA"))
+			s_log = s_log & "; qtde_parcelas=" & formata_texto_log(rs("qtde_parcelas"))
+			s_log = s_log & "; perc_RT=" & formata_texto_log(rs("perc_RT"))
+			s_log = s_log & "; midia=" & formata_texto_log(rs("midia"))
+			if Trim("" & rs("forma_pagto"))<>"" then s_log = s_log & "; forma_pagto=" & formata_texto_log(rs("forma_pagto"))
+			if Trim("" & rs("servicos"))<>"" then s_log = s_log & "; servicos=" & formata_texto_log(rs("servicos")) 
+			if (Trim("" & rs("vl_servicos"))<>"") And (Trim("" & rs("vl_servicos"))<>"0") then s_log = s_log & "; vl_servicos=" & formata_texto_log(rs("vl_servicos")) 
+			if Trim("" & rs("st_etg_imediata"))<> "" then s_log = s_log & "; st_etg_imediata=" & formata_texto_log(rs("st_etg_imediata")) 
+			if Trim("" & rs("st_etg_imediata")) = Trim(COD_ETG_IMEDIATA_NAO) then s_log = s_log & " (previsão de entrega: " & formata_data(rs("PrevisaoEntregaData")) & ")"
+			if Trim("" & rs("StBemUsoConsumo"))<> "" then s_log = s_log & "; StBemUsoConsumo=" & formata_texto_log(rs("StBemUsoConsumo")) 
+			if Trim("" & rs("obs_1"))<>"" then s_log = s_log & "; obs_1=" & formata_texto_log(rs("obs_1")) 
+			if Trim("" & rs("obs_2"))<>"" then s_log = s_log & "; obs_2=" & formata_texto_log(rs("obs_2"))
+		'	Forma de Pagamento (nova versão)
+			s_log = s_log & "; tipo_parcelamento=" & formata_texto_log(rs("tipo_parcelamento"))
+			if rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA then
+				s_log = s_log & "; av_forma_pagto=" & formata_texto_log(rs("av_forma_pagto"))
+			elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELA_UNICA then
+				s_log = s_log & "; pu_forma_pagto=" & formata_texto_log(rs("pu_forma_pagto"))
+				s_log = s_log & "; pu_valor=" & formata_texto_log(rs("pu_valor"))
+				s_log = s_log & "; pu_vencto_apos=" & formata_texto_log(rs("pu_vencto_apos"))
+			elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_CARTAO then
+				s_log = s_log & "; pc_qtde_parcelas=" & formata_texto_log(rs("pc_qtde_parcelas"))
+				s_log = s_log & "; pc_valor_parcela=" & formata_texto_log(rs("pc_valor_parcela"))
+			elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA then
+				s_log = s_log & "; pc_maquineta_qtde_parcelas=" & formata_texto_log(rs("pc_maquineta_qtde_parcelas"))
+				s_log = s_log & "; pc_maquineta_valor_parcela=" & formata_texto_log(rs("pc_maquineta_valor_parcela"))
+			elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
+				s_log = s_log & "; pce_forma_pagto_entrada=" & formata_texto_log(rs("pce_forma_pagto_entrada"))
+				s_log = s_log & "; pce_forma_pagto_prestacao=" & formata_texto_log(rs("pce_forma_pagto_prestacao"))
+				s_log = s_log & "; pce_entrada_valor=" & formata_texto_log(rs("pce_entrada_valor"))
+				s_log = s_log & "; pce_prestacao_qtde=" & formata_texto_log(rs("pce_prestacao_qtde"))
+				s_log = s_log & "; pce_prestacao_valor=" & formata_texto_log(rs("pce_prestacao_valor"))
+				s_log = s_log & "; pce_prestacao_periodo=" & formata_texto_log(rs("pce_prestacao_periodo"))
+			elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
+				s_log = s_log & "; pse_forma_pagto_prim_prest=" & formata_texto_log(rs("pse_forma_pagto_prim_prest"))
+				s_log = s_log & "; pse_forma_pagto_demais_prest=" & formata_texto_log(rs("pse_forma_pagto_demais_prest"))
+				s_log = s_log & "; pse_prim_prest_valor=" & formata_texto_log(rs("pse_prim_prest_valor"))
+				s_log = s_log & "; pse_prim_prest_apos=" & formata_texto_log(rs("pse_prim_prest_apos"))
+				s_log = s_log & "; pse_demais_prest_qtde=" & formata_texto_log(rs("pse_demais_prest_qtde"))
+				s_log = s_log & "; pse_demais_prest_valor=" & formata_texto_log(rs("pse_demais_prest_valor"))
+				s_log = s_log & "; pse_demais_prest_periodo=" & formata_texto_log(rs("pse_demais_prest_periodo"))
+				end if
+
+			s_log = s_log & "; custoFinancFornecTipoParcelamento=" & formata_texto_log(rs("custoFinancFornecTipoParcelamento"))
+			s_log = s_log & "; custoFinancFornecQtdeParcelas=" & formata_texto_log(rs("custoFinancFornecQtdeParcelas"))
+
+
+			if blnUsarMemorizacaoCompletaEnderecos then
+				s_log = s_log &	"; endereco_logradouro=" &formata_texto_log(rs("endereco_logradouro")) 
+				s_log = s_log &	"; endereco_bairro=" &  formata_texto_log(rs("endereco_bairro"))
+				s_log = s_log &	"; endereco_cidade=" & formata_texto_log(rs("endereco_cidade")) 
+				s_log = s_log &	"; endereco_uf=" &  formata_texto_log(rs("endereco_uf")) 
+				s_log = s_log &	"; endereco_cep=" & formata_texto_log(rs("endereco_cep")) 
+				s_log = s_log &	"; endereco_numero=" & formata_texto_log(rs("endereco_numero")) 
+				s_log = s_log &	"; endereco_email=" & formata_texto_log(rs("endereco_email")) 
+				s_log = s_log &	"; endereco_email_xml=" & formata_texto_log(rs("endereco_email_xml")) 
+				s_log = s_log &	"; endereco_nome=" & formata_texto_log(rs("endereco_nome")) 
+				s_log = s_log &	"; endereco_ddd_res=" & formata_texto_log(rs("endereco_ddd_res")) 
+				s_log = s_log &	"; endereco_tel_res=" & formata_texto_log(rs("endereco_tel_res")) 
+				s_log = s_log &	"; endereco_ddd_com=" & formata_texto_log(rs("endereco_ddd_com")) 
+				s_log = s_log &	"; endereco_tel_com=" & formata_texto_log(rs("endereco_tel_com")) 
+				s_log = s_log &	"; endereco_ramal_com=" & formata_texto_log(rs("endereco_ramal_com")) 
+				s_log = s_log &	"; endereco_ddd_cel=" & formata_texto_log(rs("endereco_ddd_cel")) 
+				s_log = s_log &	"; endereco_tel_cel=" & formata_texto_log(rs("endereco_tel_cel")) 
+				s_log = s_log &	"; endereco_ddd_com_2=" & formata_texto_log(rs("endereco_ddd_com_2")) 
+				s_log = s_log &	"; endereco_tel_com_2=" & formata_texto_log(rs("endereco_tel_com_2")) 
+				s_log = s_log &	"; endereco_ramal_com_2=" & formata_texto_log(rs("endereco_ramal_com_2")) 
+				s_log = s_log &	"; endereco_tipo_pessoa=" & formata_texto_log(rs("endereco_tipo_pessoa")) 
+				s_log = s_log &	"; endereco_cnpj_cpf=" & formata_texto_log(rs("endereco_cnpj_cpf")) 
+				s_log = s_log &	"; endereco_contribuinte_icms_status=" & formata_texto_log(rs("endereco_contribuinte_icms_status")) 
+				s_log = s_log &	"; endereco_produtor_rural_status=" & formata_texto_log(rs("endereco_produtor_rural_status")) 
+				s_log = s_log &	"; endereco_ie=" & formata_texto_log(rs("endereco_ie")) 
+				s_log = s_log &	"; endereco_rg=" & formata_texto_log(rs("endereco_rg")) 
+				s_log = s_log &	"; endereco_contato=" & formata_texto_log(rs("endereco_contato")) 
+				end if
+
+		
+			if rb_end_entrega = "S" then
+				s_log = s_log & "; Endereço entrega=" & formata_endereco(EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep) & " [EndEtg_cod_justificativa=" & EndEtg_obs & "]"
+				if blnUsarMemorizacaoCompletaEnderecos then
 					s_log = s_log & _
-							"; abaixo_min_status=" & formata_texto_log(.abaixo_min_status) & _
-							"; abaixo_min_autorizacao=" & formata_texto_log(.abaixo_min_autorizacao) & _
-							"; abaixo_min_autorizador=" & formata_texto_log(.abaixo_min_autorizador) & _
-							"; abaixo_min_superv_autorizador=" & formata_texto_log(.abaixo_min_superv_autorizador)
+							" (" & _
+							"email=" & EndEtg_email & _
+							", email_xml=" & EndEtg_email_xml & _
+							", nome=" & EndEtg_nome & _
+							", ddd_res=" & EndEtg_ddd_res & _
+							", tel_res=" & EndEtg_tel_res & _
+							", ddd_com=" & EndEtg_ddd_com & _
+							", tel_com=" & EndEtg_tel_com & _
+							", ramal_com=" & EndEtg_ramal_com & _
+							", ddd_cel=" & EndEtg_ddd_cel & _
+							", tel_cel=" & EndEtg_tel_cel & _
+							", ddd_com_2=" & EndEtg_ddd_com_2 & _
+							", tel_com_2=" & EndEtg_tel_com_2 & _
+							", ramal_com_2=" & EndEtg_ramal_com_2 & _
+							", tipo_pessoa=" & EndEtg_tipo_pessoa & _
+							", cnpj_cpf=" & EndEtg_cnpj_cpf & _
+							", contribuinte_icms_status=" & EndEtg_contribuinte_icms_status & _
+							", produtor_rural_status=" & EndEtg_produtor_rural_status & _
+							", ie=" & EndEtg_ie & _
+							", rg=" & EndEtg_rg & _					
+							")"
 					end if
-				end with
-			next
+			else
+				s_log = s_log & "; Endereço entrega=mesmo do cadastro"
+				end if
 		
-		if Not gera_num_orcamento(id_orcamento, msg_erro) then 
-		'	~~~~~~~~~~~~~~~~
-			cn.RollbackTrans
-		'	~~~~~~~~~~~~~~~~
-			Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_GERAR_NSU)
-			end if
+			s_log = s_log & "; InstaladorInstalaStatus=" & rb_instalador_instala
+			s_log = s_log & "; GarantiaIndicadorStatus=" & rb_garantia_indicador
+			s_log = s_log & "; perc_desagio_RA_liquida=" & rs("perc_desagio_RA_liquida")
 		
-		s="UPDATE t_ORCAMENTO SET orcamento='" & id_orcamento & "' WHERE orcamento='" & id_orcamento_temp & "'"
-		cn.Execute(s)
+			if rs.State <> 0 then rs.Close
 		
-		s="UPDATE t_ORCAMENTO_ITEM SET orcamento='" & id_orcamento & "' WHERE orcamento='" & id_orcamento_temp & "'"
-		cn.Execute(s)
-		
-		grava_log usuario, loja, id_orcamento, cliente_selecionado, OP_LOG_ORCAMENTO_NOVO, s_log		
+			for i=Lbound(v_item) to Ubound(v_item)
+				with v_item(i)
+					qtde_spe = 0
+					for k=Lbound(v_spe) to Ubound(v_spe)
+						if (v_spe(k).fabricante=.fabricante) And (v_spe(k).produto=.produto) then
+							if v_spe(k).qtde_solicitada > v_spe(k).qtde_estoque then qtde_spe = v_spe(k).qtde_solicitada - v_spe(k).qtde_estoque
+							exit for
+							end if
+						next
 
-'		SENHAS DE AUTORIZAÇÃO PARA DESCONTO SUPERIOR
-		for k = Lbound(v_desconto) to Ubound(v_desconto)
-			if Trim(v_desconto(k)) <> "" then
-				s = "SELECT * FROM t_DESCONTO" & _
-					" WHERE (usado_status=0)" & _
-					" AND (cancelado_status=0)" & _
-					" AND (id='" & Trim(v_desconto(k)) & "')"
-				if rs.State <> 0 then rs.Close
-				rs.open s, cn
-				if rs.Eof then
-					alerta = "Senha de autorização para desconto superior não encontrado."
-					exit for
-				else
-					rs("usado_status") = 1
-					rs("usado_data") = Now
-					rs("vendedor") = usuario
+					s="SELECT * FROM t_ORCAMENTO_ITEM WHERE orcamento='X'"
+					rs.Open s, cn
+					rs.AddNew 
+					rs("orcamento")=id_orcamento_temp
+					rs("fabricante")=.fabricante
+					rs("produto")=.produto
+					rs("qtde")=.qtde
+					rs("qtde_spe")=qtde_spe
+					rs("desc_dado")=.desc_dado
+					rs("preco_venda")=.preco_venda
+					rs("preco_NF")=.preco_NF
+					rs("preco_fabricante")=.preco_fabricante
+					rs("vl_custo2")=.vl_custo2
+					rs("preco_lista")=.preco_lista
+					rs("margem")=.margem
+					rs("desc_max")=.desc_max
+					rs("comissao")=.comissao
+					rs("descricao")=.descricao
+					rs("descricao_html")=.descricao_html
+					rs("obs")=.obs
+					rs("ean")=.ean
+					rs("grupo")=.grupo
+					rs("subgrupo")=.subgrupo
+					rs("peso")=.peso
+					rs("qtde_volumes")=.qtde_volumes
+					rs("abaixo_min_status")=.abaixo_min_status
+					rs("abaixo_min_autorizacao")=.abaixo_min_autorizacao
+					rs("abaixo_min_autorizador")=.abaixo_min_autorizador
+					rs("abaixo_min_superv_autorizador")=.abaixo_min_superv_autorizador
+					rs("sequencia")=renumera_com_base1(Lbound(v_item), i)
+					rs("markup_fabricante")=.markup_fabricante
+					rs("custoFinancFornecCoeficiente")=.custoFinancFornecCoeficiente
+					rs("custoFinancFornecPrecoListaBase")=.custoFinancFornecPrecoListaBase
+					rs("cubagem")=.cubagem
+					rs("ncm")=.ncm
+					rs("cst")=.cst
+					rs("descontinuado")=.descontinuado
 					rs.Update
 					if Err <> 0 then
 					'	~~~~~~~~~~~~~~~~
@@ -1235,9 +1198,73 @@
 					'	~~~~~~~~~~~~~~~~
 						Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
 						end if
-					end if
+					if rs.State <> 0 then rs.Close
+
+					if s_log <> "" then s_log=s_log & ";" & chr(13)
+					s_log = s_log & _
+							log_produto_monta(.qtde, .fabricante, .produto) & _
+							"; preco_lista=" & formata_texto_log(.preco_lista) & _
+							"; desc_dado=" & formata_texto_log(.desc_dado) & _
+							"; preco_venda=" & formata_texto_log(.preco_venda) & _
+							"; preco_NF=" & formata_texto_log(.preco_NF) & _
+							"; obs=" & formata_texto_log(.obs) & _
+							"; custoFinancFornecCoeficiente=" & formata_texto_log(.custoFinancFornecCoeficiente) & _
+							"; custoFinancFornecPrecoListaBase=" & formata_texto_log(.custoFinancFornecPrecoListaBase)
+				
+					if qtde_spe > 0 then s_log = s_log & "; spe=" & Cstr(qtde_spe)
+					
+					if converte_numero(.abaixo_min_status) <> 0 then
+						s_log = s_log & _
+								"; abaixo_min_status=" & formata_texto_log(.abaixo_min_status) & _
+								"; abaixo_min_autorizacao=" & formata_texto_log(.abaixo_min_autorizacao) & _
+								"; abaixo_min_autorizador=" & formata_texto_log(.abaixo_min_autorizador) & _
+								"; abaixo_min_superv_autorizador=" & formata_texto_log(.abaixo_min_superv_autorizador)
+						end if
+					end with
+				next
+		
+			if Not gera_num_orcamento(id_orcamento, msg_erro) then 
+			'	~~~~~~~~~~~~~~~~
+				cn.RollbackTrans
+			'	~~~~~~~~~~~~~~~~
+				Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_GERAR_NSU)
 				end if
-			next
+		
+			s="UPDATE t_ORCAMENTO SET orcamento='" & id_orcamento & "' WHERE orcamento='" & id_orcamento_temp & "'"
+			cn.Execute(s)
+		
+			s="UPDATE t_ORCAMENTO_ITEM SET orcamento='" & id_orcamento & "' WHERE orcamento='" & id_orcamento_temp & "'"
+			cn.Execute(s)
+		
+			grava_log usuario, loja, id_orcamento, cliente_selecionado, OP_LOG_ORCAMENTO_NOVO, s_log		
+
+	'		SENHAS DE AUTORIZAÇÃO PARA DESCONTO SUPERIOR
+			for k = Lbound(v_desconto) to Ubound(v_desconto)
+				if Trim(v_desconto(k)) <> "" then
+					s = "SELECT * FROM t_DESCONTO" & _
+						" WHERE (usado_status=0)" & _
+						" AND (cancelado_status=0)" & _
+						" AND (id='" & Trim(v_desconto(k)) & "')"
+					if rs.State <> 0 then rs.Close
+					rs.open s, cn
+					if rs.Eof then
+						alerta = "Senha de autorização para desconto superior não encontrado."
+						exit for
+					else
+						rs("usado_status") = 1
+						rs("usado_data") = Now
+						rs("vendedor") = usuario
+						rs.Update
+						if Err <> 0 then
+						'	~~~~~~~~~~~~~~~~
+							cn.RollbackTrans
+						'	~~~~~~~~~~~~~~~~
+							Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
+							end if
+						end if
+					end if
+				next
+			end if 'if alerta = ""
 		
 		if alerta = "" then
 		'	~~~~~~~~~~~~~~
@@ -1252,8 +1279,8 @@
 		'	~~~~~~~~~~~~~~~~
 			cn.RollbackTrans
 		'	~~~~~~~~~~~~~~~~
-			end if
-		end if
+			end if 'if alerta = ""
+		end if 'if alerta = ""
 
 %>
 
@@ -1310,8 +1337,17 @@
 <!--  T E L A  -->
 <p class="T">A V I S O</p>
 <div class="MtAlerta" style="width:600px;font-weight:bold;" align="center"><p style='margin:5px 2px 5px 2px;'><%=alerta%></p></div>
-<br><br>
-<p class="TracoBottom"></p>
+<br />
+<table class="notPrint" width="649" cellpadding="4" cellspacing="0" style="border-bottom:1px solid black">
+<tr><td class="Rc" align="left">&nbsp;</td></tr>
+</table>
+<table class="notPrint" width="649" cellpadding="0" cellspacing="0">
+<tr><td align="right"><span class="Rc">
+	<a href="resumo.asp" title="retorna para página inicial" class="LPagInicial">página inicial</a>&nbsp;&nbsp;&nbsp;
+	<a href="sessaoencerra.asp" title="encerra a sessão do usuário" class="LSessaoEncerra">encerra</a>
+	</span>
+</td></tr>
+</table>
 <table cellSpacing="0">
 <tr>
 	<td align="center"><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()"><img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
