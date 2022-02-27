@@ -431,6 +431,7 @@ function fORCVirarPedido( f ) {
 <form id="fORC" name="fORC" method="post">
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
 <input type="hidden" name="orcamento_selecionado" id="orcamento_selecionado" value='<%=orcamento_selecionado%>'>
+<input type="hidden" name="request_guid" id="request_guid" value="<%=gera_uid%>" />
 
 <% if operacao_permitida(OP_LJA_CADASTRA_NOVO_PEDIDO_SELECAO_MANUAL_CD, s_lista_operacoes_permitidas) then %>
 <input type="hidden" name="c_ExibirCamposModoSelecaoCD" value="S" />
