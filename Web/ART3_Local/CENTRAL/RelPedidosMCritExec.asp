@@ -1895,6 +1895,7 @@ dim vTransportadora
             " t_PEDIDO.cancelado_codigo_sub_motivo," & _
 			" t_PEDIDO.entregue_data," & _
 			" t_PEDIDO.PrevisaoEntregaTranspData," & _
+			" t_PEDIDO.PedidoRecebidoStatus," & _
 			" t_PEDIDO.PedidoRecebidoData," & _
 			" ISNULL(t_PEDIDO__VL_TOTAL.vl_total_pedido,0) AS vl_total_pedido," & _
 			" ISNULL(t_PEDIDO__VL_TOTAL.vl_total_pedido_NF,0) AS vl_total_pedido_NF," & _
@@ -2486,7 +2487,11 @@ dim vTransportadora
 	
 	'> DATA DA ENTREGA (OPCIONAL)
 		if ckb_exibir_data_entrega <> "" then
-			s = formata_data(r("entregue_data"))
+			if Trim("" & r("st_entrega")) = ST_ENTREGA_ENTREGUE then
+				s = formata_data(r("entregue_data"))
+			else
+				s = "&nbsp;"
+				end if
 			x = x & "		<TD align='center' valign='middle' style='width:" & Cstr(w_data) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
 			end if
 
@@ -2511,7 +2516,11 @@ dim vTransportadora
 
 	'> DATA DE RECEBIMENTO DO PEDIDO PELO CLIENTE (OPCIONAL)
 		if ckb_exibir_data_recebido_cliente <> "" then
-			s = formata_data(r("PedidoRecebidoData"))
+			if r("PedidoRecebidoStatus") = 1 then
+				s = formata_data(r("PedidoRecebidoData"))
+			else
+				s = "&nbsp;"
+				end if
 			x = x & "		<TD align='center' valign='middle' style='width:" & Cstr(w_data) & "px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)
 			end if
 
