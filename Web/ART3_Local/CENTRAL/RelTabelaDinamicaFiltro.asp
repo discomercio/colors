@@ -776,6 +776,28 @@ function exibe_botao_confirmar() {
 	</td>
 	</tr>
 
+<!--  PEDIDOS RECEBIDOS PELO CLIENTE  -->
+	<tr bgcolor="#FFFFFF">
+	<td class="MDBE" align="left" nowrap><span class="PLTe">PEDIDOS RECEBIDOS PELO CLIENTE</span>
+		<br>
+		<table cellspacing="0" cellpadding="0" style="margin-left:30px;margin-bottom:4px;">
+		<tr bgcolor="#FFFFFF"><td align="left">
+			<input type="checkbox" tabindex="-1" id="ckb_pedido_nao_recebido_pelo_cliente" name="ckb_pedido_nao_recebido_pelo_cliente"
+				value="ON"
+				<% if get_default_valor_texto_bd(usuario, ID_RELATORIO & "|ckb_pedido_nao_recebido_pelo_cliente") <> "" then Response.Write " checked" %>
+				><span class="C" style="cursor:default" 
+				onclick="fFILTRO.ckb_pedido_nao_recebido_pelo_cliente.click();">Não recebido pelo cliente</span>
+			</td></tr>
+		<tr bgcolor="#FFFFFF"><td align="left">
+			<input type="checkbox" tabindex="-1" id="ckb_pedido_recebido_pelo_cliente" name="ckb_pedido_recebido_pelo_cliente"
+				value="ON"
+				<% if get_default_valor_texto_bd(usuario, ID_RELATORIO & "|ckb_pedido_recebido_pelo_cliente") <> "" then Response.Write " checked" %>
+				><span class="C" style="cursor:default" 
+				onclick="fFILTRO.ckb_pedido_recebido_pelo_cliente.click();">Recebido pelo cliente</span>
+			</td></tr>
+		</table>
+	</td></tr>
+
 <!--  FABRICANTE  -->
 	<tr bgcolor="#FFFFFF">
 	<td class="MDBE" align="left" nowrap>
@@ -1010,7 +1032,7 @@ function exibe_botao_confirmar() {
 		<table width="100%" cellpadding="2" cellspacing="2">
 			<tr>	
 			    <td rowspan="2" class="tdColSaida" align="left" valign="top" style="margin-left:2px; margin-right:2px">	
-			        <fieldset style="height:508px; border: solid 1px #555; padding: auto"><legend><input id="cadastro" type="checkbox" onclick="marcarDesmarcarCadastro()"/><label for="cadastro">Cadastro</label></legend>	   
+			        <fieldset style="height:602px; border: solid 1px #555; padding: auto"><legend><input id="cadastro" type="checkbox" onclick="marcarDesmarcarCadastro()"/><label for="cadastro">Cadastro</label></legend>	   
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_DATA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 				
@@ -1075,12 +1097,22 @@ function exibe_botao_confirmar() {
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_CIDADE|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 						    <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_CIDADE" name="ckb_COL_CIDADE"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_CIDADE.click();">Cidade</span><br />
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_CIDADE.click();">Cidade (cadastro)</span><br />
 			
 			            <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_UF|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_UF" name="ckb_COL_UF"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_UF.click();">UF</span><br />
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_UF.click();">UF (cadastro)</span><br />
+
+				        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_CIDADE_ETG|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+						    <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_CIDADE_ETG" name="ckb_COL_CIDADE_ETG"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_CIDADE_ETG.click();">Cidade (entrega)</span><br />
+			
+			            <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_UF_ETG|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_UF_ETG" name="ckb_COL_UF_ETG"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_UF_ETG.click();">UF (entrega)</span><br />
 
                         <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_TEL|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
@@ -1106,10 +1138,26 @@ function exibe_botao_confirmar() {
 					        if (InStr(s_campos_saida_default, "|ckb_COL_TRANSPORTADORA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_TRANSPORTADORA" name="ckb_COL_TRANSPORTADORA"
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_TRANSPORTADORA.click();">Transportadora</span><br />
+
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_ENTREGA_IMEDIATA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_ENTREGA_IMEDIATA" name="ckb_COL_ENTREGA_IMEDIATA"
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_ENTREGA_IMEDIATA.click();">Entrega Imediata</span><br />
+
+                        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_DT_ENTREGA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_DT_ENTREGA" name="ckb_COL_DT_ENTREGA"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_DT_ENTREGA.click();">Data de Entrega</span><br />
+
+                        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_DT_PREVISAO_ETG_TRANSP|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_DT_PREVISAO_ETG_TRANSP" name="ckb_COL_DT_PREVISAO_ETG_TRANSP"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_DT_PREVISAO_ETG_TRANSP.click();">Previsão de Entrega da Transportadora</span><br />
+
+                        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_DT_RECEB_CLIENTE|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_DT_RECEB_CLIENTE" name="ckb_COL_DT_RECEB_CLIENTE"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_DT_RECEB_CLIENTE.click();">Data de Recebimento pelo Cliente</span><br />
                         <hr />
                         <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_INDICADOR_CPF_CNPJ|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
@@ -1195,6 +1243,11 @@ function exibe_botao_confirmar() {
 					        if (InStr(s_campos_saida_default, "|ckb_COL_PESO|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_COMERCIAL" tabindex="-1" id="ckb_COL_PESO" name="ckb_COL_PESO"
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_PESO.click();">Peso</span><br />
+
+                        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_QTDE_VOLUMES|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_COMERCIAL" tabindex="-1" id="ckb_COL_QTDE_VOLUMES" name="ckb_COL_QTDE_VOLUMES"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_QTDE_VOLUMES.click();">Qtde Volumes</span><br />
 
                         <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_FRETE|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
