@@ -399,15 +399,15 @@ namespace FinanceiroService
 		public static bool isConexaoOk()
 		{
 			#region [ Declarações ]
-			DateTime dtHrServidor = DateTime.MinValue;
+			string sParam;
 			#endregion
 
 			try
 			{
 				if (BD.cnConexao == null) return false;
 
-				dtHrServidor = obtemDataHoraServidor();
-				if (dtHrServidor != DateTime.MinValue) return true;
+				sParam = GeralDAO.getCampoTextoTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.PARAMETRO_DUMMY_TESTE_CONEXAO_BD);
+				if ((sParam ?? "").Length > 0) return true;
 				return false;
 			}
 			catch (Exception)
