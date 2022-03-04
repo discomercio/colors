@@ -442,6 +442,8 @@ strSqlVlPagoCartao = " Coalesce(" & _
 								" t1.pedido," & _
                                 " t1.pedido_base," & _
 								" Coalesce(t1.obs_2, '') AS obs_2," & _
+								" Coalesce(t1.obs_3, '') AS obs_3," & _
+								" Coalesce(t1.obs_4, '') AS obs_4," & _
 								" t1.transportadora_selecao_auto_status," & _
 								" Coalesce(t1.transportadora_id, '') AS transportadora_id," & _
 								" t1.st_entrega," & _
@@ -480,6 +482,8 @@ strSqlVlPagoCartao = " Coalesce(" & _
 								" t1.pedido," & _
                                 " t1.pedido_base," & _
 								" Coalesce(t1.obs_2, '') AS obs_2," & _
+								" Coalesce(t1.obs_3, '') AS obs_3," & _
+								" Coalesce(t1.obs_4, '') AS obs_4," & _
 								" t1.transportadora_selecao_auto_status," & _
 								" Coalesce(t1.transportadora_id, '') AS transportadora_id," & _
 								" t1.st_entrega," & _
@@ -517,8 +521,51 @@ strSqlVlPagoCartao = " Coalesce(" & _
 							" UNION " & _
 							"SELECT" & _
 								" t1.pedido," & _
+                                " t1.pedido_base," & _
+								" Coalesce(t1.obs_2, '') AS obs_2," & _
+								" Coalesce(t1.obs_3, '') AS obs_3," & _
+								" Coalesce(t1.obs_4, '') AS obs_4," & _
+								" t1.transportadora_selecao_auto_status," & _
+								" Coalesce(t1.transportadora_id, '') AS transportadora_id," & _
+								" t1.st_entrega," & _
+								" 'Crédito OK (aguardando pagto boleto AV)' AS analise_credito_descricao," & _
+								" " & PRAZO_CANCEL_AUTO_PEDIDO_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV & " AS prazo_cancelamento," & _
+								" tPedBase.analise_credito," & _
+								" tPedBase.analise_credito_data," & _
+								" tPedBase.analise_credito_data_sem_hora," & _
+                                " tPedBase.vendedor,"
+
+				if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
+					strSql = strSql & _
+								" t1.endereco_nome_iniciais_em_maiusculas AS nome,"
+				else
+					strSql = strSql & _
+								" t_CLIENTE.nome_iniciais_em_maiusculas AS nome,"
+					end if
+
+				strSql = strSql & _
+								" Coalesce(Datediff(day, tPedBase.analise_credito_data_sem_hora, Convert(datetime, Convert(varchar(10), getdate(), 121), 121)), 0) AS dias_decorridos," & _
+								" (" & _
+									"SELECT Count(*) FROM t_PEDIDO t2 WHERE (t2.pedido_base = t1.pedido_base) AND (t2.st_auto_split = 0) AND (t2.tamanho_num_pedido > " & TAM_MIN_ID_PEDIDO & ")" & _
+								") AS qtde_pedido_filhote," & _
+                                strSqlVlPagoCartao & _
+							" FROM t_PEDIDO t1" & _
+                            " INNER JOIN t_PEDIDO AS tPedBase ON (t1.pedido_base=tPedBase.pedido)" & _
+                            " INNER JOIN t_CLIENTE on (t1.id_cliente = t_CLIENTE.id)" & _
+							" WHERE" & _
+								strWhereBase & _
+								" AND (" & _
+									"(tPedBase.analise_credito = " & COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV & ")" & _
+									" AND (tPedBase.analise_credito_data_sem_hora IS NOT NULL)" & _
+									" AND (Coalesce(Datediff(day, tPedBase.analise_credito_data_sem_hora, getdate()), 0) > (" & PRAZO_CANCEL_AUTO_PEDIDO_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV & " -  " & PRAZO_EXIBICAO_CANCEL_AUTO_PEDIDO & "))" & _
+								")" & _
+							" UNION " & _
+							"SELECT" & _
+								" t1.pedido," & _
 								" t1.pedido_base," & _
 								" Coalesce(t1.obs_2, '') AS obs_2," & _
+								" Coalesce(t1.obs_3, '') AS obs_3," & _
+								" Coalesce(t1.obs_4, '') AS obs_4," & _
 								" t1.transportadora_selecao_auto_status," & _
 								" Coalesce(t1.transportadora_id, '') AS transportadora_id," & _
 								" t1.st_entrega," & _
@@ -555,8 +602,9 @@ strSqlVlPagoCartao = " Coalesce(" & _
 								")" & _
 							") t" & _
 						" WHERE" & _
-							" (qtde_pedido_filhote = 0)" & _
-							" AND (LEN(obs_2) = 0)" & _
+							" (LEN(obs_2) = 0)" & _
+							" AND (LEN(obs_3) = 0)" & _
+							" AND (LEN(obs_4) = 0)" & _
                             " AND (vl_pago_cartao = 0)" & _
 							" AND ((transportadora_selecao_auto_status = 1) OR (LEN(Coalesce(transportadora_id,'')) = 0))" & _
 						" ORDER BY" & _

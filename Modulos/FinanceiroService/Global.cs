@@ -29,8 +29,8 @@ namespace FinanceiroService
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "Financeiro Service";
 				public static readonly string ID_SISTEMA_EVENTLOG = GetConfigurationValue("ServiceName");
-				public const string VERSAO_NUMERO = "1.41";
-				public const string VERSAO_DATA = "21.DEZ.2021";
+				public const string VERSAO_NUMERO = "1.42";
+				public const string VERSAO_DATA = " 04.MAR.2022";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Serviço do Windows para execução automática de rotinas financeiras";
@@ -320,8 +320,17 @@ namespace FinanceiroService
 			 *      Implementação de envio de e-mail de alerta quando ocorrer falha no processamento do
 			 *      cancelamento ou estorno de transações durante o processamento do retorno da Clearsale.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.42 - XX.XX.20XX - por XXX
+			 * v 1.42 - 04.03.2022 - por HHO
+			 *      Ajustes nas regras do cancelamento automático de pedidos:
+			 *          1) Incluir no cancelamento automático os pedidos com status de crédito
+			 *             'Crédito OK (aguardando pagto boleto AV)' que estejam com status de pagamento
+			 *             'Não Pago' após o prazo de 7 dias.
+			 *          2) Pedidos com split realizado manualmente devem ser cancelados automaticamente.
+			 *          3) Prazo de cancelamento para pedidos no status 'Pendente Vendas' passa a ser de
+			 *             7 dias.
 			 *      
+			 *      Ajustes na rotina de reconexão ao banco de dados para incluir um intervalo mínimo entre
+			 *      as tentativas.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.43 - XX.XX.20XX - por XXX
 			 *      
@@ -356,6 +365,7 @@ namespace FinanceiroService
 				#region [ ID_T_PARAMETRO ]
 				public static class ID_T_PARAMETRO
 				{
+					public const string PARAMETRO_DUMMY_TESTE_CONEXAO_BD = "FinSvc_ParametroDummy_TesteConexaoBD";
 					public const string DT_HR_ULT_PROC_CLIENTES_EM_ATRASO = "FinSvc_DtHrUltProcClientesEmAtraso";
 					public const string DT_HR_ULT_MANUTENCAO_ARQ_LOG_ATIVIDADE = "FinSvc_DtHrUltManutencaoArqLogAtividade";
 					public const string DT_HR_ULT_MANUTENCAO_BD_LOG_ANTIGO = "FinSvc_DtHrUltManutencaoBdLogAntigo";
@@ -1726,7 +1736,8 @@ namespace FinanceiroService
 
 				public static readonly PrazoCancelAutoPedidoEmDias PENDENTE_CARTAO_CREDITO = new PrazoCancelAutoPedidoEmDias("PENDENTE_CARTAO_CREDITO", 7);
 				public static readonly PrazoCancelAutoPedidoEmDias CREDITO_OK_AGUARDANDO_DEPOSITO = new PrazoCancelAutoPedidoEmDias("CREDITO_OK_AGUARDANDO_DEPOSITO", 7);
-				public static readonly PrazoCancelAutoPedidoEmDias PENDENTE_VENDAS = new PrazoCancelAutoPedidoEmDias("PENDENTE_VENDAS", 10);
+				public static readonly PrazoCancelAutoPedidoEmDias CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV = new PrazoCancelAutoPedidoEmDias("CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV", 7);
+				public static readonly PrazoCancelAutoPedidoEmDias PENDENTE_VENDAS = new PrazoCancelAutoPedidoEmDias("PENDENTE_VENDAS", 7);
 
 				private PrazoCancelAutoPedidoEmDias(string name, int value)
 				{

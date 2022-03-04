@@ -497,6 +497,7 @@ namespace FinanceiroService
 			pedido.obs_1 = BD.readToString(rowResultado["obs_1"]);
 			pedido.obs_2 = BD.readToString(rowResultado["obs_2"]);
 			pedido.obs_3 = BD.readToString(rowResultado["obs_3"]);
+			pedido.obs_4 = BD.readToString(rowResultado["obs_4"]);
 			pedido.qtde_parcelas = BD.readToShort(rowResultado["qtde_parcelas"]);
 			pedido.forma_pagto = BD.readToString(rowResultado["forma_pagto"]);
 			pedido.vl_total_familia = BD.readToDecimal(rowResultado["vl_total_familia"]);
@@ -1200,6 +1201,7 @@ namespace FinanceiroService
 			pedido.obs_1 = BD.readToString(rowResultado["obs_1"]);
 			pedido.obs_2 = BD.readToString(rowResultado["obs_2"]);
 			pedido.obs_3 = BD.readToString(rowResultado["obs_3"]);
+			pedido.obs_4 = BD.readToString(rowResultado["obs_4"]);
 			pedido.qtde_parcelas = BD.readToShort(rowResultado["qtde_parcelas"]);
 			pedido.forma_pagto = BD.readToString(rowResultado["forma_pagto"]);
 			pedido.vl_total_familia = BD.readToDecimal(rowResultado["vl_total_familia"]);
@@ -2393,6 +2395,8 @@ namespace FinanceiroService
 								" t1.pedido," +
 								" t1.pedido_base," +
 								" Coalesce(t1.obs_2, '') AS obs_2," +
+								" Coalesce(t1.obs_3, '') AS obs_3," +
+								" Coalesce(t1.obs_4, '') AS obs_4," +
 								" t1.transportadora_selecao_auto_status," +
 								" Coalesce(t1.transportadora_id, '') AS transportadora_id," +
 								" t1.st_entrega," +
@@ -2421,6 +2425,8 @@ namespace FinanceiroService
 								" t1.pedido," +
 								" t1.pedido_base," +
 								" Coalesce(t1.obs_2, '') AS obs_2," +
+								" Coalesce(t1.obs_3, '') AS obs_3," +
+								" Coalesce(t1.obs_4, '') AS obs_4," +
 								" t1.transportadora_selecao_auto_status," +
 								" Coalesce(t1.transportadora_id, '') AS transportadora_id," +
 								" t1.st_entrega," +
@@ -2450,6 +2456,39 @@ namespace FinanceiroService
 								" t1.pedido," +
 								" t1.pedido_base," +
 								" Coalesce(t1.obs_2, '') AS obs_2," +
+								" Coalesce(t1.obs_3, '') AS obs_3," +
+								" Coalesce(t1.obs_4, '') AS obs_4," +
+								" t1.transportadora_selecao_auto_status," +
+								" Coalesce(t1.transportadora_id, '') AS transportadora_id," +
+								" t1.st_entrega," +
+								" '" + Global.Cte.PrazoCancelAutoPedidoEmDias.CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV.GetName() + "' AS origem_registro," +
+								" 'Crédito OK (aguardando pagto boleto AV)' AS analise_credito_descricao," +
+								" " + Global.Cte.PrazoCancelAutoPedidoEmDias.CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV.ToString() + " AS prazo_cancelamento," +
+								" tPedBase.analise_credito," +
+								" tPedBase.analise_credito_data," +
+								" tPedBase.analise_credito_data_sem_hora," +
+								" Coalesce(Datediff(day, tPedBase.analise_credito_data_sem_hora, Convert(datetime, Convert(varchar(10), getdate(), 121), 121)), 0) AS dias_decorridos," +
+								" (" +
+									"SELECT Count(*) FROM t_PEDIDO t2 WHERE (t2.pedido_base = t1.pedido_base) AND (t2.st_auto_split = 0) AND (t2.tamanho_num_pedido > " + Global.Cte.Etc.TAM_MIN_ID_PEDIDO.ToString() + ")" +
+								") AS qtde_pedido_filhote_manual," +
+								strSqlVlPagoCartao +
+							" FROM t_PEDIDO t1" +
+								" INNER JOIN t_PEDIDO AS tPedBase ON (t1.pedido_base=tPedBase.pedido)" +
+							" WHERE" +
+								strWhereBase +
+								" AND (" +
+									"(tPedBase.analise_credito = " + Global.Cte.T_PEDIDO__ANALISE_CREDITO_STATUS.CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV.ToString() + ")" +
+									" AND (tPedBase.analise_credito_data_sem_hora IS NOT NULL)" +
+									" AND (Coalesce(Datediff(day, tPedBase.analise_credito_data_sem_hora, " + Global.sqlMontaGetdateSomenteData() + "), 0) > " + Global.Cte.PrazoCancelAutoPedidoEmDias.CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV.ToString() + ")" +
+								")" +
+							" UNION " +
+							"SELECT" +
+								" t1.id_nfe_emitente," +
+								" t1.pedido," +
+								" t1.pedido_base," +
+								" Coalesce(t1.obs_2, '') AS obs_2," +
+								" Coalesce(t1.obs_3, '') AS obs_3," +
+								" Coalesce(t1.obs_4, '') AS obs_4," +
 								" t1.transportadora_selecao_auto_status," +
 								" Coalesce(t1.transportadora_id, '') AS transportadora_id," +
 								" t1.st_entrega," +
@@ -2475,8 +2514,9 @@ namespace FinanceiroService
 								")" +
 							") t" +
 						" WHERE" +
-							" (qtde_pedido_filhote_manual = 0)" +
-							" AND (LEN(obs_2) = 0)" +
+							" (LEN(obs_2) = 0)" +
+							" AND (LEN(obs_3) = 0)" +
+							" AND (LEN(obs_4) = 0)" +
 							" AND (vl_pago_cartao = 0)" +
 							" AND ((transportadora_selecao_auto_status = 1) OR (LEN(Coalesce(transportadora_id,'')) = 0))" +
 						" ORDER BY" +
@@ -2527,6 +2567,10 @@ namespace FinanceiroService
 						else if (strOrigemRegistro.Equals(Global.Cte.PrazoCancelAutoPedidoEmDias.PENDENTE_VENDAS.GetName()))
 						{
 							strCodigoSubMotivo = "003";
+						}
+						else if (strOrigemRegistro.Equals(Global.Cte.PrazoCancelAutoPedidoEmDias.CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV.GetName()))
+						{
+							strCodigoSubMotivo = "008";
 						}
 						else
 						{
