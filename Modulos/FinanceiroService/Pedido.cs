@@ -67,7 +67,9 @@ namespace FinanceiroService
 
         public String obs_3 { get; set; }
 
-        public short qtde_parcelas { get; set; }
+		public String obs_4 { get; set; }
+
+		public short qtde_parcelas { get; set; }
 
         public String forma_pagto { get; set; }
 

@@ -1181,10 +1181,9 @@ namespace FinanceiroService
 							lngSegundosDecorridos = Global.calculaTimeSpanSegundos(DateTime.Now - dtHrUltVerificacaoConexaoBd);
 							if (lngSegundosDecorridos >= 60)
 							{
-								dtHrUltVerificacaoConexaoBd = DateTime.Now;
 								if (BD.isConexaoOk())
 								{
-									// NOP
+									dtHrUltVerificacaoConexaoBd = DateTime.Now;
 								}
 								else
 								{
@@ -1217,6 +1216,7 @@ namespace FinanceiroService
 								else
 								{
 									Global.gravaLogAtividade("Falha na reinicialização preventiva automática dos objetos estáticos das units de acesso ao Banco de Dados!!");
+									ProcessaSleep(60 * 1000);
 								}
 								// Se a conexão não estiver ok, volta ao início do laço p/ reprocessar a rotina de reconexão automática
 								if (!BD.isConexaoOk()) continue;
@@ -2850,6 +2850,8 @@ namespace FinanceiroService
 						{
 							strMsg = ex.ToString();
 							Global.gravaEventLog(NOME_DESTA_ROTINA + "\r\n" + strMsg, EventLogEntryType.Error);
+							// Em situações de erro, introduz um delay para que o laço (e consequentemente o erro) não se repita com tanta frequência
+							ProcessaSleep(10 * 1000);
 						}
 
 						ProcessaSleep(1000);
