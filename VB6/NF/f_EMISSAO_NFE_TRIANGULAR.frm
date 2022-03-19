@@ -12618,7 +12618,9 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         End If
         
 '   SE UF TEM LIMINAR PARA NÃO RECOLHIMENTO DO DIFAL, INFORMAR
-    If PARTILHA_ICMS_ATIVA And blnIgnorarDIFAL Then
+    If PARTILHA_ICMS_ATIVA And blnIgnorarDIFAL And _
+        (rNFeImg.ide__idDest = "2") And _
+        (rNFeImg.dest__indIEDest = "9") Then
         If s_Texto_DIFAL_UF <> "" Then
             If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
             strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & s_Texto_DIFAL_UF

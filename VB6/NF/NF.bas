@@ -790,6 +790,22 @@ Option Explicit
 '|          |      | - Funcionalidade para que o DIFAL não seja calculado      |
 '|          |      |   em caso de liminar a favor                              |
 '|__________|______|___________________________________________________________|
+'|06.02.2022| LHGX |V 2.25                                                     |
+'|          |      | - Ajuste da versão anterior para que as NF's internas     |
+'|          |      |   não exibam a mensagem sobre a não-cobrança  do DIFAL    |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
 '|          |      |                                                           |
@@ -797,8 +813,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.24"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  03/02/2022"
+Global Const m_id_versao = "2.25"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  06/02/2022"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"
