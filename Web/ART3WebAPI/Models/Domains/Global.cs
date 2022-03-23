@@ -60,8 +60,8 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.33";
-				public const string Data = "21.NOV.2021";
+				public const string Numero = "2.34";
+				public const string Data = "23.MAR.2022";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
 			#endregion
@@ -280,8 +280,10 @@ namespace ART3WebAPI.Models.Domains
 			 *      página dentro de frames. A solução consiste em obter o conteúdo da página via WebAPI
 			 *      e carregá-la diretamente no frame.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.34 - XX.XX.20XX - por XXX
-			 *      
+			 * v 2.34 - 23.03.2022 - por HHO
+			 *      Implementação de tratamento para obter os dados sobre pagamentos em pedidos de marketplace
+			 *      em Magento2RestApi através do JSON do marketplace. Esses dados serão usados para informar
+			 *      os dados do intermediador da transação na NFe.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.35 - XX.XX.20XX - por XXX
 			 *      

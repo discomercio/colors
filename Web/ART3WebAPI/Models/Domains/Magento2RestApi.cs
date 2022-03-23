@@ -1041,6 +1041,7 @@ namespace ART3WebAPI.Models.Domains
 			MagentoErpPedidoXmlDecodeEndereco decodeEndereco;
 			MagentoErpPedidoXmlDecodeItem decodeItem;
 			MagentoErpPedidoXmlDecodeStatusHistory decodeStatusHistory;
+			MagentoErpPedidoXmlDecodeSkyhubMktpPayment decodeSkyhubMktpPayment;
 			List<CodigoDescricao> listaCodigoDescricao;
 			string[] v;
 			Magento2SalesOrderInfo mage2SalesOrderInfo;
@@ -2020,6 +2021,42 @@ namespace ART3WebAPI.Models.Domains
 						if (msg_erro.Length > 0) msg += "\n" + msg_erro;
 						Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 						throw new Exception(msg);
+					}
+				}
+				#endregion
+
+				#region [ Para pedidos de marketplace, grava dados de Payments ]
+				if (skyHubInfo != null)
+				{
+					if ((skyHubInfo.code ?? "").Trim().Length > 0)
+					{
+						foreach (Magento2SkyhubDataSourcePayment payment in skyHubInfo.payments)
+						{
+							decodeSkyhubMktpPayment = new MagentoErpPedidoXmlDecodeSkyhubMktpPayment();
+							decodeSkyhubMktpPayment.id_magento_api_pedido_xml = insertPedidoXml.id;
+							if (payment.value != null) decodeSkyhubMktpPayment.value = Global.converteNumeroDecimal(payment.value);
+							if (payment.type != null) decodeSkyhubMktpPayment.type = payment.type;
+							if (payment.transaction_date != null) decodeSkyhubMktpPayment.transaction_date = payment.transaction_date;
+							if (payment.status != null) decodeSkyhubMktpPayment.status = payment.status;
+							if (payment.parcels != null) decodeSkyhubMktpPayment.parcels = (int)Global.converteInteiro(payment.parcels);
+							if (payment.method != null) decodeSkyhubMktpPayment.method = payment.method;
+							if (payment.description != null) decodeSkyhubMktpPayment.description = payment.description;
+							if (payment.card_issuer != null) decodeSkyhubMktpPayment.card_issuer = payment.card_issuer;
+							if (payment.autorization_id != null) decodeSkyhubMktpPayment.autorization_id = payment.autorization_id;
+							if (payment.sefaz.type_integration != null) decodeSkyhubMktpPayment.sefaz_type_integration = payment.sefaz.type_integration;
+							if (payment.sefaz.payment_indicator != null) decodeSkyhubMktpPayment.sefaz_payment_indicator = payment.sefaz.payment_indicator;
+							if (payment.sefaz.name_payment != null) decodeSkyhubMktpPayment.sefaz_name_payment = payment.sefaz.name_payment;
+							if (payment.sefaz.name_card_issuer != null) decodeSkyhubMktpPayment.sefaz_name_card_issuer = payment.sefaz.name_card_issuer;
+							if (payment.sefaz.id_payment != null) decodeSkyhubMktpPayment.sefaz_id_payment = payment.sefaz.id_payment;
+							if (payment.sefaz.id_card_issuer != null) decodeSkyhubMktpPayment.sefaz_id_card_issuer = payment.sefaz.id_card_issuer;
+							if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeSkyhubMktpPayment(httpRequestId, decodeSkyhubMktpPayment, out msg_erro))
+							{
+								msg = "Falha ao tentar gravar no BD os dados de pagamento do pedido informados pelo marketplace (method=" + decodeSkyhubMktpPayment.method + ")!";
+								if (msg_erro.Length > 0) msg += "\n" + msg_erro;
+								Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
+								throw new Exception(msg);
+							}
+						}
 					}
 				}
 				#endregion
