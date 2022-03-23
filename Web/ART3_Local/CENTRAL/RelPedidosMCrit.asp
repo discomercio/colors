@@ -1521,31 +1521,89 @@ function exibe_botao_confirmar() {
 <tr bgcolor="#FFFFFF">
 <td class="MDBE" align="left" nowrap><span class="PLTe">CAMPOS OPCIONAIS</span>
 	<br>
-	<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;">
-	<tr bgcolor="#FFFFFF"><td align="left">
-		<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_vendedor") %>
-		<input type="checkbox" tabindex="-1" id="ckb_exibir_vendedor" name="ckb_exibir_vendedor"
-			value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_exibir_vendedor.click();">Vendedor</span>
-		</td></tr>
-	<tr bgcolor="#FFFFFF"><td align="left">
-		<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_parceiro") %>
-		<input type="checkbox" tabindex="-1" id="ckb_exibir_parceiro" name="ckb_exibir_parceiro"
-			value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_exibir_parceiro.click();">Parceiro</span>
-		</td></tr>
-	<tr bgcolor="#FFFFFF"><td align="left">
-		<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_uf") %>
-		<input type="checkbox" tabindex="-1" id="ckb_exibir_uf" name="ckb_exibir_uf"
-			value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_exibir_uf.click();">UF</span>
-		</td></tr>
-	<tr bgcolor="#FFFFFF"><td align="left">
-		<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_data_previsao_entrega") %>
-		<input type="checkbox" tabindex="-1" id="ckb_exibir_data_previsao_entrega" name="ckb_exibir_data_previsao_entrega"
-			value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_exibir_data_previsao_entrega.click();">Previsão de Entrega</span>
-		</td></tr>
+	<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;" width="100%">
+	<tr>
+		<td width="50%" valign="top">
+			<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;">
+			<tr bgcolor="#FFFFFF"><td align="left">
+				<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_vendedor") %>
+				<input type="checkbox" tabindex="-1" id="ckb_exibir_vendedor" name="ckb_exibir_vendedor"
+					value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+					onclick="fFILTRO.ckb_exibir_vendedor.click();">Vendedor</span>
+				</td></tr>
+			<tr bgcolor="#FFFFFF"><td align="left">
+				<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_parceiro") %>
+				<input type="checkbox" tabindex="-1" id="ckb_exibir_parceiro" name="ckb_exibir_parceiro"
+					value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+					onclick="fFILTRO.ckb_exibir_parceiro.click();">Parceiro</span>
+				</td></tr>
+			<tr bgcolor="#FFFFFF"><td align="left">
+				<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_uf") %>
+				<input type="checkbox" tabindex="-1" id="ckb_exibir_uf" name="ckb_exibir_uf"
+					value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+					onclick="fFILTRO.ckb_exibir_uf.click();">UF (cadastro do cliente)</span>
+				</td></tr>
+			<tr bgcolor="#FFFFFF"><td align="left">
+				<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_cidade_etg") %>
+				<input type="checkbox" tabindex="-1" id="ckb_exibir_cidade_etg" name="ckb_exibir_cidade_etg"
+					value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+					onclick="fFILTRO.ckb_exibir_cidade_etg.click();">Cidade (entrega)</span>
+				</td></tr>
+			<tr bgcolor="#FFFFFF"><td align="left">
+				<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_uf_etg") %>
+				<input type="checkbox" tabindex="-1" id="ckb_exibir_uf_etg" name="ckb_exibir_uf_etg"
+					value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+					onclick="fFILTRO.ckb_exibir_uf_etg.click();">UF (entrega)</span>
+				</td></tr>
+			<tr bgcolor="#FFFFFF"><td align="left">
+				<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_data_entrega") %>
+				<input type="checkbox" tabindex="-1" id="ckb_exibir_data_entrega" name="ckb_exibir_data_entrega"
+					value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+					onclick="fFILTRO.ckb_exibir_data_entrega.click();">Data de Entrega</span>
+				</td></tr>
+			</table>
+		</td>
+		<td width="50%" valign="top">
+			<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;">
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_data_previsao_entrega") %>
+					<input type="checkbox" tabindex="-1" id="ckb_exibir_data_previsao_entrega" name="ckb_exibir_data_previsao_entrega"
+						value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+						onclick="fFILTRO.ckb_exibir_data_previsao_entrega.click();">Previsão de Entrega</span>
+					</td></tr>
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_data_previsao_entrega_transp") %>
+					<input type="checkbox" tabindex="-1" id="ckb_exibir_data_previsao_entrega_transp" name="ckb_exibir_data_previsao_entrega_transp"
+						value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+						onclick="fFILTRO.ckb_exibir_data_previsao_entrega_transp.click();">Previsão de Entrega da Transportadora</span>
+					</td></tr>
+				<tr bgcolor="#FFFFFF"><td align="left">
+				<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_data_recebido_cliente") %>
+				<input type="checkbox" tabindex="-1" id="ckb_exibir_data_recebido_cliente" name="ckb_exibir_data_recebido_cliente"
+					value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+					onclick="fFILTRO.ckb_exibir_data_recebido_cliente.click();">Data de Recebimento pelo Cliente</span>
+				</td></tr>
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_qtde_volumes") %>
+					<input type="checkbox" tabindex="-1" id="ckb_exibir_qtde_volumes" name="ckb_exibir_qtde_volumes"
+						value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+						onclick="fFILTRO.ckb_exibir_qtde_volumes.click();">Qtde de Volumes</span>
+					</td></tr>
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_cubagem") %>
+					<input type="checkbox" tabindex="-1" id="ckb_exibir_cubagem" name="ckb_exibir_cubagem"
+						value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+						onclick="fFILTRO.ckb_exibir_cubagem.click();">Cubagem</span>
+					</td></tr>
+				<tr bgcolor="#FFFFFF"><td align="left">
+					<%	s_memoria = get_default_valor_texto_bd(usuario, "CENTRAL/RelPedidosMCrit|ckb_exibir_peso") %>
+					<input type="checkbox" tabindex="-1" id="ckb_exibir_peso" name="ckb_exibir_peso"
+						value="ON" <%if s_memoria <> "" then Response.Write " checked"%> /><span class="C" style="cursor:default" 
+						onclick="fFILTRO.ckb_exibir_peso.click();">Peso</span>
+					</td></tr>
+			</table>
+		</td>
+	</tr>
 	</table>
 </td></tr>
 

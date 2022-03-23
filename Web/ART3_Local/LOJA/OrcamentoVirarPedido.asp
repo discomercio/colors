@@ -62,6 +62,9 @@
 	dim blnLojaHabilitadaProdCompostoECommerce
 	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
 
+	dim insert_request_guid
+	insert_request_guid = Trim(Request.Form("request_guid"))
+
 	dim s_fabricante, s_produto, s_descricao, s_descricao_html, s_qtde, s_preco_lista, s_vl_NF, s_vl_TotalItem
 	dim s_desc_dado, s_vl_unitario
 	dim s_readonly, s_vl_NF_readonly
@@ -2421,6 +2424,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 <input type="hidden" name="c_tipo_cliente" id="c_tipo_cliente" value='<%=cliente__tipo%>'>
 <% if erro_produto_indisponivel then s="S" else s="" %>
 <input type="hidden" name="opcao_venda_sem_estoque" id="opcao_venda_sem_estoque" value='<%=s%>'>
+<input type="hidden" name="insert_request_guid" id="insert_request_guid" value="<%=insert_request_guid%>" />
 
 <input type="hidden" name="c_PercLimiteRASemDesagio" id="c_PercLimiteRASemDesagio" value='<%=strPercLimiteRASemDesagio%>'>
 <input type="hidden" name="c_PercDesagio" id="c_PercDesagio" value='<%=strPercDesagio%>'>

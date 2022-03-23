@@ -49,6 +49,9 @@
 	s = normaliza_num_pedido(pedido_selecionado)
 	if s <> "" then pedido_selecionado = s
 	
+	dim request_guid
+	request_guid = Trim(Request("request_guid"))
+
 	dim i, n
 	dim s_fabricante, s_produto, s_descricao, s_descricao_html, s_qtde, s_vl_unitario, s_vl_TotalItem, m_TotalItem, m_TotalDestePedido
 	dim s_cor, s_devolucao_anterior, s_devolucao_pendente, s_readonly
@@ -599,6 +602,8 @@ serverVariableUrl = serverVariableUrl.substring(0, serverVariableUrl.indexOf("CE
 <input type="hidden" name="upload_parameter__user_id" value="<%=usuario%>" />
 <input type="hidden" name="upload_parameter__sessionToken" value="<%=s_sessionToken%>" />
 <input type="hidden" name="upload_file_guid_returned" id="upload_file_guid_returned" />
+<input type="hidden" name="request_guid" id="request_guid" value="<%=request_guid%>" />
+
 
 <!--  I D E N T I F I C A Ç Ã O   D O   P E D I D O -->
 <%=MontaHeaderIdentificacaoPedido(pedido_selecionado, r_pedido, 852)%>

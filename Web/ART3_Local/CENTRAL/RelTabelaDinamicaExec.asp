@@ -70,6 +70,7 @@
 
 	dim alerta, msg_erro_consistencia_parametros
 	dim c_dt_faturamento_inicio, c_dt_faturamento_termino, c_dt_NF_venda_inicio, c_dt_NF_venda_termino, c_dt_NF_remessa_inicio, c_dt_NF_remessa_termino
+	dim ckb_pedido_nao_recebido_pelo_cliente, ckb_pedido_recebido_pelo_cliente
 	dim c_fabricante, c_grupo, c_potencia_BTU, c_ciclo, c_posicao_mercado, c_grupo_pedido_origem, c_entrega_imediata
 	dim c_loja, rb_tipo_cliente
 	dim s, s_aux, s_filtro, s_filtro_loja, lista_loja, v_loja, v, i
@@ -86,6 +87,8 @@
 	c_dt_NF_venda_termino = Trim(Request.Form("c_dt_NF_venda_termino"))
 	c_dt_NF_remessa_inicio = Trim(Request.Form("c_dt_NF_remessa_inicio"))
 	c_dt_NF_remessa_termino = Trim(Request.Form("c_dt_NF_remessa_termino"))
+	ckb_pedido_nao_recebido_pelo_cliente = Trim(Request.Form("ckb_pedido_nao_recebido_pelo_cliente"))
+	ckb_pedido_recebido_pelo_cliente = Trim(Request.Form("ckb_pedido_recebido_pelo_cliente"))
 	c_fabricante = retorna_so_digitos(Trim(Request.Form("c_fabricante")))
 	c_grupo = Ucase(Trim(Request.Form("c_grupo")))
 	c_potencia_BTU = Trim(Request.Form("c_potencia_BTU"))
@@ -105,13 +108,15 @@
 	ckb_COMPATIBILIDADE = Trim(Request.Form("ckb_COMPATIBILIDADE"))
 
 '	CAMPOS DE SAÍDA SELECIONADOS
-	dim ckb_COL_DATA, ckb_COL_NF, ckb_COL_DT_EMISSAO_NF, ckb_COL_NF_REMESSA, ckb_COL_DT_EMISSAO_NF_REMESSA, ckb_COL_LOJA, ckb_COL_PEDIDO, ckb_COL_PEDIDO_MARKETPLACE, ckb_COL_GRUPO_PEDIDO_ORIGEM, ckb_COL_VENDEDOR, ckb_COL_INDICADOR
+	dim ckb_COL_DATA, ckb_COL_NF, ckb_COL_DT_EMISSAO_NF, ckb_COL_NF_REMESSA, ckb_COL_DT_EMISSAO_NF_REMESSA, ckb_COL_LOJA, ckb_COL_PEDIDO, ckb_COL_PEDIDO_MARKETPLACE, ckb_COL_GRUPO_PEDIDO_ORIGEM
+	dim ckb_COL_VENDEDOR, ckb_COL_INDICADOR
 	dim ckb_COL_CPF_CNPJ_CLIENTE, ckb_COL_CONTRIBUINTE_ICMS, ckb_COL_NOME_CLIENTE, ckb_COL_VL_RA, ckb_COL_RT, ckb_COL_ICMS_UF_DEST
 	dim ckb_COL_PRODUTO, ckb_COL_NAC_IMP, ckb_COL_DESCRICAO_PRODUTO, ckb_COL_VL_NF, ckb_COL_VL_UNITARIO, ckb_COL_VL_CUSTO_REAL_TOTAL, ckb_COL_VL_TOTAL_NF, ckb_COL_VL_TOTAL, ckb_COL_QTDE
 	dim ckb_COL_VL_CUSTO_ULT_ENTRADA, ckb_COL_VL_CUSTO_REAL, ckb_COL_VL_LISTA, ckb_COL_GRUPO, ckb_COL_POTENCIA_BTU
-	dim ckb_COL_CICLO, ckb_COL_POSICAO_MERCADO, ckb_COL_MARCA, ckb_COL_TRANSPORTADORA, ckb_COL_ENTREGA_IMEDIATA
-	dim ckb_COL_CIDADE, ckb_COL_UF, ckb_COL_QTDE_PARCELAS, ckb_COL_MEIO_PAGAMENTO, ckb_COL_VL_PAGO_CARTAO_INTERNET, ckb_COL_CHAVE_NFE, ckb_COL_TEL, ckb_COL_EMAIL
-    dim ckb_COL_PERC_DESC, ckb_COL_CUBAGEM, ckb_COL_PESO, ckb_COL_FRETE
+	dim ckb_COL_CICLO, ckb_COL_POSICAO_MERCADO, ckb_COL_MARCA, ckb_COL_TRANSPORTADORA, ckb_COL_ENTREGA_IMEDIATA, ckb_COL_DT_ENTREGA, ckb_COL_DT_PREVISAO_ETG_TRANSP, ckb_COL_DT_RECEB_CLIENTE
+	dim ckb_COL_CIDADE, ckb_COL_UF, ckb_COL_CIDADE_ETG, ckb_COL_UF_ETG
+	dim ckb_COL_QTDE_PARCELAS, ckb_COL_MEIO_PAGAMENTO, ckb_COL_VL_PAGO_CARTAO_INTERNET, ckb_COL_CHAVE_NFE, ckb_COL_TEL, ckb_COL_EMAIL
+    dim ckb_COL_PERC_DESC, ckb_COL_CUBAGEM, ckb_COL_PESO, ckb_COL_QTDE_VOLUMES, ckb_COL_FRETE
     dim ckb_COL_INDICADOR_EMAILS, ckb_COL_INDICADOR_CPF_CNPJ, ckb_COL_INDICADOR_ENDERECO, ckb_COL_INDICADOR_CIDADE, ckb_COL_INDICADOR_UF
 	
 	ckb_COL_DATA = Trim(Request.Form("ckb_COL_DATA"))
@@ -150,23 +155,29 @@
 	ckb_COL_MARCA = Trim(Request.Form("ckb_COL_MARCA"))
 	ckb_COL_TRANSPORTADORA = Trim(Request.Form("ckb_COL_TRANSPORTADORA"))
 	ckb_COL_ENTREGA_IMEDIATA = Trim(Request.Form("ckb_COL_ENTREGA_IMEDIATA"))
+	ckb_COL_DT_ENTREGA = Trim(Request.Form("ckb_COL_DT_ENTREGA"))
+	ckb_COL_DT_PREVISAO_ETG_TRANSP = Trim(Request.Form("ckb_COL_DT_PREVISAO_ETG_TRANSP"))
+	ckb_COL_DT_RECEB_CLIENTE = Trim(Request.Form("ckb_COL_DT_RECEB_CLIENTE"))
 	ckb_COL_CIDADE = Trim(Request.Form("ckb_COL_CIDADE"))
 	ckb_COL_UF = Trim(Request.Form("ckb_COL_UF"))
+	ckb_COL_CIDADE_ETG = Trim(Request.Form("ckb_COL_CIDADE_ETG"))
+	ckb_COL_UF_ETG = Trim(Request.Form("ckb_COL_UF_ETG"))
 	ckb_COL_QTDE_PARCELAS = Trim(Request.Form("ckb_COL_QTDE_PARCELAS"))
 	ckb_COL_MEIO_PAGAMENTO = Trim(Request.Form("ckb_COL_MEIO_PAGAMENTO"))
 	ckb_COL_VL_PAGO_CARTAO_INTERNET = Trim(Request.Form("ckb_COL_VL_PAGO_CARTAO_INTERNET"))
 	ckb_COL_CHAVE_NFE = Trim(Request.Form("ckb_COL_CHAVE_NFE"))
-    ckb_COL_TEL = Trim(Request.Form("ckb_COL_TEL"))
-    ckb_COL_EMAIL = Trim(Request.Form("ckb_COL_EMAIL"))
-    ckb_COL_PERC_DESC = Trim(Request.Form("ckb_COL_PERC_DESC"))
-    ckb_COL_CUBAGEM = Trim(Request.Form("ckb_COL_CUBAGEM"))
-    ckb_COL_PESO = Trim(Request.Form("ckb_COL_PESO"))
-    ckb_COL_FRETE = Trim(Request.Form("ckb_COL_FRETE"))
-    ckb_COL_INDICADOR_EMAILS = Trim(Request.Form("ckb_COL_INDICADOR_EMAILS"))
-    ckb_COL_INDICADOR_ENDERECO = Trim(Request.Form("ckb_COL_INDICADOR_ENDERECO"))
-    ckb_COL_INDICADOR_CIDADE = Trim(Request.Form("ckb_COL_INDICADOR_CIDADE"))
-    ckb_COL_INDICADOR_UF = Trim(Request.Form("ckb_COL_INDICADOR_UF"))
-    ckb_COL_INDICADOR_CPF_CNPJ = Trim(Request.Form("ckb_COL_INDICADOR_CPF_CNPJ"))
+	ckb_COL_TEL = Trim(Request.Form("ckb_COL_TEL"))
+	ckb_COL_EMAIL = Trim(Request.Form("ckb_COL_EMAIL"))
+	ckb_COL_PERC_DESC = Trim(Request.Form("ckb_COL_PERC_DESC"))
+	ckb_COL_CUBAGEM = Trim(Request.Form("ckb_COL_CUBAGEM"))
+	ckb_COL_PESO = Trim(Request.Form("ckb_COL_PESO"))
+	ckb_COL_QTDE_VOLUMES = Trim(Request.Form("ckb_COL_QTDE_VOLUMES"))
+	ckb_COL_FRETE = Trim(Request.Form("ckb_COL_FRETE"))
+	ckb_COL_INDICADOR_EMAILS = Trim(Request.Form("ckb_COL_INDICADOR_EMAILS"))
+	ckb_COL_INDICADOR_ENDERECO = Trim(Request.Form("ckb_COL_INDICADOR_ENDERECO"))
+	ckb_COL_INDICADOR_CIDADE = Trim(Request.Form("ckb_COL_INDICADOR_CIDADE"))
+	ckb_COL_INDICADOR_UF = Trim(Request.Form("ckb_COL_INDICADOR_UF"))
+	ckb_COL_INDICADOR_CPF_CNPJ = Trim(Request.Form("ckb_COL_INDICADOR_CPF_CNPJ"))
 	
 	dim s_campos_saida
 	s_campos_saida = "|"
@@ -185,12 +196,17 @@
 		if ckb_COL_NOME_CLIENTE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_NOME_CLIENTE" & "|"
 		if ckb_COL_CIDADE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_CIDADE" & "|"
 		if ckb_COL_UF <> "" then s_campos_saida = s_campos_saida & "ckb_COL_UF" & "|"
+		if ckb_COL_CIDADE_ETG <> "" then s_campos_saida = s_campos_saida & "ckb_COL_CIDADE_ETG" & "|"
+		if ckb_COL_UF_ETG <> "" then s_campos_saida = s_campos_saida & "ckb_COL_UF_ETG" & "|"
         if ckb_COL_TEL <> "" then s_campos_saida = s_campos_saida & "ckb_COL_TEL" & "|"
         if ckb_COL_EMAIL <> "" then s_campos_saida = s_campos_saida & "ckb_COL_EMAIL" & "|"
 		if ckb_COL_VENDEDOR <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VENDEDOR" & "|"
 		if ckb_COL_INDICADOR <> "" then s_campos_saida = s_campos_saida & "ckb_COL_INDICADOR" & "|"
 		if ckb_COL_TRANSPORTADORA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_TRANSPORTADORA" & "|"
 		if ckb_COL_ENTREGA_IMEDIATA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_ENTREGA_IMEDIATA" & "|"
+		if ckb_COL_DT_ENTREGA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_DT_ENTREGA" & "|"
+		if ckb_COL_DT_PREVISAO_ETG_TRANSP <> "" then s_campos_saida = s_campos_saida & "ckb_COL_DT_PREVISAO_ETG_TRANSP" & "|"
+		if ckb_COL_DT_RECEB_CLIENTE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_DT_RECEB_CLIENTE" & "|"
 		if ckb_COL_INDICADOR_CPF_CNPJ <> "" then s_campos_saida = s_campos_saida & "ckb_COL_INDICADOR_CPF_CNPJ" & "|"
 		if ckb_COL_INDICADOR_ENDERECO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_INDICADOR_ENDERECO" & "|"
 		if ckb_COL_INDICADOR_CIDADE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_INDICADOR_CIDADE" & "|"
@@ -205,10 +221,11 @@
 		if ckb_COL_NAC_IMP <> "" then s_campos_saida = s_campos_saida & "ckb_COL_NAC_IMP" & "|"
 		if ckb_COL_DESCRICAO_PRODUTO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_DESCRICAO_PRODUTO" & "|"
 		if ckb_COL_QTDE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_QTDE" & "|"
-        if ckb_COL_PERC_DESC <> "" then s_campos_saida = s_campos_saida & "ckb_COL_PERC_DESC" & "|"
-        if ckb_COL_CUBAGEM <> "" then s_campos_saida = s_campos_saida & "ckb_COL_CUBAGEM" & "|"
-        if ckb_COL_PESO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_PESO" & "|"
-        if ckb_COL_FRETE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_FRETE" & "|"
+		if ckb_COL_PERC_DESC <> "" then s_campos_saida = s_campos_saida & "ckb_COL_PERC_DESC" & "|"
+		if ckb_COL_CUBAGEM <> "" then s_campos_saida = s_campos_saida & "ckb_COL_CUBAGEM" & "|"
+		if ckb_COL_PESO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_PESO" & "|"
+		if ckb_COL_QTDE_VOLUMES <> "" then s_campos_saida = s_campos_saida & "ckb_COL_QTDE_VOLUMES" & "|"
+		if ckb_COL_FRETE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_FRETE" & "|"
 		if ckb_COL_VL_CUSTO_ULT_ENTRADA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_CUSTO_ULT_ENTRADA" & "|"
 		if ckb_COL_VL_CUSTO_REAL <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_CUSTO_REAL" & "|"
 		if ckb_COL_VL_LISTA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_LISTA" & "|"
@@ -234,6 +251,8 @@
 		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_dt_NF_venda_termino", c_dt_NF_venda_termino)
 		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_dt_NF_remessa_inicio", c_dt_NF_remessa_inicio)
 		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_dt_NF_remessa_termino", c_dt_NF_remessa_termino)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|ckb_pedido_nao_recebido_pelo_cliente", ckb_pedido_nao_recebido_pelo_cliente)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|ckb_pedido_recebido_pelo_cliente", ckb_pedido_recebido_pelo_cliente)
 		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_fabricante", c_fabricante)
 		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_grupo", c_grupo)
 		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_potencia_BTU", c_potencia_BTU)
@@ -359,7 +378,7 @@ const SEPARADOR_DECIMAL = ","
 dim s, s_sql, s_sql_aux, s_cst, x, x_cab, s_where, s_where_aux, s_where_temp, s_where_venda, s_where_devolucao, s_where_loja, s_where_lista_codigo_frete_devolucao, s_where_periodo_NF
 dim perc_RT, vl_RA, vl_RT, vl_preco_venda, vl_preco_NF, n_reg, n_reg_total, n_reg_total_passo1
 dim tipo_parc
-dim s_qtde, item_peso, item_cubagem, item_qtde, s_campo_qtde
+dim s_qtde, item_peso, item_qtde_volumes, item_cubagem, item_qtde, s_campo_qtde
 dim s_vICMSUFDest, vl_vICMSUFDest, s_vICMSUFDest_unitario, vl_vICMSUFDest_unitario, s_det__qCom, n_det__qCom, vl_frete_proporcional
 dim v
 dim vNFeAConsultar, vNFeChave, iQI
@@ -442,9 +461,10 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 	s_where_devolucao = ""
 	s_where_periodo_NF = ""
 
-    item_peso = 0
-    item_cubagem = 0
-    item_qtde = 0
+	item_peso = 0
+	item_qtde_volumes = 0
+	item_cubagem = 0
+	item_qtde = 0
 	
 	if IsDate(c_dt_faturamento_inicio) then
 		if s_where_venda <> "" then s_where_venda = s_where_venda & " AND"
@@ -508,6 +528,24 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 		s_where_periodo_NF = s_where_periodo_NF & " (dt_emissao_remessa < " & bd_formata_data(StrToDate(c_dt_NF_remessa_termino)+1) & ")"
 		end if
 
+	'CRITÉRIO: PEDIDOS RECEBIDOS PELO CLIENTE
+	s_where_aux = ""
+	if ckb_pedido_nao_recebido_pelo_cliente <> "" then
+		if s_where_aux <> "" then s_where_aux = s_where_aux & " OR"
+		s_where_aux = s_where_aux & " (t_PEDIDO.PedidoRecebidoStatus = 0)"
+		end if
+
+	if ckb_pedido_recebido_pelo_cliente <> "" then
+		if s_where_aux <> "" then s_where_aux = s_where_aux & " OR"
+		s_where_aux = s_where_aux & " (t_PEDIDO.PedidoRecebidoStatus = 1)"
+		end if
+
+	if s_where_aux <> "" then
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (" & s_where_aux & ")"
+		end if
+
+	'CRITÉRIO: FABRICANTE
 	if c_fabricante <> "" then
 		if s_where_venda <> "" then s_where_venda = s_where_venda & " AND"
 		s_where_venda = s_where_venda & " (t_PEDIDO_ITEM.fabricante = '" & c_fabricante & "')"
@@ -627,8 +665,13 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 				", t_PEDIDO.pedido" & _
 				", t_PEDIDO.pedido_bs_x_marketplace" & _
 				", t_PEDIDO.marketplace_codigo_origem" & _
+				", t_PEDIDO.st_entrega" & _
+				", t_PEDIDO.entregue_data" & _
 				", t_PEDIDO.st_etg_imediata" & _
 				", t_PEDIDO.PrevisaoEntregaData" & _
+				", t_PEDIDO.PrevisaoEntregaTranspData" & _
+				", t_PEDIDO.PedidoRecebidoStatus" & _
+				", t_PEDIDO.PedidoRecebidoData" & _
 				", tGrupoPedidoOrigemDescricao.descricao AS GrupoPedidoOrigemDescricao" & _
 				", tPedidoOrigemDescricao.descricao AS PedidoOrigemDescricao" & _
 				", t_PEDIDO.transportadora_id" & _
@@ -679,17 +722,20 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 		end if
 
 	s_sql = s_sql & _
-                ", t_ORCAMENTISTA_E_INDICADOR.cnpj_cpf AS indicador_cnpj_cpf" & _
-                ", t_ORCAMENTISTA_E_INDICADOR.endereco AS indicador_endereco" & _
-                ", t_ORCAMENTISTA_E_INDICADOR.endereco_numero AS indicador_endereco_numero" & _
-                ", t_ORCAMENTISTA_E_INDICADOR.endereco_complemento AS indicador_endereco_complemento" & _
-                ", t_ORCAMENTISTA_E_INDICADOR.bairro AS indicador_bairro" & _
-                ", t_ORCAMENTISTA_E_INDICADOR.cidade AS indicador_cidade" & _
-                ", t_ORCAMENTISTA_E_INDICADOR.uf AS indicador_uf" & _
-                ", t_ORCAMENTISTA_E_INDICADOR.cep AS indicador_cep" & _
-                ", t_ORCAMENTISTA_E_INDICADOR.email AS indicador_email" & _
-                ", t_ORCAMENTISTA_E_INDICADOR.email2 AS indicador_email2" & _
-                ", t_ORCAMENTISTA_E_INDICADOR.email3 AS indicador_email3" & _
+				", t_PEDIDO.st_end_entrega" & _
+				", t_PEDIDO.EndEtg_cidade" & _
+				", t_PEDIDO.EndEtg_uf" & _
+				", t_ORCAMENTISTA_E_INDICADOR.cnpj_cpf AS indicador_cnpj_cpf" & _
+				", t_ORCAMENTISTA_E_INDICADOR.endereco AS indicador_endereco" & _
+				", t_ORCAMENTISTA_E_INDICADOR.endereco_numero AS indicador_endereco_numero" & _
+				", t_ORCAMENTISTA_E_INDICADOR.endereco_complemento AS indicador_endereco_complemento" & _
+				", t_ORCAMENTISTA_E_INDICADOR.bairro AS indicador_bairro" & _
+				", t_ORCAMENTISTA_E_INDICADOR.cidade AS indicador_cidade" & _
+				", t_ORCAMENTISTA_E_INDICADOR.uf AS indicador_uf" & _
+				", t_ORCAMENTISTA_E_INDICADOR.cep AS indicador_cep" & _
+				", t_ORCAMENTISTA_E_INDICADOR.email AS indicador_email" & _
+				", t_ORCAMENTISTA_E_INDICADOR.email2 AS indicador_email2" & _
+				", t_ORCAMENTISTA_E_INDICADOR.email3 AS indicador_email3" & _
 				", t_PEDIDO__BASE.qtde_parcelas AS qtde_parcelas" & _
 				", t_PEDIDO__BASE.tipo_parcelamento AS tipo_parcelamento" & _
 				", t_PEDIDO__BASE.av_forma_pagto AS forma_pagamento_av" & _
@@ -734,6 +780,7 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 					", t_PEDIDO_ITEM.desc_dado" & _
 					", t_PEDIDO_ITEM.cubagem" & _
 					", t_PEDIDO_ITEM.peso" & _
+					", t_PEDIDO_ITEM.qtde_volumes" & _
 					", t_PRODUTO.grupo" & _
 					", t_PRODUTO.potencia_BTU" & _
 					", t_PRODUTO.ciclo" & _
@@ -765,6 +812,7 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 		s_sql = s_sql & _
 					", (" & s_campo_qtde & " * t_PEDIDO_ITEM.cubagem) AS cubagem_total_item" & _
 					", (" & s_campo_qtde & " * t_PEDIDO_ITEM.peso) AS peso_total_item" & _
+					", (" & s_campo_qtde & " * t_PEDIDO_ITEM.qtde_volumes) AS qtde_volumes_total_item" & _
 					", (" & s_campo_qtde & " * t_PEDIDO_ITEM.preco_NF) AS preco_NF_total_item" & _
 					", (" & s_campo_qtde & " * t_PEDIDO_ITEM.preco_venda) AS preco_venda_total_item"
 
@@ -889,8 +937,13 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 					", pedido" & _
 					", pedido_bs_x_marketplace" & _
 					", marketplace_codigo_origem" & _
+					", st_entrega" & _
+					", entregue_data" & _
 					", st_etg_imediata" & _
 					", PrevisaoEntregaData" & _
+					", PrevisaoEntregaTranspData" & _
+					", PedidoRecebidoStatus" & _
+					", PedidoRecebidoData" & _
 					", GrupoPedidoOrigemDescricao" & _
 					", PedidoOrigemDescricao" & _
 					", transportadora_id" & _
@@ -904,6 +957,9 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 					", produtor_rural_status" & _
 					", cidade" & _
 					", uf" & _
+					", st_end_entrega" & _
+					", EndEtg_cidade" & _
+					", EndEtg_uf" & _
 					", ddd_res" & _
 					", tel_res" & _
 					", ddd_cel" & _
@@ -957,6 +1013,7 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 		s_sql_aux = s_sql_aux & _
 					", SUM(cubagem_total_item) AS cubagem_total_pedido" & _
 					", SUM(peso_total_item) AS peso_total_pedido" & _
+					", SUM(qtde_volumes_total_item) AS qtde_volumes_total_pedido" & _
 					", SUM(preco_NF_total_item) AS preco_NF_total_pedido" & _
 					", SUM(preco_venda_total_item) AS preco_venda_total_pedido"
 
@@ -994,8 +1051,13 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 					", pedido" & _
 					", pedido_bs_x_marketplace" & _
 					", marketplace_codigo_origem" & _
+					", st_entrega" & _
+					", entregue_data" & _
 					", st_etg_imediata" & _
 					", PrevisaoEntregaData" & _
+					", PrevisaoEntregaTranspData" & _
+					", PedidoRecebidoStatus" & _
+					", PedidoRecebidoData" & _
 					", GrupoPedidoOrigemDescricao" & _
 					", PedidoOrigemDescricao" & _
 					", transportadora_id" & _
@@ -1009,6 +1071,9 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 					", produtor_rural_status" & _
 					", cidade" & _
 					", uf" & _
+					", st_end_entrega" & _
+					", EndEtg_cidade" & _
+					", EndEtg_uf" & _
 					", ddd_res" & _
 					", tel_res" & _
 					", ddd_cel" & _
@@ -1076,8 +1141,13 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 					", t_PEDIDO_ITEM_DEVOLVIDO.pedido" & _
 					", t_PEDIDO.pedido_bs_x_marketplace" & _
 					", t_PEDIDO.marketplace_codigo_origem" & _
+					", t_PEDIDO.st_entrega" & _
+					", t_PEDIDO.entregue_data" & _
 					", t_PEDIDO.st_etg_imediata" & _
 					", t_PEDIDO.PrevisaoEntregaData" & _
+					", t_PEDIDO.PrevisaoEntregaTranspData" & _
+					", t_PEDIDO.PedidoRecebidoStatus" & _
+					", t_PEDIDO.PedidoRecebidoData" & _
 					", tGrupoPedidoOrigemDescricao.descricao AS GrupoPedidoOrigemDescricao" & _
 					", tPedidoOrigemDescricao.descricao AS PedidoOrigemDescricao" & _
 					", t_PEDIDO.transportadora_id" & _
@@ -1128,6 +1198,9 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 			end if
 
 		s_sql = s_sql & _
+					", t_PEDIDO.st_end_entrega" & _
+					", t_PEDIDO.EndEtg_cidade" & _
+					", t_PEDIDO.EndEtg_uf" & _
 					", t_ORCAMENTISTA_E_INDICADOR.cnpj_cpf AS indicador_cnpj_cpf" & _
 					", t_ORCAMENTISTA_E_INDICADOR.endereco AS indicador_endereco" & _
 					", t_ORCAMENTISTA_E_INDICADOR.endereco_numero AS indicador_endereco_numero" & _
@@ -1181,6 +1254,7 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 					", t_PEDIDO_ITEM_DEVOLVIDO.desc_dado" & _
 					", t_PEDIDO_ITEM_DEVOLVIDO.cubagem" & _
 					", t_PEDIDO_ITEM_DEVOLVIDO.peso" & _
+					", t_PEDIDO_ITEM_DEVOLVIDO.qtde_volumes" & _
 					", t_PRODUTO.grupo" & _
 					", t_PRODUTO.potencia_BTU" & _
 					", t_PRODUTO.ciclo" & _
@@ -1370,14 +1444,19 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 	if ckb_COL_CPF_CNPJ_CLIENTE <> "" then x_cab = x_cab & "CPF/CNPJ;"
 	if ckb_COL_CONTRIBUINTE_ICMS <> "" then x_cab = x_cab & "Contrib ICMS;"
 	if ckb_COL_NOME_CLIENTE <> "" then x_cab = x_cab & "Nome Cliente;"
-	if ckb_COL_CIDADE <> "" then x_cab = x_cab & "Cidade;"
-	if ckb_COL_UF <> "" then x_cab = x_cab & "UF;"
+	if ckb_COL_CIDADE <> "" then x_cab = x_cab & "Cidade (cadastro);"
+	if ckb_COL_UF <> "" then x_cab = x_cab & "UF (cadastro);"
+	if ckb_COL_CIDADE_ETG <> "" then x_cab = x_cab & "Cidade (entrega);"
+	if ckb_COL_UF_ETG <> "" then x_cab = x_cab & "UF (entrega);"
     if ckb_COL_TEL <> "" then x_cab = x_cab & "Telefone;Telefone;Telefone;"
     if ckb_COL_EMAIL <> "" then x_cab = x_cab & "Email;"
 	if ckb_COL_VENDEDOR <> "" then x_cab = x_cab & "Vendedor;"
 	if ckb_COL_INDICADOR <> "" then x_cab = x_cab & "Indicador;"
 	if ckb_COL_TRANSPORTADORA <> "" then x_cab = x_cab & "Transportadora;"
 	if ckb_COL_ENTREGA_IMEDIATA <> "" then x_cab = x_cab & "Entrega Imediata;Previsao Entrega;"
+	if ckb_COL_DT_ENTREGA <> "" then x_cab = x_cab & "Data de Entrega;"
+	if ckb_COL_DT_PREVISAO_ETG_TRANSP <> "" then x_cab = x_cab & "Previsão de Entrega (Transp);"
+	if ckb_COL_DT_RECEB_CLIENTE <> "" then x_cab = x_cab & "Receb Cliente;"
 	if ckb_COL_INDICADOR_CPF_CNPJ <> "" then x_cab = x_cab & "CPF/CNPJ Ind;"
 	if ckb_COL_INDICADOR_ENDERECO <> "" then x_cab = x_cab & "Endereco Ind;"
 	if ckb_COL_INDICADOR_CIDADE <> "" then x_cab = x_cab & "Cidade Ind;"
@@ -1392,10 +1471,11 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 	if ckb_COL_NAC_IMP <> "" then x_cab = x_cab & "Nac/Imp;"
 	if ckb_COL_DESCRICAO_PRODUTO <> "" then x_cab = x_cab & "Descricao;"
 	if ckb_COL_QTDE <> "" then x_cab = x_cab & "Qtde;"
-    if ckb_COL_PERC_DESC <> "" then x_cab = x_cab & "Desc %;"
-    if ckb_COL_CUBAGEM <> "" then x_cab = x_cab & "Cubagem;"
-    if ckb_COL_PESO <> "" then x_cab = x_cab & "Peso;"
-    if ckb_COL_FRETE <> "" then x_cab = x_cab & "VL Frete;"
+	if ckb_COL_PERC_DESC <> "" then x_cab = x_cab & "Desc %;"
+	if ckb_COL_CUBAGEM <> "" then x_cab = x_cab & "Cubagem;"
+	if ckb_COL_PESO <> "" then x_cab = x_cab & "Peso;"
+	if ckb_COL_QTDE_VOLUMES <> "" then x_cab = x_cab & "Volumes;"
+	if ckb_COL_FRETE <> "" then x_cab = x_cab & "VL Frete;"
 	if ckb_COL_VL_CUSTO_ULT_ENTRADA <> "" then x_cab = x_cab & "VL Custo (Últ Entrada);"
 	if ckb_COL_VL_CUSTO_REAL <> "" then x_cab = x_cab & "VL Custo (Real);"
 	if ckb_COL_VL_LISTA <> "" then x_cab = x_cab & "VL Lista;"
@@ -1566,6 +1646,26 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 				x = x & Trim("" & r("uf")) & ";"
 			end if
 
+		 '> CIDADE (ETG)
+			if ckb_COL_CIDADE_ETG <> "" then
+				if r("st_end_entrega") <> 0 then
+					s = Trim("" & r("EndEtg_cidade"))
+				else
+					s = Trim("" & r("cidade"))
+					end if
+				s = Replace(s, ";", ",")
+				x = x & s & ";"
+			end if
+	 
+		 '> UF (ETG)
+			if ckb_COL_UF_ETG <> "" then
+				if r("st_end_entrega") <> 0 then
+					x = x & Trim("" & r("EndEtg_uf")) & ";"
+				else
+					x = x & Trim("" & r("uf")) & ";"
+					end if
+			end if
+
 		 '> TELEFONES
 			if ckb_COL_TEL <> "" then
 				if CStr(r("tipo_cliente")) = ID_PF then
@@ -1616,6 +1716,33 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 					end if
 				x = x & s & ";"
 				end if 
+
+		'> DATA DE ENTREGA
+			if ckb_COL_DT_ENTREGA <> "" then
+				s = ""
+				if (Trim("" & r("operacao")) = "VENDA_NORMAL") And (Trim("" & r("st_entrega")) = ST_ENTREGA_ENTREGUE) And IsDate(r("entregue_data")) then
+					s = formata_data(r("entregue_data"))
+					end if
+				x = x & s & ";"
+				end if
+
+		'> PREVISÃO DE ENTREGA DA TRANSPORTADORA
+			if ckb_COL_DT_PREVISAO_ETG_TRANSP <> "" then
+				s = ""
+				if (Trim("" & r("operacao")) = "VENDA_NORMAL") And IsDate(r("PrevisaoEntregaTranspData")) then
+					s = formata_data(r("PrevisaoEntregaTranspData"))
+					end if
+				x = x & s & ";"
+				end if
+
+		'> DATA DE RECEBIMENTO PELO CLIENTE
+			if ckb_COL_DT_RECEB_CLIENTE <> "" then
+				s = ""
+				if (Trim("" & r("operacao")) = "VENDA_NORMAL") And (r("PedidoRecebidoStatus") = 1) And IsDate(r("PedidoRecebidoData")) then
+					s = formata_data(r("PedidoRecebidoData"))
+					end if
+				x = x & s & ";"
+				end if
 
 		'> INDICADOR: CPF/CNPJ
 			if ckb_COL_INDICADOR_CPF_CNPJ <> "" then
@@ -1740,7 +1867,7 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 
 			'> QTDE
 				if ckb_COL_QTDE <> "" then
-					x = x & s_qtde & ";"                 
+					x = x & s_qtde & ";"
 					end if
 				end if
 
@@ -1766,6 +1893,16 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 					x = x & item_peso & ";"
 				else
 					x = x & r("peso_total_pedido") & ";"
+					end if
+			end if
+
+		'> QTDE VOLUMES
+			if ckb_COL_QTDE_VOLUMES <> "" then
+				if ckb_CONSOLIDAR_PEDIDO = "" then
+					item_qtde_volumes = s_qtde * r("qtde_volumes")
+					x = x & item_qtde_volumes & ";"
+				else
+					x = x & r("qtde_volumes_total_pedido") & ";"
 					end if
 			end if
 
@@ -2102,6 +2239,8 @@ window.status='Aguarde, executando a consulta ...';
 <input type="hidden" name="c_dt_NF_venda_termino" id="c_dt_NF_venda_termino" value="<%=c_dt_NF_venda_termino%>">
 <input type="hidden" name="c_dt_NF_remessa_inicio" id="c_dt_NF_remessa_inicio" value="<%=c_dt_NF_remessa_inicio%>">
 <input type="hidden" name="c_dt_NF_remessa_termino" id="c_dt_NF_remessa_termino" value="<%=c_dt_NF_remessa_termino%>">
+<input type="hidden" name="ckb_pedido_nao_recebido_pelo_cliente" id="ckb_pedido_nao_recebido_pelo_cliente" value="<%=ckb_pedido_nao_recebido_pelo_cliente%>" />
+<input type="hidden" name="ckb_pedido_recebido_pelo_cliente" id="ckb_pedido_recebido_pelo_cliente" value="<%=ckb_pedido_recebido_pelo_cliente%>" />
 <input type="hidden" name="c_fabricante" id="c_fabricante" value="<%=c_fabricante%>">
 <input type="hidden" name="c_grupo" id="c_grupo" value="<%=c_grupo%>">
 <input type="hidden" name="c_potencia_BTU" id="c_potencia_BTU" value="<%=c_potencia_BTU%>">
@@ -2163,6 +2302,28 @@ window.status='Aguarde, executando a consulta ...';
 	s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
 			   "<span class='N'>Período NF Remessa:&nbsp;</span></td><td align='left' valign='top' width='99%'>" & _
 			   "<span class='N'>" & s & "</span></td></tr>"
+
+'	PEDIDOS RECEBIDOS PELO CLIENTE
+	s = ""
+	if ckb_pedido_nao_recebido_pelo_cliente <> "" then
+		s_aux = "não recebidos"
+		if s <> "" then s = s & ",&nbsp; "
+		s = s & s_aux
+		end if
+
+	if ckb_pedido_recebido_pelo_cliente <> "" then
+		s_aux = "recebidos"
+		if s <> "" then s = s & ",&nbsp; "
+		s = s & s_aux
+		end if
+
+	if s <> "" then
+		s_filtro = s_filtro & _
+					"	<tr>" & chr(13) & _
+					"		<td align='right' valign='top' nowrap><span class='N'>Pedidos Recebidos pelo Cliente:&nbsp;</span></td>" & chr(13) & _
+					"		<td valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
+					"	</tr>" & chr(13)
+		end if
 
 '	FABRICANTE
 	s = c_fabricante

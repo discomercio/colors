@@ -65,6 +65,9 @@
 			end if
 		end if
 	
+	dim insert_request_guid
+	insert_request_guid = Trim(Request.Form("request_guid"))
+
 	dim r_cliente
 	set r_cliente = New cl_CLIENTE
 	if Not x_cliente_bd(r_pedido.id_cliente, r_cliente) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
@@ -247,6 +250,7 @@ var b, i, n;
 <form id="fPED" name="fPED" method="post">
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
 <input type="hidden" name="pedido_selecionado" id="pedido_selecionado" value='<%=pedido_selecionado%>'>
+<input type="hidden" name="insert_request_guid" id="insert_request_guid" value="<%=insert_request_guid%>" />
 
 <!--  I D E N T I F I C A Ç Ã O   D O   P E D I D O -->
 <%=MontaHeaderIdentificacaoPedido(pedido_selecionado, r_pedido, 649)%>
@@ -351,7 +355,8 @@ var b, i, n;
 <!-- ************   BOTÕES   ************ -->
 <table class="notPrint" width="649" cellSpacing="0">
 <tr>
-	<td align="left"><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()" title="volta para página anterior">
+	<td align="left"><a name="bVOLTAR" id="bVOLTAR" href="pedido.asp?pedido_selecionado=<%=pedido_selecionado & "&url_back=X&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>"
+		title="volta para página anterior">
 		<img src="../botao/voltar.gif" width="176" height="55" border="0"></a>
 	</td>
 	<td align="right"><div name="dCONFIRMA" id="dCONFIRMA">

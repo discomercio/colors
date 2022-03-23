@@ -1747,6 +1747,8 @@ onload="trata_indicador_onchange(); if (trim(fPED.c_fabricante[0].value)=='') fP
 <input type="hidden" name="EndCob_rg" id="EndCob_rg" value="<%=EndCob_rg%>" />
 <% end if %>
 
+<input type="hidden" name="insert_request_guid" id="insert_request_guid" value="<%=gera_uid%>" />
+
 
 <!-- AJAX EM ANDAMENTO -->
 <div id="divAjaxRunning" style="display:none;"><img src="../Imagem/ajax_loader_gray_256.gif" class="AjaxImgLoader"/></div>

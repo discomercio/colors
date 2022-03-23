@@ -62,9 +62,11 @@
     dim corpo_mensagem, id_email, msg_erro_grava_email
     dim c_pedido_possui_parcela_cartao
     dim c_taxa_observacoes, c_credito_observacoes
+	dim request_guid
     dim r_pedido
 	dim vLog(), campos_a_omitir
 
+    request_guid = Trim(Request("request_guid"))
     c_procedimento = Request.Form("c_procedimento")
     c_local_coleta = Request.Form("c_local_coleta")
     c_coleta_endereco = Trim(Request.Form("c_coleta_endereco"))
@@ -212,6 +214,22 @@
             end if
         end if
 
+	if alerta = "" then
+		'Verifica se o usuário está tentando usar o botão voltar
+		'Esse controle é feito através do campo request_guid (t_PEDIDO_DEVOLUCAO.InsertRequestGuid)
+		if request_guid <> "" then
+			s = "SELECT Id, pedido FROM t_PEDIDO_DEVOLUCAO WHERE (InsertRequestGuid = '" & request_guid & "')"
+			if Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+			rs.Open s, cn
+			if Not rs.Eof then
+				alerta = "Esta pré-devolução já foi gravada no pedido " & Trim("" & rs("pedido")) & " com o ID " & Trim("" & rs("id"))
+				end if
+
+			if rs.State <> 0 then rs.Close
+			set rs = nothing
+			end if
+		end if
+
     if alerta = "" then
 	    n = Request.Form("c_qtde_devolucao").Count
 	    for iv = 1 to n
@@ -303,6 +321,7 @@
 			end if
 		end if
 
+
 	if alerta = "" then
 	'	~~~~~~~~~~~~~
 		cn.BeginTrans
@@ -336,6 +355,7 @@
             rs.AddNew
             rs("id") = id_pedido_devolucao
             rs("pedido") = pedido_selecionado
+			if request_guid <> "" then rs("InsertRequestGuid") = "{" & request_guid & "}"
             rs("usuario_cadastro") = usuario
             rs("status") = COD_ST_PEDIDO_DEVOLUCAO__CADASTRADA
             rs("status_usuario") = usuario
