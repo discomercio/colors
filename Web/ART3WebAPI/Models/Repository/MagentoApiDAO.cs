@@ -1194,6 +1194,184 @@ namespace ART3WebAPI.Models.Repository
 		}
 		#endregion
 
+		#region [ insertMagentoPedidoXmlDecodeSkyhubMktpPayment ]
+		public static bool insertMagentoPedidoXmlDecodeSkyhubMktpPayment(Guid? httpRequestId, MagentoErpPedidoXmlDecodeSkyhubMktpPayment payment, out string msg_erro)
+		{
+			#region [ Declarações ]
+			const string NOME_DESTA_ROTINA = "insertMagentoPedidoXmlDecodeSkyhubMktpPayment()";
+			bool blnSucesso = false;
+			int generatedId;
+			int intQtdeTentativas = 0;
+			string msg;
+			string strSql;
+			StringBuilder sbLog = new StringBuilder("");
+			SqlConnection cn;
+			SqlCommand cmInsert;
+			#endregion
+
+			msg_erro = "";
+			try
+			{
+				cn = new SqlConnection(BD.getConnectionString());
+				cn.Open();
+				try // finally: BD.fechaConexao(ref cn);
+				{
+					#region [ cmInsert ]
+					strSql = "INSERT INTO t_MAGENTO_API_PEDIDO_XML_DECODE_SKYHUB_MKTP_PAYMENT (" +
+								"id_magento_api_pedido_xml, " +
+								"value, " +
+								"type, " +
+								"transaction_date, " +
+								"status, " +
+								"parcels, " +
+								"method, " +
+								"description, " +
+								"card_issuer, " +
+								"autorization_id, " +
+								"sefaz_type_integration, " +
+								"sefaz_payment_indicator, " +
+								"sefaz_name_payment, " +
+								"sefaz_name_card_issuer, " +
+								"sefaz_id_payment, " +
+								"sefaz_id_card_issuer" +
+							")" +
+							" OUTPUT INSERTED.id" +
+							" VALUES " +
+							"(" +
+								"@id_magento_api_pedido_xml, " +
+								"@value, " +
+								"@type, " +
+								"@transaction_date, " +
+								"@status, " +
+								"@parcels, " +
+								"@method, " +
+								"@description, " +
+								"@card_issuer, " +
+								"@autorization_id, " +
+								"@sefaz_type_integration, " +
+								"@sefaz_payment_indicator, " +
+								"@sefaz_name_payment, " +
+								"@sefaz_name_card_issuer, " +
+								"@sefaz_id_payment, " +
+								"@sefaz_id_card_issuer" +
+							")";
+					cmInsert = new SqlCommand();
+					cmInsert.Connection = cn;
+					cmInsert.CommandText = strSql;
+					cmInsert.Parameters.Add("@id_magento_api_pedido_xml", SqlDbType.Int);
+					cmInsert.Parameters.Add(new SqlParameter("@value", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add("@type", SqlDbType.VarChar, 80);
+					cmInsert.Parameters.Add("@transaction_date", SqlDbType.VarChar, 40);
+					cmInsert.Parameters.Add("@status", SqlDbType.VarChar, 80);
+					cmInsert.Parameters.Add("@parcels", SqlDbType.Int);
+					cmInsert.Parameters.Add("@method", SqlDbType.VarChar, 80);
+					cmInsert.Parameters.Add("@description", SqlDbType.VarChar, 80);
+					cmInsert.Parameters.Add("@card_issuer", SqlDbType.VarChar, 80);
+					cmInsert.Parameters.Add("@autorization_id", SqlDbType.VarChar, 80);
+					cmInsert.Parameters.Add("@sefaz_type_integration", SqlDbType.VarChar, 80);
+					cmInsert.Parameters.Add("@sefaz_payment_indicator", SqlDbType.VarChar, 80);
+					cmInsert.Parameters.Add("@sefaz_name_payment", SqlDbType.VarChar, 80);
+					cmInsert.Parameters.Add("@sefaz_name_card_issuer", SqlDbType.VarChar, 80);
+					cmInsert.Parameters.Add("@sefaz_id_payment", SqlDbType.VarChar, 80);
+					cmInsert.Parameters.Add("@sefaz_id_card_issuer", SqlDbType.VarChar, 80);
+					cmInsert.Prepare();
+					#endregion
+
+					try
+					{
+						#region [ Laço de tentativas de inserção no banco de dados ]
+						do
+						{
+							intQtdeTentativas++;
+							msg_erro = "";
+
+							#region [ Preenche o valor dos parâmetros ]
+							cmInsert.Parameters["@id_magento_api_pedido_xml"].Value = payment.id_magento_api_pedido_xml;
+							cmInsert.Parameters["@value"].Value = (object)payment.value ?? DBNull.Value;
+							cmInsert.Parameters["@type"].Value = (object)payment.type ?? DBNull.Value;
+							cmInsert.Parameters["@transaction_date"].Value = (object)payment.transaction_date ?? DBNull.Value;
+							cmInsert.Parameters["@status"].Value = (object)payment.status ?? DBNull.Value;
+							cmInsert.Parameters["@parcels"].Value = (object)payment.parcels ?? DBNull.Value;
+							cmInsert.Parameters["@method"].Value = (object)payment.method ?? DBNull.Value;
+							cmInsert.Parameters["@description"].Value = (object)payment.description ?? DBNull.Value;
+							cmInsert.Parameters["@card_issuer"].Value = (object)payment.card_issuer ?? DBNull.Value;
+							cmInsert.Parameters["@autorization_id"].Value = (object)payment.autorization_id ?? DBNull.Value;
+							cmInsert.Parameters["@sefaz_type_integration"].Value = (object)payment.sefaz_type_integration ?? DBNull.Value;
+							cmInsert.Parameters["@sefaz_payment_indicator"].Value = (object)payment.sefaz_payment_indicator ?? DBNull.Value;
+							cmInsert.Parameters["@sefaz_name_payment"].Value = (object)payment.sefaz_name_payment ?? DBNull.Value;
+							cmInsert.Parameters["@sefaz_name_card_issuer"].Value = (object)payment.sefaz_name_card_issuer ?? DBNull.Value;
+							cmInsert.Parameters["@sefaz_id_payment"].Value = (object)payment.sefaz_id_payment ?? DBNull.Value;
+							cmInsert.Parameters["@sefaz_id_card_issuer"].Value = (object)payment.sefaz_id_card_issuer ?? DBNull.Value;
+							#endregion
+
+							#region [ Monta texto para o log em arquivo ]
+							// Se houver conteúdo de alguma tentativa anterior, descarta
+							sbLog = new StringBuilder("");
+							foreach (SqlParameter item in cmInsert.Parameters)
+							{
+								if (sbLog.Length > 0) sbLog.Append("; ");
+								sbLog.Append(item.ParameterName + "=" + (item.Value != null ? item.Value.ToString() : ""));
+							}
+							#endregion
+
+							#region [ Tenta inserir o registro ]
+							try
+							{
+								generatedId = (int)cmInsert.ExecuteScalar();
+								payment.id = generatedId;
+							}
+							catch (Exception ex)
+							{
+								generatedId = 0;
+								msg = NOME_DESTA_ROTINA + " - Exception: " + ex.ToString();
+								Global.gravaLogAtividade(httpRequestId, msg);
+							}
+							#endregion
+
+							#region [ Processamento para sucesso ou falha desta tentativa de inserção ]
+							if (generatedId > 0)
+							{
+								blnSucesso = true;
+							}
+							else
+							{
+								Thread.Sleep(100);
+							}
+							#endregion
+						} while ((!blnSucesso) && (intQtdeTentativas < 5));
+						#endregion
+
+						#region [ Processamento final de sucesso ou falha ]
+						if (blnSucesso)
+						{
+							return true;
+						}
+						else
+						{
+							msg_erro = "Falha ao gravar no banco de dados de pagamento do pedido Magento informados pelo marketplace obtidos através da API após " + intQtdeTentativas.ToString() + " tentativas!!";
+							return false;
+						}
+						#endregion
+					}
+					catch (Exception ex)
+					{
+						msg_erro = ex.Message;
+						return false;
+					}
+				}
+				finally
+				{
+					BD.fechaConexao(ref cn);
+				}
+			}
+			catch (Exception ex)
+			{
+				msg_erro = ex.Message;
+				return false;
+			}
+		}
+		#endregion
+
 		#region [ getMagentoPedidoXmlByTicket ]
 		public static MagentoErpPedidoXml getMagentoPedidoXmlByTicket(string numeroPedidoMagento, string operationControlTicket, int api_versao, out string msg_erro)
 		{

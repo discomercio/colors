@@ -61,6 +61,7 @@
 	dim insert_request_guid
 	insert_request_guid = Trim(Request.Form("insert_request_guid"))
 
+	dim s_mktp_payment
 	dim percDescServico, vl_servico_original_price, vl_servico_price
 	dim operacao_origem, c_numero_magento, operationControlTicket, sessionToken, id_magento_api_pedido_xml
 	operacao_origem = Trim(Request("operacao_origem"))
@@ -2521,6 +2522,47 @@
 
 								tMAP_ITEM.MoveNext
 								loop
+							
+							'Grava no pedido os dados de pagamento do marketplace, se houver
+							'Esses dados são usados para informar os dados do intermediador da transação na NFe
+							s = "INSERT INTO t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT (" & _
+									"pedido" & _
+									", value" & _
+									", type" & _
+									", transaction_date" & _
+									", status" & _
+									", parcels" & _
+									", method" & _
+									", description" & _
+									", card_issuer" & _
+									", autorization_id" & _
+									", sefaz_type_integration" & _
+									", sefaz_payment_indicator" & _
+									", sefaz_name_payment" & _
+									", sefaz_name_card_issuer" & _
+									", sefaz_id_payment" & _
+									", sefaz_id_card_issuer" & _
+								") SELECT " & _
+									"'" & id_pedido_temp & "'" & _
+									", value" & _
+									", type" & _
+									", transaction_date" & _
+									", status" & _
+									", parcels" & _
+									", method" & _
+									", description" & _
+									", card_issuer" & _
+									", autorization_id" & _
+									", sefaz_type_integration" & _
+									", sefaz_payment_indicator" & _
+									", sefaz_name_payment" & _
+									", sefaz_name_card_issuer" & _
+									", sefaz_id_payment" & _
+									", sefaz_id_card_issuer" & _
+								" FROM t_MAGENTO_API_PEDIDO_XML_DECODE_SKYHUB_MKTP_PAYMENT" & _
+								" WHERE" & _
+									" (id_magento_api_pedido_xml = " & id_magento_api_pedido_xml & ")"
+							cn.Execute(s)
 							end if 'if indice_pedido = 1
 						end if 'if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO
 
@@ -2549,6 +2591,9 @@
 		
 					if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then
 						s="UPDATE t_PEDIDO_ITEM_SERVICO SET pedido='" & id_pedido & "' WHERE pedido='" & id_pedido_temp & "'"
+						cn.Execute(s)
+
+						s="UPDATE t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT SET pedido='" & id_pedido & "' WHERE pedido='" & id_pedido_temp & "'"
 						cn.Execute(s)
 						end if
 
@@ -3082,6 +3127,35 @@
 							alerta = "Falha ao gravar bloco de notas com mensagem automática no pedido (" & id_pedido & ")"
 							end if
 						end if
+
+					'Registra no bloco de notas o meio de pagamento informado pelo marketplace, se for o caso
+					if alerta = "" then
+						if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then
+							if indice_pedido = 1 then
+								s_mktp_payment = ""
+								s = "SELECT * FROM t_MAGENTO_API_PEDIDO_XML_DECODE_SKYHUB_MKTP_PAYMENT WHERE (id_magento_api_pedido_xml = " & id_magento_api_pedido_xml & ") ORDER BY id"
+								if rs.State <> 0 then rs.Close
+								rs.Open s, cn
+								do while Not rs.Eof
+									if Trim("" & rs("method")) <> "" then
+										if s_mktp_payment <> "" then s_mktp_payment = s_mktp_payment & ", "
+										s_mktp_payment = s_mktp_payment & Trim("" & rs("method"))
+										if Trim("" & rs("value")) <> "" then
+											s_mktp_payment = s_mktp_payment & " (" & formata_moeda(rs("value")) & ")"
+											end if
+										end if
+									rs.MoveNext
+									loop
+
+								if s_mktp_payment <> "" then
+									sBlocoNotasMsg = "Método de pagamento usado pelo cliente no marketplace: " & s_mktp_payment
+									if Not grava_bloco_notas_pedido(id_pedido, ID_USUARIO_SISTEMA, loja, COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__RESTRITO, sBlocoNotasMsg, COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_SKYHUB_MKTP_PAYMENT, msg_erro) then
+										alerta = "Falha ao gravar bloco de notas com mensagem automática no pedido (" & id_pedido & ")"
+										end if
+									end if
+								end if 'if indice_pedido = 1
+							end if 'if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO
+						end if 'if alerta = ""
 					end if ' if (vEmpresaAutoSplit(iv) <> 0) then
 			
 				if alerta <> "" then exit for
