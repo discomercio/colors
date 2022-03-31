@@ -1584,7 +1584,15 @@ namespace ART3WebAPI.Models.Domains
 									#endregion
 								}
 
-								sParametro = (codDescr.parametro_campo_texto ?? "").Trim();
+								if (codDescr.parametro_2_campo_flag == 1)
+								{
+									sParametro = (codDescr.parametro_3_campo_texto ?? "").Trim();
+								}
+								else
+								{
+									sParametro = (codDescr.parametro_campo_texto ?? "").Trim();
+								}
+
 								if (sParametro.Length == 0) continue;
 								vMktpOrderDescriptor = sParametro.Split('|');
 								for (int k = 0; k < vMktpOrderDescriptor.Length; k++)
@@ -1593,49 +1601,71 @@ namespace ART3WebAPI.Models.Domains
 									if ((sMktpOrderDescriptor ?? "").Trim().Length == 0) continue;
 									if (vComment[j].ToUpper().StartsWith(sMktpOrderDescriptor.ToUpper()))
 									{
-										// Obtém a parte relativa ao nº pedido marketplace
-										sValue = vComment[j].Substring(sMktpOrderDescriptor.Length).Trim();
-										if (sValue.Length > 0)
+										if (loja.Equals(Global.Cte.Loja.ArClube) && codDescr.codigo.Equals("017"))
 										{
-											sNumPedidoMktpCompletoIdentificado = sValue;
-
-											#region [ Tratamento p/ nº marketplace do Walmart (ex: 78381578-1796973) ]
-											if (loja.Equals(Global.Cte.Loja.ArClube) && codDescr.codigo.Equals("009"))
+											#region [ Tratamento para Leroy Merlin ]
+											// No pedido do Leroy Merlin via Anymarket, o nº do pedido está em outra linha, após a identificação do marketplace, mas com quebras de linha separando
+											sValue = "";
+											for (int j2 = (j + 1); j2 < vComment.Length; j2++)
 											{
+												sValue = vComment[j2].Trim();
+												if (sValue.Trim().Length > 0) break;
+											}
+
+											if (sValue.Length > 0)
+											{
+												#region [ Tratamento p/ nº marketplace do Leroy Merlin (ex: 0004536570-A) ]
 												if (sValue.Contains('-'))
 												{
 													vValue = sValue.Split('-');
 													sValue = vValue[0];
 												}
-											}
-											#endregion
+												#endregion
 
-											#region [ Tratamento p/ nº marketplace do Carrefour (ex: 2090221380001-A) ]
-											if (loja.Equals(Global.Cte.Loja.ArClube) && codDescr.codigo.Equals("016"))
+												sNumPedidoMktpIdentificado = sValue;
+												sOrigemMktpIdentificado = codDescr.codigo;
+												break;
+											}
+
+											#endregion
+										}
+										else
+										{
+											#region [ Demais marketplaces ]
+											// Obtém a parte relativa ao nº pedido marketplace
+											sValue = vComment[j].Substring(sMktpOrderDescriptor.Length).Trim();
+											if (sValue.Length > 0)
 											{
-												if (sValue.Contains('-'))
+												sNumPedidoMktpCompletoIdentificado = sValue;
+
+												#region [ Tratamento p/ nº marketplace do Walmart (ex: 78381578-1796973) ]
+												if (loja.Equals(Global.Cte.Loja.ArClube) && codDescr.codigo.Equals("009"))
 												{
-													vValue = sValue.Split('-');
-													sValue = vValue[0];
+													if (sValue.Contains('-'))
+													{
+														vValue = sValue.Split('-');
+														sValue = vValue[0];
+													}
 												}
+												#endregion
+
+												#region [ Tratamento p/ nº marketplace do Carrefour (ex: 2090221380001-A) ]
+												if (loja.Equals(Global.Cte.Loja.ArClube) && codDescr.codigo.Equals("016"))
+												{
+													if (sValue.Contains('-'))
+													{
+														vValue = sValue.Split('-');
+														sValue = vValue[0];
+													}
+												}
+												#endregion
+
+
+												sNumPedidoMktpIdentificado = sValue;
+												sOrigemMktpIdentificado = codDescr.codigo;
+												break;
 											}
 											#endregion
-
-											#region [ Tratamento p/ nº marketplace do Leroy Merlin (ex: 0004536570-A) ]
-											if (loja.Equals(Global.Cte.Loja.ArClube) && codDescr.codigo.Equals("017"))
-											{
-												if (sValue.Contains('-'))
-												{
-													vValue = sValue.Split('-');
-													sValue = vValue[0];
-												}
-											}
-											#endregion
-
-
-											sNumPedidoMktpIdentificado = sValue;
-											sOrigemMktpIdentificado = codDescr.codigo;
-											break;
 										}
 									}
 								}

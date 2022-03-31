@@ -6463,6 +6463,13 @@ dim v, s_telefone_formatado, s_tel_aux
 		s_telefone_formatado = Replace(s_telefone_formatado, BRANCO & BRANCO, BRANCO)
 		loop
 
+	'Possui código de país?
+	if Left(s_telefone_formatado, 3) = "+55" then
+		s_telefone_formatado = Right(s_telefone_formatado, Len(s_telefone_formatado)-3)
+	elseif (Left(s_telefone_formatado, 2) = "55") And (Len(retorna_so_digitos(s_telefone_formatado)) >= 12) then
+		s_telefone_formatado = Right(s_telefone_formatado, Len(s_telefone_formatado)-2)
+		end if
+
 	if Instr(s_telefone_formatado, BRANCO) = 0 then
 		'NÃO ENCONTROU SEPARAÇÃO ENTRE DDD E TELEFONE
 		s_tel_aux = retorna_so_digitos(s_telefone_formatado)
