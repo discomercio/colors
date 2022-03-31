@@ -60,8 +60,8 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.34";
-				public const string Data = "23.MAR.2022";
+				public const string Numero = "2.35";
+				public const string Data = "30.MAR.2022";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
 			#endregion
@@ -285,8 +285,11 @@ namespace ART3WebAPI.Models.Domains
 			 *      em Magento2RestApi através do JSON do marketplace. Esses dados serão usados para informar
 			 *      os dados do intermediador da transação na NFe.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.35 - XX.XX.20XX - por XXX
-			 *      
+			 * v 2.35 - 30.03.2022 - por HHO
+			 *      Ajustes na rotina que obtém os dados de pedido do Magento para identificar o marketplace
+			 *      Leroy Merlin integrado via Anymarket.
+			 *      Ajustes na rotina que decodifica o telefone nos dados do Magento para tratar o caso em
+			 *      que o código do país está incluso.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.36 - XX.XX.20XX - por XXX
 			 *      
@@ -1236,6 +1239,17 @@ namespace ART3WebAPI.Models.Domains
 			{
 				sTelefoneFormatado = sTelefoneFormatado.Replace("  ", " ");
 			}
+
+			#region [ Possui código de país? ]
+			if (sTelefoneFormatado.StartsWith("+55"))
+			{
+				sTelefoneFormatado = Texto.rightStr(sTelefoneFormatado, (sTelefoneFormatado.Length - 3));
+			}
+			else if (sTelefoneFormatado.StartsWith("55") && (Global.digitos(sTelefoneFormatado).Length >= 12))
+			{
+				sTelefoneFormatado = Texto.rightStr(sTelefoneFormatado, (sTelefoneFormatado.Length - 2));
+			}
+			#endregion
 
 			if (!sTelefoneFormatado.Contains(" "))
 			{
