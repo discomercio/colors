@@ -6535,6 +6535,9 @@ Dim strMarketPlaceCadIntTran As String
 Dim strPagtoAntecipadoStatus As Integer
 Dim strPagtoAntecipadoQuitadoStatus As Integer
 Dim s_Texto_DIFAL_UF As String
+Dim strCnpjIntermediadorPagto As String
+Dim strMetodoPagto As String
+Dim strMeioPagtoSefaz As String
 
 ' FLAGS
 Dim blnAchou As Boolean
@@ -6587,6 +6590,7 @@ Dim lngNFeNumeroNfManual As Long
 Dim intContribuinteICMS As Integer
 Dim intAnoPartilha As Integer
 Dim intImprimeIntermediadorAusente As Integer
+Dim intInformarIntermediador As Integer
 
 ' BANCO DE DADOS
 Dim t_PEDIDO As ADODB.Recordset
@@ -6603,6 +6607,8 @@ Dim t_NFe_IMAGEM As ADODB.Recordset
 Dim t_T1_NFE_INUTILIZA As ADODB.Recordset
 Dim t_CODIGO_DESCRICAO As ADODB.Recordset
 Dim t_NFe_UF_PARAMETRO As ADODB.Recordset
+Dim t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT As ADODB.Recordset
+Dim t_CFG_MKTP_INTERMEDIADOR_PAGTO As ADODB.Recordset
 Dim rsNFeRetornoSPSituacao As ADODB.Recordset
 Dim rsNFeRetornoSPEmite As ADODB.Recordset
 Dim cmdNFeSituacao As New ADODB.Command
@@ -6665,6 +6671,10 @@ Dim perc_ICMS_UF_dest As Single
 Dim perc_ICMS_UF_remet As Single
 Dim perc_fcp As Single
 Dim perc_ICMS_diferencial_interestadual As Single
+Dim perc_simulado_ICMS_UF_dest As Single
+Dim perc_simulado_ICMS_UF_remet As Single
+Dim perc_simulado_fcp As Single
+Dim perc_simulado_ICMS_diferencial_interestadual As Single
 
 ' REAL
 Dim peso_aux As Single
@@ -6934,9 +6944,25 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         .CacheSize = BD_CACHE_CONSULTA
         End With
         
-  ' t_NFe_UF_PARAMETRO
+  't_NFe_UF_PARAMETRO
     Set t_NFe_UF_PARAMETRO = New ADODB.Recordset
     With t_NFe_UF_PARAMETRO
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
+        
+  't_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT
+    Set t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT = New ADODB.Recordset
+    With t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
+  
+  't_CFG_MKTP_INTERMEDIADOR_PAGTO
+    Set t_CFG_MKTP_INTERMEDIADOR_PAGTO = New ADODB.Recordset
+    With t_CFG_MKTP_INTERMEDIADOR_PAGTO
         .CursorType = BD_CURSOR_SOMENTE_LEITURA
         .LockType = BD_POLITICA_LOCKING
         .CacheSize = BD_CACHE_CONSULTA
@@ -6952,6 +6978,11 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strConfirmacaoEtgImediata = ""
     strTransportadoraId = ""
     strPedidoBSMarketplace = ""
+    strMetodoPagto = ""
+    intInformarIntermediador = 0
+    strCnpjIntermediadorPagto = ""
+    strMeioPagtoSefaz = ""
+
     rNFeImg.ide__indPag = "2" ' Forma de pagamento: outros
     For i = LBound(v_pedido) To UBound(v_pedido)
         If Trim$(v_pedido(i)) <> "" Then
@@ -7100,7 +7131,48 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     intImprimeIntermediadorAusente = t_CODIGO_DESCRICAO("parametro_3_campo_flag")
                     End If
                     
+                'verificar tabela de configuração de marketplaces para obter parametros
+                If strMarketPlaceCNPJ <> "" Then
+                    s = "SELECT * FROM t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT WHERE pedido = '" & Trim$(v_pedido(i)) & "' "
+                    If t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT.State <> adStateClosed Then t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT.Close
+                    t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT.Open s, dbc, , , adCmdText
+                    If Not t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT.EOF Then
+                        strMetodoPagto = Trim$("" & t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT("method"))
+                        If strMetodoPagto <> "" Then
+                            s = "SELECT * FROM t_CFG_MKTP_INTERMEDIADOR_PAGTO " & _
+                                "WHERE IdCodigoDescricaoCodigo = '" & strMarketplaceCodOrigem & "' " & _
+                                "AND PaymentMethod = '" & strMetodoPagto & "' "
+                            If t_CFG_MKTP_INTERMEDIADOR_PAGTO.State <> adStateClosed Then t_CFG_MKTP_INTERMEDIADOR_PAGTO.Close
+                            t_CFG_MKTP_INTERMEDIADOR_PAGTO.Open s, dbc, , , adCmdText
+                            If Not t_CFG_MKTP_INTERMEDIADOR_PAGTO.EOF Then
+                                strMetodoPagto = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("PaymentMethod"))
+                                intInformarIntermediador = t_CFG_MKTP_INTERMEDIADOR_PAGTO("StInformarIntermediadorPagto")
+                                strCnpjIntermediadorPagto = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("CnpjIntermediadorPagto"))
+                                strMeioPagtoSefaz = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("CodigoMeioPagtoSefaz"))
+                                End If
+                            End If
+                                                
+                        'se não encontrar meio pagto, procurar OUTROS
+                        If strMetodoPagto = "" Then
+                            s = "SELECT * FROM t_CFG_MKTP_INTERMEDIADOR_PAGTO " & _
+                                "WHERE IdCodigoDescricaoCodigo = '" & strMarketplaceCodOrigem & "' " & _
+                                "AND PaymentMethod = '" & "*_OUTROS_*" & "' "
+                            If t_CFG_MKTP_INTERMEDIADOR_PAGTO.State <> adStateClosed Then t_CFG_MKTP_INTERMEDIADOR_PAGTO.Close
+                            t_CFG_MKTP_INTERMEDIADOR_PAGTO.Open s, dbc, , , adCmdText
+                            If Not t_CFG_MKTP_INTERMEDIADOR_PAGTO.EOF Then
+                                strMetodoPagto = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("PaymentMethod"))
+                                intInformarIntermediador = t_CFG_MKTP_INTERMEDIADOR_PAGTO("StInformarIntermediadorPagto")
+                                strCnpjIntermediadorPagto = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("CnpjIntermediadorPagto"))
+                                strMeioPagtoSefaz = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("CodigoMeioPagtoSefaz"))
+                                End If
+                            End If
+                                                
+                        End If
+                    
+                    End If
+        
                 End If
+                            
             
             
             End If
@@ -9189,8 +9261,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             
                 If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
                     (rNFeImg.dest__indIEDest = "9") And _
-                    Not cfop_eh_de_remessa(strCfopCodigo) And _
                     Not blnIgnorarDIFAL And _
+                    Not cfop_eh_de_remessa(strCfopCodigo) And _
                     (vl_ICMS > 0) Then
                     
                     If IsNumeric(.fcp) Then
@@ -9235,7 +9307,11 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     If vl_ICMS_UF_remet < 0 Then vl_ICMS_UF_remet = 0
                     
                     End If
-            
+                            
+            '   OBS: EXISTE IPI APENAS NA EMISSÃO DE NFe PARA DEVOLUÇÃO AO FORNECEDOR
+                If blnIgnorarDIFAL Then
+                
+                    End If
             
             '   TAG IPI
             '   ~~~~~~~
@@ -9712,6 +9788,15 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "0"
         vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = "90"
         vNFeImgPag(UBound(vNFeImgPag)).pag__vPag = NFeFormataMoeda2Dec(0)
+    'Se a operação envolve marketplace, substituir com os valores obtidos
+    ElseIf (rNFeImg.ide__tpNF = "1") And _
+        (param_nfintermediador.campo_inteiro = 1) And _
+        (strMarketplaceCodOrigem <> "") And _
+        (strMeioPagtoSefaz <> "") Then
+        vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "0"
+        vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = strMeioPagtoSefaz
+        s = strMetodoPagto
+        vNFeImgPag(UBound(vNFeImgPag)).pag__vPag = rNFeImg.total__vNF
     'Se o pagamento é à vista
     ElseIf strTipoParcelamento = COD_FORMA_PAGTO_A_VISTA Then
         'Para cada meio de pagamento abaixo:
@@ -9908,10 +9993,12 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         vNFeImgPag(UBound(vNFeImgPag)).pag__vPag = NFeFormataMoeda2Dec(vl_aux)
         End If
     
+    
     strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("indPag", vNFeImgPag(UBound(vNFeImgPag)).pag__indPag)
     strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("tPag", vNFeImgPag(UBound(vNFeImgPag)).pag__tPag)
     If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) Or _
-        (param_contingencia_meio_pagamento_cartao.campo_inteiro = 1) Then
+        (param_contingencia_meio_pagamento_cartao.campo_inteiro = 1) Or _
+        (strMeioPagtoSefaz = "99") Then
         If s <> "" Then strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("xPag", s)
         End If
     strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("vPag", vNFeImgPag(UBound(vNFeImgPag)).pag__vPag)
@@ -10775,6 +10862,8 @@ NFE_EMITE_FECHA_TABELAS:
     bd_desaloca_recordset t_T1_NFE_INUTILIZA, True
     bd_desaloca_recordset t_CODIGO_DESCRICAO, True
     bd_desaloca_recordset t_NFe_UF_PARAMETRO, True
+    bd_desaloca_recordset t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT, True
+    bd_desaloca_recordset t_CFG_MKTP_INTERMEDIADOR_PAGTO, True
     bd_desaloca_recordset rsNFeRetornoSPSituacao, True
     bd_desaloca_recordset rsNFeRetornoSPEmite, True
   
