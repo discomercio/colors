@@ -6530,6 +6530,7 @@ Dim strNFeRef As String
 Dim strInfoAdicParc As String
 Dim strPedidoBSMarketplace As String
 Dim strMarketplaceCodOrigem As String
+Dim strMarketplaceCodOrigemGrupo As String
 Dim strMarketPlaceCNPJ As String
 Dim strMarketPlaceCadIntTran As String
 Dim strPagtoAntecipadoStatus As Integer
@@ -6557,6 +6558,7 @@ Dim blnExisteMemorizacaoEndereco As Boolean
 Dim blnNotadeCompromisso As Boolean
 Dim blnRemessaEntregaFutura As Boolean
 Dim blnIgnorarDIFAL As Boolean
+Dim blnEncontrouMeioPagtoSkyHub As Boolean
 
 ' CONTADORES
 Dim i As Integer
@@ -6982,6 +6984,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     intInformarIntermediador = 0
     strCnpjIntermediadorPagto = ""
     strMeioPagtoSefaz = ""
+    strMarketplaceCodOrigemGrupo = ""
+    blnEncontrouMeioPagtoSkyHub = False
 
     rNFeImg.ide__indPag = "2" ' Forma de pagamento: outros
     For i = LBound(v_pedido) To UBound(v_pedido)
@@ -7115,7 +7119,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 
             'obter as informações de marketplace
             If (param_nfintermediador.campo_inteiro = 1) And (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") Then
-                s = "SELECT o.codigo, o.descricao, og.parametro_campo_texto, og.parametro_2_campo_texto, og.parametro_3_campo_flag  " & _
+                s = "SELECT o.codigo, o.descricao, og.parametro_campo_texto, og.parametro_2_campo_texto, og.parametro_3_campo_flag, os.codigo_pai  " & _
                     "FROM (select * from t_CODIGO_DESCRICAO where grupo = 'PedidoECommerce_Origem') o  " & _
                         "INNER JOIN (select * from t_CODIGO_DESCRICAO where grupo = 'PedidoECommerce_Origem_Grupo') og  " & _
                         "on o.codigo_pai = og.codigo " & _
@@ -7129,6 +7133,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     strMarketPlaceCNPJ = Trim$("" & t_CODIGO_DESCRICAO("parametro_campo_texto"))
                     strMarketPlaceCadIntTran = Trim$("" & t_CODIGO_DESCRICAO("parametro_2_campo_texto"))
                     intImprimeIntermediadorAusente = t_CODIGO_DESCRICAO("parametro_3_campo_flag")
+                    strMarketplaceCodOrigemGrupo = Trim$("" & t_CODIGO_DESCRICAO("codigo_pai"))
                     End If
                     
                 'verificar tabela de configuração de marketplaces para obter parametros
@@ -7140,27 +7145,26 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                         strMetodoPagto = Trim$("" & t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT("method"))
                         If strMetodoPagto <> "" Then
                             s = "SELECT * FROM t_CFG_MKTP_INTERMEDIADOR_PAGTO " & _
-                                "WHERE IdCodigoDescricaoCodigo = '" & strMarketplaceCodOrigem & "' " & _
+                                "WHERE IdCodigoDescricaoCodigo = '" & strMarketplaceCodOrigemGrupo & "' " & _
                                 "AND PaymentMethod = '" & strMetodoPagto & "' "
                             If t_CFG_MKTP_INTERMEDIADOR_PAGTO.State <> adStateClosed Then t_CFG_MKTP_INTERMEDIADOR_PAGTO.Close
                             t_CFG_MKTP_INTERMEDIADOR_PAGTO.Open s, dbc, , , adCmdText
                             If Not t_CFG_MKTP_INTERMEDIADOR_PAGTO.EOF Then
-                                strMetodoPagto = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("PaymentMethod"))
                                 intInformarIntermediador = t_CFG_MKTP_INTERMEDIADOR_PAGTO("StInformarIntermediadorPagto")
                                 strCnpjIntermediadorPagto = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("CnpjIntermediadorPagto"))
                                 strMeioPagtoSefaz = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("CodigoMeioPagtoSefaz"))
+                                blnEncontrouMeioPagtoSkyHub = True
                                 End If
                             End If
                                                 
                         'se não encontrar meio pagto, procurar OUTROS
-                        If strMetodoPagto = "" Then
+                        If Not blnEncontrouMeioPagtoSkyHub Then
                             s = "SELECT * FROM t_CFG_MKTP_INTERMEDIADOR_PAGTO " & _
-                                "WHERE IdCodigoDescricaoCodigo = '" & strMarketplaceCodOrigem & "' " & _
+                                "WHERE IdCodigoDescricaoCodigo = '" & strMarketplaceCodOrigemGrupo & "' " & _
                                 "AND PaymentMethod = '" & "*_OUTROS_*" & "' "
                             If t_CFG_MKTP_INTERMEDIADOR_PAGTO.State <> adStateClosed Then t_CFG_MKTP_INTERMEDIADOR_PAGTO.Close
                             t_CFG_MKTP_INTERMEDIADOR_PAGTO.Open s, dbc, , , adCmdText
                             If Not t_CFG_MKTP_INTERMEDIADOR_PAGTO.EOF Then
-                                strMetodoPagto = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("PaymentMethod"))
                                 intInformarIntermediador = t_CFG_MKTP_INTERMEDIADOR_PAGTO("StInformarIntermediadorPagto")
                                 strCnpjIntermediadorPagto = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("CnpjIntermediadorPagto"))
                                 strMeioPagtoSefaz = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("CodigoMeioPagtoSefaz"))
