@@ -10009,8 +10009,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     'Segundo informado pelo Valter (Target) em e-mail de 27/07/2017, o grupo vcard não deve ser informado no arquivo texto,
     'ele é preenchido pelo sistema
     'ATUALIZAÇÃO: a partir de 2022, após a nota técnica 2020.006 v 1.30 da SEFAZ, mudou-se o entendimento e o grupo card
-    'passou a ser preenchido
-    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) And _
+    'passou a ser preenchido quando o meio de pagamento for cartão de crédito e o CNPJ do intermediador do pagamento existir
+    If (param_nfintermediador.campo_inteiro = 1) And _
         (intInformarIntermediadorPagto = 1) And _
         (strCnpjIntermediadorPagto <> "") Then
         strNFeTagPag = strNFeTagPag & vbTab & "card;"
