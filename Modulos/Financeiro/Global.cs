@@ -29,15 +29,15 @@ namespace Financeiro
                 public const string NOME_OWNER = "Artven";
                 public const string NOME_SISTEMA = "Financeiro";
                 public const string VERSAO_NUMERO = "1.38";
-                public const string VERSAO_DATA = "30.OUT.2020";
+                public const string VERSAO_DATA = "12.ABR.2022";
                 public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
                 public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
                 public const string M_DESCRICAO = "Módulo para execução de rotinas financeiras";
             }
-            #endregion
+			#endregion
 
-            #region[ Comentário sobre as versões ]
-            /*================================================================================================
+			#region[ Comentário sobre as versões ]
+			/*================================================================================================
 			 * v 1.00 - 14.09.2009 - por HHO
 			 *        Início.
 			 *        Este programa realiza diversas rotinas financeiras.
@@ -475,6 +475,10 @@ namespace Financeiro
 			 *		  Implementação de tratamento na carga do arquivo de retorno de boletos para ignorar o
 			 *		  envio de boleto AV para o Serasa.
 			 * -----------------------------------------------------------------------------------------------
+			 * v 1.38(B) - 12.04.2022 - por HHO
+			 *		  Ajustes no Relatório Sintético Comparativo de Movimentos para parametrizar a quantidade
+			 *		  de anos do período no comparativo mês a mês.
+			 * -----------------------------------------------------------------------------------------------
 			 * v 1.39 - XX.XX.20XX - por XXX
 			 *		  
 			 * -----------------------------------------------------------------------------------------------
@@ -485,10 +489,10 @@ namespace Financeiro
 			 *		  Implementação de recursos para cobrança de clientes em atraso.
 			 * ===============================================================================================
 			 */
-            #endregion
+			#endregion
 
-            #region [ Etc ]
-            public class Etc
+			#region [ Etc ]
+			public class Etc
             {
                 public const String SIMBOLO_MONETARIO = "R$";
                 public const byte FLAG_NAO_SETADO = 255;
@@ -914,14 +918,15 @@ namespace Financeiro
                     public const String T_SERASA_CLIENTE = "t_SERASA_CLIENTE";
                     public const String T_SERASA_TITULO_MOVIMENTO = "t_SERASA_TITULO_MOVIMENTO";
                 }
-                #endregion
+				#endregion
 
-                #region [ ID_T_PARAMETRO ]
-                public static class ID_T_PARAMETRO
-                {
-                    public const string SERASA_RECIPROCIDADE_CNPJ_IGNORADOS = "SerasaReciprocidadeCnpjIgnorados";
-                    public const string ID_PARAMETRO_FLAG_PEDIDO_MEMORIZACAOCOMPLETAENDERECOS = "Flag_Pedido_MemorizacaoCompletaEnderecos";
-                }
+				#region [ ID_T_PARAMETRO ]
+				public static class ID_T_PARAMETRO
+				{
+					public const string SERASA_RECIPROCIDADE_CNPJ_IGNORADOS = "SerasaReciprocidadeCnpjIgnorados";
+					public const string ID_PARAMETRO_FLAG_PEDIDO_MEMORIZACAOCOMPLETAENDERECOS = "Flag_Pedido_MemorizacaoCompletaEnderecos";
+					public const string ID_PARAMETRO_FIN_REL_SINT_COMP_MOVTO_COMP_MES_A_MES_PERIODO_EM_ANOS = "FIN_RelSinteticoComparativoMovimentos_ComparativoMesAMes_PeriodoEmAnos";
+				}
                 #endregion
             }
             #endregion
