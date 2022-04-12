@@ -2855,11 +2855,15 @@ namespace Financeiro
 			#region [ Declarações ]
 			bool blnSucesso = false;
 			int iAno;
+			int qtdeAnosPeriodo;
 			#endregion
 
 			try
 			{
 				limpaCampos();
+
+				qtdeAnosPeriodo = ComumDAO.getCampoInteiroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ID_PARAMETRO_FIN_REL_SINT_COMP_MOVTO_COMP_MES_A_MES_PERIODO_EM_ANOS);
+				if (qtdeAnosPeriodo <= 0) qtdeAnosPeriodo = 5;
 
 				#region [ Combo Conta Corrente ]
 				// Cria uma linha com a opção Todas
@@ -2967,7 +2971,7 @@ namespace Financeiro
 
 				#region [ Combo ano competência (inicial) ]
 				cbCompetenciaAnoInicial.Items.Clear();
-				for (int i = 0; i < 5; i++)
+				for (int i = 0; i < qtdeAnosPeriodo; i++)
 				{
 					iAno = DateTime.Today.Year - i;
 					cbCompetenciaAnoInicial.Items.Add(new Global.OpcaoAno(iAno, iAno.ToString()));
@@ -2986,7 +2990,7 @@ namespace Financeiro
 
 				#region [ Combo ano competência (final) ]
 				cbCompetenciaAnoFinal.Items.Clear();
-				for (int i = 0; i < 5; i++)
+				for (int i = 0; i < qtdeAnosPeriodo; i++)
 				{
 					iAno = DateTime.Today.Year - i;
 					cbCompetenciaAnoFinal.Items.Add(new Global.OpcaoAno(iAno, iAno.ToString()));
