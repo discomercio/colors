@@ -6592,7 +6592,7 @@ Dim lngNFeNumeroNfManual As Long
 Dim intContribuinteICMS As Integer
 Dim intAnoPartilha As Integer
 Dim intImprimeIntermediadorAusente As Integer
-Dim intInformarIntermediador As Integer
+Dim intInformarIntermediadorPagto As Integer
 
 ' BANCO DE DADOS
 Dim t_PEDIDO As ADODB.Recordset
@@ -6981,7 +6981,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strTransportadoraId = ""
     strPedidoBSMarketplace = ""
     strMetodoPagto = ""
-    intInformarIntermediador = 0
+    intInformarIntermediadorPagto = 0
     strCnpjIntermediadorPagto = ""
     strMeioPagtoSefaz = ""
     strMarketplaceCodOrigemGrupo = ""
@@ -7150,7 +7150,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                             If t_CFG_MKTP_INTERMEDIADOR_PAGTO.State <> adStateClosed Then t_CFG_MKTP_INTERMEDIADOR_PAGTO.Close
                             t_CFG_MKTP_INTERMEDIADOR_PAGTO.Open s, dbc, , , adCmdText
                             If Not t_CFG_MKTP_INTERMEDIADOR_PAGTO.EOF Then
-                                intInformarIntermediador = t_CFG_MKTP_INTERMEDIADOR_PAGTO("StInformarIntermediadorPagto")
+                                intInformarIntermediadorPagto = t_CFG_MKTP_INTERMEDIADOR_PAGTO("StInformarIntermediadorPagto")
                                 strCnpjIntermediadorPagto = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("CnpjIntermediadorPagto"))
                                 strMeioPagtoSefaz = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("CodigoMeioPagtoSefaz"))
                                 blnEncontrouMeioPagtoSkyHub = True
@@ -7165,7 +7165,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                             If t_CFG_MKTP_INTERMEDIADOR_PAGTO.State <> adStateClosed Then t_CFG_MKTP_INTERMEDIADOR_PAGTO.Close
                             t_CFG_MKTP_INTERMEDIADOR_PAGTO.Open s, dbc, , , adCmdText
                             If Not t_CFG_MKTP_INTERMEDIADOR_PAGTO.EOF Then
-                                intInformarIntermediador = t_CFG_MKTP_INTERMEDIADOR_PAGTO("StInformarIntermediadorPagto")
+                                intInformarIntermediadorPagto = t_CFG_MKTP_INTERMEDIADOR_PAGTO("StInformarIntermediadorPagto")
                                 strCnpjIntermediadorPagto = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("CnpjIntermediadorPagto"))
                                 strMeioPagtoSefaz = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("CodigoMeioPagtoSefaz"))
                                 End If
@@ -10008,6 +10008,15 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("vPag", vNFeImgPag(UBound(vNFeImgPag)).pag__vPag)
     'Segundo informado pelo Valter (Target) em e-mail de 27/07/2017, o grupo vcard não deve ser informado no arquivo texto,
     'ele é preenchido pelo sistema
+    'ATUALIZAÇÃO: a partir de 2022, após a nota técnica 2020.006 v 1.30 da SEFAZ, mudou-se o entendimento e o grupo card
+    'passou a ser preenchido
+    If (param_contingencia_meio_pagamento_geral.campo_inteiro = 1) And _
+        (intInformarIntermediadorPagto = 1) And _
+        (strCnpjIntermediadorPagto <> "") Then
+        strNFeTagPag = strNFeTagPag & vbTab & "card;"
+        strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("tpIntegra", "1")
+        strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("CNPJ", strCnpjIntermediadorPagto)
+        End If
     'informações do intermediador
     If (param_nfintermediador.campo_inteiro = 1) And (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") Then
         'If (strMarketplaceCodOrigem <> "") Then
