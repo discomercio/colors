@@ -9086,6 +9086,10 @@ Dim strMarketPlaceCadIntTran As String
 Dim strPagtoAntecipadoStatus As Integer
 Dim strPagtoAntecipadoQuitadoStatus As Integer
 Dim s_Texto_DIFAL_UF As String
+Dim strMarketplaceCodOrigemGrupo As String
+Dim strCnpjIntermediadorPagto As String
+Dim strMetodoPagto As String
+Dim strMeioPagtoSefaz As String
 
 ' FLAGS
 Dim blnAchou As Boolean
@@ -9105,6 +9109,7 @@ Dim blnExisteMemorizacaoEndereco As Boolean
 Dim blnNotadeCompromisso As Boolean
 Dim blnRemessaEntregaFutura As Boolean
 Dim blnIgnorarDIFAL As Boolean
+Dim blnEncontrouMeioPagtoSkyHub As Boolean
 
 ' CONTADORES
 Dim i As Integer
@@ -9138,6 +9143,7 @@ Dim lngNFeNumeroNfManual As Long
 Dim intContribuinteICMS As Integer
 Dim intAnoPartilha As Integer
 Dim intImprimeIntermediadorAusente As Integer
+Dim intInformarIntermediadorPagto As Integer
 
 ' BANCO DE DADOS
 Dim t_PEDIDO As ADODB.Recordset
@@ -9154,6 +9160,8 @@ Dim t_NFe_IMAGEM As ADODB.Recordset
 Dim t_T1_NFE_INUTILIZA As ADODB.Recordset
 Dim t_CODIGO_DESCRICAO As ADODB.Recordset
 Dim t_NFe_UF_PARAMETRO As ADODB.Recordset
+Dim t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT As ADODB.Recordset
+Dim t_CFG_MKTP_INTERMEDIADOR_PAGTO As ADODB.Recordset
 Dim rsNFeRetornoSPSituacao As ADODB.Recordset
 Dim rsNFeRetornoSPEmite As ADODB.Recordset
 Dim cmdNFeSituacao As New ADODB.Command
@@ -9508,7 +9516,22 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         .CacheSize = BD_CACHE_CONSULTA
         End With
         
+  't_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT
+    Set t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT = New ADODB.Recordset
+    With t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
   
+  't_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT
+    Set t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT = New ADODB.Recordset
+    With t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
+          
 
 '   VERIFICA CADA UM DOS PEDIDOS
     strIdCliente = ""
@@ -9519,6 +9542,14 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strConfirmacaoEtgImediata = ""
     strTransportadoraId = ""
     strPedidoBSMarketplace = ""
+    strMetodoPagto = ""
+    intInformarIntermediadorPagto = 0
+    strCnpjIntermediadorPagto = ""
+    strMeioPagtoSefaz = ""
+    strMarketplaceCodOrigemGrupo = ""
+    blnEncontrouMeioPagtoSkyHub = False
+
+    
     rNFeImg.ide__indPag = "2" ' Forma de pagamento: outros
     For i = LBound(v_pedido) To UBound(v_pedido)
         If Trim$(v_pedido(i)) <> "" Then
@@ -9643,11 +9674,10 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 If s_erro <> "" Then s_erro = s_erro & vbCrLf
                 s_erro = s_erro & "Não foi encontrado nenhum produto relacionado ao pedido " & Trim$(v_pedido(i)) & "!!"
                 End If
-            End If
             
             'obter as informações de marketplace
-            If (param_nfintermediador.campo_inteiro = 1) And (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") Then
-                s = "SELECT o.codigo, o.descricao, og.parametro_campo_texto, og.parametro_2_campo_texto, og.parametro_3_campo_flag  " & _
+            If (s_erro = "") And (param_nfintermediador.campo_inteiro = 1) And (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") Then
+                s = "SELECT o.codigo, o.descricao, og.parametro_campo_texto, og.parametro_2_campo_texto, og.parametro_3_campo_flag, os.codigo_pai  " & _
                     "FROM (select * from t_CODIGO_DESCRICAO where grupo = 'PedidoECommerce_Origem') o  " & _
                         "INNER JOIN (select * from t_CODIGO_DESCRICAO where grupo = 'PedidoECommerce_Origem_Grupo') og  " & _
                         "on o.codigo_pai = og.codigo " & _
@@ -9661,9 +9691,49 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     strMarketPlaceCNPJ = Trim$("" & t_CODIGO_DESCRICAO("parametro_campo_texto"))
                     strMarketPlaceCadIntTran = Trim$("" & t_CODIGO_DESCRICAO("parametro_2_campo_texto"))
                     intImprimeIntermediadorAusente = t_CODIGO_DESCRICAO("parametro_3_campo_flag")
+                    strMarketplaceCodOrigemGrupo = Trim$("" & t_CODIGO_DESCRICAO("codigo_pai"))
                     End If
                     
+                'verificar tabela de configuração de marketplaces para obter parametros
+                If strMarketPlaceCNPJ <> "" Then
+                    s = "SELECT * FROM t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT WHERE pedido = '" & Trim$(v_pedido(i)) & "' "
+                    If t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT.State <> adStateClosed Then t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT.Close
+                    t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT.Open s, dbc, , , adCmdText
+                    If Not t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT.EOF Then
+                        strMetodoPagto = Trim$("" & t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT("method"))
+                        If strMetodoPagto <> "" Then
+                            s = "SELECT * FROM t_CFG_MKTP_INTERMEDIADOR_PAGTO " & _
+                                "WHERE IdCodigoDescricaoCodigo = '" & strMarketplaceCodOrigemGrupo & "' " & _
+                                "AND PaymentMethod = '" & strMetodoPagto & "' "
+                            If t_CFG_MKTP_INTERMEDIADOR_PAGTO.State <> adStateClosed Then t_CFG_MKTP_INTERMEDIADOR_PAGTO.Close
+                            t_CFG_MKTP_INTERMEDIADOR_PAGTO.Open s, dbc, , , adCmdText
+                            If Not t_CFG_MKTP_INTERMEDIADOR_PAGTO.EOF Then
+                                intInformarIntermediadorPagto = t_CFG_MKTP_INTERMEDIADOR_PAGTO("StInformarIntermediadorPagto")
+                                strCnpjIntermediadorPagto = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("CnpjIntermediadorPagto"))
+                                strMeioPagtoSefaz = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("CodigoMeioPagtoSefaz"))
+                                blnEncontrouMeioPagtoSkyHub = True
+                                End If
+                            End If
+                                                
+                        'se não encontrar meio pagto, procurar OUTROS
+                        If Not blnEncontrouMeioPagtoSkyHub Then
+                            s = "SELECT * FROM t_CFG_MKTP_INTERMEDIADOR_PAGTO " & _
+                                "WHERE IdCodigoDescricaoCodigo = '" & strMarketplaceCodOrigemGrupo & "' " & _
+                                "AND PaymentMethod = '" & "*_OUTROS_*" & "' "
+                            If t_CFG_MKTP_INTERMEDIADOR_PAGTO.State <> adStateClosed Then t_CFG_MKTP_INTERMEDIADOR_PAGTO.Close
+                            t_CFG_MKTP_INTERMEDIADOR_PAGTO.Open s, dbc, , , adCmdText
+                            If Not t_CFG_MKTP_INTERMEDIADOR_PAGTO.EOF Then
+                                intInformarIntermediadorPagto = t_CFG_MKTP_INTERMEDIADOR_PAGTO("StInformarIntermediadorPagto")
+                                strCnpjIntermediadorPagto = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("CnpjIntermediadorPagto"))
+                                strMeioPagtoSefaz = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("CodigoMeioPagtoSefaz"))
+                                End If
+                            End If
+                                                
+                        End If
+                    End If
                 End If
+                                                
+            End If
 
             
         Next
@@ -12314,6 +12384,15 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "0"
         vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = "90"
         vNFeImgPag(UBound(vNFeImgPag)).pag__vPag = NFeFormataMoeda2Dec(0)
+    'Se a operação envolve marketplace, substituir com os valores obtidos
+    ElseIf (rNFeImg.ide__tpNF = "1") And _
+        (param_nfintermediador.campo_inteiro = 1) And _
+        (strMarketplaceCodOrigem <> "") And _
+        (strMeioPagtoSefaz <> "") Then
+        vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "0"
+        vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = strMeioPagtoSefaz
+        s = strMetodoPagto
+        vNFeImgPag(UBound(vNFeImgPag)).pag__vPag = rNFeImg.total__vNF
     'Se o pagamento é à vista
     ElseIf strTipoParcelamento = COD_FORMA_PAGTO_A_VISTA Then
         'Para cada meio de pagamento abaixo:
@@ -12519,6 +12598,15 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("vPag", vNFeImgPag(UBound(vNFeImgPag)).pag__vPag)
     'Segundo informado pelo Valter (Target) em e-mail de 27/07/2017, o grupo vcard não deve ser informado no arquivo texto,
     'ele é preenchido pelo sistema
+    'ATUALIZAÇÃO: a partir de 2022, após a nota técnica 2020.006 v 1.30 da SEFAZ, mudou-se o entendimento e o grupo card
+    'passou a ser preenchido quando o meio de pagamento for cartão de crédito e o CNPJ do intermediador do pagamento existir
+    If (param_nfintermediador.campo_inteiro = 1) And _
+        (intInformarIntermediadorPagto = 1) And _
+        (strCnpjIntermediadorPagto <> "") Then
+        strNFeTagPag = strNFeTagPag & vbTab & "card;"
+        strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("tpIntegra", "1")
+        strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("CNPJ", strCnpjIntermediadorPagto)
+        End If
     'informações do intermediador
     If (param_nfintermediador.campo_inteiro = 1) And (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") Then
         'If (strMarketplaceCodOrigem <> "") Then
@@ -13240,6 +13328,8 @@ NFE_EMITE_FECHA_TABELAS:
     bd_desaloca_recordset t_T1_NFE_INUTILIZA, True
     bd_desaloca_recordset t_CODIGO_DESCRICAO, True
     bd_desaloca_recordset t_NFe_UF_PARAMETRO, True
+    bd_desaloca_recordset t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT, True
+    bd_desaloca_recordset t_CFG_MKTP_INTERMEDIADOR_PAGTO, True
     bd_desaloca_recordset rsNFeRetornoSPSituacao, True
     bd_desaloca_recordset rsNFeRetornoSPEmite, True
   
@@ -13388,6 +13478,10 @@ Dim strPedidoBSMarketplace As String
 Dim strMarketplaceCodOrigem As String
 Dim strMarketPlaceCNPJ As String
 Dim strMarketPlaceCadIntTran As String
+Dim strMarketplaceCodOrigemGrupo As String
+Dim strCnpjIntermediadorPagto As String
+Dim strMetodoPagto As String
+Dim strMeioPagtoSefaz As String
 
 
 ' FLAGS
@@ -13406,6 +13500,7 @@ Dim blnExibirTotalTributos As Boolean
 Dim blnHaProdutoSemDadosIbpt As Boolean
 Dim blnExisteMemorizacaoEndereco As Boolean
 Dim blnNotadeCompromisso As Boolean
+Dim blnEncontrouMeioPagtoSkyHub As Boolean
 
 ' CONTADORES
 Dim i As Integer
@@ -13439,6 +13534,7 @@ Dim lngNFeNumeroNfManual As Long
 Dim intContribuinteICMS As Integer
 Dim intAnoPartilha As Integer
 Dim intImprimeIntermediadorAusente As Integer
+Dim intInformarIntermediadorPagto As Integer
 
 ' BANCO DE DADOS
 Dim t_PEDIDO As ADODB.Recordset
@@ -13454,6 +13550,8 @@ Dim t_NFe_EMISSAO As ADODB.Recordset
 Dim t_NFe_IMAGEM As ADODB.Recordset
 Dim t_T1_NFE_INUTILIZA As ADODB.Recordset
 Dim t_CODIGO_DESCRICAO As ADODB.Recordset
+Dim t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT As ADODB.Recordset
+Dim t_CFG_MKTP_INTERMEDIADOR_PAGTO As ADODB.Recordset
 Dim rsNFeRetornoSPSituacao As ADODB.Recordset
 Dim rsNFeRetornoSPEmite As ADODB.Recordset
 Dim cmdNFeSituacao As New ADODB.Command
@@ -13587,7 +13685,13 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeInfAdicQuadroProdutos = ""
     strNFeInfAdicQuadroInfAdic = ""
     strNFeTagDup = ""
-    
+    strMetodoPagto = ""
+    intInformarIntermediadorPagto = 0
+    strCnpjIntermediadorPagto = ""
+    strMeioPagtoSefaz = ""
+    strMarketplaceCodOrigemGrupo = ""
+    blnEncontrouMeioPagtoSkyHub = False
+
     blnTemPedidoComStBemUsoConsumo = False
     blnTemPedidoSemStBemUsoConsumo = False
     blnTemPedidoComTransportadora = False
@@ -13800,6 +13904,21 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         .CacheSize = BD_CACHE_CONSULTA
         End With
         
+  't_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT
+    Set t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT = New ADODB.Recordset
+    With t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
+  
+  't_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT
+    Set t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT = New ADODB.Recordset
+    With t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
   
 
 '   VERIFICA CADA UM DOS PEDIDOS

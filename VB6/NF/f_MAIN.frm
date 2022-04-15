@@ -7118,7 +7118,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 End If
                 
             'obter as informações de marketplace
-            If (param_nfintermediador.campo_inteiro = 1) And (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") Then
+            If (s_erro = "") And (param_nfintermediador.campo_inteiro = 1) And (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") Then
                 s = "SELECT o.codigo, o.descricao, og.parametro_campo_texto, og.parametro_2_campo_texto, og.parametro_3_campo_flag, o.codigo_pai  " & _
                     "FROM (select * from t_CODIGO_DESCRICAO where grupo = 'PedidoECommerce_Origem') o  " & _
                         "INNER JOIN (select * from t_CODIGO_DESCRICAO where grupo = 'PedidoECommerce_Origem_Grupo') og  " & _
@@ -7172,12 +7172,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                             End If
                                                 
                         End If
-                    
                     End If
-        
                 End If
-                            
-            
             
             End If
         Next
