@@ -1041,6 +1041,7 @@ namespace ART3WebAPI.Models.Domains
 			MagentoErpPedidoXmlDecodeEndereco decodeEndereco;
 			MagentoErpPedidoXmlDecodeItem decodeItem;
 			MagentoErpPedidoXmlDecodeStatusHistory decodeStatusHistory;
+			MagentoErpPedidoXmlDecodeSkyhubMktpPayment decodeSkyhubMktpPayment;
 			List<CodigoDescricao> listaCodigoDescricao;
 			string[] v;
 			Magento2SalesOrderInfo mage2SalesOrderInfo;
@@ -1583,7 +1584,15 @@ namespace ART3WebAPI.Models.Domains
 									#endregion
 								}
 
-								sParametro = (codDescr.parametro_campo_texto ?? "").Trim();
+								if (codDescr.parametro_2_campo_flag == 1)
+								{
+									sParametro = (codDescr.parametro_3_campo_texto ?? "").Trim();
+								}
+								else
+								{
+									sParametro = (codDescr.parametro_campo_texto ?? "").Trim();
+								}
+
 								if (sParametro.Length == 0) continue;
 								vMktpOrderDescriptor = sParametro.Split('|');
 								for (int k = 0; k < vMktpOrderDescriptor.Length; k++)
@@ -1592,49 +1601,71 @@ namespace ART3WebAPI.Models.Domains
 									if ((sMktpOrderDescriptor ?? "").Trim().Length == 0) continue;
 									if (vComment[j].ToUpper().StartsWith(sMktpOrderDescriptor.ToUpper()))
 									{
-										// Obtém a parte relativa ao nº pedido marketplace
-										sValue = vComment[j].Substring(sMktpOrderDescriptor.Length).Trim();
-										if (sValue.Length > 0)
+										if (loja.Equals(Global.Cte.Loja.ArClube) && codDescr.codigo.Equals("017"))
 										{
-											sNumPedidoMktpCompletoIdentificado = sValue;
-
-											#region [ Tratamento p/ nº marketplace do Walmart (ex: 78381578-1796973) ]
-											if (loja.Equals(Global.Cte.Loja.ArClube) && codDescr.codigo.Equals("009"))
+											#region [ Tratamento para Leroy Merlin ]
+											// No pedido do Leroy Merlin via Anymarket, o nº do pedido está em outra linha, após a identificação do marketplace, mas com quebras de linha separando
+											sValue = "";
+											for (int j2 = (j + 1); j2 < vComment.Length; j2++)
 											{
+												sValue = vComment[j2].Trim();
+												if (sValue.Trim().Length > 0) break;
+											}
+
+											if (sValue.Length > 0)
+											{
+												#region [ Tratamento p/ nº marketplace do Leroy Merlin (ex: 0004536570-A) ]
 												if (sValue.Contains('-'))
 												{
 													vValue = sValue.Split('-');
 													sValue = vValue[0];
 												}
-											}
-											#endregion
+												#endregion
 
-											#region [ Tratamento p/ nº marketplace do Carrefour (ex: 2090221380001-A) ]
-											if (loja.Equals(Global.Cte.Loja.ArClube) && codDescr.codigo.Equals("016"))
+												sNumPedidoMktpIdentificado = sValue;
+												sOrigemMktpIdentificado = codDescr.codigo;
+												break;
+											}
+
+											#endregion
+										}
+										else
+										{
+											#region [ Demais marketplaces ]
+											// Obtém a parte relativa ao nº pedido marketplace
+											sValue = vComment[j].Substring(sMktpOrderDescriptor.Length).Trim();
+											if (sValue.Length > 0)
 											{
-												if (sValue.Contains('-'))
+												sNumPedidoMktpCompletoIdentificado = sValue;
+
+												#region [ Tratamento p/ nº marketplace do Walmart (ex: 78381578-1796973) ]
+												if (loja.Equals(Global.Cte.Loja.ArClube) && codDescr.codigo.Equals("009"))
 												{
-													vValue = sValue.Split('-');
-													sValue = vValue[0];
+													if (sValue.Contains('-'))
+													{
+														vValue = sValue.Split('-');
+														sValue = vValue[0];
+													}
 												}
+												#endregion
+
+												#region [ Tratamento p/ nº marketplace do Carrefour (ex: 2090221380001-A) ]
+												if (loja.Equals(Global.Cte.Loja.ArClube) && codDescr.codigo.Equals("016"))
+												{
+													if (sValue.Contains('-'))
+													{
+														vValue = sValue.Split('-');
+														sValue = vValue[0];
+													}
+												}
+												#endregion
+
+
+												sNumPedidoMktpIdentificado = sValue;
+												sOrigemMktpIdentificado = codDescr.codigo;
+												break;
 											}
 											#endregion
-
-											#region [ Tratamento p/ nº marketplace do Leroy Merlin (ex: 0004536570-A) ]
-											if (loja.Equals(Global.Cte.Loja.ArClube) && codDescr.codigo.Equals("017"))
-											{
-												if (sValue.Contains('-'))
-												{
-													vValue = sValue.Split('-');
-													sValue = vValue[0];
-												}
-											}
-											#endregion
-
-
-											sNumPedidoMktpIdentificado = sValue;
-											sOrigemMktpIdentificado = codDescr.codigo;
-											break;
 										}
 									}
 								}
@@ -2020,6 +2051,42 @@ namespace ART3WebAPI.Models.Domains
 						if (msg_erro.Length > 0) msg += "\n" + msg_erro;
 						Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
 						throw new Exception(msg);
+					}
+				}
+				#endregion
+
+				#region [ Para pedidos de marketplace, grava dados de Payments ]
+				if (skyHubInfo != null)
+				{
+					if ((skyHubInfo.code ?? "").Trim().Length > 0)
+					{
+						foreach (Magento2SkyhubDataSourcePayment payment in skyHubInfo.payments)
+						{
+							decodeSkyhubMktpPayment = new MagentoErpPedidoXmlDecodeSkyhubMktpPayment();
+							decodeSkyhubMktpPayment.id_magento_api_pedido_xml = insertPedidoXml.id;
+							if (payment.value != null) decodeSkyhubMktpPayment.value = Global.converteNumeroDecimal(payment.value);
+							if (payment.type != null) decodeSkyhubMktpPayment.type = payment.type;
+							if (payment.transaction_date != null) decodeSkyhubMktpPayment.transaction_date = payment.transaction_date;
+							if (payment.status != null) decodeSkyhubMktpPayment.status = payment.status;
+							if (payment.parcels != null) decodeSkyhubMktpPayment.parcels = (int)Global.converteInteiro(payment.parcels);
+							if (payment.method != null) decodeSkyhubMktpPayment.method = payment.method;
+							if (payment.description != null) decodeSkyhubMktpPayment.description = payment.description;
+							if (payment.card_issuer != null) decodeSkyhubMktpPayment.card_issuer = payment.card_issuer;
+							if (payment.autorization_id != null) decodeSkyhubMktpPayment.autorization_id = payment.autorization_id;
+							if (payment.sefaz.type_integration != null) decodeSkyhubMktpPayment.sefaz_type_integration = payment.sefaz.type_integration;
+							if (payment.sefaz.payment_indicator != null) decodeSkyhubMktpPayment.sefaz_payment_indicator = payment.sefaz.payment_indicator;
+							if (payment.sefaz.name_payment != null) decodeSkyhubMktpPayment.sefaz_name_payment = payment.sefaz.name_payment;
+							if (payment.sefaz.name_card_issuer != null) decodeSkyhubMktpPayment.sefaz_name_card_issuer = payment.sefaz.name_card_issuer;
+							if (payment.sefaz.id_payment != null) decodeSkyhubMktpPayment.sefaz_id_payment = payment.sefaz.id_payment;
+							if (payment.sefaz.id_card_issuer != null) decodeSkyhubMktpPayment.sefaz_id_card_issuer = payment.sefaz.id_card_issuer;
+							if (!MagentoApiDAO.insertMagentoPedidoXmlDecodeSkyhubMktpPayment(httpRequestId, decodeSkyhubMktpPayment, out msg_erro))
+							{
+								msg = "Falha ao tentar gravar no BD os dados de pagamento do pedido informados pelo marketplace (method=" + decodeSkyhubMktpPayment.method + ")!";
+								if (msg_erro.Length > 0) msg += "\n" + msg_erro;
+								Global.gravaLogAtividade(httpRequestId, NOME_DESTA_ROTINA + " - " + msg);
+								throw new Exception(msg);
+							}
+						}
 					}
 				}
 				#endregion

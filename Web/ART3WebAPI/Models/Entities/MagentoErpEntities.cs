@@ -208,4 +208,27 @@ namespace ART3WebAPI.Models.Entities
 		public int store_id { get; set; }
 	}
 	#endregion
+
+	#region [ MagentoErpPedidoXmlDecodeSkyhubMktpPayment ]
+	public class MagentoErpPedidoXmlDecodeSkyhubMktpPayment
+	{
+		public int id { get; set; }
+		public int id_magento_api_pedido_xml { get; set; }
+		public decimal? value { get; set; } = null;
+		public string type { get; set; }
+		public string transaction_date { get; set; }
+		public string status { get; set; }
+		public int? parcels { get; set; } = null;
+		public string method { get; set; }
+		public string description { get; set; }
+		public string card_issuer { get; set; }
+		public string autorization_id { get; set; }
+		public string sefaz_type_integration { get; set; }
+		public string sefaz_payment_indicator { get; set; }
+		public string sefaz_name_payment { get; set; }
+		public string sefaz_name_card_issuer { get; set; }
+		public string sefaz_id_payment { get; set; }
+		public string sefaz_id_card_issuer { get; set; }
+	}
+	#endregion
 }

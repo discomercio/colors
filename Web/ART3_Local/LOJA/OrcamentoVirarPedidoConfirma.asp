@@ -1149,7 +1149,7 @@
 		end if
 	
 '	RA Líquido
-	dim perc_desagio_RA, perc_limite_RA_sem_desagio
+	dim perc_desagio_RA, perc_limite_RA_sem_desagio, perc_desagio_RA_liquida
 	dim vl_limite_mensal, vl_limite_mensal_consumido, vl_limite_mensal_disponivel
 	if alerta = "" then
 		perc_desagio_RA = obtem_perc_desagio_RA_do_indicador(r_orcamento.orcamentista)
@@ -1404,11 +1404,30 @@
 					'	CUSTO FINANCEIRO FORNECEDOR
 						rs("custoFinancFornecTipoParcelamento") = c_custoFinancFornecTipoParcelamento
 						rs("custoFinancFornecQtdeParcelas") = c_custoFinancFornecQtdeParcelas
+						
 						rs("vl_total_NF") = vl_total_NF
 						rs("vl_total_RA") = vl_total_RA
 						rs("perc_RT") = perc_RT
 						rs("perc_desagio_RA") = perc_desagio_RA
 						rs("perc_limite_RA_sem_desagio") = perc_limite_RA_sem_desagio
+
+						'01/02/2018: os pedidos do Arclube usam o RA para incluir o valor do frete e, portanto, não devem ter deságio do RA
+						if Cstr(loja) <> Cstr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) then
+							perc_desagio_RA_liquida = r_orcamento.perc_desagio_RA_liquida
+						else
+							perc_desagio_RA_liquida = 0
+							end if
+
+						vl_total_RA_liquido = CCur(vl_total_RA - (perc_desagio_RA_liquida/100)*vl_total_RA)
+						vl_total_RA_liquido = converte_numero(formata_moeda(vl_total_RA_liquido))
+
+						rs("vl_total_RA_liquido") = vl_total_RA_liquido
+						rs("qtde_parcelas_desagio_RA") = 0
+						if vl_total_RA <> 0 then
+							rs("st_tem_desagio_RA") = 1
+						else
+							rs("st_tem_desagio_RA") = 0
+							end if
 
 					else
 					'	PEDIDO FILHOTE
@@ -1771,32 +1790,7 @@
 		
 					s = "UPDATE t_PEDIDO SET st_entrega='" & s & "' WHERE pedido='" & id_pedido & "'"
 					cn.Execute(s)
-
-					if Not calcula_total_RA_liquido_BD(id_pedido, vl_total_RA_liquido, msg_erro) then
-					'	~~~~~~~~~~~~~~~~
-						cn.RollbackTrans
-					'	~~~~~~~~~~~~~~~~
-						Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
-						end if
-
-					if indice_pedido = 1 then
-						s = "SELECT * FROM t_PEDIDO WHERE (pedido='" & id_pedido & "')"
-						if rs.State <> 0 then rs.Close
-						rs.open s, cn
-						if rs.Eof then
-							alerta = "Falha ao consultar o registro do novo pedido (" & id_pedido & ")"
-						else
-							rs("vl_total_RA_liquido") = vl_total_RA_liquido
-							rs("qtde_parcelas_desagio_RA") = 0
-							if vl_total_RA <> 0 then
-								rs("st_tem_desagio_RA") = 1
-							else
-								rs("st_tem_desagio_RA") = 0
-								end if
-							rs.Update
-							end if
-						end if
-
+					
 					if indice_pedido = 1 then
 				'		SENHAS DE AUTORIZAÇÃO PARA DESCONTO SUPERIOR
 						for k = Lbound(v_desconto) to Ubound(v_desconto)
@@ -2449,7 +2443,7 @@
 				next
 
 			if s_log <> "" then
-				grava_log usuario, loja, id_pedido, r_orcamento.id_cliente, OP_LOG_ORCAMENTO_VIROU_PEDIDO, s_log
+				grava_log usuario, loja, id_pedido_base, r_orcamento.id_cliente, OP_LOG_ORCAMENTO_VIROU_PEDIDO, s_log
 				end if
 			end if 'if alerta = ""
 

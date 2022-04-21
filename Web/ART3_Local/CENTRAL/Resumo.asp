@@ -1029,6 +1029,16 @@ var blnFlagOk,idx;
 			"" & chr(13)
 		end if
 
+	if operacao_permitida(OP_CEN_REL_COMISSAO_INDICADORES, s_lista_operacoes_permitidas) then
+		strScript = strScript & _
+			" // RELATÓRIO DE PEDIDOS INDICADORES (VIA NFS-e)" & chr(13) & _
+			"	iop++;" & chr(13) & _
+			"	if (f.rb_rel[iop].checked) {" & chr(13) & _
+			"		s_dest='RelComissaoIndicadoresNFSeP01Filtro.asp';" & chr(13) & _
+			"		}" & chr(13) & _
+			"" & chr(13)
+		end if
+
    ' if operacao_permitida(OP_CEN_REL_PEDIDOS_INDICADORES_PAGAMENTO , s_lista_operacoes_permitidas) then
 	'	strScript = strScript & _
 	'		" // Comissão de indicadores: Cadastrar NF " & chr(13) & _
@@ -2941,6 +2951,11 @@ if (operacao_permitida(OP_CEN_PAGTO_PARCIAL, s_lista_operacoes_permitidas) Or _
 		qtde_rel_com=qtde_rel_com+1
 		qtde_total_rel=qtde_total_rel+1
 		end if
+	if operacao_permitida(OP_CEN_REL_COMISSAO_INDICADORES, s_lista_operacoes_permitidas) then
+	'	RELATÓRIO PEDIDOS INDICADORES (VIA NFS-e)
+		qtde_rel_com=qtde_rel_com+1
+		qtde_total_rel=qtde_total_rel+1
+		end if
    ' if operacao_permitida(OP_CEN_REL_PEDIDOS_INDICADORES_PAGAMENTO, s_lista_operacoes_permitidas) then
 	'	comissão indicadores cadastra nf
 	'	qtde_rel_com=qtde_rel_com+1
@@ -3395,6 +3410,18 @@ if (operacao_permitida(OP_CEN_PAGTO_PARCIAL, s_lista_operacoes_permitidas) Or _
 			<input type="radio" id="rb_rel" name="rb_rel" value="<%=Cstr(idx)%>" class="CBOX" <%=s%>><span class="rbLink" onclick="fREL.rb_rel[<%=Cstr(idx)%>].click(); if (fREL.rb_rel[<%=Cstr(idx)%>].checked) fREL.bEXECUTAR.click();"
 				>Relatório de Pedidos Indicadores</span>
 	<% end if %>
+
+	<%	' RELATÓRIO: RELATÓRIO DE PEDIDOS INDICADORES (VIA NFSe)
+		if operacao_permitida(OP_CEN_REL_COMISSAO_INDICADORES, s_lista_operacoes_permitidas) then
+			idx=idx+1
+			Response.Write s_separacao
+			s_separacao = "<br>" 
+			if (qtde_total_rel = 1) then s=" checked" else s=""
+	%>
+			<input type="radio" id="rb_rel" name="rb_rel" value="<%=Cstr(idx)%>" class="CBOX" <%=s%>><span class="rbLink" onclick="fREL.rb_rel[<%=Cstr(idx)%>].click(); if (fREL.rb_rel[<%=Cstr(idx)%>].checked) fREL.bEXECUTAR.click();"
+				>Relatório de Pedidos Indicadores (via NFS-e)</span>
+	<% end if %>
+
     <%	' COMISSÃO INDICADORES: CADASTRA NF
 		'if operacao_permitida(OP_CEN_REL_PEDIDOS_INDICADORES_PAGAMENTO, s_lista_operacoes_permitidas) then
 		'	idx=idx+1

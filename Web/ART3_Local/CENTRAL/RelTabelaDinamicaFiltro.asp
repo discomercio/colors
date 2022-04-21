@@ -430,6 +430,14 @@ end function
 			$(".SpnDETPED").css("color", "red");
 		}
 
+		if ($("#ckb_COL_FRETE_DETALHADO").is(":checked")) {
+			$("#ckb_COL_FRETE").prop("checked", true);
+		}
+
+		if (!$("#ckb_COL_FRETE").is(":checked")) {
+			$("#ckb_COL_FRETE_DETALHADO").prop("checked", false);
+		}
+
 		$("#ckb_CONSOLIDAR_PEDIDO").change(function () {
 			if ($(this).is(":checked")) {
 				$(".SpnDETPROD").css("color", "red");
@@ -438,6 +446,18 @@ end function
 			else {
 				$(".SpnDETPROD").css("color", "black");
 				$(".SpnDETPED").css("color", "red");
+			}
+		});
+
+		$("#ckb_COL_FRETE").change(function () {
+			if (!$(this).is(":checked")) {
+				$("#ckb_COL_FRETE_DETALHADO").prop("checked", false);
+			}
+		});
+
+		$("#ckb_COL_FRETE_DETALHADO").change(function () {
+			if ($(this).is(":checked")) {
+				$("#ckb_COL_FRETE").prop("checked", true);
 			}
 		});
 	});
@@ -465,6 +485,7 @@ function marcarDesmarcarComercial() {
     }
     else {
         $(".CKB_COMERCIAL").prop("checked", false);
+		$(".CKB_COMERCIAL_SUB_OPCAO").prop("checked", false);
     }
 }
 
@@ -487,7 +508,7 @@ function marcarTodos() {
 }
 
 function desmarcarTodos() {
-    $(".CKB_CADASTRO, .CKB_COMERCIAL, .CKB_FINANCEIRO").each(function() {
+	$(".CKB_CADASTRO, .CKB_COMERCIAL, .CKB_COMERCIAL_SUB_OPCAO, .CKB_FINANCEIRO").each(function() {
         if ($(this).is(":checked")) {
             $(this).trigger('click');
         }
@@ -1252,7 +1273,12 @@ function exibe_botao_confirmar() {
                         <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_FRETE|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_COMERCIAL" tabindex="-1" id="ckb_COL_FRETE" name="ckb_COL_FRETE"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_FRETE.click();">Valor Frete</span><br />
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_FRETE.click();">Valor Frete</span
+							><span class="C" style="cursor:default">&nbsp(</span
+                        <%	s_checked = ""
+					        if (InStr(s_campos_saida_default, "|ckb_COL_FRETE_DETALHADO|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+							><input type="checkbox" class="CKB_COMERCIAL_SUB_OPCAO" tabindex="-1" id="ckb_COL_FRETE_DETALHADO" name="ckb_COL_FRETE_DETALHADO" valign="bottom" style="padding:0px;margin:0px;"
+							value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_FRETE_DETALHADO.click();">detalhado)</span><br />
 					</fieldset>
 				</td>
 			</tr>

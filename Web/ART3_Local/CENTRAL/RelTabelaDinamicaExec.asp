@@ -41,6 +41,13 @@
 	const MSO_NUMBER_FORMAT_MOEDA = "\#\#\#\,\#\#\#\,\#\#0\.00"
 	const MSO_NUMBER_FORMAT_TEXTO = "\@"
 	
+	class cl_TIPO_FRETE
+		dim codigo
+		dim descricao
+		dim colSQL
+		dim blnFreteDevolucao
+		end class
+
 	dim usuario
 	usuario = Trim(Session("usuario_atual"))
 	if (usuario = "") then usuario = Trim(Request("c_usuario_sessao"))
@@ -116,7 +123,7 @@
 	dim ckb_COL_CICLO, ckb_COL_POSICAO_MERCADO, ckb_COL_MARCA, ckb_COL_TRANSPORTADORA, ckb_COL_ENTREGA_IMEDIATA, ckb_COL_DT_ENTREGA, ckb_COL_DT_PREVISAO_ETG_TRANSP, ckb_COL_DT_RECEB_CLIENTE
 	dim ckb_COL_CIDADE, ckb_COL_UF, ckb_COL_CIDADE_ETG, ckb_COL_UF_ETG
 	dim ckb_COL_QTDE_PARCELAS, ckb_COL_MEIO_PAGAMENTO, ckb_COL_VL_PAGO_CARTAO_INTERNET, ckb_COL_CHAVE_NFE, ckb_COL_TEL, ckb_COL_EMAIL
-    dim ckb_COL_PERC_DESC, ckb_COL_CUBAGEM, ckb_COL_PESO, ckb_COL_QTDE_VOLUMES, ckb_COL_FRETE
+    dim ckb_COL_PERC_DESC, ckb_COL_CUBAGEM, ckb_COL_PESO, ckb_COL_QTDE_VOLUMES, ckb_COL_FRETE, ckb_COL_FRETE_DETALHADO
     dim ckb_COL_INDICADOR_EMAILS, ckb_COL_INDICADOR_CPF_CNPJ, ckb_COL_INDICADOR_ENDERECO, ckb_COL_INDICADOR_CIDADE, ckb_COL_INDICADOR_UF
 	
 	ckb_COL_DATA = Trim(Request.Form("ckb_COL_DATA"))
@@ -173,6 +180,7 @@
 	ckb_COL_PESO = Trim(Request.Form("ckb_COL_PESO"))
 	ckb_COL_QTDE_VOLUMES = Trim(Request.Form("ckb_COL_QTDE_VOLUMES"))
 	ckb_COL_FRETE = Trim(Request.Form("ckb_COL_FRETE"))
+	ckb_COL_FRETE_DETALHADO = Trim(Request.Form("ckb_COL_FRETE_DETALHADO"))
 	ckb_COL_INDICADOR_EMAILS = Trim(Request.Form("ckb_COL_INDICADOR_EMAILS"))
 	ckb_COL_INDICADOR_ENDERECO = Trim(Request.Form("ckb_COL_INDICADOR_ENDERECO"))
 	ckb_COL_INDICADOR_CIDADE = Trim(Request.Form("ckb_COL_INDICADOR_CIDADE"))
@@ -226,6 +234,7 @@
 		if ckb_COL_PESO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_PESO" & "|"
 		if ckb_COL_QTDE_VOLUMES <> "" then s_campos_saida = s_campos_saida & "ckb_COL_QTDE_VOLUMES" & "|"
 		if ckb_COL_FRETE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_FRETE" & "|"
+		if ckb_COL_FRETE_DETALHADO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_FRETE_DETALHADO" & "|"
 		if ckb_COL_VL_CUSTO_ULT_ENTRADA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_CUSTO_ULT_ENTRADA" & "|"
 		if ckb_COL_VL_CUSTO_REAL <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_CUSTO_REAL" & "|"
 		if ckb_COL_VL_LISTA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_VL_LISTA" & "|"
@@ -383,6 +392,7 @@ dim s_vICMSUFDest, vl_vICMSUFDest, s_vICMSUFDest_unitario, vl_vICMSUFDest_unitar
 dim v
 dim vNFeAConsultar, vNFeChave, iQI
 dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptografadaBd, senha_decodificada, chave, s_pesq_nf, idxNFeLocalizada
+dim vTipoFrete
 
 	n_reg_total_passo1 = -1
 
@@ -453,6 +463,38 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 		loop
 
 	if s_where_lista_codigo_frete_devolucao <> "" then s_where_lista_codigo_frete_devolucao = " (" & s_where_lista_codigo_frete_devolucao & ")"
+
+	if (ckb_COL_FRETE <> "") And (ckb_COL_FRETE_DETALHADO <> "") then
+	'	OBTÉM AS INFORMAÇÕES SOBRE CADA TIPO DE FRETE
+		redim vTipoFrete(0)
+		set vTipoFrete(UBound(vTipoFrete)) = new cl_TIPO_FRETE
+		vTipoFrete(UBound(vTipoFrete)).codigo = ""
+
+	'	ORDENA POR parametro_campo_texto PARA QUE O FRETE DE DEVOLUÇÃO FIQUE NO FINAL
+		s = "SELECT * FROM t_CODIGO_DESCRICAO WHERE (grupo = '" & GRUPO_T_CODIGO_DESCRICAO__PEDIDO_TIPO_FRETE & "') ORDER BY parametro_campo_texto, ordenacao"
+		if r.State <> 0 then r.Close
+		r.open s, cn
+		do while Not r.Eof
+			if vTipoFrete(UBound(vTipoFrete)).codigo <> "" then
+				redim preserve vTipoFrete(UBound(vTipoFrete)+1)
+				set vTipoFrete(UBound(vTipoFrete)) = new cl_TIPO_FRETE
+				vTipoFrete(UBound(vTipoFrete)).codigo = ""
+				end if
+			with vTipoFrete(UBound(vTipoFrete))
+				.codigo = Trim("" & r("codigo"))
+				.descricao = Trim("" & r("descricao"))
+				.colSQL = "vlFrete_" & Trim("" & r("codigo"))
+				if Trim("" & r("parametro_campo_texto")) = "DEV" then
+					.blnFreteDevolucao = True
+				else
+					.blnFreteDevolucao = False
+					end if
+				end with
+
+			r.MoveNext
+			loop
+		end if
+
 
 '	CRITÉRIOS COMUNS
 '	================
@@ -750,8 +792,27 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 		end if
 
 	if ckb_COL_FRETE <> "" then
+		if ckb_COL_FRETE_DETALHADO = "" then
+			s_sql = s_sql & _
+						", (SELECT Coalesce(SUM(vl_frete),0) AS vl_frete FROM t_PEDIDO_FRETE WHERE (t_PEDIDO_FRETE.pedido=t_PEDIDO.pedido)" & s_where_aux & ") AS vl_frete"
+		else
+			for i=LBound(vTipoFrete) to UBound(vTipoFrete)
+				with vTipoFrete(i)
+					if .codigo <> "" then
+						'QUANDO A LISTAGEM É ITEM A ITEM, O VALOR DO FRETE DE DEVOLUÇÃO SOMENTE É EXIBIDO NOS ITENS DEVOLVIDOS E VICE-VERSA
+						if (ckb_CONSOLIDAR_PEDIDO = "") And .blnFreteDevolucao then
+							s_sql = s_sql & _
+										", 0 AS " & .colSQL
+						else
+							s_sql = s_sql & _
+										", (SELECT Coalesce(SUM(vl_frete),0) AS vl_frete FROM t_PEDIDO_FRETE WHERE (t_PEDIDO_FRETE.pedido=t_PEDIDO.pedido) AND (codigo_tipo_frete = '" & .codigo & "')) AS " & .colSQL
+							end if
+						end if
+					end with
+				next
+			end if
+
 		s_sql = s_sql & _
-					", (SELECT Coalesce(SUM(vl_frete),0) AS vl_frete FROM t_PEDIDO_FRETE WHERE (t_PEDIDO_FRETE.pedido=t_PEDIDO.pedido)" & s_where_aux & ") AS vl_frete" & _
 					", (SELECT Coalesce(SUM(qtde * preco_venda),0) AS vl_total_produtos_calc_frete FROM t_PEDIDO_ITEM WHERE (t_PEDIDO_ITEM.pedido = t_PEDIDO.pedido)) AS vl_total_produtos_calc_frete"
 		end if
 
@@ -990,8 +1051,21 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 					", parcela_unica"
 
 		if ckb_COL_FRETE <> "" then
+			if ckb_COL_FRETE_DETALHADO = "" then
+				s_sql_aux = s_sql_aux & _
+						", vl_frete"
+			else
+				for i=LBound(vTipoFrete) to UBound(vTipoFrete)
+					with vTipoFrete(i)
+						if .codigo <> "" then
+							s_sql_aux = s_sql_aux & _
+									", " & .colSQL
+							end if
+						end with
+					next
+				end if
+
 			s_sql_aux = s_sql_aux & _
-					", vl_frete" & _
 					", vl_total_produtos_calc_frete"
 			end if
 		
@@ -1104,8 +1178,21 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 					", parcela_unica"
 
 		if ckb_COL_FRETE <> "" then
+			if ckb_COL_FRETE_DETALHADO = "" then
+				s_sql = s_sql & _
+						", vl_frete"
+			else
+				for i=LBound(vTipoFrete) to UBound(vTipoFrete)
+					with vTipoFrete(i)
+						if .codigo <> "" then
+							s_sql = s_sql & _
+									", " & .colSQL
+							end if
+						end with
+					next
+				end if
+
 			s_sql = s_sql & _
-					", vl_frete" & _
 					", vl_total_produtos_calc_frete"
 			end if
 
@@ -1226,8 +1313,27 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 			end if
 
 		if ckb_COL_FRETE <> "" then
+			if ckb_COL_FRETE_DETALHADO = "" then
+				s_sql = s_sql & _
+							", (SELECT Coalesce(SUM(vl_frete),0) AS vl_frete FROM t_PEDIDO_FRETE WHERE (t_PEDIDO_FRETE.pedido=t_PEDIDO.pedido)" & s_where_aux & ") AS vl_frete"
+			else
+				for i=LBound(vTipoFrete) to UBound(vTipoFrete)
+					with vTipoFrete(i)
+						if .codigo <> "" then
+							'QUANDO A LISTAGEM É ITEM A ITEM, O VALOR DO FRETE DE DEVOLUÇÃO SOMENTE É EXIBIDO NOS ITENS DEVOLVIDOS E VICE-VERSA
+							if (ckb_CONSOLIDAR_PEDIDO = "") And (Not .blnFreteDevolucao) then
+								s_sql = s_sql & _
+											", 0 AS " & .colSQL
+							else
+								s_sql = s_sql & _
+											", (SELECT Coalesce(SUM(vl_frete),0) AS vl_frete FROM t_PEDIDO_FRETE WHERE (t_PEDIDO_FRETE.pedido=t_PEDIDO.pedido) AND (codigo_tipo_frete = '" & .codigo & "')) AS " & .colSQL
+								end if
+							end if
+						end with
+					next
+				end if
+
 			s_sql = s_sql & _
-						", (SELECT Coalesce(SUM(vl_frete),0) AS vl_frete FROM t_PEDIDO_FRETE WHERE (t_PEDIDO_FRETE.pedido=t_PEDIDO.pedido)" & s_where_aux & ") AS vl_frete" & _
 						", (SELECT Coalesce(SUM(qtde * preco_venda),0) AS vl_total_produtos_calc_frete FROM t_PEDIDO_ITEM_DEVOLVIDO WHERE (t_PEDIDO_ITEM_DEVOLVIDO.pedido = t_PEDIDO.pedido)) AS vl_total_produtos_calc_frete"
 			end if
 
@@ -1475,7 +1581,21 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 	if ckb_COL_CUBAGEM <> "" then x_cab = x_cab & "Cubagem;"
 	if ckb_COL_PESO <> "" then x_cab = x_cab & "Peso;"
 	if ckb_COL_QTDE_VOLUMES <> "" then x_cab = x_cab & "Volumes;"
-	if ckb_COL_FRETE <> "" then x_cab = x_cab & "VL Frete;"
+	
+	if ckb_COL_FRETE <> "" then
+		if ckb_COL_FRETE_DETALHADO = "" then
+			x_cab = x_cab & "VL Frete;"
+		else
+			for i=LBound(vTipoFrete) to UBound(vTipoFrete)
+				with vTipoFrete(i)
+					if .codigo <> "" then
+						x_cab = x_cab & "VL Frete (" & .descricao & ");"
+						end if
+					end with
+				next
+			end if
+		end if
+
 	if ckb_COL_VL_CUSTO_ULT_ENTRADA <> "" then x_cab = x_cab & "VL Custo (Últ Entrada);"
 	if ckb_COL_VL_CUSTO_REAL <> "" then x_cab = x_cab & "VL Custo (Real);"
 	if ckb_COL_VL_LISTA <> "" then x_cab = x_cab & "VL Lista;"
@@ -1908,20 +2028,49 @@ dim strNfeT1ServidorBd, strNfeT1NomeBd, strNfeT1UsuarioBd, strNfeT1SenhaCriptogr
 
 		'> FRETE
 			if ckb_COL_FRETE <> "" then
-				if ckb_CONSOLIDAR_PEDIDO = "" then
-				'	CALCULA O VALOR PROPORCIONAL DO FRETE (LEMBRANDO QUE O VALOR DO FRETE OBTIDO É O TOTAL EM FRETES, MAS OS FRETES DE DEVOLUÇÃO SÃO COMPUTADOS APENAS P/ AS DEVOLUÇÕES)
-					vl_frete_proporcional = 0
-					if r("vl_total_produtos_calc_frete") <> 0 then
-						vl_frete_proporcional = (Abs(CLng(s_qtde)) * r("preco_venda")) * (r("vl_frete") / r("vl_total_produtos_calc_frete"))
-						end if
-					s = formata_moeda(vl_frete_proporcional)
-					if s = "" then s = 0
-					x = x & s & ";"
-				else
-					s = formata_moeda(r("vl_frete"))
-					if s = "" then s = 0
-					x = x & s & ";"
-					end if
+				if ckb_COL_FRETE_DETALHADO = "" then
+					if ckb_CONSOLIDAR_PEDIDO = "" then
+					'	CALCULA O VALOR PROPORCIONAL DO FRETE (LEMBRANDO QUE O VALOR DO FRETE OBTIDO É O TOTAL EM FRETES, MAS OS FRETES DE DEVOLUÇÃO SÃO COMPUTADOS APENAS P/ AS DEVOLUÇÕES)
+						vl_frete_proporcional = 0
+						if r("vl_total_produtos_calc_frete") <> 0 then
+							vl_frete_proporcional = (Abs(CLng(s_qtde)) * r("preco_venda")) * (r("vl_frete") / r("vl_total_produtos_calc_frete"))
+							end if
+						s = formata_moeda(vl_frete_proporcional)
+						if s = "" then s = 0
+						x = x & s & ";"
+					else 'if ckb_CONSOLIDAR_PEDIDO = ""
+						s = formata_moeda(r("vl_frete"))
+						if s = "" then s = 0
+						x = x & s & ";"
+						end if 'if ckb_CONSOLIDAR_PEDIDO = ""
+				else 'if ckb_COL_FRETE_DETALHADO = ""
+					if ckb_CONSOLIDAR_PEDIDO = "" then
+					'	CALCULA O VALOR PROPORCIONAL DO FRETE (LEMBRANDO QUE O VALOR DO FRETE OBTIDO É O TOTAL EM FRETES, MAS OS FRETES DE DEVOLUÇÃO SÃO COMPUTADOS APENAS P/ AS DEVOLUÇÕES)
+						for i=LBound(vTipoFrete) to UBound(vTipoFrete)
+							with vTipoFrete(i)
+								if .codigo <> "" then
+									vl_frete_proporcional = 0
+									if r("vl_total_produtos_calc_frete") <> 0 then
+										vl_frete_proporcional = (Abs(CLng(s_qtde)) * r("preco_venda")) * (r(.colSQL) / r("vl_total_produtos_calc_frete"))
+										end if
+									s = formata_moeda(vl_frete_proporcional)
+									if s = "" then s = 0
+									x = x & s & ";"
+									end if
+								end with
+							next
+					else 'if ckb_CONSOLIDAR_PEDIDO = ""
+						for i=LBound(vTipoFrete) to UBound(vTipoFrete)
+							with vTipoFrete(i)
+								if .codigo <> "" then
+									s = formata_moeda(r(.colSQL))
+									if s = "" then s = 0
+									x = x & s & ";"
+									end if
+								end with
+							next
+						end if 'if ckb_CONSOLIDAR_PEDIDO = ""
+					end if 'if ckb_COL_FRETE_DETALHADO = ""
 			end if
 			
 		'> VALOR CUSTO (ÚLT ENTRADA)
