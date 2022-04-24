@@ -41,7 +41,7 @@
 	Const COD_FC_AMBIENTE = "L"
 
 	Const SERVIDOR_BD = "Win2019DB,29981"
-	Const NOME_BD = "Artven2DIS"
+	Const NOME_BD = "Artven2DIS_20220417"
 	Const USUARIO_BD = "artven2"
 	Const SCHEMA_BD = "dbo"
 	Const SENHA_BD = "000000007bbddfed3b85e97d47b91b"
@@ -68,27 +68,7 @@
 	Const USUARIO_BD_CEP = "CEP_user"
 	Const SENHA_BD_CEP = "000000007bbddfed3b85e97d47b91b"
 
-'	A NUMERAÇÃO DO SUFIXO REFERE-SE À NUMERAÇÃO DO CNPJ
-	Const ID_NFE_EMITENTE__OLD01_01 = 1001
-	Const ID_NFE_EMITENTE__OLD03_01 = 2001
-	Const ID_NFE_EMITENTE__OLD02_02 = 3002
-	Const ID_NFE_EMITENTE__DIS_01 = 4001
-	Const ID_NFE_EMITENTE__DIS_03 = 4003
-    Const ID_NFE_EMITENTE__DIS_903 = 4903
 
-	Const DIR_TARGET_ONE_PDF_DANFE_EMITENTE__OLD01_01 = "C:\Program Files\Target One\E@syway NFe - S1\Integracao\PDF"
-	Const DIR_TARGET_ONE_PDF_DANFE_EMITENTE__OLD02_02 = "C:\Program Files\Target One\E@syway NFe - S3\Integracao\PDF"
-	Const DIR_TARGET_ONE_PDF_DANFE_EMITENTE__OLD03_01 = "C:\Program Files\Target One\E@syway NFe - S2\Integracao\PDF"
-	Const DIR_TARGET_ONE_PDF_DANFE_EMITENTE__DIS_01 = "D:\Work\Target One\E@syway NFe 4.00 P2\Integracao\PDF"
-	Const DIR_TARGET_ONE_PDF_DANFE_EMITENTE__DIS_03 = "D:\Work\Target One\E@syway NFe 4.00 P1\Integracao\PDF"
-    Const DIR_TARGET_ONE_PDF_DANFE_EMITENTE__DIS_903 = "D:\Work\Target One\E@syway NFe 4.00 P1\Integracao\PDF"
-	
-	Const DIR_TARGET_ONE_XML_NFE_EMITENTE__OLD01_01 = "C:\Program Files\Target One\E@syway NFe - S1\Integracao\XML"
-	Const DIR_TARGET_ONE_XML_NFE_EMITENTE__OLD02_02 = "C:\Program Files\Target One\E@syway NFe - S3\Integracao\XML"
-	Const DIR_TARGET_ONE_XML_NFE_EMITENTE__OLD03_01 = "C:\Program Files\Target One\E@syway NFe - S2\Integracao\XML"
-	Const DIR_TARGET_ONE_XML_NFE_EMITENTE__DIS_01 = "D:\Work\Target One\E@syway NFe 4.00 P2\Integracao\XML"
-	Const DIR_TARGET_ONE_XML_NFE_EMITENTE__DIS_03 = "D:\Work\Target One\E@syway NFe 4.00 P1\Integracao\XML"
-    Const DIR_TARGET_ONE_XML_NFE_EMITENTE__DIS_903 = "D:\Work\Target One\E@syway NFe 4.00 P1\Integracao\XML"
 
 	Const FATOR_BD = "1209"
 	

@@ -1856,7 +1856,7 @@ end function
 ' - traz a nota fiscal de venda de um pedido, se houver
 function monta_link_para_DANFE(byval pedido, byval max_dias_emissao, byval html_elemento_interno_anchor)
 dim s, strSerieNFe, strNumeroNFe
-dim strArqDanfe, strArqDanfeNovo, strArqDanfeAntigo, strArqDanfeCompletoNovo, strArqDanfeCompletoAntigo, strPathArqDanfe, strLinkDanfe
+dim strArqDanfe, strArqDanfeAux, strArqDanfeCompleto, strPathArqDanfe, strLinkDanfe
 dim intIdNFeEmitente, lngSerieNFe, lngNumeroNFe, lngQtdeDiasEmissao, lngMaxDiasEmissao
 dim blnArqDanfeExiste
 dim fso
@@ -1868,7 +1868,7 @@ dim chave
 dim senha_decodificada
 dim strFlagCancelada
 dim blnQtdeDiasOK
-dim rP
+dim rP, rNfeEmitente, iCfg
 	
 	monta_link_para_DANFE = ""
 	
@@ -1919,6 +1919,8 @@ dim rP
 		exit function
 		end if
 	
+	set fso = Server.CreateObject("Scripting.FileSystemObject")
+	
 	blnArqDanfeExiste = false
 	do while (Not r.Eof) And (Not blnArqDanfeExiste)
 		intIdNFeEmitente = CInt(r("id_nfe_emitente"))
@@ -1928,59 +1930,38 @@ dim rP
 		strNumeroNFe = NFeFormataNumeroNF(lngNumeroNFe)
 		lngQtdeDiasEmissao = CLng(r("qtde_dias_emissao"))
 	
-		'r.Close
-		'set r = nothing
-
 	'	EXCEDE PERÍODO MÁXIMO EM QUE O DANFE FICA ACESSÍVEL NO PEDIDO?
 		blnQtdeDiasOK = true
-		if lngMaxDiasEmissao > 0 then
+		if lngMaxDiasEmissao <> -1 then
 			if lngQtdeDiasEmissao > lngMaxDiasEmissao then blnQtdeDiasOK = false 'exit function
 			end if
 			
 		if blnQtdeDiasOK then
-		'	MONTA O NOME DO ARQUIVO DA DANFE
-			strArqDanfe = ""
-			strArqDanfeAntigo = "NFe_" & strNumeroNFe & "_Série_" & strSerieNFe & ".PDF"
-			strArqDanfeNovo = "NFe_" & strNumeroNFe & "_Serie_" & strSerieNFe & ".PDF"
-			if intIdNFeEmitente = ID_NFE_EMITENTE__OLD01_01 then
-				strArqDanfeAntigo = "OLD01_" & strArqDanfeAntigo
-				strArqDanfeNovo = "OLD01_" & strArqDanfeNovo
-			elseif intIdNFeEmitente = ID_NFE_EMITENTE__OLD02_02 then
-				strArqDanfeAntigo = "OLD02_" & strArqDanfeAntigo
-				strArqDanfeNovo = "OLD02_" & strArqDanfeNovo
-			elseif intIdNFeEmitente = ID_NFE_EMITENTE__OLD03_01 then
-				strArqDanfeAntigo = "OLD03_" & strArqDanfeAntigo
-				strArqDanfeNovo = "OLD03_" & strArqDanfeNovo
-			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_01 then
-				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
-				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
-			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_03 then
-				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
-                strArqDanfeNovo = "DIS_" & strArqDanfeNovo
-			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_903 then
-				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
-				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
-			else
-				exit function
-				end if
+			set rNfeEmitente = le_nfe_emitente(intIdNFeEmitente)
 
-			strPathArqDanfe = obtem_path_pdf_danfe(intIdNFeEmitente)
-			strArqDanfeCompletoAntigo = strPathArqDanfe & "\" & strArqDanfeAntigo
-			strArqDanfeCompletoNovo = strPathArqDanfe & "\" & strArqDanfeNovo
-	
-			set fso = Server.CreateObject("Scripting.FileSystemObject")
-			blnArqDanfeExiste = fso.FileExists(strArqDanfeCompletoNovo)
-			if blnArqDanfeExiste then strArqDanfe = strArqDanfeNovo
-			if Not blnArqDanfeExiste then
-				blnArqDanfeExiste = fso.FileExists(strArqDanfeCompletoAntigo)
-				if blnArqDanfeExiste then strArqDanfe = strArqDanfeAntigo
-				end if
-			set fso = nothing
-			end if
+			for iCfg=LBound(rNfeEmitente.vCfgDanfe) to UBound(rNfeEmitente.vCfgDanfe)
+				if Trim("" & rNfeEmitente.vCfgDanfe(iCfg).convencao_nome_arq_pdf_danfe) <> "" then
+				'	MONTA O NOME DO ARQUIVO DA DANFE
+					strArqDanfe = ""
+					strArqDanfeAux = Trim("" & rNfeEmitente.vCfgDanfe(iCfg).convencao_nome_arq_pdf_danfe)
+					if strArqDanfeAux <> "" then
+						strArqDanfe = Replace(Replace(strArqDanfeAux, "[NUMERO_NFE]", strNumeroNFe), "[SERIE_NFE]", strSerieNFe)
+						strPathArqDanfe = Trim("" & rNfeEmitente.vCfgDanfe(iCfg).diretorio_pdf_danfe)
+						strArqDanfeCompleto = strPathArqDanfe & "\" & strArqDanfe
+						blnArqDanfeExiste = fso.FileExists(strArqDanfeCompleto)
+						end if
+					end if
+				
+				if blnArqDanfeExiste then exit for
+				next
+			end if 'if blnQtdeDiasOK
+		
 		r.MoveNext
 		loop
 
-	r.Close
+	set fso = nothing
+
+	if r.State <> 0 then r.Close
 	set r = nothing
 	if Not blnArqDanfeExiste then exit function
 	
@@ -2055,7 +2036,7 @@ end function
 ' Monta o link para a DANFE da NFe especificada, se existir
 function monta_link_para_DANFE_NFe(byval pedido, byval numero_NFe, byval max_dias_emissao, byval html_elemento_interno_anchor)
 dim s, strSerieNFe, strNumeroNFe
-dim strArqDanfe, strArqDanfeNovo, strArqDanfeAntigo, strArqDanfeCompletoNovo, strArqDanfeCompletoAntigo, strPathArqDanfe, strLinkDanfe
+dim strArqDanfe, strArqDanfeAux, strArqDanfeCompleto, strPathArqDanfe, strLinkDanfe
 dim intIdNFeEmitente, lngSerieNFe, lngNumeroNFe, lngQtdeDiasEmissao, lngMaxDiasEmissao
 dim blnArqDanfeExiste
 dim fso
@@ -2067,6 +2048,7 @@ dim chave
 dim senha_decodificada
 dim strFlagCancelada
 dim blnQtdeDiasOK
+dim rNfeEmitente, iCfg
 	
 	monta_link_para_DANFE_NFe = ""
 	
@@ -2114,11 +2096,13 @@ dim blnQtdeDiasOK
 	s = s & " ORDER BY" & _
 			" id DESC"
 	set r = cn.Execute(s)
-	if r.Eof then 
+	if r.Eof then
 		r.Close
 		set r = nothing
 		exit function
 		end if
+	
+	set fso = Server.CreateObject("Scripting.FileSystemObject")
 	
 	blnArqDanfeExiste = false
 	do while (Not r.Eof) And (Not blnArqDanfeExiste)
@@ -2129,59 +2113,38 @@ dim blnQtdeDiasOK
 		strNumeroNFe = NFeFormataNumeroNF(lngNumeroNFe)
 		lngQtdeDiasEmissao = CLng(r("qtde_dias_emissao"))
 	
-		'r.Close
-		'set r = nothing
-
 	'	EXCEDE PERÍODO MÁXIMO EM QUE O DANFE FICA ACESSÍVEL NO PEDIDO?
 		blnQtdeDiasOK = true
-		if lngMaxDiasEmissao > 0 then
+		if lngMaxDiasEmissao <> -1 then
 			if lngQtdeDiasEmissao > lngMaxDiasEmissao then blnQtdeDiasOK = false 'exit function
 			end if
 			
 		if blnQtdeDiasOK then
-		'	MONTA O NOME DO ARQUIVO DA DANFE
-			strArqDanfe = ""
-			strArqDanfeAntigo = "NFe_" & strNumeroNFe & "_Série_" & strSerieNFe & ".PDF"
-			strArqDanfeNovo = "NFe_" & strNumeroNFe & "_Serie_" & strSerieNFe & ".PDF"
-			if intIdNFeEmitente = ID_NFE_EMITENTE__OLD01_01 then
-				strArqDanfeAntigo = "OLD01_" & strArqDanfeAntigo
-				strArqDanfeNovo = "OLD01_" & strArqDanfeNovo
-			elseif intIdNFeEmitente = ID_NFE_EMITENTE__OLD02_02 then
-				strArqDanfeAntigo = "OLD02_" & strArqDanfeAntigo
-				strArqDanfeNovo = "OLD02_" & strArqDanfeNovo
-			elseif intIdNFeEmitente = ID_NFE_EMITENTE__OLD03_01 then
-				strArqDanfeAntigo = "OLD03_" & strArqDanfeAntigo
-				strArqDanfeNovo = "OLD03_" & strArqDanfeNovo
-			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_01 then
-				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
-				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
-			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_03 then
-				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
-                strArqDanfeNovo = "DIS_" & strArqDanfeNovo
-			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_903 then
-				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
-				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
-			else
-				exit function
-				end if
+			set rNfeEmitente = le_nfe_emitente(intIdNFeEmitente)
 
-			strPathArqDanfe = obtem_path_pdf_danfe(intIdNFeEmitente)
-			strArqDanfeCompletoAntigo = strPathArqDanfe & "\" & strArqDanfeAntigo
-			strArqDanfeCompletoNovo = strPathArqDanfe & "\" & strArqDanfeNovo
-	
-			set fso = Server.CreateObject("Scripting.FileSystemObject")
-			blnArqDanfeExiste = fso.FileExists(strArqDanfeCompletoNovo)
-			if blnArqDanfeExiste then strArqDanfe = strArqDanfeNovo
-			if Not blnArqDanfeExiste then
-				blnArqDanfeExiste = fso.FileExists(strArqDanfeCompletoAntigo)
-				if blnArqDanfeExiste then strArqDanfe = strArqDanfeAntigo
-				end if
-			set fso = nothing
-			end if
+			for iCfg=LBound(rNfeEmitente.vCfgDanfe) to UBound(rNfeEmitente.vCfgDanfe)
+				if Trim("" & rNfeEmitente.vCfgDanfe(iCfg).convencao_nome_arq_pdf_danfe) <> "" then
+				'	MONTA O NOME DO ARQUIVO DA DANFE
+					strArqDanfe = ""
+					strArqDanfeAux = Trim("" & rNfeEmitente.vCfgDanfe(iCfg).convencao_nome_arq_pdf_danfe)
+					if strArqDanfeAux <> "" then
+						strArqDanfe = Replace(Replace(strArqDanfeAux, "[NUMERO_NFE]", strNumeroNFe), "[SERIE_NFE]", strSerieNFe)
+						strPathArqDanfe = Trim("" & rNfeEmitente.vCfgDanfe(iCfg).diretorio_pdf_danfe)
+						strArqDanfeCompleto = strPathArqDanfe & "\" & strArqDanfe
+						blnArqDanfeExiste = fso.FileExists(strArqDanfeCompleto)
+						end if
+					end if
+				
+				if blnArqDanfeExiste then exit for
+				next
+			end if 'if blnQtdeDiasOK
+
 		r.MoveNext
 		loop
 
-	r.Close
+	set fso = nothing
+
+	if r.State <> 0 then r.Close
 	set r = nothing
 	if Not blnArqDanfeExiste then exit function
 	
@@ -2244,7 +2207,7 @@ dim blnQtdeDiasOK
 	
 '	NFE FOI CANCELADA?
 	if strFlagCancelada = "1" then exit function
-
+	
 	strLinkDanfe = "<a name='lnkDanfePedido' href='../Global/DownloadDanfe.asp?file=" & strArqDanfe & "&emitente=" & Cstr(intIdNFeEmitente) & "&force=true" & "' title='Clique para consultar o PDF da NFe'>" & html_elemento_interno_anchor & "</a>"
 	monta_link_para_DANFE_NFe = strLinkDanfe
 end function
@@ -2257,7 +2220,7 @@ end function
 
 function monta_link_para_ultima_DANFE(byval pedido, byval max_dias_emissao, byval html_elemento_interno_anchor)
 dim s, strSerieNFe, strNumeroNFe
-dim strArqDanfe, strArqDanfeNovo, strArqDanfeAntigo, strArqDanfeCompletoNovo, strArqDanfeCompletoAntigo, strPathArqDanfe, strLinkDanfe
+dim strArqDanfe, strArqDanfeAux, strArqDanfeCompleto, strPathArqDanfe, strLinkDanfe
 dim intIdNFeEmitente, lngSerieNFe, lngNumeroNFe, lngQtdeDiasEmissao, lngMaxDiasEmissao
 dim blnArqDanfeExiste
 dim fso
@@ -2272,7 +2235,7 @@ dim blnQtdeDiasOK
 dim lngNumVenda
 dim lngNumRemessa
 dim intIdEmitenteRemessa
-dim rP
+dim rP, rNfeEmitente, iCfg
 dim blnLocalizouRemessa
 	
 	monta_link_para_ultima_DANFE = ""
@@ -2389,12 +2352,14 @@ dim blnLocalizouRemessa
 		s = s & " ORDER BY" & _
 				" id DESC"
 		set r = cn.Execute(s)
-		if r.Eof then 
+		if r.Eof then
 			r.Close
 			set r = nothing
 			exit function
 			end if
 		end if
+	
+	set fso = Server.CreateObject("Scripting.FileSystemObject")
 	
 	blnArqDanfeExiste = false
 	do while (Not r.Eof) And (Not blnArqDanfeExiste)
@@ -2405,59 +2370,37 @@ dim blnLocalizouRemessa
 		strNumeroNFe = NFeFormataNumeroNF(lngNumeroNFe)
 		lngQtdeDiasEmissao = CLng(r("qtde_dias_emissao"))
 	
-		'r.Close
-		'set r = nothing
-
 	'	EXCEDE PERÍODO MÁXIMO EM QUE O DANFE FICA ACESSÍVEL NO PEDIDO?
 		blnQtdeDiasOK = true
-		if lngMaxDiasEmissao > 0 then
+		if lngMaxDiasEmissao <> -1 then
 			if lngQtdeDiasEmissao > lngMaxDiasEmissao then blnQtdeDiasOK = false 'exit function
 			end if
 			
 		if blnQtdeDiasOK then
-		'	MONTA O NOME DO ARQUIVO DA DANFE
-			strArqDanfe = ""
-			strArqDanfeAntigo = "NFe_" & strNumeroNFe & "_Série_" & strSerieNFe & ".PDF"
-			strArqDanfeNovo = "NFe_" & strNumeroNFe & "_Serie_" & strSerieNFe & ".PDF"
-			if intIdNFeEmitente = ID_NFE_EMITENTE__OLD01_01 then
-				strArqDanfeAntigo = "OLD01_" & strArqDanfeAntigo
-				strArqDanfeNovo = "OLD01_" & strArqDanfeNovo
-			elseif intIdNFeEmitente = ID_NFE_EMITENTE__OLD02_02 then
-				strArqDanfeAntigo = "OLD02_" & strArqDanfeAntigo
-				strArqDanfeNovo = "OLD02_" & strArqDanfeNovo
-			elseif intIdNFeEmitente = ID_NFE_EMITENTE__OLD03_01 then
-				strArqDanfeAntigo = "OLD03_" & strArqDanfeAntigo
-				strArqDanfeNovo = "OLD03_" & strArqDanfeNovo
-			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_01 then
-				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
-				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
-			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_03 then
-				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
-				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
-			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_903 then
-				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
-				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
-			else
-				exit function
-				end if
+			set rNfeEmitente = le_nfe_emitente(intIdNFeEmitente)
+			for iCfg=LBound(rNfeEmitente.vCfgDanfe) to UBound(rNfeEmitente.vCfgDanfe)
+				if Trim("" & rNfeEmitente.vCfgDanfe(iCfg).convencao_nome_arq_pdf_danfe) <> "" then
+				'	MONTA O NOME DO ARQUIVO DA DANFE
+					strArqDanfe = ""
+					strArqDanfeAux = Trim("" & rNfeEmitente.vCfgDanfe(iCfg).convencao_nome_arq_pdf_danfe)
+					if strArqDanfeAux <> "" then
+						strArqDanfe = Replace(Replace(strArqDanfeAux, "[NUMERO_NFE]", strNumeroNFe), "[SERIE_NFE]", strSerieNFe)
+						strPathArqDanfe = Trim("" & rNfeEmitente.vCfgDanfe(iCfg).diretorio_pdf_danfe)
+						strArqDanfeCompleto = strPathArqDanfe & "\" & strArqDanfe
+						blnArqDanfeExiste = fso.FileExists(strArqDanfeCompleto)
+						end if
+					end if
+				
+				if blnArqDanfeExiste then exit for
+				next
+			end if 'if blnQtdeDiasOK
 
-			strPathArqDanfe = obtem_path_pdf_danfe(intIdNFeEmitente)
-			strArqDanfeCompletoAntigo = strPathArqDanfe & "\" & strArqDanfeAntigo
-			strArqDanfeCompletoNovo = strPathArqDanfe & "\" & strArqDanfeNovo
-	
-			set fso = Server.CreateObject("Scripting.FileSystemObject")
-			blnArqDanfeExiste = fso.FileExists(strArqDanfeCompletoNovo)
-			if blnArqDanfeExiste then strArqDanfe = strArqDanfeNovo
-			if Not blnArqDanfeExiste then
-				blnArqDanfeExiste = fso.FileExists(strArqDanfeCompletoAntigo)
-				if blnArqDanfeExiste then strArqDanfe = strArqDanfeAntigo
-				end if
-			set fso = nothing
-			end if
 		r.MoveNext
 		loop
 
-	r.Close
+	set fso = nothing
+
+	if r.State <> 0 then r.Close
 	set r = nothing
 	if Not blnArqDanfeExiste then exit function
 	
@@ -2531,7 +2474,7 @@ end function
 
 function monta_link_para_DANFE_remessa(byval pedido, byval max_dias_emissao, byval html_elemento_interno_anchor)
 dim s, strSerieNFe, strNumeroNFe
-dim strArqDanfe, strArqDanfeNovo, strArqDanfeAntigo, strArqDanfeCompletoNovo, strArqDanfeCompletoAntigo, strPathArqDanfe, strLinkDanfe
+dim strArqDanfe, strArqDanfeAux, strArqDanfeCompleto, strPathArqDanfe, strLinkDanfe
 dim intIdNFeEmitente, lngSerieNFe, lngNumeroNFe, lngQtdeDiasEmissao, lngMaxDiasEmissao
 dim blnArqDanfeExiste
 dim fso
@@ -2546,7 +2489,7 @@ dim blnQtdeDiasOK
 dim lngNumVenda
 dim lngNumRemessa
 dim intIdEmitenteRemessa
-dim rP
+dim rP, rNfeEmitente, iCfg
 	
 	monta_link_para_DANFE_remessa = ""
 	
@@ -2629,13 +2572,15 @@ dim rP
 			" ORDER BY" & _
 				" id DESC"
 		set r = cn.Execute(s)
-		if r.Eof then 
+		if r.Eof then
 			r.Close
 			set r = nothing
 			exit function
 			end if
 		end if
-
+	
+	set fso = Server.CreateObject("Scripting.FileSystemObject")
+	
 	blnArqDanfeExiste = false
 	do while (Not r.Eof) And (Not blnArqDanfeExiste)
 		intIdNFeEmitente = CInt(r("id_nfe_emitente"))
@@ -2645,59 +2590,38 @@ dim rP
 		strNumeroNFe = NFeFormataNumeroNF(lngNumeroNFe)
 		lngQtdeDiasEmissao = CLng(r("qtde_dias_emissao"))
 	
-		'r.Close
-		'set r = nothing
-
 	'	EXCEDE PERÍODO MÁXIMO EM QUE O DANFE FICA ACESSÍVEL NO PEDIDO?
 		blnQtdeDiasOK = true
-		if lngMaxDiasEmissao > 0 then
+		if lngMaxDiasEmissao <> -1 then
 			if lngQtdeDiasEmissao > lngMaxDiasEmissao then blnQtdeDiasOK = false 'exit function
 			end if
 			
 		if blnQtdeDiasOK then
-		'	MONTA O NOME DO ARQUIVO DA DANFE
-			strArqDanfe = ""
-			strArqDanfeAntigo = "NFe_" & strNumeroNFe & "_Série_" & strSerieNFe & ".PDF"
-			strArqDanfeNovo = "NFe_" & strNumeroNFe & "_Serie_" & strSerieNFe & ".PDF"
-			if intIdNFeEmitente = ID_NFE_EMITENTE__OLD01_01 then
-				strArqDanfeAntigo = "OLD01_" & strArqDanfeAntigo
-				strArqDanfeNovo = "OLD01_" & strArqDanfeNovo
-			elseif intIdNFeEmitente = ID_NFE_EMITENTE__OLD02_02 then
-				strArqDanfeAntigo = "OLD02_" & strArqDanfeAntigo
-				strArqDanfeNovo = "OLD02_" & strArqDanfeNovo
-			elseif intIdNFeEmitente = ID_NFE_EMITENTE__OLD03_01 then
-				strArqDanfeAntigo = "OLD03_" & strArqDanfeAntigo
-				strArqDanfeNovo = "OLD03_" & strArqDanfeNovo
-			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_01 then
-				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
-				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
-			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_03 then
-				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
-				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
-			elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_903 then
-				strArqDanfeAntigo = "DIS_" & strArqDanfeAntigo
-				strArqDanfeNovo = "DIS_" & strArqDanfeNovo
-			else
-				exit function
-				end if
+			set rNfeEmitente = le_nfe_emitente(intIdNFeEmitente)
 
-			strPathArqDanfe = obtem_path_pdf_danfe(intIdNFeEmitente)
-			strArqDanfeCompletoAntigo = strPathArqDanfe & "\" & strArqDanfeAntigo
-			strArqDanfeCompletoNovo = strPathArqDanfe & "\" & strArqDanfeNovo
-	
-			set fso = Server.CreateObject("Scripting.FileSystemObject")
-			blnArqDanfeExiste = fso.FileExists(strArqDanfeCompletoNovo)
-			if blnArqDanfeExiste then strArqDanfe = strArqDanfeNovo
-			if Not blnArqDanfeExiste then
-				blnArqDanfeExiste = fso.FileExists(strArqDanfeCompletoAntigo)
-				if blnArqDanfeExiste then strArqDanfe = strArqDanfeAntigo
-				end if
-			set fso = nothing
-			end if
+			for iCfg=LBound(rNfeEmitente.vCfgDanfe) to UBound(rNfeEmitente.vCfgDanfe)
+				if Trim("" & rNfeEmitente.vCfgDanfe(iCfg).convencao_nome_arq_pdf_danfe) <> "" then
+				'	MONTA O NOME DO ARQUIVO DA DANFE
+					strArqDanfe = ""
+					strArqDanfeAux = Trim("" & rNfeEmitente.vCfgDanfe(iCfg).convencao_nome_arq_pdf_danfe)
+					if strArqDanfeAux <> "" then
+						strArqDanfe = Replace(Replace(strArqDanfeAux, "[NUMERO_NFE]", strNumeroNFe), "[SERIE_NFE]", strSerieNFe)
+						strPathArqDanfe = Trim("" & rNfeEmitente.vCfgDanfe(iCfg).diretorio_pdf_danfe)
+						strArqDanfeCompleto = strPathArqDanfe & "\" & strArqDanfe
+						blnArqDanfeExiste = fso.FileExists(strArqDanfeCompleto)
+						end if
+					end if
+				
+				if blnArqDanfeExiste then exit for
+				next
+			end if 'if blnQtdeDiasOK
+		
 		r.MoveNext
 		loop
 
-	r.Close
+	set fso = nothing
+
+	if r.State <> 0 then r.Close
 	set r = nothing
 	if Not blnArqDanfeExiste then exit function
 	
@@ -3073,9 +2997,10 @@ dim chave
 dim senha_decodificada
 dim fso
 dim intIdNFeEmitente
-dim strArqXml, strArqXmlNovo, strArqXmlAntigo
-dim strPathArqXml, strArqXmlCompletoAntigo, strArqXmlCompletoNovo
+dim strArqXml, strArqXmlAux, strArqXmlCompleto
+dim strPathArqXml
 dim blnArqXmlExiste
+dim rNfeEmitente, iCfg
 	
 	IsNFeCompletamenteEmitidaMontaLinkXmlNFe = False
 	
@@ -3119,7 +3044,7 @@ dim blnArqXmlExiste
 	s = "SELECT" & _
 			" Nfe," & _
 			" Serie, " & _
-            " ChaveAcesso" & _
+			" ChaveAcesso" & _
 		" FROM NFE" & _
 		" WHERE" & _
 			" (Serie = '" & NFeFormataSerieNF(strSerieNFe) & "')" & _
@@ -3130,8 +3055,8 @@ dim blnArqXmlExiste
 		dbcNFe.Close
 		set dbcNFe = nothing
 		exit function
-    else
-        ChaveAcesso = tNFE("ChaveAcesso")
+	else
+		ChaveAcesso = tNFE("ChaveAcesso")
 		end if
 		
 	tNFE.Close
@@ -3140,44 +3065,29 @@ dim blnArqXmlExiste
 	dbcNFe.Close
 	set dbcNFe = nothing
 	
-'	MONTA O NOME DO ARQUIVO DO XML DA NFE
-	strArqXml = ""
 	intIdNFeEmitente = CLng(strIdNfeEmitente)
-	strArqXmlAntigo = "NFe_" & strNumeroNFe & "_Série_" & strSerieNFe & ".XML"
-	strArqXmlNovo = "NFe_" & strNumeroNFe & "_Serie_" & strSerieNFe & ".XML"
-	if intIdNFeEmitente = ID_NFE_EMITENTE__OLD01_01 then
-		strArqXmlAntigo = "OLD01_" & strArqXmlAntigo
-		strArqXmlNovo = "OLD01_" & strArqXmlNovo
-	elseif intIdNFeEmitente = ID_NFE_EMITENTE__OLD02_02 then
-		strArqXmlAntigo = "OLD02_" & strArqXmlAntigo
-		strArqXmlNovo = "OLD02_" & strArqXmlNovo
-	elseif intIdNFeEmitente = ID_NFE_EMITENTE__OLD03_01 then
-		strArqXmlAntigo = "OLD03_" & strArqXmlAntigo
-		strArqXmlNovo = "OLD03_" & strArqXmlNovo
-	elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_01 then
-		strArqXmlAntigo = "DIS_" & strArqXmlAntigo
-		strArqXmlNovo = "DIS_" & strArqXmlNovo
-	elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_03 then
-		strArqXmlAntigo = "DIS_" & strArqXmlAntigo
-        strArqXmlNovo = "DIS_" & strArqXmlNovo
-	elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_903 then
-		strArqXmlAntigo = "DIS_" & strArqXmlAntigo
-		strArqXmlNovo = "DIS_" & strArqXmlNovo
-	else
-		exit function
-		end if
 
-	strPathArqXml = obtem_path_xml_nfe(intIdNFeEmitente)
-	strArqXmlCompletoAntigo = strPathArqXml & "\" & strArqXmlAntigo
-	strArqXmlCompletoNovo = strPathArqXml & "\" & strArqXmlNovo
-	
 	set fso = Server.CreateObject("Scripting.FileSystemObject")
-	blnArqXmlExiste = fso.FileExists(strArqXmlCompletoNovo)
-	if blnArqXmlExiste then strArqXml = strArqXmlNovo
-	if Not blnArqXmlExiste then
-		blnArqXmlExiste = fso.FileExists(strArqXmlCompletoAntigo)
-		if blnArqXmlExiste then strArqXml = strArqXmlAntigo
-		end if
+
+	set rNfeEmitente = le_nfe_emitente(intIdNFeEmitente)
+
+	blnArqXmlExiste = False
+	for iCfg=LBound(rNfeEmitente.vCfgDanfe) to UBound(rNfeEmitente.vCfgDanfe)
+		if Trim("" & rNfeEmitente.vCfgDanfe(iCfg).convencao_nome_arq_xml_nfe) <> "" then
+		'	MONTA O NOME DO ARQUIVO DO XML DA NFE
+			strArqXml = ""
+			strArqXmlAux = Trim("" & rNfeEmitente.vCfgDanfe(iCfg).convencao_nome_arq_xml_nfe)
+			if strArqXmlAux <> "" then
+				strArqXml = Replace(Replace(strArqXmlAux, "[NUMERO_NFE]", strNumeroNFe), "[SERIE_NFE]", strSerieNFe)
+				strPathArqXml = Trim("" & rNfeEmitente.vCfgDanfe(iCfg).diretorio_xml_nfe)
+				strArqXmlCompleto = strPathArqXml & "\" & strArqXml
+				blnArqXmlExiste = fso.FileExists(strArqXmlCompleto)
+				end if
+			end if
+
+		if blnArqXmlExiste then exit for
+		next
+
 	set fso = nothing
 
 	if blnArqXmlExiste then

@@ -3,21 +3,57 @@
 <% Response.Buffer=True %>
 <!-- #include file = "../global/constantes.asp" -->
 <!-- #include file = "../global/funcoes.asp"    -->
+<!-- #include file = "../global/bdd.asp" -->
 <%
 	Const adTypeBinary = 1
 	Const adTypeText = 2
 	Const chunkSize = 2048
 
+'	CONECTA AO BANCO DE DADOS
+'	=========================
+	dim cn
+	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
+
 	dim s
-	dim strFileName, strFilePath
+	dim strFileName, strFilePath, strFilePathAux, strFullFileName
 	dim intIdNFeEmitente
 	dim blnForceDownload ' Força o download (dialog box "Save As") ou permite que seja aberto diretamente dentro do browser?
+	dim fso, blnFileExists
 
 	strFileName=Request("file")
 
 	s=Request("emitente")
 	if IsNumeric(s) then intIdNFeEmitente=CInt(s) else intIdNFeEmitente=0
-	strFilePath=obtem_path_xml_nfe(intIdNFeEmitente)
+	
+	dim rNfeEmitente, iCfg
+	set rNfeEmitente = le_nfe_emitente(intIdNFeEmitente)
+	
+	blnFileExists = False
+	Set fso=Server.CreateObject("Scripting.FileSystemObject")
+
+	'Analisa em qual pasta o arquivo se encontra
+	strFilePath = ""
+	for iCfg=LBound(rNfeEmitente.vCfgDanfe) to UBound(rNfeEmitente.vCfgDanfe)
+		if Trim("" & rNfeEmitente.vCfgDanfe(iCfg).convencao_nome_arq_xml_nfe) <> "" then
+			strFilePathAux = Trim("" & rNfeEmitente.vCfgDanfe(iCfg).diretorio_xml_nfe)
+			strFullFileName = strFilePathAux
+			if Right(strFullFileName,1)<>"\" then strFullFileName=strFullFileName & "\"
+			strFullFileName = strFullFileName & strFileName
+			if fso.FileExists(strFullFileName) then
+				blnFileExists = True
+				strFilePath = strFilePathAux
+				exit for
+				end if
+			end if
+		next
+
+	Set fso=Nothing
+	set rNfeEmitente=Nothing
+
+	If Not blnFileExists Then
+		Err.Raise 20000, "Download de Arquivo", "Erro: arquivo não encontrado: " & strFileName
+		Response.END
+		End If
 
 	s = Ucase(Trim(Request("force")))
 	if (s="FALSE") Or (s="F") Or (s="NAO") Or (s="N") then blnForceDownload=False else blnForceDownload=True
@@ -185,4 +221,8 @@ dim arrTmp
 	GetExtension=arrTmp(UBound(arrTmp))
 End Function
 
+
+'FECHA CONEXAO COM O BANCO DE DADOS
+cn.Close
+set cn = nothing
 %>
