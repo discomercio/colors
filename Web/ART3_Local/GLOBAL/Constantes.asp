@@ -475,11 +475,6 @@
 	Const ST_PAGTO_NAO_PAGO		= "N"
 	Const ST_PAGTO_PARCIAL		= "P"
 
-'	STATUS DE FECHAMENTO DO PEDIDO (INDICA SE O ORÇAMENTO GEROU UM PEDIDO OU NÃO)
-	Const ST_FECHAMENTO_PEDIDO_FECHOU		= "S"
-	Const ST_FECHAMENTO_PEDIDO_NAO_FECHOU	= "N"
-	Const ST_FECHAMENTO_PEDIDO_CONCORRENTE	= "C"
-
 '	STATUS DO ORÇAMENTO
 	Const ST_ORCAMENTO_CANCELADO		= "CAN"	 ' ORÇAMENTO FOI CANCELADO
 
@@ -770,9 +765,6 @@
 	Const ID_ORCAMENTISTA_E_INDICADOR_RESTRICAO_FP_TODOS = "*_A_L_L_*"
 
 
-'	PERÍODO MÁXIMO EM QUE O DANFE FICA ACESSÍVEL NO PEDIDO
-	Const MAX_PERIODO_LINK_DANFE_DISPONIVEL_NO_PEDIDO_EM_DIAS = 90
-
   ' TAMANHO MÁXIMO DO CAMPO NO BD
 	Const MAX_OBS_2 = 10
 	
@@ -890,6 +882,7 @@
 	Const ID_PARAM_VlLimiteMensalIndicadorParaCadastroFeitoNaLoja = "VlLimiteMensalIndicadorParaCadastroFeitoNaLoja"  ' NESTE CASO, O REGISTRO É USADO P/ ARMAZENAR UM PARÂMETRO E NÃO P/ GERAR UM NSU!!
 	Const ID_PARAM_PercDesagioRAIndicadorParaCadastroFeitoNaLoja = "PercDesagioRAIndicadorParaCadastroFeitoNaLoja"    ' NESTE CASO, O REGISTRO É USADO P/ ARMAZENAR UM PARÂMETRO E NÃO P/ GERAR UM NSU!!
 	Const ID_PARAM_PercVlPedidoLimiteRA					= "PercVlPedidoLimiteRA"			' NESTE CASO, O REGISTRO É USADO P/ ARMAZENAR UM PARÂMETRO E NÃO P/ GERAR UM NSU!!
+	Const ID_PARAM_MAX_PERIODO_LINK_DANFE_DISPONIVEL_NO_PEDIDO_EM_DIAS = "MAX_PERIODO_LINK_DANFE_DISPONIVEL_NO_PEDIDO_EM_DIAS"
 	Const ID_XLOCK_SYNC_PEDIDO = "XLOCK_SYNC_PEDIDO"   ' NESTE CASO, O REGISTRO É USADO PARA SINCRONIZAR (SERIALIZAR) A OPERAÇÃO E EVITAR ACESSO CONCORRENTE
 	Const ID_XLOCK_SYNC_ORCAMENTO = "XLOCK_SYNC_ORCAMENTO"   ' NESTE CASO, O REGISTRO É USADO PARA SINCRONIZAR (SERIALIZAR) A OPERAÇÃO E EVITAR ACESSO CONCORRENTE
 	Const ID_XLOCK_SYNC_CLIENTE = "XLOCK_SYNC_CLIENTE"   ' NESTE CASO, O REGISTRO É USADO PARA SINCRONIZAR (SERIALIZAR) A OPERAÇÃO E EVITAR ACESSO CONCORRENTE
@@ -3073,6 +3066,19 @@
 		dim descricao
 		end class
 
+	class cl_NFE_EMITENTE_CFG_DANFE
+		dim id
+		dim id_nfe_emitente
+		dim min_tamanho_serie_NFe
+		dim min_tamanho_numero_NFe
+		dim convencao_nome_arq_pdf_danfe
+		dim diretorio_pdf_danfe
+		dim convencao_nome_arq_xml_nfe
+		dim diretorio_xml_nfe
+		dim dt_hr_cadastro
+		dim ordenacao
+		end class
+
 	class cl_NFE_EMITENTE
 		dim id
 		dim id_boleto_cedente
@@ -3106,6 +3112,18 @@
 		dim st_habilitado_ctrl_estoque
 		dim ordem
 		dim texto_fixo_especifico
+		
+		public vCfgDanfe
+		
+		Private Sub Class_Initialize
+			vCfgDanfe = Array()
+		End Sub
+
+		Sub AddItemCfgDanfe(newItem)
+		'	INICIALMENTE, O ARRAY ENCONTRA-SE EM UM ESTADO EM QUE LBOUND() RETORNA 0 (ZERO) E UBOUND() RETORNA -1 (UM NEGATIVO)
+			ReDim Preserve vCfgDanfe(UBound(vCfgDanfe) + 1)
+			set vCfgDanfe(UBound(vCfgDanfe)) = newItem
+		End Sub
 		end class
 
 	class cl_PEDIDO_DETALHE_TIPO_SPLIT

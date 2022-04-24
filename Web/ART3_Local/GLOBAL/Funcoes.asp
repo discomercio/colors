@@ -4709,71 +4709,6 @@ dim strResp
 end function
 
 
-' ------------------------------------------------------------------------
-'   OBTEM PATH PDF DANFE
-'   Retorna o path do diretório onde estão os arquivos PDF das DANFE's
-'	do referido emitente.
-function obtem_path_pdf_danfe(byval idNFeEmitente)
-dim s_resp, intIdNFeEmitente
-
-	obtem_path_pdf_danfe = ""
-	
-	if Not IsNumeric(idNFeEmitente) then exit function
-	intIdNFeEmitente= CInt(idNFeEmitente)
-	
-	if intIdNFeEmitente = ID_NFE_EMITENTE__OLD01_01 then
-		s_resp = DIR_TARGET_ONE_PDF_DANFE_EMITENTE__OLD01_01
-	elseif intIdNFeEmitente = ID_NFE_EMITENTE__OLD03_01 then
-		s_resp = DIR_TARGET_ONE_PDF_DANFE_EMITENTE__OLD03_01
-	elseif intIdNFeEmitente = ID_NFE_EMITENTE__OLD02_02 then
-		s_resp = DIR_TARGET_ONE_PDF_DANFE_EMITENTE__OLD02_02
-	elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_01 then
-		s_resp = DIR_TARGET_ONE_PDF_DANFE_EMITENTE__DIS_01
-	elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_03 then
-		s_resp = DIR_TARGET_ONE_PDF_DANFE_EMITENTE__DIS_03
-	elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_903 then
-		s_resp = DIR_TARGET_ONE_PDF_DANFE_EMITENTE__DIS_903
-	else
-		s_resp = ""
-		end if
-		
-	obtem_path_pdf_danfe=s_resp
-end function
-
-
-
-' ------------------------------------------------------------------------
-'   OBTEM PATH XML NFE
-'   Retorna o path do diretório onde estão os arquivos XML das NFe's
-'	do referido emitente.
-function obtem_path_xml_nfe(byval idNFeEmitente)
-dim s_resp, intIdNFeEmitente
-
-	obtem_path_xml_nfe = ""
-	
-	if Not IsNumeric(idNFeEmitente) then exit function
-	intIdNFeEmitente= CInt(idNFeEmitente)
-	
-	if intIdNFeEmitente = ID_NFE_EMITENTE__OLD01_01 then
-		s_resp = DIR_TARGET_ONE_XML_NFE_EMITENTE__OLD01_01
-	elseif intIdNFeEmitente = ID_NFE_EMITENTE__OLD03_01 then
-		s_resp = DIR_TARGET_ONE_XML_NFE_EMITENTE__OLD03_01
-	elseif intIdNFeEmitente = ID_NFE_EMITENTE__OLD02_02 then
-		s_resp = DIR_TARGET_ONE_XML_NFE_EMITENTE__OLD02_02
-	elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_01 then
-		s_resp = DIR_TARGET_ONE_XML_NFE_EMITENTE__DIS_01
-	elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_03 then
-		s_resp = DIR_TARGET_ONE_XML_NFE_EMITENTE__DIS_03
-	elseif intIdNFeEmitente = ID_NFE_EMITENTE__DIS_903 then
-		s_resp = DIR_TARGET_ONE_XML_NFE_EMITENTE__DIS_903
-	else
-		s_resp = ""
-		end if
-		
-	obtem_path_xml_nfe=s_resp
-end function
-
-
 
 ' ------------------------------------------------------------------------
 '   MONTA DESCRICAO FORMA PAGTO
@@ -5878,6 +5813,7 @@ sub limpa_cl_NFE_EMITENTE(ByRef rx)
 	rx.texto_fixo_especifico = ""
 end sub
 
+
 ' ------------------------------------------------------------------------
 '   isEnderecoIgual
 function isEnderecoIgual(ByVal end_logradouro_1, ByVal end_numero_1, ByVal end_cep_1, ByVal end_logradouro_2, ByVal end_numero_2, ByVal end_cep_2)
@@ -6254,42 +6190,6 @@ dim i
 		end if
 
 	copia_cl_ITEM_ORCAMENTO_para_cl_ITEM_ORCAMENTO_NOVO = True
-end function
-
-
-' ------------------------------------------------------------------------
-'   obtem_descricao_icms_contribuinte_x_produtor_rural
-'
-function obtem_descricao_icms_contribuinte_x_produtor_rural(byval tipo, byval st_pj, byval st_pf)
-dim strResp
-
-    tipo = Trim(tipo)
-    st_pj = Trim(st_pj)
-    st_pf = Trim(st_pf)
-
-    if tipo = ID_PJ then
-        select case st_pj
-            case COD_ST_CLIENTE_CONTRIBUINTE_ICMS_NAO
-                strResp = "Não Contribuinte"
-            case COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM
-                strResp = "Contribuinte"
-            case COD_ST_CLIENTE_CONTRIBUINTE_ICMS_ISENTO
-                strResp = "Isento"
-            case else
-                strResp = ""
-        end select
-    elseif tipo = ID_PF then
-        select case st_pf
-            case COD_ST_CLIENTE_PRODUTOR_RURAL_NAO
-                strResp = "Pessoa Física"
-            case COD_ST_CLIENTE_PRODUTOR_RURAL_SIM
-                strResp = "Produtor Rural"
-            case else
-                strResp = ""
-        end select
-    end if
-
-    obtem_descricao_icms_contribuinte_x_produtor_rural = strResp
 end function
 
 
