@@ -58,6 +58,9 @@
 	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 
+	dim max_dias_link_danfe_disponivel
+	max_dias_link_danfe_disponivel = obtem_max_periodo_link_danfe_disponivel_no_pedido_em_dias()
+
 	dim url_back, strUrlBotaoVoltar
 	url_back = Trim(Request("url_back"))
 	if url_back <> "" then
@@ -727,7 +730,7 @@ total_valor = 0
 			s_num_nfe = Trim("" & r("numeroNFe"))
 			if s_num_nfe <> "" then
 				s = "<span class='C'" & s_html_color & ">" & NFeFormataNumeroNF(s_num_nfe) & "</span>"
-				s_link_nfe = monta_link_para_ultima_DANFE(Trim("" & r("pedido")), MAX_PERIODO_LINK_DANFE_DISPONIVEL_NO_PEDIDO_EM_DIAS, s)
+				s_link_nfe = monta_link_para_ultima_DANFE(Trim("" & r("pedido")), max_dias_link_danfe_disponivel, s)
 				'aproveitar o link, se existir, para ver se habilita o checkbox Imprimir PDF
 				s_link_habilita_print = s_link_nfe
 				if s_link_nfe = "" then s_link_nfe = "<span class='C' style='color:gray;'>" & NFeFormataNumeroNF(s_num_nfe) & "</span>"
