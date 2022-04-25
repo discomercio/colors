@@ -794,6 +794,23 @@ Option Explicit
 '|          |      | - Ajuste da versão anterior para que as NF's internas     |
 '|          |      |   não exibam a mensagem sobre a não-cobrança  do DIFAL    |
 '|__________|______|___________________________________________________________|
+'|25.04.2022| LHGX |V 2.26                                                     |
+'|          |      | - Informações do intermediador de pagamento nas opera-    |
+'|          |      |   ções envolvendo marketplace                             |
+'|          |      | - Registro no log da tela de origem da emissão da NFe     |
+'|          |      |   (automática, manual, triangular)                        |
+'|          |      | - Zerar PIS/COFINS quando natureza da operação for 6949   |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
 '|          |      |                                                           |
@@ -813,8 +830,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.25"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  06/02/2022"
+Global Const m_id_versao = "2.26"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  25/04/2022"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"
@@ -1371,7 +1388,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -1693,7 +1710,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -2049,7 +2066,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -2366,7 +2383,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection

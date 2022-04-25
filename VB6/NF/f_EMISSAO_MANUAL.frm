@@ -4958,7 +4958,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' BANCO DE DADOS
 Dim t_FIN_BOLETO_CEDENTE As ADODB.Recordset
@@ -5197,7 +5197,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' BANCO DE DADOS
 Dim t_NFE_EMITENTE As ADODB.Recordset
@@ -8852,6 +8852,12 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
         strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "Fabricante não cobre avarias de peças plásticas, portanto, é necessário avaliar o equipamento no ato da entrega."
         
+    '   TEXTO FIXO SOBRE REGIME ESPECIAL
+        If txtFixoEspecifico <> "" Then
+            If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
+            strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & txtFixoEspecifico
+            End If
+        
     '   INFORMAÇÕES SOBRE PARTILHA DO ICMS
         If PARTILHA_ICMS_ATIVA And Not blnIgnorarDIFAL Then
             'DIFAL- suprimir texto em notas de entrada/devolução
@@ -9416,6 +9422,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                         "; Msg SP=" & strNFeMsgRetornoSPEmite & _
                         "; Série NFe=" & strSerieNf & _
                         "; Nº NFe=" & strNumeroNf & _
+                        "; tela emissão=Painel Manual" & _
                         "; emitente=" & CStr(rNFeImg.id_nfe_emitente) & _
                         "; destinatário=" & cnpj_cpf_formata(c_cnpj_cpf_dest) & _
                         "; tipo=" & cb_tipo_NF & _
@@ -12670,8 +12677,8 @@ Private Sub cb_natureza_Click()
         opVenda.Value = True
         End If
     
-    If s_cfop = ("5.915") Or s_cfop = ("6.152") Or s_cfop = ("5.949") Or _
-       s_cfop = ("6.117") Or s_cfop = ("6.923") Or s_cfop = ("6.910") Then
+    If (s_cfop = "5.915") Or (s_cfop = "6.152") Or (s_cfop = "5.949") Or (s_cfop = "6.949") Or _
+       (s_cfop = "6.117") Or (s_cfop = "6.923") Or (s_cfop = "6.910") Then
        cb_zerar_COFINS.ListIndex = 4
        cb_zerar_PIS.ListIndex = 4
     Else

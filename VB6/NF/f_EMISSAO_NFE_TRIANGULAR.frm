@@ -5107,8 +5107,8 @@ Private Sub cb_natureza_Click()
     If (digito = "2") Or (digito = "6") Then cb_loc_dest.ListIndex = 1
     
     s_cfop = left(Trim(cb_natureza.Text), 5)
-    If s_cfop = ("5.915") Or s_cfop = ("6.152") Or s_cfop = ("5.949") Or _
-       s_cfop = ("6.117") Or s_cfop = ("6.923") Or s_cfop = ("6.910") Then
+    If (s_cfop = "5.915") Or (s_cfop = "6.152") Or (s_cfop = "5.949") Or (s_cfop = "6.949") Or _
+       (s_cfop = "6.117") Or (s_cfop = "6.923") Or (s_cfop = "6.910") Then
        cb_zerar_COFINS.ListIndex = 4
        cb_zerar_PIS.ListIndex = 4
     Else
@@ -8422,7 +8422,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 Dim blnOperacaoNaoTriangular As Boolean
 
@@ -13178,6 +13178,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                         "; Msg SP=" & strNFeMsgRetornoSPEmite & _
                         "; Série NFe=" & strSerieNf & _
                         "; Nº NFe=" & strNumeroNf & _
+                        "; tela emissão=Painel Triangular" & _
                         "; tipo=" & cb_tipo_NF & _
                         "; pedido=" & Join(v_pedido, ", ") & _
                         "; natureza operação=" & cb_natureza & _
@@ -17235,6 +17236,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                         "; Msg SP=" & strNFeMsgRetornoSPEmite & _
                         "; Série NFe=" & strSerieNf & _
                         "; Nº NFe=" & strNumeroNf & _
+                        "; tela emissão=Painel Triangular" & _
                         "; tipo=" & cb_tipo_NF & _
                         "; pedido=" & Join(v_pedido, ", ") & _
                         "; natureza operação=" & cb_natureza_recebedor & _
