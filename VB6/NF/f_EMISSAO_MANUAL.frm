@@ -5185,6 +5185,7 @@ Dim strNomeArqCompletoDanfe As String
 Dim strNumeroNfNormalizado As String
 Dim strSerieNfNormalizado As String
 Dim strNomeEmitente As String
+Dim strPastaEmitente As String
 Dim strNfeT1ServidorBd As String
 Dim strNfeT1NomeBd As String
 Dim strNfeT1UsuarioBd As String
@@ -5256,6 +5257,8 @@ Dim dbcNFe As ADODB.Connection
     
     s = "SELECT" & _
             " razao_social," & _
+            " cnpj," & _
+            " apelido," & _
             " NFe_T1_servidor_BD," & _
             " NFe_T1_nome_BD," & _
             " NFe_T1_usuario_BD," & _
@@ -5278,6 +5281,13 @@ Dim dbcNFe As ADODB.Connection
     strNfeT1NomeBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_nome_BD"))
     strNfeT1UsuarioBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_usuario_BD"))
     strNfeT1SenhaCriptografadaBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_senha_BD"))
+    'novo padrão de nome da pasta para DANFEs: <cnpj>-<apelido_com_underlines_substituindo_barras>
+    '(ex: 23209013000332-DIS_ES)
+    strPastaEmitente = Trim$("" & t_NFE_EMITENTE("cnpj"))
+    strPastaEmitente = retorna_so_digitos(strPastaEmitente)
+    strPastaEmitente = strPastaEmitente & "-" & Trim$("" & t_NFE_EMITENTE("apelido"))
+    strPastaEmitente = substitui_caracteres(strPastaEmitente, "/", "_")
+
     
     decodifica_dado strNfeT1SenhaCriptografadaBd, s_aux
     s = "Provider=" & BD_OLEDB_PROVIDER & _
@@ -5323,7 +5333,7 @@ Dim dbcNFe As ADODB.Connection
         End If
     
     strNomeArqDanfe = "NFe_" & strSerieNfNormalizado & "_" & strNumeroNfNormalizado & ".pdf"
-    strDiretorioPdfDanfe = barra_invertida_add(App.Path) & "DANFE\" & strNomeEmitente
+    strDiretorioPdfDanfe = barra_invertida_add(App.Path) & "DANFE\" & strPastaEmitente
     
     If Not DirectoryExists(strDiretorioPdfDanfe, s_erro) Then
         If Not ForceDirectories(strDiretorioPdfDanfe, s_erro) Then

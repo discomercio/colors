@@ -6139,6 +6139,7 @@ Dim s_aux As String
 Dim strNumeroNfNormalizado As String
 Dim strSerieNfNormalizado As String
 Dim strNomeEmitente As String
+Dim strPastaEmitente As String
 Dim strNfeT1ServidorBd As String
 Dim strNfeT1NomeBd As String
 Dim strNfeT1UsuarioBd As String
@@ -6178,6 +6179,8 @@ Dim dbcNFe As ADODB.Connection
 
     s = "SELECT" & _
         " razao_social," & _
+        " cnpj," & _
+        " apelido," & _
         " NFe_T1_servidor_BD," & _
         " NFe_T1_nome_BD," & _
         " NFe_T1_usuario_BD," & _
@@ -6197,6 +6200,12 @@ Dim dbcNFe As ADODB.Connection
     strNfeT1NomeBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_nome_BD"))
     strNfeT1UsuarioBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_usuario_BD"))
     strNfeT1SenhaCriptografadaBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_senha_BD"))
+    'novo padrão de nome da pasta para DANFEs: <cnpj>-<apelido_com_underlines_substituindo_barras>
+    '(ex: 23209013000332-DIS_ES)
+    strPastaEmitente = Trim$("" & t_NFE_EMITENTE("cnpj"))
+    strPastaEmitente = retorna_so_digitos(strPastaEmitente)
+    strPastaEmitente = strPastaEmitente & "-" & Trim$("" & t_NFE_EMITENTE("apelido"))
+    strPastaEmitente = substitui_caracteres(strPastaEmitente, "/", "_")
     
     decodifica_dado strNfeT1SenhaCriptografadaBd, s_aux
     s = "Provider=" & BD_OLEDB_PROVIDER & _
@@ -8402,6 +8411,7 @@ Dim strNomeArqCompletoDanfe As String
 Dim strNumeroNfNormalizado As String
 Dim strSerieNfNormalizado As String
 Dim strNomeEmitente As String
+Dim strPastaEmitente As String
 Dim strNfeT1ServidorBd As String
 Dim strNfeT1NomeBd As String
 Dim strNfeT1UsuarioBd As String
@@ -8555,6 +8565,8 @@ Dim dbcNFe As ADODB.Connection
                 
                 s = "SELECT" & _
                         " razao_social," & _
+                        " cnpj," & _
+                        " apelido," & _
                         " NFe_T1_servidor_BD," & _
                         " NFe_T1_nome_BD," & _
                         " NFe_T1_usuario_BD," & _
@@ -8575,6 +8587,12 @@ Dim dbcNFe As ADODB.Connection
                 strNfeT1NomeBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_nome_BD"))
                 strNfeT1UsuarioBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_usuario_BD"))
                 strNfeT1SenhaCriptografadaBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_senha_BD"))
+                'novo padrão de nome da pasta para DANFEs: <cnpj>-<apelido_com_underlines_substituindo_barras>
+                '(ex: 23209013000332-DIS_ES)
+                strPastaEmitente = Trim$("" & t_NFE_EMITENTE("cnpj"))
+                strPastaEmitente = retorna_so_digitos(strPastaEmitente)
+                strPastaEmitente = strPastaEmitente & "-" & Trim$("" & t_NFE_EMITENTE("apelido"))
+                strPastaEmitente = substitui_caracteres(strPastaEmitente, "/", "_")
                 
                 decodifica_dado strNfeT1SenhaCriptografadaBd, s_aux
                 s = "Provider=" & BD_OLEDB_PROVIDER & _
@@ -8624,7 +8642,7 @@ Dim dbcNFe As ADODB.Connection
                             End If
                         
                         strNomeArqDanfe = "NFe_" & strSerieNfNormalizado & "_" & strNumeroNfNormalizado & "_" & strPedido & ".pdf"
-                        strDiretorioPdfDanfe = barra_invertida_add(App.Path) & "DANFE\" & strNomeEmitente
+                        strDiretorioPdfDanfe = barra_invertida_add(App.Path) & "DANFE\" & strPastaEmitente
                         
                         If Not DirectoryExists(strDiretorioPdfDanfe, s_erro) Then
                             If Not ForceDirectories(strDiretorioPdfDanfe, s_erro) Then
@@ -8693,7 +8711,7 @@ Dim dbcNFe As ADODB.Connection
                             End If
                         
                         strNomeArqDanfe = "NFe_" & strSerieNfNormalizado & "_" & strNumeroNfNormalizado & "_" & strPedido & ".pdf"
-                        strDiretorioPdfDanfe = barra_invertida_add(App.Path) & "DANFE\" & strNomeEmitente
+                        strDiretorioPdfDanfe = barra_invertida_add(App.Path) & "DANFE\" & strPastaEmitente
                         
                         If Not DirectoryExists(strDiretorioPdfDanfe, s_erro) Then
                             If Not ForceDirectories(strDiretorioPdfDanfe, s_erro) Then
@@ -8775,6 +8793,8 @@ PROXIMO_PEDIDO_TRI:
                 
                 s = "SELECT" & _
                         " razao_social," & _
+                        " cnpj," & _
+                        " apelido," & _
                         " NFe_T1_servidor_BD," & _
                         " NFe_T1_nome_BD," & _
                         " NFe_T1_usuario_BD," & _
@@ -8795,6 +8815,12 @@ PROXIMO_PEDIDO_TRI:
                 strNfeT1NomeBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_nome_BD"))
                 strNfeT1UsuarioBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_usuario_BD"))
                 strNfeT1SenhaCriptografadaBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_senha_BD"))
+                'novo padrão de nome da pasta para DANFEs: <cnpj>-<apelido_com_underlines_substituindo_barras>
+                '(ex: 23209013000332-DIS_ES)
+                strPastaEmitente = Trim$("" & t_NFE_EMITENTE("cnpj"))
+                strPastaEmitente = retorna_so_digitos(strPastaEmitente)
+                strPastaEmitente = strPastaEmitente & "-" & Trim$("" & t_NFE_EMITENTE("apelido"))
+                strPastaEmitente = substitui_caracteres(strPastaEmitente, "/", "_")
                 
                 decodifica_dado strNfeT1SenhaCriptografadaBd, s_aux
                 s = "Provider=" & BD_OLEDB_PROVIDER & _
@@ -8840,7 +8866,7 @@ PROXIMO_PEDIDO_TRI:
                         End If
                     
                     strNomeArqDanfe = "NFe_" & strSerieNfNormalizado & "_" & strNumeroNfNormalizado & "_" & strPedido & ".pdf"
-                    strDiretorioPdfDanfe = barra_invertida_add(App.Path) & "DANFE\" & strNomeEmitente
+                    strDiretorioPdfDanfe = barra_invertida_add(App.Path) & "DANFE\" & strPastaEmitente
                     
                     If Not DirectoryExists(strDiretorioPdfDanfe, s_erro) Then
                         If Not ForceDirectories(strDiretorioPdfDanfe, s_erro) Then
@@ -9677,7 +9703,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             
             'obter as informações de marketplace
             If (s_erro = "") And (param_nfintermediador.campo_inteiro = 1) And (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") Then
-                s = "SELECT o.codigo, o.descricao, og.parametro_campo_texto, og.parametro_2_campo_texto, og.parametro_3_campo_flag, os.codigo_pai  " & _
+                s = "SELECT o.codigo, o.descricao, og.parametro_campo_texto, og.parametro_2_campo_texto, og.parametro_3_campo_flag, o.codigo_pai  " & _
                     "FROM (select * from t_CODIGO_DESCRICAO where grupo = 'PedidoECommerce_Origem') o  " & _
                         "INNER JOIN (select * from t_CODIGO_DESCRICAO where grupo = 'PedidoECommerce_Origem_Grupo') og  " & _
                         "on o.codigo_pai = og.codigo " & _
@@ -13190,7 +13216,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                         "; finalidade=" & Trim$(cb_finalidade) & _
                         "; chave NFe referenciada=" & Trim$(c_chave_nfe_ref) & _
                         "; dados adicionais=" & Trim$(c_dados_adicionais_venda)
-    Call grava_log(usuario.id, "", strLogPedido, "", OP_LOG_NFE_EMISSAO, strLogComplemento)
+    Call grava_log(usuario.id, "", strLogPedido, "", OP_LOG_NFE_EMISSAO_TRIANGULAR, strLogComplemento)
         
         
 '   SUCESSO NA CHAMADA DA STORED PROCEDURE!!
@@ -17248,7 +17274,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                         "; finalidade=" & Trim$(cb_finalidade) & _
                         "; chave NFe referenciada=" & Trim$(c_chave_nfe_ref) & _
                         "; dados adicionais=" & Trim$(c_dados_adicionais_venda)
-    Call grava_log(usuario.id, "", strLogPedido, "", OP_LOG_NFE_EMISSAO, strLogComplemento)
+    Call grava_log(usuario.id, "", strLogPedido, "", OP_LOG_NFE_EMISSAO_TRIANGULAR, strLogComplemento)
         
         
 '   SUCESSO NA CHAMADA DA STORED PROCEDURE!!
