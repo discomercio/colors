@@ -2856,6 +2856,8 @@ namespace Financeiro
 			bool blnSucesso = false;
 			int iAno;
 			int qtdeAnosPeriodo;
+			int qtdeAnosPeriodoFuturo;
+			int qtdeAnosPeriodoTotal;
 			#endregion
 
 			try
@@ -2864,6 +2866,11 @@ namespace Financeiro
 
 				qtdeAnosPeriodo = ComumDAO.getCampoInteiroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ID_PARAMETRO_FIN_REL_SINT_COMP_MOVTO_COMP_MES_A_MES_PERIODO_EM_ANOS);
 				if (qtdeAnosPeriodo <= 0) qtdeAnosPeriodo = 5;
+
+				qtdeAnosPeriodoFuturo = ComumDAO.getCampoInteiroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ID_PARAMETRO_FIN_REL_SINT_COMP_MOVTO_COMP_MES_A_MES_FUTURO_PERIODO_EM_ANOS);
+				if (qtdeAnosPeriodoFuturo < 0) qtdeAnosPeriodoFuturo = 0;
+
+				qtdeAnosPeriodoTotal = qtdeAnosPeriodo + qtdeAnosPeriodoFuturo;
 
 				#region [ Combo Conta Corrente ]
 				// Cria uma linha com a opção Todas
@@ -2971,9 +2978,9 @@ namespace Financeiro
 
 				#region [ Combo ano competência (inicial) ]
 				cbCompetenciaAnoInicial.Items.Clear();
-				for (int i = 0; i < qtdeAnosPeriodo; i++)
+				for (int i = 0; i < qtdeAnosPeriodoTotal; i++)
 				{
-					iAno = DateTime.Today.Year - i;
+					iAno = (DateTime.Today.Year + qtdeAnosPeriodoFuturo) - i;
 					cbCompetenciaAnoInicial.Items.Add(new Global.OpcaoAno(iAno, iAno.ToString()));
 				}
 				cbCompetenciaAnoInicial.DisplayMember = "descricao";
@@ -2990,9 +2997,9 @@ namespace Financeiro
 
 				#region [ Combo ano competência (final) ]
 				cbCompetenciaAnoFinal.Items.Clear();
-				for (int i = 0; i < qtdeAnosPeriodo; i++)
+				for (int i = 0; i < qtdeAnosPeriodoTotal; i++)
 				{
-					iAno = DateTime.Today.Year - i;
+					iAno = (DateTime.Today.Year + qtdeAnosPeriodoFuturo) - i;
 					cbCompetenciaAnoFinal.Items.Add(new Global.OpcaoAno(iAno, iAno.ToString()));
 				}
 				cbCompetenciaAnoFinal.DisplayMember = "descricao";
