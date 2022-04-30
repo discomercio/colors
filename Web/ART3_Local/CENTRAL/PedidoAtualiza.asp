@@ -1606,7 +1606,7 @@
 															rEmailDestinatario.campo_texto, _
 															"", _
 															"", _
-															"Edição da forma de pagamento em pedido com status 'Crédito OK'", _
+															"Edição da forma de pagamento em pedido com status 'Crédito OK' (pedido " & pedido_selecionado & ")", _
 															corpo_mensagem, _
 															Now, _
 															id_email, _
@@ -1655,7 +1655,7 @@
 															rEmailDestinatario.campo_texto, _
 															"", _
 															"", _
-															"Alteração do indicador em pedido com status 'Crédito OK'", _
+															"Alteração do indicador em pedido com status 'Crédito OK' (pedido " & pedido_selecionado & ")", _
 															corpo_mensagem, _
 															Now, _
 															id_email, _
@@ -1725,7 +1725,8 @@
 					alerta = Cstr(Err) & ": " & Err.Description
 					end if
 				end if
-			end if
+			end if 'if IsPedidoFilhote(pedido_selecionado)
+
 
 		if alerta = "" then
 			s = "SELECT * FROM t_PEDIDO WHERE pedido='" & pedido_selecionado & "'"
@@ -1869,7 +1870,7 @@
 																rEmailDestinatario.campo_texto, _
 																"", _
 																"", _
-																"Edição da forma de pagamento em pedido com status 'Crédito OK'", _
+																"Edição da forma de pagamento em pedido com status 'Crédito OK' (pedido " & pedido_selecionado & ")", _
 																corpo_mensagem, _
 																Now, _
 																id_email, _
@@ -1916,7 +1917,7 @@
 																rEmailDestinatario.campo_texto, _
 																"", _
 																"", _
-																"Alteração do indicador em pedido com status 'Crédito OK'", _
+																"Alteração do indicador em pedido com status 'Crédito OK' (pedido " & pedido_selecionado & ")", _
 																corpo_mensagem, _
 																Now, _
 																id_email, _
@@ -2842,7 +2843,7 @@
 				set rEmailDestinatario = get_registro_t_parametro(ID_PARAMETRO_EmailDestinatarioAlertaEdicaoCadastroClienteComPedidoCreditoOkEntregaPendente)
 				if Trim("" & rEmailDestinatario.campo_texto) <> "" then
 					
-					corpo_mensagem = "O usuário '" & usuario & "' editou em " & formata_data_hora_sem_seg(Now) & " no módulo Central o endereço do cliente:" & _
+					corpo_mensagem = "O usuário '" & usuario & "' editou em " & formata_data_hora_sem_seg(Now) & " na Central o endereço do cliente:" & _
 									vbCrLf & _
 										cnpj_cpf_formata(r_cliente.cnpj_cpf) & " - " & r_cliente.nome  & _
 										vbCrLf & _
@@ -2857,7 +2858,7 @@
 																		rEmailDestinatario.campo_texto, _
 																		"", _
 																		"", _
-																		"Edição no endereço de cliente que possui pedido com status 'Crédito OK' e entrega pendente", _
+																		"Edição no endereço de cliente que possui pedido com status 'Crédito OK' e entrega pendente (pedido " & r_pedido.pedido & ")", _
 																		corpo_mensagem, _
 																		Now, _
 																		id_email, _
@@ -2877,7 +2878,7 @@
 						s = cnpj_cpf_formata(r_cliente.cnpj_cpf) & " - " & r_cliente.nome
 						end if
 					
-					corpo_mensagem = "O usuário '" & usuario & "' editou em " & formata_data_hora_sem_seg(Now) & " no módulo Loja o endereço de entrega do pedido " & r_pedido.pedido & ":" & _
+					corpo_mensagem = "O usuário '" & usuario & "' editou em " & formata_data_hora_sem_seg(Now) & " na Central o endereço de entrega do pedido " & r_pedido.pedido & ":" & _
 									vbCrLf & _
 										"Cliente: " & s & _
 										vbCrLf & _
@@ -2892,7 +2893,7 @@
 																		rEmailDestinatario.campo_texto, _
 																		"", _
 																		"", _
-																		"Edição no endereço de entrega do pedido " & r_pedido.pedido & " com status 'Crédito OK' e entrega pendente", _
+																		"Edição no endereço de entrega em pedido com status 'Crédito OK' e entrega pendente (pedido " & r_pedido.pedido & ")", _
 																		corpo_mensagem, _
 																		Now, _
 																		id_email, _
@@ -2939,7 +2940,7 @@
 														rEmailDestinatario.campo_texto, _
 														"", _
 														"", _
-														"Edição da forma de pagamento incluindo o meio de pagamento: " & sMeioPagtoMonitoradoIdentificado, _
+														"Edição da forma de pagamento incluindo o meio de pagamento: " & sMeioPagtoMonitoradoIdentificado & " (pedido " & pedido_selecionado & ")", _
 														corpo_mensagem, _
 														Now, _
 														id_email, _
@@ -2947,6 +2948,37 @@
 						end if 'if Trim("" & rEmailDestinatario.campo_texto) <> ""
 					end if 'if sMeioPagtoMonitoradoIdentificado <> ""
 				end if 'if Not le_pedido(pedido_selecionado, r_pedido_atualizado, msg_erro) - else
+			end if 'if alerta = ""
+
+		if alerta = "" then
+			'Monitoramento da forma de pagamento "à vista"
+			if houve_edicao_forma_pagto_pedido(r_pedido, r_pedido_atualizado) And (CStr(r_pedido_atualizado.tipo_parcelamento) = COD_FORMA_PAGTO_A_VISTA) then
+				set rEmailDestinatario = get_registro_t_parametro(ID_PARAMETRO_EmailDestinatarioAlertaEdicaoFormaPagtoAVista)
+				if Trim("" & rEmailDestinatario.campo_texto) <> "" then
+					corpo_mensagem = "O usuário '" & usuario & "' editou em " & formata_data_hora_sem_seg(Now) & " na Central a forma de pagamento do pedido " & pedido_selecionado & " para: " & monta_descricao_forma_pagto_pedido_com_quebra_linha(r_pedido_atualizado, quebraLinhaFormaPagto) & vbCrLf & _
+									vbCrLf & _
+									"Forma de pagamento anterior:" & vbCrLf & _
+									monta_descricao_forma_pagto_pedido_com_quebra_linha(r_pedido, quebraLinhaFormaPagto) & vbCrLf & _
+									vbCrLf & _
+									"Forma de pagamento atual:" & vbCrLf & _
+									monta_descricao_forma_pagto_pedido_com_quebra_linha(r_pedido_atualizado, quebraLinhaFormaPagto) & vbCrLf & _
+									vbCrLf & _
+									"Informações adicionais:" & vbCrLf & _
+									"Status da análise de crédito: " & x_analise_credito(r_pedido.analise_credito) & vbCrLf & _
+									"Status de pagamento: " & Ucase(x_status_pagto(r_pedido.st_pagto))
+
+					EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__SENTINELA_SISTEMA), _
+													"", _
+													rEmailDestinatario.campo_texto, _
+													"", _
+													"", _
+													"Edição da forma de pagamento para: '" & monta_descricao_forma_pagto_pedido_com_quebra_linha(r_pedido_atualizado, quebraLinhaFormaPagto) & "' (pedido " & pedido_selecionado & ")", _
+													corpo_mensagem, _
+													Now, _
+													id_email, _
+													msg_erro_grava_email
+					end if 'if Trim("" & rEmailDestinatario.campo_texto) <> ""
+				end if 'if houve_edicao_forma_pagto_pedido(r_pedido, r_pedido_atualizado) And (CStr(r_pedido_atualizado.tipo_parcelamento) = COD_FORMA_PAGTO_A_VISTA)
 			end if 'if alerta = ""
 
 		if alerta = "" then
@@ -2975,7 +3007,7 @@
 														rEmailDestinatario.campo_texto, _
 														"", _
 														"", _
-														"Edição da forma de pagamento que possui o meio de pagamento: '" & x_opcao_forma_pagamento(idMeioPagtoMonitorado) & "'", _
+														"Edição da forma de pagamento que possui o meio de pagamento: '" & x_opcao_forma_pagamento(idMeioPagtoMonitorado) & "' (pedido " & pedido_selecionado & ")", _
 														corpo_mensagem, _
 														Now, _
 														id_email, _
