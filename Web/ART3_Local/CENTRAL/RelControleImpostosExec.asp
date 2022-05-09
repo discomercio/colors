@@ -103,6 +103,9 @@
     set rPTimeout = get_registro_t_parametro(ID_PARAMETRO_CtrlRelatorio_RelControleImpostos_TimeoutLockEmMinutos)
     set rPQtdeMax = get_registro_t_parametro(ID_PARAMETRO_CtrlRelatorio_RelControleImpostos_MaxQtdeResultadoPorConsulta)
 
+	dim max_dias_link_danfe_disponivel
+	max_dias_link_danfe_disponivel = obtem_max_periodo_link_danfe_disponivel_no_pedido_em_dias()
+
     dim blnErroAcessoConcorrente, s_msg_erro_acesso_concorrente
     blnErroAcessoConcorrente = False
     s_msg_erro_acesso_concorrente = ""
@@ -459,7 +462,7 @@ dim linkXmlNFe
 			s_num_nfe = NFeFormataNumeroNF(Trim("" & r("NFe_numero_NF")))
 			if s_num_nfe <> "" then
 				s = "<span class='C'" & s_html_color & ">" & NFeFormataNumeroNF(s_num_nfe) & "</span>"
-				s_link_nfe = monta_link_para_DANFE(s_pedido, MAX_PERIODO_LINK_DANFE_DISPONIVEL_NO_PEDIDO_EM_DIAS, s)
+				s_link_nfe = monta_link_para_DANFE(s_pedido, max_dias_link_danfe_disponivel, s)
 				s_link_habilita_nfe = s_link_nfe
 				if s_link_nfe = "" then s_link_nfe = "<span class='C' style='color:gray;'>" & s_num_nfe & "</span>"
 			else

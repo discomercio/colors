@@ -168,7 +168,7 @@
 													rEmailDestinatario.campo_texto, _
 													"", _
 													"", _
-													"Alteração do indicador em pedido com status 'Crédito OK'", _
+													"Alteração do indicador em pedido com status 'Crédito OK' (pedido " & pedido_selecionado & ")", _
 													corpo_mensagem, _
 													Now, _
 													id_email, _

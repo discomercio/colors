@@ -29,7 +29,7 @@ namespace Financeiro
                 public const string NOME_OWNER = "Artven";
                 public const string NOME_SISTEMA = "Financeiro";
                 public const string VERSAO_NUMERO = "1.38";
-                public const string VERSAO_DATA = "12.ABR.2022";
+                public const string VERSAO_DATA = "27.ABR.2022";
                 public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
                 public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
                 public const string M_DESCRICAO = "Módulo para execução de rotinas financeiras";
@@ -479,6 +479,10 @@ namespace Financeiro
 			 *		  Ajustes no Relatório Sintético Comparativo de Movimentos para parametrizar a quantidade
 			 *		  de anos do período no comparativo mês a mês.
 			 * -----------------------------------------------------------------------------------------------
+			 * v 1.38(C) - 27.04.2022 - por HHO
+			 *		  Ajustes no Relatório Sintético Comparativo de Movimentos para parametrizar a quantidade
+			 *		  de anos do período no comparativo mês a mês de forma que sejam exibidos anos futuros.
+			 * -----------------------------------------------------------------------------------------------
 			 * v 1.39 - XX.XX.20XX - por XXX
 			 *		  
 			 * -----------------------------------------------------------------------------------------------
@@ -926,9 +930,10 @@ namespace Financeiro
 					public const string SERASA_RECIPROCIDADE_CNPJ_IGNORADOS = "SerasaReciprocidadeCnpjIgnorados";
 					public const string ID_PARAMETRO_FLAG_PEDIDO_MEMORIZACAOCOMPLETAENDERECOS = "Flag_Pedido_MemorizacaoCompletaEnderecos";
 					public const string ID_PARAMETRO_FIN_REL_SINT_COMP_MOVTO_COMP_MES_A_MES_PERIODO_EM_ANOS = "FIN_RelSinteticoComparativoMovimentos_ComparativoMesAMes_PeriodoEmAnos";
+					public const string ID_PARAMETRO_FIN_REL_SINT_COMP_MOVTO_COMP_MES_A_MES_FUTURO_PERIODO_EM_ANOS = "FIN_RelSinteticoComparativoMovimentos_ComparativoMesAMes_Futuro_PeriodoEmAnos";
 				}
-                #endregion
-            }
+				#endregion
+			}
             #endregion
 
             #region [ Códigos para formas de pagamento do pedido ]

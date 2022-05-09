@@ -4097,23 +4097,6 @@ end function
 
 
 ' ___________________________________________________
-' X _ S T _ O R C A M E N T O _ F E C H A M E N T O
-'
-function x_st_orcamento_fechamento(byval status)
-dim s
-	status = Trim("" & status)
-	select case status
-		case ST_FECHAMENTO_PEDIDO_FECHOU: s="Fechou o pedido"
-		case ST_FECHAMENTO_PEDIDO_NAO_FECHOU: s="Não fechou o pedido"
-		case ST_FECHAMENTO_PEDIDO_CONCORRENTE: s="Comprou com o concorrente"
-		case else s=""
-		end select
-	x_st_orcamento_fechamento=s
-end function
-
-
-
-' ___________________________________________________
 ' D E S C R I C A O _ A N A L I S E _ C R E D I T O
 '
 function descricao_analise_credito(byval codigo)
@@ -4180,24 +4163,6 @@ dim s_cor
 		case else s_cor="black"
 		end select
 	x_analise_credito_cor=s_cor
-end function
-
-
-
-' ___________________________________________________
-' X _ E T G _ I M E D I A T A
-'
-function x_etg_imediata(byval codigo)
-dim s
-	codigo = Trim("" & codigo)
-	select case codigo
-		case COD_ETG_IMEDIATA_ST_INICIAL: s=""
-		case COD_ETG_IMEDIATA_NAO: s="Entrega imediata: NÃO"
-		case COD_ETG_IMEDIATA_SIM: s="Entrega imediata: SIM"
-		case COD_ETG_IMEDIATA_NAO_DEFINIDO: s=""
-		case else s=""
-		end select
-	x_etg_imediata=s
 end function
 
 
@@ -4437,6 +4402,19 @@ end function
 function obtem_perc_limite_RA_sem_desagio
 dim msg_erro
 	obtem_perc_limite_RA_sem_desagio = converte_numero(le_parametro_bd(ID_PARAM_PERC_LIMITE_RA_SEM_DESAGIO, msg_erro))
+end function
+
+
+
+' ___________________________________________________________
+' OBTEM MAX PERIODO LINK DANFE DISPONIVEL NO PEDIDO EM DIAS
+'
+function obtem_max_periodo_link_danfe_disponivel_no_pedido_em_dias
+dim rParam
+	obtem_max_periodo_link_danfe_disponivel_no_pedido_em_dias = 0
+	set rParam = get_registro_t_parametro(ID_PARAM_MAX_PERIODO_LINK_DANFE_DISPONIVEL_NO_PEDIDO_EM_DIAS)
+	if Trim("" & rParam.id) <> "" then obtem_max_periodo_link_danfe_disponivel_no_pedido_em_dias = rParam.campo_inteiro
+	set rParam = Nothing
 end function
 
 
@@ -5771,7 +5749,7 @@ end function
 ' LE NFE EMITENTE
 '
 function le_nfe_emitente(ByVal id)
-dim r, rx, s
+dim r, rx, ry, s
 	set rx = New cl_NFE_EMITENTE
 	limpa_cl_NFE_EMITENTE rx
 	
@@ -5822,7 +5800,31 @@ dim r, rx, s
 	
 	if r.State <> 0 then r.Close
 	set r = nothing
+
+	if rx.id <> 0 then
+		s = "SELECT * FROM t_NFe_EMITENTE_CFG_DANFE WHERE (id_nfe_emitente = " & rx.id & ") ORDER BY ordenacao"
+		set r = cn.Execute(s)
+		do while Not r.Eof
+			set ry = new cl_NFE_EMITENTE_CFG_DANFE
+			ry.id = r("id")
+			ry.id_nfe_emitente = r("id_nfe_emitente")
+			ry.min_tamanho_serie_NFe = r("min_tamanho_serie_NFe")
+			ry.min_tamanho_numero_NFe = r("min_tamanho_numero_NFe")
+			ry.convencao_nome_arq_pdf_danfe = Trim("" & r("convencao_nome_arq_pdf_danfe"))
+			ry.diretorio_pdf_danfe = Trim("" & r("diretorio_pdf_danfe"))
+			ry.convencao_nome_arq_xml_nfe = Trim("" & r("convencao_nome_arq_xml_nfe"))
+			ry.diretorio_xml_nfe = Trim("" & r("diretorio_xml_nfe"))
+			ry.dt_hr_cadastro = r("dt_hr_cadastro")
+			ry.ordenacao = r("ordenacao")
+			rx.AddItemCfgDanfe(ry)
+			r.MoveNext
+			loop
+		if r.State <> 0 then r.Close
+		set r = nothing
+		end if
+
 end function
+
 
 ' _______________________________________________________
 ' obtem_apelido_empresa_NFe_emitente

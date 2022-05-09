@@ -92,6 +92,9 @@
 	if Not rs.Eof then s_sessionToken = Trim("" & rs("SessionTokenModuloLoja"))
 	if rs.State <> 0 then rs.Close
 
+	dim max_dias_link_danfe_disponivel
+	max_dias_link_danfe_disponivel = obtem_max_periodo_link_danfe_disponivel_no_pedido_em_dias()
+
 	dim r_pedido, v_item, v_item_servico, qtdeItemServico, alerta
 	alerta=""
 	if Not le_pedido(pedido_selecionado, r_pedido, msg_erro) then 
@@ -1478,12 +1481,12 @@ function fPEDPagto(f) {
 	</td>
 	<td width="145" align="left"><p class="Rf">VENDEDOR</p><p class="C"><%=r_pedido.vendedor%>&nbsp;</p></td>
 	<% if operacao_permitida(OP_LJA_PEDIDO_EXIBIR_LINK_DANFE, s_lista_operacoes_permitidas) then
-			s = monta_link_para_DANFE_com_icone_PDF(pedido_selecionado, MAX_PERIODO_LINK_DANFE_DISPONIVEL_NO_PEDIDO_EM_DIAS)
+			s = monta_link_para_DANFE_com_icone_PDF(pedido_selecionado, max_dias_link_danfe_disponivel)
 			if s <> "" then %>
 			<td class="ME" style="width:22px" align="center"><%=s%></td>
 	<%		end if 
 			if r_pedido.loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
-				s = monta_link_para_DANFE_remessa_com_icone_PDF(pedido_selecionado, MAX_PERIODO_LINK_DANFE_DISPONIVEL_NO_PEDIDO_EM_DIAS)
+				s = monta_link_para_DANFE_remessa_com_icone_PDF(pedido_selecionado, max_dias_link_danfe_disponivel)
 				if s <> "" then %>
 					 <td class="ME" style="width:22px" align="center"><%=s%></td>
 	<%		     end if
@@ -2172,7 +2175,7 @@ function fPEDPagto(f) {
 							readonly tabindex=-1 value='<%=r_pedido.obs_4%>'>
 						<% if operacao_permitida(OP_LJA_PEDIDO_EXIBIR_LINK_DANFE, s_lista_operacoes_permitidas) then
 								if r_pedido.obs_4 <> "" then
-									s = monta_link_para_DANFE_NFe_com_icone_PDF_peq(pedido_selecionado, r_pedido.obs_4, MAX_PERIODO_LINK_DANFE_DISPONIVEL_NO_PEDIDO_EM_DIAS)
+									s = monta_link_para_DANFE_NFe_com_icone_PDF_peq(pedido_selecionado, r_pedido.obs_4, max_dias_link_danfe_disponivel)
 									if s <> "" then Response.Write s
 									end if
 								end if%>
