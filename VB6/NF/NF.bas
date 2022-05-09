@@ -786,6 +786,40 @@ Option Explicit
 '|          |      | - Ajuste gravação campo nItemPed                          |
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
+'|03.02.2022| LHGX |V 2.24                                                     |
+'|          |      | - Funcionalidade para que o DIFAL não seja calculado      |
+'|          |      |   em caso de liminar a favor                              |
+'|__________|______|___________________________________________________________|
+'|06.02.2022| LHGX |V 2.25                                                     |
+'|          |      | - Ajuste da versão anterior para que as NF's internas     |
+'|          |      |   não exibam a mensagem sobre a não-cobrança  do DIFAL    |
+'|__________|______|___________________________________________________________|
+'|25.04.2022| LHGX |V 2.26                                                     |
+'|          |      | - Informações do intermediador de pagamento nas opera-    |
+'|          |      |   ções envolvendo marketplace                             |
+'|          |      | - Registro no log da tela de origem da emissão da NFe     |
+'|          |      |   (automática, manual, triangular)                        |
+'|          |      | - Zerar PIS/COFINS quando natureza da operação for 6949   |
+'|          |      | - Mudança da nomenclatura da pasta local de gravação      |
+'|          |      |   de DANFEs                                               |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
 '|          |      |                                                           |
@@ -797,8 +831,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.23"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  18/01/2022"
+Global Const m_id_versao = "2.26"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  25/04/2022"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"
@@ -1355,7 +1389,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -1657,6 +1691,7 @@ Dim strNomeArqCompletoDanfe As String
 Dim strNumeroNfNormalizado As String
 Dim strSerieNfNormalizado As String
 Dim strNomeEmitente As String
+Dim strPastaEmitente As String
 Dim strNfeT1ServidorBd As String
 Dim strNfeT1NomeBd As String
 Dim strNfeT1UsuarioBd As String
@@ -1677,7 +1712,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -1789,6 +1824,8 @@ Dim rsNFeRetornoSPDanfe As ADODB.Recordset
         If id_nfe_emitente <> id_nfe_emitente_anterior Then
             s = "SELECT" & _
                     " razao_social," & _
+                    " cnpj," & _
+                    " apelido," & _
                     " NFe_T1_servidor_BD," & _
                     " NFe_T1_nome_BD," & _
                     " NFe_T1_usuario_BD," & _
@@ -1811,6 +1848,12 @@ Dim rsNFeRetornoSPDanfe As ADODB.Recordset
             strNfeT1NomeBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_nome_BD"))
             strNfeT1UsuarioBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_usuario_BD"))
             strNfeT1SenhaCriptografadaBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_senha_BD"))
+            'novo padrão de nome da pasta para DANFEs: <cnpj>-<apelido_com_underlines_substituindo_barras>
+            '(ex: 23209013000332-DIS_ES)
+            strPastaEmitente = Trim$("" & t_NFE_EMITENTE("cnpj"))
+            strPastaEmitente = retorna_so_digitos(strPastaEmitente)
+            strPastaEmitente = strPastaEmitente & "-" & Trim$("" & t_NFE_EMITENTE("apelido"))
+            strPastaEmitente = substitui_caracteres(strPastaEmitente, "/", "_")
             
             decodifica_dado strNfeT1SenhaCriptografadaBd, s_aux
             s = "Provider=" & BD_OLEDB_PROVIDER & _
@@ -1862,7 +1905,7 @@ Dim rsNFeRetornoSPDanfe As ADODB.Recordset
                 
                 '   ARQUIVO DE DANFE
                     strNomeArqDanfe = "NFe_" & strSerieNfNormalizado & "_" & strNumeroNfNormalizado & ".pdf"
-                    strDiretorioPdfDanfe = barra_invertida_add(App.Path) & "DANFE\" & strNomeEmitente
+                    strDiretorioPdfDanfe = barra_invertida_add(App.Path) & "DANFE\" & strPastaEmitente
                     
                     If Not DirectoryExists(strDiretorioPdfDanfe, s_erro) Then
                         If Not ForceDirectories(strDiretorioPdfDanfe, s_erro) Then
@@ -2033,7 +2076,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -2332,6 +2375,7 @@ Dim strNomeArqCompletoDanfe As String
 Dim strNumeroNfNormalizado As String
 Dim strSerieNfNormalizado As String
 Dim strNomeEmitente As String
+Dim strPastaEmitente As String
 Dim strNfeT1ServidorBd As String
 Dim strNfeT1NomeBd As String
 Dim strNfeT1UsuarioBd As String
@@ -2350,7 +2394,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -2469,6 +2513,12 @@ Dim rsNFeRetornoSPDanfe As ADODB.Recordset
             strNfeT1NomeBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_nome_BD"))
             strNfeT1UsuarioBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_usuario_BD"))
             strNfeT1SenhaCriptografadaBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_senha_BD"))
+            'novo padrão de nome da pasta para DANFEs: <cnpj>-<apelido_com_underlines_substituindo_barras>
+            '(ex: 23209013000332-DIS_ES)
+            strPastaEmitente = Trim$("" & t_NFE_EMITENTE("cnpj"))
+            strPastaEmitente = retorna_so_digitos(strPastaEmitente)
+            strPastaEmitente = strPastaEmitente & "-" & Trim$("" & t_NFE_EMITENTE("apelido"))
+            strPastaEmitente = substitui_caracteres(strPastaEmitente, "/", "_")
             
             decodifica_dado strNfeT1SenhaCriptografadaBd, s_aux
             s = "Provider=" & BD_OLEDB_PROVIDER & _
@@ -2520,7 +2570,7 @@ Dim rsNFeRetornoSPDanfe As ADODB.Recordset
                 
                 '   ARQUIVO DE DANFE
                     strNomeArqDanfe = "NFe_" & strSerieNfNormalizado & "_" & strNumeroNfNormalizado & ".pdf"
-                    strDiretorioPdfDanfe = barra_invertida_add(App.Path) & "DANFE\" & strNomeEmitente
+                    strDiretorioPdfDanfe = barra_invertida_add(App.Path) & "DANFE\" & strPastaEmitente
                     
                     If Not DirectoryExists(strDiretorioPdfDanfe, s_erro) Then
                         If Not ForceDirectories(strDiretorioPdfDanfe, s_erro) Then

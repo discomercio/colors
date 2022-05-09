@@ -5107,8 +5107,8 @@ Private Sub cb_natureza_Click()
     If (digito = "2") Or (digito = "6") Then cb_loc_dest.ListIndex = 1
     
     s_cfop = left(Trim(cb_natureza.Text), 5)
-    If s_cfop = ("5.915") Or s_cfop = ("6.152") Or s_cfop = ("5.949") Or _
-       s_cfop = ("6.117") Or s_cfop = ("6.923") Or s_cfop = ("6.910") Then
+    If (s_cfop = "5.915") Or (s_cfop = "6.152") Or (s_cfop = "5.949") Or (s_cfop = "6.949") Or _
+       (s_cfop = "6.117") Or (s_cfop = "6.923") Or (s_cfop = "6.910") Then
        cb_zerar_COFINS.ListIndex = 4
        cb_zerar_PIS.ListIndex = 4
     Else
@@ -6139,6 +6139,7 @@ Dim s_aux As String
 Dim strNumeroNfNormalizado As String
 Dim strSerieNfNormalizado As String
 Dim strNomeEmitente As String
+Dim strPastaEmitente As String
 Dim strNfeT1ServidorBd As String
 Dim strNfeT1NomeBd As String
 Dim strNfeT1UsuarioBd As String
@@ -6178,6 +6179,8 @@ Dim dbcNFe As ADODB.Connection
 
     s = "SELECT" & _
         " razao_social," & _
+        " cnpj," & _
+        " apelido," & _
         " NFe_T1_servidor_BD," & _
         " NFe_T1_nome_BD," & _
         " NFe_T1_usuario_BD," & _
@@ -6197,6 +6200,12 @@ Dim dbcNFe As ADODB.Connection
     strNfeT1NomeBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_nome_BD"))
     strNfeT1UsuarioBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_usuario_BD"))
     strNfeT1SenhaCriptografadaBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_senha_BD"))
+    'novo padrão de nome da pasta para DANFEs: <cnpj>-<apelido_com_underlines_substituindo_barras>
+    '(ex: 23209013000332-DIS_ES)
+    strPastaEmitente = Trim$("" & t_NFE_EMITENTE("cnpj"))
+    strPastaEmitente = retorna_so_digitos(strPastaEmitente)
+    strPastaEmitente = strPastaEmitente & "-" & Trim$("" & t_NFE_EMITENTE("apelido"))
+    strPastaEmitente = substitui_caracteres(strPastaEmitente, "/", "_")
     
     decodifica_dado strNfeT1SenhaCriptografadaBd, s_aux
     s = "Provider=" & BD_OLEDB_PROVIDER & _
@@ -8402,6 +8411,7 @@ Dim strNomeArqCompletoDanfe As String
 Dim strNumeroNfNormalizado As String
 Dim strSerieNfNormalizado As String
 Dim strNomeEmitente As String
+Dim strPastaEmitente As String
 Dim strNfeT1ServidorBd As String
 Dim strNfeT1NomeBd As String
 Dim strNfeT1UsuarioBd As String
@@ -8422,7 +8432,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hwnd As Long
+Dim hWnd As Long
 
 Dim blnOperacaoNaoTriangular As Boolean
 
@@ -8555,6 +8565,8 @@ Dim dbcNFe As ADODB.Connection
                 
                 s = "SELECT" & _
                         " razao_social," & _
+                        " cnpj," & _
+                        " apelido," & _
                         " NFe_T1_servidor_BD," & _
                         " NFe_T1_nome_BD," & _
                         " NFe_T1_usuario_BD," & _
@@ -8575,6 +8587,12 @@ Dim dbcNFe As ADODB.Connection
                 strNfeT1NomeBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_nome_BD"))
                 strNfeT1UsuarioBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_usuario_BD"))
                 strNfeT1SenhaCriptografadaBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_senha_BD"))
+                'novo padrão de nome da pasta para DANFEs: <cnpj>-<apelido_com_underlines_substituindo_barras>
+                '(ex: 23209013000332-DIS_ES)
+                strPastaEmitente = Trim$("" & t_NFE_EMITENTE("cnpj"))
+                strPastaEmitente = retorna_so_digitos(strPastaEmitente)
+                strPastaEmitente = strPastaEmitente & "-" & Trim$("" & t_NFE_EMITENTE("apelido"))
+                strPastaEmitente = substitui_caracteres(strPastaEmitente, "/", "_")
                 
                 decodifica_dado strNfeT1SenhaCriptografadaBd, s_aux
                 s = "Provider=" & BD_OLEDB_PROVIDER & _
@@ -8624,7 +8642,7 @@ Dim dbcNFe As ADODB.Connection
                             End If
                         
                         strNomeArqDanfe = "NFe_" & strSerieNfNormalizado & "_" & strNumeroNfNormalizado & "_" & strPedido & ".pdf"
-                        strDiretorioPdfDanfe = barra_invertida_add(App.Path) & "DANFE\" & strNomeEmitente
+                        strDiretorioPdfDanfe = barra_invertida_add(App.Path) & "DANFE\" & strPastaEmitente
                         
                         If Not DirectoryExists(strDiretorioPdfDanfe, s_erro) Then
                             If Not ForceDirectories(strDiretorioPdfDanfe, s_erro) Then
@@ -8693,7 +8711,7 @@ Dim dbcNFe As ADODB.Connection
                             End If
                         
                         strNomeArqDanfe = "NFe_" & strSerieNfNormalizado & "_" & strNumeroNfNormalizado & "_" & strPedido & ".pdf"
-                        strDiretorioPdfDanfe = barra_invertida_add(App.Path) & "DANFE\" & strNomeEmitente
+                        strDiretorioPdfDanfe = barra_invertida_add(App.Path) & "DANFE\" & strPastaEmitente
                         
                         If Not DirectoryExists(strDiretorioPdfDanfe, s_erro) Then
                             If Not ForceDirectories(strDiretorioPdfDanfe, s_erro) Then
@@ -8775,6 +8793,8 @@ PROXIMO_PEDIDO_TRI:
                 
                 s = "SELECT" & _
                         " razao_social," & _
+                        " cnpj," & _
+                        " apelido," & _
                         " NFe_T1_servidor_BD," & _
                         " NFe_T1_nome_BD," & _
                         " NFe_T1_usuario_BD," & _
@@ -8795,6 +8815,12 @@ PROXIMO_PEDIDO_TRI:
                 strNfeT1NomeBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_nome_BD"))
                 strNfeT1UsuarioBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_usuario_BD"))
                 strNfeT1SenhaCriptografadaBd = Trim$("" & t_NFE_EMITENTE("NFe_T1_senha_BD"))
+                'novo padrão de nome da pasta para DANFEs: <cnpj>-<apelido_com_underlines_substituindo_barras>
+                '(ex: 23209013000332-DIS_ES)
+                strPastaEmitente = Trim$("" & t_NFE_EMITENTE("cnpj"))
+                strPastaEmitente = retorna_so_digitos(strPastaEmitente)
+                strPastaEmitente = strPastaEmitente & "-" & Trim$("" & t_NFE_EMITENTE("apelido"))
+                strPastaEmitente = substitui_caracteres(strPastaEmitente, "/", "_")
                 
                 decodifica_dado strNfeT1SenhaCriptografadaBd, s_aux
                 s = "Provider=" & BD_OLEDB_PROVIDER & _
@@ -8840,7 +8866,7 @@ PROXIMO_PEDIDO_TRI:
                         End If
                     
                     strNomeArqDanfe = "NFe_" & strSerieNfNormalizado & "_" & strNumeroNfNormalizado & "_" & strPedido & ".pdf"
-                    strDiretorioPdfDanfe = barra_invertida_add(App.Path) & "DANFE\" & strNomeEmitente
+                    strDiretorioPdfDanfe = barra_invertida_add(App.Path) & "DANFE\" & strPastaEmitente
                     
                     If Not DirectoryExists(strDiretorioPdfDanfe, s_erro) Then
                         If Not ForceDirectories(strDiretorioPdfDanfe, s_erro) Then
@@ -9085,6 +9111,11 @@ Dim strMarketPlaceCNPJ As String
 Dim strMarketPlaceCadIntTran As String
 Dim strPagtoAntecipadoStatus As Integer
 Dim strPagtoAntecipadoQuitadoStatus As Integer
+Dim s_Texto_DIFAL_UF As String
+Dim strMarketplaceCodOrigemGrupo As String
+Dim strCnpjIntermediadorPagto As String
+Dim strMetodoPagto As String
+Dim strMeioPagtoSefaz As String
 
 ' FLAGS
 Dim blnAchou As Boolean
@@ -9103,6 +9134,8 @@ Dim blnHaProdutoSemDadosIbpt As Boolean
 Dim blnExisteMemorizacaoEndereco As Boolean
 Dim blnNotadeCompromisso As Boolean
 Dim blnRemessaEntregaFutura As Boolean
+Dim blnIgnorarDIFAL As Boolean
+Dim blnEncontrouMeioPagtoSkyHub As Boolean
 
 ' CONTADORES
 Dim i As Integer
@@ -9136,6 +9169,7 @@ Dim lngNFeNumeroNfManual As Long
 Dim intContribuinteICMS As Integer
 Dim intAnoPartilha As Integer
 Dim intImprimeIntermediadorAusente As Integer
+Dim intInformarIntermediadorPagto As Integer
 
 ' BANCO DE DADOS
 Dim t_PEDIDO As ADODB.Recordset
@@ -9151,6 +9185,9 @@ Dim t_NFe_EMISSAO As ADODB.Recordset
 Dim t_NFe_IMAGEM As ADODB.Recordset
 Dim t_T1_NFE_INUTILIZA As ADODB.Recordset
 Dim t_CODIGO_DESCRICAO As ADODB.Recordset
+Dim t_NFe_UF_PARAMETRO As ADODB.Recordset
+Dim t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT As ADODB.Recordset
+Dim t_CFG_MKTP_INTERMEDIADOR_PAGTO As ADODB.Recordset
 Dim rsNFeRetornoSPSituacao As ADODB.Recordset
 Dim rsNFeRetornoSPEmite As ADODB.Recordset
 Dim cmdNFeSituacao As New ADODB.Command
@@ -9497,7 +9534,30 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         .CacheSize = BD_CACHE_CONSULTA
         End With
         
+  ' t_NFe_UF_PARAMETRO
+    Set t_NFe_UF_PARAMETRO = New ADODB.Recordset
+    With t_NFe_UF_PARAMETRO
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
+        
+  't_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT
+    Set t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT = New ADODB.Recordset
+    With t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
   
+  't_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT
+    Set t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT = New ADODB.Recordset
+    With t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
+          
 
 '   VERIFICA CADA UM DOS PEDIDOS
     strIdCliente = ""
@@ -9508,6 +9568,14 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strConfirmacaoEtgImediata = ""
     strTransportadoraId = ""
     strPedidoBSMarketplace = ""
+    strMetodoPagto = ""
+    intInformarIntermediadorPagto = 0
+    strCnpjIntermediadorPagto = ""
+    strMeioPagtoSefaz = ""
+    strMarketplaceCodOrigemGrupo = ""
+    blnEncontrouMeioPagtoSkyHub = False
+
+    
     rNFeImg.ide__indPag = "2" ' Forma de pagamento: outros
     For i = LBound(v_pedido) To UBound(v_pedido)
         If Trim$(v_pedido(i)) <> "" Then
@@ -9632,11 +9700,10 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 If s_erro <> "" Then s_erro = s_erro & vbCrLf
                 s_erro = s_erro & "Não foi encontrado nenhum produto relacionado ao pedido " & Trim$(v_pedido(i)) & "!!"
                 End If
-            End If
             
             'obter as informações de marketplace
-            If (param_nfintermediador.campo_inteiro = 1) And (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") Then
-                s = "SELECT o.codigo, o.descricao, og.parametro_campo_texto, og.parametro_2_campo_texto, og.parametro_3_campo_flag  " & _
+            If (s_erro = "") And (param_nfintermediador.campo_inteiro = 1) And (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") Then
+                s = "SELECT o.codigo, o.descricao, og.parametro_campo_texto, og.parametro_2_campo_texto, og.parametro_3_campo_flag, o.codigo_pai  " & _
                     "FROM (select * from t_CODIGO_DESCRICAO where grupo = 'PedidoECommerce_Origem') o  " & _
                         "INNER JOIN (select * from t_CODIGO_DESCRICAO where grupo = 'PedidoECommerce_Origem_Grupo') og  " & _
                         "on o.codigo_pai = og.codigo " & _
@@ -9650,9 +9717,49 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     strMarketPlaceCNPJ = Trim$("" & t_CODIGO_DESCRICAO("parametro_campo_texto"))
                     strMarketPlaceCadIntTran = Trim$("" & t_CODIGO_DESCRICAO("parametro_2_campo_texto"))
                     intImprimeIntermediadorAusente = t_CODIGO_DESCRICAO("parametro_3_campo_flag")
+                    strMarketplaceCodOrigemGrupo = Trim$("" & t_CODIGO_DESCRICAO("codigo_pai"))
                     End If
                     
+                'verificar tabela de configuração de marketplaces para obter parametros
+                If strMarketPlaceCNPJ <> "" Then
+                    s = "SELECT * FROM t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT WHERE pedido = '" & Trim$(v_pedido(i)) & "' "
+                    If t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT.State <> adStateClosed Then t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT.Close
+                    t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT.Open s, dbc, , , adCmdText
+                    If Not t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT.EOF Then
+                        strMetodoPagto = Trim$("" & t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT("method"))
+                        If strMetodoPagto <> "" Then
+                            s = "SELECT * FROM t_CFG_MKTP_INTERMEDIADOR_PAGTO " & _
+                                "WHERE IdCodigoDescricaoCodigo = '" & strMarketplaceCodOrigemGrupo & "' " & _
+                                "AND PaymentMethod = '" & strMetodoPagto & "' "
+                            If t_CFG_MKTP_INTERMEDIADOR_PAGTO.State <> adStateClosed Then t_CFG_MKTP_INTERMEDIADOR_PAGTO.Close
+                            t_CFG_MKTP_INTERMEDIADOR_PAGTO.Open s, dbc, , , adCmdText
+                            If Not t_CFG_MKTP_INTERMEDIADOR_PAGTO.EOF Then
+                                intInformarIntermediadorPagto = t_CFG_MKTP_INTERMEDIADOR_PAGTO("StInformarIntermediadorPagto")
+                                strCnpjIntermediadorPagto = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("CnpjIntermediadorPagto"))
+                                strMeioPagtoSefaz = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("CodigoMeioPagtoSefaz"))
+                                blnEncontrouMeioPagtoSkyHub = True
+                                End If
+                            End If
+                                                
+                        'se não encontrar meio pagto, procurar OUTROS
+                        If Not blnEncontrouMeioPagtoSkyHub Then
+                            s = "SELECT * FROM t_CFG_MKTP_INTERMEDIADOR_PAGTO " & _
+                                "WHERE IdCodigoDescricaoCodigo = '" & strMarketplaceCodOrigemGrupo & "' " & _
+                                "AND PaymentMethod = '" & "*_OUTROS_*" & "' "
+                            If t_CFG_MKTP_INTERMEDIADOR_PAGTO.State <> adStateClosed Then t_CFG_MKTP_INTERMEDIADOR_PAGTO.Close
+                            t_CFG_MKTP_INTERMEDIADOR_PAGTO.Open s, dbc, , , adCmdText
+                            If Not t_CFG_MKTP_INTERMEDIADOR_PAGTO.EOF Then
+                                intInformarIntermediadorPagto = t_CFG_MKTP_INTERMEDIADOR_PAGTO("StInformarIntermediadorPagto")
+                                strCnpjIntermediadorPagto = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("CnpjIntermediadorPagto"))
+                                strMeioPagtoSefaz = Trim$("" & t_CFG_MKTP_INTERMEDIADOR_PAGTO("CodigoMeioPagtoSefaz"))
+                                End If
+                            End If
+                                                
+                        End If
+                    End If
                 End If
+                                                
+            End If
 
             
         Next
@@ -11754,12 +11861,32 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     GoTo NFE_EMITE_ENCERRA_POR_ERRO_CONSISTENCIA
                     End If
                     
+            '   VERIFICAR SE A UF DO DESTINATÁRIO TEM LIMINAR PARA NÃO RECOLHER O DIFAL
+                
+                blnIgnorarDIFAL = False
+                s_Texto_DIFAL_UF = ""
+                
+                s = "SELECT " & _
+                    "st_ignorar_difal, " & _
+                    "texto_adicional" & _
+                    " FROM t_NFe_UF_PARAMETRO" & _
+                    " WHERE" & _
+                    " (UF='" & Trim$(strEndClienteUf) & "')"
+                If t_NFe_UF_PARAMETRO.State <> adStateClosed Then t_NFe_UF_PARAMETRO.Close
+                t_NFe_UF_PARAMETRO.Open s, dbc, , , adCmdText
+                If Not t_NFe_UF_PARAMETRO.EOF Then
+                    blnIgnorarDIFAL = t_NFe_UF_PARAMETRO("st_ignorar_difal") = 1
+                    s_Texto_DIFAL_UF = Trim$("" & t_NFe_UF_PARAMETRO("texto_adicional"))
+                    End If
+            
+                    
             '   OS CÁLCULOS DE PARTILHA FORAM MOVIDOS PARA CÁ DEVIDO À EXCLUSÃO DE ICMS E DIFAL DAS BASES DE CÁLCULO
             '   DE PIS E COFINS, CONFORME DECISÃO DO STF
             
                 If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
                     (rNFeImg.dest__indIEDest = "9") And _
                     Not cfop_eh_de_remessa(strCfopCodigo) And _
+                    Not blnIgnorarDIFAL And _
                     (vl_ICMS > 0) Then
                     
                     If IsNumeric(.fcp) Then
@@ -11899,6 +12026,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
 '                     ((rNFeImg.dest__indIEDest = "2") And (rNFeImg.dest__IE = ""))) Then
                 If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
                     (rNFeImg.dest__indIEDest = "9") And _
+                    Not blnIgnorarDIFAL And _
                     Not cfop_eh_de_remessa(strCfopCodigo) Then
                 
                     strNFeTagIcmsUFDest = ""
@@ -11955,6 +12083,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
                     (rNFeImg.dest__indIEDest = "9") And _
                     Not cfop_eh_de_remessa(strCfopCodigo) And _
+                    Not blnIgnorarDIFAL And _
                     (vl_ICMS > 0) Then
                     strNFeTagBlocoProduto = strNFeTagBlocoProduto & _
                                             "ICMSUFDest;" & vbCrLf & strNFeTagIcmsUFDest
@@ -12033,6 +12162,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
 '                     ((rNFeImg.dest__indIEDest = "2") And (rNFeImg.dest__IE = ""))) Then
     If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
         (rNFeImg.dest__indIEDest = "9") And _
+        Not blnIgnorarDIFAL And _
         Not cfop_eh_de_remessa(strCfopCodigo) Then
             rNFeImg.total__vFCPUFDest = NFeFormataMoeda2Dec(vl_total_FCPUFDest)
             strNFeTagValoresTotais = strNFeTagValoresTotais & _
@@ -12280,6 +12410,15 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "0"
         vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = "90"
         vNFeImgPag(UBound(vNFeImgPag)).pag__vPag = NFeFormataMoeda2Dec(0)
+    'Se a operação envolve marketplace, substituir com os valores obtidos
+    ElseIf (rNFeImg.ide__tpNF = "1") And _
+        (param_nfintermediador.campo_inteiro = 1) And _
+        (strMarketplaceCodOrigem <> "") And _
+        (strMeioPagtoSefaz <> "") Then
+        vNFeImgPag(UBound(vNFeImgPag)).pag__indPag = "0"
+        vNFeImgPag(UBound(vNFeImgPag)).pag__tPag = strMeioPagtoSefaz
+        s = strMetodoPagto
+        vNFeImgPag(UBound(vNFeImgPag)).pag__vPag = rNFeImg.total__vNF
     'Se o pagamento é à vista
     ElseIf strTipoParcelamento = COD_FORMA_PAGTO_A_VISTA Then
         'Para cada meio de pagamento abaixo:
@@ -12485,6 +12624,15 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("vPag", vNFeImgPag(UBound(vNFeImgPag)).pag__vPag)
     'Segundo informado pelo Valter (Target) em e-mail de 27/07/2017, o grupo vcard não deve ser informado no arquivo texto,
     'ele é preenchido pelo sistema
+    'ATUALIZAÇÃO: a partir de 2022, após a nota técnica 2020.006 v 1.30 da SEFAZ, mudou-se o entendimento e o grupo card
+    'passou a ser preenchido quando o meio de pagamento for cartão de crédito e o CNPJ do intermediador do pagamento existir
+    If (param_nfintermediador.campo_inteiro = 1) And _
+        (intInformarIntermediadorPagto = 1) And _
+        (strCnpjIntermediadorPagto <> "") Then
+        strNFeTagPag = strNFeTagPag & vbTab & "card;"
+        strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("tpIntegra", "1")
+        strNFeTagPag = strNFeTagPag & vbTab & NFeFormataCampo("CNPJ", strCnpjIntermediadorPagto)
+        End If
     'informações do intermediador
     If (param_nfintermediador.campo_inteiro = 1) And (strPedidoBSMarketplace <> "") And (strMarketplaceCodOrigem <> "") Then
         'If (strMarketplaceCodOrigem <> "") Then
@@ -12568,7 +12716,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeInfAdicQuadroProdutos = Join(v_pedido, ", ") & strTextoCubagem & strNFeInfAdicQuadroProdutos
     
 '   INFORMAÇÕES SOBRE PARTILHA DO ICMS
-    If PARTILHA_ICMS_ATIVA Then
+    If PARTILHA_ICMS_ATIVA And Not blnIgnorarDIFAL Then
         'DIFAL- suprimir texto em notas de entrada/devolução
         If (rNFeImg.ide__tpNF <> "0") And _
             (strNFeCodFinalidade <> "3") And _
@@ -12582,6 +12730,17 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 End If
             End If
         End If
+        
+'   SE UF TEM LIMINAR PARA NÃO RECOLHIMENTO DO DIFAL, INFORMAR
+    If PARTILHA_ICMS_ATIVA And blnIgnorarDIFAL And _
+        (rNFeImg.ide__idDest = "2") And _
+        (rNFeImg.dest__indIEDest = "9") Then
+        If s_Texto_DIFAL_UF <> "" Then
+            If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
+            strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & s_Texto_DIFAL_UF
+            End If
+        End If
+                
 
 '   INFORMAÇÕES SOBRE MEIO DE PAGAMENTO DAS PARCELAS
     If blnImprimeDadosFatura And _
@@ -13045,6 +13204,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                         "; Msg SP=" & strNFeMsgRetornoSPEmite & _
                         "; Série NFe=" & strSerieNf & _
                         "; Nº NFe=" & strNumeroNf & _
+                        "; tela emissão=Painel Triangular" & _
                         "; tipo=" & cb_tipo_NF & _
                         "; pedido=" & Join(v_pedido, ", ") & _
                         "; natureza operação=" & cb_natureza & _
@@ -13056,7 +13216,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                         "; finalidade=" & Trim$(cb_finalidade) & _
                         "; chave NFe referenciada=" & Trim$(c_chave_nfe_ref) & _
                         "; dados adicionais=" & Trim$(c_dados_adicionais_venda)
-    Call grava_log(usuario.id, "", strLogPedido, "", OP_LOG_NFE_EMISSAO, strLogComplemento)
+    Call grava_log(usuario.id, "", strLogPedido, "", OP_LOG_NFE_EMISSAO_TRIANGULAR, strLogComplemento)
         
         
 '   SUCESSO NA CHAMADA DA STORED PROCEDURE!!
@@ -13194,6 +13354,9 @@ NFE_EMITE_FECHA_TABELAS:
     bd_desaloca_recordset t_NFe_IMAGEM, True
     bd_desaloca_recordset t_T1_NFE_INUTILIZA, True
     bd_desaloca_recordset t_CODIGO_DESCRICAO, True
+    bd_desaloca_recordset t_NFe_UF_PARAMETRO, True
+    bd_desaloca_recordset t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT, True
+    bd_desaloca_recordset t_CFG_MKTP_INTERMEDIADOR_PAGTO, True
     bd_desaloca_recordset rsNFeRetornoSPSituacao, True
     bd_desaloca_recordset rsNFeRetornoSPEmite, True
   
@@ -13342,6 +13505,10 @@ Dim strPedidoBSMarketplace As String
 Dim strMarketplaceCodOrigem As String
 Dim strMarketPlaceCNPJ As String
 Dim strMarketPlaceCadIntTran As String
+Dim strMarketplaceCodOrigemGrupo As String
+Dim strCnpjIntermediadorPagto As String
+Dim strMetodoPagto As String
+Dim strMeioPagtoSefaz As String
 
 
 ' FLAGS
@@ -13360,6 +13527,7 @@ Dim blnExibirTotalTributos As Boolean
 Dim blnHaProdutoSemDadosIbpt As Boolean
 Dim blnExisteMemorizacaoEndereco As Boolean
 Dim blnNotadeCompromisso As Boolean
+Dim blnEncontrouMeioPagtoSkyHub As Boolean
 
 ' CONTADORES
 Dim i As Integer
@@ -13393,6 +13561,7 @@ Dim lngNFeNumeroNfManual As Long
 Dim intContribuinteICMS As Integer
 Dim intAnoPartilha As Integer
 Dim intImprimeIntermediadorAusente As Integer
+Dim intInformarIntermediadorPagto As Integer
 
 ' BANCO DE DADOS
 Dim t_PEDIDO As ADODB.Recordset
@@ -13408,6 +13577,8 @@ Dim t_NFe_EMISSAO As ADODB.Recordset
 Dim t_NFe_IMAGEM As ADODB.Recordset
 Dim t_T1_NFE_INUTILIZA As ADODB.Recordset
 Dim t_CODIGO_DESCRICAO As ADODB.Recordset
+Dim t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT As ADODB.Recordset
+Dim t_CFG_MKTP_INTERMEDIADOR_PAGTO As ADODB.Recordset
 Dim rsNFeRetornoSPSituacao As ADODB.Recordset
 Dim rsNFeRetornoSPEmite As ADODB.Recordset
 Dim cmdNFeSituacao As New ADODB.Command
@@ -13541,7 +13712,13 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeInfAdicQuadroProdutos = ""
     strNFeInfAdicQuadroInfAdic = ""
     strNFeTagDup = ""
-    
+    strMetodoPagto = ""
+    intInformarIntermediadorPagto = 0
+    strCnpjIntermediadorPagto = ""
+    strMeioPagtoSefaz = ""
+    strMarketplaceCodOrigemGrupo = ""
+    blnEncontrouMeioPagtoSkyHub = False
+
     blnTemPedidoComStBemUsoConsumo = False
     blnTemPedidoSemStBemUsoConsumo = False
     blnTemPedidoComTransportadora = False
@@ -13754,6 +13931,21 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         .CacheSize = BD_CACHE_CONSULTA
         End With
         
+  't_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT
+    Set t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT = New ADODB.Recordset
+    With t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
+  
+  't_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT
+    Set t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT = New ADODB.Recordset
+    With t_PEDIDO_MAGENTO_SKYHUB_MKTP_PAYMENT
+        .CursorType = BD_CURSOR_SOMENTE_LEITURA
+        .LockType = BD_POLITICA_LOCKING
+        .CacheSize = BD_CACHE_CONSULTA
+        End With
   
 
 '   VERIFICA CADA UM DOS PEDIDOS
@@ -17070,6 +17262,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                         "; Msg SP=" & strNFeMsgRetornoSPEmite & _
                         "; Série NFe=" & strSerieNf & _
                         "; Nº NFe=" & strNumeroNf & _
+                        "; tela emissão=Painel Triangular" & _
                         "; tipo=" & cb_tipo_NF & _
                         "; pedido=" & Join(v_pedido, ", ") & _
                         "; natureza operação=" & cb_natureza_recebedor & _
@@ -17081,7 +17274,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                         "; finalidade=" & Trim$(cb_finalidade) & _
                         "; chave NFe referenciada=" & Trim$(c_chave_nfe_ref) & _
                         "; dados adicionais=" & Trim$(c_dados_adicionais_venda)
-    Call grava_log(usuario.id, "", strLogPedido, "", OP_LOG_NFE_EMISSAO, strLogComplemento)
+    Call grava_log(usuario.id, "", strLogPedido, "", OP_LOG_NFE_EMISSAO_TRIANGULAR, strLogComplemento)
         
         
 '   SUCESSO NA CHAMADA DA STORED PROCEDURE!!
