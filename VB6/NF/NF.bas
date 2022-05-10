@@ -7,8 +7,8 @@ Option Explicit
 '                          IMPRESSÃO DE NOTA FISCAL
 '                       _______________________________
 ' 
-'                           EDIÇÃO = 072
-'                           DATA   = 15.JUL.2021
+'                           EDIÇÃO = 073
+'                           DATA   = 10.MAI.2022
 '                       _______________________________
 ' 
 ' 
@@ -804,9 +804,9 @@ Option Explicit
 '|          |      |   de DANFEs                                               |
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
-'|XX.XX.XXXX| XXXX |V X.XX                                                     |
-'|          |      |                                                           |
-'|          |      |                                                           |
+'|10.05.2022| LHGX |V 2.27                                                     |
+'|          |      | - Tratamento do campo t_TRANSPORTADORA.email2             |
+'|          |      | - Limitar comprimento de e-mails na tag 'operacional'     |
 '|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
@@ -831,8 +831,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.26"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  25/04/2022"
+Global Const m_id_versao = "2.27"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  10/05/2022"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"
@@ -1389,7 +1389,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hWnd As Long
+Dim hwnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -1712,7 +1712,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hWnd As Long
+Dim hwnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -2076,7 +2076,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hWnd As Long
+Dim hwnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection
@@ -2394,7 +2394,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hWnd As Long
+Dim hwnd As Long
 
 ' BANCO DE DADOS
 Dim dbcNFe As ADODB.Connection

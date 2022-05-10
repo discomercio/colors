@@ -8432,7 +8432,7 @@ Dim lngFileSize As Long
 Dim lngOffset As Long
 Dim bytFile() As Byte
 Dim res As Variant
-Dim hWnd As Long
+Dim hwnd As Long
 
 Dim blnOperacaoNaoTriangular As Boolean
 
@@ -9042,6 +9042,7 @@ Dim strTransportadoraRazaoSocial As String
 Dim strTransportadoraIE As String
 Dim strTransportadoraUF As String
 Dim strTransportadoraEmail As String
+Dim strTransportadoraEmail2 As String
 Dim strListaPedidosSemTransportadora As String
 Dim strListaPedidosComTransportadora As String
 Dim strTipoParcelamento As String
@@ -10595,6 +10596,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strTransportadoraIE = ""
     strTransportadoraUF = ""
     strTransportadoraEmail = ""
+    strTransportadoraEmail2 = ""
     If strTransportadoraId <> "" Then
         s = "SELECT * FROM t_TRANSPORTADORA WHERE id = '" & strTransportadoraId & "'"
         t_TRANSPORTADORA.Open s, dbc, , , adCmdText
@@ -10610,6 +10612,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             strTransportadoraIE = Trim$("" & t_TRANSPORTADORA("ie"))
             strTransportadoraUF = Trim$("" & t_TRANSPORTADORA("uf"))
             strTransportadoraEmail = Trim$("" & t_TRANSPORTADORA("email"))
+            strTransportadoraEmail2 = Trim$("" & t_TRANSPORTADORA("email2"))
             End If
         
         If (strTransportadoraCnpj = "") Or (strTransportadoraRazaoSocial = "") Then
@@ -11084,12 +11087,23 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     Else
         rNFeImg.operacional__email = Trim("" & t_DESTINATARIO("email"))
         End If
-    If (Trim$(rNFeImg.operacional__email) <> "") And (Trim$(strTransportadoraEmail) <> "") Then rNFeImg.operacional__email = rNFeImg.operacional__email & ";"
-    rNFeImg.operacional__email = rNFeImg.operacional__email & strTransportadoraEmail
+    'testar se a concatenação de e-mails não excederá o limite
+    If (Len(rNFeImg.operacional__email & ";" & strTransportadoraEmail) <= MAX_TAM_EMAIL_OPERACIONAL) Then
+        If (Trim$(rNFeImg.operacional__email) <> "") And (Trim$(strTransportadoraEmail) <> "") Then rNFeImg.operacional__email = rNFeImg.operacional__email & ";"
+        rNFeImg.operacional__email = rNFeImg.operacional__email & strTransportadoraEmail
+        End If
+    'testar se a concatenação de e-mails não excederá o limite
+    If (Len(rNFeImg.operacional__email & ";" & strTransportadoraEmail2) <= MAX_TAM_EMAIL_OPERACIONAL) Then
+        If (Trim$(rNFeImg.operacional__email) <> "") And (Trim$(strTransportadoraEmail2) <> "") Then rNFeImg.operacional__email = rNFeImg.operacional__email & ";"
+        rNFeImg.operacional__email = rNFeImg.operacional__email & strTransportadoraEmail2
+        End If
     strEmailXML = Trim("" & t_DESTINATARIO("email_xml"))
-    If Trim$(strEmailXML) <> "" Then
-        If (Trim$(rNFeImg.operacional__email) <> "") Then rNFeImg.operacional__email = rNFeImg.operacional__email & ";"
-        rNFeImg.operacional__email = rNFeImg.operacional__email & strEmailXML
+    'testar se a concatenação de e-mails não excederá o limite
+    If (Len(rNFeImg.operacional__email & ";" & strEmailXML) <= MAX_TAM_EMAIL_OPERACIONAL) Then
+        If Trim$(strEmailXML) <> "" Then
+            If (Trim$(rNFeImg.operacional__email) <> "") Then rNFeImg.operacional__email = rNFeImg.operacional__email & ";"
+            rNFeImg.operacional__email = rNFeImg.operacional__email & strEmailXML
+            End If
         End If
 
     If rNFeImg.operacional__email <> "" Then
@@ -13440,6 +13454,7 @@ Dim strTransportadoraRazaoSocial As String
 Dim strTransportadoraIE As String
 Dim strTransportadoraUF As String
 Dim strTransportadoraEmail As String
+Dim strTransportadoraEmail2 As String
 Dim strListaPedidosSemTransportadora As String
 Dim strListaPedidosComTransportadora As String
 Dim strTipoParcelamento As String
@@ -14927,6 +14942,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strTransportadoraIE = ""
     strTransportadoraUF = ""
     strTransportadoraEmail = ""
+    strTransportadoraEmail2 = ""
     If strTransportadoraId <> "" Then
         s = "SELECT * FROM t_TRANSPORTADORA WHERE id = '" & strTransportadoraId & "'"
         t_TRANSPORTADORA.Open s, dbc, , , adCmdText
@@ -14942,6 +14958,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             strTransportadoraIE = Trim$("" & t_TRANSPORTADORA("ie"))
             strTransportadoraUF = Trim$("" & t_TRANSPORTADORA("uf"))
             strTransportadoraEmail = Trim$("" & t_TRANSPORTADORA("email"))
+            strTransportadoraEmail2 = Trim$("" & t_TRANSPORTADORA("email2"))
             End If
         
         If (strTransportadoraCnpj = "") Or (strTransportadoraRazaoSocial = "") Then
@@ -15319,12 +15336,23 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
 
 '   EMAIL DO DESTINATÁRIO DA NFe
     rNFeImg.operacional__email = Trim("" & t_DESTINATARIO("email"))
-    If (Trim$(rNFeImg.operacional__email) <> "") And (Trim$(strTransportadoraEmail) <> "") Then rNFeImg.operacional__email = rNFeImg.operacional__email & ";"
-    rNFeImg.operacional__email = rNFeImg.operacional__email & strTransportadoraEmail
+    'testar se a concatenação de e-mails não excederá o limite
+    If (Len(rNFeImg.operacional__email & ";" & strTransportadoraEmail) <= MAX_TAM_EMAIL_OPERACIONAL) Then
+        If (Trim$(rNFeImg.operacional__email) <> "") And (Trim$(strTransportadoraEmail) <> "") Then rNFeImg.operacional__email = rNFeImg.operacional__email & ";"
+        rNFeImg.operacional__email = rNFeImg.operacional__email & strTransportadoraEmail
+        End If
+    'testar se a concatenação de e-mails não excederá o limite
+    If (Len(rNFeImg.operacional__email & ";" & strTransportadoraEmail2) <= MAX_TAM_EMAIL_OPERACIONAL) Then
+        If (Trim$(rNFeImg.operacional__email) <> "") And (Trim$(strTransportadoraEmail2) <> "") Then rNFeImg.operacional__email = rNFeImg.operacional__email & ";"
+        rNFeImg.operacional__email = rNFeImg.operacional__email & strTransportadoraEmail2
+        End If
     strEmailXML = Trim("" & t_DESTINATARIO("email_xml"))
-    If Trim$(strEmailXML) <> "" Then
-        If (Trim$(rNFeImg.operacional__email) <> "") Then rNFeImg.operacional__email = rNFeImg.operacional__email & ";"
-        rNFeImg.operacional__email = rNFeImg.operacional__email & strEmailXML
+    'testar se a concatenação de e-mails não excederá o limite
+    If (Len(rNFeImg.operacional__email & ";" & strEmailXML) <= MAX_TAM_EMAIL_OPERACIONAL) Then
+        If Trim$(strEmailXML) <> "" Then
+            If (Trim$(rNFeImg.operacional__email) <> "") Then rNFeImg.operacional__email = rNFeImg.operacional__email & ";"
+            rNFeImg.operacional__email = rNFeImg.operacional__email & strEmailXML
+            End If
         End If
 
     If rNFeImg.operacional__email <> "" Then
