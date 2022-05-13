@@ -660,11 +660,11 @@ function VerificarExibicaoHeaderCEPs() {
 	</tr>
 </table>
 
-<!-- ************   EMAIL TRANSPORTADORA 1° TRECHO  ************ -->
+<!-- ************   E-MAIL (XML)  ************ -->
 <table width="649" class="QS" cellspacing="0">
 	<tr>
 <%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("email2")) else s=""%>
-		<td width="100%" align="left"><p class="R">E-MAIL TRANSPORTADORA 1° TRECHO</p><span class="C"><input id="c_email2" name="c_email2" class="TA" value="<%=s%>" maxlength="60" size="85" onkeypress="if (digitou_enter(true)) bATUALIZA.focus(); filtra_email();"></span></td>
+		<td width="100%" align="left"><p class="R">E-MAIL (XML)</p><span class="C"><input id="c_email2" name="c_email2" class="TA" value="<%=s%>" maxlength="60" size="85" onkeypress="if (digitou_enter(true)) bATUALIZA.focus(); filtra_email();"></span></td>
 	</tr>
 </table>
 
