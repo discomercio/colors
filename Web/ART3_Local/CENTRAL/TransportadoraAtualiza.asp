@@ -64,7 +64,7 @@
 	
 '	OBTÉM DADOS DO FORMULÁRIO ANTERIOR
 	dim operacao_selecionada, s_transportadora, s_nome, s_razao_social, s_cnpj, s_ie
-	dim s_endereco, s_endereco_numero, s_endereco_complemento, s_bairro, s_cidade, s_cep, s_uf, s_ddd, s_telefone, s_fax, s_contato, s_email, s_email2
+	dim s_endereco, s_endereco_numero, s_endereco_complemento, s_bairro, s_cidade, s_cep, s_uf, s_ddd, s_telefone, s_fax, s_contato, s_email, s_email2, s_email_1a_transp
 	operacao_selecionada=request("operacao_selecionada")
 	s_transportadora=ucase(trim(request("transportadora_selecionada")))
 	s_nome=Trim(request("nome"))

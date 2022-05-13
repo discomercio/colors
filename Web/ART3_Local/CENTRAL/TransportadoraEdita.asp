@@ -660,7 +660,7 @@ function VerificarExibicaoHeaderCEPs() {
 	</tr>
 </table>
 
-<!-- ************   EMAIL TRANSPORTADORA PRIMEIRO TRECHO  ************ -->
+<!-- ************   EMAIL TRANSPORTADORA 1° TRECHO  ************ -->
 <table width="649" class="QS" cellspacing="0">
 	<tr>
 <%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("email2")) else s=""%>
