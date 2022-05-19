@@ -453,10 +453,10 @@ function preencheForm()
 	                if (vetnfe.NFe.infNFe.det.imposto.IPI.IPITrib.hasOwnProperty('pIPI')) {
 	                    s = vetnfe.NFe.infNFe.det.imposto.IPI.IPITrib.pIPI;
 	                    if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 2);
-	                    $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 0));
+	                    $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 2));
 	                }
 	                else {
-	                    $("#c_nfe_aliq_ipi_" + sIdx).val("0");
+	                    $("#c_nfe_aliq_ipi_" + sIdx).val("0,00");
 	                }
 	            }
 	            else {
@@ -469,16 +469,16 @@ function preencheForm()
 	                if (vetnfe.NFe.infNFe.det.imposto.IPI.hasOwnProperty('pIPI')) {
 	                    s = vetnfe.NFe.infNFe.det.imposto.IPI.pIPI;
 	                    if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 2);
-	                    $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 0));
+	                    $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 2));
 	                }
 	                else {
-	                    $("#c_nfe_aliq_ipi_" + sIdx).val("0");
+	                    $("#c_nfe_aliq_ipi_" + sIdx).val("0,00");
 	                }
 	            }
 	        }
 	        else {
 	            $("#c_nfe_vl_ipi_" + sIdx).val("0,00");
-	            $("#c_nfe_aliq_ipi_" + sIdx).val("0");
+	            $("#c_nfe_aliq_ipi_" + sIdx).val("0,00");
 	        }
 	        $("#c_nfe_vl_ipi_ori_" + sIdx).val($("#c_nfe_vl_ipi_" + sIdx).val());
 	        $("#c_nfe_aliq_ipi_ori_" + sIdx).val($("#c_nfe_aliq_ipi_" + sIdx).val());
@@ -572,11 +572,11 @@ function preencheForm()
 	                        //$("#c_nfe_aliq_ipi_nota_" + sIdx).text(formata_numero(nfe.nfeProc.NFe.infNFe.det[i].imposto.IPI.IPITrib.pIPI, 2));
 	                        s = vetnfe.NFe.infNFe.det[i].imposto.IPI.IPITrib.pIPI;
 	                        if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 2);
-	                        $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 0));
+	                        $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 2));
 	                    }
 	                    else {
 	                        //$("#c_nfe_aliq_ipi_nota_" + sIdx).text("0,00");
-	                        $("#c_nfe_aliq_ipi_" + sIdx).val("0");
+	                        $("#c_nfe_aliq_ipi_" + sIdx).val("0,00");
 	                    }
 	                }
 	                else {
@@ -594,17 +594,17 @@ function preencheForm()
 	                        //$("#c_nfe_aliq_ipi_nota_" + sIdx).text(formata_numero(nfe.nfeProc.NFe.infNFe.det[i].imposto.IPI.pIPI, 2));
 	                        s = vetnfe.NFe.infNFe.det[i].imposto.IPI.pIPI;
 	                        if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 2);
-	                        $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 0));
+	                        $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 2));
 	                    }
 	                    else {
 	                        //$("#c_nfe_aliq_ipi_nota_" + sIdx).val("0,00");
-	                        $("#c_nfe_aliq_ipi_" + sIdx).val("0");
+	                        $("#c_nfe_aliq_ipi_" + sIdx).val("0,00");
 	                    }
 	                }
 	            }
 	            else {
 	                $("#c_nfe_vl_ipi_" + sIdx).val("0,00");
-	                $("#c_nfe_aliq_ipi_" + sIdx).val("0");
+	                $("#c_nfe_aliq_ipi_" + sIdx).val("0,00");
 	            }
 	            $("#c_nfe_vl_ipi_ori_" + sIdx).val($("#c_nfe_vl_ipi_" + sIdx).val());
 	            $("#c_nfe_aliq_ipi_ori_" + sIdx).val($("#c_nfe_aliq_ipi_" + sIdx).val());
@@ -783,7 +783,7 @@ function complementaForm()
                         if (vetnfe.NFe.infNFe.det.imposto.IPI.IPITrib.hasOwnProperty('pIPI')) {
                             s = vetnfe.NFe.infNFe.det.imposto.IPI.IPITrib.pIPI;
                             if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 2);
-                            $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 0));
+                            $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 2));
                         }
                     }
                     else {
@@ -793,7 +793,7 @@ function complementaForm()
                         if (vetnfe.NFe.infNFe.det.imposto.IPI.hasOwnProperty('pIPI')) {
                             s = vetnfe.NFe.infNFe.det.imposto.IPI.pIPI;
                             if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 2);
-                            $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 0));
+                            $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 2));
                         }
                     }
                 }
@@ -855,7 +855,7 @@ function complementaForm()
                             if (vetnfe.NFe.infNFe.det[i].imposto.IPI.IPITrib.hasOwnProperty('pIPI')) {
                                 s = vetnfe.NFe.infNFe.det[i].imposto.IPI.IPITrib.pIPI;
                                 if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 2);
-                                $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 0));
+                                $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 2));
                             }
                         }
                         else {
@@ -865,7 +865,7 @@ function complementaForm()
                             if (vetnfe.NFe.infNFe.det[i].imposto.IPI.hasOwnProperty('pIPI')) {
                                 s = vetnfe.NFe.infNFe.det[i].imposto.IPI.pIPI;
                                 if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 2);
-                                $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 0));
+                                $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 2));
                             }
                         }
                     }
