@@ -1557,7 +1557,7 @@ select
 	<td class="MDB TdNfeAliqIpi" align="left">
         <input type="hidden" name="c_nfe_aliq_ipi_ori_<%=Cstr(i)%>" id="c_nfe_aliq_ipi_ori_<%=Cstr(i)%>" />
         <input name="c_nfe_aliq_ipi_<%=Cstr(i)%>" id="c_nfe_aliq_ipi_<%=Cstr(i)%>" class="PLLe TdNfeAliqIpi TxtEditavel"
-         onblur="this.value=formata_numero(this.value, 0); if (converte_numero(this.value) > 100) {alert('Alíquota de IPI maior que 100%!');}; if (this.value != c_nfe_aliq_ipi_ori_<%=Cstr(i)%>.value) {recalcula_itens(); recalcula_total_nf();}" />
+         onblur="this.value=formata_numero(this.value, 2); if (converte_numero(this.value) > 100) {alert('Alíquota de IPI maior que 100%!');}; if (this.value != c_nfe_aliq_ipi_ori_<%=Cstr(i)%>.value) {recalcula_itens(); recalcula_total_nf();}" />
 	</td>
 	<td class="MDB TdNfeVlIpi" align="left">
         <input type="hidden" name="c_nfe_vl_ipi_ori_<%=Cstr(i)%>" id="c_nfe_vl_ipi_ori_<%=Cstr(i)%>" />
