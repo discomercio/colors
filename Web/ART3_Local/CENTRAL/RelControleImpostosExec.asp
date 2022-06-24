@@ -430,7 +430,7 @@ dim linkXmlNFe
                     qtdePedidosPendentesExibida = qtdePedidosPendentesExibida + 1
                     blnExibirLinha = True
                     end if 'if (Not blnPedidoBloqueado) And (qtdePedidosPendentesExibida < maxQtdePedidosPendentesResultado)
-			    end if 'if IsNFeCompletamenteEmitida()
+			    end if 'if IsNFeCompletamenteEmitidaMontaLinkXmlNFe()
             end if 'if r("controle_impostos_status") = CInt(COD_CONTROLE_IMPOSTOS_STATUS__OK)
 
 

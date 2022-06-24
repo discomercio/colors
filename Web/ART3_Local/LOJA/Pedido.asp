@@ -137,16 +137,37 @@
 			next
 		end if
 	
+	dim blnIncluirDataEmissaoChaveAcesso, dtEmissaoNfeVenda, dtEmissaoNfeRemessa, dtAutorizacaoNfeVenda, dtAutorizacaoNfeRemessa
+	blnIncluirDataEmissaoChaveAcesso = False
+
 	dim s_chave_acesso_nf_venda, s_chave_acesso_nf_remessa
 	s_chave_acesso_nf_venda = ""
 	s_chave_acesso_nf_remessa = ""
 	if r_pedido.loja = NUMERO_LOJA_ECOMMERCE_AR_CLUBE then
+		if r_pedido.marketplace_codigo_origem <> "" then
+			s = "SELECT parametro_campo_inteiro FROM t_CODIGO_DESCRICAO WHERE (grupo = '" & GRUPO_T_CODIGO_DESCRICAO__PEDIDOECOMMERCE_ORIGEM & "') AND (codigo = '" & Trim("" & r_pedido.marketplace_codigo_origem) & "')"
+			if rs.State <> 0 then rs.Close
+			set rs = cn.Execute(s)
+			if Not rs.Eof then
+				if Trim("" & rs("parametro_campo_inteiro")) = Cstr(COD_MAGENTO_INTEGRADORA_ANYMARKET) then blnIncluirDataEmissaoChaveAcesso = True
+				end if
+			if rs.State <> 0 then rs.Close
+			end if
+
 		if Trim("" & r_pedido.obs_2) <> "" then
-			if Not IsNFeCompletamenteEmitida(r_pedido.id_nfe_emitente, "1", r_pedido.obs_2, s_chave_acesso_nf_venda) then s_chave_acesso_nf_venda = ""
+			if Not IsNFeCompletamenteEmitida(r_pedido.id_nfe_emitente, "1", r_pedido.obs_2, s_chave_acesso_nf_venda, dtEmissaoNfeVenda, dtAutorizacaoNfeVenda) then
+				s_chave_acesso_nf_venda = ""
+				dtEmissaoNfeVenda = Null
+				dtAutorizacaoNfeVenda = Null
+				end if
 			end if
 
 		if Trim("" & r_pedido.obs_3) <> "" then
-			if Not IsNFeCompletamenteEmitida(r_pedido.id_nfe_emitente, "1", r_pedido.obs_3, s_chave_acesso_nf_remessa) then s_chave_acesso_nf_remessa = ""
+			if Not IsNFeCompletamenteEmitida(r_pedido.id_nfe_emitente, "1", r_pedido.obs_3, s_chave_acesso_nf_remessa, dtEmissaoNfeRemessa, dtAutorizacaoNfeRemessa) then
+				s_chave_acesso_nf_remessa = ""
+				dtEmissaoNfeRemessa = Null
+				dtAutorizacaoNfeRemessa = Null
+				end if
 			end if
 		end if
 
@@ -627,6 +648,12 @@ function copiaChaveAcessoVendaComPrefixo() {
 	c.select();
 	c.createTextRange().execCommand("Copy");
 }
+function copiaChaveAcessoVendaComData() {
+	var c;
+	c = document.getElementById("c_chave_acesso_venda_com_data");
+	c.select();
+	c.createTextRange().execCommand("Copy");
+}
 function copiaChaveAcessoRemessa() {
 	var c;
 	c = document.getElementById("c_chave_acesso_remessa");
@@ -636,6 +663,12 @@ function copiaChaveAcessoRemessa() {
 function copiaChaveAcessoRemessaComPrefixo() {
 	var c;
 	c = document.getElementById("c_chave_acesso_remessa_com_prefixo");
+	c.select();
+	c.createTextRange().execCommand("Copy");
+}
+function copiaChaveAcessoRemessaComData() {
+	var c;
+	c = document.getElementById("c_chave_acesso_remessa_com_data");
 	c.select();
 	c.createTextRange().execCommand("Copy");
 }
@@ -1331,7 +1364,7 @@ function fPEDPagto(f) {
     position: absolute;
     left: 50%;
     top: 50%;
-    width: 600px;
+    width: 750px;
     height:250px;
     margin-left: -300px;
     background-color: #fff;
@@ -1355,7 +1388,7 @@ function fPEDPagto(f) {
     position: absolute;
     left: 50%;
     top: 50%;
-    width: 600px;
+    width: 750px;
     height:250px;
     margin-left: -300px;
     background-color: #fff;
@@ -1369,6 +1402,12 @@ function fPEDPagto(f) {
 		background: #f7ef00;
 		border: solid 2px;
 	}
+.TdChaveAcessoLabel{
+	width:120px;
+}
+.TdChaveAcessoEspaco{
+	width:4px;
+}
 </style>
 
 
@@ -4094,30 +4133,39 @@ function fPEDPagto(f) {
     <div id="PainelBaseChaveAcessoNotaVenda"></div>
     <div id="PainelChaveAcessoNotaVenda">
     <h1>Chave de Acesso</h1>
-    <table cellspacing="0" style="width:650px;">
+    <table cellspacing="0" style="width:750px;" border="0">
         <tr>
-            <td valign="bottom" align="right">
+            <td valign="bottom" align="right" class="TdChaveAcessoLabel">
                 <span class="N">Nº NF Venda:</span>
             </td>
-			<td>&nbsp;</td>
+			<td class="TdChaveAcessoEspaco">&nbsp;</td>
 			<td valign="bottom" align="left">
 				<span class="N"><%=r_pedido.obs_2%></span>
 			</td>
         </tr>
+		<% if blnIncluirDataEmissaoChaveAcesso then 
+				s = "Chave de Acesso: " & s_chave_acesso_nf_venda & ";Data da Nota: " & formata_data_hora(dtEmissaoNfeVenda) & ";" %>
 		<tr>
-            <td valign="bottom" align="right">
+			<td colspan="3" valign="bottom" align="left">
+				<img src="../IMAGEM/edit_copy.png" onclick="copiaChaveAcessoVendaComData();" />&nbsp;<input name="c_chave_acesso_venda_com_data" id="c_chave_acesso_venda_com_data" class="PLLe" style="font-size:10pt;width:700px;" readonly onfocus="this.select();" onclick="this.select();" value="<%=s%>" />
+			</td>
+		</tr>
+		<% else %>
+		<tr>
+            <td valign="bottom" align="right" class="TdChaveAcessoLabel">
                 <img src="../IMAGEM/edit_copy.png" onclick="copiaChaveAcessoVendaComPrefixo();" />&nbsp;<span class="N">Chave de Acesso:</span>
             </td>
-			<td>&nbsp;</td>
+			<td class="TdChaveAcessoEspaco">&nbsp;</td>
 			<td valign="bottom" align="left">
 				<input name="c_chave_acesso_venda_com_prefixo" id="c_chave_acesso_venda_com_prefixo" class="PLLe" style="font-size:10pt;width:400px;" readonly onfocus="this.select();" onclick="this.select();" value="<%=s_chave_acesso_nf_venda%>" />
 			</td>
 		</tr>
+		<% end if %>
 		<tr style="display:none;">
-            <td valign="bottom" align="right">
+            <td valign="bottom" align="right" class="TdChaveAcessoLabel">
                 <img src="../IMAGEM/edit_copy.png" onclick="copiaChaveAcessoVenda();" />&nbsp;<span class="N">Chave de Acesso:</span>
             </td>
-			<td>&nbsp;</td>
+			<td class="TdChaveAcessoEspaco">&nbsp;</td>
 			<td valign="bottom" align="left">
 				<input name="c_chave_acesso_venda" id="c_chave_acesso_venda" class="PLLe" style="font-size:10pt;width:400px;" readonly onfocus="this.select();" onclick="this.select();" value="<%=s_chave_acesso_nf_venda%>" />
 			</td>
@@ -4138,30 +4186,39 @@ function fPEDPagto(f) {
     <div id="PainelBaseChaveAcessoNotaRemessa"></div>
     <div id="PainelChaveAcessoNotaRemessa">
     <h1>Chave de Acesso</h1>
-    <table cellspacing="0" style="width:650px;">
+    <table cellspacing="0" style="width:750px;">
         <tr>
-            <td valign="bottom" align="right">
+            <td valign="bottom" align="right" class="TdChaveAcessoLabel">
                 <span class="N">Nº NF Remessa:</span>
             </td>
-			<td>&nbsp;</td>
+			<td class="TdChaveAcessoEspaco">&nbsp;</td>
 			<td valign="bottom" align="left">
 				<span class="N"><%=r_pedido.obs_3%></span>
 			</td>
         </tr>
+		<% if blnIncluirDataEmissaoChaveAcesso then 
+				s = "Chave de Acesso: " & s_chave_acesso_nf_remessa & ";Data da Nota: " & formata_data_hora(dtEmissaoNfeRemessa) & ";" %>
 		<tr>
-            <td valign="bottom" align="right">
+			<td colspan="3" valign="bottom" align="left">
+				<img src="../IMAGEM/edit_copy.png" onclick="copiaChaveAcessoRemessaComData();" />&nbsp;<input name="c_chave_acesso_remessa_com_data" id="c_chave_acesso_remessa_com_data" class="PLLe" style="font-size:10pt;width:700px;" readonly onfocus="this.select();" onclick="this.select();" value="<%=s%>" />
+			</td>
+		</tr>
+		<% else %>
+		<tr>
+            <td valign="bottom" align="right" class="TdChaveAcessoLabel">
                 <img src="../IMAGEM/edit_copy.png" onclick="copiaChaveAcessoRemessaComPrefixo();" />&nbsp;<span class="N">Chave de Acesso:</span>
             </td>
-			<td>&nbsp;</td>
+			<td class="TdChaveAcessoEspaco">&nbsp;</td>
 			<td valign="bottom" align="left">
 				<input name="c_chave_acesso_remessa_com_prefixo" id="c_chave_acesso_remessa_com_prefixo" class="PLLe" style="font-size:10pt;width:400px;" readonly onfocus="this.select();" onclick="this.select();" value="<%=s_chave_acesso_nf_remessa%>" />
 			</td>
 		</tr>
+		<% end if %>
 		<tr style="display:none;">
-            <td valign="bottom" align="right">
+            <td valign="bottom" align="right" class="TdChaveAcessoLabel">
                 <img src="../IMAGEM/edit_copy.png" onclick="copiaChaveAcessoRemessa();" />&nbsp;<span class="N">Chave de Acesso:</span>
             </td>
-			<td>&nbsp;</td>
+			<td class="TdChaveAcessoEspaco">&nbsp;</td>
 			<td valign="bottom" align="left">
 				<input name="c_chave_acesso_remessa" id="c_chave_acesso_remessa" class="PLLe" style="font-size:10pt;width:400px;" readonly onfocus="this.select();" onclick="this.select();" value="<%=s_chave_acesso_nf_remessa%>" />
 			</td>
