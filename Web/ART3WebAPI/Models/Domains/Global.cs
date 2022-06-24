@@ -60,8 +60,8 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.35";
-				public const string Data = "30.MAR.2022";
+				public const string Numero = "2.36";
+				public const string Data = "24.JUN.2022";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
 			#endregion
@@ -291,8 +291,12 @@ namespace ART3WebAPI.Models.Domains
 			 *      Ajustes na rotina que decodifica o telefone nos dados do Magento para tratar o caso em
 			 *      que o código do país está incluso.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.36 - XX.XX.20XX - por XXX
-			 *      
+			 * v 2.36 - 24.06.2022 - por HHO
+			 *      Ajustes para tratar a identificação do número do pedido marketplace quando a integração
+			 *      é via Anymarket para usar o campo t_CODIGO_DESCRICAO.parametro_2_campo_texto para
+			 *      armazenar o prefixo anexado que deve ser removido do número de pedido marketplace. Quando
+			 *      não houver prefixo, esse campo do parâmetro deve estar vazio. Essa lógica é válida para
+			 *      o Magento 2.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.37 - XX.XX.20XX - por XXX
 			 *      
@@ -387,6 +391,10 @@ namespace ART3WebAPI.Models.Domains
 			{
 				public static readonly int VERSAO_API_MAGENTO_V1_SOAP_XML = 0;
 				public static readonly int VERSAO_API_MAGENTO_V2_REST_JSON = 2;
+
+				public static readonly int INTEGRADORA_SKYHUB = 1;
+				public static readonly int INTEGRADORA_ANYMARKET = 2;
+				public static readonly int INTEGRADORA_WAP = 3;
 			}
 			#endregion
 

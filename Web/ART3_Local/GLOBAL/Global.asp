@@ -2911,7 +2911,7 @@ end function
 ' ___________________________________________________________________________________
 ' IsNFeCompletamenteEmitida
 '
-function IsNFeCompletamenteEmitida(byval strIdNfeEmitente, byval strSerieNFe, byval strNumeroNFe, ByRef ChaveAcesso)
+function IsNFeCompletamenteEmitida(byval strIdNfeEmitente, byval strSerieNFe, byval strNumeroNFe, ByRef ChaveAcesso, ByRef DataEmissao, ByRef DataAutorizacao)
 dim s
 dim tNE, tNFE
 dim dbcNFe
@@ -2920,7 +2920,9 @@ dim chave
 dim senha_decodificada
 	
 	IsNFeCompletamenteEmitida = False
-	
+	DataEmissao = Null
+	DataAutorizacao = Null
+
 	if Trim("" & strNumeroNFe) = "" then exit function
 	
 '	VERIFICA SE A NFe FOI COMPLETAMENTE EMITIDA
@@ -2958,8 +2960,10 @@ dim senha_decodificada
 
 	s = "SELECT" & _
 			" Nfe," & _
-			" Serie, " & _
-            " ChaveAcesso" & _
+			" Serie," & _
+            " ChaveAcesso," & _
+			" Emissao," & _
+			" DataAutorizacao" & _
 		" FROM NFE" & _
 		" WHERE" & _
 			" (Serie = '" & NFeFormataSerieNF(strSerieNFe) & "')" & _
@@ -2972,6 +2976,8 @@ dim senha_decodificada
 		exit function
     else
         ChaveAcesso = tNFE("ChaveAcesso")
+		DataEmissao = tNFE("Emissao")
+		DataAutorizacao = tNFE("DataAutorizacao")
 		end if
 		
 	tNFE.Close

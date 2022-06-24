@@ -41,7 +41,7 @@
 	Const COD_FC_AMBIENTE = "L"
 
 	Const SERVIDOR_BD = "Win2019DB,29981"
-	Const NOME_BD = "Artven2DIS_20220417"
+	Const NOME_BD = "Artven2DIS"
 	Const USUARIO_BD = "artven2"
 	Const SCHEMA_BD = "dbo"
 	Const SENHA_BD = "000000007bbddfed3b85e97d47b91b"

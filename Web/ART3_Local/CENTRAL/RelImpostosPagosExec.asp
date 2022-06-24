@@ -129,7 +129,7 @@ dim total_fcp_uf_proporcional, total_icms_origem_uf_proporcional, total_icms_des
 dim total_fcp_geral_proporcional, total_icms_origem_geral_proporcional, total_icms_destino_geral_proporcional
 dim vl_fcp_uf_proporcional, vl_icms_origem_uf_proporcional, vl_icms_destino_uf_proporcional
 dim s_uf, s_uf_anterior
-dim ChaveAcesso
+dim ChaveAcesso, dtEmissaoNfe, dtAutorizacaoNfe
 dim percProporcao, colSpan
 
 total_fcp_uf = 0
@@ -351,7 +351,7 @@ vl_icms_destino_uf_proporcional = 0
 		s_num_nfe = NFeFormataNumeroNF(Trim("" & r("NFe_numero_NF")))
 		s_serie_nfe = NFeFormataSerieNF(Trim("" & r("NFe_serie_NF")))
 
-		if IsNFeCompletamenteEmitida(rNfeEmitente.id, s_serie_nfe, s_num_nfe, ChaveAcesso) then
+		if IsNFeCompletamenteEmitida(rNfeEmitente.id, s_serie_nfe, s_num_nfe, ChaveAcesso, dtEmissaoNfe, dtAutorizacaoNfe) then
 
 			s_uf_anterior = s_uf
 			s_uf = Trim("" & r("UF"))

@@ -1626,17 +1626,41 @@ namespace ART3WebAPI.Models.Domains
 												sOrigemMktpIdentificado = codDescr.codigo;
 												break;
 											}
-
 											#endregion
 										}
 										else
 										{
 											#region [ Demais marketplaces ]
 											// Obtém a parte relativa ao nº pedido marketplace
-											sValue = vComment[j].Substring(sMktpOrderDescriptor.Length).Trim();
+											// Nos pedidos integrados pela Anymarket, o nº pedido está em outra linha, após a identificação do marketplace, mas com quebras de linha separando
+											sValue = "";
+											if (codDescr.parametro_campo_inteiro == Global.Cte.MagentoApiIntegracao.INTEGRADORA_ANYMARKET)
+											{
+												for (int j2 = (j + 1); j2 < vComment.Length; j2++)
+												{
+													sValue = vComment[j2].Trim();
+													if (sValue.Trim().Length > 0) break;
+												}
+											}
+											else
+											{
+												sValue = vComment[j].Substring(sMktpOrderDescriptor.Length).Trim();
+											}
+
 											if (sValue.Length > 0)
 											{
 												sNumPedidoMktpCompletoIdentificado = sValue;
+
+												#region [ Verifica se há prefixo anexado a ser retirado (definição do prefixo está armazenado em 'parametro_2_campo_texto') ]
+												if ((codDescr.parametro_2_campo_texto ?? "").Length > 0)
+												{
+													if (sValue.Trim().ToUpper().StartsWith(codDescr.parametro_2_campo_texto))
+													{
+														// Obtém a parte relativa ao nº pedido marketplace removendo o prefixo, se houver
+														sValue = sValue.Trim().Substring(codDescr.parametro_2_campo_texto.Length).Trim();
+													}
+												}
+												#endregion
 
 												#region [ Tratamento p/ nº marketplace do Walmart (ex: 78381578-1796973) ]
 												if (loja.Equals(Global.Cte.Loja.ArClube) && codDescr.codigo.Equals("009"))
@@ -1659,7 +1683,6 @@ namespace ART3WebAPI.Models.Domains
 													}
 												}
 												#endregion
-
 
 												sNumPedidoMktpIdentificado = sValue;
 												sOrigemMktpIdentificado = codDescr.codigo;
