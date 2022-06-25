@@ -630,7 +630,7 @@ function fESTOQConfirma( f ) {
 				s_ncm = .ncm
 				s_cst = .cst
                 's_aliq_ipi = formata_moeda(.aliq_ipi)
-                s_aliq_ipi = formata_numero(.aliq_ipi, 0)
+                s_aliq_ipi = formata_numero(.aliq_ipi, 2)
                 s_vl_ipi = formata_moeda(.vl_ipi)
                 's_aliq_icms = formata_moeda(.aliq_icms)
                 s_aliq_icms = formata_numero(.aliq_icms, 0)

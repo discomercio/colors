@@ -495,7 +495,7 @@ var b;
 				s_total_diferenca = formata_moeda(m_total_diferenca)
 				m_total_geral_diferenca = m_total_geral_diferenca + m_total_diferenca
                 's_aliq_ipi = formata_moeda(.aliq_ipi)
-                s_aliq_ipi = formata_numero(.aliq_ipi, 0)
+                s_aliq_ipi = formata_numero(.aliq_ipi, 2)
                 s_vl_ipi = formata_moeda(.vl_ipi)
                 's_aliq_icms = formata_moeda(.aliq_icms)
                 s_aliq_icms = formata_numero(.aliq_icms, 0)
