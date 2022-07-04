@@ -513,6 +513,10 @@
 	Const COD_MAGENTO_PRODUCT_TYPE__VIRTUAL = "virtual"
 	Const COD_MAGENTO_PRODUCT_TYPE__CONFIGURABLE = "configurable"
 
+	Const COD_MAGENTO_INTEGRADORA_SKYHUB = 1
+	Const COD_MAGENTO_INTEGRADORA_ANYMARKET = 2
+	Const COD_MAGENTO_INTEGRADORA_WAP = 3
+
 
   ' CÓDIGOS PARA NÍVEL DOS USUÁRIOS
 	Const ID_VENDEDOR		= "V"
@@ -924,6 +928,8 @@
 	Const ID_PARAMETRO_PEDIDO_OCORRENCIA_EMAIL_ADMINISTRADOR = "PEDIDO_OCORRENCIA_EMAIL_ADMINISTRADOR"
 	Const ID_PARAMETRO_PedidoCanceladoRecenteExibirInformativoModuloLojaFlagHabilitacao = "PedidoCanceladoRecente_ExibirInformativoModuloLoja_FlagHabilitacao"
 	Const ID_PARAMETRO_PedidoCanceladoRecenteExibirInformativoModuloLojaPrazo = "PedidoCanceladoRecente_ExibirInformativoModuloLoja_Prazo"
+	Const ID_PARAMETRO_CXLSEC_IntegracaoMktp_Ecommerce_Pedido_Origem_Integracao_Anymarket = "CXLSEC_IntegracaoMktp_Ecommerce_Pedido_Origem_Integracao_Anymarket"
+
 	Const ID_PARAMETRO_RelComissaoIndicadoresNFSe_PlanoContas_ContaCorrente = "RelComissaoIndicadoresNFSe_PlanoContas_ContaCorrente"
 	Const ID_PARAMETRO_RelComissaoIndicadoresNFSe_PlanoContas_Empresa = "RelComissaoIndicadoresNFSe_PlanoContas_Empresa"
 	Const ID_PARAMETRO_RelComissaoIndicadoresNFSe_PlanoContas_RT = "RelComissaoIndicadoresNFSe_PlanoContas_RT"
