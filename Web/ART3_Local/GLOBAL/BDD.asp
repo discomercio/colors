@@ -4361,6 +4361,53 @@ end function
 
 
 ' _______________________________________________________
+' GET DEFAULT VALOR INTEIRO BD
+'
+function get_default_valor_inteiro_bd(byval usuario, byval nome_chave)
+dim s
+dim rs
+	get_default_valor_inteiro_bd = ""
+	s = "SELECT valor_default_inteiro FROM t_DEFAULT WHERE (usuario = '" & usuario & "') AND (nome_chave = '" & nome_chave & "')"
+	set rs = cn.Execute(s)
+	if Not rs.Eof then
+		get_default_valor_inteiro_bd = Trim("" & rs("valor_default_inteiro"))
+		end if
+	if rs.State <> 0 then rs.Close
+end function
+
+
+
+' _______________________________________________________
+' SET DEFAULT VALOR INTEIRO BD
+'
+function set_default_valor_inteiro_bd(byval usuario, byval nome_chave, byval valor_inteiro)
+dim s, msg_erro
+dim rs
+	set_default_valor_inteiro_bd = False
+	if Not cria_recordset_pessimista(rs, msg_erro) then exit function
+	s = "SELECT * FROM t_DEFAULT WHERE (usuario = '" & usuario & "') AND (nome_chave = '" & nome_chave & "')"
+	rs.Open s, cn
+	if rs.Eof then
+		rs.AddNew
+		rs("usuario") = usuario
+		rs("nome_chave") = nome_chave
+		rs("dt_hr_cadastro") = Now
+		rs("dt_hr_ult_atualizacao") = Now
+		end if
+	
+	if Ucase(Trim("" & rs("valor_default_inteiro"))) <> Ucase(Trim(valor_inteiro)) then
+		rs("valor_default_inteiro") = valor_inteiro
+		rs("dt_hr_ult_atualizacao") = Now
+		end if
+	
+	rs.Update
+	
+	if rs.State <> 0 then rs.Close
+end function
+
+
+
+' _______________________________________________________
 ' OBTEM PercVlPedidoLimiteRA
 '
 function obtem_PercVlPedidoLimiteRA

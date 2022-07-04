@@ -144,6 +144,10 @@
     Const T_PEDIDO_DEVOLUCAO_MENSAGEM = "T_PEDIDO_DEVOLUCAO_MENSAGEM"
     Const T_ESTOQUE_XML = "T_ESTOQUE_XML"
 	
+'	Códigos de tabela origem em t_CFG_TABELA_ORIGEM
+	Const ID_CFG_TABELA_ORIGEM_T_PEDIDO = 1
+	Const ID_CFG_TABELA_ORIGEM_T_PEDIDO_ITEM_DEVOLVIDO = 2
+	Const ID_CFG_TABELA_ORIGEM_T_PEDIDO_PERDA = 3
 
 '	Tamanho dos campos que identificam o usuário (t_USUARIO.usuario) e o orçamentista/indicador (t_ORCAMENTISTA_E_INDICADOR.apelido)
 	Const MAX_TAMANHO_ID_USUARIO = 10
@@ -508,6 +512,10 @@
 	Const COD_MAGENTO_PRODUCT_TYPE__SIMPLE = "simple"
 	Const COD_MAGENTO_PRODUCT_TYPE__VIRTUAL = "virtual"
 	Const COD_MAGENTO_PRODUCT_TYPE__CONFIGURABLE = "configurable"
+
+	Const COD_MAGENTO_INTEGRADORA_SKYHUB = 1
+	Const COD_MAGENTO_INTEGRADORA_ANYMARKET = 2
+	Const COD_MAGENTO_INTEGRADORA_WAP = 3
 
 
   ' CÓDIGOS PARA NÍVEL DOS USUÁRIOS
@@ -920,7 +928,12 @@
 	Const ID_PARAMETRO_PEDIDO_OCORRENCIA_EMAIL_ADMINISTRADOR = "PEDIDO_OCORRENCIA_EMAIL_ADMINISTRADOR"
 	Const ID_PARAMETRO_PedidoCanceladoRecenteExibirInformativoModuloLojaFlagHabilitacao = "PedidoCanceladoRecente_ExibirInformativoModuloLoja_FlagHabilitacao"
 	Const ID_PARAMETRO_PedidoCanceladoRecenteExibirInformativoModuloLojaPrazo = "PedidoCanceladoRecente_ExibirInformativoModuloLoja_Prazo"
+	Const ID_PARAMETRO_CXLSEC_IntegracaoMktp_Ecommerce_Pedido_Origem_Integracao_Anymarket = "CXLSEC_IntegracaoMktp_Ecommerce_Pedido_Origem_Integracao_Anymarket"
 
+	Const ID_PARAMETRO_RelComissaoIndicadoresNFSe_PlanoContas_ContaCorrente = "RelComissaoIndicadoresNFSe_PlanoContas_ContaCorrente"
+	Const ID_PARAMETRO_RelComissaoIndicadoresNFSe_PlanoContas_Empresa = "RelComissaoIndicadoresNFSe_PlanoContas_Empresa"
+	Const ID_PARAMETRO_RelComissaoIndicadoresNFSe_PlanoContas_RT = "RelComissaoIndicadoresNFSe_PlanoContas_RT"
+	Const ID_PARAMETRO_RelComissaoIndicadoresNFSe_PlanoContas_RA = "RelComissaoIndicadoresNFSe_PlanoContas_RA"
 
 
 '   CONSTANTES QUE IDENTIFICAM REGISTROS ARMAZENADOS NA TABELA "t_CTRL_RELATORIO"
@@ -976,6 +989,15 @@
 	Const COD_FIN_ST_SISTEMA__NAO = 0
 	Const COD_FIN_ST_SISTEMA__SIM = 1
 
+	Const COD_FIN_FLUXO_CAIXA_CTRL_PAGTO_MODULO__BOLETO = 1
+	Const COD_FIN_FLUXO_CAIXA_CTRL_PAGTO_MODULO__CHEQUE = 2
+	Const COD_FIN_FLUXO_CAIXA_CTRL_PAGTO_MODULO__VISA = 3
+	Const COD_FIN_FLUXO_CAIXA_CTRL_PAGTO_MODULO__BRASPAG_CARTAO = 4
+	Const COD_FIN_FLUXO_CAIXA_CTRL_PAGTO_MODULO__BRASPAG_CLEARSALE = 5
+	Const COD_FIN_FLUXO_CAIXA_CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK = 6
+	Const COD_FIN_FLUXO_CAIXA_CTRL_PAGTO_MODULO__BRASPAG_WEBHOOK_V2 = 7
+	Const COD_FIN_FLUXO_CAIXA_CTRL_PAGTO_MODULO__COMISSAO_INDICADOR = 11
+	Const COD_FIN_FLUXO_CAIXA_CTRL_PAGTO_MODULO__COMISSAO_INDICADOR_VIA_NFSe = 12
 
 '   SEPARA SUFIXO DO PEDIDO FILHOTE
 	Const COD_SEPARADOR_FILHOTE = "-"
@@ -1275,7 +1297,10 @@
 	
     Const OP_LOG_REL_COMISSAO_INDICADORES_PAGAMENTO          = "GRAVA REL COM IND"
     Const OP_LOG_REL_COMISSAO_INDICADORES_GRAVADADOS         =  "GRAVA PROC AUTO"
-	
+	Const OP_LOG_REL_COMISSAO_INDICADORES_NFSe_LANCTO_FC     = "RelComIndNFSeFC"
+
+	Const OP_LOG_REL_COMISSAO_INDICADORES_NFSe_CONSULTA		= "RelComIndNFSeCons"
+
 	Const OP_LOG_NFE_CTRL_IMPOSTOS							= "NFE CTRL IMPOSTOS"
 
     Const OP_LOG_PRODUTO_REGRA_CD_INCLUSAO                  = "PROD INCL REGRA CD"
