@@ -51,24 +51,10 @@
 '	FILTROS
 	dim c_cnpj_nfse
 	dim ckb_id_indicador
-	dim ckb_st_entrega_entregue, c_dt_entregue_inicio, c_dt_entregue_termino
-	dim ckb_comissao_paga_sim, ckb_comissao_paga_nao
-	dim ckb_st_pagto_pago, ckb_st_pagto_nao_pago, ckb_st_pagto_pago_parcial
 	dim rb_visao
 	
 	c_cnpj_nfse = retorna_so_digitos(Request.Form("c_cnpj_nfse"))
 	ckb_id_indicador = Trim(Request.Form("ckb_id_indicador"))
-	ckb_st_entrega_entregue = Trim(Request.Form("ckb_st_entrega_entregue"))
-	c_dt_entregue_inicio = Trim(Request.Form("c_dt_entregue_inicio"))
-	c_dt_entregue_termino = Trim(Request.Form("c_dt_entregue_termino"))
-
-	ckb_comissao_paga_sim = Trim(Request.Form("ckb_comissao_paga_sim"))
-	ckb_comissao_paga_nao = Trim(Request.Form("ckb_comissao_paga_nao"))
-
-	ckb_st_pagto_pago = Trim(Request.Form("ckb_st_pagto_pago"))
-	ckb_st_pagto_nao_pago = Trim(Request.Form("ckb_st_pagto_nao_pago"))
-	ckb_st_pagto_pago_parcial = Trim(Request.Form("ckb_st_pagto_pago_parcial"))
-
 	rb_visao = Trim(Request.Form("rb_visao"))
 	
 	if c_cnpj_nfse = "" then
@@ -83,17 +69,12 @@
 			end if
 		end if
 
-	dim dtMinDtInicialFiltroPeriodo, intMaxDiasDtInicialFiltroPeriodo
-	dim strMinDtInicialFiltroPeriodoYYYYMMDD, strMinDtInicialFiltroPeriodoDDMMYYYY
-	if operacao_permitida(OP_CEN_RESTRINGE_DT_INICIAL_FILTRO_PERIODO, s_lista_operacoes_permitidas) then
-		intMaxDiasDtInicialFiltroPeriodo = obtem_max_dias_dt_inicial_filtro_periodo()
-		dtMinDtInicialFiltroPeriodo = Date - intMaxDiasDtInicialFiltroPeriodo
-		strMinDtInicialFiltroPeriodoYYYYMMDD = formata_data_yyyymmdd(dtMinDtInicialFiltroPeriodo)
-		strMinDtInicialFiltroPeriodoDDMMYYYY = formata_data(dtMinDtInicialFiltroPeriodo)
-	else
-		strMinDtInicialFiltroPeriodoYYYYMMDD = ""
-		strMinDtInicialFiltroPeriodoDDMMYYYY = ""
-		end if
+	dim dt_entregue_termino, s_data_ref
+	if alerta = "" then
+		s_data_ref = "01/" & normaliza_a_esq(Month(Date),2) & "/" & Year(Date)
+		dt_entregue_termino = StrToDate(s_data_ref)
+		dt_entregue_termino = DateAdd("d", -1, dt_entregue_termino)
+		end if 'if alerta = ""
 
 
 
@@ -145,8 +126,6 @@
 <script type="text/javascript">
 	$(function () {
 		$(".aviso").css('display', 'none');
-		$("#c_dt_entregue_inicio").hUtilUI('datepicker_filtro_inicial');
-		$("#c_dt_entregue_termino").hUtilUI('datepicker_filtro_final');
 	});
 </script>
 
@@ -157,36 +136,8 @@
 	}
 
 	function fFILTROConfirma(f) {
-		var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
-
-		if (f.ckb_st_entrega_entregue.checked) {
-			if (!consiste_periodo(f.c_dt_entregue_inicio, f.c_dt_entregue_termino)) return;
-		}
-
-		//  Período de consulta está restrito por perfil de acesso?
-		if (trim(f.c_MinDtInicialFiltroPeriodoYYYYMMDD.value) != "") {
-			strDtRefDDMMYYYY = trim(f.c_dt_entregue_inicio.value);
-			if (trim(strDtRefDDMMYYYY) != "") {
-				strDtRefYYYYMMDD = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(strDtRefDDMMYYYY));
-				if (strDtRefYYYYMMDD < f.c_MinDtInicialFiltroPeriodoYYYYMMDD.value) {
-					alert("Data inválida para consulta: " + strDtRefDDMMYYYY + "\nO período de consulta não pode compreender datas anteriores a " + f.c_MinDtInicialFiltroPeriodoDDMMYYYY.value + "!!");
-					return;
-				}
-			}
-			strDtRefDDMMYYYY = trim(f.c_dt_entregue_termino.value);
-			if (trim(strDtRefDDMMYYYY) != "") {
-				strDtRefYYYYMMDD = retorna_so_digitos(formata_ddmmyyyy_yyyymmdd(strDtRefDDMMYYYY));
-				if (strDtRefYYYYMMDD < f.c_MinDtInicialFiltroPeriodoYYYYMMDD.value) {
-					alert("Data inválida para consulta: " + strDtRefDDMMYYYY + "\nO período de consulta não pode compreender datas anteriores a " + f.c_MinDtInicialFiltroPeriodoDDMMYYYY.value + "!!");
-					return;
-				}
-			}
-		}
-
 		dCONFIRMA.style.visibility = "hidden";
-
 		f.action = "RelComissaoIndicadoresNFSeP04Exec.asp";
-
 		window.status = "Aguarde ...";
 		f.submit();
 	}
@@ -242,6 +193,9 @@
 		text-align:left;
 		vertical-align:middle;
 	}
+	.CampoValorFiltroRealce {
+		font-size:10pt;
+	}
 </style>
 
 
@@ -273,10 +227,10 @@
 
 <form id="fFILTRO" name="fFILTRO" method="post" onsubmit="if (!fFILTROConfirma(fFILTRO)) return false;">
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
-<input type="hidden" name="c_MinDtInicialFiltroPeriodoYYYYMMDD" id="c_MinDtInicialFiltroPeriodoYYYYMMDD" value='<%=strMinDtInicialFiltroPeriodoYYYYMMDD%>'>
-<input type="hidden" name="c_MinDtInicialFiltroPeriodoDDMMYYYY" id="c_MinDtInicialFiltroPeriodoDDMMYYYY" value='<%=strMinDtInicialFiltroPeriodoDDMMYYYY%>'>
+<input type="hidden" name="c_dt_entregue_termino" id="c_dt_entregue_termino" value="<%=formata_data(dt_entregue_termino)%>" />
 <input type="hidden" name="c_cnpj_nfse" id="c_cnpj_nfse" value="<%=c_cnpj_nfse%>" />
 <input type="hidden" name="ckb_id_indicador" id="ckb_id_indicador" value="<%=ckb_id_indicador%>" />
+<input type="hidden" name="proc_comissao_request_guid" id="proc_comissao_request_guid" value="<%=gera_uid%>" />
 
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->
 <table width="690" cellpadding="4" CellSpacing="0" style="border-bottom:1px solid black">
@@ -292,86 +246,14 @@
 
 <!--  PARÂMETROS  -->
 <table width="690" class="Qx" cellspacing="0">
-<!--  STATUS DE ENTREGA  -->
+<!--  MÊS DE COMPETÊNCIA  -->
 <tr bgcolor="#FFFFFF">
-<td class="MT" align="left" nowrap><span class="PLTe">PERÍODO</span>
-	<br>
-	<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;">
+<td class="MT" align="left" nowrap><span class="PLTe">COMPETÊNCIA</span>
+	<br />
+	<table cellspacing="3" cellpadding="0" style="margin-bottom:4px; width:100%">
 	<tr bgcolor="#FFFFFF">
-		<td align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_st_entrega_entregue" name="ckb_st_entrega_entregue" onclick="if (fFILTRO.ckb_st_entrega_entregue.checked) fFILTRO.c_dt_entregue_inicio.focus();"
-			value="<%=ST_ENTREGA_ENTREGUE%>"
-			<% if (c_dt_entregue_inicio <> "") Or (c_dt_entregue_termino <> "") then Response.Write " checked"%>
-			><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_st_entrega_entregue.click();">Pedidos entregues entre</span
-			><input class="Cc" maxlength="10" style="width:70px;" name="c_dt_entregue_inicio" id="c_dt_entregue_inicio" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_entregue_termino.focus(); else fFILTRO.ckb_st_entrega_entregue.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_entregue.checked=true;" onchange="if (trim(this.value)!='') fFILTRO.ckb_st_entrega_entregue.checked=true;"
-			<% if c_dt_entregue_inicio <> "" then Response.Write " value=" & chr(34) & c_dt_entregue_inicio & chr(34)%>
-			/>&nbsp;<span class="C">e</span>&nbsp;<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_entregue_termino" id="c_dt_entregue_termino" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_st_entrega_entregue.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_entregue.checked=true;"  onchange="if (trim(this.value)!='') fFILTRO.ckb_st_entrega_entregue.checked=true;"
-			<% if c_dt_entregue_termino <> "" then Response.Write " value=" & chr(34) & c_dt_entregue_termino & chr(34)%>
-			/>
-		</td>
-	</tr>
-	</table>
-</td></tr>
-
-<!--  COMISSÃO PAGA  -->
-<tr bgcolor="#FFFFFF">
-<td class="MDBE" align="left" nowrap><span class="PLTe">COMISSÃO</span>
-	<br>
-	<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;">
-	<tr bgcolor="#FFFFFF">
-		<td align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_comissao_paga_sim" name="ckb_comissao_paga_sim"
-			value="ON"
-			<% if ckb_comissao_paga_sim <> "" then Response.Write " checked" %>
-			/><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_comissao_paga_sim.click();">Paga</span>
-		</td>
-	</tr>
-	<tr bgcolor="#FFFFFF">
-		<td align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_comissao_paga_nao" name="ckb_comissao_paga_nao"
-			value="ON"
-			<% if ckb_comissao_paga_nao <> "" then Response.Write " checked" %>
-			/><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_comissao_paga_nao.click();">Não-Paga</span>
-		</td>
-	</tr>
-	</table>
-</td>
-</tr>
-
-<!--  STATUS DE PAGAMENTO  -->
-<tr bgcolor="#FFFFFF">
-<td class="MDBE" align="left" nowrap><span class="PLTe">STATUS DE PAGAMENTO</span>
-	<br>
-	<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;">
-	<tr bgcolor="#FFFFFF">
-		<td align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_st_pagto_pago" name="ckb_st_pagto_pago"
-			value="<%=ST_PAGTO_PAGO%>"
-			<% if ckb_st_pagto_pago <> "" then Response.Write " checked" %>
-			/><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_st_pagto_pago.click();">Pago</span>
-		</td>
-	</tr>
-	<tr bgcolor="#FFFFFF">
-		<td align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_st_pagto_nao_pago" name="ckb_st_pagto_nao_pago"
-			value="<%=ST_PAGTO_NAO_PAGO%>"
-			<% if ckb_st_pagto_nao_pago <> "" then Response.Write " checked" %>
-			/><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_st_pagto_nao_pago.click();">Não-Pago</span>
-		</td>
-	</tr>
-	<tr bgcolor="#FFFFFF">
-		<td align="left">
-		<input type="checkbox" tabindex="-1" id="ckb_st_pagto_pago_parcial" name="ckb_st_pagto_pago_parcial"
-			value="<%=ST_PAGTO_PARCIAL%>"
-			<% if ckb_st_pagto_pago_parcial <> "" then Response.Write " checked" %>
-			/><span class="C" style="cursor:default" 
-			onclick="fFILTRO.ckb_st_pagto_pago_parcial.click();">Pago Parcial</span>
-		</td>
+		<td align="right" style="width: 20px" valign="bottom"><span class="PLTd" style="margin-left:20px;">Mês de Competência:</span></td>
+		<td align="left" valign="bottom"><span class="C CampoValorFiltroRealce"><%=normaliza_a_esq(Cstr(Month(dt_entregue_termino)),2) & " / " & Cstr(Year(dt_entregue_termino))%></span></td>
 	</tr>
 	</table>
 </td>
@@ -383,8 +265,8 @@
 	<br />
 	<table cellspacing="3" cellpadding="0" style="margin-bottom:4px; width:100%">
 	<tr bgcolor="#FFFFFF">
-		<td align="right" style="width: 20px"><span class="PLTd" style="margin-left:20px;">CNPJ do Emitente da NFS-e:</span></td>
-		<td align="left"><span class="C"><%=cnpj_cpf_formata(c_cnpj_nfse)%></span></td>
+		<td align="right" style="width: 20px" valign="bottom"><span class="PLTd" style="margin-left:20px;">CNPJ do Emitente da NFS-e:</span></td>
+		<td align="left" valign="bottom"><span class="C CampoValorFiltroRealce"><%=cnpj_cpf_formata(c_cnpj_nfse)%></span></td>
 	</tr>
 	</table>
 </td>
@@ -487,6 +369,9 @@
 </html>
 
 <%
+	if rs.State <> 0 then rs.Close
+	set rs = nothing
+
 '	FECHA CONEXAO COM O BANCO DE DADOS
 	cn.Close
 	set cn = nothing
