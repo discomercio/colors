@@ -452,11 +452,12 @@ function preencheForm()
 	                }
 	                if (vetnfe.NFe.infNFe.det.imposto.IPI.IPITrib.hasOwnProperty('pIPI')) {
 	                    s = vetnfe.NFe.infNFe.det.imposto.IPI.IPITrib.pIPI;
-	                    if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 2);
-	                    $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 0));
+	                    if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 4);
+	                    //$("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 2));
+                        $("#c_nfe_aliq_ipi_" + sIdx).val(formata_moeda_xml(s));
 	                }
 	                else {
-	                    $("#c_nfe_aliq_ipi_" + sIdx).val("0");
+	                    $("#c_nfe_aliq_ipi_" + sIdx).val("0,00");
 	                }
 	            }
 	            else {
@@ -468,17 +469,18 @@ function preencheForm()
 	                }
 	                if (vetnfe.NFe.infNFe.det.imposto.IPI.hasOwnProperty('pIPI')) {
 	                    s = vetnfe.NFe.infNFe.det.imposto.IPI.pIPI;
-	                    if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 2);
-	                    $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 0));
+	                    if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 4);
+	                    //$("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 2));
+                        $("#c_nfe_aliq_ipi_" + sIdx).val(formata_moeda_xml(s));
 	                }
 	                else {
-	                    $("#c_nfe_aliq_ipi_" + sIdx).val("0");
+	                    $("#c_nfe_aliq_ipi_" + sIdx).val("0,00");
 	                }
 	            }
 	        }
 	        else {
 	            $("#c_nfe_vl_ipi_" + sIdx).val("0,00");
-	            $("#c_nfe_aliq_ipi_" + sIdx).val("0");
+	            $("#c_nfe_aliq_ipi_" + sIdx).val("0,00");
 	        }
 	        $("#c_nfe_vl_ipi_ori_" + sIdx).val($("#c_nfe_vl_ipi_" + sIdx).val());
 	        $("#c_nfe_aliq_ipi_ori_" + sIdx).val($("#c_nfe_aliq_ipi_" + sIdx).val());
@@ -571,12 +573,13 @@ function preencheForm()
 	                        //$("#c_nfe_aliq_ipi_" + sIdx).text(formata_numero(nfe.nfeProc.NFe.infNFe.det[i].imposto.IPI.IPITrib.pIPI, 2));
 	                        //$("#c_nfe_aliq_ipi_nota_" + sIdx).text(formata_numero(nfe.nfeProc.NFe.infNFe.det[i].imposto.IPI.IPITrib.pIPI, 2));
 	                        s = vetnfe.NFe.infNFe.det[i].imposto.IPI.IPITrib.pIPI;
-	                        if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 2);
-	                        $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 0));
+	                        if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 4);
+	                        //$("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 2));
+                            $("#c_nfe_aliq_ipi_" + sIdx).val(formata_moeda_xml(s));
 	                    }
 	                    else {
 	                        //$("#c_nfe_aliq_ipi_nota_" + sIdx).text("0,00");
-	                        $("#c_nfe_aliq_ipi_" + sIdx).val("0");
+	                        $("#c_nfe_aliq_ipi_" + sIdx).val("0,00");
 	                    }
 	                }
 	                else {
@@ -593,18 +596,19 @@ function preencheForm()
 	                        //$("#c_nfe_aliq_ipi_" + sIdx).text(formata_numero(nfe.nfeProc.NFe.infNFe.det[i].imposto.IPI.pIPI, 2));
 	                        //$("#c_nfe_aliq_ipi_nota_" + sIdx).text(formata_numero(nfe.nfeProc.NFe.infNFe.det[i].imposto.IPI.pIPI, 2));
 	                        s = vetnfe.NFe.infNFe.det[i].imposto.IPI.pIPI;
-	                        if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 2);
-	                        $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 0));
+	                        if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 4);
+	                        //$("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 2));
+                            $("#c_nfe_aliq_ipi_" + sIdx).val(formata_moeda_xml(s));
 	                    }
 	                    else {
 	                        //$("#c_nfe_aliq_ipi_nota_" + sIdx).val("0,00");
-	                        $("#c_nfe_aliq_ipi_" + sIdx).val("0");
+	                        $("#c_nfe_aliq_ipi_" + sIdx).val("0,00");
 	                    }
 	                }
 	            }
 	            else {
 	                $("#c_nfe_vl_ipi_" + sIdx).val("0,00");
-	                $("#c_nfe_aliq_ipi_" + sIdx).val("0");
+	                $("#c_nfe_aliq_ipi_" + sIdx).val("0,00");
 	            }
 	            $("#c_nfe_vl_ipi_ori_" + sIdx).val($("#c_nfe_vl_ipi_" + sIdx).val());
 	            $("#c_nfe_aliq_ipi_ori_" + sIdx).val($("#c_nfe_aliq_ipi_" + sIdx).val());
@@ -782,8 +786,8 @@ function complementaForm()
                         } 
                         if (vetnfe.NFe.infNFe.det.imposto.IPI.IPITrib.hasOwnProperty('pIPI')) {
                             s = vetnfe.NFe.infNFe.det.imposto.IPI.IPITrib.pIPI;
-                            if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 2);
-                            $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 0));
+                            if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 4);
+                            $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 2));
                         }
                     }
                     else {
@@ -792,8 +796,9 @@ function complementaForm()
                         } 
                         if (vetnfe.NFe.infNFe.det.imposto.IPI.hasOwnProperty('pIPI')) {
                             s = vetnfe.NFe.infNFe.det.imposto.IPI.pIPI;
-                            if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 2);
-                            $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 0));
+                            if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 4);
+                            //$("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 2));
+                            $("#c_nfe_aliq_ipi_" + sIdx).val(formata_moeda_xml(s));
                         }
                     }
                 }
@@ -854,8 +859,8 @@ function complementaForm()
                             } 
                             if (vetnfe.NFe.infNFe.det[i].imposto.IPI.IPITrib.hasOwnProperty('pIPI')) {
                                 s = vetnfe.NFe.infNFe.det[i].imposto.IPI.IPITrib.pIPI;
-                                if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 2);
-                                $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 0));
+                                if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 4);
+                                $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 2));
                             }
                         }
                         else {
@@ -864,8 +869,9 @@ function complementaForm()
                             } 
                             if (vetnfe.NFe.infNFe.det[i].imposto.IPI.hasOwnProperty('pIPI')) {
                                 s = vetnfe.NFe.infNFe.det[i].imposto.IPI.pIPI;
-                                if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 2);
-                                $("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 0));
+                                if (s.indexOf(".") > 0) s = s.substring(0, s.indexOf(".") + 4);
+                                //$("#c_nfe_aliq_ipi_" + sIdx).val(formata_numero(s, 2));
+                                $("#c_nfe_aliq_ipi_" + sIdx).val(formata_moeda_xml(s));
                             }
                         }
                     }
@@ -930,7 +936,8 @@ function recalcula_itens() {
 		        $("#c_nfe_vl_ipi_" + trim(i.toString())).val(formata_moeda(v_ipi.toString()));
 		    }
 		    else {
-		        v_ipi = converte_numero($("#c_nfe_vl_ipi_" + trim(i.toString())).val());
+		        v_ipi = converte_numero($("#c_nfe_vl_ipi_ori_" + trim(i.toString())).val());
+                v_ipi = v_ipi / converte_numero($("#c_nfe_qtde_" + trim(i.toString())).val());
 		    }
 		    $("#c_nfe_vl_ipi_" + trim(i.toString())).val(formata_moeda(v_ipi.toString()));
             v_calculo = v_calculo + v_ipi;
@@ -1557,7 +1564,7 @@ select
 	<td class="MDB TdNfeAliqIpi" align="left">
         <input type="hidden" name="c_nfe_aliq_ipi_ori_<%=Cstr(i)%>" id="c_nfe_aliq_ipi_ori_<%=Cstr(i)%>" />
         <input name="c_nfe_aliq_ipi_<%=Cstr(i)%>" id="c_nfe_aliq_ipi_<%=Cstr(i)%>" class="PLLe TdNfeAliqIpi TxtEditavel"
-         onblur="this.value=formata_numero(this.value, 0); if (converte_numero(this.value) > 100) {alert('Alíquota de IPI maior que 100%!');}; if (this.value != c_nfe_aliq_ipi_ori_<%=Cstr(i)%>.value) {recalcula_itens(); recalcula_total_nf();}" />
+         onblur="this.value=formata_numero(this.value, 2); if (converte_numero(this.value) > 100) {alert('Alíquota de IPI maior que 100%!');}; if (this.value != c_nfe_aliq_ipi_ori_<%=Cstr(i)%>.value) {recalcula_itens(); recalcula_total_nf();}" />
 	</td>
 	<td class="MDB TdNfeVlIpi" align="left">
         <input type="hidden" name="c_nfe_vl_ipi_ori_<%=Cstr(i)%>" id="c_nfe_vl_ipi_ori_<%=Cstr(i)%>" />

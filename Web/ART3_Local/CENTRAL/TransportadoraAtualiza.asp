@@ -64,7 +64,7 @@
 	
 '	OBTÉM DADOS DO FORMULÁRIO ANTERIOR
 	dim operacao_selecionada, s_transportadora, s_nome, s_razao_social, s_cnpj, s_ie
-	dim s_endereco, s_endereco_numero, s_endereco_complemento, s_bairro, s_cidade, s_cep, s_uf, s_ddd, s_telefone, s_fax, s_contato, s_email
+	dim s_endereco, s_endereco_numero, s_endereco_complemento, s_bairro, s_cidade, s_cep, s_uf, s_ddd, s_telefone, s_fax, s_contato, s_email, s_email2, s_email_1a_transp
 	operacao_selecionada=request("operacao_selecionada")
 	s_transportadora=ucase(trim(request("transportadora_selecionada")))
 	s_nome=Trim(request("nome"))
@@ -83,6 +83,7 @@
 	s_fax=retorna_so_digitos(Trim(request("fax")))
 	s_contato=Trim(request("contato"))
 	s_email=Trim(request("c_email"))
+    s_email2=Trim(request("c_email2"))
 
 	dim v_registro_cep_transportadora
 	redim v_registro_cep_transportadora(0)
@@ -227,6 +228,7 @@
 				r("fax")=s_fax
 				r("contato")=s_contato
 				r("email")=s_email
+                r("email2")=s_email2
 				r("dt_ult_atualizacao")=Now
 				
 				r.Update

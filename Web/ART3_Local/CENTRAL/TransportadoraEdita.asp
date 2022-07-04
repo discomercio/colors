@@ -216,6 +216,14 @@ function AtualizaTransportadora( f ) {
 		}
 	}
 
+	if (trim(f.c_email2.value) != "") {
+		if (!email_ok(f.c_email2.value)) {
+			alert("Email inválido!!");
+			f.c_email2.focus();
+			return;
+		}
+	}
+
 	if ((trim(f.endereco.value) != "") || (trim(f.bairro.value) != "") || (trim(f.cidade.value) != "") || (trim(f.uf.value) != "") || (trim(f.cep.value) != "")) {
 		if (trim(f.endereco.value) == "") {
 			alert('Preencha o endereço!!');
@@ -648,7 +656,15 @@ function VerificarExibicaoHeaderCEPs() {
 <table width="649" class="QS" cellspacing="0">
 	<tr>
 <%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("email")) else s=""%>
-		<td width="100%" align="left"><p class="R">E-MAIL</p><span class="C"><input id="c_email" name="c_email" class="TA" value="<%=s%>" maxlength="60" size="85" onkeypress="if (digitou_enter(true)) bATUALIZA.focus(); filtra_email();"></span></td>
+		<td width="100%" align="left"><p class="R">E-MAIL</p><span class="C"><input id="c_email" name="c_email" class="TA" value="<%=s%>" maxlength="60" size="85" onkeypress="if (digitou_enter(true)) fCAD.c_email2.focus(); filtra_email();"></span></td>
+	</tr>
+</table>
+
+<!-- ************   E-MAIL (XML)  ************ -->
+<table width="649" class="QS" cellspacing="0">
+	<tr>
+<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("email2")) else s=""%>
+		<td width="100%" align="left"><p class="R">E-MAIL (XML)</p><span class="C"><input id="c_email2" name="c_email2" class="TA" value="<%=s%>" maxlength="60" size="85" onkeypress="if (digitou_enter(true)) bATUALIZA.focus(); filtra_email();"></span></td>
 	</tr>
 </table>
 
