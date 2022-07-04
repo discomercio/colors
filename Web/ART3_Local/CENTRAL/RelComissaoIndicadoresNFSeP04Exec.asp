@@ -32,12 +32,93 @@
 	
 	Server.ScriptTimeout = MAX_SERVER_SCRIPT_TIMEOUT_EM_SEG
 	
+	class cl_REL_COMISSAO_NFSe_N2
+		dim vendedor
+		dim indicador
+		dim id_indicador
+		dim desempenho_nota
+		dim razao_social_nome
+		dim NFSe_razao_social
+		dim comissao_cartao_status
+		dim comissao_cartao_cpf
+		dim comissao_cartao_titular
+		dim banco
+		dim banco_nome
+		dim agencia
+		dim agencia_dv
+		dim tipo_conta
+		dim conta_operacao
+		dim conta
+		dim conta_dv
+		dim favorecido
+		dim favorecido_cnpj_cpf
+		dim vl_total_preco_venda
+		dim vl_total_preco_NF
+		dim vl_total_RT
+		dim vl_total_RA_bruto
+		dim vl_total_RA_liquido
+		dim vl_total_RA_dif
+		dim cor_linha_total
+		dim mensagem_desconto
+
+		public vN3Pedido
+		public vN3Desconto
+
+		Private Sub Class_Initialize
+			vN3Pedido = Array()
+			vN3Desconto = Array()
+		End Sub
+
+		Sub AddN3Pedido(newItem)
+		'	INICIALMENTE, O ARRAY ENCONTRA-SE EM UM ESTADO EM QUE LBOUND() RETORNA 0 (ZERO) E UBOUND() RETORNA -1 (UM NEGATIVO)
+			ReDim Preserve vN3Pedido(UBound(vN3Pedido) + 1)
+			set vN3Pedido(UBound(vN3Pedido)) = newItem
+		End Sub
+		
+		Sub AddN3Desconto(newItem)
+		'	INICIALMENTE, O ARRAY ENCONTRA-SE EM UM ESTADO EM QUE LBOUND() RETORNA 0 (ZERO) E UBOUND() RETORNA -1 (UM NEGATIVO)
+			ReDim Preserve vN3Desconto(UBound(vN3Desconto) + 1)
+			set vN3Desconto(UBound(vN3Desconto)) = newItem
+		End Sub
+		end class
+
+	class cl_REL_COMISSAO_NFSe_N3_DESCONTO
+		dim id_orcamentista_e_indicador_desconto
+		dim descricao
+		dim valor
+		dim ordenacao
+		end class
+
+	class cl_REL_COMISSAO_NFSe_N3_PEDIDO
+		dim pedido
+		dim orcamento
+		dim operacao
+		dim id_cfg_tabela_origem
+		dim id_registro_tabela_origem
+		dim loja
+		dim st_comissao_original
+		dim st_pagto
+		dim nome_cliente
+		dim data_pedido
+		dim perc_RT
+		dim vl_preco_venda
+		dim vl_preco_NF
+		dim vl_RT
+		dim vl_RA_bruto
+		dim vl_RA_liquido
+		dim vl_RA_dif
+		dim vl_comissao
+		dim sinal
+		dim cor_sinal
+		dim cor_linha
+		end class
+
 	dim usuario
 	usuario = Trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
 
 '	CONECTA COM O BANCO DE DADOS
-	dim cn, rs, msg_erro,rs2
+	dim cn, rs, rs2, msg_erro
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	If Not cria_recordset_otimista(rs2, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
@@ -57,41 +138,27 @@
 	dim alerta
 	alerta = ""
 	
+	dim blnErroFatal
+	blnErroFatal = False
+
 	dim s, s_aux, s_filtro, s_filtro_indicador
 	s_filtro_indicador = ""
 
 '	FILTROS
 	dim c_cnpj_nfse
 	dim ckb_id_indicador
-	dim ckb_st_entrega_entregue, c_dt_entregue_inicio, c_dt_entregue_termino
-	dim ckb_comissao_paga_sim, ckb_comissao_paga_nao
-	dim ckb_st_pagto_pago, ckb_st_pagto_nao_pago, ckb_st_pagto_pago_parcial
-	dim rb_visao, blnVisaoSintetica
+	dim c_dt_entregue_termino, dt_entregue_termino
+	dim rb_visao, blnVisaoSintetica, proc_comissao_request_guid
 
 	c_cnpj_nfse = retorna_so_digitos(Request.Form("c_cnpj_nfse"))
 	ckb_id_indicador = Trim(Request.Form("ckb_id_indicador"))
-	ckb_st_entrega_entregue = Trim(Request.Form("ckb_st_entrega_entregue"))
-	c_dt_entregue_inicio = Trim(Request.Form("c_dt_entregue_inicio"))
 	c_dt_entregue_termino = Trim(Request.Form("c_dt_entregue_termino"))
-
-	ckb_comissao_paga_sim = Trim(Request.Form("ckb_comissao_paga_sim"))
-	ckb_comissao_paga_nao = Trim(Request.Form("ckb_comissao_paga_nao"))
-
-	ckb_st_pagto_pago = Trim(Request.Form("ckb_st_pagto_pago"))
-	ckb_st_pagto_nao_pago = Trim(Request.Form("ckb_st_pagto_nao_pago"))
-	ckb_st_pagto_pago_parcial = Trim(Request.Form("ckb_st_pagto_pago_parcial"))
+	dt_entregue_termino = StrToDate(c_dt_entregue_termino)
 	rb_visao = Trim(Request.Form("rb_visao"))
+	proc_comissao_request_guid = Trim(Request.Form("proc_comissao_request_guid"))
 	
 	blnVisaoSintetica = False
 	if rb_visao = "SINTETICA" then blnVisaoSintetica = True
-	
-	if alerta = "" then
-		if c_dt_entregue_inicio <> "" then
-			if Not IsDate(StrToDate(c_dt_entregue_inicio)) then
-				alerta = "DATA DE INÍCIO DO PERÍODO É INVÁLIDA."
-				end if
-			end if
-		end if
 	
 	if alerta = "" then
 		if c_dt_entregue_termino <> "" then
@@ -114,43 +181,6 @@
 			alerta = "Nenhum indicador foi selecionado"
 			end if
 		end if
-
-
-'	Período de consulta está restrito por perfil de acesso?
-	dim dtMinDtInicialFiltroPeriodo, intMaxDiasDtInicialFiltroPeriodo
-	dim strMinDtInicialFiltroPeriodoYYYYMMDD, strMinDtInicialFiltroPeriodoDDMMYYYY
-	dim strDtRefDDMMYYYY
-	if operacao_permitida(OP_CEN_RESTRINGE_DT_INICIAL_FILTRO_PERIODO, s_lista_operacoes_permitidas) then
-		intMaxDiasDtInicialFiltroPeriodo = obtem_max_dias_dt_inicial_filtro_periodo()
-		dtMinDtInicialFiltroPeriodo = Date - intMaxDiasDtInicialFiltroPeriodo
-		strMinDtInicialFiltroPeriodoYYYYMMDD = formata_data_yyyymmdd(dtMinDtInicialFiltroPeriodo)
-		strMinDtInicialFiltroPeriodoDDMMYYYY = formata_data(dtMinDtInicialFiltroPeriodo)
-		if alerta = "" then
-			strDtRefDDMMYYYY = c_dt_entregue_inicio
-			if strDtRefDDMMYYYY <> "" then
-				if StrToDate(strDtRefDDMMYYYY) < dtMinDtInicialFiltroPeriodo then
-					alerta = "Data inválida para consulta: " & strDtRefDDMMYYYY & ".  O período de consulta não pode compreender datas anteriores a " & strMinDtInicialFiltroPeriodoDDMMYYYY
-					end if
-				end if
-			end if
-
-		if alerta = "" then
-			strDtRefDDMMYYYY = c_dt_entregue_termino
-			if strDtRefDDMMYYYY <> "" then
-				if StrToDate(strDtRefDDMMYYYY) < dtMinDtInicialFiltroPeriodo then
-					alerta = "Data inválida para consulta: " & strDtRefDDMMYYYY & ".  O período de consulta não pode compreender datas anteriores a " & strMinDtInicialFiltroPeriodoDDMMYYYY
-					end if
-				end if
-			end if
-
-		if alerta = "" then
-			if c_dt_entregue_inicio = "" then c_dt_entregue_inicio = strMinDtInicialFiltroPeriodoDDMMYYYY
-			end if
-		
-	else
-		strMinDtInicialFiltroPeriodoYYYYMMDD = ""
-		strMinDtInicialFiltroPeriodoDDMMYYYY = ""
-		end if
 	
 	'MONTA DESCRIÇÃO DE INDICADOR(ES) SELECIONADO(S) P/ EXIBIÇÃO NO FILTRO
 	s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (Id IN (" & ckb_id_indicador & ")) ORDER BY apelido"
@@ -163,17 +193,23 @@
 		loop
 	if rs.State <> 0 then rs.Close
 
-dim o
-dim strMsg
-dim resultadoCalculo, resultadoDigito, QtdeCedulas, TotalCedula, limitador(5)
-dim dadosCalculo
-set o = createobject( "ComPlusCalcCedulas.ComPlusCalcCedulas" )
-dim v_cedulas, aux(5), y, totalArredondado, cont
-dim cedulas()
-dim qtdeCedula(), limitador_fixo(5)
+	if alerta = "" then
+	'	TRATAMENTO P/ OS CASOS EM QUE: USUÁRIO ESTÁ TENTANDO USAR O BOTÃO VOLTAR, OCORREU DUPLO CLIQUE OU USUÁRIO ATUALIZOU A PÁGINA ENQUANTO AINDA ESTAVA PROCESSANDO (DUPLO ACIONAMENTO)
+	'	Esse tratamento é feito através do campo proc_comissao_request_guid (t_COMISSAO_INDICADOR_NFSe_N1.proc_comissao_request_guid)
+		if proc_comissao_request_guid <> "" then
+			s = "SELECT * FROM t_COMISSAO_INDICADOR_NFSe_N1 WHERE (proc_comissao_request_guid = '" & proc_comissao_request_guid & "')"
+			rs.Open s, cn
+			if Not rs.Eof then
+				blnErroFatal = True
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Este relatório já foi processado em " & formata_data_hora_sem_seg(rs("proc_comissao_data_hora")) & " por " & Trim("" & rs("proc_comissao_usuario")) & " (NSU = " & Trim("" & rs("id")) & ")" & _
+								"<br /><br />" & _
+								"<a style='color:black;' href='javascript:fRelSumario(fSumario," & Trim("" & rs("id")) & ")'><button type='button' class='Button C'>Consultar Detalhes</button></a>"
+				end if
 
-
-
+			if rs.State <> 0 then rs.Close
+			end if 'if proc_comissao_request_guid <> ""
+		end if 'if alerta = ""
 
 
 
@@ -184,35 +220,46 @@ dim qtdeCedula(), limitador_fixo(5)
 ' _____________________________________________________________________________________________
 
 ' _____________________________________
+' monta html bloco msg erro
+'
+function monta_html_bloco_msg_erro(byval mensagem_erro)
+dim s_html
+	s_html = "<br />" & _
+		"<p class='T' style='color:red;'>Mensagem de Erro</p>" & _
+		"<div class='MtAlerta' style='width:600px;font-weight:bold;' align='center'><p style='margin:5px 2px 5px 2px;'>" & mensagem_erro & "</p></div>" & _
+		"<br />"
+	monta_html_bloco_msg_erro = s_html
+end function
+
+
+' _____________________________________
 ' CONSULTA EXECUTA
 '
 sub consulta_executa
-const VENDA_NORMAL = "VENDA_NORMAL"
-const DEVOLUCAO = "DEVOLUCAO"
-const PERDA = "PERDA"
-dim r
+const VENDA_NORMAL = "VEN"
+const DEVOLUCAO = "DEV"
+const PERDA = "PER"
+dim r, tN1, tN2, tN3Desc, tN3Ped
 dim s, s_aux, s_sql, x, cab_table, cab, indicador_a, vendedor_a, n_reg, n_reg_total, qtde_indicadores
 dim vl_preco_venda, vl_sub_total_preco_venda, vl_total_preco_venda
 dim vl_preco_NF, vl_sub_total_preco_NF, vl_total_preco_NF
 dim vl_RT, vl_sub_total_RT, vl_total_RT
-dim vl_RA, vl_sub_total_RA, vl_total_RA
+dim vl_RA_bruto, vl_sub_total_RA_bruto, vl_total_RA_bruto
 dim vl_RA_liquido, vl_sub_total_RA_liquido, vl_total_RA_liquido
 dim vl_RA_diferenca, vl_sub_total_RA_diferenca, vl_total_RA_diferenca
 dim perc_RT
-dim s_where, s_where_venda, s_where_devolucao, s_where_perdas
+dim s_where, s_where_aux, s_where_venda, s_where_devolucao, s_where_perdas
 dim s_where_comissao_paga, s_where_comissao_descontada, s_where_st_pagto, s_where_dt_st_pagto
 dim s_cor, s_sinal, s_cor_sinal
 dim s_banco, s_banco_nome, s_agencia, s_conta, s_favorecido, s_favorecido_cnpj_cpf
 dim s_nome_cliente, s_desempenho_nota
-dim s_id, s_checked, s_class, s_class_td, idx_bloco, s_new_cab
+dim s_id, s_id_base, s_class, s_class_td, idx_bloco, s_new_cab
 dim s_lista_completa_venda_normal, s_lista_completa_devolucao, s_lista_completa_perda
-dim s_lista_ja_marcado_venda_normal, s_lista_ja_marcado_devolucao, s_lista_ja_marcado_perda
-dim sub_total_com, sub_total_comissao, banco, limita_cedula, qtdeChq, textDin, textChq, sub_total_com_RA, sub_total_com_RT, vl_sub_total_RT_arredondado, vl_sub_total_RA_arredondado
 dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_registro_desc, msg_desconto, IdIndicador_anterior
-
-	limita_cedula = Request.Form("limita_cedula")
-	textDin = ""
-	textChq = ""
+dim s_log, s_erro_fatal, lngNsuN1, lngNsuN2
+dim vN2, rxN3Desconto, rxN3Pedido
+dim iN2, iN3Desc, iN3Ped
+dim s_indicador_nome
 
 '	CRITÉRIOS COMUNS
 	s_where = ""
@@ -222,44 +269,10 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 
 '	CRITÉRIO: COMISSÃO PAGA
 '	A) VENDAS
-	s_where_comissao_paga = ""
-	s = ""
-	s_aux = ckb_comissao_paga_sim
-	if s_aux <> "" then
-		if s <> "" then s = s & " OR"
-		s = s & " (t_PEDIDO.comissao_paga = " & COD_COMISSAO_PAGA & ")"
-		end if
-
-	s_aux = ckb_comissao_paga_nao
-	if s_aux <> "" then
-		if s <> "" then s = s & " OR"
-		s = s & " (t_PEDIDO.comissao_paga = " & COD_COMISSAO_NAO_PAGA & ")"
-		end if
-
-	if s <> "" then 
-		if s_where_comissao_paga <> "" then s_where_comissao_paga = s_where_comissao_paga & " AND"
-		s_where_comissao_paga = s_where_comissao_paga & " (" & s & ")"
-		end if
+	s_where_comissao_paga = " (t_PEDIDO.comissao_paga = " & COD_COMISSAO_NAO_PAGA & ")"
 		
 '	B) PERDAS/DEVOLUÇÕES
-	s_where_comissao_descontada = ""
-	s = ""
-	s_aux = ckb_comissao_paga_sim
-	if s_aux <> "" then
-		if s <> "" then s = s & " OR"
-		s = s & " (comissao_descontada = " & COD_COMISSAO_DESCONTADA & ")"
-		end if
-	
-	s_aux = ckb_comissao_paga_nao
-	if s_aux <> "" then
-		if s <> "" then s = s & " OR"
-		s = s & " (comissao_descontada = " & COD_COMISSAO_NAO_DESCONTADA & ")"
-		end if
-
-	if s <> "" then 
-		if s_where_comissao_descontada <> "" then s_where_comissao_descontada = s_where_comissao_descontada & " AND"
-		s_where_comissao_descontada = s_where_comissao_descontada & " (" & s & ")"
-		end if
+	s_where_comissao_descontada = " (comissao_descontada = " & COD_COMISSAO_NAO_DESCONTADA & ")"
 
 '	CRITÉRIO: STATUS DE PAGAMENTO
 	s_where_dt_st_pagto = ""
@@ -267,38 +280,11 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 		s_where_dt_st_pagto = s_where_dt_st_pagto & " AND (t_PEDIDO__BASE.dt_st_pagto < " & bd_formata_data(StrToDate(c_dt_entregue_termino)+1) & ")"
 		end if
 
-	s_where_st_pagto = ""
-	s = ""
-	s_aux = ckb_st_pagto_pago
-	if s_aux <> "" then
-		if s <> "" then s = s & " OR"
-		s = s & " ((t_PEDIDO__BASE.st_pagto = '" & s_aux & "')" & s_where_dt_st_pagto & ")"
-		end if
+	s_where_st_pagto = " ((t_PEDIDO__BASE.st_pagto = '" & ST_PAGTO_PAGO & "')" & s_where_dt_st_pagto & ")"
 
-	s_aux = ckb_st_pagto_nao_pago
-	if s_aux <> "" then
-		if s <> "" then s = s & " OR"
-		s = s & " ((t_PEDIDO__BASE.st_pagto = '" & s_aux & "')" & s_where_dt_st_pagto & ")"
-		end if
-	
-	s_aux = ckb_st_pagto_pago_parcial
-	if s_aux <> "" then
-		if s <> "" then s = s & " OR"
-		s = s & " ((t_PEDIDO__BASE.st_pagto = '" & s_aux & "')" & s_where_dt_st_pagto & ")"
-		end if
-
-	if s <> "" then 
-		if s_where_st_pagto <> "" then s_where_st_pagto = s_where_st_pagto & " AND"
-		s_where_st_pagto = s_where_st_pagto & " (" & s & ")"
-		end if
 	
 '	CRITÉRIOS PARA PEDIDOS DE VENDA NORMAIS
 	s_where_venda = ""
-	if IsDate(c_dt_entregue_inicio) then
-		if s_where_venda <> "" then s_where_venda = s_where_venda & " AND"
-		s_where_venda = s_where_venda & " (t_PEDIDO.entregue_data >= " & bd_formata_data(StrToDate(c_dt_entregue_inicio)) & ")"
-		end if
-		
 	if IsDate(c_dt_entregue_termino) then
 		if s_where_venda <> "" then s_where_venda = s_where_venda & " AND"
 		s_where_venda = s_where_venda & " (t_PEDIDO.entregue_data < " & bd_formata_data(StrToDate(c_dt_entregue_termino)+1) & ")"
@@ -313,14 +299,9 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 		if s_where_venda <> "" then s_where_venda = s_where_venda & " AND"
 		s_where_venda = s_where_venda & " (" & s_where_st_pagto & ")"
 		end if
-		
+	
 '	CRITÉRIOS PARA DEVOLUÇÕES
 	s_where_devolucao = ""
-	if IsDate(c_dt_entregue_inicio) then
-		if s_where_devolucao <> "" then s_where_devolucao = s_where_devolucao & " AND"
-		s_where_devolucao = s_where_devolucao & " (t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data >= " & bd_formata_data(StrToDate(c_dt_entregue_inicio)) & ")"
-		end if
-		
 	if IsDate(c_dt_entregue_termino) then
 		if s_where_devolucao <> "" then s_where_devolucao = s_where_devolucao & " AND"
 		s_where_devolucao = s_where_devolucao & " (t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data < " & bd_formata_data(StrToDate(c_dt_entregue_termino)+1) & ")"
@@ -333,29 +314,26 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 
 '	CRITÉRIOS PARA PERDAS
 	s_where_perdas = ""
-	if IsDate(c_dt_entregue_inicio) then
-		if s_where_perdas <> "" then s_where_perdas = s_where_perdas & " AND"
-		s_where_perdas = s_where_perdas & " (t_PEDIDO_PERDA.data >= " & bd_formata_data(StrToDate(c_dt_entregue_inicio)) & ")"
-		end if
-		
 	if IsDate(c_dt_entregue_termino) then
 		if s_where_perdas <> "" then s_where_perdas = s_where_perdas & " AND"
 		s_where_perdas = s_where_perdas & " (t_PEDIDO_PERDA.data < " & bd_formata_data(StrToDate(c_dt_entregue_termino)+1) & ")"
 		end if
-		
+	
 	if s_where_comissao_descontada <> "" then
 		if s_where_perdas <> "" then s_where_perdas = s_where_perdas & " AND"
 		s_where_perdas = s_where_perdas & " (" & s_where_comissao_descontada & ")"
 		end if
-		
-		
+	
+	
 '	VENDAS NORMAIS
-	s = s_where
-	if (s <> "") And (s_where_venda <> "") then s = s & " AND"
-	s = s & s_where_venda
-	if s <> "" then s = " AND" & s
+	s_where_aux = s_where
+	if (s_where_aux <> "") And (s_where_venda <> "") then s_where_aux = s_where_aux & " AND"
+	s_where_aux = s_where_aux & s_where_venda
+	if s_where_aux <> "" then s_where_aux = " AND" & s_where_aux
+
 	s_sql = "SELECT" & _
 			" '" & VENDA_NORMAL & "' AS operacao," & _
+			" t_CFG_TABELA_ORIGEM.id AS id_cfg_tabela_origem," & _
 			" t_PEDIDO.pedido AS id_registro," & _
 			" t_PEDIDO.comissao_paga AS status_comissao," & _
 			" t_ORCAMENTISTA_E_INDICADOR.desempenho_nota," & _
@@ -387,9 +365,10 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 			" INNER JOIN t_PEDIDO_ITEM ON (t_PEDIDO.pedido=t_PEDIDO_ITEM.pedido)" & _
 			" INNER JOIN t_CLIENTE ON (t_PEDIDO__BASE.id_cliente=t_CLIENTE.id)" & _
 			" INNER JOIN t_ORCAMENTISTA_E_INDICADOR ON (t_PEDIDO__BASE.indicador=t_ORCAMENTISTA_E_INDICADOR.apelido)" & _
+			" LEFT JOIN t_CFG_TABELA_ORIGEM ON (nome_tabela = 't_PEDIDO')" & _
 			" WHERE (t_PEDIDO.st_entrega = '" & ST_ENTREGA_ENTREGUE & "')" & _
-			s & _
-			" GROUP BY t_PEDIDO.pedido, t_PEDIDO.comissao_paga, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.banco, t_ORCAMENTISTA_E_INDICADOR.Id, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
+			s_where_aux & _
+			" GROUP BY t_CFG_TABELA_ORIGEM.id, t_PEDIDO.pedido, t_PEDIDO.comissao_paga, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.banco, t_ORCAMENTISTA_E_INDICADOR.Id, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
 	
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
@@ -405,13 +384,15 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 			" t_PEDIDO.loja, t_PEDIDO.numero_loja, t_PEDIDO.entregue_data, t_PEDIDO.pedido, t_PEDIDO.orcamento, t_PEDIDO__BASE.perc_RT, t_PEDIDO__BASE.st_pagto, t_PEDIDO__BASE.vl_total_RA_liquido, t_PEDIDO__BASE.st_tem_desagio_RA, t_PEDIDO__BASE.perc_desagio_RA_liquida"
 
 '	ITENS DEVOLVIDOS
-	s = s_where
-	if (s <> "") And (s_where_devolucao <> "") then s = s & " AND"
-	s = s & s_where_devolucao
-	if s <> "" then s = " WHERE " & s
+	s_where_aux = s_where
+	if (s_where_aux <> "") And (s_where_devolucao <> "") then s_where_aux = s_where_aux & " AND"
+	s_where_aux = s_where_aux & s_where_devolucao
+	if s_where_aux <> "" then s_where_aux = " WHERE " & s_where_aux
+
 	s_sql = s_sql & " UNION ALL " & _
 			"SELECT" & _
 			" '" & DEVOLUCAO & "' AS operacao," & _
+			" t_CFG_TABELA_ORIGEM.id AS id_cfg_tabela_origem," & _
 			" t_PEDIDO_ITEM_DEVOLVIDO.id AS id_registro," & _
 			" t_PEDIDO_ITEM_DEVOLVIDO.comissao_descontada AS status_comissao," & _
 			" t_ORCAMENTISTA_E_INDICADOR.desempenho_nota," & _
@@ -443,8 +424,9 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 			" INNER JOIN t_PEDIDO_ITEM_DEVOLVIDO ON (t_PEDIDO.pedido=t_PEDIDO_ITEM_DEVOLVIDO.pedido)" & _
 			" INNER JOIN t_CLIENTE ON (t_PEDIDO__BASE.id_cliente=t_CLIENTE.id)" & _
 			" INNER JOIN t_ORCAMENTISTA_E_INDICADOR ON (t_PEDIDO__BASE.indicador=t_ORCAMENTISTA_E_INDICADOR.apelido)" & _
-			s & _
-			" GROUP BY t_PEDIDO_ITEM_DEVOLVIDO.id, t_PEDIDO_ITEM_DEVOLVIDO.comissao_descontada, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.banco, t_ORCAMENTISTA_E_INDICADOR.Id, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
+			" LEFT JOIN t_CFG_TABELA_ORIGEM ON (nome_tabela = 't_PEDIDO_ITEM_DEVOLVIDO')" & _
+			s_where_aux & _
+			" GROUP BY t_CFG_TABELA_ORIGEM.id, t_PEDIDO_ITEM_DEVOLVIDO.id, t_PEDIDO_ITEM_DEVOLVIDO.comissao_descontada, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.banco, t_ORCAMENTISTA_E_INDICADOR.Id, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
 	
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
@@ -460,13 +442,15 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 			" t_PEDIDO.loja, t_PEDIDO.numero_loja, t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data, t_PEDIDO.pedido, t_PEDIDO.orcamento, t_PEDIDO__BASE.perc_RT, t_PEDIDO__BASE.st_pagto, t_PEDIDO__BASE.vl_total_RA_liquido, t_PEDIDO__BASE.st_tem_desagio_RA, t_PEDIDO__BASE.perc_desagio_RA_liquida"
 
 '	PERDAS
-	s = s_where
-	if (s <> "") And (s_where_perdas <> "") then s = s & " AND"
-	s = s & s_where_perdas
-	if s <> "" then s = " WHERE " & s
+	s_where_aux = s_where
+	if (s_where_aux <> "") And (s_where_perdas <> "") then s_where_aux = s_where_aux & " AND"
+	s_where_aux = s_where_aux & s_where_perdas
+	if s_where_aux <> "" then s_where_aux = " WHERE " & s_where_aux
+
 	s_sql = s_sql & " UNION ALL " & _
 			"SELECT" & _
 			" '" & PERDA & "' AS operacao," & _
+			" t_CFG_TABELA_ORIGEM.id AS id_cfg_tabela_origem," & _
 			" t_PEDIDO_PERDA.id AS id_registro," & _
 			" t_PEDIDO_PERDA.comissao_descontada AS status_comissao," & _
 			" t_ORCAMENTISTA_E_INDICADOR.desempenho_nota," & _
@@ -498,8 +482,9 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 			" INNER JOIN t_PEDIDO_PERDA ON (t_PEDIDO.pedido=t_PEDIDO_PERDA.pedido)" & _
 			" INNER JOIN t_CLIENTE ON (t_PEDIDO__BASE.id_cliente=t_CLIENTE.id)" & _
 			" INNER JOIN t_ORCAMENTISTA_E_INDICADOR ON (t_PEDIDO__BASE.indicador=t_ORCAMENTISTA_E_INDICADOR.apelido)" & _
-			s & _
-			" GROUP BY t_PEDIDO_PERDA.id, t_PEDIDO_PERDA.comissao_descontada, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.banco, t_ORCAMENTISTA_E_INDICADOR.Id, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
+			" LEFT JOIN t_CFG_TABELA_ORIGEM ON (nome_tabela = 't_PEDIDO_PERDA')" & _
+			s_where_aux & _
+			" GROUP BY t_CFG_TABELA_ORIGEM.id, t_PEDIDO_PERDA.id, t_PEDIDO_PERDA.comissao_descontada, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.banco, t_ORCAMENTISTA_E_INDICADOR.Id, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
 	
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
@@ -521,7 +506,7 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 				") t" & _
 			" ORDER BY t.vendedor, t.desempenho_nota, t.indicador, t.numero_loja, t.data, t.pedido, t.total_preco_venda DESC"
 
-  ' CABEÇALHO
+	'CABEÇALHO
 	cab_table = "<table cellspacing='0' id='tableDados'>" & chr(13)
 	cab = "	<tr style='background:azure' nowrap>" & chr(13) & _
 		  "		<td class='MDTE tdCkb' align='center' valign='bottom' nowrap><input type='checkbox' name='ckb_comissao_paga_tit_bloco' id='ckb_comissao_paga_tit_bloco' class='CKB_COM VISAO_ANALIT' onclick='trata_ckb_onclick();' /></td>" & chr(13) & _
@@ -550,8 +535,8 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 	vl_total_preco_NF = 0
 	vl_sub_total_RT = 0
 	vl_total_RT = 0
-	vl_sub_total_RA = 0
-	vl_total_RA = 0
+	vl_sub_total_RA_bruto = 0
+	vl_total_RA_bruto = 0
 	vl_sub_total_RA_liquido = 0
 	vl_total_RA_liquido = 0
 	vl_sub_total_RA_diferenca = 0
@@ -559,91 +544,39 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 	s_lista_completa_venda_normal = ""
 	s_lista_completa_devolucao = ""
 	s_lista_completa_perda = ""
-	s_lista_ja_marcado_venda_normal = ""
-	s_lista_ja_marcado_devolucao = ""
-	s_lista_ja_marcado_perda = ""
-	sub_total_comissao = 0
-	sub_total_com = 0
 	indicador_a = "XXXXXXXXXXXX"
 	vendedor_a = "XXXXXXXXXXXX"
-	set r = cn.execute(s_sql)
-
-	dim totalComDin,totalComChqOutros,totalComchqBradesco
-	totalComDin= 0
-	totalComChqOutros=0
-	totalComchqBradesco=0
 	
-	if limita_cedula = "" then
-		limitador(0)= "10"
-		limitador(1)= "10"
-		limitador(2)= "10"
-		limitador(3)= "10"
-		limitador(4)= "10"
-		limitador(5)= "10"
-	else 
-		for cont = 0 to Ubound(limitador)
-			limitador(cont) = Request.Form("txtcedula")(cont+1)
-			limitador_fixo(cont) = Request.Form("txtcedula")(cont+1)
-
-			if (limitador(cont) = "") then limitador(cont) = 0
-			if (limitador_fixo(cont) = "") then limitador_fixo(cont) = 0
-			next
-		end if
-
+	s_log = ""
+	redim vN2(0)
+	set vN2(UBound(vN2)) = new cl_REL_COMISSAO_NFSe_N2
+	
+	set r = cn.execute(s_sql)
 	do while Not r.Eof
 	'	MUDOU DE INDICADOR?
 	'	A MUDANÇA DE VENDEDOR TAMBÉM É INTERPRETADA COMO MUDANÇA DE INDICADOR JÁ QUE É NECESSÁRIO INICIAR UM NOVO BLOCO
 		if (Trim("" & r("indicador")) <> indicador_a) Or (Trim("" & r("vendedor")) <> vendedor_a) then
-			indicador_a = Trim("" & r("indicador"))
-			vendedor_a = Trim("" & r("vendedor"))
-			idx_bloco = idx_bloco + 1
-			qtde_indicadores = qtde_indicadores + 1
-			sub_total_comissao = vl_sub_total_RT + vl_sub_total_RA_liquido
-
-			'---------------------------------------   calculo de cédulas
-			dim j, z,totalcomissao
-			z = 0
-			j = 0
-
-			if sub_total_com <= 0 Or sub_total_com > 300 Or banco = "237" then
-				if (sub_total_com > 300) And (banco <> "237") then
-					totalComChqOutros = totalComChqOutros + sub_total_com
-					qtdeChq = qtdeChq + 1
-				elseif sub_total_com < 0 then
-					'NOP
-				else
-					totalComchqBradesco = totalComchqBradesco + sub_total_com
-					end if
-			else
-				dadosCalculo = Clng(sub_total_com)
-				totalComDin =  totalComDin + dadosCalculo
-				dadosCalculo = o.CalculaCedulas(dadosCalculo,"2#"& limitador(5) &"|5#"&limitador(4)&"|10#"&limitador(3)&"|20#"&limitador(2)&"|50#"&limitador(1)&"|100#"&limitador(0)&"",resultadoCalculo)                    
-				dadosCalculo = resultadocalculo
-
-				v_cedulas = Split(dadosCalculo,"|")
-				for cont=0 to Ubound(v_cedulas)
-					if cont mod 2 = 0 then
-						redim  preserve cedulas(j)
-						' cedulas(j)=  cint(v_cedulas(cont))
-						j = j + 1
-					else
-						redim preserve qtdeCedula(z)
-						qtdeCedula(z) = cint(v_cedulas(cont))
-						z = z + 1
-						end if
-					next
-				end if
-
-		  ' FECHA TABELA DO INDICADOR ANTERIOR
+			' FECHA TABELA DO INDICADOR ANTERIOR
 			if n_reg_total > 0 then
 				s_cor="black"
 				if vl_sub_total_preco_venda < 0 then s_cor="red"
 				if vl_sub_total_RT < 0 then s_cor="red"
-				if vl_sub_total_RA < 0 then s_cor="red"
+				if vl_sub_total_RA_bruto < 0 then s_cor="red"
 				if vl_sub_total_RA_liquido < 0 then s_cor="red"
 
+				s_sql = "SELECT" & _
+							" tDESC.id" & _
+							", tDESC.descricao" & _
+							", tDESC.valor" & _
+							", tDESC.ordenacao" & _
+						" FROM t_ORCAMENTISTA_E_INDICADOR_DESCONTO tDESC" & _
+							" INNER JOIN t_ORCAMENTISTA_E_INDICADOR tOI ON (tDESC.apelido=tOI.apelido)" & _
+						" WHERE" & _
+							" (tOI.Id = " & IdIndicador_anterior & ")" & _
+						" ORDER BY" & _
+							" tDESC.ordenacao"
 				if rs2.State <> 0 then rs2.Close
-				rs2.Open "SELECT COUNT(*) AS qtde_Desconto, tDESC.descricao, tDESC.valor, tDESC.ordenacao FROM t_ORCAMENTISTA_E_INDICADOR_DESCONTO tDESC INNER JOIN t_ORCAMENTISTA_E_INDICADOR tOI ON (tDESC.apelido=tOI.apelido) WHERE (tOI.Id = " & IdIndicador_anterior & ") GROUP BY tDESC.descricao, tDESC.valor, tDESC.ordenacao ORDER BY tDESC.ordenacao", cn
+				rs2.Open s_sql, cn
 				msg_desconto = ""
 				if Not rs2.Eof then
 					valor_desconto = 0
@@ -659,108 +592,114 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 						valor_desconto = valor_desconto + v_desconto_valor(contador)
 						qtde_registro_desc = qtde_registro_desc + 1
 						contador = contador + 1
+						
+						set rxN3Desconto = new cl_REL_COMISSAO_NFSe_N3_DESCONTO
+						with rxN3Desconto
+							.id_orcamentista_e_indicador_desconto = rs2("id")
+							.descricao = Trim("" & rs2("descricao"))
+							.valor = rs2("valor")
+							.ordenacao = rs2("ordenacao")
+							end with
+						vN2(UBound(vN2)).AddN3Desconto(rxN3Desconto)
+
 						rs2.MoveNext
 						loop
-					msg_desconto =  "Planilha de Desconto:&nbsp; " & Cstr(qtde_registro_desc) & " registro(s) no valor total de&nbsp;" & formata_moeda(valor_desconto)                       
+					msg_desconto =  "Planilha de Desconto:&nbsp; " & Cstr(qtde_registro_desc) & " registro(s) no valor total de&nbsp;" & formata_moeda(valor_desconto)
 				else
 					msg_desconto = ""
 					end if
 
 				x = x & "	<tr nowrap style='background: #FFFFDD'>" & chr(13) & _
-						"		<td class='MTBE' colspan='5' align='right' nowrap><span class='Cd' style='color:" & s_cor & ";'>" & _
-						"TOTAL:</span></td>" & chr(13) & _
+						"		<td class='MTBE' colspan='5' align='right' nowrap><span class='Cd' style='color:" & s_cor & ";'>TOTAL:</span></td>" & chr(13) & _
 						"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_sub_total_preco_venda) & "</span></td>" & chr(13) & _
 						"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_sub_total_RT) & "</span></td>" & chr(13) & _
-						"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_sub_total_RA) & "</span></td>" & chr(13) & _
+						"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_sub_total_RA_bruto) & "</span></td>" & chr(13) & _
 						"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_sub_total_RA_liquido) & "</span></td>" & chr(13) & _
 						"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_sub_total_RA_diferenca) & "</span></td>" & chr(13) & _
 						"		<td class='MTBD' align='right' colspan='2'><span class='Cd' style='color:" & s_cor & ";'>&nbsp;</span></td>" & chr(13) & _
 						"		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
 						"	</tr>" & chr(13) & _
-						"	<tr>" & chr(13) 
+						"	<tr>" & chr(13)
 				
-				if sub_total_com <= 0 Or o.DigitoFinal(sub_total_com) > 300 Or banco = "237" then
-					x = x & "<td align='left' colspan='10' nowrap><span class='Cd' style='color:" & s_cor & ";'></span>"
-					if msg_desconto <> "" then x = x & "<span class='Cd'><a href='javascript:abreDesconto(" & idx_bloco -1 & ")' title='Exibe ou oculta os registros de descontos' style='color: red;'>"& msg_desconto & "</a></span>"
-				else if sub_total_com >= 0 then
-					x = x & "       <td align='left' colspan='10' nowrap>"
-					if msg_desconto <> "" then
-						x = x & "<span class='Cd' ><a href='javascript:abreDesconto(" & idx_bloco -1  & ")' title='Exibe ou oculta os registros de descontos' style='color: red;'>"& msg_desconto & "</a></span>"
-					else
-						x = x & "<span class='Rd' style='color: black;'>"
-						for cont = 0 to UBound(qtdeCedula)
-							if (cont = 0 And qtdeCedula(cont) <> 0) then
-								aux(cont) = aux(cont) + qtdeCedula(cont)
-							elseif (cont = 1 And qtdeCedula(cont) <> 0) then
-								aux(cont) = aux(cont) + qtdeCedula(cont)
-							elseif (cont = 2 And qtdeCedula(cont) <> 0) then
-								aux(cont) = aux(cont) + qtdeCedula(cont)
-							elseif (cont = 3 And qtdeCedula(cont) <> 0) then
-								aux(cont) = aux(cont) + qtdeCedula(cont)
-							elseif (cont = 4 And qtdeCedula(cont) <> 0) then
-								aux(cont) = aux(cont) + qtdeCedula(cont)
-							elseif (cont = 5 And qtdeCedula(cont) <> 0) then
-								aux(cont) = aux(cont) + qtdeCedula(cont)
-								end if
-							next
-						x = x & "</span></td>" & chr(13)
-						end if
-						end if
-					end if
-				
-				if sub_total_com_RT + sub_total_com_RA >= 0 then
-					s_cor = "black"
-				else
-					s_cor = "red"
-					end if
+				with vN2(UBound(vN2))
+					.vl_total_preco_venda = vl_sub_total_preco_venda
+					.vl_total_preco_NF = vl_sub_total_preco_NF
+					.vl_total_RT = vl_sub_total_RT
+					.vl_total_RA_bruto = vl_sub_total_RA_bruto
+					.vl_total_RA_liquido = vl_sub_total_RA_liquido
+					.vl_total_RA_dif = vl_sub_total_RA_diferenca
+					.cor_linha_total = s_cor
+					.mensagem_desconto = msg_desconto
+					end with
 
-				x = x & "       <td align='right' nowrap><span class='Cd' style='color:" & s_cor & ";'>"
-				if sub_total_com <= 0 then
-					x = x & "&nbsp;</span></td>" & chr(13)
-				elseif o.DigitoFinal(sub_total_com) > 300 And banco <> "237" then
-					x = x & "CHQ:</span></td>" & chr(13)
-				elseif banco = "237" then
-					x = x & "DEP:</span></td>" & chr(13)
+				x = x & "		<td align='left' colspan='10' nowrap>"
+				if msg_desconto <> "" then
+					x = x & "<span class='Cd' ><a href='javascript:abreDesconto(" & Cstr(idx_bloco) & ")' title='Exibe ou oculta os registros de descontos' style='color: red;'>" & msg_desconto & "</a></span>"
 				else
-					x = x & "DIN:</span></td>" & chr(13)
+					x = x & "<span class='Rd' style='color: black;'></span>"
 					end if
+				x = x & "</td>" & chr(13)
+				
+				s_cor = "black"
 
-				if sub_total_com >= 0  then
-					x = x & "       <td align='right' ><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(sub_total_com) & "</span></td>" & chr(13)
+				x = x & "		<td align='right' nowrap><span class='Cd' style='color:" & s_cor & ";'>&nbsp;</span></td>" & chr(13)
+
+				if (vl_sub_total_RT + vl_sub_total_RA_liquido) >= 0  then
+					x = x & "		<td align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_sub_total_RT + vl_sub_total_RA_liquido) & "</span></td>" & chr(13)
 					end if
 				
-				x = x &"	</tr>" & chr(13)
+				x = x & "	</tr>" & chr(13)
 				if msg_desconto <> "" then
 					x = x & "	<tr>" & chr(13) & _
-							"          <td  class='VISAO_ANALIT' id='table_Desconto_"& idx_bloco -1   &"' colspan='15' >" & chr(13) & _
-							"          <table colspan='2' align='left' >"& chr(13)
+							"		<td  class='VISAO_ANALIT' id='table_Desconto_" & Cstr(idx_bloco) & "' colspan='15'>" & chr(13) & _
+							"			<table colspan='2' align='left' >"& chr(13)
 					for contador = 0 to Ubound(v_desconto_descricao)
-						x = x & "   <tr>" & chr(13) & _
-								"       <td width='15'>&nbsp;</td>" & chr(13) & _
-								"       <td  align='left' width='400' ><span class='Cd'style='color: red;' >"& v_desconto_descricao(contador)& "</span></td>" & _
-								"       <td align='left' ><span class='Cd'style='color: red;' > R$ "& formata_moeda(v_desconto_valor(contador))& "</span></td>" & _
-								"   </tr>"
+						x = x & "				<tr>" & chr(13) & _
+								"					<td width='15'>&nbsp;</td>" & chr(13) & _
+								"					<td  align='left' width='400'><span class='Cd'style='color: red;'>" & v_desconto_descricao(contador) & "</span></td>" & chr(13) & _
+								"					<td align='left'><span class='Cd' style='color:red;'> R$ " & formata_moeda(v_desconto_valor(contador)) & "</span></td>" & chr(13) & _
+								"				</tr>" & chr(13)
 						next
-					x = x & "   </table>"& chr(13) & _
-							"   </td>"& chr(13) & _
-							"</tr>"
+					x = x & "			</table>" & chr(13) & _
+							"		</td>" & chr(13) & _
+							"	</tr>" & chr(13)
 					end if 'if msg_desconto <> ""
 				
-				x = x &"</table>" & chr(13)
+				x = x & "</table>" & chr(13)
 				Response.Write x
-				x = "<BR>" & chr(13)
+				x = "<br />" & chr(13)
 				end if 'if n_reg_total > 0
 
+
+			idx_bloco = idx_bloco + 1
+			qtde_indicadores = qtde_indicadores + 1
+
+			indicador_a = Trim("" & r("indicador"))
+			vendedor_a = Trim("" & r("vendedor"))
+
+			if Trim("" & vN2(UBound(vN2)).indicador) <> "" then
+				redim preserve vN2(UBound(vN2)+1)
+				set vN2(UBound(vN2)) = new cl_REL_COMISSAO_NFSe_N2
+				end if
+			with vN2(UBound(vN2))
+				.indicador = Trim("" & r("indicador"))
+				.vendedor = Trim("" & r("vendedor"))
+				.id_indicador = r("IdIndicador")
+				end with
 
 			n_reg = 0
 			vl_sub_total_preco_venda = 0
 			vl_sub_total_preco_NF = 0
 			vl_sub_total_RT = 0
-			vl_sub_total_RA = 0
+			vl_sub_total_RA_bruto = 0
 			vl_sub_total_RA_liquido = 0
 			vl_sub_total_RA_diferenca = 0
 
-			s_sql = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (Id = " & Trim("" & r("IdIndicador")) & ")"
+			s_sql = "SELECT " & _
+						"*" & _
+					" FROM t_ORCAMENTISTA_E_INDICADOR" & _
+					" WHERE" & _
+						" (Id = " & Trim("" & r("IdIndicador")) & ")"
 			if rs.State <> 0 then rs.Close
 			rs.Open s_sql, cn
 			if Not rs.Eof then
@@ -781,17 +720,33 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 				s_favorecido_cnpj_cpf = ""
 				end if
 			
-			if n_reg_total > 0 then x = x & "<BR>"
+			s_indicador_nome = x_orcamentista_e_indicador(Trim("" & r("indicador")))
+
+			with vN2(UBound(vN2))
+				.razao_social_nome = s_indicador_nome
+				.banco = Trim("" & rs("banco"))
+				.banco_nome = s_banco_nome
+				.agencia = Trim("" & rs("agencia"))
+				.agencia_dv = Trim("" & rs("agencia_dv"))
+				.tipo_conta = Trim("" & rs("tipo_conta"))
+				.conta_operacao = Trim("" & rs("conta_operacao"))
+				.conta = Trim("" & rs("conta"))
+				.conta_dv = Trim("" & rs("conta_dv"))
+				.favorecido = Trim("" & rs("favorecido"))
+				.favorecido_cnpj_cpf = Trim("" & rs("favorecido_cnpj_cpf"))
+				end with
+
+			if n_reg_total > 0 then x = x & "<br />" & chr(13)
 			s_desempenho_nota = Trim("" & r("desempenho_nota"))
-			if s_desempenho_nota = "" then 
+			vN2(UBound(vN2)).desempenho_nota = Trim("" & r("desempenho_nota"))
+			if s_desempenho_nota = "" then
 				s_desempenho_nota = "&nbsp;"
 			else
 				s_desempenho_nota = "(" & s_desempenho_nota & ") "
 				end if
 			s = Trim("" & r("indicador"))
-			s_aux = x_orcamentista_e_indicador(s)
-			if (s<>"") And (s_aux<>"") then s = s & " - "
-			s = s & s_aux
+			if (s<>"") And (s_indicador_nome<>"") then s = s & " - "
+			s = s & s_indicador_nome
 			x = x & Replace(cab_table, "tableDados", "tableDados_" & idx_bloco)
 			if s <> "" then x = x & "	<tr>" & chr(13) & _
 									"		<td class='MDTE' colspan='12' align='left' valign='bottom' style='background:azure;'>" & chr(13) & _
@@ -829,6 +784,13 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 				x = x & "N.I."
 				end if
 
+			with vN2(UBound(vN2))
+				.comissao_cartao_status = rs("comissao_cartao_status")
+				.comissao_cartao_cpf = Trim("" & rs("comissao_cartao_cpf"))
+				.comissao_cartao_titular = Trim("" & rs("comissao_cartao_titular"))
+				.NFSe_razao_social = Trim("" & rs("comissao_NFSe_razao_social"))
+				end with
+
 			x = x & _
 				"</span></td>" & chr(13) & _
 				"				</tr>" & chr(13) & _
@@ -844,12 +806,12 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 				"				<tr>" & chr(13) & _
 				"					<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & rs("agencia")
 			if Trim("" & rs("agencia_dv")) <> "" then
-				x = x & "-" & rs("agencia_dv") & chr(13)
+				x = x & "-" & rs("agencia_dv")
 				end if
 	
-			x = x & "</span></td>" & chr(13) & _
-					"					<td class='MC MD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>"
-
+			x = x & "</span></td>" & chr(13)
+			
+			x = x & "					<td class='MC MD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>"
 			if Trim("" & rs("tipo_conta")) <> "" then
 				if rs("tipo_conta") = "P" then
 					x = x & "C/P: "
@@ -867,8 +829,9 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 			x = x & rs("conta")
 	
 			if Trim("" & rs("conta_dv")) <> "" then
-				x = x & "-" & rs("conta_dv") & chr(13)
+				x = x & "-" & rs("conta_dv")
 				end if
+			x = x & "</span></td>" & chr(13)
 
 			x = x & "					<td class='MC' width='60%' align='left' valign='bottom'><span class='Cn'>Favorecido: " & s_favorecido & "</span></td>" & chr(13) & _
 					"				</tr>" & chr(13)
@@ -889,6 +852,7 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 				"		</td>" & chr(13) & _
 				"		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
 				"	</tr>" & chr(13)
+
 			s_new_cab = Replace(cab, "ckb_comissao_paga_tit_bloco", "ckb_comissao_paga_tit_bloco_" & idx_bloco)
 			s_new_cab = Replace(s_new_cab, "trata_ckb_onclick();", "trata_ckb_onclick(" & chr(34) & idx_bloco & chr(34) & ");")
 			s_new_cab = Replace(s_new_cab, "_NNNNN_", CStr(idx_bloco))
@@ -896,26 +860,30 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 			end if 'if (Trim("" & r("indicador")) <> indicador_a) Or (Trim("" & r("vendedor")) <> vendedor_a)
 		
 
-	  ' CONTAGEM
+		' CONTAGEM
 		n_reg = n_reg + 1
 		n_reg_total = n_reg_total + 1
 
-		x = x & "	<tr nowrap class='VISAO_ANALIT'>"  & chr(13)
+		set rxN3Pedido = new cl_REL_COMISSAO_NFSe_N3_PEDIDO
+
+		x = x & "	<tr nowrap class='VISAO_ANALIT'>" & chr(13)
 
 	'	EVITA DIFERENÇAS DE ARREDONDAMENTO
 		vl_preco_venda = converte_numero(formata_moeda(r("total_preco_venda")))
 		vl_preco_NF = converte_numero(formata_moeda(r("total_preco_NF")))
 		perc_RT = r("perc_RT")
 		vl_RT = (perc_RT/100) * vl_preco_venda
-		vl_RA = vl_preco_NF - vl_preco_venda
-		if Not calcula_total_RA_liquido(r("perc_desagio_RA_liquida"), vl_RA, vl_RA_liquido) then
-			Response.Write "FALHA AO CALCULAR O RA LÍQUIDO."
-			Response.End
+		vl_RT = converte_numero(formata_moeda(vl_RT))
+		vl_RA_bruto = vl_preco_NF - vl_preco_venda
+		if Not calcula_total_RA_liquido(r("perc_desagio_RA_liquida"), vl_RA_bruto, vl_RA_liquido) then
+			s_erro_fatal = "FALHA AO CALCULAR O RA LÍQUIDO DO PEDIDO " & Trim("" & r("pedido"))
+			exit do
 			end if
 		
-		vl_RA_diferenca = vl_RA - vl_RA_liquido
+		vl_RA_liquido = converte_numero(formata_moeda(vl_RA_liquido))
+		vl_RA_diferenca = vl_RA_bruto - vl_RA_liquido
 		
-		if (vl_preco_venda < 0) Or (vl_RT < 0) Or (vl_RA < 0) Or (vl_RA_liquido < 0) then
+		if (vl_preco_venda < 0) Or (vl_RT < 0) Or (vl_RA_bruto < 0) Or (vl_RA_liquido < 0) then
 			s_cor = "red"
 			s_cor_sinal = "red"
 			s_sinal = "-"
@@ -925,129 +893,100 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 			s_sinal = "+"
 			end if
 
-	 '> CHECK BOX
-	 '	É USADO O CÓDIGO DA OPERAÇÃO (VENDA NORMAL, DEVOLUÇÃO, PERDA) P/ NÃO CORRER O RISCO DE HAVER CONFLITO DEVIDO A ID'S REPETIDOS ENTRE AS OPERAÇÕES
-		s_id = "ckb_comissao_paga_" & Trim("" & r("operacao")) & "_" & Trim("" & r("id_registro"))
-		s_checked = ""
+		'> CHECK BOX
+		'	É USADO O CÓDIGO DA OPERAÇÃO (VENDA NORMAL, DEVOLUÇÃO, PERDA) P/ NÃO CORRER O RISCO DE HAVER CONFLITO DEVIDO A ID'S REPETIDOS ENTRE AS OPERAÇÕES
+		s_id_base = "comissao_paga_" & Trim("" & r("operacao")) & "_" & Trim("" & r("id_registro"))
 		s_class = " CKB_COM_BL_" & idx_bloco
 		s_class_td = ""
 		if Trim("" & r("operacao")) = VENDA_NORMAL then
 			if s_lista_completa_venda_normal <> "" then s_lista_completa_venda_normal = s_lista_completa_venda_normal & ";"
 			s_lista_completa_venda_normal = s_lista_completa_venda_normal & Trim("" & r("id_registro"))
 			s_class = s_class & " CKB_COM_VDNORM"
-			if CLng(r("status_comissao")) = CLng(COD_COMISSAO_PAGA) then
-				s_checked = " checked"
-				s_class_td = s_class_td & " CKB_HIGHLIGHT"
-				if s_lista_ja_marcado_venda_normal <> "" then s_lista_ja_marcado_venda_normal = s_lista_ja_marcado_venda_normal & ";"
-				s_lista_ja_marcado_venda_normal = s_lista_ja_marcado_venda_normal & Trim("" & r("id_registro"))
-				end if
 		elseif Trim("" & r("operacao")) = DEVOLUCAO then
 			if s_lista_completa_devolucao <> "" then s_lista_completa_devolucao = s_lista_completa_devolucao & ";"
 			s_lista_completa_devolucao = s_lista_completa_devolucao & Trim("" & r("id_registro"))
 			s_class = s_class & " CKB_COM_DEV"
-			if CLng(r("status_comissao")) = CLng(COD_COMISSAO_DESCONTADA) then
-				s_checked = " checked"
-				s_class_td = s_class_td & " CKB_HIGHLIGHT"
-				if s_lista_ja_marcado_devolucao <> "" then s_lista_ja_marcado_devolucao = s_lista_ja_marcado_devolucao & ";"
-				s_lista_ja_marcado_devolucao = s_lista_ja_marcado_devolucao & Trim("" & r("id_registro"))
-				end if
 		elseif Trim("" & r("operacao")) = PERDA then
 			if s_lista_completa_perda <> "" then s_lista_completa_perda = s_lista_completa_perda & ";"
 			s_lista_completa_perda = s_lista_completa_perda & Trim("" & r("id_registro"))
 			s_class = s_class & " CKB_COM_PERDA"
-			if CLng(r("status_comissao")) = CLng(COD_COMISSAO_DESCONTADA) then
-				s_checked = " checked"
-				s_class_td = s_class_td & " CKB_HIGHLIGHT"
-				if s_lista_ja_marcado_perda <> "" then s_lista_ja_marcado_perda = s_lista_ja_marcado_perda & ";"
-				s_lista_ja_marcado_perda = s_lista_ja_marcado_perda & Trim("" & r("id_registro"))
-				end if
 			end if
 
+		s_id = "ckb_" & s_id_base
 		x = x & "		<td class='MDTE tdCkb" & s_class_td & "' align='center'>" & _
-							"<input type='checkbox' class='CKB_COM " & s_class & "' name='" & s_id & "' id='" & s_id & "' value='" & Trim("" & r("id_registro")) & "|" & Trim("" & r("operacao")) & "'" & s_checked & " />" & _
+							"<input type='checkbox' class='CKB_COM " & s_class & "' name='" & s_id & "' id='" & s_id & "' value='" & Trim("" & r("id_registro")) & "|" & Trim("" & r("operacao")) & "' />" & _
 							"<input type='hidden' name='" & s_id & "_original" & "' id='" & s_id & "_original" & "' value='" & Trim("" & r("status_comissao")) & "' />" & _
 				"</td>" & chr(13)
 	
-	 '> LOJA
+		'> LOJA
 		x = x & "		<td class='MTD tdLoja' align='center'><span class='Cnc' style='color:" & s_cor & ";'>" & Trim("" & r("loja")) & "</span></td>" & chr(13)
 
-	 '> Nº ORÇAMENTO
+		'> Nº ORÇAMENTO
 		s = Trim("" & r("orcamento"))
 		if s = "" then s = "&nbsp;"
 		x = x & "		<td class='MTD tdOrcamento' align='left'><span class='Cn'><a style='color:" & s_cor & ";' href='javascript:fORCConsulta(" & _
 				chr(34) & s & chr(34) & "," & chr(34) & usuario & chr(34) & ")' title='clique para consultar o orçamento'>" & _
 				s & "</a></span></td>" & chr(13)
 
-	 '> Nº PEDIDO
+		'> Nº PEDIDO
 		s_nome_cliente = Trim("" & r("nome_iniciais_em_maiusculas"))
 		s_nome_cliente = Left(s_nome_cliente, 15)
 		
 		x = x & "		<td class='MTD tdPedido' align='left'><span class='Cn'><a style='color:" & s_cor & ";' href='javascript:fPEDConsulta(" & _
 				chr(34) & Trim("" & r("pedido")) & chr(34) & "," & chr(34) & usuario & chr(34) & ")' title='clique para consultar o pedido'>" & _
-				Trim("" & r("pedido")) & "<br>" & s_nome_cliente & "</a></span></td>" & chr(13)
+				Trim("" & r("pedido")) & "<br />" & s_nome_cliente & "</a></span></td>" & chr(13)
 
-	 '> DATA
+		'> DATA
 		s = formata_data(r("data"))
 		x = x & "		<td align='center' class='MTD tdData'><span class='Cnc' style='color:" & s_cor & ";'>" & s & "</span></td>" & chr(13)
 
-	 '> VALOR DO PEDIDO (PREÇO DE VENDA)
-		x = x & "		<td align='right' class='MTD tdVlPedido'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_moeda(vl_preco_venda) & "</span></td>" & chr(13)
+		'> VALOR DO PEDIDO (PREÇO DE VENDA)
+		s_id = "spn_vl_preco_venda_" & s_id_base
+		x = x & "		<td align='right' class='MTD tdVlPedido'><span class='Cnd' style='color:" & s_cor & ";' name='" & s_id & "' id='" & s_id & "'>" & formata_moeda(vl_preco_venda) & "</span></td>" & chr(13)
 
-	 '> COMISSÃO (ANTERIORMENTE CHAMADO DE RT)
-		x = x & "		<td align='right' class='MTD tdVlRT'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RT) & "</span></td>" & chr(13)
+		'> PREÇO NF (CAMPO OCULTO, SOMENTE P/ CÁLCULO DE TOTAIS)
+		s_id = "spn_vl_preco_NF_" & s_id_base
+		x = x & "<span style='display:none;' name='" & s_id & "' id='" & s_id & "'>" & formata_moeda(vl_preco_NF) & "</span>"
 
-	 '> RA BRUTO
-		x = x & "		<td align='right' class='MTD tdVlRABruto'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RA) & "</span></td>" & chr(13)
+		'> COMISSÃO (ANTERIORMENTE CHAMADO DE RT)
+		s_id = "spn_vl_RT_" & s_id_base
+		x = x & "		<td align='right' class='MTD tdVlRT'><span class='Cnd' style='color:" & s_cor & ";' name='" & s_id & "' id='" & s_id & "'>" & formata_moeda(vl_RT) & "</span></td>" & chr(13)
 
-	 '> RA LÍQUIDO
-		x = x & "		<td align='right' class='MTD tdVlRALiq'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RA_liquido) & "</span></td>" & chr(13)
+		'> RA BRUTO
+		s_id = "spn_vl_RA_bruto_" & s_id_base
+		x = x & "		<td align='right' class='MTD tdVlRABruto'><span class='Cnd' style='color:" & s_cor & ";' name='" & s_id & "' id='" & s_id & "'>" & formata_moeda(vl_RA_bruto) & "</span></td>" & chr(13)
 
-	 '> RA DIFERENÇA
-		x = x & "		<td align='right' class='MTD tdVlRADif'><span class='Cnd' style='color:" & s_cor & ";'>" & formata_moeda(vl_RA_diferenca) & "</span></td>" & chr(13)
+		'> RA LÍQUIDO
+		s_id = "spn_vl_RA_liq_" & s_id_base
+		x = x & "		<td align='right' class='MTD tdVlRALiq'><span class='Cnd' style='color:" & s_cor & ";' name='" & s_id & "' id='" & s_id & "'>" & formata_moeda(vl_RA_liquido) & "</span></td>" & chr(13)
 
-	 '> STATUS DE PAGAMENTO
-		x = x & "		<td class='MTD tdStPagto' align='left'><span class='Cn' style='color:" & s_cor & ";'>" & x_status_pagto(Trim("" & r("st_pagto"))) & "</span></td>" & chr(13)
+		'> RA DIFERENÇA
+		s_id = "spn_vl_RA_dif_" & s_id_base
+		x = x & "		<td align='right' class='MTD tdVlRADif'><span class='Cnd' style='color:" & s_cor & ";' name='" & s_id & "' id='" & s_id & "'>" & formata_moeda(vl_RA_diferenca) & "</span></td>" & chr(13)
 
-	 '> +/-
-		x = x & "		<td align='center' class='MTD tdSinal'><span class='C' style='font-family:Courier,Arial;color:" & s_cor_sinal & "'>" & s_sinal & "</span></td>" & chr(13)
+		'> STATUS DE PAGAMENTO
+		s_id = "spn_st_pagto_" & s_id_base
+		x = x & "		<td class='MTD tdStPagto' align='left'><span class='Cn' style='color:" & s_cor & ";' name='" & s_id & "' id='" & s_id & "'>" & x_status_pagto(Trim("" & r("st_pagto"))) & "</span></td>" & chr(13)
+
+		'> +/-
+		s_id = "spn_sinal_" & s_id_base
+		x = x & "		<td align='center' class='MTD tdSinal'><span class='C' style='font-family:Courier,Arial;color:" & s_cor_sinal & "' name='" & s_id & "' id='" & s_id & "'>" & s_sinal & "</span></td>" & chr(13)
 		
-	 '> COLUNA DA FIGURA (EXPANDE/RECOLHE)
+		'> COLUNA DA FIGURA (EXPANDE/RECOLHE)
 		x = x & "		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13)
 		
 		vl_sub_total_preco_venda = vl_sub_total_preco_venda + r("total_preco_venda")
 		vl_total_preco_venda = vl_total_preco_venda + r("total_preco_venda")
 		vl_sub_total_preco_NF = vl_sub_total_preco_NF + r("total_preco_NF")
 		vl_total_preco_NF = vl_total_preco_NF + r("total_preco_NF")
-		vl_sub_total_RT = vl_sub_total_RT +  vl_RT
-		vl_total_RT = vl_total_RT + vl_RT        
-		vl_sub_total_RA = vl_sub_total_RA +  vl_RA       
-		vl_total_RA = vl_total_RA + vl_RA
+		vl_sub_total_RT = vl_sub_total_RT + vl_RT
+		vl_total_RT = vl_total_RT + vl_RT
+		vl_sub_total_RA_bruto = vl_sub_total_RA_bruto + vl_RA_bruto
+		vl_total_RA_bruto = vl_total_RA_bruto + vl_RA_bruto
 		vl_sub_total_RA_liquido = vl_sub_total_RA_liquido + vl_RA_liquido
 		vl_total_RA_liquido = vl_total_RA_liquido + vl_RA_liquido
 		vl_sub_total_RA_diferenca = vl_sub_total_RA_diferenca + vl_RA_diferenca
 		vl_total_RA_diferenca = vl_total_RA_diferenca + vl_RA_diferenca
-		sub_total_comissao = vl_sub_total_RT + vl_sub_total_RA_liquido
-
-
-		if vl_sub_total_RT >= 0 and vl_sub_total_RA_liquido >= 0 then
-			vl_sub_total_RT_arredondado = Clng(o.digitoFinal(formata_moeda(vl_sub_total_RT)))
-			vl_sub_total_RA_arredondado = Clng(o.digitoFinal(formata_moeda(vl_sub_total_RA_liquido)))
-		else
-			vl_sub_total_RT_arredondado =vl_sub_total_RT
-			vl_sub_total_RA_arredondado =vl_sub_total_RA_liquido
-			end if
-
-		if vl_sub_total_RT_arredondado >=0 or vl_sub_total_RA_arredondado >= 0 then
-			if vl_sub_total_RT_arredondado < 0 or vl_sub_total_RA_arredondado <0 then
-				sub_total_com = o.digitoFinal(vl_sub_total_RT+vl_sub_total_RA_liquido)
-			else 
-				sub_total_com = vl_sub_total_RT_arredondado + vl_sub_total_RA_arredondado
-				end if
-			end if
-		
-		if vl_sub_total_RT <= 0 and vl_sub_total_RA_liquido <= 0 then
-			sub_total_com = vl_sub_total_RT_arredondado + vl_sub_total_RA_arredondado
-			end if
 		
 		x = x & "	</tr>" & chr(13)
 		
@@ -1056,51 +995,58 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 			x = ""
 			end if
 
-		banco = rs("banco")
+		with rxN3Pedido
+			.pedido = Trim("" & r("pedido"))
+			.orcamento = Trim("" & r("orcamento"))
+			.operacao = Trim("" & r("operacao"))
+			.id_cfg_tabela_origem = r("id_cfg_tabela_origem")
+			.id_registro_tabela_origem = Trim("" & r("id_registro"))
+			.st_comissao_original = CLng(r("status_comissao"))
+			.st_pagto = Trim("" & r("st_pagto"))
+			.loja = Trim("" & r("loja"))
+			.nome_cliente = Trim("" & r("nome_iniciais_em_maiusculas"))
+			.data_pedido = r("data")
+			.perc_RT = r("perc_RT")
+			.vl_preco_venda = vl_preco_venda
+			.vl_preco_NF = vl_preco_NF
+			.vl_RT = vl_RT
+			.vl_RA_bruto = vl_RA_bruto
+			.vl_RA_liquido = vl_RA_liquido
+			.vl_RA_dif = vl_RA_diferenca
+			.vl_comissao = vl_RT + vl_RA_liquido
+			.sinal = s_sinal
+			.cor_sinal = s_cor_sinal
+			.cor_linha = s_cor
+			end with
+
+		vN2(UBound(vN2)).AddN3Pedido(rxN3Pedido)
+
 		IdIndicador_anterior = r("IdIndicador")
 		r.MoveNext
 		loop
-	
+
+
   ' MOSTRA TOTAL DO ÚLTIMO INDICADOR
 	if n_reg <> 0 then
 		s_cor="black"
 		if vl_sub_total_preco_venda < 0 then s_cor="red"
 		if vl_sub_total_RT < 0 then s_cor="red"
-		if vl_sub_total_RA < 0 then s_cor="red"
+		if vl_sub_total_RA_bruto < 0 then s_cor="red"
 		if vl_sub_total_RA_liquido < 0 then s_cor="red"
-		sub_total_comissao = vl_sub_total_RT + vl_sub_total_RA_liquido
- 
-		z = 0
 
-		if sub_total_com <= 0 Or sub_total_com > 300 Or banco = "237" then
-			if (sub_total_com > 300) And (banco <> "237") then
-				totalComChqOutros = totalComChqOutros + sub_total_com
-				qtdeChq = qtdeChq + 1
-			elseif sub_total_com < 0 then
-				'NOP
-			else
-				totalComchqBradesco = totalComchqBradesco + sub_total_com
-				end if
-		else
-			dadosCalculo = sub_total_com
-			dadosCalculo = o.CalculaCedulas(dadosCalculo,"2#"& limitador(5) &"|5#"&limitador(4)&"|10#"&limitador(3)&"|20#"&limitador(2)&"|50#"&limitador(1)&"|100#"&limitador(0)&"",resultadoCalculo)
-			dadosCalculo = resultadocalculo
-			v_cedulas = Split(dadosCalculo,"|")
-			for cont=0 to Ubound(v_cedulas)
-				if cont mod 2 = 0 then
-					redim  preserve cedulas(j)
-					' cedulas(j)=  cint(v_cedulas(cont))
-					j = j + 1
-				else
-					redim preserve qtdeCedula(z)
-					qtdeCedula(z) = cint(v_cedulas(cont))
-					z = z + 1
-					end if
-				next
-			end if
-
+		s_sql = "SELECT" & _
+					" tDESC.id" & _
+					", tDESC.descricao" & _
+					", tDESC.valor" & _
+					", tDESC.ordenacao" & _
+				" FROM t_ORCAMENTISTA_E_INDICADOR_DESCONTO tDESC" & _
+					" INNER JOIN t_ORCAMENTISTA_E_INDICADOR tOI ON (tDESC.apelido=tOI.apelido)" & _
+				" WHERE" & _
+					" (tOI.Id = " & IdIndicador_anterior & ")" & _
+				" ORDER BY" & _
+					" tDESC.ordenacao"
 		if rs2.State <> 0 then rs2.Close
-		rs2.Open "SELECT COUNT(*) AS qtde_Desconto, tDESC.descricao, tDESC.valor, tDESC.ordenacao FROM t_ORCAMENTISTA_E_INDICADOR_DESCONTO tDESC INNER JOIN t_ORCAMENTISTA_E_INDICADOR tOI ON (tDESC.apelido=tOI.apelido) WHERE (tOI.Id = " & IdIndicador_anterior & ") GROUP BY tDESC.descricao, tDESC.valor, tDESC.ordenacao ORDER BY tDESC.ordenacao", cn
+		rs2.Open s_sql, cn
 		msg_desconto = ""
 		if Not rs2.Eof then
 			valor_desconto = 0
@@ -1116,19 +1062,28 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 				valor_desconto = valor_desconto + v_desconto_valor(contador)
 				qtde_registro_desc = qtde_registro_desc + 1
 				contador = contador + 1
+
+				set rxN3Desconto = new cl_REL_COMISSAO_NFSe_N3_DESCONTO
+				with rxN3Desconto
+					.id_orcamentista_e_indicador_desconto = rs2("id")
+					.descricao = Trim("" & rs2("descricao"))
+					.valor = rs2("valor")
+					.ordenacao = rs2("ordenacao")
+					end with
+				vN2(UBound(vN2)).AddN3Desconto(rxN3Desconto)
+
 				rs2.MoveNext
 				loop
-			msg_desconto =  "Planilha de Desconto:&nbsp; " & Cstr(qtde_registro_desc) & " registro(s) no valor total de&nbsp;" & formata_moeda(valor_desconto)
+			msg_desconto = "Planilha de Desconto:&nbsp; " & Cstr(qtde_registro_desc) & " registro(s) no valor total de&nbsp;" & formata_moeda(valor_desconto)
 		else
-			msg_desconto= ""
+			msg_desconto = ""
 			end if
 
 		x = x & "	<tr nowrap style='background: #FFFFDD'>" & chr(13) & _
-				"		<td colspan='5' class='MTBE' align='right' nowrap><span class='Cd' style='color:" & s_cor & ";'>" & _
-				"TOTAL:</span></td>" & chr(13) & _
+				"		<td colspan='5' class='MTBE' align='right' nowrap><span class='Cd' style='color:" & s_cor & ";'>TOTAL:</span></td>" & chr(13) & _
 				"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_sub_total_preco_venda) & "</span></td>" & chr(13) & _
 				"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_sub_total_RT) & "</span></td>" & chr(13) & _
-				"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_sub_total_RA) & "</span></td>" & chr(13) & _
+				"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_sub_total_RA_bruto) & "</span></td>" & chr(13) & _
 				"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_sub_total_RA_liquido) & "</span></td>" & chr(13) & _
 				"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_sub_total_RA_diferenca) & "</span></td>" & chr(13) & _
 				"		<td class='MTBD' align='right' colspan='2'><span class='Cd' style='color:" & s_cor & ";'>&nbsp;</span></td>" & chr(13) & _
@@ -1136,79 +1091,51 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 				"	</tr>" & chr(13) & _
 				"	<tr>" & chr(13)
 
-		if sub_total_com <= 0 Or o.DigitoFinal(sub_total_com) > 300 Or banco = "237" then
-			x = x & "<td align='left' colspan='10' nowrap><span class='Cd' style='color:" & s_cor & ";'></span>"
-			if msg_desconto <> "" then x = x & "<span class='Cd'><a href='javascript:abreDesconto(" & idx_bloco  & ")' title='Exibe ou oculta os registros de descontos' style='color: red;'>"& msg_desconto & "</a></span>"
-		else if sub_total_com >= 0 then
-			x = x & "       <td align='left' colspan='10' nowrap>"
-			if msg_desconto <> "" then
-				x = x & "<span class='Cd' ><a href='javascript:abreDesconto(" & idx_bloco  & ")' title='Exibe ou oculta os registros de descontos' style='color: red;'>"& msg_desconto & "</a></span>"
-			else
-				x = x & "<span class='Rd' style='color: black;'>"
-				for cont = 0 to UBound(qtdeCedula)
-					if (cont = 0 And qtdeCedula(cont) <> 0) then
-						aux(cont) = aux(cont) + qtdeCedula(cont)
-					elseif (cont = 1 And qtdeCedula(cont) <> 0) then
-						aux(cont) = aux(cont) + qtdeCedula(cont)
-					elseif (cont = 2 And qtdeCedula(cont) <> 0) then
-						aux(cont) = aux(cont) + qtdeCedula(cont)
-					elseif (cont = 3 And qtdeCedula(cont) <> 0) then
-						aux(cont) = aux(cont) + qtdeCedula(cont)
-					elseif (cont = 4 And qtdeCedula(cont) <> 0) then
-						aux(cont) = aux(cont) + qtdeCedula(cont)
-					elseif (cont = 5 And qtdeCedula(cont) <> 0) then
-						aux(cont) = aux(cont) + qtdeCedula(cont)
-						end if
-					next
-				x = x & "</span></td>" 
-				end if
-				end if
-			end if
+		with vN2(UBound(vN2))
+			.vl_total_preco_venda = vl_sub_total_preco_venda
+			.vl_total_preco_NF = vl_sub_total_preco_NF
+			.vl_total_RT = vl_sub_total_RT
+			.vl_total_RA_bruto = vl_sub_total_RA_bruto
+			.vl_total_RA_liquido = vl_sub_total_RA_liquido
+			.vl_total_RA_dif = vl_sub_total_RA_diferenca
+			.cor_linha_total = s_cor
+			.mensagem_desconto = msg_desconto
+			end with
 
-		if sub_total_com_RT + sub_total_com_RA >= 0 then
-			s_cor = "black"
-		else
-			s_cor = "red"
-			end if
-
-		x = x & "       <td align='right' nowrap><span class='Cd' style='color:" & s_cor & ";'>"
-		if sub_total_com <= 0 then
-			x = x & "&nbsp;</span></td>" & chr(13)
-		elseif sub_total_com > 300 And banco <> "237" then
-			x = x & "CHQ:</span></td>" & chr(13)
-		elseif banco = "237" then
-			x = x & "DEP:</span></td>" & chr(13)
-		else
-			x = x & "DIN:</span></td>" & chr(13)
-			end if
-
-		if sub_total_com >= 0 then
-			x = x & "       <td align='right' colspan='2'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(sub_total_com) & "</span></td>" & chr(13)
-			end if
-		x = x & "	    </tr>" & chr(13)
+		x = x & "		<td align='left' colspan='10' nowrap>"
 		if msg_desconto <> "" then
-			x = x &"   <tr>" & chr(13) & _
-				"          <td  class='VISAO_ANALIT' id='table_Desconto_"& idx_bloco   &"'"" colspan='15' >" & chr(13) & _
-				"          <table colspan='2' align='left' >"& chr(13)
-			for contador = 0 to Ubound(v_desconto_descricao)
-				x = x & "   <tr>" & chr(13) & _
-						"       <td width='15'>&nbsp;</td>" & chr(13) & _
-						"       <td  align='left' width='400' ><span class='Cd'style='color: red;' >"& v_desconto_descricao(contador)& "</span></td>" & _
-						"       <td align='left' ><span class='Cd'style='color: red;' > R$ "& formata_moeda(v_desconto_valor(contador))& "</span></td>" & _
-						"   </tr>"
-				next
-			x = x & "   </table>"& chr(13)& _
-					"   </td>"& chr(13)& _
-					"</tr>"
+			x = x & "<span class='Cd'><a href='javascript:abreDesconto(" & idx_bloco & ")' title='Exibe ou oculta os registros de descontos' style='color: red;'>" & msg_desconto & "</a></span>"
+		else
+			x = x & "<span class='Rd' style='color: black;'></span>"
 			end if
-		
+		x = x & "</td>"
+
+		s_cor = "black"
+
+		x = x & "		<td align='right' nowrap><span class='Cd' style='color:" & s_cor & ";'>&nbsp;</span></td>"
+
+		if (vl_sub_total_RT + vl_sub_total_RA_liquido) >= 0 then
+			x = x & "		<td align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_sub_total_RT + vl_sub_total_RA_liquido) & "</span></td>" & chr(13)
+			end if
+		x = x & "	</tr>" & chr(13)
+		if msg_desconto <> "" then
+			x = x & "	<tr>" & chr(13) & _
+				"		<td class='VISAO_ANALIT' id='table_Desconto_" & idx_bloco & "' colspan='15'>" & chr(13) & _
+				"			<table colspan='2' align='left'>" & chr(13)
+			for contador = 0 to Ubound(v_desconto_descricao)
+				x = x & "				<tr>" & chr(13) & _
+						"					<td width='15'>&nbsp;</td>" & chr(13) & _
+						"					<td align='left' width='400'><span class='Cd' style='color:red;'>" & v_desconto_descricao(contador) & "</span></td>" & chr(13) & _
+						"					<td align='left'><span class='Cd' style='color:red;'> R$ " & formata_moeda(v_desconto_valor(contador)) & "</span></td>" & chr(13) & _
+						"				</tr>" & chr(13)
+				next
+			x = x & "			</table>"& chr(13) & _
+					"		</td>"& chr(13)& _
+					"	</tr>"
+			end if
+	
 	'>	TOTAL GERAL
-		if qtde_indicadores > 1 then
-			s_cor="black"
-			if vl_total_preco_venda < 0 then s_cor="red"
-			if vl_total_RT < 0 then s_cor="red"
-			if vl_total_RA < 0 then s_cor="red"
-			if vl_total_RA_liquido < 0 then s_cor="red"
+		if qtde_indicadores >= 1 then
 			x = x & "	<tr>" & chr(13) & _
 					"		<td colspan='12' style='border-left:0px;border-right:0px;' align='left'>&nbsp;</td>" & chr(13) & _
 					"		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
@@ -1217,80 +1144,56 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 					"		<td colspan='12' style='border-left:0px;border-right:0px;' align='left'>&nbsp;</td>" & chr(13) & _
 					"		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
 					"	</tr>" & chr(13) & _
-					"	<tr nowrap style='background:honeydew'>" & chr(13) & _
-					"		<td class='MTBE' colspan='5' align='right' nowrap><span class='Cd' style='color:" & s_cor & ";'>" & _
-					"TOTAL GERAL:</span></td>" & chr(13) & _
-					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_preco_venda) & "</span></td>" & chr(13) & _
-					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_RT) & "</span></td>" & chr(13) & _
-					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_RA) & "</span></td>" & chr(13) & _
-					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_RA_liquido) & "</span></td>" & chr(13) & _
-					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_RA_diferenca) & "</span></td>" & chr(13) & _
-					"		<td class='MTBD' align='right' colspan='2'><span class='Cd' style='color:" & s_cor & ";'>&nbsp;</span></td>" & chr(13) & _
+					"	<tr nowrap style='background:whitesmoke'>" & chr(13) & _
+					"		<td class='MTBE' colspan='5' align='right' nowrap><span class='Cd' style='color:black;'>TOTAL GERAL:</span></td>" & chr(13)
+			
+			if vl_total_preco_venda < 0 then s_cor="red" else s_cor="black"
+			x = x & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_preco_venda) & "</span></td>" & chr(13)
+			if vl_total_RT < 0 then s_cor="red" else s_cor="black"
+			x = x & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_RT) & "</span></td>" & chr(13)
+			if vl_total_RA_bruto < 0 then s_cor="red" else s_cor="black"
+			x = x & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_RA_bruto) & "</span></td>" & chr(13)
+			if vl_total_RA_liquido < 0 then s_cor="red" else s_cor="black"
+			x = x & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_RA_liquido) & "</span></td>" & chr(13)
+			if vl_total_RA_diferenca < 0 then s_cor="red" else s_cor="black"
+			x = x & _
+					"		<td class='MTB' align='right'><span class='Cd' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_RA_diferenca) & "</span></td>" & chr(13)
+			x = x & _
+					"		<td class='MTBD' colspan='2' align='right'><span class='Cd' style='color:black;'>&nbsp;</span></td>" & chr(13) & _
 					"		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
 					"	</tr>" & chr(13) & _
-					" </table>" & chr(13)
-
-			x = x & "<br>" & chr(13)
-		'    TOTAL DE CEDULAS
-			if aux(0) <> 0 then
-				textDin = textDin + Cstr(aux(0)) + "&times;100,00 "
-				if ((aux(1) <> 0) OR (aux(2) <> 0) OR (aux(3) <> 0) OR (aux(4) <> 0) OR (aux(5) <> 0)) then textDin = textDin + "&nbsp;&nbsp;&nbsp;+&nbsp;&nbsp;&nbsp;"
-				end if
-				
-			if aux(1) <> 0 then
-				textDin = textDin + Cstr(aux(1)) + "&times;50,00 "
-				if ((aux(2) <> 0) OR (aux(3) <> 0) OR (aux(4) <> 0) OR (aux(5) <> 0)) then textDin = textDin + "&nbsp;&nbsp;&nbsp;+&nbsp;&nbsp;&nbsp;"
-				end if
-				
-			if aux(2) <> 0 then
-				textDin = textDin + Cstr(aux(2)) + "&times;20,00 "
-				if ((aux(3) <> 0) OR (aux(4) <> 0) OR (aux(5) <> 0)) then textDin = textDin + "&nbsp;&nbsp;&nbsp;+&nbsp;&nbsp;&nbsp;"
-				end if
-				
-			if aux(3) <> 0 then
-				textDin = textDin + Cstr(aux(3)) + "&times;10,00 "
-				if ((aux(4) <> 0) OR (aux(5) <> 0)) then textDin = textDin + "&nbsp;&nbsp;&nbsp;+&nbsp;&nbsp;&nbsp;"
-				end if
-				
-			if aux(4) <> 0 then
-				textDin = textDin + Cstr(aux(4)) + "&times;5,00 "
-				if  (aux(5) <> 0) then textDin = textDin + "&nbsp;&nbsp;&nbsp;+&nbsp;&nbsp;&nbsp;"
-				end if
-				
-			if aux(5) <> 0 then
-				textDin = textDin + Cstr(aux(5)) + "&times;2,00 "
-				end if
-
-		'    TOTAL CHQ textChq
-			if qtdeChq <> 0 then
-				textChq = textChq + formata_moeda(totalComChqOutros) + "&nbsp;(Nº cheques " +  Cstr(qtdeChq) + ")"
-			else
-				textChq = textChq + formata_moeda(totalComChqOutros)
-				end if
-
-			x = x & " <table  cellspacing='0'  width='700px'> " & chr(13) & _
-				"   <tr  nowrap style='background:honeydew'>"& chr(13) & _
-				"       <td width='30%' class='MDTE' align='left'><span class='Cd' style='color:black;' > TOTAL COMISSÃO</td> "& chr(13) & _
-				"       <td class='MD MC'  style='background:honeydew'><span class='Cd'>" & formata_moeda(totalComDin+totalComChqOutros+totalComChqBradesco) &" </td> "& chr(13) & _
-				"   </tr>"& chr(13) & _
-				"   <tr nowrap>"& chr(13) & _
-						"<td  style='background:honeydew;' width='30%' class='MDTE' align='left'><span class='Cd' style='color:black;' valign='bottom'>Comissão em CHQ</td>" & chr(13) & _
-				"       <td class='MD MC'  style='background:honeydew'><span class='Cd'>" & textChq & "</td>" & chr(13) & _
-				"   </tr>"& chr(13) & _
-				"    <tr nowrap >"& chr(13) & _
-				"       <td  style='background:honeydew' width='30%' class='MDTE' align='left'><span class='Cd' style='color:black;' >Comissão em DEP</td> "& chr(13) & _
-				"       <td class='MTD' style='background:honeydew'><span class='Cd'>"& formata_moeda(totalComChqBradesco)&" </td> "& chr(13) & _
-				"   </tr>"& chr(13) & _
-				"   <tr nowrap >"& chr(13) & _
-				"       <td style='background:honeydew' width='30%' class='MDTE' align='left'><span class='Cd' style='color:black;' >Comissão em DIN:</td>" & chr(13) & _
-				"       <td class='MD MC' style='background:honeydew'><span class='Cd'>"& formata_moeda(totalComDin)&"</td>"& chr(13) & _
-				"   </tr>"& chr(13) & _
-				"   <tr nowrap >"& chr(13) & _
-				"       <td  style='background:honeydew' width='30%' class='MTBE MD' align='left'><span class='Cd' style='color:black;' >Qtde Cedulas para Comissão em DIN</td>"& chr(13) & _
-				"       <td class='MTB MD' align='left'  style='background:honeydew'><span class='Cd'>" & textDin &" </td>"& chr(13) & _
-				"   </tr>"& chr(13) & _
-				"</table>"& chr(13)
-			end if 'if qtde_indicadores > 1
+					"	<tr>" & chr(13) & _
+					"		<td colspan='12' style='border-left:0px;border-right:0px;' align='left'>&nbsp;</td>" & chr(13) & _
+					"		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
+					"	</tr>" & chr(13) & _
+					"	<tr nowrap style='background:honeydew'>" & chr(13) & _
+					"		<td class='MTBE' colspan='5' align='right' nowrap><span class='Cd SpnRowTotalGeralComissao' style='color:black;'>TOTAL COMISSÃO:</span></td>" & chr(13)
+			if vl_total_RT < 0 then s_cor="red" else s_cor="black"
+			x = x & _
+					"		<td class='MTB' colspan='2' align='right'>" & _
+								"<span class='Cd SpnRowTotalGeralComissao' style='color:black;'>COM: &nbsp; </span>" & _
+								"<span name='spnTotalGeralRT SpnRowTotalGeralComissao' id='spnTotalGeralRT' class='Cd SpnRowTotalGeralComissao' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_RT) & "</span>" & _
+							"</td>" & chr(13)
+			if vl_total_RA_liquido < 0 then s_cor="red" else s_cor="black"
+			x = x & _
+					"		<td class='MTB' colspan='2' align='right'>" & _
+								"<span class='Cd SpnRowTotalGeralComissao' style='color:black;'>RA: &nbsp; </span>" & _
+								"<span name='spnTotalGeralRALiq' id='spnTotalGeralRALiq' class='Cd SpnRowTotalGeralComissao' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_RA_liquido) & "</span>" & _
+							"</td>" & chr(13)
+			if (vl_total_RT+vl_total_RA_liquido) < 0 then s_cor="red" else s_cor="black"
+			x = x & _
+					"		<td class='MTBD' colspan='3' align='right'>" & _
+								"<span class='Cd SpnRowTotalGeralComissao' style='color:black;'> = &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>" & _
+								"<span name='spnTotalGeral_RT_RALiq' id='spnTotalGeral_RT_RALiq' class='Cd SpnRowTotalGeralComissao' style='color:" & s_cor & ";'>" & formata_moeda(vl_total_RT+vl_total_RA_liquido) & "</span>" & _
+							"</td>" & chr(13)
+			x = x & _
+					"		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
+					"	</tr>" & chr(13)
+			end if 'if qtde_indicadores >= 1
 		end if 'if n_reg <> 0
 
 
@@ -1304,22 +1207,192 @@ dim v_desconto_descricao(), v_desconto_valor(), contador, valor_desconto, qtde_r
 		end if
 
   ' FECHA TABELA DO ÚLTIMO INDICADOR
-	x = x & "</table>" & chr(13)
+	x = x & "</table>" & chr(13) & chr(13)
 	
 	Response.write x
 
-	x = "<input type='hidden' name='c_lista_completa_venda_normal' id='c_lista_completa_venda_normal' value='" & s_lista_completa_venda_normal & "' />" & chr(13) & _
+	x = "<br />" & chr(13) & _
+		"<input type='hidden' name='c_lista_completa_venda_normal' id='c_lista_completa_venda_normal' value='" & s_lista_completa_venda_normal & "' />" & chr(13) & _
 		"<input type='hidden' name='c_lista_completa_devolucao' id ='c_lista_completa_devolucao' value='" & s_lista_completa_devolucao & "' />" & chr(13) & _
-		"<input type='hidden' name='c_lista_completa_perda' id='c_lista_completa_perda' value='" & s_lista_completa_perda & "' />" & chr(13) & _
-		"<input type='hidden' name='c_lista_ja_marcado_venda_normal' id='c_lista_ja_marcado_venda_normal' value='" & s_lista_ja_marcado_venda_normal & "' />" & chr(13) & _
-		"<input type='hidden' name='c_lista_ja_marcado_devolucao' id='c_lista_ja_marcado_devolucao' value='" & s_lista_ja_marcado_devolucao & "' />" & chr(13) & _
-		"<input type='hidden' name='c_lista_ja_marcado_perda' id='c_lista_ja_marcado_perda' value='" & s_lista_ja_marcado_perda & "' />" & chr(13)
+		"<input type='hidden' name='c_lista_completa_perda' id='c_lista_completa_perda' value='" & s_lista_completa_perda & "' />" & chr(13)
 	Response.write x
-	
-	if r.State <> 0 then r.Close
-	if rs2.State <> 0 then rs2.Close 
-	set r=nothing
 
+
+	s_erro_fatal = ""
+
+'	~~~~~~~~~~~~~
+	cn.BeginTrans
+'	~~~~~~~~~~~~~
+	if Not cria_recordset_otimista(tN1, msg_erro) then
+		s_erro_fatal = "FALHA AO TENTAR CRIAR UM OBJETO ADO PARA ACESSO AO BANCO DE DADOS PARA A TABELA: t_COMISSAO_INDICADOR_NFSe_N1"
+		end if
+
+	if s_erro_fatal = "" then
+		if Not cria_recordset_otimista(tN2, msg_erro) then
+			s_erro_fatal = "FALHA AO TENTAR CRIAR UM OBJETO ADO PARA ACESSO AO BANCO DE DADOS PARA A TABELA: t_COMISSAO_INDICADOR_NFSe_N2"
+			end if
+		end if
+
+	if s_erro_fatal = "" then
+		if Not cria_recordset_otimista(tN3Desc, msg_erro) then
+			s_erro_fatal = "FALHA AO TENTAR CRIAR UM OBJETO ADO PARA ACESSO AO BANCO DE DADOS PARA A TABELA: t_COMISSAO_INDICADOR_NFSe_N3_DESCONTO"
+			end if
+		end if
+
+	if s_erro_fatal = "" then
+		if Not cria_recordset_otimista(tN3Ped, msg_erro) then
+			s_erro_fatal = "FALHA AO TENTAR CRIAR UM OBJETO ADO PARA ACESSO AO BANCO DE DADOS PARA A TABELA: t_COMISSAO_INDICADOR_NFSe_N3_PEDIDO"
+			end if
+		end if
+
+	if s_erro_fatal = "" then
+		s_sql = "SELECT * FROM t_COMISSAO_INDICADOR_NFSe_N1 WHERE (id = -1)"
+		tN1.open s_sql, cn
+		tN1.AddNew
+		tN1("usuario_cadastro") = usuario
+		tN1("competencia_ano") = Year(dt_entregue_termino)
+		tN1("competencia_mes") = Month(dt_entregue_termino)
+		tN1("NFSe_cnpj") = c_cnpj_nfse
+		tN1("vl_total_geral_preco_venda") = vl_total_preco_venda
+		tN1("vl_total_geral_preco_NF") = vl_total_preco_NF
+		tN1("vl_total_geral_RT") = vl_total_RT
+		tN1("vl_total_geral_RA_bruto") = vl_total_RA_bruto
+		tN1("vl_total_geral_RA_liquido") = vl_total_RA_liquido
+		tN1("vl_total_geral_RA_dif") = vl_total_RA_diferenca
+		tN1("cor_linha_total_geral") = s_cor
+		tN1.Update
+		lngNsuN1 = tN1("id")
+		
+		for iN2=LBound(vN2) to UBound(vN2)
+			if Trim("" & vN2(iN2).indicador) <> "" then
+				with vN2(iN2)
+					s_sql = "SELECT * FROM t_COMISSAO_INDICADOR_NFSe_N2 WHERE (id = -1)"
+					if tN2.State <> 0 then tN2.Close
+					tN2.open s_sql, cn
+					tN2.AddNew
+					tN2("id_comissao_indicador_nfse_n1") = lngNsuN1
+					tN2("vendedor") = .vendedor
+					tN2("indicador") = .indicador
+					tN2("id_indicador") = .id_indicador
+					tN2("desempenho_nota") = .desempenho_nota
+					tN2("razao_social_nome") = .razao_social_nome
+					tN2("NFSe_razao_social") = .NFSe_razao_social
+					tN2("comissao_cartao_status") = .comissao_cartao_status
+					tN2("comissao_cartao_cpf") = .comissao_cartao_cpf
+					tN2("comissao_cartao_titular") = .comissao_cartao_titular
+					tN2("banco") = .banco
+					tN2("banco_nome") = .banco_nome
+					tN2("agencia") = .agencia
+					tN2("agencia_dv") = .agencia_dv
+					tN2("tipo_conta") = .tipo_conta
+					tN2("conta_operacao") = .conta_operacao
+					tN2("conta") = .conta
+					tN2("conta_dv") = .conta_dv
+					tN2("favorecido") = .favorecido
+					tN2("favorecido_cnpj_cpf") = .favorecido_cnpj_cpf
+					tN2("vl_total_preco_venda") = .vl_total_preco_venda
+					tN2("vl_total_preco_NF") = .vl_total_preco_NF
+					tN2("vl_total_RT") = .vl_total_RT
+					tN2("vl_total_RA_bruto") = .vl_total_RA_bruto
+					tN2("vl_total_RA_liquido") = .vl_total_RA_liquido
+					tN2("vl_total_RA_dif") = .vl_total_RA_dif
+					tN2("cor_linha_total") = .cor_linha_total
+					tN2("mensagem_desconto") = .mensagem_desconto
+					tN2.Update
+					lngNsuN2 = tN2("id")
+					end with
+
+				for iN3Desc=LBound(vN2(iN2).vN3Desconto) to UBound(vN2(iN2).vN3Desconto)
+					if Trim("" & vN2(iN2).vN3Desconto(iN3Desc).id_orcamentista_e_indicador_desconto) <> "" then
+						with vN2(iN2).vN3Desconto(iN3Desc)
+							s_sql = "SELECT * FROM t_COMISSAO_INDICADOR_NFSe_N3_DESCONTO WHERE (id = -1)"
+							if tN3Desc.State <> 0 then tN3Desc.Close
+							tN3Desc.open s_sql, cn
+							tN3Desc.AddNew
+							tN3Desc("id_comissao_indicador_nfse_n2") = lngNsuN2
+							tN3Desc("id_orcamentista_e_indicador_desconto") = .id_orcamentista_e_indicador_desconto
+							tN3Desc("descricao") = .descricao
+							tN3Desc("valor") = .valor
+							tN3Desc("ordenacao") = .ordenacao
+							tN3Desc.Update
+							end with
+						end if
+					next
+
+				for iN3Ped=LBound(vN2(iN2).vN3Pedido) to UBound(vN2(iN2).vN3Pedido)
+					if Trim("" & vN2(iN2).vN3Pedido(iN3Ped).pedido) <> "" then
+						with vN2(iN2).vN3Pedido(iN3Ped)
+							s_sql = "SELECT * FROM t_COMISSAO_INDICADOR_NFSe_N3_PEDIDO WHERE (id = -1)"
+							if tN3Ped.State <> 0 then tN3Ped.Close
+							tN3Ped.open s_sql, cn
+							tN3Ped.AddNew
+							tN3Ped("id_comissao_indicador_nfse_n2") = lngNsuN2
+							tN3Ped("pedido") = .pedido
+							tN3Ped("operacao") = .operacao
+							tN3Ped("id_cfg_tabela_origem") = .id_cfg_tabela_origem
+							tN3Ped("id_registro_tabela_origem") = .id_registro_tabela_origem
+							tN3Ped("loja") = .loja
+							tN3Ped("st_comissao_original") = .st_comissao_original
+							tN3Ped("st_pagto") = .st_pagto
+							tN3Ped("nome_cliente") = .nome_cliente
+							tN3Ped("data_pedido") = .data_pedido
+							tN3Ped("perc_RT") = .perc_RT
+							tN3Ped("vl_preco_venda") = .vl_preco_venda
+							tN3Ped("vl_preco_NF") = .vl_preco_NF
+							tN3Ped("vl_RT") = .vl_RT
+							tN3Ped("vl_RA_bruto") = .vl_RA_bruto
+							tN3Ped("vl_RA_liquido") = .vl_RA_liquido
+							tN3Ped("vl_RA_dif") = .vl_RA_dif
+							tN3Ped("vl_comissao") = .vl_comissao
+							tN3Ped("sinal") = .sinal
+							tN3Ped("cor_sinal") = .cor_sinal
+							tN3Ped("cor_linha") = .cor_linha
+							tN3Ped.Update
+							end with
+						end if
+					next
+				end if
+			next
+		end if 'if s_erro_fatal = ""
+
+	if s_erro_fatal <> "" then
+	'	~~~~~~~~~~~~~~~~
+		cn.RollbackTrans
+	'	~~~~~~~~~~~~~~~~
+		blnErroFatal = True
+		s = monta_html_bloco_msg_erro(s_erro_fatal)
+		Response.Write s
+		exit sub
+		end if
+	
+	if s_erro_fatal = "" then
+		if s_log <> "" then
+			s_log = "t_COMISSAO_INDICADOR_NFSe_N1.id=" & Cstr(lngNsuN1) & ";  " & s_log
+			grava_log usuario, "", "", "", OP_LOG_REL_COMISSAO_INDICADORES_NFSe_CONSULTA, s_log
+			end if
+	'	~~~~~~~~~~~~~~
+		cn.CommitTrans
+	'	~~~~~~~~~~~~~~
+		end if
+
+	if s_erro_fatal = "" then
+		x = "<input type='hidden' name='id_nsu_N1' id='id_nsu_N1' value='" & CStr(lngNsuN1) & "' />" & chr(13)
+		Response.Write x
+		end if
+
+	if tN1.State <> 0 then tN1.Close
+	if tN2.State <> 0 then tN2.Close
+	if tN3Ped.State <> 0 then tN3Ped.Close
+	if tN3Desc.State <> 0 then tN3Desc.Close
+	set tN1=nothing
+	set tN2=nothing
+	set tN3Ped=nothing
+	set tN3Desc=nothing
+
+	if r.State <> 0 then r.Close
+	if rs2.State <> 0 then rs2.Close
+	set r=nothing
+	set rs2=nothing
 end sub
 
 %>
@@ -1360,8 +1433,8 @@ end sub
 <script src="<%=URL_FILE__GLOBAL_JS%>" language="JavaScript" type="text/javascript"></script>
 
 <script language="JavaScript" type="text/javascript">
-var windowScrollTopAnterior;
-window.status = 'Aguarde, executando a consulta ...';
+	var windowScrollTopAnterior;
+	window.status = 'Aguarde, executando a consulta ...';
 
 $(function() {
 	$("#divPedidoConsulta").hide();
@@ -1390,30 +1463,93 @@ $(function() {
 		else {
 			$(this).parents("td.tdCkb").removeClass("CKB_HIGHLIGHT");
 		}
-	})
+	});
 
 	// EVENTO P/ REALÇAR OU NÃO CONFORME SE MARCA/DESMARCA O CHECKBOX
-	$(".CKB_COM:enabled").click(function() {
+	$(".CKB_COM:enabled").click(function () {
 		if ($(this).is(":checked")) {
 			$(this).parents("td.tdCkb").addClass("CKB_HIGHLIGHT");
 		}
 		else {
 			$(this).parents("td.tdCkb").removeClass("CKB_HIGHLIGHT");
 		}
-	})
-	
+		recalculaComissaoTotalGeral();
+	});
+
 	// VISÃO SINTÉTICA?
 	if ($("#rb_visao").val() == "SINTETICA") {
 		$(".CKB_COM").attr("disabled", true);
 	}
+
+	recalculaComissaoTotalGeral();
 });
 
+	function recalculaComissaoTotalGeral() {
+		var vlTotalPrecoVenda = 0;
+		var vlTotalPrecoNF = 0;
+		var vlTotalRT = 0;
+		var vlTotalRABruto = 0;
+		var vlTotalRALiq = 0;
+		var vlTotalRADif = 0;
+		var s_id, s_id_base, s_value;
+		$(".CKB_COM:enabled:checked").each(function () {
+			s_id = $(this).attr("id");
+			s_id_base = s_id.replace("ckb_", "");
+			// Preço venda
+			s_id = "spn_vl_preco_venda_" + s_id_base;
+			s_value = $("#" + s_id).text();
+			vlTotalPrecoVenda += converte_numero(s_value);
+			// Preço NF
+			s_id = "spn_vl_preco_NF_" + s_id_base;
+			s_value = $("#" + s_id).text();
+			vlTotalPrecoNF += converte_numero(s_value);
+			// RT
+			s_id = "spn_vl_RT_" + s_id_base;
+			s_value = $("#" + s_id).text();
+			vlTotalRT += converte_numero(s_value);
+			// RA Bruto
+			s_id = "spn_vl_RA_bruto_" + s_id_base;
+			s_value = $("#" + s_id).text();
+			vlTotalRABruto += converte_numero(s_value);
+			// RA Líquido
+			s_id = "spn_vl_RA_liq_" + s_id_base;
+			s_value = $("#" + s_id).text();
+			vlTotalRALiq += converte_numero(s_value);
+			// RA Dif
+			s_id = "spn_vl_RA_dif_" + s_id_base;
+			s_value = $("#" + s_id).text();
+			vlTotalRADif += converte_numero(s_value);
+		});
+		// Atualiza valores na linha "TOTAL COMISSÃO"
+		s_id = "#spnTotalGeralRT";
+		$(s_id).text(formata_moeda(vlTotalRT));
+		$(s_id).css("color", (vlTotalRT < 0 ? "red" : "black"));
+		s_id = "#spnTotalGeralRALiq";
+		$(s_id).text(formata_moeda(vlTotalRALiq));
+		$(s_id).css("color", (vlTotalRALiq < 0 ? "red" : "black"));
+		s_id = "#spnTotalGeral_RT_RALiq";
+		$(s_id).text(formata_moeda(vlTotalRT + vlTotalRALiq));
+		$(s_id).css("color", ((vlTotalRT + vlTotalRALiq) < 0 ? "red" : "black"));
+		// Atualiza campos hidden que armazenam os totais dos registros selecionados
+		s_id = "#c_total_geral_selecionado_preco_venda";
+		$(s_id).val(formata_moeda(vlTotalPrecoVenda));
+		s_id = "#c_total_geral_selecionado_preco_NF";
+		$(s_id).val(formata_moeda(vlTotalPrecoNF));
+		s_id = "#c_total_geral_selecionado_RT";
+		$(s_id).val(formata_moeda(vlTotalRT));
+		s_id = "#c_total_geral_selecionado_RA_bruto";
+		$(s_id).val(formata_moeda(vlTotalRABruto));
+		s_id = "#c_total_geral_selecionado_RA_liq";
+		$(s_id).val(formata_moeda(vlTotalRALiq));
+		s_id = "#c_total_geral_selecionado_RA_dif";
+		$(s_id).val(formata_moeda(vlTotalRADif));
+	}
 
 function abreDesconto(idx_bloco) {
-    var s_seletor = "#table_Desconto_" + idx_bloco;
+	var s_seletor = "#table_Desconto_" + idx_bloco;
+	$(s_seletor).toggle();
+	}
 
-    $(s_seletor).toggle();
-}
 //Every resize of window
 $(window).resize(function() {
 	sizeDivPedidoConsulta();
@@ -1434,12 +1570,14 @@ function marcar_todos() {
 	$(".CKB_COM:enabled")
 		.prop("checked", true)
 		.parents("td.tdCkb").addClass("CKB_HIGHLIGHT");
+	recalculaComissaoTotalGeral();
 }
 
 function desmarcar_todos() {
 	$(".CKB_COM:enabled")
 		.prop("checked", false)
 		.parents("td.tdCkb").removeClass("CKB_HIGHLIGHT");
+	recalculaComissaoTotalGeral();
 }
 
 function trata_ckb_onclick(idx_bloco) {
@@ -1488,7 +1626,27 @@ function fRetornaInicio(f) {
 	f.submit();
 }
 
+function fRelSumario(f, id_nsu_N1) {
+	f.id_nsu_N1.value = id_nsu_N1;
+	f.action = "RelComissaoIndicadoresNFSeP06BotaoMagico.asp";
+	f.submit();
+}
+
 function fRELGravaDados(f) {
+	var vl_total_RT_RALiq;
+
+	vl_total_RT_RALiq = converte_numero($("#c_total_geral_selecionado_RT").val()) + converte_numero($("#c_total_geral_selecionado_RA_liq").val());
+
+	if (vl_total_RT_RALiq == 0) {
+		alert("O valor total da comissão (RT + RA líquido) é zero!");
+		return;
+	}
+
+	if (vl_total_RT_RALiq < 0) {
+		alert("O valor total da comissão (RT + RA líquido) é negativo!");
+		return;
+	}
+
 	if (!confirm("Prosseguir com a gravação dos dados?")) {
 		return;
 	}
@@ -1634,6 +1792,16 @@ function fRELGravaDados(f) {
 	<td align="center"><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()"><img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
 </tr>
 </table>
+
+<form name="fSumario" id="fSumario" method="post">
+<input type="hidden" name="c_cnpj_nfse" id="c_cnpj_nfse" value="<%=c_cnpj_nfse%>" />
+<input type="hidden" name="ckb_id_indicador" id="ckb_id_indicador" value="<%=ckb_id_indicador%>" />
+<input type="hidden" name="c_dt_entregue_termino" id="c_dt_entregue_termino" value="<%=c_dt_entregue_termino%>">
+<input type="hidden" name="rb_visao" id="rb_visao" value="<%=rb_visao%>">
+<input type="hidden" name="id_nsu_N1" id="id_nsu_N1" />
+<input type="hidden" name="proc_comissao_request_guid" id="proc_comissao_request_guid" value="<%=proc_comissao_request_guid%>" />
+</form>
+
 </center>
 </body>
 
@@ -1656,16 +1824,16 @@ function fRELGravaDados(f) {
 
 <input type="hidden" name="c_cnpj_nfse" id="c_cnpj_nfse" value="<%=c_cnpj_nfse%>" />
 <input type="hidden" name="ckb_id_indicador" id="ckb_id_indicador" value="<%=ckb_id_indicador%>" />
-<input type="hidden" name="ckb_st_entrega_entregue" id="ckb_st_entrega_entregue" value="<%=ckb_st_entrega_entregue%>">
-<input type="hidden" name="c_dt_entregue_inicio" id="c_dt_entregue_inicio" value="<%=c_dt_entregue_inicio%>">
 <input type="hidden" name="c_dt_entregue_termino" id="c_dt_entregue_termino" value="<%=c_dt_entregue_termino%>">
-<input type="hidden" name="ckb_comissao_paga_sim" id="ckb_comissao_paga_sim" value="<%=ckb_comissao_paga_sim%>">
-<input type="hidden" name="ckb_comissao_paga_nao" id="ckb_comissao_paga_nao" value="<%=ckb_comissao_paga_nao%>">
-<input type="hidden" name="ckb_st_pagto_pago" id="ckb_st_pagto_pago" value="<%=ckb_st_pagto_pago%>">
-<input type="hidden" name="ckb_st_pagto_nao_pago" id="ckb_st_pagto_nao_pago" value="<%=ckb_st_pagto_nao_pago%>">
-<input type="hidden" name="ckb_st_pagto_pago_parcial" id="ckb_st_pagto_pago_parcial" value="<%=ckb_st_pagto_pago_parcial%>">
 <input type="hidden" name="rb_visao" id="rb_visao" value="<%=rb_visao%>">
 <input type="hidden" name="c_usuario_sessao" id="c_usuario_sessao" value="<%=usuario%>" />
+<input type="hidden" name="c_total_geral_selecionado_preco_venda" id="c_total_geral_selecionado_preco_venda" />
+<input type="hidden" name="c_total_geral_selecionado_preco_NF" id="c_total_geral_selecionado_preco_NF" />
+<input type="hidden" name="c_total_geral_selecionado_RT" id="c_total_geral_selecionado_RT" />
+<input type="hidden" name="c_total_geral_selecionado_RA_bruto" id="c_total_geral_selecionado_RA_bruto" />
+<input type="hidden" name="c_total_geral_selecionado_RA_liq" id="c_total_geral_selecionado_RA_liq" />
+<input type="hidden" name="c_total_geral_selecionado_RA_dif" id="c_total_geral_selecionado_RA_dif" />
+<input type="hidden" name="proc_comissao_request_guid" id="proc_comissao_request_guid" value="<%=proc_comissao_request_guid%>" />
 
 
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->
@@ -1683,76 +1851,12 @@ function fRELGravaDados(f) {
 <%
 	s_filtro = "<table width='709' cellpadding='0' cellspacing='0' style='border-bottom:1px solid black' border='0'>" & chr(13)
 
-'	PERÍODO: PEDIDOS ENTREGUES ENTRE
-	s = ""
-	if (c_dt_entregue_inicio <> "") Or (c_dt_entregue_termino <> "") then
-	'	DEVIDO AO WORD WRAP: SÓ FAZ WORD WRAP QUANDO ENCONTRA CHR(32), OU SEJA, MANTÉM AGRUPADO TEXTO COM &nbsp;
-		if s <> "" then s = s & ",&nbsp; "
-		s_aux = c_dt_entregue_inicio
-		if s_aux = "" then s_aux = "N.I."
-		s_aux = " " & s_aux & " a "
-		s_aux = replace(s_aux, " ", "&nbsp;")
-		s = s & s_aux
-		s_aux = c_dt_entregue_termino
-		if s_aux = "" then s_aux = "N.I."
-		s_aux = replace(s_aux, " ", "&nbsp;")
-		s = s & s_aux
-		end if
-
+'	MÊS DE COMPETÊNCIA
+	s = normaliza_a_esq(Cstr(Month(dt_entregue_termino)),2) & " / " & Cstr(Year(dt_entregue_termino))
 	if s <> "" then
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
-					"		<td align='right' valign='top' nowrap><span class='N'>Período Entrega:&nbsp;</span></td>" & chr(13) & _
-					"		<td align='left' valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
-					"	</tr>" & chr(13)
-		end if
-
-'	COMISSÃO PAGA
-	s = ""
-	s_aux = ckb_comissao_paga_sim
-	if s_aux<>"" then
-		if s <> "" then s = s & ",&nbsp;&nbsp;"
-		s = s & "paga"
-		end if
-	
-	s_aux = ckb_comissao_paga_nao
-	if s_aux<>"" then
-		if s <> "" then s = s & ",&nbsp;&nbsp;"
-		s = s & "não-paga"
-		end if
-
-	if s <> "" then
-		s_filtro = s_filtro & _
-					"	<tr>" & chr(13) & _
-					"		<td align='right' valign='top' nowrap><span class='N'>Comissão:&nbsp;</span></td>" & chr(13) & _
-					"		<td align='left' valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
-					"	</tr>" & chr(13)
-		end if
-
-'	STATUS DE PAGAMENTO
-	s = ""
-	s_aux = Lcase(x_status_pagto(ckb_st_pagto_pago))
-	if s_aux<>"" then
-		if s <> "" then s = s & ",&nbsp;&nbsp;"
-		s = s & s_aux
-		end if
-	
-	s_aux = Lcase(x_status_pagto(ckb_st_pagto_nao_pago))
-	if s_aux<>"" then
-		if s <> "" then s = s & ",&nbsp;&nbsp;"
-		s = s & s_aux
-		end if
-
-	s_aux = Lcase(x_status_pagto(ckb_st_pagto_pago_parcial))
-	if s_aux<>"" then
-		if s <> "" then s = s & ",&nbsp;&nbsp;"
-		s = s & s_aux
-		end if
-
-	if s <> "" then
-		s_filtro = s_filtro & _
-					"	<tr>" & chr(13) & _
-					"		<td align='right' valign='top' nowrap><span class='N'>Status de Pagamento:&nbsp;</span></td>" & chr(13) & _
+					"		<td align='right' valign='top' nowrap><span class='N'>Competência:&nbsp;</span></td>" & chr(13) & _
 					"		<td align='left' valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
@@ -1832,9 +1936,11 @@ function fRELGravaDados(f) {
 	</td>
 	<td align="center"><a name="bVOLTAR" id="bVOLTAR" href="javascript:fRetornaInicio(fREL)" title="retorna para o início do relatório">
 		<img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
+	<% if Not blnErroFatal then %>
 	<td align="right">
 		<div name="dCONFIRMA" id="dCONFIRMA"><a name="bCONFIRMA" id="bCONFIRMA" href="javascript:fRELGravaDados(fREL)" title="grava os dados"><img src="../botao/confirmar.gif" width="176" height="55" border="0"></a></div>
 	</td>
+	<% end if %>
 </tr>
 </table>
 <% end if %>
