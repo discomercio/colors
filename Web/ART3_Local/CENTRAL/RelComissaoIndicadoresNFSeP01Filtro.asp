@@ -45,22 +45,8 @@
 	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
 
 '	FILTROS
-	dim ckb_st_entrega_entregue, c_dt_entregue_inicio, c_dt_entregue_termino
-	dim ckb_comissao_paga_sim, ckb_comissao_paga_nao
-	dim ckb_st_pagto_pago, ckb_st_pagto_nao_pago, ckb_st_pagto_pago_parcial
 	dim rb_visao
-	
-	ckb_st_entrega_entregue = Trim(Request.Form("ckb_st_entrega_entregue"))
-	c_dt_entregue_inicio = Trim(Request.Form("c_dt_entregue_inicio"))
-	c_dt_entregue_termino = Trim(Request.Form("c_dt_entregue_termino"))
-
-	ckb_comissao_paga_sim = Trim(Request.Form("ckb_comissao_paga_sim"))
-	ckb_comissao_paga_nao = Trim(Request.Form("ckb_comissao_paga_nao"))
-
-	ckb_st_pagto_pago = Trim(Request.Form("ckb_st_pagto_pago"))
-	ckb_st_pagto_nao_pago = Trim(Request.Form("ckb_st_pagto_nao_pago"))
-	ckb_st_pagto_pago_parcial = Trim(Request.Form("ckb_st_pagto_pago_parcial"))
-
+	'Se processou um relatório e retornou ao ponto inicial, recupera parâmetros p/ serem usados como memória nesta próxima execução
 	rb_visao = Trim(Request.Form("rb_visao"))
 	
 	dim dtMinDtInicialFiltroPeriodo, intMaxDiasDtInicialFiltroPeriodo
@@ -187,14 +173,6 @@
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
 <input type="hidden" name="c_MinDtInicialFiltroPeriodoYYYYMMDD" id="c_MinDtInicialFiltroPeriodoYYYYMMDD" value='<%=strMinDtInicialFiltroPeriodoYYYYMMDD%>'>
 <input type="hidden" name="c_MinDtInicialFiltroPeriodoDDMMYYYY" id="c_MinDtInicialFiltroPeriodoDDMMYYYY" value='<%=strMinDtInicialFiltroPeriodoDDMMYYYY%>'>
-<input type="hidden" name="ckb_st_entrega_entregue" id="ckb_st_entrega_entregue" value="<%=ckb_st_entrega_entregue%>" />
-<input type="hidden" name="c_dt_entregue_inicio" id="c_dt_entregue_inicio" value="<%=c_dt_entregue_inicio%>" />
-<input type="hidden" name="c_dt_entregue_termino" id="c_dt_entregue_termino" value="<%=c_dt_entregue_termino%>" />
-<input type="hidden" name="ckb_comissao_paga_sim" id="ckb_comissao_paga_sim" value="<%=ckb_comissao_paga_sim%>" />
-<input type="hidden" name="ckb_comissao_paga_nao" id="ckb_comissao_paga_nao" value="<%=ckb_comissao_paga_nao%>" />
-<input type="hidden" name="ckb_st_pagto_pago" id="ckb_st_pagto_pago" value="<%=ckb_st_pagto_pago%>" />
-<input type="hidden" name="ckb_st_pagto_nao_pago" id="ckb_st_pagto_nao_pago" value="<%=ckb_st_pagto_nao_pago%>" />
-<input type="hidden" name="ckb_st_pagto_pago_parcial" id="ckb_st_pagto_pago_parcial" value="<%=ckb_st_pagto_pago_parcial%>" />
 <input type="hidden" name="rb_visao" id="rb_visao" value="<%=rb_visao%>" />
 
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->
