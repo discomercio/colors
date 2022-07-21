@@ -85,7 +85,7 @@
 '
 '									F  U  N  Ç  Õ  E  S 
 ' _____________________________________________________________________________________________
-	
+
 ' _____________________________________________
 ' finPlanoContasEmpresaMontaItensSelect
 '
@@ -119,8 +119,8 @@ dim x, r, strResp, ha_default
 	r.close
 	set r=nothing
 end function
-	
-	
+
+
 ' _____________________________________________
 ' finPlanoContasContaMontaItensSelect
 '
@@ -161,7 +161,42 @@ dim x, r, strSql, strResp, ha_default
 	r.close
 	set r=nothing
 end function
-	
+
+
+' _____________________________________________
+' unidadeNegocioMontaItensSelect
+'
+function unidadeNegocioMontaItensSelect(byval id_default)
+dim x, r, strResp, ha_default
+	id_default = Trim("" & id_default)
+	ha_default=False
+	set r = cn.Execute("SELECT * FROM t_CFG_UNIDADE_NEGOCIO ORDER BY ordenacao")
+	strResp = ""
+	do while Not r.eof 
+		x = Trim("" & r("Sigla"))
+		if (id_default <> "") And (UCase(id_default) = UCase(x)) then
+			strResp = strResp & "<OPTION SELECTED"
+			ha_default=True
+		else
+			strResp = strResp & "<OPTION"
+			end if
+		strResp = strResp & " VALUE='" & x & "'>"
+		strResp = strResp & Trim("" & r("NomeCurto"))
+		strResp = strResp & "</OPTION>" & chr(13)
+		r.MoveNext
+		loop
+
+	if Not ha_default then
+		strResp = "<OPTION SELECTED VALUE=''>&nbsp;</OPTION>" & chr(13) & strResp
+	else
+		strResp = "<OPTION VALUE=''>&nbsp;</OPTION>" & chr(13) & strResp
+		end if
+		
+	unidadeNegocioMontaItensSelect = strResp
+	r.close
+	set r=nothing
+end function
+
 %>
 
 
@@ -500,6 +535,32 @@ function AtualizaLoja( f ) {
 			<p class="R">PLANO DE CONTA (LANÇAMENTOS DO FLUXO DE CAIXA)</p>
 			<select id="c_plano_contas_conta" name="c_plano_contas_conta" style="margin-left:4px;margin-top:4px;margin-bottom:8px;" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;">
 			<%=finPlanoContasContaMontaItensSelect(s)%>
+			</select>
+		</td>
+	</tr>
+</table>
+
+<!-- ************   COMISSÃO INDICADORES: PLANO CONTAS EMPRESA   ************ -->
+<table width="649" class="QS" cellSpacing="0">
+	<tr>
+		<td align="left">
+			<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("id_plano_contas_empresa_comissao_indicador")) else s=""%>
+			<p class="R">EMPRESA (LANÇAMENTOS DO FLUXO DE CAIXA REF COMISSÃO INDICADOR)</p>
+			<select id="c_plano_contas_empresa_comissao_indicador" name="c_plano_contas_empresa_comissao_indicador" style="margin-left:4px;margin-top:4px;margin-bottom:8px;" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;">
+			<%=finPlanoContasEmpresaMontaItensSelect(s)%>
+			</select>
+		</td>
+	</tr>
+</table>
+
+<!-- ************   UNIDADE DE NEGÓCIO   ************ -->
+<table width="649" class="QS" cellSpacing="0">
+	<tr>
+		<td align="left">
+			<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("unidade_negocio")) else s=""%>
+			<p class="R">UNIDADE DE NEGÓCIO</p>
+			<select id="c_unidade_negocio" name="c_unidade_negocio" style="margin-left:4px;margin-top:4px;margin-bottom:8px;" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;">
+			<%=unidadeNegocioMontaItensSelect(s)%>
 			</select>
 		</td>
 	</tr>

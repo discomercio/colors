@@ -57,6 +57,7 @@
 	dim s_endereco, s_endereco_numero, s_endereco_complemento, s_bairro, s_cidade, s_cep, s_uf
 	dim s_ddd, s_telefone, s_fax, s_comissao_indicacao
 	dim s_plano_contas_empresa, s_plano_contas_grupo, s_plano_contas_conta
+	dim s_plano_contas_empresa_comissao_indicador, s_unidade_negocio
 	operacao_selecionada=request("operacao_selecionada")
 	s_loja=retorna_so_digitos(trim(request("loja_selecionada")))
 	s_nome=Trim(request("nome"))
@@ -85,6 +86,9 @@
 		s_plano_contas_conta=vAux(Lbound(vAux))
 		s_plano_contas_grupo=vAux(Ubound(vAux))
 		end if
+
+	s_plano_contas_empresa_comissao_indicador = Trim(Request.Form("c_plano_contas_empresa_comissao_indicador"))
+	s_unidade_negocio = Trim(Request.Form("c_unidade_negocio"))
 
 	if s_loja = "" then Response.Redirect("aviso.asp?id=" & ERR_ID_INVALIDO)
 	
@@ -294,6 +298,18 @@
 				r("id_plano_contas_conta")=CLng(s_plano_contas_conta)
 				r("natureza")=COD_FIN_NATUREZA__CREDITO
 				
+				if s_plano_contas_empresa_comissao_indicador <> "" then
+					r("id_plano_contas_empresa_comissao_indicador") = CInt(s_plano_contas_empresa_comissao_indicador)
+				else
+					r("id_plano_contas_empresa_comissao_indicador") = Null
+					end if
+
+				if s_unidade_negocio <> "" then
+					r("unidade_negocio") = s_unidade_negocio
+				else
+					r("unidade_negocio") = Null
+					end if
+
 				r.Update
 
 				If Err = 0 then 
