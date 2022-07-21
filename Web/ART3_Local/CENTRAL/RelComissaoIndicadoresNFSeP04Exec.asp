@@ -339,6 +339,7 @@ dim s_indicador_nome
 			" t_ORCAMENTISTA_E_INDICADOR.desempenho_nota," & _
 			" t_ORCAMENTISTA_E_INDICADOR.banco," & _
 			" t_ORCAMENTISTA_E_INDICADOR.Id AS IdIndicador," & _
+			" t_LOJA.id_plano_contas_empresa_comissao_indicador," & _
 			" t_PEDIDO__BASE.indicador," & _
 			" t_PEDIDO__BASE.vendedor,"
 	
@@ -366,9 +367,10 @@ dim s_indicador_nome
 			" INNER JOIN t_CLIENTE ON (t_PEDIDO__BASE.id_cliente=t_CLIENTE.id)" & _
 			" INNER JOIN t_ORCAMENTISTA_E_INDICADOR ON (t_PEDIDO__BASE.indicador=t_ORCAMENTISTA_E_INDICADOR.apelido)" & _
 			" LEFT JOIN t_CFG_TABELA_ORIGEM ON (nome_tabela = 't_PEDIDO')" & _
+			" LEFT JOIN t_LOJA ON (t_PEDIDO.loja = t_LOJA.loja)" & _
 			" WHERE (t_PEDIDO.st_entrega = '" & ST_ENTREGA_ENTREGUE & "')" & _
 			s_where_aux & _
-			" GROUP BY t_CFG_TABELA_ORIGEM.id, t_PEDIDO.pedido, t_PEDIDO.comissao_paga, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.banco, t_ORCAMENTISTA_E_INDICADOR.Id, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
+			" GROUP BY t_CFG_TABELA_ORIGEM.id, t_PEDIDO.pedido, t_PEDIDO.comissao_paga, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.banco, t_ORCAMENTISTA_E_INDICADOR.Id, t_LOJA.id_plano_contas_empresa_comissao_indicador, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
 	
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
@@ -398,6 +400,7 @@ dim s_indicador_nome
 			" t_ORCAMENTISTA_E_INDICADOR.desempenho_nota," & _
 			" t_ORCAMENTISTA_E_INDICADOR.banco," & _
 			" t_ORCAMENTISTA_E_INDICADOR.Id AS IdIndicador," & _
+			" t_LOJA.id_plano_contas_empresa_comissao_indicador," & _
 			" t_PEDIDO__BASE.indicador," & _
 			" t_PEDIDO__BASE.vendedor,"
 	
@@ -425,8 +428,9 @@ dim s_indicador_nome
 			" INNER JOIN t_CLIENTE ON (t_PEDIDO__BASE.id_cliente=t_CLIENTE.id)" & _
 			" INNER JOIN t_ORCAMENTISTA_E_INDICADOR ON (t_PEDIDO__BASE.indicador=t_ORCAMENTISTA_E_INDICADOR.apelido)" & _
 			" LEFT JOIN t_CFG_TABELA_ORIGEM ON (nome_tabela = 't_PEDIDO_ITEM_DEVOLVIDO')" & _
+			" LEFT JOIN t_LOJA ON (t_PEDIDO.loja = t_LOJA.loja)" & _
 			s_where_aux & _
-			" GROUP BY t_CFG_TABELA_ORIGEM.id, t_PEDIDO_ITEM_DEVOLVIDO.id, t_PEDIDO_ITEM_DEVOLVIDO.comissao_descontada, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.banco, t_ORCAMENTISTA_E_INDICADOR.Id, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
+			" GROUP BY t_CFG_TABELA_ORIGEM.id, t_PEDIDO_ITEM_DEVOLVIDO.id, t_PEDIDO_ITEM_DEVOLVIDO.comissao_descontada, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.banco, t_ORCAMENTISTA_E_INDICADOR.Id, t_LOJA.id_plano_contas_empresa_comissao_indicador, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
 	
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
@@ -456,6 +460,7 @@ dim s_indicador_nome
 			" t_ORCAMENTISTA_E_INDICADOR.desempenho_nota," & _
 			" t_ORCAMENTISTA_E_INDICADOR.banco," & _
 			" t_ORCAMENTISTA_E_INDICADOR.Id AS IdIndicador," & _
+			" t_LOJA.id_plano_contas_empresa_comissao_indicador," & _
 			" t_PEDIDO__BASE.indicador," & _
 			" t_PEDIDO__BASE.vendedor,"
 	
@@ -483,8 +488,9 @@ dim s_indicador_nome
 			" INNER JOIN t_CLIENTE ON (t_PEDIDO__BASE.id_cliente=t_CLIENTE.id)" & _
 			" INNER JOIN t_ORCAMENTISTA_E_INDICADOR ON (t_PEDIDO__BASE.indicador=t_ORCAMENTISTA_E_INDICADOR.apelido)" & _
 			" LEFT JOIN t_CFG_TABELA_ORIGEM ON (nome_tabela = 't_PEDIDO_PERDA')" & _
+			" LEFT JOIN t_LOJA ON (t_PEDIDO.loja = t_LOJA.loja)" & _
 			s_where_aux & _
-			" GROUP BY t_CFG_TABELA_ORIGEM.id, t_PEDIDO_PERDA.id, t_PEDIDO_PERDA.comissao_descontada, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.banco, t_ORCAMENTISTA_E_INDICADOR.Id, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
+			" GROUP BY t_CFG_TABELA_ORIGEM.id, t_PEDIDO_PERDA.id, t_PEDIDO_PERDA.comissao_descontada, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.banco, t_ORCAMENTISTA_E_INDICADOR.Id, t_LOJA.id_plano_contas_empresa_comissao_indicador, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
 	
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
@@ -914,12 +920,17 @@ dim s_indicador_nome
 
 		s_id = "ckb_" & s_id_base
 		x = x & "		<td class='MDTE tdCkb" & s_class_td & "' align='center'>" & _
-							"<input type='checkbox' class='CKB_COM " & s_class & "' name='" & s_id & "' id='" & s_id & "' value='" & Trim("" & r("id_registro")) & "|" & Trim("" & r("operacao")) & "' />" & _
+							"<input type='checkbox' class='CKB_COM CKB_COM_REG " & s_class & "' name='" & s_id & "' id='" & s_id & "' value='" & Trim("" & r("id_registro")) & "|" & Trim("" & r("operacao")) & "' />" & _
 							"<input type='hidden' name='" & s_id & "_original" & "' id='" & s_id & "_original" & "' value='" & Trim("" & r("status_comissao")) & "' />" & _
 				"</td>" & chr(13)
 	
 		'> LOJA
-		x = x & "		<td class='MTD tdLoja' align='center'><span class='Cnc' style='color:" & s_cor & ";'>" & Trim("" & r("loja")) & "</span></td>" & chr(13)
+		s_id = "spn_loja_" & s_id_base
+		x = x & "		<td class='MTD tdLoja' align='center'><span class='Cnc' style='color:" & s_cor & ";' name='" & s_id & "' id='" & s_id & "'>" & Trim("" & r("loja")) & "</span>" & chr(13)
+		'EMPRESA DO LANÇAMENTO NO FLUXO DE CAIXA
+		s_id = "c_empresa_lancamento_" & s_id_base
+		x = x & "		<input type='hidden' name='" & s_id & "' id='" & s_id & "' value='" & Trim("" & r("id_plano_contas_empresa_comissao_indicador")) & "' />" & chr(13)
+		x = x & "</td>" & chr(13)
 
 		'> Nº ORÇAMENTO
 		s = Trim("" & r("orcamento"))
@@ -1492,7 +1503,7 @@ $(function() {
 		var vlTotalRALiq = 0;
 		var vlTotalRADif = 0;
 		var s_id, s_id_base, s_value;
-		$(".CKB_COM:enabled:checked").each(function () {
+		$(".CKB_COM_REG:enabled:checked").each(function () {
 			s_id = $(this).attr("id");
 			s_id_base = s_id.replace("ckb_", "");
 			// Preço venda
@@ -1634,6 +1645,8 @@ function fRelSumario(f, id_nsu_N1) {
 
 function fRELGravaDados(f) {
 	var vl_total_RT_RALiq;
+	var s_confirmacao;
+	var v, s_id, s_id_base, s_value, s_search, s_lista_loja, s_lista_empresa, qtde_lojas, qtde_empresas, s_lojas, s_empresas;
 
 	vl_total_RT_RALiq = converte_numero($("#c_total_geral_selecionado_RT").val()) + converte_numero($("#c_total_geral_selecionado_RA_liq").val());
 
@@ -1647,7 +1660,62 @@ function fRELGravaDados(f) {
 		return;
 	}
 
-	if (!confirm("Prosseguir com a gravação dos dados?")) {
+	// Verifica se há mais de uma loja entre os pedidos/devoluções/perdas selecionados e se há mais de uma empresa p/ o lançamento no fluxo de caixa
+	s_lista_loja = "|";
+	s_lista_empresa = "|";
+	qtde_lojas = 0;
+	qtde_empresas = 0;
+	$(".CKB_COM_REG:enabled:checked").each(function () {
+		s_id = $(this).attr("id");
+		s_id_base = s_id.replace("ckb_", "");
+		// Loja
+		s_id = "spn_loja_" + s_id_base;
+		s_value = $("#" + s_id).text();
+		if (s_value.length > 0) {
+			s_search = "|" + s_value + "|";
+			if (s_lista_loja.indexOf(s_search) == -1) {
+				qtde_lojas++;
+				s_lista_loja += s_value + "|";
+			}
+		}
+		// Empresa do lançamento no fluxo de caixa
+		s_id = "c_empresa_lancamento_" + s_id_base;
+		s_value = $("#" + s_id).val();
+		if (s_value.length > 0) {
+			s_search = "|" + s_value + "|";
+			if (s_lista_empresa.indexOf(s_search) == -1) {
+				qtde_empresas++;
+				s_lista_empresa += s_value + "|";
+			}
+		}
+	});
+
+	s_confirmacao = "Prosseguir com a gravação dos dados?";
+	if (qtde_lojas > 1) {
+		v = s_lista_loja.split("|");
+		s_lojas = "";
+		for (var i = 0; i < v.length; i++) {
+			if (("" + v[i]).length > 0) {
+				if (s_lojas.length > 0) s_lojas += ", ";
+				s_lojas += v[i];
+			}
+		}
+		s_confirmacao += "\n\nAtenção: há mais de uma loja entre os registros selecionados (lojas: " + s_lojas + ")!";
+	}
+
+	if (qtde_empresas > 1) {
+		v = s_lista_empresa.split("|");
+		s_empresas = "";
+		for (var i = 0; i < v.length; i++) {
+			if (("" + v[i]).length > 0) {
+				if (s_empresas.length > 0) s_empresas += ", ";
+				s_empresas += v[i];
+			}
+		}
+		s_confirmacao += "\n\nAtenção: há mais de uma empresa para o lançamento no fluxo de caixa entre os registros selecionados (empresas: " + s_empresas + ")!";
+	}
+
+	if (!confirm(s_confirmacao)) {
 		return;
 	}
 
