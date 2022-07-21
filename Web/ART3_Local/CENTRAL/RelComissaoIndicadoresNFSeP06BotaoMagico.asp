@@ -84,10 +84,11 @@
 
 '	CONECTA AO BANCO DE DADOS
 '	=========================
-	dim cn, cn2, tN1, tN3Ped
+	dim cn, cn2, rs, tN1, tN3Ped
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	if Not bdd_conecta_RPIFC(cn2) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	
+	If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	If Not cria_recordset_otimista(tN1, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	If Not cria_recordset_otimista(tN3Ped, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
@@ -106,17 +107,73 @@
 			end if
 		end if
 
+	'OBTÉM O CÓDIGO DA EMPRESA P/ O LANÇAMENTO NO FLUXO DE CAIXA DE ACORDO C/ A LOJA DOS REGISTROS SELECIONADOS
+	dim s_id_plano_contas_empresa, qtde_id_plano_contas_empresa, s_lista_lojas, qtde_lojas, alerta_plano_contas_empresa
+	s_id_plano_contas_empresa = ""
+	qtde_id_plano_contas_empresa = 0
+	s_lista_lojas = ""
+	qtde_lojas = 0
+	alerta_plano_contas_empresa = ""
+	if alerta = "" then
+		s = "SELECT DISTINCT" & _
+				" t_LOJA.id_plano_contas_empresa_comissao_indicador" & _
+			" FROM t_COMISSAO_INDICADOR_NFSe_N1 tN1" & _
+				" INNER JOIN t_COMISSAO_INDICADOR_NFSe_N2 tN2 ON (tN1.id = tN2.id_comissao_indicador_nfse_n1)" & _
+				" INNER JOIN t_COMISSAO_INDICADOR_NFSe_N3_PEDIDO tN3Ped ON (tN2.id = tN3Ped.id_comissao_indicador_nfse_n2)" & _
+				" INNER JOIN t_LOJA ON (tN3Ped.loja = t_LOJA.loja)" & _
+			" WHERE" & _
+				" (tN1.id = " & id_nsu_N1 & ")" & _
+				" AND (tN3Ped.st_selecionado = 1)"
+		rs.Open s, cn
+		do while Not rs.Eof
+			s_id_plano_contas_empresa = Trim("" & rs("id_plano_contas_empresa_comissao_indicador"))
+			if s_id_plano_contas_empresa <> "" then qtde_id_plano_contas_empresa = qtde_id_plano_contas_empresa + 1
+			rs.MoveNext
+			loop
+
+		if qtde_id_plano_contas_empresa > 1 then s_id_plano_contas_empresa = ""
+		if rs.State <> 0 then rs.Close
+
+		'TRATAMENTO P/ O CASO EM QUE NÃO ENCONTROU A EMPRESA P/ O LANÇAMENTO DO FLUXO DE CAIXA
+		if s_id_plano_contas_empresa = "" then
+			s = "SELECT DISTINCT" & _
+					" tN3Ped.loja" & _
+				" FROM t_COMISSAO_INDICADOR_NFSe_N1 tN1" & _
+					" INNER JOIN t_COMISSAO_INDICADOR_NFSe_N2 tN2 ON (tN1.id = tN2.id_comissao_indicador_nfse_n1)" & _
+					" INNER JOIN t_COMISSAO_INDICADOR_NFSe_N3_PEDIDO tN3Ped ON (tN2.id = tN3Ped.id_comissao_indicador_nfse_n2)" & _
+				" WHERE" & _
+					" (tN1.id = " & id_nsu_N1 & ")" & _
+					" AND (tN3Ped.st_selecionado = 1)" & _
+				" ORDER BY" & _
+					" tN3Ped.loja"
+			if rs.State <> 0 then rs.Close
+			rs.Open s, cn
+			do while Not rs.Eof
+				if Trim("" & rs("loja")) <> "" then
+					qtde_lojas = qtde_lojas + 1
+					if s_lista_lojas <> "" then s_lista_lojas = s_lista_lojas & ", "
+					s_lista_lojas = s_lista_lojas & Trim("" & rs("loja"))
+					end if
+				rs.MoveNext
+				loop
+			if rs.State <> 0 then rs.Close
+			
+			if qtde_lojas = 1 then
+				alerta_plano_contas_empresa = "Não foi encontrada a empresa para o lançamento no fluxo de caixa referente à loja: " & s_lista_lojas
+			else
+				alerta_plano_contas_empresa = "Não foi encontrada a empresa para o lançamento no fluxo de caixa referente às lojas: " & s_lista_lojas
+				end if
+			end if 'if s_id_plano_contas_empresa = ""
+		end if 'if alerta = ""
+
 	dim fluxo_caixa_dt_competencia_default
-	dim fluxo_caixa_conta_corrente_default, fluxo_caixa_empresa_default, fluxo_caixa_plano_contas_RT_default
+	dim fluxo_caixa_conta_corrente_default, fluxo_caixa_plano_contas_RT_default
 	
 	if alerta = "" then
 		fluxo_caixa_dt_competencia_default = get_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_fluxo_caixa_dt_competencia")
 	
 		fluxo_caixa_conta_corrente_default = get_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_fluxo_caixa_conta_corrente")
 		if fluxo_caixa_conta_corrente_default = "" then fluxo_caixa_conta_corrente_default = getParametroFromCampoTexto(ID_PARAMETRO_RelComissaoIndicadoresNFSe_PlanoContas_ContaCorrente)
-	
-		fluxo_caixa_empresa_default = get_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_fluxo_caixa_empresa")
-		if fluxo_caixa_empresa_default = "" then fluxo_caixa_empresa_default = getParametroFromCampoTexto(ID_PARAMETRO_RelComissaoIndicadoresNFSe_PlanoContas_Empresa)
 	
 		fluxo_caixa_plano_contas_RT_default = get_default_valor_texto_bd(usuario, ID_RELATORIO & "|c_fluxo_caixa_plano_contas_RT")
 		if fluxo_caixa_plano_contas_RT_default = "" then fluxo_caixa_plano_contas_RT_default = getParametroFromCampoTexto(ID_PARAMETRO_RelComissaoIndicadoresNFSe_PlanoContas_RT)
@@ -627,7 +684,7 @@ end function
 		<td class="MDBE TdLabel" valign="middle" align="right"><span class="Cd">Empresa:</span></td>
 		<td class="MDB TdInfo" align="left">
 				<select id="c_fluxo_caixa_empresa" name="c_fluxo_caixa_empresa" style="width:500px;margin:6px;">
-					<%=fluxo_caixa_empresa_monta_itens_select(fluxo_caixa_empresa_default)%>
+					<%=fluxo_caixa_empresa_monta_itens_select(s_id_plano_contas_empresa)%>
 				</select>
 		</td>
 	</tr>
@@ -635,6 +692,16 @@ end function
 		<td class="MDBE TdLabel" valign="middle" align="right"><span class="Cd">Plano Contas:</span></td>
 		<td class="MDB TdInfo" align="left"><input type="text" name="c_fluxo_caixa_plano_contas_RT" id="c_fluxo_caixa_plano_contas_RT" maxlength="6" class="PLLe" style="font-size:11pt;width:300px;" onblur="this.value=trim(this.value);" onkeypress="filtra_numerico();" value="<%=fluxo_caixa_plano_contas_RT_default%>" /></td>
 	</tr>
+<% if alerta_plano_contas_empresa <> "" then %>
+	<tr>
+		<td colspan="2" style="height:4px;">&nbsp;</td>
+	</tr>
+	<tr>
+		<td colspan="2" class="MT" align="center">
+			<span style="color:red;font-weight:bold;"><%=alerta_plano_contas_empresa%></span>
+		</td>
+	</tr>
+<% end if %>
 </table>
 <br />
 <% else 'if tN1("proc_fluxo_caixa_status") = 0 %>
