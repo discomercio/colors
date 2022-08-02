@@ -29,7 +29,7 @@ namespace Financeiro
                 public const string NOME_OWNER = "Artven";
                 public const string NOME_SISTEMA = "Financeiro";
                 public const string VERSAO_NUMERO = "1.38";
-                public const string VERSAO_DATA = "27.ABR.2022";
+                public const string VERSAO_DATA = "02.AGO.2022";
                 public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
                 public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
                 public const string M_DESCRICAO = "Módulo para execução de rotinas financeiras";
@@ -483,6 +483,20 @@ namespace Financeiro
 			 *		  Ajustes no Relatório Sintético Comparativo de Movimentos para parametrizar a quantidade
 			 *		  de anos do período no comparativo mês a mês de forma que sejam exibidos anos futuros.
 			 * -----------------------------------------------------------------------------------------------
+			 * v 1.38(D) - 02.08.2022 - por HHO
+			 *		  Implementação de tratamento para que o módulo aceite múltiplas versões permitidas
+			 *		  na tabela t_VERSAO durante a validação da versão na inicialização do módulo (caso
+			 *		  exista mais de uma versão permitida, deve estar separada pelo caractere pipe "|").
+			 *		  Implementação de tratamento definido por parâmetro no BD para considerar ou não
+			 *		  a data da última atualização do lançamento no fluxo de caixa ao aplicar filtro de
+			 *		  pesquisa ou exibição dos dados quando não houve edição manual, ou seja, quando
+			 *		  ocorreram somente atualizações automáticas.
+			 *		  Inclusão de coluna com o status de pagamento do pedido no painel com a lista de
+			 *		  boletos a cadastrar.
+			 *		  Implementação de tratamento definido por parâmetro no BD para permitir ou não que
+			 *		  se prossiga com o cadastramento de boleto avulso quando ocorre divergência entre o
+			 *		  valor definido na forma de pagamento e o valor do pedido.
+			 * -----------------------------------------------------------------------------------------------
 			 * v 1.39 - XX.XX.20XX - por XXX
 			 *		  
 			 * -----------------------------------------------------------------------------------------------
@@ -931,6 +945,8 @@ namespace Financeiro
 					public const string ID_PARAMETRO_FLAG_PEDIDO_MEMORIZACAOCOMPLETAENDERECOS = "Flag_Pedido_MemorizacaoCompletaEnderecos";
 					public const string ID_PARAMETRO_FIN_REL_SINT_COMP_MOVTO_COMP_MES_A_MES_PERIODO_EM_ANOS = "FIN_RelSinteticoComparativoMovimentos_ComparativoMesAMes_PeriodoEmAnos";
 					public const string ID_PARAMETRO_FIN_REL_SINT_COMP_MOVTO_COMP_MES_A_MES_FUTURO_PERIODO_EM_ANOS = "FIN_RelSinteticoComparativoMovimentos_ComparativoMesAMes_Futuro_PeriodoEmAnos";
+					public const string ID_PARAMETRO_FIN_FluxoCaixa_ConsiderarDataAtualizacaoAutomatica_FlagHabilitacao = "FIN_FluxoCaixa_ConsiderarDataAtualizacaoAutomatica_FlagHabilitacao";
+					public const string ID_PARAMETRO_FIN_BoletoAvulso_PermitirDivergenciaValoresFormaPagtoVsPedido_FlagHabilitacao = "FIN_BoletoAvulso_PermitirDivergenciaValoresFormaPagtoVsPedido_FlagHabilitacao";
 				}
 				#endregion
 			}
@@ -1030,10 +1046,18 @@ namespace Financeiro
         public static int contadorLancamentoCreditoLoteInserido = 0;
         public static string PATH_BOLETO_ARQUIVO_REMESSA = Application.StartupPath + "\\BOLETOS\\ARQUIVO_REMESSA";
         public static Color BackColorPainelPadrao = SystemColors.Control;
-        #endregion
+		#endregion
 
-        #region [ Classe Acesso ]
-        public class Acesso
+		#region [ Parâmetros ]
+		public static class Parametro
+		{
+			public static int FluxoCaixa_ConsiderarDataAtualizacaoAutomatica;
+			public static int BoletoAvulso_PermitirDivergenciaValoresFormaPagtoVsPedido;
+		}
+		#endregion
+
+		#region [ Classe Acesso ]
+		public class Acesso
         {
             #region [ Constantes ]
             public const String OP_CEN_FIN_APP_FINANCEIRO_ACESSO_AO_MODULO = "21400";
