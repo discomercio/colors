@@ -693,7 +693,9 @@ namespace Financeiro
 		#region [ FFluxoEdita_Load ]
 		private void FFluxoEdita_Load(object sender, EventArgs e)
 		{
+			#region [ Declarações ]
 			bool blnSucesso = false;
+			#endregion
 
 			try
 			{
@@ -790,7 +792,7 @@ namespace Financeiro
 				lblCadastradoEm.Text = Global.formataDataDdMmYyyyHhMmComSeparador(lancamentoSelecionado.dt_hr_cadastro);
 				lblCadastradoPor.Text = lancamentoSelecionado.usuario_cadastro;
 				lblCadastradoModo.Text = Global.retornaDescricaoTipoCadastramento(lancamentoSelecionado.tipo_cadastro);
-				if (lancamentoSelecionado.editado_manual == Global.Cte.FIN.EditadoManual.SIM)
+				if ((lancamentoSelecionado.editado_manual == Global.Cte.FIN.EditadoManual.SIM) || (Global.Parametro.FluxoCaixa_ConsiderarDataAtualizacaoAutomatica == 1))
 				{
 					lblAlteradoEm.Text = Global.formataDataDdMmYyyyHhMmComSeparador(lancamentoSelecionado.dt_hr_ult_atualizacao);
 					lblAlteradoPor.Text = lancamentoSelecionado.usuario_ult_atualizacao;

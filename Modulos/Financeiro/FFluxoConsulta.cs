@@ -19,12 +19,12 @@ namespace Financeiro
         #region [ Constantes ]
         const String GRID_ST_SEM_EFEITO__CANCELADO = "Cancel";
         const String GRID_ST_SEM_EFEITO__VALIDO = "Válido";
-        #endregion
+		#endregion
 
-        #region [ Atributos ]
+		#region [ Atributos ]
 
-        #region [ Diversos ]
-        private bool _InicializacaoOk;
+		#region [ Diversos ]
+		private bool _InicializacaoOk;
         public bool inicializacaoOk
         {
             get { return _InicializacaoOk; }
@@ -406,10 +406,10 @@ namespace Financeiro
             StringBuilder sbWhere = new StringBuilder("");
             String strAux;
 			int numNF;
-            DateTime dtReferenciaLimitePagamentoEmAtraso;
-            #endregion
+			DateTime dtReferenciaLimitePagamentoEmAtraso;
+			#endregion
 
-            dtReferenciaLimitePagamentoEmAtraso = Global.obtemDataReferenciaLimitePagamentoEmAtraso();
+			dtReferenciaLimitePagamentoEmAtraso = Global.obtemDataReferenciaLimitePagamentoEmAtraso();
 
             #region [ Data de competência ]
             if ((txtDataCompetenciaInicial.Text.Length > 0) && (txtDataCompetenciaFinal.Text.Length > 0))
@@ -535,7 +535,11 @@ namespace Financeiro
 					strAux = " ((tFC.dt_ult_atualizacao >= " + Global.sqlMontaDdMmYyyyParaSqlDateTime(txtDataAtualizInicial.Text) + ") AND (tFC.dt_ult_atualizacao <= " + Global.sqlMontaDdMmYyyyParaSqlDateTime(txtDataAtualizFinal.Text) + "))";
 				}
 
-				strAux = " ((tFC.editado_manual = '" + Global.Cte.FIN.EditadoManual.SIM + "') AND " + strAux + ")";
+				if (Global.Parametro.FluxoCaixa_ConsiderarDataAtualizacaoAutomatica == 0)
+				{
+					strAux = " ((tFC.editado_manual = '" + Global.Cte.FIN.EditadoManual.SIM + "') AND " + strAux + ")";
+				}
+
 				if (sbWhere.Length > 0) sbWhere.Append(" AND");
 				sbWhere.Append(strAux);
 			}
@@ -553,7 +557,11 @@ namespace Financeiro
 
 				if (strAux.Length > 0)
 				{
-					strAux = " ((tFC.editado_manual = '" + Global.Cte.FIN.EditadoManual.SIM + "') AND " + strAux + ")";
+					if (Global.Parametro.FluxoCaixa_ConsiderarDataAtualizacaoAutomatica == 0)
+					{
+						strAux = " ((tFC.editado_manual = '" + Global.Cte.FIN.EditadoManual.SIM + "') AND " + strAux + ")";
+					}
+
 					if (sbWhere.Length > 0) sbWhere.Append(" AND");
 					sbWhere.Append(strAux);
 				}
@@ -2887,14 +2895,14 @@ namespace Financeiro
         }
         #endregion
 
-        #endregion
+		#endregion
 
-        #region [ Botões / Menu ]
+		#region [ Botões / Menu ]
 
-        #region [ Pesquisar ]
+		#region [ Pesquisar ]
 
-        #region [ btnPesquisar_Click ]
-        private void btnPesquisar_Click(object sender, EventArgs e)
+		#region [ btnPesquisar_Click ]
+		private void btnPesquisar_Click(object sender, EventArgs e)
         {
             executaPesquisa();
         }

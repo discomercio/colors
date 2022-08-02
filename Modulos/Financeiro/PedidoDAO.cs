@@ -689,6 +689,60 @@ namespace Financeiro
 		}
 		#endregion
 
+		#region [ getPedidoStPagto ]
+		public static string getPedidoStPagto(string numeroPedido)
+		{
+			#region [ Declarações ]
+			string strSql;
+			string numeroPedidoBase;
+			string st_pagto;
+			SqlCommand cmCommand;
+			SqlDataAdapter daDataAdapter;
+			DataTable dtbResultado = new DataTable();
+			DataRow rowResultado;
+			#endregion
+
+			#region [ Consistências ]
+			if (numeroPedido == null) throw new FinanceiroException("Nº do pedido a ser consultado não foi fornecido!!");
+			if (numeroPedido.Length == 0) throw new FinanceiroException("Nº do pedido a ser consultado não foi informado!!");
+			#endregion
+
+			#region [ Prepara acesso ao BD ]
+			cmCommand = BD.criaSqlCommand();
+			daDataAdapter = BD.criaSqlDataAdapter();
+			#endregion
+
+			#region [ Inicialização ]
+			numeroPedido = numeroPedido.Trim();
+			numeroPedidoBase = Global.retornaNumeroPedidoBase(numeroPedido);
+			#endregion
+
+			#region [ Monta Select ]
+			strSql = "SELECT" +
+						" st_pagto" +
+					" FROM t_PEDIDO" +
+					" WHERE" +
+						" (pedido = '" + numeroPedidoBase + "')";
+			#endregion
+
+			#region [ Executa a consulta ]
+			cmCommand.CommandText = strSql;
+			daDataAdapter.SelectCommand = cmCommand;
+			daDataAdapter.MissingSchemaAction = MissingSchemaAction.Add;
+			daDataAdapter.Fill(dtbResultado);
+			#endregion
+
+			if (dtbResultado.Rows.Count == 0) throw new FinanceiroException("Pedido nº " + numeroPedido + " não foi encontrado!!");
+
+			#region [ Processa o resultado ]
+			rowResultado = dtbResultado.Rows[0];
+			st_pagto = BD.readToString(rowResultado["st_pagto"]);
+			#endregion
+
+			return st_pagto;
+		}
+		#endregion
+
 		#region [ marcaPedidoStatusBoletoConfeccionado ]
 		public static bool marcaPedidoStatusBoletoConfeccionado(String usuario, 
 													  String pedido, 

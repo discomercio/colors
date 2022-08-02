@@ -1116,6 +1116,9 @@ namespace Financeiro
 			bool blnValidacaoUsuarioOk;
 			String strMsg;
 			String strUltimoUsuario;
+			string sVersaoPermitida;
+			string[] vListaVersaoPermitida;
+			List<string> listaVersaoPermitida = new List<string>();
 			Color? cor;
 			DateTime dtHrServidor;
 			UsuarioDAO usuarioDAO;
@@ -1455,9 +1458,20 @@ namespace Financeiro
 						return;
 					}
 
-					if (!versaoModulo.versao.Equals(Global.Cte.Aplicativo.VERSAO_NUMERO))
+					sVersaoPermitida = versaoModulo.versao.Trim();
+					sVersaoPermitida = sVersaoPermitida.Replace(';', '|');
+					vListaVersaoPermitida = sVersaoPermitida.Split('|');
+					foreach (string item in vListaVersaoPermitida)
 					{
-						strMsgErro = "Versão inválida do aplicativo!!\n\nVersão deste programa: " + Global.Cte.Aplicativo.VERSAO_NUMERO + "\nVersão permitida: " + versaoModulo.versao;
+						if ((item ?? "").Trim().Length > 0)
+						{
+							listaVersaoPermitida.Add(item.Trim());
+						}
+					}
+
+					if (!listaVersaoPermitida.Contains(Global.Cte.Aplicativo.VERSAO_NUMERO))
+					{
+						strMsgErro = "Versão inválida do aplicativo!!\n\nVersão deste programa: " + Global.Cte.Aplicativo.VERSAO_NUMERO + "\nVersão permitida: " + String.Join(", ", listaVersaoPermitida);
 						Global.gravaLogAtividade(strMsgErro);
 						avisoErro(strMsgErro);
 						Close();
@@ -1471,6 +1485,11 @@ namespace Financeiro
 					{
 						carregaListaNomeClienteAutoComplete();
 					}
+					#endregion
+
+					#region [ Carrega parâmetros ]
+					Global.Parametro.FluxoCaixa_ConsiderarDataAtualizacaoAutomatica = ComumDAO.getCampoInteiroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ID_PARAMETRO_FIN_FluxoCaixa_ConsiderarDataAtualizacaoAutomatica_FlagHabilitacao);
+					Global.Parametro.BoletoAvulso_PermitirDivergenciaValoresFormaPagtoVsPedido = ComumDAO.getCampoInteiroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ID_PARAMETRO_FIN_BoletoAvulso_PermitirDivergenciaValoresFormaPagtoVsPedido_FlagHabilitacao);
 					#endregion
 
 					#region [ Copia logotipo do Bradesco usado na geração da imagem do boleto ]
@@ -1515,7 +1534,8 @@ namespace Financeiro
 										"; OS Version=" + System.Environment.OSVersion.Version +
 										"; OS SP=" + System.Environment.OSVersion.ServicePack +
 										"; Processor Count=" + System.Environment.ProcessorCount.ToString() +
-										"; Windows User Name=" + System.Environment.UserName;
+										"; Windows User Name=" + System.Environment.UserName +
+										"; Versão=" + Global.Cte.Aplicativo.M_ID;
 					FinLogDAO.insere(Global.Usuario.usuario, finLog, ref strMsgErroLog);
 					#endregion
 
