@@ -1045,6 +1045,10 @@ namespace Financeiro
 				}
 				#endregion
 
+				#region [ Campo descrição ]
+				txtDescricao.MaxLength = Global.Cte.FIN.TamanhoCampo.FLUXO_CAIXA_DESCRICAO;
+				#endregion
+
 				blnSucesso = true;
 			}
 			catch (Exception ex)
@@ -2249,7 +2253,7 @@ namespace Financeiro
 
                 #region [ Descrição ]
                 cx = ixDescricao;
-				r = new RectangleF(ixDescricao, cy, wxDescricao, 20);
+				r = new RectangleF(ixDescricao, cy, wxDescricao, 30);
 				strTexto = BD.readToString(_dtbConsulta.Rows[_intConsultaImpressaoIdxLinha]["descricao"]);
 				strAux = BD.readToString(_dtbConsulta.Rows[_intConsultaImpressaoIdxLinha]["flag_em_atraso"]);
 				if (strAux.Equals("S")) strTexto += "  (*** em atraso ***)";

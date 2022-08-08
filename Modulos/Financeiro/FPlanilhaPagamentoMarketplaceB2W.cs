@@ -79,8 +79,9 @@ namespace Financeiro
         #region [ trataBotaoConfirmar ]
         private void trataBotaoConfirmar()
         {
-            #region [ Declarações ]
-            bool blnAux;
+			#region [ Declarações ]
+			const string NOME_DESTA_ROTINA = "FPlanilhaPagamentoMarketplaceB2W.trataBotaoConfirmar()";
+			bool blnAux;
             bool blnPedidoExiste;
             string strMsgErro = "";
             string strPedidoAux;
@@ -351,6 +352,7 @@ namespace Financeiro
             catch (Exception ex)
             {
                 BD.rollbackTransacao();
+				Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + ex.ToString());
                 avisoErro("Erro ao gravar dados da planilha no banco de dados!");
                 return;
             }

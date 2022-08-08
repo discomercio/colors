@@ -145,6 +145,28 @@ namespace Financeiro
 
 			strSql += " UNION " +
 					"SELECT" +
+						" 'GRANDE_USUARIO' AS tabela_origem," +
+						" GU.CEP_DIG AS cep," +
+						" GU.UFE_SG AS uf," +
+						" Loc.LOC_NOSUB AS localidade," +
+						" Bai.BAI_NO AS bairro_extenso," +
+						" Bai.BAI_NO_ABREV AS bairro_abreviado," +
+						" Logr.LOG_TIPO_LOGRADOURO AS logradouro_tipo," +
+						" Logr.LOG_NO AS logradouro_nome," +
+						" GU.GRU_NO AS logradouro_complemento" +
+					" FROM LOG_GRANDE_USUARIO GU" +
+						" LEFT JOIN LOG_LOGRADOURO Logr ON (GU.LOG_NU_SEQUENCIAL = Logr.LOG_NU_SEQUENCIAL)" +
+						" LEFT JOIN LOG_BAIRRO Bai ON (GU.BAI_NU_SEQUENCIAL = Bai.BAI_NU_SEQUENCIAL)" +
+						" LEFT JOIN LOG_LOCALIDADE Loc ON (GU.LOC_NU_SEQUENCIAL = Loc.LOC_NU_SEQUENCIAL)" +
+					" WHERE";
+
+			if (numeroCep.Length == 5)
+				strSql += " (GU.CEP_DIG LIKE '" + numeroCep + BDCep.CARACTER_CURINGA_TODOS + "')";
+			else
+				strSql += " (GU.CEP_DIG = '" + numeroCep + "')";
+
+			strSql += " UNION " +
+					"SELECT" +
 						" 'LOCALIDADE' AS tabela_origem," +
 						" CEP_DIG AS cep," +
 						" UFE_SG AS uf," +
@@ -293,6 +315,31 @@ namespace Financeiro
 						" LEFT JOIN LOG_LOCALIDADE Loc ON (Logr.LOC_NU_SEQUENCIAL = Loc.LOC_NU_SEQUENCIAL)" +
 					" WHERE" +
 						"(Logr.UFE_SG = '" + uf + "')" +
+						" AND " +
+						"(Loc.LOC_NOSUB = '" + localidade + "'" + Global.Cte.Etc.SQL_COLLATE_CASE_ACCENT + ")";
+
+			if (endereco.Length > 0)
+			{
+				strSql += " AND (Logr.LOG_NO LIKE '" + BDCep.CARACTER_CURINGA_TODOS + endereco + BDCep.CARACTER_CURINGA_TODOS + "'" + Global.Cte.Etc.SQL_COLLATE_CASE_ACCENT + ")";
+			}
+
+			strSql += " UNION " +
+					"SELECT TOP 500" +
+						" 'GRANDE_USUARIO' AS tabela_origem," +
+						" GU.CEP_DIG AS cep," +
+						" GU.UFE_SG AS uf," +
+						" Loc.LOC_NOSUB AS localidade," +
+						" Bai.BAI_NO AS bairro_extenso," +
+						" Bai.BAI_NO_ABREV AS bairro_abreviado," +
+						" Logr.LOG_TIPO_LOGRADOURO AS logradouro_tipo," +
+						" Logr.LOG_NO AS logradouro_nome," +
+						" GU.GRU_NO AS logradouro_complemento" +
+					" FROM LOG_GRANDE_USUARIO GU" +
+						" LEFT JOIN LOG_LOGRADOURO Logr ON (GU.LOG_NU_SEQUENCIAL = Logr.LOG_NU_SEQUENCIAL)" +
+						" LEFT JOIN LOG_BAIRRO Bai ON (GU.BAI_NU_SEQUENCIAL = Bai.BAI_NU_SEQUENCIAL)" +
+						" LEFT JOIN LOG_LOCALIDADE Loc ON (GU.LOC_NU_SEQUENCIAL = Loc.LOC_NU_SEQUENCIAL)" +
+					" WHERE" +
+						"(GU.UFE_SG = '" + uf + "')" +
 						" AND " +
 						"(Loc.LOC_NOSUB = '" + localidade + "'" + Global.Cte.Etc.SQL_COLLATE_CASE_ACCENT + ")";
 

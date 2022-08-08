@@ -71,6 +71,7 @@ namespace Financeiro
 		FCobrancaMain fCobrancaMain;
         FPlanilhasPagtoMarketplaceSeleciona fPlanilhaPagtoMarketplaceSeleciona;
         public List<String> listaNomeClienteAutoComplete = new List<String>();
+		DateTime _ultValidacaoVersaoAplicativo = DateTime.MinValue;
 		#endregion
 
 		#region[ Métodos Privados ]
@@ -228,6 +229,74 @@ namespace Financeiro
 			catch (Exception ex)
 			{
 				Global.gravaLogAtividade("Falha ao reinicializar os objetos estáticos das units de acesso ao Banco de Dados!!\n" + ex.Message);
+			}
+		}
+		#endregion
+
+		#region [ validaVersaoAplicativo ]
+		private bool validaVersaoAplicativo(string IdAplicativoCtrlVersao, string versaoAplicativo, out VersaoModulo versaoModulo, out bool versaoIncorretaDetectada, out string msgErro)
+		{
+			#region [ Declarações ]
+			const string NOME_DESTA_ROTINA = "FMain.validaVersaoAplicativo()";
+			string strMsgErroAux;
+			string sVersaoPermitida;
+			string[] vListaVersaoPermitida;
+			List<string> listaVersaoPermitida = new List<string>();
+			#endregion
+
+			msgErro = "";
+			versaoIncorretaDetectada = false;
+			versaoModulo = BD.getVersaoModulo(IdAplicativoCtrlVersao, out strMsgErroAux);
+
+			try
+			{
+				#region [ Consistência dos parâmetros ]
+				if ((IdAplicativoCtrlVersao ?? "").Trim().Length == 0)
+				{
+					msgErro = "Não foi informada a identificação do aplicativo no controle de versão!";
+					return false;
+				}
+
+				if ((versaoAplicativo ?? "").Trim().Length == 0)
+				{
+					msgErro = "Não foi informado o número de versão deste aplicativo para ser validado!";
+					return false;
+				}
+				#endregion
+
+				#region [ Realiza a validação da versão ]
+				if (versaoModulo == null)
+				{
+					msgErro = "Falha ao tentar obter no banco de dados o número da versão em produção deste aplicativo!\n" + strMsgErroAux;
+					return false;
+				}
+
+				sVersaoPermitida = versaoModulo.versao.Trim();
+				sVersaoPermitida = sVersaoPermitida.Replace(';', '|');
+				vListaVersaoPermitida = sVersaoPermitida.Split('|');
+				foreach (string item in vListaVersaoPermitida)
+				{
+					if ((item ?? "").Trim().Length > 0)
+					{
+						listaVersaoPermitida.Add(item.Trim());
+					}
+				}
+
+				if (!listaVersaoPermitida.Contains(versaoAplicativo))
+				{
+					versaoIncorretaDetectada = true;
+					msgErro = "Versão inválida do aplicativo!\n\nVersão deste programa: " + versaoAplicativo + "\nVersão permitida: " + String.Join(", ", listaVersaoPermitida);
+					return false;
+				}
+				#endregion
+
+				return true;
+			}
+			catch (Exception ex)
+			{
+				msgErro = "Falha ao validar a versão do aplicativo!\n" + ex.Message;
+				Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + ex.ToString());
+				return false;
 			}
 		}
 		#endregion
@@ -1114,25 +1183,23 @@ namespace Financeiro
 			int intLeft;
 			bool blnRestauraPosicaoAnterior;
 			bool blnValidacaoUsuarioOk;
+			bool blnVersaoIncorretaDetectada;
 			String strMsg;
 			String strUltimoUsuario;
-			string sVersaoPermitida;
-			string[] vListaVersaoPermitida;
-			List<string> listaVersaoPermitida = new List<string>();
 			Color? cor;
 			DateTime dtHrServidor;
 			UsuarioDAO usuarioDAO;
-			VersaoModulo versaoModulo;
 			FLogin fLogin = new FLogin();
 			DialogResult drLogin;
+			VersaoModulo versaoModulo;
 			FinLog finLog = new FinLog();
 			#endregion
 
 			try
 			{
-				#region[ Executa rotinas de inicialização ]
 				if (!_InicializacaoOk)
 				{
+					#region[ Executa rotinas de inicialização ]
 					#region [ Registry: posição do form na execução anterior ]
 					RegistryKey regKey = Global.RegistryApp.criaRegistryKey(REGISTRY_PATH_FORM_OPTIONS);
 					strTop = (String)regKey.GetValue(Global.RegistryApp.Chaves.top);
@@ -1448,35 +1515,15 @@ namespace Financeiro
 					#endregion
 
 					#region [ Validação da versão deste programa ]
-					versaoModulo = BD.getVersaoModulo("FIN", out strMsgErro);
-					if (versaoModulo == null)
+					if (!validaVersaoAplicativo(Global.Cte.Aplicativo.ID_APLICATIVO_CTRL_VERSAO, Global.Cte.Aplicativo.VERSAO_NUMERO, out versaoModulo, out blnVersaoIncorretaDetectada, out strMsgErro))
 					{
-						strMsgErro = "Falha ao tentar obter no banco de dados o número da versão em produção deste aplicativo!!\n" + strMsgErro;
 						Global.gravaLogAtividade(strMsgErro);
 						avisoErro(strMsgErro);
 						Close();
 						return;
 					}
 
-					sVersaoPermitida = versaoModulo.versao.Trim();
-					sVersaoPermitida = sVersaoPermitida.Replace(';', '|');
-					vListaVersaoPermitida = sVersaoPermitida.Split('|');
-					foreach (string item in vListaVersaoPermitida)
-					{
-						if ((item ?? "").Trim().Length > 0)
-						{
-							listaVersaoPermitida.Add(item.Trim());
-						}
-					}
-
-					if (!listaVersaoPermitida.Contains(Global.Cte.Aplicativo.VERSAO_NUMERO))
-					{
-						strMsgErro = "Versão inválida do aplicativo!!\n\nVersão deste programa: " + Global.Cte.Aplicativo.VERSAO_NUMERO + "\nVersão permitida: " + String.Join(", ", listaVersaoPermitida);
-						Global.gravaLogAtividade(strMsgErro);
-						avisoErro(strMsgErro);
-						Close();
-						return;
-					}
+					_ultValidacaoVersaoAplicativo = DateTime.Now;
 					#endregion
 
 					#region [ Carregando dados iniciais ]
@@ -1490,6 +1537,8 @@ namespace Financeiro
 					#region [ Carrega parâmetros ]
 					Global.Parametro.FluxoCaixa_ConsiderarDataAtualizacaoAutomatica = ComumDAO.getCampoInteiroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ID_PARAMETRO_FIN_FluxoCaixa_ConsiderarDataAtualizacaoAutomatica_FlagHabilitacao);
 					Global.Parametro.BoletoAvulso_PermitirDivergenciaValoresFormaPagtoVsPedido = ComumDAO.getCampoInteiroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ID_PARAMETRO_FIN_BoletoAvulso_PermitirDivergenciaValoresFormaPagtoVsPedido_FlagHabilitacao);
+					Global.Parametro.ValidacaoVersao_VerificacaoPeriodica_FlagHabilitacao = ComumDAO.getCampoInteiroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ID_PARAMETRO_FIN_ValidacaoVersao_VerificacaoPeriodica_FlagHabilitacao);
+					Global.Parametro.ValidacaoVersao_TempoMinEntreValidacoesPeriodicasEmSeg = ComumDAO.getCampoInteiroTabelaParametro(Global.Cte.FIN.ID_T_PARAMETRO.ID_PARAMETRO_FIN_ValidacaoVersao_TempoMinEntreValidacoesPeriodicasEmSeg);
 					#endregion
 
 					#region [ Copia logotipo do Bradesco usado na geração da imagem do boleto ]
@@ -1540,8 +1589,8 @@ namespace Financeiro
 					#endregion
 
 					_InicializacaoOk = true;
+					#endregion
 				}
-				#endregion
 			}
 			catch (Exception ex)
 			{
@@ -1555,6 +1604,74 @@ namespace Financeiro
 				// Se não inicializou corretamente, assegura-se de que o programa será terminado
 				if (!_InicializacaoOk) Application.Exit();
 			}
+		}
+		#endregion
+
+		#region [ FMain_Activated ]
+		private void FMain_Activated(object sender, EventArgs e)
+		{
+			#region [ Declarações ]
+			bool blnVersaoIncorretaDetectada;
+			String strMsgErro = "";
+			VersaoModulo versaoModulo;
+			#endregion
+
+			#region [ A cada retorno ao painel principal, valida a versão do aplicativo ]
+			if (_InicializacaoOk && (Global.Parametro.ValidacaoVersao_VerificacaoPeriodica_FlagHabilitacao == 1))
+			{
+				if (Global.calculaTimeSpanSegundos(DateTime.Now - _ultValidacaoVersaoAplicativo) > Global.Parametro.ValidacaoVersao_TempoMinEntreValidacoesPeriodicasEmSeg)
+				{
+					_ultValidacaoVersaoAplicativo = DateTime.Now;
+					if (!validaVersaoAplicativo(Global.Cte.Aplicativo.ID_APLICATIVO_CTRL_VERSAO, Global.Cte.Aplicativo.VERSAO_NUMERO, out versaoModulo, out blnVersaoIncorretaDetectada, out strMsgErro))
+					{
+						Global.gravaLogAtividade(strMsgErro);
+						if (blnVersaoIncorretaDetectada)
+						{
+							// Encerra o programa somente se foi detectada que a versão está incorreta
+							// Isso evita que o programa seja fechado em caso de instabilidade de rede ao tentar obter o número da versão atual no banco de dados,
+							// já que esta verificação é feita com frequência.
+							avisoErro(strMsgErro);
+							Close();
+							return;
+						}
+					}
+				}
+			}
+			#endregion
+		}
+		#endregion
+
+		#region [ FMain_Deactivate ]
+		private void FMain_Deactivate(object sender, EventArgs e)
+		{
+			#region [ Declarações ]
+			bool blnVersaoIncorretaDetectada;
+			String strMsgErro = "";
+			VersaoModulo versaoModulo;
+			#endregion
+
+			#region [ A cada retorno ao painel principal, valida a versão do aplicativo ]
+			if (_InicializacaoOk && (Global.Parametro.ValidacaoVersao_VerificacaoPeriodica_FlagHabilitacao == 1))
+			{
+				if (Global.calculaTimeSpanSegundos(DateTime.Now - _ultValidacaoVersaoAplicativo) > Global.Parametro.ValidacaoVersao_TempoMinEntreValidacoesPeriodicasEmSeg)
+				{
+					_ultValidacaoVersaoAplicativo = DateTime.Now;
+					if (!validaVersaoAplicativo(Global.Cte.Aplicativo.ID_APLICATIVO_CTRL_VERSAO, Global.Cte.Aplicativo.VERSAO_NUMERO, out versaoModulo, out blnVersaoIncorretaDetectada, out strMsgErro))
+					{
+						Global.gravaLogAtividade(strMsgErro);
+						if (blnVersaoIncorretaDetectada)
+						{
+							// Encerra o programa somente se foi detectada que a versão está incorreta
+							// Isso evita que o programa seja fechado em caso de instabilidade de rede ao tentar obter o número da versão atual no banco de dados,
+							// já que esta verificação é feita com frequência.
+							avisoErro(strMsgErro);
+							Close();
+							return;
+						}
+					}
+				}
+			}
+			#endregion
 		}
 		#endregion
 

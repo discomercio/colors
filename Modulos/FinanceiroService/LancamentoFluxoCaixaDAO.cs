@@ -102,7 +102,7 @@ namespace FinanceiroService
 			cmLancamentoInsertDevidoBoletoEC.Parameters.Add("@natureza", SqlDbType.Char, 1);
 			cmLancamentoInsertDevidoBoletoEC.Parameters.Add("@dt_competencia", SqlDbType.VarChar, 10);
 			cmLancamentoInsertDevidoBoletoEC.Parameters.Add("@valor", SqlDbType.Money);
-			cmLancamentoInsertDevidoBoletoEC.Parameters.Add("@descricao", SqlDbType.VarChar, 40);
+			cmLancamentoInsertDevidoBoletoEC.Parameters.Add("@descricao", SqlDbType.VarChar, Global.Cte.FIN.TamanhoCampo.FLUXO_CAIXA_DESCRICAO);
 			cmLancamentoInsertDevidoBoletoEC.Parameters.Add("@ctrl_pagto_id_parcela", SqlDbType.Int);
 			cmLancamentoInsertDevidoBoletoEC.Parameters.Add("@ctrl_pagto_modulo", SqlDbType.TinyInt);
 			cmLancamentoInsertDevidoBoletoEC.Parameters.Add("@id_cliente", SqlDbType.VarChar, 12);

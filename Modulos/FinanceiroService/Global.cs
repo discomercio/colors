@@ -29,8 +29,8 @@ namespace FinanceiroService
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "Financeiro Service";
 				public static readonly string ID_SISTEMA_EVENTLOG = GetConfigurationValue("ServiceName");
-				public const string VERSAO_NUMERO = "1.42";
-				public const string VERSAO_DATA = " 04.MAR.2022";
+				public const string VERSAO_NUMERO = "1.43";
+				public const string VERSAO_DATA = " 07.AGO.2022";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Serviço do Windows para execução automática de rotinas financeiras";
@@ -332,8 +332,10 @@ namespace FinanceiroService
 			 *      Ajustes na rotina de reconexão ao banco de dados para incluir um intervalo mínimo entre
 			 *      as tentativas.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.43 - XX.XX.20XX - por XXX
-			 *      
+			 * v 1.43 - 07.08.2022 - por HHO
+			 *      Aumento do tamanho do campo descrição do lançamento de fluxo de caixa.
+			 *      Limpeza automática dos dados de relatórios não processados na tabela
+			 *        t_COMISSAO_INDICADOR_NFSe_N1
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.44 - XX.XX.20XX - por XXX
 			 *      
@@ -548,7 +550,7 @@ namespace FinanceiroService
 					public const int PLANO_CONTAS_EMPRESA = 1;
 					public const int PLANO_CONTAS_GRUPO = 2;
 					public const int PLANO_CONTAS_CONTA = 4;
-					public const int FLUXO_CAIXA_DESCRICAO = 40;
+					public const int FLUXO_CAIXA_DESCRICAO = 80;
 					public const int FIN_LOG_DESCRICAO = 7500;  // Para prevenir erro: "exceeds the maximum number of bytes per row (8060)"
 					public const int COMENTARIO_OCORRENCIA_TRATADA = 240;
 				}
@@ -1648,16 +1650,17 @@ namespace FinanceiroService
 					public const int T_SESSAO_ABANDONADA__CORTE_EM_DIAS = 6 * 31;
 					public const int T_SESSAO_HISTORICO__CORTE_EM_DIAS = 6 * 31;
 					public const int T_SESSAO_RESTAURADA__CORTE_EM_DIAS = 6 * 31;
-					public const int T_ESTOQUE_LOG__CORTE_EM_DIAS = 5 * 366;
+					public const int T_ESTOQUE_LOG__CORTE_EM_DIAS = 10 * 366;
 					public const int T_ESTOQUE_SALDO_DIARIO__CORTE_EM_DIAS = T_ESTOQUE_LOG__CORTE_EM_DIAS + 1;
-					public const int T_ESTOQUE_VENDA_SALDO_DIARIO__CORTE_EM_DIAS = 5 * 366;
+					public const int T_ESTOQUE_VENDA_SALDO_DIARIO__CORTE_EM_DIAS = 10 * 366;
 					public const int T_FINSVC_LOG__CORTE_EM_DIAS = 12 * 31;
 					public const int T_EMAILSNDSVC_LOG__CORTE_EM_DIAS = 12 * 31;
 					public const int T_EMAILSNDSVC_LOG_ERRO__CORTE_EM_DIAS = 12 * 31;
 					public const int T_MAGENTO_API_PEDIDO_XML__INFO_UTILIZADA__CORTE_EM_DIAS = 36 * 31;
 					public const int T_MAGENTO_API_PEDIDO_XML__INFO_DESCARTADA__CORTE_EM_DIAS = 1 * 31;
                     public const int T_CTRL_RELATORIO_USUARIO_X_PEDIDO__CORTE_EM_DIAS = 1 * 31;
-                }
+					public const int T_COMISSAO_INDICADOR_NFSe_N1__INFO_DESCARTADA__CORTE_EM_DIAS = 6 * 31;
+				}
 				#endregion
 			}
 			#endregion

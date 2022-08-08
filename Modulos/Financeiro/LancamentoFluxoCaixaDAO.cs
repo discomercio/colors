@@ -118,7 +118,7 @@ namespace Financeiro
 			cmLancamentoInsert.Parameters.Add("@natureza", SqlDbType.Char, 1);
 			cmLancamentoInsert.Parameters.Add("@dt_competencia", SqlDbType.VarChar, 10);
 			cmLancamentoInsert.Parameters.Add("@valor", SqlDbType.Money);
-			cmLancamentoInsert.Parameters.Add("@descricao", SqlDbType.VarChar, 40);
+			cmLancamentoInsert.Parameters.Add("@descricao", SqlDbType.VarChar, Global.Cte.FIN.TamanhoCampo.FLUXO_CAIXA_DESCRICAO);
 			cmLancamentoInsert.Parameters.Add("@cnpj_cpf", SqlDbType.VarChar, 14);
 			cmLancamentoInsert.Parameters.Add("@numero_NF", SqlDbType.Int);
 			cmLancamentoInsert.Parameters.Add("@tipo_cadastro", SqlDbType.Char, 1);
@@ -191,7 +191,7 @@ namespace Financeiro
 			cmLancamentoInsertDevidoBoletoOcorrencia02.Parameters.Add("@natureza", SqlDbType.Char, 1);
 			cmLancamentoInsertDevidoBoletoOcorrencia02.Parameters.Add("@dt_competencia", SqlDbType.VarChar, 10);
 			cmLancamentoInsertDevidoBoletoOcorrencia02.Parameters.Add("@valor", SqlDbType.Money);
-			cmLancamentoInsertDevidoBoletoOcorrencia02.Parameters.Add("@descricao", SqlDbType.VarChar, 40);
+			cmLancamentoInsertDevidoBoletoOcorrencia02.Parameters.Add("@descricao", SqlDbType.VarChar, Global.Cte.FIN.TamanhoCampo.FLUXO_CAIXA_DESCRICAO);
 			cmLancamentoInsertDevidoBoletoOcorrencia02.Parameters.Add("@ctrl_pagto_id_parcela", SqlDbType.Int);
 			cmLancamentoInsertDevidoBoletoOcorrencia02.Parameters.Add("@ctrl_pagto_modulo", SqlDbType.TinyInt);
 			cmLancamentoInsertDevidoBoletoOcorrencia02.Parameters.Add("@id_boleto_cedente", SqlDbType.SmallInt);
@@ -239,7 +239,7 @@ namespace Financeiro
 			cmLancamentoUpdate.Parameters.Add("@dt_competencia", SqlDbType.VarChar, 10);
             cmLancamentoUpdate.Parameters.Add("@dt_mes_competencia", SqlDbType.VarChar, 10);
 			cmLancamentoUpdate.Parameters.Add("@valor", SqlDbType.Money);
-			cmLancamentoUpdate.Parameters.Add("@descricao", SqlDbType.VarChar, 40);
+			cmLancamentoUpdate.Parameters.Add("@descricao", SqlDbType.VarChar, Global.Cte.FIN.TamanhoCampo.FLUXO_CAIXA_DESCRICAO);
 			cmLancamentoUpdate.Parameters.Add("@cnpj_cpf", SqlDbType.VarChar, 14);
 			cmLancamentoUpdate.Parameters.Add("@numero_NF", SqlDbType.Int);
 			cmLancamentoUpdate.Parameters.Add("@ctrl_pagto_status", SqlDbType.TinyInt);
@@ -265,7 +265,7 @@ namespace Financeiro
 			cmLancamentoUpdateDevidoBoletoOcorrencia02.Parameters.Add("@st_sem_efeito", SqlDbType.TinyInt);
 			cmLancamentoUpdateDevidoBoletoOcorrencia02.Parameters.Add("@dt_competencia", SqlDbType.VarChar, 10);
 			cmLancamentoUpdateDevidoBoletoOcorrencia02.Parameters.Add("@valor", SqlDbType.Money);
-			cmLancamentoUpdateDevidoBoletoOcorrencia02.Parameters.Add("@descricao", SqlDbType.VarChar, 40);
+			cmLancamentoUpdateDevidoBoletoOcorrencia02.Parameters.Add("@descricao", SqlDbType.VarChar, Global.Cte.FIN.TamanhoCampo.FLUXO_CAIXA_DESCRICAO);
 			cmLancamentoUpdateDevidoBoletoOcorrencia02.Parameters.Add("@ctrl_pagto_status", SqlDbType.TinyInt);
 			cmLancamentoUpdateDevidoBoletoOcorrencia02.Parameters.Add("@usuario_ult_atualizacao", SqlDbType.VarChar, 10);
 			cmLancamentoUpdateDevidoBoletoOcorrencia02.Prepare();
@@ -500,7 +500,7 @@ namespace Financeiro
 			cmLancamentoInsertDevidoBoletoOcorrencia17.Parameters.Add("@natureza", SqlDbType.Char, 1);
 			cmLancamentoInsertDevidoBoletoOcorrencia17.Parameters.Add("@dt_competencia", SqlDbType.VarChar, 10);
 			cmLancamentoInsertDevidoBoletoOcorrencia17.Parameters.Add("@valor", SqlDbType.Money);
-			cmLancamentoInsertDevidoBoletoOcorrencia17.Parameters.Add("@descricao", SqlDbType.VarChar, 40);
+			cmLancamentoInsertDevidoBoletoOcorrencia17.Parameters.Add("@descricao", SqlDbType.VarChar, Global.Cte.FIN.TamanhoCampo.FLUXO_CAIXA_DESCRICAO);
 			cmLancamentoInsertDevidoBoletoOcorrencia17.Parameters.Add("@ctrl_pagto_id_parcela", SqlDbType.Int);
 			cmLancamentoInsertDevidoBoletoOcorrencia17.Parameters.Add("@ctrl_pagto_modulo", SqlDbType.TinyInt);
 			cmLancamentoInsertDevidoBoletoOcorrencia17.Parameters.Add("@ctrl_pagto_status", SqlDbType.TinyInt);
@@ -1177,7 +1177,7 @@ namespace Financeiro
 				{
 					if (strClausulaSet.Length > 0) strClausulaSet += ", ";
 					strClausulaSet += "descricao = @descricao";
-					cmUpdate.Parameters.Add("@descricao", SqlDbType.VarChar, 40);
+					cmUpdate.Parameters.Add("@descricao", SqlDbType.VarChar, Global.Cte.FIN.TamanhoCampo.FLUXO_CAIXA_DESCRICAO);
 					cmUpdate.Parameters["@descricao"].Value = strDescricaoLancamento;
 				}
 				#endregion
@@ -1435,7 +1435,7 @@ namespace Financeiro
 		/// Valor da parcela.
 		/// </param>
 		/// <param name="descricao">
-		/// Descrição da parcela (40 posições).
+		/// Descrição da parcela.
 		/// </param>
 		/// <param name="id_fluxo_caixa">
 		/// Retorna o identificador do registro do lançamento do fluxo de caixa criado/atualizado.
@@ -2828,7 +2828,7 @@ namespace Financeiro
 		/// Valor do lançamento no fluxo de caixa.
 		/// </param>
 		/// <param name="descricao">
-		/// Descrição da parcela (40 posições).
+		/// Descrição da parcela.
 		/// </param>
 		/// <param name="dataOcorrenciaBanco">
 		/// Data da ocorrência no banco.

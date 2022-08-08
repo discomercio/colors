@@ -388,6 +388,10 @@ namespace Financeiro
 					if (!comboPlanoContasContaPosicionaDefault()) cbPlanoContasConta.SelectedIndex = -1;
 				#endregion
 
+				#region [ Campo descrição ]
+				txtDescricao.MaxLength = Global.Cte.FIN.TamanhoCampo.FLUXO_CAIXA_DESCRICAO;
+				#endregion
+
 				blnSucesso = true;
 			}
 			catch (Exception ex)

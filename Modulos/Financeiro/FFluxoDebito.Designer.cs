@@ -57,7 +57,7 @@
 			// 
 			// pnBotoes
 			// 
-			this.pnBotoes.Size = new System.Drawing.Size(675, 55);
+			this.pnBotoes.Size = new System.Drawing.Size(875, 55);
 			// 
 			// pnCampos
 			// 
@@ -83,7 +83,7 @@
 			this.pnCampos.Controls.Add(this.cbContaCorrente);
 			this.pnCampos.Controls.Add(this.lblContaCorrente);
 			this.pnCampos.Controls.Add(this.lblTitulo);
-			this.pnCampos.Size = new System.Drawing.Size(675, 339);
+			this.pnCampos.Size = new System.Drawing.Size(875, 339);
 			// 
 			// btnDummy
 			// 
@@ -91,12 +91,12 @@
 			// 
 			// btnFechar
 			// 
-			this.btnFechar.Location = new System.Drawing.Point(626, 4);
+			this.btnFechar.Location = new System.Drawing.Point(826, 4);
 			this.btnFechar.TabIndex = 1;
 			// 
 			// btnSobre
 			// 
-			this.btnSobre.Location = new System.Drawing.Point(581, 4);
+			this.btnSobre.Location = new System.Drawing.Point(781, 4);
 			this.btnSobre.TabIndex = 0;
 			// 
 			// lblTitulo
@@ -108,7 +108,7 @@
 			this.lblTitulo.Image = ((System.Drawing.Image)(resources.GetObject("lblTitulo.Image")));
 			this.lblTitulo.Location = new System.Drawing.Point(0, 0);
 			this.lblTitulo.Name = "lblTitulo";
-			this.lblTitulo.Size = new System.Drawing.Size(671, 40);
+			this.lblTitulo.Size = new System.Drawing.Size(871, 40);
 			this.lblTitulo.TabIndex = 0;
 			this.lblTitulo.Text = "Lançamento de Débito";
 			this.lblTitulo.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -132,7 +132,7 @@
 			this.cbContaCorrente.Location = new System.Drawing.Point(132, 50);
 			this.cbContaCorrente.MaxDropDownItems = 12;
 			this.cbContaCorrente.Name = "cbContaCorrente";
-			this.cbContaCorrente.Size = new System.Drawing.Size(518, 24);
+			this.cbContaCorrente.Size = new System.Drawing.Size(718, 24);
 			this.cbContaCorrente.TabIndex = 0;
 			this.cbContaCorrente.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cbContaCorrente_KeyDown);
 			// 
@@ -155,7 +155,7 @@
 			this.cbPlanoContasEmpresa.Location = new System.Drawing.Point(132, 86);
 			this.cbPlanoContasEmpresa.MaxDropDownItems = 12;
 			this.cbPlanoContasEmpresa.Name = "cbPlanoContasEmpresa";
-			this.cbPlanoContasEmpresa.Size = new System.Drawing.Size(518, 24);
+			this.cbPlanoContasEmpresa.Size = new System.Drawing.Size(718, 24);
 			this.cbPlanoContasEmpresa.TabIndex = 1;
 			this.cbPlanoContasEmpresa.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cbPlanoContasEmpresa_KeyDown);
 			// 
@@ -178,7 +178,7 @@
 			this.cbPlanoContasConta.Location = new System.Drawing.Point(132, 122);
 			this.cbPlanoContasConta.MaxDropDownItems = 12;
 			this.cbPlanoContasConta.Name = "cbPlanoContasConta";
-			this.cbPlanoContasConta.Size = new System.Drawing.Size(518, 24);
+			this.cbPlanoContasConta.Size = new System.Drawing.Size(718, 24);
 			this.cbPlanoContasConta.TabIndex = 2;
 			this.cbPlanoContasConta.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cbPlanoContasConta_KeyDown);
 			// 
@@ -213,9 +213,9 @@
 			// 
 			this.txtDescricao.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.txtDescricao.Location = new System.Drawing.Point(132, 231);
-			this.txtDescricao.MaxLength = 40;
+			this.txtDescricao.MaxLength = 80;
 			this.txtDescricao.Name = "txtDescricao";
-			this.txtDescricao.Size = new System.Drawing.Size(518, 23);
+			this.txtDescricao.Size = new System.Drawing.Size(718, 23);
 			this.txtDescricao.TabIndex = 8;
 			this.txtDescricao.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtDescricao_KeyDown);
 			this.txtDescricao.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtDescricao_KeyPress);
@@ -268,7 +268,7 @@
 			this.btnLimpar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
 			this.btnLimpar.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.btnLimpar.Image = ((System.Drawing.Image)(resources.GetObject("btnLimpar.Image")));
-			this.btnLimpar.Location = new System.Drawing.Point(521, 278);
+			this.btnLimpar.Location = new System.Drawing.Point(721, 278);
 			this.btnLimpar.Name = "btnLimpar";
 			this.btnLimpar.Size = new System.Drawing.Size(129, 40);
 			this.btnLimpar.TabIndex = 10;
@@ -279,7 +279,7 @@
 			// lblCnpjCpf
 			// 
 			this.lblCnpjCpf.AutoSize = true;
-			this.lblCnpjCpf.Location = new System.Drawing.Point(267, 196);
+			this.lblCnpjCpf.Location = new System.Drawing.Point(367, 196);
 			this.lblCnpjCpf.Name = "lblCnpjCpf";
 			this.lblCnpjCpf.Size = new System.Drawing.Size(59, 13);
 			this.lblCnpjCpf.TabIndex = 12;
@@ -288,7 +288,7 @@
 			// txtCnpjCpf
 			// 
 			this.txtCnpjCpf.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.txtCnpjCpf.Location = new System.Drawing.Point(332, 191);
+			this.txtCnpjCpf.Location = new System.Drawing.Point(432, 191);
 			this.txtCnpjCpf.MaxLength = 18;
 			this.txtCnpjCpf.Name = "txtCnpjCpf";
 			this.txtCnpjCpf.Size = new System.Drawing.Size(145, 23);
@@ -315,7 +315,7 @@
 			// lblComp2
 			// 
 			this.lblComp2.AutoSize = true;
-			this.lblComp2.Location = new System.Drawing.Point(286, 163);
+			this.lblComp2.Location = new System.Drawing.Point(386, 163);
 			this.lblComp2.Name = "lblComp2";
 			this.lblComp2.Size = new System.Drawing.Size(40, 13);
 			this.lblComp2.TabIndex = 14;
@@ -324,7 +324,7 @@
 			// txtComp2
 			// 
 			this.txtComp2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.txtComp2.Location = new System.Drawing.Point(332, 158);
+			this.txtComp2.Location = new System.Drawing.Point(432, 158);
 			this.txtComp2.MaxLength = 7;
 			this.txtComp2.Name = "txtComp2";
 			this.txtComp2.Size = new System.Drawing.Size(91, 23);
@@ -338,7 +338,7 @@
 			// txtNF
 			// 
 			this.txtNF.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.txtNF.Location = new System.Drawing.Point(557, 191);
+			this.txtNF.Location = new System.Drawing.Point(757, 191);
 			this.txtNF.MaxLength = 18;
 			this.txtNF.Name = "txtNF";
 			this.txtNF.Size = new System.Drawing.Size(93, 23);
@@ -352,7 +352,7 @@
 			// lblNF
 			// 
 			this.lblNF.AutoSize = true;
-			this.lblNF.Location = new System.Drawing.Point(530, 196);
+			this.lblNF.Location = new System.Drawing.Point(730, 196);
 			this.lblNF.Name = "lblNF";
 			this.lblNF.Size = new System.Drawing.Size(21, 13);
 			this.lblNF.TabIndex = 16;
@@ -361,7 +361,7 @@
 			// FFluxoDebito
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.ClientSize = new System.Drawing.Size(675, 436);
+			this.ClientSize = new System.Drawing.Size(875, 436);
 			this.Name = "FFluxoDebito";
 			this.Text = "Artven - Financeiro  -  1.00 - xx.JUL.2009";
 			this.Load += new System.EventHandler(this.FFluxoDebito_Load);
