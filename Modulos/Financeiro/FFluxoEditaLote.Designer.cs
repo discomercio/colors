@@ -29,17 +29,17 @@
 		private void InitializeComponent()
 		{
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FFluxoEditaLote));
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle23 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle24 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle25 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle26 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle27 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle28 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle29 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle30 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle31 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle32 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle33 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
 			this.lblTitulo = new System.Windows.Forms.Label();
 			this.lblDataCompetencia = new System.Windows.Forms.Label();
 			this.txtDataCompetencia = new System.Windows.Forms.TextBox();
@@ -399,14 +399,14 @@
 			this.grdLote.AllowUserToDeleteRows = false;
 			this.grdLote.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
 			this.grdLote.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			dataGridViewCellStyle23.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-			dataGridViewCellStyle23.BackColor = System.Drawing.SystemColors.Control;
-			dataGridViewCellStyle23.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			dataGridViewCellStyle23.ForeColor = System.Drawing.SystemColors.WindowText;
-			dataGridViewCellStyle23.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-			dataGridViewCellStyle23.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-			dataGridViewCellStyle23.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-			this.grdLote.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle23;
+			dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+			dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+			dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+			dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+			dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+			dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+			this.grdLote.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
 			this.grdLote.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 			this.grdLote.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.colNatureza,
@@ -433,9 +433,9 @@
 			// colNatureza
 			// 
 			this.colNatureza.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-			dataGridViewCellStyle24.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-			dataGridViewCellStyle24.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.colNatureza.DefaultCellStyle = dataGridViewCellStyle24;
+			dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+			dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.colNatureza.DefaultCellStyle = dataGridViewCellStyle2;
 			this.colNatureza.Frozen = true;
 			this.colNatureza.HeaderText = "C/D";
 			this.colNatureza.MinimumWidth = 40;
@@ -448,8 +448,8 @@
 			// colStSemEfeito
 			// 
 			this.colStSemEfeito.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-			dataGridViewCellStyle25.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-			this.colStSemEfeito.DefaultCellStyle = dataGridViewCellStyle25;
+			dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+			this.colStSemEfeito.DefaultCellStyle = dataGridViewCellStyle3;
 			this.colStSemEfeito.Frozen = true;
 			this.colStSemEfeito.HeaderText = "Efeito";
 			this.colStSemEfeito.MinimumWidth = 65;
@@ -462,8 +462,8 @@
 			// colConfirmacaoPendente
 			// 
 			this.colConfirmacaoPendente.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-			dataGridViewCellStyle26.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-			this.colConfirmacaoPendente.DefaultCellStyle = dataGridViewCellStyle26;
+			dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+			this.colConfirmacaoPendente.DefaultCellStyle = dataGridViewCellStyle4;
 			this.colConfirmacaoPendente.Frozen = true;
 			this.colConfirmacaoPendente.HeaderText = "Confirmação";
 			this.colConfirmacaoPendente.MinimumWidth = 85;
@@ -476,9 +476,9 @@
 			// colContaCorrente
 			// 
 			this.colContaCorrente.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-			dataGridViewCellStyle27.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-			dataGridViewCellStyle27.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-			this.colContaCorrente.DefaultCellStyle = dataGridViewCellStyle27;
+			dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+			dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+			this.colContaCorrente.DefaultCellStyle = dataGridViewCellStyle5;
 			this.colContaCorrente.Frozen = true;
 			this.colContaCorrente.HeaderText = "C/C";
 			this.colContaCorrente.MinimumWidth = 70;
@@ -491,24 +491,24 @@
 			// colPlanoContasConta
 			// 
 			this.colPlanoContasConta.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-			dataGridViewCellStyle28.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-			dataGridViewCellStyle28.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			dataGridViewCellStyle28.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-			this.colPlanoContasConta.DefaultCellStyle = dataGridViewCellStyle28;
+			dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+			dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+			this.colPlanoContasConta.DefaultCellStyle = dataGridViewCellStyle6;
 			this.colPlanoContasConta.Frozen = true;
 			this.colPlanoContasConta.HeaderText = "Plano de Conta";
-			this.colPlanoContasConta.MinimumWidth = 180;
+			this.colPlanoContasConta.MinimumWidth = 160;
 			this.colPlanoContasConta.Name = "colPlanoContasConta";
 			this.colPlanoContasConta.ReadOnly = true;
 			this.colPlanoContasConta.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-			this.colPlanoContasConta.Width = 180;
+			this.colPlanoContasConta.Width = 160;
 			// 
 			// colDataCompetencia
 			// 
 			this.colDataCompetencia.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-			dataGridViewCellStyle29.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-			dataGridViewCellStyle29.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.colDataCompetencia.DefaultCellStyle = dataGridViewCellStyle29;
+			dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+			dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.colDataCompetencia.DefaultCellStyle = dataGridViewCellStyle7;
 			this.colDataCompetencia.Frozen = true;
 			this.colDataCompetencia.HeaderText = "Competência";
 			this.colDataCompetencia.MaxInputLength = 10;
@@ -521,9 +521,9 @@
 			// colComp2
 			// 
 			this.colComp2.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-			dataGridViewCellStyle30.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-			dataGridViewCellStyle30.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.colComp2.DefaultCellStyle = dataGridViewCellStyle30;
+			dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+			dataGridViewCellStyle8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.colComp2.DefaultCellStyle = dataGridViewCellStyle8;
 			this.colComp2.Frozen = true;
 			this.colComp2.HeaderText = "Comp2";
 			this.colComp2.MaxInputLength = 7;
@@ -537,9 +537,9 @@
 			// colValorLancto
 			// 
 			this.colValorLancto.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-			dataGridViewCellStyle31.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-			dataGridViewCellStyle31.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.colValorLancto.DefaultCellStyle = dataGridViewCellStyle31;
+			dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+			dataGridViewCellStyle9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.colValorLancto.DefaultCellStyle = dataGridViewCellStyle9;
 			this.colValorLancto.Frozen = true;
 			this.colValorLancto.HeaderText = "Valor";
 			this.colValorLancto.MaxInputLength = 20;
@@ -552,9 +552,9 @@
 			// colCnpjCpf
 			// 
 			this.colCnpjCpf.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-			dataGridViewCellStyle32.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-			dataGridViewCellStyle32.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.colCnpjCpf.DefaultCellStyle = dataGridViewCellStyle32;
+			dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+			dataGridViewCellStyle10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.colCnpjCpf.DefaultCellStyle = dataGridViewCellStyle10;
 			this.colCnpjCpf.Frozen = true;
 			this.colCnpjCpf.HeaderText = "CNPJ/CPF";
 			this.colCnpjCpf.MaxInputLength = 18;
@@ -568,16 +568,17 @@
 			// colDescricao
 			// 
 			this.colDescricao.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-			dataGridViewCellStyle33.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-			dataGridViewCellStyle33.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			dataGridViewCellStyle33.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-			this.colDescricao.DefaultCellStyle = dataGridViewCellStyle33;
+			dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+			dataGridViewCellStyle11.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			dataGridViewCellStyle11.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+			this.colDescricao.DefaultCellStyle = dataGridViewCellStyle11;
 			this.colDescricao.Frozen = true;
 			this.colDescricao.HeaderText = "Descrição";
-			this.colDescricao.MaxInputLength = 40;
+			this.colDescricao.MaxInputLength = 80;
+			this.colDescricao.MinimumWidth = 160;
 			this.colDescricao.Name = "colDescricao";
 			this.colDescricao.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-			this.colDescricao.Width = 199;
+			this.colDescricao.Width = 160;
 			// 
 			// colIdLancto
 			// 
@@ -630,22 +631,22 @@
 		private DataGridViewEditavel grdLote;
         private System.Windows.Forms.TextBox txtComp2;
         private System.Windows.Forms.Label lblTitComp2;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colNatureza;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colStSemEfeito;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colConfirmacaoPendente;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colContaCorrente;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colPlanoContasConta;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colDataCompetencia;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colComp2;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colValorLancto;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colCnpjCpf;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colDescricao;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colIdLancto;
 		private System.Windows.Forms.ComboBox cbContaCorrente;
 		private System.Windows.Forms.Label lblContaCorrente;
 		private System.Windows.Forms.ComboBox cbPlanoContasEmpresa;
 		private System.Windows.Forms.Label lblPlanoContasEmpresa;
 		private System.Windows.Forms.ComboBox cbPlanoContasConta;
 		private System.Windows.Forms.Label lblPlanoContasConta;
+		private System.Windows.Forms.DataGridViewTextBoxColumn colNatureza;
+		private System.Windows.Forms.DataGridViewTextBoxColumn colStSemEfeito;
+		private System.Windows.Forms.DataGridViewTextBoxColumn colConfirmacaoPendente;
+		private System.Windows.Forms.DataGridViewTextBoxColumn colContaCorrente;
+		private System.Windows.Forms.DataGridViewTextBoxColumn colPlanoContasConta;
+		private System.Windows.Forms.DataGridViewTextBoxColumn colDataCompetencia;
+		private System.Windows.Forms.DataGridViewTextBoxColumn colComp2;
+		private System.Windows.Forms.DataGridViewTextBoxColumn colValorLancto;
+		private System.Windows.Forms.DataGridViewTextBoxColumn colCnpjCpf;
+		private System.Windows.Forms.DataGridViewTextBoxColumn colDescricao;
+		private System.Windows.Forms.DataGridViewTextBoxColumn colIdLancto;
 	}
 }

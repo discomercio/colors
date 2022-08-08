@@ -29,15 +29,15 @@
 		private void InitializeComponent()
 		{
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FFluxoDebitoLote));
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle28 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle29 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle30 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle31 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle32 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle33 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle34 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle35 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle36 = new System.Windows.Forms.DataGridViewCellStyle();
 			this.lblTitulo = new System.Windows.Forms.Label();
 			this.lblContaCorrente = new System.Windows.Forms.Label();
 			this.cbContaCorrente = new System.Windows.Forms.ComboBox();
@@ -129,7 +129,7 @@
 			// lblContaCorrente
 			// 
 			this.lblContaCorrente.AutoSize = true;
-			this.lblContaCorrente.Location = new System.Drawing.Point(69, 18);
+			this.lblContaCorrente.Location = new System.Drawing.Point(49, 18);
 			this.lblContaCorrente.Name = "lblContaCorrente";
 			this.lblContaCorrente.Size = new System.Drawing.Size(78, 13);
 			this.lblContaCorrente.TabIndex = 1;
@@ -142,17 +142,17 @@
 			this.cbContaCorrente.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cbContaCorrente.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.cbContaCorrente.FormattingEnabled = true;
-			this.cbContaCorrente.Location = new System.Drawing.Point(153, 13);
+			this.cbContaCorrente.Location = new System.Drawing.Point(133, 13);
 			this.cbContaCorrente.MaxDropDownItems = 12;
 			this.cbContaCorrente.Name = "cbContaCorrente";
-			this.cbContaCorrente.Size = new System.Drawing.Size(518, 24);
+			this.cbContaCorrente.Size = new System.Drawing.Size(668, 24);
 			this.cbContaCorrente.TabIndex = 0;
 			this.cbContaCorrente.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cbContaCorrente_KeyDown);
 			// 
 			// lblPlanoContasEmpresa
 			// 
 			this.lblPlanoContasEmpresa.AutoSize = true;
-			this.lblPlanoContasEmpresa.Location = new System.Drawing.Point(99, 48);
+			this.lblPlanoContasEmpresa.Location = new System.Drawing.Point(79, 48);
 			this.lblPlanoContasEmpresa.Name = "lblPlanoContasEmpresa";
 			this.lblPlanoContasEmpresa.Size = new System.Drawing.Size(48, 13);
 			this.lblPlanoContasEmpresa.TabIndex = 3;
@@ -165,17 +165,17 @@
 			this.cbPlanoContasEmpresa.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cbPlanoContasEmpresa.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.cbPlanoContasEmpresa.FormattingEnabled = true;
-			this.cbPlanoContasEmpresa.Location = new System.Drawing.Point(153, 43);
+			this.cbPlanoContasEmpresa.Location = new System.Drawing.Point(133, 43);
 			this.cbPlanoContasEmpresa.MaxDropDownItems = 12;
 			this.cbPlanoContasEmpresa.Name = "cbPlanoContasEmpresa";
-			this.cbPlanoContasEmpresa.Size = new System.Drawing.Size(518, 24);
+			this.cbPlanoContasEmpresa.Size = new System.Drawing.Size(668, 24);
 			this.cbPlanoContasEmpresa.TabIndex = 1;
 			this.cbPlanoContasEmpresa.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cbPlanoContasEmpresa_KeyDown);
 			// 
 			// lblPlanoContasConta
 			// 
 			this.lblPlanoContasConta.AutoSize = true;
-			this.lblPlanoContasConta.Location = new System.Drawing.Point(67, 78);
+			this.lblPlanoContasConta.Location = new System.Drawing.Point(47, 78);
 			this.lblPlanoContasConta.Name = "lblPlanoContasConta";
 			this.lblPlanoContasConta.Size = new System.Drawing.Size(80, 13);
 			this.lblPlanoContasConta.TabIndex = 5;
@@ -188,17 +188,17 @@
 			this.cbPlanoContasConta.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cbPlanoContasConta.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.cbPlanoContasConta.FormattingEnabled = true;
-			this.cbPlanoContasConta.Location = new System.Drawing.Point(153, 73);
+			this.cbPlanoContasConta.Location = new System.Drawing.Point(133, 73);
 			this.cbPlanoContasConta.MaxDropDownItems = 12;
 			this.cbPlanoContasConta.Name = "cbPlanoContasConta";
-			this.cbPlanoContasConta.Size = new System.Drawing.Size(518, 24);
+			this.cbPlanoContasConta.Size = new System.Drawing.Size(668, 24);
 			this.cbPlanoContasConta.TabIndex = 2;
 			this.cbPlanoContasConta.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cbPlanoContasConta_KeyDown);
 			// 
 			// lblDataCompetencia
 			// 
 			this.lblDataCompetencia.AutoSize = true;
-			this.lblDataCompetencia.Location = new System.Drawing.Point(37, 109);
+			this.lblDataCompetencia.Location = new System.Drawing.Point(17, 109);
 			this.lblDataCompetencia.Name = "lblDataCompetencia";
 			this.lblDataCompetencia.Size = new System.Drawing.Size(110, 13);
 			this.lblDataCompetencia.TabIndex = 7;
@@ -207,7 +207,7 @@
 			// lblValor
 			// 
 			this.lblValor.AutoSize = true;
-			this.lblValor.Location = new System.Drawing.Point(93, 138);
+			this.lblValor.Location = new System.Drawing.Point(73, 138);
 			this.lblValor.Name = "lblValor";
 			this.lblValor.Size = new System.Drawing.Size(54, 13);
 			this.lblValor.TabIndex = 9;
@@ -216,7 +216,7 @@
 			// lblDescricao
 			// 
 			this.lblDescricao.AutoSize = true;
-			this.lblDescricao.Location = new System.Drawing.Point(92, 167);
+			this.lblDescricao.Location = new System.Drawing.Point(72, 167);
 			this.lblDescricao.Name = "lblDescricao";
 			this.lblDescricao.Size = new System.Drawing.Size(55, 13);
 			this.lblDescricao.TabIndex = 11;
@@ -225,10 +225,10 @@
 			// txtDescricao
 			// 
 			this.txtDescricao.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.txtDescricao.Location = new System.Drawing.Point(153, 162);
-			this.txtDescricao.MaxLength = 40;
+			this.txtDescricao.Location = new System.Drawing.Point(133, 162);
+			this.txtDescricao.MaxLength = 80;
 			this.txtDescricao.Name = "txtDescricao";
-			this.txtDescricao.Size = new System.Drawing.Size(518, 23);
+			this.txtDescricao.Size = new System.Drawing.Size(668, 23);
 			this.txtDescricao.TabIndex = 7;
 			this.txtDescricao.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtDescricao_KeyDown);
 			this.txtDescricao.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtDescricao_KeyPress);
@@ -236,7 +236,7 @@
 			// txtDataCompetencia
 			// 
 			this.txtDataCompetencia.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.txtDataCompetencia.Location = new System.Drawing.Point(153, 104);
+			this.txtDataCompetencia.Location = new System.Drawing.Point(133, 104);
 			this.txtDataCompetencia.MaxLength = 10;
 			this.txtDataCompetencia.Name = "txtDataCompetencia";
 			this.txtDataCompetencia.Size = new System.Drawing.Size(91, 23);
@@ -251,7 +251,7 @@
 			// txtValor
 			// 
 			this.txtValor.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.txtValor.Location = new System.Drawing.Point(153, 133);
+			this.txtValor.Location = new System.Drawing.Point(133, 133);
 			this.txtValor.MaxLength = 18;
 			this.txtValor.Name = "txtValor";
 			this.txtValor.Size = new System.Drawing.Size(111, 23);
@@ -268,7 +268,7 @@
 			this.btnGravar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
 			this.btnGravar.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.btnGravar.Image = ((System.Drawing.Image)(resources.GetObject("btnGravar.Image")));
-			this.btnGravar.Location = new System.Drawing.Point(49, 83);
+			this.btnGravar.Location = new System.Drawing.Point(29, 83);
 			this.btnGravar.Name = "btnGravar";
 			this.btnGravar.Size = new System.Drawing.Size(129, 40);
 			this.btnGravar.TabIndex = 0;
@@ -281,7 +281,7 @@
 			this.btnLimpar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
 			this.btnLimpar.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.btnLimpar.Image = ((System.Drawing.Image)(resources.GetObject("btnLimpar.Image")));
-			this.btnLimpar.Location = new System.Drawing.Point(49, 136);
+			this.btnLimpar.Location = new System.Drawing.Point(29, 136);
 			this.btnLimpar.Name = "btnLimpar";
 			this.btnLimpar.Size = new System.Drawing.Size(129, 40);
 			this.btnLimpar.TabIndex = 1;
@@ -292,7 +292,7 @@
 			// lblCnpjCpf
 			// 
 			this.lblCnpjCpf.AutoSize = true;
-			this.lblCnpjCpf.Location = new System.Drawing.Point(288, 138);
+			this.lblCnpjCpf.Location = new System.Drawing.Point(388, 138);
 			this.lblCnpjCpf.Name = "lblCnpjCpf";
 			this.lblCnpjCpf.Size = new System.Drawing.Size(59, 13);
 			this.lblCnpjCpf.TabIndex = 12;
@@ -301,7 +301,7 @@
 			// txtCnpjCpf
 			// 
 			this.txtCnpjCpf.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.txtCnpjCpf.Location = new System.Drawing.Point(353, 133);
+			this.txtCnpjCpf.Location = new System.Drawing.Point(453, 133);
 			this.txtCnpjCpf.MaxLength = 18;
 			this.txtCnpjCpf.Name = "txtCnpjCpf";
 			this.txtCnpjCpf.Size = new System.Drawing.Size(145, 23);
@@ -318,7 +318,7 @@
 			this.lblContador.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
 			this.lblContador.Font = new System.Drawing.Font("Microsoft Sans Serif", 22F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblContador.Image = ((System.Drawing.Image)(resources.GetObject("lblContador.Image")));
-			this.lblContador.Location = new System.Drawing.Point(76, 24);
+			this.lblContador.Location = new System.Drawing.Point(56, 24);
 			this.lblContador.Name = "lblContador";
 			this.lblContador.Size = new System.Drawing.Size(75, 40);
 			this.lblContador.TabIndex = 13;
@@ -345,7 +345,7 @@
 			this.gboxDefault.Controls.Add(this.lblContaCorrente);
 			this.gboxDefault.Location = new System.Drawing.Point(10, 48);
 			this.gboxDefault.Name = "gboxDefault";
-			this.gboxDefault.Size = new System.Drawing.Size(731, 193);
+			this.gboxDefault.Size = new System.Drawing.Size(831, 193);
 			this.gboxDefault.TabIndex = 0;
 			this.gboxDefault.TabStop = false;
 			this.gboxDefault.Text = "Valores Padrão";
@@ -353,7 +353,7 @@
 			// txtComp2
 			// 
 			this.txtComp2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.txtComp2.Location = new System.Drawing.Point(353, 103);
+			this.txtComp2.Location = new System.Drawing.Point(453, 103);
 			this.txtComp2.MaxLength = 7;
 			this.txtComp2.Name = "txtComp2";
 			this.txtComp2.Size = new System.Drawing.Size(91, 23);
@@ -367,7 +367,7 @@
 			// lblComp2
 			// 
 			this.lblComp2.AutoSize = true;
-			this.lblComp2.Location = new System.Drawing.Point(307, 108);
+			this.lblComp2.Location = new System.Drawing.Point(407, 108);
 			this.lblComp2.Name = "lblComp2";
 			this.lblComp2.Size = new System.Drawing.Size(40, 13);
 			this.lblComp2.TabIndex = 16;
@@ -378,9 +378,9 @@
 			this.gboxBotoes.Controls.Add(this.lblContador);
 			this.gboxBotoes.Controls.Add(this.btnLimpar);
 			this.gboxBotoes.Controls.Add(this.btnGravar);
-			this.gboxBotoes.Location = new System.Drawing.Point(866, 48);
+			this.gboxBotoes.Location = new System.Drawing.Point(906, 48);
 			this.gboxBotoes.Name = "gboxBotoes";
-			this.gboxBotoes.Size = new System.Drawing.Size(219, 193);
+			this.gboxBotoes.Size = new System.Drawing.Size(179, 193);
 			this.gboxBotoes.TabIndex = 2;
 			this.gboxBotoes.TabStop = false;
 			// 
@@ -400,14 +400,14 @@
 			this.grdLote.AllowUserToDeleteRows = false;
 			this.grdLote.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
 			this.grdLote.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-			dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-			dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
-			dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-			dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-			dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-			this.grdLote.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+			dataGridViewCellStyle28.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+			dataGridViewCellStyle28.BackColor = System.Drawing.SystemColors.Control;
+			dataGridViewCellStyle28.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			dataGridViewCellStyle28.ForeColor = System.Drawing.SystemColors.WindowText;
+			dataGridViewCellStyle28.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+			dataGridViewCellStyle28.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+			dataGridViewCellStyle28.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+			this.grdLote.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle28;
 			this.grdLote.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 			this.grdLote.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.colPlanoContasEmpresa,
@@ -431,8 +431,8 @@
 			// 
 			// colPlanoContasEmpresa
 			// 
-			dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.colPlanoContasEmpresa.DefaultCellStyle = dataGridViewCellStyle2;
+			dataGridViewCellStyle29.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.colPlanoContasEmpresa.DefaultCellStyle = dataGridViewCellStyle29;
 			this.colPlanoContasEmpresa.Frozen = true;
 			this.colPlanoContasEmpresa.HeaderText = "Empresa";
 			this.colPlanoContasEmpresa.MinimumWidth = 120;
@@ -441,8 +441,8 @@
 			// 
 			// colPlanoContasConta
 			// 
-			dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.colPlanoContasConta.DefaultCellStyle = dataGridViewCellStyle3;
+			dataGridViewCellStyle30.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.colPlanoContasConta.DefaultCellStyle = dataGridViewCellStyle30;
 			this.colPlanoContasConta.HeaderText = "Plano de Conta";
 			this.colPlanoContasConta.MinimumWidth = 210;
 			this.colPlanoContasConta.Name = "colPlanoContasConta";
@@ -452,9 +452,9 @@
 			// colDataCompetencia
 			// 
 			this.colDataCompetencia.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-			dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-			dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.colDataCompetencia.DefaultCellStyle = dataGridViewCellStyle4;
+			dataGridViewCellStyle31.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+			dataGridViewCellStyle31.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.colDataCompetencia.DefaultCellStyle = dataGridViewCellStyle31;
 			this.colDataCompetencia.HeaderText = "Competência";
 			this.colDataCompetencia.MaxInputLength = 10;
 			this.colDataCompetencia.MinimumWidth = 100;
@@ -465,9 +465,9 @@
 			// colComp2
 			// 
 			this.colComp2.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-			dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-			dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.colComp2.DefaultCellStyle = dataGridViewCellStyle5;
+			dataGridViewCellStyle32.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+			dataGridViewCellStyle32.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.colComp2.DefaultCellStyle = dataGridViewCellStyle32;
 			this.colComp2.HeaderText = "Comp2";
 			this.colComp2.MaxInputLength = 7;
 			this.colComp2.MinimumWidth = 100;
@@ -478,9 +478,9 @@
 			// colValorLancto
 			// 
 			this.colValorLancto.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-			dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-			dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.colValorLancto.DefaultCellStyle = dataGridViewCellStyle6;
+			dataGridViewCellStyle33.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+			dataGridViewCellStyle33.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.colValorLancto.DefaultCellStyle = dataGridViewCellStyle33;
 			this.colValorLancto.HeaderText = "Valor";
 			this.colValorLancto.MaxInputLength = 20;
 			this.colValorLancto.MinimumWidth = 100;
@@ -491,9 +491,9 @@
 			// colCnpjCpf
 			// 
 			this.colCnpjCpf.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-			dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-			dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.colCnpjCpf.DefaultCellStyle = dataGridViewCellStyle7;
+			dataGridViewCellStyle34.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+			dataGridViewCellStyle34.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.colCnpjCpf.DefaultCellStyle = dataGridViewCellStyle34;
 			this.colCnpjCpf.HeaderText = "CNPJ/CPF";
 			this.colCnpjCpf.MaxInputLength = 18;
 			this.colCnpjCpf.MinimumWidth = 140;
@@ -505,9 +505,9 @@
 			// colNF
 			// 
 			this.colNF.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-			dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-			dataGridViewCellStyle8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.colNF.DefaultCellStyle = dataGridViewCellStyle8;
+			dataGridViewCellStyle35.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+			dataGridViewCellStyle35.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.colNF.DefaultCellStyle = dataGridViewCellStyle35;
 			this.colNF.HeaderText = "NF";
 			this.colNF.MaxInputLength = 13;
 			this.colNF.MinimumWidth = 80;
@@ -519,12 +519,12 @@
 			// colDescricao
 			// 
 			this.colDescricao.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-			dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-			dataGridViewCellStyle9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-			this.colDescricao.DefaultCellStyle = dataGridViewCellStyle9;
+			dataGridViewCellStyle36.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+			dataGridViewCellStyle36.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			dataGridViewCellStyle36.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+			this.colDescricao.DefaultCellStyle = dataGridViewCellStyle36;
 			this.colDescricao.HeaderText = "Descrição";
-			this.colDescricao.MaxInputLength = 40;
+			this.colDescricao.MaxInputLength = 80;
 			this.colDescricao.Name = "colDescricao";
 			this.colDescricao.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
 			// 

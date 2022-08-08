@@ -1244,6 +1244,9 @@ namespace FinanceiroService
 				strSqlCondicao = "(st_usado_cadastramento_pedido_erp = 1)";
 				executaLimpezaTabelaCondicional("t_MAGENTO_API_PEDIDO_XML", "dt_cadastro", Global.Cte.ManutencaoLogBd.Corte.T_MAGENTO_API_PEDIDO_XML__INFO_UTILIZADA__CORTE_EM_DIAS, strSqlCondicao, out strMsgErroAux);
 
+				strSqlCondicao = "(status = 0) AND (proc_comissao_status = 0) AND (proc_fluxo_caixa_status = 0)";
+				executaLimpezaTabelaCondicional("t_COMISSAO_INDICADOR_NFSe_N1", "dt_cadastro", Global.Cte.ManutencaoLogBd.Corte.T_COMISSAO_INDICADOR_NFSe_N1__INFO_DESCARTADA__CORTE_EM_DIAS, strSqlCondicao, out strMsgErroAux);
+
 				strMsg = "Rotina " + NOME_DESTA_ROTINA + " concluída com sucesso (duração: " + Global.formataDuracaoHMS(DateTime.Now - dtHrInicio) + ")";
 				Global.gravaLogAtividade(strMsg);
 

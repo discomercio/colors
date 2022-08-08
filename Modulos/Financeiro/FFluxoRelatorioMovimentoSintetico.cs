@@ -1029,6 +1029,10 @@ namespace Financeiro
 				}
 				#endregion
 
+				#region [ Campo descrição ]
+				txtDescricao.MaxLength = Global.Cte.FIN.TamanhoCampo.FLUXO_CAIXA_DESCRICAO;
+				#endregion
+
 				blnSucesso = true;
 			}
 			catch (Exception ex)

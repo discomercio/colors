@@ -2204,9 +2204,13 @@ namespace Financeiro
                 cbCtrlPagtoStatus.DisplayMember = "descricao";
                 cbCtrlPagtoStatus.ValueMember = "codigo";
                 cbCtrlPagtoStatus.SelectedIndex = -1;
-                #endregion
+				#endregion
 
-                blnSucesso = true;
+				#region [ Campo descrição ]
+				txtDescricao.MaxLength = Global.Cte.FIN.TamanhoCampo.FLUXO_CAIXA_DESCRICAO;
+				#endregion
+
+				blnSucesso = true;
             }
             catch (Exception ex)
             {
@@ -3170,11 +3174,11 @@ namespace Financeiro
                 ixContaCorrente = ixComp2 + wxComp2 + ESPACAMENTO_COLUNAS;
                 wxContaCorrente = 20f;
                 ixPlanoContasConta = ixContaCorrente + wxContaCorrente + ESPACAMENTO_COLUNAS;
-                wxPlanoContasConta = 50f;
+                wxPlanoContasConta = 40f;
                 ixDescricao = ixPlanoContasConta + wxPlanoContasConta + ESPACAMENTO_COLUNAS;
                 wxObs = 35f;
                 ixObs = cxInicio + larguraUtil - wxObs;
-                wxNomeCnpjCpf = 50f;
+                wxNomeCnpjCpf = 40f;
                 ixNomeCnpjCpf = ixObs - wxNomeCnpjCpf - ESPACAMENTO_COLUNAS;
 				wxNF = 15f;
 				ixNF = ixNomeCnpjCpf - wxNF - ESPACAMENTO_COLUNAS;
@@ -3528,7 +3532,7 @@ namespace Financeiro
                 hMax = Math.Max(hMax, e.Graphics.MeasureString(strTexto, fonteAtual, (int)wxPlanoContasConta).Height);
 
                 cx = ixDescricao;
-                r = new RectangleF(ixDescricao, cy, wxDescricao, 20);
+                r = new RectangleF(ixDescricao, cy, wxDescricao, 30);
                 strTexto = gridDados.Rows[_intConsultaImpressaoIdxLinhaGrid].Cells["descricao"].Value.ToString();
                 e.Graphics.DrawString(strTexto, fonteAtual, brushPadrao, r);
                 hMax = Math.Max(hMax, e.Graphics.MeasureString(strTexto, fonteAtual, (int)wxDescricao).Height);

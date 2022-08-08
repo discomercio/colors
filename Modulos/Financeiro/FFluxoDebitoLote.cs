@@ -811,6 +811,14 @@ namespace Financeiro
 				iniciaGrid();
 				#endregion
 
+				#region [ Campo descrição ]
+				txtDescricao.MaxLength = Global.Cte.FIN.TamanhoCampo.FLUXO_CAIXA_DESCRICAO;
+				#endregion
+
+				#region [ Tamanho da coluna descrição do grid ]
+				((DataGridViewTextBoxColumn)grdLote.Columns[COL_DESCRICAO]).MaxInputLength = Global.Cte.FIN.TamanhoCampo.FLUXO_CAIXA_DESCRICAO;
+				#endregion
+
 				blnSucesso = true;
 			}
 			catch (Exception ex)
