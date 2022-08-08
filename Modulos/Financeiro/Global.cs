@@ -23,17 +23,18 @@ namespace Financeiro
         #region [ Constantes ]
         public class Cte
         {
-            #region[ Versão do Aplicativo ]
-            public class Aplicativo
-            {
-                public const string NOME_OWNER = "Artven";
-                public const string NOME_SISTEMA = "Financeiro";
-                public const string VERSAO_NUMERO = "1.38";
-                public const string VERSAO_DATA = "02.AGO.2022";
-                public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
-                public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
-                public const string M_DESCRICAO = "Módulo para execução de rotinas financeiras";
-            }
+			#region[ Versão do Aplicativo ]
+			public class Aplicativo
+			{
+				public const string NOME_OWNER = "DIS";
+				public const string NOME_SISTEMA = "Financeiro";
+				public const string VERSAO_NUMERO = "1.39";
+				public const string VERSAO_DATA = "07.AGO.2022";
+				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
+				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
+				public const string M_DESCRICAO = "Módulo para execução de rotinas financeiras";
+				public const string ID_APLICATIVO_CTRL_VERSAO = "FIN";
+			}
 			#endregion
 
 			#region[ Comentário sobre as versões ]
@@ -497,10 +498,45 @@ namespace Financeiro
 			 *		  se prossiga com o cadastramento de boleto avulso quando ocorre divergência entre o
 			 *		  valor definido na forma de pagamento e o valor do pedido.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.39 - XX.XX.20XX - por XXX
-			 *		  
+			 * v 1.39 - 07.08.2022 - por HHO
+			 *		  Aumento do tamanho do campo descrição do lançamento de fluxo de caixa.
+			 *		  Ajustes na pesquisa de CEP para incluir a tabela LOG_GRANDE_USUARIO na consulta.
+			 *		  Implementação de tratamento para fazer a validação da versão do aplicativo durante o
+			 *		    seu uso como forma de garantir que um usuário nunca consiga utilizá-lo indefinidamente
+			 *		    caso mantenha o aplicativo aberto e o computador sempre ligado mesmo após uma nova
+			 *		    versão ter sido configurada em t_VERSAO.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.40 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.41 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.42 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.43 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.44 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.45 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.46 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.47 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.48 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.49 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.50 - XX.XX.20XX - por XXX
 			 *		  
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.XX - XX.XX.20XX - por XXX
@@ -589,7 +625,7 @@ namespace Financeiro
                     public const int PLANO_CONTAS_EMPRESA = 1;
                     public const int PLANO_CONTAS_GRUPO = 2;
                     public const int PLANO_CONTAS_CONTA = 4;
-                    public const int FLUXO_CAIXA_DESCRICAO = 40;
+                    public const int FLUXO_CAIXA_DESCRICAO = 80;
                     public const int FIN_LOG_DESCRICAO = 7500;  // Para prevenir erro: "exceeds the maximum number of bytes per row (8060)"
                     public const int COMENTARIO_OCORRENCIA_TRATADA = 240;
                 }
@@ -947,6 +983,8 @@ namespace Financeiro
 					public const string ID_PARAMETRO_FIN_REL_SINT_COMP_MOVTO_COMP_MES_A_MES_FUTURO_PERIODO_EM_ANOS = "FIN_RelSinteticoComparativoMovimentos_ComparativoMesAMes_Futuro_PeriodoEmAnos";
 					public const string ID_PARAMETRO_FIN_FluxoCaixa_ConsiderarDataAtualizacaoAutomatica_FlagHabilitacao = "FIN_FluxoCaixa_ConsiderarDataAtualizacaoAutomatica_FlagHabilitacao";
 					public const string ID_PARAMETRO_FIN_BoletoAvulso_PermitirDivergenciaValoresFormaPagtoVsPedido_FlagHabilitacao = "FIN_BoletoAvulso_PermitirDivergenciaValoresFormaPagtoVsPedido_FlagHabilitacao";
+					public const string ID_PARAMETRO_FIN_ValidacaoVersao_VerificacaoPeriodica_FlagHabilitacao = "FIN_ValidacaoVersao_VerificacaoPeriodica_FlagHabilitacao";
+					public const string ID_PARAMETRO_FIN_ValidacaoVersao_TempoMinEntreValidacoesPeriodicasEmSeg = "FIN_ValidacaoVersao_TempoMinEntreValidacoesPeriodicasEmSeg";
 				}
 				#endregion
 			}
@@ -1053,6 +1091,8 @@ namespace Financeiro
 		{
 			public static int FluxoCaixa_ConsiderarDataAtualizacaoAutomatica;
 			public static int BoletoAvulso_PermitirDivergenciaValoresFormaPagtoVsPedido;
+			public static int ValidacaoVersao_VerificacaoPeriodica_FlagHabilitacao;
+			public static int ValidacaoVersao_TempoMinEntreValidacoesPeriodicasEmSeg;
 		}
 		#endregion
 

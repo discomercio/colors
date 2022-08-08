@@ -783,6 +783,10 @@ namespace Financeiro
 				if (lancamentoSelecionado.tipo_cadastro == Global.Cte.FIN.TipoCadastro.SISTEMA) cbPlanoContasConta.Enabled = false;
 				#endregion
 
+				#region [ Campo descrição: tamanho máximo ]
+				txtDescricao.MaxLength = Global.Cte.FIN.TamanhoCampo.FLUXO_CAIXA_DESCRICAO;
+				#endregion
+
 				#region [ Demais campos ]
 				txtDataCompetencia.Text = Global.formataDataDdMmYyyyComSeparador(lancamentoSelecionado.dt_competencia);
 				txtValor.Text = Global.formataMoeda(lancamentoSelecionado.valor);

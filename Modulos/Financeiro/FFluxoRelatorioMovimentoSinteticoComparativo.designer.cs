@@ -619,7 +619,7 @@
 			// 
 			this.txtDescricao.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.txtDescricao.Location = new System.Drawing.Point(605, 256);
-			this.txtDescricao.MaxLength = 40;
+			this.txtDescricao.MaxLength = 80;
 			this.txtDescricao.Name = "txtDescricao";
 			this.txtDescricao.Size = new System.Drawing.Size(218, 23);
 			this.txtDescricao.TabIndex = 7;

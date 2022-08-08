@@ -64,6 +64,8 @@
 			this.lblTitCtrlPagtoStatus = new System.Windows.Forms.Label();
 			this.gboxCamposSistema = new System.Windows.Forms.GroupBox();
 			this.gboxCamposLancamento = new System.Windows.Forms.GroupBox();
+			this.txtNF = new System.Windows.Forms.TextBox();
+			this.lblNF = new System.Windows.Forms.Label();
 			this.txtComp2 = new System.Windows.Forms.TextBox();
 			this.lblTitComp2 = new System.Windows.Forms.Label();
 			this.cbStConfirmacaoPendente = new System.Windows.Forms.ComboBox();
@@ -71,8 +73,6 @@
 			this.gboxDadosCliente = new System.Windows.Forms.GroupBox();
 			this.lblNome = new System.Windows.Forms.Label();
 			this.lblTitNome = new System.Windows.Forms.Label();
-			this.txtNF = new System.Windows.Forms.TextBox();
-			this.lblNF = new System.Windows.Forms.Label();
 			this.pnBotoes.SuspendLayout();
 			this.pnCampos.SuspendLayout();
 			this.gboxCamposSistema.SuspendLayout();
@@ -84,7 +84,7 @@
 			// 
 			this.pnBotoes.Controls.Add(this.btnExcluir);
 			this.pnBotoes.Controls.Add(this.btnAtualizar);
-			this.pnBotoes.Size = new System.Drawing.Size(675, 55);
+			this.pnBotoes.Size = new System.Drawing.Size(875, 55);
 			this.pnBotoes.Controls.SetChildIndex(this.btnFechar, 0);
 			this.pnBotoes.Controls.SetChildIndex(this.btnDummy, 0);
 			this.pnBotoes.Controls.SetChildIndex(this.btnSobre, 0);
@@ -97,7 +97,7 @@
 			this.pnCampos.Controls.Add(this.gboxCamposLancamento);
 			this.pnCampos.Controls.Add(this.gboxCamposSistema);
 			this.pnCampos.Controls.Add(this.lblTitulo);
-			this.pnCampos.Size = new System.Drawing.Size(675, 486);
+			this.pnCampos.Size = new System.Drawing.Size(875, 486);
 			// 
 			// btnDummy
 			// 
@@ -105,12 +105,12 @@
 			// 
 			// btnFechar
 			// 
-			this.btnFechar.Location = new System.Drawing.Point(626, 4);
+			this.btnFechar.Location = new System.Drawing.Point(826, 4);
 			this.btnFechar.TabIndex = 3;
 			// 
 			// btnSobre
 			// 
-			this.btnSobre.Location = new System.Drawing.Point(581, 4);
+			this.btnSobre.Location = new System.Drawing.Point(781, 4);
 			this.btnSobre.TabIndex = 2;
 			// 
 			// lblTitulo
@@ -122,7 +122,7 @@
 			this.lblTitulo.Image = ((System.Drawing.Image)(resources.GetObject("lblTitulo.Image")));
 			this.lblTitulo.Location = new System.Drawing.Point(0, 0);
 			this.lblTitulo.Name = "lblTitulo";
-			this.lblTitulo.Size = new System.Drawing.Size(671, 40);
+			this.lblTitulo.Size = new System.Drawing.Size(871, 40);
 			this.lblTitulo.TabIndex = 0;
 			this.lblTitulo.Text = "Edição de Lançamento";
 			this.lblTitulo.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -146,7 +146,7 @@
 			this.cbContaCorrente.Location = new System.Drawing.Point(122, 88);
 			this.cbContaCorrente.MaxDropDownItems = 12;
 			this.cbContaCorrente.Name = "cbContaCorrente";
-			this.cbContaCorrente.Size = new System.Drawing.Size(518, 24);
+			this.cbContaCorrente.Size = new System.Drawing.Size(718, 24);
 			this.cbContaCorrente.TabIndex = 3;
 			this.cbContaCorrente.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cbContaCorrente_KeyDown);
 			// 
@@ -169,7 +169,7 @@
 			this.cbPlanoContasEmpresa.Location = new System.Drawing.Point(122, 126);
 			this.cbPlanoContasEmpresa.MaxDropDownItems = 12;
 			this.cbPlanoContasEmpresa.Name = "cbPlanoContasEmpresa";
-			this.cbPlanoContasEmpresa.Size = new System.Drawing.Size(518, 24);
+			this.cbPlanoContasEmpresa.Size = new System.Drawing.Size(718, 24);
 			this.cbPlanoContasEmpresa.TabIndex = 4;
 			this.cbPlanoContasEmpresa.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cbPlanoContasEmpresa_KeyDown);
 			// 
@@ -192,7 +192,7 @@
 			this.cbPlanoContasConta.Location = new System.Drawing.Point(122, 164);
 			this.cbPlanoContasConta.MaxDropDownItems = 12;
 			this.cbPlanoContasConta.Name = "cbPlanoContasConta";
-			this.cbPlanoContasConta.Size = new System.Drawing.Size(518, 24);
+			this.cbPlanoContasConta.Size = new System.Drawing.Size(718, 24);
 			this.cbPlanoContasConta.TabIndex = 5;
 			this.cbPlanoContasConta.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cbPlanoContasConta_KeyDown);
 			// 
@@ -227,9 +227,9 @@
 			// 
 			this.txtDescricao.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.txtDescricao.Location = new System.Drawing.Point(122, 280);
-			this.txtDescricao.MaxLength = 40;
+			this.txtDescricao.MaxLength = 80;
 			this.txtDescricao.Name = "txtDescricao";
-			this.txtDescricao.Size = new System.Drawing.Size(518, 23);
+			this.txtDescricao.Size = new System.Drawing.Size(718, 23);
 			this.txtDescricao.TabIndex = 11;
 			this.txtDescricao.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtDescricao_KeyDown);
 			this.txtDescricao.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtDescricao_KeyPress);
@@ -267,7 +267,7 @@
 			// lblCnpjCpf
 			// 
 			this.lblCnpjCpf.AutoSize = true;
-			this.lblCnpjCpf.Location = new System.Drawing.Point(257, 246);
+			this.lblCnpjCpf.Location = new System.Drawing.Point(357, 246);
 			this.lblCnpjCpf.Name = "lblCnpjCpf";
 			this.lblCnpjCpf.Size = new System.Drawing.Size(59, 13);
 			this.lblCnpjCpf.TabIndex = 12;
@@ -276,7 +276,7 @@
 			// txtCnpjCpf
 			// 
 			this.txtCnpjCpf.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.txtCnpjCpf.Location = new System.Drawing.Point(322, 241);
+			this.txtCnpjCpf.Location = new System.Drawing.Point(422, 241);
 			this.txtCnpjCpf.MaxLength = 18;
 			this.txtCnpjCpf.Name = "txtCnpjCpf";
 			this.txtCnpjCpf.Size = new System.Drawing.Size(145, 23);
@@ -292,7 +292,7 @@
 			// 
 			this.btnAtualizar.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
 			this.btnAtualizar.Image = ((System.Drawing.Image)(resources.GetObject("btnAtualizar.Image")));
-			this.btnAtualizar.Location = new System.Drawing.Point(491, 4);
+			this.btnAtualizar.Location = new System.Drawing.Point(691, 4);
 			this.btnAtualizar.Name = "btnAtualizar";
 			this.btnAtualizar.Size = new System.Drawing.Size(40, 44);
 			this.btnAtualizar.TabIndex = 0;
@@ -304,7 +304,7 @@
 			// 
 			this.btnExcluir.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
 			this.btnExcluir.Image = ((System.Drawing.Image)(resources.GetObject("btnExcluir.Image")));
-			this.btnExcluir.Location = new System.Drawing.Point(536, 4);
+			this.btnExcluir.Location = new System.Drawing.Point(736, 4);
 			this.btnExcluir.Name = "btnExcluir";
 			this.btnExcluir.Size = new System.Drawing.Size(40, 44);
 			this.btnExcluir.TabIndex = 1;
@@ -335,7 +335,7 @@
 			// 
 			this.lblCadastradoPor.AutoSize = true;
 			this.lblCadastradoPor.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.lblCadastradoPor.Location = new System.Drawing.Point(352, 14);
+			this.lblCadastradoPor.Location = new System.Drawing.Point(452, 14);
 			this.lblCadastradoPor.Name = "lblCadastradoPor";
 			this.lblCadastradoPor.Size = new System.Drawing.Size(61, 13);
 			this.lblCadastradoPor.TabIndex = 16;
@@ -344,7 +344,7 @@
 			// lblTitCadastradoPor
 			// 
 			this.lblTitCadastradoPor.AutoSize = true;
-			this.lblTitCadastradoPor.Location = new System.Drawing.Point(270, 14);
+			this.lblTitCadastradoPor.Location = new System.Drawing.Point(370, 14);
 			this.lblTitCadastradoPor.Name = "lblTitCadastradoPor";
 			this.lblTitCadastradoPor.Size = new System.Drawing.Size(79, 13);
 			this.lblTitCadastradoPor.TabIndex = 15;
@@ -354,7 +354,7 @@
 			// 
 			this.lblCadastradoModo.AutoSize = true;
 			this.lblCadastradoModo.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.lblCadastradoModo.Location = new System.Drawing.Point(517, 14);
+			this.lblCadastradoModo.Location = new System.Drawing.Point(717, 14);
 			this.lblCadastradoModo.Name = "lblCadastradoModo";
 			this.lblCadastradoModo.Size = new System.Drawing.Size(61, 13);
 			this.lblCadastradoModo.TabIndex = 18;
@@ -363,7 +363,7 @@
 			// lblTitCadastradoModo
 			// 
 			this.lblTitCadastradoModo.AutoSize = true;
-			this.lblTitCadastradoModo.Location = new System.Drawing.Point(453, 14);
+			this.lblTitCadastradoModo.Location = new System.Drawing.Point(653, 14);
 			this.lblTitCadastradoModo.Name = "lblTitCadastradoModo";
 			this.lblTitCadastradoModo.Size = new System.Drawing.Size(61, 13);
 			this.lblTitCadastradoModo.TabIndex = 17;
@@ -373,7 +373,7 @@
 			// 
 			this.lblAlteradoPor.AutoSize = true;
 			this.lblAlteradoPor.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.lblAlteradoPor.Location = new System.Drawing.Point(352, 42);
+			this.lblAlteradoPor.Location = new System.Drawing.Point(452, 42);
 			this.lblAlteradoPor.Name = "lblAlteradoPor";
 			this.lblAlteradoPor.Size = new System.Drawing.Size(56, 13);
 			this.lblAlteradoPor.TabIndex = 22;
@@ -382,7 +382,7 @@
 			// lblTitAlteradoPor
 			// 
 			this.lblTitAlteradoPor.AutoSize = true;
-			this.lblTitAlteradoPor.Location = new System.Drawing.Point(285, 42);
+			this.lblTitAlteradoPor.Location = new System.Drawing.Point(385, 42);
 			this.lblTitAlteradoPor.Name = "lblTitAlteradoPor";
 			this.lblTitAlteradoPor.Size = new System.Drawing.Size(64, 13);
 			this.lblTitAlteradoPor.TabIndex = 21;
@@ -411,7 +411,7 @@
 			// 
 			this.lblNatureza.AutoSize = true;
 			this.lblNatureza.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.lblNatureza.Location = new System.Drawing.Point(517, 42);
+			this.lblNatureza.Location = new System.Drawing.Point(717, 42);
 			this.lblNatureza.Name = "lblNatureza";
 			this.lblNatureza.Size = new System.Drawing.Size(62, 13);
 			this.lblNatureza.TabIndex = 24;
@@ -420,7 +420,7 @@
 			// lblTitNatureza
 			// 
 			this.lblTitNatureza.AutoSize = true;
-			this.lblTitNatureza.Location = new System.Drawing.Point(464, 42);
+			this.lblTitNatureza.Location = new System.Drawing.Point(664, 42);
 			this.lblTitNatureza.Name = "lblTitNatureza";
 			this.lblTitNatureza.Size = new System.Drawing.Size(50, 13);
 			this.lblTitNatureza.TabIndex = 23;
@@ -456,7 +456,7 @@
 			this.cbCtrlPagtoStatus.FormattingEnabled = true;
 			this.cbCtrlPagtoStatus.Location = new System.Drawing.Point(122, 50);
 			this.cbCtrlPagtoStatus.Name = "cbCtrlPagtoStatus";
-			this.cbCtrlPagtoStatus.Size = new System.Drawing.Size(518, 24);
+			this.cbCtrlPagtoStatus.Size = new System.Drawing.Size(718, 24);
 			this.cbCtrlPagtoStatus.TabIndex = 2;
 			this.cbCtrlPagtoStatus.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cbCtrlPagtoStatus_KeyDown);
 			// 
@@ -486,7 +486,7 @@
 			this.gboxCamposSistema.Controls.Add(this.lblTitCadastradoEm);
 			this.gboxCamposSistema.Location = new System.Drawing.Point(10, 45);
 			this.gboxCamposSistema.Name = "gboxCamposSistema";
-			this.gboxCamposSistema.Size = new System.Drawing.Size(652, 64);
+			this.gboxCamposSistema.Size = new System.Drawing.Size(852, 64);
 			this.gboxCamposSistema.TabIndex = 38;
 			this.gboxCamposSistema.TabStop = false;
 			// 
@@ -518,14 +518,37 @@
 			this.gboxCamposLancamento.Controls.Add(this.lblContaCorrente);
 			this.gboxCamposLancamento.Location = new System.Drawing.Point(10, 158);
 			this.gboxCamposLancamento.Name = "gboxCamposLancamento";
-			this.gboxCamposLancamento.Size = new System.Drawing.Size(652, 313);
+			this.gboxCamposLancamento.Size = new System.Drawing.Size(852, 313);
 			this.gboxCamposLancamento.TabIndex = 39;
 			this.gboxCamposLancamento.TabStop = false;
+			// 
+			// txtNF
+			// 
+			this.txtNF.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.txtNF.Location = new System.Drawing.Point(747, 241);
+			this.txtNF.MaxLength = 18;
+			this.txtNF.Name = "txtNF";
+			this.txtNF.Size = new System.Drawing.Size(93, 23);
+			this.txtNF.TabIndex = 10;
+			this.txtNF.Text = "999.999.999";
+			this.txtNF.Enter += new System.EventHandler(this.txtNF_Enter);
+			this.txtNF.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtNF_KeyDown);
+			this.txtNF.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtNF_KeyPress);
+			this.txtNF.Leave += new System.EventHandler(this.txtNF_Leave);
+			// 
+			// lblNF
+			// 
+			this.lblNF.AutoSize = true;
+			this.lblNF.Location = new System.Drawing.Point(720, 246);
+			this.lblNF.Name = "lblNF";
+			this.lblNF.Size = new System.Drawing.Size(21, 13);
+			this.lblNF.TabIndex = 41;
+			this.lblNF.Text = "NF";
 			// 
 			// txtComp2
 			// 
 			this.txtComp2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.txtComp2.Location = new System.Drawing.Point(322, 203);
+			this.txtComp2.Location = new System.Drawing.Point(422, 203);
 			this.txtComp2.MaxLength = 7;
 			this.txtComp2.Name = "txtComp2";
 			this.txtComp2.Size = new System.Drawing.Size(91, 23);
@@ -539,7 +562,7 @@
 			// lblTitComp2
 			// 
 			this.lblTitComp2.AutoSize = true;
-			this.lblTitComp2.Location = new System.Drawing.Point(276, 208);
+			this.lblTitComp2.Location = new System.Drawing.Point(376, 208);
 			this.lblTitComp2.Name = "lblTitComp2";
 			this.lblTitComp2.Size = new System.Drawing.Size(40, 13);
 			this.lblTitComp2.TabIndex = 8;
@@ -551,7 +574,7 @@
 			this.cbStConfirmacaoPendente.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cbStConfirmacaoPendente.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.cbStConfirmacaoPendente.FormattingEnabled = true;
-			this.cbStConfirmacaoPendente.Location = new System.Drawing.Point(473, 13);
+			this.cbStConfirmacaoPendente.Location = new System.Drawing.Point(673, 13);
 			this.cbStConfirmacaoPendente.Name = "cbStConfirmacaoPendente";
 			this.cbStConfirmacaoPendente.Size = new System.Drawing.Size(167, 24);
 			this.cbStConfirmacaoPendente.TabIndex = 1;
@@ -561,7 +584,7 @@
 			// 
 			this.lblTitStConfirmacaoPendente.AutoSize = true;
 			this.lblTitStConfirmacaoPendente.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.lblTitStConfirmacaoPendente.Location = new System.Drawing.Point(352, 18);
+			this.lblTitStConfirmacaoPendente.Location = new System.Drawing.Point(552, 18);
 			this.lblTitStConfirmacaoPendente.Name = "lblTitStConfirmacaoPendente";
 			this.lblTitStConfirmacaoPendente.Size = new System.Drawing.Size(115, 13);
 			this.lblTitStConfirmacaoPendente.TabIndex = 39;
@@ -573,7 +596,7 @@
 			this.gboxDadosCliente.Controls.Add(this.lblTitNome);
 			this.gboxDadosCliente.Location = new System.Drawing.Point(10, 116);
 			this.gboxDadosCliente.Name = "gboxDadosCliente";
-			this.gboxDadosCliente.Size = new System.Drawing.Size(652, 35);
+			this.gboxDadosCliente.Size = new System.Drawing.Size(852, 35);
 			this.gboxDadosCliente.TabIndex = 40;
 			this.gboxDadosCliente.TabStop = false;
 			// 
@@ -596,33 +619,10 @@
 			this.lblTitNome.TabIndex = 14;
 			this.lblTitNome.Text = "Nome";
 			// 
-			// txtNF
-			// 
-			this.txtNF.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.txtNF.Location = new System.Drawing.Point(547, 241);
-			this.txtNF.MaxLength = 18;
-			this.txtNF.Name = "txtNF";
-			this.txtNF.Size = new System.Drawing.Size(93, 23);
-			this.txtNF.TabIndex = 10;
-			this.txtNF.Text = "999.999.999";
-			this.txtNF.Enter += new System.EventHandler(this.txtNF_Enter);
-			this.txtNF.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtNF_KeyDown);
-			this.txtNF.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtNF_KeyPress);
-			this.txtNF.Leave += new System.EventHandler(this.txtNF_Leave);
-			// 
-			// lblNF
-			// 
-			this.lblNF.AutoSize = true;
-			this.lblNF.Location = new System.Drawing.Point(520, 246);
-			this.lblNF.Name = "lblNF";
-			this.lblNF.Size = new System.Drawing.Size(21, 13);
-			this.lblNF.TabIndex = 41;
-			this.lblNF.Text = "NF";
-			// 
 			// FFluxoEdita
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.ClientSize = new System.Drawing.Size(675, 583);
+			this.ClientSize = new System.Drawing.Size(875, 583);
 			this.Name = "FFluxoEdita";
 			this.Text = "Artven - Financeiro  -  1.00 - xx.JUL.2009";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FFluxoEdita_FormClosing);

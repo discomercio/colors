@@ -116,7 +116,7 @@
 			// lblContaCorrente
 			// 
 			this.lblContaCorrente.AutoSize = true;
-			this.lblContaCorrente.Location = new System.Drawing.Point(69, 27);
+			this.lblContaCorrente.Location = new System.Drawing.Point(49, 27);
 			this.lblContaCorrente.Name = "lblContaCorrente";
 			this.lblContaCorrente.Size = new System.Drawing.Size(78, 13);
 			this.lblContaCorrente.TabIndex = 1;
@@ -129,17 +129,17 @@
 			this.cbContaCorrente.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cbContaCorrente.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.cbContaCorrente.FormattingEnabled = true;
-			this.cbContaCorrente.Location = new System.Drawing.Point(153, 22);
+			this.cbContaCorrente.Location = new System.Drawing.Point(133, 22);
 			this.cbContaCorrente.MaxDropDownItems = 12;
 			this.cbContaCorrente.Name = "cbContaCorrente";
-			this.cbContaCorrente.Size = new System.Drawing.Size(518, 24);
+			this.cbContaCorrente.Size = new System.Drawing.Size(618, 24);
 			this.cbContaCorrente.TabIndex = 0;
 			this.cbContaCorrente.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cbContaCorrente_KeyDown);
 			// 
 			// lblPlanoContasEmpresa
 			// 
 			this.lblPlanoContasEmpresa.AutoSize = true;
-			this.lblPlanoContasEmpresa.Location = new System.Drawing.Point(99, 58);
+			this.lblPlanoContasEmpresa.Location = new System.Drawing.Point(79, 58);
 			this.lblPlanoContasEmpresa.Name = "lblPlanoContasEmpresa";
 			this.lblPlanoContasEmpresa.Size = new System.Drawing.Size(48, 13);
 			this.lblPlanoContasEmpresa.TabIndex = 3;
@@ -152,17 +152,17 @@
 			this.cbPlanoContasEmpresa.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cbPlanoContasEmpresa.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.cbPlanoContasEmpresa.FormattingEnabled = true;
-			this.cbPlanoContasEmpresa.Location = new System.Drawing.Point(153, 53);
+			this.cbPlanoContasEmpresa.Location = new System.Drawing.Point(133, 53);
 			this.cbPlanoContasEmpresa.MaxDropDownItems = 12;
 			this.cbPlanoContasEmpresa.Name = "cbPlanoContasEmpresa";
-			this.cbPlanoContasEmpresa.Size = new System.Drawing.Size(518, 24);
+			this.cbPlanoContasEmpresa.Size = new System.Drawing.Size(618, 24);
 			this.cbPlanoContasEmpresa.TabIndex = 1;
 			this.cbPlanoContasEmpresa.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cbPlanoContasEmpresa_KeyDown);
 			// 
 			// lblPlanoContasConta
 			// 
 			this.lblPlanoContasConta.AutoSize = true;
-			this.lblPlanoContasConta.Location = new System.Drawing.Point(67, 89);
+			this.lblPlanoContasConta.Location = new System.Drawing.Point(47, 89);
 			this.lblPlanoContasConta.Name = "lblPlanoContasConta";
 			this.lblPlanoContasConta.Size = new System.Drawing.Size(80, 13);
 			this.lblPlanoContasConta.TabIndex = 5;
@@ -175,17 +175,17 @@
 			this.cbPlanoContasConta.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cbPlanoContasConta.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.cbPlanoContasConta.FormattingEnabled = true;
-			this.cbPlanoContasConta.Location = new System.Drawing.Point(153, 84);
+			this.cbPlanoContasConta.Location = new System.Drawing.Point(133, 84);
 			this.cbPlanoContasConta.MaxDropDownItems = 12;
 			this.cbPlanoContasConta.Name = "cbPlanoContasConta";
-			this.cbPlanoContasConta.Size = new System.Drawing.Size(518, 24);
+			this.cbPlanoContasConta.Size = new System.Drawing.Size(618, 24);
 			this.cbPlanoContasConta.TabIndex = 2;
 			this.cbPlanoContasConta.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cbPlanoContasConta_KeyDown);
 			// 
 			// lblDataCompetencia
 			// 
 			this.lblDataCompetencia.AutoSize = true;
-			this.lblDataCompetencia.Location = new System.Drawing.Point(37, 120);
+			this.lblDataCompetencia.Location = new System.Drawing.Point(17, 120);
 			this.lblDataCompetencia.Name = "lblDataCompetencia";
 			this.lblDataCompetencia.Size = new System.Drawing.Size(110, 13);
 			this.lblDataCompetencia.TabIndex = 7;
@@ -194,7 +194,7 @@
 			// lblValor
 			// 
 			this.lblValor.AutoSize = true;
-			this.lblValor.Location = new System.Drawing.Point(266, 120);
+			this.lblValor.Location = new System.Drawing.Point(306, 120);
 			this.lblValor.Name = "lblValor";
 			this.lblValor.Size = new System.Drawing.Size(54, 13);
 			this.lblValor.TabIndex = 9;
@@ -203,7 +203,7 @@
 			// lblDescricao
 			// 
 			this.lblDescricao.AutoSize = true;
-			this.lblDescricao.Location = new System.Drawing.Point(92, 150);
+			this.lblDescricao.Location = new System.Drawing.Point(72, 150);
 			this.lblDescricao.Name = "lblDescricao";
 			this.lblDescricao.Size = new System.Drawing.Size(55, 13);
 			this.lblDescricao.TabIndex = 11;
@@ -212,10 +212,10 @@
 			// txtDescricao
 			// 
 			this.txtDescricao.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.txtDescricao.Location = new System.Drawing.Point(153, 145);
-			this.txtDescricao.MaxLength = 40;
+			this.txtDescricao.Location = new System.Drawing.Point(133, 145);
+			this.txtDescricao.MaxLength = 80;
 			this.txtDescricao.Name = "txtDescricao";
-			this.txtDescricao.Size = new System.Drawing.Size(518, 23);
+			this.txtDescricao.Size = new System.Drawing.Size(618, 23);
 			this.txtDescricao.TabIndex = 6;
 			this.txtDescricao.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtDescricao_KeyDown);
 			this.txtDescricao.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtDescricao_KeyPress);
@@ -223,7 +223,7 @@
 			// txtDataCompetencia
 			// 
 			this.txtDataCompetencia.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.txtDataCompetencia.Location = new System.Drawing.Point(153, 115);
+			this.txtDataCompetencia.Location = new System.Drawing.Point(133, 115);
 			this.txtDataCompetencia.MaxLength = 10;
 			this.txtDataCompetencia.Name = "txtDataCompetencia";
 			this.txtDataCompetencia.Size = new System.Drawing.Size(91, 23);
@@ -238,7 +238,7 @@
 			// txtValor
 			// 
 			this.txtValor.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.txtValor.Location = new System.Drawing.Point(326, 115);
+			this.txtValor.Location = new System.Drawing.Point(366, 115);
 			this.txtValor.MaxLength = 18;
 			this.txtValor.Name = "txtValor";
 			this.txtValor.Size = new System.Drawing.Size(111, 23);
@@ -255,7 +255,7 @@
 			this.btnGravar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
 			this.btnGravar.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.btnGravar.Image = ((System.Drawing.Image)(resources.GetObject("btnGravar.Image")));
-			this.btnGravar.Location = new System.Drawing.Point(45, 75);
+			this.btnGravar.Location = new System.Drawing.Point(25, 75);
 			this.btnGravar.Name = "btnGravar";
 			this.btnGravar.Size = new System.Drawing.Size(129, 40);
 			this.btnGravar.TabIndex = 0;
@@ -268,7 +268,7 @@
 			this.btnLimpar.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
 			this.btnLimpar.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.btnLimpar.Image = ((System.Drawing.Image)(resources.GetObject("btnLimpar.Image")));
-			this.btnLimpar.Location = new System.Drawing.Point(45, 128);
+			this.btnLimpar.Location = new System.Drawing.Point(25, 128);
 			this.btnLimpar.Name = "btnLimpar";
 			this.btnLimpar.Size = new System.Drawing.Size(129, 40);
 			this.btnLimpar.TabIndex = 1;
@@ -279,7 +279,7 @@
 			// lblCnpjCpf
 			// 
 			this.lblCnpjCpf.AutoSize = true;
-			this.lblCnpjCpf.Location = new System.Drawing.Point(461, 120);
+			this.lblCnpjCpf.Location = new System.Drawing.Point(541, 120);
 			this.lblCnpjCpf.Name = "lblCnpjCpf";
 			this.lblCnpjCpf.Size = new System.Drawing.Size(59, 13);
 			this.lblCnpjCpf.TabIndex = 12;
@@ -288,7 +288,7 @@
 			// txtCnpjCpf
 			// 
 			this.txtCnpjCpf.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.txtCnpjCpf.Location = new System.Drawing.Point(526, 115);
+			this.txtCnpjCpf.Location = new System.Drawing.Point(606, 115);
 			this.txtCnpjCpf.MaxLength = 18;
 			this.txtCnpjCpf.Name = "txtCnpjCpf";
 			this.txtCnpjCpf.Size = new System.Drawing.Size(145, 23);
@@ -305,7 +305,7 @@
 			this.lblContador.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
 			this.lblContador.Font = new System.Drawing.Font("Microsoft Sans Serif", 22F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblContador.Image = ((System.Drawing.Image)(resources.GetObject("lblContador.Image")));
-			this.lblContador.Location = new System.Drawing.Point(72, 16);
+			this.lblContador.Location = new System.Drawing.Point(52, 16);
 			this.lblContador.Name = "lblContador";
 			this.lblContador.Size = new System.Drawing.Size(75, 40);
 			this.lblContador.TabIndex = 13;
@@ -317,9 +317,9 @@
 			this.gboxBotoes.Controls.Add(this.lblContador);
 			this.gboxBotoes.Controls.Add(this.btnLimpar);
 			this.gboxBotoes.Controls.Add(this.btnGravar);
-			this.gboxBotoes.Location = new System.Drawing.Point(786, 48);
+			this.gboxBotoes.Location = new System.Drawing.Point(826, 48);
 			this.gboxBotoes.Name = "gboxBotoes";
-			this.gboxBotoes.Size = new System.Drawing.Size(219, 181);
+			this.gboxBotoes.Size = new System.Drawing.Size(179, 181);
 			this.gboxBotoes.TabIndex = 2;
 			this.gboxBotoes.TabStop = false;
 			// 
@@ -341,7 +341,7 @@
 			this.gboxDefault.Controls.Add(this.lblContaCorrente);
 			this.gboxDefault.Location = new System.Drawing.Point(10, 48);
 			this.gboxDefault.Name = "gboxDefault";
-			this.gboxDefault.Size = new System.Drawing.Size(731, 181);
+			this.gboxDefault.Size = new System.Drawing.Size(771, 181);
 			this.gboxDefault.TabIndex = 0;
 			this.gboxDefault.TabStop = false;
 			this.gboxDefault.Text = "Valores Padrão";
@@ -501,7 +501,7 @@
 			dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
 			this.colDescricao.DefaultCellStyle = dataGridViewCellStyle7;
 			this.colDescricao.HeaderText = "Descrição";
-			this.colDescricao.MaxInputLength = 40;
+			this.colDescricao.MaxInputLength = 80;
 			this.colDescricao.Name = "colDescricao";
 			this.colDescricao.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
 			// 
