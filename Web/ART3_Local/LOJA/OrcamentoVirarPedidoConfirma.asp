@@ -2231,7 +2231,7 @@
 					if alerta = "" then
 						if indice_pedido > 1 then
 							sBlocoNotasMsg = "Pedido gerado através de split automático durante o cadastramento inicial"
-							if Not grava_bloco_notas_pedido(id_pedido, ID_USUARIO_SISTEMA, loja, COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__RESTRITO, sBlocoNotasMsg, COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_SPLIT_AUTOMATICO, msg_erro) then
+							if Not grava_bloco_notas_pedido(id_pedido, ID_USUARIO_SISTEMA, loja, COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__PUBLICO, sBlocoNotasMsg, COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_SPLIT_AUTOMATICO, msg_erro) then
 								alerta = "Falha ao gravar bloco de notas com mensagem automática no pedido (" & id_pedido & ")"
 								end if
 							end if
