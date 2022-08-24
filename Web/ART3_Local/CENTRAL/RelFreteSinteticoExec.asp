@@ -390,16 +390,16 @@ const MSO_NUMBER_FORMAT_TEXTO = "\@"
 dim r
 dim x
 dim cab, cab_table
-dim s_aux, s_sql, s_where
+dim s_aux, s_sql, s_where, s_lista_pedidos
 dim n_reg, n_reg_total
 dim intLargTransportadora, intLargQtdePedidos, intLargValorFrete, intLargPrecoNF, intLargPercPrecoNF, intLargPrecoVenda, intLargPercPrecoVenda
 dim vlFrete, vlPrecoNF, vlPrecoVenda
 dim percPrecoVenda, percPrecoNF
-dim vlTotalFrete, vlTotalPrecoNF, vlTotalPrecoVenda
-dim vlTotalPercPrecoNF, vlTotalPercPrecoVenda
+dim vlTotalFrete, vlTotalPrecoNF, vlTotalPrecoVenda, vlTotalAjustadoPrecoNF, vlTotalAjustadoPrecoVenda
+dim vlTotalPercPrecoNF, vlTotalPercPrecoVenda, vlTotalAjustadoPercPrecoNF, vlTotalAjustadoPercPrecoVenda
 dim lngQtdeTotalPedidos, lngQtdePedidos
 dim strTransportadora, intQtdeTransportadoras
-dim strPercPrecoNF, strPercPrecoVenda, strVlTotalPercPrecoNF, strVlTotalPercPrecoVenda, s_where_externo
+dim strPercPrecoNF, strPercPrecoVenda, strVlTotalPercPrecoNF, strVlTotalPercPrecoVenda, strVlTotalAjustadoPercPrecoNF, strVlTotalAjustadoPercPrecoVenda, s_where_externo
 
 '	CRITÉRIOS DE RESTRIÇÃO
 	s_where = "(p.st_entrega <> '" & ST_ENTREGA_CANCELADO & "')"
@@ -497,6 +497,7 @@ dim strPercPrecoNF, strPercPrecoVenda, strVlTotalPercPrecoNF, strVlTotalPercPrec
 '	MONTA SQL DE CONSULTA
 	s_sql = "SELECT " & _
 				"transportadora_id, " & _
+				"STRING_AGG(CONVERT(varchar(max), ''''+ pedido + ''''), ',') AS lista_pedidos, " & _
 				"Coalesce(COUNT(*),0) AS qtde_pedidos, " & _
 				"Coalesce(SUM(preco_NF),0) AS preco_NF, " & _
 				"Coalesce(SUM(preco_venda),0) AS preco_venda, " & _
@@ -583,9 +584,12 @@ dim strPercPrecoNF, strPercPrecoVenda, strVlTotalPercPrecoNF, strVlTotalPercPrec
 	vlTotalFrete = 0
 	vlTotalPrecoNF = 0
 	vlTotalPrecoVenda = 0
+	vlTotalAjustadoPrecoNF = 0
+	vlTotalAjustadoPrecoVenda = 0
 	lngQtdeTotalPedidos = 0
 	intQtdeTransportadoras = 0
-	
+	s_lista_pedidos = ""
+
 	set r = cn.execute(s_sql)
 	do while Not r.Eof
 	
@@ -594,6 +598,9 @@ dim strPercPrecoNF, strPercPrecoVenda, strVlTotalPercPrecoNF, strVlTotalPercPrec
 
 		x = x & "	<TR>" & chr(13)
 		
+		if s_lista_pedidos <> "" then s_lista_pedidos = s_lista_pedidos & ", "
+		s_lista_pedidos = s_lista_pedidos & Trim("" & r("lista_pedidos"))
+
 		vlFrete = CCur(r("frete_valor"))
 		vlPrecoNF = CCur(r("preco_NF"))
 		vlPrecoVenda = CCur(r("preco_venda"))
@@ -703,6 +710,48 @@ dim strPercPrecoNF, strPercPrecoVenda, strVlTotalPercPrecoNF, strVlTotalPercPrec
 			"		<TD class='MC MD ME' colspan=7><P class='ALERTA'>&nbsp;NENHUM PEDIDO ENCONTRADO&nbsp;</P></TD>" & chr(13) & _
 			"	</TR>" & chr(13)
 	else
+		'CALCULA VALORES DOS PEDIDOS SEM DUPLICIDADE (ISSO PODE OCORRER QUANDO UM PEDIDO POSSUI MAIS DE UM REGISTRO DE FRETE, SENDO QUE PODEM SER DE TRANSPORTADORAS DIFERENTES)
+		'PREÇO NF: VENDAS NORMAIS
+		s_sql = "SELECT " & _
+					"Coalesce(SUM(qtde*preco_NF),0) AS vl_total_preco_NF" & _
+				" FROM t_PEDIDO_ITEM i" &_ 
+				" WHERE" & _
+					" (i.pedido IN (" & s_lista_pedidos & "))"
+		if r.State <> 0 then r.Close
+		set r = cn.execute(s_sql)
+		if Not r.Eof then vlTotalAjustadoPrecoNF = r("vl_total_preco_NF")
+		
+		'PREÇO NF: DEVOLUÇÕES
+		s_sql = "SELECT " & _
+					"Coalesce(SUM(qtde*preco_NF),0) AS vl_total_preco_NF" & _
+				" FROM t_PEDIDO_ITEM_DEVOLVIDO d" &_ 
+				" WHERE" & _
+					" (d.pedido IN (" & s_lista_pedidos & "))"
+		if r.State <> 0 then r.Close
+		set r = cn.execute(s_sql)
+		if Not r.Eof then vlTotalAjustadoPrecoNF = vlTotalAjustadoPrecoNF - r("vl_total_preco_NF")
+
+		'PREÇO VENDA: VENDAS NORMAIS
+		s_sql = "SELECT " & _
+					"Coalesce(SUM(qtde*preco_venda),0) AS vl_total_preco_venda" & _
+				" FROM t_PEDIDO_ITEM i" &_ 
+				" WHERE" & _
+					" (i.pedido IN (" & s_lista_pedidos & "))"
+		if r.State <> 0 then r.Close
+		set r = cn.execute(s_sql)
+		if Not r.Eof then vlTotalAjustadoPrecoVenda = r("vl_total_preco_venda")
+		
+		'PREÇO VENDA: DEVOLUÇÕES
+		s_sql = "SELECT " & _
+					"Coalesce(SUM(qtde*preco_venda),0) AS vl_total_preco_venda" & _
+				" FROM t_PEDIDO_ITEM_DEVOLVIDO d" &_ 
+				" WHERE" & _
+					" (d.pedido IN (" & s_lista_pedidos & "))"
+		if r.State <> 0 then r.Close
+		set r = cn.execute(s_sql)
+		if Not r.Eof then vlTotalAjustadoPrecoVenda = vlTotalAjustadoPrecoVenda - r("vl_total_preco_venda")
+
+		'CALCULA PERCENTUAIS P/ VALORES NOMINAIS
 		if (vlTotalFrete = 0) Or (vlTotalPrecoNF = 0) then
 			vlTotalPercPrecoNF = 0
 		else
@@ -729,6 +778,33 @@ dim strPercPrecoNF, strPercPrecoVenda, strVlTotalPercPrecoNF, strVlTotalPercPrec
 			strVlTotalPercPrecoVenda = formata_perc1dec(vlTotalPercPrecoVenda)
 			end if
 		
+		'CALCULA PERCENTUAIS P/ VALORES AJUSTADOS (CADA PEDIDO SENDO CONTABILIZADO UMA ÚNICA VEZ)
+		if (vlTotalFrete = 0) Or (vlTotalAjustadoPrecoNF = 0) then
+			vlTotalAjustadoPercPrecoNF = 0
+		else
+			vlTotalAjustadoPercPrecoNF = vlTotalFrete / vlTotalAjustadoPrecoNF
+			if Not blnSaidaExcel then vlTotalAjustadoPercPrecoNF = 100 * vlTotalAjustadoPercPrecoNF
+			end if
+
+		if blnSaidaExcel then
+			strVlTotalAjustadoPercPrecoNF = formata_perc4dec(vlTotalAjustadoPercPrecoNF)
+		else
+			strVlTotalAjustadoPercPrecoNF = formata_perc1dec(vlTotalAjustadoPercPrecoNF)
+			end if
+			
+		if (vlTotalFrete = 0) Or (vlTotalAjustadoPrecoVenda = 0) then
+			vlTotalAjustadoPercPrecoVenda = 0
+		else
+			vlTotalAjustadoPercPrecoVenda = vlTotalFrete / vlTotalAjustadoPrecoVenda
+			if Not blnSaidaExcel then vlTotalAjustadoPercPrecoVenda = 100 * vlTotalAjustadoPercPrecoVenda
+			end if
+		
+		if blnSaidaExcel then
+			strVlTotalAjustadoPercPrecoVenda = formata_perc4dec(vlTotalAjustadoPercPrecoVenda)
+		else
+			strVlTotalAjustadoPercPrecoVenda = formata_perc1dec(vlTotalAjustadoPercPrecoVenda)
+			end if
+
 	'	TOTAIS
 		x = x & _
 			"	<TR>" & chr(13) & _
@@ -758,6 +834,26 @@ dim strPercPrecoNF, strPercPrecoVenda, strVlTotalPercPrecoNF, strVlTotalPercPrec
 			"		</TD>" & chr(13) & _
 			"		<TD class='MTD'>" & _
 						"<P class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_PERC & chr(34) & ";'>" & strVlTotalPercPrecoVenda & "</p>" & _
+			"		</TD>" & chr(13) & _
+			"	</TR>" & chr(13) & _
+			"	<TR style='background:ivory;'>" & chr(13) & _
+			"		<TD class='MTD ME' colspan='2' align='right'>" & chr(13) & _
+						"<P class='C' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & " AJUSTADO</p>" & _
+			"		</TD>" & chr(13) & _
+			"		<TD class='MTD'>" & _
+						"<P class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vlTotalFrete) & "</p>" & _
+			"		</TD>" & chr(13) & _
+			"		<TD class='MTD'>" & _
+						"<P class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vlTotalAjustadoPrecoNF) & "</p>" & _
+			"		</TD>" & chr(13) & _
+			"		<TD class='MTD'>" & _
+						"<P class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_PERC & chr(34) & ";'>" & strVlTotalAjustadoPercPrecoNF & "</p>" & _
+			"		</TD>" & chr(13) & _
+			"		<TD class='MTD'>" & _
+						"<P class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vlTotalAjustadoPrecoVenda) & "</p>" & _
+			"		</TD>" & chr(13) & _
+			"		<TD class='MTD'>" & _
+						"<P class='Cd' style='font-weight:bold;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_PERC & chr(34) & ";'>" & strVlTotalAjustadoPercPrecoVenda & "</p>" & _
 			"		</TD>" & chr(13) & _
 			"	</TR>" & chr(13)
 		end if

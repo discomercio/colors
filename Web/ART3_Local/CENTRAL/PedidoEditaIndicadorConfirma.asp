@@ -56,7 +56,7 @@
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	if Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	
-	dim pedido_selecionado
+	dim pedido_selecionado, s_pedidos
 	pedido_selecionado = Trim(Request.Form("pedido_selecionado"))
 	if (pedido_selecionado = "") then Response.Redirect("aviso.asp?id=" & ERR_PEDIDO_NAO_ESPECIFICADO)
 
@@ -99,6 +99,71 @@
 			end if
 		if rs.State <> 0 then rs.Close
 		end if
+
+	if alerta = "" then
+		s = "SELECT *" & _
+			" FROM t_COMISSAO_INDICADOR_NFSe_N1 n1" & _
+				" INNER JOIN t_COMISSAO_INDICADOR_NFSe_N2 n2 ON (n1.id = n2.id_comissao_indicador_nfse_n1)" & _
+				" INNER JOIN t_COMISSAO_INDICADOR_NFSe_N3_PEDIDO n3Ped ON (n2.id = n3Ped.id_comissao_indicador_nfse_n2)" & _
+			" WHERE" & _
+				" (n1.status <> 0)" & _
+				" AND (n3Ped.pedido = '" & r_pedido.pedido & "')"
+		set rs = cn.Execute(s)
+		if Not rs.Eof then
+			alerta=texto_add_br(alerta)
+			alerta=alerta & "O indicador não pode ser alterado porque este pedido já foi processado no relatório de comissões (via NFSe)!"
+			end if
+		if rs.State <> 0 then rs.Close
+		end if 'if alerta = "" then
+
+	if alerta = "" then
+		'O indicador é válido p/ toda a família de pedidos, portanto, verifica se há algum pedido da família que já teve a comissão processada
+		s = "SELECT" & _
+				" pedido" & _
+			" FROM t_PEDIDO" & _
+			" WHERE" & _
+				" (pedido_base = '" & retorna_num_pedido_base(r_pedido.pedido) & "')" & _
+				" AND (comissao_paga = " & COD_COMISSAO_PAGA & ")" & _
+			" ORDER BY" & _
+				" pedido"
+		set rs = cn.Execute(s)
+		if Not rs.Eof then
+			s_pedidos = ""
+			do while Not rs.Eof
+				if s_pedidos <> "" then s_pedidos = s_pedidos & ", "
+				s_pedidos = s_pedidos & Trim("" & rs("pedido"))
+				rs.MoveNext
+				loop
+			alerta=texto_add_br(alerta)
+			if s_pedidos = r_pedido.pedido then
+				alerta=alerta & "O indicador não pode ser alterado porque este pedido já consta com status de comissão paga!"
+			else
+				alerta=alerta & "O indicador não pode ser alterado porque há pedidos desta família de pedidos que constam com status de comissão paga (" & s_pedidos & ")!"
+				end if
+			end if
+		if rs.State <> 0 then rs.Close
+		end if 'if alerta = "" then
+
+	dim blnPedidoPassouPossuirIndicador, blnTratarRALiq, perc_desagio_RA, perc_desagio_RA_liquida, perc_limite_RA_sem_desagio
+	blnPedidoPassouPossuirIndicador = False
+	blnTratarRALiq = False
+	perc_desagio_RA = 0
+	perc_desagio_RA_liquida = 0
+	perc_limite_RA_sem_desagio = 0
+	if alerta = "" then
+		'Se está sendo cadastrado agora um indicador em um pedido que não tinha indicador, realiza o tratamento p/ os campos de RA e RA líquida
+		if (r_pedido.indicador = "") And (c_indicador_novo <> "") then
+			blnPedidoPassouPossuirIndicador = True
+			perc_desagio_RA = obtem_perc_desagio_RA_do_indicador(c_indicador_novo)
+			perc_limite_RA_sem_desagio = obtem_perc_limite_RA_sem_desagio()
+
+			if (Cstr(r_pedido.loja) <> Cstr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE)) then
+				blnTratarRALiq = True
+				perc_desagio_RA_liquida = getParametroPercDesagioRALiquida
+				end if
+			end if
+		end if 'if alerta = "" then
+
 
 	dim sBlocoNotasMsg
 	sBlocoNotasMsg = ""
@@ -146,6 +211,15 @@
 		if alerta = "" then
 			indicador_anterior = rs("indicador")
 			rs("indicador")=c_indicador_novo
+
+			if blnPedidoPassouPossuirIndicador then
+				rs("perc_desagio_RA") = perc_desagio_RA
+				rs("perc_limite_RA_sem_desagio") = perc_limite_RA_sem_desagio
+				
+				if blnTratarRALiq then
+					rs("perc_desagio_RA_liquida") = perc_desagio_RA_liquida
+					end if
+				end if
 
 			if Trim("" & rs("analise_credito")) = COD_AN_CREDITO_OK then
 				'Envia mensagem de alerta sobre alteração do indicador em pedido com status "crédito ok"
@@ -200,7 +274,20 @@
 			if alerta = "" then
 				s = "UPDATE t_PED__FILHOTE" & _
 					" SET" & _
-						" t_PED__FILHOTE.indicador = t_PED__BASE.indicador" & _
+						" t_PED__FILHOTE.indicador = t_PED__BASE.indicador"
+				
+				if blnPedidoPassouPossuirIndicador then
+					s = s & _
+						", t_PED__FILHOTE.perc_desagio_RA = t_PED__BASE.perc_desagio_RA" & _
+						", t_PED__FILHOTE.perc_limite_RA_sem_desagio = t_PED__BASE.perc_limite_RA_sem_desagio"
+					
+					if blnTratarRALiq then
+						s = s & _
+							", t_PED__FILHOTE.perc_desagio_RA_liquida = t_PED__BASE.perc_desagio_RA_liquida"
+						end if
+					end if
+				
+				s = s & _
 					" FROM t_PEDIDO AS t_PED__FILHOTE" & _
 						" INNER JOIN t_PEDIDO AS t_PED__BASE ON (t_PED__FILHOTE.pedido_base = t_PED__BASE.pedido)" & _
 					" WHERE" & _
