@@ -431,7 +431,7 @@ dim s_aux, s_sql, s_where,s_sql_2
 dim n_reg
 dim vlFrete, vlPrecoNF, vlPrecoVenda
 dim percPrecoVenda, percPrecoNF
-dim vlTotalFrete, vlTotalPrecoNF, vlTotalPrecoVenda,vlTotalPrecoVendaAjustado
+dim vlTotalFrete, vlTotalPrecoNF, vlTotalPrecoVenda, vlTotalPrecoNFAjustado, vlTotalPrecoVendaAjustado
 dim vlTotalPercPrecoNF, vlTotalPercPrecoVenda
 dim strTransportadora, strTransportadoraAnterior, strTransportadoraAux, strPlural,strPluralFrete,pedidoAnterior
 dim strCidade, strUf, strCidadeUf, strNF
@@ -441,7 +441,8 @@ dim strPercPrecoNF, strPercPrecoVenda, strVlSubTotalPercPrecoNF, strVlSubTotalPe
 dim vlCubagem, intQtdeVolumes, vlPeso
 dim vlTotalCubagem, intQtdeTotalVolumes, vlTotalPeso
 dim vlSubTotalCubagem, intQtdeSubTotalVolumes, vlSubTotalPeso,intQtdeSubTotalFretes,intQtdeTotalFretes,s_where_tipo_frete
-dim qtde_Pedido,lista_pedidos_total_geral,strPercPrecoVendaSomado,vlTotalPercPrecoVendaAjustado,strVlTotalPercPrecoVendaAjustado,pedidoatual, s_where_externo
+dim qtde_Pedido,lista_pedidos_total_geral,strPercPrecoVendaSomado,vlTotalPercPrecoVendaAjustado,vlTotalPercPrecoNFAjustado,strVlTotalPercPrecoVendaAjustado,strVlTotalPercPrecoNFAjustado
+dim pedidoatual, s_where_externo
 
 
 '	CRITÉRIOS DE RESTRIÇÃO
@@ -1026,12 +1027,8 @@ dim qtde_Pedido,lista_pedidos_total_geral,strPercPrecoVendaSomado,vlTotalPercPre
 	end if
 
         
-        vlTotalPrecoNF = vlTotalPrecoNF + vlPrecoNF       
 		vlTotalFrete = vlTotalFrete + vlFrete
 		vlSubTotalFrete = vlSubTotalFrete + vlFrete
-		
-		
-		vlSubTotalPrecoNF = vlSubTotalPrecoNF + vlPrecoNF
 		
 		vlTotalCubagem = vlTotalCubagem + vlCubagem
 		vlSubTotalCubagem = vlSubTotalCubagem + vlCubagem
@@ -1044,6 +1041,7 @@ dim qtde_Pedido,lista_pedidos_total_geral,strPercPrecoVendaSomado,vlTotalPercPre
 		
         if Instr(lista_pedidos_total_geral, "|" & pedidoatual & "|") = 0 then
             vlTotalPrecoVendaAjustado = vlTotalPrecoVendaAjustado + vlPrecoVenda
+			vlTotalPrecoNFAjustado = vlTotalPrecoNFAjustado + vlPrecoNF
             intQtdeTotalPedidos = intQtdeTotalPedidos + 1
 		    
             lista_pedidos_total_geral = lista_pedidos_total_geral & "|" & pedidoatual & "|"
@@ -1051,6 +1049,8 @@ dim qtde_Pedido,lista_pedidos_total_geral,strPercPrecoVendaSomado,vlTotalPercPre
         
         if pedidoatual <> pedidoanterior then
          vlTotalPrecoVenda = vlTotalPrecoVenda + vlPrecoVenda
+         vlTotalPrecoNF = vlTotalPrecoNF + vlPrecoNF
+         vlSubTotalPrecoNF = vlSubTotalPrecoNF + vlPrecoNF
          vlSubTotalPrecoVenda = vlSubTotalPrecoVenda + vlPrecoVenda
          intQtdeSubTotalPedidos = intQtdeSubTotalPedidos + 1
 		end if
@@ -1144,16 +1144,23 @@ dim qtde_Pedido,lista_pedidos_total_geral,strPercPrecoVendaSomado,vlTotalPercPre
 		if intQtdeTransportadoras > 1 then
 			if (vlTotalFrete = 0) Or (vlTotalPrecoNF = 0) then
 				vlTotalPercPrecoNF = 0
+				vlTotalPercPrecoNFAjustado = 0
 			else
 			'	LEMBRANDO QUE O EXCEL EXIBE O VALOR MULTIPLICADO POR 100 (EX: 0.5 -> 50%)
 				vlTotalPercPrecoNF = vlTotalFrete / vlTotalPrecoNF
-				if Not blnSaidaExcel then vlTotalPercPrecoNF = 100 * vlTotalPercPrecoNF
+				vlTotalPercPrecoNFAjustado = vlTotalFrete / vlTotalPrecoNFAjustado
+				if Not blnSaidaExcel then
+					vlTotalPercPrecoNF = 100 * vlTotalPercPrecoNF
+					vlTotalPercPrecoNFAjustado = 100 * vlTotalPercPrecoNFAjustado
+					end if
 				end if
 				
 			if blnSaidaExcel then
 				strVlTotalPercPrecoNF = formata_perc4dec(vlTotalPercPrecoNF)
+				strVlTotalPercPrecoNFAjustado = formata_perc4dec(vlTotalPercPrecoNFAjustado)
 			else
 				strVlTotalPercPrecoNF = formata_perc1dec(vlTotalPercPrecoNF)
+				strVlTotalPercPrecoNFAjustado = formata_perc1dec(vlTotalPercPrecoNFAjustado)
 				end if
 			
 			if (vlTotalFrete = 0) Or (vlTotalPrecoVenda = 0) then
@@ -1220,8 +1227,20 @@ dim qtde_Pedido,lista_pedidos_total_geral,strPercPrecoVendaSomado,vlTotalPercPre
 				"		</TD>" & chr(13) & _
 				"	</TR>" & chr(13) &_
                 "   <TR style='background:ivory;'> " & chr(13) & _
-                "		<TD colspan=10 class='MTD ME tdPrecoVenda2'>" & _
+                "		<TD colspan=4 class='MTD ME tdPrecoVenda2'>" & _
 							"<P class='Cd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_PERC & chr(34) & ";'> AJUSTADO </p>" & _
+				"		</TD>" & chr(13) & _
+				"		<TD class='MTD tdValorFrete'>" & _
+							"<P class='Cd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vlTotalFrete) & "</p>" & _
+				"		</TD>" & chr(13) & _
+                "		<TD class='MTD'>" & _
+							"<P class='Cd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vlTotalPrecoNFAjustado) & "</p>" & _
+				"		</TD>" & chr(13) & _
+                "       <TD class='MTD'>" & _
+							"<P class='Cd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_PERC & chr(34) & ";'>" & strVlTotalPercPrecoNFAjustado & "</p>" & _
+				"		</TD>" & chr(13) & _
+                "		<TD class='MTD' colspan='3'>" & _
+							"&nbsp;" & _
 				"		</TD>" & chr(13) & _
                 "		<TD class='MTD tdPrecoVenda2'>" & _
 							"<P class='Cd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & formata_moeda(vlTotalPrecoVendaAjustado) & "</p>" & _
