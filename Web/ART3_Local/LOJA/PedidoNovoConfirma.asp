@@ -2124,6 +2124,11 @@
 							rs("analise_credito")=Clng(COD_AN_CREDITO_OK)
 							rs("analise_credito_data")=Now
 							rs("analise_credito_usuario")="AUTOMÁTICO"
+						elseif (Cstr(loja) = NUMERO_LOJA_INDICACAO_OBRA) And (rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA) And ((CStr(op_av_forma_pagto) = Cstr(ID_FORMA_PAGTO_DINHEIRO)) Or (CStr(op_av_forma_pagto) = Cstr(ID_FORMA_PAGTO_DEPOSITO))) then
+							'Loja Indicação de Obra: Crédito Ok automático p/ pagto à vista em dinheiro ou depósito
+							rs("analise_credito")=Clng(COD_AN_CREDITO_OK)
+							rs("analise_credito_data")=Now
+							rs("analise_credito_usuario")="AUTOMÁTICO"
 						elseif Cstr(loja) = Cstr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) And (rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA) And (CStr(op_av_forma_pagto) = Cstr(ID_FORMA_PAGTO_DINHEIRO)) then
 							rs("analise_credito")=Clng(COD_AN_CREDITO_PENDENTE_VENDAS)
 							rs("analise_credito_data")=Now
