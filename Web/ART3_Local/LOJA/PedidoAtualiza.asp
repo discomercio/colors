@@ -2589,6 +2589,12 @@
 					sMeioPagtoMonitoradoIdentificado = sMeioPagtoMonitoradoIdentificado & "'" & x_opcao_forma_pagamento(idMeioPagtoMonitorado) & "'"
 					end if
 
+				idMeioPagtoMonitorado = ID_FORMA_PAGTO_CARTAO_MAQUINETA
+				if parcelamentoPassouPossuirMeioPagamento(r_pedido, r_pedido_atualizado, idMeioPagtoMonitorado, False) then
+					if sMeioPagtoMonitoradoIdentificado <> "" then sMeioPagtoMonitoradoIdentificado = sMeioPagtoMonitoradoIdentificado & ", "
+					sMeioPagtoMonitoradoIdentificado = sMeioPagtoMonitoradoIdentificado & "'" & x_opcao_forma_pagamento(idMeioPagtoMonitorado) & "'"
+					end if
+
 				if sMeioPagtoMonitoradoIdentificado <> "" then
 					set rEmailDestinatario = get_registro_t_parametro(ID_PARAMETRO_EmailDestinatarioAlertaEdicaoFormaPagtoPassouPossuirMeioPagtoMonitorado)
 					if Trim("" & rEmailDestinatario.campo_texto) <> "" then
