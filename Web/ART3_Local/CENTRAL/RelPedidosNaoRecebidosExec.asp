@@ -307,6 +307,8 @@ sub consulta_executa
 const MSO_NUMBER_FORMAT_PERC = "\#\#0\.0%"
 const MSO_NUMBER_FORMAT_MOEDA = "\#\#\#\,\#\#\#\,\#\#0\.00"
 const MSO_NUMBER_FORMAT_FLOAT = "\#\#\#\,\#\#\#\,\#\#0\.0"
+const MSO_NUMBER_FORMAT_FLOAT1DEC = "\#\#\#\,\#\#\#\,\#\#0\.0"
+const MSO_NUMBER_FORMAT_FLOAT2DEC = "\#\#\#\,\#\#\#\,\#\#0\.00"
 const MSO_NUMBER_FORMAT_INTEIRO = "\#\#\#\,\#\#\#\,\#\#0"
 const MSO_NUMBER_FORMAT_TEXTO = "\@"
 dim r
@@ -319,8 +321,9 @@ dim strCidade, strUf, strCidadeUf
 dim intQtdeTotalPedidos, intQtdeTransportadoras
 dim intQtdeSubTotalPedidos, s_grupo_origem, nColSpan
 dim s_cor, s_dias
+dim vl_total_NF, s_total_NF, blnNfVenda
 
-	nColSpan = 9
+	nColSpan = 12
 	if blnSaidaExcel then nColSpan = nColSpan - 1
 
 '	CRITÉRIOS DE RESTRIÇÃO
@@ -405,6 +408,12 @@ dim s_cor, s_dias
 		end if
 
 	s_sql = s_sql & _
+				", Coalesce((SELECT SUM(qtde*cubagem) FROM t_PEDIDO_ITEM WHERE (t_PEDIDO_ITEM.pedido = p.pedido)), 0) AS cubagem" & _
+				", Coalesce((SELECT SUM(qtde*peso) FROM t_PEDIDO_ITEM WHERE (t_PEDIDO_ITEM.pedido = p.pedido)), 0) AS peso" & _
+				", (SELECT TOP 1 total__vNF FROM t_NFE_IMAGEM WHERE (st_anulado = 0) AND (t_NFE_IMAGEM.NFe_numero_NF = p.num_obs_2) AND (t_NFE_IMAGEM.id_nfe_emitente = p.id_nfe_emitente) ORDER BY id DESC) AS total__vNF_venda" & _
+				", (SELECT TOP 1 total__vNF FROM t_NFE_IMAGEM WHERE (st_anulado = 0) AND (t_NFE_IMAGEM.NFe_numero_NF = p.num_obs_3) AND (t_NFE_IMAGEM.id_nfe_emitente = p.id_nfe_emitente) ORDER BY id DESC) AS total__vNF_remessa"
+
+	s_sql = s_sql & _
 			" FROM t_PEDIDO p INNER JOIN t_CLIENTE c ON (p.id_cliente=c.id)" & _
 			" WHERE " & _
 				s_where & _
@@ -428,19 +437,25 @@ dim s_cor, s_dias
 			"		<td class='MTD tdPedido' valign='bottom' nowrap><span class='R'>Pedido</span></td>" &  chr(13) & _
 			"		<td class='MTD tdCidade' valign='bottom' nowrap><span class='R' style='text-align:left;'>Cidade</span></td>" &  chr(13) & _
 			"		<td class='MTD tdObs2' valign='bottom' nowrap><span class='R' style='text-align:left;'>NF</span></td>" &  chr(13) & _
+			"		<td class='MTD tdVlNf' align='right' valign='bottom' nowrap><span class='Rd' style='text-align:right;'>VL NF</span></td>" &  chr(13) & _
+			"		<td class='MTD tdCubagem' align='right' valign='bottom' nowrap><span class='Rd' style='text-align:right;'>Cubagem</span></td>" &  chr(13) & _
+			"		<td class='MTD tdPeso' align='right' valign='bottom' nowrap><span class='Rd' style='text-align:right;'>Peso</span></td>" &  chr(13) & _
 			"		<td class='MTD tdLoja' align='center' valign='bottom' nowrap><span class='Rc'>Loja</span></td>" &  chr(13) & _
 			"		<td class='MTD tdCliente' valign='bottom'><span style='font-weight:bold; text-align:left;' class='R'>Cliente</span></td>" & chr(13) & _
 			"	</tr>" & chr(13)
 	else
 		cab = _
 			"	<tr style='background:azure' nowrap>" & chr(13) & _
-			"		<td class='MDTE tdDataEntrega' align='center' valign='bottom' nowrap style='width:90px;><span class='Rc' style='font-weight:bold;text-align:center;'>Data Coleta</span></td>" & chr(13) & _
-			"		<td class='MTD tdPrevEtg' align='center' valign='bottom' nowrap style='width:90px;><span class='Rc' style='font-weight:bold;text-align:center;'>Prev Etg</span></td>" & chr(13) & _
-			"		<td class='MTD tdAtraso' align='right' valign='bottom' nowrap style='width:60px;><span class='Rd' style='font-weight:bold;text-align:right;'>Atraso</span></td>" & chr(13) & _
-			"		<td class='MTD tdPedido' valign='bottom' nowrap style='width:90px;><span class='R' style='font-weight:bold;'>Pedido</span></td>" &  chr(13) & _
-			"		<td class='MTD tdCidade' valign='bottom' nowrap style='width:300px;><span class='R' style='font-weight:bold;text-align:left;'>Cidade</span></td>" &  chr(13) & _
-			"		<td class='MTD tdObs2' valign='bottom' nowrap style='width:80px;><span class='R' style='font-weight:bold;text-align:left;'>NF</span></td>" &  chr(13) & _
-			"		<td class='MTD tdLoja' align='center' valign='bottom' nowrap style='width:70px;><span class='Rc' style='font-weight:bold;text-align:center;'>Loja</span></td>" &  chr(13) & _
+			"		<td class='MDTE tdDataEntrega' align='center' valign='bottom' nowrap style='width:90px;'><span class='Rc' style='font-weight:bold;text-align:center;'>Data Coleta</span></td>" & chr(13) & _
+			"		<td class='MTD tdPrevEtg' align='center' valign='bottom' nowrap style='width:90px;'><span class='Rc' style='font-weight:bold;text-align:center;'>Prev Etg</span></td>" & chr(13) & _
+			"		<td class='MTD tdAtraso' align='right' valign='bottom' nowrap style='width:60px;'><span class='Rd' style='font-weight:bold;text-align:right;'>Atraso</span></td>" & chr(13) & _
+			"		<td class='MTD tdPedido' valign='bottom' nowrap style='width:90px;'><span class='R' style='font-weight:bold;'>Pedido</span></td>" &  chr(13) & _
+			"		<td class='MTD tdCidade' valign='bottom' nowrap style='width:300px;'><span class='R' style='font-weight:bold;text-align:left;'>Cidade</span></td>" &  chr(13) & _
+			"		<td class='MTD tdObs2' valign='bottom' nowrap style='width:80px;'><span class='R' style='font-weight:bold;text-align:left;'>NF</span></td>" &  chr(13) & _
+			"		<td class='MTD tdVlNf' align='right' valign='bottom' nowrap style='width:80px;'><span class='Rd' style='font-weight:bold;text-align:right;'>VL NF</span></td>" &  chr(13) & _
+			"		<td class='MTD tdCubagem' align='right' valign='bottom' nowrap style='width:70px;'><span class='Rd' style='font-weight:bold;text-align:right;'>Cubagem</span></td>" &  chr(13) & _
+			"		<td class='MTD tdPeso' align='right' valign='bottom' nowrap style='width:60px;'><span class='Rd' style='font-weight:bold;text-align:right;'>Peso</span></td>" &  chr(13) & _
+			"		<td class='MTD tdLoja' align='center' valign='bottom' nowrap style='width:70px;'><span class='Rc' style='font-weight:bold;text-align:center;'>Loja</span></td>" &  chr(13) & _
 			"		<td class='MTD tdCliente' valign='bottom' style='width:500px;'><span style='font-weight:bold;text-align:left;' class='R'>Cliente</span></td>" & chr(13) & _
 			"	</tr>" & chr(13)
 		end if
@@ -625,8 +640,12 @@ dim s_cor, s_dias
 
 	'>  NF
 		'Somente NF de Remessa, quando houver
+		blnNfVenda = False
 		strNF = Trim("" & r("obs_3"))
-		if strNF = "" then strNF = Trim("" & r("obs_2"))
+		if strNF = "" then
+			blnNfVenda = True
+			strNF = Trim("" & r("obs_2"))
+			end if
 
 		x = x & "		<td class='MTD tdObs2'>"
 		if Not blnSaidaExcel then
@@ -643,7 +662,56 @@ dim s_cor, s_dias
 			end if
 
 		x = x & "</td>" & chr(13)
-						
+	
+	'>  VALOR DA NF
+		s_total_NF = ""
+		if (Trim("" & r("obs_2")) <> "") Or (Trim("" & r("obs_3")) <> "") then
+			if blnNfVenda then
+				vl_total_NF = converte_numero(Trim("" & r("total__vNF_venda")))
+			else
+				vl_total_NF = converte_numero(Trim("" & r("total__vNF_remessa")))
+				end if
+			s_total_NF = formata_moeda(vl_total_NF)
+			end if
+
+		x = x & "		<td class='MTD tdVlNf' align='right'>"
+		if Not blnSaidaExcel then
+			x = x & _
+					"<span class='Cd' style='text-align:right;'>" & _
+						s_total_NF & _
+					"</span>"
+		else
+			x = x & _
+				"<p class='Cd' style='text-align:right;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_MOEDA & chr(34) & ";'>" & s_total_NF & "</p>"
+			end if
+		x = x & "</td>" & chr(13)
+
+	'>  CUBAGEM
+		x = x & "		<td class='MTD tdCubagem' align='right'>"
+		if Not blnSaidaExcel then
+			x = x & _
+					"<span class='Cd' style='text-align:right;'>" & _
+						formata_numero(r("cubagem"), 2) & _
+					"</span>"
+		else
+			x = x & _
+				"<p class='Cd' style='text-align:right;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_FLOAT2DEC & chr(34) & ";'>" & formata_numero(r("cubagem"), 2) & "</p>"
+			end if
+		x = x & "</td>" & chr(13)
+
+	'>  PESO
+		x = x & "		<td class='MTD tdPeso' align='right'>"
+		if Not blnSaidaExcel then
+			x = x & _
+					"<span class='Cd' style='text-align:right;'>" & _
+						formata_numero(r("peso"), 1) & _
+					"</span>"
+		else
+			x = x & _
+				"<p class='Cd' style='text-align:right;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_FLOAT1DEC & chr(34) & ";'>" & formata_numero(r("peso"), 1) & "</p>"
+			end if
+		x = x & "</td>" & chr(13)
+
 	'>  Nº LOJA
 		x = x & "		<td class='MTD tdLoja' align='center'>"
 		if Not blnSaidaExcel then
@@ -943,6 +1011,15 @@ function fRELGravaDados(f) {
 	
 .tdObs2{
 	width: 70px;
+	}
+.tdVlNf{
+	width: 70px;
+	}
+.tdCubagem{
+	width: 50px;
+	}
+.tdPeso{
+	width: 50px;
 	}
 .tdLoja{
 	width: 32px;
