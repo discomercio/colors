@@ -1528,7 +1528,6 @@ dim vTipoFrete
 
 	x_cab = ""
 	if ckb_COL_DT_CADASTRO <> "" then x_cab = x_cab & "Data (Cadastro);"
-	if ckb_COL_DT_ENTREGA <> "" then x_cab = x_cab & "Data (Entrega);"
 	if ckb_COL_NF <> "" then x_cab = x_cab & "NF;"
 	if ckb_COL_DT_EMISSAO_NF <> "" then x_cab = x_cab & "Emissao NF;"
 	if ckb_COL_NF_REMESSA <> "" then x_cab = x_cab & "NF Remessa;"
@@ -1550,6 +1549,7 @@ dim vTipoFrete
 	if ckb_COL_INDICADOR <> "" then x_cab = x_cab & "Indicador;"
 	if ckb_COL_TRANSPORTADORA <> "" then x_cab = x_cab & "Transportadora;"
 	if ckb_COL_ENTREGA_IMEDIATA <> "" then x_cab = x_cab & "Entrega Imediata;Previsao Entrega;"
+	if ckb_COL_DT_ENTREGA <> "" then x_cab = x_cab & "Data de Entrega;"
 	if ckb_COL_DT_PREVISAO_ETG_TRANSP <> "" then x_cab = x_cab & "Previsão de Entrega (Transp);"
 	if ckb_COL_DT_RECEB_CLIENTE <> "" then x_cab = x_cab & "Receb Cliente;"
 	if ckb_COL_INDICADOR_CPF_CNPJ <> "" then x_cab = x_cab & "CPF/CNPJ Ind;"
@@ -1635,17 +1635,6 @@ dim vTipoFrete
 		 '> DATA (CADASTRO)
 			if ckb_COL_DT_CADASTRO <> "" then
 				x = x & formata_data(r("data_hora")) & ";"
-				end if
-
-		 '> DATA (ENTREGA)
-			if ckb_COL_DT_ENTREGA <> "" then
-				s = ""
-				if (Trim("" & r("operacao")) = "VENDA_NORMAL") And (Trim("" & r("st_entrega")) = ST_ENTREGA_ENTREGUE) And IsDate(r("entregue_data")) then
-					s = formata_data(r("entregue_data"))
-				elseif Trim("" & r("operacao")) = "DEVOLUCAO" then
-					s = formata_data(r("data_hora"))
-					end if
-				x = x & s & ";"
 				end if
 		
 		 '> NF
@@ -1832,7 +1821,18 @@ dim vTipoFrete
 					end if
 				x = x & s & ";"
 				end if 
-
+		
+		 '> DATA (ENTREGA)
+			if ckb_COL_DT_ENTREGA <> "" then
+				s = ""
+				if (Trim("" & r("operacao")) = "VENDA_NORMAL") And (Trim("" & r("st_entrega")) = ST_ENTREGA_ENTREGUE) And IsDate(r("entregue_data")) then
+					s = formata_data(r("entregue_data"))
+				elseif Trim("" & r("operacao")) = "DEVOLUCAO" then
+					s = formata_data(r("data_hora"))
+					end if
+				x = x & s & ";"
+				end if
+		
 		'> PREVISÃO DE ENTREGA DA TRANSPORTADORA
 			if ckb_COL_DT_PREVISAO_ETG_TRANSP <> "" then
 				s = ""
