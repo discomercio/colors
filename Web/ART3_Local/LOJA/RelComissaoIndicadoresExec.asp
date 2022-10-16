@@ -59,6 +59,8 @@
 	dim s, s_aux, s_filtro
 	dim ckb_st_entrega_entregue, c_dt_entregue_inicio, c_dt_entregue_termino
 	dim ckb_comissao_paga_sim, ckb_comissao_paga_nao
+	dim ckb_st_pagto_pago, ckb_st_pagto_nao_pago, ckb_st_pagto_pago_parcial
+	dim rb_pagto_comissao_via_cartao
 	dim c_vendedor, c_indicador
 	dim c_loja, lista_loja, s_filtro_loja, v_loja, v, i
 	dim rb_visao
@@ -80,6 +82,12 @@
 
 	ckb_comissao_paga_sim = Trim(Request.Form("ckb_comissao_paga_sim"))
 	ckb_comissao_paga_nao = Trim(Request.Form("ckb_comissao_paga_nao"))
+
+	ckb_st_pagto_pago = Trim(Request.Form("ckb_st_pagto_pago"))
+	ckb_st_pagto_nao_pago = Trim(Request.Form("ckb_st_pagto_nao_pago"))
+	ckb_st_pagto_pago_parcial = Trim(Request.Form("ckb_st_pagto_pago_parcial"))
+	
+	rb_pagto_comissao_via_cartao = Trim(Request.Form("rb_pagto_comissao_via_cartao"))
 	rb_visao = Trim(Request.Form("rb_visao"))
 
 '	APENAS PEDIDOS DESTA LOJA
@@ -153,6 +161,9 @@
 ' CONSULTA EXECUTA
 '
 sub consulta_executa
+const VENDA_NORMAL = "VENDA_NORMAL"
+const DEVOLUCAO = "DEVOLUCAO"
+const PERDA = "PERDA"
 dim r
 dim s, s_aux, s_sql, x, cab_table, cab, indicador_a, n_reg, n_reg_total, qtde_indicadores
 dim vl_preco_venda, vl_sub_total_preco_venda, vl_total_preco_venda
@@ -161,6 +172,7 @@ dim vl_RT, vl_sub_total_RT, vl_total_RT
 dim vl_RA, vl_sub_total_RA, vl_total_RA
 dim perc_RT
 dim s_where, s_where_venda, s_where_devolucao, s_where_perdas, s_where_loja, s_cor, s_sinal, s_cor_sinal
+dim s_where_comissao_paga, s_where_comissao_descontada, s_where_st_pagto, s_where_dt_st_pagto
 dim nome_cliente
 
 '	CRITÉRIOS COMUNS
@@ -208,24 +220,83 @@ dim nome_cliente
 		end if
 
 '	CRITÉRIO: COMISSÃO PAGA
+'	A) VENDAS
+	s_where_comissao_paga = ""
 	s = ""
 	s_aux = ckb_comissao_paga_sim
 	if s_aux <> "" then
 		if s <> "" then s = s & " OR"
-		s = s & " (t_PEDIDO.comissao_paga = 1)"
+		s = s & " (t_PEDIDO.comissao_paga = " & COD_COMISSAO_PAGA & ")"
 		end if
 
 	s_aux = ckb_comissao_paga_nao
 	if s_aux <> "" then
 		if s <> "" then s = s & " OR"
-		s = s & " (t_PEDIDO.comissao_paga = 0)"
+		s = s & " (t_PEDIDO.comissao_paga = " & COD_COMISSAO_NAO_PAGA & ")"
 		end if
 
 	if s <> "" then 
-		if s_where <> "" then s_where = s_where & " AND"
-		s_where = s_where & " (" & s & ")"
+		if s_where_comissao_paga <> "" then s_where_comissao_paga = s_where_comissao_paga & " AND"
+		s_where_comissao_paga = s_where_comissao_paga & " (" & s & ")"
 		end if
 	
+'	B) PERDAS/DEVOLUÇÕES
+	s_where_comissao_descontada = ""
+	s = ""
+	s_aux = ckb_comissao_paga_sim
+	if s_aux <> "" then
+		if s <> "" then s = s & " OR"
+		s = s & " (comissao_descontada = " & COD_COMISSAO_DESCONTADA & ")"
+		end if
+	
+	s_aux = ckb_comissao_paga_nao
+	if s_aux <> "" then
+		if s <> "" then s = s & " OR"
+		s = s & " (comissao_descontada = " & COD_COMISSAO_NAO_DESCONTADA & ")"
+		end if
+
+	if s <> "" then 
+		if s_where_comissao_descontada <> "" then s_where_comissao_descontada = s_where_comissao_descontada & " AND"
+		s_where_comissao_descontada = s_where_comissao_descontada & " (" & s & ")"
+		end if
+
+'	CRITÉRIO: STATUS DE PAGAMENTO
+	s_where_dt_st_pagto = ""
+	if IsDate(c_dt_entregue_termino) then
+		s_where_dt_st_pagto = s_where_dt_st_pagto & " AND (t_PEDIDO__BASE.dt_st_pagto < " & bd_formata_data(StrToDate(c_dt_entregue_termino)+1) & ")"
+		end if
+
+	s_where_st_pagto = ""
+	s = ""
+	s_aux = ckb_st_pagto_pago
+	if s_aux <> "" then
+		if s <> "" then s = s & " OR"
+		s = s & " ((t_PEDIDO__BASE.st_pagto = '" & s_aux & "')" & s_where_dt_st_pagto & ")"
+		end if
+
+	s_aux = ckb_st_pagto_nao_pago
+	if s_aux <> "" then
+		if s <> "" then s = s & " OR"
+		s = s & " ((t_PEDIDO__BASE.st_pagto = '" & s_aux & "')" & s_where_dt_st_pagto & ")"
+		end if
+	
+	s_aux = ckb_st_pagto_pago_parcial
+	if s_aux <> "" then
+		if s <> "" then s = s & " OR"
+		s = s & " ((t_PEDIDO__BASE.st_pagto = '" & s_aux & "')" & s_where_dt_st_pagto & ")"
+		end if
+
+	if s <> "" then 
+		if s_where_st_pagto <> "" then s_where_st_pagto = s_where_st_pagto & " AND"
+		s_where_st_pagto = s_where_st_pagto & " (" & s & ")"
+		end if
+	
+'	CRITÉRIO: PAGAMENTO DA COMISSÃO VIA CARTÃO
+	if rb_pagto_comissao_via_cartao <> "" then
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (t_ORCAMENTISTA_E_INDICADOR.comissao_cartao_status = " & rb_pagto_comissao_via_cartao & ")"
+		end if
+
 '	CRITÉRIOS PARA PEDIDOS DE VENDA NORMAIS
 	s_where_venda = ""
 	if IsDate(c_dt_entregue_inicio) then
@@ -236,6 +307,16 @@ dim nome_cliente
 	if IsDate(c_dt_entregue_termino) then
 		if s_where_venda <> "" then s_where_venda = s_where_venda & " AND"
 		s_where_venda = s_where_venda & " (t_PEDIDO.entregue_data < " & bd_formata_data(StrToDate(c_dt_entregue_termino)+1) & ")"
+		end if
+
+	if s_where_comissao_paga <> "" then
+		if s_where_venda <> "" then s_where_venda = s_where_venda & " AND"
+		s_where_venda = s_where_venda & " (" & s_where_comissao_paga & ")"
+		end if
+
+	if s_where_st_pagto <> "" then
+		if s_where_venda <> "" then s_where_venda = s_where_venda & " AND"
+		s_where_venda = s_where_venda & " (" & s_where_st_pagto & ")"
 		end if
 
 '	CRITÉRIOS PARA DEVOLUÇÕES
@@ -250,6 +331,11 @@ dim nome_cliente
 		s_where_devolucao = s_where_devolucao & " (t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data < " & bd_formata_data(StrToDate(c_dt_entregue_termino)+1) & ")"
 		end if
 
+	if s_where_comissao_descontada <> "" then
+		if s_where_devolucao <> "" then s_where_devolucao = s_where_devolucao & " AND"
+		s_where_devolucao = s_where_devolucao & " (" & s_where_comissao_descontada & ")"
+		end if
+
 '	CRITÉRIOS PARA PERDAS
 	s_where_perdas = ""
 	if IsDate(c_dt_entregue_inicio) then
@@ -261,13 +347,21 @@ dim nome_cliente
 		if s_where_perdas <> "" then s_where_perdas = s_where_perdas & " AND"
 		s_where_perdas = s_where_perdas & " (t_PEDIDO_PERDA.data < " & bd_formata_data(StrToDate(c_dt_entregue_termino)+1) & ")"
 		end if
-		
-		
+	
+	if s_where_comissao_descontada <> "" then
+		if s_where_perdas <> "" then s_where_perdas = s_where_perdas & " AND"
+		s_where_perdas = s_where_perdas & " (" & s_where_comissao_descontada & ")"
+		end if
+	
+'	VENDAS NORMAIS
 	s = s_where
 	if (s <> "") And (s_where_venda <> "") then s = s & " AND"
 	s = s & s_where_venda
 	if s <> "" then s = " AND" & s
-	s_sql = "SELECT t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor," & _
+	s_sql = "SELECT" & _
+			" '" & VENDA_NORMAL & "' AS operacao," & _
+			" t_PEDIDO.pedido AS id_registro," & _
+			" t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor," & _
 			" t_PEDIDO.loja AS loja, t_PEDIDO.numero_loja," & _
 			" t_PEDIDO.entregue_data AS data," & _
 			" t_PEDIDO.pedido AS pedido, t_PEDIDO.orcamento AS orcamento," & _
@@ -287,6 +381,7 @@ dim nome_cliente
 			" FROM t_PEDIDO INNER JOIN t_PEDIDO AS t_PEDIDO__BASE ON (t_PEDIDO.pedido_base=t_PEDIDO__BASE.pedido)" & _
 			" INNER JOIN t_PEDIDO_ITEM ON (t_PEDIDO.pedido=t_PEDIDO_ITEM.pedido)" & _
 			" INNER JOIN t_CLIENTE ON (t_PEDIDO.id_cliente = t_CLIENTE.id)" & _
+			" LEFT JOIN t_ORCAMENTISTA_E_INDICADOR ON (t_PEDIDO__BASE.indicador=t_ORCAMENTISTA_E_INDICADOR.apelido)" & _
 			" WHERE (t_PEDIDO.st_entrega = '" & ST_ENTREGA_ENTREGUE & "')" & _
 			s & _
 			" GROUP BY t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor, t_PEDIDO.loja, t_PEDIDO.numero_loja,"
@@ -308,7 +403,10 @@ dim nome_cliente
 	s = s & s_where_devolucao
 	if s <> "" then s = " WHERE" & s
 	s_sql = s_sql & " UNION ALL " & _
-			"SELECT t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor," & _
+			"SELECT" & _
+			" '" & DEVOLUCAO & "' AS operacao," & _
+			" t_PEDIDO_ITEM_DEVOLVIDO.id AS id_registro," & _
+			" t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor," & _
 			" t_PEDIDO.loja AS loja, t_PEDIDO.numero_loja," & _
 			" t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data AS data," & _
 			" t_PEDIDO.pedido AS pedido, t_PEDIDO.orcamento AS orcamento," & _
@@ -328,8 +426,9 @@ dim nome_cliente
 			" FROM t_PEDIDO INNER JOIN t_PEDIDO AS t_PEDIDO__BASE ON (t_PEDIDO.pedido_base=t_PEDIDO__BASE.pedido)" & _
 			" INNER JOIN t_PEDIDO_ITEM_DEVOLVIDO ON (t_PEDIDO.pedido=t_PEDIDO_ITEM_DEVOLVIDO.pedido)" & _
 			" INNER JOIN t_CLIENTE ON (t_PEDIDO.id_cliente = t_CLIENTE.id)" & _
+			" LEFT JOIN t_ORCAMENTISTA_E_INDICADOR ON (t_PEDIDO__BASE.indicador=t_ORCAMENTISTA_E_INDICADOR.apelido)" & _
 			s & _
-			" GROUP BY t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor, t_PEDIDO.loja, t_PEDIDO.numero_loja,"
+			" GROUP BY t_PEDIDO_ITEM_DEVOLVIDO.id, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor, t_PEDIDO.loja, t_PEDIDO.numero_loja,"
 	
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
@@ -348,7 +447,10 @@ dim nome_cliente
 	s = s & s_where_perdas
 	if s <> "" then s = " WHERE" & s
 	s_sql = s_sql & " UNION ALL " & _
-			"SELECT t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor," & _
+			"SELECT" & _
+			" '" & PERDA & "' AS operacao," & _
+			" t_PEDIDO_PERDA.id AS id_registro," & _
+			" t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor," & _
 			" t_PEDIDO.loja AS loja, t_PEDIDO.numero_loja," & _
 			" t_PEDIDO_PERDA.data AS data," & _
 			" t_PEDIDO.pedido AS pedido, t_PEDIDO.orcamento AS orcamento," & _
@@ -368,8 +470,9 @@ dim nome_cliente
 			" FROM t_PEDIDO INNER JOIN t_PEDIDO AS t_PEDIDO__BASE ON (t_PEDIDO.pedido_base=t_PEDIDO__BASE.pedido)" & _
 			" INNER JOIN t_CLIENTE ON (t_PEDIDO.id_cliente = t_CLIENTE.id)" & _
 			" INNER JOIN t_PEDIDO_PERDA ON (t_PEDIDO.pedido=t_PEDIDO_PERDA.pedido)" & _
+			" LEFT JOIN t_ORCAMENTISTA_E_INDICADOR ON (t_PEDIDO__BASE.indicador=t_ORCAMENTISTA_E_INDICADOR.apelido)" & _
 			s & _
-			" GROUP BY t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor, t_PEDIDO.loja, t_PEDIDO.numero_loja,"
+			" GROUP BY t_PEDIDO_PERDA.id, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor, t_PEDIDO.loja, t_PEDIDO.numero_loja,"
 
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
@@ -788,6 +891,52 @@ function fORCConcluir( id_orcamento ) {
 					"	<tr>" & chr(13) & _
 					"		<td align='right' valign='top' NOWRAP><p class='N'>Comissão:&nbsp;</p></td>" & chr(13) & _
 					"		<td valign='top' width='99%'><p class='N'>" & s & "</p></td>" & chr(13) & _
+					"	</tr>" & chr(13)
+		end if
+
+'	STATUS DE PAGAMENTO
+	s = ""
+	s_aux = Lcase(x_status_pagto(ckb_st_pagto_pago))
+	if s_aux<>"" then
+		if s <> "" then s = s & ",&nbsp;&nbsp;"
+		s = s & s_aux
+		end if
+	
+	s_aux = Lcase(x_status_pagto(ckb_st_pagto_nao_pago))
+	if s_aux<>"" then
+		if s <> "" then s = s & ",&nbsp;&nbsp;"
+		s = s & s_aux
+		end if
+
+	s_aux = Lcase(x_status_pagto(ckb_st_pagto_pago_parcial))
+	if s_aux<>"" then
+		if s <> "" then s = s & ",&nbsp;&nbsp;"
+		s = s & s_aux
+		end if
+
+	if s <> "" then
+		s_filtro = s_filtro & _
+					"	<tr>" & chr(13) & _
+					"		<td align='right' valign='top' nowrap><span class='N'>Status de Pagamento:&nbsp;</span></td>" & chr(13) & _
+					"		<td align='left' valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
+					"	</tr>" & chr(13)
+		end if
+
+'	PAGAMENTO DA COMISSÃO VIA CARTÃO
+	s = ""
+	if rb_pagto_comissao_via_cartao = "0" then
+		s = "não"
+	elseif rb_pagto_comissao_via_cartao = "1" then
+		s = "sim"
+	else
+		s = "todos"
+		end if
+
+	if s <> "" then
+		s_filtro = s_filtro & _
+					"	<tr>" & chr(13) & _
+					"		<td align='right' valign='top' nowrap><span class='N'>Comissão via Cartão:&nbsp;</span></td>" & chr(13) & _
+					"		<td align='left' valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
 
