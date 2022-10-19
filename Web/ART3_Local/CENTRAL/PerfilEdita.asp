@@ -50,6 +50,9 @@
 	if perfil_selecionado="" then Response.Redirect("aviso.asp?id=" & ERR_PERFIL_NAO_ESPECIFICADO) 
 	if (operacao_selecionada<>OP_INCLUI) And (operacao_selecionada<>OP_CONSULTA) then Response.Redirect("aviso.asp?id=" & ERR_OPERACAO_NAO_ESPECIFICADA)
 	
+	dim alerta
+	alerta = ""
+
 '	CONECTA COM O BANCO DE DADOS
 	dim cn, rs, msg_erro
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
@@ -71,21 +74,28 @@
 		if Not rs.EOF then Response.Redirect("aviso.asp?id=" & ERR_PERFIL_JA_CADASTRADO)
 	elseif operacao_selecionada=OP_CONSULTA then
 		if rs.EOF then Response.Redirect("aviso.asp?id=" & ERR_PERFIL_NAO_CADASTRADO)
-		s_descricao = Trim("" & rs("descricao"))
-		s_cod_nivel_acesso_bloco_notas_pedido = Trim("" & rs("nivel_acesso_bloco_notas_pedido"))
-        s_cod_nivel_acesso_chamado_pedido = Trim("" & rs("nivel_acesso_chamado"))
-		st_inativo = Trim("" & rs("st_inativo"))
-	'	OBTÉM A LISTA DE OPERAÇÕES JÁ CADASTRADAS P/ ESTE PERFIL
-		s = "SELECT id_operacao FROM t_PERFIL_ITEM INNER JOIN t_PERFIL ON t_PERFIL_ITEM.id_perfil=t_PERFIL.id WHERE apelido='" & perfil_selecionado & "'"
-		if rs.State <> 0 then rs.Close
-		rs.open s, cn
-		do while Not rs.Eof
-			s = Cstr(rs("id_operacao"))
-			if Right(s_op_cadastradas,1) <> "|" then s_op_cadastradas = s_op_cadastradas & "|"
-			s_op_cadastradas = s_op_cadastradas & s
-			rs.MoveNext
-			loop
-		if (s_op_cadastradas <> "") And (Right(s_op_cadastradas,1) <> "|") then s_op_cadastradas = s_op_cadastradas & "|"
+		if rs("st_oculto") = 1 then
+			alerta=texto_add_br(alerta)
+			alerta=alerta & "O perfil não está acessível para edição manual"
+			end if
+
+		if alerta = "" then
+			s_descricao = Trim("" & rs("descricao"))
+			s_cod_nivel_acesso_bloco_notas_pedido = Trim("" & rs("nivel_acesso_bloco_notas_pedido"))
+			s_cod_nivel_acesso_chamado_pedido = Trim("" & rs("nivel_acesso_chamado"))
+			st_inativo = Trim("" & rs("st_inativo"))
+		'	OBTÉM A LISTA DE OPERAÇÕES JÁ CADASTRADAS P/ ESTE PERFIL
+			s = "SELECT id_operacao FROM t_PERFIL_ITEM INNER JOIN t_PERFIL ON t_PERFIL_ITEM.id_perfil=t_PERFIL.id WHERE apelido='" & perfil_selecionado & "'"
+			if rs.State <> 0 then rs.Close
+			rs.open s, cn
+			do while Not rs.Eof
+				s = Cstr(rs("id_operacao"))
+				if Right(s_op_cadastradas,1) <> "|" then s_op_cadastradas = s_op_cadastradas & "|"
+				s_op_cadastradas = s_op_cadastradas & s
+				rs.MoveNext
+				loop
+			if (s_op_cadastradas <> "") And (Right(s_op_cadastradas,1) <> "|") then s_op_cadastradas = s_op_cadastradas & "|"
+			end if 'if alerta = ""
 		end if
 
 %>
@@ -126,6 +136,9 @@ var i;
 		for (i = 0; i < fCAD["ckb_op_loja"].length; i++) {
 			if (!fCAD["ckb_op_loja"][i].disabled) fCAD["ckb_op_loja"][i].checked = true;
 		}
+		for (i = 0; i < fCAD["ckb_op_orcto_cotacao"].length; i++) {
+			if (!fCAD["ckb_op_orcto_cotacao"][i].disabled) fCAD["ckb_op_orcto_cotacao"][i].checked = true;
+		}
 	}
 }
 
@@ -141,7 +154,7 @@ var b;
 }
 
 function AtualizaPerfil( f ) {
-    var i, qtdeOpCentral, qtdeOpLoja, qtdeOpNivelAcessoBlocoNotas, qtdeOpNivelAcessoChamados;
+	var i, qtdeOpCentral, qtdeOpLoja, qtdeOpOrctoCotacao, qtdeOpNivelAcessoBlocoNotas, qtdeOpNivelAcessoChamados;
 	if (trim(f.c_descricao.value)=="") {
 		alert('Preencha a descrição do perfil!!');
 		f.c_descricao.focus();
@@ -151,22 +164,30 @@ function AtualizaPerfil( f ) {
 	qtdeOpNivelAcessoBlocoNotas = 0;
 	qtdeOpNivelAcessoChamados = 0;
 	qtdeOpCentral=0;
-	for (i=0; i<f.ckb_op_central.length; i++) {
+	for (i = 0; i < f.ckb_op_central.length; i++) {
 		if (f.ckb_op_central[i].checked) {
 			qtdeOpCentral++;
 			if ((f.ckb_op_central[i].value == OP_CEN_BLOCO_NOTAS_PEDIDO_LEITURA) || (f.ckb_op_central[i].value == OP_CEN_BLOCO_NOTAS_PEDIDO_CADASTRAMENTO)) qtdeOpNivelAcessoBlocoNotas++;
 			if ((f.ckb_op_central[i].value == OP_CEN_PEDIDO_CHAMADO_LEITURA_QUALQUER_CHAMADO) || (f.ckb_op_central[i].value == OP_CEN_PEDIDO_CHAMADO_CADASTRAMENTO)) qtdeOpNivelAcessoChamados++;
-			}
 		}
+	}
 
 	qtdeOpLoja=0;
-	for (i=0; i<f.ckb_op_loja.length; i++) {
+	for (i = 0; i < f.ckb_op_loja.length; i++) {
 		if (f.ckb_op_loja[i].checked) {
 			qtdeOpLoja++;
 			if ((f.ckb_op_loja[i].value == OP_LJA_BLOCO_NOTAS_PEDIDO_LEITURA) || (f.ckb_op_loja[i].value == OP_LJA_BLOCO_NOTAS_PEDIDO_CADASTRAMENTO)) qtdeOpNivelAcessoBlocoNotas++;
 			if ((f.ckb_op_loja[i].value == OP_LJA_PEDIDO_CHAMADO_LEITURA_QUALQUER_CHAMADO) || (f.ckb_op_loja[i].value == OP_LJA_PEDIDO_CHAMADO_CADASTRAMENTO)) qtdeOpNivelAcessoChamados++;
-        }
 		}
+	}
+
+	qtdeOpOrctoCotacao = 0;
+	for (i = 0; i < f.ckb_op_orcto_cotacao.length; i++) {
+		if (f.ckb_op_orcto_cotacao[i].checked) {
+			qtdeOpOrctoCotacao++;
+		}
+	}
+
     // nivel de acesso ao bloco de notas do pedido
 	if ((qtdeOpNivelAcessoBlocoNotas > 0) && (trim(f.c_nivel_acesso_bloco_notas.value) == "")) {
 		alert('Selecione o nível de acesso para o bloco de notas do pedido!!');
@@ -192,10 +213,10 @@ function AtualizaPerfil( f ) {
 	    return;
 	}
 		
-	if ((qtdeOpCentral==0)&&(qtdeOpLoja==0)) {
+	if ((qtdeOpCentral == 0) && (qtdeOpLoja == 0) && (qtdeOpOrctoCotacao == 0)) {
 		alert('Nenhuma operação da lista foi selecionada!!');
 		return;
-		}
+	}
 		
 	dATUALIZA.style.visibility="hidden";
 	window.status = "Aguarde ...";
@@ -226,8 +247,35 @@ function AtualizaPerfil( f ) {
 #ckb_op_loja {
 	margin: 0pt 2pt 1pt 15pt;
 	}
+#ckb_op_orcto_cotacao {
+	margin: 0pt 2pt 1pt 15pt;
+	}
 </style>
 
+
+<% if alerta <> "" then %>
+<!-- ************************************************************ -->
+<!-- **********  PÁGINA PARA EXIBIR MENSAGENS DE ERRO  ********** -->
+<!-- ************************************************************ -->
+<body onload="bVOLTAR.focus();">
+<center>
+<br>
+<!--  T E L A  -->
+<p class="T">A V I S O</p>
+<div class="MtAlerta" style="width:680px;font-weight:bold;" align="center"><p style='margin:5px 2px 5px 2px;'><%=alerta%></p></div>
+<br><br>
+<p class="TracoBottom"></p>
+<table cellspacing="0">
+<tr>
+	<td align="center"><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()"><img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
+</tr>
+</table>
+</center>
+</body>
+
+
+
+<% else %>
 
 <%	if operacao_selecionada=OP_INCLUI then
 		s = "fCAD.c_descricao.focus();"
@@ -265,7 +313,7 @@ function AtualizaPerfil( f ) {
 <table width="649" class="Q" cellSpacing="0">
 	<tr>
 		<td class="MD" width="25%"><p class="R">PERFIL</p><p class="C"><input id="perfil_selecionado" name="perfil_selecionado" class="TA" value="<%=perfil_selecionado%>" readonly size="20" style="text-align:left; color:#0000ff"></p></td>
-		<td width="75%"><p class="R">DESCRIÇÃO</p><p class="C"><input id="c_descricao" name="c_descricao" class="TA" maxlength="40" size="70" value="<%=s_descricao%>" onkeypress="filtra_nome_identificador();"></p></td>
+		<td width="75%"><p class="R">DESCRIÇÃO</p><p class="C"><input id="c_descricao" name="c_descricao" class="TA" maxlength="160" size="70" value="<%=s_descricao%>" onkeypress="filtra_nome_identificador();"></p></td>
 	</tr>
 	<tr>
 		<td colspan="2" class="MC"><p class="R">STATUS</p>
@@ -309,15 +357,27 @@ function AtualizaPerfil( f ) {
 	
 	intIndex = -1
 	do while Not rs.Eof
-		intIndex = intIndex + 1
-		s = "|" & Cstr(rs("id")) & "|"
-		s_checked = ""
-		if Instr(s_op_cadastradas, s) > 0 then s_checked = " checked"
-		s_cor = "black"
-		if Trim("" & rs("st_inativo")) = "1" then s_cor="#A9A9A9"
-%>
-		<p class="C"><input type="checkbox" id="ckb_op_central" name="ckb_op_central" value="<%=Cstr(rs("id"))%>" class="TA"<%=s_checked%>><span style="cursor:default;color:<%=s_cor%>;" onclick="fCAD.ckb_op_central[<%=Cstr(intIndex)%>].click();"><%=Trim("" & rs("descricao"))%></span>&nbsp;</p>
-<%
+		if Trim("" & rs("st_oculto")) = "0" then
+			intIndex = intIndex + 1
+			s = "|" & Cstr(rs("id")) & "|"
+			s_checked = ""
+			if Instr(s_op_cadastradas, s) > 0 then s_checked = " checked"
+			s_cor = "black"
+			if Trim("" & rs("st_inativo")) = "1" then s_cor="#A9A9A9"
+	%>
+			<p class="C"><input type="checkbox" id="ckb_op_central" name="ckb_op_central" value="<%=Cstr(rs("id"))%>" class="TA"<%=s_checked%>><span style="cursor:default;color:<%=s_cor%>;" onclick="fCAD.ckb_op_central[<%=Cstr(intIndex)%>].click();"><%=Trim("" & rs("descricao"))%></span>&nbsp;</p>
+	<%
+		else 'if-then-else Trim("" & rs("st_oculto")) = "0"
+			'Se a operação está c/ o flag oculto ativo, não exibe na tela, mas cria um campo hidden p/ mantê-lo na composição do perfil
+			s = "|" & Cstr(rs("id")) & "|"
+			if Instr(s_op_cadastradas, s) > 0 then
+				intIndex = intIndex + 1
+	%>
+				<input type="hidden" id="ckb_op_central" name="ckb_op_central" value="<%=Cstr(rs("id"))%>" />
+	<%
+				end if
+			end if 'if Trim("" & rs("st_oculto")) = "0"
+
 		rs.MoveNext
 		loop
 %>
@@ -337,21 +397,74 @@ function AtualizaPerfil( f ) {
 	
 	intIndex = -1
 	do while Not rs.Eof
-		intIndex = intIndex + 1
-		s = "|" & Cstr(rs("id")) & "|"
-		s_checked = ""
-		if Instr(s_op_cadastradas, s) > 0 then s_checked = " checked"
-		s_cor = "black"
-		if Trim("" & rs("st_inativo")) = "1" then s_cor="#A9A9A9"
-%>
-		<p class="C"><input type="checkbox" id="ckb_op_loja" name="ckb_op_loja" value="<%=Cstr(rs("id"))%>" class="TA"<%=s_checked%>><span style="cursor:default;color:<%=s_cor%>;" onclick="fCAD.ckb_op_loja[<%=Cstr(intIndex)%>].click();"><%=Trim("" & rs("descricao"))%></span>&nbsp;</p>
-<%
+		if Trim("" & rs("st_oculto")) = "0" then
+			intIndex = intIndex + 1
+			s = "|" & Cstr(rs("id")) & "|"
+			s_checked = ""
+			if Instr(s_op_cadastradas, s) > 0 then s_checked = " checked"
+			s_cor = "black"
+			if Trim("" & rs("st_inativo")) = "1" then s_cor="#A9A9A9"
+	%>
+			<p class="C"><input type="checkbox" id="ckb_op_loja" name="ckb_op_loja" value="<%=Cstr(rs("id"))%>" class="TA"<%=s_checked%>><span style="cursor:default;color:<%=s_cor%>;" onclick="fCAD.ckb_op_loja[<%=Cstr(intIndex)%>].click();"><%=Trim("" & rs("descricao"))%></span>&nbsp;</p>
+	<%
+		else 'if-then-else Trim("" & rs("st_oculto")) = "0"
+			'Se a operação está c/ o flag oculto ativo, não exibe na tela, mas cria um campo hidden p/ mantê-lo na composição do perfil
+			s = "|" & Cstr(rs("id")) & "|"
+			if Instr(s_op_cadastradas, s) > 0 then
+				intIndex = intIndex + 1
+	%>
+				<input type="hidden" id="ckb_op_loja" name="ckb_op_loja" value="<%=Cstr(rs("id"))%>" />
+	<%
+				end if
+			end if 'if Trim("" & rs("st_oculto")) = "0"
+
 		rs.MoveNext
 		loop
 %>
 		</td>
 	</tr>
 </table>
+
+<!-- ************   OPERAÇÕES DO MÓDULO DE ORÇAMENTO/COTAÇÃO   ************ -->
+<table width="649" class="QS" cellSpacing="0">
+	<tr>
+		<td width="100%">
+		<p class="R">OPERAÇÕES DE ORÇAMENTO/COTAÇÃO</p>
+<%
+	s = "SELECT * FROM t_OPERACAO WHERE modulo='" & COD_OP_MODULO_ORCAMENTO_COTACAO & "' ORDER BY ordenacao"
+	if rs.State <> 0 then rs.Close
+	rs.open s, cn
+	
+	intIndex = -1
+	do while Not rs.Eof
+		if Trim("" & rs("st_oculto")) = "0" then
+			intIndex = intIndex + 1
+			s = "|" & Cstr(rs("id")) & "|"
+			s_checked = ""
+			if Instr(s_op_cadastradas, s) > 0 then s_checked = " checked"
+			s_cor = "black"
+			if Trim("" & rs("st_inativo")) = "1" then s_cor="#A9A9A9"
+	%>
+			<p class="C"><input type="checkbox" id="ckb_op_orcto_cotacao" name="ckb_op_orcto_cotacao" value="<%=Cstr(rs("id"))%>" class="TA"<%=s_checked%>><span style="cursor:default;color:<%=s_cor%>;" onclick="fCAD.ckb_op_orcto_cotacao[<%=Cstr(intIndex)%>].click();"><%=Trim("" & rs("descricao"))%></span>&nbsp;</p>
+	<%
+		else ' if-then-else Trim("" & rs("st_oculto")) = "0"
+			'Se a operação está c/ o flag oculto ativo, não exibe na tela, mas cria um campo hidden p/ mantê-lo na composição do perfil
+			s = "|" & Cstr(rs("id")) & "|"
+			if Instr(s_op_cadastradas, s) > 0 then
+				intIndex = intIndex + 1
+	%>
+				<input type="hidden" id="ckb_op_orcto_cotacao" name="ckb_op_orcto_cotacao" value="<%=Cstr(rs("id"))%>" />
+	<%
+				end if
+			end if 'if Trim("" & rs("st_oculto")) = "0"
+
+		rs.MoveNext
+		loop
+%>
+		</td>
+	</tr>
+</table>
+
 
 <!-- ************   SEPARADOR   ************ -->
 <table width="649" cellPadding="4" CellSpacing="0" style="border-bottom:1px solid black">
@@ -381,6 +494,9 @@ function AtualizaPerfil( f ) {
 
 </center>
 </body>
+
+<% end if %>
+
 </html>
 
 

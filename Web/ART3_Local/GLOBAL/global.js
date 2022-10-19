@@ -1436,6 +1436,20 @@ var i, achou;
 	return false;
 }
 
+function tem_letra(texto) {
+	var i, achou;
+	texto = trim("" + texto);
+	achou = false;
+	for (i = 0; i < texto.length; i++) {
+		if (isLetra(texto.charAt(i))) {
+			achou = true;
+			break;
+		}
+	}
+	if (achou) return true;
+	return false;
+}
+
 function iniciais_em_maiusculas(texto){
 var palavras_minusculas = "|A|AS|E|O|OS|UM|UNS|UMA|UMAS|DA|DAS|DE|DO|DOS|EM|NA|NAS|NO|NOS|COM|SEM|POR|PELO|PARA|PRA|P/|S/|C/|TEM|OU|E/OU|";
 var letra, palavra, frase, s, i, i_max;

@@ -181,9 +181,9 @@ var s_dest,s_op,s_perfil;
 	<tr>
 		<td NOWRAP>
 			<input type="radio" id="rb_op" name="rb_op" value="1" class="CBOX" onclick="fOP.c_novo.focus();"><span style="cursor:default" onclick="fOP.rb_op[0].click(); fOP.c_novo.focus();">Cadastrar Novo</span>&nbsp;
-				<input name="c_novo" id="c_novo" type="text" maxlength="12" size="30" onblur="this.value=trim(this.value);" onclick="fOP.rb_op[0].click();" onkeypress="this.click(); filtra_nome_identificador(); if (digitou_enter(true) && tem_info(this.value)) if (fOPConcluir(fOP)) fOP.submit();"><br>
+				<input name="c_novo" id="c_novo" type="text" maxlength="30" size="30" onblur="this.value=trim(this.value);" onclick="fOP.rb_op[0].click();" onkeypress="this.click(); filtra_nome_identificador(); if (digitou_enter(true) && tem_info(this.value)) if (fOPConcluir(fOP)) fOP.submit();"><br>
 			<input type="radio" id="rb_op" name="rb_op" value="2" class="CBOX" onclick="fOP.c_cons.focus();"><span style="cursor:default" onclick="fOP.rb_op[1].click(); fOP.c_cons.focus();">Consultar</span>&nbsp;
-				<input name="c_cons" id="c_cons" type="text" maxlength="12" size="30" onblur="this.value=trim(this.value);" onclick="fOP.rb_op[1].click();" onkeypress="this.click(); filtra_nome_identificador(); if (digitou_enter(true) && tem_info(this.value)) if (fOPConcluir(fOP)) fOP.submit();"><br>
+				<input name="c_cons" id="c_cons" type="text" maxlength="30" size="30" onblur="this.value=trim(this.value);" onclick="fOP.rb_op[1].click();" onkeypress="this.click(); filtra_nome_identificador(); if (digitou_enter(true) && tem_info(this.value)) if (fOPConcluir(fOP)) fOP.submit();"><br>
 			<input type="radio" id="rb_op" name="rb_op" value="3" class="CBOX"><span class="rbLink" onclick="fOP.rb_op[2].click(); fOP.bEXECUTAR.click();">Consultar Lista</span>
 			</td>
 		</tr>

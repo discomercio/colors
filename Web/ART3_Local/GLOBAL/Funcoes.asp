@@ -2588,6 +2588,27 @@ end function
 
 
 ' ---------------------------------------------------------------
+'   TEM LETRA
+function tem_letra(byval texto)
+dim i	
+dim achou
+dim letra
+	tem_letra = False
+	texto = Trim("" & texto)
+	achou = False
+	for i = 1 to len(texto)
+		letra = UCase(mid(texto, i, 1))
+		if (letra >= "A") And (letra <= "Z") then
+			achou = True
+			exit for
+			end if
+		next
+	if achou then tem_letra = True
+end function
+
+
+
+' ---------------------------------------------------------------
 '   INICIAIS EM MAIUSCULAS
 function iniciais_em_maiusculas(byval texto)
 const palavras_minusculas = "|A|AS|AO|AOS|À|ÀS|E|O|OS|UM|UNS|UMA|UMAS|DA|DAS|DE|DO|DOS|EM|NA|NAS|NO|NOS|COM|SEM|POR|PELO|PELA|PARA|PRA|P/|S/|C/|TEM|OU|E/OU|ATE|ATÉ|QUE|SE|QUAL|"

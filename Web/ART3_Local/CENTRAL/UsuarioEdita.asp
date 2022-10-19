@@ -164,6 +164,8 @@
 <script src="<%=URL_FILE__GLOBAL_JS%>" language="JavaScript" type="text/javascript"></script>
 
 <script language="JavaScript" type="text/javascript">
+var TAM_MIN_SENHA = <%=TAM_MIN_SENHA%>;
+
 	$(function () {
 		$(".CKBLOJAVEND").change(function () {
 			if ($(this).is(":checked")) {
@@ -192,17 +194,26 @@ var i, s_senha, blnTemLoja;
 		return;
 		}
 		
-	if (s_senha.length < 5) {
-		alert('A senha deve possuir no mínimo 5 caracteres!!');
-		f.senha.focus();
-		return;
-		}
-		
 	if (s_senha != trim(f.senha2.value)) {
 		alert('A confirmação da senha não está correta!!');
 		f.senha2.focus();
 		return;
 		}
+
+	// Validações realizadas somente p/ inclusão de novo usuário ou se alterou a senha
+	if ((f.operacao_selecionada.value == OP_INCLUI) || (f.senha.value != f.senha_original.value)) {
+		if (s_senha.length < TAM_MIN_SENHA) {
+			alert('A senha deve possuir no mínimo ' + TAM_MIN_SENHA + ' caracteres!!');
+			f.senha.focus();
+			return;
+		}
+
+		if (!(tem_digito(s_senha) && tem_letra(s_senha))) {
+			alert("A senha deve conter no mínimo 1 letra e 1 dígito numérico");
+			f.senha.focus();
+			return;
+		}
+	}
 
 	if (trim(f.nome.value)=="") {
 		alert('Preencha o nome!!');
@@ -315,6 +326,7 @@ var i, s_senha, blnTemLoja;
 %>
 		<td class="MD" width="25%" align="left"><p class="R">SENHA</p><p class="C"><input id="senha" name="senha" class="TA" type="password" maxlength="15" size="18" value="<%=senha_descripto%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.senha2.focus();"></p></td>
 		<td width="25%" align="left"><p class="R">SENHA (CONFIRMAÇÃO)</p><p class="C"><input id="senha2" name="senha2" class="TA" type="password" maxlength="15" size="18" value="<%=senha_descripto%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.nome.focus();"></p></td>
+		<input type="hidden" name="senha_original" id="senha_original" value="<%=senha_descripto%>" />
 	</tr>
 </table>
 
@@ -368,15 +380,27 @@ var i, s_senha, blnTemLoja;
 	
 	intIndex = -1
 	do while Not r.Eof
-		intIndex = intIndex + 1
-		s = "|" & Cstr(r("id")) & "|"
-		s_checked = ""
-		if Instr(s_perfil_cadastrado, s) > 0 then s_checked = " checked"
-		s_cor = "black"
-		if Trim("" & r("st_inativo")) = "1" then s_cor = "#A9A9A9"
-%>
-		<p class="C"><input type="checkbox" id="ckb_perfil" name="ckb_perfil" value="<%=Cstr(r("id"))%>" class="TA"<%=s_checked%>><span style="cursor:default;color:<%=s_cor%>;" onclick="fCAD.ckb_perfil[<%=Cstr(intIndex)%>].click();"><%=Trim("" & r("apelido")) & " - " & Trim("" & r("descricao"))%></span>&nbsp;</p>
-<%
+		if Trim("" & r("st_oculto")) = "0" then
+			intIndex = intIndex + 1
+			s = "|" & Cstr(r("id")) & "|"
+			s_checked = ""
+			if Instr(s_perfil_cadastrado, s) > 0 then s_checked = " checked"
+			s_cor = "black"
+			if Trim("" & r("st_inativo")) = "1" then s_cor = "#A9A9A9"
+	%>
+			<p class="C"><input type="checkbox" id="ckb_perfil" name="ckb_perfil" value="<%=Cstr(r("id"))%>" class="TA"<%=s_checked%>><span style="cursor:default;color:<%=s_cor%>;" onclick="fCAD.ckb_perfil[<%=Cstr(intIndex)%>].click();"><%=Trim("" & r("apelido")) & " - " & Trim("" & r("descricao"))%></span>&nbsp;</p>
+	<%
+		else 'if-then-else Trim("" & rs("st_oculto")) = "0"
+			'Se o perfil está c/ o flag oculto ativo, não exibe na tela, mas cria um campo hidden p/ mantê-lo no cadastro do usuário
+			s = "|" & Cstr(r("id")) & "|"
+			if Instr(s_perfil_cadastrado, s) > 0 then
+				intIndex = intIndex + 1
+	%>
+				<input type="hidden" id="ckb_perfil" name="ckb_perfil" value="<%=Cstr(r("id"))%>" />
+	<%
+				end if
+			end if 'if Trim("" & rs("st_oculto")) = "0"
+
 		r.MoveNext
 		loop
 

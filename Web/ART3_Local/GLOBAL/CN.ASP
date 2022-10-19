@@ -41,8 +41,8 @@
 	Const COD_FC_AMBIENTE = "L"
 
 	Const SERVIDOR_BD = "Win2019DB,29981"
-	Const NOME_BD = "Artven2DIS"
-	Const USUARIO_BD = "artven2"
+	Const NOME_BD = "Artven2DIS_ModOrcto1"
+	Const USUARIO_BD = "orcto_lab1"
 	Const SCHEMA_BD = "dbo"
 	Const SENHA_BD = "000000007bbddfed3b85e97d47b91b"
 
@@ -196,7 +196,7 @@
 	Const URL_FILE__E_LOGO_TOP_OLD03_CSS = "../Global/eLogoTopOLD03.css?v=002"
 	
 '	URL PARA ACESSO NA PÁGINA DE LOGIN DO PARCEIRO (PÁGINA C/ LOGIN DUPLO)
-	Const URL_BASE_RELATIVA_SITE_ARTVEN3 = "/art3HotFix3"
+	Const URL_BASE_RELATIVA_SITE_ARTVEN3 = "/art3HotFix5"
 	Const URL_BASE_RELATIVA_SITE_ASSISTENCIA_TECNICA = "/assistenciatecnica"
 	
 '	Const URL_SITE_CLIENTE_PAGTO_CIELO = "http://web.bonshop.com.br/pagamento/clientecartao/default.asp"

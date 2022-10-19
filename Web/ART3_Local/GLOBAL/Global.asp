@@ -239,7 +239,7 @@ dim s, x, r, strResp, ha_default
 						"(" & _
 							"(id_orcamentista_e_indicador = '" & Trim(id_orcamentista_e_indicador) & "')" & _
 							" OR " & _
-							"(id_orcamentista_e_indicador = '" & ID_ORCAMENTISTA_E_INDICADOR_RESTRICAO_FP_TODOS & "')" & _
+							"(id_orcamentista_e_indicador = '" & ID_APELIDO_ORCAMENTISTA_E_INDICADOR__RESTRICAO_FP_TODOS & "')" & _
 						")" & _
 						" AND (tipo_cliente = '" & Trim(tipo_cliente) & "')" & _
 						" AND (st_restricao_ativa <> 0)" & _
@@ -303,7 +303,7 @@ dim s, x, r, strResp, ha_default
 						"(" & _
 							"(id_orcamentista_e_indicador = '" & Trim(id_orcamentista_e_indicador) & "')" & _
 							" OR " & _
-							"(id_orcamentista_e_indicador = '" & ID_ORCAMENTISTA_E_INDICADOR_RESTRICAO_FP_TODOS & "')" & _
+							"(id_orcamentista_e_indicador = '" & ID_APELIDO_ORCAMENTISTA_E_INDICADOR__RESTRICAO_FP_TODOS & "')" & _
 						")" & _
 						" AND (tipo_cliente = '" & Trim(tipo_cliente) & "')" & _
 						" AND (st_restricao_ativa <> 0)" & _
@@ -442,7 +442,7 @@ dim s, x, r, strResp, ha_default
 						"(" & _
 							"(id_orcamentista_e_indicador = '" & Trim(id_orcamentista_e_indicador) & "')" & _
 							" OR " & _
-							"(id_orcamentista_e_indicador = '" & ID_ORCAMENTISTA_E_INDICADOR_RESTRICAO_FP_TODOS & "')" & _
+							"(id_orcamentista_e_indicador = '" & ID_APELIDO_ORCAMENTISTA_E_INDICADOR__RESTRICAO_FP_TODOS & "')" & _
 						")" & _
 						" AND (tipo_cliente = '" & Trim(tipo_cliente) & "')" & _
 						" AND (st_restricao_ativa <> 0)" & _
@@ -506,7 +506,7 @@ dim s, x, r, strResp, ha_default
 						"(" & _
 							"(id_orcamentista_e_indicador = '" & Trim(id_orcamentista_e_indicador) & "')" & _
 							" OR " & _
-							"(id_orcamentista_e_indicador = '" & ID_ORCAMENTISTA_E_INDICADOR_RESTRICAO_FP_TODOS & "')" & _
+							"(id_orcamentista_e_indicador = '" & ID_APELIDO_ORCAMENTISTA_E_INDICADOR__RESTRICAO_FP_TODOS & "')" & _
 						")" & _
 						" AND (tipo_cliente = '" & Trim(tipo_cliente) & "')" & _
 						" AND (st_restricao_ativa <> 0)" & _
@@ -645,7 +645,7 @@ dim s, x, r, strResp, ha_default
 						"(" & _
 							"(id_orcamentista_e_indicador = '" & Trim(id_orcamentista_e_indicador) & "')" & _
 							" OR " & _
-							"(id_orcamentista_e_indicador = '" & ID_ORCAMENTISTA_E_INDICADOR_RESTRICAO_FP_TODOS & "')" & _
+							"(id_orcamentista_e_indicador = '" & ID_APELIDO_ORCAMENTISTA_E_INDICADOR__RESTRICAO_FP_TODOS & "')" & _
 						")" & _
 						" AND (tipo_cliente = '" & Trim(tipo_cliente) & "')" & _
 						" AND (st_restricao_ativa <> 0)" & _
@@ -709,7 +709,7 @@ dim s, x, r, strResp, ha_default
 						"(" & _
 							"(id_orcamentista_e_indicador = '" & Trim(id_orcamentista_e_indicador) & "')" & _
 							" OR " & _
-							"(id_orcamentista_e_indicador = '" & ID_ORCAMENTISTA_E_INDICADOR_RESTRICAO_FP_TODOS & "')" & _
+							"(id_orcamentista_e_indicador = '" & ID_APELIDO_ORCAMENTISTA_E_INDICADOR__RESTRICAO_FP_TODOS & "')" & _
 						")" & _
 						" AND (tipo_cliente = '" & Trim(tipo_cliente) & "')" & _
 						" AND (st_restricao_ativa <> 0)" & _
@@ -882,7 +882,7 @@ dim s, x, r, strResp, ha_default
 						"(" & _
 							"(id_orcamentista_e_indicador = '" & Trim(id_orcamentista_e_indicador) & "')" & _
 							" OR " & _
-							"(id_orcamentista_e_indicador = '" & ID_ORCAMENTISTA_E_INDICADOR_RESTRICAO_FP_TODOS & "')" & _
+							"(id_orcamentista_e_indicador = '" & ID_APELIDO_ORCAMENTISTA_E_INDICADOR__RESTRICAO_FP_TODOS & "')" & _
 						")" & _
 						" AND (tipo_cliente = '" & Trim(tipo_cliente) & "')" & _
 						" AND (st_restricao_ativa <> 0)" & _
@@ -946,7 +946,7 @@ dim s, x, r, strResp, ha_default
 						"(" & _
 							"(id_orcamentista_e_indicador = '" & Trim(id_orcamentista_e_indicador) & "')" & _
 							" OR " & _
-							"(id_orcamentista_e_indicador = '" & ID_ORCAMENTISTA_E_INDICADOR_RESTRICAO_FP_TODOS & "')" & _
+							"(id_orcamentista_e_indicador = '" & ID_APELIDO_ORCAMENTISTA_E_INDICADOR__RESTRICAO_FP_TODOS & "')" & _
 						")" & _
 						" AND (tipo_cliente = '" & Trim(tipo_cliente) & "')" & _
 						" AND (st_restricao_ativa <> 0)" & _

@@ -107,8 +107,8 @@
 	s_nextel = trim(Request.Form("c_nextel"))
 	rb_estabelecimento = trim(Request.Form("rb_estabelecimento"))
     s_acesso = trim(Request.Form("rb_acesso"))
-    s_senha=UCase(trim(Request.Form("senha")))
-	s_senha2=UCase(trim(Request.Form("senha2")))
+    s_senha=trim(Request.Form("senha"))
+	s_senha2=trim(Request.Form("senha2"))
     conta_dv = trim(Request.Form("conta_dv"))
     agencia_dv = trim(Request.Form("agencia_dv"))
     tipo_conta = trim(Request.Form("tipo_conta"))
@@ -138,8 +138,8 @@
 	
 	erro_consistencia=false
 	erro_fatal=false
-	
 	alerta = ""
+
 	if s_id_selecionado = "" then
 		alerta="FORNEÇA UM IDENTIFICADOR (APELIDO) PARA O INDICADOR."
 	elseif s_razao_social_nome = "" then
@@ -224,14 +224,20 @@
 		alerta="INDIQUE A FORMA PELA QUAL CONHECEU A BONSHOP."
 		end if
 	
+	if alerta = "" then
+		if CLng(s_acesso) <> 0 then
+			if len(s_senha) < TAM_MIN_SENHA then
+				alerta="A SENHA DEVE POSSUIR NO MÍNIMO " & TAM_MIN_SENHA & " CARACTERES."
+			elseif (Not (tem_digito(s_senha) And tem_letra(s_senha))) then
+				alerta = "A SENHA DEVE CONTER NO MÍNIMO 1 LETRA E 1 DÍGITO NUMÉRICO"
+			elseif Ucase(s_senha) <> Ucase(s_senha2) then
+				alerta="A CONFIRMAÇÃO DA SENHA NÃO ESTÁ CORRETA."
+				end if
+			end if
+		end if
 	
 	if alerta <> "" then erro_consistencia=True
 
-    if s_senha <> "" then
-		chave = gera_chave(FATOR_BD)
-		codifica_dado s_senha, senha_cripto, chave
-		end if
-		
 	if s_senha <> "" then
 		chave = gera_chave(FATOR_BD)
 		codifica_dado s_senha, senha_cripto, chave

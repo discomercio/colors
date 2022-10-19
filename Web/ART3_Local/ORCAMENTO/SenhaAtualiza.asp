@@ -40,7 +40,7 @@
 
 '	OBTEM DADOS DO FORM ANTERIOR
 	senha = UCase(trim(request("senha")))
-	novasenha = UCase(trim(request("novasenha")))
+	novasenha = trim(request("novasenha"))
 	
 	loja = trim(Session("loja_atual"))
 	usuario = trim(Session("usuario_atual"))
@@ -51,6 +51,16 @@
 
 	if senha <> UCase(trim(Session("senha_atual"))) then alerta = "SENHA ATUAL INVÁLIDA."
 	
+	if alerta = "" then
+		if Len(novasenha) < TAM_MIN_SENHA then
+			alerta = "A nova senha deve possuir no mínimo " & TAM_MIN_SENHA & " caracteres"
+		elseif Ucase(senha) = Ucase(novasenha) then
+			alerta = "A nova senha deve ser diferente da senha atual"
+		elseif Not (tem_digito(novasenha) And tem_letra(novasenha)) then
+			alerta = "A nova senha deve conter no mínimo 1 letra e 1 dígito numérico"
+			end if
+		end if
+
 '	ALTERA A SENHA NO BD
 	if alerta = "" then 
 		chave = gera_chave(FATOR_BD)
@@ -78,8 +88,6 @@
 	if alerta = "" then 
 		Session("senha_atual") = novasenha
 		Response.Redirect("Resumo.asp")
-	else 
-		Response.Redirect("Aviso.asp?id=" & ERR_SENHA_INVALIDA)
 		end if
 
 %>
@@ -129,18 +137,18 @@
 <!--  T E L A  -->
 
 <table width="100%" cellpadding="4" cellspacing="0" style="border-bottom:1px solid black">
-
 <tr>
 	<td align="right" valign="bottom"><p class="PEDIDO"><%=usuario%><br><span class="C">&nbsp;</span></p></td>
 </tr>
 </table>
 
-<br><br>
+<br />
 <center>
 
-<%= "<p class='ALERTA'>" & alerta & "</p>"%>
+<p class="T">A V I S O</p>
+<div class="MtAlerta" style="width:600px;font-weight:bold;" align="center"><p style='margin:5px 2px 5px 2px;'><%=alerta%></p></div>
 
-<br>
+<br />
 <p class="TracoBottom"></p>
 
 <table cellspacing="0">

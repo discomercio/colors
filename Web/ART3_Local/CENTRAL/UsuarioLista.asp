@@ -66,7 +66,7 @@ dim r
 	cab=cab & "<tr style='background: #FFF0E0'>"
 	cab=cab & "<td width='100' nowrap class='MD MB' align='left' valign='bottom'><p class='R' style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='usuariolista.asp?ord=1" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Identificação</p></td>"
 	cab=cab & "<td width='210' class='MD MB' align='left' valign='bottom'><p class='R' style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='usuariolista.asp?ord=2" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Nome</p></td>"
-	cab=cab & "<td width='100' class='MD MB' align='left' valign='bottom'><p class='R' style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='usuariolista.asp?ord=3" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Perfil</p></td>"
+	cab=cab & "<td width='200' class='MD MB' align='left' valign='bottom'><p class='R' style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='usuariolista.asp?ord=3" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Perfil</p></td>"
 	cab=cab & "<td width='35' nowrap class='MD MB' align='right' valign='bottom'><p class='Rd' style='font-weight:bold; cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='usuariolista.asp?ord=4" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Vend<br />Loja</p></td>"
 	cab=cab & "<td width='20' nowrap class='MD MB' align='center' valign='bottom'><p class='Rd' style='font-weight:bold; cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='usuariolista.asp?ord=5" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Vend<br />Ext</p></td>"
 	cab=cab & "<td width='20' nowrap class='MD MB' align='center' valign='bottom'><p class='Rc' style='font-weight:bold; cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='usuariolista.asp?ord=5" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">CD</p></td>"
@@ -132,7 +132,7 @@ dim r
 	 '> PERFIL
 		s = Trim("" & r("perfil"))
 		if s = "" then s = "&nbsp;"
-		x=x & " <td class='MDB' style='width:100px;' align='left' valign='top'><p class='C'>" & s & "</p></td>"
+		x=x & " <td class='MDB' style='width:200px;' align='left' valign='top'><p class='C'>" & s & "</p></td>"
 
 	 '> VENDEDOR DA LOJA
 		s=""

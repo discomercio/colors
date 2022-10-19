@@ -63,7 +63,7 @@
 
 	if s_apelido_perfil = "" then Response.Redirect("aviso.asp?id=" & ERR_ID_INVALIDO)
 		
-	dim i, n, v_op_central, v_op_loja, qtde_op_central, qtde_op_loja, qtdeOpNivelAcessoBlocoNotas, qtdeOpNivelAcessoChamados
+	dim i, n, v_op_central, v_op_loja, v_op_orcto_cotacao, qtde_op_central, qtde_op_loja, qtde_op_orcto_cotacao, qtdeOpNivelAcessoBlocoNotas, qtdeOpNivelAcessoChamados
 	qtdeOpNivelAcessoBlocoNotas = 0
     qtdeOpNivelAcessoChamados = 0
 	
@@ -105,6 +105,23 @@
 			end if
 		next
 	
+'	OPERAÇÕES DO MÓDULO ORÇAMENTO/COTAÇÃO
+	qtde_op_orcto_cotacao = 0
+	redim v_op_orcto_cotacao(0)
+	v_op_orcto_cotacao(0) = ""
+	n = Request.Form("ckb_op_orcto_cotacao").Count
+	for i = 1 to n
+		s = Trim(Request.Form("ckb_op_orcto_cotacao")(i))
+		if s <> "" then
+			if Trim(v_op_orcto_cotacao(ubound(v_op_orcto_cotacao))) <> "" then
+				redim preserve v_op_orcto_cotacao(ubound(v_op_orcto_cotacao)+1)
+				v_op_orcto_cotacao(ubound(v_op_orcto_cotacao)) = ""
+				end if
+			v_op_orcto_cotacao(ubound(v_op_orcto_cotacao)) = s
+			qtde_op_orcto_cotacao = qtde_op_orcto_cotacao + 1
+			end if
+		next
+	
 	dim erro_consistencia, erro_fatal
 	erro_consistencia=false
 	erro_fatal=false
@@ -124,7 +141,7 @@
 		alerta="O NÍVEL DE ACESSO PARA OS CHAMADOS DO PEDIDO NÃO FOI DEFINIDO."
 	elseif (qtdeOpNivelAcessoChamados=0) And (s_nivel_acesso_chamado_pedido<>"") then
 		alerta="O NÍVEL DE ACESSO PARA OS CHAMADOS DO PEDIDO FOI DEFINIDO, MAS NENHUMA OPERAÇÃO DE LEITURA OU CADASTRAMENTO DE CHAMADOS FOI HABILITADA."
-	elseif (qtde_op_central = 0) And (qtde_op_loja = 0) then
+	elseif (qtde_op_central = 0) And (qtde_op_loja = 0) And (qtde_op_orcto_cotacao = 0) then
 		alerta="NENHUMA OPERAÇÃO DA LISTA FOI SELECIONADA."
 		end if
 	
@@ -372,7 +389,35 @@
 							end if
 						next
 					end if
-					
+				
+				if Err = 0 then
+				'	ORÇAMENTO/COTAÇÃO
+					for i = Lbound(v_op_orcto_cotacao) to Ubound(v_op_orcto_cotacao)
+						if Trim(v_op_orcto_cotacao(i)) <> "" then
+							s = "SELECT * FROM t_PERFIL_ITEM WHERE (id_perfil = '" & id_perfil & "') AND (id_operacao = " & Trim(v_op_orcto_cotacao(i)) & ")"
+							if rs.State <> 0 then rs.Close
+							rs.Open s, cn
+							if Not rs.Eof then
+								rs("excluido_status") = 0
+							else
+								if Not gera_nsu(NSU_CADASTRO_PERFIL_ITEM, id_perfil_item, msg_erro) then 
+									alerta = "FALHA AO GERAR O NSU DO ITEM DE PERFIL (" & Cstr(Err) & ": " & Err.Description & ")."
+									erro_fatal = True
+									exit for
+									end if
+								rs.AddNew
+								rs("id") = id_perfil_item
+								rs("id_perfil") = id_perfil
+								rs("id_operacao") = Trim(v_op_orcto_cotacao(i))
+								rs("dt_cadastro") = Date
+								rs("usuario_cadastro") = usuario
+								end if
+							rs.Update
+							if Err <> 0 then exit for
+							end if
+						next
+					end if
+				
 				if Err = 0 then
 					s = "DELETE FROM t_PERFIL_ITEM WHERE (id_perfil = '" & id_perfil & "') AND (excluido_status <> 0)"
 					cn.Execute(s)
@@ -394,9 +439,16 @@
 							end if
 						next
 					
+					for i=Lbound(v_op_orcto_cotacao) to Ubound(v_op_orcto_cotacao)
+						if Trim(v_op_orcto_cotacao(i)) <> "" then
+							if s_log_itens <> "" then s_log_itens = s_log_itens & ","
+							s_log_itens = s_log_itens & v_op_orcto_cotacao(i)
+							end if
+						next
+					
 					if s_log_itens = "" then s_log_itens = "(nenhuma)"
 					if s_log_itens <> "" then s_log_itens = "operações (atual): " & s_log_itens
-				
+					
 					log_via_vetor_carrega_do_recordset r, vLog2, campos_a_omitir
 					if criou_novo_reg then
 						s_log = log_via_vetor_monta_inclusao(vLog2)

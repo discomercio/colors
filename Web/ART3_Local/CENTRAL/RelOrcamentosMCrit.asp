@@ -136,7 +136,7 @@ function indicadores_monta_itens_select(byval id_default, byval incluirItemBranc
     dim x, r, strResp, ha_default
 	    id_default = Trim("" & id_default)
 	    ha_default=False
-	    set r = cn.Execute("SELECT apelido, razao_social_nome_iniciais_em_maiusculas FROM t_ORCAMENTISTA_E_INDICADOR WHERE (apelido NOT IN ('" & ID_ORCAMENTISTA_E_INDICADOR_RESTRICAO_FP_TODOS & "')) ORDER BY apelido")
+	    set r = cn.Execute("SELECT apelido, razao_social_nome_iniciais_em_maiusculas FROM t_ORCAMENTISTA_E_INDICADOR WHERE (Id NOT IN (" & Cstr(ID_NSU_ORCAMENTISTA_E_INDICADOR__RESTRICAO_FP_TODOS) & "," & Cstr(ID_NSU_ORCAMENTISTA_E_INDICADOR__SEM_INDICADOR) & ")) ORDER BY apelido")
 	    strResp = ""
 	    do while Not r.eof 
 		    x = UCase(Trim("" & r("apelido")))

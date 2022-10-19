@@ -71,7 +71,7 @@
 	dim s_endereco, s_endereco_numero, s_endereco_complemento, s_bairro, s_cidade, s_uf, s_cep, s_ddd, s_telefone, s_fax, url_origem
 	dim s_ddd_cel, s_tel_cel, s_contato
 	dim s_banco, s_agencia, s_conta, s_favorecido
-	dim s_senha, s_senha2
+	dim s_senha, s_senha2, s_senha_original
 	dim s_vendedor, s_acesso, s_status
 	dim strEmail, strEmail2, strEmail3, strCaptador
 	dim strChecadoStatus, strObs
@@ -101,8 +101,8 @@
 	s_fax = retorna_so_digitos(trim(Request.Form("fax")))
 	s_ddd_cel = retorna_so_digitos(trim(Request.Form("ddd_cel")))
 	s_tel_cel = retorna_so_digitos(trim(Request.Form("tel_cel")))
-	s_senha=UCase(trim(Request.Form("senha")))
-	s_senha2=UCase(trim(Request.Form("senha2")))
+	s_senha=trim(Request.Form("senha"))
+	s_senha2=trim(Request.Form("senha2"))
 	s_contato = trim(Request.Form("contato"))
 	s_acesso = trim(Request.Form("rb_acesso_hidden"))
 	strEmail = trim(Request.Form("c_email"))
@@ -139,37 +139,65 @@
 	
 	erro_consistencia=false
 	erro_fatal=false
-	
 	alerta = ""
-	if s_id_selecionado = "" then
-		alerta="FORNEÇA UM IDENTIFICADOR (APELIDO) PARA O ORÇAMENTISTA / INDICADOR."
-	elseif s_razao_social_nome = "" then
-		if s_tipo_PJ_PF = ID_PJ then
-			alerta="PREENCHA A RAZÃO SOCIAL DO ORÇAMENTISTA / INDICADOR."
+
+	dim blnSenhaAlterada
+	blnSenhaAlterada = False
+
+	if operacao_selecionada <> OP_INCLUI then
+		s_senha_original = ""
+		s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (apelido = '" & s_id_selecionado & "')"
+		set rs = cn.Execute(s)
+		if rs.Eof then
+			alerta = "CADASTRO DO INDICADOR NÃO ENCONTRADO (" & s_id_selecionado & ")"
 		else
-			alerta="PREENCHA O NOME DO ORÇAMENTISTA / INDICADOR."
+			s = Trim("" & rs("datastamp"))
+			chave = gera_chave(FATOR_BD)
+			decodifica_dado s, s_senha_original, chave
+			if s_senha_original <> "" then
+				if s_senha_original <> s_senha then blnSenhaAlterada = True
+				end if
 			end if
-	end if
-	
-	if operacao_selecionada=OP_INCLUI then
-	if s_status = "" then
-		alerta="INFORME SE O STATUS ESTÁ ATIVO OU INATIVO."
-	elseif s_vendedor = "" then
-		alerta="INFORME POR QUAL VENDEDOR O INDICADOR SERÁ ATENDIDO."
+		if rs.State <> 0 then rs.Close
 		end if
+
+	if alerta = "" then
+		if s_id_selecionado = "" then
+			alerta="FORNEÇA UM IDENTIFICADOR (APELIDO) PARA O ORÇAMENTISTA / INDICADOR."
+		elseif s_razao_social_nome = "" then
+			if s_tipo_PJ_PF = ID_PJ then
+				alerta="PREENCHA A RAZÃO SOCIAL DO ORÇAMENTISTA / INDICADOR."
+			else
+				alerta="PREENCHA O NOME DO ORÇAMENTISTA / INDICADOR."
+				end if
+			end if
 	
+		if operacao_selecionada=OP_INCLUI then
+			if s_status = "" then
+				alerta="INFORME SE O STATUS ESTÁ ATIVO OU INATIVO."
+			elseif s_vendedor = "" then
+				alerta="INFORME POR QUAL VENDEDOR O INDICADOR SERÁ ATENDIDO."
+				end if
+			end if
+		end if 'if alerta = ""
+
 	if alerta = "" then
 		if operacao_selecionada = OP_INCLUI then
 			if strCaptador = "" then alerta="INFORME QUEM É O CAPTADOR."
 			end if
 		end if
-	end if
-	
+
 	if alerta = "" then
 		if (operacao_selecionada <> OP_EXCLUI) And (CLng(s_acesso) <> 0) then
-			if len(s_senha) < 5 then
-				alerta="A SENHA DEVE POSSUIR NO MÍNIMO 5 CARACTERES."
-			elseif s_senha <> s_senha2 then
+			if (operacao_selecionada = OP_INCLUI) And (len(s_senha) < TAM_MIN_SENHA) then
+				alerta="A SENHA DEVE POSSUIR NO MÍNIMO " & TAM_MIN_SENHA & " CARACTERES."
+			elseif (operacao_selecionada = OP_INCLUI) And (Not (tem_digito(s_senha) And tem_letra(s_senha))) then
+				alerta = "A SENHA DEVE CONTER NO MÍNIMO 1 LETRA E 1 DÍGITO NUMÉRICO"
+			elseif blnSenhaAlterada And (len(s_senha) < TAM_MIN_SENHA) then
+				alerta="A SENHA DEVE POSSUIR NO MÍNIMO " & TAM_MIN_SENHA & " CARACTERES."
+			elseif blnSenhaAlterada And (Not (tem_digito(s_senha) And tem_letra(s_senha))) then
+				alerta = "A SENHA DEVE CONTER NO MÍNIMO 1 LETRA E 1 DÍGITO NUMÉRICO"
+			elseif Ucase(s_senha) <> Ucase(s_senha2) then
 				alerta="A CONFIRMAÇÃO DA SENHA NÃO ESTÁ CORRETA."
 				end if
 			end if

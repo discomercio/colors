@@ -59,11 +59,11 @@
 	
 '	OBTÉM DADOS DO FORMULÁRIO ANTERIOR
 	dim i, n
-	dim s_usuario, s_senha, s_senha2, s_nome, s_email, s_bloqueado, s_vendedor, operacao_selecionada, s_vendedor_ext
+	dim s_usuario, s_senha, s_senha2, s_senha_original, s_nome, s_email, s_bloqueado, s_vendedor, operacao_selecionada, s_vendedor_ext
 	operacao_selecionada=request("operacao_selecionada")
 	s_usuario=UCase(trim(request("usuario_selecionado")))
-	s_senha=UCase(trim(request("senha")))
-	s_senha2=UCase(trim(request("senha2")))
+	s_senha=trim(request("senha"))
+	s_senha2=trim(request("senha2"))
 	s_nome=trim(request("nome"))
     s_email=trim(request("email"))
 	s_bloqueado=trim(request("rb_estado"))
@@ -133,24 +133,52 @@
 	
 	erro_consistencia=false
 	erro_fatal=false
-	
 	alerta = ""
-	if s_usuario = "" then
-		alerta="IDENTIFICADOR DE USUÁRIO INVÁLIDO."	
-	elseif s_nome = "" then
-		alerta="PREENCHA O NOME DO USUÁRIO."
-	elseif s_bloqueado = "" then
-		alerta="INFORME SE O USUÁRIO TEM ACESSO PERMITIDO OU BLOQUEADO."
-	elseif (s_vendedor=ID_VENDEDOR) And (qtde_loja_vendedor=0) then
-		alerta="INFORME A(S) LOJA(S) DO VENDEDOR."
-	elseif len(s_senha) < 5 then
-		alerta="A SENHA DEVE POSSUIR NO MÍNIMO 5 CARACTERES."
-	elseif s_senha <> s_senha2 then
-		alerta="A CONFIRMAÇÃO DA SENHA NÃO ESTÁ CORRETA."
-	elseif qtde_perfil = 0 then
-		alerta="NENHUM PERFIL DE ACESSO FOI SELECIONADO."
-		end if
 	
+	dim blnSenhaAlterada
+	blnSenhaAlterada = False
+
+	if operacao_selecionada <> OP_INCLUI then
+		s_senha_original = ""
+		s = "SELECT * FROM t_USUARIO WHERE (usuario = '" & s_usuario & "')"
+		if rs.State <> 0 then rs.Close
+		rs.Open s, cn
+		if rs.Eof then
+			alerta="USUÁRIO NÃO ENCONTRADO (" & s_usuario & ")"
+		else
+			s = Trim("" & rs("datastamp"))
+			chave = gera_chave(FATOR_BD)
+			decodifica_dado s, s_senha_original, chave
+			if s_senha_original <> "" then
+				if s_senha_original <> s_senha then blnSenhaAlterada = True
+				end if
+			end if
+		end if
+
+	if alerta = "" then
+		if s_usuario = "" then
+			alerta="IDENTIFICADOR DE USUÁRIO INVÁLIDO."	
+		elseif s_nome = "" then
+			alerta="PREENCHA O NOME DO USUÁRIO."
+		elseif s_bloqueado = "" then
+			alerta="INFORME SE O USUÁRIO TEM ACESSO PERMITIDO OU BLOQUEADO."
+		elseif (s_vendedor=ID_VENDEDOR) And (qtde_loja_vendedor=0) then
+			alerta="INFORME A(S) LOJA(S) DO VENDEDOR."
+		elseif (operacao_selecionada = OP_INCLUI) And (len(s_senha) < TAM_MIN_SENHA) then
+			alerta="A SENHA DEVE POSSUIR NO MÍNIMO " & TAM_MIN_SENHA & " CARACTERES."
+		elseif (operacao_selecionada = OP_INCLUI) And (Not (tem_digito(s_senha) And tem_letra(s_senha))) then
+			alerta = "A SENHA DEVE CONTER NO MÍNIMO 1 LETRA E 1 DÍGITO NUMÉRICO"
+		elseif blnSenhaAlterada And (len(s_senha) < TAM_MIN_SENHA) then
+			alerta="A SENHA DEVE POSSUIR NO MÍNIMO " & TAM_MIN_SENHA & " CARACTERES."
+		elseif blnSenhaAlterada And (Not (tem_digito(s_senha) And tem_letra(s_senha))) then
+			alerta = "A SENHA DEVE CONTER NO MÍNIMO 1 LETRA E 1 DÍGITO NUMÉRICO"
+		elseif Ucase(s_senha) <> Ucase(s_senha2) then
+			alerta="A CONFIRMAÇÃO DA SENHA NÃO ESTÁ CORRETA."
+		elseif qtde_perfil = 0 then
+			alerta="NENHUM PERFIL DE ACESSO FOI SELECIONADO."
+			end if
+		end if 'if alerta = ""
+
 	'VALIDAÇÃO SE O IDENTIFICADOR JÁ ESTÁ EM USO NO CADASTRO DE INDICADORES (ASSEGURA QUE NÃO EXISTA USUÁRIO E INDICADOR COM MESMO IDENTIFICADOR)
 	if alerta = "" then
 		if operacao_selecionada = OP_INCLUI then

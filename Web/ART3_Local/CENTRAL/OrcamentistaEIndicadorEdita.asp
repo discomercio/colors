@@ -181,6 +181,7 @@ end function
 <script src="<%=URL_FILE__JANELACEP_JS%>" language="JavaScript" type="text/javascript"></script>
 
 <script type="text/javascript">
+	var TAM_MIN_SENHA = <%=TAM_MIN_SENHA%>;
 	var s_ckb_id, s_spn_id;
 
 	$(function() {
@@ -471,26 +472,35 @@ var s, s_senha, cont;
 	}
 //  SENHA
 	if (f.rb_acesso[0].checked) {
-		s_senha=trim(f.senha.value);
-		if (s_senha=="") {
+		s_senha = trim(f.senha.value);
+		if (s_senha == "") {
 			alert('Preencha a senha!!');
 			f.senha.focus();
 			return;
-			}
-			
-		if (s_senha.length < 5) {
-			alert('A senha deve possuir no mínimo 5 caracteres!!');
-			f.senha.focus();
-			return;
-			}
-		
+		}
+
 		if (s_senha != trim(f.senha2.value)) {
 			alert('A confirmação da senha não confere!!');
 			f.senha2.focus();
 			return;
+		}
+
+		// Validações realizadas somente p/ inclusão de novo parceiro ou se alterou a senha
+		if ((f.operacao_selecionada.value == OP_INCLUI) || (f.rb_acesso_original.value != "1") || (f.senha.value != f.senha_original.value)) {
+			if (s_senha.length < TAM_MIN_SENHA) {
+				alert('A senha deve possuir no mínimo ' + TAM_MIN_SENHA + ' caracteres!!');
+				f.senha.focus();
+				return;
+			}
+
+			if (!(tem_digito(s_senha) && tem_letra(s_senha))) {
+				alert("A senha deve conter no mínimo 1 letra e 1 dígito numérico");
+				f.senha.focus();
+				return;
 			}
 		}
-		
+	}
+
 //  LOJA
 	if (trim(f.loja.value)=='') {
 		alert('Selecione a loja!!');
@@ -1254,7 +1264,9 @@ var s, s_senha, cont;
 		<td width="25%" class="MD" align="left"><p class="R">ACESSO AO SISTEMA</p><p class="C">
 			<input type="radio" id="rb_acesso_liberado" name="rb_acesso" value="1" class="TA"<%if s_parametro = "1" then Response.Write(" checked")%>><span onclick="fCAD.rb_acesso[0].click();" style="cursor:default; color:#006600">Liberado</span>
 			<br><input type="radio" id="rb_acesso_bloqueado" name="rb_acesso" value="0" class="TA"<%if (s_parametro<>"1") And (s_parametro<>"") then Response.Write(" checked")%>><span onclick="fCAD.rb_acesso[1].click()" style="cursor:default; color:#ff0000">Bloqueado</span>
-			</p></td>
+			</p>
+			<input type="hidden" name="rb_acesso_original" id="rb_acesso_original" value="<%=s_parametro%>" />
+		</td>
 <%if operacao_selecionada=OP_CONSULTA then s_parametro=Trim("" & rs("status")) else s_parametro=""%>
 		<td width="25%" class="MD" align="left"><p class="R">STATUS</p><p class="C">
 			<input type="radio" id="rb_status_ativo" name="rb_status" value="A" class="TA"<%if s_parametro = "A" then Response.Write(" checked")%>><span onclick="fCAD.rb_status[0].click();" style="cursor:default; color:#006600">Ativo</span>
@@ -1287,6 +1299,7 @@ var s, s_senha, cont;
 %>       
 		<td class="MD" width="50%" align="left"><p class="R">SENHA</p><p class="C"><input id="senha" name="senha" class="TA" type="password" maxlength="15" size="18" value="<%=senha_descripto%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.senha2.focus();"></p></td>
 		<td width="50%" align="left"><p class="R">SENHA (CONFIRMAÇÃO)</p><p class="C"><input id="senha2" name="senha2" class="TA" type="password" maxlength="15" size="18" value="<%=senha_descripto%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.c_perc_desagio_RA.focus();"></p></td>
+		<input type="hidden" name="senha_original" id="senha_original" value="<%=senha_descripto%>" />
 	</tr>
 </table>
 

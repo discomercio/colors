@@ -83,6 +83,8 @@
 <script src="<%=URL_FILE__GLOBAL_JS%>" language="JavaScript" type="text/javascript"></script>
 
 <script language="JavaScript" type="text/javascript">
+var TAM_MIN_SENHA = <%=TAM_MIN_SENHA%>;
+
 configura_painel();
 
 function posiciona_foco( f ){
@@ -105,17 +107,17 @@ var s1, s2, s3;
 	s1 = ucase(trim(f.senha.value));
 	s2 = ucase(trim(f.novasenha.value));
 	s3 = ucase(trim(f.novasenha2.value));
-	if (s1.length < 5){ 
+	if (s1.length < TAM_MIN_SENHA){
 		f.senha.focus();
 		return false;
 		}
-	if (s2.length < 5){ 
-		alert("A nova senha deve possuir no mínimo 5 caracteres.");
+	if (s2.length < TAM_MIN_SENHA){
+		alert("A nova senha deve possuir no mínimo " + TAM_MIN_SENHA + " caracteres.");
 		f.novasenha.focus();
 		return false;
 		}
-	if (s3.length < 5){ 
-		alert("A confirmação da nova senha deve possuir no mínimo 5 caracteres.");
+	if (s3.length < TAM_MIN_SENHA){
+		alert("A confirmação da nova senha deve possuir no mínimo " + TAM_MIN_SENHA + " caracteres.");
 		f.novasenha2.focus();
 		return false;
 		}
@@ -140,7 +142,14 @@ var s1, s2, s3;
 		f.novasenha.focus();
 		return false;
 		}
-	
+	if (!(tem_digito(s2) && tem_letra(s2))) {
+		alert("A nova senha deve conter no mínimo 1 letra e 1 dígito numérico");
+		f.novasenha.value = "";
+		f.novasenha2.value = "";
+		f.novasenha.focus();
+		return false;
+	}
+
 	return true;
 }
 

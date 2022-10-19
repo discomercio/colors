@@ -137,6 +137,7 @@ var tipo_PJ_PF = ID_PJ;
 <% end if %>
 
 <script language="JavaScript" type="text/javascript">
+var TAM_MIN_SENHA = <%=TAM_MIN_SENHA%>;
 var fCepPopup;
 
 $(function () {
@@ -439,24 +440,33 @@ var s, s_senha;
 
     //  SENHA
 	if (f.rb_acesso[0].checked) {
-	    s_senha = f.senha.value;
-	    if (s_senha == "") {
-	        alert('Preencha a senha!!');
-	        f.senha.focus();
-	        return;
-	    }
+		s_senha = f.senha.value;
+		if (s_senha == "") {
+			alert('Preencha a senha!!');
+			f.senha.focus();
+			return;
+		}
 
-	    if (s_senha.length < 5) {
-	        alert('A senha deve possuir no mínimo 5 caracteres!!');
-	        f.senha.focus();
-	        return;
-	    }
+		if (s_senha != f.senha2.value) {
+			alert('A confirmação da senha não confere!!');
+			f.senha2.focus();
+			return;
+		}
 
-	    if (s_senha != f.senha2.value) {
-	        alert('A confirmação da senha não confere!!');
-	        f.senha2.focus();
-	        return;
-	    }
+		// Validações realizadas somente p/ inclusão de novo parceiro ou se alterou a senha
+		if ((f.operacao_selecionada.value == OP_INCLUI) || (f.rb_acesso_original.value != "1") || (f.senha.value != f.senha_original.value)) {
+			if (s_senha.length < TAM_MIN_SENHA) {
+				alert('A senha deve possuir no mínimo ' + TAM_MIN_SENHA + ' caracteres!!');
+				f.senha.focus();
+				return;
+			}
+
+			if (!(tem_digito(s_senha) && tem_letra(s_senha))) {
+				alert("A senha deve conter no mínimo 1 letra e 1 dígito numérico");
+				f.senha.focus();
+				return;
+			}
+		}
 	}
 
 
@@ -764,7 +774,9 @@ var s, s_senha;
 			<br><input type="radio" id="rb_acesso_bloqueado" name="rb_acesso" value="0" 
 				class="TA"
 				><span onclick="fCAD.rb_acesso[1].click();" style="cursor:default; color:#ff0000">Bloqueado</span>
-			</p></td>
+			</p>
+			<input type="hidden" name="rb_acesso_original" id="rb_acesso_original" value="" />
+		</td>
         </tr>
     </table>
 
@@ -773,6 +785,7 @@ var s, s_senha;
 	<tr>
 		<td class="MD" width="50%" align="left"><p class="R">SENHA</p><p class="C"><input id="senha" name="senha" class="TA" type="password" maxlength="15" size="18" value="" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.senha2.focus();"></p></td>
 		<td width="50%" align="left"><p class="R">SENHA (CONFIRMAÇÃO)</p><p class="C"><input id="senha2" name="senha2" class="TA" type="password" maxlength="15" size="18" value="" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.c_email.focus();"></p></td>
+		<input type="hidden" name="senha_original" id="senha_original" value="" />
 	</tr>
 </table>
 

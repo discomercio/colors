@@ -66,7 +66,7 @@ dim r
 	cab=cab & "<TD class='MB' style='width:60px;' valign='bottom'><P class='R' style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='PerfilLista.asp?ord=3" & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Status</P></TD>"
 	cab=cab & "</TR>" & chr(13)
 
-	s_where = ""
+	s_where = "(st_oculto = 0)"
 
 	consulta= "SELECT * FROM t_PERFIL"
 	
