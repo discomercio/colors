@@ -13,6 +13,7 @@ namespace ART3WebAPI.Models.Entities
 		public MagentoErpSalesOrderJaCadastrado erpSalesOrderJaCadastrado { get; set; } = new MagentoErpSalesOrderJaCadastrado();
 		public MagentoErpSalesOrderCliente erpCliente { get; set; } = new MagentoErpSalesOrderCliente();
 		public MagentoSoapApiSalesOrderInfo magentoSalesOrderInfo { get; set; } = null;
+		public Magento2SalesOrderInfo magento2SalesOrderInfo { get; set; } = null;
 	}
 	#endregion
 
@@ -94,6 +95,11 @@ namespace ART3WebAPI.Models.Entities
 		public decimal mktp_datasource_discount { get; set; } = 0m;
 		public decimal mktp_datasource_total_ordered { get; set; } = 0m;
 		public decimal mktp_datasource_shipping_cost { get; set; } = 0m;
+		public string b2b_installer_name { get; set; }
+		public int b2b_installer_id { get; set; }
+		public decimal b2b_installer_commission_value { get; set; }
+		public double b2b_installer_commission_percentage { get; set; } = 0d;
+		public string b2b_type_order { get; set; }
 	}
 	#endregion
 

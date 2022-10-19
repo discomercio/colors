@@ -54,6 +54,10 @@
 	dim cn, r, rs
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim r_loja_user_session
+	set r_loja_user_session = New cl_LOJA
+	if Not x_loja_bd(loja, r_loja_user_session) then Response.Redirect("aviso.asp?id=" & ERR_LOJA_NAO_CADASTRADA)
+
 	Dim criou_novo_reg, s_senha, s_senha2, chave
 	Dim s_log
 	Dim campos_a_omitir
@@ -73,9 +77,11 @@
 	dim s_nextel, rb_estabelecimento
     dim rs2, s2, intNsuNovoLog
     dim n, cont, s_contato_nome, s_contato_id, s_contato_data, s_contato_log_inclusao
-	
+	dim s_id_magento_b2b, id_magento_b2b
+
 	operacao_selecionada = request("operacao_selecionada")
 	s_id_selecionado = UCase(trim(Request.Form("id_selecionado")))
+	s_id_magento_b2b = Trim(Request.Form("c_id_magento_b2b"))
 	s_tipo_PJ_PF = trim(Request.Form("tipo_PJ_PF"))
 	s_razao_social_nome = trim(Request.Form("razao_social_nome"))
 	s_responsavel_principal = trim(Request.Form("c_responsavel_principal"))
@@ -224,6 +230,25 @@
 		alerta="INDIQUE A FORMA PELA QUAL CONHECEU A BONSHOP."
 		end if
 	
+	if alerta = "" then
+		if (r_loja_user_session.unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__AC) And (s_id_magento_b2b <> "") then
+			if retorna_so_digitos(s_id_magento_b2b) <> substitui_caracteres(s_id_magento_b2b, ".", "") then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "ID Magento B2B informado está em formato inválido"
+			elseif converte_numero(s_id_magento_b2b) <= 0 then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "ID Magento B2B informado é inválido"
+				end if
+			
+			if alerta = "" then
+				id_magento_b2b = CLng(s_id_magento_b2b)
+				if id_magento_b2b <= 0 then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "ID Magento B2B possui valor inválido"
+					end if
+				end if
+			end if
+		end if
 	
 	if alerta <> "" then erro_consistencia=True
 
@@ -274,6 +299,29 @@
 		if rs.State <> 0 then rs.Close
 		end if
 
+	if alerta = "" then
+		if (r_loja_user_session.unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__AC) And (id_magento_b2b > 0) then
+			'VERIFICA SE O ID MAGENTO B2B JÁ ESTÁ EM USO
+			s = "SELECT" & _
+					" apelido," & _
+					" cnpj_cpf," & _
+					" razao_social_nome," & _
+					" loja" & _
+				" FROM t_ORCAMENTISTA_E_INDICADOR" & _
+				" WHERE" & _
+					" (id_magento_b2b = " & Cstr(id_magento_b2b) & ")"
+			set rs = cn.Execute(s)
+			if Not rs.Eof then
+				blnErroDuplicidadeCadastro=True
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "O ID Magento B2B " & Cstr(id_magento_b2b) & " já está cadastrado no parceiro " & Trim("" & rs("apelido")) & _
+						 " (loja: " & Trim("" & rs("loja")) & _
+						 ", CPF/CNPJ: " & cnpj_cpf_formata(Trim("" & rs("cnpj_cpf"))) & _
+						 ", nome: " & Trim("" & rs("razao_social_nome")) & ")"
+				end if
+			if rs.State <> 0 then rs.Close
+			end if
+		end if
 
 	Err.Clear
 	
@@ -311,6 +359,14 @@
 					log_via_vetor_carrega_do_recordset r, vLog1, campos_a_omitir
 					end if
 					
+				if r_loja_user_session.unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__AC then
+					if id_magento_b2b > 0 then
+						r("id_magento_b2b") = id_magento_b2b
+					else
+						r("id_magento_b2b") = Null
+						end if
+					end if
+
 				r("dt_ult_atualizacao") = Now
                 r("vendedor_dt_ult_atualizacao") = Date
                 r("vendedor_dt_hr_ult_atualizacao") = Now

@@ -161,6 +161,11 @@ namespace ART3WebAPI.Models.Repository
 			pedidoXml.mktp_datasource_discount = BD.readToDecimal(rowDados["mktp_datasource_discount"]);
 			pedidoXml.mktp_datasource_total_ordered = BD.readToDecimal(rowDados["mktp_datasource_total_ordered"]);
 			pedidoXml.mktp_datasource_shipping_cost = BD.readToDecimal(rowDados["mktp_datasource_shipping_cost"]);
+			pedidoXml.b2b_installer_name = BD.readToString(rowDados["b2b_installer_name"]);
+			pedidoXml.b2b_installer_id = BD.readToInt(rowDados["b2b_installer_id"]);
+			pedidoXml.b2b_installer_commission_value = BD.readToDecimal(rowDados["b2b_installer_commission_value"]);
+			pedidoXml.b2b_installer_commission_percentage = BD.readToSingle(rowDados["b2b_installer_commission_percentage"]);
+			pedidoXml.b2b_type_order = BD.readToString(rowDados["b2b_type_order"]);
 
 			return pedidoXml;
 		}
@@ -242,7 +247,12 @@ namespace ART3WebAPI.Models.Repository
 								"mktp_datasource_status, " +
 								"mktp_datasource_discount, " +
 								"mktp_datasource_total_ordered, " +
-								"mktp_datasource_shipping_cost" +
+								"mktp_datasource_shipping_cost, " +
+								"b2b_installer_name, " +
+								"b2b_installer_id, " +
+								"b2b_installer_commission_value, " +
+								"b2b_installer_commission_percentage, " +
+								"b2b_type_order" +
 							")" +
 							" OUTPUT INSERTED.id" +
 							" VALUES " +
@@ -296,7 +306,12 @@ namespace ART3WebAPI.Models.Repository
 								"@mktp_datasource_status, " +
 								"@mktp_datasource_discount, " +
 								"@mktp_datasource_total_ordered, " +
-								"@mktp_datasource_shipping_cost" +
+								"@mktp_datasource_shipping_cost," +
+								"@b2b_installer_name, " +
+								"@b2b_installer_id, " +
+								"@b2b_installer_commission_value, " +
+								"@b2b_installer_commission_percentage, " +
+								"@b2b_type_order" +
 							")";
 					cmInsert = new SqlCommand();
 					cmInsert.Connection = cn;
@@ -351,6 +366,11 @@ namespace ART3WebAPI.Models.Repository
 					cmInsert.Parameters.Add(new SqlParameter("@mktp_datasource_discount", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
 					cmInsert.Parameters.Add(new SqlParameter("@mktp_datasource_total_ordered", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
 					cmInsert.Parameters.Add(new SqlParameter("@mktp_datasource_shipping_cost", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add("@b2b_installer_name", SqlDbType.VarChar, 200);
+					cmInsert.Parameters.Add("@b2b_installer_id", SqlDbType.Int);
+					cmInsert.Parameters.Add(new SqlParameter("@b2b_installer_commission_value", SqlDbType.Decimal) { Precision = 18, Scale = 4 });
+					cmInsert.Parameters.Add("@b2b_installer_commission_percentage", SqlDbType.Real);
+					cmInsert.Parameters.Add("@b2b_type_order", SqlDbType.VarChar, 40);
 					cmInsert.Prepare();
 					#endregion
 
@@ -413,6 +433,11 @@ namespace ART3WebAPI.Models.Repository
 							cmInsert.Parameters["@mktp_datasource_discount"].Value = pedidoXml.mktp_datasource_discount;
 							cmInsert.Parameters["@mktp_datasource_total_ordered"].Value = pedidoXml.mktp_datasource_total_ordered;
 							cmInsert.Parameters["@mktp_datasource_shipping_cost"].Value = pedidoXml.mktp_datasource_shipping_cost;
+							cmInsert.Parameters["@b2b_installer_name"].Value = (pedidoXml.b2b_installer_name ?? "");
+							cmInsert.Parameters["@b2b_installer_id"].Value = pedidoXml.b2b_installer_id;
+							cmInsert.Parameters["@b2b_installer_commission_value"].Value = pedidoXml.b2b_installer_commission_value;
+							cmInsert.Parameters["@b2b_installer_commission_percentage"].Value = pedidoXml.b2b_installer_commission_percentage;
+							cmInsert.Parameters["@b2b_type_order"].Value = (pedidoXml.b2b_type_order ?? "");
 							#endregion
 
 							#region [ Monta texto para o log em arquivo ]

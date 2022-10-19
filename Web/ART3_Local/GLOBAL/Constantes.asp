@@ -1929,6 +1929,7 @@
 	
 	class cl_ORCAMENTISTA_E_INDICADOR
 		dim apelido
+		dim id_magento_b2b
 		dim cnpj_cpf
 		dim tipo
 		dim ie_rg
