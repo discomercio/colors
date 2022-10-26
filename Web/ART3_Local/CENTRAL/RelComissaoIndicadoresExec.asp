@@ -59,6 +59,7 @@
 	dim ckb_st_entrega_entregue, c_dt_entregue_inicio, c_dt_entregue_termino
 	dim ckb_comissao_paga_sim, ckb_comissao_paga_nao
 	dim ckb_st_pagto_pago, ckb_st_pagto_nao_pago, ckb_st_pagto_pago_parcial
+	dim rb_pagto_comissao_via_cartao
 	dim c_vendedor, c_indicador
 	dim c_loja, lista_loja, s_filtro_loja, v_loja, v, i
 	dim rb_visao, blnVisaoSintetica
@@ -79,6 +80,8 @@
 	ckb_st_pagto_pago = Trim(Request.Form("ckb_st_pagto_pago"))
 	ckb_st_pagto_nao_pago = Trim(Request.Form("ckb_st_pagto_nao_pago"))
 	ckb_st_pagto_pago_parcial = Trim(Request.Form("ckb_st_pagto_pago_parcial"))
+	
+	rb_pagto_comissao_via_cartao = Trim(Request.Form("rb_pagto_comissao_via_cartao"))
 	rb_visao = Trim(Request.Form("rb_visao"))
 	
 	blnVisaoSintetica = False
@@ -209,16 +212,16 @@ dim v_desconto_descricao(),v_desconto_valor(),contador,valor_desconto,qtde_regis
 			v = split(v_loja(i),"-",-1)
 			if Ubound(v)=Lbound(v) then
 				if s_where_loja <> "" then s_where_loja = s_where_loja & " OR"
-				s_where_loja = s_where_loja & " (CONVERT(smallint, t_PEDIDO.loja) = " & v_loja(i) & ")"
+				s_where_loja = s_where_loja & " (t_PEDIDO.numero_loja = " & v_loja(i) & ")"
 			else
 				s = ""
 				if v(Lbound(v))<>"" then 
 					if s <> "" then s = s & " AND"
-					s = s & " (CONVERT(smallint, t_PEDIDO.loja) >= " & v(Lbound(v)) & ")"
+					s = s & " (t_PEDIDO.numero_loja >= " & v(Lbound(v)) & ")"
 					end if
 				if v(Ubound(v))<>"" then
 					if s <> "" then s = s & " AND"
-					s = s & " (CONVERT(smallint, t_PEDIDO.loja) <= " & v(Ubound(v)) & ")"
+					s = s & " (t_PEDIDO.numero_loja <= " & v(Ubound(v)) & ")"
 					end if
 				if s <> "" then 
 					if s_where_loja <> "" then s_where_loja = s_where_loja & " OR"
@@ -305,6 +308,12 @@ dim v_desconto_descricao(),v_desconto_valor(),contador,valor_desconto,qtde_regis
 		s_where_st_pagto = s_where_st_pagto & " (" & s & ")"
 		end if
 	
+'	CRITÉRIO: PAGAMENTO DA COMISSÃO VIA CARTÃO
+	if rb_pagto_comissao_via_cartao <> "" then
+		if s_where <> "" then s_where = s_where & " AND"
+		s_where = s_where & " (t_ORCAMENTISTA_E_INDICADOR.comissao_cartao_status = " & rb_pagto_comissao_via_cartao & ")"
+		end if
+
 '	CRITÉRIOS PARA PEDIDOS DE VENDA NORMAIS
 	s_where_venda = ""
 	if IsDate(c_dt_entregue_inicio) then
@@ -1656,6 +1665,7 @@ function limitaCedulas() {
 <input type="hidden" name="ckb_st_pagto_pago" id="ckb_st_pagto_pago" value="<%=ckb_st_pagto_pago%>">
 <input type="hidden" name="ckb_st_pagto_nao_pago" id="ckb_st_pagto_nao_pago" value="<%=ckb_st_pagto_nao_pago%>">
 <input type="hidden" name="ckb_st_pagto_pago_parcial" id="ckb_st_pagto_pago_parcial" value="<%=ckb_st_pagto_pago_parcial%>">
+<input type="hidden" name="rb_pagto_comissao_via_cartao" id="rb_pagto_comissao_via_cartao" value="<%=rb_pagto_comissao_via_cartao%>" />
 <input type="hidden" name="rb_visao" id="rb_visao" value="<%=rb_visao%>">
 <input type="hidden" name="c_usuario_sessao" id="c_usuario_sessao" value="<%=usuario%>" />
 
@@ -1745,6 +1755,24 @@ function limitaCedulas() {
 		s_filtro = s_filtro & _
 					"	<tr>" & chr(13) & _
 					"		<td align='right' valign='top' nowrap><span class='N'>Status de Pagamento:&nbsp;</span></td>" & chr(13) & _
+					"		<td align='left' valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
+					"	</tr>" & chr(13)
+		end if
+
+'	PAGAMENTO DA COMISSÃO VIA CARTÃO
+	s = ""
+	if rb_pagto_comissao_via_cartao = "0" then
+		s = "não"
+	elseif rb_pagto_comissao_via_cartao = "1" then
+		s = "sim"
+	else
+		s = "todos"
+		end if
+
+	if s <> "" then
+		s_filtro = s_filtro & _
+					"	<tr>" & chr(13) & _
+					"		<td align='right' valign='top' nowrap><span class='N'>Comissão via Cartão:&nbsp;</span></td>" & chr(13) & _
 					"		<td align='left' valign='top' width='99%'><span class='N'>" & s & "</span></td>" & chr(13) & _
 					"	</tr>" & chr(13)
 		end if
