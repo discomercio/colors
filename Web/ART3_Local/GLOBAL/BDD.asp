@@ -2370,6 +2370,7 @@ dim rs
 	else
 		with r_orcamentista_e_indicador
 			.apelido					= Trim("" & rs("apelido"))
+			.id_magento_b2b				= rs("id_magento_b2b")
 			.cnpj_cpf					= Trim("" & rs("cnpj_cpf"))
 			.tipo						= Trim("" & rs("tipo"))
 			.ie_rg						= Trim("" & rs("ie_rg"))

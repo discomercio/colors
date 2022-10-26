@@ -1228,7 +1228,7 @@ html
 
 <!--  INDICADOR: FORMA COMO CONHECEU  -->
 	<tr bgcolor="#FFFFFF" id="tr_FormaComoConheceu">
-	<td class="MDBE" align="left" nowrap><span class="PLTe">FORMA COMO CONHECEU A BONSHOP</span>
+	<td class="MDBE" align="left" nowrap><span class="PLTe">FORMA COMO CONHECEU A DIS</span>
 		<br>
 		<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;">
 		<tr bgcolor="#FFFFFF"><td align="left">

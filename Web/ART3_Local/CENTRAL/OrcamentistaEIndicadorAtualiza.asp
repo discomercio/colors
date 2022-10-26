@@ -111,9 +111,12 @@
     dim n, cont, s_id_desc, s_desc_desc, s_val_desc
     dim s_contato_nome, s_contato_id, s_contato_data, s_contato_log_inclusao, s_contato_log_exclusao, s_contato_log_edicao
 	dim ckb_comissao_cartao_status, c_comissao_cartao_cpf, c_comissao_cartao_titular, c_comissao_NFSe_cnpj, c_comissao_NFSe_razao_social
+	dim s_id_magento_b2b, s_id_magento_b2b_original, id_magento_b2b
 
 	operacao_selecionada = request("operacao_selecionada")
 	s_id_selecionado = UCase(trim(Request.Form("id_selecionado")))
+	s_id_magento_b2b = Trim(Request.Form("c_id_magento_b2b"))
+	s_id_magento_b2b_original = Trim(Request.Form("c_id_magento_b2b_original"))
 	s_tipo_PJ_PF = trim(Request.Form("tipo_PJ_PF"))
 	s_razao_social_nome = trim(Request.Form("razao_social_nome"))
 	s_responsavel_principal = trim(Request.Form("c_responsavel_principal"))
@@ -384,6 +387,10 @@
 '	VALIDAÇÃO P/ PERMITIR SOMENTE UM CADASTRO POR LOJA P/ CADA CPF/CNPJ
 	dim s_label
 	dim r_orcamentista_e_indicador
+	if operacao_selecionada <> OP_INCLUI then
+		call le_orcamentista_e_indicador(s_id_selecionado, r_orcamentista_e_indicador, msg_erro)
+		end if
+
 	dim blnErroDuplicidadeCadastro
 	blnErroDuplicidadeCadastro=False
 	if alerta = "" then
@@ -418,7 +425,6 @@
 		
 			if rs.State <> 0 then rs.Close
 		elseif operacao_selecionada <> OP_EXCLUI then
-			call le_orcamentista_e_indicador(s_id_selecionado, r_orcamentista_e_indicador, msg_erro)
 			' CONSISTE SOMENTE SE ESTIVER ALTERANDO A LOJA OU O CPF/CNPJ
 			if converte_numero(s_loja) <> converte_numero(r_orcamentista_e_indicador.loja) Or _
 				retorna_so_digitos(s_cnpj_cpf) <> retorna_so_digitos(r_orcamentista_e_indicador.cnpj_cpf) then
@@ -456,6 +462,89 @@
 				end if
 			end if
 		end if
+
+	dim r_loja_indicador_original, r_loja_indicador_form
+	set r_loja_indicador_original = New cl_LOJA
+	set r_loja_indicador_form = New cl_LOJA
+	if alerta = "" then
+		if operacao_selecionada <> OP_INCLUI then
+			if Not x_loja_bd(r_orcamentista_e_indicador.loja, r_loja_indicador_original) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "A loja cadastrada para o indicador (" & r_orcamentista_e_indicador.loja & ") não foi encontrada"
+				end if
+			end if
+		if s_loja <> "" then
+			if Not x_loja_bd(s_loja, r_loja_indicador_form) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "A loja selecionada para o indicador (" & s_loja & ") não foi encontrada"
+				end if
+			end if
+		end if 'if alerta = "" then
+
+	dim blnVisivelIdMagentoB2B
+	blnVisivelIdMagentoB2B = False
+	if alerta = "" then
+		if operacao_selecionada = OP_INCLUI then
+			if Trim("" & r_loja_indicador_form.unidade_negocio) = COD_UNIDADE_NEGOCIO_LOJA__AC then
+				blnVisivelIdMagentoB2B = True
+				end if
+		else
+			if (Trim("" & r_loja_indicador_form.unidade_negocio) = COD_UNIDADE_NEGOCIO_LOJA__AC) _
+				Or (r_loja_indicador_original.unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__AC) _
+				Or ( (Trim("" & r_orcamentista_e_indicador.id_magento_b2b) <> "") And (Trim("" & r_orcamentista_e_indicador.id_magento_b2b) <> "0") ) then
+				blnVisivelIdMagentoB2B = True
+				end if
+			end if
+		end if 'if alerta = ""
+
+	if alerta = "" then
+		if blnVisivelIdMagentoB2B then
+			if s_id_magento_b2b <> "" then
+				if retorna_so_digitos(s_id_magento_b2b) <> substitui_caracteres(s_id_magento_b2b, ".", "") then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "ID Magento B2B informado está em formato inválido"
+				elseif converte_numero(s_id_magento_b2b) <= 0 then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "ID Magento B2B informado é inválido"
+					end if
+			
+				if alerta = "" then
+					id_magento_b2b = CLng(s_id_magento_b2b)
+					if id_magento_b2b <= 0 then
+						alerta=texto_add_br(alerta)
+						alerta=alerta & "ID Magento B2B possui valor inválido"
+						end if
+					end if
+				end if
+			end if
+		end if 'if alerta = "" then
+
+	if alerta = "" then
+		if blnVisivelIdMagentoB2B then
+			if id_magento_b2b > 0 then
+				'VERIFICA SE O ID MAGENTO B2B JÁ ESTÁ EM USO
+				s = "SELECT" & _
+						" apelido," & _
+						" cnpj_cpf," & _
+						" razao_social_nome," & _
+						" loja" & _
+					" FROM t_ORCAMENTISTA_E_INDICADOR" & _
+					" WHERE" & _
+						" (id_magento_b2b = " & Cstr(id_magento_b2b) & ")" & _
+						" AND (apelido <> '" & s_id_selecionado & "')"
+				set rs = cn.Execute(s)
+				if Not rs.Eof then
+					blnErroDuplicidadeCadastro=True
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "O ID Magento B2B " & Cstr(id_magento_b2b) & " já está cadastrado no parceiro " & Trim("" & rs("apelido")) & _
+							 " (loja: " & Trim("" & rs("loja")) & _
+							 ", CPF/CNPJ: " & cnpj_cpf_formata(Trim("" & rs("cnpj_cpf"))) & _
+							 ", nome: " & Trim("" & rs("razao_social_nome")) & ")"
+					end if
+				if rs.State <> 0 then rs.Close
+				end if 'if id_magento_b2b > 0
+			end if 'if blnVisivelIdMagentoB2B
+		end if 'if alerta = ""
 
 	'VALIDAÇÃO SE O IDENTIFICADOR JÁ ESTÁ EM USO NO CADASTRO DE USUÁRIOS (ASSEGURA QUE NÃO EXISTA USUÁRIO E INDICADOR COM MESMO IDENTIFICADOR)
 	if alerta = "" then
@@ -608,7 +697,19 @@
 				
                 rs2.Open s2, cn
                 if rs2.EOF then 
-                    
+                    ' ID Magento B2B
+					if blnVisivelIdMagentoB2B then
+						x1 = Trim("" & r("id_magento_b2b"))
+						if x1 = "0" then x1 = ""
+						x2 = Cstr(id_magento_b2b)
+						if x2 = "0" then x2 = ""
+						if (x1 <> x2) then
+							if x1 = "" then x1 = "VAZIO"
+							if x2 = "" then x2 = "VAZIO"
+							msg = msg & "ID Magento B2B alterado <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
+							end if
+						end if
+
                     ' log razão social
                     if (s_razao_social_nome <> r("razao_social_nome")) then 
                         msg = msg & "Razão Social alterada <br>|de: " & r("razao_social_nome") & "<br>|para: " & s_razao_social_nome & "<br>"
@@ -995,11 +1096,11 @@
                         msg = msg & "Captador alterado <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
                     end if
 
-                    ' log forma como conheceu a bonshop
+                    ' log forma como conheceu a DIS
                     if isNull(r("forma_como_conheceu_codigo")) then r("forma_como_conheceu_codigo") = ""
                     if (s_forma_como_conheceu_codigo <> r("forma_como_conheceu_codigo")) then
                         if (obtem_descricao_tabela_t_codigo_descricao("CadOrcamentistaEIndicador_FormaComoConheceu", r("forma_como_conheceu_codigo"))) = "Código não cadastrado ()" then x1 = "VAZIO" else x1 = obtem_descricao_tabela_t_codigo_descricao("CadOrcamentistaEIndicador_FormaComoConheceu", r("forma_como_conheceu_codigo"))                 
-                        msg = msg & "Forma como conheceu a Bonshop alterada <br>|de: " & x1 & "<br>|para: " & obtem_descricao_tabela_t_codigo_descricao("CadOrcamentistaEIndicador_FormaComoConheceu", s_forma_como_conheceu_codigo) & "<br>"
+                        msg = msg & "Forma como conheceu a DIS alterada <br>|de: " & x1 & "<br>|para: " & obtem_descricao_tabela_t_codigo_descricao("CadOrcamentistaEIndicador_FormaComoConheceu", s_forma_como_conheceu_codigo) & "<br>"
                     end if
 
 
@@ -1199,6 +1300,14 @@
 					log_via_vetor_carrega_do_recordset r, vLog1, campos_a_omitir
 					end if
 				
+				if blnVisivelIdMagentoB2B then
+					if id_magento_b2b > 0 then
+						r("id_magento_b2b") = id_magento_b2b
+					else
+						r("id_magento_b2b") = Null
+						end if
+					end if
+
 				r("dt_ult_atualizacao") = Now
 				r("usuario_ult_atualizacao") = usuario
 				if s_vendedor <> r("vendedor") then

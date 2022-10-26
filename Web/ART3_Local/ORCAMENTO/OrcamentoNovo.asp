@@ -993,7 +993,7 @@ var i, b, ha_item, strMsgErro;
 		}
 
 /*	if (trim(f.midia.value)=='') {
-		alert('Indique a forma pela qual o cliente conheceu a Bonshop!!');
+		alert('Indique a forma pela qual o cliente conheceu a DIS!!');
 		f.midia.focus();
 		return;
 		}
@@ -1280,7 +1280,7 @@ var i, b, ha_item, strMsgErro;
 <!-- ************   MÍDIA (INATIVO)  ************ -->
 <!-- <table cellspacing="0" style="width:375px" style="display:none">
 	<tr>
-	<td width="100%" align="left"><p class="R">FORMA PELA QUAL CONHECEU A BONSHOP</p><p class="C">
+	<td width="100%" align="left"><p class="R">FORMA PELA QUAL CONHECEU A DIS</p><p class="C">
 		<select id="midia" name="midia" style="margin-top:4pt; margin-bottom:4pt;width:370px;">
 			<%'=midia_monta_itens_select(r_cliente.midia)%>
 		</select>

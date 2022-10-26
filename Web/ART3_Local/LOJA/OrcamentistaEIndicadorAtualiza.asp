@@ -80,9 +80,12 @@
     dim s_etq_endereco, s_etq_endereco_numero, s_etq_endereco_complemento, s_etq_bairro, s_etq_cidade, s_etq_uf, s_etq_cep, s_etq_ddd_1, s_etq_ddd_2, s_etq_tel_1, s_etq_tel_2, s_etq_email
     dim msg,s_favorecido_cnpjcpf
     dim n, cont, s_contato_nome, s_contato_id, s_contato_data, s_contato_log_inclusao, s_contato_log_exclusao, s_contato_log_edicao
-	
+	dim s_id_magento_b2b, s_id_magento_b2b_original, id_magento_b2b
+
 	operacao_selecionada = request("operacao_selecionada")
 	s_id_selecionado = UCase(trim(Request.Form("id_selecionado")))
+	s_id_magento_b2b = Trim(Request.Form("c_id_magento_b2b"))
+	s_id_magento_b2b_original = Trim(Request.Form("c_id_magento_b2b_original"))
 	s_tipo_PJ_PF = trim(Request.Form("tipo_PJ_PF"))
 	s_razao_social_nome = trim(Request.Form("razao_social_nome"))
 	s_responsavel_principal = trim(Request.Form("c_responsavel_principal"))
@@ -236,6 +239,10 @@
 '	VALIDAÇÃO P/ PERMITIR SOMENTE UM CADASTRO POR LOJA P/ CADA CPF/CNPJ
 	dim s_label
 	dim r_orcamentista_e_indicador
+	if operacao_selecionada <> OP_INCLUI then
+		call le_orcamentista_e_indicador(s_id_selecionado, r_orcamentista_e_indicador, msg_erro)
+		end if
+
 	dim blnErroDuplicidadeCadastro
 	blnErroDuplicidadeCadastro=False
 	if alerta = "" then
@@ -271,7 +278,6 @@
 			if rs.State <> 0 then rs.Close
 		elseif operacao_selecionada <> OP_EXCLUI then
 			' CONSISTE SOMENTE SE ESTIVER ALTERANDO O CPF/CNPJ (OBS: NESTA PÁGINA NÃO É POSSÍVEL ALTERAR A LOJA)
-			call le_orcamentista_e_indicador(s_id_selecionado, r_orcamentista_e_indicador, msg_erro)
 			if retorna_so_digitos(s_cnpj_cpf) <> retorna_so_digitos(r_orcamentista_e_indicador.cnpj_cpf) then
 				s = "SELECT" & _
 						" apelido," & _
@@ -307,6 +313,87 @@
 				end if
 			end if
 		end if
+
+	dim r_loja_user_session, r_loja_indicador_original
+	set r_loja_user_session = New cl_LOJA
+	set r_loja_indicador_original = New cl_LOJA
+	if alerta = "" then
+		if Not x_loja_bd(loja, r_loja_user_session) then
+			alerta=texto_add_br(alerta)
+			alerta=alerta & "A loja atual do login do usuário (" & loja & ") não foi encontrada"
+			end if
+		if operacao_selecionada <> OP_INCLUI then
+			if Not x_loja_bd(r_orcamentista_e_indicador.loja, r_loja_indicador_original) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "A loja cadastrada para o indicador (" & r_orcamentista_e_indicador.loja & ") não foi encontrada"
+				end if
+			end if
+		end if 'if alerta = "" then
+
+	dim blnVisivelIdMagentoB2B
+	blnVisivelIdMagentoB2B = False
+	if alerta = "" then
+		if operacao_selecionada = OP_INCLUI then
+			if r_loja_user_session.unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__AC then
+				blnVisivelIdMagentoB2B = True
+				end if
+		else
+			if (r_loja_user_session.unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__AC) _
+				Or (r_loja_indicador_original.unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__AC) _
+				Or ( (Trim("" & r_orcamentista_e_indicador.id_magento_b2b) <> "") And (Trim("" & r_orcamentista_e_indicador.id_magento_b2b) <> "0") ) then
+				blnVisivelIdMagentoB2B = True
+				end if
+			end if
+		end if 'if alerta = ""
+
+	if alerta = "" then
+		if blnVisivelIdMagentoB2B then
+			if s_id_magento_b2b <> "" then
+				if retorna_so_digitos(s_id_magento_b2b) <> substitui_caracteres(s_id_magento_b2b, ".", "") then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "ID Magento B2B informado está em formato inválido"
+				elseif converte_numero(s_id_magento_b2b) <= 0 then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "ID Magento B2B informado é inválido"
+					end if
+			
+				if alerta = "" then
+					id_magento_b2b = CLng(s_id_magento_b2b)
+					if id_magento_b2b <= 0 then
+						alerta=texto_add_br(alerta)
+						alerta=alerta & "ID Magento B2B possui valor inválido"
+						end if
+					end if
+				end if
+			end if
+		end if 'if alerta = "" then
+
+	if alerta = "" then
+		if blnVisivelIdMagentoB2B then
+			if id_magento_b2b > 0 then
+				'VERIFICA SE O ID MAGENTO B2B JÁ ESTÁ EM USO
+				s = "SELECT" & _
+						" apelido," & _
+						" cnpj_cpf," & _
+						" razao_social_nome," & _
+						" loja" & _
+					" FROM t_ORCAMENTISTA_E_INDICADOR" & _
+					" WHERE" & _
+						" (id_magento_b2b = " & Cstr(id_magento_b2b) & ")" & _
+						" AND (apelido <> '" & s_id_selecionado & "')"
+				set rs = cn.Execute(s)
+				if Not rs.Eof then
+					blnErroDuplicidadeCadastro=True
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "O ID Magento B2B " & Cstr(id_magento_b2b) & " já está cadastrado no parceiro " & Trim("" & rs("apelido")) & _
+							 " (loja: " & Trim("" & rs("loja")) & _
+							 ", CPF/CNPJ: " & cnpj_cpf_formata(Trim("" & rs("cnpj_cpf"))) & _
+							 ", nome: " & Trim("" & rs("razao_social_nome")) & ")"
+					end if
+				if rs.State <> 0 then rs.Close
+				end if 'if id_magento_b2b > 0
+			end if 'if blnVisivelIdMagentoB2B
+		end if 'if alerta = ""
 
 
 	Err.Clear
@@ -451,7 +538,19 @@
 				r.Open s, cn
                 rs2.Open s2, cn
                 if rs2.EOF then 
-                    
+                    ' ID Magento B2B
+					if blnVisivelIdMagentoB2B then
+						x1 = Trim("" & r("id_magento_b2b"))
+						if x1 = "0" then x1 = ""
+						x2 = Cstr(id_magento_b2b)
+						if x2 = "0" then x2 = ""
+						if (x1 <> x2) then
+							if x1 = "" then x1 = "VAZIO"
+							if x2 = "" then x2 = "VAZIO"
+							msg = msg & "ID Magento B2B alterado <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
+							end if
+						end if
+
                     ' log razão social
                     if (s_razao_social_nome <> r("razao_social_nome")) then 
                         msg = msg & "Razão Social alterada <br>|de: " & r("razao_social_nome") & "<br>|para: " & s_razao_social_nome & "<br>"
@@ -836,7 +935,15 @@
 					criou_novo_reg = False
 					log_via_vetor_carrega_do_recordset r, vLog1, campos_a_omitir
 					end if
-					
+				
+				if blnVisivelIdMagentoB2B then
+					if id_magento_b2b > 0 then
+						r("id_magento_b2b") = id_magento_b2b
+					else
+						r("id_magento_b2b") = Null
+						end if
+					end if
+
 				r("dt_ult_atualizacao") = Now
 				r("usuario_ult_atualizacao") = usuario
 				

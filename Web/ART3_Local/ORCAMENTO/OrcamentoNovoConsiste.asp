@@ -185,7 +185,7 @@
 	alerta=""
 
 '	if midia = "" then
-'		alerta = "Indique a forma pela qual o cliente conheceu a Bonshop."
+'		alerta = "Indique a forma pela qual o cliente conheceu a DIS."
 	if vendedor = "" then
 		alerta = "Selecione um vendedor."
 	elseif (converte_numero(s_perc_RT)<0) Or (converte_numero(s_perc_RT)>100) then

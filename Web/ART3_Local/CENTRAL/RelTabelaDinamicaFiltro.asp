@@ -1055,10 +1055,9 @@ function exibe_botao_confirmar() {
 			    <td rowspan="2" class="tdColSaida" align="left" valign="top" style="margin-left:2px; margin-right:2px">	
 			        <fieldset style="height:602px; border: solid 1px #555; padding: auto"><legend><input id="cadastro" type="checkbox" onclick="marcarDesmarcarCadastro()"/><label for="cadastro">Cadastro</label></legend>	   
 				        <%	s_checked = ""
-					        if (InStr(s_campos_saida_default, "|ckb_COL_DATA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
-				
-					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_DATA" name="ckb_COL_DATA"
-						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_DATA.click();">Data</span><br />
+					        if (InStr(s_campos_saida_default, "|ckb_COL_DT_CADASTRO|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
+					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_DT_CADASTRO" name="ckb_COL_DT_CADASTRO"
+						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_DT_CADASTRO.click();">Data (Cadastro)</span><br />
 					
 				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_NF|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
@@ -1165,7 +1164,7 @@ function exibe_botao_confirmar() {
 					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_ENTREGA_IMEDIATA" name="ckb_COL_ENTREGA_IMEDIATA"
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_ENTREGA_IMEDIATA.click();">Entrega Imediata</span><br />
 
-                        <%	s_checked = ""
+				        <%	s_checked = ""
 					        if (InStr(s_campos_saida_default, "|ckb_COL_DT_ENTREGA|") <> 0) Or (s_campos_saida_default = "") then s_checked = " checked" %>
 					        <input type="checkbox" class="CKB_CADASTRO" tabindex="-1" id="ckb_COL_DT_ENTREGA" name="ckb_COL_DT_ENTREGA"
 						    value="ON" <%=s_checked%> /><span class="C" style="cursor:default" onclick="fFILTRO.ckb_COL_DT_ENTREGA.click();">Data de Entrega</span><br />

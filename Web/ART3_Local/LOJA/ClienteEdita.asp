@@ -1476,7 +1476,7 @@ end function
 
 /*
 	if (trim(f.midia.options[f.midia.selectedIndex].value)=="") {
-		alert('Indique a forma pela qual conheceu a Bonshop!!');
+		alert('Indique a forma pela qual conheceu a DIS!!');
 		return;
 		}
 */
@@ -2372,7 +2372,7 @@ end function
 <!-- ************   MÍDIA  (INATIVO) ************ -->
 <table width="649" class="QS" cellspacing="0" style="display:none">
 	<tr>
-	<td width="100%" align="left"><p class="R">FORMA PELA QUAL CONHECEU A BONSHOP</p><p class="C">
+	<td width="100%" align="left"><p class="R">FORMA PELA QUAL CONHECEU A DIS</p><p class="C">
 		<%if operacao_selecionada=OP_CONSULTA Or blnHaRegistroBsp then
 			s=Trim("" & rs("midia"))
 		else

@@ -115,18 +115,19 @@
 	ckb_COMPATIBILIDADE = Trim(Request.Form("ckb_COMPATIBILIDADE"))
 
 '	CAMPOS DE SAÍDA SELECIONADOS
-	dim ckb_COL_DATA, ckb_COL_NF, ckb_COL_DT_EMISSAO_NF, ckb_COL_NF_REMESSA, ckb_COL_DT_EMISSAO_NF_REMESSA, ckb_COL_LOJA, ckb_COL_PEDIDO, ckb_COL_PEDIDO_MARKETPLACE, ckb_COL_GRUPO_PEDIDO_ORIGEM
+	dim ckb_COL_DT_CADASTRO, ckb_COL_DT_ENTREGA, ckb_COL_NF, ckb_COL_DT_EMISSAO_NF, ckb_COL_NF_REMESSA, ckb_COL_DT_EMISSAO_NF_REMESSA, ckb_COL_LOJA, ckb_COL_PEDIDO, ckb_COL_PEDIDO_MARKETPLACE, ckb_COL_GRUPO_PEDIDO_ORIGEM
 	dim ckb_COL_VENDEDOR, ckb_COL_INDICADOR
 	dim ckb_COL_CPF_CNPJ_CLIENTE, ckb_COL_CONTRIBUINTE_ICMS, ckb_COL_NOME_CLIENTE, ckb_COL_VL_RA, ckb_COL_RT, ckb_COL_ICMS_UF_DEST
 	dim ckb_COL_PRODUTO, ckb_COL_NAC_IMP, ckb_COL_DESCRICAO_PRODUTO, ckb_COL_VL_NF, ckb_COL_VL_UNITARIO, ckb_COL_VL_CUSTO_REAL_TOTAL, ckb_COL_VL_TOTAL_NF, ckb_COL_VL_TOTAL, ckb_COL_QTDE
 	dim ckb_COL_VL_CUSTO_ULT_ENTRADA, ckb_COL_VL_CUSTO_REAL, ckb_COL_VL_LISTA, ckb_COL_GRUPO, ckb_COL_POTENCIA_BTU
-	dim ckb_COL_CICLO, ckb_COL_POSICAO_MERCADO, ckb_COL_MARCA, ckb_COL_TRANSPORTADORA, ckb_COL_ENTREGA_IMEDIATA, ckb_COL_DT_ENTREGA, ckb_COL_DT_PREVISAO_ETG_TRANSP, ckb_COL_DT_RECEB_CLIENTE
+	dim ckb_COL_CICLO, ckb_COL_POSICAO_MERCADO, ckb_COL_MARCA, ckb_COL_TRANSPORTADORA, ckb_COL_ENTREGA_IMEDIATA, ckb_COL_DT_PREVISAO_ETG_TRANSP, ckb_COL_DT_RECEB_CLIENTE
 	dim ckb_COL_CIDADE, ckb_COL_UF, ckb_COL_CIDADE_ETG, ckb_COL_UF_ETG
 	dim ckb_COL_QTDE_PARCELAS, ckb_COL_MEIO_PAGAMENTO, ckb_COL_VL_PAGO_CARTAO_INTERNET, ckb_COL_CHAVE_NFE, ckb_COL_TEL, ckb_COL_EMAIL
     dim ckb_COL_PERC_DESC, ckb_COL_CUBAGEM, ckb_COL_PESO, ckb_COL_QTDE_VOLUMES, ckb_COL_FRETE, ckb_COL_FRETE_DETALHADO
     dim ckb_COL_INDICADOR_EMAILS, ckb_COL_INDICADOR_CPF_CNPJ, ckb_COL_INDICADOR_ENDERECO, ckb_COL_INDICADOR_CIDADE, ckb_COL_INDICADOR_UF
 	
-	ckb_COL_DATA = Trim(Request.Form("ckb_COL_DATA"))
+	ckb_COL_DT_CADASTRO = Trim(Request.Form("ckb_COL_DT_CADASTRO"))
+	ckb_COL_DT_ENTREGA = Trim(Request.Form("ckb_COL_DT_ENTREGA"))
 	ckb_COL_NF = Trim(Request.Form("ckb_COL_NF"))
 	ckb_COL_DT_EMISSAO_NF = Trim(Request.Form("ckb_COL_DT_EMISSAO_NF"))
 	ckb_COL_NF_REMESSA = Trim(Request.Form("ckb_COL_NF_REMESSA"))
@@ -162,7 +163,6 @@
 	ckb_COL_MARCA = Trim(Request.Form("ckb_COL_MARCA"))
 	ckb_COL_TRANSPORTADORA = Trim(Request.Form("ckb_COL_TRANSPORTADORA"))
 	ckb_COL_ENTREGA_IMEDIATA = Trim(Request.Form("ckb_COL_ENTREGA_IMEDIATA"))
-	ckb_COL_DT_ENTREGA = Trim(Request.Form("ckb_COL_DT_ENTREGA"))
 	ckb_COL_DT_PREVISAO_ETG_TRANSP = Trim(Request.Form("ckb_COL_DT_PREVISAO_ETG_TRANSP"))
 	ckb_COL_DT_RECEB_CLIENTE = Trim(Request.Form("ckb_COL_DT_RECEB_CLIENTE"))
 	ckb_COL_CIDADE = Trim(Request.Form("ckb_COL_CIDADE"))
@@ -190,7 +190,8 @@
 	dim s_campos_saida
 	s_campos_saida = "|"
 	if alerta = "" then
-		if ckb_COL_DATA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_DATA" & "|"
+		if ckb_COL_DT_CADASTRO <> "" then s_campos_saida = s_campos_saida & "ckb_COL_DT_CADASTRO" & "|"
+		if ckb_COL_DT_ENTREGA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_DT_ENTREGA" & "|"
 		if ckb_COL_NF <> "" then s_campos_saida = s_campos_saida & "ckb_COL_NF" & "|"
 		if ckb_COL_DT_EMISSAO_NF <> "" then s_campos_saida = s_campos_saida & "ckb_COL_DT_EMISSAO_NF" & "|"
 		if ckb_COL_NF_REMESSA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_NF_REMESSA" & "|"
@@ -212,7 +213,6 @@
 		if ckb_COL_INDICADOR <> "" then s_campos_saida = s_campos_saida & "ckb_COL_INDICADOR" & "|"
 		if ckb_COL_TRANSPORTADORA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_TRANSPORTADORA" & "|"
 		if ckb_COL_ENTREGA_IMEDIATA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_ENTREGA_IMEDIATA" & "|"
-		if ckb_COL_DT_ENTREGA <> "" then s_campos_saida = s_campos_saida & "ckb_COL_DT_ENTREGA" & "|"
 		if ckb_COL_DT_PREVISAO_ETG_TRANSP <> "" then s_campos_saida = s_campos_saida & "ckb_COL_DT_PREVISAO_ETG_TRANSP" & "|"
 		if ckb_COL_DT_RECEB_CLIENTE <> "" then s_campos_saida = s_campos_saida & "ckb_COL_DT_RECEB_CLIENTE" & "|"
 		if ckb_COL_INDICADOR_CPF_CNPJ <> "" then s_campos_saida = s_campos_saida & "ckb_COL_INDICADOR_CPF_CNPJ" & "|"
@@ -684,8 +684,7 @@ dim vTipoFrete
 '	VENDAS NORMAIS
 	s_sql = "SELECT" & _
 				" 'VENDA_NORMAL' AS operacao" & _
-				", t_PEDIDO.data_hora" & _
-				", t_PEDIDO.entregue_data AS faturamento_data"
+				", t_PEDIDO.data_hora"
 
 	if ckb_COL_ICMS_UF_DEST <> "" then
 		s_sql = s_sql & _
@@ -986,7 +985,6 @@ dim vTipoFrete
 	if ckb_CONSOLIDAR_PEDIDO <> "" then
 		s_sql_aux = " operacao" & _
 					", data_hora" & _
-					", faturamento_data" & _
 					", dt_emissao" & _
 					", dt_emissao_remessa" & _
 					", id_nfe_emitente" & _
@@ -1113,7 +1111,6 @@ dim vTipoFrete
 				" GROUP BY" & _
 					" operacao" & _
 					", data_hora" & _
-					", faturamento_data" & _
 					", dt_emissao" & _
 					", dt_emissao_remessa" & _
 					", id_nfe_emitente" & _
@@ -1216,7 +1213,6 @@ dim vTipoFrete
 				"SELECT" & _
 					" 'DEVOLUCAO' AS operacao" & _
 					", t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data AS data_hora" & _
-					", t_PEDIDO_ITEM_DEVOLVIDO.devolucao_data AS faturamento_data" & _
 					", NULL AS dt_emissao" & _
 					", NULL AS dt_emissao_remessa" & _
 					", t_PEDIDO.id_nfe_emitente" & _
@@ -1448,8 +1444,7 @@ dim vTipoFrete
 
 	s_sql = s_sql & _
 			" ORDER BY" & _
-				" faturamento_data" & _
-				", pedido"
+				" pedido"
 	
 	if ckb_CONSOLIDAR_PEDIDO = "" then
 		s_sql = s_sql & _
@@ -1532,13 +1527,7 @@ dim vTipoFrete
 
 
 	x_cab = ""
-	if ckb_COL_DATA <> "" then
-		if c_entrega_imediata <> "" then
-			x_cab = x_cab & "Data (Cadastro);"
-		else
-			x_cab = x_cab & "Data (Entregue);"
-			end if
-		end if
+	if ckb_COL_DT_CADASTRO <> "" then x_cab = x_cab & "Data (Cadastro);"
 	if ckb_COL_NF <> "" then x_cab = x_cab & "NF;"
 	if ckb_COL_DT_EMISSAO_NF <> "" then x_cab = x_cab & "Emissao NF;"
 	if ckb_COL_NF_REMESSA <> "" then x_cab = x_cab & "NF Remessa;"
@@ -1643,13 +1632,9 @@ dim vTipoFrete
 
         for iQI=1 to Abs(item_qtde)
 
-		 '> DATA
-			if ckb_COL_DATA <> "" then
-				if c_entrega_imediata <> "" then
-					x = x & formata_data(r("data_hora")) & ";"
-				else
-					x = x & formata_data(r("faturamento_data")) & ";"
-					end if
+		 '> DATA (CADASTRO)
+			if ckb_COL_DT_CADASTRO <> "" then
+				x = x & formata_data(r("data_hora")) & ";"
 				end if
 		
 		 '> NF
@@ -1836,16 +1821,18 @@ dim vTipoFrete
 					end if
 				x = x & s & ";"
 				end if 
-
-		'> DATA DE ENTREGA
+		
+		 '> DATA (ENTREGA)
 			if ckb_COL_DT_ENTREGA <> "" then
 				s = ""
 				if (Trim("" & r("operacao")) = "VENDA_NORMAL") And (Trim("" & r("st_entrega")) = ST_ENTREGA_ENTREGUE) And IsDate(r("entregue_data")) then
 					s = formata_data(r("entregue_data"))
+				elseif Trim("" & r("operacao")) = "DEVOLUCAO" then
+					s = formata_data(r("data_hora"))
 					end if
 				x = x & s & ";"
 				end if
-
+		
 		'> PREVISÃO DE ENTREGA DA TRANSPORTADORA
 			if ckb_COL_DT_PREVISAO_ETG_TRANSP <> "" then
 				s = ""
