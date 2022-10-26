@@ -157,7 +157,7 @@ var s_dest, s_op;
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
 <INPUT type=HIDDEN name='operacao_selecionada' id="operacao_selecionada" value='' />
 
-<span class="T">Opções para "Forma como conheceu a Bonshop"<br />(Cadastro de Indicadores)</span>
+<span class="T">Opções para "Forma como conheceu a DIS"<br />(Cadastro de Indicadores)</span>
 <div class="QFn" align="CENTER">
 <table class="TFn">
 	<tr>

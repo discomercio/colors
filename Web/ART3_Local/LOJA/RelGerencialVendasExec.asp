@@ -6680,7 +6680,7 @@ window.status='Aguarde, executando a consulta ...';
 			s = iniciais_em_maiusculas(obtem_descricao_tabela_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__CAD_ORCAMENTISTA_E_INDICADOR__FORMA_COMO_CONHECEU, c_forma_como_conheceu_codigo))
 			end if
 		s_filtro = s_filtro & "<tr><td align='right' valign='top' nowrap>" & _
-				   "<span class='N'>Forma como conheceu a Bonshop:&nbsp;</span></td><td align='left' valign='top'>" & _
+				   "<span class='N'>Forma como conheceu a DIS:&nbsp;</span></td><td align='left' valign='top'>" & _
 				   "<span class='N'>" & s & "</span></td></tr>"
 		end if
 	

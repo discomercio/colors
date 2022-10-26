@@ -157,9 +157,9 @@ function AtualizaRegistro( f ) {
 <table width="649" cellPadding="4" CellSpacing="0" style="border-bottom:1px solid black">
 <tr>
 <%	if operacao_selecionada=OP_INCLUI then
-		s = "Cadastro de Nova Opção para<br />""Forma como conheceu a Bonshop""<br />(Cadastro de Indicadores)"
+		s = "Cadastro de Nova Opção para<br />""Forma como conheceu a DIS""<br />(Cadastro de Indicadores)"
 	else
-		s = "Consulta/Edição de Opção para<br />""Forma como conheceu a Bonshop""<br />(Cadastro de Indicadores)"
+		s = "Consulta/Edição de Opção para<br />""Forma como conheceu a DIS""<br />(Cadastro de Indicadores)"
 		end if
 %>
 	<td align="CENTER" vAlign="BOTTOM"><p class="PEDIDO"><%=s%><br><span class="C">&nbsp;</span></p></td>

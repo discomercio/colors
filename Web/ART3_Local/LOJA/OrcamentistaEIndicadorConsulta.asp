@@ -105,10 +105,34 @@
 				if rs("vendedor") <> usuario then Response.Redirect("aviso.asp?id=" & ERR_NIVEL_ACESSO_INSUFICIENTE)
 				'end if
 		end if
-		
-		novo_bloco = Request("NovoBloco")
-		url_back = Request("url_back")
-		url_origem = Request("url_origem")
+	
+	dim r_loja_user_session, r_loja_indicador
+	if alerta = "" then
+		set r_loja_user_session = New cl_LOJA
+		set r_loja_indicador = New cl_LOJA
+		if Not x_loja_bd(Trim("" & rs("loja")), r_loja_indicador) then
+			alerta=texto_add_br(alerta)
+			alerta=alerta & "A loja cadastrada para o indicador (" & Trim("" & rs("loja")) & ") não foi encontrada"
+			end if
+		if Not x_loja_bd(loja, r_loja_user_session) then
+			alerta=texto_add_br(alerta)
+			alerta=alerta & "A loja atual do login do usuário (" & loja & ") não foi encontrada"
+			end if
+		end if
+
+	dim blnVisivelIdMagentoB2B
+	blnVisivelIdMagentoB2B = False
+	if alerta = "" then
+		if (r_loja_user_session.unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__AC) _
+			Or (r_loja_indicador.unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__AC) _
+			Or ( (Trim("" & rs("id_magento_b2b")) <> "") And (Trim("" & rs("id_magento_b2b")) <> "0") ) then
+			blnVisivelIdMagentoB2B = True
+			end if
+		end if 'if alerta = ""
+
+	novo_bloco = Request("NovoBloco")
+	url_back = Request("url_back")
+	url_origem = Request("url_origem")
 %>
 
 <%=DOCTYPE_LEGADO%>
@@ -587,6 +611,22 @@ var tipo_PJ_PF = ID_PJ;
 	</tr>
 </table>
 
+<% if blnVisivelIdMagentoB2B then
+		s = Trim("" & rs("id_magento_b2b"))
+		if s = "0" then s = ""
+%>
+<!-- ************  ID DO PARCEIRO NO MAGENTO B2B   ************ -->
+<table width="649" class="QS" cellSpacing="0">
+	<tr>
+		<td align="left" width="100%"><p class="R">ID MAGENTO B2B</p><p class="C">
+		<input id="c_id_magento_b2b" name="c_id_magento_b2b" class="TA" 
+			value="<%=s%>" maxlength="60" size="60"
+			readonly tabindex=-1
+			></p></td>
+	</tr>
+</table>
+<% end if %>
+
 <!-- ************   RESPONSÁVEL PRINCIPAL   ************ -->
 <table width="649" class="QS" cellSpacing="0">
 	<tr>
@@ -1022,11 +1062,11 @@ var tipo_PJ_PF = ID_PJ;
 	</tr>
 </table>
 
-<!-- ************   FORMA COMO CONHECEU A BONSHOP   ************ -->
+<!-- ************   FORMA COMO CONHECEU A DIS   ************ -->
 <table width="649" class="QS" cellSpacing="0">
 	<tr>
 <%s=Trim("" & rs("forma_como_conheceu_codigo"))%>
-		<td align="left"><p class="R">FORMA COMO CONHECEU A BONSHOP</p><p class="C">
+		<td align="left"><p class="R">FORMA COMO CONHECEU A DIS</p><p class="C">
 			<select id="c_forma_como_conheceu_codigo" name="c_forma_como_conheceu_codigo" style="margin-top:4pt; margin-bottom:4pt;width:490px;" disabled tabindex=-1>
 				<%=codigo_descricao_monta_itens_select(GRUPO_T_CODIGO_DESCRICAO__CAD_ORCAMENTISTA_E_INDICADOR__FORMA_COMO_CONHECEU, s)%>
 			</select>

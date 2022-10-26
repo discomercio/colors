@@ -60,8 +60,8 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.36";
-				public const string Data = "24.JUN.2022";
+				public const string Numero = "2.37";
+				public const string Data = "20.OUT.2022";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
 			#endregion
@@ -298,8 +298,10 @@ namespace ART3WebAPI.Models.Domains
 			 *      não houver prefixo, esse campo do parâmetro deve estar vazio. Essa lógica é válida para
 			 *      o Magento 2.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.37 - XX.XX.20XX - por XXX
-			 *      
+			 * v 2.37 - 20.10.2022 - por HHO
+			 *      Ajustes para identificar o marketplace Daikin integrado via WAP.
+			 *      Ajustes para tratar o Magento B2B, ou seja, pedidos realizados no Magento 2 com
+			 *        intermediação de um instalador.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.38 - XX.XX.20XX - por XXX
 			 *      
@@ -395,6 +397,17 @@ namespace ART3WebAPI.Models.Domains
 				public static readonly int INTEGRADORA_SKYHUB = 1;
 				public static readonly int INTEGRADORA_ANYMARKET = 2;
 				public static readonly int INTEGRADORA_WAP = 3;
+			}
+			#endregion
+
+			#region [ MagentoB2B ]
+			public static class MagentoB2B
+			{
+				public static readonly string TYPE_ORDER__INSTALLER = "installer";
+				public static readonly string TYPE_ORDER__MAGENTO = "magento";
+				public static readonly string PEDIDO_ECOMMERCE_ORIGEM__ARCLUBE_ECOMMERCE = getConfigurationValue(httpRequestId: null, "PEDIDO_ECOMMERCE_ORIGEM__ARCLUBE_ECOMMERCE");
+				public static readonly string PEDIDO_ECOMMERCE_ORIGEM__PARCEIROS = getConfigurationValue(httpRequestId: null, "PEDIDO_ECOMMERCE_ORIGEM__PARCEIROS");
+				public static readonly string PEDIDO_ECOMMERCE_ORIGEM__DAIKIN = getConfigurationValue(httpRequestId: null, "PEDIDO_ECOMMERCE_ORIGEM__DAIKIN");
 			}
 			#endregion
 

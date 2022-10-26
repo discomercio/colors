@@ -70,6 +70,7 @@ namespace ART3WebAPI.Models.Entities
 		public string total_qty_ordered { get; set; }
 		public string weight { get; set; }
 		public string x_forwarded_for { get; set; }
+
 		public List<Magento2SalesOrderItem> items { get; set; }
 		public Magento2BillingAddress billing_address { get; set; } = new Magento2BillingAddress();
 		public Magento2SalesOrderPayment payment { get; set; } = new Magento2SalesOrderPayment();
@@ -727,6 +728,11 @@ namespace ART3WebAPI.Models.Entities
 		public string gw_card_base_price { get; set; }
 		public string gw_card_price { get; set; }
 		public Magento2ExtensionAttributesSkyhubInfo skyhub_info { get; set; }
+		public string installer_name { get; set; }
+		public string installer_id { get; set; }
+		public string commission_value { get; set; }
+		public string commission_percentage { get; set; }
+		public string type_order { get; set; }
 
 		#region [ FormataDados ]
 		public string FormataDados()

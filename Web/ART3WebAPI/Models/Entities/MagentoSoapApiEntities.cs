@@ -200,6 +200,12 @@ namespace ART3WebAPI.Models.Entities
 		public string bseller_skyhub_invoice_key { get; set; }
 		public string bseller_skyhub_interest { get; set; }
 		public string bseller_skyhub_json { get; set; }
+		public string b2b_installer_name { get; set; }
+		public string b2b_installer_id { get; set; }
+		public string b2b_commission_value { get; set; }
+		public string b2b_commission_percentage { get; set; }
+		public string b2b_type_order { get; set; }
+
 		public MagentoSoapApiShippingAddress shipping_address { get; set; } = new MagentoSoapApiShippingAddress();
 		public MagentoSoapApiBillingAddress billing_address { get; set; } = new MagentoSoapApiBillingAddress();
 		public List<MagentoSoapApiSalesOrderItem> items { get; set; } = new List<MagentoSoapApiSalesOrderItem>();

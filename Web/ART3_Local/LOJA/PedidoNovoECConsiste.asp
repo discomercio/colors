@@ -46,7 +46,7 @@
 
 '	CONECTA AO BANCO DE DADOS
 '	=========================
-	dim cn, rs, tMAP_XML, tMAP_END_COB, tMAP_END_ETG, tMAP_ITEM, tPROD, tPCI, tPED, tPEDITM, t_CLIENTE, msg_erro
+	dim cn, rs, tMAP_XML, tMAP_END_COB, tMAP_END_ETG, tMAP_ITEM, tPROD, tPCI, tPED, tPEDITM, t_CLIENTE, t_ORCAMENTISTA_E_INDICADOR, msg_erro
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	If Not cria_recordset_otimista(tMAP_XML, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
@@ -58,7 +58,8 @@
 	If Not cria_recordset_otimista(tPED, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	If Not cria_recordset_otimista(tPEDITM, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	If Not cria_recordset_otimista(t_CLIENTE, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
-	
+	If Not cria_recordset_otimista(t_ORCAMENTISTA_E_INDICADOR, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+
 	dim alerta
 	alerta = ""
 	
@@ -208,6 +209,30 @@
 				end if
 			next
 		end if
+
+	if alerta = "" then
+		if Trim("" & tMAP_XML("b2b_type_order")) = COD_MAGENTO_TYPE_ORDER__INSTALLER then
+			if (Trim("" & tMAP_XML("b2b_installer_id")) = "") Or (Trim("" & tMAP_XML("b2b_installer_id")) = "0") then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "O campo 'installer_id' com a identificação do parceiro no Magento está com valor inválido!"
+			else
+				s = "SELECT" & _
+						" *" & _
+					" FROM t_ORCAMENTISTA_E_INDICADOR" & _
+					" WHERE" & _
+						" (id_magento_b2b = " & Trim("" & tMAP_XML("b2b_installer_id")) & ")"
+				if t_ORCAMENTISTA_E_INDICADOR.State <> 0 then t_ORCAMENTISTA_E_INDICADOR.Close
+				t_ORCAMENTISTA_E_INDICADOR.open s, cn
+				if t_ORCAMENTISTA_E_INDICADOR.Eof then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "Não foi localizado o cadastro do parceiro no sistema:" & chr(13) & _
+									"<br />ID Magento B2B: " & Trim("" & tMAP_XML("b2b_installer_id")) & chr(13) & _
+									"<br />Nome: " & Trim("" & tMAP_XML("b2b_installer_name")) & chr(13) & _
+									"<br />Pedido Magento: " & c_numero_magento
+					end if
+				end if
+			end if
+		end if 'if alerta = ""
 
 	dim s_lista_sugerida_municipios_end_cob, s_lista_sugerida_municipios_end_etg
 	dim blnErroIbgeEndCob, blnErroIbgeEndEtg, blnEnderecosIguais, blnFlagCadSemiAutoPedMagento_FluxoOtimizado, tipoCliente
@@ -394,12 +419,18 @@
 				if (Not blnErroIbgeEndEtg) then blnFlagCadSemiAutoPedMagento_FluxoOtimizado = True
 				end if
 
-			'Tem valor de frete?
-			'Se houver valor de frete, o pedido será cadastrado automaticamente como tendo RA e o indicador será o 'FRETE'
-			if converte_numero(tMAP_XML("shipping_amount")) > 0 then
+			if Trim("" & tMAP_XML("b2b_type_order")) = COD_MAGENTO_TYPE_ORDER__INSTALLER then
 				rb_indicacao = "S"
-				c_indicador = "FRETE"
+				c_indicador = Trim("" & t_ORCAMENTISTA_E_INDICADOR("apelido"))
 				rb_RA = "S"
+			else
+				'Tem valor de frete?
+				'Se houver valor de frete, o pedido será cadastrado automaticamente como tendo RA e o indicador será o 'FRETE'
+				if converte_numero(tMAP_XML("shipping_amount")) > 0 then
+					rb_indicacao = "S"
+					c_indicador = "FRETE"
+					rb_RA = "S"
+					end if
 				end if
 
 			if tipoCliente = ID_PF then
@@ -456,6 +487,7 @@
 				end if 'if rb_end_entrega = "S"
 			end if 'if blnFlagCadSemiAutoPedMagentoCadAutoClienteNovo
 		end if 'if alerta = ""
+
 %>
 
 
@@ -869,6 +901,26 @@ function fPNEC2Confirma(f) {
 <!--  PULA LINHA  -->
 <br /><br />
 
+<!--  PARCEIRO  -->
+<% if Trim("" & tMAP_XML("b2b_type_order")) = COD_MAGENTO_TYPE_ORDER__INSTALLER then %>
+<table class="Qx" cellspacing="0">
+	<tr style="background-color:azure;">
+		<td colspan="2" class="MC MB ME MD" align="center"><span class="N">PARCEIRO</span></td>
+	</tr>
+	<tr>
+		<td class="MB ME MD TdCliLbl"><span class="PLTd">ID Magento B2B</span></td>
+		<td class="MB MD TdCliCel"><span class="C"><%=Trim("" & tMAP_XML("b2b_installer_id"))%></span></td>
+	</tr>
+	<tr>
+		<td class="MB ME MD TdCliLbl"><span class="PLTd">Nome</span></td>
+		<td class="MB MD TdCliCel"><span class="C"><%=Trim("" & tMAP_XML("b2b_installer_name"))%></span></td>
+	</tr>
+</table>
+
+<!--  PULA LINHA  -->
+<br /><br />
+<% end if %>
+
 <!--  DADOS DO PEDIDO  -->
 <table class="Qx" cellspacing="0">
 	<tr style="background-color:azure;">
@@ -1188,6 +1240,9 @@ function fPNEC2Confirma(f) {
 
 	if t_CLIENTE.State <> 0 then t_CLIENTE.Close
 	set t_CLIENTE = nothing
+
+	if t_ORCAMENTISTA_E_INDICADOR.State <> 0 then t_ORCAMENTISTA_E_INDICADOR.Close
+	set t_ORCAMENTISTA_E_INDICADOR = nothing
 
 '	FECHA CONEXAO COM O BANCO DE DADOS
 	cn.Close
