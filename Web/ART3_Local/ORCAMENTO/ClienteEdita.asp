@@ -1086,7 +1086,7 @@ if (!eh_cpf) {
     }
 
 /*	if (trim(f.midia.options[f.midia.selectedIndex].value)=="") {
-		alert('Indique a forma pela qual conheceu a Bonshop!!');
+		alert('Indique a forma pela qual conheceu a DIS!!');
 		return;
 		}
 */
@@ -2114,7 +2114,7 @@ function setarValorRadio(array, valor)
 <!-- ************   MÍDIA (INATIVO)  ************ -->
 <table width="649" class="QS" cellspacing="0" style="display:none">
 	<tr>
-	<td width="100%" align="left"><p class="R">FORMA PELA QUAL CONHECEU A BONSHOP</p><p class="C">
+	<td width="100%" align="left"><p class="R">FORMA PELA QUAL CONHECEU A DIS</p><p class="C">
 		<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("midia")) else s=""%>
 		<select id="midia" name="midia" <%=s_disabled%> style="margin-top:4pt; margin-bottom:4pt;">
 			<%=midia_monta_itens_select(s)%>

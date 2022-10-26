@@ -1068,11 +1068,11 @@
                         msg = msg & "Captador alterado <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
                     end if
 
-                    ' log forma como conheceu a bonshop
+                    ' log forma como conheceu a DIS
                     if isNull(r("forma_como_conheceu_codigo")) then r("forma_como_conheceu_codigo") = ""
                     if (s_forma_como_conheceu_codigo <> r("forma_como_conheceu_codigo")) then
                         if (obtem_descricao_tabela_t_codigo_descricao("CadOrcamentistaEIndicador_FormaComoConheceu", r("forma_como_conheceu_codigo"))) = "Código não cadastrado ()" then x1 = "VAZIO" else x1 = obtem_descricao_tabela_t_codigo_descricao("CadOrcamentistaEIndicador_FormaComoConheceu", r("forma_como_conheceu_codigo"))                 
-                        msg = msg & "Forma como conheceu a Bonshop alterada <br>|de: " & x1 & "<br>|para: " & obtem_descricao_tabela_t_codigo_descricao("CadOrcamentistaEIndicador_FormaComoConheceu", s_forma_como_conheceu_codigo) & "<br>"
+                        msg = msg & "Forma como conheceu a DIS alterada <br>|de: " & x1 & "<br>|para: " & obtem_descricao_tabela_t_codigo_descricao("CadOrcamentistaEIndicador_FormaComoConheceu", s_forma_como_conheceu_codigo) & "<br>"
                     end if
 
 

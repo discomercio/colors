@@ -227,7 +227,7 @@
 	elseif (strEmail = "") And (strEmail2 = "") And (strEmail3 = "") then
 		alerta="INFORME NO MÍNIMO UM ENDEREÇO DE E-MAIL."
 	elseif s_forma_como_conheceu_codigo = "" then
-		alerta="INDIQUE A FORMA PELA QUAL CONHECEU A BONSHOP."
+		alerta="INDIQUE A FORMA PELA QUAL CONHECEU A DIS."
 		end if
 	
 	if alerta = "" then

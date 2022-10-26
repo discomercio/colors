@@ -107,18 +107,24 @@
 	dim r_loja_indicador
 	if alerta = "" then
 		set r_loja_indicador = New cl_LOJA
-		if Not x_loja_bd(Trim("" & rs("loja")), r_loja_indicador) then
-			alerta=texto_add_br(alerta)
-			alerta=alerta & "A loja cadastrada para o indicador (" & Trim("" & rs("loja")) & ") não foi encontrada"
+		if operacao_selecionada <> OP_INCLUI then
+			if Not x_loja_bd(Trim("" & rs("loja")), r_loja_indicador) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "A loja cadastrada para o indicador (" & Trim("" & rs("loja")) & ") não foi encontrada"
+				end if
 			end if
 		end if
 
 	dim blnVisivelIdMagentoB2B
 	blnVisivelIdMagentoB2B = False
 	if alerta = "" then
-		if (r_loja_indicador.unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__AC) _
-			Or ((Trim("" & rs("id_magento_b2b")) <> "") And (Trim("" & rs("id_magento_b2b")) <> "0")) then
+		if operacao_selecionada=OP_INCLUI then
 			blnVisivelIdMagentoB2B = True
+		else
+			if (r_loja_indicador.unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__AC) _
+				Or ((Trim("" & rs("id_magento_b2b")) <> "") And (Trim("" & rs("id_magento_b2b")) <> "0")) then
+				blnVisivelIdMagentoB2B = True
+				end if
 			end if
 		end if 'if alerta = ""
 
@@ -563,10 +569,10 @@ var s, s_senha, cont;
 		}
 	}
 
-//  FORMA COMO CONHECEU A BONSHOP
+//  FORMA COMO CONHECEU A DIS
 	if (trim(f.c_forma_como_conheceu_codigo_original.value) != "") {
 		if (trim(f.c_forma_como_conheceu_codigo.value) == "") {
-			alert("Selecione a forma como conheceu a Bonshop!!");
+			alert("Selecione a forma como conheceu a DIS!!");
 			return;
 			}
 	}
@@ -1031,13 +1037,14 @@ var s, s_senha, cont;
 <INPUT type="hidden" name="c_forma_como_conheceu_codigo_original" id="c_forma_como_conheceu_codigo_original" value='' />
 <% end if%>
 
+<% if operacao_selecionada <> OP_INCLUI then %>
 <% if blnVisivelIdMagentoB2B then %>
 <input type="hidden" name="c_id_magento_b2b_original" id="c_id_magento_b2b_original" value="<%=Trim("" & rs("id_magento_b2b"))%>" />
 <% else %>
 <input type="hidden" name="c_id_magento_b2b" id="c_id_magento_b2b" value="<%=Trim("" & rs("id_magento_b2b"))%>" />
 <input type="hidden" name="c_id_magento_b2b_original" id="c_id_magento_b2b_original" value="<%=Trim("" & rs("id_magento_b2b"))%>" />
 <% end if %>
-
+<% end if %>
 
 <!-- ************   NOME/RAZÃO SOCIAL   ************ -->
 <table width="649" class="Q" cellspacing="0">
@@ -1445,11 +1452,11 @@ var s, s_senha, cont;
 	</tr>
 </table>
 
-<!-- ************   FORMA COMO CONHECEU A BONSHOP   ************ -->
+<!-- ************   FORMA COMO CONHECEU A DIS   ************ -->
 <table width="649" class="QS" cellspacing="0">
 	<tr>
 <%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("forma_como_conheceu_codigo")) else s=""%>
-		<td align="left"><p class="R">FORMA COMO CONHECEU A BONSHOP</p><p class="C">
+		<td align="left"><p class="R">FORMA COMO CONHECEU A DIS</p><p class="C">
 			<select id="c_forma_como_conheceu_codigo" name="c_forma_como_conheceu_codigo" style="margin-top:4pt; margin-bottom:4pt;width:490px;">
 				<%=codigo_descricao_monta_itens_select(GRUPO_T_CODIGO_DESCRICAO__CAD_ORCAMENTISTA_E_INDICADOR__FORMA_COMO_CONHECEU, s)%>
 			</select>

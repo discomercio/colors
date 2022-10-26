@@ -1186,11 +1186,11 @@ var s, s_senha;
 	</tr>
 </table>
 
-<!-- ************   FORMA COMO CONHECEU A BONSHOP   ************ -->
+<!-- ************   FORMA COMO CONHECEU A DIS   ************ -->
 <table width="649" class="QS" cellSpacing="0">
 	<tr>
 <%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("forma_como_conheceu_codigo")) else s=""%>
-		<td align="left"><p class="R">FORMA COMO CONHECEU A BONSHOP</p><p class="C">
+		<td align="left"><p class="R">FORMA COMO CONHECEU A DIS</p><p class="C">
 			<select id="c_forma_como_conheceu_codigo" name="c_forma_como_conheceu_codigo" style="margin-top:4pt; margin-bottom:4pt;width:490px;" disabled tabindex=-1>
 				<%=codigo_descricao_monta_itens_select(GRUPO_T_CODIGO_DESCRICAO__CAD_ORCAMENTISTA_E_INDICADOR__FORMA_COMO_CONHECEU, s)%>
 			</select>

@@ -442,7 +442,7 @@
 	<tr>
 	<% if rs("spc_negativado_status") = 1 then %>
 	<td class="MD" width="50%" align="left">
-		<p class="R">FORMA PELA QUAL CONHECEU A BONSHOP</p>
+		<p class="R">FORMA PELA QUAL CONHECEU A DIS</p>
 		<p class="C">
 		<input id="midia" name="midia" class="TA" value="<%=s_codigo_e_descricao%>" style="width:310px;" readonly />
 		</p>
@@ -455,7 +455,7 @@
 	</td>
 	<% else %>
 	<td width="100%" align="left">
-		<p class="R">FORMA PELA QUAL CONHECEU A BONSHOP</p>
+		<p class="R">FORMA PELA QUAL CONHECEU A DIS</p>
 		<p class="C">
 		<input id="midia" name="midia" class="TA" value="<%=s_codigo_e_descricao%>" style="width:310px;" readonly />
 		</p>

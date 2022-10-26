@@ -1758,15 +1758,8 @@ namespace ART3WebAPI.Models.Domains
 											if ((item.value ?? "").Trim().Length > 0)
 											{
 												sNumPedidoMktpIdentificado = (item.value ?? "").Trim();
-												foreach (var codDescr in listaCodigoDescricao)
-												{
-													if (codDescr.descricao.ToUpper().Equals("Daikin".ToUpper()) && (codDescr.st_inativo == 0))
-													{
-														sOrigemMktpIdentificado = codDescr.codigo;
-														blnOrigemPedidoIdentificada = true;
-														break;
-													}
-												}
+												sOrigemMktpIdentificado = (Global.Cte.MagentoB2B.PEDIDO_ECOMMERCE_ORIGEM__DAIKIN ?? "");
+												if (sOrigemMktpIdentificado.Trim().Length > 0) blnOrigemPedidoIdentificada = true;
 
 												// Se não identificou o código do marketplace, assegura que o nº pedido marketplace estará vazio
 												// p/ que a combinação de campos nº pedido marketplace + código origem não fiquem inconsistentes
@@ -1795,37 +1788,13 @@ namespace ART3WebAPI.Models.Domains
 						{
 							if (salesOrder.magento2SalesOrderInfo.extension_attributes.type_order.Equals(Global.Cte.MagentoB2B.TYPE_ORDER__INSTALLER))
 							{
-								foreach (var codDescr in listaCodigoDescricao)
-								{
-									if (
-										(codDescr.descricao.ToUpper().Contains("instalador".ToUpper())
-										 || codDescr.descricao.ToUpper().Contains("instaladores".ToUpper())
-										 || codDescr.descricao.ToUpper().Contains("installer".ToUpper())
-										 || codDescr.descricao.ToUpper().Contains("installers".ToUpper())
-										)
-										&& codDescr.codigo_pai.Equals(Global.Cte.MagentoB2B.PEDIDO_ECOMMERCE_ORIGEM_GRUPO__ARCLUBE)
-										&& (codDescr.st_inativo == 0)
-										)
-									{
-										sOrigemMktpIdentificado = codDescr.codigo;
-										blnOrigemPedidoIdentificada = true;
-										break;
-									}
-								}
+								sOrigemMktpIdentificado = (Global.Cte.MagentoB2B.PEDIDO_ECOMMERCE_ORIGEM__PARCEIROS ?? "");
+								if (sOrigemMktpIdentificado.Trim().Length > 0) blnOrigemPedidoIdentificada = true;
 							}
 							else if (salesOrder.magento2SalesOrderInfo.extension_attributes.type_order.Equals(Global.Cte.MagentoB2B.TYPE_ORDER__MAGENTO))
 							{
-								foreach (var codDescr in listaCodigoDescricao)
-								{
-									if (codDescr.descricao.ToUpper().Contains("e-commerce".ToUpper())
-										&& codDescr.codigo_pai.Equals(Global.Cte.MagentoB2B.PEDIDO_ECOMMERCE_ORIGEM_GRUPO__ARCLUBE)
-										&& (codDescr.st_inativo == 0))
-									{
-										sOrigemMktpIdentificado = codDescr.codigo;
-										blnOrigemPedidoIdentificada = true;
-										break;
-									}
-								}
+								sOrigemMktpIdentificado = (Global.Cte.MagentoB2B.PEDIDO_ECOMMERCE_ORIGEM__ARCLUBE_ECOMMERCE ?? "");
+								if (sOrigemMktpIdentificado.Trim().Length > 0) blnOrigemPedidoIdentificada = true;
 							}
 						}
 					}
