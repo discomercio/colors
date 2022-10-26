@@ -1853,7 +1853,11 @@
 				set rs2 = cn.execute(s)
 				if Not rs2.Eof then
 				'	OBTÉM O PERCENTUAL DE COMISSÃO DO MARKETPLACE
-					if Trim("" & tMAP_XML("b2b_type_order")) <> COD_MAGENTO_TYPE_ORDER__INSTALLER then perc_RT = rs2("parametro_campo_real")
+					if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then
+						if Trim("" & tMAP_XML("b2b_type_order")) <> COD_MAGENTO_TYPE_ORDER__INSTALLER then perc_RT = rs2("parametro_campo_real")
+					else
+						perc_RT = rs2("parametro_campo_real")
+						end if
 				'	DEVE COLOCAR AUTOMATICAMENTE COM 'CRÉDITO OK'?
 					if rs2("parametro_1_campo_flag") = 1 then blnPedidoECommerceCreditoOkAutomatico = True
 				'	Nº PEDIDO MARKETPLACE É OBRIGATÓRIO?
