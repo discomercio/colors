@@ -118,7 +118,7 @@ dim x, r, strResp, ha_default, s_sql
 				" AND (loja IN (SELECT loja FROM t_LOJA WHERE unidade_negocio = '" & COD_UNIDADE_NEGOCIO_LOJA__AC & "'))"
 	elseif (Trim("" & r_loja.unidade_negocio) = COD_UNIDADE_NEGOCIO_LOJA__BS) Or (Trim("" & r_loja.unidade_negocio) = COD_UNIDADE_NEGOCIO_LOJA__VRF) then
 		s_sql = s_sql & _
-				" AND (vendedor = '" & QuotedStr(r_pedido.vendedor) & "')"
+				" AND (loja IN (SELECT loja FROM t_LOJA WHERE unidade_negocio IN ('" & COD_UNIDADE_NEGOCIO_LOJA__BS & "','" & COD_UNIDADE_NEGOCIO_LOJA__VRF & "')))"
 		end if
 
 	if id_default <> "" then
