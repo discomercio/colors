@@ -7,8 +7,8 @@ Option Explicit
 '                          ADMINISTRAÇÃO E MANUTENÇÃO
 '                       _______________________________
 ' 
-'                           EDIÇÃO = 030
-'                           DATA   = 11.DEZ.2021
+'                           EDIÇÃO = 031
+'                           DATA   = 11.NOV.2022
 '                       _______________________________
 ' 
 ' 
@@ -259,7 +259,9 @@ Option Explicit
 '|          |      |de importação do cadastro de produtos.                     |
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
-'|          |      |                                                           |
+'|11/11/2022| HHO  |V1.31 Ajustes na rotina de carga da planilha de produtos   |
+'|          |      |para permitir o literal 'SEM GTIN' no campo EAN de múlti-  |
+'|          |      |plos produtos.                                             |
 '|__________|______|___________________________________________________________|
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
@@ -272,8 +274,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "1.30"
-Global Const m_id = "Módulo de Administração e Manutenção - v" & m_id_versao & " - 11.DEZ.2021"
+Global Const m_id_versao = "1.31"
+Global Const m_id = "Módulo de Administração e Manutenção - v" & m_id_versao & " - 11.NOV.2022"
 
 
 
