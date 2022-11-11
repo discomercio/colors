@@ -1464,6 +1464,7 @@ Const MAX_XLS_LINHAS_EM_BRANCO_CONSECUTIVAS = 20
 Const SEPARADOR_CODIGO = "-"
 Const xlUnderlineStyleSingle = 2
 Const VL_COD_PRECO_A_IGNORAR = -1
+Const EAN__SEM_GTIN = "SEM GTIN"
 
 ' STRINGS
 Dim s As String
@@ -2293,14 +2294,14 @@ Dim oDescricao As Object
                         GoTo TPC_ABORTA_PROCESSAMENTO
                         End If
                                             
-                    If (Len(.ean) <> 0) And (Len(.ean) <> 8) And (Len(.ean) <> 12) And (Len(.ean) <> 13) And (Len(.ean) <> 14) Then
+                    If (Len(.ean) <> 0) And (Len(.ean) <> 8) And (Len(.ean) <> 12) And (Len(.ean) <> 13) And (Len(.ean) <> 14) And (UCase$(.ean) <> UCase$(EAN__SEM_GTIN)) Then
                         msg_erro = "Planilha " & oWS.Name & ", linha " & CStr(ilinha) & _
                                   vbCrLf & "Produto " & .produto & " especifica código EAN (" & .ean & ") com tamanho inválido!!"
                         GoTo TPC_ABORTA_PROCESSAMENTO
                         End If
                         
                 '   CÓDIGO EAN JÁ ESTÁ EM USO POR OUTRO PRODUTO ?
-                    If Len(.ean) > 0 Then
+                    If (Len(.ean) > 0) And (UCase$(.ean) <> UCase$(EAN__SEM_GTIN)) Then
                         s = "SELECT" & _
                                 " fabricante," & _
                                 " produto," & _
@@ -3151,7 +3152,7 @@ End Sub
 Private Sub barra_MouseMove(Index As Integer, Button As Integer, Shift As Integer, X As Single, Y As Single)
 Dim i As Integer
 
-    For i = seta.lbound To seta.ubound
+    For i = seta.LBound To seta.UBound
         If i <> Index Then
             seta(i).Visible = False
         Else
@@ -3353,12 +3354,12 @@ Private Sub BARRA_Inicia()
 Dim i As Integer
   
   ' CARREGA SETAS
-    For i = (barra.lbound + 1) To barra.ubound
+    For i = (barra.LBound + 1) To barra.UBound
         Load seta(i)
         seta(i).Picture = seta(0).Picture
         Next
     
-    For i = barra.lbound To barra.ubound
+    For i = barra.LBound To barra.UBound
         If barra(i).Visible Then
             seta(i).Visible = False
             barra(i).BackColor = COR_BARRA
@@ -3447,7 +3448,7 @@ End Sub
 Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
 Dim i As Integer
     
-    For i = seta.lbound To seta.ubound
+    For i = seta.LBound To seta.UBound
         seta(i).Visible = False
         Next
         
