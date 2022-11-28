@@ -808,9 +808,9 @@ Option Explicit
 '|          |      | - Tratamento do campo t_TRANSPORTADORA.email2             |
 '|          |      | - Limitar comprimento de e-mails na tag 'operacional'     |
 '|__________|______|___________________________________________________________|
-'|XX.XX.XXXX| XXXX |V X.XX                                                     |
-'|          |      |                                                           |
-'|          |      |                                                           |
+'|XX.XX.XXXX| LHGX |V 2.28                                                     |
+'|          |      | - Correção de bug em mensagem sobre entrega futura        |
+'|          |      |   não quitada                                             |
 '|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
@@ -831,8 +831,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.27"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  10/05/2022"
+Global Const m_id_versao = "2.28"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  29/07/2022"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"

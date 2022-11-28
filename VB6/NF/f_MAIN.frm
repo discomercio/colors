@@ -8339,7 +8339,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
 '   (não permitir emissão se não for nota de compromisso)
     If (strPagtoAntecipadoStatus = "1") And (strPagtoAntecipadoQuitadoStatus <> "1") Then
         If Not blnNotadeCompromisso Then
-            s = "Pedido " & Trim$(v_pedido(i)) & " se refere a venda futura não quitada!"
+            's = "Pedido " & Trim$(v_pedido(i)) & " se refere a venda futura não quitada!"
+            s = "Pedido se refere a venda futura não quitada!"
             aviso s
             GoSub NFE_EMITE_FECHA_TABELAS
             aguarde INFO_NORMAL, m_id
