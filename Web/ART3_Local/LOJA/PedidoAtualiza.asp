@@ -163,7 +163,7 @@
 	dim op_pce_entrada_forma_pagto, c_pce_entrada_valor, op_pce_prestacao_forma_pagto, c_pce_prestacao_qtde, c_pce_prestacao_valor, c_pce_prestacao_periodo
 	dim op_pse_prim_prest_forma_pagto, c_pse_prim_prest_valor, c_pse_prim_prest_apos, op_pse_demais_prest_forma_pagto, c_pse_demais_prest_qtde, c_pse_demais_prest_valor, c_pse_demais_prest_periodo
 	dim vlTotalFormaPagto
-	dim s_perc_RT, vl_total_RA, vl_total_RA_liquido
+	dim s_perc_RT, s_perc_RT_original, vl_total_RA, vl_total_RA_liquido
 	dim idMeioPagtoMonitorado, sMeioPagtoMonitoradoIdentificado
 
 	versao_forma_pagamento = Trim(Request.Form("versao_forma_pagamento"))
@@ -315,6 +315,7 @@
 		s_qtde_parcelas=retorna_so_digitos(request("c_qtde_parcelas"))
 		end if
 	s_perc_RT = Trim(request("c_perc_RT"))
+	s_perc_RT_original = Trim(request("c_perc_RT_original"))
 
 	dim perc_RT
 	perc_RT = converte_numero(s_perc_RT)
@@ -1639,7 +1640,8 @@
 						end if
 					end if 'if (versao_forma_pagamento = "2") And (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL)
 				
-				if bln_RT_EdicaoLiberada Or (c_gravar_perc_RT_novo = "S") then rs("perc_RT") = converte_numero(s_perc_RT)
+				'No caso de pedidos Arclube c/ instalador pode haver uma grande precisão no percentual de comissão, portanto, evita de sobreescrever se não tiver havido edição
+				if (bln_RT_EdicaoLiberada And (s_perc_RT <> s_perc_RT_original)) Or (c_gravar_perc_RT_novo = "S") then rs("perc_RT") = converte_numero(s_perc_RT)
 
 				if blnIndicadorEdicaoLiberada then
 					s_indicador_anterior = Trim("" & rs("indicador"))
@@ -1921,7 +1923,8 @@
 				
 				if (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL) then rs("forma_pagto") = s_forma_pagto
 
-				if bln_RT_EdicaoLiberada Or (c_gravar_perc_RT_novo = "S") then rs("perc_RT") = converte_numero(s_perc_RT)
+				'No caso de pedidos Arclube c/ instalador pode haver uma grande precisão no percentual de comissão, portanto, evita de sobreescrever se não tiver havido edição
+				if (bln_RT_EdicaoLiberada And (s_perc_RT <> s_perc_RT_original)) Or (c_gravar_perc_RT_novo = "S") then rs("perc_RT") = converte_numero(s_perc_RT)
 				
 				if (versao_forma_pagamento = "1") And (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL) then
 					if IsNumeric(s_qtde_parcelas) then 
@@ -2584,6 +2587,12 @@
 					end if
 
 				idMeioPagtoMonitorado = ID_FORMA_PAGTO_CARTAO
+				if parcelamentoPassouPossuirMeioPagamento(r_pedido, r_pedido_atualizado, idMeioPagtoMonitorado, False) then
+					if sMeioPagtoMonitoradoIdentificado <> "" then sMeioPagtoMonitoradoIdentificado = sMeioPagtoMonitoradoIdentificado & ", "
+					sMeioPagtoMonitoradoIdentificado = sMeioPagtoMonitoradoIdentificado & "'" & x_opcao_forma_pagamento(idMeioPagtoMonitorado) & "'"
+					end if
+
+				idMeioPagtoMonitorado = ID_FORMA_PAGTO_CARTAO_MAQUINETA
 				if parcelamentoPassouPossuirMeioPagamento(r_pedido, r_pedido_atualizado, idMeioPagtoMonitorado, False) then
 					if sMeioPagtoMonitoradoIdentificado <> "" then sMeioPagtoMonitoradoIdentificado = sMeioPagtoMonitoradoIdentificado & ", "
 					sMeioPagtoMonitoradoIdentificado = sMeioPagtoMonitoradoIdentificado & "'" & x_opcao_forma_pagamento(idMeioPagtoMonitorado) & "'"

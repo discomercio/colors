@@ -23,17 +23,18 @@ namespace Financeiro
         #region [ Constantes ]
         public class Cte
         {
-            #region[ Versão do Aplicativo ]
-            public class Aplicativo
-            {
-                public const string NOME_OWNER = "Artven";
-                public const string NOME_SISTEMA = "Financeiro";
-                public const string VERSAO_NUMERO = "1.38";
-                public const string VERSAO_DATA = "27.ABR.2022";
-                public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
-                public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
-                public const string M_DESCRICAO = "Módulo para execução de rotinas financeiras";
-            }
+			#region[ Versão do Aplicativo ]
+			public class Aplicativo
+			{
+				public const string NOME_OWNER = "DIS";
+				public const string NOME_SISTEMA = "Financeiro";
+				public const string VERSAO_NUMERO = "1.39";
+				public const string VERSAO_DATA = "07.AGO.2022";
+				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
+				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
+				public const string M_DESCRICAO = "Módulo para execução de rotinas financeiras";
+				public const string ID_APLICATIVO_CTRL_VERSAO = "FIN";
+			}
 			#endregion
 
 			#region[ Comentário sobre as versões ]
@@ -483,10 +484,59 @@ namespace Financeiro
 			 *		  Ajustes no Relatório Sintético Comparativo de Movimentos para parametrizar a quantidade
 			 *		  de anos do período no comparativo mês a mês de forma que sejam exibidos anos futuros.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.39 - XX.XX.20XX - por XXX
-			 *		  
+			 * v 1.38(D) - 02.08.2022 - por HHO
+			 *		  Implementação de tratamento para que o módulo aceite múltiplas versões permitidas
+			 *		  na tabela t_VERSAO durante a validação da versão na inicialização do módulo (caso
+			 *		  exista mais de uma versão permitida, deve estar separada pelo caractere pipe "|").
+			 *		  Implementação de tratamento definido por parâmetro no BD para considerar ou não
+			 *		  a data da última atualização do lançamento no fluxo de caixa ao aplicar filtro de
+			 *		  pesquisa ou exibição dos dados quando não houve edição manual, ou seja, quando
+			 *		  ocorreram somente atualizações automáticas.
+			 *		  Inclusão de coluna com o status de pagamento do pedido no painel com a lista de
+			 *		  boletos a cadastrar.
+			 *		  Implementação de tratamento definido por parâmetro no BD para permitir ou não que
+			 *		  se prossiga com o cadastramento de boleto avulso quando ocorre divergência entre o
+			 *		  valor definido na forma de pagamento e o valor do pedido.
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.39 - 07.08.2022 - por HHO
+			 *		  Aumento do tamanho do campo descrição do lançamento de fluxo de caixa.
+			 *		  Ajustes na pesquisa de CEP para incluir a tabela LOG_GRANDE_USUARIO na consulta.
+			 *		  Implementação de tratamento para fazer a validação da versão do aplicativo durante o
+			 *		    seu uso como forma de garantir que um usuário nunca consiga utilizá-lo indefinidamente
+			 *		    caso mantenha o aplicativo aberto e o computador sempre ligado mesmo após uma nova
+			 *		    versão ter sido configurada em t_VERSAO.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.40 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.41 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.42 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.43 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.44 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.45 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.46 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.47 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.48 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.49 - XX.XX.20XX - por XXX
+			 *		  
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.50 - XX.XX.20XX - por XXX
 			 *		  
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.XX - XX.XX.20XX - por XXX
@@ -575,7 +625,7 @@ namespace Financeiro
                     public const int PLANO_CONTAS_EMPRESA = 1;
                     public const int PLANO_CONTAS_GRUPO = 2;
                     public const int PLANO_CONTAS_CONTA = 4;
-                    public const int FLUXO_CAIXA_DESCRICAO = 40;
+                    public const int FLUXO_CAIXA_DESCRICAO = 80;
                     public const int FIN_LOG_DESCRICAO = 7500;  // Para prevenir erro: "exceeds the maximum number of bytes per row (8060)"
                     public const int COMENTARIO_OCORRENCIA_TRATADA = 240;
                 }
@@ -931,6 +981,10 @@ namespace Financeiro
 					public const string ID_PARAMETRO_FLAG_PEDIDO_MEMORIZACAOCOMPLETAENDERECOS = "Flag_Pedido_MemorizacaoCompletaEnderecos";
 					public const string ID_PARAMETRO_FIN_REL_SINT_COMP_MOVTO_COMP_MES_A_MES_PERIODO_EM_ANOS = "FIN_RelSinteticoComparativoMovimentos_ComparativoMesAMes_PeriodoEmAnos";
 					public const string ID_PARAMETRO_FIN_REL_SINT_COMP_MOVTO_COMP_MES_A_MES_FUTURO_PERIODO_EM_ANOS = "FIN_RelSinteticoComparativoMovimentos_ComparativoMesAMes_Futuro_PeriodoEmAnos";
+					public const string ID_PARAMETRO_FIN_FluxoCaixa_ConsiderarDataAtualizacaoAutomatica_FlagHabilitacao = "FIN_FluxoCaixa_ConsiderarDataAtualizacaoAutomatica_FlagHabilitacao";
+					public const string ID_PARAMETRO_FIN_BoletoAvulso_PermitirDivergenciaValoresFormaPagtoVsPedido_FlagHabilitacao = "FIN_BoletoAvulso_PermitirDivergenciaValoresFormaPagtoVsPedido_FlagHabilitacao";
+					public const string ID_PARAMETRO_FIN_ValidacaoVersao_VerificacaoPeriodica_FlagHabilitacao = "FIN_ValidacaoVersao_VerificacaoPeriodica_FlagHabilitacao";
+					public const string ID_PARAMETRO_FIN_ValidacaoVersao_TempoMinEntreValidacoesPeriodicasEmSeg = "FIN_ValidacaoVersao_TempoMinEntreValidacoesPeriodicasEmSeg";
 				}
 				#endregion
 			}
@@ -1030,10 +1084,20 @@ namespace Financeiro
         public static int contadorLancamentoCreditoLoteInserido = 0;
         public static string PATH_BOLETO_ARQUIVO_REMESSA = Application.StartupPath + "\\BOLETOS\\ARQUIVO_REMESSA";
         public static Color BackColorPainelPadrao = SystemColors.Control;
-        #endregion
+		#endregion
 
-        #region [ Classe Acesso ]
-        public class Acesso
+		#region [ Parâmetros ]
+		public static class Parametro
+		{
+			public static int FluxoCaixa_ConsiderarDataAtualizacaoAutomatica;
+			public static int BoletoAvulso_PermitirDivergenciaValoresFormaPagtoVsPedido;
+			public static int ValidacaoVersao_VerificacaoPeriodica_FlagHabilitacao;
+			public static int ValidacaoVersao_TempoMinEntreValidacoesPeriodicasEmSeg;
+		}
+		#endregion
+
+		#region [ Classe Acesso ]
+		public class Acesso
         {
             #region [ Constantes ]
             public const String OP_CEN_FIN_APP_FINANCEIRO_ACESSO_AO_MODULO = "21400";

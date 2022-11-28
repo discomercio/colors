@@ -103,7 +103,7 @@ namespace Financeiro
 		/// Retorna uma lista com todas as parcelas de pagamento definidas no(s) pedido(s), 
 		/// independentemente se a parcela é por boleto ou não.
 		/// </returns>
-		private List<TipoLinhaDadosParcelaPagto> geraDadosParcelasPagto(List<String> listaNumeroPedido)
+		private List<TipoLinhaDadosParcelaPagto> geraDadosParcelasPagto(List<String> listaNumeroPedido, out string msgSolicitacaoConfirmacao)
 		{
 			#region [ Declarações ]
 			String strMsgErro = "";
@@ -135,6 +135,7 @@ namespace Financeiro
 			#endregion
 
 			#region [ Inicialização ]
+			msgSolicitacaoConfirmacao = "";
 			vParcelaPagto.Add(new TipoLinhaDadosParcelaPagto());
 			#endregion
 
@@ -649,10 +650,17 @@ namespace Financeiro
 
 			if (Math.Abs(vlDiferencaArredondamento) > 1)
 			{
-				strMsgErro = "A soma dos valores definidos na forma de pagamento (" + Global.formataMoeda(vlTotalFormaPagto) + ") não coincide com o valor total do(s) pedido(s) (" + Global.formataMoeda(vlTotalPedido) + ")!!" +
-							 "\n" +
-							 "Não é possível gerar os dados das parcelas dos boletos!!";
-				throw new FinanceiroException(strMsgErro);
+				strMsgErro = "A soma dos valores definidos na forma de pagamento (" + Global.formataMoeda(vlTotalFormaPagto) + ") não coincide com o valor total do(s) pedido(s) (" + Global.formataMoeda(vlTotalPedido) + ")!";
+				if (Global.Parametro.BoletoAvulso_PermitirDivergenciaValoresFormaPagtoVsPedido == 0)
+				{
+					strMsgErro += "\n" +
+								"Não é possível gerar os dados das parcelas dos boletos!";
+					throw new FinanceiroException(strMsgErro);
+				}
+				else
+				{
+					msgSolicitacaoConfirmacao = strMsgErro;
+				}
 			}
 			#endregion
 
@@ -2851,6 +2859,8 @@ namespace Financeiro
 			String strDadosRateio;
 			String strDadosRateioParcela;
 			String strEndereco;
+			String strMsg;
+			String msgSolicitacaoConfirmacao;
 			bool blnAchou;
 			Pedido pedido;
 			int intIndiceLinhaGrid;
@@ -2858,6 +2868,8 @@ namespace Financeiro
 			decimal vlTotalParcelasBase = 0;
 			decimal vlTotalParcelasBoleto = 0;
 			List<TipoLinhaDadosParcelaPagto> vParcelaPagto;
+			FAutorizacao fAutorizacao;
+			DialogResult drAutorizacao;
 			#endregion
 
 			try
@@ -2871,7 +2883,33 @@ namespace Financeiro
 					#region [ Obtém os dados para cadastramento do boleto ]
 					try
 					{
-						vParcelaPagto = geraDadosParcelasPagto(_listaNumeroPedidoSelecionado);
+						vParcelaPagto = geraDadosParcelasPagto(_listaNumeroPedidoSelecionado, out msgSolicitacaoConfirmacao);
+						if (msgSolicitacaoConfirmacao.Length > 0)
+						{
+							strMsg = msgSolicitacaoConfirmacao +
+									"\n" +
+									"Digite a senha para confirmar que deseja prosseguir mesmo assim!";
+							fAutorizacao = new FAutorizacao(strMsg);
+							while (true)
+							{
+								drAutorizacao = fAutorizacao.ShowDialog();
+								if (drAutorizacao != DialogResult.OK)
+								{
+									avisoErro("Operação cancelada!");
+									return;
+								}
+
+								if (fAutorizacao.senha.ToUpper() != Global.Usuario.senhaDescriptografada.ToUpper())
+								{
+									avisoErro("Senha inválida!");
+								}
+								else
+								{
+									break;
+								}
+							}
+						}
+
 						boletoAvulsoComPedidoSelecionado = geraDadosBoletoAvulsoComPedido(_listaNumeroPedidoSelecionado, vParcelaPagto);
 						clienteSelecionado = ClienteDAO.getCliente(boletoAvulsoComPedidoSelecionado.id_cliente);
 						_blnRegistroFoiGravado = false;

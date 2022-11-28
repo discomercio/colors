@@ -225,7 +225,7 @@
 	c_mag_cpf_cnpj_identificado = ""
 
 	dim blnMagentoPedidoComIndicador, sListaLojaMagentoPedidoComIndicador, vLoja, rParametro
-	dim percCommissionValue, percCommissionDiscount
+	dim percCommissionValue, percCommissionDiscount, percComissionPercentage
 	dim sIdIndicador, sNomeIndicador, sIdVendedor, sNomeVendedor
 	blnMagentoPedidoComIndicador = False
 	sListaLojaMagentoPedidoComIndicador = ""
@@ -235,6 +235,7 @@
 	sNomeVendedor = ""
 	percCommissionValue = 0
 	percCommissionDiscount = 0
+	percComissionPercentage = 0
 
 	if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then
 		c_numero_magento = Trim(Request("c_numero_magento"))
@@ -253,6 +254,7 @@
 			vLoja = Split(sListaLojaMagentoPedidoComIndicador, ",")
 			for i=LBound(vLoja) to UBound(vLoja)
 				if Trim("" & vLoja(i)) = loja then
+					'Esta implementação do pedido Magento com indicador é referente ao projeto em Magento 1 da Bonshop
 					blnMagentoPedidoComIndicador = True
 					exit for
 					end if
@@ -493,8 +495,20 @@
 					rb_RA = "S"
 					permite_RA_status = 1
 				else
-					if r_orcamentista_e_indicador.permite_RA_status = 0 then rb_RA = "N"
-					permite_RA_status = r_orcamentista_e_indicador.permite_RA_status
+					if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then
+						if (Trim("" & tMAP_XML("b2b_type_order")) = COD_MAGENTO_TYPE_ORDER__INSTALLER) And (Trim("" & tMAP_XML("magento_api_versao")) = CStr(VERSAO_API_MAGENTO_V2_REST_JSON)) then
+							if vl_frete_magento > 0 then
+								rb_RA = "S"
+								permite_RA_status = 1
+								end if
+						else
+							if r_orcamentista_e_indicador.permite_RA_status = 0 then rb_RA = "N"
+							permite_RA_status = r_orcamentista_e_indicador.permite_RA_status
+							end if
+					else
+						if r_orcamentista_e_indicador.permite_RA_status = 0 then rb_RA = "N"
+						permite_RA_status = r_orcamentista_e_indicador.permite_RA_status
+						end if
 					end if
 				end if
 			end if
@@ -2921,38 +2935,39 @@ var perc_max_comissao_e_desconto_a_utilizar;
 	}
 	
 	// Tem RT: sim
-	if (perc_RT != 0) {
-		// RT excede limite máximo?
-		if (perc_RT > perc_max_RT) {
-			alert("Percentual de comissão excede o máximo permitido!");
-			return;
-		}
-
-		// Neste ponto, é certo que todos os produtos que possuem desconto estão dentro do máximo permitido
-		// ou possuem senha de desconto autorizando.
-		// Verifica-se agora se é necessário reduzir automaticamente o percentual da RT usando p/ o cálculo
-		// o percentual de desconto médio.
-		perc_RT_novo = Math.min(perc_RT, (perc_max_comissao_e_desconto_a_utilizar - perc_desc_medio));
-		if (perc_RT_novo < 0) perc_RT_novo = 0;
-
-		// O percentual de RT será alterado automaticamente, solicita confirmação
-		if (perc_RT_novo != perc_RT) {
-			s = "A soma dos percentuais de comissão (" + formata_numero(perc_RT, 2) + "%) e de desconto médio do(s) produto(s) (" + formata_numero(perc_desc_medio, 2) + "%) totaliza " + formata_numero(perc_desc_medio + perc_RT, 2) + "% e excede o máximo permitido!" +
-				"\nA comissão será reduzida automaticamente para " + formata_numero(perc_RT_novo, 2) + "%!" +
-				"\nContinua?";
-			if (!confirm(s)) {
-				s = "Operação cancelada!";
-				alert(s);
+	if (f.operacao_origem.value != "<%=OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO%>") {
+		if (perc_RT != 0) {
+			// RT excede limite máximo?
+			if (perc_RT > perc_max_RT) {
+				alert("Percentual de comissão excede o máximo permitido!");
 				return;
 			}
-			else {
-				// Novo percentual de RT
-				f.c_perc_RT.value = formata_perc_RT(perc_RT_novo);
-				perc_RT = perc_RT_novo;
+
+			// Neste ponto, é certo que todos os produtos que possuem desconto estão dentro do máximo permitido
+			// ou possuem senha de desconto autorizando.
+			// Verifica-se agora se é necessário reduzir automaticamente o percentual da RT usando p/ o cálculo
+			// o percentual de desconto médio.
+			perc_RT_novo = Math.min(perc_RT, (perc_max_comissao_e_desconto_a_utilizar - perc_desc_medio));
+			if (perc_RT_novo < 0) perc_RT_novo = 0;
+
+			// O percentual de RT será alterado automaticamente, solicita confirmação
+			if (perc_RT_novo != perc_RT) {
+				s = "A soma dos percentuais de comissão (" + formata_numero(perc_RT, 2) + "%) e de desconto médio do(s) produto(s) (" + formata_numero(perc_desc_medio, 2) + "%) totaliza " + formata_numero(perc_desc_medio + perc_RT, 2) + "% e excede o máximo permitido!" +
+					"\nA comissão será reduzida automaticamente para " + formata_numero(perc_RT_novo, 2) + "%!" +
+					"\nContinua?";
+				if (!confirm(s)) {
+					s = "Operação cancelada!";
+					alert(s);
+					return;
+				}
+				else {
+					// Novo percentual de RT
+					f.c_perc_RT.value = formata_perc_RT(perc_RT_novo);
+					perc_RT = perc_RT_novo;
+				}
 			}
-		}
-	} // if (perc_RT != 0)
-	
+		} // if (perc_RT != 0)
+	} // if (f.operacao_origem.value != "PED_NOVO_EC_SEMI_AUTO")
 	
 	blnFlag=false;
 	for (i=0; i < f.rb_etg_imediata.length; i++) {
@@ -3349,15 +3364,8 @@ var perc_max_comissao_e_desconto_a_utilizar;
 			<% end if %>
 		</td>
 	</tr>
-	<% if blnMagentoPedidoComIndicador then %>
-	<tr>
-		<td class="MB ME MD TdCliLbl"><span class="PLTd">Indicador</span></td>
-		<td class="MB MD TdCliCel">
-			<span class="C"><%=cnpj_cpf_formata(c_mag_installer_document)%></span>
-			<br /><span class="C"><%=sIdIndicador & " - " & sNomeIndicador%></span>
-		</td>
-	</tr>
-	<% elseif (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1") Or (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "9") then 
+
+	<% if (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1") Or (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "9") then 
 			vl_total_produto_magento = 0
 			vl_total_servico_magento = 0
 			if Trim("" & tMAP_XML("magento_api_versao")) = CStr(VERSAO_API_MAGENTO_V1_SOAP_XML) then
@@ -3392,6 +3400,36 @@ var perc_max_comissao_e_desconto_a_utilizar;
 					loop
 				end if 'elseif Trim("" & tMAP_XML("magento_api_versao")) = CStr(VERSAO_API_MAGENTO_V2_REST_JSON)
 	%>
+
+	<% if blnMagentoPedidoComIndicador then %>
+	<tr>
+		<td class="MB ME MD TdCliLbl"><span class="PLTd">Indicador</span></td>
+		<td class="MB MD TdCliCel">
+			<span class="C"><%=cnpj_cpf_formata(c_mag_installer_document)%></span>
+			<br /><span class="C"><%=sIdIndicador & " - " & sNomeIndicador%></span>
+		</td>
+	</tr>
+	<% end if %>
+	
+	<% if Trim("" & tMAP_XML("b2b_type_order")) = COD_MAGENTO_TYPE_ORDER__INSTALLER then
+			'Esta implementação do pedido Magento com indicador é referente ao projeto em Magento 2 (B2B) do Arclube
+			if vl_total_produto_magento <> 0 then
+				percComissionPercentage = 100 * (converte_numero(tMAP_XML("b2b_installer_commission_value")) / vl_total_produto_magento)
+			else
+				percComissionPercentage = 0
+				end if
+			c_perc_RT = formata_perc_RT(percComissionPercentage)
+	%>
+	<tr>
+		<td class="MB ME MD TdCliLbl"><span class="PLTd">Parceiro</span></td>
+		<td class="MB MD TdCliCel">
+			<span class="C"><%="ID: " & Trim("" & tMAP_XML("b2b_installer_id"))%></span>
+			<br /><span class="C"><%=Trim("" & tMAP_XML("b2b_installer_name"))%></span>
+			<br /><span class="C"><%="Comissão (" & formata_perc_RT(tMAP_XML("b2b_installer_commission_percentage")) & "%): " & SIMBOLO_MONETARIO & " " & formata_moeda(tMAP_XML("b2b_installer_commission_value"))%></span>
+		</td>
+	</tr>
+	<% end if %>
+
 	<tr>
 		<td class="MB ME MD TdCliLbl"><span class="PLTd">Indicador</span></td>
 		<td class="MB MD TdCliCel">
@@ -3408,6 +3446,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		<td class="MB ME MD TdCliLbl"><span class="PLTd">VL Produtos c/ Desc</span></td>
 		<td class="MB MD TdCliCel">
 			<span class="C"><%=formata_moeda(vl_total_produto_magento)%></span>
+			<input type="hidden" name="c_vl_total_produto_magento" id="c_vl_total_produto_magento" value="<%=formata_moeda(vl_total_produto_magento)%>" />
 		</td>
 	</tr>
 	<tr>

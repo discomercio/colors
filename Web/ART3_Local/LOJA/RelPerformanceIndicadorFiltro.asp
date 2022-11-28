@@ -380,7 +380,7 @@ var i, blnFlagOk;
 
 <!--  INDICADOR: FORMA COMO CONHECEU  -->
 	<tr bgColor="#FFFFFF" id="tr_FormaComoConheceu">
-	<td class="MDBE" align="left" nowrap><span class="PLTe">FORMA COMO CONHECEU A BONSHOP</span>
+	<td class="MDBE" align="left" nowrap><span class="PLTe">FORMA COMO CONHECEU A DIS</span>
 		<br>
 		<table cellSpacing="0" cellPadding="0" style="margin-bottom:10px;">
 		<tr bgColor="#FFFFFF"><td align="left">

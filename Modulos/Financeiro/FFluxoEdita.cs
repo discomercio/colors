@@ -693,7 +693,9 @@ namespace Financeiro
 		#region [ FFluxoEdita_Load ]
 		private void FFluxoEdita_Load(object sender, EventArgs e)
 		{
+			#region [ Declarações ]
 			bool blnSucesso = false;
+			#endregion
 
 			try
 			{
@@ -781,6 +783,10 @@ namespace Financeiro
 				if (lancamentoSelecionado.tipo_cadastro == Global.Cte.FIN.TipoCadastro.SISTEMA) cbPlanoContasConta.Enabled = false;
 				#endregion
 
+				#region [ Campo descrição: tamanho máximo ]
+				txtDescricao.MaxLength = Global.Cte.FIN.TamanhoCampo.FLUXO_CAIXA_DESCRICAO;
+				#endregion
+
 				#region [ Demais campos ]
 				txtDataCompetencia.Text = Global.formataDataDdMmYyyyComSeparador(lancamentoSelecionado.dt_competencia);
 				txtValor.Text = Global.formataMoeda(lancamentoSelecionado.valor);
@@ -790,7 +796,7 @@ namespace Financeiro
 				lblCadastradoEm.Text = Global.formataDataDdMmYyyyHhMmComSeparador(lancamentoSelecionado.dt_hr_cadastro);
 				lblCadastradoPor.Text = lancamentoSelecionado.usuario_cadastro;
 				lblCadastradoModo.Text = Global.retornaDescricaoTipoCadastramento(lancamentoSelecionado.tipo_cadastro);
-				if (lancamentoSelecionado.editado_manual == Global.Cte.FIN.EditadoManual.SIM)
+				if ((lancamentoSelecionado.editado_manual == Global.Cte.FIN.EditadoManual.SIM) || (Global.Parametro.FluxoCaixa_ConsiderarDataAtualizacaoAutomatica == 1))
 				{
 					lblAlteradoEm.Text = Global.formataDataDdMmYyyyHhMmComSeparador(lancamentoSelecionado.dt_hr_ult_atualizacao);
 					lblAlteradoPor.Text = lancamentoSelecionado.usuario_ult_atualizacao;

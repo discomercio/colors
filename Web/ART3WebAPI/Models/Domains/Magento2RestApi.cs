@@ -532,6 +532,16 @@ namespace ART3WebAPI.Models.Domains
 				// *** carrier_method_lengow
 				// *** clearsale_status_code
 				// *** session_id
+
+				if (mage2SalesOrderInfo.extension_attributes != null)
+				{
+					mage1SalesOrderInfo.b2b_installer_name = mage2SalesOrderInfo.extension_attributes.installer_name;
+					mage1SalesOrderInfo.b2b_installer_id = mage2SalesOrderInfo.extension_attributes.installer_id;
+					mage1SalesOrderInfo.b2b_commission_value = mage2SalesOrderInfo.extension_attributes.commission_value;
+					mage1SalesOrderInfo.b2b_commission_percentage = mage2SalesOrderInfo.extension_attributes.commission_percentage;
+					mage1SalesOrderInfo.b2b_type_order = mage2SalesOrderInfo.extension_attributes.type_order;
+				}
+
 				if (mage2SkyHubInfo != null)
 				{
 					mage1SalesOrderInfo.skyhub_code = mage2SkyHubInfo.code;
@@ -1012,6 +1022,8 @@ namespace ART3WebAPI.Models.Domains
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "Magento2RestApi.processaGetPedido()";
 			bool blnInserted = false;
+			bool blnWAP = false;
+			bool blnOrigemPedidoIdentificada = false;
 			int intParametroFlagCadSemiAutoPedMagentoCadastrarAutomaticamenteClienteNovo;
 			int intParametroFlagCadSemiAutoPedMagentoUsarEnderecoMktpDataSource;
 			string msg;
@@ -1047,6 +1059,7 @@ namespace ART3WebAPI.Models.Domains
 			Magento2SalesOrderInfo mage2SalesOrderInfo;
 			Magento2SkyhubDataSource skyHubInfo = null;
 			Magento2SkyhubDataSourceItem skyHubInfoItem;
+			Magento2SalesOrderSearchResponse mage2SalesOrderInfoSearchResponse;
 			#endregion
 
 			#region [ Verifica o parâmetro que define se devem ser usados os dados de endereço originais informados pelo marketplace ]
@@ -1081,10 +1094,20 @@ namespace ART3WebAPI.Models.Domains
 						if (loginParameters.api_rest_force_get_sales_order_by_entity_id == 1)
 						{
 							salesOrder.magentoSalesOrderInfo = Magento2RestApi.decodificaSalesOrderInfoJsonEntityIdResponseMage2ParaObjMage1(sJson, out msg_erro);
+							salesOrder.magento2SalesOrderInfo = Magento2RestApi.decodificaJsonSalesOrderInfo(sJson, out msg_erro);
 						}
 						else
 						{
 							salesOrder.magentoSalesOrderInfo = Magento2RestApi.decodificaSalesOrderInfoJsonSearchResponseMage2ParaObjMage1(sJson, out msg_erro);
+							mage2SalesOrderInfoSearchResponse = Magento2RestApi.decodificaJsonSalesOrderSearchResponse(sJson, out msg_erro);
+							if (mage2SalesOrderInfoSearchResponse.total_count > 0)
+							{
+								salesOrder.magento2SalesOrderInfo = mage2SalesOrderInfoSearchResponse.items[0];
+							}
+							else
+							{
+								salesOrder.magento2SalesOrderInfo = null;
+							}
 						}
 
 						if (salesOrder.magentoSalesOrderInfo == null)
@@ -1125,6 +1148,7 @@ namespace ART3WebAPI.Models.Domains
 				msg = "Consulta do pedido Magento nº " + numeroPedidoMagento + " via API REST";
 				Global.gravaLogAtividade(httpRequestId, msg);
 				mage2SalesOrderInfo = Magento2RestApi.getSalesOrderInfo(httpRequestId, numeroPedidoMagento, loginParameters, out sJson, out msg_erro);
+				salesOrder.magento2SalesOrderInfo = mage2SalesOrderInfo;
 				#endregion
 
 				#region [ Falha ao obter os dados do pedido Magento ]
@@ -1534,6 +1558,7 @@ namespace ART3WebAPI.Models.Domains
 
 									sNumPedidoMktpIdentificado = sValue;
 									sOrigemMktpIdentificado = codDescr.codigo;
+									blnOrigemPedidoIdentificada = true;
 									break;
 								}
 							}
@@ -1543,7 +1568,7 @@ namespace ART3WebAPI.Models.Domains
 				}
 
 				#region [ Se não conseguiu identificar o nº pedido marketplace através do campo 'skyhub_code', analisa o status history ]
-				if (sNumPedidoMktpIdentificado.Length == 0)
+				if (!blnOrigemPedidoIdentificada)
 				{
 					for (int i = (salesOrder.magentoSalesOrderInfo.status_history.Count - 1); i >= 0; i--)
 					{
@@ -1624,6 +1649,7 @@ namespace ART3WebAPI.Models.Domains
 
 												sNumPedidoMktpIdentificado = sValue;
 												sOrigemMktpIdentificado = codDescr.codigo;
+												blnOrigemPedidoIdentificada = true;
 												break;
 											}
 											#endregion
@@ -1686,17 +1712,91 @@ namespace ART3WebAPI.Models.Domains
 
 												sNumPedidoMktpIdentificado = sValue;
 												sOrigemMktpIdentificado = codDescr.codigo;
+												blnOrigemPedidoIdentificada = true;
 												break;
 											}
 											#endregion
 										}
 									}
 								}
-								if (sNumPedidoMktpIdentificado.Length > 0) break;
+								if (blnOrigemPedidoIdentificada) break;
 							}
-							if (sNumPedidoMktpIdentificado.Length > 0) break;
+							if (blnOrigemPedidoIdentificada) break;
 						}
-						if (sNumPedidoMktpIdentificado.Length > 0) break;
+						if (blnOrigemPedidoIdentificada) break;
+					}
+				}
+				#endregion
+
+				#region [ Se não conseguiu identificar o nº pedido marketplace até este ponto, analisa o 'payment_additional_info' (WAP) ]
+				if (!blnOrigemPedidoIdentificada)
+				{
+					if (salesOrder.magento2SalesOrderInfo != null)
+					{
+						if (salesOrder.magento2SalesOrderInfo.extension_attributes != null)
+						{
+							if (salesOrder.magento2SalesOrderInfo.extension_attributes.payment_additional_info != null)
+							{
+								// 17/10/2022: o marketplace Daikin é integrado via WAP, sendo que a integradora não fornece nenhuma informação
+								// específica que identifique o marketplace. Como a Daikin é o único marketplace integrado pela WAP, esta lógica
+								// assume que se a integradora é WAP, o pedido é da Daikin.
+								foreach (Magento2ExtensionAttributesPaymentAdditionalInfo item in salesOrder.magento2SalesOrderInfo.extension_attributes.payment_additional_info)
+								{
+									if (item.key.Equals("method_title") && (item.value ?? "").Equals("WAP Connect Payment"))
+									{
+										blnWAP = true;
+										break;
+									}
+								}
+
+								if (blnWAP)
+								{
+									foreach (Magento2ExtensionAttributesPaymentAdditionalInfo item in salesOrder.magento2SalesOrderInfo.extension_attributes.payment_additional_info)
+									{
+										if (item.key.Equals("idPedido"))
+										{
+											if ((item.value ?? "").Trim().Length > 0)
+											{
+												sNumPedidoMktpIdentificado = (item.value ?? "").Trim();
+												sOrigemMktpIdentificado = (Global.Cte.MagentoB2B.PEDIDO_ECOMMERCE_ORIGEM__DAIKIN ?? "");
+												if (sOrigemMktpIdentificado.Trim().Length > 0) blnOrigemPedidoIdentificada = true;
+
+												// Se não identificou o código do marketplace, assegura que o nº pedido marketplace estará vazio
+												// p/ que a combinação de campos nº pedido marketplace + código origem não fiquem inconsistentes
+												if (!blnOrigemPedidoIdentificada)
+												{
+													sNumPedidoMktpIdentificado = "";
+													sOrigemMktpIdentificado = "";
+												}
+												break;
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				#endregion
+
+				#region [ Se não conseguiu identificar o nº pedido marketplace, verifica se é um pedido Magento B2B (instalador) ]
+				if (!blnOrigemPedidoIdentificada)
+				{
+					if (salesOrder.magento2SalesOrderInfo.extension_attributes != null)
+					{
+						if (salesOrder.magento2SalesOrderInfo.extension_attributes.type_order != null)
+						{
+							if (salesOrder.magento2SalesOrderInfo.extension_attributes.type_order.Equals(Global.Cte.MagentoB2B.TYPE_ORDER__INSTALLER))
+							{
+								sOrigemMktpIdentificado = (Global.Cte.MagentoB2B.PEDIDO_ECOMMERCE_ORIGEM__PARCEIROS ?? "");
+								if (sOrigemMktpIdentificado.Trim().Length > 0) blnOrigemPedidoIdentificada = true;
+							}
+							else if (salesOrder.magento2SalesOrderInfo.extension_attributes.type_order.Equals(Global.Cte.MagentoB2B.TYPE_ORDER__MAGENTO))
+							{
+								sOrigemMktpIdentificado = (Global.Cte.MagentoB2B.PEDIDO_ECOMMERCE_ORIGEM__ARCLUBE_ECOMMERCE ?? "");
+								if (sOrigemMktpIdentificado.Trim().Length > 0) blnOrigemPedidoIdentificada = true;
+							}
+						}
 					}
 				}
 				#endregion
@@ -1746,8 +1846,13 @@ namespace ART3WebAPI.Models.Domains
 				insertPedidoXml.commission_final_discount = Global.converteNumeroDecimal((salesOrder.magentoSalesOrderInfo.commission_final_discount ?? ""));
 				insertPedidoXml.commission_final_value = Global.converteNumeroDecimal((salesOrder.magentoSalesOrderInfo.commission_final_value ?? ""));
 				insertPedidoXml.commission_discount_type = (salesOrder.magentoSalesOrderInfo.commission_discount_type ?? "");
+				insertPedidoXml.b2b_installer_name = (salesOrder.magentoSalesOrderInfo.b2b_installer_name ?? "");
+				insertPedidoXml.b2b_installer_id = (int)Global.converteInteiro(salesOrder.magentoSalesOrderInfo.b2b_installer_id ?? "");
+				insertPedidoXml.b2b_installer_commission_value = Global.converteNumeroDecimal((salesOrder.magentoSalesOrderInfo.b2b_commission_value ?? ""));
+				insertPedidoXml.b2b_installer_commission_percentage = Global.converteDouble(salesOrder.magentoSalesOrderInfo.b2b_commission_percentage, SEPARADOR_DECIMAL_NUM_REAL);
+				insertPedidoXml.b2b_type_order = (salesOrder.magentoSalesOrderInfo.b2b_type_order ?? "");
 
-				if (sNumPedidoMktpIdentificado.Length > 0)
+				if (blnOrigemPedidoIdentificada)
 				{
 					insertPedidoXml.pedido_marketplace = sNumPedidoMktpIdentificado;
 					insertPedidoXml.pedido_marketplace_completo = sNumPedidoMktpCompletoIdentificado;

@@ -30,8 +30,9 @@
 		{
 			this.components = new System.ComponentModel.Container();
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FBoletoCadastra));
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
@@ -39,7 +40,7 @@
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
 			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FBoletoCadastra));
+			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
 			this.lblTitulo = new System.Windows.Forms.Label();
 			this.pnParametros = new System.Windows.Forms.Panel();
 			this.txtNumLoja = new System.Windows.Forms.TextBox();
@@ -64,19 +65,6 @@
 			this.lblDataCompetenciaAte = new System.Windows.Forms.Label();
 			this.pnResultado = new System.Windows.Forms.Panel();
 			this.gridDados = new System.Windows.Forms.DataGridView();
-			this.dt_cadastro_formatada = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.numero_NF = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.qtde_parcelas_boleto = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.valor_formatado = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.pedido = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.cnpj_cpf_formatado = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.nome = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.id = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.cnpj_cpf = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.dt_cadastro = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.vl_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.id_cliente = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.dtbNfParcelaPagtoGridBindingSource = new System.Windows.Forms.BindingSource(this.components);
 			this.dsDataSource = new Financeiro.DsDataSource();
 			this.pnTotalizacao = new System.Windows.Forms.Panel();
@@ -87,6 +75,20 @@
 			this.btnDetalhe = new System.Windows.Forms.Button();
 			this.btnPesquisar = new System.Windows.Forms.Button();
 			this.btnLimpar = new System.Windows.Forms.Button();
+			this.dt_cadastro_formatada = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.numero_NF = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.qtde_parcelas_boleto = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.valor_formatado = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.pedido = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.st_pagto_descricao = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.cnpj_cpf_formatado = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.nome = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.id = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.cnpj_cpf = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.dt_cadastro = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.status = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.vl_total = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.id_cliente = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.pnBotoes.SuspendLayout();
 			this.pnCampos.SuspendLayout();
 			this.pnParametros.SuspendLayout();
@@ -453,6 +455,7 @@
             this.qtde_parcelas_boleto,
             this.valor_formatado,
             this.pedido,
+            this.st_pagto_descricao,
             this.cnpj_cpf_formatado,
             this.nome,
             this.id,
@@ -462,27 +465,27 @@
             this.vl_total,
             this.id_cliente});
 			this.gridDados.DataSource = this.dtbNfParcelaPagtoGridBindingSource;
-			dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-			dataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Window;
-			dataGridViewCellStyle9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			dataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.ControlText;
-			dataGridViewCellStyle9.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-			dataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-			dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-			this.gridDados.DefaultCellStyle = dataGridViewCellStyle9;
+			dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+			dataGridViewCellStyle10.BackColor = System.Drawing.SystemColors.Window;
+			dataGridViewCellStyle10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			dataGridViewCellStyle10.ForeColor = System.Drawing.SystemColors.ControlText;
+			dataGridViewCellStyle10.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+			dataGridViewCellStyle10.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+			dataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+			this.gridDados.DefaultCellStyle = dataGridViewCellStyle10;
 			this.gridDados.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.gridDados.Location = new System.Drawing.Point(0, 0);
 			this.gridDados.MultiSelect = false;
 			this.gridDados.Name = "gridDados";
 			this.gridDados.ReadOnly = true;
-			dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-			dataGridViewCellStyle10.BackColor = System.Drawing.SystemColors.Control;
-			dataGridViewCellStyle10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			dataGridViewCellStyle10.ForeColor = System.Drawing.SystemColors.WindowText;
-			dataGridViewCellStyle10.SelectionBackColor = System.Drawing.SystemColors.Control;
-			dataGridViewCellStyle10.SelectionForeColor = System.Drawing.SystemColors.WindowText;
-			dataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-			this.gridDados.RowHeadersDefaultCellStyle = dataGridViewCellStyle10;
+			dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+			dataGridViewCellStyle11.BackColor = System.Drawing.SystemColors.Control;
+			dataGridViewCellStyle11.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			dataGridViewCellStyle11.ForeColor = System.Drawing.SystemColors.WindowText;
+			dataGridViewCellStyle11.SelectionBackColor = System.Drawing.SystemColors.Control;
+			dataGridViewCellStyle11.SelectionForeColor = System.Drawing.SystemColors.WindowText;
+			dataGridViewCellStyle11.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+			this.gridDados.RowHeadersDefaultCellStyle = dataGridViewCellStyle11;
 			this.gridDados.RowHeadersVisible = false;
 			this.gridDados.RowHeadersWidth = 15;
 			this.gridDados.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
@@ -491,143 +494,6 @@
 			this.gridDados.TabIndex = 0;
 			this.gridDados.DoubleClick += new System.EventHandler(this.gridDados_DoubleClick);
 			this.gridDados.KeyDown += new System.Windows.Forms.KeyEventHandler(this.gridDados_KeyDown);
-			// 
-			// dt_cadastro_formatada
-			// 
-			this.dt_cadastro_formatada.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-			this.dt_cadastro_formatada.DataPropertyName = "dt_cadastro_formatada";
-			dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
-			this.dt_cadastro_formatada.DefaultCellStyle = dataGridViewCellStyle2;
-			this.dt_cadastro_formatada.HeaderText = "Data";
-			this.dt_cadastro_formatada.MinimumWidth = 80;
-			this.dt_cadastro_formatada.Name = "dt_cadastro_formatada";
-			this.dt_cadastro_formatada.ReadOnly = true;
-			this.dt_cadastro_formatada.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-			this.dt_cadastro_formatada.Width = 80;
-			// 
-			// numero_NF
-			// 
-			this.numero_NF.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-			this.numero_NF.DataPropertyName = "numero_NF";
-			dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
-			this.numero_NF.DefaultCellStyle = dataGridViewCellStyle3;
-			this.numero_NF.HeaderText = "NF";
-			this.numero_NF.MinimumWidth = 80;
-			this.numero_NF.Name = "numero_NF";
-			this.numero_NF.ReadOnly = true;
-			this.numero_NF.Width = 80;
-			// 
-			// qtde_parcelas_boleto
-			// 
-			this.qtde_parcelas_boleto.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-			this.qtde_parcelas_boleto.DataPropertyName = "qtde_parcelas_boleto";
-			dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
-			this.qtde_parcelas_boleto.DefaultCellStyle = dataGridViewCellStyle4;
-			this.qtde_parcelas_boleto.HeaderText = "Parcelas";
-			this.qtde_parcelas_boleto.MinimumWidth = 85;
-			this.qtde_parcelas_boleto.Name = "qtde_parcelas_boleto";
-			this.qtde_parcelas_boleto.ReadOnly = true;
-			this.qtde_parcelas_boleto.Width = 85;
-			// 
-			// valor_formatado
-			// 
-			this.valor_formatado.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-			this.valor_formatado.DataPropertyName = "valor_formatado";
-			dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopRight;
-			dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.valor_formatado.DefaultCellStyle = dataGridViewCellStyle5;
-			this.valor_formatado.FillWeight = 331.0345F;
-			this.valor_formatado.HeaderText = "Valor Total";
-			this.valor_formatado.MinimumWidth = 120;
-			this.valor_formatado.Name = "valor_formatado";
-			this.valor_formatado.ReadOnly = true;
-			this.valor_formatado.Width = 120;
-			// 
-			// pedido
-			// 
-			this.pedido.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-			this.pedido.DataPropertyName = "pedido";
-			dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopLeft;
-			dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-			this.pedido.DefaultCellStyle = dataGridViewCellStyle6;
-			this.pedido.HeaderText = "Pedido";
-			this.pedido.MinimumWidth = 115;
-			this.pedido.Name = "pedido";
-			this.pedido.ReadOnly = true;
-			this.pedido.Width = 115;
-			// 
-			// cnpj_cpf_formatado
-			// 
-			this.cnpj_cpf_formatado.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-			this.cnpj_cpf_formatado.DataPropertyName = "cnpj_cpf_formatado";
-			dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
-			this.cnpj_cpf_formatado.DefaultCellStyle = dataGridViewCellStyle7;
-			this.cnpj_cpf_formatado.HeaderText = "CNPJ / CPF";
-			this.cnpj_cpf_formatado.MinimumWidth = 130;
-			this.cnpj_cpf_formatado.Name = "cnpj_cpf_formatado";
-			this.cnpj_cpf_formatado.ReadOnly = true;
-			this.cnpj_cpf_formatado.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-			this.cnpj_cpf_formatado.Width = 130;
-			// 
-			// nome
-			// 
-			this.nome.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-			this.nome.DataPropertyName = "nome";
-			dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopLeft;
-			dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-			this.nome.DefaultCellStyle = dataGridViewCellStyle8;
-			this.nome.HeaderText = "Cliente";
-			this.nome.MinimumWidth = 180;
-			this.nome.Name = "nome";
-			this.nome.ReadOnly = true;
-			// 
-			// id
-			// 
-			this.id.DataPropertyName = "id";
-			this.id.HeaderText = "id";
-			this.id.Name = "id";
-			this.id.ReadOnly = true;
-			this.id.Visible = false;
-			// 
-			// cnpj_cpf
-			// 
-			this.cnpj_cpf.DataPropertyName = "cnpj_cpf";
-			this.cnpj_cpf.HeaderText = "cnpj_cpf";
-			this.cnpj_cpf.Name = "cnpj_cpf";
-			this.cnpj_cpf.ReadOnly = true;
-			this.cnpj_cpf.Visible = false;
-			// 
-			// dt_cadastro
-			// 
-			this.dt_cadastro.DataPropertyName = "dt_cadastro";
-			this.dt_cadastro.HeaderText = "dt_cadastro";
-			this.dt_cadastro.Name = "dt_cadastro";
-			this.dt_cadastro.ReadOnly = true;
-			this.dt_cadastro.Visible = false;
-			// 
-			// status
-			// 
-			this.status.DataPropertyName = "status";
-			this.status.HeaderText = "status";
-			this.status.Name = "status";
-			this.status.ReadOnly = true;
-			this.status.Visible = false;
-			// 
-			// vl_total
-			// 
-			this.vl_total.DataPropertyName = "vl_total";
-			this.vl_total.HeaderText = "vl_total";
-			this.vl_total.Name = "vl_total";
-			this.vl_total.ReadOnly = true;
-			this.vl_total.Visible = false;
-			// 
-			// id_cliente
-			// 
-			this.id_cliente.DataPropertyName = "id_cliente";
-			this.id_cliente.HeaderText = "id_cliente";
-			this.id_cliente.Name = "id_cliente";
-			this.id_cliente.ReadOnly = true;
-			this.id_cliente.Visible = false;
 			// 
 			// dtbNfParcelaPagtoGridBindingSource
 			// 
@@ -725,6 +591,154 @@
 			this.btnLimpar.UseVisualStyleBackColor = true;
 			this.btnLimpar.Click += new System.EventHandler(this.btnLimpar_Click);
 			// 
+			// dt_cadastro_formatada
+			// 
+			this.dt_cadastro_formatada.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+			this.dt_cadastro_formatada.DataPropertyName = "dt_cadastro_formatada";
+			dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
+			this.dt_cadastro_formatada.DefaultCellStyle = dataGridViewCellStyle2;
+			this.dt_cadastro_formatada.HeaderText = "Data";
+			this.dt_cadastro_formatada.MinimumWidth = 80;
+			this.dt_cadastro_formatada.Name = "dt_cadastro_formatada";
+			this.dt_cadastro_formatada.ReadOnly = true;
+			this.dt_cadastro_formatada.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+			this.dt_cadastro_formatada.Width = 80;
+			// 
+			// numero_NF
+			// 
+			this.numero_NF.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+			this.numero_NF.DataPropertyName = "numero_NF";
+			dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
+			this.numero_NF.DefaultCellStyle = dataGridViewCellStyle3;
+			this.numero_NF.HeaderText = "NF";
+			this.numero_NF.MinimumWidth = 80;
+			this.numero_NF.Name = "numero_NF";
+			this.numero_NF.ReadOnly = true;
+			this.numero_NF.Width = 80;
+			// 
+			// qtde_parcelas_boleto
+			// 
+			this.qtde_parcelas_boleto.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+			this.qtde_parcelas_boleto.DataPropertyName = "qtde_parcelas_boleto";
+			dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
+			this.qtde_parcelas_boleto.DefaultCellStyle = dataGridViewCellStyle4;
+			this.qtde_parcelas_boleto.HeaderText = "Parcelas";
+			this.qtde_parcelas_boleto.MinimumWidth = 85;
+			this.qtde_parcelas_boleto.Name = "qtde_parcelas_boleto";
+			this.qtde_parcelas_boleto.ReadOnly = true;
+			this.qtde_parcelas_boleto.Width = 85;
+			// 
+			// valor_formatado
+			// 
+			this.valor_formatado.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+			this.valor_formatado.DataPropertyName = "valor_formatado";
+			dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopRight;
+			dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.valor_formatado.DefaultCellStyle = dataGridViewCellStyle5;
+			this.valor_formatado.FillWeight = 331.0345F;
+			this.valor_formatado.HeaderText = "Valor Total";
+			this.valor_formatado.MinimumWidth = 120;
+			this.valor_formatado.Name = "valor_formatado";
+			this.valor_formatado.ReadOnly = true;
+			this.valor_formatado.Width = 120;
+			// 
+			// pedido
+			// 
+			this.pedido.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+			this.pedido.DataPropertyName = "pedido";
+			dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopLeft;
+			dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+			this.pedido.DefaultCellStyle = dataGridViewCellStyle6;
+			this.pedido.HeaderText = "Pedido";
+			this.pedido.MinimumWidth = 100;
+			this.pedido.Name = "pedido";
+			this.pedido.ReadOnly = true;
+			// 
+			// st_pagto_descricao
+			// 
+			this.st_pagto_descricao.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+			this.st_pagto_descricao.DataPropertyName = "st_pagto_descricao";
+			dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.st_pagto_descricao.DefaultCellStyle = dataGridViewCellStyle7;
+			this.st_pagto_descricao.HeaderText = "St Pagto";
+			this.st_pagto_descricao.MinimumWidth = 85;
+			this.st_pagto_descricao.Name = "st_pagto_descricao";
+			this.st_pagto_descricao.ReadOnly = true;
+			this.st_pagto_descricao.Width = 85;
+			// 
+			// cnpj_cpf_formatado
+			// 
+			this.cnpj_cpf_formatado.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+			this.cnpj_cpf_formatado.DataPropertyName = "cnpj_cpf_formatado";
+			dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopCenter;
+			this.cnpj_cpf_formatado.DefaultCellStyle = dataGridViewCellStyle8;
+			this.cnpj_cpf_formatado.HeaderText = "CNPJ / CPF";
+			this.cnpj_cpf_formatado.MinimumWidth = 130;
+			this.cnpj_cpf_formatado.Name = "cnpj_cpf_formatado";
+			this.cnpj_cpf_formatado.ReadOnly = true;
+			this.cnpj_cpf_formatado.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+			this.cnpj_cpf_formatado.Width = 130;
+			// 
+			// nome
+			// 
+			this.nome.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+			this.nome.DataPropertyName = "nome";
+			dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopLeft;
+			dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+			this.nome.DefaultCellStyle = dataGridViewCellStyle9;
+			this.nome.HeaderText = "Cliente";
+			this.nome.MinimumWidth = 180;
+			this.nome.Name = "nome";
+			this.nome.ReadOnly = true;
+			// 
+			// id
+			// 
+			this.id.DataPropertyName = "id";
+			this.id.HeaderText = "id";
+			this.id.Name = "id";
+			this.id.ReadOnly = true;
+			this.id.Visible = false;
+			// 
+			// cnpj_cpf
+			// 
+			this.cnpj_cpf.DataPropertyName = "cnpj_cpf";
+			this.cnpj_cpf.HeaderText = "cnpj_cpf";
+			this.cnpj_cpf.Name = "cnpj_cpf";
+			this.cnpj_cpf.ReadOnly = true;
+			this.cnpj_cpf.Visible = false;
+			// 
+			// dt_cadastro
+			// 
+			this.dt_cadastro.DataPropertyName = "dt_cadastro";
+			this.dt_cadastro.HeaderText = "dt_cadastro";
+			this.dt_cadastro.Name = "dt_cadastro";
+			this.dt_cadastro.ReadOnly = true;
+			this.dt_cadastro.Visible = false;
+			// 
+			// status
+			// 
+			this.status.DataPropertyName = "status";
+			this.status.HeaderText = "status";
+			this.status.Name = "status";
+			this.status.ReadOnly = true;
+			this.status.Visible = false;
+			// 
+			// vl_total
+			// 
+			this.vl_total.DataPropertyName = "vl_total";
+			this.vl_total.HeaderText = "vl_total";
+			this.vl_total.Name = "vl_total";
+			this.vl_total.ReadOnly = true;
+			this.vl_total.Visible = false;
+			// 
+			// id_cliente
+			// 
+			this.id_cliente.DataPropertyName = "id_cliente";
+			this.id_cliente.HeaderText = "id_cliente";
+			this.id_cliente.Name = "id_cliente";
+			this.id_cliente.ReadOnly = true;
+			this.id_cliente.Visible = false;
+			// 
 			// FBoletoCadastra
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -784,11 +798,16 @@
 		private System.Windows.Forms.TextBox txtNumPedido;
 		private System.Windows.Forms.Label lblTitNumPedido;
 		private System.Windows.Forms.BindingSource dtbNfParcelaPagtoGridBindingSource;
+		private System.Windows.Forms.ComboBox cbBoletoCedente;
+		private System.Windows.Forms.Label lblTitCedente;
+		private System.Windows.Forms.TextBox txtNumLoja;
+		private System.Windows.Forms.Label lblTitNumLoja;
 		private System.Windows.Forms.DataGridViewTextBoxColumn dt_cadastro_formatada;
 		private System.Windows.Forms.DataGridViewTextBoxColumn numero_NF;
 		private System.Windows.Forms.DataGridViewTextBoxColumn qtde_parcelas_boleto;
 		private System.Windows.Forms.DataGridViewTextBoxColumn valor_formatado;
 		private System.Windows.Forms.DataGridViewTextBoxColumn pedido;
+		private System.Windows.Forms.DataGridViewTextBoxColumn st_pagto_descricao;
 		private System.Windows.Forms.DataGridViewTextBoxColumn cnpj_cpf_formatado;
 		private System.Windows.Forms.DataGridViewTextBoxColumn nome;
 		private System.Windows.Forms.DataGridViewTextBoxColumn id;
@@ -797,9 +816,5 @@
 		private System.Windows.Forms.DataGridViewTextBoxColumn status;
 		private System.Windows.Forms.DataGridViewTextBoxColumn vl_total;
 		private System.Windows.Forms.DataGridViewTextBoxColumn id_cliente;
-		private System.Windows.Forms.ComboBox cbBoletoCedente;
-		private System.Windows.Forms.Label lblTitCedente;
-		private System.Windows.Forms.TextBox txtNumLoja;
-		private System.Windows.Forms.Label lblTitNumLoja;
 	}
 }

@@ -84,6 +84,9 @@
 	dim cn,rs,r,t, rs2
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim alerta
+	alerta = ""
+
 	set rs = cn.Execute("SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (apelido='" & id_selecionado & "')")
 	if Err <> 0 then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
 
@@ -100,6 +103,30 @@
 		tipo_PJ_PF = Trim("" & rs("tipo"))
 		if CLng(rs("checado_status"))=0 then blnChecadoStatusBloqueado=False
 		end if
+
+	dim r_loja_indicador
+	if alerta = "" then
+		set r_loja_indicador = New cl_LOJA
+		if operacao_selecionada <> OP_INCLUI then
+			if Not x_loja_bd(Trim("" & rs("loja")), r_loja_indicador) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "A loja cadastrada para o indicador (" & Trim("" & rs("loja")) & ") não foi encontrada"
+				end if
+			end if
+		end if
+
+	dim blnVisivelIdMagentoB2B
+	blnVisivelIdMagentoB2B = False
+	if alerta = "" then
+		if operacao_selecionada=OP_INCLUI then
+			blnVisivelIdMagentoB2B = True
+		else
+			if (r_loja_indicador.unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__AC) _
+				Or ((Trim("" & rs("id_magento_b2b")) <> "") And (Trim("" & rs("id_magento_b2b")) <> "0")) then
+				blnVisivelIdMagentoB2B = True
+				end if
+			end if
+		end if 'if alerta = ""
 
     url_origem = Request("url_origem")
 
@@ -542,10 +569,10 @@ var s, s_senha, cont;
 		}
 	}
 
-//  FORMA COMO CONHECEU A BONSHOP
+//  FORMA COMO CONHECEU A DIS
 	if (trim(f.c_forma_como_conheceu_codigo_original.value) != "") {
 		if (trim(f.c_forma_como_conheceu_codigo.value) == "") {
-			alert("Selecione a forma como conheceu a Bonshop!!");
+			alert("Selecione a forma como conheceu a DIS!!");
 			return;
 			}
 	}
@@ -574,6 +601,15 @@ var s, s_senha, cont;
 	            return;
 	        }
 	    }
+	}
+
+	s = trim("" + f.c_id_magento_b2b.value);
+	if (s != "") {
+		if (retorna_so_digitos(s) != s.replace(".", "")) {
+			alert("ID Magento B2B informado está em formato inválido!");
+			f.c_id_magento_b2b.focus();
+			return;
+		}
 	}
 
 	fCAD.c_FormFieldValues.value = formToString($("#fCAD"));
@@ -915,6 +951,32 @@ var s, s_senha, cont;
 }
 </style>
 
+
+
+<% if alerta <> "" then %>
+<!-- ************************************************************ -->
+<!-- **********  PÁGINA PARA EXIBIR MENSAGENS DE ERRO  ********** -->
+<!-- ************************************************************ -->
+<body onload="bVOLTAR.focus();">
+<center>
+<br>
+<!--  T E L A  -->
+<p class="T">A V I S O</p>
+<div class="MtAlerta" style="width:600px;font-weight:bold;" align="center"><p style='margin:5px 2px 5px 2px;'><%=alerta%></p></div>
+<br><br>
+<p class="TracoBottom"></p>
+<table cellSpacing="0">
+<tr>
+	<td align="center"><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()"><img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
+</tr>
+</table>
+</center>
+</body>
+
+
+
+<% else %>
+
 <%	if operacao_selecionada=OP_INCLUI then
 		s = "fCAD.razao_social_nome.focus()"
 	else
@@ -975,6 +1037,14 @@ var s, s_senha, cont;
 <INPUT type="hidden" name="c_forma_como_conheceu_codigo_original" id="c_forma_como_conheceu_codigo_original" value='' />
 <% end if%>
 
+<% if operacao_selecionada <> OP_INCLUI then %>
+<% if blnVisivelIdMagentoB2B then %>
+<input type="hidden" name="c_id_magento_b2b_original" id="c_id_magento_b2b_original" value="<%=Trim("" & rs("id_magento_b2b"))%>" />
+<% else %>
+<input type="hidden" name="c_id_magento_b2b" id="c_id_magento_b2b" value="<%=Trim("" & rs("id_magento_b2b"))%>" />
+<input type="hidden" name="c_id_magento_b2b_original" id="c_id_magento_b2b_original" value="<%=Trim("" & rs("id_magento_b2b"))%>" />
+<% end if %>
+<% end if %>
 
 <!-- ************   NOME/RAZÃO SOCIAL   ************ -->
 <table width="649" class="Q" cellspacing="0">
@@ -985,6 +1055,18 @@ var s, s_senha, cont;
 		<td width="85%" align="left"><p class="R"><%=s_label%></p><p class="C"><input id="razao_social_nome" name="razao_social_nome" class="TA" type="text" maxlength="60" size="60" value="<%=s%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.c_responsavel_principal.focus(); filtra_nome_identificador();"></p></td>
 	</tr>
 </table>
+
+<% if blnVisivelIdMagentoB2B then
+		if operacao_selecionada=OP_CONSULTA then s = Trim("" & rs("id_magento_b2b")) else s=""
+		if s = "0" then s = ""
+%>
+<!-- ************  ID DO PARCEIRO NO MAGENTO B2B   ************ -->
+<table width="649" class="QS" cellSpacing="0">
+	<tr>
+		<td align="left"><p class="R">ID MAGENTO B2B</p><p class="C"><input id="c_id_magento_b2b" name="c_id_magento_b2b" class="TA" type="text" maxlength="12" size="60" value="<%=s%>" onkeypress="if (digitou_enter(true)) fCAD.c_nome_fantasia.focus();"></p></td>
+	</tr>
+</table>
+<% end if %>
 
 <!-- ************   RESPONSÁVEL PRINCIPAL   ************ -->
 <table width="649" class="QS" cellSpacing="0">
@@ -1370,11 +1452,11 @@ var s, s_senha, cont;
 	</tr>
 </table>
 
-<!-- ************   FORMA COMO CONHECEU A BONSHOP   ************ -->
+<!-- ************   FORMA COMO CONHECEU A DIS   ************ -->
 <table width="649" class="QS" cellspacing="0">
 	<tr>
 <%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("forma_como_conheceu_codigo")) else s=""%>
-		<td align="left"><p class="R">FORMA COMO CONHECEU A BONSHOP</p><p class="C">
+		<td align="left"><p class="R">FORMA COMO CONHECEU A DIS</p><p class="C">
 			<select id="c_forma_como_conheceu_codigo" name="c_forma_como_conheceu_codigo" style="margin-top:4pt; margin-bottom:4pt;width:490px;">
 				<%=codigo_descricao_monta_itens_select(GRUPO_T_CODIGO_DESCRICAO__CAD_ORCAMENTISTA_E_INDICADOR__FORMA_COMO_CONHECEU, s)%>
 			</select>
@@ -1754,6 +1836,9 @@ loop %>
 
 </center>
 </body>
+
+<% end if %>
+
 </html>
 
 

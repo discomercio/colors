@@ -494,7 +494,7 @@ if (!eh_cpf) {
 	}
 
 /*	if (trim(f.midia.options[f.midia.selectedIndex].value)=="") {
-		alert('Indique a forma pela qual conheceu a Bonshop!!');
+		alert('Indique a forma pela qual conheceu a DIS!!');
 		return;
 		}
 */
@@ -955,7 +955,7 @@ if (!eh_cpf) {
 <table width="649" class="QS" cellspacing="0" style="display:none">
 	<tr>
 	<% if rs("spc_negativado_status") = 1 then %>
-	<td class="MD" width="50%" align="left"><p class="R">FORMA PELA QUAL CONHECEU A BONSHOP</p><p class="C">
+	<td class="MD" width="50%" align="left"><p class="R">FORMA PELA QUAL CONHECEU A DIS</p><p class="C">
 		<select id="Select1" name="midia" style="margin-top:4pt; margin-bottom:4pt;">
 			<%=lista_midia(Trim("" & rs("midia")))%>
 		</select></p>
@@ -964,7 +964,7 @@ if (!eh_cpf) {
 			<input id="infoSPC" name="infoSPC" class="TA" style="color: #FF0000; margin-top:4pt; margin-bottom:4pt;" value="Cliente Negativado (em <%=formata_data(rs("spc_negativado_data"))%>)" size="30"></p>
 	</td>
 	<% else %>
-	<td width="100%" align="left"><p class="R">FORMA PELA QUAL CONHECEU A BONSHOP</p><p class="C">
+	<td width="100%" align="left"><p class="R">FORMA PELA QUAL CONHECEU A DIS</p><p class="C">
 		<select id="midia" name="midia" style="margin-top:4pt; margin-bottom:4pt;">
 			<%=lista_midia(Trim("" & rs("midia")))%>
 		</select>

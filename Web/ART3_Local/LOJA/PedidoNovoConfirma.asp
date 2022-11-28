@@ -64,6 +64,7 @@
 	dim s_mktp_payment
 	dim percDescServico, vl_servico_original_price, vl_servico_price
 	dim operacao_origem, c_numero_magento, operationControlTicket, sessionToken, id_magento_api_pedido_xml
+	dim c_vl_total_produto_magento, vl_total_produto_magento
 	operacao_origem = Trim(Request("operacao_origem"))
 	c_numero_magento = ""
 	operationControlTicket = ""
@@ -74,6 +75,8 @@
 		operationControlTicket = Trim(Request("operationControlTicket"))
 		sessionToken = Trim(Request("sessionToken"))
 		id_magento_api_pedido_xml = Trim(Request("id_magento_api_pedido_xml"))
+		c_vl_total_produto_magento = Trim(Request.Form("c_vl_total_produto_magento"))
+		vl_total_produto_magento = converte_numero(c_vl_total_produto_magento)
 		end if
 
 	dim rb_selecao_cd, c_id_nfe_emitente_selecao_manual
@@ -470,11 +473,31 @@
 		end if
 	
 	if alerta = "" then
-		if perc_RT > rCD.perc_max_comissao then
-			alerta = "Percentual de comissão excede o máximo permitido."
+		if (Cstr(loja) <> Cstr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE)) And (Not blnMagentoPedidoComIndicador) then
+			if perc_RT > rCD.perc_max_comissao then
+				alerta = "Percentual de comissão excede o máximo permitido."
+				end if
 			end if
 		end if
 	
+	vlMagentoShippingAmount = 0
+	if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then
+		if alerta = "" then
+			s = "SELECT " & _
+					"*" & _
+				" FROM t_MAGENTO_API_PEDIDO_XML" & _
+				" WHERE" & _
+					" (id = " & id_magento_api_pedido_xml & ")"
+			if tMAP_XML.State <> 0 then tMAP_XML.Close
+			tMAP_XML.open s, cn
+			if tMAP_XML.Eof then
+				alerta = "Falha ao tentar localizar no banco de dados o registro com os dados do pedido Magento consultados via API (id = " & id_magento_api_pedido_xml & ")"
+			else
+				vlMagentoShippingAmount = converte_numero(tMAP_XML("shipping_amount")) - converte_numero(tMAP_XML("shipping_discount_amount"))
+				end if
+			end if 'if alerta = ""
+		end if 'if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO
+
 	dim r_orcamentista_e_indicador
 	dim permite_RA_status
 	permite_RA_status = 0
@@ -488,7 +511,15 @@
 			end if
 		end if
 	
-	if (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO) And blnMagentoPedidoComIndicador then permite_RA_status = 1
+	if alerta = "" then
+		if (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO) then
+			if blnMagentoPedidoComIndicador then permite_RA_status = 1
+		
+			if (Trim("" & tMAP_XML("b2b_type_order")) = COD_MAGENTO_TYPE_ORDER__INSTALLER) And (Trim("" & tMAP_XML("magento_api_versao")) = CStr(VERSAO_API_MAGENTO_V2_REST_JSON)) then
+				if vlMagentoShippingAmount > 0 then permite_RA_status = 1
+				end if
+			end if 'if (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO)
+		end if 'if alerta = ""
 
 '	RA Líquido
 	dim perc_desagio_RA, perc_limite_RA_sem_desagio, perc_desagio_RA_liquida
@@ -638,6 +669,19 @@
 		vl_total_RA = vl_total_NF - vl_total
 		end if
 	
+	if alerta = "" then
+		if (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO) then
+			if (Trim("" & tMAP_XML("b2b_type_order")) = COD_MAGENTO_TYPE_ORDER__INSTALLER) And (Trim("" & tMAP_XML("magento_api_versao")) = CStr(VERSAO_API_MAGENTO_V2_REST_JSON)) then
+				'Recalcula percentual de comissão p/ o caso do preço de venda ter sido editado
+				if vl_total <> 0 then
+					perc_RT = 100 * (converte_numero(tMAP_XML("b2b_installer_commission_value")) / vl_total)
+				else
+					perc_RT = 0
+					end if
+				end if
+			end if 'if (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO)
+		end if 'if alerta = ""
+
 '	ANALISA O PERCENTUAL DE COMISSÃO+DESCONTO
 	dim perc_comissao_e_desconto_a_utilizar
 	dim s_pg, blnPreferencial
@@ -975,49 +1019,35 @@
 	sNomeVendedor = ""
 	percCommissionValue = 0
 	percCommissionDiscount = 0
-	vlMagentoShippingAmount = 0
 
 	if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then
 		if alerta = "" then
-			s = "SELECT " & _
-					"*" & _
-				" FROM t_MAGENTO_API_PEDIDO_XML" & _
-				" WHERE" & _
-					" (id = " & id_magento_api_pedido_xml & ")"
-			if tMAP_XML.State <> 0 then tMAP_XML.Close
-			tMAP_XML.open s, cn
-			if tMAP_XML.Eof then
-				alerta = "Falha ao tentar localizar no banco de dados o registro com os dados do pedido Magento consultados via API (id = " & id_magento_api_pedido_xml & ")"
-			else
-				vlMagentoShippingAmount = converte_numero(tMAP_XML("shipping_amount")) - converte_numero(tMAP_XML("shipping_discount_amount"))
-				
-				if blnMagentoPedidoComIndicador then
-					c_mag_installer_document = retorna_so_digitos(Trim("" & tMAP_XML("installer_document")))
-					percCommissionValue = tMAP_XML("commission_value")
-					percCommissionDiscount = tMAP_XML("commission_discount")
+			if blnMagentoPedidoComIndicador then
+				c_mag_installer_document = retorna_so_digitos(Trim("" & tMAP_XML("installer_document")))
+				percCommissionValue = tMAP_XML("commission_value")
+				percCommissionDiscount = tMAP_XML("commission_discount")
 
-					if c_mag_installer_document = "" then
+				if c_mag_installer_document = "" then
+					alerta=texto_add_br(alerta)
+					alerta=alerta & "O pedido Magento nº " & c_numero_magento & " não informa o CPF/CNPJ do indicador!"
+				else
+					If Not cria_recordset_otimista(tOI, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+					s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (cnpj_cpf = '" & retorna_so_digitos(c_mag_installer_document) & "') AND (Convert(smallint, loja) = " & loja & ")"
+					if tOI.State <> 0 then tOI.Close
+					tOI.open s, cn
+					if tOI.Eof then
 						alerta=texto_add_br(alerta)
-						alerta=alerta & "O pedido Magento nº " & c_numero_magento & " não informa o CPF/CNPJ do indicador!"
+						alerta=alerta & "O pedido Magento nº " & c_numero_magento & " especifica o indicador com CPF/CNPJ " & cnpj_cpf_formata(c_mag_installer_document) & " que não foi localizado no banco de dados (loja: " & loja & ")!"
 					else
-						If Not cria_recordset_otimista(tOI, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
-						s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (cnpj_cpf = '" & retorna_so_digitos(c_mag_installer_document) & "') AND (Convert(smallint, loja) = " & loja & ")"
-						if tOI.State <> 0 then tOI.Close
-						tOI.open s, cn
-						if tOI.Eof then
-							alerta=texto_add_br(alerta)
-							alerta=alerta & "O pedido Magento nº " & c_numero_magento & " especifica o indicador com CPF/CNPJ " & cnpj_cpf_formata(c_mag_installer_document) & " que não foi localizado no banco de dados (loja: " & loja & ")!"
-						else
-							sIdIndicador = Trim("" & tOI("apelido"))
-							sNomeIndicador = Trim("" & tOI("razao_social_nome"))
-							sIdVendedor = Trim("" & tOI("vendedor"))
-							sNomeVendedor = Trim("" & x_usuario (sIdVendedor))
-							end if
-						if tOI.State <> 0 then tOI.Close
-						set tOI = nothing
+						sIdIndicador = Trim("" & tOI("apelido"))
+						sNomeIndicador = Trim("" & tOI("razao_social_nome"))
+						sIdVendedor = Trim("" & tOI("vendedor"))
+						sNomeVendedor = Trim("" & x_usuario (sIdVendedor))
 						end if
-					end if 'if blnMagentoPedidoComIndicador
-				end if 'if tMAP_XML.Eof
+					if tOI.State <> 0 then tOI.Close
+					set tOI = nothing
+					end if
+				end if 'if blnMagentoPedidoComIndicador
 			end if 'if alerta = ""
 
 		if blnMagentoPedidoComIndicador then
@@ -1823,7 +1853,11 @@
 				set rs2 = cn.execute(s)
 				if Not rs2.Eof then
 				'	OBTÉM O PERCENTUAL DE COMISSÃO DO MARKETPLACE
-					perc_RT = rs2("parametro_campo_real")
+					if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then
+						if Trim("" & tMAP_XML("b2b_type_order")) <> COD_MAGENTO_TYPE_ORDER__INSTALLER then perc_RT = rs2("parametro_campo_real")
+					else
+						perc_RT = rs2("parametro_campo_real")
+						end if
 				'	DEVE COLOCAR AUTOMATICAMENTE COM 'CRÉDITO OK'?
 					if rs2("parametro_1_campo_flag") = 1 then blnPedidoECommerceCreditoOkAutomatico = True
 				'	Nº PEDIDO MARKETPLACE É OBRIGATÓRIO?
@@ -2124,6 +2158,11 @@
 							rs("analise_credito")=Clng(COD_AN_CREDITO_OK)
 							rs("analise_credito_data")=Now
 							rs("analise_credito_usuario")="AUTOMÁTICO"
+						elseif (Cstr(loja) = NUMERO_LOJA_INDICACAO_OBRA) And (rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA) And ((CStr(op_av_forma_pagto) = Cstr(ID_FORMA_PAGTO_DINHEIRO)) Or (CStr(op_av_forma_pagto) = Cstr(ID_FORMA_PAGTO_DEPOSITO))) then
+							'Loja Indicação de Obra: Crédito Ok automático p/ pagto à vista em dinheiro ou depósito
+							rs("analise_credito")=Clng(COD_AN_CREDITO_OK)
+							rs("analise_credito_data")=Now
+							rs("analise_credito_usuario")="AUTOMÁTICO"
 						elseif Cstr(loja) = Cstr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) And (rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA) And (CStr(op_av_forma_pagto) = Cstr(ID_FORMA_PAGTO_DINHEIRO)) then
 							rs("analise_credito")=Clng(COD_AN_CREDITO_PENDENTE_VENDAS)
 							rs("analise_credito_data")=Now
@@ -2171,6 +2210,10 @@
 							rs("st_tem_desagio_RA") = 0
 							end if
 
+						if (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO) then
+							rs("vl_frete_total_cobrado_cliente") = vlMagentoShippingAmount
+							rs("vl_base_calculo_frete_total_cobrado_cliente") = vl_total_produto_magento
+							end if
 					else
 					'	PEDIDO FILHOTE
 					'	==============
@@ -2363,6 +2406,15 @@
 					rs("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
 
 					rs("id_nfe_emitente") = vEmpresaAutoSplit(iv)
+
+					if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then
+						rs("magento_quote_id") = tMAP_XML("quote_id")
+						rs("magento_installer_name") = Trim("" & tMAP_XML("b2b_installer_name"))
+						rs("magento_installer_id") = tMAP_XML("b2b_installer_id")
+						rs("magento_installer_commission_value") = tMAP_XML("b2b_installer_commission_value")
+						rs("magento_installer_commission_percentage") = tMAP_XML("b2b_installer_commission_percentage")
+						rs("magento_type_order") = tMAP_XML("b2b_type_order")
+						end if
 
 					rs.Update
 					if Err <> 0 then
@@ -3098,7 +3150,7 @@
 					if alerta = "" then
 						if indice_pedido > 1 then
 							sBlocoNotasMsg = "Pedido gerado através de split automático durante o cadastramento inicial"
-							if Not grava_bloco_notas_pedido(id_pedido, ID_USUARIO_SISTEMA, loja, COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__RESTRITO, sBlocoNotasMsg, COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_SPLIT_AUTOMATICO, msg_erro) then
+							if Not grava_bloco_notas_pedido(id_pedido, ID_USUARIO_SISTEMA, loja, COD_NIVEL_ACESSO_BLOCO_NOTAS_PEDIDO__PUBLICO, sBlocoNotasMsg, COD_TIPO_MSG_BLOCO_NOTAS_PEDIDO__AUTOMATICA_SPLIT_AUTOMATICO, msg_erro) then
 								alerta = "Falha ao gravar bloco de notas com mensagem automática no pedido (" & id_pedido & ")"
 								end if
 							end if
@@ -3467,6 +3519,8 @@
 
 
 <%
+	on error resume next
+
 	if rs.State <> 0 then rs.Close
 	set rs = nothing
 	

@@ -73,12 +73,6 @@
     s_id = Trim(Request.Form("c_id"))
     qtde_reg_fluxo_caixa=0
 
-    if COD_FC_AMBIENTE = "L" then
-        max_caracteres_favorecido = 27
-    else
-        max_caracteres_favorecido = 28
-	end if
-
 	dim alerta
 	alerta=""
 
@@ -95,6 +89,39 @@
     	If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
         If Not cria_recordset_otimista(rs2, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
         If Not cria_recordset_pessimista(r, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
+
+	dim max_fc_descricao
+	max_fc_descricao = 0
+	if alerta = "" then
+		'OBTÉM O TAMANHO DO CAMPO t_FIN_FLUXO_CAIXA.descricao
+		s = "SELECT" & _
+				" sc.length" & _
+			" FROM syscolumns sc" & _
+				" INNER JOIN sysobjects so ON (sc.id = so.id)" & _
+			" WHERE" & _
+				" (so.type = 'U')" & _
+				" AND (so.name = 't_FIN_FLUXO_CAIXA')" & _
+				" AND (sc.name = 'descricao')"
+		if rs.State <> 0 then rs.Close
+		rs.Open s, cn2
+		if rs.Eof then
+			alerta=texto_add_br(alerta)
+			alerta=alerta & "Falha ao tentar determinar o tamanho do campo t_FIN_FLUXO_CAIXA.descricao"
+		else
+			max_fc_descricao = rs("length")
+			end if
+		if rs.State <> 0 then rs.Close
+		end if 'if alerta = ""
+
+	if max_fc_descricao = 0 then max_fc_descricao = 40
+
+    if COD_FC_AMBIENTE = "L" then
+        max_caracteres_favorecido = max_fc_descricao - 13
+    else
+        max_caracteres_favorecido = max_fc_descricao - 12
+	end if
+
+
 
 
 ' ___________________________________________

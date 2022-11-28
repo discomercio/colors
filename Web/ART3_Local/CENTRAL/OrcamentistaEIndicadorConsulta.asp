@@ -66,8 +66,26 @@
 	if Err <> 0 then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
 	if rs.EOF then Response.Redirect("aviso.asp?id=" & ERR_ORCAMENTISTA_INDICADOR_NAO_CADASTRADO)
 	tipo_PJ_PF = Trim("" & rs("tipo"))
+
+	dim r_loja_indicador
+	if alerta = "" then
+		set r_loja_indicador = New cl_LOJA
+		if Not x_loja_bd(Trim("" & rs("loja")), r_loja_indicador) then
+			alerta=texto_add_br(alerta)
+			alerta=alerta & "A loja cadastrada para o indicador (" & Trim("" & rs("loja")) & ") não foi encontrada"
+			end if
+		end if 'if alerta = ""
+
+	dim blnVisivelIdMagentoB2B
+	blnVisivelIdMagentoB2B = False
+	if alerta = "" then
+		if (r_loja_indicador.unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__AC) _
+			Or ( (Trim("" & rs("id_magento_b2b")) <> "") And (Trim("" & rs("id_magento_b2b")) <> "0") ) then
+			blnVisivelIdMagentoB2B = True
+			end if
+		end if 'if alerta = ""
+
 	novo_bloco = Request("NovoBloco")
-	
 	url_back = Request("url_back")
     url_origem = Request("url_origem")
 %>
@@ -578,6 +596,22 @@ var tipo_PJ_PF = ID_PJ;
 			></p></td>
 	</tr>
 </table>
+
+<% if blnVisivelIdMagentoB2B then
+		s = Trim("" & rs("id_magento_b2b"))
+		if s = "0" then s = ""
+%>
+<!-- ************  ID DO PARCEIRO NO MAGENTO B2B   ************ -->
+<table width="649" class="QS" cellSpacing="0">
+	<tr>
+		<td align="left" width="100%"><p class="R">ID MAGENTO B2B</p><p class="C">
+		<input id="c_id_magento_b2b" name="c_id_magento_b2b" class="TA" 
+			value="<%=s%>" maxlength="60" size="60"
+			readonly tabindex=-1
+			></p></td>
+	</tr>
+</table>
+<% end if %>
 
 <!-- ************   RESPONSÁVEL PRINCIPAL   ************ -->
 <table width="649" class="QS" cellSpacing="0">

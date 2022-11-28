@@ -49,6 +49,7 @@
 	dim ckb_st_entrega_entregue, c_dt_entregue_inicio, c_dt_entregue_termino
 	dim ckb_comissao_paga_sim, ckb_comissao_paga_nao
 	dim ckb_st_pagto_pago, ckb_st_pagto_nao_pago, ckb_st_pagto_pago_parcial
+	dim rb_pagto_comissao_via_cartao
 	dim c_vendedor, c_indicador
 	dim c_loja, rb_visao
 	
@@ -65,6 +66,8 @@
 	ckb_st_pagto_pago = Trim(Request.Form("ckb_st_pagto_pago"))
 	ckb_st_pagto_nao_pago = Trim(Request.Form("ckb_st_pagto_nao_pago"))
 	ckb_st_pagto_pago_parcial = Trim(Request.Form("ckb_st_pagto_pago_parcial"))
+
+	rb_pagto_comissao_via_cartao = Trim(Request.Form("rb_pagto_comissao_via_cartao"))
 
 	c_loja = Trim(Request.Form("c_loja"))
 	rb_visao = Trim(Request.Form("rb_visao"))
@@ -479,6 +482,42 @@ function CarregaListaIndicadores(strVendedor) {
 			<% if ckb_st_pagto_pago_parcial <> "" then Response.Write " checked" %>
 			/><span class="C" style="cursor:default" 
 			onclick="fFILTRO.ckb_st_pagto_pago_parcial.click();">Pago Parcial</span>
+		</td>
+	</tr>
+	</table>
+</td>
+</tr>
+
+<!--  PAGAMENTO DA COMISSÃO VIA CARTÃO  -->
+<tr bgcolor="#FFFFFF">
+<td class="MDBE" align="left" nowrap><span class="PLTe">COMISSÃO VIA CARTÃO</span>
+	<br>
+	<table cellspacing="0" cellpadding="0" style="margin-bottom:4px;">
+	<tr bgcolor="#FFFFFF">
+		<td align="left">
+		<input type="radio" tabindex="-1" name="rb_pagto_comissao_via_cartao" id="rb_pagto_comissao_via_cartao_nao"
+			value="0"
+			<% if (rb_pagto_comissao_via_cartao = "0") then Response.Write " checked" %>
+			/><span class="C" style="cursor:default" 
+			onclick="fFILTRO.rb_pagto_comissao_via_cartao[0].click();">Não</span>
+		</td>
+	</tr>
+	<tr bgcolor="#FFFFFF">
+		<td align="left">
+		<input type="radio" tabindex="-1" name="rb_pagto_comissao_via_cartao" id="rb_pagto_comissao_via_cartao_sim"
+			value="1"
+			<% if rb_pagto_comissao_via_cartao = "1" then Response.Write " checked" %>
+			/><span class="C" style="cursor:default" 
+			onclick="fFILTRO.rb_pagto_comissao_via_cartao[1].click();">Sim</span>
+		</td>
+	</tr>
+	<tr bgcolor="#FFFFFF">
+		<td align="left">
+		<input type="radio" tabindex="-1" name="rb_pagto_comissao_via_cartao" id="rb_pagto_comissao_via_cartao_todos"
+			value=""
+			<% if rb_pagto_comissao_via_cartao = "" then Response.Write " checked" %>
+			/><span class="C" style="cursor:default" 
+			onclick="fFILTRO.rb_pagto_comissao_via_cartao[2].click();">Todos</span>
 		</td>
 	</tr>
 	</table>

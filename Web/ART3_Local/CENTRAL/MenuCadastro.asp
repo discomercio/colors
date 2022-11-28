@@ -182,7 +182,7 @@ var s, strCep, iop;
 		s="CepEdita.asp";
 		}
 
- // OPÇÕES PARA "FORMA COMO CONHECEU A BONSHOP" (CADASTRO DE INDICADORES)
+ // OPÇÕES PARA "FORMA COMO CONHECEU A DIS" (CADASTRO DE INDICADORES)
 		iop++;
 		if (f.rb_op[iop].checked) {
 			s = "CadIndicadorOpcoesFormaComoConheceu.asp";
@@ -457,7 +457,7 @@ var s, strCep, iop;
 			<%	idx=idx+1
 				if operacao_permitida(OP_CEN_CAD_INDICADOR_OPCOES_FORMA_COMO_CONHECEU, s_lista_operacoes_permitidas) then s="" else s=" disabled" %>
 			<input type="radio" id="rb_op" name="rb_op" value="<%=Cstr(idx)%>" class="CBOX" <%=s%>><span class="rbLink" onclick="fOP.rb_op[<%=Cstr(idx-1)%>].click(); if (fOP.rb_op[<%=Cstr(idx-1)%>].checked) fOP.bEXECUTAR.click();"
-				>Opções para "Forma como conheceu a Bonshop" (Cadastro de Indicadores)</span><br>
+				>Opções para "Forma como conheceu a DIS" (Cadastro de Indicadores)</span><br>
 
 			<%	idx=idx+1
 				if operacao_permitida(OP_CEN_OPCOES_PAGTO_VISANET, s_lista_operacoes_permitidas) then s="" else s=" disabled" %>

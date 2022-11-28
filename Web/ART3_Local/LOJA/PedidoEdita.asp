@@ -2620,40 +2620,42 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 		}
 	
 		// Tem RT: sim
-		if (perc_RT != 0) {
-			// RT excede limite máximo?
-			if (f.c_perc_RT.value != f.c_perc_RT_original.value) {
-				if (perc_RT > perc_max_RT) {
-					alert("Percentual de comissão excede o máximo permitido!!");
-					return;
+		if (f.c_loja.value != NUMERO_LOJA_ECOMMERCE_AR_CLUBE) {
+			if (perc_RT != 0) {
+				// RT excede limite máximo?
+				if (f.c_perc_RT.value != f.c_perc_RT_original.value) {
+					if (perc_RT > perc_max_RT) {
+						alert("Percentual de comissão excede o máximo permitido!!");
+						return;
+					}
 				}
-			}
 
-			// Neste ponto, é certo que todos os produtos que possuem desconto estão dentro do máximo permitido
-			// ou possuem senha de desconto autorizando.
-			// Verifica-se agora se é necessário reduzir automaticamente o percentual da RT usando p/ o cálculo
-			// o percentual de desconto médio.
-			perc_RT_novo = Math.min(perc_RT, (perc_max_comissao_e_desconto_a_utilizar - perc_desc_medio));
-			if (perc_RT_novo < 0) perc_RT_novo = 0;
+				// Neste ponto, é certo que todos os produtos que possuem desconto estão dentro do máximo permitido
+				// ou possuem senha de desconto autorizando.
+				// Verifica-se agora se é necessário reduzir automaticamente o percentual da RT usando p/ o cálculo
+				// o percentual de desconto médio.
+				perc_RT_novo = Math.min(perc_RT, (perc_max_comissao_e_desconto_a_utilizar - perc_desc_medio));
+				if (perc_RT_novo < 0) perc_RT_novo = 0;
 
-			// O percentual de RT será alterado automaticamente, solicita confirmação
-			if (perc_RT_novo != perc_RT) {
-				s = "A soma dos percentuais de comissão (" + formata_numero(perc_RT, 2) + "%) e de desconto médio do(s) produto(s) (" + formata_numero(perc_desc_medio, 2) + "%) totaliza " + formata_numero(perc_desc_medio + perc_RT, 2) + "% e excede o máximo permitido!!" +
-					"\nA comissão será reduzida automaticamente para " + formata_numero(perc_RT_novo, 2) + "%!!" +
-					"\nContinua?";
-				if (!confirm(s)) {
-					s = "Operação cancelada!!";
-					alert(s);
-					return;
+				// O percentual de RT será alterado automaticamente, solicita confirmação
+				if (perc_RT_novo != perc_RT) {
+					s = "A soma dos percentuais de comissão (" + formata_numero(perc_RT, 2) + "%) e de desconto médio do(s) produto(s) (" + formata_numero(perc_desc_medio, 2) + "%) totaliza " + formata_numero(perc_desc_medio + perc_RT, 2) + "% e excede o máximo permitido!!" +
+						"\nA comissão será reduzida automaticamente para " + formata_numero(perc_RT_novo, 2) + "%!!" +
+						"\nContinua?";
+					if (!confirm(s)) {
+						s = "Operação cancelada!!";
+						alert(s);
+						return;
+					}
+					else {
+						// Novo percentual de RT
+						f.c_perc_RT.value = formata_perc_RT(perc_RT_novo);
+						f.c_gravar_perc_RT_novo.value = "S";
+						perc_RT = perc_RT_novo;
+					}
 				}
-				else {
-					// Novo percentual de RT
-					f.c_perc_RT.value = formata_perc_RT(perc_RT_novo);
-					f.c_gravar_perc_RT_novo.value = "S";
-					perc_RT = perc_RT_novo;
-				}
-			}
-		} // if (perc_RT != 0)
+			} // if (perc_RT != 0)
+		}
 	}
 
     //campos do endereço de entrega que precisam de transformacao

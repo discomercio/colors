@@ -422,6 +422,8 @@ namespace Financeiro
 						" Coalesce(pedido_endereco_nome, nome) AS nome," +
 						" cnpj_cpf," +
 						" pedido," +
+						" '' AS st_pagto," +
+						" '' AS st_pagto_descricao," +
 						" vl_total" +
 					" FROM " +
 						"(" +
@@ -466,6 +468,7 @@ namespace Financeiro
 			Decimal decTotalizacaoValor = 0;
 			int intQtdeRegistros = 0;
 			String strSql;
+			string st_pagto;
 			SqlCommand cmCommand;
 			SqlDataAdapter daAdapter;
 			DsDataSource.DtbNfParcelaPagtoGridDataTable dtbConsulta = new DsDataSource.DtbNfParcelaPagtoGridDataTable();
@@ -515,6 +518,21 @@ namespace Financeiro
 					rowConsulta.valor_formatado = Global.formataMoeda(rowConsulta.vl_total);
 					rowConsulta.cnpj_cpf_formatado = Global.formataCnpjCpf(rowConsulta.cnpj_cpf);
 					rowConsulta.dt_cadastro_formatada = Global.formataDataDdMmYyyyComSeparador(rowConsulta.dt_cadastro);
+
+					try
+					{
+						st_pagto = PedidoDAO.getPedidoStPagto(rowConsulta["pedido"].ToString());
+					}
+					catch (Exception)
+					{
+						st_pagto = "";
+					}
+
+					if ((st_pagto ?? "").Trim().Length > 0)
+					{
+						rowConsulta["st_pagto"] = st_pagto;
+						rowConsulta["st_pagto_descricao"] = Global.stPagtoPedidoDescricao(st_pagto);
+					}
 
 					decTotalizacaoValor += rowConsulta.vl_total;
 					intQtdeRegistros++;

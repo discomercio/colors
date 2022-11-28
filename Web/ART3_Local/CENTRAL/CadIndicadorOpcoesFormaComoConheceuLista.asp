@@ -187,7 +187,7 @@ function fOPConcluir(s_id){
 <!--  I D E N T I F I C A Ç Ã O  -->
 <table width="100%" cellPadding="4" CellSpacing="0" style="border-bottom:1px solid black">
 <tr>
-	<td align="RIGHT" vAlign="BOTTOM" NOWRAP><span class="PEDIDO">Opções para "Forma como conheceu a Bonshop"<br />(Cadastro de Indicadores)</span>
+	<td align="RIGHT" vAlign="BOTTOM" NOWRAP><span class="PEDIDO">Opções para "Forma como conheceu a DIS"<br />(Cadastro de Indicadores)</span>
 	<br><span class="Rc">
 		<a href="resumo.asp<%= "?" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>" title="retorna para página inicial" class="LPagInicial">página inicial</a>&nbsp;&nbsp;&nbsp;
 		<a href="sessaoencerra.asp<%= "?" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo"))%>" title="encerra a sessão do usuário" class="LSessaoEncerra">encerra</a>

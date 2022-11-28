@@ -84,6 +84,14 @@
 		end if
 	if rs.State <> 0 then rs.Close
 
+	dim r_loja
+	if alerta = "" then
+		set r_loja = New cl_LOJA
+			if Not x_loja_bd(r_pedido.loja, r_loja) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "A loja do pedido (" & r_pedido.loja & ") não foi encontrada"
+				end if
+		end if
 
 
 
@@ -96,10 +104,35 @@
 ' _____________________________________________
 ' INDICADORES MONTA ITENS SELECT
 function indicadores_monta_itens_select(byval id_default)
-dim x, r, strResp, ha_default
+dim x, r, strResp, ha_default, s_sql
 	id_default = Trim("" & id_default)
 	ha_default=False
-	set r = cn.Execute("SELECT apelido, razao_social_nome_iniciais_em_maiusculas FROM t_ORCAMENTISTA_E_INDICADOR WHERE apelido <> '" & ID_ORCAMENTISTA_E_INDICADOR_RESTRICAO_FP_TODOS & "' ORDER BY apelido")
+
+	s_sql = "SELECT" & _
+				" apelido" & _
+				", razao_social_nome_iniciais_em_maiusculas" & _
+			" FROM t_ORCAMENTISTA_E_INDICADOR" & _
+			" WHERE" & _
+				" (Id NOT IN (" & Cstr(ID_NSU_ORCAMENTISTA_E_INDICADOR__RESTRICAO_FP_TODOS) & "," & Cstr(ID_NSU_ORCAMENTISTA_E_INDICADOR__SEM_INDICADOR) & "))"
+
+	if Trim("" & r_loja.unidade_negocio) = COD_UNIDADE_NEGOCIO_LOJA__AC then
+		s_sql = s_sql & _
+				" AND (loja IN (SELECT loja FROM t_LOJA WHERE unidade_negocio = '" & COD_UNIDADE_NEGOCIO_LOJA__AC & "'))"
+	elseif (Trim("" & r_loja.unidade_negocio) = COD_UNIDADE_NEGOCIO_LOJA__BS) Or (Trim("" & r_loja.unidade_negocio) = COD_UNIDADE_NEGOCIO_LOJA__VRF) then
+		s_sql = s_sql & _
+				" AND (loja IN (SELECT loja FROM t_LOJA WHERE unidade_negocio IN ('" & COD_UNIDADE_NEGOCIO_LOJA__BS & "','" & COD_UNIDADE_NEGOCIO_LOJA__VRF & "')))"
+		end if
+
+	if id_default <> "" then
+		s_sql = s_sql & _
+					" OR (apelido = '" & QuotedStr(id_default) & "')"
+		end if
+
+	s_sql = s_sql & _
+			" ORDER BY" & _
+				" apelido"
+
+	set r = cn.Execute(s_sql)
 	strResp = "<option value=''>&nbsp;</option>"
 	do while Not r.eof 
 		x = UCase(Trim("" & r("apelido")))

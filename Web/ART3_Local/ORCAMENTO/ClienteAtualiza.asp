@@ -305,7 +305,7 @@
 		elseif (s_ie="") And (s_contribuinte_icms = COD_ST_CLIENTE_CONTRIBUINTE_ICMS_SIM) then
 			alerta="PREENCHA A INSCRIÇÃO ESTADUAL."
 '		elseif s_midia="" then
-'			alerta="INDIQUE A FORMA PELA QUAL CONHECEU A BONSHOP."
+'			alerta="INDIQUE A FORMA PELA QUAL CONHECEU A DIS."
 			end if
 
 

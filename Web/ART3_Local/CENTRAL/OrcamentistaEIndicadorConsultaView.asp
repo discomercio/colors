@@ -1226,11 +1226,13 @@ loop %>
 
 <%
 '	FECHA CONEXAO COM O BANCO DE DADOS
-	rs.Close
+	if rs.State <> 0 then rs.Close
 	set rs = nothing
 
-    rs2.Close
-	set rs2 = nothing
+	if alerta = "" then
+		if rs2.State <> 0 then rs2.Close
+		set rs2 = nothing
+		end if
 	
 	cn.Close
 	set cn = nothing

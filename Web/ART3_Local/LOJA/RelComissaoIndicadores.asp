@@ -482,8 +482,8 @@ function CarregaListaIndicadores(strVendedor) {
 		<input type="checkbox" tabindex="-1" id="ckb_st_entrega_entregue" name="ckb_st_entrega_entregue" onclick="if (fFILTRO.ckb_st_entrega_entregue.checked) fFILTRO.c_dt_entregue_inicio.focus();"
 			value="<%=ST_ENTREGA_ENTREGUE%>"><span class="C" style="cursor:default" 
 			onclick="fFILTRO.ckb_st_entrega_entregue.click();">Pedidos entregues entre</span
-			><input class="Cc" maxlength="10" style="width:70px;" name="c_dt_entregue_inicio" id="c_dt_entregue_inicio" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_entregue_termino.focus(); else fFILTRO.ckb_st_entrega_entregue.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_entregue.checked=true;"
-			>&nbsp;<span class="C">e</span>&nbsp;<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_entregue_termino" id="c_dt_entregue_termino" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_st_entrega_entregue.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_entregue.checked=true;">
+			><input class="Cc" maxlength="10" style="width:70px;" name="c_dt_entregue_inicio" id="c_dt_entregue_inicio" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_entregue_termino.focus(); else fFILTRO.ckb_st_entrega_entregue.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_entregue.checked=true;" onchange="if (trim(this.value)!='') fFILTRO.ckb_st_entrega_entregue.checked=true;"
+			>&nbsp;<span class="C">e</span>&nbsp;<input class="Cc" maxlength="10" style="width:70px;" name="c_dt_entregue_termino" id="c_dt_entregue_termino" onblur="if (!isDate(this)) {alert('Data inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) bCONFIRMA.focus(); else fFILTRO.ckb_st_entrega_entregue.checked=true; filtra_data();" onclick="fFILTRO.ckb_st_entrega_entregue.checked=true;" onchange="if (trim(this.value)!='') fFILTRO.ckb_st_entrega_entregue.checked=true;">
 		</td></tr>
 	</table>
 </td></tr>
@@ -505,6 +505,72 @@ function CarregaListaIndicadores(strVendedor) {
 		</td></tr>
 	</table>
 </td></tr>
+
+<!--  STATUS DE PAGAMENTO  -->
+<tr bgcolor="#FFFFFF">
+<td class="MDBE" align="left" nowrap><span class="PLTe">STATUS DE PAGAMENTO</span>
+	<br>
+	<table cellspacing="0" cellpadding="0" style="margin-bottom:10px;">
+	<tr bgcolor="#FFFFFF">
+		<td align="left">
+		<input type="checkbox" tabindex="-1" id="ckb_st_pagto_pago" name="ckb_st_pagto_pago"
+			value="<%=ST_PAGTO_PAGO%>"
+			/><span class="C" style="cursor:default" 
+			onclick="fFILTRO.ckb_st_pagto_pago.click();">Pago</span>
+		</td>
+	</tr>
+	<tr bgcolor="#FFFFFF">
+		<td align="left">
+		<input type="checkbox" tabindex="-1" id="ckb_st_pagto_nao_pago" name="ckb_st_pagto_nao_pago"
+			value="<%=ST_PAGTO_NAO_PAGO%>"
+			/><span class="C" style="cursor:default" 
+			onclick="fFILTRO.ckb_st_pagto_nao_pago.click();">Não-Pago</span>
+		</td>
+	</tr>
+	<tr bgcolor="#FFFFFF">
+		<td align="left">
+		<input type="checkbox" tabindex="-1" id="ckb_st_pagto_pago_parcial" name="ckb_st_pagto_pago_parcial"
+			value="<%=ST_PAGTO_PARCIAL%>"
+			/><span class="C" style="cursor:default" 
+			onclick="fFILTRO.ckb_st_pagto_pago_parcial.click();">Pago Parcial</span>
+		</td>
+	</tr>
+	</table>
+</td>
+</tr>
+
+<!--  PAGAMENTO DA COMISSÃO VIA CARTÃO  -->
+<tr bgcolor="#FFFFFF">
+<td class="MDBE" align="left" nowrap><span class="PLTe">COMISSÃO VIA CARTÃO</span>
+	<br>
+	<table cellspacing="0" cellpadding="0" style="margin-bottom:4px;">
+	<tr bgcolor="#FFFFFF">
+		<td align="left">
+		<input type="radio" tabindex="-1" name="rb_pagto_comissao_via_cartao" id="rb_pagto_comissao_via_cartao_nao"
+			value="0"
+			/><span class="C" style="cursor:default" 
+			onclick="fFILTRO.rb_pagto_comissao_via_cartao[0].click();">Não</span>
+		</td>
+	</tr>
+	<tr bgcolor="#FFFFFF">
+		<td align="left">
+		<input type="radio" tabindex="-1" name="rb_pagto_comissao_via_cartao" id="rb_pagto_comissao_via_cartao_sim"
+			value="1"
+			/><span class="C" style="cursor:default" 
+			onclick="fFILTRO.rb_pagto_comissao_via_cartao[1].click();">Sim</span>
+		</td>
+	</tr>
+	<tr bgcolor="#FFFFFF">
+		<td align="left">
+		<input type="radio" tabindex="-1" name="rb_pagto_comissao_via_cartao" id="rb_pagto_comissao_via_cartao_todos"
+			value="" checked
+			/><span class="C" style="cursor:default" 
+			onclick="fFILTRO.rb_pagto_comissao_via_cartao[2].click();">Todos</span>
+		</td>
+	</tr>
+	</table>
+</td>
+</tr>
 
 <!--  CADASTRAMENTO  -->
 <tr bgColor="#FFFFFF">
