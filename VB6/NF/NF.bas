@@ -812,9 +812,10 @@ Option Explicit
 '|          |      | - Correção de bug em mensagem sobre entrega futura        |
 '|          |      |   não quitada                                             |
 '|__________|______|___________________________________________________________|
-'|XX.XX.XXXX| XXXX |V X.XX                                                     |
-'|          |      |                                                           |
-'|          |      |                                                           |
+'|30.11.2022| LHGX |V 2.29                                                     |
+'|          |      | - Não exibir a mensagem sobre os valores aproximados      |
+'|          |      |   de tributos (IBPT) para operações de transferência      |
+'|          |      |   de estoque entre filiais (CFOP 5152)                    |
 '|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
@@ -831,8 +832,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.28"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  29/07/2022"
+Global Const m_id_versao = "2.29"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  30/11/2022"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"
