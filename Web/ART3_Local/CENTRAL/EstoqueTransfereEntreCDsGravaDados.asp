@@ -279,6 +279,17 @@
 
                     'response.Write " lhgx atualizaremos estoque item " & cstr(iv)
 
+					if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO then
+						'BLOQUEIA REGISTRO PARA EVITAR ACESSO CONCORRENTE (REALIZA O FLIP EM UM CAMPO BIT APENAS P/ ADQUIRIR O LOCK EXCLUSIVO)
+						s = "UPDATE t_ESTOQUE_ITEM SET" & _
+								" dummy = ~dummy" & _
+							" WHERE" & _
+								" (id_estoque = '" & .id_estoque_origem & "')" & _
+								" AND (fabricante = '" & .fabricante & "')" & _
+								" AND (produto = '" & .produto & "')"
+						cn.Execute(s)
+						end if 'if TRATAMENTO_ACESSO_CONCORRENTE_LOCK_EXCLUSIVO_MANUAL_HABILITADO
+
 		        '	T_ESTOQUE_ITEM: SAÍDA DE PRODUTOS DO ESTOQUE ORIGEM
                 '   (obs: o fabricante de destino é o mesmo de origem)
 			        s = "SELECT " & _
@@ -298,91 +309,73 @@
 				        msg_erro = "Falha ao acessar o registro no estoque do produto " & .produto & " do fabricante " & .fabricante & " (id_estoque = '" & id_estoque_origem & "')"
 				        end if
 
-			        rs("qtde_utilizada") = rs("qtde_utilizada") + .qtde
-			        rs("data_ult_movimento") = Date
-			        rs.Update
-			        if Err <> 0 then
-				        msg_erro="Falha na atualização do estoque de origem - " & Cstr(Err) & ": " & Err.Description
-				        end if
-		
-		        '	T_ESTOQUE_MOVIMENTO: REGISTRA O MOVIMENTO DE SAÍDA DO ESTOQUE
-			        If Not gera_id_estoque_movto(s_chave, msg_erro) Then
-				        msg_erro = "Falha ao tentar obter um nº de identificação único para este registro de movimentação no estoque!!" & _
-							        chr(13) & msg_erro
-				        End If
-			
-                    'response.Write " lhgx inseriremos estoque item " & cstr(iv)
-                    
-                    s = "INSERT INTO t_ESTOQUE_MOVIMENTO" & _
-				        " (id_movimento, data, hora, operacao, estoque, usuario, pedido, loja," & _
-				        " fabricante, produto, id_estoque, qtde, kit) VALUES" & _
-				        " ('" & s_chave & "'" & _
-				        "," & bd_formata_data(Date) & _
-				        ",'" & retorna_so_digitos(formata_hora(Now)) & "'" & _
-				        ",'" & OP_ESTOQUE_TRANSFERENCIA & "'" & _
-				        ",'" & ID_ESTOQUE_VENDA & "'" & _
-				        ",'" & usuario & "'" & _
-				        ",'" & "" & "'" & _
-				        ",'" & "" & "'" & _
-				        ",'" & .fabricante & "'" & _
-				        ",'" & .produto & "'" & _
-				        ",'" & s_id_estoque_destino & "'" & _
-				        "," & CStr(.qtde) & _
-				        "," & "0"  & ")"
-			        cn.Execute(s)
-			        if Err <> 0 then
-				        msg_erro="Falha no cadastramento da movimentação do estoque de destino - " & Cstr(Err) & ": " & Err.Description
-				        end if
+					if msg_erro = "" then
+						if CLng(rs("qtde_utilizada") + .qtde) > CLng(rs("qtde")) then
+							msg_erro="Inconsistência encontrada ao tentar atualizar a quantidade no estoque de origem: a quantidade utilizada iria exceder a quantidade cadastrada"
+							end if
+						end if
 
+					if msg_erro = "" then
+						rs("qtde_utilizada") = rs("qtde_utilizada") + .qtde
+						rs("data_ult_movimento") = Date
+						rs.Update
+						if Err <> 0 then
+							msg_erro="Falha na atualização do estoque de origem - " & Cstr(Err) & ": " & Err.Description
+							end if
+						end if
+		
                     'response.Write " lhgx atualizaremos estoque " & cstr(iv)
 
-		        '	T_ESTOQUE: ATUALIZA DATA DO ÚLTIMO MOVIMENTO
-			        s = "SELECT " & _
-					        "*" & _
-				        " FROM t_ESTOQUE" & _
-				        " WHERE" & _
-					        " (id_estoque = '" & .id_estoque_origem & "')"
-			        if rs.State <> 0 then rs.Close
-			        rs.open s, cn
-			        if Err <> 0 then
-				        msg_erro="Falha no seleção do estoque de origem - " & Cstr(Err) & ": " & Err.Description
-				        end if
+					if msg_erro = "" then
+					'	T_ESTOQUE: ATUALIZA DATA DO ÚLTIMO MOVIMENTO
+						s = "SELECT " & _
+								"*" & _
+							" FROM t_ESTOQUE" & _
+							" WHERE" & _
+								" (id_estoque = '" & .id_estoque_origem & "')"
+						if rs.State <> 0 then rs.Close
+						rs.open s, cn
+						if Err <> 0 then
+							msg_erro="Falha no seleção do estoque de origem - " & Cstr(Err) & ": " & Err.Description
+							end if
 			
-			        if rs.Eof then
-				        msg_erro = "Falha ao acessar o registro principal no estoque do produto " & id_produto & " do fabricante " & id_fabricante
-			        else
-				        rs("data_ult_movimento") = Date
-				        rs.Update
-				        if Err <> 0 then
-					        msg_erro="Falha na atualização do estoque de origem - " & Cstr(Err) & ": " & Err.Description
-					        end if
-				        End If
+						if rs.Eof then
+							msg_erro = "Falha ao acessar o registro principal no estoque do produto " & id_produto & " do fabricante " & id_fabricante
+						else
+							rs("data_ult_movimento") = Date
+							rs.Update
+							if Err <> 0 then
+								msg_erro="Falha na atualização do estoque de origem - " & Cstr(Err) & ": " & Err.Description
+								end if
+							End If
+						end if
 
             ' 	ATUALIZA t_ESTOQUE_TRANSFERENCIA INDICANDO QUE A TRANSFERENCIA FOI CONFIRMADA
 
                 'response.Write " lhgx atualizaremos transferência " & cstr(iv)
-
-		        s_sql = " UPDATE T_ESTOQUE_TRANSFERENCIA_ITEM_SUB SET" & _
-                        " id_estoque_destino = '" & s_id_estoque_destino & "'" & _
-                        " WHERE (id_estoque_origem = '" & .id_estoque_origem & "') " & _
-                        " AND (fabricante = '" & .fabricante & "') " & _
-                        " AND (produto = '" & .produto & "') " & _
-                        " AND (id_estoque_transferencia = '" & c_transf_selecionada & "') "
-		        cn.Execute(s_sql)
-		        if Err <> 0 then
-                    msg_erro= "Problema na atualização da transferência" & vbCrLf
-			        msg_erro= msg_erro & Cstr(Err) & ": " & Err.Description
-			        end if				
+					if msg_erro = "" then
+						s_sql = " UPDATE T_ESTOQUE_TRANSFERENCIA_ITEM_SUB SET" & _
+								" id_estoque_destino = '" & s_id_estoque_destino & "'" & _
+								" WHERE (id_estoque_origem = '" & .id_estoque_origem & "') " & _
+								" AND (fabricante = '" & .fabricante & "') " & _
+								" AND (produto = '" & .produto & "') " & _
+								" AND (id_estoque_transferencia = '" & c_transf_selecionada & "') "
+						cn.Execute(s_sql)
+						if Err <> 0 then
+							msg_erro= "Problema na atualização da transferência" & vbCrLf
+							msg_erro= msg_erro & Cstr(Err) & ": " & Err.Description
+							end if				
                 
-                'response.Write " lhgx gravaremos log " & cstr(iv)
+						'response.Write " lhgx gravaremos log " & cstr(iv)
 
-            '   Log de movimentação do estoque
-	            if Not grava_log_estoque_v2(usuario, c_nfe_emitente_origem, .fabricante, .produto, .qtde, .qtde, OP_ESTOQUE_TRANSFERENCIA, _
-                                            ID_ESTOQUE_VENDA, ID_ESTOQUE_VENDA, "", "", "", "", c_documento_transf, _
-                                            "Transf estoque " & .id_estoque_origem & " (CD " & c_nfe_emitente_origem & _
-                                            ") => estoque " & s_id_estoque_destino & " (CD " & c_nfe_emitente_destino & ")", "") then
-		            msg_erro="FALHA AO GRAVAR O LOG DA MOVIMENTAÇÃO NO ESTOQUE"
-		            end if
+					'   Log de movimentação do estoque
+						if Not grava_log_estoque_v2(usuario, c_nfe_emitente_origem, .fabricante, .produto, .qtde, .qtde, OP_ESTOQUE_TRANSFERENCIA, _
+													ID_ESTOQUE_VENDA, ID_ESTOQUE_VENDA, "", "", "", "", c_documento_transf, _
+													"Transf estoque " & .id_estoque_origem & " (CD " & c_nfe_emitente_origem & _
+													") => estoque " & s_id_estoque_destino & " (CD " & c_nfe_emitente_destino & ")", "") then
+							msg_erro="FALHA AO GRAVAR O LOG DA MOVIMENTAÇÃO NO ESTOQUE"
+							end if
+						end if
 
                 'response.Write " lhgx mensagem de erro " & msg_erro
 
