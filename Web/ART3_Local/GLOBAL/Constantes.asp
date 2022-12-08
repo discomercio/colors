@@ -505,6 +505,12 @@
 	Const COD_SISTEMA_RESPONSAVEL_CADASTRO__ITS = 2
 	Const COD_SISTEMA_RESPONSAVEL_CADASTRO__UNIS = 3
 	Const COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP_WEBAPI = 4
+	Const COD_SISTEMA_RESPONSAVEL_CADASTRO__ORCAMENTO_COTACAO = 6
+
+	Const COD_USUARIO_CONTEXTO__USUARIO_INTERNO = 1
+	Const COD_USUARIO_CONTEXTO__PARCEIRO = 2
+	Const COD_USUARIO_CONTEXTO__VENDEDOR_DO_PARCEIRO = 3
+	Const COD_USUARIO_CONTEXTO__CLIENTE = 4
 
 	Const VERSAO_API_MAGENTO_V1_SOAP_XML = 0
 	Const VERSAO_API_MAGENTO_V2_REST_JSON = 2
@@ -1935,6 +1941,7 @@
 	
 	class cl_ORCAMENTISTA_E_INDICADOR
 		dim apelido
+		dim Id
 		dim id_magento_b2b
 		dim cnpj_cpf
 		dim tipo
@@ -2194,6 +2201,22 @@
 		dim PrevisaoEntregaTranspData
 		dim PrevisaoEntregaTranspUsuarioUltAtualiz
 		dim PrevisaoEntregaTranspDtHrUltAtualiz
+		dim IdOrcamentoCotacao
+		dim IdIndicadorVendedor
+		dim vl_frete_total_cobrado_cliente
+		dim vl_base_calculo_frete_total_cobrado_cliente
+		dim perc_max_comissao_padrao
+		dim perc_max_comissao_e_desconto_padrao
+		dim InstaladorInstalaIdTipoUsuarioContexto
+		dim InstaladorInstalaIdUsuarioUltAtualiz
+		dim GarantiaIndicadorIdTipoUsuarioContexto
+		dim GarantiaIndicadorIdUsuarioUltAtualiz
+		dim EtgImediataIdTipoUsuarioContexto
+		dim EtgImediataIdUsuarioUltAtualiz
+		dim PrevisaoEntregaIdTipoUsuarioContexto
+		dim PrevisaoEntregaIdUsuarioUltAtualiz
+		dim UsuarioCadastroIdTipoUsuarioContexto
+		dim UsuarioCadastroId
 		end class
 
 	class cl_ITEM_PEDIDO
@@ -2233,6 +2256,9 @@
 		dim cod_produto_alfanum_fabricante
 		dim potencia_valor
 		dim id_unidade_potencia
+		dim StatusDescontoSuperior
+		dim IdUsuarioDescontoSuperior
+		dim DataHoraDescontoSuperior
 		end class
 
 	class cl_ITEM_PEDIDO_SERVICO
@@ -2272,6 +2298,9 @@
 		dim cod_produto_alfanum_fabricante
 		dim potencia_valor
 		dim id_unidade_potencia
+		dim StatusDescontoSuperior
+		dim IdUsuarioDescontoSuperior
+		dim DataHoraDescontoSuperior
 		end class
 
 	class cl_ITEM_PEDIDO_NOVO
@@ -2599,6 +2628,9 @@
 		dim cod_produto_alfanum_fabricante
 		dim potencia_valor
 		dim id_unidade_potencia
+		dim StatusDescontoSuperior
+		dim IdUsuarioDescontoSuperior
+		dim DataHoraDescontoSuperior
 		end class
 
 	class cl_PEDIDO_PERDA
@@ -2742,6 +2774,20 @@
 		dim PrevisaoEntregaData
 		dim PrevisaoEntregaUsuarioUltAtualiz
 		dim PrevisaoEntregaDtHrUltAtualiz
+		dim IdOrcamentoCotacao
+		dim IdIndicadorVendedor
+		dim perc_max_comissao_padrao
+		dim perc_max_comissao_e_desconto_padrao
+		dim InstaladorInstalaIdTipoUsuarioContexto
+		dim InstaladorInstalaIdUsuarioUltAtualiz
+		dim GarantiaIndicadorIdTipoUsuarioContexto
+		dim GarantiaIndicadorIdUsuarioUltAtualiz
+		dim EtgImediataIdTipoUsuarioContexto
+		dim EtgImediataIdUsuarioUltAtualiz
+		dim PrevisaoEntregaIdTipoUsuarioContexto
+		dim PrevisaoEntregaIdUsuarioUltAtualiz
+		dim UsuarioCadastroIdTipoUsuarioContexto
+		dim UsuarioCadastroId
 		end class
 
 	class cl_ITEM_ORCAMENTO
@@ -2779,6 +2825,9 @@
 		dim ncm
 		dim cst
 		dim descontinuado
+		dim StatusDescontoSuperior
+		dim IdUsuarioDescontoSuperior
+		dim DataHoraDescontoSuperior
 		end class
 
 	class cl_ITEM_ORCAMENTO_NOVO
@@ -3242,6 +3291,8 @@
 
     class cl_INDICADOR
         dim apelido
+		dim Id
+		dim id_magento_b2b
         dim cnpj_cpf
         dim tipo
         dim ie_rg

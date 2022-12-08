@@ -328,7 +328,9 @@
 	set rs = cn.Execute(s)
 	if operacao_permitida(OP_LJA_EDITA_PEDIDO_INDICADOR, s_lista_operacoes_permitidas) then
 		if r_pedido.st_entrega<>ST_ENTREGA_CANCELADO And rs.Eof then
-			blnIndicadorEdicaoLiberada = True
+			if (Trim("" & r_pedido.IdOrcamentoCotacao) = "") Or (converte_numero(Trim("" & r_pedido.IdOrcamentoCotacao)) = 0) then
+				blnIndicadorEdicaoLiberada = True
+				end if
 		end if 
 	end if
 	if rs.State <> 0 then rs.Close

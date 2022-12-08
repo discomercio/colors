@@ -2677,7 +2677,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 			<input type="hidden" name="c_total_RA" id="c_total_RA" value='<%=formata_moeda(m_total_RA)%>'>
 			<% end if %>
 			<td align="right">
-			<% if operacao_permitida(OP_LJA_EXIBIR_CAMPO_RT_AO_CADASTRAR_NOVO_PEDIDO, s_lista_operacoes_permitidas) then %>
+			<% if operacao_permitida(OP_LJA_EXIBIR_CAMPO_RT_AO_CADASTRAR_NOVO_PEDIDO, s_lista_operacoes_permitidas) And (Trim(r_orcamento.orcamentista) <> "") And (r_orcamentista_e_indicador.Id <> ID_NSU_ORCAMENTISTA_E_INDICADOR__SEM_INDICADOR) then %>
 			<table cellspacing="0" cellpadding="0">
 				<tr>
 				<td class="MTBE" align="left" nowrap><span class="PLTe">&nbsp;COM(%)</span></td>

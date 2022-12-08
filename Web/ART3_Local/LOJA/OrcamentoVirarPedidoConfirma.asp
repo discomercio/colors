@@ -1449,7 +1449,12 @@
 				'	CAMPOS ARMAZENADOS TANTO NO PEDIDO-PAI QUANTO NO PEDIDO-FILHOTE
 					rs("st_orc_virou_pedido")=1
 					rs("orcamento")=orcamento_selecionado
-					rs("orcamentista")=r_orcamento.orcamentista
+					
+					if (Trim(r_orcamento.orcamentista) <> "") And (r_orcamentista_e_indicador.Id <> ID_NSU_ORCAMENTISTA_E_INDICADOR__SEM_INDICADOR) then
+						rs("orcamentista")=r_orcamento.orcamentista
+					else
+						rs("orcamentista")=""
+						end if
 
 					rs("id_cliente")=r_orcamento.id_cliente
 					rs("midia")=r_orcamento.midia
@@ -1495,7 +1500,11 @@
 					rs("NFe_texto_constar")=s_nf_texto
 					rs("NFe_xPed")=s_num_pedido_compra
 
-					rs("indicador") = r_orcamento.orcamentista
+					if (Trim(r_orcamento.orcamentista) <> "") And (r_orcamentista_e_indicador.Id <> ID_NSU_ORCAMENTISTA_E_INDICADOR__SEM_INDICADOR) then
+						rs("indicador") = r_orcamento.orcamentista
+					else
+						rs("indicador") = ""
+						end if
 
 					rs("GarantiaIndicadorStatus") = CLng(rb_garantia_indicador)
 					rs("GarantiaIndicadorUsuarioUltAtualiz") = usuario
@@ -1614,6 +1623,21 @@
 
 					sBlocoNotasEndCob = formata_endereco(Trim("" & rs("endereco_logradouro")), Trim("" & rs("endereco_numero")), Trim("" & rs("endereco_complemento")), Trim("" & rs("endereco_bairro")), Trim("" & rs("endereco_cidade")), Trim("" & rs("endereco_uf")), Trim("" & rs("endereco_cep")))
 
+					rs("IdOrcamentoCotacao") = r_orcamento.IdOrcamentoCotacao
+					rs("IdIndicadorVendedor") = r_orcamento.IdIndicadorVendedor
+					rs("perc_max_comissao_padrao") = r_orcamento.perc_max_comissao_padrao
+					rs("perc_max_comissao_e_desconto_padrao") = r_orcamento.perc_max_comissao_e_desconto_padrao
+					rs("InstaladorInstalaIdTipoUsuarioContexto") = r_orcamento.InstaladorInstalaIdTipoUsuarioContexto
+					rs("InstaladorInstalaIdUsuarioUltAtualiz") = r_orcamento.InstaladorInstalaIdUsuarioUltAtualiz
+					rs("GarantiaIndicadorIdTipoUsuarioContexto") = r_orcamento.GarantiaIndicadorIdTipoUsuarioContexto
+					rs("GarantiaIndicadorIdUsuarioUltAtualiz") = r_orcamento.GarantiaIndicadorIdUsuarioUltAtualiz
+					rs("EtgImediataIdTipoUsuarioContexto") = r_orcamento.EtgImediataIdTipoUsuarioContexto
+					rs("EtgImediataIdUsuarioUltAtualiz") = r_orcamento.EtgImediataIdUsuarioUltAtualiz
+					rs("PrevisaoEntregaIdTipoUsuarioContexto") = r_orcamento.PrevisaoEntregaIdTipoUsuarioContexto
+					rs("PrevisaoEntregaIdUsuarioUltAtualiz") = r_orcamento.PrevisaoEntregaIdUsuarioUltAtualiz
+					rs("UsuarioCadastroIdTipoUsuarioContexto") = r_orcamento.UsuarioCadastroIdTipoUsuarioContexto
+					rs("UsuarioCadastroId") = r_orcamento.UsuarioCadastroId
+
 					rs("plataforma_origem_pedido") = COD_PLATAFORMA_ORIGEM_PEDIDO__ERP
 
 					rs("sistema_responsavel_cadastro") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
@@ -1691,6 +1715,9 @@
 											rs("cod_produto_alfanum_fabricante") = .cod_produto_alfanum_fabricante
 											rs("potencia_valor") = .potencia_valor
 											rs("id_unidade_potencia") = .id_unidade_potencia
+											rs("StatusDescontoSuperior") = .StatusDescontoSuperior
+											rs("IdUsuarioDescontoSuperior") = .IdUsuarioDescontoSuperior
+											rs("DataHoraDescontoSuperior") = .DataHoraDescontoSuperior
 											rs.Update
 											if Err <> 0 then
 											'	~~~~~~~~~~~~~~~~
@@ -1770,7 +1797,7 @@
 
 					if indice_pedido = 1 then
 					'	INDICADOR: SE ESTE PEDIDO É COM INDICADOR E O CLIENTE AINDA NÃO TEM UM INDICADOR NO CADASTRO, ENTÃO CADASTRA ESTE.
-						if Trim(r_orcamento.orcamentista) <> "" then
+						if (Trim(r_orcamento.orcamentista) <> "") And (r_orcamentista_e_indicador.Id <> ID_NSU_ORCAMENTISTA_E_INDICADOR__SEM_INDICADOR) then
 							if Trim(r_cliente.indicador) = "" then
 								s="UPDATE t_CLIENTE SET indicador='" & Trim(r_orcamento.orcamentista) & "' WHERE (id='" & r_orcamento.id_cliente & "')"
 								cn.Execute(s)
@@ -1827,7 +1854,7 @@
 						'	ENDEREÇO DO CADASTRO
 						'	====================
 						'	1) VERIFICA SE O ENDEREÇO USADO É O DO PARCEIRO
-							if r_orcamento.orcamentista <> "" then
+							if (r_orcamento.orcamentista <> "") And (r_orcamentista_e_indicador.Id <> ID_NSU_ORCAMENTISTA_E_INDICADOR__SEM_INDICADOR) then
 								if isEnderecoIgual(cliente__endereco, cliente__endereco_numero, cliente__cep, r_orcamentista_e_indicador.endereco, r_orcamentista_e_indicador.endereco_numero, r_orcamentista_e_indicador.cep) then
 									blnAnEnderecoCadClienteUsaEndParceiro = True
 									blnAnalisarEndereco = True
@@ -1880,7 +1907,7 @@
 											end if ' if Not fin_gera_nsu()
 										end if ' if alerta = ""
 									end if ' if isEnderecoIgual()
-								end if ' if r_orcamento.orcamentista <> ""
+								end if ' if (r_orcamento.orcamentista <> "") And (r_orcamentista_e_indicador.Id <> ID_NSU_ORCAMENTISTA_E_INDICADOR__SEM_INDICADOR)
 							end if 'if alerta = ""
 			
 						if alerta = "" then
@@ -2025,7 +2052,7 @@
 							'	ENDEREÇO DE ENTREGA (SE HOUVER)
 							'	===============================
 							'	1) VERIFICA SE O ENDEREÇO USADO É O DO PARCEIRO
-								if r_orcamento.orcamentista <> "" then
+								if (r_orcamento.orcamentista <> "") And (r_orcamentista_e_indicador.Id <> ID_NSU_ORCAMENTISTA_E_INDICADOR__SEM_INDICADOR) then
 									if isEnderecoIgual(r_orcamento.EndEtg_endereco, r_orcamento.EndEtg_endereco_numero, r_orcamento.EndEtg_cep, r_orcamentista_e_indicador.endereco, r_orcamentista_e_indicador.endereco_numero, r_orcamentista_e_indicador.cep) then
 										blnAnEnderecoEndEntregaUsaEndParceiro = True
 										blnAnalisarEndereco = True
@@ -2078,7 +2105,7 @@
 												end if ' if Not fin_gera_nsu()
 											end if ' if alerta = ""
 										end if ' if isEnderecoIgual()
-									end if ' if r_orcamento.orcamentista <> ""
+									end if ' if (r_orcamento.orcamentista <> "") And (r_orcamentista_e_indicador.Id <> ID_NSU_ORCAMENTISTA_E_INDICADOR__SEM_INDICADOR)
 				
 							'	2)VERIFICA PEDIDOS DE OUTROS CLIENTES
 								if alerta = "" then

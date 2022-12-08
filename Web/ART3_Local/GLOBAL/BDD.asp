@@ -1642,7 +1642,15 @@ dim blnUsarMemorizacaoCompletaEnderecos
 
 	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 
-	s="SELECT * FROM t_PEDIDO WHERE (pedido='" & id_pedido & "')"
+	s = "SELECT" & _
+			" *" & _
+			"," & montaSubqueryGetUsuarioContexto("InstaladorInstalaUsuarioUltAtualiz", "DecodNome_InstaladorInstalaUsuarioUltAtualiz") & _
+			"," & montaSubqueryGetUsuarioContexto("GarantiaIndicadorUsuarioUltAtualiz", "DecodNome_GarantiaIndicadorUsuarioUltAtualiz") & _
+			"," & montaSubqueryGetUsuarioContexto("etg_imediata_usuario", "DecodNome_etg_imediata_usuario") & _
+			"," & montaSubqueryGetUsuarioContexto("PrevisaoEntregaUsuarioUltAtualiz", "DecodNome_PrevisaoEntregaUsuarioUltAtualiz") & _
+		" FROM t_PEDIDO" & _
+		" WHERE" & _
+			" (pedido='" & id_pedido & "')"
 	set rs=cn.Execute(s)
 	if Err <> 0 then
 		msg_erro=Cstr(Err) & ": " & Err.Description
@@ -1880,9 +1888,23 @@ dim blnUsarMemorizacaoCompletaEnderecos
 
 			.st_etg_imediata			= rs("st_etg_imediata")
 			.etg_imediata_data			= rs("etg_imediata_data")
-			.etg_imediata_usuario		= Trim("" & rs("etg_imediata_usuario"))
+			if Trim("" & rs("DecodNome_etg_imediata_usuario")) = "" then
+				.etg_imediata_usuario		= Trim("" & rs("etg_imediata_usuario"))
+			else
+				.etg_imediata_usuario = Left(Trim("" & rs("DecodNome_etg_imediata_usuario")), MAX_TAMANHO_ID_ORCAMENTISTA_E_INDICADOR)
+				if Left(Trim("" & rs("etg_imediata_usuario")), 3) = "[" & Cstr(COD_USUARIO_CONTEXTO__VENDEDOR_DO_PARCEIRO) & "]" then
+					.etg_imediata_usuario = "[VP] " & .etg_imediata_usuario
+					end if
+				end if
 			.PrevisaoEntregaData = rs("PrevisaoEntregaData")
-			.PrevisaoEntregaUsuarioUltAtualiz = Trim("" & rs("PrevisaoEntregaUsuarioUltAtualiz"))
+			if Trim("" & rs("DecodNome_PrevisaoEntregaUsuarioUltAtualiz")) = "" then
+				.PrevisaoEntregaUsuarioUltAtualiz = Trim("" & rs("PrevisaoEntregaUsuarioUltAtualiz"))
+			else
+				.PrevisaoEntregaUsuarioUltAtualiz = Left(Trim("" & rs("DecodNome_PrevisaoEntregaUsuarioUltAtualiz")), MAX_TAMANHO_ID_ORCAMENTISTA_E_INDICADOR)
+				if Left(Trim("" & rs("PrevisaoEntregaUsuarioUltAtualiz")), 3) = "[" & Cstr(COD_USUARIO_CONTEXTO__VENDEDOR_DO_PARCEIRO) & "]" then
+					.PrevisaoEntregaUsuarioUltAtualiz = "[VP] " & .PrevisaoEntregaUsuarioUltAtualiz
+					end if
+				end if
 			.PrevisaoEntregaDtHrUltAtualiz = rs("PrevisaoEntregaDtHrUltAtualiz")
 			.frete_status				= rs("frete_status")
 			.frete_valor				= rs("frete_valor")
@@ -1894,10 +1916,24 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.PedidoRecebidoUsuarioUltAtualiz = Trim("" & rs("PedidoRecebidoUsuarioUltAtualiz"))
 			.PedidoRecebidoDtHrUltAtualiz = rs("PedidoRecebidoDtHrUltAtualiz")
 			.InstaladorInstalaStatus	= rs("InstaladorInstalaStatus")
-			.InstaladorInstalaUsuarioUltAtualiz = Trim("" & rs("InstaladorInstalaUsuarioUltAtualiz"))
+			if Trim("" & rs("DecodNome_InstaladorInstalaUsuarioUltAtualiz")) = "" then
+				.InstaladorInstalaUsuarioUltAtualiz = Trim("" & rs("InstaladorInstalaUsuarioUltAtualiz"))
+			else
+				.InstaladorInstalaUsuarioUltAtualiz = Left(Trim("" & rs("DecodNome_InstaladorInstalaUsuarioUltAtualiz")), MAX_TAMANHO_ID_ORCAMENTISTA_E_INDICADOR)
+				if Left(Trim("" & rs("InstaladorInstalaUsuarioUltAtualiz")), 3) = "[" & Cstr(COD_USUARIO_CONTEXTO__VENDEDOR_DO_PARCEIRO) & "]" then
+					.InstaladorInstalaUsuarioUltAtualiz = "[VP] " & .InstaladorInstalaUsuarioUltAtualiz
+					end if
+				end if
 			.InstaladorInstalaDtHrUltAtualiz = rs("InstaladorInstalaDtHrUltAtualiz")
 			.GarantiaIndicadorStatus	= rs("GarantiaIndicadorStatus")
-			.GarantiaIndicadorUsuarioUltAtualiz = rs("GarantiaIndicadorUsuarioUltAtualiz")
+			if Trim("" & rs("DecodNome_GarantiaIndicadorUsuarioUltAtualiz")) = "" then
+				.GarantiaIndicadorUsuarioUltAtualiz = rs("GarantiaIndicadorUsuarioUltAtualiz")
+			else
+				.GarantiaIndicadorUsuarioUltAtualiz = Left(Trim("" & rs("DecodNome_GarantiaIndicadorUsuarioUltAtualiz")), MAX_TAMANHO_ID_ORCAMENTISTA_E_INDICADOR)
+				if Left(Trim("" & rs("GarantiaIndicadorUsuarioUltAtualiz")), 3) = "[" & Cstr(COD_USUARIO_CONTEXTO__VENDEDOR_DO_PARCEIRO) & "]" then
+					.GarantiaIndicadorUsuarioUltAtualiz = "[VP] " & .GarantiaIndicadorUsuarioUltAtualiz
+					end if
+				end if
 			.GarantiaIndicadorDtHrUltAtualiz = rs("GarantiaIndicadorDtHrUltAtualiz")
 			.perc_desagio_RA_liquida	= rs("perc_desagio_RA_liquida")
 			.permite_RA_status			= rs("permite_RA_status")
@@ -1929,6 +1965,22 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.PrevisaoEntregaTranspData = rs("PrevisaoEntregaTranspData")
 			.PrevisaoEntregaTranspUsuarioUltAtualiz = Trim("" & rs("PrevisaoEntregaTranspUsuarioUltAtualiz"))
 			.PrevisaoEntregaTranspDtHrUltAtualiz = rs("PrevisaoEntregaTranspDtHrUltAtualiz")
+			.IdOrcamentoCotacao = rs("IdOrcamentoCotacao")
+			.IdIndicadorVendedor = rs("IdIndicadorVendedor")
+			.vl_frete_total_cobrado_cliente = rs("vl_frete_total_cobrado_cliente")
+			.vl_base_calculo_frete_total_cobrado_cliente = rs("vl_base_calculo_frete_total_cobrado_cliente")
+			.perc_max_comissao_padrao = rs("perc_max_comissao_padrao")
+			.perc_max_comissao_e_desconto_padrao = rs("perc_max_comissao_e_desconto_padrao")
+			.InstaladorInstalaIdTipoUsuarioContexto = rs("InstaladorInstalaIdTipoUsuarioContexto")
+			.InstaladorInstalaIdUsuarioUltAtualiz = rs("InstaladorInstalaIdUsuarioUltAtualiz")
+			.GarantiaIndicadorIdTipoUsuarioContexto = rs("GarantiaIndicadorIdTipoUsuarioContexto")
+			.GarantiaIndicadorIdUsuarioUltAtualiz = rs("GarantiaIndicadorIdUsuarioUltAtualiz")
+			.EtgImediataIdTipoUsuarioContexto = rs("EtgImediataIdTipoUsuarioContexto")
+			.EtgImediataIdUsuarioUltAtualiz = rs("EtgImediataIdUsuarioUltAtualiz")
+			.PrevisaoEntregaIdTipoUsuarioContexto = rs("PrevisaoEntregaIdTipoUsuarioContexto")
+			.PrevisaoEntregaIdUsuarioUltAtualiz = rs("PrevisaoEntregaIdUsuarioUltAtualiz")
+			.UsuarioCadastroIdTipoUsuarioContexto = rs("UsuarioCadastroIdTipoUsuarioContexto")
+			.UsuarioCadastroId = rs("UsuarioCadastroId")
 			end with
 		end if
 
@@ -2040,6 +2092,22 @@ dim blnUsarMemorizacaoCompletaEnderecos
 				.PagtoAntecipadoStatus = rs("PagtoAntecipadoStatus")
 				.PagtoAntecipadoDataHora = rs("PagtoAntecipadoDataHora")
 				.PagtoAntecipadoUsuario = Trim("" & rs("PagtoAntecipadoUsuario"))
+				.IdOrcamentoCotacao = rs("IdOrcamentoCotacao")
+				.IdIndicadorVendedor = rs("IdIndicadorVendedor")
+				.vl_frete_total_cobrado_cliente = rs("vl_frete_total_cobrado_cliente")
+				.vl_base_calculo_frete_total_cobrado_cliente = rs("vl_base_calculo_frete_total_cobrado_cliente")
+				.perc_max_comissao_padrao = rs("perc_max_comissao_padrao")
+				.perc_max_comissao_e_desconto_padrao = rs("perc_max_comissao_e_desconto_padrao")
+				.InstaladorInstalaIdTipoUsuarioContexto = rs("InstaladorInstalaIdTipoUsuarioContexto")
+				.InstaladorInstalaIdUsuarioUltAtualiz = rs("InstaladorInstalaIdUsuarioUltAtualiz")
+				.GarantiaIndicadorIdTipoUsuarioContexto = rs("GarantiaIndicadorIdTipoUsuarioContexto")
+				.GarantiaIndicadorIdUsuarioUltAtualiz = rs("GarantiaIndicadorIdUsuarioUltAtualiz")
+				.EtgImediataIdTipoUsuarioContexto = rs("EtgImediataIdTipoUsuarioContexto")
+				.EtgImediataIdUsuarioUltAtualiz = rs("EtgImediataIdUsuarioUltAtualiz")
+				.PrevisaoEntregaIdTipoUsuarioContexto = rs("PrevisaoEntregaIdTipoUsuarioContexto")
+				.PrevisaoEntregaIdUsuarioUltAtualiz = rs("PrevisaoEntregaIdUsuarioUltAtualiz")
+				.UsuarioCadastroIdTipoUsuarioContexto = rs("UsuarioCadastroIdTipoUsuarioContexto")
+				.UsuarioCadastroId = rs("UsuarioCadastroId")
 				end with
 			end if
 		end if
@@ -2115,6 +2183,9 @@ dim rs
 				.cod_produto_alfanum_fabricante = Trim("" & rs("cod_produto_alfanum_fabricante"))
 				.potencia_valor = rs("potencia_valor")
 				.id_unidade_potencia = rs("id_unidade_potencia")
+				.StatusDescontoSuperior = rs("StatusDescontoSuperior")
+				.IdUsuarioDescontoSuperior = rs("IdUsuarioDescontoSuperior")
+				.DataHoraDescontoSuperior = rs("DataHoraDescontoSuperior")
 				end with
 			rs.MoveNext
 			Loop
@@ -2196,6 +2267,9 @@ dim rs
 				.cod_produto_alfanum_fabricante = Trim("" & rs("cod_produto_alfanum_fabricante"))
 				.potencia_valor = rs("potencia_valor")
 				.id_unidade_potencia = rs("id_unidade_potencia")
+				.StatusDescontoSuperior = rs("StatusDescontoSuperior")
+				.IdUsuarioDescontoSuperior = rs("IdUsuarioDescontoSuperior")
+				.DataHoraDescontoSuperior = rs("DataHoraDescontoSuperior")
 				end with
 			rs.MoveNext
 			Loop
@@ -2354,6 +2428,7 @@ dim rs
 	set r_orcamentista_e_indicador = New cl_ORCAMENTISTA_E_INDICADOR
 	if apelido = "" then
 		r_orcamentista_e_indicador.apelido = ""
+		r_orcamentista_e_indicador.Id = 0
 		le_orcamentista_e_indicador = True
 		exit function
 		end if
@@ -2370,6 +2445,7 @@ dim rs
 	else
 		with r_orcamentista_e_indicador
 			.apelido					= Trim("" & rs("apelido"))
+			.Id							= rs("Id")
 			.id_magento_b2b				= rs("id_magento_b2b")
 			.cnpj_cpf					= Trim("" & rs("cnpj_cpf"))
 			.tipo						= Trim("" & rs("tipo"))
@@ -3494,6 +3570,9 @@ dim rs
 			.cod_produto_alfanum_fabricante = Trim("" & rs("cod_produto_alfanum_fabricante"))
 			.potencia_valor = rs("potencia_valor")
 			.id_unidade_potencia = rs("id_unidade_potencia")
+			.StatusDescontoSuperior = rs("StatusDescontoSuperior")
+			.IdUsuarioDescontoSuperior = rs("IdUsuarioDescontoSuperior")
+			.DataHoraDescontoSuperior = rs("DataHoraDescontoSuperior")
 			end with
 		rs.MoveNext
 		Loop
@@ -3587,6 +3666,9 @@ dim rs
 			.cod_produto_alfanum_fabricante = Trim("" & rs("cod_produto_alfanum_fabricante"))
 			.potencia_valor = rs("potencia_valor")
 			.id_unidade_potencia = rs("id_unidade_potencia")
+			.StatusDescontoSuperior = rs("StatusDescontoSuperior")
+			.IdUsuarioDescontoSuperior = rs("IdUsuarioDescontoSuperior")
+			.DataHoraDescontoSuperior = rs("DataHoraDescontoSuperior")
 			end with
 		rs.MoveNext
 		Loop
@@ -3737,7 +3819,15 @@ dim blnUsarMemorizacaoCompletaEnderecos
 	msg_erro = ""
 	id_orcamento=Trim("" & id_orcamento)
 	set r_orcamento = New cl_ORCAMENTO
-	s="SELECT * FROM t_ORCAMENTO WHERE (orcamento='" & id_orcamento & "')"
+	s = "SELECT" & _
+			" *" & _
+			"," & montaSubqueryGetUsuarioContexto("InstaladorInstalaUsuarioUltAtualiz", "DecodNome_InstaladorInstalaUsuarioUltAtualiz") & _
+			"," & montaSubqueryGetUsuarioContexto("GarantiaIndicadorUsuarioUltAtualiz", "DecodNome_GarantiaIndicadorUsuarioUltAtualiz") & _
+			"," & montaSubqueryGetUsuarioContexto("etg_imediata_usuario", "DecodNome_etg_imediata_usuario") & _
+			"," & montaSubqueryGetUsuarioContexto("PrevisaoEntregaUsuarioUltAtualiz", "DecodNome_PrevisaoEntregaUsuarioUltAtualiz") & _
+		" FROM t_ORCAMENTO" & _
+		" WHERE" & _
+			" (orcamento='" & id_orcamento & "')"
 	set rs=cn.Execute(s)
 	if Err <> 0 then
 		msg_erro=Cstr(Err) & ": " & Err.Description
@@ -3931,16 +4021,44 @@ dim blnUsarMemorizacaoCompletaEnderecos
 
 			.st_etg_imediata			= rs("st_etg_imediata")
 			.etg_imediata_data			= rs("etg_imediata_data")
-			.etg_imediata_usuario		= Trim("" & rs("etg_imediata_usuario"))
+			if Trim("" & rs("DecodNome_etg_imediata_usuario")) = "" then
+				.etg_imediata_usuario		= Trim("" & rs("etg_imediata_usuario"))
+			else
+				.etg_imediata_usuario = Left(Trim("" & rs("DecodNome_etg_imediata_usuario")), MAX_TAMANHO_ID_ORCAMENTISTA_E_INDICADOR)
+				if Left(Trim("" & rs("etg_imediata_usuario")), 3) = "[" & Cstr(COD_USUARIO_CONTEXTO__VENDEDOR_DO_PARCEIRO) & "]" then
+					.etg_imediata_usuario = "[VP] " & .etg_imediata_usuario
+					end if
+				end if
 			.PrevisaoEntregaData = rs("PrevisaoEntregaData")
-			.PrevisaoEntregaUsuarioUltAtualiz = Trim("" & rs("PrevisaoEntregaUsuarioUltAtualiz"))
+			if Trim("" & rs("DecodNome_PrevisaoEntregaUsuarioUltAtualiz")) = "" then
+				.PrevisaoEntregaUsuarioUltAtualiz = Trim("" & rs("PrevisaoEntregaUsuarioUltAtualiz"))
+			else
+				.PrevisaoEntregaUsuarioUltAtualiz = Left(Trim("" & rs("DecodNome_PrevisaoEntregaUsuarioUltAtualiz")), MAX_TAMANHO_ID_ORCAMENTISTA_E_INDICADOR)
+				if Left(Trim("" & rs("PrevisaoEntregaUsuarioUltAtualiz")), 3) = "[" & Cstr(COD_USUARIO_CONTEXTO__VENDEDOR_DO_PARCEIRO) & "]" then
+					.PrevisaoEntregaUsuarioUltAtualiz = "[VP] " & .PrevisaoEntregaUsuarioUltAtualiz
+					end if
+				end if
 			.PrevisaoEntregaDtHrUltAtualiz = rs("PrevisaoEntregaDtHrUltAtualiz")
 			.StBemUsoConsumo			= rs("StBemUsoConsumo")
 			.InstaladorInstalaStatus	= rs("InstaladorInstalaStatus")
-			.InstaladorInstalaUsuarioUltAtualiz = Trim("" & rs("InstaladorInstalaUsuarioUltAtualiz"))
+			if Trim("" & rs("DecodNome_InstaladorInstalaUsuarioUltAtualiz")) = "" then
+				.InstaladorInstalaUsuarioUltAtualiz = Trim("" & rs("InstaladorInstalaUsuarioUltAtualiz"))
+			else
+				.InstaladorInstalaUsuarioUltAtualiz = Left(Trim("" & rs("DecodNome_InstaladorInstalaUsuarioUltAtualiz")), MAX_TAMANHO_ID_ORCAMENTISTA_E_INDICADOR)
+				if Left(Trim("" & rs("InstaladorInstalaUsuarioUltAtualiz")), 3) = "[" & Cstr(COD_USUARIO_CONTEXTO__VENDEDOR_DO_PARCEIRO) & "]" then
+					.InstaladorInstalaUsuarioUltAtualiz = "[VP] " & .InstaladorInstalaUsuarioUltAtualiz
+					end if
+				end if
 			.InstaladorInstalaDtHrUltAtualiz = rs("InstaladorInstalaDtHrUltAtualiz")
 			.GarantiaIndicadorStatus	= rs("GarantiaIndicadorStatus")
-			.GarantiaIndicadorUsuarioUltAtualiz = rs("GarantiaIndicadorUsuarioUltAtualiz")
+			if Trim("" & rs("DecodNome_GarantiaIndicadorUsuarioUltAtualiz")) = "" then
+				.GarantiaIndicadorUsuarioUltAtualiz = rs("GarantiaIndicadorUsuarioUltAtualiz")
+			else
+				.GarantiaIndicadorUsuarioUltAtualiz = Left(Trim("" & rs("DecodNome_GarantiaIndicadorUsuarioUltAtualiz")), MAX_TAMANHO_ID_ORCAMENTISTA_E_INDICADOR)
+				if Left(Trim("" & rs("GarantiaIndicadorUsuarioUltAtualiz")), 3) = "[" & Cstr(COD_USUARIO_CONTEXTO__VENDEDOR_DO_PARCEIRO) & "]" then
+					.GarantiaIndicadorUsuarioUltAtualiz = "[VP] " & .GarantiaIndicadorUsuarioUltAtualiz
+					end if
+				end if
 			.GarantiaIndicadorDtHrUltAtualiz = rs("GarantiaIndicadorDtHrUltAtualiz")
 			.perc_desagio_RA_liquida	= rs("perc_desagio_RA_liquida")
 			.permite_RA_status			= rs("permite_RA_status")
@@ -3949,6 +4067,20 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.usuario_violado_permite_RA_status	= Trim("" & rs("usuario_violado_permite_RA_status"))
             .EndEtg_obs                 = Trim("" & rs("EndEtg_obs"))
             .EndEtg_cod_justificativa   = Trim("" & rs("EndEtg_cod_justificativa"))
+			.IdOrcamentoCotacao = rs("IdOrcamentoCotacao")
+			.IdIndicadorVendedor = rs("IdIndicadorVendedor")
+			.perc_max_comissao_padrao = rs("perc_max_comissao_padrao")
+			.perc_max_comissao_e_desconto_padrao = rs("perc_max_comissao_e_desconto_padrao")
+			.InstaladorInstalaIdTipoUsuarioContexto = rs("InstaladorInstalaIdTipoUsuarioContexto")
+			.InstaladorInstalaIdUsuarioUltAtualiz = rs("InstaladorInstalaIdUsuarioUltAtualiz")
+			.GarantiaIndicadorIdTipoUsuarioContexto = rs("GarantiaIndicadorIdTipoUsuarioContexto")
+			.GarantiaIndicadorIdUsuarioUltAtualiz = rs("GarantiaIndicadorIdUsuarioUltAtualiz")
+			.EtgImediataIdTipoUsuarioContexto = rs("EtgImediataIdTipoUsuarioContexto")
+			.EtgImediataIdUsuarioUltAtualiz = rs("EtgImediataIdUsuarioUltAtualiz")
+			.PrevisaoEntregaIdTipoUsuarioContexto = rs("PrevisaoEntregaIdTipoUsuarioContexto")
+			.PrevisaoEntregaIdUsuarioUltAtualiz = rs("PrevisaoEntregaIdUsuarioUltAtualiz")
+			.UsuarioCadastroIdTipoUsuarioContexto = rs("UsuarioCadastroIdTipoUsuarioContexto")
+			.UsuarioCadastroId = rs("UsuarioCadastroId")
 			end with
 		end if
 
@@ -4026,6 +4158,9 @@ dim rs
 				.ncm					= Trim("" & rs("ncm"))
 				.cst					= Trim("" & rs("cst"))
 				.descontinuado			= Trim("" & rs("descontinuado"))
+				.StatusDescontoSuperior = rs("StatusDescontoSuperior")
+				.IdUsuarioDescontoSuperior = rs("IdUsuarioDescontoSuperior")
+				.DataHoraDescontoSuperior = rs("DataHoraDescontoSuperior")
 				end with
 			rs.MoveNext 
 			Loop
@@ -6397,6 +6532,8 @@ dim rs
 	else
 		with r_indicador
 			.apelido					= rs("apelido")
+			.Id							= rs("Id")
+			.id_magento_b2b				= rs("id_magento_b2b")
 			.cnpj_cpf					= rs("cnpj_cpf")
 			.tipo						= rs("tipo")
 			.ie_rg						= Trim("" & rs("ie_rg"))
@@ -6829,5 +6966,41 @@ dim s_log
 	if s_log <> "" then grava_log idUsuario, numeroLoja, numeroPedido, "", OP_LOG_PEDIDO_BLOCO_NOTAS_INCLUSAO, s_log
 
 	grava_bloco_notas_pedido = True
+end function
+
+
+
+' ________________________________________________________
+' montaSubqueryGetUsuarioContexto
+' Monta uma subquery para obter a identificação do usuário
+' quando os dados armazenados de forma codificada:
+'    [N] 999999
+'        N = 1 -> Usuário interno (t_USUARIO.Id)
+'        N = 2 -> Parceiro (t_ORCAMENTISTA_E_INDICADOR.Id)
+'        N = 3 -> Vendedor do Parceiro (t_ORCAMENTISTA_E_INDICADOR_VENDEDOR.Id)
+'        N = 4 -> Cliente
+'    999999 = Id do registro
+function montaSubqueryGetUsuarioContexto(byval nomeCampo, byval alias)
+dim s_sql, s_sql_convert_int
+	montaSubqueryGetUsuarioContexto = ""
+
+	if Trim("" & nomeCampo) = "" then exit function
+
+	s_sql_convert_int = " CONVERT(int, LTRIM(SUBSTRING(" & nomeCampo & ", CHARINDEX(']', " & nomeCampo & ", 1) + 1, LEN(" & nomeCampo & "))))"
+
+	s_sql = " (CASE" & _
+				" WHEN SUBSTRING(" & nomeCampo & ", 1, 3) = '[1]' THEN" & _
+					" (SELECT usuario FROM t_USUARIO tU_SQAux WHERE tU_SQAux.Id = " & s_sql_convert_int & ")" & _
+				" WHEN SUBSTRING(" & nomeCampo & ", 1, 3) = '[2]' THEN" & _
+					" (SELECT apelido FROM t_ORCAMENTISTA_E_INDICADOR tOI_SQAux WHERE tOI_SQAux.Id = " & s_sql_convert_int & ")" & _
+				" WHEN SUBSTRING(" & nomeCampo & ", 1, 3) = '[3]' THEN" & _
+					" (SELECT Nome FROM t_ORCAMENTISTA_E_INDICADOR_VENDEDOR tOIV_SQAux WHERE tOIV_SQAux.Id = " & s_sql_convert_int & ")" & _
+				" ELSE" & _
+					" NULL" & _
+			" END)"
+
+	if Trim("" & alias) <> "" then s_sql = s_sql & " AS " & alias
+
+	montaSubqueryGetUsuarioContexto = s_sql
 end function
 %>
