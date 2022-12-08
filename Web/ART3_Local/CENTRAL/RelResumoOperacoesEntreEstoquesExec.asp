@@ -827,6 +827,7 @@ dim dtSaldoInicio, dtSaldoFim
 							" (anulado_status=0)" & _
 							" AND (estoque <> 'ETG')" & _
 							" AND (estoque <> 'KIT')" & _
+							" AND (estoque <> 'VDA')" & _
 							" AND (t_ESTOQUE_MOVIMENTO.fabricante = '" & c_fabricante & "')" & _
 							" AND (produto = '" & c_produto & "')" 
 

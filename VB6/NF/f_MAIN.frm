@@ -8339,7 +8339,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
 '   (não permitir emissão se não for nota de compromisso)
     If (strPagtoAntecipadoStatus = "1") And (strPagtoAntecipadoQuitadoStatus <> "1") Then
         If Not blnNotadeCompromisso Then
-            s = "Pedido " & Trim$(v_pedido(i)) & " se refere a venda futura não quitada!"
+            's = "Pedido " & Trim$(v_pedido(i)) & " se refere a venda futura não quitada!"
+            s = "Pedido se refere a venda futura não quitada!"
             aviso s
             GoSub NFE_EMITE_FECHA_TABELAS
             aguarde INFO_NORMAL, m_id
@@ -10121,7 +10122,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         End If
 
 '   INFORMA O TOTAL ESTIMADO DE TRIBUTOS?
-    If blnExibirTotalTributos And (Not blnHaProdutoSemDadosIbpt) And (strInfoAdicIbpt <> "") Then
+'   (a partir de 01/12/2022, esta mensagem não será exibida em NF's de transferência de estoque entre filiais - CFOP 5152
+    If blnExibirTotalTributos And (Not blnHaProdutoSemDadosIbpt) And (strInfoAdicIbpt <> "") And (strCfopCodigo <> "5152") Then
         If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = vbCrLf & strNFeInfAdicQuadroProdutos
         strNFeInfAdicQuadroProdutos = strInfoAdicIbpt & strNFeInfAdicQuadroProdutos
         End If
