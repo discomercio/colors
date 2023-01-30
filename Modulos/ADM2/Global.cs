@@ -18,7 +18,7 @@ using System.Configuration;
 
 namespace ADM2
 {
-	class Global
+	public class Global
 	{
 		#region [ Constantes ]
 		public class Cte
@@ -28,11 +28,12 @@ namespace ADM2
 			{
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "ADM2";
-				public const string VERSAO_NUMERO = "1.12";
-				public const string VERSAO_DATA = "17.DEZ.2021";
+				public const string VERSAO_NUMERO = "1.13";
+				public const string VERSAO_DATA = "30.JAN.2023";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Módulo Administrativo";
+				public const string ID_APLICATIVO_CTRL_VERSAO = "ADM2";
 			}
 			#endregion
 
@@ -130,8 +131,9 @@ namespace ADM2
 			 *		  na tabela t_VERSAO durante a validação da versão na inicialização do módulo (caso
 			 *		  exista mais de uma versão permitida, deve estar separada pelo caractere pipe "|").
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.13 - XX.XX.20XX - por XXX
-			 *		  
+			 * v 1.13 - 30.01.2023 - por HHO
+			 *		  Implementação de funcionalidade para registrar o frete no pedido a partir de arquivo
+			 *		  CSV.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.14 - XX.XX.20XX - por XXX
 			 *		  
@@ -234,6 +236,8 @@ namespace ADM2
 					public const String OP_LOG_PEDIDO_RECEBIDO = "PEDIDO RECEBIDO";
 					public const String OP_LOG_PEDIDO_RECEBIDO_MARKETPLACE = "PEDIDO RECEBIDO MKTP";
 					public const String OP_LOG_PEDIDO_ATUALIZA_PREVISAO_ENTREGA_TRANSP = "PED PREV ETG TRANSP";
+					public const string OP_LOG_ANOTA_FRETE_PEDIDO_VIA_CSV = "ADM2-FretePedViaCsv";
+					public const string OP_LOG_ANOTA_FRETE_PEDIDO = "ANOTA FRETE PEDIDO";
 				}
 				#endregion
 
@@ -349,6 +353,14 @@ namespace ADM2
 				}
 				#endregion
 
+				#region [ T_PEDIDO_FRETE__TIPO_PREENCHIMENTO ]
+				public class T_PEDIDO_FRETE__TIPO_PREENCHIMENTO
+				{
+					public const int MANUAL = 1;
+					public const int ANOTACAO_VIA_CSV_ADM2 = 4;
+				}
+				#endregion
+
 				#region [ CtrlPagtoModulo ]
 				public class CtrlPagtoModulo
 				{
@@ -420,6 +432,15 @@ namespace ADM2
 				public static class ID_T_PARAMETRO
 				{
 					public const string OwnerPedido_ModoSelecao = "OwnerPedido_ModoSelecao";
+					public const string ID_PARAMETRO_ADM2_ValidacaoVersao_VerificacaoPeriodica_FlagHabilitacao = "ADM2_ValidacaoVersao_VerificacaoPeriodica_FlagHabilitacao";
+					public const string ID_PARAMETRO_ADM2_ValidacaoVersao_TempoMinEntreValidacoesPeriodicasEmSeg = "ADM2_ValidacaoVersao_TempoMinEntreValidacoesPeriodicasEmSeg";
+				}
+				#endregion
+
+				#region [ ID_T_FIN_CONTROLE ]
+				public static class ID_T_FIN_CONTROLE
+				{
+					public const string T_PEDIDO_FRETE = "T_PEDIDO_FRETE";
 				}
 				#endregion
 
@@ -435,6 +456,14 @@ namespace ADM2
 					#endregion
 				}
 				#endregion
+			}
+			#endregion
+
+			#region [ t_CODIGO_DESCRICAO - Grupos ]
+			public class GruposCodigoDescricao
+			{
+				public const string ID_GRUPO__PEDIDO_TIPO_FRETE = "Pedido_TipoFrete";
+				public const string ID_GRUPO__PEDIDO_FRETE_TIPO_PREENCHIMENTO = "Pedido_Frete_TipoPreenchimento";
 			}
 			#endregion
 
@@ -600,12 +629,34 @@ namespace ADM2
 		public static List<string> listaCodigosRastreioSituacaoMercadoriaEntregue = new List<string>();
 		#endregion
 
+		#region [ Parâmetros ]
+		public static class Parametro
+		{
+			public static int ValidacaoVersao_VerificacaoPeriodica_FlagHabilitacao;
+			public static int ValidacaoVersao_TempoMinEntreValidacoesPeriodicasEmSeg;
+		}
+		#endregion
+
+		#region [ enum ]
+
+		#region [ Filtro Flag st_inativo ]
+		public enum eFiltroFlagStInativo : byte
+		{
+			FLAG_DESLIGADO = 0,
+			FLAG_LIGADO = 1,
+			FLAG_IGNORADO = 255
+		}
+		#endregion
+
+		#endregion
+
 		#region [ Classe Acesso ]
 		public class Acesso
 		{
 			#region [ Constantes ]
 			public const String OP_CEN_ADM2_APP_ADMINISTRATIVO_ACESSO_AO_MODULO = "25200";
 			public const string OP_CEN_ADM2_ANOTAR_PEDIDOS_RECEBIDOS_PELO_CLIENTE = "29700";
+			public const string OP_CEN_ADM2_ANOTAR_FRETE_PEDIDO_VIA_CSV = "29900";
 			#endregion
 
 			#region [ Atributos ]
@@ -681,6 +732,12 @@ namespace ADM2
 				{
 					public static string pathArquivoRastreio = "";
 					public static string fileNameArquivoRastreio = "";
+				}
+
+				public class FAnotarFretePedidoViaCsv
+				{
+					public static string pathArquivoCsv = "";
+					public static string fileNameArquivoCsv = "";
 				}
 			}
 			#endregion
@@ -1207,6 +1264,8 @@ namespace ADM2
 		#endregion
 
 		#region [ converteNumeroDecimal ]
+
+		#region [ converteNumeroDecimal ]
 		/// <summary>
 		/// Converte o número representado pelo texto do parâmetro em um número do tipo decimal
 		/// Se não conseguir realizar a conversão, será retornado zero
@@ -1266,6 +1325,74 @@ namespace ADM2
 			decResultado = intSinal * (decInteiro + decFracionario);
 			return decResultado;
 		}
+		#endregion
+
+		#region [ converteNumeroDecimal ]
+		/// <summary>
+		/// Converte o número representado pelo texto do parâmetro em um número do tipo decimal
+		/// Se não conseguir realizar a conversão, será retornado zero
+		/// </summary>
+		/// <param name="numero">
+		/// Texto representando um número decimal
+		/// </param>
+		/// <param name="separadorDecimal">
+		/// Caractere usado como separador decimal
+		/// </param>
+		/// <returns>
+		/// Retorna um número do tipo decimal
+		/// </returns>
+		public static decimal converteNumeroDecimal(string numero, char separadorDecimal)
+		{
+			#region [ Declarações ]
+			int i;
+			char c_separador_decimal;
+			String s_numero_aux;
+			String s_inteiro = "";
+			String s_centavos = "";
+			int intSinal = 1;
+			decimal decFracionario;
+			decimal decInteiro;
+			decimal decResultado;
+			#endregion
+
+			if (numero == null) return 0;
+			if (numero.Trim().Length == 0) return 0;
+
+			numero = numero.Trim();
+
+			if (numero.IndexOf('-') != -1) intSinal = -1;
+
+			c_separador_decimal = separadorDecimal;
+			if (c_separador_decimal.ToString().Trim().Length == 0) c_separador_decimal = retornaSeparadorDecimal(numero);
+
+			#region [ Separa parte inteira e os centavos ]
+			s_numero_aux = numero.Replace(c_separador_decimal, 'V');
+			String[] v = s_numero_aux.Split('V');
+			for (i = 0; i < v.Length; i++)
+			{
+				if (v[i] == null) v[i] = "";
+			}
+			// Falha ao determinar o separador de decimal, então calcula como se não houvesse centavos
+			if (v.Length > 2)
+			{
+				s_inteiro = digitos(numero);
+			}
+			else
+			{
+				if (v.Length >= 1) s_inteiro = digitos(v[0]);
+				if (v.Length >= 2) s_centavos = digitos(v[1]);
+			}
+			if (s_inteiro.Length == 0) s_inteiro = "0";
+			s_centavos = s_centavos.PadRight(2, '0');
+			#endregion
+
+			decInteiro = (decimal)converteInteiro(s_inteiro);
+			decFracionario = (decimal)converteInteiro(s_centavos) / (decimal)Math.Pow(10, s_centavos.Length);
+			decResultado = intSinal * (decInteiro + decFracionario);
+			return decResultado;
+		}
+		#endregion
+
 		#endregion
 
 		#region [ converteNumeroDouble ]
@@ -2030,6 +2157,13 @@ namespace ADM2
 				strValorFormatado = strValorFormatado.Replace("V", ",");
 			}
 			return strValorFormatado;
+		}
+		#endregion
+
+		#region [ formataMoedaComSimbolo ]
+		public static string formataMoedaComSimbolo(decimal valor)
+		{
+			return Cte.Etc.SIMBOLO_MONETARIO + " " + formataMoeda(valor);
 		}
 		#endregion
 
