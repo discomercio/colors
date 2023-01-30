@@ -65,21 +65,30 @@ namespace ADM2
 		#endregion
 
 		#region [ getPedido ]
+
+		#region [ getPedido ]
+		public Pedido getPedido(String numeroPedido, bool flagNaoCarregarItens)
+		{
+			return getPedido(numeroPedido, flagNaoCarregarItens, flagNaoCarregarFretes: false);
+		}
+		#endregion
+
+		#region [ getPedido ]
 		/// <summary>
 		/// Retorna um objeto Pedido contendo os dados lidos do BD
 		/// </summary>
-		/// <param name="numeroPedido">
+		/// <param name="numeroPedido">Número do pedido</param>
 		/// <param name="flagNaoCarregarItens">Flag que indica para não carregar os dados de itens do pedido quando não forem necessários a fim de agilizar o processamento</param>
-		/// Número do pedido
-		/// </param>
+		/// <param name="flagNaoCarregarFretes">Flag que indica para não carregar os dados de frete quando não forem necessários a fim de agilizar o processamento</param>
 		/// <returns>
 		/// Retorna um objeto Pedido contendo os dados lidos do BD
 		/// </returns>
-		public Pedido getPedido(String numeroPedido, bool flagNaoCarregarItens)
+		public Pedido getPedido(String numeroPedido, bool flagNaoCarregarItens, bool flagNaoCarregarFretes)
 		{
 			#region [ Declarações ]
 			String strSql;
 			String numeroPedidoBase;
+			String strMsgErro;
 			decimal razaoValorPedidoFilhote = 0m;
 			decimal vlBoletoDestePedido = 0m;
 			decimal vlFormaPagtoDestePedido = 0m;
@@ -113,6 +122,8 @@ namespace ADM2
 			#region [ Monta Select ]
 			strSql = "SELECT" +
 						" t_PEDIDO.*," +
+						" (SELECT Sum(qtde*preco_NF) FROM t_PEDIDO_ITEM WHERE t_PEDIDO_ITEM.pedido=t_PEDIDO.pedido) AS vl_total_NF_calculado_deste_pedido," +
+						" (SELECT Sum(qtde*preco_venda) FROM t_PEDIDO_ITEM WHERE t_PEDIDO_ITEM.pedido=t_PEDIDO.pedido) AS vl_total_venda_calculado_deste_pedido," +
 						" t_LOJA.razao_social AS loja_razao_social," +
 						" t_LOJA.nome AS loja_nome," +
 						" t_USUARIO_VENDEDOR.nome AS vendedor_nome," +
@@ -257,6 +268,8 @@ namespace ADM2
 			pedido.PrevisaoEntregaTranspUsuarioUltAtualiz = BD.readToString(rowResultado["PrevisaoEntregaTranspUsuarioUltAtualiz"]);
 			pedido.PrevisaoEntregaTranspDtHrUltAtualiz = BD.readToDateTime(rowResultado["PrevisaoEntregaTranspDtHrUltAtualiz"]);
 			pedido.PrevisaoEntregaTranspDataAnterior = BD.readToDateTime(rowResultado["PrevisaoEntregaTranspDataAnterior"]);
+			pedido.vl_total_NF_calculado_deste_pedido = BD.readToDecimal(rowResultado["vl_total_NF_calculado_deste_pedido"]);
+			pedido.vl_total_venda_calculado_deste_pedido = BD.readToDecimal(rowResultado["vl_total_venda_calculado_deste_pedido"]);
 			#endregion
 
 			#endregion
@@ -622,7 +635,25 @@ namespace ADM2
 			if (Math.Abs(vlDiferencaArredondamento) <= 1) pedido.vlTotalBoletoDestePedido += vlDiferencaArredondamento;
 			#endregion
 
+			#region [ Pesquisa anotações de frete ]
+			if (!flagNaoCarregarFretes)
+			{
+				pedido.listaPedidoFrete = FMain.contextoBD.AmbienteBase.pedidoFreteDAO.getPedidoFrete(numeroPedido, out strMsgErro);
+			}
+			#endregion
+
 			return pedido;
+		}
+		#endregion
+
+		#endregion
+
+		#region [ getPedidoByNF ]
+
+		#region [ getPedidoByNF ]
+		public List<Pedido> getPedidoByNF(string cnpjEmitente, int serieNF, int numeroNF, bool flagNaoCarregarItens)
+		{
+			return getPedidoByNF(cnpjEmitente, serieNF, numeroNF, flagNaoCarregarItens, flagNaoCarregarFretes: false);
 		}
 		#endregion
 
@@ -634,8 +665,9 @@ namespace ADM2
 		/// <param name="serieNF">Número da série da NF</param>
 		/// <param name="numeroNF">Número da NF</param>
 		/// <param name="flagNaoCarregarItens">Flag que indica para não carregar os dados de itens do pedido quando não forem necessários a fim de agilizar o processamento</param>
+		/// <param name="flagNaoCarregarFretes">Flag que indica para não carregar os dados de frete quando não forem necessários a fim de agilizar o processamento</param>
 		/// <returns></returns>
-		public List<Pedido> getPedidoByNF(string cnpjEmitente, int serieNF, int numeroNF, bool flagNaoCarregarItens)
+		public List<Pedido> getPedidoByNF(string cnpjEmitente, int serieNF, int numeroNF, bool flagNaoCarregarItens, bool flagNaoCarregarFretes)
 		{
 			#region [ Declarações ]
 			bool blnAchou;
@@ -726,7 +758,7 @@ namespace ADM2
 				{
 					try
 					{
-						pedido = pedidoDAO.getPedido(strPedido, flagNaoCarregarItens);
+						pedido = pedidoDAO.getPedido(strPedido, flagNaoCarregarItens, flagNaoCarregarFretes);
 					}
 					catch (Exception)
 					{
@@ -780,7 +812,7 @@ namespace ADM2
 				strPedido = BD.readToString(rowResultado["pedido"]);
 				try
 				{
-					pedido = pedidoDAO.getPedido(strPedido, flagNaoCarregarItens);
+					pedido = pedidoDAO.getPedido(strPedido, flagNaoCarregarItens, flagNaoCarregarFretes);
 				}
 				catch (Exception)
 				{
@@ -809,6 +841,8 @@ namespace ADM2
 
 			return listaPedidos;
 		}
+		#endregion
+
 		#endregion
 
 		#region [ marcaPedidoStatusBoletoConfeccionado ]

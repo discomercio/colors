@@ -13,6 +13,7 @@ namespace ADM2
 		{
 			listaPedidoItem = new List<PedidoItem>();
 			listaPedidoItemDevolvido = new List<PedidoItemDevolvido>();
+			listaPedidoFrete = new List<PedidoFrete>();
 		}
 		#endregion
 
@@ -20,6 +21,7 @@ namespace ADM2
 
 		public List<PedidoItem> listaPedidoItem;
 		public List<PedidoItemDevolvido> listaPedidoItemDevolvido;
+		public List<PedidoFrete> listaPedidoFrete;
 
 		private String _pedido;
 		public String pedido
@@ -495,6 +497,22 @@ namespace ADM2
 		{
 			get { return _vl_total_RA; }
 			set { _vl_total_RA = value; }
+		}
+
+		private decimal _vl_total_NF_calculado_deste_pedido;
+
+		public decimal vl_total_NF_calculado_deste_pedido
+		{
+			get { return _vl_total_NF_calculado_deste_pedido; }
+			set { _vl_total_NF_calculado_deste_pedido = value; }
+		}
+
+		private decimal _vl_total_venda_calculado_deste_pedido;
+
+		public decimal vl_total_venda_calculado_deste_pedido
+		{
+			get { return _vl_total_venda_calculado_deste_pedido; }
+			set { _vl_total_venda_calculado_deste_pedido = value; }
 		}
 
 		private double _perc_RT;

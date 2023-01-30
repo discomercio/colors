@@ -197,7 +197,7 @@ namespace ADM2
 		public string tituloColuna { get; set; } = "";
 		public int? indexColuna { get; set; } = null;
 
-		#region [ Constutor ]
+		#region [ Construtor ]
 		public ColunaHeaderRastreioPedidoRecebidoCliente(string TituloColuna)
 		{
 			tituloColuna = TituloColuna;
@@ -286,7 +286,6 @@ namespace ADM2
 			listaCamposHeader.Add(PrevisaoEntrega);
 		}
 		#endregion
-
 	}
 	#endregion
 }
