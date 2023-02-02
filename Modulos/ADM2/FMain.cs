@@ -22,6 +22,8 @@ namespace ADM2
 		FIbpt fIbpt;
 		FAtualizaPlanilhaEstoque fAtualizaPlanilhaEstoque;
 		FAnotarPedidoRecebidoCliente fAnotarPedidoRecebidoCliente;
+		FAnotarFretePedidoViaCsv fAnotarFretePedidoViaCsv;
+		DateTime _ultValidacaoVersaoAplicativo = DateTime.MinValue;
 		private bool _InicializacaoOk;
 		private bool _OcorreuExceptionNaInicializacao = false;
 		#endregion
@@ -181,6 +183,7 @@ namespace ADM2
 			ComboDAO.inicializaConstrutorEstatico();
 			PedidoDAO.inicializaConstrutorEstatico();
 			ProdutoDAO.inicializaConstrutorEstatico();
+			GeralDAO.inicializaConstrutorEstatico();
 		}
 		#endregion
 
@@ -308,6 +311,74 @@ namespace ADM2
 		}
 		#endregion
 
+		#region [ validaVersaoAplicativo ]
+		private bool validaVersaoAplicativo(string IdAplicativoCtrlVersao, string versaoAplicativo, out VersaoModulo versaoModulo, out bool versaoIncorretaDetectada, out string msgErro)
+		{
+			#region [ Declarações ]
+			const string NOME_DESTA_ROTINA = "FMain.validaVersaoAplicativo()";
+			string strMsgErroAux;
+			string sVersaoPermitida;
+			string[] vListaVersaoPermitida;
+			List<string> listaVersaoPermitida = new List<string>();
+			#endregion
+
+			msgErro = "";
+			versaoIncorretaDetectada = false;
+			versaoModulo = contextoBD.AmbienteBase.BD.getVersaoModulo(IdAplicativoCtrlVersao, out strMsgErroAux);
+
+			try
+			{
+				#region [ Consistência dos parâmetros ]
+				if ((IdAplicativoCtrlVersao ?? "").Trim().Length == 0)
+				{
+					msgErro = "Não foi informada a identificação do aplicativo no controle de versão!";
+					return false;
+				}
+
+				if ((versaoAplicativo ?? "").Trim().Length == 0)
+				{
+					msgErro = "Não foi informado o número de versão deste aplicativo para ser validado!";
+					return false;
+				}
+				#endregion
+
+				#region [ Realiza a validação da versão ]
+				if (versaoModulo == null)
+				{
+					msgErro = "Falha ao tentar obter no banco de dados o número da versão em produção deste aplicativo!\n" + strMsgErroAux;
+					return false;
+				}
+
+				sVersaoPermitida = versaoModulo.versao.Trim();
+				sVersaoPermitida = sVersaoPermitida.Replace(';', '|');
+				vListaVersaoPermitida = sVersaoPermitida.Split('|');
+				foreach (string item in vListaVersaoPermitida)
+				{
+					if ((item ?? "").Trim().Length > 0)
+					{
+						listaVersaoPermitida.Add(item.Trim());
+					}
+				}
+
+				if (!listaVersaoPermitida.Contains(versaoAplicativo))
+				{
+					versaoIncorretaDetectada = true;
+					msgErro = "Versão inválida do aplicativo!\n\nVersão deste programa: " + versaoAplicativo + "\nVersão permitida: " + String.Join(", ", listaVersaoPermitida);
+					return false;
+				}
+				#endregion
+
+				return true;
+			}
+			catch (Exception ex)
+			{
+				msgErro = "Falha ao validar a versão do aplicativo!\n" + ex.Message;
+				Global.gravaLogAtividade(NOME_DESTA_ROTINA + " - " + ex.ToString());
+				return false;
+			}
+		}
+		#endregion
+
 		#region [ trataBotaoIbptCarregaArqCsv ]
 		private void trataBotaoIbptCarregaArqCsv()
 		{
@@ -387,6 +458,35 @@ namespace ADM2
 		}
 		#endregion
 
+		#region [ trataBotaoAnotarFretePedidoViaCsv ]
+		private void trataBotaoAnotarFretePedidoViaCsv()
+		{
+			#region [ Verifica se a conexão c/ o BD está ok ]
+			if (!contextoBD.AmbienteBase.BD.isConexaoOk())
+			{
+				if (!FMain.reiniciaBancoDados())
+				{
+					avisoErro("Ocorreu uma falha na conexão com o Banco de Dados!!\nA tentativa de reconectar automaticamente falhou!!\nPor favor, aguarde alguns instantes e tente outra vez!!");
+					return;
+				}
+			}
+			#endregion
+
+			#region [ Permissão de acesso ]
+			if (!Global.Acesso.operacaoPermitida(Global.Acesso.OP_CEN_ADM2_ANOTAR_FRETE_PEDIDO_VIA_CSV))
+			{
+				avisoErro("Nível de acesso insuficiente!!");
+				return;
+			}
+			#endregion
+
+			fAnotarFretePedidoViaCsv = new FAnotarFretePedidoViaCsv();
+			fAnotarFretePedidoViaCsv.Location = this.Location;
+			fAnotarFretePedidoViaCsv.Show();
+			if (!fAnotarFretePedidoViaCsv.ocorreuExceptionNaInicializacao) this.Visible = false;
+		}
+		#endregion
+
 		#endregion
 
 		#region [ Eventos ]
@@ -408,8 +508,7 @@ namespace ADM2
 			int intLeft;
 			bool blnRestauraPosicaoAnterior;
 			bool blnValidacaoUsuarioOk;
-			string sVersaoPermitida;
-			string[] vListaVersaoPermitida;
+			bool blnVersaoIncorretaDetectada;
 			List<string> listaVersaoPermitida = new List<string>();
 			Color? cor;
 			DateTime dtHrServidor;
@@ -650,35 +749,20 @@ namespace ADM2
 					#endregion
 
 					#region [ Validação da versão deste programa ]
-					versaoModulo = contextoBD.AmbienteBase.BD.getVersaoModulo("ADM2", out strMsgErro);
-					if (versaoModulo == null)
+					if (!validaVersaoAplicativo(Global.Cte.Aplicativo.ID_APLICATIVO_CTRL_VERSAO, Global.Cte.Aplicativo.VERSAO_NUMERO, out versaoModulo, out blnVersaoIncorretaDetectada, out strMsgErro))
 					{
-						strMsgErro = "Falha ao tentar obter no banco de dados o número da versão em produção deste aplicativo!!\n" + strMsgErro;
 						Global.gravaLogAtividade(strMsgErro);
 						avisoErro(strMsgErro);
 						Close();
 						return;
 					}
 
-					sVersaoPermitida = versaoModulo.versao.Trim();
-					sVersaoPermitida = sVersaoPermitida.Replace(';', '|');
-					vListaVersaoPermitida = sVersaoPermitida.Split('|');
-					foreach (string item in vListaVersaoPermitida)
-					{
-						if ((item ?? "").Trim().Length > 0)
-						{
-							listaVersaoPermitida.Add(item.Trim());
-						}
-					}
+					_ultValidacaoVersaoAplicativo = DateTime.Now;
+					#endregion
 
-					if (!listaVersaoPermitida.Contains(Global.Cte.Aplicativo.VERSAO_NUMERO))
-					{
-						strMsgErro = "Versão inválida do aplicativo!!\n\nVersão deste programa: " + Global.Cte.Aplicativo.VERSAO_NUMERO + "\nVersão permitida: " + String.Join(", ", listaVersaoPermitida);
-						Global.gravaLogAtividade(strMsgErro);
-						avisoErro(strMsgErro);
-						Close();
-						return;
-					}
+					#region [ Carrega parâmetros ]
+					Global.Parametro.ValidacaoVersao_VerificacaoPeriodica_FlagHabilitacao = FMain.contextoBD.AmbienteBase.parametroDAO.getParametro(Global.Cte.FIN.ID_T_PARAMETRO.ID_PARAMETRO_ADM2_ValidacaoVersao_VerificacaoPeriodica_FlagHabilitacao).campo_inteiro;
+					Global.Parametro.ValidacaoVersao_TempoMinEntreValidacoesPeriodicasEmSeg = FMain.contextoBD.AmbienteBase.parametroDAO.getParametro(Global.Cte.FIN.ID_T_PARAMETRO.ID_PARAMETRO_ADM2_ValidacaoVersao_TempoMinEntreValidacoesPeriodicasEmSeg).campo_inteiro;
 					#endregion
 
 					#region [ Cor de fundo padrão cadastrado no BD ]
@@ -782,6 +866,74 @@ namespace ADM2
 		}
 		#endregion
 
+		#region [ FMain_Activated ]
+		private void FMain_Activated(object sender, EventArgs e)
+		{
+			#region [ Declarações ]
+			bool blnVersaoIncorretaDetectada;
+			String strMsgErro = "";
+			VersaoModulo versaoModulo;
+			#endregion
+
+			#region [ A cada retorno ao painel principal, valida a versão do aplicativo ]
+			if (_InicializacaoOk && (Global.Parametro.ValidacaoVersao_VerificacaoPeriodica_FlagHabilitacao == 1))
+			{
+				if (Global.calculaTimeSpanSegundos(DateTime.Now - _ultValidacaoVersaoAplicativo) > Global.Parametro.ValidacaoVersao_TempoMinEntreValidacoesPeriodicasEmSeg)
+				{
+					_ultValidacaoVersaoAplicativo = DateTime.Now;
+					if (!validaVersaoAplicativo(Global.Cte.Aplicativo.ID_APLICATIVO_CTRL_VERSAO, Global.Cte.Aplicativo.VERSAO_NUMERO, out versaoModulo, out blnVersaoIncorretaDetectada, out strMsgErro))
+					{
+						Global.gravaLogAtividade(strMsgErro);
+						if (blnVersaoIncorretaDetectada)
+						{
+							// Encerra o programa somente se foi detectada que a versão está incorreta
+							// Isso evita que o programa seja fechado em caso de instabilidade de rede ao tentar obter o número da versão atual no banco de dados,
+							// já que esta verificação é feita com frequência.
+							avisoErro(strMsgErro);
+							Close();
+							return;
+						}
+					}
+				}
+			}
+			#endregion
+		}
+		#endregion
+
+		#region [ FMain_Deactivate ]
+		private void FMain_Deactivate(object sender, EventArgs e)
+		{
+			#region [ Declarações ]
+			bool blnVersaoIncorretaDetectada;
+			String strMsgErro = "";
+			VersaoModulo versaoModulo;
+			#endregion
+
+			#region [ A cada retorno ao painel principal, valida a versão do aplicativo ]
+			if (_InicializacaoOk && (Global.Parametro.ValidacaoVersao_VerificacaoPeriodica_FlagHabilitacao == 1))
+			{
+				if (Global.calculaTimeSpanSegundos(DateTime.Now - _ultValidacaoVersaoAplicativo) > Global.Parametro.ValidacaoVersao_TempoMinEntreValidacoesPeriodicasEmSeg)
+				{
+					_ultValidacaoVersaoAplicativo = DateTime.Now;
+					if (!validaVersaoAplicativo(Global.Cte.Aplicativo.ID_APLICATIVO_CTRL_VERSAO, Global.Cte.Aplicativo.VERSAO_NUMERO, out versaoModulo, out blnVersaoIncorretaDetectada, out strMsgErro))
+					{
+						Global.gravaLogAtividade(strMsgErro);
+						if (blnVersaoIncorretaDetectada)
+						{
+							// Encerra o programa somente se foi detectada que a versão está incorreta
+							// Isso evita que o programa seja fechado em caso de instabilidade de rede ao tentar obter o número da versão atual no banco de dados,
+							// já que esta verificação é feita com frequência.
+							avisoErro(strMsgErro);
+							Close();
+							return;
+						}
+					}
+				}
+			}
+			#endregion
+		}
+		#endregion
+
 		#endregion
 
 		#region [ btnIbptCarregaArqCsv ]
@@ -812,6 +964,17 @@ namespace ADM2
 		private void btnAnotarPedidosRecebidosCliente_Click(object sender, EventArgs e)
 		{
 			trataBotaoAnotarPedidosRecebidosCliente();
+		}
+		#endregion
+
+		#endregion
+
+		#region [ btnAnotarFretePedidoViaCsv ]
+
+		#region [ btnAnotarFretePedidoViaCsv_Click ]
+		private void btnAnotarFretePedidoViaCsv_Click(object sender, EventArgs e)
+		{
+			trataBotaoAnotarFretePedidoViaCsv();
 		}
 		#endregion
 
