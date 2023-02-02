@@ -322,6 +322,7 @@
 	dim strHistPagtoCorParcelaEmAtraso
 	dim dtReferenciaLimitePagamentoEmAtraso
 
+	dim r_orcamento_cotacao
 	dim blnIndicadorEdicaoLiberada
 	blnIndicadorEdicaoLiberada = False
 	s = "SELECT * FROM t_COMISSAO_INDICADOR_N4 WHERE (pedido='" & r_pedido.pedido & "')"
@@ -330,9 +331,15 @@
 		if r_pedido.st_entrega<>ST_ENTREGA_CANCELADO And rs.Eof then
 			if (Trim("" & r_pedido.IdOrcamentoCotacao) = "") Or (converte_numero(Trim("" & r_pedido.IdOrcamentoCotacao)) = 0) then
 				blnIndicadorEdicaoLiberada = True
+			else
+				if le_orcamento_cotacao(r_pedido.IdOrcamentoCotacao, r_orcamento_cotacao, msg_erro) then
+					if (r_orcamento_cotacao.IdIndicador = ID_NSU_ORCAMENTISTA_E_INDICADOR__SEM_INDICADOR) Or (Trim("" & r_orcamento_cotacao.IdIndicador) = "") then
+						blnIndicadorEdicaoLiberada = True
+						end if
+					end if
 				end if
-		end if 
-	end if
+			end if
+		end if
 	if rs.State <> 0 then rs.Close
 
 	dim blnPossuiFormaPagtoProporcional, sDescricaoFormaPagtoProporcional, blnFormaPagtoProporcionalNaoSeAplica, blnFormaPagtoProporcionalFalhaCalculo, msgFormaPagtoProporcionalFalhaCalculo

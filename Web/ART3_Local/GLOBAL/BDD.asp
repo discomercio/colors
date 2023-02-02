@@ -4232,6 +4232,107 @@ end function
 
 
 
+' ___________________________________________
+' LE ORCAMENTO COTACAO
+'
+function le_orcamento_cotacao(byval IdOrcamentoCotacao, byref r_orcamento_cotacao, byref msg_erro)
+dim s
+dim rs
+
+	le_orcamento_cotacao = False
+	msg_erro = ""
+	IdOrcamentoCotacao = Trim("" & IdOrcamentoCotacao)
+	set r_orcamento_cotacao = New cl_ORCAMENTO_COTACAO
+
+	if IdOrcamentoCotacao = "" then
+		r_orcamento_cotacao.Id = 0
+		exit function
+		end if
+
+	s = "SELECT" & _
+			" *" & _
+		" FROM t_ORCAMENTO_COTACAO" & _
+		" WHERE" & _
+			" (Id = " & IdOrcamentoCotacao & ")"
+	set rs=cn.Execute(s)
+	if Err <> 0 then
+		msg_erro=Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+
+	if rs.EOF then
+		msg_erro="Orçamento/cotação nº " & IdOrcamentoCotacao & " não está cadastrado."
+	else
+		with r_orcamento_cotacao
+			.Id = rs("Id")
+			.Loja = Trim("" & rs("Loja"))
+			.NomeCliente = Trim("" & rs("NomeCliente"))
+			.NomeObra = Trim("" & rs("NomeObra"))
+			.IdVendedor = rs("IdVendedor")
+			.IdIndicador = rs("IdIndicador")
+			.IdIndicadorVendedor = rs("IdIndicadorVendedor")
+			.Email = Trim("" & rs("Email"))
+			.Telefone = Trim("" & rs("Telefone"))
+			.AceiteWhatsApp = rs("AceiteWhatsApp")
+			.UF = Trim("" & rs("UF"))
+			.TipoCliente = Trim("" & rs("TipoCliente"))
+			.ContribuinteIcms = rs("ContribuinteIcms")
+			.Validade = rs("Validade")
+			.ValidadeAnterior = rs("ValidadeAnterior")
+			.QtdeRenovacao = rs("QtdeRenovacao")
+			.IdUsuarioUltRenovacao = rs("IdUsuarioUltRenovacao")
+			.DataHoraUltRenovacao = rs("DataHoraUltRenovacao")
+			.Observacao = Trim("" & rs("Observacao"))
+			.InstaladorInstalaStatus = rs("InstaladorInstalaStatus")
+			.GarantiaIndicadorStatus = rs("GarantiaIndicadorStatus")
+			.StEtgImediata = rs("StEtgImediata")
+			.PrevisaoEntregaData = rs("PrevisaoEntregaData")
+			.Status = rs("Status")
+			.IdTipoUsuarioContextoUltStatus = rs("IdTipoUsuarioContextoUltStatus")
+			.IdUsuarioUltStatus = rs("IdUsuarioUltStatus")
+			.DataUltStatus = rs("DataUltStatus")
+			.DataHoraUltStatus = rs("DataHoraUltStatus")
+			.VersaoPoliticaCredito = Trim("" & rs("VersaoPoliticaCredito"))
+			.VersaoPoliticaPrivacidade = Trim("" & rs("VersaoPoliticaPrivacidade"))
+			.IdOrcamento = Trim("" & rs("IdOrcamento"))
+			.IdPedido = Trim("" & rs("IdPedido"))
+			.perc_max_comissao_padrao = rs("perc_max_comissao_padrao")
+			.perc_max_comissao_e_desconto_padrao = rs("perc_max_comissao_e_desconto_padrao")
+			.IdTipoUsuarioContextoCadastro = rs("IdTipoUsuarioContextoCadastro")
+			.IdUsuarioCadastro = rs("IdUsuarioCadastro")
+			.DataCadastro = rs("DataCadastro")
+			.DataHoraCadastro = rs("DataHoraCadastro")
+			.IdTipoUsuarioContextoUltAtualizacao = rs("IdTipoUsuarioContextoUltAtualizacao")
+			.IdUsuarioUltAtualizacao = rs("IdUsuarioUltAtualizacao")
+			.DataHoraUltAtualizacao = rs("DataHoraUltAtualizacao")
+			.InstaladorInstalaIdTipoUsuarioContexto = rs("InstaladorInstalaIdTipoUsuarioContexto")
+			.InstaladorInstalaIdUsuarioUltAtualiz = rs("InstaladorInstalaIdUsuarioUltAtualiz")
+			.InstaladorInstalaDtHrUltAtualiz = rs("InstaladorInstalaDtHrUltAtualiz")
+			.GarantiaIndicadorIdTipoUsuarioContexto = rs("GarantiaIndicadorIdTipoUsuarioContexto")
+			.GarantiaIndicadorIdUsuarioUltAtualiz = rs("GarantiaIndicadorIdUsuarioUltAtualiz")
+			.GarantiaIndicadorDtHrUltAtualiz = rs("GarantiaIndicadorDtHrUltAtualiz")
+			.EtgImediataIdTipoUsuarioContexto = rs("EtgImediataIdTipoUsuarioContexto")
+			.EtgImediataIdUsuarioUltAtualiz = rs("EtgImediataIdUsuarioUltAtualiz")
+			.EtgImediataDtHrUltAtualiz = rs("EtgImediataDtHrUltAtualiz")
+			.PrevisaoEntregaIdTipoUsuarioContexto = rs("PrevisaoEntregaIdTipoUsuarioContexto")
+			.PrevisaoEntregaIdUsuarioUltAtualiz = rs("PrevisaoEntregaIdUsuarioUltAtualiz")
+			.PrevisaoEntregaDtHrUltAtualiz = rs("PrevisaoEntregaDtHrUltAtualiz")
+			.IdTipoUsuarioContextoUltRenovacao = rs("IdTipoUsuarioContextoUltRenovacao")
+			end with
+		end if
+
+	if Err <> 0 then
+		msg_erro=Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+
+	if rs.State <> 0 then rs.Close
+
+	if msg_erro = "" then le_orcamento_cotacao=True
+end function
+
+
+
 ' ___________________________________________________
 ' D E S C R I C A O _ A N A L I S E _ C R E D I T O
 '

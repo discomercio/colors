@@ -2870,6 +2870,64 @@
 		dim qtde_estoque_sem_presenca
 		end class
 
+' ORÇAMENTO/COTAÇÃO (t_ORCAMENTO_COTACAO)
+	class cl_ORCAMENTO_COTACAO
+		dim Id
+		dim Loja
+		dim NomeCliente
+		dim NomeObra
+		dim IdVendedor
+		dim IdIndicador
+		dim IdIndicadorVendedor
+		dim Email
+		dim Telefone
+		dim AceiteWhatsApp
+		dim UF
+		dim TipoCliente
+		dim ContribuinteIcms
+		dim Validade
+		dim ValidadeAnterior
+		dim QtdeRenovacao
+		dim IdUsuarioUltRenovacao
+		dim DataHoraUltRenovacao
+		dim Observacao
+		dim InstaladorInstalaStatus
+		dim GarantiaIndicadorStatus
+		dim StEtgImediata
+		dim PrevisaoEntregaData
+		dim Status
+		dim IdTipoUsuarioContextoUltStatus
+		dim IdUsuarioUltStatus
+		dim DataUltStatus
+		dim DataHoraUltStatus
+		dim VersaoPoliticaCredito
+		dim VersaoPoliticaPrivacidade
+		dim IdOrcamento
+		dim IdPedido
+		dim perc_max_comissao_padrao
+		dim perc_max_comissao_e_desconto_padrao
+		dim IdTipoUsuarioContextoCadastro
+		dim IdUsuarioCadastro
+		dim DataCadastro
+		dim DataHoraCadastro
+		dim IdTipoUsuarioContextoUltAtualizacao
+		dim IdUsuarioUltAtualizacao
+		dim DataHoraUltAtualizacao
+		dim InstaladorInstalaIdTipoUsuarioContexto
+		dim InstaladorInstalaIdUsuarioUltAtualiz
+		dim InstaladorInstalaDtHrUltAtualiz
+		dim GarantiaIndicadorIdTipoUsuarioContexto
+		dim GarantiaIndicadorIdUsuarioUltAtualiz
+		dim GarantiaIndicadorDtHrUltAtualiz
+		dim EtgImediataIdTipoUsuarioContexto
+		dim EtgImediataIdUsuarioUltAtualiz
+		dim EtgImediataDtHrUltAtualiz
+		dim PrevisaoEntregaIdTipoUsuarioContexto
+		dim PrevisaoEntregaIdUsuarioUltAtualiz
+		dim PrevisaoEntregaDtHrUltAtualiz
+		dim IdTipoUsuarioContextoUltRenovacao
+		end class
+
 	class cl_ORDEM_SERVICO
 		dim ordem_servico
 		dim usuario

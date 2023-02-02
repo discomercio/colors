@@ -84,10 +84,15 @@
 		end if
 	if rs.State <> 0 then rs.Close
 
+	dim r_orcamento_cotacao
 	if converte_numero(Trim("" & r_pedido.IdOrcamentoCotacao)) > 0 then
-		blnIndicadorEdicaoLiberada = False
-		alerta=texto_add_br(alerta)
-		alerta=alerta & "Não é possível alterar o indicador porque o pedido foi gerado a partir do orçamento nº " & formata_inteiro(r_pedido.IdOrcamentoCotacao)
+		if le_orcamento_cotacao(r_pedido.IdOrcamentoCotacao, r_orcamento_cotacao, msg_erro) then
+			if (r_orcamento_cotacao.IdIndicador <> ID_NSU_ORCAMENTISTA_E_INDICADOR__SEM_INDICADOR) And (Trim("" & r_orcamento_cotacao.IdIndicador) <> "") then
+				blnIndicadorEdicaoLiberada = False
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Não é possível alterar o indicador porque o pedido foi gerado a partir do orçamento nº " & formata_inteiro(r_pedido.IdOrcamentoCotacao)
+				end if
+			end if
 		end if
 
 	dim r_loja

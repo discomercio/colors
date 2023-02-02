@@ -109,7 +109,7 @@ var s1, s2, s3;
 	s1 = ucase(trim(f.senha.value));
 	s2 = ucase(trim(f.novasenha.value));
 	s3 = ucase(trim(f.novasenha2.value));
-	if (s1.length < TAM_MIN_SENHA){
+	if (s1.length <= 0){
 		f.senha.focus();
 		return false;
 		}
