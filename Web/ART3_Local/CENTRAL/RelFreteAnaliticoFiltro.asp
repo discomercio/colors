@@ -139,14 +139,19 @@ end function
 
             $("#divMsgAguardeObtendoDados").css('filter', 'alpha(opacity=50)');
 
-        if (fFILTRO.c_hidden_reload.value == 1) {
-            if (('localStorage' in window) && window['localStorage'] !== null) {
-                if ('c_indicador' in localStorage) {
-                    $("#c_indicador").html(localStorage.getItem('c_indicador'));
-                    $("#c_indicador").prop('selectedIndex', fFILTRO.c_hidden_indice_indicador.value);
-                }
-            }
-        }
+		if (fFILTRO.c_hidden_reload.value == 1) {
+			try {
+				if (('localStorage' in window) && window['localStorage'] !== null) {
+					if ('c_indicador' in localStorage) {
+						$("#c_indicador").html(localStorage.getItem('c_indicador'));
+						$("#c_indicador").prop('selectedIndex', fFILTRO.c_hidden_indice_indicador.value);
+					}
+				}
+			}
+			catch (e) {
+				// NOP
+			}
+		}
         
      <% end if %>
 
@@ -246,10 +251,15 @@ var i;
 	if (f.rb_tipo_saida[1].checked) setTimeout('exibe_botao_confirmar()', 15000);
 
     <% if lst_indicadores_carrega = "" then %>
-	    if (('localStorage' in window) && window['localStorage'] !== null) {
-        var d = $("#c_indicador").html();
-        localStorage.setItem('c_indicador', d);
-    }
+	try {
+		if (('localStorage' in window) && window['localStorage'] !== null) {
+			var d = $("#c_indicador").html();
+			localStorage.setItem('c_indicador', d);
+		}
+	}
+	catch (e) {
+		// NOP
+	}
 	<% end if %>
 
         fFILTRO.c_hidden_reload.value = 1;
