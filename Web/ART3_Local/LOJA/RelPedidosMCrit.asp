@@ -353,13 +353,18 @@ end function
     <% if lst_indicadores_carrega = "" then %>
 
     if (fFILTRO.c_hidden_reload.value == 1) {
-        if (('localStorage' in window) && window['localStorage'] !== null) {
-            if ('c_indicador' in localStorage) {
-                $("#c_indicador").html(localStorage.getItem('c_indicador'));
-                $("#c_indicador").prop('selectedIndex', fFILTRO.c_hidden_indice_indicador.value);
-            }
-        }
-    }
+			try {
+				if (('localStorage' in window) && window['localStorage'] !== null) {
+					if ('c_indicador' in localStorage) {
+						$("#c_indicador").html(localStorage.getItem('c_indicador'));
+						$("#c_indicador").prop('selectedIndex', fFILTRO.c_hidden_indice_indicador.value);
+					}
+				}
+			}
+			catch (e) {
+				// NOP
+			}
+		}
     
     <% end if %>
 		$("#c_dt_entregue_inicio").hUtilUI('datepicker_peq_filtro_inicial');
@@ -688,10 +693,14 @@ var strDtRefYYYYMMDD, strDtRefDDMMYYYY;
 	window.status = "Aguarde ...";
 	
 	<% if lst_indicadores_carrega = "" then %>
-
-	if (('localStorage' in window) && window['localStorage'] !== null) {
-	    var d = $("#c_indicador").html();
-	    localStorage.setItem('c_indicador', d);
+	try {
+		if (('localStorage' in window) && window['localStorage'] !== null) {
+			var d = $("#c_indicador").html();
+			localStorage.setItem('c_indicador', d);
+		}
+	}
+	catch (e) {
+		// NOP
 	}
 	<% end if %>
 

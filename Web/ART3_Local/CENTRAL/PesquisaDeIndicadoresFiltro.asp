@@ -587,44 +587,49 @@ if (f.rb_pesquisar_por[4].checked) {
 	window.status = "Aguarde ...";
     
    
-	// Save the search result table when leaving the page.
-	var d
+	try {
+		// Save the search result table when leaving the page.
+		var d;
 
-    if (f.rb_pesquisar_por[0].checked) {
-	    if (('localStorage' in window) && window['localStorage'] !== null) {
-	        var d = $("#c_escolher_loc").html();
-	        localStorage.setItem('c_escolher_loc', d);
-	    }
-	    if (('localStorage' in window) && window['localStorage'] !== null) {
-	        var d = $("#c_localidade_pesq").html();
-	        localStorage.setItem('c_localidade_pesq', d);
-	    }
+		if (f.rb_pesquisar_por[0].checked) {
+			if (('localStorage' in window) && window['localStorage'] !== null) {
+				var d = $("#c_escolher_loc").html();
+				localStorage.setItem('c_escolher_loc', d);
+			}
+			if (('localStorage' in window) && window['localStorage'] !== null) {
+				var d = $("#c_localidade_pesq").html();
+				localStorage.setItem('c_localidade_pesq', d);
+			}
+		}
+		if (f.rb_pesquisar_por[1].checked) {
+			if (('localStorage' in window) && window['localStorage'] !== null) {
+				var d = $("#c_bairro").html();
+				localStorage.setItem('c_bairro', d);
+			}
+			if (('localStorage' in window) && window['localStorage'] !== null) {
+				var d = $("#cidade_bairro").html();
+				localStorage.setItem('cidade_bairro', d);
+			}
+			if (('localStorage' in window) && window['localStorage'] !== null) {
+				var d = $("#bairro_pesq").html();
+				localStorage.setItem('bairro_pesq', d);
+			}
+		}
+		if (f.rb_pesquisar_por[3].checked) {
+			if (('localStorage' in window) && window['localStorage'] !== null) {
+				var d = $("#c_indicador").html();
+				localStorage.setItem('c_indicador', d);
+			}
+		}
+		if (f.rb_pesquisar_por[5].checked) {
+			if (('localStorage' in window) && window['localStorage'] !== null) {
+				var d = $("#c_vendedor").html();
+				localStorage.setItem('c_vendedor', d);
+			}
+		}
 	}
-	if (f.rb_pesquisar_por[1].checked) {
-	    if (('localStorage' in window) && window['localStorage'] !== null) {
-	        var d = $("#c_bairro").html();
-	        localStorage.setItem('c_bairro', d);
-	    }
-	    if (('localStorage' in window) && window['localStorage'] !== null) {
-	        var d = $("#cidade_bairro").html();
-	        localStorage.setItem('cidade_bairro', d);
-	    }
-	    if (('localStorage' in window) && window['localStorage'] !== null) {
-	        var d = $("#bairro_pesq").html();
-	        localStorage.setItem('bairro_pesq', d);
-	    }
-	} 
-	if (f.rb_pesquisar_por[3].checked) {
-	    if (('localStorage' in window) && window['localStorage'] !== null) {
-	        var d = $("#c_indicador").html();
-	        localStorage.setItem('c_indicador', d);
-	    }
-	}
-	if (f.rb_pesquisar_por[5].checked) {
-	    if (('localStorage' in window) && window['localStorage'] !== null) {
-	        var d = $("#c_vendedor").html();
-	        localStorage.setItem('c_vendedor', d);
-	    }
+	catch (e) {
+		// NOP
 	}
 
 
@@ -644,59 +649,64 @@ if (f.rb_pesquisar_por[4].checked) {
         var f = fFILTRO;
         $("#divMsgAguardeObtendoDados").css('filter', 'alpha(opacity=50)');
         // Replace the search result table on load.
-        if ($("#c_hidden_reload").val() == 1) {
-            if (f.rb_pesquisar_por[0].checked) {
-                if (('localStorage' in window) && window['localStorage'] !== null) {
-                    if ('c_escolher_loc' in localStorage) {
-                        $("#c_escolher_loc").html(localStorage.getItem('c_escolher_loc'));
-                        $("#c_escolher_loc").prop('selectedIndex', 1);
-                    }
-                }
-                if (('localStorage' in window) && window['localStorage'] !== null) {
-                    if ('c_localidade_pesq' in localStorage) {
-                        $("#c_localidade_pesq").html(localStorage.getItem('c_localidade_pesq'));
-                        $("#c_localidade_pesq").prop('selectedIndex', 1);
-                    }
-                }
-            }
-            if (f.rb_pesquisar_por[1].checked) {
-                if (('localStorage' in window) && window['localStorage'] !== null) {
-                    if ('c_bairro' in localStorage) {
-                        $("#c_bairro").html(localStorage.getItem('c_bairro'));
-                        $("#c_bairro").prop('selectedIndex', 1);
-                    }
-                }
+		if ($("#c_hidden_reload").val() == 1) {
+			try {
+				if (f.rb_pesquisar_por[0].checked) {
+					if (('localStorage' in window) && window['localStorage'] !== null) {
+						if ('c_escolher_loc' in localStorage) {
+							$("#c_escolher_loc").html(localStorage.getItem('c_escolher_loc'));
+							$("#c_escolher_loc").prop('selectedIndex', 1);
+						}
+					}
+					if (('localStorage' in window) && window['localStorage'] !== null) {
+						if ('c_localidade_pesq' in localStorage) {
+							$("#c_localidade_pesq").html(localStorage.getItem('c_localidade_pesq'));
+							$("#c_localidade_pesq").prop('selectedIndex', 1);
+						}
+					}
+				}
+				if (f.rb_pesquisar_por[1].checked) {
+					if (('localStorage' in window) && window['localStorage'] !== null) {
+						if ('c_bairro' in localStorage) {
+							$("#c_bairro").html(localStorage.getItem('c_bairro'));
+							$("#c_bairro").prop('selectedIndex', 1);
+						}
+					}
 
-                if (('localStorage' in window) && window['localStorage'] !== null) {
-                    if ('cidade_bairro' in localStorage) {
-                        $("#cidade_bairro").html(localStorage.getItem('cidade_bairro'));
-                        $("#cidade_bairro").prop('selectedIndex', fFILTRO.c_hidden_indice_cidade_bairro.value);
-                    }
-                }
-                if (('localStorage' in window) && window['localStorage'] !== null) {
-                    if ('bairro_pesq' in localStorage) {
-                        $("#bairro_pesq").html(localStorage.getItem('bairro_pesq'));
-                        $("#bairro_pesq").prop('selectedIndex', 1);
-                    }
-                }
-            }
-            if (f.rb_pesquisar_por[3].checked) {
-                if (('localStorage' in window) && window['localStorage'] !== null) {
-                    if ('c_indicador' in localStorage) {
-                        $("#c_indicador").html(localStorage.getItem('c_indicador'));
-                        $("#c_indicador").prop('selectedIndex', fFILTRO.c_hidden_indice_indicador.value);
-                    }
-                }
-            }
-            if (f.rb_pesquisar_por[5].checked) {
-                if (('localStorage' in window) && window['localStorage'] !== null) {
-                    if ('c_vendedor' in localStorage) {
-                        $("#c_vendedor").html(localStorage.getItem('c_vendedor'));
-                        $("#c_vendedor").prop('selectedIndex', fFILTRO.c_hidden_indice_vendedor.value);
-                    }
-                }
-            }
-        }
+					if (('localStorage' in window) && window['localStorage'] !== null) {
+						if ('cidade_bairro' in localStorage) {
+							$("#cidade_bairro").html(localStorage.getItem('cidade_bairro'));
+							$("#cidade_bairro").prop('selectedIndex', fFILTRO.c_hidden_indice_cidade_bairro.value);
+						}
+					}
+					if (('localStorage' in window) && window['localStorage'] !== null) {
+						if ('bairro_pesq' in localStorage) {
+							$("#bairro_pesq").html(localStorage.getItem('bairro_pesq'));
+							$("#bairro_pesq").prop('selectedIndex', 1);
+						}
+					}
+				}
+				if (f.rb_pesquisar_por[3].checked) {
+					if (('localStorage' in window) && window['localStorage'] !== null) {
+						if ('c_indicador' in localStorage) {
+							$("#c_indicador").html(localStorage.getItem('c_indicador'));
+							$("#c_indicador").prop('selectedIndex', fFILTRO.c_hidden_indice_indicador.value);
+						}
+					}
+				}
+				if (f.rb_pesquisar_por[5].checked) {
+					if (('localStorage' in window) && window['localStorage'] !== null) {
+						if ('c_vendedor' in localStorage) {
+							$("#c_vendedor").html(localStorage.getItem('c_vendedor'));
+							$("#c_vendedor").prop('selectedIndex', fFILTRO.c_hidden_indice_vendedor.value);
+						}
+					}
+				}
+			}
+			catch (e) {
+				// NOP
+			}
+		}
 
         //Every resize of window
         $(window).resize(function() {

@@ -1714,6 +1714,26 @@ var s;
 	f.submit();
 }
 
+function fProdCompostoConcluir(f) {
+	var s;
+	s = retorna_so_digitos(f.c_prod_comp_fabricante.value);
+	if (s == "") {
+		alert("Preencha o código do fabricante!!");
+		f.c_prod_comp_fabricante.focus();
+		return;
+	}
+
+	s = trim(f.c_prod_comp_produto.value);
+	if (s == "") {
+		alert("Preencha o código do produto!!");
+		f.c_prod_comp_produto.focus();
+		return;
+	}
+
+	window.status = "Aguarde ...";
+	f.submit();
+}
+
 function fPesqPrePedido(orcamento) {
     window.status = "Aguarde ...";
     fPEDPESQ.orcamento_selecionado.value=orcamento;
@@ -2882,6 +2902,32 @@ if operacao_permitida(OP_LJA_CONSULTA_PROD_BLOQ_ESTOQUE_ENTREGA, s_lista_operaco
 </div>
 </form>
 <% end if %>
+
+
+
+
+<!--  PRODUTO COMPOSTO (COMPOSIÇÃO)  -->
+<br />
+<form action="ProdutoCompostoConsulta.asp" method="post" id="fProdComposto" name="fProdComposto" onsubmit="if (!fProdCompostoConcluir(fProdComposto)) return false;">
+<%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
+<span id="spnProdComposto" class="T">PRODUTO COMPOSTO</span>
+<div class="QFn" align="center" style="width:600px;">
+	<table cellpadding="0" cellspacing="0" style="margin-top:10px;">
+		<tr>
+			<td class="R" align="left" nowrap>
+				<p class="C" style="margin: 12px 0px 12px 0px;">FABRICANTE&nbsp;
+				<input name="c_prod_comp_fabricante" id="c_prod_comp_fabricante" type="text" maxlength="4" style="width:40px;" onblur="this.value=normaliza_codigo(this.value, TAM_MIN_FABRICANTE);" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fProdComposto.c_prod_comp_produto.focus(); filtra_fabricante();">
+				&nbsp;&nbsp;&nbsp;&nbsp;PRODUTO&nbsp;
+				<input name="c_prod_comp_produto" id="c_prod_comp_produto" type="text" maxlength="8" style="width:80px;" onkeypress="if (digitou_enter(true) && tem_info(this.value)) {this.value=normaliza_produto(this.value); fProdCompostoConcluir(fProdComposto);} filtra_produto();" onblur="this.value=normaliza_produto(this.value);">
+				&nbsp;&nbsp;&nbsp;
+				<input name="bEXECUTAR" id="bEXECUTAR" type="submit" class="Botao" value="CONSULTAR" title="executa a consulta">
+				</p>
+			</td>
+		</tr>
+	</table>
+	<p class="R" style="margin: 0 10 0 10">&nbsp;</p>
+</div>
+</form>
 
 
 
