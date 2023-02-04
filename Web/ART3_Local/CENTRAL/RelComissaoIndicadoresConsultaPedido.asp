@@ -147,10 +147,15 @@ var s_ult_vendedor_selecionado = "--XX--XX--XX--XX--XX--";
 
 $(function () {
 	if (fFILTRO.c_hidden_reload.value == 1) {
-		if (('localStorage' in window) && window['localStorage'] !== null) {
-			if ('lista_id' in localStorage) {
-				$("#id").html(localStorage.getItem('lista_id'));
+		try {
+			if (('localStorage' in window) && window['localStorage'] !== null) {
+				if ('lista_id' in localStorage) {
+					$("#id").html(localStorage.getItem('lista_id'));
+				}
 			}
+		}
+		catch (e) {
+			// NOP
 		}
 	}
 
@@ -187,9 +192,14 @@ function fFILTROConfirma(f) {
 		f.id.focus();
 	}
 
-	if (('localStorage' in window) && window['localStorage'] !== null) {
-		var d = $("#id").html();
-		localStorage.setItem('lista_id', d);
+	try {
+		if (('localStorage' in window) && window['localStorage'] !== null) {
+			var d = $("#id").html();
+			localStorage.setItem('lista_id', d);
+		}
+	}
+	catch (e) {
+		// NOP
 	}
 
 	fFILTRO.c_hidden_reload.value = 1;
