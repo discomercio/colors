@@ -43,7 +43,7 @@
 	
 	
 '	OBTEM O ID
-	dim s, usuario, loja, id_selecionado, operacao_selecionada, tipo_PJ_PF, url_origem, cnpj_cpf_selecionado, i, cont
+	dim s, usuario, loja, id_selecionado, operacao_selecionada, tipo_PJ_PF, url_origem, cnpj_cpf_selecionado, i, cont, s_color
 	dim s_label, s_parametro, chave, senha_descripto, s_selected
 	usuario = trim(Session("usuario_atual"))
 	loja = Trim(Session("loja_atual"))
@@ -1112,6 +1112,30 @@ var s, s_senha;
 		<td class="MD" width="50%" align="left"><p class="R">SENHA</p><p class="C"><input id="senha" name="senha" class="TA" type="password" maxlength="15" size="18" value="<%=senha_descripto%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.senha2.focus();"></p></td>
 		<td width="50%" align="left"><p class="R">SENHA (CONFIRMAÇÃO)</p><p class="C"><input id="senha2" name="senha2" class="TA" type="password" maxlength="15" size="18" value="<%=senha_descripto%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.c_perc_desagio_RA.focus();"></p></td>
 		<input type="hidden" name="senha_original" id="senha_original" value="<%=senha_descripto%>" />
+	</tr>
+</table>
+
+<!-- ************   LOGIN BLOQUEADO AUTOMATICAMENTE?   ************ -->
+<table width="649" class="QS" cellspacing="0">
+	<tr>
+<%
+	s = "&nbsp;"
+	s_color = "black"
+	if operacao_selecionada=OP_CONSULTA then
+		if rs("StLoginBloqueadoAutomatico") <> 0 then
+			s = "Bloqueado em " & formata_data_hora_sem_seg(rs("DataHoraBloqueadoAutomatico")) & " (" & Trim("" & rs("QtdeConsecutivaFalhaLogin")) & " tentativas consecutivas com senha errada)"
+			s_color = "red"
+			end if
+		end if
+%>
+		<td width="100%" align="left">
+		<p class="R">LOGIN BLOQUEADO AUTOMATICAMENTE</p>
+		<p class="C" id="pMsgStLoginBloqueadoAutomatico" style="color:<%=s_color%>;"><%=s%>
+		<% if rs("StLoginBloqueadoAutomatico") <> 0 then %>
+		<input type="checkbox" id="ckb_desbloquear_bloqueio_automatico" name="ckb_desbloquear_bloqueio_automatico" value="ON" class="TA" style="margin-left:15px;" /><span class="C" onclick="fCAD.ckb_desbloquear_bloqueio_automatico.click();" style="cursor:default;">Desbloquear</span>
+		<% end if %>
+		</p>
+		</td>
 	</tr>
 </table>
 

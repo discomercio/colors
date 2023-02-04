@@ -72,7 +72,7 @@
 	dim s_ddd_cel, s_tel_cel, s_contato
 	dim s_banco, s_agencia, s_conta, s_favorecido
 	dim s_senha, s_senha2, s_senha_original
-	dim s_vendedor, s_acesso, s_status
+	dim s_vendedor, s_acesso, s_status, ckb_desbloquear_bloqueio_automatico
 	dim strEmail, strEmail2, strEmail3, strCaptador
 	dim strChecadoStatus, strObs
 	dim s_forma_como_conheceu_codigo
@@ -106,6 +106,7 @@
 	s_tel_cel = retorna_so_digitos(trim(Request.Form("tel_cel")))
 	s_senha=trim(Request.Form("senha"))
 	s_senha2=trim(Request.Form("senha2"))
+	ckb_desbloquear_bloqueio_automatico=trim(request("ckb_desbloquear_bloqueio_automatico"))
 	s_contato = trim(Request.Form("contato"))
 	s_acesso = trim(Request.Form("rb_acesso_hidden"))
 	strEmail = trim(Request.Form("c_email"))
@@ -464,7 +465,7 @@
 				s="DELETE FROM t_ORCAMENTISTA_E_INDICADOR WHERE apelido = '" & s_id_selecionado & "'"
 				cn.Execute(s)
 				If Err = 0 then 
-					if s_log <> "" then grava_log usuario, "", "", "", OP_LOG_ORCAMENTISTA_E_INDICADOR_EXCLUSAO, s_log
+					if s_log <> "" then grava_log usuario, loja, "", "", OP_LOG_ORCAMENTISTA_E_INDICADOR_EXCLUSAO, s_log
 				else
 					erro_fatal=True
 					alerta = "FALHA AO REMOVER O ORÇAMENTISTA / INDICADOR (" & Cstr(Err) & ": " & Err.Description & ")."
@@ -895,9 +896,9 @@
                     set t = nothing
                     
                     ' grava log contatos
-                    if s_contato_log_exclusao <> "" then grava_log usuario, "", "", "", OP_LOG_ORCAMENTISTA_E_INDICADOR_CONTATOS__EXCLUSAO, s_contato_log_exclusao
-                    if s_contato_log_inclusao <> "" then grava_log usuario, "", "", "", OP_LOG_ORCAMENTISTA_E_INDICADOR_CONTATOS__INCLUSAO, s_contato_log_inclusao
-                    if s_contato_log_edicao <> "" then grava_log usuario, "", "", "", OP_LOG_ORCAMENTISTA_E_INDICADOR_CONTATOS__EDICAO, s_contato_log_edicao
+                    if s_contato_log_exclusao <> "" then grava_log usuario, loja, "", "", OP_LOG_ORCAMENTISTA_E_INDICADOR_CONTATOS__EXCLUSAO, s_contato_log_exclusao
+                    if s_contato_log_inclusao <> "" then grava_log usuario, loja, "", "", OP_LOG_ORCAMENTISTA_E_INDICADOR_CONTATOS__INCLUSAO, s_contato_log_inclusao
+                    if s_contato_log_edicao <> "" then grava_log usuario, loja, "", "", OP_LOG_ORCAMENTISTA_E_INDICADOR_CONTATOS__EDICAO, s_contato_log_edicao
                     
                     
                     ' Houve alteração?
@@ -983,6 +984,9 @@
 					r("datastamp")=senha_cripto
 					r("senha") = gera_senha_aleatoria
 					r("dt_ult_alteracao_senha") = Null
+					'Ao alterar a senha, assegura que um eventual bloqueio automático de login também seja desbloqueado
+					r("StLoginBloqueadoAutomatico") = 0
+					r("QtdeConsecutivaFalhaLogin") = 0
 					end if
 					
 				r("email") = strEmail
@@ -1005,6 +1009,11 @@
 				
 				r("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
 
+				if ckb_desbloquear_bloqueio_automatico <> "" then
+					r("StLoginBloqueadoAutomatico") = 0
+					r("QtdeConsecutivaFalhaLogin") = 0
+					end if
+
 				r.Update
 
 				If Err = 0 then 
@@ -1012,14 +1021,14 @@
 					if criou_novo_reg then
 						s_log = log_via_vetor_monta_inclusao(vLog2)
 						if s_log <> "" then 
-							grava_log usuario, "", "", "", OP_LOG_ORCAMENTISTA_E_INDICADOR_INCLUSAO, s_log
+							grava_log usuario, loja, "", "", OP_LOG_ORCAMENTISTA_E_INDICADOR_INCLUSAO, s_log
 							end if
 					else
 						s_log = log_via_vetor_monta_alteracao(vLog1, vLog2)
 						if (s_log <> "") then 
 							if s_log <> "" then s_log = "; " & s_log
 							s_log="apelido=" & Trim("" & r("apelido")) & s_log
-							grava_log usuario, "", "", "", OP_LOG_ORCAMENTISTA_E_INDICADOR_ALTERACAO, s_log
+							grava_log usuario, loja, "", "", OP_LOG_ORCAMENTISTA_E_INDICADOR_ALTERACAO, s_log
 							end if
 						end if
 				else

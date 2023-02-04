@@ -59,7 +59,7 @@
 	
 '	OBTÉM DADOS DO FORMULÁRIO ANTERIOR
 	dim i, n
-	dim s_usuario, s_senha, s_senha2, s_senha_original, s_nome, s_email, s_bloqueado, s_vendedor, operacao_selecionada, s_vendedor_ext
+	dim s_usuario, s_senha, s_senha2, s_senha_original, s_nome, s_email, s_bloqueado, s_vendedor, operacao_selecionada, s_vendedor_ext, ckb_desbloquear_bloqueio_automatico
 	operacao_selecionada=request("operacao_selecionada")
 	s_usuario=UCase(trim(request("usuario_selecionado")))
 	s_senha=trim(request("senha"))
@@ -69,6 +69,7 @@
 	s_bloqueado=trim(request("rb_estado"))
 	s_vendedor=trim(request("ckb_vendedor"))
 	s_vendedor_ext=trim(request("ckb_vendedor_ext"))
+	ckb_desbloquear_bloqueio_automatico=trim(request("ckb_desbloquear_bloqueio_automatico"))
 
 '	SE FOR VENDEDOR DA LOJA, ARMAZENA RELAÇÃO DE LOJAS LIBERADAS
 	dim qtde_loja_vendedor, v_loja_vendedor
@@ -445,6 +446,9 @@
 					r("datastamp")=senha_cripto
 					r("senha") = gera_senha_aleatoria
 					r("dt_ult_alteracao_senha") = Null
+					'Ao alterar a senha, assegura que um eventual bloqueio automático de login também seja desbloqueado
+					r("StLoginBloqueadoAutomatico") = 0
+					r("QtdeConsecutivaFalhaLogin") = 0
 					end if
 
 				if s_vendedor_ext <> "" then
@@ -452,7 +456,12 @@
 				else
 					r("vendedor_externo")=0
 					end if
-					
+				
+				if ckb_desbloquear_bloqueio_automatico <> "" then
+					r("StLoginBloqueadoAutomatico") = 0
+					r("QtdeConsecutivaFalhaLogin") = 0
+					end if
+
 				r.Update
 
 			'	PERFIL

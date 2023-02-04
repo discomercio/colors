@@ -97,7 +97,7 @@
 	dim s_ddd_cel, s_tel_cel, s_contato
 	dim s_banco, s_agencia, s_conta, s_favorecido
 	dim s_senha, s_senha2, s_senha_original
-	dim s_loja, s_vendedor, s_acesso, s_status, s_permite_RA_status
+	dim s_loja, s_vendedor, s_acesso, s_status, s_permite_RA_status, ckb_desbloquear_bloqueio_automatico
 	dim s_desempenho_nota
 	dim s_perc_desagio_RA, strValorLimiteMensal, strValorMeta
 	dim strEmail, strEmail2, strEmail3, strCaptador
@@ -143,6 +143,7 @@
     s_favorecido_cnpjcpf = retorna_so_digitos(trim(Request.Form("favorecido_cnpjcpf")))
 	s_senha=trim(Request.Form("senha"))
 	s_senha2=trim(Request.Form("senha2"))
+	ckb_desbloquear_bloqueio_automatico=trim(request("ckb_desbloquear_bloqueio_automatico"))
 	s_loja = trim(Request.Form("loja"))
 	s_vendedor = trim(Request.Form("vendedor"))
 	s_acesso = trim(Request.Form("rb_acesso"))
@@ -1370,6 +1371,9 @@
 					r("datastamp")=senha_cripto
 					r("senha") = gera_senha_aleatoria
 					r("dt_ult_alteracao_senha") = Null
+					'Ao alterar a senha, assegura que um eventual bloqueio automático de login também seja desbloqueado
+					r("StLoginBloqueadoAutomatico") = 0
+					r("QtdeConsecutivaFalhaLogin") = 0
 					end if
 				
 				if s_desempenho_nota <> Trim("" & r("desempenho_nota")) then
@@ -1425,6 +1429,11 @@
 					end if
 
 				r("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
+
+				if ckb_desbloquear_bloqueio_automatico <> "" then
+					r("StLoginBloqueadoAutomatico") = 0
+					r("QtdeConsecutivaFalhaLogin") = 0
+					end if
 
 				r.Update
                 

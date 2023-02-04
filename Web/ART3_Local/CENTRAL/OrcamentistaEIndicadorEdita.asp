@@ -1385,6 +1385,30 @@ var s, s_senha, cont;
 	</tr>
 </table>
 
+<!-- ************   LOGIN BLOQUEADO AUTOMATICAMENTE?   ************ -->
+<table width="649" class="QS" cellspacing="0">
+	<tr>
+<%
+	s = "&nbsp;"
+	s_color = "black"
+	if operacao_selecionada=OP_CONSULTA then
+		if rs("StLoginBloqueadoAutomatico") <> 0 then
+			s = "Bloqueado em " & formata_data_hora_sem_seg(rs("DataHoraBloqueadoAutomatico")) & " (" & Trim("" & rs("QtdeConsecutivaFalhaLogin")) & " tentativas consecutivas com senha errada)"
+			s_color = "red"
+			end if
+		end if
+%>
+		<td width="100%" align="left">
+		<p class="R">LOGIN BLOQUEADO AUTOMATICAMENTE</p>
+		<p class="C" id="pMsgStLoginBloqueadoAutomatico" style="color:<%=s_color%>;"><%=s%>
+		<% if rs("StLoginBloqueadoAutomatico") <> 0 then %>
+		<input type="checkbox" id="ckb_desbloquear_bloqueio_automatico" name="ckb_desbloquear_bloqueio_automatico" value="ON" class="TA" style="margin-left:15px;" /><span class="C" onclick="fCAD.ckb_desbloquear_bloqueio_automatico.click();" style="cursor:default;">Desbloquear</span>
+		<% end if %>
+		</p>
+		</td>
+	</tr>
+</table>
+
 <!-- ************   PERCENTUAL DE DESÁGIO DO RA / LIMITE MENSAL COMPRAS   ************ -->
 <table width="649" class="QS" cellspacing="0">
 	<tr>
