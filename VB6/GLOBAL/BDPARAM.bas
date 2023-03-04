@@ -14,7 +14,7 @@ Option Explicit
   ' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   ' ******* ANTES DE COMPILAR, CONFIGURE AQUI O AMBIENTE !!         *******
   ' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Global Const DESENVOLVIMENTO = False
+    Global Const DESENVOLVIMENTO = True
   ' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   ' ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -52,9 +52,17 @@ Option Explicit
         descricao As String
         End Type
     
+    Type TIPO_RESPONSAVEL_TECNICO_EMISSAO
+        CNPJ As String
+        nome As String
+        EMAIL As String
+        telefone As String
+        End Type
+    
     Global bd_selecionado As TIPO_PARAMETROS_CONEXAO_BD
     Global bd_selecionado_at As TIPO_PARAMETROS_CONEXAO_BD
     Global bd_selecionado_cep As TIPO_PARAMETROS_CONEXAO_BD
+    Global resptec_emissor As TIPO_RESPONSAVEL_TECNICO_EMISSAO
       
       
   ' DEFINE OS PARÂMETROS PARA ABRIR BD

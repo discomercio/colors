@@ -134,6 +134,8 @@ Option Explicit
     Global param_contingencia_meio_pagamento_cartao As TIPO_t_PARAMETRO
     
     Global param_contingencia_meio_pagamento_geral As TIPO_t_PARAMETRO
+    
+    Global param_nfinformaresptec As TIPO_t_PARAMETRO
 
 
     Global Const FORMATO_MOEDA = "###,###,###,##0.00"

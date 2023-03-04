@@ -6511,6 +6511,7 @@ Dim strNFeTagFat As String
 Dim strNFeTagDup As String
 Dim strNFeTagInfAdicionais As String
 Dim strNFeTagPag As String
+Dim strNFeTagInfRespTec As String
 Dim strNFeInfAdicQuadroProdutos As String
 Dim strNFeInfAdicQuadroInfAdic As String
 Dim strCfopCodigo As String
@@ -6764,6 +6765,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeInfAdicQuadroInfAdic = ""
     strNFeTagFat = ""
     strNFeTagDup = ""
+    strNFeTagInfRespTec = ""
     
     blnTemPedidoComStBemUsoConsumo = False
     blnTemPedidoSemStBemUsoConsumo = False
@@ -10246,6 +10248,17 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 End If
             End If
         End If
+        
+'   TAG INFRESTEC
+'   ~~~~~~~~~~~~~
+    If (param_nfinformaresptec.campo_inteiro = 1) And (resptec_emissor.CNPJ <> "") Then
+        strNFeTagInfRespTec = "infRespTec;" & vbCrLf & _
+                                vbTab & NFeFormataCampo("CNPJ", resptec_emissor.CNPJ) & _
+                                vbTab & NFeFormataCampo("xContato", resptec_emissor.nome) & _
+                                vbTab & NFeFormataCampo("email", resptec_emissor.EMAIL) & _
+                                vbTab & NFeFormataCampo("fone", resptec_emissor.telefone)
+        End If
+        
 
 '   SÓ AUTORIZA EMISSÃO SEM INTERMEDIADOR SE intImprimeIntermediadorAusente FOR 1
 '   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -10260,6 +10273,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             Exit Sub
             End If
         End If
+
+
 
 
 '   Nº DA NFE: AUTOMÁTICO OU MANUAL?
@@ -10578,7 +10593,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                    strNFeTagFat & _
                    strNFeTagDup & _
                    strNFeTagPag & _
-                   strNFeTagInfAdicionais
+                   strNFeTagInfAdicionais & _
+                   strNFeTagInfRespTec
     
     
 '   REGISTRA DADOS DA NFE P/ FINS DE HISTÓRICO, CONTROLE E CONSULTA DA DANFE
@@ -13989,7 +14005,9 @@ Dim cor_inicial As String
     
     '   OBTER O PARÂMETRO DA CONTINGÊNCIA PARA QUALQUER MEIO DE PAGAMENTO
         get_registro_t_parametro "NF_Contingencia_MeioPagamento_Geral", param_contingencia_meio_pagamento_geral
-            
+        
+    '   OBTER O PARÂMETRO DO RESPONSÁVEL TÉCNICO DO SOFTWARE EMISSOR
+        get_registro_t_parametro "NF_Informa_Resp_Tec", param_nfinformaresptec
     
     '   SELEÇÃO DO EMITENTE A SER UTILIZADO
         If obtem_emitentes_usuario(usuario.id, vEmitsUsuario, qtdEmits) Then

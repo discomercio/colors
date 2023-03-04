@@ -6099,6 +6099,7 @@ Dim strNFeTagVol As String
 Dim strNFeTagFat As String
 Dim strNFeTagDup As String
 Dim strNFeTagInfAdicionais As String
+Dim strNFeTagInfRespTec As String
 Dim strNFeTagPag As String
 Dim strNFeInfAdicQuadroProdutos As String
 Dim strNFeInfAdicQuadroInfAdic As String
@@ -6490,6 +6491,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     strNFeTagTransp = ""
     strNFeTagTransporta = ""
     strNFeTagInfAdicionais = ""
+    strNFeTagInfRespTec = ""
     strNFeInfAdicQuadroProdutos = ""
     strNFeInfAdicQuadroInfAdic = ""
     strNFeTagFat = ""
@@ -8930,6 +8932,17 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                              vbTab & NFeFormataCampo("infCpl", rNFeImg.infAdic__infCpl)
     
     
+'   TAG INFRESTEC
+'   ~~~~~~~~~~~~~
+    If (param_nfinformaresptec.campo_inteiro = 1) And (resptec_emissor.CNPJ <> "") Then
+        strNFeTagInfRespTec = "infRespTec;" & vbCrLf & _
+                                vbTab & NFeFormataCampo("CNPJ", resptec_emissor.CNPJ) & _
+                                vbTab & NFeFormataCampo("xContato", resptec_emissor.nome) & _
+                                vbTab & NFeFormataCampo("email", resptec_emissor.EMAIL) & _
+                                vbTab & NFeFormataCampo("fone", resptec_emissor.telefone)
+        End If
+    
+    
 '   Nº DA NFE: AUTOMÁTICO OU MANUAL?
 '   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     If FLAG_NUMERACAO_MANUAL Then
@@ -9273,7 +9286,8 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                    strNFeTagFat & _
                    strNFeTagDup & _
                    strNFeTagPag & _
-                   strNFeTagInfAdicionais
+                   strNFeTagInfAdicionais & _
+                   strNFeTagInfRespTec
     
     
 '   REGISTRA DADOS DA NFE P/ FINS DE HISTÓRICO, CONTROLE E CONSULTA DA DANFE
