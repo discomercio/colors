@@ -4001,13 +4001,13 @@ Dim Fnum As Integer
                 Case "OPTION_CEP"
                     s_senha_cep = s_valor
                 Case "RESPTEC_CNPJ"
-                    resptec_emissor.CNPJ = s_valor
+                    resptec_emissor.CNPJ = retorna_so_digitos(s_valor)
                 Case "RESPTEC_NOME"
                     resptec_emissor.nome = s_valor
                 Case "RESPTEC_EMAIL"
                     resptec_emissor.EMAIL = s_valor
                 Case "RESPTEC_TELEFONE"
-                    resptec_emissor.telefone = s_valor
+                    resptec_emissor.telefone = retorna_so_digitos(s_valor)
                 End Select
             End If
         Loop
