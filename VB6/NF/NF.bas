@@ -817,9 +817,10 @@ Option Explicit
 '|          |      |   de tributos (IBPT) para operações de transferência      |
 '|          |      |   de estoque entre filiais (CFOP 5152)                    |
 '|__________|______|___________________________________________________________|
-'|01.03.2023| LHGX |V 2.30                                                     |
+'|10.03.2023| LHGX |V 2.30                                                     |
 '|          |      | - Inclusão tag infRespTec                                 |
-'|          |      |                                                           |
+'|          |      | - Adição do parâmetro NF_Informa_Resp_Tec para ativar ou  |
+'|          |      |   desativar o envio de informações da tag infRespTec      |
 '|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
@@ -833,7 +834,7 @@ Option Explicit
 
 
 Global Const m_id_versao = "2.30"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  01/03/2023"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  10/03/2023"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"
