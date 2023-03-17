@@ -362,7 +362,8 @@ dim v, i
 				" t_PRODUTO.descricao," & _
 				" t_PRODUTO.descricao_html," & _
 				" t_FABRICANTE.razao_social, t_FABRICANTE.nome," & _
-				" t_ESTOQUE.data_emissao_NF_entrada" & _
+				" t_ESTOQUE.data_emissao_NF_entrada," & _
+                " t_ESTOQUE.entrada_tipo" & _
             " FROM t_ESTOQUE INNER JOIN t_ESTOQUE_ITEM ON (t_ESTOQUE.id_estoque=t_ESTOQUE_ITEM.id_estoque)" & _
 				" LEFT JOIN t_PRODUTO ON ((t_ESTOQUE_ITEM.fabricante=t_PRODUTO.fabricante) AND (t_ESTOQUE_ITEM.produto=t_PRODUTO.produto))" & _
 				" LEFT JOIN t_FABRICANTE ON (t_ESTOQUE.fabricante=t_FABRICANTE.fabricante)" & _
@@ -539,12 +540,16 @@ dim v, i
 		x = x & chr(13) & "	<TD align='center' valign='middle' class='MDB' NOWRAP style='width:" & w_dt_entrada & "px;'><span class='Cn'>" & s_link_open & formata_data(rs("data_entrada")) & s_link_close & "</span>" & "</TD>"
 		
 	'	DOCUMENTO
+    '   (OBS: NO CASO DO RELATÓRIO HTML, HAVERÁ UM CAMPO OCULTO PARA INDICAR TIPO DA ENTRADA - MANUAL OU XML)
 		if blnSaidaExcel then s_nowrap = " NOWRAP" else s_nowrap = ""
 		s = Trim("" & rs("documento"))
 		if Not blnSaidaExcel then
 			if s = "" then s = "&nbsp;"
+            s_aux = Cstr(rs("entrada_tipo"))
+            if s_aux <> "" then s_aux = "<input type='hidden' name='c_entrada_tipo' id='c_entrada_tipo' value='" & s_aux & "'/>"
 			end if
-		x = x & chr(13) & "	<TD valign='middle' class='MDB'" & s_nowrap & " style='width:" & w_documento & "px;'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s_link_open & s & s_link_close & "</span></TD>"
+		x = x & chr(13) & "	<TD valign='middle' class='MDB'" & s_nowrap & " style='width:" & w_documento & "px;'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s_link_open & s & s_link_close
+        x = x & "</span></TD>"
 
 	'	DATA NF
 		'if blnSaidaExcel then s_nowrap = " NOWRAP" else s_nowrap = ""
@@ -596,9 +601,14 @@ dim v, i
 		if blnSaidaExcel then s_nowrap = " NOWRAP" else s_nowrap = ""
 		x = x & chr(13) & "	<TD valign='middle' class='MB'" & s_nowrap & " style='width:" & w_operador & "px;'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & Trim("" & rs("usuario")) & "</span></TD>"
 
+	'	TIPO DE ENTRADA (CAMPO OCULTO)
+		if not blnSaidaExcel then 
+		x = x & chr(13) & "	<TD valign='middle' class='MB'" & s_nowrap & " style='width:" & w_operador & "px;'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & Trim("" & rs("usuario")) & "</span></TD>"
+            end if
+
 		x = x & "</TR>" & chr(13)
 
-		if (n_reg mod 100) = 0 then
+    	if (n_reg mod 100) = 0 then
 			Response.Write x
 			x = ""
 			end if
