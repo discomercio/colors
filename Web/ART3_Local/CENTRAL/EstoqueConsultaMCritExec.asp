@@ -546,10 +546,11 @@ dim v, i
 		if Not blnSaidaExcel then
 			if s = "" then s = "&nbsp;"
             s_aux = Cstr(rs("entrada_tipo"))
-            if s_aux <> "" then s_aux = "<input type='hidden' name='c_entrada_tipo' id='c_entrada_tipo' value='" & s_aux & "'/>"
+            if s_aux <> "" then s_aux = "<input type='hidden' name='c_entrada_tipo' id='c_entrada_tipo' value='" & s_aux & "' />"
 			end if
-		x = x & chr(13) & "	<TD valign='middle' class='MDB'" & s_nowrap & " style='width:" & w_documento & "px;'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s_link_open & s & s_link_close
-        x = x & "</span></TD>"
+		x = x & chr(13) & "	<TD valign='middle' class='MDB'" & s_nowrap & " style='width:" & w_documento & "px;'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s_link_open & s & s_link_close & "</span>"
+        x = x & s_aux
+        x = x & "</TD>"
 
 	'	DATA NF
 		'if blnSaidaExcel then s_nowrap = " NOWRAP" else s_nowrap = ""
@@ -664,8 +665,14 @@ end sub
 <script language="JavaScript" type="text/javascript">
 window.status='Aguarde, executando a consulta ...';
 
-function fConcluir ( id ) {
-	fESTOQ.action = "EstoqueConsultaEAN.asp";
+function fConcluir(id) {
+        alert("c_entrada_tipo = " + c_entrada_tipo);
+    if (c_entrada_tipo == "1") {
+        fESTOQ.action = "EstoqueConsultaXML.asp";
+    }
+    else {
+        fESTOQ.action = "EstoqueConsultaEAN.asp";
+    }
 	fESTOQ.estoque_selecionado.value = id;
 	fESTOQ.submit();
 }
@@ -766,6 +773,7 @@ a
 <input type=HIDDEN name="ckb_devolucao" id="ckb_devolucao" value="<%=ckb_devolucao%>">
 <input type="hidden" name="c_grupo" id="c_grupo" value="<%=c_grupo%>" />
 <input type="hidden" name="c_subgrupo" id="c_subgrupo" value="<%=c_subgrupo%>" />
+<input type="hidden" name="c_entrada_tipo" id="c_entrada_tipo" value="" />
 
 
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->
