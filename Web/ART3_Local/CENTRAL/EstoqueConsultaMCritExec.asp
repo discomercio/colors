@@ -532,6 +532,7 @@ dim v, i
 			s_link_close = ""
 		else
 			s_link_open = "<a href='javascript:fConcluir(" & chr(34) & Trim("" & rs("id_estoque")) & chr(34) & _
+                    "," & chr(34) & Trim("" & Cstr(rs("entrada_tipo"))) & chr(34) & _
 					 ")' title='clique para consultar este registro de entrada no estoque'>"
 			s_link_close = "</a>"
 			end if
@@ -540,17 +541,12 @@ dim v, i
 		x = x & chr(13) & "	<TD align='center' valign='middle' class='MDB' NOWRAP style='width:" & w_dt_entrada & "px;'><span class='Cn'>" & s_link_open & formata_data(rs("data_entrada")) & s_link_close & "</span>" & "</TD>"
 		
 	'	DOCUMENTO
-    '   (OBS: NO CASO DO RELATÓRIO HTML, HAVERÁ UM CAMPO OCULTO PARA INDICAR TIPO DA ENTRADA - MANUAL OU XML)
 		if blnSaidaExcel then s_nowrap = " NOWRAP" else s_nowrap = ""
 		s = Trim("" & rs("documento"))
 		if Not blnSaidaExcel then
 			if s = "" then s = "&nbsp;"
-            s_aux = Cstr(rs("entrada_tipo"))
-            if s_aux <> "" then s_aux = "<input type='hidden' name='c_entrada_tipo' id='c_entrada_tipo' value='" & s_aux & "' />"
 			end if
-		x = x & chr(13) & "	<TD valign='middle' class='MDB'" & s_nowrap & " style='width:" & w_documento & "px;'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s_link_open & s & s_link_close & "</span>"
-        x = x & s_aux
-        x = x & "</TD>"
+		x = x & chr(13) & "	<TD valign='middle' class='MDB'" & s_nowrap & " style='width:" & w_documento & "px;'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s_link_open & s & s_link_close & "</span></TD>"
 
 	'	DATA NF
 		'if blnSaidaExcel then s_nowrap = " NOWRAP" else s_nowrap = ""
@@ -665,9 +661,8 @@ end sub
 <script language="JavaScript" type="text/javascript">
 window.status='Aguarde, executando a consulta ...';
 
-function fConcluir(id) {
-        alert("c_entrada_tipo = " + c_entrada_tipo);
-    if (c_entrada_tipo == "1") {
+function fConcluir(id,entrada_tipo) {
+    if (entrada_tipo == "1") {
         fESTOQ.action = "EstoqueConsultaXML.asp";
     }
     else {
