@@ -434,7 +434,7 @@ dim percPrecoVenda, percPrecoNF
 dim vlTotalFrete, vlTotalPrecoNF, vlTotalPrecoVenda, vlTotalPrecoNFAjustado, vlTotalPrecoVendaAjustado
 dim vlTotalPercPrecoNF, vlTotalPercPrecoVenda
 dim strTransportadora, strTransportadoraAnterior, strTransportadoraAux, strPlural,strPluralFrete,pedidoAnterior
-dim strCidade, strUf, strCidadeUf, strNF
+dim strCidade, strUf, strCidadeUf, strCnpjCpfCliente, strNF
 dim intQtdeTotalPedidos, intQtdeTransportadoras
 dim intQtdeSubTotalPedidos, vlSubTotalFrete, vlSubTotalPrecoNF, vlSubTotalPrecoVenda, vlSubTotalPercPrecoNF, vlSubTotalPercPrecoVenda
 dim strPercPrecoNF, strPercPrecoVenda, strVlSubTotalPercPrecoNF, strVlSubTotalPercPrecoVenda, strVlTotalPercPrecoNF, strVlTotalPercPrecoVenda
@@ -555,8 +555,10 @@ dim pedidoatual, s_where_externo
 	            ",st_end_entrega " & _
 	            ",EndEtg_cidade " & _
 	            ",EndEtg_uf " & _
+				",EndEtg_cnpj_cpf " & _
 	            ",cidade " & _
 	            ",uf " & _
+				",cliente_cnpj_cpf " & _
 	            ",vl_frete " & _
 	            ",codigo_tipo_frete " & _
 	            ",descricao " & _
@@ -580,16 +582,19 @@ dim pedidoatual, s_where_externo
                 s_sql = s_sql + ") as qtde_pedido," & _  
 				"p.st_end_entrega, " & _
 				"p.EndEtg_cidade, " & _
-				"p.EndEtg_uf, "
+				"p.EndEtg_uf, " & _
+				"p.EndEtg_cnpj_cpf,"
 
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
 				"p.endereco_cidade AS cidade, " & _
-				"p.endereco_uf AS uf, "
+				"p.endereco_uf AS uf, " & _
+				"p.endereco_cnpj_cpf AS cliente_cnpj_cpf,"
 	else
 		s_sql = s_sql & _
 				"c.cidade, " & _
-				"c.uf, "
+				"c.uf, " & _
+				"c.cnpj_cpf AS cliente_cnpj_cpf,"
 		end if
 
 	s_sql = s_sql & _
@@ -690,6 +695,7 @@ dim pedidoatual, s_where_externo
 		"		<TD class='MDTE tdPedido' align='left' valign='bottom' NOWRAP><span class='R titColL'>Pedido</span></TD>" &  chr(13) & _
 		"		<TD class='MTD tdNF' align='left' valign='bottom'><span class='R titColL'>NF</span></TD>" & chr(13) & _
 		"		<TD class='MTD tdCidade' align='left' valign='bottom'><span class='R titColL'>Cidade</span></TD>" & chr(13) & _
+		"		<TD class='MTD tdCnpjCpfCliente' align='left' valign='bottom'><span class='R titColL'>CNPJ/CPF</span><br /><span class='R titColL'>Cliente</span></TD>" & chr(13) & _
 		"		<TD class='MTD tdTipoFrete' align='right' valign='bottom'><span class='Rd titColR'>Tipo Frete</span></TD>" & chr(13) & _
 		"		<TD class='MTD tdValorFrete' align='right' valign='bottom'><span class='Rd titColR'>Frete (" & SIMBOLO_MONETARIO & ")</span></TD>" & chr(13) & _
 		"		<TD class='MTD tdPrecoNF' align='right' valign='bottom'><span class='Rd titColR'>Preço (" & SIMBOLO_MONETARIO & ")</span></TD>" & chr(13) & _
@@ -766,7 +772,7 @@ dim pedidoatual, s_where_externo
 					"		<TD colspan='2' class='MTE'>" & _
 								"<P class='C' style=text-align:left;>" & formata_inteiro(intQtdeSubTotalPedidos) & " pedido" & strPlural & "</p>" & _
 					"		</TD>" & chr(13) & _
-                    "		<TD colspan='2' class='MTD '>" & _
+                    "		<TD colspan='3' class='MTD '>" & _
 								"<P class='C' style=text-align:left;>" & formata_inteiro(intQtdeSubTotalFretes) & " frete" & strPluralFrete & "</p>" & _
 					"		</TD>" & chr(13) & _
 					"		<TD class='MTD tdValorFrete'>" & _
@@ -806,13 +812,13 @@ dim pedidoatual, s_where_externo
 			if intQtdeTotalPedidos > 0 then
 			x = x & _
 					"	<TR>" & chr(13) & _
-					"		<TD colspan=13 class='MC'>&nbsp;</TD>" & chr(13) & _
+					"		<TD colspan=14 class='MC'>&nbsp;</TD>" & chr(13) & _
 					"	</TR>" & chr(13)
 				end if
 			
 			x = x & _
 				"	<TR style='background:azure'>" & chr(13) & _
-				"		<TD colspan=13 class='MC ME MD'><P class='C' style='font-weight:bold;text-align:left;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & strTransportadoraAux & "</P></TD>" & chr(13) & _
+				"		<TD colspan=14 class='MC ME MD'><P class='C' style='font-weight:bold;text-align:left;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & strTransportadoraAux & "</P></TD>" & chr(13) & _
 				"	</TR>" & chr(13)
 			
 		'	TÍTULO DAS COLUNAS
@@ -892,9 +898,11 @@ dim pedidoatual, s_where_externo
 		if CInt(r("st_end_entrega")) = 0 then
 			strCidade = Trim("" & r("cidade"))
 			strUf = Trim("" & r("uf"))
+			strCnpjCpfCliente = Trim("" & r("cliente_cnpj_cpf"))
 		else
 			strCidade = Trim("" & r("EndEtg_cidade"))
 			strUf = Trim("" & r("EndEtg_uf"))
+			strCnpjCpfCliente = Trim("" & r("EndEtg_cnpj_cpf"))
 			end if
 		
 		if strCidade <> "" then strCidade = iniciais_em_maiusculas(strCidade)
@@ -909,6 +917,16 @@ dim pedidoatual, s_where_externo
 							"<p class='C' style='text-align:left;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & strCidadeUf & "</p>" & _
 						"</TD>" & chr(13)
 		
+	'>  CNPJ/CPF CLIENTE
+		if strCnpjCpfCliente <> "" then
+			strCnpjCpfCliente = cnpj_cpf_formata(strCnpjCpfCliente)
+		else
+			strCnpjCpfCliente = "&nbsp;"
+			end if
+		x = x & "		<TD class='MTD tdCnpjCpfCliente'>" & _
+							"<p class='C' style='text-align:left;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & strCnpjCpfCliente & "</p>" & _
+						"</TD>" & chr(13)
+
     '>  TIPO DE FRETE
         x = x & "		<TD class='MTD tdValorFrete'>" & _
 							"<P class='Cd' style='text-align:center'>" & r("descricao") & "</P>" & _
@@ -1069,7 +1087,7 @@ dim pedidoatual, s_where_externo
 		x = cab_table & _
 			cab & _
 			"	<TR NOWRAP>" & chr(13) & _
-			"		<TD class='MC MD ME ALERTA' colspan='13'><span class='ALERTA'>&nbsp;NENHUM PEDIDO ENCONTRADO&nbsp;</span></TD>" & chr(13) & _
+			"		<TD class='MC MD ME ALERTA' colspan='14'><span class='ALERTA'>&nbsp;NENHUM PEDIDO ENCONTRADO&nbsp;</span></TD>" & chr(13) & _
 			"	</TR>" & chr(13)
 	else
 	'	SUB-TOTAL DA ÚLTIMA TRANSPORTADORA
@@ -1108,7 +1126,7 @@ dim pedidoatual, s_where_externo
 			"		<TD colspan='2' class='MTE'>" & _
 								"<P class='C' style=text-align:left;>" & formata_inteiro(intQtdeSubTotalPedidos) & " pedido" & strPlural & "</p>" & _
 			"		</TD>" & chr(13) & _
-            "		<TD colspan='2' class='MTD '>" & _
+            "		<TD colspan='3' class='MTD '>" & _
 						        "<P class='C' style=text-align:left;>" & formata_inteiro(intQtdeSubTotalFretes) & " frete" & strPluralFrete & "</p>" & _
 			"		</TD>" & chr(13) & _
 			"		<TD class='MTD tdValorFrete'>" & _
@@ -1135,7 +1153,7 @@ dim pedidoatual, s_where_externo
 			"		<TD class='MTD tdPercPrecoVenda'>" & _
 						"<P class='Cd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_PERC & chr(34) & ";'>" & strVlSubTotalPercPrecoVenda & "</p>" & _
 			"		</TD>" & chr(13) & _
-            "		<TD class='MTD MB tdPercPrecoVenda2'>" & _
+            "		<TD class='MTD tdPercPrecoVenda2'>" & _
 						"<P class='Cd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_PERC & chr(34) & ";'>" & strVlSubTotalPercPrecoVenda & "</p>" & _
 			"		</TD>" & chr(13) & _
 			"	</TR>" & chr(13)
@@ -1189,16 +1207,16 @@ dim pedidoatual, s_where_externo
             if intQtdeTotalFretes > 1 then strPluralFrete = "s" else strPluralFrete = ""
 			x = x & _
 				"	<TR>" & chr(13) & _
-				"		<TD colspan=12 class='MC'>&nbsp;</TD>" & chr(13) & _
+				"		<TD colspan=14 class='MC'>&nbsp;</TD>" & chr(13) & _
 				"	</TR>" & chr(13) & _
 				"	<TR>" & chr(13) & _
-				"		<TD colspan=12><P class='C' style='font-weight:bold;text-align:left;'>TOTAL GERAL</P></TD>" & chr(13) & _
+				"		<TD colspan=14><P class='C' style='font-weight:bold;text-align:left;'>TOTAL GERAL</P></TD>" & chr(13) & _
 				"	</TR>" & chr(13) & _
 				"	<TR style='background:ivory;'>" & chr(13) & _
 				"		<TD colspan='2' class='MTE'>" & _
 							"<P class='C' style='text-align:left;'>" & formata_inteiro(intQtdeTotalPedidos) & " pedido" & strPlural & "</p>" & _
 				"		</TD>" & chr(13) & _
-                "		<TD colspan='2' class='MTD '>" & _
+                "		<TD colspan='3' class='MTD '>" & _
 							"<P class='C' style='text-align:left;'>" & formata_inteiro(intQtdeTotalFretes) & " frete" & strPluralFrete & "</p>" & _
 				"		</TD>" & chr(13) & _
 				"		<TD class='MTD tdValorFrete'>" & _
@@ -1227,7 +1245,7 @@ dim pedidoatual, s_where_externo
 				"		</TD>" & chr(13) & _
 				"	</TR>" & chr(13) &_
                 "   <TR style='background:ivory;'> " & chr(13) & _
-                "		<TD colspan=4 class='MTD ME tdPrecoVenda2'>" & _
+                "		<TD colspan=5 class='MTD ME tdPrecoVenda2'>" & _
 							"<P class='Cd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_PERC & chr(34) & ";'> AJUSTADO </p>" & _
 				"		</TD>" & chr(13) & _
 				"		<TD class='MTD tdValorFrete'>" & _
@@ -1330,6 +1348,9 @@ function fRELConcluir(s_id){
 	}
 .tdCidade{
 	width: 160px;
+	}
+.tdCnpjCpfCliente{
+	width: 105px;
 	}
 .tdValorFrete{
 	width: 60px;
