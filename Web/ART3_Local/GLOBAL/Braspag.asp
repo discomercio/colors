@@ -913,15 +913,15 @@ dim trx
 	'	1) O meio de pagamento 599 (Getnet WebService) independe da bandeira, basta a bandeira estar habilitada na plataforma da adquirente (Getnet WebService)
 	'	2) O meio de pagamento 612 (SafraPay) independe da bandeira, basta a bandeira estar habilitada na plataforma da adquirente (SafraPay)
 	if (bandeira = Lcase(BRASPAG_BANDEIRA__VISA)) then
-		trx.PAG_PaymentDataCollection_PaymentMethod = "612" 'Cielo VISA = 500 / SiTef Santander VISA (Getnet) = 531 / Getnet WebService = 599 / SafraPay = 612
+		trx.PAG_PaymentDataCollection_PaymentMethod = "599" 'Cielo VISA = 500 / SiTef Santander VISA (Getnet) = 531 / Getnet WebService = 599 / SafraPay = 612
 	elseif (bandeira = Lcase(BRASPAG_BANDEIRA__MASTERCARD)) then
-		trx.PAG_PaymentDataCollection_PaymentMethod = "612" 'Cielo MASTERCARD = 501 / SiTef Santander MASTERCARD (Getnet) = 532 / Getnet WebService = 599 / SafraPay = 612
+		trx.PAG_PaymentDataCollection_PaymentMethod = "599" 'Cielo MASTERCARD = 501 / SiTef Santander MASTERCARD (Getnet) = 532 / Getnet WebService = 599 / SafraPay = 612
 	elseif (bandeira = Lcase(BRASPAG_BANDEIRA__AMEX)) then
-		trx.PAG_PaymentDataCollection_PaymentMethod = "612" 'Cielo AMEX = 502 / Getnet WebService = 599 / SafraPay = 612
+		trx.PAG_PaymentDataCollection_PaymentMethod = "599" 'Cielo AMEX = 502 / Getnet WebService = 599 / SafraPay = 612
 	elseif (bandeira = Lcase(BRASPAG_BANDEIRA__ELO)) then
-		trx.PAG_PaymentDataCollection_PaymentMethod = "612" 'Cielo ELO = 504 / Getnet WebService = 599 / SafraPay = 612
+		trx.PAG_PaymentDataCollection_PaymentMethod = "599" 'Cielo ELO = 504 / Getnet WebService = 599 / SafraPay = 612
 	elseif (bandeira = Lcase(BRASPAG_BANDEIRA__HIPERCARD)) then
-		trx.PAG_PaymentDataCollection_PaymentMethod = "612" 'Cielo ELO = 504 / Getnet WebService = 599 / SafraPay = 612
+		trx.PAG_PaymentDataCollection_PaymentMethod = "599" 'Cielo ELO = 504 / Getnet WebService = 599 / SafraPay = 612
 	elseif (bandeira = Lcase(BRASPAG_BANDEIRA__DINERS)) then
 		trx.PAG_PaymentDataCollection_PaymentMethod = "503"
 	elseif (bandeira = Lcase(BRASPAG_BANDEIRA__DISCOVER)) then
@@ -977,15 +977,15 @@ dim i, bandeira
 			'	1) O meio de pagamento 599 (Getnet WebService) independe da bandeira, basta a bandeira estar habilitada na plataforma da adquirente (Getnet WebService)
 			'	2) O meio de pagamento 612 (SafraPay) independe da bandeira, basta a bandeira estar habilitada na plataforma da adquirente (SafraPay)
 			if (bandeira = Lcase(BRASPAG_BANDEIRA__VISA)) then
-				v_trx(Ubound(v_trx)).PAG_PaymentMethod = "612" 'Cielo VISA = 500 / SiTef Santander VISA (Getnet) = 531 / Getnet WebService = 599 / SafraPay = 612
+				v_trx(Ubound(v_trx)).PAG_PaymentMethod = "599" 'Cielo VISA = 500 / SiTef Santander VISA (Getnet) = 531 / Getnet WebService = 599 / SafraPay = 612
 			elseif (bandeira = Lcase(BRASPAG_BANDEIRA__MASTERCARD)) then
-				v_trx(Ubound(v_trx)).PAG_PaymentMethod = "612" 'Cielo MASTERCARD = 501 / SiTef Santander MASTERCARD (Getnet) = 532 / Getnet WebService = 599 / SafraPay = 612
+				v_trx(Ubound(v_trx)).PAG_PaymentMethod = "599" 'Cielo MASTERCARD = 501 / SiTef Santander MASTERCARD (Getnet) = 532 / Getnet WebService = 599 / SafraPay = 612
 			elseif (bandeira = Lcase(BRASPAG_BANDEIRA__AMEX)) then
-				v_trx(Ubound(v_trx)).PAG_PaymentMethod = "612" 'Cielo AMEX = 502 / Getnet WebService = 599 / SafraPay = 612
+				v_trx(Ubound(v_trx)).PAG_PaymentMethod = "599" 'Cielo AMEX = 502 / Getnet WebService = 599 / SafraPay = 612
 			elseif (bandeira = Lcase(BRASPAG_BANDEIRA__ELO)) then
-				v_trx(Ubound(v_trx)).PAG_PaymentMethod = "612" 'Cielo ELO = 504 / Getnet WebService = 599 / SafraPay = 612
+				v_trx(Ubound(v_trx)).PAG_PaymentMethod = "599" 'Cielo ELO = 504 / Getnet WebService = 599 / SafraPay = 612
 			elseif (bandeira = Lcase(BRASPAG_BANDEIRA__HIPERCARD)) then
-				v_trx(Ubound(v_trx)).PAG_PaymentMethod = "612" 'Cielo ELO = 504 / Getnet WebService = 599 / SafraPay = 612
+				v_trx(Ubound(v_trx)).PAG_PaymentMethod = "599" 'Cielo ELO = 504 / Getnet WebService = 599 / SafraPay = 612
 			elseif (bandeira = Lcase(BRASPAG_BANDEIRA__DINERS)) then
 				v_trx(Ubound(v_trx)).PAG_PaymentMethod = "503"
 			elseif (bandeira = Lcase(BRASPAG_BANDEIRA__DISCOVER)) then
