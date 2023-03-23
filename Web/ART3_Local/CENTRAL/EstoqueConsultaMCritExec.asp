@@ -598,11 +598,6 @@ dim v, i
 		if blnSaidaExcel then s_nowrap = " NOWRAP" else s_nowrap = ""
 		x = x & chr(13) & "	<TD valign='middle' class='MB'" & s_nowrap & " style='width:" & w_operador & "px;'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & Trim("" & rs("usuario")) & "</span></TD>"
 
-	'	TIPO DE ENTRADA (CAMPO OCULTO)
-		if not blnSaidaExcel then 
-		x = x & chr(13) & "	<TD valign='middle' class='MB'" & s_nowrap & " style='width:" & w_operador & "px;'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & Trim("" & rs("usuario")) & "</span></TD>"
-            end if
-
 		x = x & "</TR>" & chr(13)
 
     	if (n_reg mod 100) = 0 then
