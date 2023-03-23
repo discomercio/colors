@@ -937,15 +937,13 @@ var s_produtos_ean;
 	<tr>
     <td colspan="18" class="MD" id="tdPreTotalGeralFabricante">&nbsp;</td>
     
-	<td class="MD">&nbsp;</td>
     <td class="MD" align="left"><p class="Cd">Total NF</p></td>
 	<td class="MDB" align="right"><input name="c_total_nf" id="c_total_nf" class="PLLd" style="width:62px;color:blue;" 
 		value='' readonly tabindex=-1></td>
-    <!--O CAMPO ABAIXO DEIXOU DE APRESENTAR O TOTAL DOS PRODUTOS E PASSOU A APRESENTAR O TOTAL DA NOTA FISCAL, POR SOLICITAÇÃO, PARA FACILITAR A VISUALIZAÇÃO NA CONSULTA-->
-    <!--<td class="MDB" align="right" id="tdTotalGeralFabricante"><input name="c_total_geral" id="c_total_geral" class="PLLd" style="width:62px;color:blue;" 
-		value='<%=formata_moeda(m_total_geral)%>' readonly tabindex=-1></td>-->
+
 	<td class="MDB" align="right" id="tdTotalGeralFabricante"><input name="c_total_geral" id="c_total_geral" class="PLLd" style="width:62px;color:blue;" 
-		value='<%=formata_moeda(m_total_geral_custo2)%>' readonly tabindex=-1></td>
+		value='<%=formata_moeda(m_total_geral)%>' readonly tabindex=-1></td>
+	<td class="MD">&nbsp;</td>
     <td class="MD">&nbsp;</td>
     <td class="MD">&nbsp;</td>
     <td class="MD">&nbsp;</td>
