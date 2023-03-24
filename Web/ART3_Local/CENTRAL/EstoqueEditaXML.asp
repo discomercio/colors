@@ -716,7 +716,7 @@ function fESTOQConfirma( f ) {
 	<td colspan="11" class="MD" id="tdPreTotalGeralFabricante">&nbsp;</td>
 
 	<td>&nbsp;</td>
-    <td class="MD" align="left"><p class="Cd">Total NF</p></td>
+    <td class="MDBE" align="left"><p class="Cd">Total NF</p></td>
     <!--O CAMPO ABAIXO DEIXOU DE APRESENTAR O TOTAL DOS PRODUTOS E PASSOU A APRESENTAR O TOTAL DA NOTA FISCAL, POR SOLICITAÇÃO, PARA FACILITAR A VISUALIZAÇÃO NA CONSULTA-->
 	<!--<td class="MDB" align="right"><input name="c_total_nf" id="c_total_nf" class="PLLd" style="width:62px;color:black;" 
 		value='<%=formata_moeda(m_total_geral)%>'></td>-->
