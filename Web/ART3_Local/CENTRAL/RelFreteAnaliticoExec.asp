@@ -560,6 +560,7 @@ dim pedidoatual, s_where_externo
 	            ",uf " & _
 				",cliente_cnpj_cpf " & _
 	            ",vl_frete " & _
+				",dt_lancto_frete " & _
 	            ",codigo_tipo_frete " & _
 	            ",descricao " & _
 	            ",preco_NF " & _
@@ -599,6 +600,7 @@ dim pedidoatual, s_where_externo
 
 	s_sql = s_sql & _
 				"Coalesce(pf.vl_frete, 0) as vl_frete, " & _
+				"pf.dt_cadastro AS dt_lancto_frete, " & _
 	            "pf.codigo_tipo_frete, " & _
                 "tCD.descricao, " & _
 				"(" & _
@@ -706,6 +708,7 @@ dim pedidoatual, s_where_externo
 		"		<TD class='MTD tdPrecoVenda' align='right' valign='bottom'><span class='Rd titColR'>Venda (" & SIMBOLO_MONETARIO & ")</span></TD>" & chr(13) & _
 		"		<TD class='MTD tdPercPrecoVenda' align='right' valign='bottom'><span class='Rd titColR'>%</span><br /><span class='Rd titColR'>Venda</span></TD>" & chr(13) & _
         "		<TD class='MTD tdPercPrecoVenda2' align='right' valign='bottom'><span class='Rd titColR'>%</span><br /><span class='Rd titColR'>Venda</span></TD>" & chr(13) & _
+		"		<TD class='MTD tdDtLanctoFrete' align='center' valign='bottom'><span class='Rc titColC'>Data</span><br /><span class='Rc titColC'>Lançto<br /><span class='Rc titColC'>Frete</span></TD>" & chr(13) & _
 		"	</TR>" & chr(13)
 	
 '	LAÇO P/ LEITURA DO RECORDSET
@@ -802,6 +805,9 @@ dim pedidoatual, s_where_externo
                     "		<TD class='MTD tdPercPrecoVenda2'>" & _
 								"<P class='Cd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_PERC & chr(34) & ";'>" & strVlSubTotalPercPrecoVenda & "</p>" & _
 					"		</TD>" & chr(13) & _
+					"		<TD class='MTD tdDtLanctoFrete'>" & chr(13) & _
+							"&nbsp;" & _
+							"</TD>" & chr(13) & _
 					"	</TR>" & chr(13)
 				end if
 			
@@ -812,13 +818,13 @@ dim pedidoatual, s_where_externo
 			if intQtdeTotalPedidos > 0 then
 			x = x & _
 					"	<TR>" & chr(13) & _
-					"		<TD colspan=14 class='MC'>&nbsp;</TD>" & chr(13) & _
+					"		<TD colspan=15 class='MC'>&nbsp;</TD>" & chr(13) & _
 					"	</TR>" & chr(13)
 				end if
 			
 			x = x & _
 				"	<TR style='background:azure'>" & chr(13) & _
-				"		<TD colspan=14 class='MC ME MD'><P class='C' style='font-weight:bold;text-align:left;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & strTransportadoraAux & "</P></TD>" & chr(13) & _
+				"		<TD colspan=15 class='MC ME MD'><P class='C' style='font-weight:bold;text-align:left;mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & strTransportadoraAux & "</P></TD>" & chr(13) & _
 				"	</TR>" & chr(13)
 			
 		'	TÍTULO DAS COLUNAS
@@ -850,7 +856,7 @@ dim pedidoatual, s_where_externo
 		vlPrecoVenda = CCur(r("preco_venda"))
 		qtde_pedido = r("qtde_pedido")
 	'>  PEDIDO
-    pedidoatual = Trim("" & r("pedido"))
+		pedidoatual = Trim("" & r("pedido"))
 		if blnSaidaExcel then
 			s_aux = pedidoatual
 		else
@@ -1034,6 +1040,10 @@ dim pedidoatual, s_where_externo
 		   strPercPrecoVendaSomado = 0
         end if
     
+	'DATA DO LANÇAMENTO DO FRETE
+		x = x & "		<TD class='MTD tdDtLanctoFrete'>" & _
+							"<P class='Cc'>" & formata_data(r("dt_lancto_frete")) & "</P>" & _
+						"</TD>" & chr(13)
 
         x = x & "	</TR>" & chr(13)
 
@@ -1087,7 +1097,7 @@ dim pedidoatual, s_where_externo
 		x = cab_table & _
 			cab & _
 			"	<TR NOWRAP>" & chr(13) & _
-			"		<TD class='MC MD ME ALERTA' colspan='14'><span class='ALERTA'>&nbsp;NENHUM PEDIDO ENCONTRADO&nbsp;</span></TD>" & chr(13) & _
+			"		<TD class='MC MD ME ALERTA' colspan='15'><span class='ALERTA'>&nbsp;NENHUM PEDIDO ENCONTRADO&nbsp;</span></TD>" & chr(13) & _
 			"	</TR>" & chr(13)
 	else
 	'	SUB-TOTAL DA ÚLTIMA TRANSPORTADORA
@@ -1156,6 +1166,9 @@ dim pedidoatual, s_where_externo
             "		<TD class='MTD tdPercPrecoVenda2'>" & _
 						"<P class='Cd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_PERC & chr(34) & ";'>" & strVlSubTotalPercPrecoVenda & "</p>" & _
 			"		</TD>" & chr(13) & _
+			"		<TD class='MTD tdDtLanctoFrete'>" & chr(13) & _
+					"&nbsp;" & _
+					"</TD>" & chr(13) & _
 			"	</TR>" & chr(13)
 		
 	'	TOTAL GERAL
@@ -1207,10 +1220,10 @@ dim pedidoatual, s_where_externo
             if intQtdeTotalFretes > 1 then strPluralFrete = "s" else strPluralFrete = ""
 			x = x & _
 				"	<TR>" & chr(13) & _
-				"		<TD colspan=14 class='MC'>&nbsp;</TD>" & chr(13) & _
+				"		<TD colspan=15 class='MC'>&nbsp;</TD>" & chr(13) & _
 				"	</TR>" & chr(13) & _
 				"	<TR>" & chr(13) & _
-				"		<TD colspan=14><P class='C' style='font-weight:bold;text-align:left;'>TOTAL GERAL</P></TD>" & chr(13) & _
+				"		<TD colspan=15><P class='C' style='font-weight:bold;text-align:left;'>TOTAL GERAL</P></TD>" & chr(13) & _
 				"	</TR>" & chr(13) & _
 				"	<TR style='background:ivory;'>" & chr(13) & _
 				"		<TD colspan='2' class='MTE'>" & _
@@ -1243,6 +1256,9 @@ dim pedidoatual, s_where_externo
 				"		<TD colspan='2' class='MTD tdPercPrecoVenda'>" & _
 							"<P class='Cd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_PERC & chr(34) & ";'>" & strVlTotalPercPrecoVenda & "</p>" & _
 				"		</TD>" & chr(13) & _
+				"		<TD class='MTD tdDtLanctoFrete'>" & chr(13) & _
+						"&nbsp;" & _
+						"</TD>" & chr(13) & _
 				"	</TR>" & chr(13) &_
                 "   <TR style='background:ivory;'> " & chr(13) & _
                 "		<TD colspan=5 class='MTD ME tdPrecoVenda2'>" & _
@@ -1266,6 +1282,9 @@ dim pedidoatual, s_where_externo
                 "       <TD colspan='2' class='MTD tdPrecoVenda2'>" & _
 							"<P class='Cd' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_PERC & chr(34) & ";'>" & strVlTotalPercPrecoVendaAjustado & "</p>" & _
 				"		</TD>" & chr(13) & _
+				"		<TD class='MTD tdDtLanctoFrete'>" & chr(13) & _
+						"&nbsp;" & _
+						"</TD>" & chr(13) & _
                 "	</TR>" & chr(13)
 			end if
 		end if
@@ -1382,6 +1401,9 @@ function fRELConcluir(s_id){
 .tdPercPrecoVenda2{
 	width: 40px;
 	}
+.tdDtLanctoFrete{
+	width: 65px;
+	}
 .titColL
 {
 	font-weight:bold;
@@ -1391,6 +1413,11 @@ function fRELConcluir(s_id){
 {
 	font-weight:bold;
 	text-align:right;
+}
+.titColC
+{
+	font-weight:bold;
+	text-align:center;
 }
 </style>
 
