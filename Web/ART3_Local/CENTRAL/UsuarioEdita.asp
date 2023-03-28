@@ -370,16 +370,17 @@ var i, s_senha, blnTemLoja;
 </table>
 
 <!-- ************   LOGIN BLOQUEADO AUTOMATICAMENTE?   ************ -->
+<%
+if operacao_selecionada=OP_CONSULTA then
+%>
 <table width="649" class="QS" cellspacing="0">
 	<tr>
 <%
 	s = "&nbsp;"
 	s_cor = "black"
-	if operacao_selecionada=OP_CONSULTA then
-		if rs("StLoginBloqueadoAutomatico") <> 0 then
-			s = "Bloqueado em " & formata_data_hora_sem_seg(rs("DataHoraBloqueadoAutomatico")) & " (" & Trim("" & rs("QtdeConsecutivaFalhaLogin")) & " tentativas consecutivas com senha errada)"
-			s_cor = "red"
-			end if
+	if rs("StLoginBloqueadoAutomatico") <> 0 then
+		s = "Bloqueado em " & formata_data_hora_sem_seg(rs("DataHoraBloqueadoAutomatico")) & " (" & Trim("" & rs("QtdeConsecutivaFalhaLogin")) & " tentativas consecutivas com senha errada)"
+		s_cor = "red"
 		end if
 %>
 		<td width="100%" align="left">
@@ -392,6 +393,9 @@ var i, s_senha, blnTemLoja;
 		</td>
 	</tr>
 </table>
+<%
+	end if
+%>
 
 <!-- ************   PERFIS DE ACESSO   ************ -->
 <table width="649" class="QS" cellspacing="0">

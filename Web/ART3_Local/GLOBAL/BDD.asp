@@ -2495,6 +2495,10 @@ dim rs
 			.UsuarioUltAtualizVlMeta	= Trim("" & rs("UsuarioUltAtualizVlMeta"))
 			.DtHrUltAtualizVlMeta		= rs("DtHrUltAtualizVlMeta")
 			.permite_RA_status			= rs("permite_RA_status")
+			.QtdeConsecutivaFalhaLogin = rs("QtdeConsecutivaFalhaLogin")
+			.StLoginBloqueadoAutomatico = rs("StLoginBloqueadoAutomatico")
+			.DataHoraBloqueadoAutomatico = rs("DataHoraBloqueadoAutomatico")
+			.EnderecoIpBloqueadoAutomatico = Trim("" & rs("EnderecoIpBloqueadoAutomatico"))
 			end with
 		end if
 
@@ -4640,6 +4644,19 @@ dim rs
 	rs.Update
 	
 	if rs.State <> 0 then rs.Close
+end function
+
+
+
+' ___________________________________________________________
+' OBTEM PARAMETRO MAX TENTATIVAS LOGIN
+'
+function obtem_parametro_max_tentativas_login
+dim rParam
+	obtem_parametro_max_tentativas_login = 0
+	set rParam = get_registro_t_parametro(ID_PARAM_MAX_TENTATIVAS_LOGIN)
+	if Trim("" & rParam.id) <> "" then obtem_parametro_max_tentativas_login = rParam.campo_inteiro
+	set rParam = Nothing
 end function
 
 
@@ -6905,6 +6922,11 @@ dim rs
 			.SessionTokenModuloLoja = Trim("" & rs("SessionTokenModuloLoja"))
 			.DtHrSessionTokenModuloLoja = rs("DtHrSessionTokenModuloLoja")
 			.fin_smtp_enable_ssl = rs("fin_smtp_enable_ssl")
+			.Id = rs("Id")
+			.QtdeConsecutivaFalhaLogin = rs("QtdeConsecutivaFalhaLogin")
+			.StLoginBloqueadoAutomatico = rs("StLoginBloqueadoAutomatico")
+			.DataHoraBloqueadoAutomatico = rs("DataHoraBloqueadoAutomatico")
+			.EnderecoIpBloqueadoAutomatico = Trim("" & rs("EnderecoIpBloqueadoAutomatico"))
 			end with
 		end if
 

@@ -242,6 +242,11 @@
 			end if
 		end if 'if alerta = ""
 
+	dim r_usuario
+	if alerta = "" then
+		call le_usuario(usuario, r_usuario, msg_erro)
+		end if
+
 	dim blnUsarMemorizacaoCompletaEnderecos
 	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 
@@ -408,6 +413,23 @@
 					blnTemRA = True
 					exit for
 					end if
+				end if
+			next
+		end if
+
+'	RECUPERA DADOS QUE ESTÃO NO ORÇAMENTO
+'	TODO (** TODO ** - VERIFICAR CONSISTÊNCIA DAS REGRAS DE DESCONTO POR ALÇADA)
+	if alerta = "" then
+		for i=Lbound(v_item) to Ubound(v_item)
+			if Trim("" & v_item(i).produto) <> "" then
+				for j=LBound(v_orcamento_item) to UBound(v_orcamento_item)
+					if (Trim("" & v_item(i).fabricante) = Trim("" & v_orcamento_item(j).fabricante)) And (Trim("" & v_item(i).produto) = Trim("" & v_orcamento_item(j).produto)) then
+						v_item(i).StatusDescontoSuperior = v_orcamento_item(j).StatusDescontoSuperior
+						v_item(i).IdUsuarioDescontoSuperior = v_orcamento_item(j).IdUsuarioDescontoSuperior
+						v_item(i).DataHoraDescontoSuperior = v_orcamento_item(j).DataHoraDescontoSuperior
+						exit for
+						end if
+					next
 				end if
 			next
 		end if
@@ -1466,10 +1488,15 @@
 						rs("st_etg_imediata")=CLng(s_etg_imediata)
 						rs("etg_imediata_data")=Now
 						rs("etg_imediata_usuario")=usuario
+						rs("EtgImediataIdTipoUsuarioContexto") = COD_USUARIO_CONTEXTO__USUARIO_INTERNO
+						rs("EtgImediataIdUsuarioUltAtualiz") = r_usuario.Id
 					else
+						'Se a opção não foi editada em relação ao que constava no pré-pedido, mantém os dados complementares também
 						rs("st_etg_imediata")=r_orcamento.st_etg_imediata
 						rs("etg_imediata_data")=r_orcamento.etg_imediata_data
 						rs("etg_imediata_usuario")=r_orcamento.etg_imediata_usuario
+						rs("EtgImediataIdTipoUsuarioContexto") = r_orcamento.EtgImediataIdTipoUsuarioContexto
+						rs("EtgImediataIdUsuarioUltAtualiz") = r_orcamento.EtgImediataIdUsuarioUltAtualiz
 						end if
 
 					if CLng(s_etg_imediata) = CLng(COD_ETG_IMEDIATA_NAO) then
@@ -1478,10 +1505,14 @@
 						'	SE A DATA DA PREVISÃO DE ENTREGA FOI ALTERADA EM RELAÇÃO AO QUE CONSTAVA NO PRÉ-PEDIDO, ATUALIZA O USUÁRIO RESPONSÁVEL
 							rs("PrevisaoEntregaUsuarioUltAtualiz") = usuario
 							rs("PrevisaoEntregaDtHrUltAtualiz") = Now
+							rs("PrevisaoEntregaIdTipoUsuarioContexto") = COD_USUARIO_CONTEXTO__USUARIO_INTERNO
+							rs("PrevisaoEntregaIdUsuarioUltAtualiz") = r_usuario.Id
 						else
 						'	SE A DATA DA PREVISÃO DE ENTREGA PERMANECE A MESMA QUE CONSTAVA NO PRÉ-PEDIDO, MANTÉM O MESMO USUÁRIO RESPONSÁVEL
 							rs("PrevisaoEntregaUsuarioUltAtualiz") = r_orcamento.PrevisaoEntregaUsuarioUltAtualiz
 							rs("PrevisaoEntregaDtHrUltAtualiz") = r_orcamento.PrevisaoEntregaDtHrUltAtualiz
+							rs("PrevisaoEntregaIdTipoUsuarioContexto") = r_orcamento.PrevisaoEntregaIdTipoUsuarioContexto
+							rs("PrevisaoEntregaIdUsuarioUltAtualiz") = r_orcamento.PrevisaoEntregaIdUsuarioUltAtualiz
 							end if
 						end if
 
@@ -1491,10 +1522,21 @@
 						rs("StBemUsoConsumo")=r_orcamento.StBemUsoConsumo
 						end if
 
-					if s_instalador_instala <> "" then
-						rs("InstaladorInstalaStatus")=CLng(s_instalador_instala)
-						rs("InstaladorInstalaUsuarioUltAtualiz")=usuario
-						rs("InstaladorInstalaDtHrUltAtualiz")=Now
+					if Trim(s_instalador_instala) = Trim("" & r_orcamento.InstaladorInstalaStatus) then
+						'Se a opção não foi editada em relação ao que constava no pré-pedido, mantém os dados complementares também
+						rs("InstaladorInstalaStatus") = r_orcamento.InstaladorInstalaStatus
+						rs("InstaladorInstalaUsuarioUltAtualiz") = r_orcamento.InstaladorInstalaUsuarioUltAtualiz
+						rs("InstaladorInstalaDtHrUltAtualiz") = r_orcamento.InstaladorInstalaDtHrUltAtualiz
+						rs("InstaladorInstalaIdTipoUsuarioContexto") = r_orcamento.InstaladorInstalaIdTipoUsuarioContexto
+						rs("InstaladorInstalaIdUsuarioUltAtualiz") = r_orcamento.InstaladorInstalaIdUsuarioUltAtualiz
+					else
+						if s_instalador_instala <> "" then
+							rs("InstaladorInstalaStatus")=CLng(s_instalador_instala)
+							rs("InstaladorInstalaUsuarioUltAtualiz")=usuario
+							rs("InstaladorInstalaDtHrUltAtualiz")=Now
+							rs("InstaladorInstalaIdTipoUsuarioContexto") = COD_USUARIO_CONTEXTO__USUARIO_INTERNO
+							rs("InstaladorInstalaIdUsuarioUltAtualiz") = r_usuario.Id
+							end if
 						end if
 
 					rs("NFe_texto_constar")=s_nf_texto
@@ -1506,9 +1548,20 @@
 						rs("indicador") = ""
 						end if
 
-					rs("GarantiaIndicadorStatus") = CLng(rb_garantia_indicador)
-					rs("GarantiaIndicadorUsuarioUltAtualiz") = usuario
-					rs("GarantiaIndicadorDtHrUltAtualiz") = Now
+					if Trim(rb_garantia_indicador) = Trim("" & r_orcamento.GarantiaIndicadorStatus) then
+						'Se a opção não foi editada em relação ao que constava no pré-pedido, mantém os dados complementares também
+						rs("GarantiaIndicadorStatus") = r_orcamento.GarantiaIndicadorStatus
+						rs("GarantiaIndicadorUsuarioUltAtualiz") = r_orcamento.GarantiaIndicadorUsuarioUltAtualiz
+						rs("GarantiaIndicadorDtHrUltAtualiz") = r_orcamento.GarantiaIndicadorDtHrUltAtualiz
+						rs("GarantiaIndicadorIdTipoUsuarioContexto") = r_orcamento.GarantiaIndicadorIdTipoUsuarioContexto
+						rs("GarantiaIndicadorIdUsuarioUltAtualiz") = r_orcamento.GarantiaIndicadorIdUsuarioUltAtualiz
+					else
+						rs("GarantiaIndicadorStatus") = CLng(rb_garantia_indicador)
+						rs("GarantiaIndicadorUsuarioUltAtualiz") = usuario
+						rs("GarantiaIndicadorDtHrUltAtualiz") = Now
+						rs("GarantiaIndicadorIdTipoUsuarioContexto") = COD_USUARIO_CONTEXTO__USUARIO_INTERNO
+						rs("GarantiaIndicadorIdUsuarioUltAtualiz") = r_usuario.Id
+						end if
 
 					rs("st_end_entrega") = r_orcamento.st_end_entrega
 					if CLng(r_orcamento.st_end_entrega) <> 0 then
@@ -1627,14 +1680,6 @@
 					rs("IdIndicadorVendedor") = r_orcamento.IdIndicadorVendedor
 					rs("perc_max_comissao_padrao") = r_orcamento.perc_max_comissao_padrao
 					rs("perc_max_comissao_e_desconto_padrao") = r_orcamento.perc_max_comissao_e_desconto_padrao
-					rs("InstaladorInstalaIdTipoUsuarioContexto") = r_orcamento.InstaladorInstalaIdTipoUsuarioContexto
-					rs("InstaladorInstalaIdUsuarioUltAtualiz") = r_orcamento.InstaladorInstalaIdUsuarioUltAtualiz
-					rs("GarantiaIndicadorIdTipoUsuarioContexto") = r_orcamento.GarantiaIndicadorIdTipoUsuarioContexto
-					rs("GarantiaIndicadorIdUsuarioUltAtualiz") = r_orcamento.GarantiaIndicadorIdUsuarioUltAtualiz
-					rs("EtgImediataIdTipoUsuarioContexto") = r_orcamento.EtgImediataIdTipoUsuarioContexto
-					rs("EtgImediataIdUsuarioUltAtualiz") = r_orcamento.EtgImediataIdUsuarioUltAtualiz
-					rs("PrevisaoEntregaIdTipoUsuarioContexto") = r_orcamento.PrevisaoEntregaIdTipoUsuarioContexto
-					rs("PrevisaoEntregaIdUsuarioUltAtualiz") = r_orcamento.PrevisaoEntregaIdUsuarioUltAtualiz
 					rs("UsuarioCadastroIdTipoUsuarioContexto") = r_orcamento.UsuarioCadastroIdTipoUsuarioContexto
 					rs("UsuarioCadastroId") = r_orcamento.UsuarioCadastroId
 

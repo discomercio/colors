@@ -37,7 +37,7 @@
 	
 '	OBTEM O ID
 	dim s, usuario, loja, id_selecionado, tipo_PJ_PF, flag_ok, strSql, rs2, cont, url_back, url_origem, cnpj_cpf_selecionado, i
-	dim s_label, s_parametro, chave, senha_descripto, s_selected
+	dim s_label, s_parametro, chave, senha_descripto, s_selected, s_color
 	usuario = trim(Session("usuario_atual"))
 	loja = Trim(Session("loja_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
@@ -968,6 +968,24 @@ var tipo_PJ_PF = ID_PJ;
 		<td class="MD" width="50%" align="left"><p class="R">SENHA</p><p class="C"><input id="senha" name="senha" class="TA" type="password" maxlength="15" size="18" value="<%=senha_descripto%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.senha2.focus();"></p></td>
 		<td width="50%" align="left"><p class="R">SENHA (CONFIRMAÇÃO)</p><p class="C"><input id="senha2" name="senha2" class="TA" type="password" maxlength="15" size="18" value="<%=senha_descripto%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.loja.focus();"></p></td>
 		
+	</tr>
+</table>
+
+<!-- ************   LOGIN BLOQUEADO AUTOMATICAMENTE?   ************ -->
+<table width="649" class="QS" cellspacing="0">
+	<tr>
+<%
+	s = "&nbsp;"
+	s_color = "black"
+	if rs("StLoginBloqueadoAutomatico") <> 0 then
+		s = "Bloqueado em " & formata_data_hora_sem_seg(rs("DataHoraBloqueadoAutomatico")) & " (" & Trim("" & rs("QtdeConsecutivaFalhaLogin")) & " tentativas consecutivas com senha errada)"
+		s_color = "red"
+		end if
+%>
+		<td width="100%" align="left">
+		<p class="R">LOGIN BLOQUEADO AUTOMATICAMENTE</p>
+		<p class="C" id="pMsgStLoginBloqueadoAutomatico" style="color:<%=s_color%>;"><%=s%></p>
+		</td>
 	</tr>
 </table>
 

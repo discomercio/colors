@@ -699,6 +699,19 @@
     Const COD_PEDIDO_DEVOLUCAO_TAXA_RESPONSAVEL__CLIENTE = "003"
     Const COD_PEDIDO_DEVOLUCAO_TAXA_RESPONSAVEL__VENDEDOR_PARCEIRO = "004"
 
+'   CÓDIGOS T_CODIGO_DESCRICAO - CONTROLE LOGIN ('ControleLogin_Falha_Motivo')
+	Const COD_CONTROLE_LOGIN_FALHA__SENHA_INVALIDA = "001"
+	Const COD_CONTROLE_LOGIN_FALHA__BLOQUEADO_MANUAL = "002"
+	Const COD_CONTROLE_LOGIN_FALHA__BLOQUEADO_AUTOMATICO = "003"
+	Const COD_CONTROLE_LOGIN_FALHA__USUARIO_NAO_CADASTRADO = "004"
+	Const COD_CONTROLE_LOGIN_FALHA__PERMISSAO_INSUFICIENTE = "005"
+
+'   CÓDIGOS DE IDENTIFICAÇÃO DO MÓDULO (t_CFG_MODULO)
+	Const ID_MODULO__CENTRAL = 1
+	Const ID_MODULO__LOJA = 2
+	Const ID_MODULO__PRE_PEDIDO = 3
+	Const ID_MODULO__ORCTO_COTACAO = 4
+
 '   PRÉ-DEVOLUÇÃO: CONSTANTES AUXILIARES
     Const TAXA_ADMINISTRATIVA__NAO = "0"
     Const TAXA_ADMINISTRATIVA__SIM = "1"
@@ -901,6 +914,7 @@
 	Const ID_PARAM_PercDesagioRAIndicadorParaCadastroFeitoNaLoja = "PercDesagioRAIndicadorParaCadastroFeitoNaLoja"    ' NESTE CASO, O REGISTRO É USADO P/ ARMAZENAR UM PARÂMETRO E NÃO P/ GERAR UM NSU!!
 	Const ID_PARAM_PercVlPedidoLimiteRA					= "PercVlPedidoLimiteRA"			' NESTE CASO, O REGISTRO É USADO P/ ARMAZENAR UM PARÂMETRO E NÃO P/ GERAR UM NSU!!
 	Const ID_PARAM_MAX_PERIODO_LINK_DANFE_DISPONIVEL_NO_PEDIDO_EM_DIAS = "MAX_PERIODO_LINK_DANFE_DISPONIVEL_NO_PEDIDO_EM_DIAS"
+	Const ID_PARAM_MAX_TENTATIVAS_LOGIN = "MAX_TENTATIVAS_LOGIN"
 	Const ID_XLOCK_SYNC_PEDIDO = "XLOCK_SYNC_PEDIDO"   ' NESTE CASO, O REGISTRO É USADO PARA SINCRONIZAR (SERIALIZAR) A OPERAÇÃO E EVITAR ACESSO CONCORRENTE
 	Const ID_XLOCK_SYNC_ORCAMENTO = "XLOCK_SYNC_ORCAMENTO"   ' NESTE CASO, O REGISTRO É USADO PARA SINCRONIZAR (SERIALIZAR) A OPERAÇÃO E EVITAR ACESSO CONCORRENTE
 	Const ID_XLOCK_SYNC_CLIENTE = "XLOCK_SYNC_CLIENTE"   ' NESTE CASO, O REGISTRO É USADO PARA SINCRONIZAR (SERIALIZAR) A OPERAÇÃO E EVITAR ACESSO CONCORRENTE
@@ -908,6 +922,8 @@
 
 
 '	CONSTANTES QUE IDENTIFICAM PARÂMETROS ARMAZENADOS NA TABELA "t_PARAMETRO"
+	Const ID_PARAMETRO_AMBIENTE_EXECUCAO_OWNER = "AMBIENTE_EXECUCAO_OWNER"
+	Const ID_PARAMETRO_AMBIENTE_EXECUCAO_CONTEXTO = "AMBIENTE_EXECUCAO_CONTEXTO"
 	Const ID_PARAMETRO_PercMaxComissaoEDesconto_Nivel2_MeiosPagto = "PercMaxComissaoEDesconto_Nivel2_MeiosPagto"
 	Const ID_PARAMETRO_NF_FlagOperacaoTriangular = "NF_FlagOperacaoTriangular"
 	Const ID_PARAMETRO_Flag_Orcamento_ConsisteDisponibilidadeEstoqueGlobal = "Flag_Orcamento_ConsisteDisponibilidadeEstoqueGlobal"
@@ -919,6 +935,10 @@
 	Const ID_PARAMETRO_EmailDestinatarioAlertaEdicaoFormaPagtoComBoletoAV = "EmailDestinatarioAlertaEdicaoFormaPagtoComBoletoAV"
 	Const ID_PARAMETRO_EmailDestinatarioAlertaEdicaoFormaPagtoAVista = "EmailDestinatarioAlertaEdicaoFormaPagtoAVista"
 	Const ID_PARAMETRO_EmailDestinatarioAlertaAlteracaoIndicadorEmPedidoCreditoOk = "EmailDestinatarioAlertaAlteracaoIndicadorEmPedidoCreditoOk"
+	Const ID_PARAMETRO_EmailDestinatarioAlertaLoginBloqueadoAutomatico = "EmailDestinatarioAlertaLoginBloqueadoAutomatico"
+	Const ID_PARAMETRO_EmailRemetenteAlertaLoginBloqueadoAutomatico = "EmailRemetenteAlertaLoginBloqueadoAutomatico"
+	Const ID_PARAMETRO_SubjectEmailAlertaLoginBloqueadoAutomatico = "SubjectEmailAlertaLoginBloqueadoAutomatico"
+	Const ID_PARAMETRO_BodyEmailAlertaLoginBloqueadoAutomatico = "BodyEmailAlertaLoginBloqueadoAutomatico"
 	Const ID_PARAMETRO_CtrlRelatorio_RelControleImpostos_TimeoutLockEmMinutos = "CtrlRelatorio_RelControleImpostos_TimeoutLockEmMinutos"
     Const ID_PARAMETRO_CtrlRelatorio_RelControleImpostos_MaxQtdeResultadoPorConsulta = "CtrlRelatorio_RelControleImpostos_MaxQtdeResultadoPorConsulta"
 	Const ID_PARAMETRO_SSW_Rastreamento_Lista_Transportadoras = "SSW_Rastreamento_Lista_Transportadoras"
@@ -1654,6 +1674,7 @@
 	Const ERR_SENHA_NAO_INFORMADA = "20"
 	Const ERR_HORARIO_MANUTENCAO_SISTEMA = "21"
 	Const ERR_HORARIO_REBOOT_SERVIDOR = "22"
+	Const ERR_USUARIO_BLOQUEADO_AUTOMATICO = "23"
 	
   ' ERROS QUE NÃO ENCERRAM A SESSÃO DO USUÁRIO
 	Const ERR_USUARIO_NAO_ESPECIFICADO = "5001"
@@ -1991,6 +2012,10 @@
 		dim UsuarioUltAtualizVlMeta
 		dim DtHrUltAtualizVlMeta
 		dim permite_RA_status
+		dim QtdeConsecutivaFalhaLogin
+		dim StLoginBloqueadoAutomatico
+		dim DataHoraBloqueadoAutomatico
+		dim EnderecoIpBloqueadoAutomatico
 		end class
 	
 	class cl_PEDIDO
@@ -2343,6 +2368,9 @@
 		dim cod_produto_alfanum_fabricante
 		dim potencia_valor
 		dim id_unidade_potencia
+		dim StatusDescontoSuperior
+		dim IdUsuarioDescontoSuperior
+		dim DataHoraDescontoSuperior
 		end class
 
 	class cl_ITEM_SENHA_DESCONTO
@@ -3420,5 +3448,10 @@
 		dim fin_smtp_enable_ssl
 		dim nivel_acesso_bloco_notas_pedido
 		dim nivel_acesso_chamado
+		dim Id
+		dim QtdeConsecutivaFalhaLogin
+		dim StLoginBloqueadoAutomatico
+		dim DataHoraBloqueadoAutomatico
+		dim EnderecoIpBloqueadoAutomatico
 		end class
 %>

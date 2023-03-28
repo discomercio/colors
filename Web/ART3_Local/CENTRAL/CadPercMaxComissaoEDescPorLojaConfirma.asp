@@ -63,6 +63,12 @@
 		dim perc_max_comissao_e_desconto_pj
 		dim perc_max_comissao_e_desconto_nivel2
 		dim perc_max_comissao_e_desconto_nivel2_pj
+		dim perc_alcada1_pf
+		dim perc_alcada1_pj
+		dim perc_alcada2_pf
+		dim perc_alcada2_pj
+		dim perc_alcada3_pf
+		dim perc_alcada3_pj
 		end class
 
 	dim vTabela
@@ -85,6 +91,12 @@
 			vTabela(Ubound(vTabela)).perc_max_comissao_e_desconto_pj = converte_numero(Trim(Request.Form("c_perc_comissao_e_desconto_pj")(i)))
 			vTabela(Ubound(vTabela)).perc_max_comissao_e_desconto_nivel2 = converte_numero(Trim(Request.Form("c_perc_comissao_e_desconto_nivel2")(i)))
 			vTabela(Ubound(vTabela)).perc_max_comissao_e_desconto_nivel2_pj = converte_numero(Trim(Request.Form("c_perc_comissao_e_desconto_nivel2_pj")(i)))
+			vTabela(Ubound(vTabela)).perc_alcada1_pf = converte_numero(Trim(Request.Form("c_perc_alcada1_pf")(i)))
+			vTabela(Ubound(vTabela)).perc_alcada1_pj = converte_numero(Trim(Request.Form("c_perc_alcada1_pj")(i)))
+			vTabela(Ubound(vTabela)).perc_alcada2_pf = converte_numero(Trim(Request.Form("c_perc_alcada2_pf")(i)))
+			vTabela(Ubound(vTabela)).perc_alcada2_pj = converte_numero(Trim(Request.Form("c_perc_alcada2_pj")(i)))
+			vTabela(Ubound(vTabela)).perc_alcada3_pf = converte_numero(Trim(Request.Form("c_perc_alcada3_pf")(i)))
+			vTabela(Ubound(vTabela)).perc_alcada3_pj = converte_numero(Trim(Request.Form("c_perc_alcada3_pj")(i)))
 			end if
 		next
 	
@@ -126,6 +138,42 @@
 			elseif vTabela(i).perc_max_comissao_e_desconto_nivel2_pj > 100 then
 				alerta=texto_add_br(alerta)
 				alerta=alerta & "PERCENTUAL DE COMISSÃO+DESCONTO (NÍVEL 2 - PJ) NÃO PODE EXCEDER 100% (LOJA " & vTabela(i).num_loja & ")"
+			elseif vTabela(i).perc_alcada1_pf < 0 then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "PERCENTUAL DE COMISSÃO+DESCONTO (ALÇADA 1 - PF) NEGATIVO NÃO É VÁLIDO (LOJA " & vTabela(i).num_loja & ")"
+			elseif vTabela(i).perc_alcada1_pf > 100 then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "PERCENTUAL DE COMISSÃO+DESCONTO (ALÇADA 1 - PF) NÃO PODE EXCEDER 100% (LOJA " & vTabela(i).num_loja & ")"
+			elseif vTabela(i).perc_alcada1_pj < 0 then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "PERCENTUAL DE COMISSÃO+DESCONTO (ALÇADA 1 - PJ) NEGATIVO NÃO É VÁLIDO (LOJA " & vTabela(i).num_loja & ")"
+			elseif vTabela(i).perc_alcada1_pj > 100 then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "PERCENTUAL DE COMISSÃO+DESCONTO (ALÇADA 1 - PJ) NÃO PODE EXCEDER 100% (LOJA " & vTabela(i).num_loja & ")"
+			elseif vTabela(i).perc_alcada2_pf < 0 then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "PERCENTUAL DE COMISSÃO+DESCONTO (ALÇADA 2 - PF) NEGATIVO NÃO É VÁLIDO (LOJA " & vTabela(i).num_loja & ")"
+			elseif vTabela(i).perc_alcada2_pf > 100 then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "PERCENTUAL DE COMISSÃO+DESCONTO (ALÇADA 2 - PF) NÃO PODE EXCEDER 100% (LOJA " & vTabela(i).num_loja & ")"
+			elseif vTabela(i).perc_alcada2_pj < 0 then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "PERCENTUAL DE COMISSÃO+DESCONTO (ALÇADA 2 - PJ) NEGATIVO NÃO É VÁLIDO (LOJA " & vTabela(i).num_loja & ")"
+			elseif vTabela(i).perc_alcada2_pj > 100 then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "PERCENTUAL DE COMISSÃO+DESCONTO (ALÇADA 2 - PJ) NÃO PODE EXCEDER 100% (LOJA " & vTabela(i).num_loja & ")"
+			elseif vTabela(i).perc_alcada3_pf < 0 then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "PERCENTUAL DE COMISSÃO+DESCONTO (ALÇADA 3 - PF) NEGATIVO NÃO É VÁLIDO (LOJA " & vTabela(i).num_loja & ")"
+			elseif vTabela(i).perc_alcada3_pf > 100 then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "PERCENTUAL DE COMISSÃO+DESCONTO (ALÇADA 3 - PF) NÃO PODE EXCEDER 100% (LOJA " & vTabela(i).num_loja & ")"
+			elseif vTabela(i).perc_alcada3_pj < 0 then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "PERCENTUAL DE COMISSÃO+DESCONTO (ALÇADA 3 - PJ) NEGATIVO NÃO É VÁLIDO (LOJA " & vTabela(i).num_loja & ")"
+			elseif vTabela(i).perc_alcada3_pj > 100 then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "PERCENTUAL DE COMISSÃO+DESCONTO (ALÇADA 3 - PJ) NÃO PODE EXCEDER 100% (LOJA " & vTabela(i).num_loja & ")"
 				end if
 			end if
 		next
@@ -215,6 +263,84 @@
 							end if
 						end if
 					
+					'Alçada 1 - PF
+					if converte_numero(r("perc_max_comissao_e_desconto_alcada1_pf")) <> converte_numero(vTabela(i).perc_alcada1_pf) then
+						if s_log_aux <> "" then s_log_aux = s_log_aux & ", "
+						s_log_aux = s_log_aux & "[perc_max_comissao_e_desconto_alcada1_pf: " & formata_perc(r("perc_max_comissao_e_desconto_alcada1_pf")) & " => " & formata_perc(vTabela(i).perc_alcada1_pf) & "]"
+						r("perc_max_comissao_e_desconto_alcada1_pf") = vTabela(i).perc_alcada1_pf
+						r.Update
+						
+						if Err <> 0 then
+							erro_fatal=True
+							alerta = "FALHA AO GRAVAR OS DADOS (" & Cstr(Err) & ": " & Err.Description & ")."
+							end if
+						end if
+
+					'Alçada 1 - PJ
+					if converte_numero(r("perc_max_comissao_e_desconto_alcada1_pj")) <> converte_numero(vTabela(i).perc_alcada1_pj) then
+						if s_log_aux <> "" then s_log_aux = s_log_aux & ", "
+						s_log_aux = s_log_aux & "[perc_max_comissao_e_desconto_alcada1_pj: " & formata_perc(r("perc_max_comissao_e_desconto_alcada1_pj")) & " => " & formata_perc(vTabela(i).perc_alcada1_pj) & "]"
+						r("perc_max_comissao_e_desconto_alcada1_pj") = vTabela(i).perc_alcada1_pj
+						r.Update
+						
+						if Err <> 0 then
+							erro_fatal=True
+							alerta = "FALHA AO GRAVAR OS DADOS (" & Cstr(Err) & ": " & Err.Description & ")."
+							end if
+						end if
+
+					'Alçada 2 - PF
+					if converte_numero(r("perc_max_comissao_e_desconto_alcada2_pf")) <> converte_numero(vTabela(i).perc_alcada2_pf) then
+						if s_log_aux <> "" then s_log_aux = s_log_aux & ", "
+						s_log_aux = s_log_aux & "[perc_max_comissao_e_desconto_alcada2_pf: " & formata_perc(r("perc_max_comissao_e_desconto_alcada2_pf")) & " => " & formata_perc(vTabela(i).perc_alcada2_pf) & "]"
+						r("perc_max_comissao_e_desconto_alcada2_pf") = vTabela(i).perc_alcada2_pf
+						r.Update
+						
+						if Err <> 0 then
+							erro_fatal=True
+							alerta = "FALHA AO GRAVAR OS DADOS (" & Cstr(Err) & ": " & Err.Description & ")."
+							end if
+						end if
+
+					'Alçada 2 - PJ
+					if converte_numero(r("perc_max_comissao_e_desconto_alcada2_pj")) <> converte_numero(vTabela(i).perc_alcada2_pj) then
+						if s_log_aux <> "" then s_log_aux = s_log_aux & ", "
+						s_log_aux = s_log_aux & "[perc_max_comissao_e_desconto_alcada2_pj: " & formata_perc(r("perc_max_comissao_e_desconto_alcada2_pj")) & " => " & formata_perc(vTabela(i).perc_alcada2_pj) & "]"
+						r("perc_max_comissao_e_desconto_alcada2_pj") = vTabela(i).perc_alcada2_pj
+						r.Update
+						
+						if Err <> 0 then
+							erro_fatal=True
+							alerta = "FALHA AO GRAVAR OS DADOS (" & Cstr(Err) & ": " & Err.Description & ")."
+							end if
+						end if
+
+					'Alçada 3 - PF
+					if converte_numero(r("perc_max_comissao_e_desconto_alcada3_pf")) <> converte_numero(vTabela(i).perc_alcada3_pf) then
+						if s_log_aux <> "" then s_log_aux = s_log_aux & ", "
+						s_log_aux = s_log_aux & "[perc_max_comissao_e_desconto_alcada3_pf: " & formata_perc(r("perc_max_comissao_e_desconto_alcada3_pf")) & " => " & formata_perc(vTabela(i).perc_alcada3_pf) & "]"
+						r("perc_max_comissao_e_desconto_alcada3_pf") = vTabela(i).perc_alcada3_pf
+						r.Update
+						
+						if Err <> 0 then
+							erro_fatal=True
+							alerta = "FALHA AO GRAVAR OS DADOS (" & Cstr(Err) & ": " & Err.Description & ")."
+							end if
+						end if
+
+					'Alçada 3 - PJ
+					if converte_numero(r("perc_max_comissao_e_desconto_alcada3_pj")) <> converte_numero(vTabela(i).perc_alcada3_pj) then
+						if s_log_aux <> "" then s_log_aux = s_log_aux & ", "
+						s_log_aux = s_log_aux & "[perc_max_comissao_e_desconto_alcada3_pj: " & formata_perc(r("perc_max_comissao_e_desconto_alcada3_pj")) & " => " & formata_perc(vTabela(i).perc_alcada3_pj) & "]"
+						r("perc_max_comissao_e_desconto_alcada3_pj") = vTabela(i).perc_alcada3_pj
+						r.Update
+						
+						if Err <> 0 then
+							erro_fatal=True
+							alerta = "FALHA AO GRAVAR OS DADOS (" & Cstr(Err) & ": " & Err.Description & ")."
+							end if
+						end if
+
 					if s_log_aux <> "" then
 						if s_log <> "" then s_log = s_log & "; "
 						s_log = s_log & "(Loja " & vTabela(i).num_loja & ": " & s_log_aux & ")"

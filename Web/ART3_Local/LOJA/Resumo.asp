@@ -58,8 +58,10 @@
 	
 	
 '	VERIFICA ID
-	dim s, loja, loja_nome, usuario, usuario_nome, senha, senha_real, cadastrado, chave, vendedor_loja, vendedor_externo, strFlagPrimeiraExecucao
-	dim dt_ult_alteracao_senha, usuario_bloqueado, confere_login_no_bd, eh_primeira_execucao
+	dim s, loja, loja_nome, usuario, usuario_nome, senha, senha_real, blnPossuiPermissaoAcesso, chave, vendedor_loja, vendedor_externo, strFlagPrimeiraExecucao
+	dim dt_ult_alteracao_senha, usuario_bloqueado, usuario_bloqueado_automatico, confere_login_no_bd, eh_primeira_execucao
+	dim idUsuario, qtdeConsecutivaFalhaLogin, max_tentativas_login, blnUsuarioCadastrado, blnSenhaConfereOk, dtHrBloqueioAutomatico
+	dim id_email, assunto_mensagem, corpo_mensagem, remetente_mensagem, msg_erro_grava_email, rEmailDestinatario, ambiente_execucao
 	dim strScript, qtde_relatorios, idx, s_separacao, s_operationControlTicket, s_sessionToken
 	
 	confere_login_no_bd = (Trim(Session("usuario_a_checar")) <> "")	
@@ -133,13 +135,35 @@
         nivel_acesso_chamado = obtem_nivel_acesso_chamado_pedido(cn, usuario)
 
 	'	VERIFICA USUARIO E SENHA NO BD
-		cadastrado = false
+		blnPossuiPermissaoAcesso = false
 		dt_ult_alteracao_senha = null
 		usuario_bloqueado=false
-		set rs = cn.Execute("select nome, senha, datastamp, dt_ult_alteracao_senha, bloqueado, vendedor_loja, vendedor_externo, SessionCtrlTicket, SessionCtrlLoja, SessionCtrlModulo, SessionCtrlDtHrLogon from t_USUARIO where usuario='" & usuario & "'")
+		usuario_bloqueado_automatico=False
+		blnUsuarioCadastrado=False
+		blnSenhaConfereOk=False
+		s = "SELECT" & _
+				" Id" & _
+				", nome" & _
+				", senha" & _
+				", datastamp" & _
+				", dt_ult_alteracao_senha" & _
+				", bloqueado" & _
+				", vendedor_loja" & _
+				", vendedor_externo" & _
+				", SessionCtrlTicket" & _
+				", SessionCtrlLoja" & _
+				", SessionCtrlModulo" & _
+				", SessionCtrlDtHrLogon" & _
+				", StLoginBloqueadoAutomatico" & _
+				", QtdeConsecutivaFalhaLogin" & _
+			" FROM t_USUARIO" & _
+			" WHERE" & _
+				" (usuario='" & QuotedStr(usuario) & "')"
+		set rs = cn.Execute(s)
 		if Err <> 0 then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
 		
-		if Not rs.eof then 
+		if Not rs.eof then
+			blnUsuarioCadastrado=True
 			if Trim("" & rs("SessionCtrlTicket")) <> "" then
 				if Trim(Session("TrocaRapidaLoja")) <> "S" then
 					strMensagemAviso = "A sessão anterior não foi encerrada corretamente.<br>Para segurança da sua identidade, <i>sempre</i> encerre a sessão clicando no link <i>'encerra'</i>.<br>Esta ocorrência será gravada no histórico de auditoria."
@@ -169,39 +193,255 @@
 			if Trim("" & rs("datastamp")) = "" then usuario_bloqueado=true
 		'	ACESSO BLOQUEADO?
 			if rs("bloqueado")<>0 then usuario_bloqueado=true
+		'	ACESSO BLOQUEADO AUTOMATICAMENTE POR EXCESSO DE TENTATIVAS C/ SENHA ERRADA?
+			if rs("StLoginBloqueadoAutomatico")<>0 then usuario_bloqueado_automatico=true
+			qtdeConsecutivaFalhaLogin = rs("QtdeConsecutivaFalhaLogin")
+			max_tentativas_login = obtem_parametro_max_tentativas_login
+
+			idUsuario = rs("Id")
 			dt_ult_alteracao_senha = rs("dt_ult_alteracao_senha")
 			usuario_nome = Trim("" & rs("nome"))
 			vendedor_loja = (rs("vendedor_loja") <> 0)
 			vendedor_externo = (rs("vendedor_externo") <> 0)
-			if operacao_permitida(OP_CEN_ACESSO_TODAS_LOJAS, s_lista_operacoes_permitidas) then cadastrado = true
+			if operacao_permitida(OP_CEN_ACESSO_TODAS_LOJAS, s_lista_operacoes_permitidas) then blnPossuiPermissaoAcesso = true
 			if vendedor_loja then
-				s="SELECT loja FROM t_USUARIO_X_LOJA WHERE (usuario='" & usuario & "') AND (CONVERT(smallint,loja)=" & loja & ")"
+				s = "SELECT" & _
+						" loja" & _
+					" FROM t_USUARIO_X_LOJA" & _
+					" WHERE" & _
+						" (usuario='" & usuario & "')" & _
+						" AND (CONVERT(smallint,loja)=" & loja & ")"
 				set rs2 = cn.Execute(s)
 				if Err <> 0 then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
-				if Not rs2.Eof then cadastrado = true
+				if Not rs2.Eof then blnPossuiPermissaoAcesso = true
 				end if
 
 			senha_real = ""
-			if cadastrado then
-				s = Trim("" & rs("datastamp"))
-				chave = gera_chave(FATOR_BD)
-				decodifica_dado s, senha_real, chave
-				if UCase(trim(senha_real)) <> UCase(trim(senha)) then 
-					if senha_real <> "" then senha = ""
-					end if
+			s = Trim("" & rs("datastamp"))
+			chave = gera_chave(FATOR_BD)
+			decodifica_dado s, senha_real, chave
+			if UCase(trim(senha_real)) = UCase(trim(senha)) then
+				'SENHA CONFERE OK
+				blnSenhaConfereOk = True
+			else
+				if senha_real <> "" then senha = ""
 				end if
 			end if
 
 		rs.close
 		set rs = nothing
-			
-		if (not cadastrado) or (senha="") then 
+
+		'REGISTRA HISTÓRICO DE LOGIN (NA SEQUÊNCIA DE PRIORIDADE)
+		'MOTIVO: USUÁRIO NÃO CADASTRADO
+		if Not blnUsuarioCadastrado then
+			'USUÁRIO NÃO CADASTRADO
+			s = "INSERT INTO t_LOGIN_HISTORICO (" & _
+					"StSucesso" & _
+					", IP" & _
+					", sistema_responsavel" & _
+					", Login" & _
+					", Motivo" & _
+					", IdCfgModulo" & _
+					", loja" & _
+				") VALUES (" & _
+					"0" & _
+					", '" & QuotedStr(Trim("" & Request.ServerVariables("REMOTE_ADDR"))) & "'" & _
+					", " & CStr(COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP) & _
+					", '" & QuotedStr(usuario) & "'" & _
+					", '" & COD_CONTROLE_LOGIN_FALHA__USUARIO_NAO_CADASTRADO & "'" & _
+					", " & CStr(ID_MODULO__LOJA) & _
+					", '" & loja & "'" & _
+				")"
+			cn.Execute(s)
+
+		'MOTIVO: SENHA NÃO CONFERE
+		elseif Not blnSenhaConfereOk then
+			qtdeConsecutivaFalhaLogin = qtdeConsecutivaFalhaLogin + 1
+
+			'SENHA NÃO CONFERE
+			s = "INSERT INTO t_LOGIN_HISTORICO (" & _
+					"IdTipoUsuarioContexto" & _
+					", IdUsuario" & _
+					", StSucesso" & _
+					", IP" & _
+					", sistema_responsavel" & _
+					", Login" & _
+					", Motivo" & _
+					", IdCfgModulo" & _
+					", loja" & _
+				") VALUES (" & _
+					COD_USUARIO_CONTEXTO__USUARIO_INTERNO & _
+					", " & CStr(idUsuario) & _
+					", 0" & _
+					", '" & QuotedStr(Trim("" & Request.ServerVariables("REMOTE_ADDR"))) & "'" & _
+					", " & CStr(COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP) & _
+					", '" & QuotedStr(usuario) & "'" & _
+					", '" & COD_CONTROLE_LOGIN_FALHA__SENHA_INVALIDA & "'" & _
+					", " & CStr(ID_MODULO__LOJA) & _
+					", '" & loja & "'" & _
+				")"
+			cn.Execute(s)
+
+			'Incrementa quantidade de tentativas consecutivas com falha
+			s = "UPDATE t_USUARIO SET" & _
+					" QtdeConsecutivaFalhaLogin = QtdeConsecutivaFalhaLogin + 1" & _
+				" WHERE" & _
+					" (usuario = '" & QuotedStr(usuario) & "')"
+			cn.Execute(s)
+
+			if (Not usuario_bloqueado_automatico) And (qtdeConsecutivaFalhaLogin >= max_tentativas_login) then
+				'Usuário será bloqueado automaticamente no próximo login
+				dtHrBloqueioAutomatico = Now
+				s = "UPDATE t_USUARIO SET" & _
+						" StLoginBloqueadoAutomatico = 1" & _
+						", DataHoraBloqueadoAutomatico = getdate()" & _
+						", EnderecoIpBloqueadoAutomatico = '" & QuotedStr(Trim("" & Request.ServerVariables("REMOTE_ADDR"))) & "'" & _
+					" WHERE" & _
+						" (Id = " & CStr(idUsuario) & ")"
+				cn.Execute(s)
+
+				'Envia e-mail de alerta sobre o bloqueio automático
+				set rEmailDestinatario = get_registro_t_parametro(ID_PARAMETRO_EmailDestinatarioAlertaLoginBloqueadoAutomatico)
+				if Trim("" & rEmailDestinatario.campo_texto) <> "" then
+					ambiente_execucao = getParametroFromCampoTexto(ID_PARAMETRO_AMBIENTE_EXECUCAO_OWNER) & "/" & getParametroFromCampoTexto(ID_PARAMETRO_AMBIENTE_EXECUCAO_CONTEXTO)
+					assunto_mensagem = getParametroFromCampoTexto(ID_PARAMETRO_SubjectEmailAlertaLoginBloqueadoAutomatico)
+					corpo_mensagem = getParametroFromCampoTexto(ID_PARAMETRO_BodyEmailAlertaLoginBloqueadoAutomatico)
+					remetente_mensagem = getParametroFromCampoTexto(ID_PARAMETRO_EmailRemetenteAlertaLoginBloqueadoAutomatico)
+					
+					assunto_mensagem = Replace(assunto_mensagem, "[AMBIENTE]", ambiente_execucao)
+					assunto_mensagem = Replace(assunto_mensagem, "[LOGIN_USUARIO]", usuario)
+					assunto_mensagem = Replace(assunto_mensagem, "[DATA_HORA_BLOQUEIO]", formata_data_hora_sem_seg(dtHrBloqueioAutomatico))
+
+					corpo_mensagem = Replace(corpo_mensagem, "[AMBIENTE]", ambiente_execucao)
+					corpo_mensagem = Replace(corpo_mensagem, "[LOGIN_USUARIO]", usuario)
+					corpo_mensagem = Replace(corpo_mensagem, "[IdTipoUsuarioContexto]", CStr(COD_USUARIO_CONTEXTO__USUARIO_INTERNO))
+					corpo_mensagem = Replace(corpo_mensagem, "[IdUsuario]", CStr(idUsuario))
+					corpo_mensagem = Replace(corpo_mensagem, "[IP]", QuotedStr(Trim("" & Request.ServerVariables("REMOTE_ADDR"))))
+					corpo_mensagem = Replace(corpo_mensagem, "[DATA_HORA_BLOQUEIO]", formata_data_hora_sem_seg(dtHrBloqueioAutomatico))
+					corpo_mensagem = Replace(corpo_mensagem, "[MAX_TENTATIVAS_LOGIN]", CStr(max_tentativas_login))
+					corpo_mensagem = corpo_mensagem & _
+									vbCrLf & _
+									"Loja: " & loja
+
+					EmailSndSvcGravaMensagemParaEnvio remetente_mensagem, _
+													"", _
+													rEmailDestinatario.campo_texto, _
+													"", _
+													"", _
+													assunto_mensagem, _
+													corpo_mensagem, _
+													Now, _
+													id_email, _
+													msg_erro_grava_email
+					end if 'if Trim("" & rEmailDestinatario.campo_texto) <> ""
+				end if 'if (Not usuario_bloqueado_automatico) And (qtdeConsecutivaFalhaLogin >= max_tentativas_login)
+		
+		'MOTIVO: USUÁRIO ESTÁ BLOQUEADO AUTOMATICAMENTE
+		elseif usuario_bloqueado_automatico then
+			'USUÁRIO ENCONTRA-SE BLOQUEADO AUTOMATICAMENTE
+			s = "INSERT INTO t_LOGIN_HISTORICO (" & _
+					"IdTipoUsuarioContexto" & _
+					", IdUsuario" & _
+					", StSucesso" & _
+					", IP" & _
+					", sistema_responsavel" & _
+					", Login" & _
+					", Motivo" & _
+					", IdCfgModulo" & _
+					", loja" & _
+				") VALUES (" & _
+					COD_USUARIO_CONTEXTO__USUARIO_INTERNO & _
+					", " & CStr(idUsuario) & _
+					", 0" & _
+					", '" & QuotedStr(Trim("" & Request.ServerVariables("REMOTE_ADDR"))) & "'" & _
+					", " & CStr(COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP) & _
+					", '" & QuotedStr(usuario) & "'" & _
+					", '" & COD_CONTROLE_LOGIN_FALHA__BLOQUEADO_AUTOMATICO & "'" & _
+					", " & CStr(ID_MODULO__LOJA) & _
+					", '" & loja & "'" & _
+				")"
+			cn.Execute(s)
+
+		'MOTIVO: USUÁRIO ESTÁ BLOQUEADO MANUALMENTE
+		elseif usuario_bloqueado then
+			'USUÁRIO BLOQUEADO MANUALMENTE
+			s = "INSERT INTO t_LOGIN_HISTORICO (" & _
+					"IdTipoUsuarioContexto" & _
+					", IdUsuario" & _
+					", StSucesso" & _
+					", IP" & _
+					", sistema_responsavel" & _
+					", Login" & _
+					", Motivo" & _
+					", IdCfgModulo" & _
+					", loja" & _
+				") VALUES (" & _
+					COD_USUARIO_CONTEXTO__USUARIO_INTERNO & _
+					", " & CStr(idUsuario) & _
+					", 0" & _
+					", '" & QuotedStr(Trim("" & Request.ServerVariables("REMOTE_ADDR"))) & "'" & _
+					", " & CStr(COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP) & _
+					", '" & QuotedStr(usuario) & "'" & _
+					", '" & COD_CONTROLE_LOGIN_FALHA__BLOQUEADO_MANUAL & "'" & _
+					", " & CStr(ID_MODULO__LOJA) & _
+					", '" & loja & "'" & _
+				")"
+			cn.Execute(s)
+
+		'MOTIVO: USUÁRIO NÃO POSSUI PERMISSÃO DE ACESSO SUFICIENTE
+		elseif Not blnPossuiPermissaoAcesso then
+			'USUÁRIO SEM PERMISSÃO DE ACESSO
+			s = "INSERT INTO t_LOGIN_HISTORICO (" & _
+					"IdTipoUsuarioContexto" & _
+					", IdUsuario" & _
+					", StSucesso" & _
+					", IP" & _
+					", sistema_responsavel" & _
+					", Login" & _
+					", Motivo" & _
+					", IdCfgModulo" & _
+					", loja" & _
+				") VALUES (" & _
+					COD_USUARIO_CONTEXTO__USUARIO_INTERNO & _
+					", " & CStr(idUsuario) & _
+					", 0" & _
+					", '" & QuotedStr(Trim("" & Request.ServerVariables("REMOTE_ADDR"))) & "'" & _
+					", " & CStr(COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP) & _
+					", '" & QuotedStr(usuario) & "'" & _
+					", '" & COD_CONTROLE_LOGIN_FALHA__PERMISSAO_INSUFICIENTE & "'" & _
+					", " & CStr(ID_MODULO__LOJA) & _
+					", '" & loja & "'" & _
+				")"
+			cn.Execute(s)
+			end if 'if - elseif (falhas de login)
+
+
+		if Not blnUsuarioCadastrado then
 			cn.Close
 			Response.Redirect("aviso.asp?id=" & ERR_IDENTIFICACAO)
 			end if
 
-		if usuario_bloqueado then Response.Redirect("aviso.asp?id=" & ERR_USUARIO_BLOQUEADO)
+		if Not blnSenhaConfereOk then
+			cn.Close
+			Response.Redirect("aviso.asp?id=" & ERR_IDENTIFICACAO)
+			end if
+
+		if usuario_bloqueado_automatico then
+			cn.Close
+			Response.Redirect("aviso.asp?id=" & ERR_USUARIO_BLOQUEADO_AUTOMATICO)
+			end if
 		
+		if usuario_bloqueado then
+			cn.Close
+			Response.Redirect("aviso.asp?id=" & ERR_USUARIO_BLOQUEADO)
+			end if
+
+		if Not blnPossuiPermissaoAcesso then
+			cn.Close
+			Response.Redirect("aviso.asp?id=" & ERR_USUARIO_BLOQUEADO)
+			end if
+
+
 		Session("loja_atual") = loja
 		Session("usuario_atual") = usuario
 		Session("senha_atual") = senha
@@ -221,6 +461,7 @@
 		
 		s = "UPDATE t_USUARIO SET" & _
 				" dt_ult_acesso = " & bd_formata_data_hora(Now) & _
+				", QtdeConsecutivaFalhaLogin = 0" & _
 				", SessionCtrlDtHrLogon = " & bd_formata_data_hora(Session("DataHoraLogon")) & _
 				", SessionCtrlModulo = '" & SESSION_CTRL_MODULO_LOJA & "'" & _
 				", SessionCtrlLoja = '" & loja & "'" & _
@@ -228,7 +469,7 @@
 				", SessionTokenModuloLoja = newid()" & _
 				", DtHrSessionTokenModuloLoja = getdate()" & _
 			" WHERE" & _
-				" (usuario = '" & usuario & "')"
+				" (usuario = '" & QuotedStr(usuario) & "')"
 		cn.Execute(s)
 
 		s = "INSERT INTO t_SESSAO_HISTORICO (" & _
@@ -247,6 +488,28 @@
 				"'" & SESSION_CTRL_MODULO_LOJA & "'," & _
 				"'" & QuotedStr(Trim("" & Request.ServerVariables("REMOTE_ADDR"))) & "'," & _
 				"'" & QuotedStr(Trim("" & Request.ServerVariables("HTTP_USER_AGENT"))) & "'" & _
+			")"
+		cn.Execute(s)
+
+		'Login bem sucedido
+		s = "INSERT INTO t_LOGIN_HISTORICO (" & _
+				"IdTipoUsuarioContexto" & _
+				", IdUsuario" & _
+				", StSucesso" & _
+				", IP" & _
+				", sistema_responsavel" & _
+				", Login" & _
+				", IdCfgModulo" & _
+				", loja" & _
+			") VALUES (" & _
+				COD_USUARIO_CONTEXTO__USUARIO_INTERNO & _
+				", " & CStr(idUsuario) & _
+				", 1" & _
+				", '" & QuotedStr(Trim("" & Request.ServerVariables("REMOTE_ADDR"))) & "'" & _
+				", " & CStr(COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP) & _
+				", '" & QuotedStr(usuario) & "'" & _
+				", " & CStr(ID_MODULO__LOJA) & _
+				", '" & loja & "'" & _
 			")"
 		cn.Execute(s)
 
