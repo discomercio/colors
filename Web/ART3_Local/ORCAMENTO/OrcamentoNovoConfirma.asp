@@ -296,7 +296,7 @@
 
 	opcao_venda_sem_estoque = Trim(request("opcao_venda_sem_estoque"))
 	
-	dim s_forma_pagto, s_obs1, s_obs2, s_etg_imediata, s_bem_uso_consumo, c_data_previsao_entrega
+	dim s_forma_pagto, s_obs1, s_obs1_concatenado, s_obs2, s_etg_imediata, s_bem_uso_consumo, c_data_previsao_entrega
 	s_obs1=Trim(request("c_obs1"))
 	s_obs2=Trim(request("c_obs2"))
 	s_etg_imediata=Trim(request("rb_etg_imediata"))
@@ -304,7 +304,16 @@
 	s_bem_uso_consumo=Trim(request("rb_bem_uso_consumo"))
 	s_forma_pagto=Trim(request("c_forma_pagto"))
 
-	
+	'Concatena o campo "forma_pagto" em "obs_1", pois o "forma_pagto" foi alterado para possuir o
+	'label "Informações Sobre Análise de Crédito" e passou a ser usado somente pelo depto de análise de crédito.
+	s_obs1_concatenado = s_obs1
+	if (s_obs1_concatenado <> "") And (s_forma_pagto <> "") then s_obs1_concatenado = s_obs1_concatenado & vbCrLf
+	s_obs1_concatenado = s_obs1_concatenado & s_forma_pagto
+
+	s_obs1 = s_obs1_concatenado
+	s_forma_pagto = ""
+
+
 '	CONECTA AO BANCO DE DADOS
 '	=========================
 	dim cn, rs, rs2

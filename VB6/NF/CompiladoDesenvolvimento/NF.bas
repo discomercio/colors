@@ -817,10 +817,9 @@ Option Explicit
 '|          |      |   de tributos (IBPT) para operações de transferência      |
 '|          |      |   de estoque entre filiais (CFOP 5152)                    |
 '|__________|______|___________________________________________________________|
-'|10.03.2023| LHGX |V 2.30                                                     |
+'|01.03.2023| LHGX |V 2.30                                                     |
 '|          |      | - Inclusão tag infRespTec                                 |
-'|          |      | - Adição do parâmetro NF_Informa_Resp_Tec para ativar ou  |
-'|          |      |   desativar o envio de informações da tag infRespTec      |
+'|          |      |                                                           |
 '|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
@@ -834,7 +833,7 @@ Option Explicit
 
 
 Global Const m_id_versao = "2.30"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  10/03/2023"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  01/03/2023"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"
@@ -4002,13 +4001,13 @@ Dim Fnum As Integer
                 Case "OPTION_CEP"
                     s_senha_cep = s_valor
                 Case "RESPTEC_CNPJ"
-                    resptec_emissor.CNPJ = retorna_so_digitos(s_valor)
+                    resptec_emissor.CNPJ = s_valor
                 Case "RESPTEC_NOME"
                     resptec_emissor.nome = s_valor
                 Case "RESPTEC_EMAIL"
                     resptec_emissor.EMAIL = s_valor
                 Case "RESPTEC_TELEFONE"
-                    resptec_emissor.telefone = retorna_so_digitos(s_valor)
+                    resptec_emissor.telefone = s_valor
                 End Select
             End If
         Loop

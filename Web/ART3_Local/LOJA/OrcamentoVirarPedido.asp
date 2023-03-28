@@ -3116,6 +3116,8 @@ var perc_max_comissao_e_desconto_a_utilizar;
 	  </table>
 	</td>
   </tr>
+  <% if False then
+	'Foi definido que os parceiros não  devem visualizar o campo "Informações Sobre Análise de Crédito" %>
   <tr>
 	<td class="MC" align="left">
 	  <p class="Rf">Informações Sobre Análise de Crédito</p>
@@ -3124,6 +3126,9 @@ var perc_max_comissao_e_desconto_a_utilizar;
 			><%=r_orcamento.forma_pagto%></textarea>
 	</td>
   </tr>  
+  <% else %>
+	<input type="hidden" name="c_forma_pagto" id="c_forma_pagto" value="" />
+  <% end if %>
 </table>
 
 
