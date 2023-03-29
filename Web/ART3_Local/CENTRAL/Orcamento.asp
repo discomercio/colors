@@ -1070,6 +1070,8 @@ var b;
 	  </table>
 	</td>
   </tr>
+  <% if False then
+	'Foi definido que os parceiros não  devem visualizar o campo "Informações Sobre Análise de Crédito" %>
   <tr>
 	<td class="MC" align="left"><p class="Rf">Informações Sobre Análise de Crédito</p>
 	  <textarea name="c_forma_pagto" id="c_forma_pagto" class="PLLe notPrint" rows="<%=Cstr(MAX_LINHAS_FORMA_PAGTO)%>"
@@ -1081,6 +1083,7 @@ var b;
 			Response.Write s %></span>
 	</td>
   </tr>
+  <% end if %>
 </table>
 <% end if %>
 
