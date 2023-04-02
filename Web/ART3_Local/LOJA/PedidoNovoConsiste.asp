@@ -810,6 +810,47 @@
 			next
 		end if
 
+	'Regra de negócio: permite vender determinados produtos somente se não excederem determinado limite percentual em relação ao total do pedido
+	dim rVCLstProd, rVCPercMax
+	dim sVCLstProd, sProdutosVendaCondicionada, qtdeProdutosVendaCondicionada
+	dim vl_total_preco_lista, vl_total_venda_condicionada
+	if alerta = "" then
+		set rVCLstProd = get_registro_t_parametro(ID_PARAMETRO_VendaCondicionada_RegraProporcao_ListaProdutos)
+		set rVCPercMax = get_registro_t_parametro(ID_PARAMETRO_VendaCondicionada_RegraProporcao_PercentualMaximoPedido)
+		if Trim("" & rVCLstProd.campo_texto) <> "" then
+			sVCLstProd = "|" & Trim("" & rVCLstProd.campo_texto) & "|"
+			sProdutosVendaCondicionada = ""
+			qtdeProdutosVendaCondicionada = 0
+			vl_total_preco_lista = 0
+			vl_total_venda_condicionada = 0
+			for i=Lbound(v_item) to Ubound(v_item)
+				with v_item(i)
+					if Trim("" & .produto) <> "" then
+						vl_total_preco_lista = vl_total_preco_lista + (.qtde * .preco_lista)
+						s = "|" & Trim("" & .produto) & "|"
+						if Instr(sVCLstProd, s) <> 0 then
+							qtdeProdutosVendaCondicionada = qtdeProdutosVendaCondicionada + 1
+							vl_total_venda_condicionada = vl_total_venda_condicionada + (.qtde * .preco_lista)
+							if sProdutosVendaCondicionada <> "" then sProdutosVendaCondicionada = sProdutosVendaCondicionada & ", "
+							sProdutosVendaCondicionada = sProdutosVendaCondicionada & Trim("" & .produto)
+							end if
+						end if
+					end with
+				next
+			
+			if vl_total_preco_lista <> 0 then
+				if (qtdeProdutosVendaCondicionada > 0) And ((vl_total_venda_condicionada / vl_total_preco_lista) > (rVCPercMax.campo_real / 100)) then
+					alerta=texto_add_br(alerta)
+					if qtdeProdutosVendaCondicionada > 1 then
+						alerta=alerta & "Os produtos " & sProdutosVendaCondicionada & " não podem ser vendidos neste pedido!"
+					else
+						alerta=alerta & "O produto " & sProdutosVendaCondicionada & " não pode ser vendido neste pedido!"
+						end if
+					end if
+				end if
+			end if
+		end if 'if alerta = ""
+
 	if alerta = "" then
 		'Calcula o rateio do frete automaticamente?
 		'Importante: o frete grátis é um caso específico de valor de frete, pois essa rotina irá

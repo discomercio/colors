@@ -965,6 +965,9 @@
 	Const ID_PARAMETRO_RelComissaoIndicadoresNFSe_PlanoContas_RT = "RelComissaoIndicadoresNFSe_PlanoContas_RT"
 	Const ID_PARAMETRO_RelComissaoIndicadoresNFSe_PlanoContas_RA = "RelComissaoIndicadoresNFSe_PlanoContas_RA"
 
+	Const ID_PARAMETRO_VendaCondicionada_RegraProporcao_ListaProdutos = "VendaCondicionada_RegraProporcao_ListaProdutos"
+	Const ID_PARAMETRO_VendaCondicionada_RegraProporcao_PercentualMaximoPedido = "VendaCondicionada_RegraProporcao_PercentualMaximoPedido"
+
 
 '   CONSTANTES QUE IDENTIFICAM REGISTROS ARMAZENADOS NA TABELA "t_CTRL_RELATORIO"
     Const ID_CTRL_RELATORIO_RelControleImpostos = 1
