@@ -242,7 +242,10 @@
 
 	function recalcula_itens() {
 	    var v_agio;
-	    var v_calculo = 0;
+        var v_calculo = 0;
+        var v_ipi;
+        var v_aliq_ipi;
+        var v_frete;
 	    var s;
 	    var iQtdeItens = '<%=UBound(v_item) + 1%>';
 	    var f = fESTOQ;
@@ -254,11 +257,30 @@
     
 	    v_agio = converte_numero(s) / 100;
 	    for (var i = 0; i <= iQtdeItens-1; i++) {
-	        v_calculo = converte_numero(f.c_vl_unitario[i].value)  * (1 + v_agio);
-	        f.c_vl_custo2[i].value = formata_moeda(v_calculo);
+	        //v_calculo = converte_numero(f.c_vl_unitario[i].value)  * (1 + v_agio);
+            //f.c_vl_custo2[i].value = formata_moeda(v_calculo);
+
+            //calculo do valor do produto com IPI, frete e ágio
+            v_calculo = converte_numero(f.c_vl_unitario[i].value);
+            v_frete = converte_numero(f.c_vl_frete[i].value);
+            v_frete = v_frete / converte_numero(f.c_qtde[i].value);
+            v_calculo = v_calculo + v_frete;
+            v_aliq_ipi = converte_numero(f.c_vl_aliq_ipi[i].value) / 100;
+            if (v_aliq_ipi > 0) {
+                v_ipi = converte_numero(formata_moeda(v_calculo * v_aliq_ipi));
+            }
+            else {
+                v_ipi = converte_numero(f.c_vl_ipi.value);
+                v_ipi = v_ipi / converte_numero(f.c_qtde.value);
+            }
+            v_calculo = v_calculo + v_ipi;
+            v_agio = converte_numero(formata_moeda(v_calculo * v_perc_agio));
+            v_calculo = converte_numero(formata_moeda(v_calculo + v_agio));
+            f.c_vl_total_custo2.value = formata_moeda(v_calculo)
+
 	        recalcula_total(i + 1);
 	    }
-	    recalcula_total_nf();
+	    //recalcula_total_nf();
 	    return;
 
 	}
@@ -279,7 +301,8 @@
 	        v_calculo = v_calculo * converte_numero(f.c_qtde[i].value);
 	        v_total = v_total + v_calculo;
 	    }
-	    f.c_total_nf.value = formata_moeda(v_total);
+        // O CAMPO ABAIXO DEIXOU DE APRESENTAR O TOTAL DOS PRODUTOS E PASSOU A APRESENTAR O TOTAL DA NOTA FISCAL, POR SOLICITAÇÃO, PARA FACILITAR A VISUALIZAÇÃO NA CONSULTA
+        //f.c_total_nf.value = formata_moeda(v_total);
 		
 	    return;
 
@@ -296,7 +319,10 @@ var idx, m, f, i;
 	f.c_vl_total_custo2[idx].value = formata_moeda(parseInt(f.c_qtde[idx].value) * m);
 	m = 0;
 	for (i = 0; i < f.c_vl_total_custo2.length; i++) m = m + converte_numero(f.c_vl_total_custo2[i].value);
-	f.c_total_geral_custo2.value = formata_moeda(m);
+    f.c_total_geral_custo2.value = formata_moeda(m);
+
+    //O CAMPO ABAIXO DEIXOU DE APRESENTAR O TOTAL DOS PRODUTOS E PASSOU A APRESENTAR O TOTAL DA NOTA FISCAL, POR SOLICITAÇÃO, PARA FACILITAR A VISUALIZAÇÃO NA CONSULTA
+    f.c_total_nf.value = formata_moeda(m);
 }
 
 function fESTOQConfirma( f ) {
@@ -715,10 +741,13 @@ function fESTOQConfirma( f ) {
 	<tr>
 	<td colspan="11" class="MD" id="tdPreTotalGeralFabricante">&nbsp;</td>
 
-    <td class="MD" align="left"><p class="Cd">Total NF</p></td>
-	<td class="MDB" align="right"><input name="c_total_nf" id="c_total_nf" class="PLLd" style="width:62px;color:black;" 
-		value='<%=formata_moeda(m_total_geral)%>'></td>
 	<td>&nbsp;</td>
+    <td class="MDBE" align="left"><p class="Cd">Total NF</p></td>
+    <!--O CAMPO ABAIXO DEIXOU DE APRESENTAR O TOTAL DOS PRODUTOS E PASSOU A APRESENTAR O TOTAL DA NOTA FISCAL, POR SOLICITAÇÃO, PARA FACILITAR A VISUALIZAÇÃO NA CONSULTA-->
+	<!--<td class="MDB" align="right"><input name="c_total_nf" id="c_total_nf" class="PLLd" style="width:62px;color:black;" 
+		value='<%=formata_moeda(m_total_geral)%>'></td>-->
+    <td class="MDB" align="right"><input name="c_total_nf" id="c_total_nf" class="PLLd" style="width:62px;color:black;" 
+		value='<%=formata_moeda(m_total_geral_custo2)%>'></td>
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>

@@ -565,10 +565,13 @@ var b;
 	<tfoot>
 	<tr>
 	<td colspan="11" id="tdPreTotalGeralFabricante">&nbsp;</td>
-	<td class="MDBE" align="left"><p class="Cd">Total NF</p></td>
-	<td class="MDB" align="right" id="tdTotalGeralFabricante"><input name="c_total_geral" id="c_total_geral" class="PLLd" style="width:70px;" 
-		value='<%=formata_moeda(m_total_geral)%>' readonly tabindex=-1></td>
 	<td>&nbsp;</td>
+    <td class="MDBE" align="left"><p class="Cd">Total NF</p></td>
+    <!--O CAMPO ABAIXO DEIXOU DE APRESENTAR O TOTAL DOS PRODUTOS E PASSOU A APRESENTAR O TOTAL DA NOTA FISCAL, POR SOLICITAÇÃO, PARA FACILITAR A VISUALIZAÇÃO NA CONSULTA-->
+	<!--<td class="MDB" align="right" id="tdTotalGeralFabricante"><input name="c_total_geral" id="c_total_geral" class="PLLd" style="width:70px;" 
+		value='<%=formata_moeda(m_total_geral)%>' readonly tabindex=-1></td>-->
+    <td class="MDB" align="right" id="tdTotalGeralFabricante"><input name="c_total_geral" id="c_total_geral" class="PLLd" style="width:70px;" 
+		value='<%=formata_moeda(m_total_geral_custo2)%>' readonly tabindex=-1></td>
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>
