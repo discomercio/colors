@@ -9289,11 +9289,18 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             '   OS CÁLCULOS DE PARTILHA FORAM MOVIDOS PARA CÁ DEVIDO À EXCLUSÃO DE ICMS E DIFAL DAS BASES DE CÁLCULO
             '   DE PIS E COFINS, CONFORME DECISÃO DO STF
             
+'                A partir de 03/04/2023 condição abaixo de ICMS maior que zero começou a dar problema
+'                (Nota Técnica 2022.005 SEFAZ)
+'                If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
+'                    (rNFeImg.dest__indIEDest = "9") And _
+'                    Not blnIgnorarDIFAL And _
+'                    Not cfop_eh_de_remessa(strCfopCodigo) And _
+'                    (vl_ICMS > 0) Then
+                    
                 If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
                     (rNFeImg.dest__indIEDest = "9") And _
                     Not blnIgnorarDIFAL And _
-                    Not cfop_eh_de_remessa(strCfopCodigo) And _
-                    (vl_ICMS > 0) Then
+                    Not cfop_eh_de_remessa(strCfopCodigo) Then
                     
                     If IsNumeric(.fcp) Then
                         perc_fcp = CSng(.fcp)
@@ -9434,11 +9441,18 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
 '                If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
 '                    ((rNFeImg.dest__indIEDest = "9") Or _
 '                     ((rNFeImg.dest__indIEDest = "2") And (rNFeImg.dest__IE = ""))) Then
+'                A partir de 03/04/2023 condição abaixo de ICMS maior que zero começou a dar problema
+'                (Nota Técnica 2022.005 SEFAZ)
+'                If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
+'                    (rNFeImg.dest__indIEDest = "9") And _
+'                    Not cfop_eh_de_remessa(strCfopCodigo) And _
+'                    Not blnIgnorarDIFAL And _
+'                    (vl_ICMS > 0) Then
+                
                 If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
                     (rNFeImg.dest__indIEDest = "9") And _
                     Not cfop_eh_de_remessa(strCfopCodigo) And _
-                    Not blnIgnorarDIFAL And _
-                    (vl_ICMS > 0) Then
+                    Not blnIgnorarDIFAL Then
                 
                     strNFeTagIcmsUFDest = ""
                     
@@ -9490,11 +9504,19 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
 '                If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
 '                    ((rNFeImg.dest__indIEDest = "9") Or _
 '                     ((rNFeImg.dest__indIEDest = "2") And (rNFeImg.dest__IE = ""))) Then
+
+'                A partir de 03/04/2023 condição abaixo de ICMS maior que zero começou a dar problema
+'                (Nota Técnica 2022.005 SEFAZ)
+'                If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
+'                    (rNFeImg.dest__indIEDest = "9") And _
+'                    Not cfop_eh_de_remessa(strCfopCodigo) And _
+'                    Not blnIgnorarDIFAL And _
+'                    (vl_ICMS > 0) Then
+                    
                 If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
                     (rNFeImg.dest__indIEDest = "9") And _
                     Not cfop_eh_de_remessa(strCfopCodigo) And _
-                    Not blnIgnorarDIFAL And _
-                    (vl_ICMS > 0) Then
+                    Not blnIgnorarDIFAL Then
                     strNFeTagBlocoProduto = strNFeTagBlocoProduto & _
                                             "ICMSUFDest;" & vbCrLf & strNFeTagIcmsUFDest
                     End If
