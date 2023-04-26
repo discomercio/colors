@@ -822,19 +822,45 @@ Option Explicit
 '|          |      | - Adição do parâmetro NF_Informa_Resp_Tec para ativar ou  |
 '|          |      |   desativar o envio de informações da tag infRespTec      |
 '|__________|______|___________________________________________________________|
+'|04.04.2023| LHGX |V 2.31                                                     |
+'|          |      | - Informar a tag de partilha de ICMS mesmo zerada nas     |
+'|          |      |   operações interestaduais (Nota Técnica 2022.005 SEFAZ)  |
+'|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
 '|          |      |                                                           |
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
 '|          |      |                                                           |
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
 '
 
 
-Global Const m_id_versao = "2.30"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  10/03/2023"
+Global Const m_id_versao = "2.31"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  04/04/2023"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"
