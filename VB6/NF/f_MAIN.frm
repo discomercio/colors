@@ -8125,46 +8125,6 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
         
     
 '   CONFIRMA ALÍQUOTA DO ICMS
-'    If usuario.emit_uf = "ES" Then
-'        Select Case UCase$(Trim$("" & t_DESTINATARIO("uf")))
-'            Case "ES": strIcms = "17"
-'            Case "RJ", "SP", "PR", "SC", "RS", "MG", "GO", "TO", "MT", "MS", "AM", "AP", "RR", "RO", "AC", "PB", "MA", "PI", "CE", "RN", "BA", "PE", "AL", "SE", "DF", "PA": strIcms = "12"
-'            Case Else: strIcms = ""
-'            End Select
-'    ElseIf usuario.emit_uf = "MG" Then
-'        Select Case UCase$(Trim$("" & t_DESTINATARIO("uf")))
-'            Case "MG": strIcms = "18"
-'            Case "RJ", "SP", "PR", "SC", "RS": strIcms = "12"
-'            Case "ES", "GO", "TO", "MT", "MS", "AM", "AP", "RR", "RO", "AC", "PB", "MA", "PI", "CE", "RN", "BA", "PE", "AL", "SE", "DF", "PA": strIcms = "7"
-'            Case Else: strIcms = ""
-'            End Select
-'    ElseIf usuario.emit_uf = "MS" Then
-'        Select Case UCase$(Trim$("" & t_DESTINATARIO("uf")))
-'            Case "MS": strIcms = "17"
-'            Case "RJ", "MG", "PR", "SC", "RS", "ES", "GO", "TO", "MT", "SP", "AM", "AP", "RR", "RO", "AC", "PB", "MA", "PI", "CE", "RN", "BA", "PE", "AL", "SE", "DF", "PA": strIcms = "12"
-'            Case Else: strIcms = ""
-'            End Select
-'    ElseIf usuario.emit_uf = "RJ" Then
-'        Select Case UCase$(Trim$("" & t_DESTINATARIO("uf")))
-'            Case "RJ": strIcms = "19"
-'            Case "MG", "SP", "PR", "SC", "RS": strIcms = "12"
-'            Case "ES", "GO", "TO", "MT", "MS", "AM", "AP", "RR", "RO", "AC", "PB", "MA", "PI", "CE", "RN", "BA", "PE", "AL", "SE", "DF", "PA": strIcms = "7"
-'            Case Else: strIcms = ""
-'            End Select
-'    ElseIf usuario.emit_uf = "TO" Then
-'        Select Case UCase$(Trim$("" & t_DESTINATARIO("uf")))
-'            Case "TO": strIcms = "17"
-'            Case "RJ", "MG", "PR", "SC", "RS", "ES", "GO", "MS", "MT", "SP", "AM", "AP", "RR", "RO", "AC", "PB", "MA", "PI", "CE", "RN", "BA", "PE", "AL", "SE", "DF", "PA": strIcms = "12"
-'            Case Else: strIcms = ""
-'            End Select
-'    Else
-'        Select Case UCase$(Trim$("" & t_DESTINATARIO("uf")))
-'            Case "SP": strIcms = "18"
-'            Case "RJ", "MG", "PR", "SC", "RS": strIcms = "12"
-'            Case "ES", "GO", "TO", "MT", "MS", "AM", "AP", "RR", "RO", "AC", "PB", "MA", "PI", "CE", "RN", "BA", "PE", "AL", "SE", "DF", "PA": strIcms = "7"
-'            Case Else: strIcms = ""
-'            End Select
-'        End If
     If obtem_aliquota_ICMS(usuario.emit_uf, strEndClienteUf, aliquota_icms_interestadual) Then
         strIcms = Trim$(CStr(aliquota_icms_interestadual))
     Else
