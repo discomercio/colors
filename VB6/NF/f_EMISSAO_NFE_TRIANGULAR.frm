@@ -9204,6 +9204,7 @@ Dim vl_total_BC_ICMS_ST As Currency
 Dim vl_BC_ICMS As Currency
 Dim vl_BC_ICMS_ST As Currency
 Dim vl_BC_ICMS_ST_Ret As Currency
+Dim vl_pST As Currency
 Dim vl_ICMS As Currency
 Dim vl_ICMSDeson As Currency
 Dim vl_ICMS_ST As Currency
@@ -11738,6 +11739,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 
                 vl_ICMS_ST_Ret = 0
                 vl_BC_ICMS_ST_Ret = 0
+                vl_pST = 0
                 
                 If Len(Trim$(.cst)) = 0 Then
                     s_erro = "O produto " & .produto & " - " & .descricao & " não possui a informação do CST!!"
@@ -11871,6 +11873,10 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     vl_ICMS_ST_Ret = 0
                     vNFeImgItem(UBound(vNFeImgItem)).ICMS__vICMSSTRet = NFeFormataMoeda2Dec(vl_ICMS_ST_Ret)
                     strNFeTagIcms = strNFeTagIcms & vbTab & NFeFormataCampo("vICMSSTRet", vNFeImgItem(UBound(vNFeImgItem)).ICMS__vICMSSTRet)
+                
+                '   ALIQUOTA SUPORTADA PELO CONSUMIDOR FINAL
+                    vl_pST = 0
+                    strNFeTagIcms = strNFeTagIcms & vbTab & NFeFormataCampo("pST", NFeFormataMoeda2Dec(vl_pST))
                 
             '   ICMS: CÓDIGO DE CST NÃO TRATADO PELO SISTEMA!!
                 Else
