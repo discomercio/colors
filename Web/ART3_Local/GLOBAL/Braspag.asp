@@ -1684,7 +1684,7 @@ dim s_ult_AF_GlobalStatus
 					(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO)) And _
 					(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV)) And _
 					(CLng(rs("analise_credito")) <> CLng(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)) then
-				'	TODO PEDIDO SEM INDICADOR DEVE PASSAR PELA ANÁLISE MANUAL
+				'	PEDIDO SEM INDICADOR DEVE PASSAR PELA ANÁLISE MANUAL
 					if s_log <> "" then s_log = s_log & "; "
 					s_log = s_log & " Análise de crédito: " & descricao_analise_credito(rs("analise_credito")) & " => " & descricao_analise_credito(COD_AN_CREDITO_PENDENTE_VENDAS) & " (motivo: pedido não possui indicador)"
 					rs("analise_credito") = CLng(COD_AN_CREDITO_PENDENTE_VENDAS)

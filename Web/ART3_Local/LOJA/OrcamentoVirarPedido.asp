@@ -216,7 +216,7 @@
 			c_custoFinancFornecQtdeParcelas=r_orcamento.pce_prestacao_qtde
 		elseif Cstr(r_orcamento.tipo_parcelamento)=Cstr(COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA) then
 			c_custoFinancFornecTipoParcelamento=COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__SEM_ENTRADA
-			c_custoFinancFornecQtdeParcelas=r_orcamento.pse_demais_prest_qtde
+			c_custoFinancFornecQtdeParcelas=r_orcamento.pse_demais_prest_qtde + 1
 		else
 			c_custoFinancFornecTipoParcelamento=""
 			c_custoFinancFornecQtdeParcelas="0"
@@ -1055,7 +1055,13 @@ var blnTemRA = 0;
 
 function processaFormaPagtoDefault() {
 var f, i;
-	f=fPED;
+
+<% 'ORIGEM: ORÇAMENTO/COTAÇÃO
+if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
+	return;
+<% end if %>
+
+	f = fPED;
 	for (i=0; i<fPED.rb_forma_pagto.length; i++) {
 		if (fPED.rb_forma_pagto[i].checked) {
 			fPED.rb_forma_pagto[i].click();
@@ -1076,7 +1082,13 @@ function trataRespostaAjaxCustoFinancFornecSincronizaPrecos() {
 var f, strResp, i, j, xmlDoc, oNodes;
 var strFabricante,strProduto, strStatus, strPrecoLista, strMsgErro, strCodigoErro;
 var percDesc,vlLista,vlVenda,strMsgErroAlert;
-	f=fPED;
+
+<% 'ORIGEM: ORÇAMENTO/COTAÇÃO
+if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
+	return;
+<% end if %>
+
+	f = fPED;
 	strMsgErroAlert="";
 	if (objAjaxCustoFinancFornecConsultaPreco.readyState==AJAX_REQUEST_IS_COMPLETE) {
 		strResp=objAjaxCustoFinancFornecConsultaPreco.responseText;
@@ -1170,7 +1182,13 @@ var percDesc,vlLista,vlVenda,strMsgErroAlert;
 
 function recalculaCustoFinanceiroPrecoLista() {
 var f, i, strListaProdutos, strUrl, strOpcaoFormaPagto;
-	f=fPED;
+
+<% 'ORIGEM: ORÇAMENTO/COTAÇÃO
+if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
+	return;
+<% end if %>
+
+	f = fPED;
 	objAjaxCustoFinancFornecConsultaPreco=GetXmlHttpObject();
 	if (objAjaxCustoFinancFornecConsultaPreco==null) {
 		alert("O browser NÃO possui suporte ao AJAX!!");
@@ -1461,7 +1479,13 @@ var f,i,mTotVenda,mTotNF;
 // PARCELA ÚNICA
 function pu_atualiza_valor( ){
 var f,vt;
-	f=fPED;
+
+<% 'ORIGEM: ORÇAMENTO/COTAÇÃO
+if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
+	return;
+<% end if %>
+
+	f = fPED;
 	vt=fp_vl_total_pedido();
 	f.c_pu_valor.value=formata_moeda(vt);
 }
@@ -1469,7 +1493,13 @@ var f,vt;
 // PARCELADO NO CARTÃO (INTERNET)
 function pc_calcula_valor_parcela( ){
 var f,n,t;
-	f=fPED;
+
+<% 'ORIGEM: ORÇAMENTO/COTAÇÃO
+if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
+	return;
+<% end if %>
+
+	f = fPED;
 	if (trim(f.c_pc_qtde.value)=='') return;
 	n=converte_numero(f.c_pc_qtde.value);
 	if (n<=0) return;
@@ -1481,7 +1511,13 @@ var f,n,t;
 // PARCELADO NO CARTÃO (MAQUINETA)
 function pc_maquineta_calcula_valor_parcela( ){
 	var f,n,t;
-	f=fPED;
+
+<% 'ORIGEM: ORÇAMENTO/COTAÇÃO
+if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
+	return;
+<% end if %>
+
+	f = fPED;
 	if (trim(f.c_pc_maquineta_qtde.value)=='') return;
 	n=converte_numero(f.c_pc_maquineta_qtde.value);
 	if (n<=0) return;
@@ -1493,14 +1529,26 @@ function pc_maquineta_calcula_valor_parcela( ){
 // PARCELADO COM ENTRADA
 function pce_preenche_sugestao_intervalo() {
 var f;
-	f=fPED;
+
+<% 'ORIGEM: ORÇAMENTO/COTAÇÃO
+if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
+	return;
+<% end if %>
+
+	f = fPED;
 	if (converte_numero(trim(f.c_pce_prestacao_periodo.value))>0) return;
 	f.c_pce_prestacao_periodo.value='30';
 }
 
 function pce_calcula_valor_parcela( ){
 var f,n,e,t;
-	f=fPED;
+
+<% 'ORIGEM: ORÇAMENTO/COTAÇÃO
+if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
+	return;
+<% end if %>
+
+	f = fPED;
 	t=fp_vl_total_pedido();
 	if (trim(f.c_pce_entrada_valor.value)=='') return;
 	e=converte_numero(f.c_pce_entrada_valor.value);
@@ -1515,14 +1563,26 @@ var f,n,e,t;
 // PARCELADO SEM ENTRADA
 function pse_preenche_sugestao_intervalo() {
 var f;
-	f=fPED;
+
+<% 'ORIGEM: ORÇAMENTO/COTAÇÃO
+if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
+	return;
+<% end if %>
+
+	f = fPED;
 	if (converte_numero(trim(f.c_pse_demais_prest_periodo.value))>0) return;
 	f.c_pse_demais_prest_periodo.value='30';
 }
 
 function pse_calcula_valor_parcela( ){
 var f,n,e,t;
-	f=fPED;
+
+<% 'ORIGEM: ORÇAMENTO/COTAÇÃO
+if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
+	return;
+<% end if %>
+
+	f = fPED;
 	t=fp_vl_total_pedido();
 	if (trim(f.c_pse_prim_prest_valor.value)=='') return;
 	e=converte_numero(f.c_pse_prim_prest_valor.value);
@@ -1536,7 +1596,13 @@ var f,n,e,t;
 
 function pce_sugestao_forma_pagto( ) {
 var f, p, s, i, n;
-	f=fPED;
+
+<% 'ORIGEM: ORÇAMENTO/COTAÇÃO
+if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
+	return;
+<% end if %>
+
+	f = fPED;
 	f.c_forma_pagto.value="";
 	p=converte_numero(f.c_pce_prestacao_periodo.value);
 	if (p<=0) return;
@@ -1552,7 +1618,13 @@ var f, p, s, i, n;
 
 function pse_sugestao_forma_pagto( ) {
 var f, p1, p2, s, i, n;
-	f=fPED;
+
+<% 'ORIGEM: ORÇAMENTO/COTAÇÃO
+if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
+	return;
+<% end if %>
+
+	f = fPED;
 	f.c_forma_pagto.value="";
 	p1=converte_numero(f.c_pse_prim_prest_apos.value);
 	if (p1<=0) return;
@@ -1578,7 +1650,13 @@ var f,i;
 
 function recalcula_total_linha( id ) {
 var idx, m, m_lista, m_unit, d, f, i, s;
-	f=fPED;
+
+<% 'ORIGEM: ORÇAMENTO/COTAÇÃO
+if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
+	return;
+<% end if %>
+
+	f = fPED;
 	idx=parseInt(id)-1;
 	if (f.c_produto[idx].value=="") return;
 	m_lista=converte_numero(f.c_preco_lista[idx].value);
@@ -1597,6 +1675,12 @@ var idx, m, m_lista, m_unit, d, f, i, s;
 
 function recalcula_total_todas_linhas() {
 var f,i,vt,m_lista,m_unit,d,m,s;
+
+<% 'ORIGEM: ORÇAMENTO/COTAÇÃO
+if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
+	return;
+<% end if %>
+
 	f = fPED;
 	vt=0;
 	for (i=0; i < f.c_produto.length; i++) {
@@ -1617,6 +1701,12 @@ var f,i,vt,m_lista,m_unit,d,m,s;
 
 function recalcula_RA( ) {
 var f,i,mTotVenda,mTotNF;
+
+<% 'ORIGEM: ORÇAMENTO/COTAÇÃO
+if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
+	return;
+<% end if %>
+
 	f = fPED;
 	mTotVenda=0;
 	for (i=0; i<f.c_vl_total.length; i++) mTotVenda=mTotVenda+converte_numero(f.c_vl_total[i].value);
@@ -1630,7 +1720,13 @@ var f,i,mTotVenda,mTotNF;
 function recalcula_RA_Liquido( ) {
 var f,i,mTotVenda,mTotNF,vl_RA,vl_RA_liquido;
 var r_RA_liquido;
-	f=fPED;
+
+<% 'ORIGEM: ORÇAMENTO/COTAÇÃO
+if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
+	return;
+<% end if %>
+
+	f = fPED;
 	
 	recalcula_total_todas_linhas();
 	
@@ -1650,7 +1746,13 @@ var r_RA_liquido;
 function consiste_forma_pagto( blnComAvisos ) {
 var f,idx,vtNF,vtFP,ve,ni,nip,n,vp;
 var MAX_ERRO_ARREDONDAMENTO = 0.1;
-	f=fPED;
+
+<% 'ORIGEM: ORÇAMENTO/COTAÇÃO
+if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
+	return true;
+<% end if %>
+
+	f = fPED;
 	vtNF=fp_vl_total_pedido();
 	vtFP=0;
 	idx=-1;
@@ -2008,7 +2110,13 @@ var MAX_ERRO_ARREDONDAMENTO = 0.1;
 
 function recalcula_parcelas() {
     var f, idx;
-    f = fPED;
+
+<% 'ORIGEM: ORÇAMENTO/COTAÇÃO
+if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
+	return;
+<% end if %>
+
+	f = fPED;
     idx=-1;
 
     idx++;
@@ -2040,6 +2148,12 @@ function recalcula_parcelas() {
 
 function calcula_desconto(idx) {
 	var f, s, i, m, d, m_lista, m_unit;
+
+<% 'ORIGEM: ORÇAMENTO/COTAÇÃO
+if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
+	return;
+<% end if %>
+
 	f = fPED;
 	if (f.c_produto[idx].value == "") return;
 	d = converte_numero(f.c_desc[idx].value);
@@ -2080,6 +2194,11 @@ function calcula_desconto_medio() {
 
 function trata_edicao_RA(index) {
 var f;
+<% 'ORIGEM: ORÇAMENTO/COTAÇÃO
+if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
+	return;
+<% end if %>
+
 	f = fPED;
 	if ((f.c_permite_RA_status.value != '1') && (f.c_st_violado_permite_RA_status.value == '0')) f.c_vl_NF[index].value = f.c_vl_unitario[index].value;
 }
@@ -2088,12 +2207,13 @@ function fPEDConfirma( f ) {
 var s, i, j, blnFlag, vlAux, vl_preco_lista, vl_preco_venda, vl_NF, perc_desc, strMsgErro;
 var perc_RT, perc_RT_novo, perc_max_RT, perc_max_comissao_e_desconto, perc_max_comissao_e_desconto_pj, perc_max_comissao_e_desconto_nivel2, perc_max_comissao_e_desconto_nivel2_pj, perc_senha_desconto, perc_desc_medio;
 var perc_max_comissao_e_desconto_a_utilizar;
-	
-	recalcula_total_todas_linhas();
 
+<% 'ORIGEM: PRÉ-PEDIDO (NÃO FOI GERADO ATRAVÉS DE ORÇAMENTO/COTAÇÃO)
+if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then %>
+	recalcula_total_todas_linhas();
 	recalcula_RA();
-	
 	recalcula_RA_Liquido();
+<% end if %>
 
 	s = "" + f.c_obs1.value;
 	if (s.length > MAX_TAM_OBS1) {
@@ -2116,6 +2236,8 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		return;
 		}
 
+<% 'ORIGEM: PRÉ-PEDIDO (NÃO FOI GERADO ATRAVÉS DE ORÇAMENTO/COTAÇÃO)
+if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then %>
 //  Consiste a nova versão da forma de pagamento
 	if (!consiste_forma_pagto(true)) return;
 
@@ -2232,7 +2354,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 			}
 		}
 	} // if (perc_RT != 0)
-	
+<% end if %>
 	
 	blnFlag=false;
 	for (i=0; i < f.rb_etg_imediata.length; i++) {
@@ -2281,12 +2403,15 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		return;
 		}
 
+<% 'ORIGEM: PRÉ-PEDIDO (NÃO FOI GERADO ATRAVÉS DE ORÇAMENTO/COTAÇÃO)
+if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then %>
 	if ( (trim(f.c_indicador.value)!="")&& (trim(f.c_indicador_original.value)!="") ) {
 		if ( trim(f.c_indicador.value)!=trim(f.c_indicador_original.value) ) {
 			s="O indicador que cadastrou este pré-pedido é diferente do indicador que consta no cadastro deste cliente.\n\n##################################################\nFAVOR COMUNICAR AO GERENTE!!\n##################################################\n\nContinua mesmo assim?";
 			if (!confirm(s)) return;
 			}
 		}
+<% end if %>
 
 	blnFlag=false;
 	for (i=0; i < f.rb_garantia_indicador.length; i++) {
@@ -2308,6 +2433,8 @@ var perc_max_comissao_e_desconto_a_utilizar;
 			}
 		}
 
+<% 'ORIGEM: PRÉ-PEDIDO (NÃO FOI GERADO ATRAVÉS DE ORÇAMENTO/COTAÇÃO)
+if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then %>
 	strMsgErro="";
 	for (i=0; i < f.c_produto.length; i++) {
 		if (trim(f.c_produto[i].value)!="") {
@@ -2321,7 +2448,8 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		alert(strMsgErro);
 		return;
 		}
-	
+<% end if %>
+
 //  Há mensagem de erro detectada durante a montagem da página (nas rotinas server side)
 	strMsgErro="";
 	for (i=0; i < f.c_itemMsgErro.length; i++) {
@@ -2626,6 +2754,12 @@ var perc_max_comissao_e_desconto_a_utilizar;
 		s_vl_TotalItem=""
 		strMsgErroItem=""
 		end if
+
+	'Se o pré-pedido foi gerado por um orçamento/cotação, assegura que os valores não serão editados pelo vendedor nesta conversão
+	if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then
+		s_readonly = "readonly tabindex=-1"
+		s_vl_NF_readonly = "readonly tabindex=-1"
+		end if
 %>
 	<tr>
 	<td class="MDBE" align="left">
@@ -2725,6 +2859,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 				<td class="MTBD" align="right"><input name="c_perc_RT" id="c_perc_RT" class="PLLd" style="width:30px;color:blue;" 
 					value='<%=formata_perc_RT(r_orcamento.perc_RT)%>'
 					maxlength="5"
+					<% if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then Response.Write " readonly tabindex=-1" %>
 					onkeypress="if (digitou_enter(true)) fPED.c_obs1.focus(); filtra_percentual();"
 					onblur="this.value=formata_perc_RT(this.value); if ((converte_numero(this.value)>100)||(converte_numero(this.value)<0)) {alert('Percentual inválido!!');this.focus();}"
 					></td>
@@ -2813,8 +2948,123 @@ var perc_max_comissao_e_desconto_a_utilizar;
 	</tr>
 </table>
 
+<%
+	'Se o pré-pedido foi gerado por um orçamento/cotação, assegura que os valores não serão editados pelo vendedor nesta conversão
+	if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then
+%>
+<br />
+<table class="Q" style="width:649px;" cellspacing="0">
+  <tr>
+	<td align="left"><span class="Rf">Forma de Pagamento</span></td>
+  </tr>
+  <tr>
+	<td align="left">
+	  <table width="100%" cellspacing="0" cellpadding="0" border="0">
+		<% if Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_A_VISTA then %>
+		<!--  À VISTA  -->
+		<tr>
+		  <td align="left">
+			<table cellspacing="0" cellpadding="0" border="0">
+			  <tr>
+				<td align="left"><span class="C">À Vista&nbsp&nbsp;(<%=x_opcao_forma_pagamento(r_orcamento.av_forma_pagto)%>)</span></td>
+			  </tr>
+			</table>
+		  </td>
+		</tr>
+		<% elseif Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELA_UNICA then %>
+		<!--  PARCELA ÚNICA  -->
+		<tr>
+		  <td align="left">
+			<table cellspacing="0" cellpadding="0" border="0">
+			  <tr>
+				<td align="left"><span class="C">Parcela Única:&nbsp;&nbsp;<%=SIMBOLO_MONETARIO%>&nbsp;<%=formata_moeda(r_orcamento.pu_valor)%>&nbsp;&nbsp;&nbsp;(<%=x_opcao_forma_pagamento(r_orcamento.pu_forma_pagto)%>)&nbsp;&nbsp;vencendo após&nbsp;<%=formata_inteiro(r_orcamento.pu_vencto_apos)%>&nbsp;dias</span></td>
+			  </tr>
+			</table>
+		  </td>
+		</tr>
+		<% elseif Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO then %>
+		<!--  PARCELADO NO CARTÃO (INTERNET)  -->
+		<tr>
+		  <td align="left">
+			<table cellspacing="0" cellpadding="0" border="0">
+			  <tr>
+				<td align="left"><span class="C">Parcelado no Cartão (internet) em&nbsp;&nbsp;<%=Cstr(r_orcamento.pc_qtde_parcelas)%>&nbsp;x&nbsp;&nbsp;<%=SIMBOLO_MONETARIO & " " & formata_moeda(r_orcamento.pc_valor_parcela)%></span></td>
+			  </tr>
+			</table>
+		  </td>
+		</tr>
+		<% elseif Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA then %>
+		<!--  PARCELADO NO CARTÃO (MAQUINETA)  -->
+		<tr>
+		  <td align="left">
+			<table cellspacing="0" cellpadding="0" border="0">
+			  <tr>
+				<td align="left"><span class="C">Parcelado no Cartão (maquineta) em&nbsp;&nbsp;<%=Cstr(r_orcamento.pc_maquineta_qtde_parcelas)%>&nbsp;x&nbsp;&nbsp;<%=SIMBOLO_MONETARIO & " " & formata_moeda(r_orcamento.pc_maquineta_valor_parcela)%></span></td>
+			  </tr>
+			</table>
+		  </td>
+		</tr>
+		<% elseif Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then %>
+		<!--  PARCELADO COM ENTRADA  -->
+		<tr>
+		  <td align="left">
+			<table cellspacing="0" cellpadding="0" border="0">
+			  <tr>
+				<td align="left"><span class="C">Entrada:&nbsp;&nbsp;<%=SIMBOLO_MONETARIO%>&nbsp;<%=formata_moeda(r_orcamento.pce_entrada_valor)%>&nbsp;&nbsp;&nbsp;(<%=x_opcao_forma_pagamento(r_orcamento.pce_forma_pagto_entrada)%>)</span></td>
+			  </tr>
+			  <tr>
+				<td align="left"><span class="C">Prestações:&nbsp;&nbsp;<%=formata_inteiro(r_orcamento.pce_prestacao_qtde)%>&nbsp;x&nbsp;<%=SIMBOLO_MONETARIO%>&nbsp;<%=formata_moeda(r_orcamento.pce_prestacao_valor)%>&nbsp;&nbsp;&nbsp;(<%=x_opcao_forma_pagamento(r_orcamento.pce_forma_pagto_prestacao)%>)&nbsp;&nbsp;vencendo a cada&nbsp;<%=formata_inteiro(r_orcamento.pce_prestacao_periodo)%>&nbsp;dias</span></td>
+			  </tr>
+			</table>
+		  </td>
+		</tr>
+		<% elseif Cstr(r_orcamento.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then %>
+		<!--  PARCELADO SEM ENTRADA  -->
+		<tr>
+		  <td align="left">
+			<table cellspacing="0" cellpadding="0" border="0">
+			  <tr>
+				<td align="left"><span class="C">1ª Prestação:&nbsp;&nbsp;<%=SIMBOLO_MONETARIO%>&nbsp;<%=formata_moeda(r_orcamento.pse_prim_prest_valor)%>&nbsp;&nbsp;&nbsp;(<%=x_opcao_forma_pagamento(r_orcamento.pse_forma_pagto_prim_prest)%>)&nbsp;&nbsp;vencendo após&nbsp;<%=formata_inteiro(r_orcamento.pse_prim_prest_apos)%>&nbsp;dias</span></td>
+			  </tr>
+			  <tr>
+				<td align="left"><span class="C">Demais Prestações:&nbsp;&nbsp;<%=Cstr(r_orcamento.pse_demais_prest_qtde)%>&nbsp;x&nbsp;<%=SIMBOLO_MONETARIO%>&nbsp;<%=formata_moeda(r_orcamento.pse_demais_prest_valor)%>&nbsp;&nbsp;&nbsp;(<%=x_opcao_forma_pagamento(r_orcamento.pse_forma_pagto_demais_prest)%>)&nbsp;&nbsp;vencendo a cada&nbsp;<%=Cstr(r_orcamento.pse_demais_prest_periodo)%>&nbsp;dias</span></td>
+			  </tr>
+			</table>
+		  </td>
+		</tr>
+		<% end if %>
+	  </table>
+	</td>
+  </tr>
+</table>
+
+<input type="hidden" name="rb_forma_pagto" id="rb_forma_pagto" value="<%=Cstr(r_orcamento.tipo_parcelamento)%>" />
+<input type="hidden" name="op_av_forma_pagto" id="op_av_forma_pagto" value="<%=Cstr(r_orcamento.av_forma_pagto)%>" />
+<input type="hidden" name="op_pu_forma_pagto" id="op_pu_forma_pagto" value="<%=Cstr(r_orcamento.pu_forma_pagto)%>" />
+<input type="hidden" name="c_pu_valor" id="c_pu_valor" value="<%=formata_moeda(r_orcamento.pu_valor)%>" />
+<input type="hidden" name="c_pu_vencto_apos" id="c_pu_vencto_apos" value="<%=Cstr(r_orcamento.pu_vencto_apos)%>" />
+<input type="hidden" name="c_pc_qtde" id="c_pc_qtde" value="<%=Cstr(r_orcamento.pc_qtde_parcelas)%>" />
+<input type="hidden" name="c_pc_valor" id="c_pc_valor" value="<%=formata_moeda(r_orcamento.pc_valor_parcela)%>" />
+<input type="hidden" name="c_pc_maquineta_qtde" id="c_pc_maquineta_qtde" value="<%=Cstr(r_orcamento.pc_maquineta_qtde_parcelas)%>" />
+<input type="hidden" name="c_pc_maquineta_valor" id="c_pc_maquineta_valor" value="<%=formata_moeda(r_orcamento.pc_maquineta_valor_parcela)%>" />
+<input type="hidden" name="op_pce_entrada_forma_pagto" id="op_pce_entrada_forma_pagto" value="<%=Cstr(r_orcamento.pce_forma_pagto_entrada)%>" />
+<input type="hidden" name="c_pce_entrada_valor"id="c_pce_entrada_valor" value="<%=formata_moeda(r_orcamento.pce_entrada_valor)%>" />
+<input type="hidden" name="op_pce_prestacao_forma_pagto" id="op_pce_prestacao_forma_pagto" value="<%=Cstr(r_orcamento.pce_forma_pagto_prestacao)%>" />
+<input type="hidden" name="c_pce_prestacao_qtde" id="c_pce_prestacao_qtde" value="<%=Cstr(r_orcamento.pce_prestacao_qtde)%>" />
+<input type="hidden" name="c_pce_prestacao_valor" id="c_pce_prestacao_valor"value="<%=formata_moeda(r_orcamento.pce_prestacao_valor)%>" />
+<input type="hidden" name="c_pce_prestacao_periodo" id="c_pce_prestacao_periodo" value="<%=Cstr(r_orcamento.pce_prestacao_periodo)%>" />
+<input type="hidden" name="op_pse_prim_prest_forma_pagto" id="op_pse_prim_prest_forma_pagto" value="<%=Cstr(r_orcamento.pse_forma_pagto_prim_prest)%>" />
+<input type="hidden" name="c_pse_prim_prest_valor" id="c_pse_prim_prest_valor" value="<%=formata_moeda(r_orcamento.pse_prim_prest_valor)%>" />
+<input type="hidden" name="c_pse_prim_prest_apos" id="c_pse_prim_prest_apos" value="<%=Cstr(r_orcamento.pse_prim_prest_apos)%>" />
+<input type="hidden" name="op_pse_demais_prest_forma_pagto" id="op_pse_demais_prest_forma_pagto" value="<%=Cstr(r_orcamento.pse_forma_pagto_demais_prest)%>" />
+<input type="hidden" name="c_pse_demais_prest_qtde" id="c_pse_demais_prest_qtde" value="<%=Cstr(r_orcamento.pse_demais_prest_qtde)%>" />
+<input type="hidden" name="c_pse_demais_prest_valor" id="c_pse_demais_prest_valor" value="<%=formata_moeda(r_orcamento.pse_demais_prest_valor)%>" />
+<input type="hidden" name="c_pse_demais_prest_periodo" id="c_pse_demais_prest_periodo" value="<%=Cstr(r_orcamento.pse_demais_prest_periodo)%>" />
+<input type="hidden" name="c_forma_pagto" id="c_forma_pagto" value="" />
+
+<% else %>
 <!--  NOVA VERSÃO DA FORMA DE PAGAMENTO  -->
-<br>
+<br />
 <table class="Q" style="width:649px;" cellspacing="0">
   <tr>
 	<td align="left">
@@ -3171,6 +3421,7 @@ var perc_max_comissao_e_desconto_a_utilizar;
 	<input type="hidden" name="c_forma_pagto" id="c_forma_pagto" value="" />
   <% end if %>
 </table>
+<% end if 'if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then-else %>
 
 
 <!--  VENDEDOR EXTERNO: LOJA QUE INDICOU  -->

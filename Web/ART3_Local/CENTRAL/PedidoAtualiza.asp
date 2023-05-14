@@ -32,7 +32,50 @@
 	On Error GoTo 0
 	Err.Clear
 
-	dim s, usuario, pedido_selecionado, pedido_base
+	class cl_ITEM_PEDIDO_EDICAO
+		dim pedido
+		dim fabricante
+		dim produto
+		dim qtde
+		dim desc_dado
+		dim preco_venda
+		dim preco_venda_original
+		dim preco_NF
+		dim preco_fabricante
+		dim preco_lista
+		dim margem
+		dim desc_max
+		dim comissao
+		dim descricao
+		dim descricao_html
+		dim ean
+		dim grupo
+        dim subgrupo
+		dim peso
+		dim qtde_volumes
+		dim abaixo_min_status
+		dim abaixo_min_autorizacao
+		dim abaixo_min_autorizador
+		dim sequencia
+		dim markup_fabricante
+		dim abaixo_min_superv_autorizador
+		dim vl_custo2
+		dim custoFinancFornecCoeficiente
+		dim custoFinancFornecPrecoListaBase
+		dim cubagem
+		dim ncm
+		dim cst
+		dim descontinuado
+		dim cod_produto_xml_fabricante
+		dim cod_produto_alfanum_fabricante
+		dim potencia_valor
+		dim id_unidade_potencia
+		dim StatusDescontoSuperior
+		dim IdUsuarioDescontoSuperior
+		dim DataHoraDescontoSuperior
+		end class
+
+	dim s, usuario, pedido_selecionado, pedido_base, tipo_cliente
 	usuario = Trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
 
@@ -42,11 +85,15 @@
     dim url_origem
     url_origem = Trim(Request("url_origem"))
 
+	dim cliente_selecionado
+	cliente_selecionado = Trim(Request.Form("cliente_selecionado"))
+
 	pedido_selecionado = ucase(Trim(request("pedido_selecionado")))
 	if (pedido_selecionado = "") then Response.Redirect("aviso.asp?id=" & ERR_PEDIDO_NAO_ESPECIFICADO)
 	s = normaliza_num_pedido(pedido_selecionado)
 	if s <> "" then pedido_selecionado = s
 
+	dim i, j, n, k
 	dim alerta, blnErroConsistencia
 	alerta=""
 	blnErroConsistencia=False
@@ -57,14 +104,39 @@
 	dim msg_erro
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
-	dim r_pedido, r_pedido_atualizado
+	dim r_pedido, r_pedido_atualizado, v_item_bd
 	if alerta = "" then
-		if Not le_pedido(pedido_selecionado, r_pedido, msg_erro) then alerta = msg_erro
+		if Not le_pedido(pedido_selecionado, r_pedido, msg_erro) then
+			alerta = msg_erro
+		else
+			if Not le_pedido_item(pedido_selecionado, v_item_bd, msg_erro) then alerta = msg_erro
+			end if
 		end if
 	
 	dim r_loja
 	set r_loja = New cl_LOJA
 	call x_loja_bd(r_pedido.loja, r_loja)
+
+	dim rCD
+	set rCD = obtem_perc_max_comissao_e_desconto_por_loja(r_pedido.loja)
+
+'	OBTÉM A RELAÇÃO DE MEIOS DE PAGAMENTO PREFERENCIAIS (QUE FAZEM USO O PERCENTUAL DE COMISSÃO+DESCONTO NÍVEL 2)
+	dim rP, vMPN2
+	set rP = get_registro_t_parametro(ID_PARAMETRO_PercMaxComissaoEDesconto_Nivel2_MeiosPagto)
+	if Trim("" & rP.id) <> "" then
+		vMPN2 = Split(rP.campo_texto, ",")
+		for i=Lbound(vMPN2) to Ubound(vMPN2)
+			vMPN2(i) = Trim("" & vMPN2(i))
+			next
+	else
+		redim vMPN2(0)
+		vMPN2(0) = ""
+		end if
+
+	dim r_usuario
+	if alerta = "" then
+		call le_usuario(usuario, r_usuario, msg_erro)
+		end if
 
 	dim rEmailDestinatario
 	dim id_email, corpo_mensagem, msg_erro_grava_email, emailSndSvcRemetenteMensagemSistema
@@ -113,6 +185,10 @@
 	s = Trim(Request.Form("nivelEdicaoFormaPagto"))
 	nivelEdicaoFormaPagto = CLng(s)
 	
+	dim blnFormaPagtoEditada
+	s = Trim(Request.Form("blnFormaPagtoEditada"))
+	blnFormaPagtoEditada = CBool(s)
+
 	dim blnPagtoAntecipadoEdicaoLiberada
 	s = Trim(Request.Form("blnPagtoAntecipadoEdicaoLiberada"))
 	blnPagtoAntecipadoEdicaoLiberada = CBool(s)
@@ -266,6 +342,12 @@
 	c_exibir_campo_instalador_instala = Trim(Request.Form("c_exibir_campo_instalador_instala"))
 	s_instalador_instala = Trim(Request.Form("rb_instalador_instala"))
 
+	dim c_gravar_perc_RT_novo
+	c_gravar_perc_RT_novo = Trim(Request("c_gravar_perc_RT_novo"))
+
+	dim c_consiste_perc_max_comissao_e_desconto
+	c_consiste_perc_max_comissao_e_desconto = Trim(Request("c_consiste_perc_max_comissao_e_desconto"))
+
 	dim nivelEdicaoFormaPagtoConferencia
 	nivelEdicaoFormaPagtoConferencia = COD_NIVEL_EDICAO_BLOQUEADA
 	if operacao_permitida(OP_CEN_EDITA_PEDIDO_FORMA_PAGTO, s_lista_operacoes_permitidas) Or operacao_permitida(OP_CEN_EDITA_FORMA_PAGTO_SEM_APLICAR_RESTRICOES, s_lista_operacoes_permitidas) then
@@ -330,6 +412,7 @@
 	dim r_cliente
 	set r_cliente = New cl_CLIENTE
 	call x_cliente_bd(r_pedido.id_cliente, r_cliente)
+	tipo_cliente = r_cliente.tipo
 
 	dim eh_cpf
 	eh_cpf=(len(r_cliente.cnpj_cpf)=11)
@@ -464,10 +547,10 @@
 			end if
 		end if
 
-	dim v_item, i, j, n, intQtdeFretes
+	dim v_item, intQtdeFretes
 	dim vl_TotalFamiliaPrecoVenda, vl_TotalFamiliaPrecoNF, vl_totalFamiliaPrecoNFLiquido, vl_TotalFamiliaPago, vl_TotalFamiliaDevolucaoPrecoVenda, vl_TotalFamiliaDevolucaoPrecoNF, st_pagto, id_pedido_base
 	redim v_item(0)
-	set v_item(Ubound(v_item)) = New cl_ITEM_PEDIDO
+	set v_item(Ubound(v_item)) = New cl_ITEM_PEDIDO_EDICAO
 	v_item(Ubound(v_item)).produto = ""
 	n = Request.Form("c_produto").Count
 	for i = 1 to n
@@ -475,7 +558,7 @@
 		if s <> "" then
 			if Trim(v_item(ubound(v_item)).produto) <> "" then
 				redim preserve v_item(ubound(v_item)+1)
-				set v_item(ubound(v_item)) = New cl_ITEM_PEDIDO
+				set v_item(ubound(v_item)) = New cl_ITEM_PEDIDO_EDICAO
 				end if
 			with v_item(ubound(v_item))
 				.produto=Ucase(Trim(Request.Form("c_produto")(i)))
@@ -483,9 +566,24 @@
 				.fabricante=normaliza_codigo(s, TAM_MIN_FABRICANTE)
 				s=Trim(Request.Form("c_vl_unitario")(i))
 				.preco_venda=converte_numero(s)
+				s=Trim(Request.Form("c_vl_unitario_original")(i))
+				.preco_venda_original=converte_numero(s)
 				s=Trim(Request.Form("c_vl_NF")(i))
 				.preco_NF=converte_numero(s)
+				s=Trim(Request.Form("c_preco_lista")(i))
+				.preco_lista=converte_numero(s)
 				end with
+			
+			for j=LBound(v_item_bd) to UBound(v_item_bd)
+				if Trim("" & v_item_bd(j).produto) <> "" then
+					if (v_item(ubound(v_item)).fabricante = Trim("" & v_item_bd(j).fabricante)) And (v_item(ubound(v_item)).produto = Trim("" & v_item_bd(j).produto)) then
+						v_item(ubound(v_item)).StatusDescontoSuperior = v_item_bd(j).StatusDescontoSuperior
+						v_item(ubound(v_item)).IdUsuarioDescontoSuperior = v_item_bd(j).IdUsuarioDescontoSuperior
+						v_item(ubound(v_item)).DataHoraDescontoSuperior = v_item_bd(j).DataHoraDescontoSuperior
+						exit for
+						end if
+					end if 'if Trim("" & v_item_bd(j).produto) <> ""
+				next
 			end if
 		next
 
@@ -898,6 +996,212 @@
 						end if
 					end if
 				end if
+			end if
+		end if
+
+'	CALCULA O VALOR TOTAL DO PEDIDO
+	dim vl_total
+	if alerta = "" then
+		vl_total = 0
+		for i=Lbound(v_item) to Ubound(v_item)
+			with v_item(i)
+				if .produto <> "" then 
+					vl_total = vl_total + (.qtde * .preco_venda)
+					end if
+				end with
+			next
+		end if
+	
+'	ANALISA O PERCENTUAL DE COMISSÃO+DESCONTO
+	dim perc_comissao_e_desconto_a_utilizar, perc_comissao_e_desconto_padrao
+	dim s_pg, blnPreferencial
+	dim vlNivel1, vlNivel2
+	if tipo_cliente = ID_PJ then
+		perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_pj
+	else
+		perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto
+		end if
+
+	if alerta="" then
+		if rb_forma_pagto = COD_FORMA_PAGTO_A_VISTA then
+			s_pg = Trim(op_av_forma_pagto)
+			if s_pg <> "" then
+				for i=Lbound(vMPN2) to Ubound(vMPN2)
+				'	O meio de pagamento selecionado é um dos preferenciais
+					if Trim("" & s_pg) = Trim("" & vMPN2(i)) then
+						if tipo_cliente = ID_PJ then
+							perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2_pj
+						else
+							perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2
+							end if
+						exit for
+						end if
+					next
+				end if
+		elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELA_UNICA then
+			s_pg = Trim(op_pu_forma_pagto)
+			if s_pg <> "" then
+				for i=Lbound(vMPN2) to Ubound(vMPN2)
+				'	O meio de pagamento selecionado é um dos preferenciais
+					if Trim("" & s_pg) = Trim("" & vMPN2(i)) then
+						if tipo_cliente = ID_PJ then
+							perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2_pj
+						else
+							perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2
+							end if
+						exit for
+						end if
+					next
+				end if
+		elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_CARTAO then
+			s_pg = Trim(ID_FORMA_PAGTO_CARTAO)
+			if s_pg <> "" then
+				for i=Lbound(vMPN2) to Ubound(vMPN2)
+				'	O meio de pagamento selecionado é um dos preferenciais
+					if Trim("" & s_pg) = Trim("" & vMPN2(i)) then
+						if tipo_cliente = ID_PJ then
+							perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2_pj
+						else
+							perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2
+							end if
+						exit for
+						end if
+					next
+				end if
+		elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA then
+			s_pg = Trim(ID_FORMA_PAGTO_CARTAO_MAQUINETA)
+			if s_pg <> "" then
+				for i=Lbound(vMPN2) to Ubound(vMPN2)
+				'	O meio de pagamento selecionado é um dos preferenciais
+					if Trim("" & s_pg) = Trim("" & vMPN2(i)) then
+						if tipo_cliente = ID_PJ then
+							perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2_pj
+						else
+							perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2
+							end if
+						exit for
+						end if
+					next
+				end if
+		elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
+		'	Identifica e contabiliza o valor da entrada
+			blnPreferencial = False
+			s_pg = Trim(op_pce_entrada_forma_pagto)
+			if s_pg <> "" then
+				for i=Lbound(vMPN2) to Ubound(vMPN2)
+				'	O meio de pagamento selecionado é um dos preferenciais
+					if Trim("" & s_pg) = Trim("" & vMPN2(i)) then
+						blnPreferencial = True
+						exit for
+						end if
+					next
+				end if
+			
+			if blnPreferencial then
+				vlNivel2 = converte_numero(c_pce_entrada_valor)
+			else
+				vlNivel1 = converte_numero(c_pce_entrada_valor)
+				end if
+			
+		'	Identifica e contabiliza o valor das parcelas
+			blnPreferencial = False
+			s_pg = Trim(op_pce_prestacao_forma_pagto)
+			if s_pg <> "" then
+				for i=Lbound(vMPN2) to Ubound(vMPN2)
+				'	O meio de pagamento selecionado é um dos preferenciais
+					if Trim("" & s_pg) = Trim("" & vMPN2(i)) then
+						blnPreferencial = True
+						exit for
+						end if
+					next
+				end if
+			
+			if blnPreferencial then
+				vlNivel2 = vlNivel2 + converte_numero(c_pce_prestacao_qtde) * converte_numero(c_pce_prestacao_valor)
+			else
+				vlNivel1 = vlNivel1 + converte_numero(c_pce_prestacao_qtde) * converte_numero(c_pce_prestacao_valor)
+				end if
+		
+		'	O montante a pagar por meio de pagamento preferencial é maior que 50% do total?
+			if vlNivel2 > (vl_total/2) then
+				if tipo_cliente = ID_PJ then
+					perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2_pj
+				else
+					perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2
+					end if
+				end if
+			
+		elseif rb_forma_pagto = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
+		'	Identifica e contabiliza o valor da 1ª parcela
+			blnPreferencial = False
+			s_pg = Trim(op_pse_prim_prest_forma_pagto)
+			if s_pg <> "" then
+				for i=Lbound(vMPN2) to Ubound(vMPN2)
+				'	O meio de pagamento selecionado é um dos preferenciais
+					if Trim("" & s_pg) = Trim("" & vMPN2(i)) then
+						blnPreferencial = True
+						exit for
+						end if
+					next
+				end if
+			
+			if blnPreferencial then
+				vlNivel2 = converte_numero(c_pse_prim_prest_valor)
+			else
+				vlNivel1 = converte_numero(c_pse_prim_prest_valor)
+				end if
+			
+		'	Identifica e contabiliza o valor das parcelas
+			blnPreferencial = False
+			s_pg = Trim(op_pse_demais_prest_forma_pagto)
+			if s_pg <> "" then
+				for i=Lbound(vMPN2) to Ubound(vMPN2)
+				'	O meio de pagamento selecionado é um dos preferenciais
+					if Trim("" & s_pg) = Trim("" & vMPN2(i)) then
+						blnPreferencial = True
+						exit for
+						end if
+					next
+				end if
+			
+			if blnPreferencial then
+				vlNivel2 = vlNivel2 + converte_numero(c_pse_demais_prest_qtde) * converte_numero(c_pse_demais_prest_valor)
+			else
+				vlNivel1 = vlNivel1 + converte_numero(c_pse_demais_prest_qtde) * converte_numero(c_pse_demais_prest_valor)
+				end if
+			
+		'	O montante a pagar por meio de pagamento preferencial é maior que 50% do total?
+			if vlNivel2 > (vl_total/2) then
+				if tipo_cliente = ID_PJ then
+					perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2_pj
+				else
+					perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2
+					end if
+				end if
+			end if
+		end if
+	
+	' Verifica se o usuário tem permissão de desconto por alçada
+	perc_comissao_e_desconto_padrao = perc_comissao_e_desconto_a_utilizar
+	if tipo_cliente = ID_PF then
+		if operacao_permitida(OP_CEN_DESC_SUP_ALCADA_1, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada1_pf > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada1_pf
+			end if
+		if operacao_permitida(OP_CEN_DESC_SUP_ALCADA_2, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada2_pf > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada2_pf
+			end if
+		if operacao_permitida(OP_CEN_DESC_SUP_ALCADA_3, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada3_pf > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada3_pf
+			end if
+	else
+		if operacao_permitida(OP_CEN_DESC_SUP_ALCADA_1, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada1_pj > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada1_pj
+			end if
+		if operacao_permitida(OP_CEN_DESC_SUP_ALCADA_2, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada2_pj > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada2_pj
+			end if
+		if operacao_permitida(OP_CEN_DESC_SUP_ALCADA_3, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada3_pj > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada3_pj
 			end if
 		end if
 
@@ -1388,6 +1692,75 @@
 						end if
 					end if
 				end if
+			end if
+		end if
+
+	dim v_desconto()
+	ReDim v_desconto(0)
+	v_desconto(UBound(v_desconto)) = ""
+
+	dim desc_dado_arredondado
+	
+	if alerta="" then
+		if c_consiste_perc_max_comissao_e_desconto = "S" then
+			for i=Lbound(v_item) to Ubound(v_item)
+				with v_item(i)
+					if (.preco_venda <> .preco_venda_original) Or blnFormaPagtoEditada then
+						if .preco_lista = 0 then 
+							.desc_dado = 0
+							desc_dado_arredondado = 0
+						else
+							.desc_dado = 100*(.preco_lista-.preco_venda)/.preco_lista
+							desc_dado_arredondado = converte_numero(formata_perc_desc(.desc_dado))
+							end if
+						
+						'Se houve edição no preço de venda, verifica se há necessidade de atualizar o ID do usuário que fez uso da alçada
+						if (.desc_dado > perc_comissao_e_desconto_padrao) And (perc_comissao_e_desconto_a_utilizar > perc_comissao_e_desconto_padrao) then
+							.StatusDescontoSuperior = 1
+							.IdUsuarioDescontoSuperior = r_usuario.Id
+							.DataHoraDescontoSuperior = Now
+						else
+							.StatusDescontoSuperior = 0
+							end if
+
+						if desc_dado_arredondado > perc_comissao_e_desconto_a_utilizar then
+							s = "SELECT " & _
+									"*" & _
+								" FROM t_DESCONTO" & _
+								" WHERE" & _
+									" (usado_status=0)" & _
+									" AND (cancelado_status=0)" & _
+									" AND (id_cliente='" & cliente_selecionado & "')" & _
+									" AND (fabricante='" & .fabricante & "')" & _
+									" AND (produto='" & .produto & "')" & _
+									" AND (loja='" & r_pedido.loja & "')" & _
+									" AND (data >= " & bd_formata_data_hora(Now-converte_min_to_dec(TIMEOUT_DESCONTO_EM_MIN)) & ")" & _
+								" ORDER BY" & _
+									" data DESC"
+							set rs=cn.execute(s)
+							if rs.Eof then
+								alerta=texto_add_br(alerta)
+								alerta=alerta & "Produto " & .produto & " do fabricante " & .fabricante & ": desconto de " & formata_perc_desc(.desc_dado) & "% excede o máximo permitido."
+							else
+								if .desc_dado > rs("desc_max") then
+									alerta=texto_add_br(alerta)
+									alerta=alerta & "Produto " & .produto & " do fabricante " & .fabricante & ": desconto de " & formata_perc_desc(.desc_dado) & "% excede o máximo autorizado."
+								else
+									.abaixo_min_status=1
+									.abaixo_min_autorizacao=Trim("" & rs("id"))
+									.abaixo_min_autorizador=Trim("" & rs("autorizador"))
+									.abaixo_min_superv_autorizador=Trim("" & rs("supervisor_autorizador"))
+									If v_desconto(UBound(v_desconto)) <> "" Then
+										ReDim Preserve v_desconto(UBound(v_desconto) + 1)
+										v_desconto(UBound(v_desconto)) = ""
+										End If
+									v_desconto(UBound(v_desconto)) = Trim("" & rs("id"))
+									end if
+								end if
+							end if
+						end if
+					end with
+				next
 			end if
 		end if
 
@@ -2461,6 +2834,19 @@
 											else
 												rs("desc_dado") = 100*(vlCustoFinancFornecPrecoLista-rs("preco_venda"))/vlCustoFinancFornecPrecoLista
 												end if
+
+											'Verifica se há necessidade de atualizar o ID do usuário que fez uso da alçada
+											if (Trim("" & rs("StatusDescontoSuperior")) <> Trim("" & .StatusDescontoSuperior)) Or (Trim("" & rs("IdUsuarioDescontoSuperior")) <> Trim("" & .IdUsuarioDescontoSuperior)) then
+												rs("StatusDescontoSuperior") = CInt(.StatusDescontoSuperior)
+												if .IdUsuarioDescontoSuperior > 0 then
+													rs("IdUsuarioDescontoSuperior") = CLng(.IdUsuarioDescontoSuperior)
+													rs("DataHoraDescontoSuperior") = .DataHoraDescontoSuperior
+												else
+													rs("IdUsuarioDescontoSuperior") = Null
+													rs("DataHoraDescontoSuperior") = Null
+													end if
+												end if
+
 											rs.Update
 											log_via_vetor_carrega_do_recordset rs, vLogItemCFF2, campos_a_omitir_ItemCFF
 											s = log_via_vetor_monta_alteracao(vLogItemCFF1, vLogItemCFF2)
@@ -2534,6 +2920,17 @@
 										end if
 									rs("preco_venda")=.preco_venda
 									rs("desc_dado")=.desc_dado
+									'Verifica se há necessidade de atualizar o ID do usuário que fez uso da alçada
+									if (Trim("" & rs("StatusDescontoSuperior")) <> Trim("" & .StatusDescontoSuperior)) Or (Trim("" & rs("IdUsuarioDescontoSuperior")) <> Trim("" & .IdUsuarioDescontoSuperior)) then
+										rs("StatusDescontoSuperior") = CInt(.StatusDescontoSuperior)
+										if .IdUsuarioDescontoSuperior > 0 then
+											rs("IdUsuarioDescontoSuperior") = CLng(.IdUsuarioDescontoSuperior)
+											rs("DataHoraDescontoSuperior") = .DataHoraDescontoSuperior
+										else
+											rs("IdUsuarioDescontoSuperior") = Null
+											rs("DataHoraDescontoSuperior") = Null
+											end if
+										end if
 									blnUpdate = True
 									end if
 								end if
@@ -2546,6 +2943,21 @@
 									rs("preco_NF")=.preco_NF
 									blnUpdate = True
 									end if
+								end if
+							if converte_numero(.abaixo_min_status) <> 0 then
+								blnUpdate = True
+								rs("abaixo_min_status")=.abaixo_min_status
+								rs("abaixo_min_autorizacao")=.abaixo_min_autorizacao
+								rs("abaixo_min_autorizador")=.abaixo_min_autorizador
+								rs("abaixo_min_superv_autorizador")=.abaixo_min_superv_autorizador
+								
+								if s_log <> "" then s_log = s_log & "; "
+								s_log = s_log & _
+										"Senha de desconto p/ produto (" & .fabricante & ")" & .produto & ": " & _
+										"abaixo_min_status=" & formata_texto_log(.abaixo_min_status) & "; " & _
+										"abaixo_min_autorizacao=" & formata_texto_log(.abaixo_min_autorizacao) & "; " & _
+										"abaixo_min_autorizador=" & formata_texto_log(.abaixo_min_autorizador) & "; " & _
+										"abaixo_min_superv_autorizador=" & formata_texto_log(.abaixo_min_superv_autorizador)
 								end if
 							end if
 						
@@ -2609,6 +3021,36 @@
 					end if
 				end if
 				
+			end if
+		
+		if alerta = "" then
+	'		SENHAS DE AUTORIZAÇÃO PARA DESCONTO SUPERIOR
+			for k = Lbound(v_desconto) to Ubound(v_desconto)
+				if Trim(v_desconto(k)) <> "" then
+					s = "SELECT * FROM t_DESCONTO" & _
+						" WHERE (usado_status=0)" & _
+						" AND (cancelado_status=0)" & _
+						" AND (id='" & Trim(v_desconto(k)) & "')"
+					if rs.State <> 0 then rs.Close
+					rs.open s, cn
+					if rs.Eof then
+						alerta = "Senha de autorização para desconto superior não encontrado."
+						exit for
+					else
+						rs("usado_status") = 1
+						rs("usado_data") = Now
+						rs("vendedor") = r_pedido.vendedor
+						rs("usado_usuario") = usuario
+						rs.Update
+						if Err <> 0 then
+						'	~~~~~~~~~~~~~~~~
+							cn.RollbackTrans
+						'	~~~~~~~~~~~~~~~~
+							Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
+							end if
+						end if
+					end if
+				next
 			end if
 		
 		if alerta = "" then

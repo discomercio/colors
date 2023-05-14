@@ -33,11 +33,14 @@
 	Err.Clear
 
 	dim msg_erro
-	dim usuario, loja, cliente_selecionado, midia_selecionada, indicador_original
+	dim usuario, loja, cliente_selecionado, midia_selecionada, indicador_original, tipo_cliente
 	usuario = Trim(Session("usuario_atual"))
 	loja = Trim(Session("loja_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
 	If (loja = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
+
+	dim s_lista_operacoes_permitidas
+	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
 
 	dim alerta, alerta_aux
 	alerta=""
@@ -49,6 +52,11 @@
 '	=========================
 	dim cn, rs, rs2, t_CLIENTE, tMAP_XML, tMAP_ITEM, tITEM_SVC, tOI
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
+
+	dim r_cliente
+	set r_cliente = New cl_CLIENTE
+	call x_cliente_bd(cliente_selecionado, r_cliente)
+	tipo_cliente = r_cliente.tipo
 
 	dim blnUsarMemorizacaoCompletaEnderecos
 	blnUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
@@ -459,6 +467,11 @@
 	set r_loja = New cl_LOJA
 	call x_loja_bd(loja, r_loja)
 
+	dim r_usuario
+	if alerta = "" then
+		call le_usuario(usuario, r_usuario, msg_erro)
+		end if
+
 '	OBTÉM A RELAÇÃO DE MEIOS DE PAGAMENTO PREFERENCIAIS (QUE FAZEM USO O PERCENTUAL DE COMISSÃO+DESCONTO NÍVEL 2)
 	dim rP, vMPN2
 	set rP = get_registro_t_parametro(ID_PARAMETRO_PercMaxComissaoEDesconto_Nivel2_MeiosPagto)
@@ -683,7 +696,7 @@
 		end if 'if alerta = ""
 
 '	ANALISA O PERCENTUAL DE COMISSÃO+DESCONTO
-	dim perc_comissao_e_desconto_a_utilizar
+	dim perc_comissao_e_desconto_a_utilizar, perc_comissao_e_desconto_padrao
 	dim s_pg, blnPreferencial
 	dim vlNivel1, vlNivel2
 	if EndCob_tipo_pessoa = ID_PJ then
@@ -851,6 +864,29 @@
 			end if
 		end if
 	
+	' Verifica se o usuário tem permissão de desconto por alçada
+	perc_comissao_e_desconto_padrao = perc_comissao_e_desconto_a_utilizar
+	if tipo_cliente = ID_PF then
+		if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_1, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada1_pf > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada1_pf
+			end if
+		if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_2, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada2_pf > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada2_pf
+			end if
+		if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_3, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada3_pf > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada3_pf
+			end if
+	else
+		if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_1, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada1_pj > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada1_pj
+			end if
+		if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_2, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada2_pj > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada2_pj
+			end if
+		if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_3, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada3_pj > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada3_pj
+			end if
+		end if
 	
 '	CONSISTÊNCIA PARA VALOR ZERADO
 	if alerta="" then
@@ -941,6 +977,15 @@
 						desc_dado_arredondado = converte_numero(formata_perc_desc(.desc_dado))
 						end if
 					
+					'Se houve edição no preço de venda, verifica se há necessidade de atualizar o ID do usuário que fez uso da alçada
+					if (.desc_dado > perc_comissao_e_desconto_padrao) And (perc_comissao_e_desconto_a_utilizar > perc_comissao_e_desconto_padrao) then
+						.StatusDescontoSuperior = 1
+						.IdUsuarioDescontoSuperior = r_usuario.Id
+						.DataHoraDescontoSuperior = Now
+					else
+						.StatusDescontoSuperior = 0
+						end if
+
 					if desc_dado_arredondado > perc_comissao_e_desconto_a_utilizar then
 						if rs.State <> 0 then rs.Close
 						s = "SELECT " & _
@@ -2486,6 +2531,11 @@
 											rs("cod_produto_alfanum_fabricante") = .cod_produto_alfanum_fabricante
 											rs("potencia_valor") = .potencia_valor
 											rs("id_unidade_potencia") = .id_unidade_potencia
+											rs("StatusDescontoSuperior") = CInt(.StatusDescontoSuperior)
+											if .IdUsuarioDescontoSuperior > 0 then
+												rs("IdUsuarioDescontoSuperior") = CLng(.IdUsuarioDescontoSuperior)
+												rs("DataHoraDescontoSuperior") = .DataHoraDescontoSuperior
+												end if
 											rs.Update
 											if Err <> 0 then
 											'	~~~~~~~~~~~~~~~~

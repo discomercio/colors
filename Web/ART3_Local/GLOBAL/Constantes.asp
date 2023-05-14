@@ -40,7 +40,7 @@
 	Const URL_FILE__JQUERY_MY_PLUGIN = "../Global/jquery-my-plugin.js?v=002"
 	Const URL_FILE__JQUERY_UI_MY_PLUGIN = "../Global/jquery-ui-my-plugin.js?v=003"
 	Const URL_FILE__JQUERY_MASKMONEY = "../Global/jquery.maskMoney.min.js?v=001"
-	Const URL_FILE__GLOBAL_JS = "../Global/global.js?v=071"
+	Const URL_FILE__GLOBAL_JS = "../Global/global.js?v=072"
 	Const URL_FILE__SSL_JS = "../Global/SSL.js?v=004"
 	Const URL_FILE__CONST_JS = "../Global/const.js?v=001"
 	Const URL_FILE__CONSTXL_JS = "../Global/constXL.js?v=001"
@@ -1546,7 +1546,9 @@
 	Const OP_CEN_PRE_DEVOLUCAO_LEITURA							= 29500
 	Const OP_CEN_PRE_DEVOLUCAO_ESCREVER_MSG						= 29600
 	Const OP_CEN_EDITA_PEDIDO_CD								= 29800
-
+	Const OP_CEN_DESC_SUP_ALCADA_1								= 30000
+	Const OP_CEN_DESC_SUP_ALCADA_2								= 30100
+	Const OP_CEN_DESC_SUP_ALCADA_3								= 30200
 
   ' LOJA
 	Const OP_LJA_CADASTRA_NOVO_PEDIDO					= 50100
@@ -1648,7 +1650,9 @@
 	Const OP_LJA_CADASTRA_NOVO_PEDIDO_EC_INDICADOR_SEMI_AUTOMATICO = 59600
     Const OP_LJA_PRE_DEVOLUCAO_ADMINISTRACAO                    = 59700
 	Const OP_LJA_PRE_DEVOLUCAO_CADASTRAMENTO_GESTOR				= 59800
-
+	Const OP_LJA_DESC_SUP_ALCADA_1								= 59900
+	Const OP_LJA_DESC_SUP_ALCADA_2								= 60000
+	Const OP_LJA_DESC_SUP_ALCADA_3								= 60100
 
 
   ' CÓDIGOS DE ERRO
@@ -1903,6 +1907,12 @@
 		dim perc_max_comissao_e_desconto_nivel2
 		dim perc_max_comissao_e_desconto_nivel2_pj
 		dim perc_max_comissao_e_desconto_pj
+		dim perc_max_comissao_e_desconto_alcada1_pf
+		dim perc_max_comissao_e_desconto_alcada1_pj
+		dim perc_max_comissao_e_desconto_alcada2_pf
+		dim perc_max_comissao_e_desconto_alcada2_pj
+		dim perc_max_comissao_e_desconto_alcada3_pf
+		dim perc_max_comissao_e_desconto_alcada3_pj
 		dim magento_api_urlWebService
 		dim magento_api_username
 		dim magento_api_password
@@ -2802,6 +2812,8 @@
 		dim EndEtg_produtor_rural_status
 		dim EndEtg_ie
 		dim EndEtg_rg
+		dim sistema_responsavel_cadastro
+		dim sistema_responsavel_atualizacao
 		dim PrevisaoEntregaData
 		dim PrevisaoEntregaUsuarioUltAtualiz
 		dim PrevisaoEntregaDtHrUltAtualiz
@@ -3154,6 +3166,12 @@
 		dim perc_max_comissao_e_desconto_pj
 		dim perc_max_comissao_e_desconto_nivel2
 		dim perc_max_comissao_e_desconto_nivel2_pj
+		dim perc_max_comissao_e_desconto_alcada1_pf
+		dim perc_max_comissao_e_desconto_alcada1_pj
+		dim perc_max_comissao_e_desconto_alcada2_pf
+		dim perc_max_comissao_e_desconto_alcada2_pj
+		dim perc_max_comissao_e_desconto_alcada3_pf
+		dim perc_max_comissao_e_desconto_alcada3_pj
 		dim isCadastrado
 		end class
 	

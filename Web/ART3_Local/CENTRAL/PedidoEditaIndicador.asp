@@ -83,11 +83,14 @@
 	dim r_orcamento_cotacao
 	if converte_numero(Trim("" & r_pedido.IdOrcamentoCotacao)) > 0 then
 		if le_orcamento_cotacao(r_pedido.IdOrcamentoCotacao, r_orcamento_cotacao, msg_erro) then
-			if (r_orcamento_cotacao.IdIndicador <> ID_NSU_ORCAMENTISTA_E_INDICADOR__SEM_INDICADOR) And (Trim("" & r_orcamento_cotacao.IdIndicador) <> "") then
+			'A princípio, não libera a edição de indicador em pedidos que vieram de orçamentos sem indicador, pois ocorre uma inconsistência já que
+			'os dados no módulo de orçamentos constam que foi um orçamento sem indicador e o pedido passa a aparecer p/ um indicador, sendo que esse
+			'indicador não consegue acessar o orçamento que deu origem ao pedido.
+			'if (r_orcamento_cotacao.IdIndicador <> ID_NSU_ORCAMENTISTA_E_INDICADOR__SEM_INDICADOR) And (Trim("" & r_orcamento_cotacao.IdIndicador) <> "") then
 				blnIndicadorEdicaoLiberada = False
 				alerta=texto_add_br(alerta)
 				alerta=alerta & "Não é possível alterar o indicador porque o pedido foi gerado a partir do orçamento nº " & formata_inteiro(r_pedido.IdOrcamentoCotacao)
-				end if
+				'end if
 			end if
 		end if
 

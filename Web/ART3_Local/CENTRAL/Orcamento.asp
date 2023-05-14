@@ -1150,9 +1150,11 @@ var b;
 		</td>
 		<td align="right">
 	<% if operacao_permitida(OP_CEN_EDITA_ORCAMENTO, s_lista_operacoes_permitidas) Or operacao_permitida(OP_CEN_EDITA_ITEM_DO_ORCAMENTO, s_lista_operacoes_permitidas) then %>
+		<% if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then %>
 		<div name="dMODIFICA" id="dMODIFICA">
 		<a name="bMODIFICA" id="bMODIFICA" href="javascript:fORCModifica(fORC)" title="edita o orçamento">
 		<img src="../botao/modificar.gif" width="176" height="55" border="0"></a></div>
+		<% end if %>
 	<% end if %>
 		</td>
 	</tr>

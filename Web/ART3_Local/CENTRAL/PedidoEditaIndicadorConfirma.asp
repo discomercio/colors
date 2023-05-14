@@ -211,6 +211,8 @@
 		if alerta = "" then
 			indicador_anterior = rs("indicador")
 			rs("indicador")=c_indicador_novo
+			'Assegura que não haverá inconsistência c/ relação a vendedor do parceiro (se futuramente houver edição do vendedor do parceiro, ajustar este ponto)
+			rs("IdIndicadorVendedor") = Null
 
 			if blnPedidoPassouPossuirIndicador then
 				rs("perc_desagio_RA") = perc_desagio_RA

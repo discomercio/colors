@@ -1144,7 +1144,8 @@ function fORCVirarPedido( f ) {
 		<a name="bIMPRIME" id="bIMPRIME" href="javascript:fORCImprime(fORC)" title="vai para a página de impressão do pré-pedido em formulário contínuo">
 		<img src="../botao/imprimir.gif" width="176" height="55" border="0"></a></div>
 	</td>
-	<td align="center">
+	<% if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then s = "center" else s = "right" %>
+	<td align="<%=s%>">
 		<% if IsOrcamentoCancelavel(r_orcamento.st_orcamento) then %>
 		<div name='dREMOVE' id='dREMOVE'><a name="bREMOVE" id="bREMOVE" href="javascript:fORCRemove(fORC)" title="cancela este pré-pedido">
 			<img src="../botao/remover.gif" width="176" height="55" border="0"></a>
@@ -1152,9 +1153,11 @@ function fORCVirarPedido( f ) {
 		<% end if %>
 	</td>
 	<td align="right">
+		<% if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then %>
 		<div name="dMODIFICA" id="dMODIFICA"><a name="bMODIFICA" id="bMODIFICA" href="javascript:fORCModifica(fORC)" title="edita o pré-pedido">
 			<img src="../botao/modificar.gif" width="176" height="55" border="0"></a>
 		</div>
+		<% end if %>
 	</td>
 </tr>
 <tr>

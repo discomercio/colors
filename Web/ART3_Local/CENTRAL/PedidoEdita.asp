@@ -154,6 +154,58 @@
 		cliente__produtor_rural_status = r_pedido.endereco_produtor_rural_status
     end if
 
+	dim rCD
+	set rCD = obtem_perc_max_comissao_e_desconto_por_loja(r_pedido.loja)
+
+'	OBTÉM A RELAÇÃO DE MEIOS DE PAGAMENTO PREFERENCIAIS (QUE FAZEM USO O PERCENTUAL DE COMISSÃO+DESCONTO NÍVEL 2)
+	dim rP, vMPN2, strScriptJS_MPN2
+	set rP = get_registro_t_parametro(ID_PARAMETRO_PercMaxComissaoEDesconto_Nivel2_MeiosPagto)
+	
+	strScriptJS_MPN2 = "<script type='text/javascript'>" & chr(13) & _
+						"var vMPN2 = new Array();" & chr(13) & _
+						"vMPN2[0] = 0;" & chr(13)
+	if Trim("" & rP.id) <> "" then
+		vMPN2 = Split(rP.campo_texto, ",")
+		for i=Lbound(vMPN2) to Ubound(vMPN2)
+			vMPN2(i) = Trim("" & vMPN2(i))
+			if vMPN2(i) <> "" then
+				strScriptJS_MPN2 = strScriptJS_MPN2 & _
+									"vMPN2[vMPN2.length] = " & vMPN2(i) & ";" & chr(13)
+				end if
+			next
+		end if
+	strScriptJS_MPN2 = strScriptJS_MPN2 & _
+						"</script>" & chr(13)
+	
+	dim strPercMaxRT
+	dim strPercMaxComissaoEDesconto, strPercMaxComissaoEDescontoPj, strPercMaxComissaoEDescontoNivel2, strPercMaxComissaoEDescontoNivel2Pj
+	dim strPercMaxDescAlcada1Pf, strPercMaxDescAlcada1Pj, strPercMaxDescAlcada2Pf, strPercMaxDescAlcada2Pj, strPercMaxDescAlcada3Pf, strPercMaxDescAlcada3Pj
+	strPercMaxRT = formata_perc(rCD.perc_max_comissao)
+	strPercMaxComissaoEDesconto = formata_perc(rCD.perc_max_comissao_e_desconto)
+	strPercMaxComissaoEDescontoPj = formata_perc(rCD.perc_max_comissao_e_desconto_pj)
+	strPercMaxComissaoEDescontoNivel2 = formata_perc(rCD.perc_max_comissao_e_desconto_nivel2)
+	strPercMaxComissaoEDescontoNivel2Pj = formata_perc(rCD.perc_max_comissao_e_desconto_nivel2_pj)
+	strPercMaxDescAlcada1Pf = "0"
+	strPercMaxDescAlcada1Pj = "0"
+	strPercMaxDescAlcada2Pf = "0"
+	strPercMaxDescAlcada2Pj = "0"
+	strPercMaxDescAlcada3Pf = "0"
+	strPercMaxDescAlcada3Pj = "0"
+	
+	if operacao_permitida(OP_CEN_DESC_SUP_ALCADA_1, s_lista_operacoes_permitidas) then
+		strPercMaxDescAlcada1Pf = formata_perc(rCD.perc_max_comissao_e_desconto_alcada1_pf)
+		strPercMaxDescAlcada1Pj = formata_perc(rCD.perc_max_comissao_e_desconto_alcada1_pj)
+		end if
+
+	if operacao_permitida(OP_CEN_DESC_SUP_ALCADA_2, s_lista_operacoes_permitidas) then
+		strPercMaxDescAlcada2Pf = formata_perc(rCD.perc_max_comissao_e_desconto_alcada2_pf)
+		strPercMaxDescAlcada2Pj = formata_perc(rCD.perc_max_comissao_e_desconto_alcada2_pj)
+		end if
+
+	if operacao_permitida(OP_CEN_DESC_SUP_ALCADA_3, s_lista_operacoes_permitidas) then
+		strPercMaxDescAlcada3Pf = formata_perc(rCD.perc_max_comissao_e_desconto_alcada3_pf)
+		strPercMaxDescAlcada3Pj = formata_perc(rCD.perc_max_comissao_e_desconto_alcada3_pj)
+		end if
 
 	dim s_aux, s2, s3, s4, r_loja, s_cor, s_falta
 	dim v_disp
@@ -455,6 +507,47 @@
 				  "var nivelEdicaoFormaPagto = " & CStr(nivelEdicaoFormaPagto) & ";" & chr(13) & _
 				  "</script>" & chr(13)
 
+	dim strScriptJS_FPO
+	strScriptJS_FPO = r_pedido.tipo_parcelamento
+	if Cstr(r_pedido.tipo_parcelamento) = COD_FORMA_PAGTO_A_VISTA then
+		strScriptJS_FPO = strScriptJS_FPO & _
+							"|" & r_pedido.av_forma_pagto
+	elseif Cstr(r_pedido.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELA_UNICA then
+		strScriptJS_FPO = strScriptJS_FPO & _
+							"|" & r_pedido.pu_forma_pagto & _
+							"|" & formata_moeda(r_pedido.pu_valor) & _
+							"|" & Cstr(r_pedido.pu_vencto_apos)
+	elseif Cstr(r_pedido.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO then
+		strScriptJS_FPO = strScriptJS_FPO & _
+							"|" & Cstr(r_pedido.pc_qtde_parcelas) & _
+							"|" & formata_moeda(r_pedido.pc_valor_parcela)
+	elseif Cstr(r_pedido.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA then
+		strScriptJS_FPO = strScriptJS_FPO & _
+							"|" & Cstr(r_pedido.pc_maquineta_qtde_parcelas) & _
+							"|" & formata_moeda(r_pedido.pc_maquineta_valor_parcela)
+	elseif Cstr(r_pedido.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
+		strScriptJS_FPO = strScriptJS_FPO & _
+							"|" & r_pedido.pce_forma_pagto_entrada & _
+							"|" & formata_moeda(r_pedido.pce_entrada_valor) & _
+							"|" & r_pedido.pce_forma_pagto_prestacao & _
+							"|" & Cstr(r_pedido.pce_prestacao_qtde) & _
+							"|" & formata_moeda(r_pedido.pce_prestacao_valor) & _
+							"|" & Cstr(r_pedido.pce_prestacao_periodo)
+	elseif Cstr(r_pedido.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
+		strScriptJS_FPO = strScriptJS_FPO & _
+							"|" & r_pedido.pse_forma_pagto_prim_prest & _
+							"|" & formata_moeda(r_pedido.pse_prim_prest_valor) & _
+							"|" & Cstr(r_pedido.pse_prim_prest_apos) & _
+							"|" & r_pedido.pse_forma_pagto_demais_prest & _
+							"|" & Cstr(r_pedido.pse_demais_prest_qtde) & _
+							"|" & formata_moeda(r_pedido.pse_demais_prest_valor) & _
+							"|" & Cstr(r_pedido.pse_demais_prest_periodo)
+		end if
+	
+	strScriptJS_FPO = "<script type='text/javascript'>" & chr(13) & _
+					  "var formaPagamentoOriginal='" & strScriptJS_FPO & "';" & chr(13) & _
+					  "</script>" & chr(13)
+
 
 
 
@@ -665,6 +758,8 @@ end function
 <script src="<%=URL_FILE__JANELACEP_JS%>" language="JavaScript" type="text/javascript"></script>
 
 <%=strScriptJS%>
+<%=strScriptJS_MPN2%>
+<%=strScriptJS_FPO%>
 
 <script type="text/javascript">
 	$(function () {
@@ -732,6 +827,7 @@ end function
 var objAjaxCustoFinancFornecConsultaPreco;
 var blnConfirmaDifRAeValores=false;
 var fCepPopup;
+var objSenhaDesconto;
 var COD_NIVEL_EDICAO_LIBERADA_TOTAL = <%=COD_NIVEL_EDICAO_LIBERADA_TOTAL%>;
 var COD_NIVEL_EDICAO_LIBERADA_PARCIAL = <%=COD_NIVEL_EDICAO_LIBERADA_PARCIAL%>;
 var COD_NIVEL_EDICAO_BLOQUEADA = <%=COD_NIVEL_EDICAO_BLOQUEADA%>;
@@ -1012,6 +1108,252 @@ var f, i, strListaProdutos, strUrl, strOpcaoFormaPagto;
 	objAjaxCustoFinancFornecConsultaPreco.onreadystatechange=trataRespostaAjaxCustoFinancFornecSincronizaPrecos;
 	objAjaxCustoFinancFornecConsultaPreco.open("GET",strUrl,true);
 	objAjaxCustoFinancFornecConsultaPreco.send(null);
+}
+
+function executa_consulta_senha_desconto(id_cliente, loja) {
+	var postData = "id_cliente=" + id_cliente + "&loja=" + loja;
+	// Prevents server from using a cached file
+	var url = "../Global/JsonConsultaSenhaDescontoBD.asp" + "?anticache=" + Math.random() + Math.random();
+	window.status = "Consultando banco de dados...";
+	var responseText = synchronous_ajax(url, postData);
+	objSenhaDesconto = eval("(" + responseText + ")");
+	window.status = "Concluído";
+}
+
+function isFormaPagtoEditada(f) {
+	var idx;
+	var s_forma_pagto = "";
+
+	if (nivelEdicaoFormaPagto == COD_NIVEL_EDICAO_BLOQUEADA) return false;
+
+	idx = -1;
+
+	//	À Vista
+	idx++;
+	if (f.rb_forma_pagto[idx].checked) {
+		s_forma_pagto += trim(f.rb_forma_pagto[idx].value) +
+			"|" + trim(f.op_av_forma_pagto.value);
+	}
+
+	//	Parcela Única
+	idx++;
+	if (f.rb_forma_pagto[idx].checked) {
+		s_forma_pagto += trim(f.rb_forma_pagto[idx].value) +
+			"|" + trim(f.op_pu_forma_pagto.value) +
+			"|" + trim(f.c_pu_valor.value) +
+			"|" + trim(f.c_pu_vencto_apos.value);
+	}
+
+	//	Parcelado no Cartão (internet)
+	idx++;
+	if (f.rb_forma_pagto[idx].checked) {
+		s_forma_pagto += trim(f.rb_forma_pagto[idx].value) +
+			"|" + trim(f.c_pc_qtde.value) +
+			"|" + trim(f.c_pc_valor.value);
+	}
+
+	//	Parcelado no Cartão (maquineta)
+	idx++;
+	if (f.rb_forma_pagto[idx].checked) {
+		s_forma_pagto += trim(f.rb_forma_pagto[idx].value) +
+			"|" + trim(f.c_pc_maquineta_qtde.value) +
+			"|" + trim(f.c_pc_maquineta_valor.value);
+	}
+
+	//	Parcelado Com Entrada
+	idx++;
+	if (f.rb_forma_pagto[idx].checked) {
+		s_forma_pagto += trim(f.rb_forma_pagto[idx].value) +
+			"|" + trim(f.op_pce_entrada_forma_pagto.value) +
+			"|" + trim(f.c_pce_entrada_valor.value) +
+			"|" + trim(f.op_pce_prestacao_forma_pagto.value) +
+			"|" + trim(f.c_pce_prestacao_qtde.value) +
+			"|" + trim(f.c_pce_prestacao_valor.value) +
+			"|" + trim(f.c_pce_prestacao_periodo.value);
+	}
+
+	//	Parcelado Sem Entrada
+	idx++;
+	if (f.rb_forma_pagto[idx].checked) {
+		s_forma_pagto += trim(f.rb_forma_pagto[idx].value) +
+			"|" + trim(f.op_pse_prim_prest_forma_pagto.value) +
+			"|" + trim(f.c_pse_prim_prest_valor.value) +
+			"|" + trim(f.c_pse_prim_prest_apos.value) +
+			"|" + trim(f.op_pse_demais_prest_forma_pagto.value) +
+			"|" + trim(f.c_pse_demais_prest_qtde.value) +
+			"|" + trim(f.c_pse_demais_prest_valor.value) +
+			"|" + trim(f.c_pse_demais_prest_periodo.value);
+	}
+
+	if (formaPagamentoOriginal != s_forma_pagto) return true;
+
+	return false;
+}
+
+function obtem_perc_comissao_e_desconto_a_utilizar(f, vl_total_pedido, perc_comissao_e_desconto_nivel1, perc_comissao_e_desconto_nivel1_pj, perc_comissao_e_desconto_nivel2, perc_comissao_e_desconto_nivel2_pj) {
+	var i, idx, s_pg, blnPreferencial;
+	var vlNivel1 = 0;
+	var vlNivel2 = 0;
+
+	// ANALISA QUAL É O MEIO DE PAGAMENTO PREDOMINANTE
+	idx = -1;
+	//	À Vista
+	//	=======
+	idx++;
+	if (f.rb_forma_pagto[idx].checked) {
+		s_pg = trim(f.op_av_forma_pagto.value);
+		if (s_pg == '') return (f.c_tipo_cliente.value == ID_PJ ? perc_comissao_e_desconto_nivel1_pj : perc_comissao_e_desconto_nivel1);
+		for (i = 0; i < vMPN2.length; i++) {
+			//	O meio de pagamento selecionado é um dos preferenciais
+			if (parseInt(s_pg) == parseInt(vMPN2[i])) return (f.c_tipo_cliente.value == ID_PJ ? perc_comissao_e_desconto_nivel2_pj : perc_comissao_e_desconto_nivel2);
+		}
+		//	O meio de pagamento não é preferencial
+		return (f.c_tipo_cliente.value == ID_PJ ? perc_comissao_e_desconto_nivel1_pj : perc_comissao_e_desconto_nivel1);
+	}
+
+	//	Parcela Única
+	//	=============
+	idx++;
+	if (f.rb_forma_pagto[idx].checked) {
+		s_pg = trim(f.op_pu_forma_pagto.value);
+		if (s_pg == '') return (f.c_tipo_cliente.value == ID_PJ ? perc_comissao_e_desconto_nivel1_pj : perc_comissao_e_desconto_nivel1);
+		for (i = 0; i < vMPN2.length; i++) {
+			//	O meio de pagamento selecionado é um dos preferenciais
+			if (parseInt(s_pg) == parseInt(vMPN2[i])) return (f.c_tipo_cliente.value == ID_PJ ? perc_comissao_e_desconto_nivel2_pj : perc_comissao_e_desconto_nivel2);
+		}
+		//	O meio de pagamento não é preferencial
+		return (f.c_tipo_cliente.value == ID_PJ ? perc_comissao_e_desconto_nivel1_pj : perc_comissao_e_desconto_nivel1);
+	}
+
+	//	Parcelado no Cartão (internet)
+	//	==============================
+	idx++;
+	if (f.rb_forma_pagto[idx].checked) {
+		s_pg = ID_FORMA_PAGTO_CARTAO;
+		for (i = 0; i < vMPN2.length; i++) {
+			//	O meio de pagamento selecionado é um dos preferenciais
+			if (parseInt(s_pg) == parseInt(vMPN2[i])) return (f.c_tipo_cliente.value == ID_PJ ? perc_comissao_e_desconto_nivel2_pj : perc_comissao_e_desconto_nivel2);
+		}
+		//	O meio de pagamento não é preferencial
+		return (f.c_tipo_cliente.value == ID_PJ ? perc_comissao_e_desconto_nivel1_pj : perc_comissao_e_desconto_nivel1);
+	}
+
+	//	Parcelado no Cartão (maquineta)
+	//	===============================
+	idx++;
+	if (f.rb_forma_pagto[idx].checked) {
+		s_pg = ID_FORMA_PAGTO_CARTAO_MAQUINETA;
+		for (i = 0; i < vMPN2.length; i++) {
+			//	O meio de pagamento selecionado é um dos preferenciais
+			if (parseInt(s_pg) == parseInt(vMPN2[i])) return (f.c_tipo_cliente.value == ID_PJ ? perc_comissao_e_desconto_nivel2_pj : perc_comissao_e_desconto_nivel2);
+		}
+		//	O meio de pagamento não é preferencial
+		return (f.c_tipo_cliente.value == ID_PJ ? perc_comissao_e_desconto_nivel1_pj : perc_comissao_e_desconto_nivel1);
+	}
+
+	//	Parcelado Com Entrada
+	//	=====================
+	idx++;
+	if (f.rb_forma_pagto[idx].checked) {
+		//	Identifica e contabiliza o valor da entrada
+		blnPreferencial = false;
+		s_pg = trim(f.op_pce_entrada_forma_pagto.value);
+		for (i = 0; i < vMPN2.length; i++) {
+			//	O meio de pagamento selecionado é um dos preferenciais
+			if (parseInt(s_pg) == parseInt(vMPN2[i])) {
+				blnPreferencial = true;
+				break;
+			}
+		}
+
+		if (blnPreferencial) {
+			vlNivel2 = converte_numero(trim(f.c_pce_entrada_valor.value));
+		}
+		else {
+			vlNivel1 = converte_numero(trim(f.c_pce_entrada_valor.value));
+		}
+
+		//	Identifica e contabiliza o valor das parcelas
+		blnPreferencial = false;
+		s_pg = trim(f.op_pce_prestacao_forma_pagto.value);
+		for (i = 0; i < vMPN2.length; i++) {
+			//	O meio de pagamento selecionado é um dos preferenciais
+			if (parseInt(s_pg) == parseInt(vMPN2[i])) {
+				blnPreferencial = true;
+				break;
+			}
+		}
+
+		if (blnPreferencial) {
+			vlNivel2 += converte_numero(f.c_pce_prestacao_qtde.value) * converte_numero(f.c_pce_prestacao_valor.value);
+		}
+		else {
+			vlNivel1 += converte_numero(f.c_pce_prestacao_qtde.value) * converte_numero(f.c_pce_prestacao_valor.value);
+		}
+
+		//	O montante a pagar por meio de pagamento preferencial é maior que 50% do total?
+		if (vlNivel2 > (vl_total_pedido / 2)) return (f.c_tipo_cliente.value == ID_PJ ? perc_comissao_e_desconto_nivel2_pj : perc_comissao_e_desconto_nivel2);
+
+		//	O meio de pagamento não é preferencial
+		return (f.c_tipo_cliente.value == ID_PJ ? perc_comissao_e_desconto_nivel1_pj : perc_comissao_e_desconto_nivel1);
+	}
+
+	//	Parcelado Sem Entrada
+	//	=====================
+	idx++;
+	if (f.rb_forma_pagto[idx].checked) {
+		//	Identifica e contabiliza o valor da 1ª parcela
+		blnPreferencial = false;
+		s_pg = trim(f.op_pse_prim_prest_forma_pagto.value);
+		for (i = 0; i < vMPN2.length; i++) {
+			//	O meio de pagamento selecionado é um dos preferenciais
+			if (parseInt(s_pg) == parseInt(vMPN2[i])) {
+				blnPreferencial = true;
+				break;
+			}
+		}
+
+		if (blnPreferencial) {
+			vlNivel2 = converte_numero(trim(f.c_pse_prim_prest_valor.value));
+		}
+		else {
+			vlNivel1 = converte_numero(trim(f.c_pse_prim_prest_valor.value));
+		}
+
+		//	Identifica e contabiliza o valor das parcelas
+		blnPreferencial = false;
+		s_pg = trim(f.op_pse_demais_prest_forma_pagto.value);
+		for (i = 0; i < vMPN2.length; i++) {
+			//	O meio de pagamento selecionado é um dos preferenciais
+			if (parseInt(s_pg) == parseInt(vMPN2[i])) {
+				blnPreferencial = true;
+				break;
+			}
+		}
+
+		if (blnPreferencial) {
+			vlNivel2 += converte_numero(trim(f.c_pse_demais_prest_qtde.value)) * converte_numero(trim(f.c_pse_demais_prest_valor.value));
+		}
+		else {
+			vlNivel1 += converte_numero(trim(f.c_pse_demais_prest_qtde.value)) * converte_numero(trim(f.c_pse_demais_prest_valor.value));
+		}
+
+		//	O montante a pagar por meio de pagamento preferencial é maior que 50% do total?
+		if (vlNivel2 > (vl_total_pedido / 2)) return (f.c_tipo_cliente.value == ID_PJ ? perc_comissao_e_desconto_nivel2_pj : perc_comissao_e_desconto_nivel2);
+
+		//	O meio de pagamento não é preferencial
+		return (f.c_tipo_cliente.value == ID_PJ ? perc_comissao_e_desconto_nivel1_pj : perc_comissao_e_desconto_nivel1);
+	}
+
+	//	O meio de pagamento não é preferencial
+	return (f.c_tipo_cliente.value == ID_PJ ? perc_comissao_e_desconto_nivel1_pj : perc_comissao_e_desconto_nivel1);
+}
+
+function calcula_vl_total_preco_venda(f) {
+	var mTotVenda;
+	mTotVenda = 0;
+	for (i = 0; i < f.c_qtde.length; i++) mTotVenda = mTotVenda + converte_numero(f.c_qtde[i].value) * converte_numero(f.c_vl_unitario[i].value);
+	return mTotVenda;
 }
 
 // RETORNA O VALOR TOTAL DO PEDIDO A SER USADO P/ CALCULAR A FORMA DE PAGAMENTO
@@ -1708,8 +2050,38 @@ function exibeOcultaPagtoAntecipadoQuitadoStatus() {
 	}
 }
 
+function calcula_desconto_medio() {
+	var f, i, vl_total_preco_lista, vl_total_preco_venda, perc_desc_medio;
+
+	f = fPED;
+	vl_total_preco_lista = 0;
+	vl_total_preco_venda = 0;
+
+	// Laço p/ produtos
+	for (i = 0; i < f.c_produto.length; i++) {
+		if (trim(f.c_produto[i].value) != "") {
+			vl_total_preco_lista += converte_numero(f.c_qtde[i].value) * converte_numero(f.c_preco_lista[i].value);
+			vl_total_preco_venda += converte_numero(f.c_qtde[i].value) * converte_numero(f.c_vl_unitario[i].value);
+		}
+	}
+
+	if (vl_total_preco_lista == 0) {
+		perc_desc_medio = 0;
+	}
+	else {
+		perc_desc_medio = 100 * (vl_total_preco_lista - vl_total_preco_venda) / vl_total_preco_lista;
+	}
+	return perc_desc_medio;
+}
+
 function fPEDConfirma( f ) {
 var s,i, blnTemEndEntrega,blnTemTransportadora,blnExcFreteMarcado, strMsgErro;
+var blnHouveEdicaoVlUnitario;
+var vl_preco_lista, vl_preco_venda, perc_desc;
+var perc_RT, perc_RT_novo, perc_max_RT, perc_max_comissao_e_desconto, perc_max_comissao_e_desconto_pj, perc_max_comissao_e_desconto_nivel2, perc_max_comissao_e_desconto_nivel2_pj, perc_senha_desconto, perc_desc_medio;
+var perc_max_comissao_e_desconto_a_utilizar;
+var perc_max_desc_alcada_1_pf, perc_max_desc_alcada_1_pj, perc_max_desc_alcada_2_pf, perc_max_desc_alcada_2_pj, perc_max_desc_alcada_3_pf, perc_max_desc_alcada_3_pj;
+var blnFormaPagtoEditada;
 var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 
 	recalcula_total_todas_linhas();
@@ -2376,7 +2748,7 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 				}
 			}
 		}
-
+	
 	strMsgErro="";
 	for (i=0; i < f.c_produto.length; i++) {
 		if (trim(f.c_produto[i].value)!="") {
@@ -2390,7 +2762,17 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 		alert(strMsgErro);
 		return;
 	}
-
+	
+	blnHouveEdicaoVlUnitario = false;
+	for (i = 0; i < f.c_produto.length; i++) {
+		if (trim(f.c_produto[i].value) != "") {
+			if (f.c_vl_unitario[i].value != f.c_vl_unitario_original[i].value) {
+				blnHouveEdicaoVlUnitario = true;
+				break;
+			}
+		}
+	}
+	
 	if($('input[name=rb_analise_credito]:checked').val() != $('#c_analise_credito_inicial').val()) {
 	    if ($('#rb_analise_credito').is(':checked')) {
 	        if($('#c_pendente_vendas_motivo').val() == "") {
@@ -2430,11 +2812,144 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 	// Percentual máximo de comissão e desconto
 	// ========================================
 	// Lembretes:
-	//	1) Na 'Central', se o usuário possuir as permissões de acesso 'Editar Item do Pedido' e 'Editar RT e RA' poderá editar
-	//	   livremente o percentual de RT e o preço de venda (desconto) do produto, já que nenhuma consistência será realizada.
-	//	2) Na 'Loja', o percentual de RT pode ser alterado se o usuário possuir a permissão de acesso 'Editar RT', sendo que
-	//	   somente a RT deve ser editada para que um percentual qualquer seja aceito sem que a consistência seja realizada.
-	//	   Caso o preço de venda (desconto) seja alterado, serão aplicadas as verificações do 'percentual máximo de comissão e desconto'.
+	//	Regra anterior:
+	//		1) Na 'Central', se o usuário possuir as permissões de acesso 'Editar Item do Pedido' e 'Editar RT e RA' poderá editar
+	//			livremente o percentual de RT e o preço de venda (desconto) do produto, já que nenhuma consistência será realizada.
+	//		2) Na 'Loja', o percentual de RT pode ser alterado se o usuário possuir a permissão de acesso 'Editar RT', sendo que
+	//			somente a RT deve ser editada para que um percentual qualquer seja aceito sem que a consistência seja realizada.
+	//			Caso o preço de venda (desconto) seja alterado, serão aplicadas as verificações do 'percentual máximo de comissão e desconto'.
+	//	Regra atual:
+	//		Tanto na Central quanto na Loja, o preço de venda (desconto) do produto e a RT serão validados com base nos percentuais definidos em
+	//		"Percentual Máximo de Comissão e Desconto por Loja", o que inclui os descontos por alçada.
+	blnFormaPagtoEditada = isFormaPagtoEditada(f);
+	if (blnFormaPagtoEditada)
+		f.blnFormaPagtoEditada.value = '<%=Cstr(True)%>';
+	else
+		f.blnFormaPagtoEditada.value = '<%=Cstr(False)%>';
+	
+	if (blnHouveEdicaoVlUnitario || blnFormaPagtoEditada || (f.c_perc_RT.value != f.c_perc_RT_original.value)) {
+		f.c_consiste_perc_max_comissao_e_desconto.value = 'S';
+		// Consiste percentual máximo de comissão e desconto
+		objSenhaDesconto = null;
+		perc_RT = converte_numero(f.c_perc_RT.value);
+		perc_max_RT = converte_numero(f.c_PercMaxRT.value);
+		
+		perc_max_comissao_e_desconto = converte_numero(f.c_PercMaxComissaoEDesconto.value);
+		perc_max_comissao_e_desconto_pj = converte_numero(f.c_PercMaxComissaoEDescontoPj.value);
+		perc_max_comissao_e_desconto_nivel2 = converte_numero(f.c_PercMaxComissaoEDescontoNivel2.value);
+		perc_max_comissao_e_desconto_nivel2_pj = converte_numero(f.c_PercMaxComissaoEDescontoNivel2Pj.value);
+		perc_max_comissao_e_desconto_a_utilizar = obtem_perc_comissao_e_desconto_a_utilizar(f, calcula_vl_total_preco_venda(f), perc_max_comissao_e_desconto, perc_max_comissao_e_desconto_pj, perc_max_comissao_e_desconto_nivel2, perc_max_comissao_e_desconto_nivel2_pj);
+		perc_desc_medio = calcula_desconto_medio();
+		
+		// Verifica se o usuário tem permissão de desconto por alçada
+		perc_max_desc_alcada_1_pf = converte_numero(f.c_PercMaxDescAlcada1Pf.value);
+		perc_max_desc_alcada_1_pj = converte_numero(f.c_PercMaxDescAlcada1Pj.value);
+		perc_max_desc_alcada_2_pf = converte_numero(f.c_PercMaxDescAlcada2Pf.value);
+		perc_max_desc_alcada_2_pj = converte_numero(f.c_PercMaxDescAlcada2Pj.value);
+		perc_max_desc_alcada_3_pf = converte_numero(f.c_PercMaxDescAlcada3Pf.value);
+		perc_max_desc_alcada_3_pj = converte_numero(f.c_PercMaxDescAlcada3Pj.value);
+		if (f.c_tipo_cliente.value == ID_PF) {
+			if (perc_max_desc_alcada_1_pf > perc_max_comissao_e_desconto_a_utilizar) perc_max_comissao_e_desconto_a_utilizar = perc_max_desc_alcada_1_pf;
+			if (perc_max_desc_alcada_2_pf > perc_max_comissao_e_desconto_a_utilizar) perc_max_comissao_e_desconto_a_utilizar = perc_max_desc_alcada_2_pf;
+			if (perc_max_desc_alcada_3_pf > perc_max_comissao_e_desconto_a_utilizar) perc_max_comissao_e_desconto_a_utilizar = perc_max_desc_alcada_3_pf;
+		}
+		else {
+			if (perc_max_desc_alcada_1_pj > perc_max_comissao_e_desconto_a_utilizar) perc_max_comissao_e_desconto_a_utilizar = perc_max_desc_alcada_1_pj;
+			if (perc_max_desc_alcada_2_pj > perc_max_comissao_e_desconto_a_utilizar) perc_max_comissao_e_desconto_a_utilizar = perc_max_desc_alcada_2_pj;
+			if (perc_max_desc_alcada_3_pj > perc_max_comissao_e_desconto_a_utilizar) perc_max_comissao_e_desconto_a_utilizar = perc_max_desc_alcada_3_pj;
+		}
+		
+		// Verifica se todos os produtos cujo desconto excedem o máximo permitido possuem senha de desconto disponível
+		// Laço p/ produtos
+		strMsgErro = "";
+		for (i = 0; i < f.c_produto.length; i++) {
+			if ((trim(f.c_produto[i].value) != "") && (blnFormaPagtoEditada || (f.c_vl_unitario[i].value != f.c_vl_unitario_original[i].value))) {
+				perc_senha_desconto = 0;
+				vl_preco_lista = converte_numero(f.c_preco_lista[i].value);
+				vl_preco_venda = converte_numero(f.c_vl_unitario[i].value);
+				if (vl_preco_lista == 0) {
+					perc_desc = 0;
+				}
+				else {
+					perc_desc = 100 * (vl_preco_lista - vl_preco_venda) / vl_preco_lista;
+				}
+
+				// Tem desconto: sim
+				if (perc_desc != 0) {
+					// Desconto excede limite máximo: sim
+					if (perc_desc > perc_max_comissao_e_desconto_a_utilizar) {
+						// Tem senha de desconto?
+						if (objSenhaDesconto == null) {
+							executa_consulta_senha_desconto(f.cliente_selecionado.value, f.c_loja.value);
+						}
+						for (j = 0; j < objSenhaDesconto.item.length; j++) {
+							if ((objSenhaDesconto.item[j].fabricante == f.c_fabricante[i].value) && (objSenhaDesconto.item[j].produto == f.c_produto[i].value)) {
+								perc_senha_desconto = converte_numero(objSenhaDesconto.item[j].desc_max);
+								break;
+							}
+						}
+						// Tem senha de desconto: sim
+						if (perc_senha_desconto != 0) {
+							// Senha de desconto NÃO cobre desconto
+							if (perc_senha_desconto < perc_desc) {
+								if (strMsgErro != "") strMsgErro += "\n";
+								strMsgErro += "O desconto do produto '" + f.c_descricao[i].value + "' (" + formata_numero(perc_desc, 2) + "%) excede o máximo autorizado!!";
+							}
+						}
+						// Não tem senha de desconto
+						else {
+							if (strMsgErro != "") strMsgErro += "\n";
+							strMsgErro += "O desconto do produto '" + f.c_descricao[i].value + "' (" + formata_numero(perc_desc, 2) + "%) excede o máximo permitido!!";
+						}
+					} // if (perc_desc > perc_max_comissao_e_desconto_a_utilizar)
+				} // if (perc_desc != 0)
+			} // if (trim(f.c_produto[i].value) != "")
+		} // for (laço produtos)
+
+		if (strMsgErro != "") {
+			strMsgErro += "\n\nNão é possível continuar!!";
+			alert(strMsgErro);
+			return;
+		}
+
+		// Tem RT: sim
+		if (f.c_loja.value != NUMERO_LOJA_ECOMMERCE_AR_CLUBE) {
+			if (perc_RT != 0) {
+				// RT excede limite máximo?
+				if (f.c_perc_RT.value != f.c_perc_RT_original.value) {
+					if (perc_RT > perc_max_RT) {
+						alert("Percentual de comissão excede o máximo permitido!!");
+						return;
+					}
+				}
+
+				// Neste ponto, é certo que todos os produtos que possuem desconto estão dentro do máximo permitido
+				// ou possuem senha de desconto autorizando.
+				// Verifica-se agora se é necessário reduzir automaticamente o percentual da RT usando p/ o cálculo
+				// o percentual de desconto médio.
+				perc_RT_novo = Math.min(perc_RT, (perc_max_comissao_e_desconto_a_utilizar - perc_desc_medio));
+				if (perc_RT_novo < 0) perc_RT_novo = 0;
+
+				// O percentual de RT será alterado automaticamente, solicita confirmação
+				if (perc_RT_novo != perc_RT) {
+					s = "A soma dos percentuais de comissão (" + formata_numero(perc_RT, 2) + "%) e de desconto médio do(s) produto(s) (" + formata_numero(perc_desc_medio, 2) + "%) totaliza " + formata_numero(perc_desc_medio + perc_RT, 2) + "% e excede o máximo permitido!!" +
+						"\nA comissão será reduzida automaticamente para " + formata_numero(perc_RT_novo, 2) + "%!!" +
+						"\nContinua?";
+					if (!confirm(s)) {
+						s = "Operação cancelada!!";
+						alert(s);
+						return;
+					}
+					else {
+						// Novo percentual de RT
+						f.c_perc_RT.value = formata_perc_RT(perc_RT_novo);
+						f.c_gravar_perc_RT_novo.value = "S";
+						perc_RT = perc_RT_novo;
+					}
+				}
+			} // if (perc_RT != 0)
+		}
+	}
 
     //campos do endereço de entrega que precisam de transformacao
     transferirCamposEndEtg(f);
@@ -2695,7 +3210,22 @@ function setarValorRadio(array, valor)
 <form id="fPED" name="fPED" method="post">
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
 <input type="hidden" name="pedido_selecionado" id="pedido_selecionado" value='<%=pedido_selecionado%>'>
+<input type="hidden" name="cliente_selecionado" id="cliente_selecionado" value='<%=r_pedido.id_cliente%>'>
+<input type="hidden" name="c_tipo_cliente" id="c_tipo_cliente" value='<%=r_cliente.tipo%>'>
+<input type="hidden" name="c_consiste_perc_max_comissao_e_desconto" id="c_consiste_perc_max_comissao_e_desconto" value=''>
+<input type="hidden" name="c_PercMaxRT" id="c_PercMaxRT" value='<%=strPercMaxRT%>'>
+<input type="hidden" name="c_PercMaxComissaoEDesconto" id="c_PercMaxComissaoEDesconto" value='<%=strPercMaxComissaoEDesconto%>'>
+<input type="hidden" name="c_PercMaxComissaoEDescontoPj" id="c_PercMaxComissaoEDescontoPj" value='<%=strPercMaxComissaoEDescontoPj%>'>
+<input type="hidden" name="c_PercMaxComissaoEDescontoNivel2" id="c_PercMaxComissaoEDescontoNivel2" value='<%=strPercMaxComissaoEDescontoNivel2%>'>
+<input type="hidden" name="c_PercMaxComissaoEDescontoNivel2Pj" id="c_PercMaxComissaoEDescontoNivel2Pj" value='<%=strPercMaxComissaoEDescontoNivel2Pj%>'>
+<input type="hidden" name="c_PercMaxDescAlcada1Pf" id="c_PercMaxDescAlcada1Pf" value="<%=strPercMaxDescAlcada1Pf%>" />
+<input type="hidden" name="c_PercMaxDescAlcada1Pj" id="c_PercMaxDescAlcada1Pj" value="<%=strPercMaxDescAlcada1Pj%>" />
+<input type="hidden" name="c_PercMaxDescAlcada2Pf" id="c_PercMaxDescAlcada2Pf" value="<%=strPercMaxDescAlcada2Pf%>" />
+<input type="hidden" name="c_PercMaxDescAlcada2Pj" id="c_PercMaxDescAlcada2Pj" value="<%=strPercMaxDescAlcada2Pj%>" />
+<input type="hidden" name="c_PercMaxDescAlcada3Pf" id="c_PercMaxDescAlcada3Pf" value="<%=strPercMaxDescAlcada3Pf%>" />
+<input type="hidden" name="c_PercMaxDescAlcada3Pj" id="c_PercMaxDescAlcada3Pj" value="<%=strPercMaxDescAlcada3Pj%>" />
 <input type="hidden" name="c_PercLimiteRASemDesagio" id="c_PercLimiteRASemDesagio" value='<%=strPercLimiteRASemDesagio%>'>
+<input type="hidden" name="c_gravar_perc_RT_novo" id="c_gravar_perc_RT_novo" value='N' />
 <input type="hidden" name="c_PercDesagio" id="c_PercDesagio" value='<%=strPercDesagio%>'>
 <input type="hidden" name="c_opcao_forca_desagio" id="c_opcao_forca_desagio" value='<%=strOpcaoForcaDesagio %>'>
 <input type="hidden" name="c_qtde_pedidos_entregues" id="c_qtde_pedidos_entregues" value='<%=CStr(qtde_pedidos_entregues)%>'>
@@ -2718,6 +3248,7 @@ function setarValorRadio(array, valor)
 <input type="hidden" name="blnObs3EdicaoLiberada" id="blnObs3EdicaoLiberada" value='<%=Cstr(blnObs3EdicaoLiberada)%>'>
 <input type="hidden" name="blnObs4EdicaoLiberada" id="blnObs4EdicaoLiberada" value="<%=Cstr(blnObs4EdicaoLiberada)%>" />
 <input type="hidden" name="nivelEdicaoFormaPagto" id="nivelEdicaoFormaPagto" value='<%=Cstr(nivelEdicaoFormaPagto)%>'>
+<input type="hidden" name="blnFormaPagtoEditada" id="blnFormaPagtoEditada" />
 <input type="hidden" name="blnPagtoAntecipadoEdicaoLiberada" id="blnPagtoAntecipadoEdicaoLiberada" value="<%=CStr(blnPagtoAntecipadoEdicaoLiberada)%>" />
 <input type="hidden" name="blnEndEntregaEdicaoLiberada" id="blnEndEntregaEdicaoLiberada" value='<%=Cstr(blnEndEntregaEdicaoLiberada)%>'>
 <input type="hidden" name="blnTransportadoraEdicaoLiberada" id="blnTransportadoraEdicaoLiberada" value='<%=Cstr(blnTransportadoraEdicaoLiberada)%>'>
@@ -3597,6 +4128,7 @@ function setarValorRadio(array, valor)
 	<td class="MDB" align="right"><input name="c_vl_NF" id="c_vl_NF" class="PLLd" style="width:62px; color:<%=s_cor%>"
 		onkeypress="if (digitou_enter(true)) fPED.c_vl_unitario[<%=Cstr(i-1)%>].focus(); filtra_moeda_positivo();" onblur="this.value=formata_moeda(this.value); recalcula_RA();recalcula_RA_Liquido();"
 		value='<%=s_preco_NF%>' <%=s_readonly_RA%>></td>
+	<input type="hidden" name='c_vl_NF_original' id="c_vl_NF_original" value='<%=s_preco_NF%>'>
 	<td class="MDB" align="right"><input name="c_preco_lista" id="c_preco_lista" class="PLLd" style="width:62px; color:<%=s_cor%>"
 		value='<%=s_preco_lista%>' readonly tabindex=-1></td>
 	<td class="MDB" align="right"><input name="c_desc" id="c_desc" class="PLLd" style="width:28px; color:<%=s_cor%>"
@@ -3604,6 +4136,7 @@ function setarValorRadio(array, valor)
 	<td class="MDB" align="right"><input name="c_vl_unitario" id="c_vl_unitario" class="PLLd" style="width:62px; color:<%=s_cor%>"
 		onkeypress="if (digitou_enter(true)) {if ((<%=Cstr(i)%>==fPED.c_vl_unitario.length)||(trim(fPED.c_produto[<%=Cstr(i)%>].value)=='')) fPED.c_obs1.focus(); else fPED.c_vl_NF[<%=Cstr(i)%>].focus();} filtra_moeda_positivo();" onblur="this.value=formata_moeda(this.value); recalcula_total_linha(<%=Cstr(i)%>); recalcula_RA();recalcula_RA_Liquido();"
 		value='<%=s_vl_unitario%>' <%=s_readonly%>></td>
+	<input type="hidden" name="c_vl_unitario_original" id="c_vl_unitario_original" value='<%=s_vl_unitario%>' />
 	<td class="MDB" align="right"><input name="c_vl_total" id="c_vl_total" class="PLLd" style="width:70px; color:<%=s_cor%>" 
 		value='<%=s_vl_TotalItem%>' readonly tabindex=-1></td>
 	</tr>
@@ -3648,6 +4181,7 @@ function setarValorRadio(array, valor)
 						onblur="this.value=formata_perc_RT(this.value); if ((converte_numero(this.value)>100)||(converte_numero(this.value)<0)) {alert('Percentual inválido!!');this.focus();}"
 						<%=s_readonly_RT%>
 						></td>
+					<input type="hidden" name="c_perc_RT_original" id="c_perc_RT_original" value='<%=formata_perc_RT(r_pedido.perc_RT)%>' />
 					</tr>
 				</table>
 			</td>

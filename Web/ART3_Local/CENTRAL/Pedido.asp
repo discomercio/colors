@@ -271,7 +271,10 @@
 			else
 				if le_orcamento_cotacao(r_pedido.IdOrcamentoCotacao, r_orcamento_cotacao, msg_erro) then
 					if (r_orcamento_cotacao.IdIndicador = ID_NSU_ORCAMENTISTA_E_INDICADOR__SEM_INDICADOR) Or (Trim("" & r_orcamento_cotacao.IdIndicador) = "") then
-						blnIndicadorEdicaoLiberada = True
+						'A princípio, não libera a edição de indicador em pedidos que vieram de orçamentos sem indicador, pois ocorre uma inconsistência já que
+						'os dados no módulo de orçamentos constam que foi um orçamento sem indicador e o pedido passa a aparecer p/ um indicador, sendo que esse
+						'indicador não consegue acessar o orçamento que deu origem ao pedido.
+						'blnIndicadorEdicaoLiberada = True
 						end if
 					end if
 				end if

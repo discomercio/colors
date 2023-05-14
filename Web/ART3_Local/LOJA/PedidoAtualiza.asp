@@ -64,6 +64,9 @@
 		dim cubagem
 		dim ncm
 		dim cst
+		dim StatusDescontoSuperior
+		dim IdUsuarioDescontoSuperior
+		dim DataHoraDescontoSuperior
 		end class
 
 	dim s, usuario, loja, pedido_selecionado, pedido_base, tipo_cliente
@@ -86,6 +89,7 @@
 	dim cliente_selecionado
 	cliente_selecionado = Trim(Request.Form("cliente_selecionado"))
 
+	dim i, j, n, k
 	dim alerta, blnErroConsistencia
 	alerta=""
 	blnErroConsistencia=False
@@ -137,6 +141,11 @@
 	dim r_loja
 	set r_loja = New cl_LOJA
 	call x_loja_bd(r_pedido.loja, r_loja)
+
+	dim r_usuario
+	if alerta = "" then
+		call le_usuario(usuario, r_usuario, msg_erro)
+		end if
 
 	dim blnTemRA
 	blnTemRA = False
@@ -452,7 +461,7 @@
 	EndEtg_rg = Trim(Request.Form("EndEtg_rg"))
 
 	
-	dim v_item, i, n, k, vl_TotalFamiliaPrecoVenda, vl_TotalFamiliaPrecoNF, vl_totalFamiliaPrecoNFLiquido, vl_TotalFamiliaPago, vl_TotalFamiliaDevolucaoPrecoVenda, vl_TotalFamiliaDevolucaoPrecoNF, st_pagto, id_pedido_base
+	dim v_item, vl_TotalFamiliaPrecoVenda, vl_TotalFamiliaPrecoNF, vl_totalFamiliaPrecoNFLiquido, vl_TotalFamiliaPago, vl_TotalFamiliaDevolucaoPrecoVenda, vl_TotalFamiliaDevolucaoPrecoNF, st_pagto, id_pedido_base
 	redim v_item(0)
 	set v_item(Ubound(v_item)) = New cl_ITEM_PEDIDO_EDICAO
 	v_item(Ubound(v_item)).produto = ""
@@ -481,6 +490,17 @@
 				s=Trim(Request.Form("c_preco_lista")(i))
 				.preco_lista=converte_numero(s)
 				end with
+			
+			for j=LBound(v_item_bd) to UBound(v_item_bd)
+				if Trim("" & v_item_bd(j).produto) <> "" then
+					if (v_item(ubound(v_item)).fabricante = Trim("" & v_item_bd(j).fabricante)) And (v_item(ubound(v_item)).produto = Trim("" & v_item_bd(j).produto)) then
+						v_item(ubound(v_item)).StatusDescontoSuperior = v_item_bd(j).StatusDescontoSuperior
+						v_item(ubound(v_item)).IdUsuarioDescontoSuperior = v_item_bd(j).IdUsuarioDescontoSuperior
+						v_item(ubound(v_item)).DataHoraDescontoSuperior = v_item_bd(j).DataHoraDescontoSuperior
+						exit for
+						end if
+					end if 'if Trim("" & v_item_bd(j).produto) <> ""
+				next
 			end if
 		next
 
@@ -730,7 +750,7 @@
 		end if
 	
 '	ANALISA O PERCENTUAL DE COMISSÃO+DESCONTO
-	dim perc_comissao_e_desconto_a_utilizar
+	dim perc_comissao_e_desconto_a_utilizar, perc_comissao_e_desconto_padrao
 	dim s_pg, blnPreferencial
 	dim vlNivel1, vlNivel2
 	if tipo_cliente = ID_PJ then
@@ -898,6 +918,30 @@
 			end if
 		end if
 	
+	' Verifica se o usuário tem permissão de desconto por alçada
+	perc_comissao_e_desconto_padrao = perc_comissao_e_desconto_a_utilizar
+	if tipo_cliente = ID_PF then
+		if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_1, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada1_pf > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada1_pf
+			end if
+		if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_2, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada2_pf > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada2_pf
+			end if
+		if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_3, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada3_pf > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada3_pf
+			end if
+	else
+		if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_1, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada1_pj > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada1_pj
+			end if
+		if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_2, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada2_pj > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada2_pj
+			end if
+		if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_3, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada3_pj > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada3_pj
+			end if
+		end if
+
 	'Editável?
 	if blnEndEntregaEdicaoLiberada then
 		if alerta = "" then
@@ -1388,6 +1432,15 @@
 							desc_dado_arredondado = converte_numero(formata_perc_desc(.desc_dado))
 							end if
 						
+						'Se houve edição no preço de venda, verifica se há necessidade de atualizar o ID do usuário que fez uso da alçada
+						if (.desc_dado > perc_comissao_e_desconto_padrao) And (perc_comissao_e_desconto_a_utilizar > perc_comissao_e_desconto_padrao) then
+							.StatusDescontoSuperior = 1
+							.IdUsuarioDescontoSuperior = r_usuario.Id
+							.DataHoraDescontoSuperior = Now
+						else
+							.StatusDescontoSuperior = 0
+							end if
+
 						if desc_dado_arredondado > perc_comissao_e_desconto_a_utilizar then
 							s = "SELECT " & _
 									"*" & _
@@ -2279,6 +2332,19 @@
 											else
 												rs("desc_dado") = 100*(vlCustoFinancFornecPrecoLista-rs("preco_venda"))/vlCustoFinancFornecPrecoLista
 												end if
+
+											'Verifica se há necessidade de atualizar o ID do usuário que fez uso da alçada
+											if (Trim("" & rs("StatusDescontoSuperior")) <> Trim("" & .StatusDescontoSuperior)) Or (Trim("" & rs("IdUsuarioDescontoSuperior")) <> Trim("" & .IdUsuarioDescontoSuperior)) then
+												rs("StatusDescontoSuperior") = CInt(.StatusDescontoSuperior)
+												if .IdUsuarioDescontoSuperior > 0 then
+													rs("IdUsuarioDescontoSuperior") = CLng(.IdUsuarioDescontoSuperior)
+													rs("DataHoraDescontoSuperior") = .DataHoraDescontoSuperior
+												else
+													rs("IdUsuarioDescontoSuperior") = Null
+													rs("DataHoraDescontoSuperior") = Null
+													end if
+												end if
+
 											rs.Update
 											log_via_vetor_carrega_do_recordset rs, vLogItemCFF2, campos_a_omitir_ItemCFF
 											s = log_via_vetor_monta_alteracao(vLogItemCFF1, vLogItemCFF2)
@@ -2352,6 +2418,17 @@
 										end if
 									rs("preco_venda")=.preco_venda
 									rs("desc_dado")=.desc_dado
+									'Verifica se há necessidade de atualizar o ID do usuário que fez uso da alçada
+									if (Trim("" & rs("StatusDescontoSuperior")) <> Trim("" & .StatusDescontoSuperior)) Or (Trim("" & rs("IdUsuarioDescontoSuperior")) <> Trim("" & .IdUsuarioDescontoSuperior)) then
+										rs("StatusDescontoSuperior") = CInt(.StatusDescontoSuperior)
+										if .IdUsuarioDescontoSuperior > 0 then
+											rs("IdUsuarioDescontoSuperior") = CLng(.IdUsuarioDescontoSuperior)
+											rs("DataHoraDescontoSuperior") = .DataHoraDescontoSuperior
+										else
+											rs("IdUsuarioDescontoSuperior") = Null
+											rs("DataHoraDescontoSuperior") = Null
+											end if
+										end if
 									blnUpdate = True
 									end if
 								end if
@@ -2460,7 +2537,8 @@
 					else
 						rs("usado_status") = 1
 						rs("usado_data") = Now
-						rs("vendedor") = usuario
+						rs("vendedor") = r_pedido.vendedor
+						rs("usado_usuario") = usuario
 						rs.Update
 						if Err <> 0 then
 						'	~~~~~~~~~~~~~~~~

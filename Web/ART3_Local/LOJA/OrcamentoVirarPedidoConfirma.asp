@@ -359,8 +359,11 @@
 		end if
 
 	if alerta = "" then
-		if perc_RT > rCD.perc_max_comissao then
-			alerta = "Percentual de comissão excede o máximo permitido."
+		'ORIGEM: PRÉ-PEDIDO (NÃO FOI GERADO ATRAVÉS DE ORÇAMENTO/COTAÇÃO)
+		if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then
+			if perc_RT > rCD.perc_max_comissao then
+				alerta = "Percentual de comissão excede o máximo permitido."
+				end if
 			end if
 		end if
 
@@ -417,41 +420,27 @@
 			next
 		end if
 
-'	RECUPERA DADOS QUE ESTÃO NO ORÇAMENTO
-'	TODO (** TODO ** - VERIFICAR CONSISTÊNCIA DAS REGRAS DE DESCONTO POR ALÇADA)
-	if alerta = "" then
-		for i=Lbound(v_item) to Ubound(v_item)
-			if Trim("" & v_item(i).produto) <> "" then
-				for j=LBound(v_orcamento_item) to UBound(v_orcamento_item)
-					if (Trim("" & v_item(i).fabricante) = Trim("" & v_orcamento_item(j).fabricante)) And (Trim("" & v_item(i).produto) = Trim("" & v_orcamento_item(j).produto)) then
-						v_item(i).StatusDescontoSuperior = v_orcamento_item(j).StatusDescontoSuperior
-						v_item(i).IdUsuarioDescontoSuperior = v_orcamento_item(j).IdUsuarioDescontoSuperior
-						v_item(i).DataHoraDescontoSuperior = v_orcamento_item(j).DataHoraDescontoSuperior
-						exit for
-						end if
-					next
+'	CUSTO FINANCEIRO FORNECEDOR
+	'ORIGEM: PRÉ-PEDIDO (NÃO FOI GERADO ATRAVÉS DE ORÇAMENTO/COTAÇÃO)
+	if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then
+		if alerta = "" then
+			if (c_custoFinancFornecTipoParcelamento <> COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__A_VISTA) And _
+			   (c_custoFinancFornecTipoParcelamento <> COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__COM_ENTRADA) And _
+			   (c_custoFinancFornecTipoParcelamento <> COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__SEM_ENTRADA) then
+				alerta = "A forma de pagamento não foi informada (à vista, com entrada, sem entrada)."
 				end if
-			next
+			end if
+	
+		if alerta = "" then
+			if (c_custoFinancFornecTipoParcelamento = COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__COM_ENTRADA) Or _
+			   (c_custoFinancFornecTipoParcelamento = COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__SEM_ENTRADA) then
+				if converte_numero(c_custoFinancFornecQtdeParcelas) <= 0 then
+					alerta = "Não foi informada a quantidade de parcelas para a forma de pagamento selecionada (" & descricaoCustoFinancFornecTipoParcelamento(c_custoFinancFornecTipoParcelamento) &  ")"
+					end if
+				end if
+			end if
 		end if
 
-'	CUSTO FINANCEIRO FORNECEDOR
-	if alerta = "" then
-		if (c_custoFinancFornecTipoParcelamento <> COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__A_VISTA) And _
-		   (c_custoFinancFornecTipoParcelamento <> COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__COM_ENTRADA) And _
-		   (c_custoFinancFornecTipoParcelamento <> COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__SEM_ENTRADA) then
-			alerta = "A forma de pagamento não foi informada (à vista, com entrada, sem entrada)."
-			end if
-		end if
-	
-	if alerta = "" then
-		if (c_custoFinancFornecTipoParcelamento = COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__COM_ENTRADA) Or _
-		   (c_custoFinancFornecTipoParcelamento = COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__SEM_ENTRADA) then
-			if converte_numero(c_custoFinancFornecQtdeParcelas) <= 0 then
-				alerta = "Não foi informada a quantidade de parcelas para a forma de pagamento selecionada (" & descricaoCustoFinancFornecTipoParcelamento(c_custoFinancFornecTipoParcelamento) &  ")"
-				end if
-			end if
-		end if
-	
 '	CALCULA O VALOR TOTAL DO PEDIDO
 	if alerta = "" then
 		vl_total = 0
@@ -696,73 +685,118 @@
 					.potencia_valor = rs("potencia_valor")
 					.id_unidade_potencia = rs("id_unidade_potencia")
 
-					.custoFinancFornecPrecoListaBase = .preco_lista
-					if c_custoFinancFornecTipoParcelamento = COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__A_VISTA then
-						coeficiente = 1
-					else
-						s = "SELECT " & _
-								"*" & _
-							" FROM t_PERCENTUAL_CUSTO_FINANCEIRO_FORNECEDOR" & _
-							" WHERE" & _
-								" (fabricante = '" & .fabricante & "')" & _
-								" AND (tipo_parcelamento = '" & c_custoFinancFornecTipoParcelamento & "')" & _
-								" AND (qtde_parcelas = " & c_custoFinancFornecQtdeParcelas & ")"
-						set rs2 = cn.execute(s)
-						if rs2.Eof then
-							alerta=texto_add_br(alerta)
-							alerta=alerta & "Opção de parcelamento não disponível para fornecedor " & .fabricante & ": " & decodificaCustoFinancFornecQtdeParcelas(c_custoFinancFornecTipoParcelamento, c_custoFinancFornecQtdeParcelas) & " parcela(s)"
-						else
-							coeficiente = converte_numero(rs2("coeficiente"))
-							.preco_lista=converte_numero(formata_moeda(coeficiente*.preco_lista))
-							end if
+					'ORIGEM: ORÇAMENTO/COTAÇÃO
+					if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then
+						' RECUPERA DADOS QUE ESTÃO NO ORÇAMENTO/COTAÇÃO
+						' LEMBRANDO QUE O ORÇAMENTO/COTAÇÃO RESPEITA VALORES NEGOCIADOS C/ O CLIENTE, MESMO QUE A TABELA DE PREÇOS TENHA REAJUSTE POSTERIORMENTE
+						for j=LBound(v_orcamento_item) to UBound(v_orcamento_item)
+							if (Trim("" & v_item(i).fabricante) = Trim("" & v_orcamento_item(j).fabricante)) And (Trim("" & v_item(i).produto) = Trim("" & v_orcamento_item(j).produto)) then
+								v_item(i).qtde = v_orcamento_item(j).qtde
+								v_item(i).desc_dado = v_orcamento_item(j).desc_dado
+								v_item(i).preco_venda = v_orcamento_item(j).preco_venda
+								v_item(i).preco_lista = v_orcamento_item(j).preco_lista
+								v_item(i).preco_NF = v_orcamento_item(j).preco_NF
+								v_item(i).margem = v_orcamento_item(j).margem
+								v_item(i).desc_max = v_orcamento_item(j).desc_max
+								v_item(i).comissao = v_orcamento_item(j).comissao
+								v_item(i).preco_fabricante = v_orcamento_item(j).preco_fabricante
+								v_item(i).vl_custo2 = v_orcamento_item(j).vl_custo2
+								v_item(i).descricao = v_orcamento_item(j).descricao
+								v_item(i).descricao_html = v_orcamento_item(j).descricao_html
+								v_item(i).ean = v_orcamento_item(j).ean
+								v_item(i).grupo = v_orcamento_item(j).grupo
+								v_item(i).subgrupo = v_orcamento_item(j).subgrupo
+								v_item(i).peso = v_orcamento_item(j).peso
+								v_item(i).qtde_volumes = v_orcamento_item(j).qtde_volumes
+								v_item(i).markup_fabricante = v_orcamento_item(j).markup_fabricante
+								v_item(i).cubagem = v_orcamento_item(j).cubagem
+								v_item(i).ncm = v_orcamento_item(j).ncm
+								v_item(i).cst = v_orcamento_item(j).cst
+								v_item(i).descontinuado = v_orcamento_item(j).descontinuado
+								v_item(i).abaixo_min_status = v_orcamento_item(j).abaixo_min_status
+								v_item(i).abaixo_min_autorizacao = v_orcamento_item(j).abaixo_min_autorizacao
+								v_item(i).abaixo_min_autorizador = v_orcamento_item(j).abaixo_min_autorizador
+								v_item(i).abaixo_min_superv_autorizador = v_orcamento_item(j).abaixo_min_superv_autorizador
+								v_item(i).StatusDescontoSuperior = v_orcamento_item(j).StatusDescontoSuperior
+								v_item(i).IdUsuarioDescontoSuperior = v_orcamento_item(j).IdUsuarioDescontoSuperior
+								v_item(i).DataHoraDescontoSuperior = v_orcamento_item(j).DataHoraDescontoSuperior
+								v_item(i).custoFinancFornecCoeficiente = v_orcamento_item(j).custoFinancFornecCoeficiente
+								v_item(i).custoFinancFornecPrecoListaBase = v_orcamento_item(j).custoFinancFornecPrecoListaBase
+								exit for
+								end if
+							next
 						end if
-					.custoFinancFornecCoeficiente = coeficiente
-					
-					if .preco_lista = 0 then 
-						.desc_dado = 0
-						desc_dado_arredondado = 0
-					else
-						.desc_dado = 100*(.preco_lista-.preco_venda)/.preco_lista
-						desc_dado_arredondado = converte_numero(formata_perc_desc(.desc_dado))
-						end if
-					
-					if desc_dado_arredondado > perc_comissao_e_desconto_a_utilizar then
-						if rs.State <> 0 then rs.Close
-						s = "SELECT " & _
-								"*" & _
-							" FROM t_DESCONTO" & _
-							" WHERE" & _
-								" (usado_status=0)" & _
-								" AND (cancelado_status=0)" & _
-								" AND (id_cliente='" & r_orcamento.id_cliente & "')" & _
-								" AND (fabricante='" & .fabricante & "')" & _
-								" AND (produto='" & .produto & "')" & _
-								" AND (loja='" & loja & "')" & _
-								" AND (data >= " & bd_formata_data_hora(Now-converte_min_to_dec(TIMEOUT_DESCONTO_EM_MIN)) & ")" & _
-							" ORDER BY" & _
-								" data DESC"
-						set rs=cn.execute(s)
-						if rs.Eof then
-							alerta=texto_add_br(alerta)
-							alerta=alerta & "Produto " & .produto & " do fabricante " & .fabricante & ": desconto de " & formata_perc_desc(.desc_dado) & "% excede o máximo permitido."
+
+					'ORIGEM: PRÉ-PEDIDO (NÃO FOI GERADO ATRAVÉS DE ORÇAMENTO/COTAÇÃO)
+					if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then
+						.custoFinancFornecPrecoListaBase = .preco_lista
+						if c_custoFinancFornecTipoParcelamento = COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__A_VISTA then
+							coeficiente = 1
 						else
-							if .desc_dado > rs("desc_max") then
+							s = "SELECT " & _
+									"*" & _
+								" FROM t_PERCENTUAL_CUSTO_FINANCEIRO_FORNECEDOR" & _
+								" WHERE" & _
+									" (fabricante = '" & .fabricante & "')" & _
+									" AND (tipo_parcelamento = '" & c_custoFinancFornecTipoParcelamento & "')" & _
+									" AND (qtde_parcelas = " & c_custoFinancFornecQtdeParcelas & ")"
+							set rs2 = cn.execute(s)
+							if rs2.Eof then
 								alerta=texto_add_br(alerta)
-								alerta=alerta & "Produto " & .produto & " do fabricante " & .fabricante & ": desconto de " & formata_perc_desc(.desc_dado) & "% excede o máximo autorizado."
+								alerta=alerta & "Opção de parcelamento não disponível para fornecedor " & .fabricante & ": " & decodificaCustoFinancFornecQtdeParcelas(c_custoFinancFornecTipoParcelamento, c_custoFinancFornecQtdeParcelas) & " parcela(s)"
 							else
-								.abaixo_min_status=1
-								.abaixo_min_autorizacao=Trim("" & rs("id"))
-								.abaixo_min_autorizador=Trim("" & rs("autorizador"))
-								.abaixo_min_superv_autorizador=Trim("" & rs("supervisor_autorizador"))
-								If v_desconto(UBound(v_desconto)) <> "" Then
-									ReDim Preserve v_desconto(UBound(v_desconto) + 1)
-									v_desconto(UBound(v_desconto)) = ""
-									End If
-								v_desconto(UBound(v_desconto)) = Trim("" & rs("id"))
+								coeficiente = converte_numero(rs2("coeficiente"))
+								.preco_lista=converte_numero(formata_moeda(coeficiente*.preco_lista))
 								end if
 							end if
-						end if
-					end if
+						.custoFinancFornecCoeficiente = coeficiente
+
+						if .preco_lista = 0 then 
+							.desc_dado = 0
+							desc_dado_arredondado = 0
+						else
+							.desc_dado = 100*(.preco_lista-.preco_venda)/.preco_lista
+							desc_dado_arredondado = converte_numero(formata_perc_desc(.desc_dado))
+							end if
+					
+						if desc_dado_arredondado > perc_comissao_e_desconto_a_utilizar then
+							if rs.State <> 0 then rs.Close
+							s = "SELECT " & _
+									"*" & _
+								" FROM t_DESCONTO" & _
+								" WHERE" & _
+									" (usado_status=0)" & _
+									" AND (cancelado_status=0)" & _
+									" AND (id_cliente='" & r_orcamento.id_cliente & "')" & _
+									" AND (fabricante='" & .fabricante & "')" & _
+									" AND (produto='" & .produto & "')" & _
+									" AND (loja='" & loja & "')" & _
+									" AND (data >= " & bd_formata_data_hora(Now-converte_min_to_dec(TIMEOUT_DESCONTO_EM_MIN)) & ")" & _
+								" ORDER BY" & _
+									" data DESC"
+							set rs=cn.execute(s)
+							if rs.Eof then
+								alerta=texto_add_br(alerta)
+								alerta=alerta & "Produto " & .produto & " do fabricante " & .fabricante & ": desconto de " & formata_perc_desc(.desc_dado) & "% excede o máximo permitido."
+							else
+								if .desc_dado > rs("desc_max") then
+									alerta=texto_add_br(alerta)
+									alerta=alerta & "Produto " & .produto & " do fabricante " & .fabricante & ": desconto de " & formata_perc_desc(.desc_dado) & "% excede o máximo autorizado."
+								else
+									.abaixo_min_status=1
+									.abaixo_min_autorizacao=Trim("" & rs("id"))
+									.abaixo_min_autorizador=Trim("" & rs("autorizador"))
+									.abaixo_min_superv_autorizador=Trim("" & rs("supervisor_autorizador"))
+									If v_desconto(UBound(v_desconto)) <> "" Then
+										ReDim Preserve v_desconto(UBound(v_desconto) + 1)
+										v_desconto(UBound(v_desconto)) = ""
+										End If
+									v_desconto(UBound(v_desconto)) = Trim("" & rs("id"))
+									end if
+								end if
+							end if 'if desc_dado_arredondado > perc_comissao_e_desconto_a_utilizar
+						end if 'if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0
+					end if 'if rs.Eof then-else
 				rs.Close
 				end with
 			next
@@ -1761,8 +1795,10 @@
 											rs("potencia_valor") = .potencia_valor
 											rs("id_unidade_potencia") = .id_unidade_potencia
 											rs("StatusDescontoSuperior") = .StatusDescontoSuperior
-											rs("IdUsuarioDescontoSuperior") = .IdUsuarioDescontoSuperior
-											rs("DataHoraDescontoSuperior") = .DataHoraDescontoSuperior
+											if .IdUsuarioDescontoSuperior > 0 then
+												rs("IdUsuarioDescontoSuperior") = .IdUsuarioDescontoSuperior
+												rs("DataHoraDescontoSuperior") = .DataHoraDescontoSuperior
+												end if
 											rs.Update
 											if Err <> 0 then
 											'	~~~~~~~~~~~~~~~~
@@ -2339,6 +2375,10 @@
 			set rs = cn.execute(s)
 			if Not rs.Eof then
 				s_log = "Nº Pré-Pedido=" & orcamento_selecionado
+				'ORIGEM: ORÇAMENTO/COTAÇÃO
+				if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then
+					s_log = s_log & "; Nº Orçamento=" & CStr(r_orcamento.IdOrcamentoCotacao)
+					end if
 				s_log = s_log & "; vl total=" & formata_moeda(vl_total)
 				s_log = s_log & "; indicador=" & formata_texto_log(rs("indicador"))
 				s_log = s_log & "; vl_total_NF=" & formata_moeda(rs("vl_total_NF"))
@@ -2495,6 +2535,17 @@
 								"; abaixo_min_autorizacao=" & formata_texto_log(.abaixo_min_autorizacao) & _
 								"; abaixo_min_autorizador=" & formata_texto_log(.abaixo_min_autorizador) & _
 								"; abaixo_min_superv_autorizador=" & formata_texto_log(.abaixo_min_superv_autorizador)
+						end if
+
+					'ORIGEM: ORÇAMENTO/COTAÇÃO
+					if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then
+						s_log = s_log & _
+								"; StatusDescontoSuperior=" & CStr(.StatusDescontoSuperior)
+						if .StatusDescontoSuperior <> 0 then
+							s_log = s_log & _
+									"; IdUsuarioDescontoSuperior=" & CStr(.IdUsuarioDescontoSuperior) & _
+									"; DataHoraDescontoSuperior=" & formata_data_hora(.DataHoraDescontoSuperior)
+							end if
 						end if
 					end with
 				next

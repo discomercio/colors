@@ -612,6 +612,12 @@ dim r
 			.perc_max_comissao_e_desconto_nivel2 = r("perc_max_comissao_e_desconto_nivel2")
 			.perc_max_comissao_e_desconto_nivel2_pj = r("perc_max_comissao_e_desconto_nivel2_pj")
 			.perc_max_comissao_e_desconto_pj = r("perc_max_comissao_e_desconto_pj")
+			.perc_max_comissao_e_desconto_alcada1_pf = r("perc_max_comissao_e_desconto_alcada1_pf")
+			.perc_max_comissao_e_desconto_alcada1_pj = r("perc_max_comissao_e_desconto_alcada1_pj")
+			.perc_max_comissao_e_desconto_alcada2_pf = r("perc_max_comissao_e_desconto_alcada2_pf")
+			.perc_max_comissao_e_desconto_alcada2_pj = r("perc_max_comissao_e_desconto_alcada2_pj")
+			.perc_max_comissao_e_desconto_alcada3_pf = r("perc_max_comissao_e_desconto_alcada3_pf")
+			.perc_max_comissao_e_desconto_alcada3_pj = r("perc_max_comissao_e_desconto_alcada3_pj")
 			.magento_api_urlWebService = Trim("" & r("magento_api_urlWebService"))
 			.magento_api_username = Trim("" & r("magento_api_username"))
 			.magento_api_password = Trim("" & r("magento_api_password"))
@@ -4071,6 +4077,8 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.usuario_violado_permite_RA_status	= Trim("" & rs("usuario_violado_permite_RA_status"))
             .EndEtg_obs                 = Trim("" & rs("EndEtg_obs"))
             .EndEtg_cod_justificativa   = Trim("" & rs("EndEtg_cod_justificativa"))
+			.sistema_responsavel_cadastro = rs("sistema_responsavel_cadastro")
+			.sistema_responsavel_atualizacao = rs("sistema_responsavel_atualizacao")
 			.IdOrcamentoCotacao = rs("IdOrcamentoCotacao")
 			.IdIndicadorVendedor = rs("IdIndicadorVendedor")
 			.perc_max_comissao_padrao = rs("perc_max_comissao_padrao")
@@ -4759,6 +4767,12 @@ dim rs
 	rx.perc_max_comissao_e_desconto_pj = 0
 	rx.perc_max_comissao_e_desconto_nivel2 = 0
 	rx.perc_max_comissao_e_desconto_nivel2_pj = 0
+	rx.perc_max_comissao_e_desconto_alcada1_pf = 0
+	rx.perc_max_comissao_e_desconto_alcada1_pj = 0
+	rx.perc_max_comissao_e_desconto_alcada2_pf = 0
+	rx.perc_max_comissao_e_desconto_alcada2_pj = 0
+	rx.perc_max_comissao_e_desconto_alcada3_pf = 0
+	rx.perc_max_comissao_e_desconto_alcada3_pj = 0
 	rx.isCadastrado = False
 	
 '	LEMBRANDO QUE SE TRATA DE UM PONTEIRO P/ O OBJETO
@@ -4770,7 +4784,13 @@ dim rs
 			" perc_max_comissao_e_desconto," & _
 			" perc_max_comissao_e_desconto_pj," & _
 			" perc_max_comissao_e_desconto_nivel2," & _
-			" perc_max_comissao_e_desconto_nivel2_pj" & _
+			" perc_max_comissao_e_desconto_nivel2_pj," & _
+			" perc_max_comissao_e_desconto_alcada1_pf," & _
+			" perc_max_comissao_e_desconto_alcada1_pj," & _
+			" perc_max_comissao_e_desconto_alcada2_pf," & _
+			" perc_max_comissao_e_desconto_alcada2_pj," & _
+			" perc_max_comissao_e_desconto_alcada3_pf," & _
+			" perc_max_comissao_e_desconto_alcada3_pj" & _
 		" FROM t_LOJA" & _
 		" WHERE" & _
 			" (CONVERT(smallint,loja) = " & loja & ")"
@@ -4781,6 +4801,12 @@ dim rs
 		rx.perc_max_comissao_e_desconto_pj = rs("perc_max_comissao_e_desconto_pj")
 		rx.perc_max_comissao_e_desconto_nivel2 = rs("perc_max_comissao_e_desconto_nivel2")
 		rx.perc_max_comissao_e_desconto_nivel2_pj = rs("perc_max_comissao_e_desconto_nivel2_pj")
+		rx.perc_max_comissao_e_desconto_alcada1_pf = rs("perc_max_comissao_e_desconto_alcada1_pf")
+		rx.perc_max_comissao_e_desconto_alcada1_pj = rs("perc_max_comissao_e_desconto_alcada1_pj")
+		rx.perc_max_comissao_e_desconto_alcada2_pf = rs("perc_max_comissao_e_desconto_alcada2_pf")
+		rx.perc_max_comissao_e_desconto_alcada2_pj = rs("perc_max_comissao_e_desconto_alcada2_pj")
+		rx.perc_max_comissao_e_desconto_alcada3_pf = rs("perc_max_comissao_e_desconto_alcada3_pf")
+		rx.perc_max_comissao_e_desconto_alcada3_pj = rs("perc_max_comissao_e_desconto_alcada3_pj")
 		rx.isCadastrado = True
 		end if
 	
