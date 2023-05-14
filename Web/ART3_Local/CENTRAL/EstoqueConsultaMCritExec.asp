@@ -362,7 +362,8 @@ dim v, i
 				" t_PRODUTO.descricao," & _
 				" t_PRODUTO.descricao_html," & _
 				" t_FABRICANTE.razao_social, t_FABRICANTE.nome," & _
-				" t_ESTOQUE.data_emissao_NF_entrada" & _
+				" t_ESTOQUE.data_emissao_NF_entrada," & _
+                " t_ESTOQUE.entrada_tipo" & _
             " FROM t_ESTOQUE INNER JOIN t_ESTOQUE_ITEM ON (t_ESTOQUE.id_estoque=t_ESTOQUE_ITEM.id_estoque)" & _
 				" LEFT JOIN t_PRODUTO ON ((t_ESTOQUE_ITEM.fabricante=t_PRODUTO.fabricante) AND (t_ESTOQUE_ITEM.produto=t_PRODUTO.produto))" & _
 				" LEFT JOIN t_FABRICANTE ON (t_ESTOQUE.fabricante=t_FABRICANTE.fabricante)" & _
@@ -531,6 +532,7 @@ dim v, i
 			s_link_close = ""
 		else
 			s_link_open = "<a href='javascript:fConcluir(" & chr(34) & Trim("" & rs("id_estoque")) & chr(34) & _
+                    "," & chr(34) & Trim("" & Cstr(rs("entrada_tipo"))) & chr(34) & _
 					 ")' title='clique para consultar este registro de entrada no estoque'>"
 			s_link_close = "</a>"
 			end if
@@ -598,7 +600,7 @@ dim v, i
 
 		x = x & "</TR>" & chr(13)
 
-		if (n_reg mod 100) = 0 then
+    	if (n_reg mod 100) = 0 then
 			Response.Write x
 			x = ""
 			end if
@@ -654,8 +656,13 @@ end sub
 <script language="JavaScript" type="text/javascript">
 window.status='Aguarde, executando a consulta ...';
 
-function fConcluir ( id ) {
-	fESTOQ.action = "EstoqueConsultaEAN.asp";
+function fConcluir(id,entrada_tipo) {
+    if (entrada_tipo == "1") {
+        fESTOQ.action = "EstoqueConsultaXML.asp";
+    }
+    else {
+        fESTOQ.action = "EstoqueConsultaEAN.asp";
+    }
 	fESTOQ.estoque_selecionado.value = id;
 	fESTOQ.submit();
 }
@@ -756,6 +763,7 @@ a
 <input type=HIDDEN name="ckb_devolucao" id="ckb_devolucao" value="<%=ckb_devolucao%>">
 <input type="hidden" name="c_grupo" id="c_grupo" value="<%=c_grupo%>" />
 <input type="hidden" name="c_subgrupo" id="c_subgrupo" value="<%=c_subgrupo%>" />
+<input type="hidden" name="c_entrada_tipo" id="c_entrada_tipo" value="" />
 
 
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->

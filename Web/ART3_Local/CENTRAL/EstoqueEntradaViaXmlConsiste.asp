@@ -1010,12 +1010,15 @@ select
     </tbody>
     <tfoot>
 	    <tr>	
-	    <td colspan="7" class="MD">&nbsp;</td>
-	    <td class="MDB" align="left"><p class="Cd">Total NF</p></td>	
-	    <td class="MDB" align="right"><input name="c_total_nf" id="c_total_nf" class="PLLd" style="width:62px;color:black;" 
-	        value="<%=c_total_nf%>"></td>	
 	    <td>&nbsp;</td>
-        <td>&nbsp;</td>
+        <td colspan="7" class="MD">&nbsp;</td>
+	    <td class="MDB" align="left"><p class="Cd">Total NF</p></td>	
+        <!--O CAMPO ABAIXO DEIXOU DE APRESENTAR O TOTAL DOS PRODUTOS E PASSOU A APRESENTAR O TOTAL DA NOTA FISCAL, POR SOLICITAÇÃO, PARA FACILITAR A VISUALIZAÇÃO NA CONSULTA-->
+	    <!--<td class="MDB" align="right"><input name="c_total_nf" id="c_total_nf" class="PLLd" style="width:62px;color:black;" 
+	        value="<%=c_total_nf%>"></td>-->	
+	    <td class="MDB" align="right"><input name="c_total_nf" id="c_total_nf" class="PLLd" style="width:62px;color:black;" 
+	        value="<%=c_nfe_vl_total_geral%>"></td>	
+	    <td>&nbsp;</td>
 	    <td>&nbsp;</td>
 	    <td>&nbsp;</td>
 	    <td class="MD">&nbsp;</td>
