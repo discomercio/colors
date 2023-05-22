@@ -892,11 +892,15 @@
 				rs("st_etg_imediata")=CLng(s_etg_imediata)
 				rs("etg_imediata_data")=Now
 				rs("etg_imediata_usuario")=usuario
+				rs("EtgImediataIdTipoUsuarioContexto") = COD_USUARIO_CONTEXTO__PARCEIRO
+				rs("EtgImediataIdUsuarioUltAtualiz") = r_orcamentista_e_indicador.Id
 				end if
 			if CLng(s_etg_imediata) = CLng(COD_ETG_IMEDIATA_NAO) then
 				rs("PrevisaoEntregaData") = StrToDate(c_data_previsao_entrega)
 				rs("PrevisaoEntregaUsuarioUltAtualiz") = usuario
 				rs("PrevisaoEntregaDtHrUltAtualiz") = Now
+				rs("PrevisaoEntregaIdTipoUsuarioContexto") = COD_USUARIO_CONTEXTO__PARCEIRO
+				rs("PrevisaoEntregaIdUsuarioUltAtualiz") = r_orcamentista_e_indicador.Id
 				end if
 			if s_bem_uso_consumo <> "" then 
 				rs("StBemUsoConsumo")=CLng(s_bem_uso_consumo)
@@ -955,10 +959,14 @@
 			rs("InstaladorInstalaStatus")=CLng(rb_instalador_instala)
 			rs("InstaladorInstalaUsuarioUltAtualiz")=usuario
 			rs("InstaladorInstalaDtHrUltAtualiz")=Now
+			rs("InstaladorInstalaIdTipoUsuarioContexto") = COD_USUARIO_CONTEXTO__PARCEIRO
+			rs("InstaladorInstalaIdUsuarioUltAtualiz") = r_orcamentista_e_indicador.Id
 		
 			rs("GarantiaIndicadorStatus") = CLng(rb_garantia_indicador)
 			rs("GarantiaIndicadorUsuarioUltAtualiz") = usuario
 			rs("GarantiaIndicadorDtHrUltAtualiz") = Now
+			rs("GarantiaIndicadorIdTipoUsuarioContexto") = COD_USUARIO_CONTEXTO__PARCEIRO
+			rs("GarantiaIndicadorIdUsuarioUltAtualiz") = r_orcamentista_e_indicador.Id
 		
 			if blnUsarMemorizacaoCompletaEnderecos then
 				rs("st_memorizacao_completa_enderecos") = 1
@@ -1030,6 +1038,9 @@
 			rs("sistema_responsavel_cadastro") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
 			rs("sistema_responsavel_atualizacao") = COD_SISTEMA_RESPONSAVEL_CADASTRO__ERP
 		
+			rs("UsuarioCadastroIdTipoUsuarioContexto") = COD_USUARIO_CONTEXTO__PARCEIRO
+			rs("UsuarioCadastroId") = r_orcamentista_e_indicador.Id
+
 			rs.Update 
 			if Err <> 0 then
 			'	~~~~~~~~~~~~~~~~

@@ -1401,9 +1401,11 @@ var s, s_senha, cont;
 		<td width="100%" align="left">
 		<p class="R">LOGIN BLOQUEADO AUTOMATICAMENTE</p>
 		<p class="C" id="pMsgStLoginBloqueadoAutomatico" style="color:<%=s_color%>;"><%=s%>
-		<% if rs("StLoginBloqueadoAutomatico") <> 0 then %>
+		<% if operacao_selecionada=OP_CONSULTA then
+				if rs("StLoginBloqueadoAutomatico") <> 0 then %>
 		<input type="checkbox" id="ckb_desbloquear_bloqueio_automatico" name="ckb_desbloquear_bloqueio_automatico" value="ON" class="TA" style="margin-left:15px;" /><span class="C" onclick="fCAD.ckb_desbloquear_bloqueio_automatico.click();" style="cursor:default;">Desbloquear</span>
-		<% end if %>
+		<%		end if
+			end if %>
 		</p>
 		</td>
 	</tr>
