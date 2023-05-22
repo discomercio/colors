@@ -2189,7 +2189,8 @@ dim rs
 				.cod_produto_alfanum_fabricante = Trim("" & rs("cod_produto_alfanum_fabricante"))
 				.potencia_valor = rs("potencia_valor")
 				.id_unidade_potencia = rs("id_unidade_potencia")
-				.StatusDescontoSuperior = rs("StatusDescontoSuperior")
+				'O campo 'StatusDescontoSuperior' é do tipo 'bit' e o ASP converte como se fosse um boolean, portanto, é feito um tratamento manual
+				if rs("StatusDescontoSuperior") = 0 then .StatusDescontoSuperior = 0 else .StatusDescontoSuperior = 1
 				.IdUsuarioDescontoSuperior = rs("IdUsuarioDescontoSuperior")
 				.DataHoraDescontoSuperior = rs("DataHoraDescontoSuperior")
 				end with
@@ -2273,7 +2274,8 @@ dim rs
 				.cod_produto_alfanum_fabricante = Trim("" & rs("cod_produto_alfanum_fabricante"))
 				.potencia_valor = rs("potencia_valor")
 				.id_unidade_potencia = rs("id_unidade_potencia")
-				.StatusDescontoSuperior = rs("StatusDescontoSuperior")
+				'O campo 'StatusDescontoSuperior' é do tipo 'bit' e o ASP converte como se fosse um boolean, portanto, é feito um tratamento manual
+				if rs("StatusDescontoSuperior") = 0 then .StatusDescontoSuperior = 0 else .StatusDescontoSuperior = 1
 				.IdUsuarioDescontoSuperior = rs("IdUsuarioDescontoSuperior")
 				.DataHoraDescontoSuperior = rs("DataHoraDescontoSuperior")
 				end with
@@ -3580,7 +3582,8 @@ dim rs
 			.cod_produto_alfanum_fabricante = Trim("" & rs("cod_produto_alfanum_fabricante"))
 			.potencia_valor = rs("potencia_valor")
 			.id_unidade_potencia = rs("id_unidade_potencia")
-			.StatusDescontoSuperior = rs("StatusDescontoSuperior")
+				'O campo 'StatusDescontoSuperior' é do tipo 'bit' e o ASP converte como se fosse um boolean, portanto, é feito um tratamento manual
+				if rs("StatusDescontoSuperior") = 0 then .StatusDescontoSuperior = 0 else .StatusDescontoSuperior = 1
 			.IdUsuarioDescontoSuperior = rs("IdUsuarioDescontoSuperior")
 			.DataHoraDescontoSuperior = rs("DataHoraDescontoSuperior")
 			end with
@@ -3676,7 +3679,8 @@ dim rs
 			.cod_produto_alfanum_fabricante = Trim("" & rs("cod_produto_alfanum_fabricante"))
 			.potencia_valor = rs("potencia_valor")
 			.id_unidade_potencia = rs("id_unidade_potencia")
-			.StatusDescontoSuperior = rs("StatusDescontoSuperior")
+				'O campo 'StatusDescontoSuperior' é do tipo 'bit' e o ASP converte como se fosse um boolean, portanto, é feito um tratamento manual
+				if rs("StatusDescontoSuperior") = 0 then .StatusDescontoSuperior = 0 else .StatusDescontoSuperior = 1
 			.IdUsuarioDescontoSuperior = rs("IdUsuarioDescontoSuperior")
 			.DataHoraDescontoSuperior = rs("DataHoraDescontoSuperior")
 			end with
@@ -4170,7 +4174,8 @@ dim rs
 				.ncm					= Trim("" & rs("ncm"))
 				.cst					= Trim("" & rs("cst"))
 				.descontinuado			= Trim("" & rs("descontinuado"))
-				.StatusDescontoSuperior = rs("StatusDescontoSuperior")
+				'O campo 'StatusDescontoSuperior' é do tipo 'bit' e o ASP converte como se fosse um boolean, portanto, é feito um tratamento manual
+				if rs("StatusDescontoSuperior") = 0 then .StatusDescontoSuperior = 0 else .StatusDescontoSuperior = 1
 				.IdUsuarioDescontoSuperior = rs("IdUsuarioDescontoSuperior")
 				.DataHoraDescontoSuperior = rs("DataHoraDescontoSuperior")
 				end with

@@ -56,7 +56,7 @@
 	s = normaliza_num_pedido(pedido_selecionado)
 	if s <> "" then pedido_selecionado = s
 	
-	dim i, n, x, s_fabricante, s_produto, s_descricao, s_descricao_html, s_qtde, s_preco_lista, s_desc_dado
+	dim i, n, nColSpan, x, s_fabricante, s_produto, s_descricao, s_descricao_html, s_qtde, s_preco_lista, s_desc_dado
 	dim s_vl_unitario, s_vl_TotalItem, m_TotalItem, m_TotalDestePedido, m_TotalItemComRA, m_TotalDestePedidoComRA
 	dim s_preco_NF, m_TotalFamiliaParcelaRA
 	dim m_total_RA_deste_pedido, m_total_venda_deste_pedido, m_total_RA_outros, m_total_venda_outros
@@ -535,7 +535,15 @@ end function
 	dim strScriptJS
 	strScriptJS = "<script language='JavaScript'>" & chr(13) & _
 				  "var PERC_DESAGIO_RA_LIQUIDA_PEDIDO = " & js_formata_numero(r_pedido.perc_desagio_RA_liquida) & ";" & chr(13) & _
-				  "var nivelEdicaoFormaPagto = " & CStr(nivelEdicaoFormaPagto) & ";" & chr(13) & _
+				  "var nivelEdicaoFormaPagto = " & CStr(nivelEdicaoFormaPagto) & ";" & chr(13)
+
+	if blnTemRA then s = "true" else s = "false"
+	strScriptJS = strScriptJS & _
+				  "var formata_perc_desconto = formata_perc_2dec;" & chr(13) & _
+				  "var formata_perc_desc_linear = formata_perc_2dec;" & chr(13) & _
+				  "var blnTemRA = " & s & ";" & chr(13)
+
+	strScriptJS = strScriptJS & _
 				  "</script>" & chr(13)
 	
 	dim strScriptJS_FPO
@@ -1363,6 +1371,40 @@ var r_RA_liquido;
 	if (vl_RA_liquido>=0) f.c_total_RA_Liquido.style.color="green"; else f.c_total_RA_Liquido.style.color="red";
 }
 
+function calcula_desconto(idx) {
+	var f, s, i, m, d, m_lista, m_unit;
+	f = fPED;
+	if (f.c_produto[idx].value == "") return;
+	d = converte_numero(f.c_desc[idx].value);
+	m_lista = converte_numero(f.c_preco_lista[idx].value);
+	m_unit = m_lista - (m_lista * d / 100);
+	f.c_vl_unitario[idx].value = formata_moeda(m_unit);
+	s = formata_moeda(parseInt(f.c_qtde[idx].value) * m_unit);
+	if (f.c_vl_total[idx].value != s) f.c_vl_total[idx].value = s;
+	m = 0;
+	for (i = 0; i < f.c_vl_total.length; i++) m = m + converte_numero(f.c_vl_total[i].value);
+	s = formata_moeda(m);
+	if (f.c_total_geral.value != s) f.c_total_geral.value = s;
+}
+
+function atualiza_itens_com_desc_linear() {
+	var f;
+	f = fPED;
+	if (trim(f.c_desc_linear.value) == "") return;
+	f.c_desc_linear.value = formata_perc_desc_linear(f.c_desc_linear.value);
+	if (trim(f.c_desc_linear.value) == "") return;
+	for (i = 0; i < f.c_produto.length; i++) {
+		if (trim(f.c_produto[i].value) != "") {
+			f.c_desc[i].value = f.c_desc_linear.value;
+			calcula_desconto(i);
+			if (!blnTemRA) f.c_vl_NF[i].value = f.c_vl_unitario[i].value;
+		}
+	}
+	recalcula_total_todas_linhas();
+	recalcula_RA();
+	recalcula_RA_Liquido();
+}
+
 function recalcula_total_linha( id ) {
 var idx, m, m_lista, m_unit, d, f, i, s;
 	f=fPED;
@@ -1371,7 +1413,7 @@ var idx, m, m_lista, m_unit, d, f, i, s;
 	m_lista=converte_numero(f.c_preco_lista[idx].value);
 	m_unit=converte_numero(f.c_vl_unitario[idx].value);
 	if (m_lista==0) d=0; else d=100*(m_lista-m_unit)/m_lista;
-	if (d==0) s=""; else s=formata_perc_desc(d);
+	if (d == 0) s = ""; else s = formata_perc_desconto(d);
 	if (f.c_desc[idx].value!=s) f.c_desc[idx].value=s;
 	s=formata_moeda(parseInt(f.c_qtde[idx].value)*m_unit);
 	if (f.c_vl_total[idx].value!=s) f.c_vl_total[idx].value=s;
@@ -1379,6 +1421,7 @@ var idx, m, m_lista, m_unit, d, f, i, s;
 	for (i=0; i<f.c_vl_total.length; i++) m=m+converte_numero(f.c_vl_total[i].value);
 	s=formata_moeda(m);
 	if (f.c_total_geral.value!=s) f.c_total_geral.value=s;
+	f.c_desc_medio_total.value = formata_perc_desc_linear(calcula_desconto_medio());
 }
 
 function recalcula_total_todas_linhas() {
@@ -1390,7 +1433,7 @@ var f,i,t,m_lista,m_unit,d,m,s;
 			m_lista=converte_numero(f.c_preco_lista[i].value);
 			m_unit=converte_numero(f.c_vl_unitario[i].value);
 			if (m_lista==0) d=0; else d=100*(m_lista-m_unit)/m_lista;
-			if (d==0) s=""; else s=formata_perc_desc(d);
+			if (d == 0) s = ""; else s = formata_perc_desconto(d);
 			if (f.c_desc[i].value!=s) f.c_desc[i].value=s;
 			m=parseInt(f.c_qtde[i].value)*m_unit;
 			f.c_vl_total[i].value=formata_moeda(m);
@@ -1398,6 +1441,7 @@ var f,i,t,m_lista,m_unit,d,m,s;
 			}
 		}
 	f.c_total_geral.value=formata_moeda(t);
+	f.c_desc_medio_total.value = formata_perc_desc_linear(calcula_desconto_medio());
 }
 
 function preenche_sugestao_forma_pagto( ) {
@@ -3696,6 +3740,25 @@ if cliente__tipo = ID_PF then
 <br>
 <br>
 <table class="Qx" cellspacing="0">
+	<%
+	' Para assegurar a consistência entre o valor total de NF e o total da forma de pagamento,
+	' a edição fica permitida somente se o usuário puder editar os valores na forma de pagamento!
+	if (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL) And blnItemPedidoEdicaoLiberada then
+	%>
+	<tr bgColor="#FFFFFF">
+	<% if blnTemRA Or (r_pedido.permite_RA_status = 1) then nColSpan=6 else nColSpan=5 %>
+	<td colspan="<%=CStr(nColSpan)%>" align="left">&nbsp;</td>
+	<td colspan="2" align="right"><span class="PLTe">Desc Linear (%)&nbsp;<input name="c_desc_linear" id="c_desc_linear" class="Cd" style="width:36px;" 
+		onkeypress="if (digitou_enter(true)){this.value=formata_perc_desc_linear(this.value);fPED.btnDescLinear.focus();} filtra_percentual();"
+		onblur="this.value=formata_perc_desc_linear(this.value);"
+		/></span></td>
+	<td colspan="2" align="left"><input type="button" name="btnDescLinear" id="btnDescLinear" class="Button" onclick="atualiza_itens_com_desc_linear();" value="Aplicar" title="aplicar o desconto em todos os itens" style="margin-left:1px;margin-bottom:2px;" /></td>
+	</tr>
+	<tr bgColor="#FFFFFF">
+	<% if blnTemRA Or (r_pedido.permite_RA_status = 1) then nColSpan=10 else nColSpan=9 %>
+	<td colspan="<%=CStr(nColSpan)%>" align="left" style="height:6px;"></td>
+	</tr>
+	<% end if %>
 	<tr bgColor="#FFFFFF">
 	<td class="MB" align="left" valign="bottom"><span class="PLTe">Fabr</span></td>
 	<td class="MB" align="left" valign="bottom"><span class="PLTe">Produto</span></td>
@@ -3733,7 +3796,7 @@ if cliente__tipo = ID_PF then
 			s_descricao_html=produto_formata_descricao_em_html(.descricao_html)
 			s_qtde=.qtde
 			s_preco_lista=formata_moeda(.preco_lista)
-			if .desc_dado=0 then s_desc_dado="" else s_desc_dado=formata_perc_desc(.desc_dado)
+			if .desc_dado=0 then s_desc_dado="" else s_desc_dado=formata_perc(.desc_dado)
 			s_vl_unitario=formata_moeda(.preco_venda)
 			s_preco_NF=formata_moeda(.preco_NF)
 			m_TotalItem=.qtde * .preco_venda
@@ -3799,7 +3862,7 @@ if cliente__tipo = ID_PF then
 	<input type="hidden" name='c_vl_NF_original' id="c_vl_NF_original" value='<%=s_preco_NF%>'>
 	<td class="MDB" align="right"><input name="c_preco_lista" id="c_preco_lista" class="PLLd" style="width:62px; color:<%=s_cor%>"
 		value='<%=s_preco_lista%>' readonly tabindex=-1></td>
-	<td class="MDB" align="right"><input name="c_desc" id="c_desc" class="PLLd" style="width:28px; color:<%=s_cor%>"
+	<td class="MDB" align="right"><input name="c_desc" id="c_desc" class="PLLd" style="width:36px; color:<%=s_cor%>"
 		value='<%=s_desc_dado%>' readonly tabindex=-1></td>
 	<td class="MDB" align="right"><input name="c_vl_unitario" id="c_vl_unitario" class="PLLd" style="width:62px; color:<%=s_cor%>"
 		onkeypress="if (digitou_enter(true)) {if ((<%=Cstr(i)%>==fPED.c_vl_unitario.length)||(trim(fPED.c_produto[<%=Cstr(i)%>].value)=='')) fPED.c_obs1.focus(); else <% if blnTemRA Or (r_pedido.permite_RA_status = 1) then Response.Write "fPED.c_vl_NF" else Response.Write "fPED.c_vl_unitario"%>[<%=Cstr(i)%>].focus();} filtra_moeda_positivo();" onblur="this.value=formata_moeda(this.value); trata_edicao_RA(<%=Cstr(i-1)%>); recalcula_total_linha(<%=Cstr(i)%>); recalcula_RA();recalcula_RA_Liquido();"
@@ -3867,11 +3930,15 @@ if cliente__tipo = ID_PF then
 		<input name="c_total_NF" id="c_total_NF" class="PLLd" style="width:70px;color:blue;" 
 				value='<%=formata_moeda(m_TotalDestePedidoComRA)%>' readonly tabindex=-1>
 	</td>
-	<td colspan="3" class="MD" align="left">&nbsp;</td>
 	<% else %>
+	<td align="left">&nbsp;</td>
 	<input type="hidden" name="c_total_NF" id="c_total_NF" value='<%=formata_moeda(m_TotalDestePedidoComRA)%>'>
-	<td colspan="4" class="MD" align="left">&nbsp;</td>
 	<% end if %>
+
+	<td class="MD" align="left">&nbsp;</td>
+	<td class="MDB" align="right"><input name="c_desc_medio_total" id="c_desc_medio_total" class="PLLd" style="width:36px;color:blue;" readonly tabindex=-1 /></td>
+	<td class="MD" align="left">&nbsp;</td>
+
 	<td class="MDB" align="right"><input name="c_total_geral" id="c_total_geral" class="PLLd" style="width:70px;color:blue;" 
 		value='<%=formata_moeda(m_TotalDestePedido)%>' readonly tabindex=-1></td>
 	</tr>

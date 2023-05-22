@@ -63,7 +63,7 @@
 
 	dim msg_erro
 	dim usuario, loja, cliente_selecionado
-	dim s, s_value, i, j, n, idx, intColSpan, qtde_estoque_total_disponivel, blnAchou, blnDesativado
+	dim s, s_value, i, j, n, nColSpan, idx, intColSpan, qtde_estoque_total_disponivel, blnAchou, blnDesativado
 	usuario = Trim(Session("usuario_atual"))
 	loja = Trim(Session("loja_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
@@ -124,6 +124,10 @@
 
 	if c_indicador = "" then c_perc_RT = ""
 	
+	dim blnTemRA
+	blnTemRA = False
+	if rb_RA = "S" then blnTemRA = True
+
 	dim rb_selecao_cd, c_id_nfe_emitente_selecao_manual
 	rb_selecao_cd = Trim(Request("rb_selecao_cd"))
 	c_id_nfe_emitente_selecao_manual = Trim(Request("c_id_nfe_emitente_selecao_manual"))
@@ -1698,9 +1702,15 @@
 	if blnLojaHabilitadaProdCompostoECommerce then
 		strScriptJS = strScriptJS & "var formata_perc_desconto = formata_perc_2dec;" & chr(13)
 	else
-		strScriptJS = strScriptJS & "var formata_perc_desconto = formata_perc_desc;" & chr(13)
+		'Devido à implementação do campo "Desc Linear (%)", a precisão do campo desconto foi alterada p/ 2 decimais
+		strScriptJS = strScriptJS & "var formata_perc_desconto = formata_perc_2dec;" & chr(13)
 		end if
 	
+	if blnTemRA then s = "true" else s = "false"
+	strScriptJS = strScriptJS & _
+				  "var formata_perc_desc_linear = formata_perc_2dec;" & chr(13) & _
+				  "var blnTemRA = " & s & ";" & chr(13)
+
 	strScriptJS = strScriptJS & _
 				  "</script>" & chr(13)
 
@@ -2378,6 +2388,27 @@ function calcula_desconto(idx) {
 	if (f.c_total_geral.value != s) f.c_total_geral.value = s;
 }
 
+function atualiza_itens_com_desc_linear() {
+	var f;
+	f = fPED;
+	if (trim(f.c_desc_linear.value) == "") return;
+	f.c_desc_linear.value = formata_perc_desc_linear(f.c_desc_linear.value);
+	if (trim(f.c_desc_linear.value) == "") return;
+
+	for (i = 0; i < f.c_produto.length; i++) {
+		if (trim(f.c_produto[i].value) != "") {
+			f.c_desc[i].value = f.c_desc_linear.value;
+			calcula_desconto(i);
+			if (blnTemRA) {
+				f.c_vl_NF[i].value = f.c_vl_unitario[i].value;
+			}
+		}
+	}
+	recalcula_total_todas_linhas();
+	recalcula_RA();
+	recalcula_RA_Liquido();
+}
+
 function recalcula_total_linha( id ) {
 var idx, m, m_lista, m_unit, d, f, i, s;
 	f=fPED;
@@ -2395,6 +2426,7 @@ var idx, m, m_lista, m_unit, d, f, i, s;
 	for (i=0; i<f.c_vl_total.length; i++) m=m+converte_numero(f.c_vl_total[i].value);
 	s=formata_moeda(m);
 	if (f.c_total_geral.value!=s) f.c_total_geral.value=s;
+	f.c_desc_medio_total.value = formata_perc_desc_linear(calcula_desconto_medio());
 }
 
 function recalcula_total_todas_linhas() {
@@ -2415,6 +2447,7 @@ var f,i,vt,m_lista,m_unit,d,m,s;
 			}
 		}
 	f.c_total_geral.value=formata_moeda(vt);
+	f.c_desc_medio_total.value = formata_perc_desc_linear(calcula_desconto_medio());
 }
 
 function recalcula_RA( ) {
@@ -3637,6 +3670,19 @@ var perc_max_desc_alcada_1_pf, perc_max_desc_alcada_1_pj, perc_max_desc_alcada_2
 <!--  R E L A Ç Ã O   D E   P R O D U T O S  -->
 <table class="Qx" cellspacing="0">
 	<tr bgColor="#FFFFFF">
+	<% if (permite_RA_status = 1) And (rb_RA = "S") then nColSpan=5 else nColSpan=4 %>
+	<td colspan="<%=CStr(nColSpan)%>" align="left">&nbsp;</td>
+	<td colspan="2" align="right"><span class="PLTe">Desc Linear (%)&nbsp;<input name="c_desc_linear" id="c_desc_linear" class="Cd" style="width:36px;" 
+		onkeypress="if (digitou_enter(true)){this.value=formata_perc_desc_linear(this.value);fPED.btnDescLinear.focus();} filtra_percentual();"
+		onblur="this.value=formata_perc_desc_linear(this.value);"
+		/></span></td>
+	<td colspan="2" align="left"><input type="button" name="btnDescLinear" id="btnDescLinear" class="Button" onclick="atualiza_itens_com_desc_linear();" value="Aplicar" title="aplicar o desconto em todos os itens" style="margin-left:1px;margin-bottom:2px;" /></td>
+	</tr>
+	<tr bgColor="#FFFFFF">
+	<% if (permite_RA_status = 1) And (rb_RA = "S") then nColSpan=9 else nColSpan=8 %>
+	<td colspan="<%=CStr(nColSpan)%>" align="left" style="height:6px;"></td>
+	</tr>
+	<tr bgColor="#FFFFFF">
 	<td class="MB" align="left" valign="bottom"><span class="PLTe">Fabr</span></td>
 	<td class="MB" align="left" valign="bottom"><span class="PLTe">Produto</span></td>
 	<td class="MB" align="left" valign="bottom"><span class="PLTe">Descrição</span></td>
@@ -3831,11 +3877,15 @@ var perc_max_desc_alcada_1_pf, perc_max_desc_alcada_1_pj, perc_max_desc_alcada_2
 		<input name="c_total_NF" id="c_total_NF" class="PLLd" style="width:70px;color:blue;" 
 				value='<%=s_TotalDestePedidoComRA%>' readonly tabindex=-1 />
 	</td>
-	<td colspan="3" class="MD" align="left">&nbsp;</td>
 	<% else %>
+	<td align="left">&nbsp;</td>
 	<input type="hidden" name="c_total_NF" id="c_total_NF" value='<%=s_TotalDestePedidoComRA%>'>
-	<td colspan="4" class="MD" align="left">&nbsp;</td>
 	<% end if %>
+
+	<td class="MD" align="left">&nbsp;</td>
+	<td class="MDB" align="right"><input name="c_desc_medio_total" id="c_desc_medio_total" class="PLLd" style="width:36px;color:blue;" readonly tabindex=-1 /></td>
+	<td class="MD" align="left">&nbsp;</td>
+
 	<td class="MDB" align="right">
 		<input name="c_total_geral" id="c_total_geral" class="PLLd" style="width:70px;color:blue;" 
 			value='<%=formata_moeda(m_TotalDestePedido)%>' readonly tabindex=-1 />

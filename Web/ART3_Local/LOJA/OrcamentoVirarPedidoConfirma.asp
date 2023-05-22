@@ -33,7 +33,7 @@
 	Err.Clear
 
 	dim msg_erro
-	dim usuario, loja, orcamento_selecionado
+	dim usuario, loja, orcamento_selecionado, tipo_cliente
 	usuario = Trim(Session("usuario_atual"))
 	loja = Trim(Session("loja_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
@@ -272,6 +272,7 @@
 	set r_cliente = New cl_CLIENTE
 	if alerta = "" then
 		if Not x_cliente_bd(r_orcamento.id_cliente, r_cliente) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
+		tipo_cliente = r_cliente.tipo
 		end if
 	
     dim cliente__tipo, cliente__contribuinte_icms_status, cliente__produtor_rural_status, cliente__uf, cliente__endereco
@@ -314,7 +315,7 @@
 	vl_aprov_auto_analise_credito = 0
 	
 	dim vl_total_RA_liquido
-	dim s, i, iv, j, k, n, opcao_venda_sem_estoque, vl_total, vl_total_NF, vl_total_RA, qtde_estoque_total_disponivel, blnAchou, blnDesativado
+	dim s, i, iv, j, k, n, opcao_venda_sem_estoque, vl_total_preco_lista, vl_total, vl_total_NF, vl_total_RA, qtde_estoque_total_disponivel, blnAchou, blnDesativado
 	dim v_desconto()
 	ReDim v_desconto(0)
 	v_desconto(UBound(v_desconto)) = ""
@@ -392,6 +393,8 @@
 				.fabricante=normaliza_codigo(s, TAM_MIN_FABRICANTE)
 				s = Trim(Request.Form("c_qtde")(i))
 				if IsNumeric(s) then .qtde = CLng(s) else .qtde = 0
+				s=Trim(Request.Form("c_preco_lista")(i))
+				.preco_lista=converte_numero(s)
 				s=Trim(Request.Form("c_vl_unitario")(i))
 				.preco_venda=converte_numero(s)
 				if (r_orcamento.permite_RA_status = 1) Or (r_orcamento.st_violado_permite_RA_status = 1) then
@@ -443,12 +446,14 @@
 
 '	CALCULA O VALOR TOTAL DO PEDIDO
 	if alerta = "" then
+		vl_total_preco_lista = 0
 		vl_total = 0
 		vl_total_NF = 0
 		vl_total_RA = 0
 		for i=Lbound(v_item) to Ubound(v_item)
 			with v_item(i)
 				if .produto <> "" then 
+					vl_total_preco_lista = vl_total_preco_lista + (.qtde * .preco_lista)
 					vl_total = vl_total + (.qtde * .preco_venda)
 					vl_total_NF = vl_total_NF + (.qtde * .preco_NF)
 					end if
@@ -457,8 +462,15 @@
 		vl_total_RA = vl_total_NF - vl_total
 		end if
 	
+	dim desc_dado_medio
+	if vl_total_preco_lista = 0 then
+		desc_dado_medio = 0
+	else
+		desc_dado_medio = 100 * (vl_total_preco_lista - vl_total) / vl_total_preco_lista
+		end if
+
 '	ANALISA O PERCENTUAL DE COMISSÃO+DESCONTO
-	dim perc_comissao_e_desconto_a_utilizar
+	dim perc_comissao_e_desconto_a_utilizar, perc_comissao_e_desconto_padrao
 	dim s_pg, blnPreferencial
 	dim vlNivel1, vlNivel2
 	if cliente__tipo = ID_PJ then
@@ -626,6 +638,39 @@
 			end if
 		end if
 	
+	' Verifica se o usuário tem permissão de desconto por alçada
+	perc_comissao_e_desconto_padrao = perc_comissao_e_desconto_a_utilizar
+	if tipo_cliente = ID_PF then
+		if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_1, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada1_pf > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada1_pf
+			end if
+		if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_2, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada2_pf > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada2_pf
+			end if
+		if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_3, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada3_pf > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada3_pf
+			end if
+	else
+		if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_1, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada1_pj > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada1_pj
+			end if
+		if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_2, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada2_pj > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada2_pj
+			end if
+		if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_3, s_lista_operacoes_permitidas) then
+			if rCD.perc_max_comissao_e_desconto_alcada3_pj > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada3_pj
+			end if
+		end if
+
+	if alerta = "" then
+		'Devido a arredondamentos no front, aceita margem de erro
+		if (desc_dado_medio + perc_RT) > (perc_comissao_e_desconto_a_utilizar + MAX_MARGEM_ERRO_PERC_DESC_E_RT) then
+			alerta=texto_add_br(alerta)
+			alerta=alerta & "A soma dos percentuais de comissão (" & formata_perc_RT(perc_RT) & "%) e de desconto médio do(s) produto(s) (" & formata_perc(desc_dado_medio) & "%) totaliza " & _
+							formata_perc(perc_RT + desc_dado_medio) & "% e excede o máximo permitido!"
+			end if
+		end if
+
 '	CONSISTÊNCIA PARA VALOR ZERADO
 	if alerta="" then
 		for i=Lbound(v_item) to Ubound(v_item)
@@ -759,6 +804,16 @@
 							desc_dado_arredondado = converte_numero(formata_perc_desc(.desc_dado))
 							end if
 					
+						'Como a origem neste caso é o pré-pedido (não foi gerado através de orçamento/cotação), o usuário que está
+						'convertendo p/ pedido é o responsável pelo desconto superior caso ele possua alçada suficiente.
+						if ((.desc_dado + perc_RT) > (perc_comissao_e_desconto_padrao + MAX_MARGEM_ERRO_PERC_DESC_E_RT)) And (perc_comissao_e_desconto_a_utilizar > perc_comissao_e_desconto_padrao) then
+							.StatusDescontoSuperior = 1
+							.IdUsuarioDescontoSuperior = r_usuario.Id
+							.DataHoraDescontoSuperior = Now
+						else
+							.StatusDescontoSuperior = 0
+							end if
+
 						if desc_dado_arredondado > perc_comissao_e_desconto_a_utilizar then
 							if rs.State <> 0 then rs.Close
 							s = "SELECT " & _
@@ -1724,6 +1779,9 @@
 
 					rs("id_nfe_emitente") = vEmpresaAutoSplit(iv)
 
+					rs("perc_max_comissao_padrao") = rCD.perc_max_comissao
+					rs("perc_max_comissao_e_desconto_padrao") = perc_comissao_e_desconto_padrao
+
 					rs.Update
 					if Err <> 0 then
 					'	~~~~~~~~~~~~~~~~
@@ -1795,8 +1853,8 @@
 											rs("potencia_valor") = .potencia_valor
 											rs("id_unidade_potencia") = .id_unidade_potencia
 											rs("StatusDescontoSuperior") = .StatusDescontoSuperior
-											if .IdUsuarioDescontoSuperior > 0 then
-												rs("IdUsuarioDescontoSuperior") = .IdUsuarioDescontoSuperior
+											if .StatusDescontoSuperior <> 0 then
+												rs("IdUsuarioDescontoSuperior") = CLng(.IdUsuarioDescontoSuperior)
 												rs("DataHoraDescontoSuperior") = .DataHoraDescontoSuperior
 												end if
 											rs.Update
@@ -2537,15 +2595,13 @@
 								"; abaixo_min_superv_autorizador=" & formata_texto_log(.abaixo_min_superv_autorizador)
 						end if
 
-					'ORIGEM: ORÇAMENTO/COTAÇÃO
-					if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then
+					'DESCONTO SUPERIOR POR ALÇADA
+					s_log = s_log & _
+							"; StatusDescontoSuperior=" & CStr(.StatusDescontoSuperior)
+					if .StatusDescontoSuperior <> 0 then
 						s_log = s_log & _
-								"; StatusDescontoSuperior=" & CStr(.StatusDescontoSuperior)
-						if .StatusDescontoSuperior <> 0 then
-							s_log = s_log & _
-									"; IdUsuarioDescontoSuperior=" & CStr(.IdUsuarioDescontoSuperior) & _
-									"; DataHoraDescontoSuperior=" & formata_data_hora(.DataHoraDescontoSuperior)
-							end if
+								"; IdUsuarioDescontoSuperior=" & CStr(.IdUsuarioDescontoSuperior) & _
+								"; DataHoraDescontoSuperior=" & formata_data_hora(.DataHoraDescontoSuperior)
 						end if
 					end with
 				next

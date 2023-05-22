@@ -424,7 +424,7 @@
 	vl_aprov_auto_analise_credito = 0
 
 	dim vl_total_RA_liquido
-	dim s, c, i, iv, j, k, n, opcao_venda_sem_estoque, vl_total, vl_total_NF, vl_total_RA, qtde_estoque_total_disponivel, blnAchou, blnDesativado
+	dim s, c, i, iv, j, k, n, opcao_venda_sem_estoque, vl_total_preco_lista, vl_total, vl_total_NF, vl_total_RA, qtde_estoque_total_disponivel, blnAchou, blnDesativado
 	dim v_desconto()
 	ReDim v_desconto(0)
 	v_desconto(UBound(v_desconto)) = ""
@@ -577,6 +577,8 @@
 				.fabricante=normaliza_codigo(s, TAM_MIN_FABRICANTE)
 				s = Trim(Request.Form("c_qtde")(i))
 				if IsNumeric(s) then .qtde = CLng(s) else .qtde = 0
+				s=Trim(Request.Form("c_preco_lista")(i))
+				.preco_lista=converte_numero(s)
 				s=Trim(Request.Form("c_vl_unitario")(i))
 				.preco_venda=converte_numero(s)
 				if (rb_RA = "S") And (permite_RA_status = 1) then
@@ -668,12 +670,14 @@
 	
 '	CALCULA O VALOR TOTAL DO PEDIDO
 	if alerta = "" then
+		vl_total_preco_lista = 0
 		vl_total = 0
 		vl_total_NF = 0
 		vl_total_RA = 0
 		for i=Lbound(v_item) to Ubound(v_item)
 			with v_item(i)
 				if .produto <> "" then 
+					vl_total_preco_lista = vl_total_preco_lista + (.qtde * .preco_lista)
 					vl_total = vl_total + (.qtde * .preco_venda)
 					vl_total_NF = vl_total_NF + (.qtde * .preco_NF)
 					end if
@@ -682,6 +686,13 @@
 		vl_total_RA = vl_total_NF - vl_total
 		end if
 	
+	dim desc_dado_medio
+	if vl_total_preco_lista = 0 then
+		desc_dado_medio = 0
+	else
+		desc_dado_medio = 100 * (vl_total_preco_lista - vl_total) / vl_total_preco_lista
+		end if
+
 	if alerta = "" then
 		if (operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO) then
 			if (Trim("" & tMAP_XML("b2b_type_order")) = COD_MAGENTO_TYPE_ORDER__INSTALLER) And (Trim("" & tMAP_XML("magento_api_versao")) = CStr(VERSAO_API_MAGENTO_V2_REST_JSON)) then
@@ -888,6 +899,15 @@
 			end if
 		end if
 	
+	if alerta = "" then
+		'Devido a arredondamentos no front, aceita margem de erro
+		if (desc_dado_medio + perc_RT) > (perc_comissao_e_desconto_a_utilizar + MAX_MARGEM_ERRO_PERC_DESC_E_RT) then
+			alerta=texto_add_br(alerta)
+			alerta=alerta & "A soma dos percentuais de comissão (" & formata_perc_RT(perc_RT) & "%) e de desconto médio do(s) produto(s) (" & formata_perc(desc_dado_medio) & "%) totaliza " & _
+							formata_perc(perc_RT + desc_dado_medio) & "% e excede o máximo permitido!"
+			end if
+		end if
+
 '	CONSISTÊNCIA PARA VALOR ZERADO
 	if alerta="" then
 		for i=Lbound(v_item) to Ubound(v_item)
@@ -977,8 +997,8 @@
 						desc_dado_arredondado = converte_numero(formata_perc_desc(.desc_dado))
 						end if
 					
-					'Se houve edição no preço de venda, verifica se há necessidade de atualizar o ID do usuário que fez uso da alçada
-					if (.desc_dado > perc_comissao_e_desconto_padrao) And (perc_comissao_e_desconto_a_utilizar > perc_comissao_e_desconto_padrao) then
+					'Se houve edição no preço de venda, verifica se há necessidade de registrar o ID do usuário que fez uso da alçada
+					if ((.desc_dado + perc_RT) > (perc_comissao_e_desconto_padrao + MAX_MARGEM_ERRO_PERC_DESC_E_RT)) And (perc_comissao_e_desconto_a_utilizar > perc_comissao_e_desconto_padrao) then
 						.StatusDescontoSuperior = 1
 						.IdUsuarioDescontoSuperior = r_usuario.Id
 						.DataHoraDescontoSuperior = Now
@@ -2292,11 +2312,15 @@
 						rs("st_etg_imediata")=CLng(s_etg_imediata)
 						rs("etg_imediata_data")=Now
 						rs("etg_imediata_usuario")=usuario
+						rs("EtgImediataIdTipoUsuarioContexto") = COD_USUARIO_CONTEXTO__USUARIO_INTERNO
+						rs("EtgImediataIdUsuarioUltAtualiz") = r_usuario.Id
 						end if
 					if CLng(s_etg_imediata) = CLng(COD_ETG_IMEDIATA_NAO) then
 						rs("PrevisaoEntregaData") = StrToDate(c_data_previsao_entrega)
 						rs("PrevisaoEntregaUsuarioUltAtualiz") = usuario
 						rs("PrevisaoEntregaDtHrUltAtualiz") = Now
+						rs("PrevisaoEntregaIdTipoUsuarioContexto") = COD_USUARIO_CONTEXTO__USUARIO_INTERNO
+						rs("PrevisaoEntregaIdUsuarioUltAtualiz") = r_usuario.Id
 						end if
 					if s_bem_uso_consumo <> "" then 
 						rs("StBemUsoConsumo")=CLng(s_bem_uso_consumo)
@@ -2305,6 +2329,8 @@
 						rs("InstaladorInstalaStatus")=CLng(s_instalador_instala)
 						rs("InstaladorInstalaUsuarioUltAtualiz")=usuario
 						rs("InstaladorInstalaDtHrUltAtualiz")=Now
+						rs("InstaladorInstalaIdTipoUsuarioContexto") = COD_USUARIO_CONTEXTO__USUARIO_INTERNO
+						rs("InstaladorInstalaIdUsuarioUltAtualiz") = r_usuario.Id
 						end if
 					rs("pedido_bs_x_ac")=s_pedido_ac
 					rs("pedido_bs_x_marketplace")=s_numero_mktplace
@@ -2320,6 +2346,8 @@
 					rs("GarantiaIndicadorStatus") = CLng(rb_garantia_indicador)
 					rs("GarantiaIndicadorUsuarioUltAtualiz") = usuario
 					rs("GarantiaIndicadorDtHrUltAtualiz") = Now
+					rs("GarantiaIndicadorIdTipoUsuarioContexto") = COD_USUARIO_CONTEXTO__USUARIO_INTERNO
+					rs("GarantiaIndicadorIdUsuarioUltAtualiz") = r_usuario.Id
 
 					if rb_end_entrega = "S" then
 						rs("st_end_entrega") = 1
@@ -2461,6 +2489,10 @@
 						rs("magento_type_order") = tMAP_XML("b2b_type_order")
 						end if
 
+					rs("perc_max_comissao_padrao") = rCD.perc_max_comissao
+					rs("perc_max_comissao_e_desconto_padrao") = perc_comissao_e_desconto_padrao
+					rs("UsuarioCadastroIdTipoUsuarioContexto") = COD_USUARIO_CONTEXTO__USUARIO_INTERNO
+					rs("UsuarioCadastroId") = r_usuario.Id
 					rs.Update
 					if Err <> 0 then
 					'	~~~~~~~~~~~~~~~~
@@ -2531,8 +2563,8 @@
 											rs("cod_produto_alfanum_fabricante") = .cod_produto_alfanum_fabricante
 											rs("potencia_valor") = .potencia_valor
 											rs("id_unidade_potencia") = .id_unidade_potencia
-											rs("StatusDescontoSuperior") = CInt(.StatusDescontoSuperior)
-											if .IdUsuarioDescontoSuperior > 0 then
+											rs("StatusDescontoSuperior") = .StatusDescontoSuperior
+											if .StatusDescontoSuperior <> 0 then
 												rs("IdUsuarioDescontoSuperior") = CLng(.IdUsuarioDescontoSuperior)
 												rs("DataHoraDescontoSuperior") = .DataHoraDescontoSuperior
 												end if
@@ -3435,6 +3467,15 @@
 								"; abaixo_min_autorizacao=" & formata_texto_log(.abaixo_min_autorizacao) & _
 								"; abaixo_min_autorizador=" & formata_texto_log(.abaixo_min_autorizador) & _
 								"; abaixo_min_superv_autorizador=" & formata_texto_log(.abaixo_min_superv_autorizador)
+						end if
+
+					'DESCONTO SUPERIOR POR ALÇADA
+					s_log = s_log & _
+							"; StatusDescontoSuperior=" & CStr(.StatusDescontoSuperior)
+					if .StatusDescontoSuperior <> 0 then
+						s_log = s_log & _
+								"; IdUsuarioDescontoSuperior=" & CStr(.IdUsuarioDescontoSuperior) & _
+								"; DataHoraDescontoSuperior=" & formata_data_hora(.DataHoraDescontoSuperior)
 						end if
 					end with
 				next
