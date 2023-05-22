@@ -151,7 +151,7 @@
 	dim op_pce_entrada_forma_pagto, c_pce_entrada_valor, op_pce_prestacao_forma_pagto, c_pce_prestacao_qtde, c_pce_prestacao_valor, c_pce_prestacao_periodo
 	dim op_pse_prim_prest_forma_pagto, c_pse_prim_prest_valor, c_pse_prim_prest_apos, op_pse_demais_prest_forma_pagto, c_pse_demais_prest_qtde, c_pse_demais_prest_valor, c_pse_demais_prest_periodo
 	dim vlTotalFormaPagto
-	dim s_perc_RT, vl_total_RA, vl_total_RA_liquido
+	dim s_perc_RT, perc_RT, s_perc_RT_original, vl_total_RA, vl_total_RA_liquido
 	dim idMeioPagtoMonitorado, sMeioPagtoMonitoradoIdentificado
 
 	versao_forma_pagamento = Trim(Request.Form("versao_forma_pagamento"))
@@ -337,6 +337,8 @@
 		s_qtde_parcelas=retorna_so_digitos(request("c_qtde_parcelas"))
 		end if
 	s_perc_RT = Trim(request("c_perc_RT"))
+	s_perc_RT_original = Trim(request("c_perc_RT_original"))
+	perc_RT = converte_numero(s_perc_RT)
 
 	dim c_exibir_campo_instalador_instala, s_instalador_instala
 	c_exibir_campo_instalador_instala = Trim(Request.Form("c_exibir_campo_instalador_instala"))
@@ -1000,20 +1002,29 @@
 		end if
 
 '	CALCULA O VALOR TOTAL DO PEDIDO
-	dim vl_total
+	dim vl_total_preco_lista, vl_total
 	if alerta = "" then
+		vl_total_preco_lista = 0
 		vl_total = 0
 		for i=Lbound(v_item) to Ubound(v_item)
 			with v_item(i)
 				if .produto <> "" then 
+					vl_total_preco_lista = vl_total_preco_lista + (.qtde * .preco_lista)
 					vl_total = vl_total + (.qtde * .preco_venda)
 					end if
 				end with
 			next
 		end if
 	
+	dim desc_dado_medio
+	if vl_total_preco_lista = 0 then
+		desc_dado_medio = 0
+	else
+		desc_dado_medio = 100 * (vl_total_preco_lista - vl_total) / vl_total_preco_lista
+		end if
+
 '	ANALISA O PERCENTUAL DE COMISSÃO+DESCONTO
-	dim perc_comissao_e_desconto_a_utilizar, perc_comissao_e_desconto_padrao
+	dim perc_comissao_e_desconto_a_utilizar, perc_comissao_e_desconto_padrao, StatusDescontoSuperiorBD
 	dim s_pg, blnPreferencial
 	dim vlNivel1, vlNivel2
 	if tipo_cliente = ID_PJ then
@@ -1202,6 +1213,15 @@
 			end if
 		if operacao_permitida(OP_CEN_DESC_SUP_ALCADA_3, s_lista_operacoes_permitidas) then
 			if rCD.perc_max_comissao_e_desconto_alcada3_pj > perc_comissao_e_desconto_a_utilizar then perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_alcada3_pj
+			end if
+		end if
+
+	if alerta = "" then
+		'Devido a arredondamentos no front, aceita margem de erro
+		if (desc_dado_medio + perc_RT) > (perc_comissao_e_desconto_a_utilizar + MAX_MARGEM_ERRO_PERC_DESC_E_RT) then
+			alerta=texto_add_br(alerta)
+			alerta=alerta & "A soma dos percentuais de comissão (" & formata_perc_RT(perc_RT) & "%) e de desconto médio do(s) produto(s) (" & formata_perc(desc_dado_medio) & "%) totaliza " & _
+							formata_perc(perc_RT + desc_dado_medio) & "% e excede o máximo permitido!"
 			end if
 		end if
 
@@ -1705,24 +1725,31 @@
 		if c_consiste_perc_max_comissao_e_desconto = "S" then
 			for i=Lbound(v_item) to Ubound(v_item)
 				with v_item(i)
-					if (.preco_venda <> .preco_venda_original) Or blnFormaPagtoEditada then
-						if .preco_lista = 0 then 
-							.desc_dado = 0
-							desc_dado_arredondado = 0
-						else
-							.desc_dado = 100*(.preco_lista-.preco_venda)/.preco_lista
-							desc_dado_arredondado = converte_numero(formata_perc_desc(.desc_dado))
-							end if
+					if .preco_lista = 0 then 
+						.desc_dado = 0
+						desc_dado_arredondado = 0
+					else
+						.desc_dado = 100*(.preco_lista-.preco_venda)/.preco_lista
+						desc_dado_arredondado = converte_numero(formata_perc_desc(.desc_dado))
+						end if
 						
-						'Se houve edição no preço de venda, verifica se há necessidade de atualizar o ID do usuário que fez uso da alçada
-						if (.desc_dado > perc_comissao_e_desconto_padrao) And (perc_comissao_e_desconto_a_utilizar > perc_comissao_e_desconto_padrao) then
+					'Se houve edição no preço de venda, verifica se há necessidade de atualizar o ID do usuário que fez uso da alçada
+					if ((.desc_dado + perc_RT) > (perc_comissao_e_desconto_padrao + MAX_MARGEM_ERRO_PERC_DESC_E_RT)) And (perc_comissao_e_desconto_a_utilizar > perc_comissao_e_desconto_padrao) then
+						'Altera a identificação do usuário que concedeu o desconto superior somente se houve edição no preço de venda.
+						'Isso evita que ajustes na forma de pagamento realizados pelo depto financeiro (análise de crédito) alterem
+						'de forma indevida o usuário responsável pelo desconto.
+						'Obs: o depto financeiro edita apenas a forma de pagamento e não altera preço de venda, sendo que o desconto
+						'pode sofrer alteração caso a forma de pagamento seja alterada entre À Vista e A Prazo.
+						if (Abs(.preco_venda - .preco_venda_original) > MAX_VALOR_MARGEM_ERRO_PAGAMENTO) Or (s_perc_RT <> s_perc_RT_original) then
 							.StatusDescontoSuperior = 1
 							.IdUsuarioDescontoSuperior = r_usuario.Id
 							.DataHoraDescontoSuperior = Now
-						else
-							.StatusDescontoSuperior = 0
 							end if
+					else
+						.StatusDescontoSuperior = 0
+						end if
 
+					if (.preco_venda <> .preco_venda_original) Or blnFormaPagtoEditada then
 						if desc_dado_arredondado > perc_comissao_e_desconto_a_utilizar then
 							s = "SELECT " & _
 									"*" & _
@@ -2004,7 +2031,7 @@
 						end if
 					end if 'if (versao_forma_pagamento = "2") And (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL) And (flag_forma_pagto_editada = 1)
 					
-				if bln_RT_e_RA_EdicaoLiberada then rs("perc_RT") = converte_numero(s_perc_RT)
+				if (bln_RT_e_RA_EdicaoLiberada And (s_perc_RT <> s_perc_RT_original)) Or (c_gravar_perc_RT_novo = "S") then rs("perc_RT") = converte_numero(s_perc_RT)
 				
 				if blnIndicadorEdicaoLiberada then
 					s_indicador_anterior = Trim("" & rs("indicador"))
@@ -2316,7 +2343,7 @@
 						end if
 					end if 'if Not IsPedidoFilhote(pedido_selecionado)
 				
-				if bln_RT_e_RA_EdicaoLiberada then rs("perc_RT") = converte_numero(s_perc_RT)
+				if (bln_RT_e_RA_EdicaoLiberada And (s_perc_RT <> s_perc_RT_original)) Or (c_gravar_perc_RT_novo = "S") then rs("perc_RT") = converte_numero(s_perc_RT)
 
 				if blnObs1EdicaoLiberada then
                      rs("obs_1") = s_obs1
@@ -2835,10 +2862,19 @@
 												rs("desc_dado") = 100*(vlCustoFinancFornecPrecoLista-rs("preco_venda"))/vlCustoFinancFornecPrecoLista
 												end if
 
-											'Verifica se há necessidade de atualizar o ID do usuário que fez uso da alçada
-											if (Trim("" & rs("StatusDescontoSuperior")) <> Trim("" & .StatusDescontoSuperior)) Or (Trim("" & rs("IdUsuarioDescontoSuperior")) <> Trim("" & .IdUsuarioDescontoSuperior)) then
-												rs("StatusDescontoSuperior") = CInt(.StatusDescontoSuperior)
-												if .IdUsuarioDescontoSuperior > 0 then
+											'Verifica se há necessidade de atualizar o ID do usuário que fez uso da alçada (lembrando que a necessidade de atualizar esses dados pode decorrer da edição da RT)
+											'O campo 'StatusDescontoSuperior' é do tipo 'bit' e o ASP converte como se fosse um boolean, portanto, é feito um tratamento manual
+											if rs("StatusDescontoSuperior") = 0 then StatusDescontoSuperiorBD = 0 else StatusDescontoSuperiorBD = 1
+											if (StatusDescontoSuperiorBD <> .StatusDescontoSuperior) Or (Trim("" & rs("IdUsuarioDescontoSuperior")) <> Trim("" & .IdUsuarioDescontoSuperior)) then
+												if s_log <> "" then s_log = s_log & "; "
+												s_log = s_log & _
+														"Desconto por alçada no item (" & .fabricante & ")" & .produto & ": " & _
+														"StatusDescontoSuperior: " & monta_campo_log(StatusDescontoSuperiorBD) & " => " & monta_campo_log(.StatusDescontoSuperior) & "; " & _
+														"IdUsuarioDescontoSuperior: " & monta_campo_log(rs("IdUsuarioDescontoSuperior")) & " => " & monta_campo_log(.IdUsuarioDescontoSuperior) & "; " & _
+														"DataHoraDescontoSuperior: " & monta_campo_log(rs("DataHoraDescontoSuperior")) & " => " & monta_campo_log(.DataHoraDescontoSuperior)
+												
+												rs("StatusDescontoSuperior") = .StatusDescontoSuperior
+												if .StatusDescontoSuperior <> 0 then
 													rs("IdUsuarioDescontoSuperior") = CLng(.IdUsuarioDescontoSuperior)
 													rs("DataHoraDescontoSuperior") = .DataHoraDescontoSuperior
 												else
@@ -2920,17 +2956,6 @@
 										end if
 									rs("preco_venda")=.preco_venda
 									rs("desc_dado")=.desc_dado
-									'Verifica se há necessidade de atualizar o ID do usuário que fez uso da alçada
-									if (Trim("" & rs("StatusDescontoSuperior")) <> Trim("" & .StatusDescontoSuperior)) Or (Trim("" & rs("IdUsuarioDescontoSuperior")) <> Trim("" & .IdUsuarioDescontoSuperior)) then
-										rs("StatusDescontoSuperior") = CInt(.StatusDescontoSuperior)
-										if .IdUsuarioDescontoSuperior > 0 then
-											rs("IdUsuarioDescontoSuperior") = CLng(.IdUsuarioDescontoSuperior)
-											rs("DataHoraDescontoSuperior") = .DataHoraDescontoSuperior
-										else
-											rs("IdUsuarioDescontoSuperior") = Null
-											rs("DataHoraDescontoSuperior") = Null
-											end if
-										end if
 									blnUpdate = True
 									end if
 								end if
@@ -2959,10 +2984,32 @@
 										"abaixo_min_autorizador=" & formata_texto_log(.abaixo_min_autorizador) & "; " & _
 										"abaixo_min_superv_autorizador=" & formata_texto_log(.abaixo_min_superv_autorizador)
 								end if
-							end if
+							
+							'Verifica se há necessidade de atualizar o ID do usuário que fez uso da alçada (lembrando que a necessidade de atualizar esses dados pode decorrer da edição da RT)
+							'O campo 'StatusDescontoSuperior' é do tipo 'bit' e o ASP converte como se fosse um boolean, portanto, é feito um tratamento manual
+							if rs("StatusDescontoSuperior") = 0 then StatusDescontoSuperiorBD = 0 else StatusDescontoSuperiorBD = 1
+							if (StatusDescontoSuperiorBD <> .StatusDescontoSuperior) Or (Trim("" & rs("IdUsuarioDescontoSuperior")) <> Trim("" & .IdUsuarioDescontoSuperior)) then
+								if s_log <> "" then s_log = s_log & "; "
+								s_log = s_log & _
+										"Desconto por alçada no item (" & .fabricante & ")" & .produto & ": " & _
+										"StatusDescontoSuperior: " & monta_campo_log(StatusDescontoSuperiorBD) & " => " & monta_campo_log(.StatusDescontoSuperior) & "; " & _
+										"IdUsuarioDescontoSuperior: " & monta_campo_log(rs("IdUsuarioDescontoSuperior")) & " => " & monta_campo_log(.IdUsuarioDescontoSuperior) & "; " & _
+										"DataHoraDescontoSuperior: " & monta_campo_log(rs("DataHoraDescontoSuperior")) & " => " & monta_campo_log(.DataHoraDescontoSuperior)
+								
+								rs("StatusDescontoSuperior") = .StatusDescontoSuperior
+								if .StatusDescontoSuperior <> 0 then
+									rs("IdUsuarioDescontoSuperior") = CLng(.IdUsuarioDescontoSuperior)
+									rs("DataHoraDescontoSuperior") = .DataHoraDescontoSuperior
+								else
+									rs("IdUsuarioDescontoSuperior") = Null
+									rs("DataHoraDescontoSuperior") = Null
+									end if
+								blnUpdate = True
+								end if
+							end if 'if rs.EOF then-else
 						
 						if blnUpdate then rs.Update
-						end if
+						end if 'if Trim(.produto)<>"" then
 					end with
 				next
 			

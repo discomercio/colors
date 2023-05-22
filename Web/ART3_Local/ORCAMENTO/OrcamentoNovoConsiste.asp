@@ -29,7 +29,7 @@
 	On Error GoTo 0
 	Err.Clear
 
-	dim s, i, j, n, usuario, loja, cliente_selecionado
+	dim s, i, j, n, nColSpan, usuario, loja, cliente_selecionado
 	dim qtde_estoque_total_disponivel, qtde_estoque_total_global_disponivel, blnAchou, blnDesativado
 	dim midia, vendedor, s_perc_RT
 	usuario = Trim(Session("usuario_atual"))
@@ -67,6 +67,10 @@
 			end if
 		end if
 	
+	dim blnTemRA
+	blnTemRA = False
+	if r_orcamentista_e_indicador.permite_RA_status = 1 then blnTemRA = True
+
 	dim r_cliente
 	set r_cliente = New cl_CLIENTE
 	if alerta = "" then
@@ -1082,8 +1086,14 @@
 	if blnLojaHabilitadaProdCompostoECommerce then
 		strScriptJS = strScriptJS & "var formata_perc_desconto = formata_perc_2dec;" & chr(13)
 	else
-		strScriptJS = strScriptJS & "var formata_perc_desconto = formata_perc_desc;" & chr(13)
+		'Devido à implementação do campo "Desc Linear (%)", a precisão do campo desconto foi alterada p/ 2 decimais
+		strScriptJS = strScriptJS & "var formata_perc_desconto = formata_perc_2dec;" & chr(13)
 		end if
+
+	if blnTemRA then s = "true" else s = "false"
+	strScriptJS = strScriptJS & _
+				  "var formata_perc_desc_linear = formata_perc_2dec;" & chr(13) & _
+				  "var blnTemRA = " & s & ";" & chr(13)
 
 	strScriptJS = strScriptJS & _
 				  "</script>" & chr(13)
@@ -1550,8 +1560,32 @@ var f,i;
 
 function trata_edicao_RA(index) {
 	var f;
-	f = fPED;
+	f = fORC;
 	if (f.c_permite_RA_status.value != '1') f.c_vl_NF[index].value = f.c_vl_unitario[index].value;
+}
+
+function calcula_desconto_medio() {
+	var f, i, vl_total_preco_lista, vl_total_preco_venda, perc_desc_medio;
+
+	f = fORC;
+	vl_total_preco_lista = 0;
+	vl_total_preco_venda = 0;
+
+	// Laço p/ produtos
+	for (i = 0; i < f.c_produto.length; i++) {
+		if (trim(f.c_produto[i].value) != "") {
+			vl_total_preco_lista += converte_numero(f.c_qtde[i].value) * converte_numero(f.c_preco_lista[i].value);
+			vl_total_preco_venda += converte_numero(f.c_qtde[i].value) * converte_numero(f.c_vl_unitario[i].value);
+		}
+	}
+
+	if (vl_total_preco_lista == 0) {
+		perc_desc_medio = 0;
+	}
+	else {
+		perc_desc_medio = 100 * (vl_total_preco_lista - vl_total_preco_venda) / vl_total_preco_lista;
+	}
+	return perc_desc_medio;
 }
 
 function calcula_desconto(idx) {
@@ -1568,6 +1602,36 @@ function calcula_desconto(idx) {
 	for (i = 0; i < f.c_vl_total.length; i++) m = m + converte_numero(f.c_vl_total[i].value);
 	s = formata_moeda(m);
 	if (f.c_total_geral.value != s) f.c_total_geral.value = s;
+}
+
+function atualiza_itens_com_desc_linear() {
+	var f, blnHaValorRA;
+	f = fORC;
+	if (trim(f.c_desc_linear.value) == "") return;
+	f.c_desc_linear.value = formata_perc_desc_linear(f.c_desc_linear.value);
+	if (trim(f.c_desc_linear.value) == "") return;
+	blnHaValorRA = false;
+	if (blnTemRA) {
+		for (i = 0; i < f.c_produto.length; i++) {
+			if (trim(f.c_produto[i].value) != "") {
+				if (trim(f.c_vl_unitario[i].value) != trim(f.c_vl_NF[i].value)) {
+					blnHaValorRA = true;
+					break;
+				}
+			}
+		}
+	}
+	for (i = 0; i < f.c_produto.length; i++) {
+		if (trim(f.c_produto[i].value) != "") {
+			f.c_desc[i].value = f.c_desc_linear.value;
+			calcula_desconto(i);
+			if (blnTemRA) {
+				f.c_vl_NF[i].value = f.c_vl_unitario[i].value;
+			}
+		}
+	}
+	recalcula_total_todas_linhas();
+	recalcula_RA();
 }
 
 function recalcula_total_linha( id ) {
@@ -1587,6 +1651,7 @@ function recalcula_total_linha( id ) {
 	for (i=0; i<f.c_vl_total.length; i++) m=m+converte_numero(f.c_vl_total[i].value);
 	s=formata_moeda(m);
 	if (f.c_total_geral.value!=s) f.c_total_geral.value=s;
+	f.c_desc_medio_total.value = formata_perc_desc_linear(calcula_desconto_medio());
 }
 
 function recalcula_total( linha ) {
@@ -1606,6 +1671,7 @@ var idx, m, m_lista, m_unit, d, f, i, s;
 	for (i=0; i<f.c_vl_total.length; i++) m=m+converte_numero(f.c_vl_total[i].value);
 	s=formata_moeda(m);
 	if (f.c_total_geral.value!=s) f.c_total_geral.value=s;
+	f.c_desc_medio_total.value = formata_perc_desc_linear(calcula_desconto_medio());
 }
 
 function recalcula_total_todas_linhas() {
@@ -1626,6 +1692,7 @@ var f,i,vt,m_lista,m_unit,d,m,s;
 			}
 		}
 	f.c_total_geral.value=formata_moeda(vt);
+	f.c_desc_medio_total.value = formata_perc_desc_linear(calcula_desconto_medio());
 }
 
 function recalcula_RA( ) {
@@ -2381,6 +2448,19 @@ var blnConfirmaDifRAeValores=false;
 <!--  R E L A Ç Ã O   D E   P R O D U T O S  -->
 <table class="Qx" cellspacing="0">
 	<tr bgcolor="#FFFFFF">
+	<% if r_orcamentista_e_indicador.permite_RA_status = 1 then nColSpan=5 else nColSpan=4 %>
+	<td colspan="<%=CStr(nColSpan)%>" align="left">&nbsp;</td>
+	<td colspan="2" align="right"><span class="PLTe">Desc Linear (%)&nbsp;<input name="c_desc_linear" id="c_desc_linear" class="Cd" style="width:36px;" 
+		onkeypress="if (digitou_enter(true)){this.value=formata_perc_desc_linear(this.value);fORC.btnDescLinear.focus();} filtra_percentual();"
+		onblur="this.value=formata_perc_desc_linear(this.value);"
+		/></span></td>
+	<td colspan="2" align="left"><input type="button" name="btnDescLinear" id="btnDescLinear" class="Button" onclick="atualiza_itens_com_desc_linear();" value="Aplicar" title="aplicar o desconto em todos os itens" style="margin-left:1px;margin-bottom:2px;" /></td>
+	</tr>
+	<tr bgColor="#FFFFFF">
+	<% if r_orcamentista_e_indicador.permite_RA_status = 1 then nColSpan=9 else nColSpan=8 %>
+	<td colspan="<%=CStr(nColSpan)%>" align="left" style="height:6px;"></td>
+	</tr>
+	<tr bgcolor="#FFFFFF">
 	<td class="MB" align="left" valign="bottom"><span class="PLTe">Fabr</span></td>
 	<td class="MB" align="left" valign="bottom"><span class="PLTe">Produto</span></td>
 	<td class="MB" align="left" valign="bottom"><span class="PLTe">Descrição</span></td>
@@ -2460,6 +2540,8 @@ var blnConfirmaDifRAeValores=false;
 			value='<%=s_preco_lista%>' <%=s_readonly%>
 			/>
 	</td>
+	<% else %>
+	<input type="hidden" name="c_vl_NF" id="c_vl_NF" value='<%=s_preco_lista%>'>
 	<% end if %>
 	<td class="MDB" align="right">
 		<input name="c_preco_lista" id="c_preco_lista" class="PLLd" style="width:62px;"
@@ -2517,7 +2599,11 @@ var blnConfirmaDifRAeValores=false;
 	<% else %>
 	<td colspan="<%=Cstr(5-qtdeHiddenColumnTabProd)%>" align="left">&nbsp;</td>
 	<% end if %>
-	<td colspan="3" class="MD" align="left">&nbsp;</td>
+
+	<td class="MD" align="left">&nbsp;</td>
+	<td class="MDB" align="right"><input name="c_desc_medio_total" id="c_desc_medio_total" class="PLLd" style="width:36px;color:blue;" readonly tabindex=-1 /></td>
+	<td class="MD" align="left">&nbsp;</td>
+
 	<td class="MDB" align="right"><input name="c_total_geral" id="c_total_geral" class="PLLd" style="width:70px;color:blue;" 
 		value='<%=formata_moeda(m_TotalDestePedido)%>' readonly tabindex=-1></td>
 	</tr>

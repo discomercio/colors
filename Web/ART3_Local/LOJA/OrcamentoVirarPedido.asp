@@ -34,7 +34,7 @@
 
 	dim msg_erro
 	dim usuario, loja, orcamento_selecionado
-	dim s, i, n, qtde_estoque_total_disponivel, blnAchou, blnDesativado
+	dim s, i, n, nColSpan, qtde_estoque_total_disponivel, blnAchou, blnDesativado
 	usuario = Trim(Session("usuario_atual"))
 	loja = Trim(Session("loja_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
@@ -184,11 +184,33 @@
 
 	dim strPercMaxRT
 	dim strPercMaxComissaoEDesconto, strPercMaxComissaoEDescontoPj, strPercMaxComissaoEDescontoNivel2, strPercMaxComissaoEDescontoNivel2Pj
+	dim strPercMaxDescAlcada1Pf, strPercMaxDescAlcada1Pj, strPercMaxDescAlcada2Pf, strPercMaxDescAlcada2Pj, strPercMaxDescAlcada3Pf, strPercMaxDescAlcada3Pj
 	strPercMaxRT = formata_perc(rCD.perc_max_comissao)
 	strPercMaxComissaoEDesconto = formata_perc(rCD.perc_max_comissao_e_desconto)
 	strPercMaxComissaoEDescontoPj = formata_perc(rCD.perc_max_comissao_e_desconto_pj)
 	strPercMaxComissaoEDescontoNivel2 = formata_perc(rCD.perc_max_comissao_e_desconto_nivel2)
 	strPercMaxComissaoEDescontoNivel2Pj = formata_perc(rCD.perc_max_comissao_e_desconto_nivel2_pj)
+	strPercMaxDescAlcada1Pf = "0"
+	strPercMaxDescAlcada1Pj = "0"
+	strPercMaxDescAlcada2Pf = "0"
+	strPercMaxDescAlcada2Pj = "0"
+	strPercMaxDescAlcada3Pf = "0"
+	strPercMaxDescAlcada3Pj = "0"
+	
+	if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_1, s_lista_operacoes_permitidas) then
+		strPercMaxDescAlcada1Pf = formata_perc(rCD.perc_max_comissao_e_desconto_alcada1_pf)
+		strPercMaxDescAlcada1Pj = formata_perc(rCD.perc_max_comissao_e_desconto_alcada1_pj)
+		end if
+
+	if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_2, s_lista_operacoes_permitidas) then
+		strPercMaxDescAlcada2Pf = formata_perc(rCD.perc_max_comissao_e_desconto_alcada2_pf)
+		strPercMaxDescAlcada2Pj = formata_perc(rCD.perc_max_comissao_e_desconto_alcada2_pj)
+		end if
+
+	if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_3, s_lista_operacoes_permitidas) then
+		strPercMaxDescAlcada3Pf = formata_perc(rCD.perc_max_comissao_e_desconto_alcada3_pf)
+		strPercMaxDescAlcada3Pj = formata_perc(rCD.perc_max_comissao_e_desconto_alcada3_pj)
+		end if
 
 	dim strPercVlPedidoLimiteRA, percPercVlPedidoLimiteRA
 	percPercVlPedidoLimiteRA = obtem_PercVlPedidoLimiteRA()
@@ -935,8 +957,14 @@
 	if blnLojaHabilitadaProdCompostoECommerce then
 		strScriptJS = strScriptJS & "var formata_perc_desconto = formata_perc_2dec;" & chr(13)
 	else
-		strScriptJS = strScriptJS & "var formata_perc_desconto = formata_perc_desc;" & chr(13)
+		'Devido à implementação do campo "Desc Linear (%)", a precisão do campo desconto foi alterada p/ 2 decimais
+		strScriptJS = strScriptJS & "var formata_perc_desconto = formata_perc_2dec;" & chr(13)
 		end if
+
+	if blnTemRA then s = "true" else s = "false"
+	strScriptJS = strScriptJS & _
+				  "var formata_perc_desc_linear = formata_perc_2dec;" & chr(13) & _
+				  "var blnTemRA = " & s & ";" & chr(13)
 
 	strScriptJS = strScriptJS & _
 				  "</script>" & chr(13)
@@ -1009,6 +1037,9 @@
 		});
 
 		configuraCampoDataPrevisaoEntrega();
+
+		// Exibe o valor do desconto médio, principalmente para o caso de pré-pedidos que vieram de orçamento/cotação
+		$("#c_desc_medio_total").val(formata_perc_desc_linear(calcula_desconto_medio()));
 	});
 
 	//Every resize of window
@@ -1648,6 +1679,28 @@ var f,i;
 		}
 }
 
+function atualiza_itens_com_desc_linear() {
+	var f;
+	f = fPED;
+	if (trim(f.c_desc_linear.value) == "") return;
+	f.c_desc_linear.value = formata_perc_desc_linear(f.c_desc_linear.value);
+	if (trim(f.c_desc_linear.value) == "") return;
+
+	for (i = 0; i < f.c_produto.length; i++) {
+		if (trim(f.c_produto[i].value) != "") {
+			f.c_desc[i].value = f.c_desc_linear.value;
+			calcula_desconto(i);
+			if (f.c_permite_RA_status.value == "1") {
+				// Se houver valor definido de RA inicialmente, não sobrepõe
+				if (!blnTemRA) f.c_vl_NF[i].value = f.c_vl_unitario[i].value;
+			}
+		}
+	}
+	recalcula_total_todas_linhas();
+	recalcula_RA();
+	recalcula_RA_Liquido();
+}
+
 function recalcula_total_linha( id ) {
 var idx, m, m_lista, m_unit, d, f, i, s;
 
@@ -1671,6 +1724,7 @@ if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
 	for (i=0; i<f.c_vl_total.length; i++) m=m+converte_numero(f.c_vl_total[i].value);
 	s=formata_moeda(m);
 	if (f.c_total_geral.value!=s) f.c_total_geral.value=s;
+	f.c_desc_medio_total.value = formata_perc_desc_linear(calcula_desconto_medio());
 }
 
 function recalcula_total_todas_linhas() {
@@ -1697,6 +1751,7 @@ if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
 			}
 		}
 	f.c_total_geral.value=formata_moeda(vt);
+	f.c_desc_medio_total.value = formata_perc_desc_linear(calcula_desconto_medio());
 }
 
 function recalcula_RA( ) {
@@ -2160,6 +2215,7 @@ if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
 	m_lista = converte_numero(f.c_preco_lista[idx].value);
 	m_unit = m_lista - (m_lista * d / 100);
 	f.c_vl_unitario[idx].value = formata_moeda(m_unit);
+	if (!((f.c_permite_RA_status.value == '1') || blnTemRA)) f.c_vl_NF[idx].value = f.c_vl_unitario[idx].value;
 	s = formata_moeda(parseInt(f.c_qtde[idx].value) * m_unit);
 	if (f.c_vl_total[idx].value != s) f.c_vl_total[idx].value = s;
 	m = 0;
@@ -2207,6 +2263,7 @@ function fPEDConfirma( f ) {
 var s, i, j, blnFlag, vlAux, vl_preco_lista, vl_preco_venda, vl_NF, perc_desc, strMsgErro;
 var perc_RT, perc_RT_novo, perc_max_RT, perc_max_comissao_e_desconto, perc_max_comissao_e_desconto_pj, perc_max_comissao_e_desconto_nivel2, perc_max_comissao_e_desconto_nivel2_pj, perc_senha_desconto, perc_desc_medio;
 var perc_max_comissao_e_desconto_a_utilizar;
+var perc_max_desc_alcada_1_pf, perc_max_desc_alcada_1_pj, perc_max_desc_alcada_2_pf, perc_max_desc_alcada_2_pj, perc_max_desc_alcada_3_pf, perc_max_desc_alcada_3_pj;
 
 <% 'ORIGEM: PRÉ-PEDIDO (NÃO FOI GERADO ATRAVÉS DE ORÇAMENTO/COTAÇÃO)
 if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then %>
@@ -2268,6 +2325,24 @@ if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then %>
 	perc_max_comissao_e_desconto_a_utilizar = obtem_perc_comissao_e_desconto_a_utilizar(f, calcula_vl_total_preco_venda(f), perc_max_comissao_e_desconto, perc_max_comissao_e_desconto_pj, perc_max_comissao_e_desconto_nivel2, perc_max_comissao_e_desconto_nivel2_pj);
 	
 	perc_desc_medio = calcula_desconto_medio();
+
+	// Verifica se o usuário tem permissão de desconto por alçada
+	perc_max_desc_alcada_1_pf = converte_numero(f.c_PercMaxDescAlcada1Pf.value);
+	perc_max_desc_alcada_1_pj = converte_numero(f.c_PercMaxDescAlcada1Pj.value);
+	perc_max_desc_alcada_2_pf = converte_numero(f.c_PercMaxDescAlcada2Pf.value);
+	perc_max_desc_alcada_2_pj = converte_numero(f.c_PercMaxDescAlcada2Pj.value);
+	perc_max_desc_alcada_3_pf = converte_numero(f.c_PercMaxDescAlcada3Pf.value);
+	perc_max_desc_alcada_3_pj = converte_numero(f.c_PercMaxDescAlcada3Pj.value);
+	if (f.c_tipo_cliente.value == ID_PF) {
+		if (perc_max_desc_alcada_1_pf > perc_max_comissao_e_desconto_a_utilizar) perc_max_comissao_e_desconto_a_utilizar = perc_max_desc_alcada_1_pf;
+		if (perc_max_desc_alcada_2_pf > perc_max_comissao_e_desconto_a_utilizar) perc_max_comissao_e_desconto_a_utilizar = perc_max_desc_alcada_2_pf;
+		if (perc_max_desc_alcada_3_pf > perc_max_comissao_e_desconto_a_utilizar) perc_max_comissao_e_desconto_a_utilizar = perc_max_desc_alcada_3_pf;
+	}
+	else {
+		if (perc_max_desc_alcada_1_pj > perc_max_comissao_e_desconto_a_utilizar) perc_max_comissao_e_desconto_a_utilizar = perc_max_desc_alcada_1_pj;
+		if (perc_max_desc_alcada_2_pj > perc_max_comissao_e_desconto_a_utilizar) perc_max_comissao_e_desconto_a_utilizar = perc_max_desc_alcada_2_pj;
+		if (perc_max_desc_alcada_3_pj > perc_max_comissao_e_desconto_a_utilizar) perc_max_comissao_e_desconto_a_utilizar = perc_max_desc_alcada_3_pj;
+	}
 
 	// Verifica se todos os produtos cujo desconto excedem o máximo permitido possuem senha de desconto disponível
 	// Laço p/ produtos
@@ -2604,6 +2679,12 @@ if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then %>
 <input type="hidden" name="c_PercMaxComissaoEDescontoPj" id="c_PercMaxComissaoEDescontoPj" value='<%=strPercMaxComissaoEDescontoPj%>'>
 <input type="hidden" name="c_PercMaxComissaoEDescontoNivel2" id="c_PercMaxComissaoEDescontoNivel2" value='<%=strPercMaxComissaoEDescontoNivel2%>'>
 <input type="hidden" name="c_PercMaxComissaoEDescontoNivel2Pj" id="c_PercMaxComissaoEDescontoNivel2Pj" value='<%=strPercMaxComissaoEDescontoNivel2Pj%>'>
+<input type="hidden" name="c_PercMaxDescAlcada1Pf" id="c_PercMaxDescAlcada1Pf" value="<%=strPercMaxDescAlcada1Pf%>" />
+<input type="hidden" name="c_PercMaxDescAlcada1Pj" id="c_PercMaxDescAlcada1Pj" value="<%=strPercMaxDescAlcada1Pj%>" />
+<input type="hidden" name="c_PercMaxDescAlcada2Pf" id="c_PercMaxDescAlcada2Pf" value="<%=strPercMaxDescAlcada2Pf%>" />
+<input type="hidden" name="c_PercMaxDescAlcada2Pj" id="c_PercMaxDescAlcada2Pj" value="<%=strPercMaxDescAlcada2Pj%>" />
+<input type="hidden" name="c_PercMaxDescAlcada3Pf" id="c_PercMaxDescAlcada3Pf" value="<%=strPercMaxDescAlcada3Pf%>" />
+<input type="hidden" name="c_PercMaxDescAlcada3Pj" id="c_PercMaxDescAlcada3Pj" value="<%=strPercMaxDescAlcada3Pj%>" />
 <input type="hidden" name="c_PercVlPedidoLimiteRA" id="c_PercVlPedidoLimiteRA" value='<%=strPercVlPedidoLimiteRA%>'>
 
 <input type="hidden" name="c_indicador_original" id="c_indicador_original" value='<%=r_cliente.indicador%>'>
@@ -2692,6 +2773,23 @@ if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then %>
 <br>
 <!--  R E L A Ç Ã O   D E   P R O D U T O S  -->
 <table class="Qx" cellspacing="0" border="0">
+	<%
+	'Campo p/ aplicar desconto linear somente se a origem NÃO for orçamento/cotação
+	if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then %>
+	<tr bgcolor="#FFFFFF">
+	<% if (r_orcamento.permite_RA_status = 1) Or blnTemRA then nColSpan=5 else nColSpan=4 %>
+	<td colspan="<%=CStr(nColSpan)%>" align="left">&nbsp;</td>
+	<td colspan="2" align="right"><span class="PLTe">Desc Linear (%)&nbsp;<input name="c_desc_linear" id="c_desc_linear" class="Cd" style="width:36px;" 
+		onkeypress="if (digitou_enter(true)){this.value=formata_perc_desc_linear(this.value);fPED.btnDescLinear.focus();} filtra_percentual();"
+		onblur="this.value=formata_perc_desc_linear(this.value);"
+		/></span></td>
+	<td colspan="2" align="left"><input type="button" name="btnDescLinear" id="btnDescLinear" class="Button" onclick="atualiza_itens_com_desc_linear();" value="Aplicar" title="aplicar o desconto em todos os itens" style="margin-left:1px;margin-bottom:2px;" /></td>
+	</tr>
+	<tr bgColor="#FFFFFF">
+	<% if (r_orcamento.permite_RA_status = 1) Or blnTemRA then nColSpan=9 else nColSpan=8 %>
+	<td colspan="<%=CStr(nColSpan)%>" align="left" style="height:6px;"></td>
+	</tr>
+	<% end if %>
 	<tr bgcolor="#FFFFFF">
 	<td class="MB" align="left" valign="bottom"><span class="PLTe">Fabr</span></td>
 	<td class="MB" align="left" valign="bottom"><span class="PLTe">Produto</span></td>
@@ -2727,7 +2825,8 @@ if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then %>
 				if blnLojaHabilitadaProdCompostoECommerce then
 					s_desc_dado=formata_perc(.desc_dado)
 				else
-					s_desc_dado=formata_perc_desc(.desc_dado)
+					'Devido à implementação do campo "Desc Linear (%)", a precisão do campo desconto foi alterada p/ 2 decimais
+					s_desc_dado=formata_perc(.desc_dado)
 					end if
 				end if
 			s_vl_unitario=formata_moeda(.preco_venda)
@@ -2849,7 +2948,7 @@ if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then %>
 			</td>
 			<% else %>
 			<input type="hidden" name="c_total_RA_Liquido" id="c_total_RA_Liquido" value=''>
-			<input type="hidden" name="c_total_RA" id="c_total_RA" value='<%=formata_moeda(m_total_RA)%>'>
+			<input type="hidden" name="c_total_RA" id="c_total_RA" value=''>
 			<% end if %>
 			<td align="right">
 			<% if operacao_permitida(OP_LJA_EXIBIR_CAMPO_RT_AO_CADASTRAR_NOVO_PEDIDO, s_lista_operacoes_permitidas) And (Trim(r_orcamento.orcamentista) <> "") And (r_orcamentista_e_indicador.Id <> ID_NSU_ORCAMENTISTA_E_INDICADOR__SEM_INDICADOR) then %>
@@ -2879,11 +2978,15 @@ if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then %>
 		<input name="c_total_NF" id="c_total_NF" class="PLLd" style="width:70px;color:blue;" 
 				value='<%=s_TotalDestePedidoComRA%>' readonly tabindex=-1>
 	</td>
-	<td colspan="3" class="MD" align="left">&nbsp;</td>
 	<% else %>
+	<td align="left">&nbsp;</td>
 	<input type="hidden" name="c_total_NF" id="c_total_NF" value='<%=s_TotalDestePedidoComRA%>'>
-	<td colspan="4" class="MD" align="left">&nbsp;</td>
 	<% end if %>
+
+	<td class="MD" align="left">&nbsp;</td>
+	<td class="MDB" align="right"><input name="c_desc_medio_total" id="c_desc_medio_total" class="PLLd" style="width:36px;color:blue;" readonly tabindex=-1 /></td>
+	<td class="MD" align="left">&nbsp;</td>
+
 	<td class="MDB" align="right"><input name="c_total_geral" id="c_total_geral" class="PLLd" style="width:70px;color:blue;" 
 		value='<%=formata_moeda(m_TotalDestePedido)%>' readonly tabindex=-1></td>
 	</tr>
