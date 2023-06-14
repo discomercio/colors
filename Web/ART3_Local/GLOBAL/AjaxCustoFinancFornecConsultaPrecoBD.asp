@@ -51,13 +51,15 @@
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
-	dim strLoja, strTipoParcelamento, strQtdeParcelas, strListaProdutos, vProdutos, vAux, intCounter
+	dim strLoja, strPedido, strTipoParcelamento, strQtdeParcelas, strListaProdutos, vProdutos, vAux, intCounter
+	dim dtCriacaoPedido, vlPrecoListaBase, strDescricao, strDescricaoHtml
 	dim coeficiente
 	strLoja = Trim(Request("loja"))
 	strTipoParcelamento = Trim(Request("tipoParcelamento"))
 	strQtdeParcelas = Trim(Request("qtdeParcelas"))
 	strListaProdutos = Trim(Request("ListaProdutos"))
-		
+	strPedido = Trim(Request("pedido"))
+	
 	if (strTipoParcelamento <> COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__A_VISTA) And _
 	   (strTipoParcelamento <> COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__COM_ENTRADA) And _
 	   (strTipoParcelamento <> COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__SEM_ENTRADA) then
@@ -96,50 +98,137 @@
 			if strTipoParcelamento = COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__A_VISTA then
 				coeficiente = 1
 			else
+				'Inicialização do coeficiente
+				coeficiente = 0
+				dtCriacaoPedido = Null
+
+				'Se há pedido, localiza e retorna os dados do momento em que o pedido foi criado
+				if strPedido <> "" then
+					strSql = _
+						"SELECT data FROM t_PEDIDO WHERE (pedido = '" & retorna_num_pedido_base(strPedido) & "')"
+					if rs.State <> 0 then rs.Close
+					rs.open strSql, cn
+					if Not rs.Eof then
+						dtCriacaoPedido = rs("data")
+						end if
+
+					if Not Isnull(dtCriacaoPedido) then
+						strSql = _
+							"SELECT " & _
+								"*" & _
+							" FROM t_PERCENTUAL_CUSTO_FINANCEIRO_FORNECEDOR_HISTORICO" & _
+							" WHERE" & _
+								" (data = " & bd_formata_data(dtCriacaoPedido) & ")" & _
+								" AND (fabricante = '" & vResp(intCounter).fabricante & "')" & _
+								" AND (tipo_parcelamento = '" & strTipoParcelamento & "')" & _
+								" AND (qtde_parcelas = " & strQtdeParcelas & ")"
+						if rs.State <> 0 then rs.Close
+						rs.open strSql, cn
+						if Not rs.Eof then
+							coeficiente = converte_numero(rs("coeficiente"))
+							end if
+						end if 'if Not Isnull(dtCriacaoPedido)
+					end if 'if strPedido <> ""
+				
+				'Se não há pedido ou se não encontrou dados originais, pesquisa pelo coeficiente registrado no histórico p/ a data de hoje
+				if coeficiente = 0 then
+					strSql = _
+						"SELECT " & _
+							"*" & _
+						" FROM t_PERCENTUAL_CUSTO_FINANCEIRO_FORNECEDOR_HISTORICO" & _
+						" WHERE" & _
+							" (data = " & bd_formata_data(Now) & ")" & _
+							" AND (fabricante = '" & vResp(intCounter).fabricante & "')" & _
+							" AND (tipo_parcelamento = '" & strTipoParcelamento & "')" & _
+							" AND (qtde_parcelas = " & strQtdeParcelas & ")"
+					if rs.State <> 0 then rs.Close
+					rs.open strSql, cn
+					if Not rs.Eof then
+						coeficiente = converte_numero(rs("coeficiente"))
+						end if
+					end if 'if coeficiente = 0
+				
+				'Em último caso, pesquisa pelo coeficiente atual
+				if coeficiente = 0 then
+					strSql = _
+						"SELECT " & _
+							"*" & _
+						" FROM t_PERCENTUAL_CUSTO_FINANCEIRO_FORNECEDOR" & _
+						" WHERE" & _
+							" (fabricante = '" & vResp(intCounter).fabricante & "')" & _
+							" AND (tipo_parcelamento = '" & strTipoParcelamento & "')" & _
+							" AND (qtde_parcelas = " & strQtdeParcelas & ")"
+					if rs.State <> 0 then rs.Close
+					rs.open strSql, cn
+					if rs.Eof then
+						vResp(intCounter).status = "ERR"
+						vResp(intCounter).codigo_erro = "1"
+						vResp(intCounter).msg_erro = "Opção de parcelamento não disponível para fornecedor " & vResp(intCounter).fabricante & ": " & decodificaCustoFinancFornecQtdeParcelas(strTipoParcelamento, strQtdeParcelas) & " parcela(s)"
+					else
+						coeficiente = converte_numero(rs("coeficiente"))
+						end if
+					end if 'if coeficiente = 0
+				end if 'if strTipoParcelamento = COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__A_VISTA then-else
+			
+			
+			'Localiza preço de lista base
+			'~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			'Inicialização
+			vlPrecoListaBase = -1
+			strDescricao = ""
+			strDescricaoHtml = ""
+
+			'Se há pedido, localiza e retorna os dados do momento em que o pedido foi criado
+			if strPedido <> "" then
+				strSql = _
+					"SELECT" & _
+						" custoFinancFornecPrecoListaBase" & _
+					" FROM t_PEDIDO_ITEM" & _
+					" WHERE" & _
+						" (pedido = '" & strPedido & "')" & _
+						" AND (fabricante = '" & vResp(intCounter).fabricante & "')" & _
+						" AND (produto = '" & vResp(intCounter).produto & "')"
+				if rs.State <> 0 then rs.Close
+				rs.open strSql, cn
+				if Not rs.Eof then
+					vlPrecoListaBase = rs("custoFinancFornecPrecoListaBase")
+					end if
+				end if 'if strPedido <> ""
+			
+			'Se não há pedido ou se não encontrou dados originais, pesquisa pelo preço atual
+			if vlPrecoListaBase = -1 then
 				strSql = _
 					"SELECT " & _
 						"*" & _
-					" FROM t_PERCENTUAL_CUSTO_FINANCEIRO_FORNECEDOR" & _
+					" FROM t_PRODUTO" & _
+						" INNER JOIN t_PRODUTO_LOJA" & _
+							" ON (t_PRODUTO.fabricante=t_PRODUTO_LOJA.fabricante) AND (t_PRODUTO.produto=t_PRODUTO_LOJA.produto)" & _
 					" WHERE" & _
-						" (fabricante = '" & vResp(intCounter).fabricante & "')" & _
-						" AND (tipo_parcelamento = '" & strTipoParcelamento & "')" & _
-						" AND (qtde_parcelas = " & strQtdeParcelas & ")"
+						" (t_PRODUTO.fabricante = '" & vResp(intCounter).fabricante & "')" & _
+						" AND (t_PRODUTO.produto = '" & vResp(intCounter).produto & "')" & _
+						" AND (CONVERT(smallint,loja) = " & strLoja & ")"
 				if rs.State <> 0 then rs.Close
 				rs.open strSql, cn
 				if rs.Eof then
 					vResp(intCounter).status = "ERR"
-					vResp(intCounter).codigo_erro = "1"
-					vResp(intCounter).msg_erro = "Opção de parcelamento não disponível para fornecedor " & vResp(intCounter).fabricante & ": " & decodificaCustoFinancFornecQtdeParcelas(strTipoParcelamento, strQtdeParcelas) & " parcela(s)"
+					vResp(intCounter).codigo_erro = "2"
+					vResp(intCounter).msg_erro = "Produto " & vResp(intCounter).produto & " não localizado para a loja " & strLoja & "."
 				else
-					coeficiente = converte_numero(rs("coeficiente"))
+					strDescricao = Trim("" & rs("descricao"))
+					strDescricaoHtml = produto_formata_descricao_em_html(Trim("" & rs("descricao_html")))
+					vlPrecoListaBase = rs("preco_lista")
 					end if
-				end if
+				end if 'if vlPrecoListaBase = -1
 			
-			strSql = _
-				"SELECT " & _
-					"*" & _
-				" FROM t_PRODUTO" & _
-					" INNER JOIN t_PRODUTO_LOJA" & _
-						" ON (t_PRODUTO.fabricante=t_PRODUTO_LOJA.fabricante) AND (t_PRODUTO.produto=t_PRODUTO_LOJA.produto)" & _
-				" WHERE" & _
-					" (t_PRODUTO.fabricante = '" & vResp(intCounter).fabricante & "')" & _
-					" AND (t_PRODUTO.produto = '" & vResp(intCounter).produto & "')" & _
-					" AND (CONVERT(smallint,loja) = " & strLoja & ")"
-			if rs.State <> 0 then rs.Close
-			rs.open strSql, cn
-			if rs.Eof then
-				vResp(intCounter).status = "ERR"
-				vResp(intCounter).codigo_erro = "2"
-				vResp(intCounter).msg_erro = "Produto " & vResp(intCounter).produto & " não localizado para a loja " & strLoja & "."
-			else
-				vResp(intCounter).descricao = Trim("" & rs("descricao"))
-				vResp(intCounter).descricao_html = produto_formata_descricao_em_html(Trim("" & rs("descricao_html")))
+			if vlPrecoListaBase > -1 then
+				vResp(intCounter).descricao = strDescricao
+				vResp(intCounter).descricao_html = strDescricaoHtml
 				if vResp(intCounter).status = "" then
 					vResp(intCounter).status = "OK"
-					vResp(intCounter).precoLista = formata_moeda(coeficiente * rs("preco_lista"))
+					vResp(intCounter).precoLista = formata_moeda(coeficiente * vlPrecoListaBase)
 					end if
 				end if
-			end if
+			end if 'if (Trim(vResp(intCounter).produto) <> "") And (Trim(vResp(intCounter).status) = "")
 		next
 	
 '	MONTA A RESPOSTA

@@ -43,6 +43,7 @@
 		dim preco_NF
 		dim preco_fabricante
 		dim preco_lista
+		dim preco_lista_original
 		dim margem
 		dim desc_max
 		dim comissao
@@ -94,6 +95,7 @@
 	if s <> "" then pedido_selecionado = s
 
 	dim i, j, n, k
+	dim blnAchou
 	dim alerta, blnErroConsistencia
 	alerta=""
 	blnErroConsistencia=False
@@ -143,6 +145,25 @@
 	dim r_vendedor, blnEnviarEmailVendedorStatusAnaliseCredito
 	blnEnviarEmailVendedorStatusAnaliseCredito = False
 	emailSndSvcRemetenteMensagemSistema = getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__MENSAGEM_SISTEMA)
+
+	dim blnUsuarioDeptoFinanceiro, vDeptoSetorUsuario
+	blnUsuarioDeptoFinanceiro = False
+	
+	if alerta = "" then
+		if Not obtem_Usuario_x_DeptoSetor(usuario, vDeptoSetorUsuario, msg_erro) then
+			alerta=texto_add_br(alerta)
+			alerta = alerta & msg_erro
+		else
+			for i=LBound(vDeptoSetorUsuario) to UBound(vDeptoSetorUsuario)
+				if (vDeptoSetorUsuario(i).StInativo = 0) then
+					if (vDeptoSetorUsuario(i).Id = ID_DEPTO_SETOR__FIN_FINANCEIRO) Or (vDeptoSetorUsuario(i).Id = ID_DEPTO_SETOR__FIN_CREDITO) then
+						blnUsuarioDeptoFinanceiro = True
+						exit for
+						end if
+					end if
+				next
+			end if
+		end if
 
 '	FORMA DE PAGAMENTO (NOVA VERSÃO)
 	dim versao_forma_pagamento, flag_forma_pagto_editada
@@ -371,13 +392,7 @@
 				(Trim("" & r_pedido.analise_credito) = Cstr(COD_AN_CREDITO_PENDENTE_PAGTO_ANTECIPADO_BOLETO)) _
 				OR (Trim("" & r_pedido.analise_credito) = Cstr(COD_AN_CREDITO_OK)) _
 			) then
-			if Not ( _
-				operacao_permitida(OP_CEN_EDITA_ANALISE_CREDITO, s_lista_operacoes_permitidas) _
-				OR _
-				operacao_permitida(OP_CEN_PAGTO_PARCIAL, s_lista_operacoes_permitidas) _
-				OR _
-				operacao_permitida(OP_CEN_PAGTO_QUITACAO, s_lista_operacoes_permitidas) _
-				) then
+			if (Not blnUsuarioDeptoFinanceiro) then
 				nivelEdicaoFormaPagtoConferencia = COD_NIVEL_EDICAO_LIBERADA_PARCIAL
 				end if
 			end if
@@ -385,13 +400,7 @@
 		' Analisa situações em que a edição da forma de pagamento deve ser bloqueada totalmente
 		'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		if Trim("" & r_pedido.st_entrega) = ST_ENTREGA_ENTREGUE then
-			if Not ( _
-				operacao_permitida(OP_CEN_EDITA_ANALISE_CREDITO, s_lista_operacoes_permitidas) _
-				OR _
-				operacao_permitida(OP_CEN_PAGTO_PARCIAL, s_lista_operacoes_permitidas) _
-				OR _
-				operacao_permitida(OP_CEN_PAGTO_QUITACAO, s_lista_operacoes_permitidas) _
-				) then
+			if (Not blnUsuarioDeptoFinanceiro) then
 				if IsMesmoAnoEMes(r_pedido.entregue_data, Date) then
 					nivelEdicaoFormaPagtoConferencia = COD_NIVEL_EDICAO_LIBERADA_PARCIAL
 				else
@@ -549,6 +558,10 @@
 			end if
 		end if
 
+	dim blnHouvePrecoVendaEditado, blnHouveAlteracaoPrecoLista
+	blnHouvePrecoVendaEditado = False
+	blnHouveAlteracaoPrecoLista = False
+
 	dim v_item, intQtdeFretes
 	dim vl_TotalFamiliaPrecoVenda, vl_TotalFamiliaPrecoNF, vl_totalFamiliaPrecoNFLiquido, vl_TotalFamiliaPago, vl_TotalFamiliaDevolucaoPrecoVenda, vl_TotalFamiliaDevolucaoPrecoNF, st_pagto, id_pedido_base
 	redim v_item(0)
@@ -574,6 +587,10 @@
 				.preco_NF=converte_numero(s)
 				s=Trim(Request.Form("c_preco_lista")(i))
 				.preco_lista=converte_numero(s)
+				s=Trim(Request.Form("c_preco_lista_original")(i))
+				.preco_lista_original=converte_numero(s)
+				if .preco_venda <> .preco_venda_original then blnHouvePrecoVendaEditado = True
+				if .preco_lista <> .preco_lista_original then blnHouveAlteracaoPrecoLista = True
 				end with
 			
 			for j=LBound(v_item_bd) to UBound(v_item_bd)
@@ -942,7 +959,7 @@
 	dim c_custoFinancFornecTipoParcelamento, c_custoFinancFornecQtdeParcelas
 	dim c_custoFinancFornecTipoParcelamentoOriginal, c_custoFinancFornecQtdeParcelasOriginal
 	dim c_custoFinancFornecTipoParcelamentoConferencia, c_custoFinancFornecQtdeParcelasConferencia
-	dim coeficiente, vlCustoFinancFornecPrecoLista, vlCustoFinancFornecPrecoListaBase
+	dim coeficiente, vlCustoFinancFornecPrecoLista, vlCustoFinancFornecPrecoListaBase, dtCriacaoPedido
 	c_custoFinancFornecTipoParcelamentoOriginal = Trim(Request.Form("c_custoFinancFornecTipoParcelamentoOriginal"))
 	c_custoFinancFornecQtdeParcelasOriginal = Trim(Request.Form("c_custoFinancFornecQtdeParcelasOriginal"))
 	c_custoFinancFornecTipoParcelamento = Trim(Request.Form("c_custoFinancFornecTipoParcelamento"))
@@ -1024,9 +1041,12 @@
 		end if
 
 '	ANALISA O PERCENTUAL DE COMISSÃO+DESCONTO
-	dim perc_comissao_e_desconto_a_utilizar, perc_comissao_e_desconto_padrao, StatusDescontoSuperiorBD
+	dim perc_max_RT_a_utilizar, perc_max_RT_padrao
+	dim perc_comissao_e_desconto_a_utilizar, perc_comissao_e_desconto_padrao, StatusDescontoSuperiorBD, blnAtualizarDadosDescontoSuperior
 	dim s_pg, blnPreferencial
 	dim vlNivel1, vlNivel2
+	perc_max_RT_padrao = rCD.perc_max_comissao
+	perc_max_RT_a_utilizar = perc_max_RT_padrao
 	if tipo_cliente = ID_PJ then
 		perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_pj
 	else
@@ -1193,6 +1213,16 @@
 		end if
 	
 	' Verifica se o usuário tem permissão de desconto por alçada
+	if operacao_permitida(OP_CEN_DESC_SUP_ALCADA_1, s_lista_operacoes_permitidas) then
+		if rCD.perc_max_comissao_alcada1 > perc_max_RT_a_utilizar then perc_max_RT_a_utilizar = rCD.perc_max_comissao_alcada1
+		end if
+	if operacao_permitida(OP_CEN_DESC_SUP_ALCADA_2, s_lista_operacoes_permitidas) then
+		if rCD.perc_max_comissao_alcada2 > perc_max_RT_a_utilizar then perc_max_RT_a_utilizar = rCD.perc_max_comissao_alcada2
+		end if
+	if operacao_permitida(OP_CEN_DESC_SUP_ALCADA_3, s_lista_operacoes_permitidas) then
+		if rCD.perc_max_comissao_alcada3 > perc_max_RT_a_utilizar then perc_max_RT_a_utilizar = rCD.perc_max_comissao_alcada3
+		end if
+
 	perc_comissao_e_desconto_padrao = perc_comissao_e_desconto_a_utilizar
 	if tipo_cliente = ID_PF then
 		if operacao_permitida(OP_CEN_DESC_SUP_ALCADA_1, s_lista_operacoes_permitidas) then
@@ -1217,11 +1247,22 @@
 		end if
 
 	if alerta = "" then
-		'Devido a arredondamentos no front, aceita margem de erro
-		if (desc_dado_medio + perc_RT) > (perc_comissao_e_desconto_a_utilizar + MAX_MARGEM_ERRO_PERC_DESC_E_RT) then
-			alerta=texto_add_br(alerta)
-			alerta=alerta & "A soma dos percentuais de comissão (" & formata_perc_RT(perc_RT) & "%) e de desconto médio do(s) produto(s) (" & formata_perc(desc_dado_medio) & "%) totaliza " & _
-							formata_perc(perc_RT + desc_dado_medio) & "% e excede o máximo permitido!"
+		if blnHouvePrecoVendaEditado Or blnFormaPagtoEditada Or (s_perc_RT <> s_perc_RT_original) then
+			'Devido a arredondamentos no front, aceita margem de erro
+			if (desc_dado_medio + perc_RT) > (perc_comissao_e_desconto_a_utilizar + MAX_MARGEM_ERRO_PERC_DESC_E_RT) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "A soma dos percentuais de comissão (" & formata_perc_RT(perc_RT) & "%) e de desconto médio do(s) produto(s) (" & formata_perc(desc_dado_medio) & "%) totaliza " & _
+								formata_perc(perc_RT + desc_dado_medio) & "% e excede o máximo permitido!"
+				end if
+			end if
+		end if
+
+	if alerta = "" then
+		if s_perc_RT <> s_perc_RT_original then
+			if perc_RT > perc_max_RT_a_utilizar then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "O percentual de comissão (" & formata_perc_RT(perc_RT) & "%) excede o máximo permitido!"
+				end if
 			end if
 		end if
 
@@ -1734,21 +1775,52 @@
 						end if
 						
 					'Se houve edição no preço de venda, verifica se há necessidade de atualizar o ID do usuário que fez uso da alçada
-					if ((.desc_dado + perc_RT) > (perc_comissao_e_desconto_padrao + MAX_MARGEM_ERRO_PERC_DESC_E_RT)) And (perc_comissao_e_desconto_a_utilizar > perc_comissao_e_desconto_padrao) then
-						'Altera a identificação do usuário que concedeu o desconto superior somente se houve edição no preço de venda.
-						'Isso evita que ajustes na forma de pagamento realizados pelo depto financeiro (análise de crédito) alterem
-						'de forma indevida o usuário responsável pelo desconto.
-						'Obs: o depto financeiro edita apenas a forma de pagamento e não altera preço de venda, sendo que o desconto
-						'pode sofrer alteração caso a forma de pagamento seja alterada entre À Vista e A Prazo.
-						if (Abs(.preco_venda - .preco_venda_original) > MAX_VALOR_MARGEM_ERRO_PAGAMENTO) Or (s_perc_RT <> s_perc_RT_original) then
-							.StatusDescontoSuperior = 1
-							.IdUsuarioDescontoSuperior = r_usuario.Id
-							.DataHoraDescontoSuperior = Now
-							end if
-					else
+					'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+					'Soma do desconto e comissão está abaixo do limite padrão, portanto, assegura que os dados do uso do desconto por alçada estão vazios
+					if (.desc_dado + perc_RT) <= (perc_comissao_e_desconto_padrao + MAX_MARGEM_ERRO_PERC_DESC_E_RT) then
 						.StatusDescontoSuperior = 0
-						end if
+						.IdUsuarioDescontoSuperior = 0
+						.DataHoraDescontoSuperior = Null
+					else
+						'Soma do desconto e comissão excede limite padrão
+						'1) Se o usuário possui nível de alçada, ou seja, se o limite máximo que ele pode utilizar é acima do padrão,
+						'   verifica se houve edição que demande o registro ou a atualização do responsável pelo desconto superior.
+						'2) Se o usuário não possui nível de alçada, não faz nada, pois caso já existam dados do responsável da edição anterior que permitiu o desconto superior,
+						'   esses dados não devem ser sobreescritos
+						if perc_comissao_e_desconto_a_utilizar > perc_comissao_e_desconto_padrao then
+							'Altera a identificação do usuário que concedeu o desconto superior nos seguintes casos:
+							'	1) Houve edição no preço de venda
+							'	2) Houve aumento no percentual de comissão (lembrando que um usuário c/ alçada inferior pode ter sido obrigado a reduzir automaticamente o percentual de comissão, situação em que não faria sentido atualizar o ID do responsável pelo desconto)
+							'	3) Houve alteração na forma de pagamento que tenha acarretado alteração do preço de lista, o que implica na alteração do percentual de desconto
+							'Há um tratamento específico para identificar se as alterações foram realizadas pelo depto financeiro (análise de crédito), situação em que NÃO se
+							'deve registrar o ID do usuário responsável pelo desconto.
+							'Obs: o depto financeiro edita apenas a forma de pagamento e não altera preço de venda ou percentual de comissão (lembrando que o desconto
+							'pode sofrer alteração caso a forma de pagamento seja alterada entre À Vista e A Prazo e/ou quantidade de parcelas).
+							'Caso um usuário do depto financeiro edite preço de venda e/ou percentual de comissão, seu ID será registrado normalmente.
+							blnAtualizarDadosDescontoSuperior = False
+							if (Abs(.preco_venda - .preco_venda_original) > MAX_VALOR_MARGEM_ERRO_PAGAMENTO) _
+								OR ( (s_perc_RT <> s_perc_RT_original) And (converte_numero(s_perc_RT) > converte_numero(s_perc_RT_original)) ) _
+								OR (blnFormaPagtoEditada And blnHouveAlteracaoPrecoLista) then
+								if blnUsuarioDeptoFinanceiro then
+									'Se editou preço de venda ou aumentou o percentual de comissão, registra o ID, mesmo sendo do depto financeiro
+									if (Abs(.preco_venda - .preco_venda_original) > MAX_VALOR_MARGEM_ERRO_PAGAMENTO) _
+										OR ( (s_perc_RT <> s_perc_RT_original) And (converte_numero(s_perc_RT) > converte_numero(s_perc_RT_original)) ) then
+										blnAtualizarDadosDescontoSuperior = True
+										end if
+								else
+									blnAtualizarDadosDescontoSuperior = True
+									end if
+								end if
 
+							if blnAtualizarDadosDescontoSuperior then
+								.StatusDescontoSuperior = 1
+								.IdUsuarioDescontoSuperior = r_usuario.Id
+								.DataHoraDescontoSuperior = Now
+								end if
+							end if 'if perc_comissao_e_desconto_a_utilizar > perc_comissao_e_desconto_padrao
+						end if 'if ((.desc_dado + perc_RT) <= (perc_comissao_e_desconto_padrao + MAX_MARGEM_ERRO_PERC_DESC_E_RT)) then-else
+
+					'Verifica necessidade de senha de autorização de desconto superior e se essa autorização foi cadastrada
 					if (.preco_venda <> .preco_venda_original) Or blnFormaPagtoEditada then
 						if desc_dado_arredondado > perc_comissao_e_desconto_a_utilizar then
 							s = "SELECT " & _
@@ -2798,44 +2870,87 @@
 									coeficiente = 0
 									
 								'	Obtém Preço de Lista Base
-									s = "SELECT " & _
-											"*" & _
-										" FROM t_PRODUTO" & _
-											" INNER JOIN t_PRODUTO_LOJA" & _
-												" ON ((t_PRODUTO.fabricante=t_PRODUTO_LOJA.fabricante) AND (t_PRODUTO.produto=t_PRODUTO_LOJA.produto))" & _
-											" INNER JOIN t_FABRICANTE" & _
-												" ON (t_PRODUTO.fabricante=t_FABRICANTE.fabricante)" & _
-										" WHERE" & _
-											" (t_PRODUTO.fabricante='" & .fabricante & "')" & _
-											" AND (t_PRODUTO.produto='" & .produto & "')" & _
-											" AND (loja='" & c_loja & "')"
-									set rs2 = cn.execute(s)
-									if rs2.Eof then
+									'Localiza os dados do momento em que o pedido foi criado
+									blnAchou = False
+									for j=LBound(v_item_bd) to UBound(v_item_bd)
+										if Trim("" & v_item_bd(j).produto) <> "" then
+											if (Trim("" & v_item_bd(j).fabricante) = Trim("" & v_item(i).fabricante)) And (Trim("" & v_item_bd(j).produto) = Trim("" & v_item(i).produto)) then
+												vlCustoFinancFornecPrecoListaBase = v_item_bd(j).custoFinancFornecPrecoListaBase
+												blnAchou = True
+												exit for
+												end if
+											end if 'if Trim("" & v_item_bd(j).produto) <> ""
+										next
+
+									if Not blnAchou then
 										alerta=texto_add_br(alerta)
-										alerta=alerta & "Produto " & .produto & " do fabricante " & .fabricante & " NÃO está cadastrado para a loja " & c_loja
-									else
-										vlCustoFinancFornecPrecoListaBase = rs2("preco_lista")
+										alerta=alerta & "Produto " & .produto & " do fabricante " & .fabricante & " NÃO foi encontrado no pedido " & pedido_selecionado
 										end if
 									
 								'	Obtém coeficiente do custo financeiro
 									if c_custoFinancFornecTipoParcelamento = COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__A_VISTA then
 										coeficiente = 1
 									else
-										s = "SELECT " & _
-												"*" & _
-											" FROM t_PERCENTUAL_CUSTO_FINANCEIRO_FORNECEDOR" & _
-											" WHERE" & _
-												" (fabricante = '" & .fabricante & "')" & _
-												" AND (tipo_parcelamento = '" & c_custoFinancFornecTipoParcelamento & "')" & _
-												" AND (qtde_parcelas = " & c_custoFinancFornecQtdeParcelas & ")"
+										'Inicialização do coeficiente
+										coeficiente = 0
+										dtCriacaoPedido = Null
+
+										'Tenta ocalizar os dados do momento em que o pedido foi criado
+										s = "SELECT data FROM t_PEDIDO WHERE (pedido = '" & retorna_num_pedido_base(pedido_selecionado) & "')"
 										set rs2 = cn.execute(s)
-										if rs2.Eof then
-											alerta=texto_add_br(alerta)
-											alerta=alerta & "Opção de parcelamento não disponível para fornecedor " & .fabricante & ": " & decodificaCustoFinancFornecQtdeParcelas(c_custoFinancFornecTipoParcelamento, c_custoFinancFornecQtdeParcelas) & " parcela(s)"
-										else
-											coeficiente = converte_numero(rs2("coeficiente"))
+										if Not rs2.Eof then
+											dtCriacaoPedido = rs2("data")
 											end if
-										end if
+
+										if Not Isnull(dtCriacaoPedido) then
+											s = "SELECT " & _
+													"*" & _
+												" FROM t_PERCENTUAL_CUSTO_FINANCEIRO_FORNECEDOR_HISTORICO" & _
+												" WHERE" & _
+													" (data = " & bd_formata_data(dtCriacaoPedido) & ")" & _
+													" AND (fabricante = '" & .fabricante & "')" & _
+													" AND (tipo_parcelamento = '" & c_custoFinancFornecTipoParcelamento & "')" & _
+													" AND (qtde_parcelas = " & c_custoFinancFornecQtdeParcelas & ")"
+											set rs2 = cn.execute(s)
+											if Not rs2.Eof then
+												coeficiente = converte_numero(rs2("coeficiente"))
+												end if
+											end if 'if Not Isnull(dtCriacaoPedido)
+
+										'Se não encontrou dados originais, pesquisa pelo coeficiente registrado no histórico p/ a data de hoje
+										if coeficiente = 0 then
+											s = "SELECT " & _
+													"*" & _
+												" FROM t_PERCENTUAL_CUSTO_FINANCEIRO_FORNECEDOR_HISTORICO" & _
+												" WHERE" & _
+													" (data = " & bd_formata_data(Now) & ")" & _
+													" AND (fabricante = '" & .fabricante & "')" & _
+													" AND (tipo_parcelamento = '" & c_custoFinancFornecTipoParcelamento & "')" & _
+													" AND (qtde_parcelas = " & c_custoFinancFornecQtdeParcelas & ")"
+											set rs2 = cn.execute(s)
+											if Not rs2.Eof then
+												coeficiente = converte_numero(rs2("coeficiente"))
+												end if
+											end if 'if coeficiente = 0
+										
+										'Em último caso, pesquisa pelo coeficiente atual
+										if coeficiente = 0 then
+											s = "SELECT " & _
+													"*" & _
+												" FROM t_PERCENTUAL_CUSTO_FINANCEIRO_FORNECEDOR" & _
+												" WHERE" & _
+													" (fabricante = '" & .fabricante & "')" & _
+													" AND (tipo_parcelamento = '" & c_custoFinancFornecTipoParcelamento & "')" & _
+													" AND (qtde_parcelas = " & c_custoFinancFornecQtdeParcelas & ")"
+											set rs2 = cn.execute(s)
+											if rs2.Eof then
+												alerta=texto_add_br(alerta)
+												alerta=alerta & "Opção de parcelamento não disponível para fornecedor " & .fabricante & ": " & decodificaCustoFinancFornecQtdeParcelas(c_custoFinancFornecTipoParcelamento, c_custoFinancFornecQtdeParcelas) & " parcela(s)"
+											else
+												coeficiente = converte_numero(rs2("coeficiente"))
+												end if
+											end if 'if coeficiente = 0
+										end if 'if c_custoFinancFornecTipoParcelamento = COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__A_VISTA then-else
 									
 									if alerta = "" then
 										s = "SELECT " & _
@@ -2853,7 +2968,6 @@
 										else
 											log_via_vetor_carrega_do_recordset rs, vLogItemCFF1, campos_a_omitir_ItemCFF
 											rs("custoFinancFornecCoeficiente")=coeficiente
-											rs("custoFinancFornecPrecoListaBase")=vlCustoFinancFornecPrecoListaBase
 											vlCustoFinancFornecPrecoLista=converte_numero(formata_moeda(coeficiente*vlCustoFinancFornecPrecoListaBase))
 											rs("preco_lista")=vlCustoFinancFornecPrecoLista
 											if vlCustoFinancFornecPrecoLista = 0 then 
