@@ -128,13 +128,16 @@
         call le_usuario(r_pedido.vendedor, r_vendedor, msg_erro)
         end if
 
-    if (r_pedido.st_forma_pagto_possui_parcela_cartao = 1) Or (r_pedido.st_forma_pagto_possui_parcela_cartao_maquineta = 1) then
-        '2=Financeiro/Devolução (Pagamento em Cartão) -> para pedidos que tenham pagamento em cartão
-        id_pedido_chamado_depto = 3
-    else
-        '2=Financeiro/Devolução -> para pedidos que não tenham pagamento em cartão
-        id_pedido_chamado_depto = 2
-        end if
+	if (CStr(r_pedido.tipo_parcelamento) <> CStr(COD_FORMA_PAGTO_A_VISTA)) And (parcelamentoPossuiMeioPagamento(r_pedido, ID_FORMA_PAGTO_BOLETO)) then
+		'Pedidos que tenham boleto registrado
+		id_pedido_chamado_depto = ID_PEDIDO_CHAMADO_DEPTO__FINANCEIRO_DEVOLUCAO_BOLETO_PARCELADO
+	elseif (r_pedido.st_forma_pagto_possui_parcela_cartao = 1) Or (r_pedido.st_forma_pagto_possui_parcela_cartao_maquineta = 1) then
+		'Pedidos que tenham pagamento em cartão
+		id_pedido_chamado_depto = ID_PEDIDO_CHAMADO_DEPTO__FINANCEIRO_DEVOLUCAO_CARTAO
+	else
+		'Pedidos que não tenham pagamento em cartão e nem boleto registrado
+		id_pedido_chamado_depto = ID_PEDIDO_CHAMADO_DEPTO__FINANCEIRO_DEVOLUCAO
+		end if
 
     if c_procedimento = "" then
         alerta = texto_add_br(alerta)
