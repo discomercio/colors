@@ -6701,7 +6701,7 @@ dim blnResultado
 	idMeioPagto = Trim("" & idMeioPagto)
 	if idMeioPagto = "" then exit function
 
-	if CStr(rPed.tipo_parcelamento) = (COD_FORMA_PAGTO_A_VISTA) then
+	if CStr(rPed.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_A_VISTA) then
 		if Trim("" & rPed.av_forma_pagto) = idMeioPagto then blnResultado = True
 	elseif CStr(rPed.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELA_UNICA) then
 		if Trim("" & rPed.pu_forma_pagto) = idMeioPagto then blnResultado = True

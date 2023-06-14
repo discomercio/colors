@@ -359,15 +359,6 @@
 		vMPN2(0) = ""
 		end if
 
-	if alerta = "" then
-		'ORIGEM: PRÉ-PEDIDO (NÃO FOI GERADO ATRAVÉS DE ORÇAMENTO/COTAÇÃO)
-		if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then
-			if perc_RT > rCD.perc_max_comissao then
-				alerta = "Percentual de comissão excede o máximo permitido."
-				end if
-			end if
-		end if
-
 	dim s_instalador_instala
 	s_instalador_instala = Trim(Request.Form("rb_instalador_instala"))
 	
@@ -470,9 +461,12 @@
 		end if
 
 '	ANALISA O PERCENTUAL DE COMISSÃO+DESCONTO
+	dim perc_max_RT_a_utilizar, perc_max_RT_padrao
 	dim perc_comissao_e_desconto_a_utilizar, perc_comissao_e_desconto_padrao
 	dim s_pg, blnPreferencial
 	dim vlNivel1, vlNivel2
+	perc_max_RT_padrao = rCD.perc_max_comissao
+	perc_max_RT_a_utilizar = perc_max_RT_padrao
 	if cliente__tipo = ID_PJ then
 		perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_pj
 	else
@@ -639,6 +633,16 @@
 		end if
 	
 	' Verifica se o usuário tem permissão de desconto por alçada
+	if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_1, s_lista_operacoes_permitidas) then
+		if rCD.perc_max_comissao_alcada1 > perc_max_RT_a_utilizar then perc_max_RT_a_utilizar = rCD.perc_max_comissao_alcada1
+		end if
+	if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_2, s_lista_operacoes_permitidas) then
+		if rCD.perc_max_comissao_alcada2 > perc_max_RT_a_utilizar then perc_max_RT_a_utilizar = rCD.perc_max_comissao_alcada2
+		end if
+	if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_3, s_lista_operacoes_permitidas) then
+		if rCD.perc_max_comissao_alcada3 > perc_max_RT_a_utilizar then perc_max_RT_a_utilizar = rCD.perc_max_comissao_alcada3
+		end if
+
 	perc_comissao_e_desconto_padrao = perc_comissao_e_desconto_a_utilizar
 	if tipo_cliente = ID_PF then
 		if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_1, s_lista_operacoes_permitidas) then
@@ -663,13 +667,21 @@
 		end if
 
 	if alerta = "" then
-		'Devido a arredondamentos no front, aceita margem de erro
-		if (desc_dado_medio + perc_RT) > (perc_comissao_e_desconto_a_utilizar + MAX_MARGEM_ERRO_PERC_DESC_E_RT) then
-			alerta=texto_add_br(alerta)
-			alerta=alerta & "A soma dos percentuais de comissão (" & formata_perc_RT(perc_RT) & "%) e de desconto médio do(s) produto(s) (" & formata_perc(desc_dado_medio) & "%) totaliza " & _
-							formata_perc(perc_RT + desc_dado_medio) & "% e excede o máximo permitido!"
-			end if
-		end if
+		'ORIGEM: PRÉ-PEDIDO (NÃO FOI GERADO ATRAVÉS DE ORÇAMENTO/COTAÇÃO)
+		if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then
+			'Devido a arredondamentos no front, aceita margem de erro
+			if (desc_dado_medio + perc_RT) > (perc_comissao_e_desconto_a_utilizar + MAX_MARGEM_ERRO_PERC_DESC_E_RT) then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "A soma dos percentuais de comissão (" & formata_perc_RT(perc_RT) & "%) e de desconto médio do(s) produto(s) (" & formata_perc(desc_dado_medio) & "%) totaliza " & _
+								formata_perc(perc_RT + desc_dado_medio) & "% e excede o máximo permitido!"
+				end if
+			
+			if perc_RT > perc_max_RT_a_utilizar then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "O percentual de comissão (" & formata_perc_RT(perc_RT) & "%) excede o máximo permitido!"
+				end if
+			end if 'if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0
+		end if 'if alerta = ""
 
 '	CONSISTÊNCIA PARA VALOR ZERADO
 	if alerta="" then
@@ -806,14 +818,23 @@
 					
 						'Como a origem neste caso é o pré-pedido (não foi gerado através de orçamento/cotação), o usuário que está
 						'convertendo p/ pedido é o responsável pelo desconto superior caso ele possua alçada suficiente.
-						if ((.desc_dado + perc_RT) > (perc_comissao_e_desconto_padrao + MAX_MARGEM_ERRO_PERC_DESC_E_RT)) And (perc_comissao_e_desconto_a_utilizar > perc_comissao_e_desconto_padrao) then
-							.StatusDescontoSuperior = 1
-							.IdUsuarioDescontoSuperior = r_usuario.Id
-							.DataHoraDescontoSuperior = Now
-						else
+						'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+						'Soma do desconto e comissão está abaixo do limite padrão, portanto, assegura que os dados do uso do desconto por alçada estão vazios
+						if (.desc_dado + perc_RT) <= (perc_comissao_e_desconto_padrao + MAX_MARGEM_ERRO_PERC_DESC_E_RT) then
 							.StatusDescontoSuperior = 0
-							end if
+							.IdUsuarioDescontoSuperior = 0
+							.DataHoraDescontoSuperior = Null
+						else
+							'Soma do desconto e comissão excede limite padrão
+							'Registra o uso da alçada somente se o usuário possuir essa permissão, ou seja, se o limite máximo que ele pode utilizar é acima do padrão
+							if perc_comissao_e_desconto_a_utilizar > perc_comissao_e_desconto_padrao then
+								.StatusDescontoSuperior = 1
+								.IdUsuarioDescontoSuperior = r_usuario.Id
+								.DataHoraDescontoSuperior = Now
+								end if 'if perc_comissao_e_desconto_a_utilizar > perc_comissao_e_desconto_padrao
+							end if 'if (.desc_dado + perc_RT) <= (perc_comissao_e_desconto_padrao + MAX_MARGEM_ERRO_PERC_DESC_E_RT) then-else
 
+						'Verifica necessidade de senha de autorização de desconto superior e se essa autorização foi cadastrada
 						if desc_dado_arredondado > perc_comissao_e_desconto_a_utilizar then
 							if rs.State <> 0 then rs.Close
 							s = "SELECT " & _

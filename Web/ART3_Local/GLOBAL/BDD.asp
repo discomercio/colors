@@ -4772,10 +4772,13 @@ dim rs
 	rx.perc_max_comissao_e_desconto_pj = 0
 	rx.perc_max_comissao_e_desconto_nivel2 = 0
 	rx.perc_max_comissao_e_desconto_nivel2_pj = 0
+	rx.perc_max_comissao_alcada1 = 0
 	rx.perc_max_comissao_e_desconto_alcada1_pf = 0
 	rx.perc_max_comissao_e_desconto_alcada1_pj = 0
+	rx.perc_max_comissao_alcada2 = 0
 	rx.perc_max_comissao_e_desconto_alcada2_pf = 0
 	rx.perc_max_comissao_e_desconto_alcada2_pj = 0
+	rx.perc_max_comissao_alcada3 = 0
 	rx.perc_max_comissao_e_desconto_alcada3_pf = 0
 	rx.perc_max_comissao_e_desconto_alcada3_pj = 0
 	rx.isCadastrado = False
@@ -4790,10 +4793,13 @@ dim rs
 			" perc_max_comissao_e_desconto_pj," & _
 			" perc_max_comissao_e_desconto_nivel2," & _
 			" perc_max_comissao_e_desconto_nivel2_pj," & _
+			" perc_max_comissao_alcada1," & _
 			" perc_max_comissao_e_desconto_alcada1_pf," & _
 			" perc_max_comissao_e_desconto_alcada1_pj," & _
+			" perc_max_comissao_alcada2," & _
 			" perc_max_comissao_e_desconto_alcada2_pf," & _
 			" perc_max_comissao_e_desconto_alcada2_pj," & _
+			" perc_max_comissao_alcada3," & _
 			" perc_max_comissao_e_desconto_alcada3_pf," & _
 			" perc_max_comissao_e_desconto_alcada3_pj" & _
 		" FROM t_LOJA" & _
@@ -4806,10 +4812,13 @@ dim rs
 		rx.perc_max_comissao_e_desconto_pj = rs("perc_max_comissao_e_desconto_pj")
 		rx.perc_max_comissao_e_desconto_nivel2 = rs("perc_max_comissao_e_desconto_nivel2")
 		rx.perc_max_comissao_e_desconto_nivel2_pj = rs("perc_max_comissao_e_desconto_nivel2_pj")
+		rx.perc_max_comissao_alcada1 = rs("perc_max_comissao_alcada1")
 		rx.perc_max_comissao_e_desconto_alcada1_pf = rs("perc_max_comissao_e_desconto_alcada1_pf")
 		rx.perc_max_comissao_e_desconto_alcada1_pj = rs("perc_max_comissao_e_desconto_alcada1_pj")
+		rx.perc_max_comissao_alcada2 = rs("perc_max_comissao_alcada2")
 		rx.perc_max_comissao_e_desconto_alcada2_pf = rs("perc_max_comissao_e_desconto_alcada2_pf")
 		rx.perc_max_comissao_e_desconto_alcada2_pj = rs("perc_max_comissao_e_desconto_alcada2_pj")
+		rx.perc_max_comissao_alcada3 = rs("perc_max_comissao_alcada3")
 		rx.perc_max_comissao_e_desconto_alcada3_pf = rs("perc_max_comissao_e_desconto_alcada3_pf")
 		rx.perc_max_comissao_e_desconto_alcada3_pj = rs("perc_max_comissao_e_desconto_alcada3_pj")
 		rx.isCadastrado = True
@@ -7156,5 +7165,279 @@ dim s_sql, s_sql_convert_int
 	if Trim("" & alias) <> "" then s_sql = s_sql & " AS " & alias
 
 	montaSubqueryGetUsuarioContexto = s_sql
+end function
+
+
+' _____________________________________________________________________
+' obtem_perc_comissao_e_desconto_n1_n2_a_utilizar
+' Obtém o percentual máximo de comissão e desconto (somente
+' analisando os níveis 1 e 2, ou seja, não considerando as alçadas)
+function obtem_perc_comissao_e_desconto_n1_n2_a_utilizar(byval tipoCliente, byref rPed, byref vItem)
+dim i, vl_total_preco_venda, s_pg, perc_comissao_e_desconto_a_utilizar
+dim rCD, rP, vMPN2
+dim blnPreferencial, vlNivel1, vlNivel2
+
+	obtem_perc_comissao_e_desconto_n1_n2_a_utilizar = 0
+
+	set rCD = obtem_perc_max_comissao_e_desconto_por_loja(rPed.loja)
+	
+	set rP = get_registro_t_parametro(ID_PARAMETRO_PercMaxComissaoEDesconto_Nivel2_MeiosPagto)
+	if Trim("" & rP.id) <> "" then
+		vMPN2 = Split(rP.campo_texto, ",")
+		for i=Lbound(vMPN2) to Ubound(vMPN2)
+			vMPN2(i) = Trim("" & vMPN2(i))
+			next
+	else
+		redim vMPN2(0)
+		vMPN2(0) = ""
+		end if
+	
+	vl_total_preco_venda = 0
+	for i=Lbound(vItem) to Ubound(vItem)
+		with vItem(i)
+			if .produto <> "" then
+				vl_total_preco_venda = vl_total_preco_venda + (.qtde * .preco_venda)
+				end if
+			end with
+		next
+	
+	'Percentuais padrão (nível 1)
+	if tipoCliente = ID_PJ then
+		perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_pj
+	else
+		perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto
+		end if
+	
+	if Cstr(rPed.tipo_parcelamento) = COD_FORMA_PAGTO_A_VISTA then
+		s_pg = CStr(rPed.av_forma_pagto)
+		if s_pg <> "" then
+			for i=Lbound(vMPN2) to Ubound(vMPN2)
+			'	O meio de pagamento selecionado é um dos preferenciais
+				if Trim("" & s_pg) = Trim("" & vMPN2(i)) then
+					if tipoCliente = ID_PJ then
+						perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2_pj
+					else
+						perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2
+						end if
+					exit for
+					end if
+				next
+			end if
+	elseif Cstr(rPed.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELA_UNICA then
+		s_pg = CStr(rPed.pu_forma_pagto)
+		if s_pg <> "" then
+			for i=Lbound(vMPN2) to Ubound(vMPN2)
+			'	O meio de pagamento selecionado é um dos preferenciais
+				if Trim("" & s_pg) = Trim("" & vMPN2(i)) then
+					if tipoCliente = ID_PJ then
+						perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2_pj
+					else
+						perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2
+						end if
+					exit for
+					end if
+				next
+			end if
+	elseif Cstr(rPed.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO then
+		s_pg = Trim(ID_FORMA_PAGTO_CARTAO)
+		if s_pg <> "" then
+			for i=Lbound(vMPN2) to Ubound(vMPN2)
+			'	O meio de pagamento selecionado é um dos preferenciais
+				if Trim("" & s_pg) = Trim("" & vMPN2(i)) then
+					if tipoCliente = ID_PJ then
+						perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2_pj
+					else
+						perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2
+						end if
+					exit for
+					end if
+				next
+			end if
+	elseif Cstr(rPed.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA then
+		s_pg = Trim(ID_FORMA_PAGTO_CARTAO_MAQUINETA)
+		if s_pg <> "" then
+			for i=Lbound(vMPN2) to Ubound(vMPN2)
+			'	O meio de pagamento selecionado é um dos preferenciais
+				if Trim("" & s_pg) = Trim("" & vMPN2(i)) then
+					if tipoCliente = ID_PJ then
+						perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2_pj
+					else
+						perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2
+						end if
+					exit for
+					end if
+				next
+			end if
+	elseif Cstr(rPed.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA then
+	'	Identifica e contabiliza o valor da entrada
+		blnPreferencial = False
+		s_pg = CStr(rPed.pce_forma_pagto_entrada)
+		if s_pg <> "" then
+			for i=Lbound(vMPN2) to Ubound(vMPN2)
+			'	O meio de pagamento selecionado é um dos preferenciais
+				if Trim("" & s_pg) = Trim("" & vMPN2(i)) then
+					blnPreferencial = True
+					exit for
+					end if
+				next
+			end if
+		
+		if blnPreferencial then
+			vlNivel2 = converte_numero(rPed.pce_entrada_valor)
+		else
+			vlNivel1 = converte_numero(rPed.pce_entrada_valor)
+			end if
+		
+	'	Identifica e contabiliza o valor das parcelas
+		blnPreferencial = False
+		s_pg = CStr(rPed.pce_forma_pagto_prestacao)
+		if s_pg <> "" then
+			for i=Lbound(vMPN2) to Ubound(vMPN2)
+			'	O meio de pagamento selecionado é um dos preferenciais
+				if Trim("" & s_pg) = Trim("" & vMPN2(i)) then
+					blnPreferencial = True
+					exit for
+					end if
+				next
+			end if
+		
+		if blnPreferencial then
+			vlNivel2 = vlNivel2 + converte_numero(rPed.pce_prestacao_qtde) * converte_numero(rPed.pce_prestacao_valor)
+		else
+			vlNivel1 = vlNivel1 + converte_numero(rPed.pce_prestacao_qtde) * converte_numero(rPed.pce_prestacao_valor)
+			end if
+	
+	'	O montante a pagar por meio de pagamento preferencial é maior que 50% do total?
+		if vlNivel2 > (vl_total_preco_venda/2) then
+			if tipoCliente = ID_PJ then
+				perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2_pj
+			else
+				perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2
+				end if
+			end if
+		
+	elseif Cstr(rPed.tipo_parcelamento) = COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA then
+	'	Identifica e contabiliza o valor da 1ª parcela
+		blnPreferencial = False
+		s_pg = CStr(rPed.pse_forma_pagto_prim_prest)
+		if s_pg <> "" then
+			for i=Lbound(vMPN2) to Ubound(vMPN2)
+			'	O meio de pagamento selecionado é um dos preferenciais
+				if Trim("" & s_pg) = Trim("" & vMPN2(i)) then
+					blnPreferencial = True
+					exit for
+					end if
+				next
+			end if
+		
+		if blnPreferencial then
+			vlNivel2 = converte_numero(rPed.pse_prim_prest_valor)
+		else
+			vlNivel1 = converte_numero(rPed.pse_prim_prest_valor)
+			end if
+		
+	'	Identifica e contabiliza o valor das parcelas
+		blnPreferencial = False
+		s_pg = CStr(rPed.pse_forma_pagto_demais_prest)
+		if s_pg <> "" then
+			for i=Lbound(vMPN2) to Ubound(vMPN2)
+			'	O meio de pagamento selecionado é um dos preferenciais
+				if Trim("" & s_pg) = Trim("" & vMPN2(i)) then
+					blnPreferencial = True
+					exit for
+					end if
+				next
+			end if
+		
+		if blnPreferencial then
+			vlNivel2 = vlNivel2 + converte_numero(rPed.pse_demais_prest_qtde) * converte_numero(rPed.pse_demais_prest_valor)
+		else
+			vlNivel1 = vlNivel1 + converte_numero(rPed.pse_demais_prest_qtde) * converte_numero(rPed.pse_demais_prest_valor)
+			end if
+		
+	'	O montante a pagar por meio de pagamento preferencial é maior que 50% do total?
+		if vlNivel2 > (vl_total_preco_venda/2) then
+			if tipoCliente = ID_PJ then
+				perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2_pj
+			else
+				perc_comissao_e_desconto_a_utilizar = rCD.perc_max_comissao_e_desconto_nivel2
+				end if
+			end if
+		end if
+
+	obtem_perc_comissao_e_desconto_n1_n2_a_utilizar = perc_comissao_e_desconto_a_utilizar
+end function
+
+
+' _______________________________________________________
+' inicializa_cl_DEPTO_SETOR
+'
+sub inicializa_cl_DEPTO_SETOR(byref rDS)
+	rDS.Id = 0
+	rDS.Sigla = ""
+	rDS.Nome = ""
+	rDS.StInativo = 0
+	rDS.Observacoes = ""
+	rDS.UsuarioResponsavelN1 = ""
+	rDS.UsuarioResponsavelN2 = ""
+end sub
+
+' _______________________________________________________
+' obtem_Usuario_x_DeptoSetor
+'
+function obtem_Usuario_x_DeptoSetor(byval usuario, byref vDeptoSetor, byref msg_erro)
+dim s_sql, r
+	
+	obtem_Usuario_x_DeptoSetor = False
+	msg_erro = ""
+	
+	redim vDeptoSetor(0)
+	set vDeptoSetor(UBound(vDeptoSetor)) = new cl_DEPTO_SETOR
+	inicializa_cl_DEPTO_SETOR vDeptoSetor(UBound(vDeptoSetor))
+	usuario = Trim("" & usuario)
+
+	s_sql = "SELECT " & _
+				"*" & _
+			" FROM t_DEPTO_SETOR tDS" & _
+				" INNER JOIN t_USUARIO_X_DEPTO_SETOR tUDS ON (tUDS.IdDeptoSetor = tDS.Id)" & _
+			" WHERE" & _
+				" (tDS.StInativo = 0)" & _
+				" AND (tUDS.excluido_status = 0)" & _
+				" AND (tUDS.usuario = '" & QuotedStr(usuario) & "')" & _
+			" ORDER BY" & _
+				" Id"
+	set r=cn.Execute(s_sql)
+	if Err <> 0 then
+		msg_erro=Cstr(Err) & ": " & Err.Description
+		exit function
+		end if
+
+	if r.EOF then
+		'O usuário pode não estar associado a nenhum depto/setor específico, isso não seria um erro, basta retornar a lista vazia
+		obtem_Usuario_x_DeptoSetor = True
+		if r.State <> 0 then r.Close
+		exit function
+	else
+		do while Not r.EOF
+			if vDeptoSetor(UBound(vDeptoSetor)).Id <> 0 then
+				redim preserve vDeptoSetor(UBound(vDeptoSetor)+1)
+				set vDeptoSetor(UBound(vDeptoSetor)) = new cl_DEPTO_SETOR
+				inicializa_cl_DEPTO_SETOR vDeptoSetor(UBound(vDeptoSetor))
+				end if
+			with vDeptoSetor(UBound(vDeptoSetor))
+				.Id = r("Id")
+				.Sigla = Trim("" & r("Sigla"))
+				.Nome = Trim("" & r("Nome"))
+				.StInativo = r("StInativo")
+				.Observacoes = Trim("" & r("Observacoes"))
+				.UsuarioResponsavelN1 = Trim("" & r("UsuarioResponsavelN1"))
+				.UsuarioResponsavelN2 = Trim("" & r("UsuarioResponsavelN2"))
+				end with
+			r.MoveNext
+			loop
+		if r.State <> 0 then r.Close
+		end if
+
+	obtem_Usuario_x_DeptoSetor = True
 end function
 %>

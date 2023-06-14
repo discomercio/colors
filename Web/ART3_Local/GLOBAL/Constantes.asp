@@ -533,6 +533,17 @@
 	Const ID_ADMINISTRADOR	= "A" 
 	Const ID_GERENCIAL		= "G" 
 
+  ' ID DOS DEPARTAMENTOS/SETORES CADASTRADOS EM t_DEPTO_SETOR
+	Const ID_DEPTO_SETOR__FIN_FINANCEIRO = 1
+	Const ID_DEPTO_SETOR__FIN_CREDITO = 2
+
+  ' ID DOS DEPARTAMENTOS/SETORES CADASTRADOS EM t_PEDIDO_CHAMADO_DEPTO
+	Const ID_PEDIDO_CHAMADO_DEPTO__ARCLUBE = 1
+	Const ID_PEDIDO_CHAMADO_DEPTO__FINANCEIRO_DEVOLUCAO = 2
+	Const ID_PEDIDO_CHAMADO_DEPTO__FINANCEIRO_DEVOLUCAO_CARTAO = 3
+	Const ID_PEDIDO_CHAMADO_DEPTO__FINANCEIRO_CREDITO = 4
+	Const ID_PEDIDO_CHAMADO_DEPTO__FINANCEIRO_DEVOLUCAO_BOLETO_PARCELADO = 5
+
   ' CÓDIGOS PARA NÍVEL DE EDIÇÃO
 	Const COD_NIVEL_EDICAO_LIBERADA_TOTAL = 100
 	Const COD_NIVEL_EDICAO_LIBERADA_PARCIAL = 50
@@ -3167,10 +3178,13 @@
 		dim perc_max_comissao_e_desconto_pj
 		dim perc_max_comissao_e_desconto_nivel2
 		dim perc_max_comissao_e_desconto_nivel2_pj
+		dim perc_max_comissao_alcada1
 		dim perc_max_comissao_e_desconto_alcada1_pf
 		dim perc_max_comissao_e_desconto_alcada1_pj
+		dim perc_max_comissao_alcada2
 		dim perc_max_comissao_e_desconto_alcada2_pf
 		dim perc_max_comissao_e_desconto_alcada2_pj
+		dim perc_max_comissao_alcada3
 		dim perc_max_comissao_e_desconto_alcada3_pf
 		dim perc_max_comissao_e_desconto_alcada3_pj
 		dim isCadastrado
@@ -3475,5 +3489,15 @@
 		dim StLoginBloqueadoAutomatico
 		dim DataHoraBloqueadoAutomatico
 		dim EnderecoIpBloqueadoAutomatico
+		end class
+
+	class cl_DEPTO_SETOR
+		dim Id
+		dim Sigla
+		dim Nome
+		dim StInativo
+		dim Observacoes
+		dim UsuarioResponsavelN1
+		dim UsuarioResponsavelN2
 		end class
 %>

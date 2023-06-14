@@ -203,7 +203,7 @@ function AtualizaCadastro(f) {
 <style type="text/css">
 .tdNumLoja{
 	vertical-align: top;
-	width: 60px;
+	width: 45px;
 	}
 .tdNomeLoja{
 	vertical-align: top;
@@ -211,11 +211,11 @@ function AtualizaCadastro(f) {
 	}
 .tdPercComissao{
 	vertical-align: top;
-	width: 80px;
+	width: 70px;
 	}
 .tdPercComissaoEDesc{
 	vertical-align: top;
-	width: 85px;
+	width: 75px;
 	}
 </style>
 
@@ -268,10 +268,13 @@ function AtualizaCadastro(f) {
 <input type="hidden" id="c_perc_comissao_e_desconto_pj" name="c_perc_comissao_e_desconto_pj" value=''>
 <input type="hidden" id="c_perc_comissao_e_desconto_nivel2" name="c_perc_comissao_e_desconto_nivel2" value=''>
 <input type="hidden" id="c_perc_comissao_e_desconto_nivel2_pj" name="c_perc_comissao_e_desconto_nivel2_pj" value=''>
+<input type="hidden" id="c_perc_comissao_alcada1" name="c_perc_comissao_alcada1" value="" />
 <input type="hidden" id="c_perc_alcada1_pf" name="c_perc_alcada1_pf" value="" />
 <input type="hidden" id="c_perc_alcada1_pj" name="c_perc_alcada1_pj" value="" />
+<input type="hidden" id="c_perc_comissao_alcada2" name="c_perc_comissao_alcada2" value="" />
 <input type="hidden" id="c_perc_alcada2_pf" name="c_perc_alcada2_pf" value="" />
 <input type="hidden" id="c_perc_alcada2_pj" name="c_perc_alcada2_pj" value="" />
+<input type="hidden" id="c_perc_comissao_alcada3" name="c_perc_comissao_alcada3" value="" />
 <input type="hidden" id="c_perc_alcada3_pf" name="c_perc_alcada3_pf" value="" />
 <input type="hidden" id="c_perc_alcada3_pj" name="c_perc_alcada3_pj" value="" />
 
@@ -284,10 +287,13 @@ function AtualizaCadastro(f) {
 			" perc_max_comissao_e_desconto_pj," & _
 			" perc_max_comissao_e_desconto_nivel2," & _
 			" perc_max_comissao_e_desconto_nivel2_pj," & _
+			" perc_max_comissao_alcada1," & _
 			" perc_max_comissao_e_desconto_alcada1_pf," & _
 			" perc_max_comissao_e_desconto_alcada1_pj," & _
+			" perc_max_comissao_alcada2," & _
 			" perc_max_comissao_e_desconto_alcada2_pf," & _
 			" perc_max_comissao_e_desconto_alcada2_pj," & _
+			" perc_max_comissao_alcada3," & _
 			" perc_max_comissao_e_desconto_alcada3_pf," & _
 			" perc_max_comissao_e_desconto_alcada3_pj," & _
 			" nome," & _
@@ -305,9 +311,9 @@ function AtualizaCadastro(f) {
 	<td class="MD" colspan="3">&nbsp;</td>
 	<td colspan="2" class="MC MD tdPercComissaoEDesc Cc" align="center" style="font-size:10pt;padding-right:4px;background-color:whitesmoke;"><span>NÍVEL 1</span></td>
 	<td colspan="2" class="MC MD tdPercComissaoEDesc Cc" align="center" style="font-size:10pt;padding-right:4px;background-color:whitesmoke;"><span>NÍVEL 2</span></td>
-	<td colspan="2" class="MC MD tdPercComissaoEDesc Cc" align="center" style="font-size:10pt;padding-right:4px;background-color:whitesmoke;"><span>ALÇADA 1</span></td>
-	<td colspan="2" class="MC MD tdPercComissaoEDesc Cc" align="center" style="font-size:10pt;padding-right:4px;background-color:whitesmoke;"><span>ALÇADA 2</span></td>
-	<td colspan="2" class="MC MD tdPercComissaoEDesc Cc" align="center" style="font-size:10pt;padding-right:4px;background-color:whitesmoke;"><span>ALÇADA 3</span></td>
+	<td colspan="3" class="MC MD tdPercComissaoEDesc Cc" align="center" style="font-size:10pt;padding-right:4px;background-color:whitesmoke;"><span>ALÇADA 1</span></td>
+	<td colspan="3" class="MC MD tdPercComissaoEDesc Cc" align="center" style="font-size:10pt;padding-right:4px;background-color:whitesmoke;"><span>ALÇADA 2</span></td>
+	<td colspan="3" class="MC MD tdPercComissaoEDesc Cc" align="center" style="font-size:10pt;padding-right:4px;background-color:whitesmoke;"><span>ALÇADA 3</span></td>
 </tr>
 <tr style="background-color:#ffffff;">
 	<td class="MD" colspan="3">&nbsp;</td>
@@ -315,25 +321,31 @@ function AtualizaCadastro(f) {
 	<td class="MC MD tdPercComissaoEDesc Cc" align="center" style="font-size:10pt;padding-right:4px;background-color:whitesmoke;"><span>PJ</span></td>
 	<td class="MC MD tdPercComissaoEDesc Cc" align="center" style="font-size:10pt;padding-right:4px;background-color:whitesmoke;"><span>PF</span></td>
 	<td class="MC MD tdPercComissaoEDesc Cc" align="center" style="font-size:10pt;padding-right:4px;background-color:whitesmoke;"><span>PJ</span></td>
+	<td class="MC MD tdPercComissao Cc" align="center" style="font-size:10pt;padding-right:4px;background-color:whitesmoke;"><span></span></td>
 	<td class="MC MD tdPercComissaoEDesc Cc" align="center" style="font-size:10pt;padding-right:4px;background-color:whitesmoke;"><span>PF</span></td>
 	<td class="MC MD tdPercComissaoEDesc Cc" align="center" style="font-size:10pt;padding-right:4px;background-color:whitesmoke;"><span>PJ</span></td>
+	<td class="MC MD tdPercComissao Cc" align="center" style="font-size:10pt;padding-right:4px;background-color:whitesmoke;"><span></span></td>
 	<td class="MC MD tdPercComissaoEDesc Cc" align="center" style="font-size:10pt;padding-right:4px;background-color:whitesmoke;"><span>PF</span></td>
 	<td class="MC MD tdPercComissaoEDesc Cc" align="center" style="font-size:10pt;padding-right:4px;background-color:whitesmoke;"><span>PJ</span></td>
+	<td class="MC MD tdPercComissao Cc" align="center" style="font-size:10pt;padding-right:4px;background-color:whitesmoke;"><span></span></td>
 	<td class="MC MD tdPercComissaoEDesc Cc" align="center" style="font-size:10pt;padding-right:4px;background-color:whitesmoke;"><span>PF</span></td>
 	<td class="MC MD tdPercComissaoEDesc Cc" align="center" style="font-size:10pt;padding-right:4px;background-color:whitesmoke;"><span>PJ</span></td>
 </tr>
 <tr style="background-color:whitesmoke;">
-	<td class="MT tdNumLoja C" align="center" style="font-size:10pt;vertical-align:bottom;">Nº Loja</td>
+	<td class="MT tdNumLoja C" align="center" style="font-size:10pt;vertical-align:bottom;"><span>Nº</span><br /><span>Loja</span></td>
 	<td class="MC MB MD tdNomeLoja C" align="left" style="font-size:10pt;vertical-align:bottom;padding-left:2px;">Nome Loja</td>
 	<td class="MC MB MD tdPercComissao Cd" align="right" style="font-size:10pt;padding-right:4px;"><span>Máx</span><br /><span>Comissão</span></td>
 	<td class="MC MB MD tdPercComissaoEDesc Cd" align="right" style="font-size:10pt;padding-right:4px;"><span>Máx</span><br /><span>Comis + Desc</span></td>
 	<td class="MC MB MD tdPercComissaoEDesc Cd" align="right" style="font-size:10pt;padding-right:4px;"><span>Máx</span><br /><span>Comis + Desc</span></td>
 	<td class="MC MB MD tdPercComissaoEDesc Cd" align="right" style="font-size:10pt;padding-right:4px;"><span>Máx</span><br /><span>Comis + Desc</span></td>
 	<td class="MC MB MD tdPercComissaoEDesc Cd" align="right" style="font-size:10pt;padding-right:4px;"><span>Máx</span><br /><span>Comis + Desc</span></td>
+	<td class="MC MB MD tdPercComissao Cd" align="right" style="font-size:10pt;padding-right:4px;"><span>Máx</span><br /><span>Comissão</span></td>
 	<td class="MC MB MD tdPercComissaoEDesc Cd" align="right" style="font-size:10pt;padding-right:4px;"><span>Máx</span><br /><span>Comis + Desc</span></td>
 	<td class="MC MB MD tdPercComissaoEDesc Cd" align="right" style="font-size:10pt;padding-right:4px;"><span>Máx</span><br /><span>Comis + Desc</span></td>
+	<td class="MC MB MD tdPercComissao Cd" align="right" style="font-size:10pt;padding-right:4px;"><span>Máx</span><br /><span>Comissão</span></td>
 	<td class="MC MB MD tdPercComissaoEDesc Cd" align="right" style="font-size:10pt;padding-right:4px;"><span>Máx</span><br /><span>Comis + Desc</span></td>
 	<td class="MC MB MD tdPercComissaoEDesc Cd" align="right" style="font-size:10pt;padding-right:4px;"><span>Máx</span><br /><span>Comis + Desc</span></td>
+	<td class="MC MB MD tdPercComissao Cd" align="right" style="font-size:10pt;padding-right:4px;"><span>Máx</span><br /><span>Comissão</span></td>
 	<td class="MC MB MD tdPercComissaoEDesc Cd" align="right" style="font-size:10pt;padding-right:4px;"><span>Máx</span><br /><span>Comis + Desc</span></td>
 	<td class="MC MB MD tdPercComissaoEDesc Cd" align="right" style="font-size:10pt;padding-right:4px;"><span>Máx</span><br /><span>Comis + Desc</span></td>
 </tr>
@@ -353,64 +365,79 @@ function AtualizaCadastro(f) {
 		if s_nome_loja <> "" then s_nome_loja = iniciais_em_maiusculas(s_nome_loja)
 %>
 <tr id="TR_<%=Cstr(n_reg)%>">
-	<td class="MB MD ME tdNumLoja" align="center"><input id="c_loja" name="c_loja" readonly tabindex=-1 class="PLLc" style="font-size:10pt;width:55px;background-color:Transparent;" value="<%=Trim("" & rs("loja"))%>"></td>
+	<td class="MB MD ME tdNumLoja" align="center"><input id="c_loja" name="c_loja" readonly tabindex=-1 class="PLLc" style="font-size:10pt;width:45px;background-color:Transparent;" value="<%=Trim("" & rs("loja"))%>"></td>
 	<td class="MB MD tdNomeLoja" align="left"><input id="c_nome_loja" name="c_nome_loja" readonly tabindex=-1 class="PLLe" style="font-size:10pt;width:170px;background-color:Transparent;" value="<%=s_nome_loja%>"></td>
-	<td class="MB MD tdPercComissao" align="right"><input id="c_perc_comissao" name="c_perc_comissao" class="PLLd" style="font-size:10pt;width:60px;background-color:Transparent;"
+	<td class="MB MD tdPercComissao" align="right"><input id="c_perc_comissao" name="c_perc_comissao" class="PLLd" style="font-size:10pt;width:50px;background-color:Transparent;"
 		value="<%=formata_perc(rs("perc_max_comissao"))%>" maxlength="5" 
 		onkeypress="if (digitou_enter(true)) fCAD.c_perc_comissao_e_desconto[<%=Cstr(n_reg)%>].focus(); filtra_percentual();"
 		onfocus="this.select();realca_cor_row('TR_<%=Cstr(n_reg)%>');"
 		onblur="this.value=formata_numero(this.value,2);normaliza_cor_row('TR_<%=Cstr(n_reg)%>');"><span class="PLTd" style='vertical-align:middle;'>&nbsp;%</span></td>
 	<!-- Nível 1 -->
-	<td class="MB MD tdPercComissaoEDesc" align="right"><input id="c_perc_comissao_e_desconto" name="c_perc_comissao_e_desconto" class="PLLd" style="font-size:10pt;width:60px;background-color:Transparent;"
+	<td class="MB MD tdPercComissaoEDesc" align="right"><input id="c_perc_comissao_e_desconto" name="c_perc_comissao_e_desconto" class="PLLd" style="font-size:10pt;width:50px;background-color:Transparent;"
 		value="<%=formata_perc(rs("perc_max_comissao_e_desconto"))%>" maxlength="5" 
 		onkeypress="if (digitou_enter(true)) fCAD.c_perc_comissao_e_desconto_pj[<%=Cstr(n_reg)%>].focus(); filtra_percentual();"
 		onfocus="this.select();realca_cor_row('TR_<%=Cstr(n_reg)%>');"
 		onblur="this.value=formata_numero(this.value,2);normaliza_cor_row('TR_<%=Cstr(n_reg)%>');"><span class="PLTd" style='vertical-align:middle;'>&nbsp;%</span></td>
-	<td class="MB MD tdPercComissaoEDesc" align="right"><input id="c_perc_comissao_e_desconto_pj" name="c_perc_comissao_e_desconto_pj" class="PLLd" style="font-size:10pt;width:60px;background-color:Transparent;"
+	<td class="MB MD tdPercComissaoEDesc" align="right"><input id="c_perc_comissao_e_desconto_pj" name="c_perc_comissao_e_desconto_pj" class="PLLd" style="font-size:10pt;width:50px;background-color:Transparent;"
 		value="<%=formata_perc(rs("perc_max_comissao_e_desconto_pj"))%>" maxlength="5" 
 		onkeypress="if (digitou_enter(true)) fCAD.c_perc_comissao_e_desconto_nivel2[<%=Cstr(n_reg)%>].focus(); filtra_percentual();"
 		onfocus="this.select();realca_cor_row('TR_<%=Cstr(n_reg)%>');"
 		onblur="this.value=formata_numero(this.value,2);normaliza_cor_row('TR_<%=Cstr(n_reg)%>');"><span class="PLTd" style='vertical-align:middle;'>&nbsp;%</span></td>
 	<!-- Nível 2 -->
-	<td class="MB MD tdPercComissaoEDesc" align="right"><input id="c_perc_comissao_e_desconto_nivel2" name="c_perc_comissao_e_desconto_nivel2" class="PLLd" style="font-size:10pt;width:60px;background-color:Transparent;"
+	<td class="MB MD tdPercComissaoEDesc" align="right"><input id="c_perc_comissao_e_desconto_nivel2" name="c_perc_comissao_e_desconto_nivel2" class="PLLd" style="font-size:10pt;width:50px;background-color:Transparent;"
 		value="<%=formata_perc(rs("perc_max_comissao_e_desconto_nivel2"))%>" maxlength="5" 
 		onkeypress="if (digitou_enter(true)) fCAD.c_perc_comissao_e_desconto_nivel2_pj[<%=Cstr(n_reg)%>].focus(); filtra_percentual();"
 		onfocus="this.select();realca_cor_row('TR_<%=Cstr(n_reg)%>');"
 		onblur="this.value=formata_numero(this.value,2);normaliza_cor_row('TR_<%=Cstr(n_reg)%>');"><span class="PLTd" style='vertical-align:middle;'>&nbsp;%</span></td>
-	<td class="MB MD tdPercComissaoEDesc" align="right"><input id="c_perc_comissao_e_desconto_nivel2_pj" name="c_perc_comissao_e_desconto_nivel2_pj" class="PLLd" style="font-size:10pt;width:60px;background-color:Transparent;"
+	<td class="MB MD tdPercComissaoEDesc" align="right"><input id="c_perc_comissao_e_desconto_nivel2_pj" name="c_perc_comissao_e_desconto_nivel2_pj" class="PLLd" style="font-size:10pt;width:50px;background-color:Transparent;"
 		value="<%=formata_perc(rs("perc_max_comissao_e_desconto_nivel2_pj"))%>" maxlength="5"
-		onkeypress="if (digitou_enter(true)) fCAD.c_perc_alcada1_pf[<%=Cstr(n_reg)%>].focus(); filtra_percentual();"
+		onkeypress="if (digitou_enter(true)) fCAD.c_perc_comissao_alcada1[<%=Cstr(n_reg)%>].focus(); filtra_percentual();"
 		onfocus="this.select();realca_cor_row('TR_<%=Cstr(n_reg)%>');"
 		onblur="this.value=formata_numero(this.value,2);normaliza_cor_row('TR_<%=Cstr(n_reg)%>');"><span class="PLTd" style='vertical-align:middle;'>&nbsp;%</span></td>
 	<!-- Alçada 1 -->
-	<td class="MB MD tdPercComissaoEDesc" align="right"><input id="c_perc_alcada1_pf" name="c_perc_alcada1_pf" class="PLLd" style="font-size:10pt;width:60px;background-color:Transparent;"
+	<td class="MB MD tdPercComissao" align="right"><input id="c_perc_comissao_alcada1" name="c_perc_comissao_alcada1" class="PLLd" style="font-size:10pt;width:50px;background-color:Transparent;"
+		value="<%=formata_perc(rs("perc_max_comissao_alcada1"))%>" maxlength="5"
+		onkeypress="if (digitou_enter(true)) fCAD.c_perc_alcada1_pf[<%=Cstr(n_reg)%>].focus(); filtra_percentual();"
+		onfocus="this.select();realca_cor_row('TR_<%=Cstr(n_reg)%>');"
+		onblur="this.value=formata_numero(this.value,2);normaliza_cor_row('TR_<%=Cstr(n_reg)%>');" /><span class="PLTd" style='vertical-align:middle;'>&nbsp;%</span></td>
+	<td class="MB MD tdPercComissaoEDesc" align="right"><input id="c_perc_alcada1_pf" name="c_perc_alcada1_pf" class="PLLd" style="font-size:10pt;width:50px;background-color:Transparent;"
 		value="<%=formata_perc(rs("perc_max_comissao_e_desconto_alcada1_pf"))%>" maxlength="5"
 		onkeypress="if (digitou_enter(true)) fCAD.c_perc_alcada1_pj[<%=Cstr(n_reg)%>].focus(); filtra_percentual();"
 		onfocus="this.select();realca_cor_row('TR_<%=Cstr(n_reg)%>');"
 		onblur="this.value=formata_numero(this.value,2);normaliza_cor_row('TR_<%=Cstr(n_reg)%>');"><span class="PLTd" style='vertical-align:middle;'>&nbsp;%</span></td>
-	<td class="MB MD tdPercComissaoEDesc" align="right"><input id="c_perc_alcada1_pj" name="c_perc_alcada1_pj" class="PLLd" style="font-size:10pt;width:60px;background-color:Transparent;"
+	<td class="MB MD tdPercComissaoEDesc" align="right"><input id="c_perc_alcada1_pj" name="c_perc_alcada1_pj" class="PLLd" style="font-size:10pt;width:50px;background-color:Transparent;"
 		value="<%=formata_perc(rs("perc_max_comissao_e_desconto_alcada1_pj"))%>" maxlength="5"
-		onkeypress="if (digitou_enter(true)) fCAD.c_perc_alcada2_pf[<%=Cstr(n_reg)%>].focus(); filtra_percentual();"
+		onkeypress="if (digitou_enter(true)) fCAD.c_perc_comissao_alcada2[<%=Cstr(n_reg)%>].focus(); filtra_percentual();"
 		onfocus="this.select();realca_cor_row('TR_<%=Cstr(n_reg)%>');"
 		onblur="this.value=formata_numero(this.value,2);normaliza_cor_row('TR_<%=Cstr(n_reg)%>');"><span class="PLTd" style='vertical-align:middle;'>&nbsp;%</span></td>
 	<!-- Alçada 2 -->
-	<td class="MB MD tdPercComissaoEDesc" align="right"><input id="c_perc_alcada2_pf" name="c_perc_alcada2_pf" class="PLLd" style="font-size:10pt;width:60px;background-color:Transparent;"
+	<td class="MB MD tdPercComissao" align="right"><input id="c_perc_comissao_alcada2" name="c_perc_comissao_alcada2" class="PLLd" style="font-size:10pt;width:50px;background-color:Transparent;"
+		value="<%=formata_perc(rs("perc_max_comissao_alcada2"))%>" maxlength="5"
+		onkeypress="if (digitou_enter(true)) fCAD.c_perc_alcada2_pf[<%=Cstr(n_reg)%>].focus(); filtra_percentual();"
+		onfocus="this.select();realca_cor_row('TR_<%=Cstr(n_reg)%>');"
+		onblur="this.value=formata_numero(this.value,2);normaliza_cor_row('TR_<%=Cstr(n_reg)%>');" /><span class="PLTd" style='vertical-align:middle;'>&nbsp;%</span></td>
+	<td class="MB MD tdPercComissaoEDesc" align="right"><input id="c_perc_alcada2_pf" name="c_perc_alcada2_pf" class="PLLd" style="font-size:10pt;width:50px;background-color:Transparent;"
 		value="<%=formata_perc(rs("perc_max_comissao_e_desconto_alcada2_pf"))%>" maxlength="5"
 		onkeypress="if (digitou_enter(true)) fCAD.c_perc_alcada2_pj[<%=Cstr(n_reg)%>].focus(); filtra_percentual();"
 		onfocus="this.select();realca_cor_row('TR_<%=Cstr(n_reg)%>');"
 		onblur="this.value=formata_numero(this.value,2);normaliza_cor_row('TR_<%=Cstr(n_reg)%>');"><span class="PLTd" style='vertical-align:middle;'>&nbsp;%</span></td>
-	<td class="MB MD tdPercComissaoEDesc" align="right"><input id="c_perc_alcada2_pj" name="c_perc_alcada2_pj" class="PLLd" style="font-size:10pt;width:60px;background-color:Transparent;"
+	<td class="MB MD tdPercComissaoEDesc" align="right"><input id="c_perc_alcada2_pj" name="c_perc_alcada2_pj" class="PLLd" style="font-size:10pt;width:50px;background-color:Transparent;"
 		value="<%=formata_perc(rs("perc_max_comissao_e_desconto_alcada2_pj"))%>" maxlength="5"
-		onkeypress="if (digitou_enter(true)) fCAD.c_perc_alcada3_pf[<%=Cstr(n_reg)%>].focus(); filtra_percentual();"
+		onkeypress="if (digitou_enter(true)) fCAD.c_perc_comissao_alcada3[<%=Cstr(n_reg)%>].focus(); filtra_percentual();"
 		onfocus="this.select();realca_cor_row('TR_<%=Cstr(n_reg)%>');"
 		onblur="this.value=formata_numero(this.value,2);normaliza_cor_row('TR_<%=Cstr(n_reg)%>');"><span class="PLTd" style='vertical-align:middle;'>&nbsp;%</span></td>
 	<!-- Alçada 3 -->
-	<td class="MB MD tdPercComissaoEDesc" align="right"><input id="c_perc_alcada3_pf" name="c_perc_alcada3_pf" class="PLLd" style="font-size:10pt;width:60px;background-color:Transparent;"
+	<td class="MB MD tdPercComissao" align="right"><input id="c_perc_comissao_alcada3" name="c_perc_comissao_alcada3" class="PLLd" style="font-size:10pt;width:50px;background-color:Transparent;"
+		value="<%=formata_perc(rs("perc_max_comissao_alcada3"))%>" maxlength="5"
+		onkeypress="if (digitou_enter(true)) fCAD.c_perc_alcada3_pf[<%=Cstr(n_reg)%>].focus(); filtra_percentual();"
+		onfocus="this.select();realca_cor_row('TR_<%=Cstr(n_reg)%>');"
+		onblur="this.value=formata_numero(this.value,2);normaliza_cor_row('TR_<%=Cstr(n_reg)%>');" /><span class="PLTd" style='vertical-align:middle;'>&nbsp;%</span></td>
+	<td class="MB MD tdPercComissaoEDesc" align="right"><input id="c_perc_alcada3_pf" name="c_perc_alcada3_pf" class="PLLd" style="font-size:10pt;width:50px;background-color:Transparent;"
 		value="<%=formata_perc(rs("perc_max_comissao_e_desconto_alcada3_pf"))%>" maxlength="5"
 		onkeypress="if (digitou_enter(true)) fCAD.c_perc_alcada3_pj[<%=Cstr(n_reg)%>].focus(); filtra_percentual();"
 		onfocus="this.select();realca_cor_row('TR_<%=Cstr(n_reg)%>');"
 		onblur="this.value=formata_numero(this.value,2);normaliza_cor_row('TR_<%=Cstr(n_reg)%>');"><span class="PLTd" style='vertical-align:middle;'>&nbsp;%</span></td>
-	<td class="MB MD tdPercComissaoEDesc" align="right"><input id="c_perc_alcada3_pj" name="c_perc_alcada3_pj" class="PLLd" style="font-size:10pt;width:60px;background-color:Transparent;"
+	<td class="MB MD tdPercComissaoEDesc" align="right"><input id="c_perc_alcada3_pj" name="c_perc_alcada3_pj" class="PLLd" style="font-size:10pt;width:50px;background-color:Transparent;"
 		value="<%=formata_perc(rs("perc_max_comissao_e_desconto_alcada3_pj"))%>" maxlength="5"
 		<% if n_reg = n_reg_total then %>
 		onkeypress="if (digitou_enter(true)) bATUALIZA.focus(); filtra_percentual();"

@@ -182,7 +182,7 @@
 	strScriptJS_MPN2 = strScriptJS_MPN2 & _
 						"</script>" & chr(13)
 
-	dim strPercMaxRT
+	dim strPercMaxRT, strPercMaxRTAlcada1, strPercMaxRTAlcada2, strPercMaxRTAlcada3
 	dim strPercMaxComissaoEDesconto, strPercMaxComissaoEDescontoPj, strPercMaxComissaoEDescontoNivel2, strPercMaxComissaoEDescontoNivel2Pj
 	dim strPercMaxDescAlcada1Pf, strPercMaxDescAlcada1Pj, strPercMaxDescAlcada2Pf, strPercMaxDescAlcada2Pj, strPercMaxDescAlcada3Pf, strPercMaxDescAlcada3Pj
 	strPercMaxRT = formata_perc(rCD.perc_max_comissao)
@@ -190,24 +190,30 @@
 	strPercMaxComissaoEDescontoPj = formata_perc(rCD.perc_max_comissao_e_desconto_pj)
 	strPercMaxComissaoEDescontoNivel2 = formata_perc(rCD.perc_max_comissao_e_desconto_nivel2)
 	strPercMaxComissaoEDescontoNivel2Pj = formata_perc(rCD.perc_max_comissao_e_desconto_nivel2_pj)
+	strPercMaxRTAlcada1 = "0"
 	strPercMaxDescAlcada1Pf = "0"
 	strPercMaxDescAlcada1Pj = "0"
+	strPercMaxRTAlcada2 = "0"
 	strPercMaxDescAlcada2Pf = "0"
 	strPercMaxDescAlcada2Pj = "0"
+	strPercMaxRTAlcada3 = "0"
 	strPercMaxDescAlcada3Pf = "0"
 	strPercMaxDescAlcada3Pj = "0"
 	
 	if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_1, s_lista_operacoes_permitidas) then
+		strPercMaxRTAlcada1 = formata_perc(rCD.perc_max_comissao_alcada1)
 		strPercMaxDescAlcada1Pf = formata_perc(rCD.perc_max_comissao_e_desconto_alcada1_pf)
 		strPercMaxDescAlcada1Pj = formata_perc(rCD.perc_max_comissao_e_desconto_alcada1_pj)
 		end if
 
 	if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_2, s_lista_operacoes_permitidas) then
+		strPercMaxRTAlcada2 = formata_perc(rCD.perc_max_comissao_alcada2)
 		strPercMaxDescAlcada2Pf = formata_perc(rCD.perc_max_comissao_e_desconto_alcada2_pf)
 		strPercMaxDescAlcada2Pj = formata_perc(rCD.perc_max_comissao_e_desconto_alcada2_pj)
 		end if
 
 	if operacao_permitida(OP_LJA_DESC_SUP_ALCADA_3, s_lista_operacoes_permitidas) then
+		strPercMaxRTAlcada3 = formata_perc(rCD.perc_max_comissao_alcada3)
 		strPercMaxDescAlcada3Pf = formata_perc(rCD.perc_max_comissao_e_desconto_alcada3_pf)
 		strPercMaxDescAlcada3Pj = formata_perc(rCD.perc_max_comissao_e_desconto_alcada3_pj)
 		end if
@@ -2261,9 +2267,10 @@ if converte_numero(r_orcamento.IdOrcamentoCotacao) > 0 then %>
 
 function fPEDConfirma( f ) {
 var s, i, j, blnFlag, vlAux, vl_preco_lista, vl_preco_venda, vl_NF, perc_desc, strMsgErro;
-var perc_RT, perc_RT_novo, perc_max_RT, perc_max_comissao_e_desconto, perc_max_comissao_e_desconto_pj, perc_max_comissao_e_desconto_nivel2, perc_max_comissao_e_desconto_nivel2_pj, perc_senha_desconto, perc_desc_medio;
-var perc_max_comissao_e_desconto_a_utilizar;
+var perc_RT, perc_RT_novo, perc_max_RT_padrao, perc_max_comissao_e_desconto, perc_max_comissao_e_desconto_pj, perc_max_comissao_e_desconto_nivel2, perc_max_comissao_e_desconto_nivel2_pj, perc_senha_desconto, perc_desc_medio;
+var perc_max_RT_a_utilizar, perc_max_comissao_e_desconto_a_utilizar;
 var perc_max_desc_alcada_1_pf, perc_max_desc_alcada_1_pj, perc_max_desc_alcada_2_pf, perc_max_desc_alcada_2_pj, perc_max_desc_alcada_3_pf, perc_max_desc_alcada_3_pj;
+var perc_max_comissao_alcada1, perc_max_comissao_alcada2, perc_max_comissao_alcada3;
 
 <% 'ORIGEM: PRÉ-PEDIDO (NÃO FOI GERADO ATRAVÉS DE ORÇAMENTO/COTAÇÃO)
 if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then %>
@@ -2316,7 +2323,8 @@ if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then %>
 	// Consiste percentual máximo de comissão e desconto
 	objSenhaDesconto = null;
 	perc_RT = converte_numero(f.c_perc_RT.value);
-	perc_max_RT = converte_numero(f.c_PercMaxRT.value);
+	perc_max_RT_padrao = converte_numero(f.c_PercMaxRT.value);
+	perc_max_RT_a_utilizar = perc_max_RT_padrao;
 
 	perc_max_comissao_e_desconto = converte_numero(f.c_PercMaxComissaoEDesconto.value);
 	perc_max_comissao_e_desconto_pj = converte_numero(f.c_PercMaxComissaoEDescontoPj.value);
@@ -2327,12 +2335,20 @@ if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then %>
 	perc_desc_medio = calcula_desconto_medio();
 
 	// Verifica se o usuário tem permissão de desconto por alçada
+	perc_max_comissao_alcada1 = converte_numero(f.c_PercMaxRTAlcada1.value);
 	perc_max_desc_alcada_1_pf = converte_numero(f.c_PercMaxDescAlcada1Pf.value);
 	perc_max_desc_alcada_1_pj = converte_numero(f.c_PercMaxDescAlcada1Pj.value);
+	perc_max_comissao_alcada2 = converte_numero(f.c_PercMaxRTAlcada2.value);
 	perc_max_desc_alcada_2_pf = converte_numero(f.c_PercMaxDescAlcada2Pf.value);
 	perc_max_desc_alcada_2_pj = converte_numero(f.c_PercMaxDescAlcada2Pj.value);
+	perc_max_comissao_alcada3 = converte_numero(f.c_PercMaxRTAlcada3.value);
 	perc_max_desc_alcada_3_pf = converte_numero(f.c_PercMaxDescAlcada3Pf.value);
 	perc_max_desc_alcada_3_pj = converte_numero(f.c_PercMaxDescAlcada3Pj.value);
+
+	if (perc_max_comissao_alcada1 > perc_max_RT_a_utilizar) perc_max_RT_a_utilizar = perc_max_comissao_alcada1;
+	if (perc_max_comissao_alcada2 > perc_max_RT_a_utilizar) perc_max_RT_a_utilizar = perc_max_comissao_alcada2;
+	if (perc_max_comissao_alcada3 > perc_max_RT_a_utilizar) perc_max_RT_a_utilizar = perc_max_comissao_alcada3;
+
 	if (f.c_tipo_cliente.value == ID_PF) {
 		if (perc_max_desc_alcada_1_pf > perc_max_comissao_e_desconto_a_utilizar) perc_max_comissao_e_desconto_a_utilizar = perc_max_desc_alcada_1_pf;
 		if (perc_max_desc_alcada_2_pf > perc_max_comissao_e_desconto_a_utilizar) perc_max_comissao_e_desconto_a_utilizar = perc_max_desc_alcada_2_pf;
@@ -2400,7 +2416,7 @@ if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then %>
 	// Tem RT: sim
 	if (perc_RT != 0) {
 		// RT excede limite máximo?
-		if (perc_RT > perc_max_RT) {
+		if (perc_RT > perc_max_RT_a_utilizar) {
 			alert("Percentual de comissão excede o máximo permitido!!");
 			return;
 		}
@@ -2423,6 +2439,22 @@ if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then %>
 				return;
 			}
 			else {
+				// Verifica se o novo percentual de RT está dentro do limite definido p/ o perfil do usuário que está editando o pedido
+				if (perc_RT_novo > perc_max_RT_a_utilizar) {
+					s = "O percentual de comissão (" + formata_numero(perc_RT_novo, 2) + "%) excede o máximo permitido!!" +
+						"\nA comissão será reduzida automaticamente para " + formata_numero(perc_max_RT_a_utilizar, 2) + "%!!" +
+						"\nContinua?";
+					if (!confirm(s)) {
+						s = "Operação cancelada!!";
+						alert(s);
+						return;
+					}
+					else {
+						// Novo percentual de RT
+						perc_RT_novo = perc_max_RT_a_utilizar;
+					}
+				}
+
 				// Novo percentual de RT
 				f.c_perc_RT.value = formata_perc_RT(perc_RT_novo);
 				perc_RT = perc_RT_novo;
@@ -2679,10 +2711,13 @@ if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then %>
 <input type="hidden" name="c_PercMaxComissaoEDescontoPj" id="c_PercMaxComissaoEDescontoPj" value='<%=strPercMaxComissaoEDescontoPj%>'>
 <input type="hidden" name="c_PercMaxComissaoEDescontoNivel2" id="c_PercMaxComissaoEDescontoNivel2" value='<%=strPercMaxComissaoEDescontoNivel2%>'>
 <input type="hidden" name="c_PercMaxComissaoEDescontoNivel2Pj" id="c_PercMaxComissaoEDescontoNivel2Pj" value='<%=strPercMaxComissaoEDescontoNivel2Pj%>'>
+<input type="hidden" name="c_PercMaxRTAlcada1" id="c_PercMaxRTAlcada1" value="<%=strPercMaxRTAlcada1%>" />
 <input type="hidden" name="c_PercMaxDescAlcada1Pf" id="c_PercMaxDescAlcada1Pf" value="<%=strPercMaxDescAlcada1Pf%>" />
 <input type="hidden" name="c_PercMaxDescAlcada1Pj" id="c_PercMaxDescAlcada1Pj" value="<%=strPercMaxDescAlcada1Pj%>" />
+<input type="hidden" name="c_PercMaxRTAlcada2" id="c_PercMaxRTAlcada2" value="<%=strPercMaxRTAlcada2%>" />
 <input type="hidden" name="c_PercMaxDescAlcada2Pf" id="c_PercMaxDescAlcada2Pf" value="<%=strPercMaxDescAlcada2Pf%>" />
 <input type="hidden" name="c_PercMaxDescAlcada2Pj" id="c_PercMaxDescAlcada2Pj" value="<%=strPercMaxDescAlcada2Pj%>" />
+<input type="hidden" name="c_PercMaxRTAlcada3" id="c_PercMaxRTAlcada3" value="<%=strPercMaxRTAlcada3%>" />
 <input type="hidden" name="c_PercMaxDescAlcada3Pf" id="c_PercMaxDescAlcada3Pf" value="<%=strPercMaxDescAlcada3Pf%>" />
 <input type="hidden" name="c_PercMaxDescAlcada3Pj" id="c_PercMaxDescAlcada3Pj" value="<%=strPercMaxDescAlcada3Pj%>" />
 <input type="hidden" name="c_PercVlPedidoLimiteRA" id="c_PercVlPedidoLimiteRA" value='<%=strPercVlPedidoLimiteRA%>'>
