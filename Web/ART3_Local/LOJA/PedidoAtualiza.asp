@@ -1546,7 +1546,7 @@
 						end if 'if ((.desc_dado + perc_RT) <= (perc_comissao_e_desconto_padrao + MAX_MARGEM_ERRO_PERC_DESC_E_RT)) then-else
 
 					'Verifica necessidade de senha de autorização de desconto superior e se essa autorização foi cadastrada
-					if (.preco_venda <> .preco_venda_original) Or blnFormaPagtoEditada then
+					if (.preco_venda <> .preco_venda_original) Or (blnFormaPagtoEditada And (Not blnUsuarioDeptoFinanceiro)) then
 						if desc_dado_arredondado > perc_comissao_e_desconto_a_utilizar then
 							s = "SELECT " & _
 									"*" & _
