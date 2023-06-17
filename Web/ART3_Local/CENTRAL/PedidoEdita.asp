@@ -2966,7 +2966,7 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
 		// Laço p/ produtos
 		strMsgErro = "";
 		for (i = 0; i < f.c_produto.length; i++) {
-			if ((trim(f.c_produto[i].value) != "") && (blnFormaPagtoEditada || (f.c_vl_unitario[i].value != f.c_vl_unitario_original[i].value))) {
+			if ((trim(f.c_produto[i].value) != "") && ((blnFormaPagtoEditada && (!blnUsuarioDeptoFinanceiro)) || (f.c_vl_unitario[i].value != f.c_vl_unitario_original[i].value))) {
 				perc_senha_desconto = 0;
 				vl_preco_lista = converte_numero(f.c_preco_lista[i].value);
 				vl_preco_venda = converte_numero(f.c_vl_unitario[i].value);
