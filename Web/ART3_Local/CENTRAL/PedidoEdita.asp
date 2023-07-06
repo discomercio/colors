@@ -417,7 +417,13 @@
 	dim blnEntregaImediataEdicaoLiberada, blnEntregaImediataNaoSemDataPrevisao
 	blnEntregaImediataEdicaoLiberada = False
 	if operacao_permitida(OP_CEN_EDITA_PEDIDO, s_lista_operacoes_permitidas) then
-		if (Not IsPedidoEncerrado(r_pedido.st_entrega)) Or (Trim(r_pedido.obs_2) = "") then blnEntregaImediataEdicaoLiberada = True
+		if (Not IsPedidoEncerrado(r_pedido.st_entrega)) then
+			if r_pedido.st_entrega = ST_ENTREGA_A_ENTREGAR then
+				if operacao_permitida(OP_CEN_EDITA_CAMPO_ENTREGA_IMEDIATA_EM_PEDIDO_A_ENTREGAR, s_lista_operacoes_permitidas) then blnEntregaImediataEdicaoLiberada = True
+			else
+				if Trim(r_pedido.obs_2) = "" then blnEntregaImediataEdicaoLiberada = True
+				end if
+			end if
 		end if
 
 	dim blnPagtoAntecipadoEdicaoLiberada
@@ -848,13 +854,13 @@ end function
 	}
 
 	function configuraCampoDataPrevisaoEntrega() {
-        if ($("input[name='rb_etg_imediata']:checked").val() == '<%=COD_ETG_IMEDIATA_NAO%>') {
+		if (($("input[name='rb_etg_imediata']:checked").val() == '<%=COD_ETG_IMEDIATA_NAO%>') && ($("#blnEntregaImediataEdicaoLiberada").val()=='<%=CStr(True)%>')) {
             $("#c_data_previsao_entrega").prop("readonly", false);
             $("#c_data_previsao_entrega").prop("disabled", false);
             $("#c_data_previsao_entrega").datepicker("enable");
         }
         else {
-            $("#c_data_previsao_entrega").val("");
+			if ($("#blnEntregaImediataEdicaoLiberada").val() == '<%=CStr(True)%>') $("#c_data_previsao_entrega").val("");
             $("#c_data_previsao_entrega").prop("readonly", true);
             $("#c_data_previsao_entrega").prop("disabled", true);
             $("#c_data_previsao_entrega").datepicker("disable");

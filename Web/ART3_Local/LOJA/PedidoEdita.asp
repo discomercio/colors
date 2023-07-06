@@ -525,9 +525,14 @@ end function
     if rs.Eof then
 	    if operacao_permitida(OP_LJA_EDITA_CAMPO_ENTREGA_IMEDIATA, s_lista_operacoes_permitidas) then
 		    if Not IsPedidoEncerrado(r_pedido.st_entrega) then
-			    if (Cstr(r_pedido.obs_2)="") And (Cstr(r_pedido.obs_3)="") then
-				    blnEtgImediataEdicaoLiberada = True
-				    end if
+				if r_pedido.st_entrega = ST_ENTREGA_A_ENTREGAR then
+					'NOP
+					'A edição do campo 'Entrega Imediata' foi bloqueada em pedidos com status 'A Entregar' e a edição só pode ser realizada na Central mediante permissão de acesso específica
+				else
+					if (Cstr(r_pedido.obs_2)="") And (Cstr(r_pedido.obs_3)="") then
+						blnEtgImediataEdicaoLiberada = True
+						end if
+					end if
 			    end if
 		    end if
         end if
@@ -704,13 +709,13 @@ end function
 	}
 
     function configuraCampoDataPrevisaoEntrega() {
-        if ($("input[name='rb_etg_imediata']:checked").val() == '<%=COD_ETG_IMEDIATA_NAO%>') {
+		if (($("input[name='rb_etg_imediata']:checked").val() == '<%=COD_ETG_IMEDIATA_NAO%>') && ($("#blnEtgImediataEdicaoLiberada").val() == '<%=CStr(True)%>')) {
             $("#c_data_previsao_entrega").prop("readonly", false);
             $("#c_data_previsao_entrega").prop("disabled", false);
             $("#c_data_previsao_entrega").datepicker("enable");
         }
         else {
-            $("#c_data_previsao_entrega").val("");
+			if ($("#blnEtgImediataEdicaoLiberada").val() == '<%=CStr(True)%>') $("#c_data_previsao_entrega").val("");
             $("#c_data_previsao_entrega").prop("readonly", true);
             $("#c_data_previsao_entrega").prop("disabled", true);
             $("#c_data_previsao_entrega").datepicker("disable");
