@@ -7,8 +7,8 @@ Option Explicit
 '                          IMPRESSÃO DE NOTA FISCAL
 '                       _______________________________
 ' 
-'                           EDIÇÃO = 073
-'                           DATA   = 10.MAI.2022
+'                           EDIÇÃO = 074
+'                           DATA   = 17.MAI.2023
 '                       _______________________________
 ' 
 ' 
@@ -826,18 +826,18 @@ Option Explicit
 '|          |      | - Informar a tag de partilha de ICMS mesmo zerada nas     |
 '|          |      |   operações interestaduais (Nota Técnica 2022.005 SEFAZ)  |
 '|__________|______|___________________________________________________________|
-'|XX.XX.XXXX| XXXX |V X.XX                                                     |
-'|          |      |                                                           |
-'|          |      |                                                           |
-'|          |      |                                                           |
-'|__________|______|___________________________________________________________|
-'|XX.XX.XXXX| XXXX |V X.XX                                                     |
-'|          |      |                                                           |
+'|26.04.2023| LHGX |V 2.32                                                     |
+'|          |      | - Inclusão campo pST                                      |
 '|          |      |                                                           |
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
-'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|XX.XX.XXXX| XXXX |V 2.33                                                     |
+'|          |      | - Versão descartada                                       |
 '|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|17.05.2023| LHGX |V 2.34                                                     |
+'|          |      | - Funcionalidade para zerar DIFAL                         |
 '|          |      |                                                           |
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
@@ -859,8 +859,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.31"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  04/04/2023"
+Global Const m_id_versao = "2.34"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  17/05/2023"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"

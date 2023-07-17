@@ -6154,6 +6154,7 @@ Dim blnNotadeCompromisso As Boolean
 Dim blnRemessaEntregaFutura As Boolean
 Dim blnImprimeDadosFatura As Boolean
 Dim blnIgnorarDIFAL As Boolean
+Dim blnZerarDIFAL As Boolean
 
 ' CONTADORES
 Dim i As Integer
@@ -6209,6 +6210,7 @@ Dim vl_total_BC_ICMS_ST As Currency
 Dim vl_BC_ICMS As Currency
 Dim vl_BC_ICMS_ST As Currency
 Dim vl_BC_ICMS_ST_Ret As Currency
+Dim vl_pST As Currency
 Dim vl_ICMS As Currency
 Dim vl_ICMSDeson As Currency
 Dim vl_ICMS_ST As Currency
@@ -8053,6 +8055,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             
                 vl_ICMS_ST_Ret = 0
                 vl_BC_ICMS_ST_Ret = 0
+                vl_pST = 0
                 
                 If Len(Trim$(.cst)) = 0 Then
                     s_erro = "O produto " & .produto & " - " & .descricao & " não possui a informação do CST!!"
@@ -8186,11 +8189,15 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                     vNFeImgItem(UBound(vNFeImgItem)).ICMS__vBCSTRet = NFeFormataMoeda2Dec(vl_BC_ICMS_ST_Ret)
                     strNFeTagIcms = strNFeTagIcms & vbTab & NFeFormataCampo("vBCSTRet", vNFeImgItem(UBound(vNFeImgItem)).ICMS__vBCSTRet)
                     
+                '   ALIQUOTA SUPORTADA PELO CONSUMIDOR FINAL
+                    vl_pST = 0
+                    strNFeTagIcms = strNFeTagIcms & vbTab & NFeFormataCampo("pST", NFeFormataMoeda2Dec(vl_pST))
+                
                 '   VALOR DO ICMS ST
                     vl_ICMS_ST_Ret = 0
                     vNFeImgItem(UBound(vNFeImgItem)).ICMS__vICMSSTRet = NFeFormataMoeda2Dec(vl_ICMS_ST_Ret)
                     strNFeTagIcms = strNFeTagIcms & vbTab & NFeFormataCampo("vICMSSTRet", vNFeImgItem(UBound(vNFeImgItem)).ICMS__vICMSSTRet)
-                
+                    
             '   ICMS: CÓDIGO DE CST NÃO TRATADO PELO SISTEMA!!
                 Else
                     s_erro = "Código de CST sem tratamento definido no sistema (CST=" & strNFeCst & ")!!"
@@ -8200,10 +8207,12 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
             '   VERIFICAR SE A UF DO DESTINATÁRIO TEM LIMINAR PARA NÃO RECOLHER O DIFAL
                 
                 blnIgnorarDIFAL = False
+                blnZerarDIFAL = False
                 s_Texto_DIFAL_UF = ""
                 
                 s = "SELECT " & _
                     "st_ignorar_difal, " & _
+                    "st_zerar_difal, " & _
                     "texto_adicional" & _
                     " FROM t_NFe_UF_PARAMETRO" & _
                     " WHERE" & _
@@ -8212,6 +8221,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 t_NFe_UF_PARAMETRO.Open s, dbc, , , adCmdText
                 If Not t_NFe_UF_PARAMETRO.EOF Then
                     blnIgnorarDIFAL = t_NFe_UF_PARAMETRO("st_ignorar_difal") = 1
+                    blnZerarDIFAL = t_NFe_UF_PARAMETRO("st_zerar_difal") = 1
                     s_Texto_DIFAL_UF = Trim$("" & t_NFe_UF_PARAMETRO("texto_adicional"))
                     End If
 
@@ -8398,6 +8408,14 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
 '                    Not blnIgnorarDIFAL And _
 '                    Not cfop_eh_de_remessa(strCfopCodigo) And _
 '                    (vl_ICMS > 0) Then
+
+                If blnZerarDIFAL Then
+                    perc_fcp = 0
+                    perc_ICMS_interna_UF_dest = 0
+                    vl_ICMS_UF_dest = 0
+                    vl_ICMS_UF_remet = 0
+                    End If
+
                                 
                 If PARTILHA_ICMS_ATIVA And (rNFeImg.ide__idDest = "2") And _
                     (rNFeImg.dest__indIEDest = "9") And _
@@ -8916,7 +8934,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
                 (strNFeCodFinalidade <> "3") And _
                 (strNFeCodFinalidade <> "4") And _
                    Not tem_instricao_virtual(usuario.emit_id, rNFeImg.dest__UF) Then
-                If (vl_total_ICMSUFDest > 0) Then
+                If (vl_total_ICMSUFDest > 0) Or blnZerarDIFAL Then
                     If strNFeInfAdicQuadroProdutos <> "" Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & vbCrLf
                     strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & "Valores totais do ICMS Interestadual: partilha da UF Destino " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_ICMSUFDest)
                     If (vl_total_FCPUFDest > 0) Then strNFeInfAdicQuadroProdutos = strNFeInfAdicQuadroProdutos & " + FCP " & SIMBOLO_MONETARIO & " " & formata_moeda(vl_total_FCPUFDest)
