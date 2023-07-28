@@ -1604,7 +1604,8 @@
 						'Se a opção não foi editada em relação ao que constava no pré-pedido, mantém os dados complementares também
 						rs("st_etg_imediata")=r_orcamento.st_etg_imediata
 						rs("etg_imediata_data")=r_orcamento.etg_imediata_data
-						rs("etg_imediata_usuario")=r_orcamento.etg_imediata_usuario
+						'Utiliza o dado original, pois no campo padrão o conteúdo está tratado p/ exibir o nome de acordo c/ o tipo (contexto) do usuário
+						rs("etg_imediata_usuario")=r_orcamento.etg_imediata_usuario_RawData
 						rs("EtgImediataIdTipoUsuarioContexto") = r_orcamento.EtgImediataIdTipoUsuarioContexto
 						rs("EtgImediataIdUsuarioUltAtualiz") = r_orcamento.EtgImediataIdUsuarioUltAtualiz
 						end if
@@ -1619,7 +1620,8 @@
 							rs("PrevisaoEntregaIdUsuarioUltAtualiz") = r_usuario.Id
 						else
 						'	SE A DATA DA PREVISÃO DE ENTREGA PERMANECE A MESMA QUE CONSTAVA NO PRÉ-PEDIDO, MANTÉM O MESMO USUÁRIO RESPONSÁVEL
-							rs("PrevisaoEntregaUsuarioUltAtualiz") = r_orcamento.PrevisaoEntregaUsuarioUltAtualiz
+							'Utiliza o dado original, pois no campo padrão o conteúdo está tratado p/ exibir o nome de acordo c/ o tipo (contexto) do usuário
+							rs("PrevisaoEntregaUsuarioUltAtualiz") = r_orcamento.PrevisaoEntregaUsuarioUltAtualiz_RawData
 							rs("PrevisaoEntregaDtHrUltAtualiz") = r_orcamento.PrevisaoEntregaDtHrUltAtualiz
 							rs("PrevisaoEntregaIdTipoUsuarioContexto") = r_orcamento.PrevisaoEntregaIdTipoUsuarioContexto
 							rs("PrevisaoEntregaIdUsuarioUltAtualiz") = r_orcamento.PrevisaoEntregaIdUsuarioUltAtualiz
@@ -1635,7 +1637,8 @@
 					if Trim(s_instalador_instala) = Trim("" & r_orcamento.InstaladorInstalaStatus) then
 						'Se a opção não foi editada em relação ao que constava no pré-pedido, mantém os dados complementares também
 						rs("InstaladorInstalaStatus") = r_orcamento.InstaladorInstalaStatus
-						rs("InstaladorInstalaUsuarioUltAtualiz") = r_orcamento.InstaladorInstalaUsuarioUltAtualiz
+						'Utiliza o dado original, pois no campo padrão o conteúdo está tratado p/ exibir o nome de acordo c/ o tipo (contexto) do usuário
+						rs("InstaladorInstalaUsuarioUltAtualiz") = r_orcamento.InstaladorInstalaUsuarioUltAtualiz_RawData
 						rs("InstaladorInstalaDtHrUltAtualiz") = r_orcamento.InstaladorInstalaDtHrUltAtualiz
 						rs("InstaladorInstalaIdTipoUsuarioContexto") = r_orcamento.InstaladorInstalaIdTipoUsuarioContexto
 						rs("InstaladorInstalaIdUsuarioUltAtualiz") = r_orcamento.InstaladorInstalaIdUsuarioUltAtualiz
@@ -1661,7 +1664,8 @@
 					if Trim(rb_garantia_indicador) = Trim("" & r_orcamento.GarantiaIndicadorStatus) then
 						'Se a opção não foi editada em relação ao que constava no pré-pedido, mantém os dados complementares também
 						rs("GarantiaIndicadorStatus") = r_orcamento.GarantiaIndicadorStatus
-						rs("GarantiaIndicadorUsuarioUltAtualiz") = r_orcamento.GarantiaIndicadorUsuarioUltAtualiz
+						'Utiliza o dado original, pois no campo padrão o conteúdo está tratado p/ exibir o nome de acordo c/ o tipo (contexto) do usuário
+						rs("GarantiaIndicadorUsuarioUltAtualiz") = r_orcamento.GarantiaIndicadorUsuarioUltAtualiz_RawData
 						rs("GarantiaIndicadorDtHrUltAtualiz") = r_orcamento.GarantiaIndicadorDtHrUltAtualiz
 						rs("GarantiaIndicadorIdTipoUsuarioContexto") = r_orcamento.GarantiaIndicadorIdTipoUsuarioContexto
 						rs("GarantiaIndicadorIdUsuarioUltAtualiz") = r_orcamento.GarantiaIndicadorIdUsuarioUltAtualiz

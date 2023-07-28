@@ -1642,7 +1642,7 @@
 	dim campos_a_omitir
 	s_log = ""
 	s_log_manual = ""
-	campos_a_omitir = "|etg_imediata_data|etg_imediata_usuario|"
+	campos_a_omitir = ""
 	campos_a_omitir_FP = campos_a_omitir & "|analise_credito|st_recebido|"
 	campos_a_omitir_ItemCFF = ""
 	campos_a_omitir_PedCFF = ""
