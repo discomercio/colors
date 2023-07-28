@@ -1907,7 +1907,7 @@
 	dim campos_a_omitir
 	s_log = ""
 	s_log_manual = ""
-	campos_a_omitir = "|a_entregar_data|a_entregar_hora|etg_imediata_data|etg_imediata_usuario|PedidoRecebidoDtHrUltAtualiz|PedidoRecebidoUsuarioUltAtualiz|InstaladorInstalaUsuarioUltAtualiz|InstaladorInstalaDtHrUltAtualiz|"
+	campos_a_omitir = "|a_entregar_data|a_entregar_hora|PedidoRecebidoDtHrUltAtualiz|PedidoRecebidoUsuarioUltAtualiz|"
 	campos_a_omitir_FP = campos_a_omitir & "|analise_credito|st_recebido|"
 	campos_a_omitir_ItemCFF = ""
 	campos_a_omitir_PedCFF = ""
