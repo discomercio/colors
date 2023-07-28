@@ -1902,6 +1902,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.etg_imediata_usuario = "[VP] " & .etg_imediata_usuario
 					end if
 				end if
+			.etg_imediata_usuario_RawData = Trim("" & rs("etg_imediata_usuario"))
 			.PrevisaoEntregaData = rs("PrevisaoEntregaData")
 			if Trim("" & rs("DecodNome_PrevisaoEntregaUsuarioUltAtualiz")) = "" then
 				.PrevisaoEntregaUsuarioUltAtualiz = Trim("" & rs("PrevisaoEntregaUsuarioUltAtualiz"))
@@ -1911,6 +1912,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.PrevisaoEntregaUsuarioUltAtualiz = "[VP] " & .PrevisaoEntregaUsuarioUltAtualiz
 					end if
 				end if
+			.PrevisaoEntregaUsuarioUltAtualiz_RawData = Trim("" & rs("PrevisaoEntregaUsuarioUltAtualiz"))
 			.PrevisaoEntregaDtHrUltAtualiz = rs("PrevisaoEntregaDtHrUltAtualiz")
 			.frete_status				= rs("frete_status")
 			.frete_valor				= rs("frete_valor")
@@ -1930,6 +1932,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.InstaladorInstalaUsuarioUltAtualiz = "[VP] " & .InstaladorInstalaUsuarioUltAtualiz
 					end if
 				end if
+			.InstaladorInstalaUsuarioUltAtualiz_RawData = Trim("" & rs("InstaladorInstalaUsuarioUltAtualiz"))
 			.InstaladorInstalaDtHrUltAtualiz = rs("InstaladorInstalaDtHrUltAtualiz")
 			.GarantiaIndicadorStatus	= rs("GarantiaIndicadorStatus")
 			if Trim("" & rs("DecodNome_GarantiaIndicadorUsuarioUltAtualiz")) = "" then
@@ -1940,6 +1943,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.GarantiaIndicadorUsuarioUltAtualiz = "[VP] " & .GarantiaIndicadorUsuarioUltAtualiz
 					end if
 				end if
+			.GarantiaIndicadorUsuarioUltAtualiz_RawData = rs("GarantiaIndicadorUsuarioUltAtualiz")
 			.GarantiaIndicadorDtHrUltAtualiz = rs("GarantiaIndicadorDtHrUltAtualiz")
 			.perc_desagio_RA_liquida	= rs("perc_desagio_RA_liquida")
 			.permite_RA_status			= rs("permite_RA_status")
@@ -4043,6 +4047,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.etg_imediata_usuario = "[VP] " & .etg_imediata_usuario
 					end if
 				end if
+			.etg_imediata_usuario_RawData = Trim("" & rs("etg_imediata_usuario"))
 			.PrevisaoEntregaData = rs("PrevisaoEntregaData")
 			if Trim("" & rs("DecodNome_PrevisaoEntregaUsuarioUltAtualiz")) = "" then
 				.PrevisaoEntregaUsuarioUltAtualiz = Trim("" & rs("PrevisaoEntregaUsuarioUltAtualiz"))
@@ -4052,6 +4057,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.PrevisaoEntregaUsuarioUltAtualiz = "[VP] " & .PrevisaoEntregaUsuarioUltAtualiz
 					end if
 				end if
+			.PrevisaoEntregaUsuarioUltAtualiz_RawData = Trim("" & rs("PrevisaoEntregaUsuarioUltAtualiz"))
 			.PrevisaoEntregaDtHrUltAtualiz = rs("PrevisaoEntregaDtHrUltAtualiz")
 			.StBemUsoConsumo			= rs("StBemUsoConsumo")
 			.InstaladorInstalaStatus	= rs("InstaladorInstalaStatus")
@@ -4063,6 +4069,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.InstaladorInstalaUsuarioUltAtualiz = "[VP] " & .InstaladorInstalaUsuarioUltAtualiz
 					end if
 				end if
+			.InstaladorInstalaUsuarioUltAtualiz_RawData = Trim("" & rs("InstaladorInstalaUsuarioUltAtualiz"))
 			.InstaladorInstalaDtHrUltAtualiz = rs("InstaladorInstalaDtHrUltAtualiz")
 			.GarantiaIndicadorStatus	= rs("GarantiaIndicadorStatus")
 			if Trim("" & rs("DecodNome_GarantiaIndicadorUsuarioUltAtualiz")) = "" then
@@ -4073,6 +4080,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.GarantiaIndicadorUsuarioUltAtualiz = "[VP] " & .GarantiaIndicadorUsuarioUltAtualiz
 					end if
 				end if
+			.GarantiaIndicadorUsuarioUltAtualiz_RawData = rs("GarantiaIndicadorUsuarioUltAtualiz")
 			.GarantiaIndicadorDtHrUltAtualiz = rs("GarantiaIndicadorDtHrUltAtualiz")
 			.perc_desagio_RA_liquida	= rs("perc_desagio_RA_liquida")
 			.permite_RA_status			= rs("permite_RA_status")
