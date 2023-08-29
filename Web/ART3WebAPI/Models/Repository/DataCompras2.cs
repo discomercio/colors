@@ -10,7 +10,7 @@ namespace ART3WebAPI.Models.Repository
 {
 	public class DataCompras2
 	{
-		public Compras[] Get(string tipo_periodo, string dt_inicio, string dt_termino, string fabricante, string produto, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string nf, string dt_nf_inicio, string dt_nf_termino, string visao, string detalhamento)
+		public Compras[] Get(string tipo_periodo, string dt_inicio, string dt_termino, string empresa, string fabricante, string produto, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string nf, string dt_nf_inicio, string dt_nf_termino, string visao, string detalhamento)
 		{
 			#region [ Declarações ]
 			List<Compras> listaProduto = new List<Compras>();
@@ -172,6 +172,8 @@ namespace ART3WebAPI.Models.Repository
 							s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_emissao_NF_entrada < ", dt2Formatado) + ")");
 						}
 
+						if (!string.IsNullOrEmpty(empresa)) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (es.id_nfe_emitente = ", empresa) + ")");
+
 						s_where_temp = "";
 						if (!string.IsNullOrEmpty(fabricante))
 						{
@@ -251,6 +253,8 @@ namespace ART3WebAPI.Models.Repository
 							s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_emissao_NF_entrada < ", dt2Formatado) + ")");
 						}
 
+						if (!string.IsNullOrEmpty(empresa)) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (es.id_nfe_emitente = ", empresa) + ")");
+
 						s_where_temp = "";
 						if (!string.IsNullOrEmpty(fabricante))
 						{
@@ -329,6 +333,8 @@ namespace ART3WebAPI.Models.Repository
 							s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (data_emissao_NF_entrada < ", dt2Formatado) + ")");
 						}
 
+						if (!string.IsNullOrEmpty(empresa)) s_sql_mes = string.Concat(s_sql_mes, string.Concat(" AND (es.id_nfe_emitente = ", empresa) + ")");
+
 						s_where_temp = "";
 						if (!string.IsNullOrEmpty(fabricante))
 						{
@@ -396,7 +402,8 @@ namespace ART3WebAPI.Models.Repository
 
 			s_sql = string.Concat(s_sql, " FROM (" +
 					" SELECT" +
-						" i.fabricante" +
+						" e.id_nfe_emitente" +
+						", i.fabricante" +
 						", f.razao_social AS fabricante_nome" +
 						", i.produto" +
 						", p.descricao AS produto_descricao" +
@@ -438,6 +445,8 @@ namespace ART3WebAPI.Models.Repository
 					" WHERE (s_mes.kit = 0) " +
 						" AND (s_mes.entrada_especial = 0) " +
 						" AND (s_mes.devolucao_status = 0)");
+
+			if (!string.IsNullOrEmpty(empresa)) s_sql = string.Concat(s_sql, string.Concat(" AND (s_mes.id_nfe_emitente = ", empresa) + ")");
 
 			s_where_temp = "";
 			if (!string.IsNullOrEmpty(fabricante))

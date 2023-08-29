@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ART3WebAPI.Models.Entities;
+using ART3WebAPI.Models.Repository;
 using System;
 
 
@@ -13,7 +14,7 @@ namespace ART3WebAPI.Models.Domains
 {
 	public class Compras2GeradorRelatorio
 	{
-		public static Task GenerateXLS(List<Compras> datasource, string filePath, string tipo_periodo, string dt_inicio, string dt_termino, string fabricante, string produto, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string nf, string dt_nf_inicio, string dt_nf_termino, string visao, string detalhamento)
+		public static Task GenerateXLS(List<Compras> datasource, string filePath, string tipo_periodo, string dt_inicio, string dt_termino, string empresa, string fabricante, string produto, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string nf, string dt_nf_inicio, string dt_nf_termino, string visao, string detalhamento)
 		{
 			return Task.Run(() =>
 			{
@@ -29,6 +30,8 @@ namespace ART3WebAPI.Models.Domains
 				string periodoentrada = "";
 				string emissaoNF = "";
 				string cellsIndex;
+				string descricao_filtro_empresa;
+				NFeEmitente emitente;
 
 				if (visao.Equals(Global.Cte.Relatorio.Compras2.COD_VISAO_ANALITICA))
 				{
@@ -62,6 +65,23 @@ namespace ART3WebAPI.Models.Domains
 				}
 
 				if (periodoentrada == "") periodoentrada = "N.I";
+
+				if (string.IsNullOrEmpty(empresa))
+				{
+					descricao_filtro_empresa = "N.I";
+				}
+				else
+				{
+					emitente = NFeEmitenteDAO.getNFeEmitenteById((int)Global.converteInteiro(empresa));
+					if (emitente == null)
+					{
+						descricao_filtro_empresa = "N.I.";
+					}
+					else
+					{
+						descricao_filtro_empresa = emitente.apelido;
+					}
+				}
 
 				if (!string.IsNullOrEmpty(fabricante))
 					fabricante = fabricante.Replace("_", ", ");
@@ -220,6 +240,8 @@ namespace ART3WebAPI.Models.Domains
 					{
 						ws.Cells[cellsIndex].Value = "Período da Emissão NF Entrada: " + emissaoNF;
 					}
+					nLinha++; cellsIndex = Excel.CellAddress(COL_INICIAL, nLinha);
+					ws.Cells[cellsIndex].Value = "CD: " + descricao_filtro_empresa;
 					nLinha++; cellsIndex = Excel.CellAddress(COL_INICIAL, nLinha);
 					ws.Cells[cellsIndex].Value = "Fabricante(s): " + fabricante;
 					nLinha++; cellsIndex = Excel.CellAddress(COL_INICIAL, nLinha);

@@ -148,6 +148,62 @@
 		if rs.State <> 0 then rs.Close
 		end if 'if alerta = "" then
 
+	if alerta = "" then
+		'O indicador é válido p/ toda a família de pedidos, portanto, verifica se há alguma devolução da família que já teve a comissão descontada
+		s = "SELECT DISTINCT" & _
+				" pedido" & _
+			" FROM t_PEDIDO_ITEM_DEVOLVIDO" & _
+			" WHERE" & _
+				" (pedido LIKE '" & retorna_num_pedido_base(r_pedido.pedido) & BD_CURINGA_TODOS & "')" & _
+				" AND (comissao_descontada = " & COD_COMISSAO_DESCONTADA & ")" & _
+			" ORDER BY" & _
+				" pedido"
+		set rs = cn.Execute(s)
+		if Not rs.Eof then
+			s_pedidos = ""
+			do while Not rs.Eof
+				if s_pedidos <> "" then s_pedidos = s_pedidos & ", "
+				s_pedidos = s_pedidos & Trim("" & rs("pedido"))
+				rs.MoveNext
+				loop
+			alerta=texto_add_br(alerta)
+			if s_pedidos = r_pedido.pedido then
+				alerta=alerta & "O indicador não pode ser alterado porque este pedido possui devolução(ões) descontada(s) da comissão!"
+			else
+				alerta=alerta & "O indicador não pode ser alterado porque esta família de pedidos possui devolução(ões) descontada(s) da comissão (" & s_pedidos & ")!"
+				end if
+			end if
+		if rs.State <> 0 then rs.Close
+		end if 'if alerta = "" then
+
+	if alerta = "" then
+		'O indicador é válido p/ toda a família de pedidos, portanto, verifica se há alguma perda da família que já teve a comissão descontada
+		s = "SELECT DISTINCT" & _
+				" pedido" & _
+			" FROM t_PEDIDO_PERDA" & _
+			" WHERE" & _
+				" (pedido LIKE '" & retorna_num_pedido_base(r_pedido.pedido) & BD_CURINGA_TODOS & "')" & _
+				" AND (comissao_descontada = " & COD_COMISSAO_DESCONTADA & ")" & _
+			" ORDER BY" & _
+				" pedido"
+		set rs = cn.Execute(s)
+		if Not rs.Eof then
+			s_pedidos = ""
+			do while Not rs.Eof
+				if s_pedidos <> "" then s_pedidos = s_pedidos & ", "
+				s_pedidos = s_pedidos & Trim("" & rs("pedido"))
+				rs.MoveNext
+				loop
+			alerta=texto_add_br(alerta)
+			if s_pedidos = r_pedido.pedido then
+				alerta=alerta & "O indicador não pode ser alterado porque este pedido possui perda(s) descontada(s) da comissão!"
+			else
+				alerta=alerta & "O indicador não pode ser alterado porque esta família de pedidos possui perda(s) descontada(s) da comissão (" & s_pedidos & ")!"
+				end if
+			end if
+		if rs.State <> 0 then rs.Close
+		end if 'if alerta = "" then
+
 	dim blnPedidoPassouPossuirIndicador, blnTratarRALiq, perc_desagio_RA, perc_desagio_RA_liquida, perc_limite_RA_sem_desagio
 	blnPedidoPassouPossuirIndicador = False
 	blnTratarRALiq = False
