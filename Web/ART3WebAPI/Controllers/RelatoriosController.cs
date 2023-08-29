@@ -270,10 +270,11 @@ namespace ART3WebAPI.Controllers
 
         #region [ Requisição ]
         [HttpPost]
-        public async Task<HttpResponseMessage> GetCompras2CSV(string usuario, string tipo_periodo, string dt_inicio, string dt_termino, string fabricante, string produto, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string nf, string dt_nf_inicio, string dt_nf_termino, string visao, string detalhamento)
+        public async Task<HttpResponseMessage> GetCompras2CSV(string usuario, string tipo_periodo, string dt_inicio, string dt_termino, string empresa, string fabricante, string produto, string grupo, string subgrupo, string btu, string ciclo, string pos_mercado, string nf, string dt_nf_inicio, string dt_nf_termino, string visao, string detalhamento)
         {
 			#region [ Declarações ]
 			const string NOME_DESTA_ROTINA = "RelatoriosController.GetCompras2CSV()";
+			const string ID_RELATORIO = "RelCompras2Filtro";
 			Guid httpRequestId = Request.GetCorrelationId();
 			DateTime data = DateTime.Now;
 			string msg;
@@ -293,7 +294,7 @@ namespace ART3WebAPI.Controllers
 
 			try
 			{
-				msg = NOME_DESTA_ROTINA + ": Requisição recebida (usuario=" + (usuario ?? "") + ", tipo_periodo=" + (tipo_periodo ?? "") + ", dt_inicio=" + (dt_inicio ?? "") + ", dt_termino=" + (dt_termino ?? "") + ", fabricante=" + (fabricante ?? "") + ", produto=" + (produto ?? "") + ", grupo=" + (grupo ?? "") + ", subgrupo=" + (subgrupo ?? "") + ", btu=" + (btu ?? "") + ", ciclo=" + (ciclo ?? "") + ", pos_mercado=" + (pos_mercado ?? "") + ", nf=" + (nf ?? "") + ", dt_nf_inicio=" + (dt_nf_inicio ?? "") + ", dt_nf_termino=" + (dt_nf_termino ?? "") + ", visao=" + (visao ?? "") + ", detalhamento=" + (detalhamento ?? "") + ")";
+				msg = NOME_DESTA_ROTINA + ": Requisição recebida (usuario=" + (usuario ?? "") + ", tipo_periodo=" + (tipo_periodo ?? "") + ", dt_inicio=" + (dt_inicio ?? "") + ", dt_termino=" + (dt_termino ?? "") + ", empresa=" + (empresa ?? "") + ", fabricante=" + (fabricante ?? "") + ", produto=" + (produto ?? "") + ", grupo=" + (grupo ?? "") + ", subgrupo=" + (subgrupo ?? "") + ", btu=" + (btu ?? "") + ", ciclo=" + (ciclo ?? "") + ", pos_mercado=" + (pos_mercado ?? "") + ", nf=" + (nf ?? "") + ", dt_nf_inicio=" + (dt_nf_inicio ?? "") + ", dt_nf_termino=" + (dt_nf_termino ?? "") + ", visao=" + (visao ?? "") + ", detalhamento=" + (detalhamento ?? "") + ")";
 				Global.gravaLogAtividade(httpRequestId, msg);
 
 				#region [ Consistências ]
@@ -340,25 +341,26 @@ namespace ART3WebAPI.Controllers
 				if (MsgErroException.Length == 0)
 				{
 					#region [ Salva parâmetros no BD como valores default do usuário ]
-					Global.setDefaultBD(usuario, "RelCompras2Filtro|rb_periodo", string.IsNullOrEmpty(tipo_periodo) ? "" : tipo_periodo);
-					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_dt_periodo_inicio", string.IsNullOrEmpty(dt_inicio) ? "" : dt_inicio);
-					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_dt_periodo_termino", string.IsNullOrEmpty(dt_termino) ? "" : dt_termino);
-					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_fabricante", string.IsNullOrEmpty(fabricante) ? "" : fabricante.Replace("_", ", "));
-					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_grupo", string.IsNullOrEmpty(grupo) ? "" : grupo.Replace("_", ", "));
-					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_subgrupo", string.IsNullOrEmpty(subgrupo) ? "" : subgrupo.Replace("_", ", "));
-					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_potencia_BTU", string.IsNullOrEmpty(btu) ? "" : btu);
-					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_ciclo", string.IsNullOrEmpty(ciclo) ? "" : ciclo);
-					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_posicao_mercado", string.IsNullOrEmpty(pos_mercado) ? "" : pos_mercado);
-					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_dt_nf_inicio", string.IsNullOrEmpty(dt_nf_inicio) ? "" : dt_nf_inicio);
-					Global.setDefaultBD(usuario, "RelCompras2Filtro|c_dt_nf_termino", string.IsNullOrEmpty(dt_nf_termino) ? "" : dt_nf_termino);
-					Global.setDefaultBD(usuario, "RelCompras2Filtro|rb_detalhe", detalhamento);
+					Global.setDefaultBD(usuario, ID_RELATORIO + "|rb_periodo", string.IsNullOrEmpty(tipo_periodo) ? "" : tipo_periodo);
+					Global.setDefaultBD(usuario, ID_RELATORIO + "|c_dt_periodo_inicio", string.IsNullOrEmpty(dt_inicio) ? "" : dt_inicio);
+					Global.setDefaultBD(usuario, ID_RELATORIO + "|c_dt_periodo_termino", string.IsNullOrEmpty(dt_termino) ? "" : dt_termino);
+					Global.setDefaultBD(usuario, ID_RELATORIO + "|c_empresa", string.IsNullOrEmpty(empresa) ? "" : empresa);
+					Global.setDefaultBD(usuario, ID_RELATORIO + "|c_fabricante", string.IsNullOrEmpty(fabricante) ? "" : fabricante.Replace("_", ", "));
+					Global.setDefaultBD(usuario, ID_RELATORIO + "|c_grupo", string.IsNullOrEmpty(grupo) ? "" : grupo.Replace("_", ", "));
+					Global.setDefaultBD(usuario, ID_RELATORIO + "|c_subgrupo", string.IsNullOrEmpty(subgrupo) ? "" : subgrupo.Replace("_", ", "));
+					Global.setDefaultBD(usuario, ID_RELATORIO + "|c_potencia_BTU", string.IsNullOrEmpty(btu) ? "" : btu);
+					Global.setDefaultBD(usuario, ID_RELATORIO + "|c_ciclo", string.IsNullOrEmpty(ciclo) ? "" : ciclo);
+					Global.setDefaultBD(usuario, ID_RELATORIO + "|c_posicao_mercado", string.IsNullOrEmpty(pos_mercado) ? "" : pos_mercado);
+					Global.setDefaultBD(usuario, ID_RELATORIO + "|c_dt_nf_inicio", string.IsNullOrEmpty(dt_nf_inicio) ? "" : dt_nf_inicio);
+					Global.setDefaultBD(usuario, ID_RELATORIO + "|c_dt_nf_termino", string.IsNullOrEmpty(dt_nf_termino) ? "" : dt_nf_termino);
+					Global.setDefaultBD(usuario, ID_RELATORIO + "|rb_detalhe", detalhamento);
 					#endregion
 
 					DataCompras2 datasource = new DataCompras2();
-					List<Compras> relCompras2List = datasource.Get(tipo_periodo, dt_inicio, dt_termino, fabricante, produto, grupo, subgrupo, btu, ciclo, pos_mercado, nf, dt_nf_inicio, dt_nf_termino, visao, detalhamento).ToList();
+					List<Compras> relCompras2List = datasource.Get(tipo_periodo, dt_inicio, dt_termino, empresa, fabricante, produto, grupo, subgrupo, btu, ciclo, pos_mercado, nf, dt_nf_inicio, dt_nf_termino, visao, detalhamento).ToList();
 					if (relCompras2List.Count != 0)
 					{
-						await ART3WebAPI.Models.Domains.Compras2GeradorRelatorio.GenerateXLS(relCompras2List, filePath, tipo_periodo, dt_inicio, dt_termino, fabricante, produto, grupo, subgrupo, btu, ciclo, pos_mercado, nf, dt_nf_inicio, dt_nf_termino, visao, detalhamento);
+						await ART3WebAPI.Models.Domains.Compras2GeradorRelatorio.GenerateXLS(relCompras2List, filePath, tipo_periodo, dt_inicio, dt_termino, empresa, fabricante, produto, grupo, subgrupo, btu, ciclo, pos_mercado, nf, dt_nf_inicio, dt_nf_termino, visao, detalhamento);
 						statusResponse = "OK";
 						LogDAO.insere(httpRequestId, usuario, s_log, out strMsgErro);
 					}

@@ -4,6 +4,7 @@
 <!-- #include file = "../global/constantes.asp" -->
 <!-- #include file = "../global/funcoes.asp"    -->
 <!-- #include file = "../global/bdd.asp" -->
+<!-- #include file = "../global/global.asp" -->
 
 <!-- #include file = "../global/TrataSessaoExpirada.asp"        -->
 
@@ -29,6 +30,8 @@
 
 	On Error GoTo 0
 	Err.Clear
+
+	const ID_RELATORIO = "RelCompras2Filtro"
 
 	Const COD_CONSULTA_POR_PERIODO_ENTRADA_ESTOQUE = "ENT_ESTOQ"
 	Const COD_CONSULTA_POR_PERIODO_EMISSAO_NF_ENTRADA = "EMI_NF"
@@ -66,7 +69,7 @@
 	strDtHojeDDMMYYYY = formata_data(Date)
 
 	dim s_rb_opcao_default, s_checked
-	s_rb_opcao_default = get_default_valor_texto_bd(usuario, "RelCompras2Filtro|rb_periodo")
+	s_rb_opcao_default = get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "rb_periodo")
 
 	dim strScript
 	strScript = _
@@ -721,6 +724,7 @@ function limpaCampoSelect(c) {
 			strUrl = strUrl + '&tipo_periodo=' + $("input[name='rb_periodo']:checked").val();
             strUrl = strUrl + '&dt_inicio=' + dt_inicio;
             strUrl = strUrl + '&dt_termino=' + dt_termino;
+			strUrl = strUrl + '&empresa=' + f.c_empresa.value;
             strUrl = strUrl + '&fabricante=' + fabricante;
             strUrl = strUrl + '&produto=' + f.c_produto.value;
             strUrl = strUrl + '&grupo=' + grupo;
@@ -852,9 +856,9 @@ function limpaCampoSelect(c) {
 		</table>
 		<table cellSpacing="2" cellPadding="0"><tr bgColor="#FFFFFF"><td valign="bottom">
             <input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_inicio" id="c_dt_inicio" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de início inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_termino.focus(); filtra_data();"
-					value='<%=get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_periodo_inicio")%>'
+					value='<%=get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_dt_periodo_inicio")%>'
 					/>&nbsp;<span class="PLLc" style="color:#808080;">&nbsp;&nbsp;&nbsp;até&nbsp;</span>&nbsp;<input class="PLLc" maxlength="10" style="width:70px; " name="c_dt_termino" id="c_dt_termino" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de término inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_fabricante.focus(); filtra_data();"
-					value='<%=get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_periodo_termino")%>'
+					value='<%=get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_dt_periodo_termino")%>'
 					/>
 			</td></tr>
 		</table>
@@ -877,13 +881,25 @@ function limpaCampoSelect(c) {
 		</table>
 		<table cellSpacing="2" cellPadding="0"><tr bgColor="#FFFFFF"><td>
             <input class="PLLc" maxlength="10" style="width:70px;" name="c_dt_nf_inicio" id="c_dt_nf_inicio" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de início inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.c_dt_nf_termino.focus(); filtra_data();"
-					value='<%=get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_nf_inicio")%>'
+					value='<%=get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_dt_nf_inicio")%>'
 					/>&nbsp;<span class="PLLc" style="color:#808080;">&nbsp;&nbsp;&nbsp;até&nbsp;</span>&nbsp;<input class="PLLc" maxlength="10" style="width:70px; " name="c_dt_nf_termino" id="c_dt_nf_termino" onfocus="this.select();" onblur="if (!isDate(this)) {alert('Data de término inválida!'); this.focus();}" onkeypress="if (digitou_enter(true)) fFILTRO.rb_detalhe.focus(); filtra_data();"
-					value='<%=get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_nf_termino")%>'
+					value='<%=get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_dt_nf_termino")%>'
 					/>
 			</td></tr>
 		</table>
 		</td></tr>
+
+<!-- EMPRESA (CD) -->
+	<tr bgcolor="#FFFFFF">
+		<td class="ME MD MB" align="left" nowrap>
+			<span class="PLTe">CD</span>
+			<br>
+			<select id="c_empresa" name="c_empresa" style="margin-left:4px;margin-right:15px;min-width:100px;margin-top:4px;margin-bottom:4px;" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;">
+			<%=apelido_empresa_nfe_emitente_monta_itens_select(get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_empresa"))%>
+			</select>
+		</td>
+	</tr>
+
 <!--  FABRICANTE  -->
 	<tr bgcolor="#FFFFFF">
 	<td class="ME MD MB" align="left" nowrap>
@@ -893,7 +909,7 @@ function limpaCampoSelect(c) {
 		<tr>
 		<td>
 			<select id="c_fabricante" name="c_fabricante" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="10"style="width:100px;margin:4px 4px 4px 4px" multiple>
-			<% =fabricante_monta_itens_select(get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_fabricante")) %>
+			<% =fabricante_monta_itens_select(get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_fabricante")) %>
 			</select>
 		</td>
 		<td style="width:1px;"></td>
@@ -921,7 +937,7 @@ function limpaCampoSelect(c) {
 		<tr>
 		<td>
 			<select id="c_grupo" name="c_grupo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="10"style="width:100px;margin:4px 4px 4px 4px" multiple>
-			<% =grupo_monta_itens_select(get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_grupo")) %>
+			<% =grupo_monta_itens_select(get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_grupo")) %>
 			</select>
 		</td>
 		<td style="width:1px;"></td>
@@ -945,7 +961,7 @@ function limpaCampoSelect(c) {
 		<tr>
 		<td>
 			<select id="c_subgrupo" name="c_subgrupo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" size="10" style="min-width:250px;margin:1px 10px 6px 10px;" multiple>
-			<% =subgrupos_monta_itens_select(get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_subgrupo")) %>
+			<% =subgrupos_monta_itens_select(get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_subgrupo")) %>
 			</select>
 		</td>
 		<td style="width:1px;"></td>
@@ -969,7 +985,7 @@ function limpaCampoSelect(c) {
 		<tr>
 		<td>
 			<select id="c_potencia_BTU" name="c_potencia_BTU" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" style="margin:4px 4px 4px 4px">
-			<% =potencia_BTU_monta_itens_select(get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_potencia_BTU")) %>
+			<% =potencia_BTU_monta_itens_select(get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_potencia_BTU")) %>
 			</select>
 		</td>
 		<td style="width:1px;"></td>
@@ -990,7 +1006,7 @@ function limpaCampoSelect(c) {
 		<tr>
 		<td>
 			<select id="c_ciclo" name="c_ciclo" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" style="margin:4px 4px 4px 4px">
-			<% =ciclo_monta_itens_select(get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_ciclo")) %>
+			<% =ciclo_monta_itens_select(get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_ciclo")) %>
 			</select>
 		</td>
 		<td style="width:1px;"></td>
@@ -1011,7 +1027,7 @@ function limpaCampoSelect(c) {
 		<tr>
 		<td>
 			<select id="c_posicao_mercado" name="c_posicao_mercado" class="LST" onkeyup="if (window.event.keyCode==KEYCODE_DELETE) this.options[0].selected=true;" style="margin:4px 4px 4px 4px">
-			<% =posicao_mercado_monta_itens_select(get_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_posicao_mercado")) %>
+			<% =posicao_mercado_monta_itens_select(get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_posicao_mercado")) %>
 			</select>
 		</td>
 		<td style="width:1px;"></td>
@@ -1034,23 +1050,23 @@ function limpaCampoSelect(c) {
 		<% intIdx = -1 %>
 
         <% intIdx = intIdx + 1 %>
-		<br><input type="radio" class="rbOpt" tabindex="-1" id="rb_detalhe" name="rb_detalhe" value="SINTETICO_NF" <% if get_default_valor_texto_bd(usuario, "RelCompras2Filtro|rb_detalhe") = "SINTETICO_NF" then Response.Write " checked"%>><span class="C lblOpt" style="cursor:default" onclick="fFILTRO.rb_detalhe[<%=Cstr(intIdx)%>].click();"
+		<br><input type="radio" class="rbOpt" tabindex="-1" id="rb_detalhe" name="rb_detalhe" value="SINTETICO_NF" <% if get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "rb_detalhe") = "SINTETICO_NF" then Response.Write " checked"%>><span class="C lblOpt" style="cursor:default" onclick="fFILTRO.rb_detalhe[<%=Cstr(intIdx)%>].click();"
 			>Sintético por Nota Fiscal</span>
 
 		<% intIdx = intIdx + 1 %>
-		<br><input type="radio" class="rbOpt" tabindex="-1" id="rb_detalhe" name="rb_detalhe" value="SINTETICO_FABR" <% if get_default_valor_texto_bd(usuario, "RelCompras2Filtro|rb_detalhe") = "SINTETICO_FABR" then Response.Write " checked"%>><span class="C lblOpt" style="cursor:default" onclick="fFILTRO.rb_detalhe[<%=Cstr(intIdx)%>].click();"
+		<br><input type="radio" class="rbOpt" tabindex="-1" id="rb_detalhe" name="rb_detalhe" value="SINTETICO_FABR" <% if get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "rb_detalhe") = "SINTETICO_FABR" then Response.Write " checked"%>><span class="C lblOpt" style="cursor:default" onclick="fFILTRO.rb_detalhe[<%=Cstr(intIdx)%>].click();"
 			>Sintético por Fabricante</span>
 
 		<% intIdx = intIdx + 1 %>
-		<br><input type="radio" class="rbOpt" tabindex="-1" id="rb_detalhe" name="rb_detalhe" value="SINTETICO_PROD" <% if get_default_valor_texto_bd(usuario, "RelCompras2Filtro|rb_detalhe") = "SINTETICO_PROD" then Response.Write " checked"%>><span class="C lblOpt" style="cursor:default" onclick="fFILTRO.rb_detalhe[<%=Cstr(intIdx)%>].click();"
+		<br><input type="radio" class="rbOpt" tabindex="-1" id="rb_detalhe" name="rb_detalhe" value="SINTETICO_PROD" <% if get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "rb_detalhe") = "SINTETICO_PROD" then Response.Write " checked"%>><span class="C lblOpt" style="cursor:default" onclick="fFILTRO.rb_detalhe[<%=Cstr(intIdx)%>].click();"
 			>Sintético por Produto</span>
 		
 		<% intIdx = intIdx + 1 %>
-		<br><input type="radio" class="rbOpt" tabindex="-1" id="rb_detalhe" name="rb_detalhe" value="CUSTO_MEDIO" <% if get_default_valor_texto_bd(usuario, "RelCompras2Filtro|rb_detalhe") = "CUSTO_MEDIO" then Response.Write " checked"%>><span class="C lblOpt" style="cursor:default" onclick="fFILTRO.rb_detalhe[<%=Cstr(intIdx)%>].click();"
+		<br><input type="radio" class="rbOpt" tabindex="-1" id="rb_detalhe" name="rb_detalhe" value="CUSTO_MEDIO" <% if get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "rb_detalhe") = "CUSTO_MEDIO" then Response.Write " checked"%>><span class="C lblOpt" style="cursor:default" onclick="fFILTRO.rb_detalhe[<%=Cstr(intIdx)%>].click();"
 			>Valor Referência Médio</span>
 
 		<% intIdx = intIdx + 1 %>
-		<br><input type="radio" class="rbOpt" tabindex="-1" id="rb_detalhe" name="rb_detalhe" value="CUSTO_INDIVIDUAL" <% if get_default_valor_texto_bd(usuario, "RelCompras2Filtro|rb_detalhe") = "CUSTO_INDIVIDUAL" then Response.Write " checked"%>><span class="C lblOpt" style="cursor:default" onclick="fFILTRO.rb_detalhe[<%=Cstr(intIdx)%>].click();"
+		<br><input type="radio" class="rbOpt" tabindex="-1" id="rb_detalhe" name="rb_detalhe" value="CUSTO_INDIVIDUAL" <% if get_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "rb_detalhe") = "CUSTO_INDIVIDUAL" then Response.Write " checked"%>><span class="C lblOpt" style="cursor:default" onclick="fFILTRO.rb_detalhe[<%=Cstr(intIdx)%>].click();"
 			>Valor Referência Individual</span>
 	</td>
 	</tr>

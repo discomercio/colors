@@ -30,6 +30,8 @@
 	On Error GoTo 0
 	Err.Clear
 
+	const ID_RELATORIO = "RelCompras2Filtro"
+
 	dim usuario
 	usuario = Trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
@@ -49,7 +51,7 @@
 		end if
 
 	dim alerta
-	dim s, c_fabricante, c_produto, c_dt_inicio, c_dt_termino, c_dt_nf_inicio, c_dt_nf_termino, rb_detalhe
+	dim s, c_fabricante, c_produto, c_dt_inicio, c_dt_termino, c_dt_nf_inicio, c_dt_nf_termino, rb_detalhe, c_empresa
 	dim cod_fabricante, cod_produto
 	dim s_nome_fabricante, s_nome_produto, s_nome_produto_html,c_grupo,c_subgrupo,c_potencia_BTU,c_ciclo,c_posicao_mercado,v_fabricantes,cont
     dim s_where_temp,v_grupos,v_subgrupos
@@ -66,6 +68,7 @@
 	c_posicao_mercado = Trim(Request.Form("c_posicao_mercado"))
 	c_dt_nf_inicio = Trim(Request.Form("c_dt_nf_inicio"))
 	c_dt_nf_termino = Trim(Request.Form("c_dt_nf_termino"))
+	c_empresa = Trim(Request.Form("c_empresa"))
 
 	alerta = ""
 	if (c_produto<>"") And (Not IsEAN(c_produto)) then
@@ -200,17 +203,18 @@
 		end if
 
     if alerta = "" then
-		call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_inicio", c_dt_inicio)
-		call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_termino", c_dt_termino)
-		call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_fabricante", c_fabricante)
-		call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_grupo", c_grupo)
-        call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_subgrupo", c_subgrupo)
-		call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_potencia_BTU", c_potencia_BTU)
-		call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_ciclo", c_ciclo)
-		call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_posicao_mercado", c_posicao_mercado)
-        call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|rb_detalhe", rb_detalhe)
-		call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_nf_inicio", c_dt_nf_inicio)
-		call set_default_valor_texto_bd(usuario, "RelCompras2Filtro|c_dt_nf_termino", c_dt_nf_termino)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_dt_inicio", c_dt_inicio)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_dt_termino", c_dt_termino)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_fabricante", c_fabricante)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_grupo", c_grupo)
+        call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_subgrupo", c_subgrupo)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_potencia_BTU", c_potencia_BTU)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_ciclo", c_ciclo)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_posicao_mercado", c_posicao_mercado)
+        call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "rb_detalhe", rb_detalhe)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_dt_nf_inicio", c_dt_nf_inicio)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_dt_nf_termino", c_dt_nf_termino)
+		call set_default_valor_texto_bd(usuario, ID_RELATORIO & "|" & "c_empresa", c_empresa)
 		end if
 
 
@@ -245,7 +249,11 @@ dim valor_total, s_sql, cab, n_reg, x
 	if IsDate(c_dt_termino) then
 		s_sql = s_sql & " AND (data_entrada < " & bd_formata_data(StrToDate(c_dt_termino)+1) & ")"
 		end if
-
+	
+	if Trim(c_empresa) <> "" then
+		s_sql = s_sql & " AND (e.id_nfe_emitente = " & c_empresa & ")"
+		end if
+	
     s_where_temp = ""
 	if c_fabricante <> "" then
 	for cont = Lbound(v_fabricantes) to Ubound(v_fabricantes)
@@ -398,6 +406,10 @@ dim strFabricanteAnterior, strFabricante, strProduto, intQtdeFabricantes
 	
 	if IsDate(c_dt_termino) then
 		s_sql = s_sql & " AND (data_entrada < " & bd_formata_data(StrToDate(c_dt_termino)+1) & ")"
+		end if
+	
+	if Trim(c_empresa) <> "" then
+		s_sql = s_sql & " AND (e.id_nfe_emitente = " & c_empresa & ")"
 		end if
 	
 	s_where_temp = ""
@@ -616,6 +628,10 @@ dim strFabricanteAnterior, strFabricante, strProduto, intQtdeFabricantes
 		
 	if IsDate(c_dt_termino) then
 		s_sql = s_sql & " AND (data_entrada < " & bd_formata_data(StrToDate(c_dt_termino)+1) & ")"
+		end if
+	
+	if Trim(c_empresa) <> "" then
+		s_sql = s_sql & " AND (e.id_nfe_emitente = " & c_empresa & ")"
 		end if
 	
 	s_where_temp = ""
@@ -847,6 +863,10 @@ dim strFabricanteAnterior, strFabricante, strProduto, intQtdeFabricantes
 		
 	if IsDate(c_dt_termino) then
 		s_sql = s_sql & " AND (data_entrada < " & bd_formata_data(StrToDate(c_dt_termino)+1) & ")"
+		end if
+	
+	if Trim(c_empresa) <> "" then
+		s_sql = s_sql & " AND (e.id_nfe_emitente = " & c_empresa & ")"
 		end if
 	
 	s_where_temp = ""
@@ -1157,6 +1177,7 @@ P.F { font-size:11pt; }
 <input type="hidden" name="c_dt_termino" id="c_dt_termino" value="<%=c_dt_termino%>">
 <input type="hidden" name="c_dt_nf_inicio" id="c_dt_nf_inicio" value="<%=c_dt_nf_inicio%>">
 <input type="hidden" name="c_dt_nf_termino" id="c_dt_nf_termino" value="<%=c_dt_nf_termino%>">
+<input type="hidden" name="c_empresa" id="c_empresa" value="<%=c_empresa%>">
 
 <!--  I D E N T I F I C A Ç Ã O   D A   T E L A  -->
 <table width="649" cellPadding="4" CellSpacing="0" style="border-bottom:1px solid black">
@@ -1180,6 +1201,15 @@ P.F { font-size:11pt; }
 	<tr bgColor="#FFFFFF">
 	<td class="MT" NOWRAP><span class="PLTe">Período</span>
 		<br><p class="C" style="width:230px;cursor:default;"><%=c_dt_inicio & " a " & c_dt_termino %></p></td>
+	</tr>
+
+<!--  EMPRESA (CD)  -->
+	<tr bgColor="#FFFFFF">
+	<td class="MDBE" NOWRAP><span class="PLTe">CD</span>
+		<%	s = obtem_apelido_empresa_NFe_emitente(c_empresa)
+			if s = "" then s = "N.I."
+		%>
+		<br><p class="C" style="width:230px;cursor:default;"><%=s%></p></td>
 	</tr>
 
 <!--  FABRICANTE  -->

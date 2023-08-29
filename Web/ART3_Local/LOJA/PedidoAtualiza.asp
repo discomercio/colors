@@ -2911,7 +2911,7 @@
 			idMeioPagtoMonitorado = ID_FORMA_PAGTO_BOLETO_AV
 			if houve_edicao_forma_pagto_pedido(r_pedido, r_pedido_atualizado) _
 				And (parcelamentoPossuiMeioPagamento(r_pedido, idMeioPagtoMonitorado) OR parcelamentoPossuiMeioPagamento(r_pedido_atualizado, idMeioPagtoMonitorado)) _
-				And (r_pedido.st_pagto = ST_PAGTO_PAGO) then
+				And ((r_pedido.st_pagto = ST_PAGTO_PAGO) Or (CLng(r_pedido.analise_credito) = CLng(COD_AN_CREDITO_OK_AGUARDANDO_DEPOSITO))) then
 					set rEmailDestinatario = get_registro_t_parametro(ID_PARAMETRO_EmailDestinatarioAlertaEdicaoFormaPagtoComBoletoAV)
 					if Trim("" & rEmailDestinatario.campo_texto) <> "" then
 						corpo_mensagem = "O usuário '" & usuario & "' editou em " & formata_data_hora_sem_seg(Now) & " na loja " & loja & " a forma de pagamento do pedido " & pedido_selecionado & " que possui o meio de pagamento: '" & x_opcao_forma_pagamento(idMeioPagtoMonitorado) & "'" & vbCrLf & _
