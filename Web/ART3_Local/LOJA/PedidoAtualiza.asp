@@ -1605,6 +1605,67 @@
 			end if
 		end if
 	
+	dim bln_RT_EdicaoLiberada_Conferencia
+	dim blnFamiliaPedidosPossuiPedidoEntregueMesAnterior, blnFamiliaPedidosPossuiPedidoComissaoPaga, blnFamiliaPedidosPossuiPedidoComissaoDescontada
+	bln_RT_EdicaoLiberada_Conferencia = False
+	blnFamiliaPedidosPossuiPedidoEntregueMesAnterior = False
+	blnFamiliaPedidosPossuiPedidoComissaoPaga = False
+	blnFamiliaPedidosPossuiPedidoComissaoDescontada = False
+	if alerta = "" then
+		'Confere se edição da RT está liberada
+		'A regra de edição do percentual de RT leva em consideração que o percentual é único p/ toda a família de pedidos
+		s = "SELECT" & _
+				" pedido" & _
+				", comissao_descontada" & _
+			" FROM t_PEDIDO_ITEM_DEVOLVIDO" & _
+			" WHERE" & _
+				" (pedido LIKE '" & retorna_num_pedido_base(pedido_selecionado) & BD_CURINGA_TODOS & "')" & _
+				" AND (comissao_descontada = " & COD_COMISSAO_DESCONTADA & ")"
+		set rs = cn.Execute(s)
+		if Not rs.Eof then blnFamiliaPedidosPossuiPedidoComissaoDescontada = True
+		if rs.State <> 0 then rs.Close
+
+		s = "SELECT" & _
+				" pedido" & _
+				", comissao_descontada" & _
+			" FROM t_PEDIDO_PERDA" & _
+			" WHERE" & _
+				" (pedido LIKE '" & retorna_num_pedido_base(pedido_selecionado) & BD_CURINGA_TODOS & "')" & _
+				" AND (comissao_descontada = " & COD_COMISSAO_DESCONTADA & ")"
+		set rs = cn.Execute(s)
+		if Not rs.Eof then blnFamiliaPedidosPossuiPedidoComissaoDescontada = True
+		if rs.State <> 0 then rs.Close
+
+		s = "SELECT" & _
+				" pedido" & _
+				", st_entrega" & _
+				", entregue_data" & _
+				", comissao_paga" & _
+			" FROM t_PEDIDO" & _
+			" WHERE" & _
+				" (pedido LIKE '" & retorna_num_pedido_base(pedido_selecionado) & BD_CURINGA_TODOS & "')"
+		set rs = cn.Execute(s)
+		do while Not rs.Eof
+			if (Trim("" & rs("st_entrega")) = ST_ENTREGA_ENTREGUE) And (Not IsMesmoAnoEMes(rs("entregue_data"), Date)) then blnFamiliaPedidosPossuiPedidoEntregueMesAnterior = True
+			if CLng(rs("comissao_paga")) = CLng(COD_COMISSAO_PAGA) then blnFamiliaPedidosPossuiPedidoComissaoPaga = True
+			rs.MoveNext
+			loop
+		if rs.State <> 0 then rs.Close
+
+		if operacao_permitida(OP_LJA_EDITA_RT, s_lista_operacoes_permitidas) then
+			if (Not blnFamiliaPedidosPossuiPedidoComissaoPaga) _
+				And (Not blnFamiliaPedidosPossuiPedidoComissaoDescontada) _
+				And (Not blnFamiliaPedidosPossuiPedidoEntregueMesAnterior) then
+				bln_RT_EdicaoLiberada_Conferencia = True
+				end if
+			end if
+		
+		if bln_RT_EdicaoLiberada_Conferencia <> bln_RT_EdicaoLiberada then
+			alerta=texto_add_br(alerta)
+			alerta=alerta & "Inconsistência encontrada na validação da regra de liberação da edição da RT"
+			end if
+		end if 'if alerta = ""
+	
 	if alerta <> "" then blnErroConsistencia=True
 	
 	
