@@ -174,6 +174,7 @@
 	dim vlTotalFormaPagto
 	dim s_perc_RT, perc_RT, s_perc_RT_original, vl_total_RA, vl_total_RA_liquido
 	dim idMeioPagtoMonitorado, sMeioPagtoMonitoradoIdentificado
+	dim vMeioPagtoMonitorado, iMeioPagtoMonitorado
 
 	versao_forma_pagamento = Trim(Request.Form("versao_forma_pagamento"))
 	flag_forma_pagto_editada = CInt(Trim(Request.Form("flag_forma_pagto_editada")))
@@ -3565,61 +3566,139 @@
 				end if
 			end if
 		end if
-
+		
 		if alerta = "" then
-			'Email de alerta p/ a equipe do financeiro caso tenha havido edição na forma de pagamento alterando para algum meio de pagamento monitorado
-			sMeioPagtoMonitoradoIdentificado = ""
+			'Prepara dados que serão usados no processamento a seguir
 			if Not le_pedido(pedido_selecionado, r_pedido_atualizado, msg_erro) then
 				alerta = msg_erro
-			else
-				idMeioPagtoMonitorado = ID_FORMA_PAGTO_BOLETO
-				if parcelamentoPassouPossuirMeioPagamento(r_pedido, r_pedido_atualizado, idMeioPagtoMonitorado, False) then
-					if sMeioPagtoMonitoradoIdentificado <> "" then sMeioPagtoMonitoradoIdentificado = sMeioPagtoMonitoradoIdentificado & ", "
-					sMeioPagtoMonitoradoIdentificado = sMeioPagtoMonitoradoIdentificado & "'" & x_opcao_forma_pagamento(idMeioPagtoMonitorado) & "'"
+				end if
+			end if
+		
+		if alerta = "" then
+			'Email de alerta p/ a equipe do financeiro caso tenha havido edição na forma de pagamento alterando para algum meio de pagamento monitorado
+			s = ID_FORMA_PAGTO_BOLETO & "|" & ID_FORMA_PAGTO_CARTAO & "|" & ID_FORMA_PAGTO_CARTAO_MAQUINETA
+			vMeioPagtoMonitorado = Split(s, "|")
+			
+			sMeioPagtoMonitoradoIdentificado = ""
+			for iMeioPagtoMonitorado = LBound(vMeioPagtoMonitorado) to UBound(vMeioPagtoMonitorado)
+				idMeioPagtoMonitorado = Trim("" & vMeioPagtoMonitorado(iMeioPagtoMonitorado))
+				if idMeioPagtoMonitorado <> "" then
+					if parcelamentoPassouPossuirMeioPagamento(r_pedido, r_pedido_atualizado, idMeioPagtoMonitorado, False) then
+						if sMeioPagtoMonitoradoIdentificado <> "" then sMeioPagtoMonitoradoIdentificado = sMeioPagtoMonitoradoIdentificado & ", "
+						sMeioPagtoMonitoradoIdentificado = sMeioPagtoMonitoradoIdentificado & "'" & x_opcao_forma_pagamento(idMeioPagtoMonitorado) & "'"
+						end if
 					end if
-
-				idMeioPagtoMonitorado = ID_FORMA_PAGTO_CARTAO
-				if parcelamentoPassouPossuirMeioPagamento(r_pedido, r_pedido_atualizado, idMeioPagtoMonitorado, False) then
-					if sMeioPagtoMonitoradoIdentificado <> "" then sMeioPagtoMonitoradoIdentificado = sMeioPagtoMonitoradoIdentificado & ", "
-					sMeioPagtoMonitoradoIdentificado = sMeioPagtoMonitoradoIdentificado & "'" & x_opcao_forma_pagamento(idMeioPagtoMonitorado) & "'"
-					end if
-
-				idMeioPagtoMonitorado = ID_FORMA_PAGTO_CARTAO_MAQUINETA
-				if parcelamentoPassouPossuirMeioPagamento(r_pedido, r_pedido_atualizado, idMeioPagtoMonitorado, False) then
-					if sMeioPagtoMonitoradoIdentificado <> "" then sMeioPagtoMonitoradoIdentificado = sMeioPagtoMonitoradoIdentificado & ", "
-					sMeioPagtoMonitoradoIdentificado = sMeioPagtoMonitoradoIdentificado & "'" & x_opcao_forma_pagamento(idMeioPagtoMonitorado) & "'"
-					end if
-
-				if sMeioPagtoMonitoradoIdentificado <> "" then
-					set rEmailDestinatario = get_registro_t_parametro(ID_PARAMETRO_EmailDestinatarioAlertaEdicaoFormaPagtoPassouPossuirMeioPagtoMonitorado)
-					if Trim("" & rEmailDestinatario.campo_texto) <> "" then
-						corpo_mensagem = "O usuário '" & usuario & "' editou em " & formata_data_hora_sem_seg(Now) & " na Central a forma de pagamento do pedido " & pedido_selecionado & " incluindo o meio de pagamento: " & sMeioPagtoMonitoradoIdentificado & vbCrLf & _
-										vbCrLf & _
-										"Forma de pagamento anterior:" & vbCrLf & _
-										monta_descricao_forma_pagto_pedido_com_quebra_linha(r_pedido, quebraLinhaFormaPagto) & vbCrLf & _
-										vbCrLf & _
-										"Forma de pagamento atual:" & vbCrLf & _
-										monta_descricao_forma_pagto_pedido_com_quebra_linha(r_pedido_atualizado, quebraLinhaFormaPagto) & vbCrLf & _
-										vbCrLf & _
-										"Informações adicionais:" & vbCrLf & _
-										"Status da análise de crédito: " & x_analise_credito(r_pedido.analise_credito) & vbCrLf & _
-										"Status de pagamento: " & Ucase(x_status_pagto(r_pedido.st_pagto))
-
-						EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__SENTINELA_SISTEMA), _
-														"", _
-														rEmailDestinatario.campo_texto, _
-														"", _
-														"", _
-														"Edição da forma de pagamento incluindo o meio de pagamento: " & sMeioPagtoMonitoradoIdentificado & " (pedido " & pedido_selecionado & ")", _
-														corpo_mensagem, _
-														Now, _
-														id_email, _
-														msg_erro_grava_email
-						end if 'if Trim("" & rEmailDestinatario.campo_texto) <> ""
-					end if 'if sMeioPagtoMonitoradoIdentificado <> ""
-				end if 'if Not le_pedido(pedido_selecionado, r_pedido_atualizado, msg_erro) - else
+				next
+			
+			if sMeioPagtoMonitoradoIdentificado <> "" then
+				set rEmailDestinatario = get_registro_t_parametro(ID_PARAMETRO_EmailDestinatarioAlertaEdicaoFormaPagtoPassouPossuirMeioPagtoMonitorado)
+				if Trim("" & rEmailDestinatario.campo_texto) <> "" then
+					corpo_mensagem = "O usuário '" & usuario & "' editou em " & formata_data_hora_sem_seg(Now) & " na Central a forma de pagamento do pedido " & pedido_selecionado & " incluindo o meio de pagamento: " & sMeioPagtoMonitoradoIdentificado & vbCrLf & _
+									vbCrLf & _
+									"Forma de pagamento anterior:" & vbCrLf & _
+									monta_descricao_forma_pagto_pedido_com_quebra_linha(r_pedido, quebraLinhaFormaPagto) & vbCrLf & _
+									vbCrLf & _
+									"Forma de pagamento atual:" & vbCrLf & _
+									monta_descricao_forma_pagto_pedido_com_quebra_linha(r_pedido_atualizado, quebraLinhaFormaPagto) & vbCrLf & _
+									vbCrLf & _
+									"Informações adicionais:" & vbCrLf & _
+									"Status da análise de crédito: " & x_analise_credito(r_pedido.analise_credito) & vbCrLf & _
+									"Status de pagamento: " & Ucase(x_status_pagto(r_pedido.st_pagto))
+					
+					EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__SENTINELA_SISTEMA), _
+													"", _
+													rEmailDestinatario.campo_texto, _
+													"", _
+													"", _
+													"Edição da forma de pagamento incluindo o meio de pagamento: " & sMeioPagtoMonitoradoIdentificado & " (pedido " & pedido_selecionado & ")", _
+													corpo_mensagem, _
+													Now, _
+													id_email, _
+													msg_erro_grava_email
+					end if 'if Trim("" & rEmailDestinatario.campo_texto) <> ""
+				end if 'if sMeioPagtoMonitoradoIdentificado <> ""
 			end if 'if alerta = ""
-
+		
+		if alerta = "" then
+			'Email de alerta p/ a equipe do financeiro caso tenha havido edição na forma de pagamento de modo que uma parcela a prazo com meio de pagamento monitorado
+			'tenha sido alterada para outro meio de pagamento também monitorado
+			s = ID_FORMA_PAGTO_BOLETO & "|" & ID_FORMA_PAGTO_CARTAO & "|" & ID_FORMA_PAGTO_CARTAO_MAQUINETA
+			vMeioPagtoMonitorado = Split(s, "|")
+			
+			if houveEdicaoParcelaAPrazoEntreMeiosPagtoMonitorados(r_pedido, r_pedido_atualizado, vMeioPagtoMonitorado, sMeioPagtoMonitoradoIdentificado) then
+				set rEmailDestinatario = get_registro_t_parametro(ID_PARAMETRO_EmailDestinatarioAlertaEdicaoFormaPagtoMonitoramentoParcelaAPrazo)
+				if Trim("" & rEmailDestinatario.campo_texto) <> "" then
+					corpo_mensagem = "O usuário '" & usuario & "' editou em " & formata_data_hora_sem_seg(Now) & " na Central a forma de pagamento do pedido " & pedido_selecionado & " alterando meio de pagamento de parcela a prazo incluindo: " & sMeioPagtoMonitoradoIdentificado & vbCrLf & _
+									vbCrLf & _
+									"Forma de pagamento anterior:" & vbCrLf & _
+									monta_descricao_forma_pagto_pedido_com_quebra_linha(r_pedido, quebraLinhaFormaPagto) & vbCrLf & _
+									vbCrLf & _
+									"Forma de pagamento atual:" & vbCrLf & _
+									monta_descricao_forma_pagto_pedido_com_quebra_linha(r_pedido_atualizado, quebraLinhaFormaPagto) & vbCrLf & _
+									vbCrLf & _
+									"Informações adicionais:" & vbCrLf & _
+									"Status da análise de crédito: " & x_analise_credito(r_pedido.analise_credito) & vbCrLf & _
+									"Status de pagamento: " & Ucase(x_status_pagto(r_pedido.st_pagto))
+					
+					EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__SENTINELA_SISTEMA), _
+													"", _
+													rEmailDestinatario.campo_texto, _
+													"", _
+													"", _
+													"Edição da forma de pagamento alterando meio de pagamento de parcela a prazo incluindo: " & sMeioPagtoMonitoradoIdentificado & " (pedido " & pedido_selecionado & ")", _
+													corpo_mensagem, _
+													Now, _
+													id_email, _
+													msg_erro_grava_email
+					end if 'if Trim("" & rEmailDestinatario.campo_texto) <> ""
+				end if 'if houveEdicaoParcelaAPrazoEntreMeiosPagtoMonitorados(r_pedido, r_pedido_atualizado, vMeioPagtoMonitorado)
+			end if 'if alerta = ""
+		
+		if alerta = "" then
+			s = ID_FORMA_PAGTO_DINHEIRO & "|" & ID_FORMA_PAGTO_DEPOSITO & "|" & ID_FORMA_PAGTO_CHEQUE
+			vMeioPagtoMonitorado = Split(s, "|")
+			
+			'Email de alerta p/ a equipe do financeiro caso tenha havido edição na forma de pagamento alterando parcela a prazo para algum meio de pagamento monitorado
+			sMeioPagtoMonitoradoIdentificado = ""
+			for iMeioPagtoMonitorado = LBound(vMeioPagtoMonitorado) to UBound(vMeioPagtoMonitorado)
+				idMeioPagtoMonitorado = Trim("" & vMeioPagtoMonitorado(iMeioPagtoMonitorado))
+				if idMeioPagtoMonitorado <> "" then
+					if parcelamentoPassouPossuirParcelaAPrazoComMeioPagto(r_pedido, r_pedido_atualizado, idMeioPagtoMonitorado, False) then
+						if sMeioPagtoMonitoradoIdentificado <> "" then sMeioPagtoMonitoradoIdentificado = sMeioPagtoMonitoradoIdentificado & ", "
+						sMeioPagtoMonitoradoIdentificado = sMeioPagtoMonitoradoIdentificado & "'" & x_opcao_forma_pagamento(idMeioPagtoMonitorado) & "'"
+						end if
+					end if
+				next
+			
+			if sMeioPagtoMonitoradoIdentificado <> "" then
+				set rEmailDestinatario = get_registro_t_parametro(ID_PARAMETRO_EmailDestinatarioAlertaEdicaoFormaPagtoMonitoramentoParcelaAPrazo)
+				if Trim("" & rEmailDestinatario.campo_texto) <> "" then
+					corpo_mensagem = "O usuário '" & usuario & "' editou em " & formata_data_hora_sem_seg(Now) & " na Central a forma de pagamento do pedido " & pedido_selecionado & " incluindo meio de pagamento em parcela a prazo: " & sMeioPagtoMonitoradoIdentificado & vbCrLf & _
+									vbCrLf & _
+									"Forma de pagamento anterior:" & vbCrLf & _
+									monta_descricao_forma_pagto_pedido_com_quebra_linha(r_pedido, quebraLinhaFormaPagto) & vbCrLf & _
+									vbCrLf & _
+									"Forma de pagamento atual:" & vbCrLf & _
+									monta_descricao_forma_pagto_pedido_com_quebra_linha(r_pedido_atualizado, quebraLinhaFormaPagto) & vbCrLf & _
+									vbCrLf & _
+									"Informações adicionais:" & vbCrLf & _
+									"Status da análise de crédito: " & x_analise_credito(r_pedido.analise_credito) & vbCrLf & _
+									"Status de pagamento: " & Ucase(x_status_pagto(r_pedido.st_pagto))
+					
+					EmailSndSvcGravaMensagemParaEnvio getParametroFromCampoTexto(ID_PARAMETRO_EMAILSNDSVC_REMETENTE__SENTINELA_SISTEMA), _
+													"", _
+													rEmailDestinatario.campo_texto, _
+													"", _
+													"", _
+													"Edição da forma de pagamento incluindo meio de pagamento em parcela a prazo: " & sMeioPagtoMonitoradoIdentificado & " (pedido " & pedido_selecionado & ")", _
+													corpo_mensagem, _
+													Now, _
+													id_email, _
+													msg_erro_grava_email
+					end if 'if Trim("" & rEmailDestinatario.campo_texto) <> ""
+				end if 'if sMeioPagtoMonitoradoIdentificado <> ""
+			end if 'if alerta = ""
+		
 		if alerta = "" then
 			'Monitoramento da forma de pagamento "à vista"
 			if houve_edicao_forma_pagto_pedido(r_pedido, r_pedido_atualizado) And (CStr(r_pedido_atualizado.tipo_parcelamento) = COD_FORMA_PAGTO_A_VISTA) then

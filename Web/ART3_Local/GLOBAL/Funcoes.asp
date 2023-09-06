@@ -2003,6 +2003,42 @@ end function
 
 
 ' ------------------------------------------------------------------------
+'   texto_add_se_nao_existir
+'   Parâmetros:
+'       textoBase: texto-base ao qual será feita a concatenação
+'       textoAConcatenar: texto que será concatenado ao final do texto-base
+'       separador: separador que será adicionado entre o final do texto-base e o texto a ser concatenado (obs: o separador somente será adicionado se houver conteúdo no texto-base)
+'   Retorno da função: texto concatenado
+function texto_add_se_nao_existir(byval textoBase, byval textoAConcatenar, byval separador)
+dim sResp, blnJaExiste
+	texto_add_se_nao_existir = textoBase
+	
+	'Prevenção contra null
+	separador = "" & separador
+	textoBase = "" & textoBase
+	textoAConcatenar = "" & textoAConcatenar
+
+	sResp = textoBase
+
+	if separador = "" then
+		if Instr(textoBase, textoAConcatenar) = 0 then sResp = textoBase & textoAConcatenar
+	else
+		blnJaExiste = False
+		if textoBase = textoAConcatenar then blnJaExiste = True
+		if Instr(textoBase, textoAConcatenar & separador) <> 0 then blnJaExiste = True
+		if Instr(textoBase, separador & textoAConcatenar) <> 0 then blnJaExiste = True
+		if Not blnJaExiste then
+			if sResp <> "" then sResp = sResp & separador
+			sResp = sResp & textoAConcatenar
+			end if
+		end if
+	
+	texto_add_se_nao_existir = sResp
+end function
+
+
+
+' ------------------------------------------------------------------------
 '   RETORNA_SEPARADOR_DECIMAL
 function retorna_separador_decimal(byval numero)
 dim i
@@ -6687,6 +6723,7 @@ dim sResp
 	pagto_antecipado_quitado_cor = sResp
 end function
 
+
 'parcelamentoPossuiMeioPagamento
 'Verifica se o tipo de parcelamento usado no pedido usa em alguma parcela o meio de pagamento especificado no parâmetro
 'O parâmetro rPed deve ser do tipo: class cl_PEDIDO
@@ -6719,6 +6756,85 @@ dim blnResultado
 
 	parcelamentoPossuiMeioPagamento = blnResultado
 end function
+
+
+'parcelamentoPossuiMeioPagamentoEmParcelaAVista
+'Verifica se o tipo de parcelamento usado no pedido usa em alguma parcela à vista o meio de pagamento especificado no parâmetro
+'O parâmetro rPed deve ser do tipo: class cl_PEDIDO
+'O parâmetro idMeioPagto deve ser um código que está definido através das constantes:
+'	ID_FORMA_PAGTO_DINHEIRO, ID_FORMA_PAGTO_DEPOSITO, ID_FORMA_PAGTO_CHEQUE, ID_FORMA_PAGTO_BOLETO, ID_FORMA_PAGTO_CARTAO, ID_FORMA_PAGTO_BOLETO_AV, ID_FORMA_PAGTO_CARTAO_MAQUINETA
+function parcelamentoPossuiMeioPagamentoEmParcelaAVista(byref rPed, byval idMeioPagto)
+dim blnResultado
+
+	parcelamentoPossuiMeioPagamentoEmParcelaAVista = False
+	blnResultado = False
+
+	idMeioPagto = Trim("" & idMeioPagto)
+	if idMeioPagto = "" then exit function
+
+	if CStr(rPed.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_A_VISTA) then
+		if Trim("" & rPed.av_forma_pagto) = idMeioPagto then blnResultado = True
+	elseif CStr(rPed.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA) then
+		if Trim("" & rPed.pce_forma_pagto_entrada) = idMeioPagto then blnResultado = True
+		end if
+
+	parcelamentoPossuiMeioPagamentoEmParcelaAVista = blnResultado
+end function
+
+
+'parcelamentoPossuiMeioPagamentoEmParcelaAPrazo
+'Verifica se o tipo de parcelamento usado no pedido usa em alguma parcela a prazo o meio de pagamento especificado no parâmetro
+'O parâmetro rPed deve ser do tipo: class cl_PEDIDO
+'O parâmetro idMeioPagto deve ser um código que está definido através das constantes:
+'	ID_FORMA_PAGTO_DINHEIRO, ID_FORMA_PAGTO_DEPOSITO, ID_FORMA_PAGTO_CHEQUE, ID_FORMA_PAGTO_BOLETO, ID_FORMA_PAGTO_CARTAO, ID_FORMA_PAGTO_BOLETO_AV, ID_FORMA_PAGTO_CARTAO_MAQUINETA
+function parcelamentoPossuiMeioPagamentoEmParcelaAPrazo(byref rPed, byval idMeioPagto)
+dim blnResultado
+
+	parcelamentoPossuiMeioPagamentoEmParcelaAPrazo = False
+	blnResultado = False
+
+	idMeioPagto = Trim("" & idMeioPagto)
+	if idMeioPagto = "" then exit function
+
+	if CStr(rPed.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELA_UNICA) then
+		if Trim("" & rPed.pu_forma_pagto) = idMeioPagto then blnResultado = True
+	elseif CStr(rPed.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA) then
+		if Trim("" & rPed.pce_forma_pagto_prestacao) = idMeioPagto then blnResultado = True
+	elseif CStr(rPed.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA) then
+		if Trim("" & rPed.pse_forma_pagto_prim_prest) = idMeioPagto then blnResultado = True
+		if Trim("" & rPed.pse_forma_pagto_demais_prest) = idMeioPagto then blnResultado = True
+	elseif CStr(rPed.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_CARTAO) then
+		if CStr(idMeioPagto) = CStr(ID_FORMA_PAGTO_CARTAO) then blnResultado = True
+	elseif CStr(rPed.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA) then
+		if CStr(idMeioPagto) = CStr(ID_FORMA_PAGTO_CARTAO_MAQUINETA) then blnResultado = True
+		end if
+
+	parcelamentoPossuiMeioPagamentoEmParcelaAPrazo = blnResultado
+end function
+
+
+'isMeioPagtoNaLista
+'Verifica se o meio de pagamento especificado está no array
+'O parâmetro idMeioPagto e os valores do array devem ser códigos que estão definidos através das constantes:
+'	ID_FORMA_PAGTO_DINHEIRO, ID_FORMA_PAGTO_DEPOSITO, ID_FORMA_PAGTO_CHEQUE, ID_FORMA_PAGTO_BOLETO, ID_FORMA_PAGTO_CARTAO, ID_FORMA_PAGTO_BOLETO_AV, ID_FORMA_PAGTO_CARTAO_MAQUINETA
+function isMeioPagtoNaLista(byval idMeioPagto, byref vMeioPagto)
+dim iVetor, blnResultado
+	isMeioPagtoNaLista = False
+	blnResultado = False
+
+	idMeioPagto = Trim("" & idMeioPagto)
+	if idMeioPagto = "" then exit function
+
+	for iVetor=LBound(vMeioPagto) to UBound(vMeioPagto)
+		if idMeioPagto = Trim("" & vMeioPagto(iVetor)) then
+			blnResultado = True
+			exit for
+			end if
+		next
+	
+	isMeioPagtoNaLista = blnResultado
+end function
+
 
 'parcelamentoPassouPossuirMeioPagamento
 'Verifica se houve edição na forma de pagamento de modo que passou a incluir o meio de pagamento especificado
@@ -6808,5 +6924,221 @@ dim blnResultado
 		end if
 
 	parcelamentoPassouPossuirMeioPagamento = blnResultado
+end function
+
+
+'parcelamentoPassouPossuirParcelaAPrazoComMeioPagto
+'Verifica se houve edição na forma de pagamento de modo que passou a incluir o meio de pagamento especificado em parcela a prazo
+'Os parâmetros rPedOriginal e rPedAtualizado devem ser do tipo: class cl_PEDIDO
+'O parâmetro idMeioPagto deve ser um código que está definido através das constantes:
+'	ID_FORMA_PAGTO_DINHEIRO, ID_FORMA_PAGTO_DEPOSITO, ID_FORMA_PAGTO_CHEQUE, ID_FORMA_PAGTO_BOLETO, ID_FORMA_PAGTO_CARTAO, ID_FORMA_PAGTO_BOLETO_AV, ID_FORMA_PAGTO_CARTAO_MAQUINETA
+'O parâmetro blnSomenteSeNaoPossuiaAntes define o comportamento da análise:
+'	True = a análise retorna que a alteração passou a incluir o meio de pagamento em parcela a prazo somente se esse meio de pagamento não era usado antes em nenhuma das parcelas a prazo
+'			Ex: Meio de pagamento monitorado = Cheque
+'				Antes: Parcela Única no Boleto
+'				Atual: Parcelado Com Entrada (Entrada com Depósito e parcelas no Cheque)
+'				Retorno da função: True
+'			Ex: Meio de pagamento monitorado = Depósito
+'				Antes: Parcelado Sem Entrada (Primeira prestação com Depósito e parcelas no Boleto)
+'				Depois: Parcelado Única no Depósito
+'				Retorno da função: False
+'	False = a análise retorna que a alteração passou a incluir o meio de pagamento em parcela a prazo se:
+'			A) O meio de pagamento não era usado antes em nenhuma das parcelas a prazo e agora passou a ser usado
+'			B) Ou a forma de pagamento anterior usava o meio de pagamento em alguma das parcelas, mas a forma de pagamento foi alterada 
+'				e a nova forma de pagamento continua usando o meio de pagamento em alguma das parcelas.
+'			Ex: Meio de pagamento monitorado = Cheque
+'				Antes: Parcelado com Entrada (Entrada com Depósito e parcelas no Cheque)
+'				Depois: Parcelado Única no Cheque
+'				Retorno da função: True
+function parcelamentoPassouPossuirParcelaAPrazoComMeioPagto(byref rPedOriginal, byref rPedAtualizado, byval idMeioPagto, byval blnSomenteSeNaoPossuiaAntes)
+dim blnResultado
+	
+	parcelamentoPassouPossuirParcelaAPrazoComMeioPagto = False
+	blnResultado = False
+
+	idMeioPagto = Trim("" & idMeioPagto)
+	if idMeioPagto = "" then exit function
+
+	'O parcelamento atualizado não possui o meio de pagamento especificado em parcela a prazo
+	if Not parcelamentoPossuiMeioPagamentoEmParcelaAPrazo(rPedAtualizado, idMeioPagto) then exit function
+
+	if blnSomenteSeNaoPossuiaAntes then
+		if (Not parcelamentoPossuiMeioPagamentoEmParcelaAPrazo(rPedOriginal, idMeioPagto)) And parcelamentoPossuiMeioPagamentoEmParcelaAPrazo(rPedAtualizado, idMeioPagto) then blnResultado = True
+	else
+		if CStr(rPedAtualizado.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELA_UNICA) then
+			if CStr(rPedAtualizado.tipo_parcelamento) <> CStr(rPedOriginal.tipo_parcelamento) then
+				if Trim("" & rPedAtualizado.pu_forma_pagto) = idMeioPagto then blnResultado = True
+			else
+				if (Trim("" & rPedAtualizado.pu_forma_pagto) = idMeioPagto) And (Trim("" & rPedOriginal.pu_forma_pagto) <> idMeioPagto) then blnResultado = True
+				end if
+		elseif CStr(rPedAtualizado.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA) then
+			if CStr(rPedAtualizado.tipo_parcelamento) <> CStr(rPedOriginal.tipo_parcelamento) then
+				if Trim("" & rPedAtualizado.pce_forma_pagto_prestacao) = idMeioPagto then blnResultado = True
+			else
+				if (Trim("" & rPedAtualizado.pce_forma_pagto_prestacao) = idMeioPagto) And (Trim("" & rPedOriginal.pce_forma_pagto_prestacao) <> idMeioPagto) then blnResultado = True
+				end if
+		elseif CStr(rPedAtualizado.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA) then
+			if CStr(rPedAtualizado.tipo_parcelamento) <> CStr(rPedOriginal.tipo_parcelamento) then
+				if Trim("" & rPedAtualizado.pse_forma_pagto_prim_prest) = idMeioPagto then blnResultado = True
+				if Trim("" & rPedAtualizado.pse_forma_pagto_demais_prest) = idMeioPagto then blnResultado = True
+			else
+				if (Trim("" & rPedAtualizado.pse_forma_pagto_prim_prest) = idMeioPagto) And (Trim("" & rPedOriginal.pse_forma_pagto_prim_prest) <> idMeioPagto) then blnResultado = True
+				if (Trim("" & rPedAtualizado.pse_forma_pagto_demais_prest) = idMeioPagto) And (Trim("" & rPedOriginal.pse_forma_pagto_demais_prest) <> idMeioPagto) then blnResultado = True
+				end if
+		elseif CStr(rPedAtualizado.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_CARTAO) then
+			if CStr(rPedAtualizado.tipo_parcelamento) <> CStr(rPedOriginal.tipo_parcelamento) then
+				if CStr(idMeioPagto) = CStr(ID_FORMA_PAGTO_CARTAO) then blnResultado = True
+			else
+				'NOP
+				'Em qualquer caso o resultado será False
+				'	1) Se a forma de pagamento anterior também era Parcelado no Cartão, não houve alteração
+				'	2) Se o meio de pagamento especificado por idMeioPagto não for Cartão, então a forma de pagamento atualizada não possui o meio de pagamento especificado
+				end if
+		elseif CStr(rPedAtualizado.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA) then
+			if CStr(rPedAtualizado.tipo_parcelamento) <> CStr(rPedOriginal.tipo_parcelamento) then
+				if CStr(idMeioPagto) = CStr(ID_FORMA_PAGTO_CARTAO_MAQUINETA) then blnResultado = True
+			else
+				'NOP
+				'Em qualquer caso o resultado será False
+				'	1) Se a forma de pagamento anterior também era Parcelado no Cartão Maquineta, não houve alteração
+				'	2) Se o meio de pagamento especificado por idMeioPagto não for Cartão Maquineta, então a forma de pagamento atualizada não possui o meio de pagamento especificado
+				end if
+			end if
+		end if
+
+	parcelamentoPassouPossuirParcelaAPrazoComMeioPagto = blnResultado
+end function
+
+
+'houveEdicaoParcelaAPrazoEntreMeiosPagtoMonitorados
+'Verifica se houve edição na forma de pagamento de modo que uma parcela a prazo com meio de pagamento monitorado tenha sido alterada para outro meio de pagamento também monitorado
+'Os parâmetros rPedOriginal e rPedAtualizado devem ser do tipo: class cl_PEDIDO
+'O parâmetro vMeioPagtoMonitorado é um array contendo códigos que estão definidos através das constantes:
+'	ID_FORMA_PAGTO_DINHEIRO, ID_FORMA_PAGTO_DEPOSITO, ID_FORMA_PAGTO_CHEQUE, ID_FORMA_PAGTO_BOLETO, ID_FORMA_PAGTO_CARTAO, ID_FORMA_PAGTO_BOLETO_AV, ID_FORMA_PAGTO_CARTAO_MAQUINETA
+'O parâmetro 'meioPagtoMonitoradoIdentificado' retorna o(s) meio(s) de pagamento monitorados que passaram a ser usados em parcela a prazo
+function houveEdicaoParcelaAPrazoEntreMeiosPagtoMonitorados(byref rPedOriginal, byref rPedAtualizado, byref vMeioPagtoMonitorado, meioPagtoMonitoradoIdentificado)
+dim blnResultado, iVetor, blnAchou, idMeioPagtoAtual, idMeioPagtoOriginal, separador
+	
+	houveEdicaoParcelaAPrazoEntreMeiosPagtoMonitorados = False
+	blnResultado = False
+	meioPagtoMonitoradoIdentificado = ""
+	separador = ", "
+
+	'Há algum meio de pagamento definido no vetor?
+	blnAchou = False
+	for iVetor = LBound(vMeioPagtoMonitorado) to UBound(vMeioPagtoMonitorado)
+		if Trim("" & vMeioPagtoMonitorado(iVetor)) <> "" then
+			blnAchou = True
+			exit for
+			end if
+		next
+	
+	if Not blnAchou then exit function
+	
+	'O parcelamento original não possuía nenhum dos meios de pagamento monitorados em parcela a prazo
+	blnAchou = False
+	for iVetor = LBound(vMeioPagtoMonitorado) to UBound(vMeioPagtoMonitorado)
+		if Trim("" & vMeioPagtoMonitorado(iVetor)) <> "" then
+			if parcelamentoPossuiMeioPagamentoEmParcelaAPrazo(rPedOriginal, Trim("" & vMeioPagtoMonitorado(iVetor))) then
+				blnAchou = True
+				exit for
+				end if
+			end if
+		next
+	
+	if Not blnAchou then exit function
+	
+	'Se a forma de pagamento original e/ou a forma de pagamento atualizada é à vista, então não há parcela a prazo com alteração no meio de pagamento monitorado
+	if (CStr(rPedOriginal.tipo_parcelamento) = (COD_FORMA_PAGTO_A_VISTA)) Or (CStr(rPedAtualizado.tipo_parcelamento) = (COD_FORMA_PAGTO_A_VISTA)) then exit function
+	
+	if CStr(rPedAtualizado.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELA_UNICA) then
+		if CStr(rPedAtualizado.tipo_parcelamento) <> CStr(rPedOriginal.tipo_parcelamento) then
+			'Houve alteração no tipo de parcelamento, mas na validação inicial foi verificado que a forma de pagamento original possuía o meio de pagamento monitorado em parcela a prazo
+			idMeioPagtoAtual = Trim("" & rPedAtualizado.pu_forma_pagto)
+			if isMeioPagtoNaLista(idMeioPagtoAtual, vMeioPagtoMonitorado) then
+				blnResultado = True
+				meioPagtoMonitoradoIdentificado = texto_add_se_nao_existir(meioPagtoMonitoradoIdentificado, "'" & x_opcao_forma_pagamento(idMeioPagtoAtual) & "'", separador)
+				end if
+		else
+			idMeioPagtoAtual = Trim("" & rPedAtualizado.pu_forma_pagto)
+			idMeioPagtoOriginal = Trim("" & rPedOriginal.pu_forma_pagto)
+			if (idMeioPagtoAtual <> idMeioPagtoOriginal) And (isMeioPagtoNaLista(idMeioPagtoAtual, vMeioPagtoMonitorado)) then
+				blnResultado = True
+				meioPagtoMonitoradoIdentificado = texto_add_se_nao_existir(meioPagtoMonitoradoIdentificado, "'" & x_opcao_forma_pagamento(idMeioPagtoAtual) & "'", separador)
+				end if
+			end if
+	elseif CStr(rPedAtualizado.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_COM_ENTRADA) then
+		if CStr(rPedAtualizado.tipo_parcelamento) <> CStr(rPedOriginal.tipo_parcelamento) then
+			'Houve alteração no tipo de parcelamento, mas na validação inicial foi verificado que a forma de pagamento original possuía o meio de pagamento monitorado em parcela a prazo
+			idMeioPagtoAtual = Trim("" & rPedAtualizado.pce_forma_pagto_prestacao)
+			if isMeioPagtoNaLista(idMeioPagtoAtual, vMeioPagtoMonitorado) then
+				blnResultado = True
+				meioPagtoMonitoradoIdentificado = texto_add_se_nao_existir(meioPagtoMonitoradoIdentificado, "'" & x_opcao_forma_pagamento(idMeioPagtoAtual) & "'", separador)
+				end if
+		else
+			'Na validação inicial foi verificado que a forma de pagamento original possuía o meio de pagamento monitorado em parcela a prazo
+			idMeioPagtoAtual = Trim("" & rPedAtualizado.pce_forma_pagto_prestacao)
+			idMeioPagtoOriginal = Trim("" & rPedOriginal.pce_forma_pagto_prestacao)
+			if (idMeioPagtoAtual <> idMeioPagtoOriginal) And (isMeioPagtoNaLista(idMeioPagtoAtual, vMeioPagtoMonitorado)) then
+				blnResultado = True
+				meioPagtoMonitoradoIdentificado = texto_add_se_nao_existir(meioPagtoMonitoradoIdentificado, "'" & x_opcao_forma_pagamento(idMeioPagtoAtual) & "'", separador)
+				end if
+			end if
+	elseif CStr(rPedAtualizado.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_SEM_ENTRADA) then
+		if CStr(rPedAtualizado.tipo_parcelamento) <> CStr(rPedOriginal.tipo_parcelamento) then
+			'Houve alteração no tipo de parcelamento, mas na validação inicial foi verificado que a forma de pagamento original possuía o meio de pagamento monitorado em parcela a prazo
+			idMeioPagtoAtual = Trim("" & rPedAtualizado.pse_forma_pagto_prim_prest)
+			if isMeioPagtoNaLista(idMeioPagtoAtual, vMeioPagtoMonitorado) then
+				blnResultado = True
+				meioPagtoMonitoradoIdentificado = texto_add_se_nao_existir(meioPagtoMonitoradoIdentificado, "'" & x_opcao_forma_pagamento(idMeioPagtoAtual) & "'", separador)
+				end if
+			
+			idMeioPagtoAtual = Trim("" & rPedAtualizado.pse_forma_pagto_demais_prest)
+			if isMeioPagtoNaLista(idMeioPagtoAtual, vMeioPagtoMonitorado) then
+				blnResultado = True
+				meioPagtoMonitoradoIdentificado = texto_add_se_nao_existir(meioPagtoMonitoradoIdentificado, "'" & x_opcao_forma_pagamento(idMeioPagtoAtual) & "'", separador)
+				end if
+		else
+			idMeioPagtoAtual = Trim("" & rPedAtualizado.pse_forma_pagto_prim_prest)
+			idMeioPagtoOriginal = Trim("" & rPedOriginal.pse_forma_pagto_prim_prest)
+			if (idMeioPagtoAtual <> idMeioPagtoOriginal) And (isMeioPagtoNaLista(idMeioPagtoAtual, vMeioPagtoMonitorado)) then
+				blnResultado = True
+				meioPagtoMonitoradoIdentificado = texto_add_se_nao_existir(meioPagtoMonitoradoIdentificado, "'" & x_opcao_forma_pagamento(idMeioPagtoAtual) & "'", separador)
+				end if
+			
+			idMeioPagtoAtual = Trim("" & rPedAtualizado.pse_forma_pagto_demais_prest)
+			idMeioPagtoOriginal = Trim("" & rPedOriginal.pse_forma_pagto_demais_prest)
+			if (idMeioPagtoAtual <> idMeioPagtoOriginal) And (isMeioPagtoNaLista(idMeioPagtoAtual, vMeioPagtoMonitorado)) then
+				blnResultado = True
+				meioPagtoMonitoradoIdentificado = texto_add_se_nao_existir(meioPagtoMonitoradoIdentificado, "'" & x_opcao_forma_pagamento(idMeioPagtoAtual) & "'", separador)
+				end if
+			end if
+	elseif CStr(rPedAtualizado.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_CARTAO) then
+		if CStr(rPedAtualizado.tipo_parcelamento) <> CStr(rPedOriginal.tipo_parcelamento) then
+			'Houve alteração no tipo de parcelamento, mas na validação inicial foi verificado que a forma de pagamento original possuía o meio de pagamento monitorado em parcela a prazo
+			idMeioPagtoAtual = CStr(ID_FORMA_PAGTO_CARTAO)
+			if isMeioPagtoNaLista(idMeioPagtoAtual, vMeioPagtoMonitorado) then
+				blnResultado = True
+				meioPagtoMonitoradoIdentificado = texto_add_se_nao_existir(meioPagtoMonitoradoIdentificado, "'" & x_opcao_forma_pagamento(idMeioPagtoAtual) & "'", separador)
+				end if
+		else
+			'NOP
+			'Se a forma de pagamento anterior também era Parcelado no Cartão, não houve alteração
+			end if
+	elseif CStr(rPedAtualizado.tipo_parcelamento) = CStr(COD_FORMA_PAGTO_PARCELADO_CARTAO_MAQUINETA) then
+		if CStr(rPedAtualizado.tipo_parcelamento) <> CStr(rPedOriginal.tipo_parcelamento) then
+			'Houve alteração no tipo de parcelamento, mas na validação inicial foi verificado que a forma de pagamento original possuía o meio de pagamento monitorado em parcela a prazo
+			idMeioPagtoAtual = CStr(ID_FORMA_PAGTO_CARTAO_MAQUINETA)
+			if isMeioPagtoNaLista(idMeioPagtoAtual, vMeioPagtoMonitorado) then
+				blnResultado = True
+				meioPagtoMonitoradoIdentificado = texto_add_se_nao_existir(meioPagtoMonitoradoIdentificado, "'" & x_opcao_forma_pagamento(idMeioPagtoAtual) & "'", separador)
+				end if
+		else
+			'NOP
+			'Se a forma de pagamento anterior também era Parcelado no Cartão Maquineta, não houve alteração
+			end if
+		end if
+	
+	houveEdicaoParcelaAPrazoEntreMeiosPagtoMonitorados = blnResultado
 end function
 %>
