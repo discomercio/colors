@@ -65,11 +65,12 @@ dim r
 	cab="<table class='Q' cellspacing=0>" & chr(13)
 	cab=cab & "<tr style='background: #FFF0E0'>"
 	cab=cab & "<td width='100' nowrap class='MD MB' align='left' valign='bottom'><p class='R' style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='usuariolista.asp?ord=1" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Identificação</p></td>"
-	cab=cab & "<td width='210' class='MD MB' align='left' valign='bottom'><p class='R' style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='usuariolista.asp?ord=2" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Nome</p></td>"
+	cab=cab & "<td width='150' class='MD MB' align='left' valign='bottom'><p class='R' style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='usuariolista.asp?ord=2" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Nome</p></td>"
 	cab=cab & "<td width='200' class='MD MB' align='left' valign='bottom'><p class='R' style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='usuariolista.asp?ord=3" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Perfil</p></td>"
 	cab=cab & "<td width='35' nowrap class='MD MB' align='right' valign='bottom'><p class='Rd' style='font-weight:bold; cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='usuariolista.asp?ord=4" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Vend<br />Loja</p></td>"
 	cab=cab & "<td width='20' nowrap class='MD MB' align='center' valign='bottom'><p class='Rd' style='font-weight:bold; cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='usuariolista.asp?ord=5" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Vend<br />Ext</p></td>"
 	cab=cab & "<td width='20' nowrap class='MD MB' align='center' valign='bottom'><p class='Rc' style='font-weight:bold; cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='usuariolista.asp?ord=5" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">CD</p></td>"
+	cab=cab & "<td width='20' nowrap class='MD MB' align='center' valign='bottom'><p class='Rc' style='font-weight:bold; cursor: pointer;'>Telefone</p></td>"
 	cab=cab & "<td width='50' nowrap class='MB' align='left' valign='bottom'><p class='R' style='cursor: pointer;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='usuariolista.asp?ord=6" & s_op & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">Acesso</p></td>"
 	cab=cab & "</tr>" & chr(13)
 
@@ -124,7 +125,7 @@ dim r
 		x=x & r("usuario") & "</a></p></td>"
 
 	 '> NOME
-		x=x & " <td class='MDB' style='width:210px;' align='left' valign='top'><p class='C'>" 
+		x=x & " <td class='MDB' style='width:150px;' align='left' valign='top'><p class='C'>" 
 		x=x & "<a href='javascript:fOPConcluir(" & chr(34) & r("usuario") & chr(34)
 		x=x & ")' title='clique para consultar o cadastro deste usuário'>"
 		x=x & r("nome_iniciais_em_maiusculas") & "</a></p></td>"
@@ -154,6 +155,11 @@ dim r
 		if s="" then s="&nbsp;"
 		x=x & " <td class='MDB' align='center' valign='top' nowrap><p class='Cc'>" & s & "</p></td>"
 
+	 '> TELEFONE
+		s = formata_ddd_telefone_ramal(Trim("" & r("ddd")), Trim("" & r("telefone")), "")
+		if s="" then s="&nbsp;"
+		x=x & " <td class='MDB' align='center' valign='top' nowrap><p class='Cc'>" & s & "</p></td>"
+
 	 '> ACESSO
 		if r("bloqueado")=0 then 
 			s="<span style='color:#006600'>Liberado</span>"
@@ -174,7 +180,7 @@ dim r
 
 
   ' MOSTRA TOTAL DE USUÁRIOS
-	x=x & "<tr nowrap style='background: #FFFFDD'><td colspan='7' align='right' nowrap><p class='Cd'>" & "TOTAL:&nbsp;&nbsp;&nbsp;" & cstr(i) & "&nbsp;&nbsp;usuários" & "</p></td></tr>"
+	x=x & "<tr nowrap style='background: #FFFFDD'><td colspan='8' align='right' nowrap><p class='Cd'>" & "TOTAL:&nbsp;&nbsp;&nbsp;" & cstr(i) & "&nbsp;&nbsp;usuários" & "</p></td></tr>"
 
   ' FECHA TABELA
 	x=x & "</table>"

@@ -59,13 +59,15 @@
 	
 '	OBTÉM DADOS DO FORMULÁRIO ANTERIOR
 	dim i, n
-	dim s_usuario, s_senha, s_senha2, s_senha_original, s_nome, s_email, s_bloqueado, s_vendedor, operacao_selecionada, s_vendedor_ext, ckb_desbloquear_bloqueio_automatico
+	dim s_usuario, s_senha, s_senha2, s_senha_original, s_nome, s_email, s_ddd, s_telefone, s_bloqueado, s_vendedor, operacao_selecionada, s_vendedor_ext, ckb_desbloquear_bloqueio_automatico
 	operacao_selecionada=request("operacao_selecionada")
 	s_usuario=UCase(trim(request("usuario_selecionado")))
 	s_senha=trim(request("senha"))
 	s_senha2=trim(request("senha2"))
 	s_nome=trim(request("nome"))
     s_email=trim(request("email"))
+	s_ddd = trim(request("ddd"))
+	s_telefone = trim(request("telefone"))
 	s_bloqueado=trim(request("rb_estado"))
 	s_vendedor=trim(request("ckb_vendedor"))
 	s_vendedor_ext=trim(request("ckb_vendedor_ext"))
@@ -439,6 +441,8 @@
 					
 				r("nome")=s_nome
                 r("email")=s_email
+				r("ddd")=retorna_so_digitos(s_ddd)
+				r("telefone")=retorna_so_digitos(s_telefone)
 				r("bloqueado")=CLng(s_bloqueado)
 				r("dt_ult_atualizacao") = Now
 				

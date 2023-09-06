@@ -43,6 +43,12 @@
 	dim ordenacao_selecionada
 	ordenacao_selecionada=Trim(request("ord"))
 
+	dim ckb_incluir_produtos_normais, c_fabricante_listagem
+	ckb_incluir_produtos_normais = Trim(Request("ckb_incluir_produtos_normais"))
+	c_fabricante_listagem = Trim(Request("c_fabricante_listagem"))
+
+	if c_fabricante_listagem <> "" then c_fabricante_listagem = normaliza_codigo(c_fabricante_listagem, TAM_MIN_FABRICANTE)
+
 
 
 
@@ -50,6 +56,8 @@
 ' E X E C U T A _ C O N S U L T A
 '
 Sub executa_consulta
+Const ORIGEM_PROD_COMPOSTO = "t_EC_PRODUTO_COMPOSTO"
+Const ORIGEM_PROD_NORMAL = "t_PRODUTO"
 dim strSql, s, i, x, cab, strComposto
 dim r, r2
 dim intLargFabricante, intLargProduto, intLargDescricao, intLargComposicao
@@ -62,16 +70,45 @@ dim intLargFabricante, intLargProduto, intLargDescricao, intLargComposicao
   ' CABEÇALHO
 	cab="<table class='Q' cellspacing=0>" & chr(13)
 	cab=cab & "<tr style='background: #FFF0E0' nowrap>"
-	cab=cab & "<td align='left' style='width:" & Cstr(intLargFabricante) & ";border-right: 1px solid;border-bottom:1px solid'><span class='R' style='cursor: hand;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='ECProdutoCompostoLista.asp?ord=1" & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">FABR</span></td>"
-	cab=cab & "<td align='left' style='width:" & Cstr(intLargProduto) & ";border-right: 1px solid;border-bottom:1px solid'><span class='R' style='cursor: hand;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='ECProdutoCompostoLista.asp?ord=2" & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">PRODUTO</span></TD>"
-	cab=cab & "<td align='left' style='width:" & Cstr(intLargDescricao) & ";border-right: 1px solid;border-bottom:1px solid'><span class='R' style='cursor: hand;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='ECProdutoCompostoLista.asp?ord=3" & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">DESCRIÇÃO</span></TD>"
+	cab=cab & "<td align='left' style='width:" & Cstr(intLargFabricante) & ";border-right: 1px solid;border-bottom:1px solid'><span class='R' style='cursor: default;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='ECProdutoCompostoLista.asp?ord=1" & "&ckb_incluir_produtos_normais=" & ckb_incluir_produtos_normais & "&c_fabricante_listagem=" & c_fabricante_listagem & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">FABR</span></td>"
+	cab=cab & "<td align='left' style='width:" & Cstr(intLargProduto) & ";border-right: 1px solid;border-bottom:1px solid'><span class='R' style='cursor: default;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='ECProdutoCompostoLista.asp?ord=2" & "&ckb_incluir_produtos_normais=" & ckb_incluir_produtos_normais & "&c_fabricante_listagem=" & c_fabricante_listagem & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">PRODUTO</span></TD>"
+	cab=cab & "<td align='left' style='width:" & Cstr(intLargDescricao) & ";border-right: 1px solid;border-bottom:1px solid'><span class='R' style='cursor: default;' title='clique para ordenar a lista por este campo' onclick=" & chr(34) & "window.location='ECProdutoCompostoLista.asp?ord=3" & "&ckb_incluir_produtos_normais=" & ckb_incluir_produtos_normais & "&c_fabricante_listagem=" & c_fabricante_listagem & "&" & MontaCampoQueryStringSessionCtrlInfo(Session("SessionCtrlInfo")) & "';" & chr(34) & ">DESCRIÇÃO</span></TD>"
 	cab=cab & "<td align='left' style='width:" & Cstr(intLargComposicao) & ";border-bottom:1px solid'><span class='R'>COMPOSIÇÃO</span></td>"
 	cab=cab & "</tr>" & chr(13)
 
-	strSql= "SELECT " & _
-				"*" & _
-			" FROM t_EC_PRODUTO_COMPOSTO" & _
-			" ORDER BY "
+	if ckb_incluir_produtos_normais = "" then
+		strSql= "SELECT" & _
+					" fabricante_composto" & _
+					", produto_composto" & _
+					", descricao" & _
+					", '" & ORIGEM_PROD_COMPOSTO & "' AS origem" & _
+				" FROM t_EC_PRODUTO_COMPOSTO"
+		if c_fabricante_listagem <> "" then strSql = strSql & " WHERE (fabricante_composto = '" & c_fabricante_listagem & "')"
+	else
+		strSql= "SELECT" & _
+					" fabricante_composto" & _
+					", produto_composto" & _
+					", descricao" & _
+					", '" & ORIGEM_PROD_COMPOSTO & "' AS origem" & _
+				" FROM t_EC_PRODUTO_COMPOSTO"
+		if c_fabricante_listagem <> "" then strSql = strSql & " WHERE (fabricante_composto = '" & c_fabricante_listagem & "')"
+		strSql = strSql & _
+				" UNION " & _
+				"SELECT" & _
+					" fabricante AS fabricante_composto" & _
+					", produto AS produto_composto" & _
+					", descricao" & _
+					", '" & ORIGEM_PROD_NORMAL & "' AS origem" & _
+				" FROM t_PRODUTO" & _
+				" WHERE" & _
+					" (fabricante + '|' + produto NOT IN (SELECT fabricante_composto + '|' + produto_composto FROM t_EC_PRODUTO_COMPOSTO))" & _
+					" AND (excluido_status = 0)" & _
+					" AND (Len(Coalesce(descricao, '')) > 0)" & _
+					" AND (descricao NOT IN ('.', '-'))"
+		if c_fabricante_listagem <> "" then strSql = strSql & " AND (fabricante = '" & c_fabricante_listagem & "')"
+		end if
+
+	strSql = strSql & " ORDER BY "
 
 	select case ordenacao_selecionada
 		case "1": strSql = strSql & "fabricante_composto, produto_composto"
@@ -100,53 +137,74 @@ dim intLargFabricante, intLargProduto, intLargDescricao, intLargComposicao
 	
 	 '> FABRICANTE
 		x=x & " <td style='width:" & Cstr(intLargFabricante) & ";' class='MDB' align='left' valign='top'><span class='C'>"
-		x=x & "<a href='javascript:fOPConcluir(" & chr(34) & r("fabricante_composto") & chr(34) & "," & chr(34) & r("produto_composto") & chr(34)
-		x=x & ")' title='clique para consultar o cadastro deste produto composto'>"
+		if Trim("" & r("origem")) = ORIGEM_PROD_COMPOSTO then
+			x=x & "<a href='javascript:fOPConcluir(" & chr(34) & r("fabricante_composto") & chr(34) & "," & chr(34) & r("produto_composto") & chr(34)
+			x=x & ")' title='clique para consultar o cadastro deste produto composto'>"
+			end if
 		x=x & r("fabricante_composto")
-		x=x & "</a>"
+		if Trim("" & r("origem")) = ORIGEM_PROD_COMPOSTO then
+			x=x & "</a>"
+			end if
 		x=x & "</span></td>"
 
 	 '> PRODUTO
 		x=x & " <td style='width:" & Cstr(intLargProduto) & ";' class='MDB' align='left' valign='top' nowrap><span class='C' nowrap>" 
-		x=x & "<a href='javascript:fOPConcluir(" & chr(34) & r("fabricante_composto") & chr(34) & "," & chr(34) & r("produto_composto") & chr(34)
-		x=x & ")' title='clique para consultar o cadastro deste produto composto'>"
+		if Trim("" & r("origem")) = ORIGEM_PROD_COMPOSTO then
+			x=x & "<a href='javascript:fOPConcluir(" & chr(34) & r("fabricante_composto") & chr(34) & "," & chr(34) & r("produto_composto") & chr(34)
+			x=x & ")' title='clique para consultar o cadastro deste produto composto'>"
+			end if
 		x=x & r("produto_composto")
-		x=x & "</a>"
+		if Trim("" & r("origem")) = ORIGEM_PROD_COMPOSTO then
+			x=x & "</a>"
+			end if
 		x=x & "</span></td>"
 
 	 '> DESCRIÇÃO
 		s=Trim("" & r("descricao"))
 		if s="" then s="&nbsp;"
 		x=x & " <td style='width:" & Cstr(intLargDescricao) & ";' class='MDB' align='left' valign='top'><span class='C'>"
-		x=x & "<a href='javascript:fOPConcluir(" & chr(34) & r("fabricante_composto") & chr(34) & "," & chr(34) & r("produto_composto") & chr(34)
-		x=x & ")' title='clique para consultar o cadastro deste produto composto'>"
+		if Trim("" & r("origem")) = ORIGEM_PROD_COMPOSTO then
+			x=x & "<a href='javascript:fOPConcluir(" & chr(34) & r("fabricante_composto") & chr(34) & "," & chr(34) & r("produto_composto") & chr(34)
+			x=x & ")' title='clique para consultar o cadastro deste produto composto'>"
+			end if
 		x=x & s
-		x=x & "</a>"
+		if Trim("" & r("origem")) = ORIGEM_PROD_COMPOSTO then
+			x=x & "</a>"
+			end if
 		x=x & "</span></td>"
 
 	 '> COMPOSIÇÃO
-		strSql = "SELECT " & _
-					"*" & _
-				" FROM t_EC_PRODUTO_COMPOSTO_ITEM a" & _
-					" LEFT JOIN t_PRODUTO b ON (a.fabricante_item=b.fabricante) AND (a.produto_item=b.produto)" & _
-				" WHERE" & _
-					" (fabricante_composto = '" & Trim("" & r("fabricante_composto")) & "')" & _
-					" AND (produto_composto = '" & Trim("" & r("produto_composto")) & "')" & _
-				" ORDER BY" & _
-					" sequencia"
-		set r2 = cn.Execute(strSql)
 		strComposto = ""
-		do while Not r2.Eof
-			if strComposto <> "" then strComposto = strComposto & "<br />"
-			strComposto = strComposto & "<span class='C'>" & formata_inteiro(r2("qtde")) & " x " & Trim("" & r2("produto_item")) & " (" & Trim("" & r2("fabricante_item")) & ") - " & Trim("" & r2("descricao")) & "</span>"
-			r2.MoveNext
-			loop
-		
+
+		if Trim("" & r("origem")) = ORIGEM_PROD_COMPOSTO then
+			strSql = "SELECT " & _
+						"*" & _
+					" FROM t_EC_PRODUTO_COMPOSTO_ITEM a" & _
+						" LEFT JOIN t_PRODUTO b ON (a.fabricante_item=b.fabricante) AND (a.produto_item=b.produto)" & _
+					" WHERE" & _
+						" (fabricante_composto = '" & Trim("" & r("fabricante_composto")) & "')" & _
+						" AND (produto_composto = '" & Trim("" & r("produto_composto")) & "')" & _
+					" ORDER BY" & _
+						" sequencia"
+			set r2 = cn.Execute(strSql)
+			do while Not r2.Eof
+				if strComposto <> "" then strComposto = strComposto & "<br />"
+				strComposto = strComposto & "<span class='C'>" & formata_inteiro(r2("qtde")) & " x " & Trim("" & r2("produto_item")) & " (" & Trim("" & r2("fabricante_item")) & ") - " & Trim("" & r2("descricao")) & "</span>"
+				r2.MoveNext
+				loop
+			end if
+
+		if strComposto = "" then strComposto = "&nbsp;"
+
 		x=x & " <td style='width:" & Cstr(intLargComposicao) & ";' class='MB' align='left' valign='top' nowrap>"
-		x=x & "<a href='javascript:fOPConcluir(" & chr(34) & r("fabricante_composto") & chr(34) & "," & chr(34) & r("produto_composto") & chr(34)
-		x=x & ")' title='clique para consultar o cadastro deste produto composto'>"
+		if Trim("" & r("origem")) = ORIGEM_PROD_COMPOSTO then
+			x=x & "<a href='javascript:fOPConcluir(" & chr(34) & r("fabricante_composto") & chr(34) & "," & chr(34) & r("produto_composto") & chr(34)
+			x=x & ")' title='clique para consultar o cadastro deste produto composto'>"
+			end if
 		x=x & strComposto
-		x=x & "</a>"
+		if Trim("" & r("origem")) = ORIGEM_PROD_COMPOSTO then
+			x=x & "</a>"
+			end if
 		x=x & "</td>"
 
 		x=x & "</tr>" & chr(13)
