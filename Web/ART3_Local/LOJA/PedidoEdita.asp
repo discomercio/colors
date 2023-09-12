@@ -503,11 +503,59 @@ end function
 	if operacao_permitida(OP_LJA_EDITA_RA, s_lista_operacoes_permitidas) then
 		if (Cstr(r_pedido.comissao_paga) = Cstr(COD_COMISSAO_NAO_PAGA)) And (nivelEdicaoFormaPagto >= COD_NIVEL_EDICAO_LIBERADA_PARCIAL) then bln_RA_EdicaoLiberada = True
 		end if
-		
+	
+	'A regra de edição do percentual de RT leva em consideração que o percentual é único p/ toda a família de pedidos
+	dim blnFamiliaPedidosPossuiPedidoEntregueMesAnterior, blnFamiliaPedidosPossuiPedidoComissaoPaga, blnFamiliaPedidosPossuiPedidoComissaoDescontada
+	blnFamiliaPedidosPossuiPedidoEntregueMesAnterior = False
+	blnFamiliaPedidosPossuiPedidoComissaoPaga = False
+	blnFamiliaPedidosPossuiPedidoComissaoDescontada = False
+
+	sql = "SELECT" & _
+				" pedido" & _
+				", comissao_descontada" & _
+			" FROM t_PEDIDO_ITEM_DEVOLVIDO" & _
+			" WHERE" & _
+				" (pedido LIKE '" & retorna_num_pedido_base(pedido_selecionado) & BD_CURINGA_TODOS & "')" & _
+				" AND (comissao_descontada = " & COD_COMISSAO_DESCONTADA & ")"
+	set rs = cn.Execute(sql)
+	if Not rs.Eof then blnFamiliaPedidosPossuiPedidoComissaoDescontada = True
+	if rs.State <> 0 then rs.Close
+
+	sql = "SELECT" & _
+				" pedido" & _
+				", comissao_descontada" & _
+			" FROM t_PEDIDO_PERDA" & _
+			" WHERE" & _
+				" (pedido LIKE '" & retorna_num_pedido_base(pedido_selecionado) & BD_CURINGA_TODOS & "')" & _
+				" AND (comissao_descontada = " & COD_COMISSAO_DESCONTADA & ")"
+	set rs = cn.Execute(sql)
+	if Not rs.Eof then blnFamiliaPedidosPossuiPedidoComissaoDescontada = True
+	if rs.State <> 0 then rs.Close
+
+	sql = "SELECT" & _
+				" pedido" & _
+				", st_entrega" & _
+				", entregue_data" & _
+				", comissao_paga" & _
+			" FROM t_PEDIDO" & _
+			" WHERE" & _
+				" (pedido LIKE '" & retorna_num_pedido_base(pedido_selecionado) & BD_CURINGA_TODOS & "')"
+	set rs = cn.Execute(sql)
+	do while Not rs.Eof
+		if (Trim("" & rs("st_entrega")) = ST_ENTREGA_ENTREGUE) And (Not IsMesmoAnoEMes(rs("entregue_data"), Date)) then blnFamiliaPedidosPossuiPedidoEntregueMesAnterior = True
+		if CLng(rs("comissao_paga")) = CLng(COD_COMISSAO_PAGA) then blnFamiliaPedidosPossuiPedidoComissaoPaga = True
+		rs.MoveNext
+		loop
+	if rs.State <> 0 then rs.Close
+	
 	dim bln_RT_EdicaoLiberada
 	bln_RT_EdicaoLiberada = False
 	if operacao_permitida(OP_LJA_EDITA_RT, s_lista_operacoes_permitidas) then
-		if Cstr(r_pedido.comissao_paga) = Cstr(COD_COMISSAO_NAO_PAGA) then bln_RT_EdicaoLiberada = True
+		if (Not blnFamiliaPedidosPossuiPedidoComissaoPaga) _
+			And (Not blnFamiliaPedidosPossuiPedidoComissaoDescontada) _
+			And (Not blnFamiliaPedidosPossuiPedidoEntregueMesAnterior) then
+			bln_RT_EdicaoLiberada = True
+			end if
 		end if
 	
 	dim blnItemPedidoEdicaoLiberada
@@ -525,9 +573,14 @@ end function
     if rs.Eof then
 	    if operacao_permitida(OP_LJA_EDITA_CAMPO_ENTREGA_IMEDIATA, s_lista_operacoes_permitidas) then
 		    if Not IsPedidoEncerrado(r_pedido.st_entrega) then
-			    if (Cstr(r_pedido.obs_2)="") And (Cstr(r_pedido.obs_3)="") then
-				    blnEtgImediataEdicaoLiberada = True
-				    end if
+				if r_pedido.st_entrega = ST_ENTREGA_A_ENTREGAR then
+					'NOP
+					'A edição do campo 'Entrega Imediata' foi bloqueada em pedidos com status 'A Entregar' e a edição só pode ser realizada na Central mediante permissão de acesso específica
+				else
+					if (Cstr(r_pedido.obs_2)="") And (Cstr(r_pedido.obs_3)="") then
+						blnEtgImediataEdicaoLiberada = True
+						end if
+					end if
 			    end if
 		    end if
         end if
@@ -704,13 +757,13 @@ end function
 	}
 
     function configuraCampoDataPrevisaoEntrega() {
-        if ($("input[name='rb_etg_imediata']:checked").val() == '<%=COD_ETG_IMEDIATA_NAO%>') {
+		if (($("input[name='rb_etg_imediata']:checked").val() == '<%=COD_ETG_IMEDIATA_NAO%>') && ($("#blnEtgImediataEdicaoLiberada").val() == '<%=CStr(True)%>')) {
             $("#c_data_previsao_entrega").prop("readonly", false);
             $("#c_data_previsao_entrega").prop("disabled", false);
             $("#c_data_previsao_entrega").datepicker("enable");
         }
         else {
-            $("#c_data_previsao_entrega").val("");
+			if ($("#blnEtgImediataEdicaoLiberada").val() == '<%=CStr(True)%>') $("#c_data_previsao_entrega").val("");
             $("#c_data_previsao_entrega").prop("readonly", true);
             $("#c_data_previsao_entrega").prop("disabled", true);
             $("#c_data_previsao_entrega").datepicker("disable");

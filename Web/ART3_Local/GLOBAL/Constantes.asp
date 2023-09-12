@@ -957,6 +957,7 @@
 	Const ID_PARAMETRO_EmailDestinatarioAlertaEdicaoFormaPagtoPassouPossuirMeioPagtoMonitorado = "EmailDestinatarioAlertaEdicaoFormaPagtoPassouPossuirMeioPagtoMonitorado"
 	Const ID_PARAMETRO_EmailDestinatarioAlertaEdicaoFormaPagtoComBoletoAV = "EmailDestinatarioAlertaEdicaoFormaPagtoComBoletoAV"
 	Const ID_PARAMETRO_EmailDestinatarioAlertaEdicaoFormaPagtoAVista = "EmailDestinatarioAlertaEdicaoFormaPagtoAVista"
+	Const ID_PARAMETRO_EmailDestinatarioAlertaEdicaoFormaPagtoMonitoramentoParcelaAPrazo = "EmailDestinatarioAlertaEdicaoFormaPagtoMonitoramentoParcelaAPrazo"
 	Const ID_PARAMETRO_EmailDestinatarioAlertaAlteracaoIndicadorEmPedidoCreditoOk = "EmailDestinatarioAlertaAlteracaoIndicadorEmPedidoCreditoOk"
 	Const ID_PARAMETRO_EmailDestinatarioAlertaLoginBloqueadoAutomatico = "EmailDestinatarioAlertaLoginBloqueadoAutomatico"
 	Const ID_PARAMETRO_EmailRemetenteAlertaLoginBloqueadoAutomatico = "EmailRemetenteAlertaLoginBloqueadoAutomatico"
@@ -1572,6 +1573,7 @@
 	Const OP_CEN_DESC_SUP_ALCADA_1								= 30000
 	Const OP_CEN_DESC_SUP_ALCADA_2								= 30100
 	Const OP_CEN_DESC_SUP_ALCADA_3								= 30200
+	Const OP_CEN_EDITA_CAMPO_ENTREGA_IMEDIATA_EM_PEDIDO_A_ENTREGAR = 30300
 
   ' LOJA
 	Const OP_LJA_CADASTRA_NOVO_PEDIDO					= 50100
@@ -2151,6 +2153,7 @@
 		dim st_etg_imediata
 		dim etg_imediata_data
 		dim etg_imediata_usuario
+		dim etg_imediata_usuario_RawData
 		dim frete_status
 		dim frete_valor
 		dim frete_data
@@ -2162,11 +2165,13 @@
 		dim PedidoRecebidoDtHrUltAtualiz
 		dim InstaladorInstalaStatus
 		dim InstaladorInstalaUsuarioUltAtualiz
+		dim InstaladorInstalaUsuarioUltAtualiz_RawData
 		dim InstaladorInstalaDtHrUltAtualiz
 		dim custoFinancFornecTipoParcelamento
 		dim custoFinancFornecQtdeParcelas
 		dim GarantiaIndicadorStatus
 		dim GarantiaIndicadorUsuarioUltAtualiz
+		dim GarantiaIndicadorUsuarioUltAtualiz_RawData
 		dim GarantiaIndicadorDtHrUltAtualiz
 		dim perc_desagio_RA_liquida
 		dim permite_RA_status
@@ -2252,6 +2257,7 @@
 		dim EndEtg_rg
 		dim PrevisaoEntregaData
 		dim PrevisaoEntregaUsuarioUltAtualiz
+		dim PrevisaoEntregaUsuarioUltAtualiz_RawData
 		dim PrevisaoEntregaDtHrUltAtualiz
 		dim PagtoAntecipadoStatus
 		dim PagtoAntecipadoDataHora
@@ -2770,14 +2776,17 @@
 		dim st_etg_imediata
 		dim etg_imediata_data
 		dim etg_imediata_usuario
+		dim etg_imediata_usuario_RawData
 		dim StBemUsoConsumo
 		dim custoFinancFornecTipoParcelamento
 		dim custoFinancFornecQtdeParcelas
 		dim InstaladorInstalaStatus
 		dim InstaladorInstalaUsuarioUltAtualiz
+		dim InstaladorInstalaUsuarioUltAtualiz_RawData
 		dim InstaladorInstalaDtHrUltAtualiz
 		dim GarantiaIndicadorStatus
 		dim GarantiaIndicadorUsuarioUltAtualiz
+		dim GarantiaIndicadorUsuarioUltAtualiz_RawData
 		dim GarantiaIndicadorDtHrUltAtualiz
 		dim perc_desagio_RA_liquida
 		dim permite_RA_status
@@ -2839,6 +2848,7 @@
 		dim sistema_responsavel_atualizacao
 		dim PrevisaoEntregaData
 		dim PrevisaoEntregaUsuarioUltAtualiz
+		dim PrevisaoEntregaUsuarioUltAtualiz_RawData
 		dim PrevisaoEntregaDtHrUltAtualiz
 		dim IdOrcamentoCotacao
 		dim IdIndicadorVendedor

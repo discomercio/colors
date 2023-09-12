@@ -228,7 +228,30 @@ var i, s_senha, blnTemLoja;
 	        return;
 	    }
 	}
-			
+
+	if ((trim(f.ddd.value) != "") || (trim(f.telefone.value) != "")) {
+		if (trim(f.ddd.value) == "") {
+			alert("Informe o DDD!")
+			f.ddd.focus();
+			return;
+		}
+		if (!ddd_ok(f.ddd.value)) {
+			alert("DDD inválido!")
+			f.ddd.focus();
+			return;
+		}
+		if (trim(f.telefone.value) == "") {
+			alert("Informe o telefone!")
+			f.telefone.focus();
+			return;
+		}
+		if (!telefone_ok(f.telefone.value)) {
+			alert("Telefone inválido!")
+			f.telefone.focus();
+			return;
+		}
+	}
+
 	if (f.ckb_vendedor.checked) {
 		blnTemLoja=false;
 		for (i=0; i<f.ckb_loja_vendedor.length; i++) {
@@ -349,6 +372,22 @@ var i, s_senha, blnTemLoja;
 	if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("email"))
 %>
 		<td width="100%" align="left"><p class="R">E-MAIL</p><p class="C"><input id="email" name="email" class="TA" value="<%=s%>" maxlength="60" size="85" onkeypress="filtra_email();"></p></td>
+	</tr>
+</table>
+
+<!-- ************   TELEFONE   ************ -->
+<table width="649" class="QS" cellspacing="0">
+	<tr>
+<%
+	s=""
+	if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("ddd"))
+%>
+		<td width="25%" align="left" class="MD"><p class="R">DDD</p><p class="C"><input id="ddd" name="ddd" class="TA" value="<%=s%>" maxlength="2" size="4" onkeypress="filtra_numerico();" onblur="this.value=retorna_so_digitos(this.value);"></p></td>
+<%
+	s=""
+	if operacao_selecionada=OP_CONSULTA then s=telefone_formata(Trim("" & rs("telefone")))
+%>
+		<td width="75%" align="left"><p class="R">TELEFONE</p><p class="C"><input id="telefone" name="telefone" class="TA" value="<%=s%>" maxlength="10" size="12" onkeypress="filtra_numerico();" onblur="this.value=telefone_formata(retorna_so_digitos(this.value));"></p></td>
 	</tr>
 </table>
 

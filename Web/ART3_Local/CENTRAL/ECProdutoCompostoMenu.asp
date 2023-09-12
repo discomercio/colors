@@ -269,7 +269,37 @@ var s_dest,s_op,s_fabricante,s_produto;
 	</tr>
 	<tr align="left">
 		<td align="left" nowrap>
-			<input type="radio" id="s1" name="rb_op" value="3" class="CBOX"><span class="rbLink" onclick="fOP.rb_op[2].click(); fOPConcluir(fOP);">Consultar Lista</span>
+			<table cellspacing="0" cellpadding="0">
+				<tr align="left">
+					<td align="left" colspan="2">
+						<input type="radio" id="s1" name="rb_op" value="3" class="CBOX">
+						<span class="rbLink" onclick="fOP.rb_op[2].click(); fOPConcluir(fOP);">Consultar Lista</span>
+					</td>
+				</tr>
+				<tr>
+					<td align="left" style="width:40px;">
+						&nbsp;
+					</td>
+					<td align="left">
+						<table cellspacing="0" cellpadding="0">
+							<tr>
+								<td align="right" style="padding-bottom:4px;">
+									<span class="L">Fabricante&nbsp;</span>
+								</td>
+								<td align="left" style="padding-bottom:4px;">
+									<input name="c_fabricante_listagem" type="text" maxlength="3" style="width:40px;" onblur="this.value=normaliza_codigo(this.value,TAM_MIN_FABRICANTE);" onclick="fOP.rb_op[2].click();" onkeypress="this.click(); filtra_fabricante();">
+								</td>
+							</tr>
+							<tr>
+								<td colspan="2" align="center" style="padding-bottom:4px;">
+									<input type="checkbox" name="ckb_incluir_produtos_normais" id="ckb_incluir_produtos_normais" value="ON" onclick="fOP.rb_op[2].click();" />
+									<span class="C" style="cursor:default" onclick="fOP.ckb_incluir_produtos_normais.click();">Incluir produtos normais</span>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
 		</td>
 	</tr>
 </table>
