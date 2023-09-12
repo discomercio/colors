@@ -36,12 +36,10 @@
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
 
 '	CONECTA COM O BANCO DE DADOS
-	dim cn, cn2, rs, msg_erro
+	dim cn, cn2, msg_erro
 
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)            
     if Not bdd_conecta_RPIFC(cn2) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)    
-
-	If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	
 	dim s_lista_operacoes_permitidas
 	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
@@ -137,6 +135,9 @@ dim s, s_aux, s_sql, x, cab_table, meio_pagto_a, n_reg, n_reg_total, qtde_indica
 dim idx_bloco, inc, comissao, num_pag,indice,qtde_vendedor
 dim v_Banco,strAuxbanco,blnAchou,vl_aux,n_reg_BD,intIdxBanco,strAuxBancoAnterior,intIdxVetor,strCampoOrdenacao,v_OutrosBancos, num_linhas
 dim regex
+dim vCodDescrTipoChavePix, sDescricaoPix, sChavePix, blnDescricaoPixCadastrada
+
+	call carrega_em_vetor_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE, vCodDescrTipoChavePix)
 
 	'Devido ao código "DEP1" usado para "Pagamento em Depósito (Banco Inter)", é usada a regex para retirar todos os dígitos 1 que estejam no final do código
 	set regex = New RegExp
@@ -330,57 +331,85 @@ dim regex
 					"					<td colspan='10' width='50%' align='left' valign='bottom' style='background:white;'>" & chr(13) & _
 					"						<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
 					"							<tr class='notPrint'>" & chr(13) & _
-					"								<td colspan='3' align='left' valign='bottom' style='height:15px;vertical-align:middle;border-bottom:1px solid #c0c0c0'><span class='Cn'>Indicador: " & r("indicador") & "</span></td>" & chr(13) & _
-					"							</tr>" & chr(13) & _
-					"							<tr>" & chr(13) & _
-					"								<td colspan='3' align='left' valign='bottom' style='vertical-align:middle'><div valign='bottom' style='height:14px;max-height:14px;overflow:hidden;vertical-align:middle'><span class='Cn'>Banco: " & r("banco") & " - " & x_banco(r("banco")) &  "</span></div></td>" & chr(13) & _
-					"							</tr>" & chr(13) & _
-					"							<tr>" & chr(13) & _
-					"								<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & r("agencia")
+					"								<td colspan='2' align='left' valign='bottom' style='height:15px;vertical-align:middle;border-bottom:1px solid #c0c0c0'><span class='Cn'>Indicador: " & r("indicador") & "</span></td>" & chr(13) & _
+					"							</tr>" & chr(13)
 
-				if Trim("" & r("agencia_dv")) <> "" then
-					x = x & "-" & r("agencia_dv")
-					end if
-
-				x = x & "</span></td>" & chr(13) & _
-					"								<td class='MC' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>"
-
-				if Trim("" & r("tipo_conta")) <> "" then
-					if r("tipo_conta") = "P" then
-						x = x & "C/P: "
-					elseif r("tipo_conta") = "C" then
-						x = x & "C/C: "
+				if Trim("" & r("opcao_dados_bancarios")) = Cstr(COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CHAVE_PIX) then
+					sChavePix = ""
+					sDescricaoPix = consulta_descricao_vetor_t_codigo_descricao(vCodDescrTipoChavePix, GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE, r("pix_tipo_chave"), blnDescricaoPixCadastrada)
+					if Trim("" & r("pix_tipo_chave")) = CStr(COD_ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE__CNPJ_CPF) then
+						if Not blnDescricaoPixCadastrada then sDescricaoPix = "CNPJ/CPF"
+						sChavePix = cnpj_cpf_formata(Trim("" & r("pix_chave")))
+					elseif Trim("" & r("pix_tipo_chave")) = CStr(COD_ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE__CELULAR) then
+						if Not blnDescricaoPixCadastrada then sDescricaoPix = "Celular"
+						sChavePix = Trim("" & r("pix_chave"))
+					elseif Trim("" & r("pix_tipo_chave")) = CStr(COD_ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE__EMAIL) then
+						if Not blnDescricaoPixCadastrada then sDescricaoPix = "E-mail"
+						sChavePix = Trim("" & r("pix_chave"))
 						end if
+					
+					x = x & _
+						"							<tr>" & chr(13) & _
+						"								<td colspan='2' align='left' valign='bottom' style='vertical-align:middle'><div valign='bottom' style='height:14px;max-height:14px;overflow:hidden;vertical-align:middle'><span class='Cn'>Tipo Chave Pix: " & sDescricaoPix & "</span></div></td>" & chr(13) & _
+						"							</tr>" & chr(13) & _
+						"							<tr>" & chr(13) & _
+						"								<td colspan='2' class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Chave Pix: " & sChavePix & "</span></div></td>" & chr(13) & _
+						"							</tr>" & chr(13) & _
+						"							<tr>" & chr(13) & _
+						"								<td colspan='2' class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Favorecido Pix: " & Trim("" & r("pix_favorecido")) & "</span></div></td>" & chr(13) & _
+						"							</tr>" & chr(13)
 				else
-					x = x & "Conta: "
-					end if
+					x = x & _
+						"							<tr>" & chr(13) & _
+						"								<td colspan='2' align='left' valign='bottom' style='vertical-align:middle'><div valign='bottom' style='height:14px;max-height:14px;overflow:hidden;vertical-align:middle'><span class='Cn'>Banco: " & r("banco") & " - " & x_banco(r("banco")) &  "</span></div></td>" & chr(13) & _
+						"							</tr>" & chr(13) & _
+						"							<tr>" & chr(13) & _
+						"								<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & r("agencia")
 
-				if Trim("" & r("conta_operacao")) <> "" then
-					x = x & r("conta_operacao") & "-"
-					end if
+					if Trim("" & r("agencia_dv")) <> "" then
+						x = x & "-" & r("agencia_dv")
+						end if
 
-				x = x & r("conta")
+					x = x & "</span></td>" & chr(13) & _
+						"								<td class='MC' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>"
+
+					if Trim("" & r("tipo_conta")) <> "" then
+						if r("tipo_conta") = "P" then
+							x = x & "C/P: "
+						elseif r("tipo_conta") = "C" then
+							x = x & "C/C: "
+							end if
+					else
+						x = x & "Conta: "
+						end if
+
+					if Trim("" & r("conta_operacao")) <> "" then
+						x = x & r("conta_operacao") & "-"
+						end if
+
+					x = x & r("conta")
 	
-				if Trim("" & r("conta_dv")) <> "" then
-					x = x & "-" & r("conta_dv")
-					end if
+					if Trim("" & r("conta_dv")) <> "" then
+						x = x & "-" & r("conta_dv")
+						end if
 
-				x = x & "</span></td>" & chr(13) & _
-					"							</tr>" & chr(13) & _
-					"							<tr>" & chr(13) & _
-					"								<td class='MC' width='60%' colspan='2' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Favorecido: " & r("favorecido") & "</span></td>" & chr(13) & _
-					"							</tr>" & chr(13)
+					x = x & "</span></td>" & chr(13) & _
+						"							</tr>" & chr(13) & _
+						"							<tr>" & chr(13) & _
+						"								<td class='MC' width='60%' colspan='2' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Favorecido: " & r("favorecido") & "</span></td>" & chr(13) & _
+						"							</tr>" & chr(13)
 
-				if Len(retorna_so_digitos(Trim("" & r("favorecido_cnpj_cpf")))) = 11 then
-					s_aux = "CPF"
-				else
-					s_aux = "CNPJ"
-					end if
+					if Len(retorna_so_digitos(Trim("" & r("favorecido_cnpj_cpf")))) = 11 then
+						s_aux = "CPF"
+					else
+						s_aux = "CNPJ"
+						end if
 
-				x = x & _
-					"							<tr>" & chr(13) & _
-					"								<td class='MC' width='60%' colspan='2' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>" & s_aux & ": " & cnpj_cpf_formata(Trim("" & r("favorecido_cnpj_cpf"))) & "</span></td>" & chr(13) & _
-					"							</tr>" & chr(13)
+					x = x & _
+						"							<tr>" & chr(13) & _
+						"								<td class='MC' width='60%' colspan='2' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>" & s_aux & ": " & cnpj_cpf_formata(Trim("" & r("favorecido_cnpj_cpf"))) & "</span></td>" & chr(13) & _
+						"							</tr>" & chr(13)
+					end if 'if Trim("" & r("opcao_dados_bancarios")) = Cstr(COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CHAVE_PIX) then-else
 
 				x = x & _
 					"						</table>" & chr(13) & _
@@ -848,9 +877,6 @@ function fRELGravaDados(f) {
 
 
 <%
-	if rs.State <> 0 then rs.Close
-	set rs = nothing
-
 '	FECHA CONEXAO COM O BANCO DE DADOS
 	cn.Close
 	set cn = nothing

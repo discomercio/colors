@@ -5689,7 +5689,7 @@ end function
 
 ' ------------------------------------------------------------------------
 '	IIF
-'	SIMULA A FUNÃO IIF DO VISUAL BASIC
+'	SIMULA A FUNÇÃO IIF DO VISUAL BASIC
 '		blnCondicao: parâmetro que deve conter True ou False
 '		retornoTrue: parâmetro cujo conteúdo será retornado se a condição for True
 '		retornoFalse: parâmetro cujo conteúdo será retornado se a condição for False

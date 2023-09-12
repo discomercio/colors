@@ -637,6 +637,15 @@
 	Const COD_CONTROLE_IMPOSTOS_STATUS__OK = "1"
 	Const COD_CONTROLE_IMPOSTOS_STATUS__NAO_DEFINIDO = "10"
   
+  ' CÓDIGOS P/ t_ORCAMENTISTA_E_INDICADOR.opcao_dados_bancarios
+	Const COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CONTA_BANCARIA = 1
+	Const COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CHAVE_PIX = 2
+
+  ' CÓDIGOS P/ t_ORCAMENTISTA_E_INDICADOR.pix_tipo_chave
+	Const COD_ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE__CNPJ_CPF = 1
+	Const COD_ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE__CELULAR = 2
+	Const COD_ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE__EMAIL = 3
+
   ' FORMA DE PAGAMENTO
 	Const COD_FORMA_PAGTO_A_VISTA = "1"
 	Const COD_FORMA_PAGTO_PARCELADO_CARTAO = "2"
@@ -781,6 +790,8 @@
     Const GRUPO_T_CODIGO_DESCRICAO__PEDIDO_DEVOLUCAO__PROCEDIMENTO = "DevolucaoPedido_Procedimento"
     Const GRUPO_T_CODIGO_DESCRICAO__PEDIDO_DEVOLUCAO__TAXA_FORMA_PAGAMENTO = "DevolucaoPedido_TaxaFormaDePagamento"
     Const GRUPO_T_CODIGO_DESCRICAO__PEDIDO_DEVOLUCAO__TAXA_RESPONSAVEL = "DevolucaoPedido_TaxaResponsavel"
+    Const GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS = "OrcamentistaIndicador__OpcaoDadosBancarios"
+    Const GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE = "OrcamentistaIndicador__PixTipoChave"
 
 '	TIPO DE ESTABELECIMENTO DO PARCEIRO
 	Const COD_PARCEIRO_TIPO_ESTABELECIMENTO__NAO_INFORMADO = "0"
@@ -3441,6 +3452,10 @@
         dim conta_operacao
         dim conta_dv
         dim tipo_conta
+		dim opcao_dados_bancarios
+		dim pix_tipo_chave
+		dim pix_chave
+		dim pix_favorecido
         dim loja
         dim vendedor
         dim email
@@ -3499,5 +3514,13 @@
 		dim Observacoes
 		dim UsuarioResponsavelN1
 		dim UsuarioResponsavelN2
+		end class
+
+	class cl_CODIGO_DESCRICAO
+		dim grupo
+		dim codigo
+		dim ordenacao
+		dim st_inativo
+		dim descricao
 		end class
 %>

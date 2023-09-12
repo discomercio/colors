@@ -5567,6 +5567,91 @@ end function
 
 
 ' ___________________________________________
+' CONSULTA DESCRICAO TABELA T_CODIGO_DESCRICAO
+'
+function consulta_descricao_tabela_t_codigo_descricao(byval grupo, byval codigo, byref cadastrado)
+dim r
+dim s, s_resp
+	cadastrado = False
+	s_resp=""
+	s = "SELECT descricao FROM t_CODIGO_DESCRICAO WHERE (grupo='" & grupo & "') AND (codigo='" & codigo & "')"
+	set r = cn.Execute(s)
+	if Not r.Eof then
+		cadastrado = True
+		s_resp = Trim("" & r("descricao"))
+		end if
+	consulta_descricao_tabela_t_codigo_descricao=s_resp
+	if r.State <> 0 then r.Close
+	set r =  nothing
+end function
+
+
+
+' ___________________________________________
+' CONSULTA DESCRICAO VETOR T_CODIGO_DESCRICAO
+'
+function consulta_descricao_vetor_t_codigo_descricao(byref vCodDescricao, byval grupo, byval codigo, byref cadastrado)
+dim i, sResp
+	cadastrado = False
+	sResp = ""
+	for i=LBound(vCodDescricao) to UBound(vCodDescricao)
+		if (Trim("" & vCodDescricao(i).grupo) = Trim("" & grupo)) And (Trim("" & vCodDescricao(i).codigo) = Trim("" & codigo)) then
+			cadastrado = True
+			sResp = Trim("" & vCodDescricao(i).descricao)
+			exit for
+			end if
+		next
+	consulta_descricao_vetor_t_codigo_descricao = sResp
+end function
+
+
+
+' ___________________________________________
+' CARREGA EM VETOR T_CODIGO_DESCRICAO
+'
+function carrega_em_vetor_t_codigo_descricao(byval grupo, byref vCodDescricao)
+dim r
+dim sql
+	carrega_em_vetor_t_codigo_descricao = False
+	redim vCodDescricao(0)
+	set vCodDescricao(UBound(vCodDescricao)) = New cl_CODIGO_DESCRICAO
+	with vCodDescricao(UBound(vCodDescricao))
+		.grupo = ""
+		.codigo = ""
+		end with
+
+	sql = "SELECT " & _
+			"*" & _
+		" FROM t_CODIGO_DESCRICAO"
+	if Trim("" & grupo) <> "" then sql = sql & " WHERE (grupo = '" & Trim("" & grupo) & "')"
+	sql = sql & " ORDER BY grupo, ordenacao"
+	set r = cn.Execute(sql)
+	do while Not r.Eof
+		if vCodDescricao(UBound(vCodDescricao)).grupo <> "" then
+			redim preserve vCodDescricao(UBound(vCodDescricao) + 1)
+			set vCodDescricao(UBound(vCodDescricao)) = New cl_CODIGO_DESCRICAO
+			end if
+		
+		with vCodDescricao(UBound(vCodDescricao))
+			.grupo = Trim("" & r("grupo"))
+			.codigo = Trim("" & r("codigo"))
+			.ordenacao = r("ordenacao")
+			.st_inativo = r("st_inativo")
+			.descricao = Trim("" & r("descricao"))
+			end with
+
+		r.MoveNext
+		loop
+
+	if r.State <> 0 then r.Close
+	set r =  nothing
+
+	carrega_em_vetor_t_codigo_descricao = True
+end function
+
+
+
+' ___________________________________________
 ' OBTEM WMS DEPOSITO ZONA CODIGOS
 '
 function obtem_wms_deposito_zona_codigos
@@ -6718,6 +6803,10 @@ dim rs
 			.conta_operacao 			= Trim("" & rs("conta_operacao"))
 			.conta_dv					= Trim("" & rs("conta_dv"))
 			.tipo_conta				    = Trim("" & rs("tipo_conta"))
+			.opcao_dados_bancarios		= rs("opcao_dados_bancarios")
+			.pix_tipo_chave				= rs("pix_tipo_chave")
+			.pix_chave					= Trim("" & rs("pix_chave"))
+			.pix_favorecido				= Trim("" & rs("pix_favorecido"))
 			.loja			            = Trim("" & rs("loja"))
 			.vendedor			        = Trim("" & rs("vendedor"))
 			.email	                    = Trim("" & rs("email"))

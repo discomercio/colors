@@ -1825,6 +1825,54 @@ end function
 
 
 
+' ____________________________________________
+' TIPO_CHAVE_PIX_MONTA_ITENS_SELECT
+'
+function tipo_chave_pix_monta_itens_select(byval id_default, byval blnIncluirOpcaoEmBranco)
+dim x, r, sql, sql_id_default, strResp, ha_default
+	id_default = Trim("" & id_default)
+	ha_default=False
+	sql_id_default = ""
+	if id_default <> "" then sql_id_default = " OR (CONVERT(int, codigo) = " & id_default & ")"
+	sql = "SELECT" & _
+			" CONVERT(int, codigo) AS codigo" & _
+			", descricao" & _
+		" FROM t_CODIGO_DESCRICAO" & _
+		" WHERE" & _
+			" (grupo = '" & GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE & "')" & _
+			" AND" & _
+			" ( (st_inativo = 0)" & sql_id_default & " )" & _
+		" ORDER BY" & _
+			" ordenacao"
+	set r = cn.Execute(sql)
+	strResp = ""
+	do while Not r.eof 
+		x = Trim("" & r("codigo"))
+		if (id_default<>"") And (converte_numero(id_default)=converte_numero(x)) then
+			strResp = strResp & "<option selected"
+			ha_default=True
+		else
+			strResp = strResp & "<option"
+			end if
+		strResp = strResp & " value='" & x & "'>"
+		strResp = strResp & Trim("" & r("descricao"))
+		strResp = strResp & "</option>" & chr(13)
+		r.MoveNext
+		loop
+
+	if Not ha_default then
+		strResp = "<option selected value=''>&nbsp;</option>" & chr(13) & strResp
+	elseif blnIncluirOpcaoEmBranco then
+		strResp = "<option value=''>&nbsp;</option>" & chr(13) & strResp
+		end if
+		
+	tipo_chave_pix_monta_itens_select = strResp
+	r.close
+	set r=nothing
+end function
+
+
+
 ' ___________________________________________________________________________________
 ' FORMATA O Nº SÉRIE DA NFe ADICIONANDO OS ZEROS À ESQUERDA
 '

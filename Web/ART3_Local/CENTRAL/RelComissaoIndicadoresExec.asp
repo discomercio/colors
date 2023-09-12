@@ -36,6 +36,9 @@
 	usuario = Trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
 
+	dim alerta
+	alerta = ""
+
 '	CONECTA COM O BANCO DE DADOS
 	dim cn, rs, msg_erro,rs2
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
@@ -54,7 +57,9 @@
 	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 
-	dim alerta
+	dim vCodDescrTipoChavePix, sDescricao, sChavePix, blnDescricaoCadastrada
+	call carrega_em_vetor_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE, vCodDescrTipoChavePix)
+
 	dim s, s_aux, s_filtro
 	dim ckb_st_entrega_entregue, c_dt_entregue_inicio, c_dt_entregue_termino
 	dim ckb_comissao_paga_sim, ckb_comissao_paga_nao
@@ -64,9 +69,6 @@
 	dim c_loja, lista_loja, s_filtro_loja, v_loja, v, i
 	dim rb_visao, blnVisaoSintetica
     
-
-	alerta = ""
-
 	ckb_st_entrega_entregue = Trim(Request.Form("ckb_st_entrega_entregue"))
 	c_dt_entregue_inicio = Trim(Request.Form("c_dt_entregue_inicio"))
 	c_dt_entregue_termino = Trim(Request.Form("c_dt_entregue_termino"))
@@ -381,7 +383,9 @@ dim v_desconto_descricao(),v_desconto_valor(),contador,valor_desconto,qtde_regis
 			" t_PEDIDO.pedido AS id_registro," & _
 			" t_PEDIDO.comissao_paga AS status_comissao," & _
 			" t_ORCAMENTISTA_E_INDICADOR.desempenho_nota," & _
+            " t_ORCAMENTISTA_E_INDICADOR.opcao_dados_bancarios," & _
             " t_ORCAMENTISTA_E_INDICADOR.banco," & _
+            " t_ORCAMENTISTA_E_INDICADOR.pix_tipo_chave," & _
 			" t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
 	
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
@@ -409,7 +413,7 @@ dim v_desconto_descricao(),v_desconto_valor(),contador,valor_desconto,qtde_regis
 			" LEFT JOIN t_ORCAMENTISTA_E_INDICADOR ON (t_PEDIDO__BASE.indicador=t_ORCAMENTISTA_E_INDICADOR.apelido)" & _
 			" WHERE (t_PEDIDO.st_entrega = '" & ST_ENTREGA_ENTREGUE & "')" & _
 			s & _
-			" GROUP BY t_PEDIDO.pedido, t_PEDIDO.comissao_paga, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.banco, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
+			" GROUP BY t_PEDIDO.pedido, t_PEDIDO.comissao_paga, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.opcao_dados_bancarios, t_ORCAMENTISTA_E_INDICADOR.banco, t_ORCAMENTISTA_E_INDICADOR.pix_tipo_chave, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
 	
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
@@ -435,7 +439,9 @@ dim v_desconto_descricao(),v_desconto_valor(),contador,valor_desconto,qtde_regis
 			" t_PEDIDO_ITEM_DEVOLVIDO.id AS id_registro," & _
 			" t_PEDIDO_ITEM_DEVOLVIDO.comissao_descontada AS status_comissao," & _
 			" t_ORCAMENTISTA_E_INDICADOR.desempenho_nota," & _
+            " t_ORCAMENTISTA_E_INDICADOR.opcao_dados_bancarios," & _
             " t_ORCAMENTISTA_E_INDICADOR.banco," & _
+            " t_ORCAMENTISTA_E_INDICADOR.pix_tipo_chave," & _
 			" t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
 	
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
@@ -462,7 +468,7 @@ dim v_desconto_descricao(),v_desconto_valor(),contador,valor_desconto,qtde_regis
 			" INNER JOIN t_CLIENTE ON (t_PEDIDO__BASE.id_cliente=t_CLIENTE.id)" & _
 			" LEFT JOIN t_ORCAMENTISTA_E_INDICADOR ON (t_PEDIDO__BASE.indicador=t_ORCAMENTISTA_E_INDICADOR.apelido)" & _
 			s & _
-			" GROUP BY t_PEDIDO_ITEM_DEVOLVIDO.id, t_PEDIDO_ITEM_DEVOLVIDO.comissao_descontada, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.banco, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
+			" GROUP BY t_PEDIDO_ITEM_DEVOLVIDO.id, t_PEDIDO_ITEM_DEVOLVIDO.comissao_descontada, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.opcao_dados_bancarios, t_ORCAMENTISTA_E_INDICADOR.banco, t_ORCAMENTISTA_E_INDICADOR.pix_tipo_chave, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
 	
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
@@ -488,7 +494,9 @@ dim v_desconto_descricao(),v_desconto_valor(),contador,valor_desconto,qtde_regis
 			" t_PEDIDO_PERDA.id AS id_registro," & _
 			" t_PEDIDO_PERDA.comissao_descontada AS status_comissao," & _
 			" t_ORCAMENTISTA_E_INDICADOR.desempenho_nota," & _
+            " t_ORCAMENTISTA_E_INDICADOR.opcao_dados_bancarios," & _
             " t_ORCAMENTISTA_E_INDICADOR.banco," & _
+            " t_ORCAMENTISTA_E_INDICADOR.pix_tipo_chave," & _
 			" t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
 	
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
@@ -515,7 +523,7 @@ dim v_desconto_descricao(),v_desconto_valor(),contador,valor_desconto,qtde_regis
 			" INNER JOIN t_CLIENTE ON (t_PEDIDO__BASE.id_cliente=t_CLIENTE.id)" & _
 			" LEFT JOIN t_ORCAMENTISTA_E_INDICADOR ON (t_PEDIDO__BASE.indicador=t_ORCAMENTISTA_E_INDICADOR.apelido)" & _
 			s & _
-			" GROUP BY t_PEDIDO_PERDA.id, t_PEDIDO_PERDA.comissao_descontada, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.banco, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
+			" GROUP BY t_PEDIDO_PERDA.id, t_PEDIDO_PERDA.comissao_descontada, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota, t_ORCAMENTISTA_E_INDICADOR.opcao_dados_bancarios, t_ORCAMENTISTA_E_INDICADOR.banco, t_ORCAMENTISTA_E_INDICADOR.pix_tipo_chave, t_PEDIDO__BASE.indicador, t_PEDIDO__BASE.vendedor,"
 	
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
@@ -814,31 +822,67 @@ end if
 									"				<tr>" & chr(13) & _
 									"					<td align='right' valign='bottom' nowrap><span class='Cn'>Pagamento da Comissão via Cartão:</span></td>" & chr(13) & _
 									"					<td width='90%' align='left' valign='bottom' nowrap><span class='Cn'>"
-				if rs("comissao_cartao_status") = 1 then
-					x = x & "Sim" & " &nbsp; " & cnpj_cpf_formata(Trim("" & rs("comissao_cartao_cpf"))) & " - " & Trim("" & rs("comissao_cartao_titular"))
-				else
-					x = x & "Não"
+			if rs("comissao_cartao_status") = 1 then
+				x = x & "Sim" & " &nbsp; " & cnpj_cpf_formata(Trim("" & rs("comissao_cartao_cpf"))) & " - " & Trim("" & rs("comissao_cartao_titular"))
+			else
+				x = x & "Não"
+				end if
+
+			x = x & _
+								"</span></td>" & chr(13) & _
+								"				</tr>" & chr(13) & _
+								"				<tr>" & chr(13) & _
+								"					<td class='MC' align='right' valign='bottom' nowrap><span class='Cn'>Pagamento da Comissão via NFSe:</span></td>" & chr(13) & _
+								"					<td class='MC' width='90%' align='left' valign='bottom' nowrap><span class='Cn'>" & chr(13)
+
+			if Trim("" & rs("comissao_NFSe_cnpj")) <> "" then
+				x = x & cnpj_cpf_formata(Trim("" & rs("comissao_NFSe_cnpj"))) & " - " & Trim("" & rs("comissao_NFSe_razao_social"))
+			else
+				x = x & "N.I."
+				end if
+
+			x = x & _
+				"</span></td>" & chr(13) & _
+				"				</tr>" & chr(13) & _
+				"			</table>" & chr(13) & _
+				"		</td>" & chr(13) & _
+				"	</tr>" & chr(13)
+
+			if Trim("" & rs("opcao_dados_bancarios")) = CStr(COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CHAVE_PIX) then
+				'Dados chave Pix
+				x = x & _
+					"	<tr>" & chr(13) & _
+					"		<td class='MDTE' colspan='12' align='left' valign='bottom' class='MB' style='background:whitesmoke;'>" & chr(13) & _
+					"			<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
+					"				<tr>" & chr(13)
+
+				sChavePix = ""
+				sDescricao = consulta_descricao_vetor_t_codigo_descricao(vCodDescrTipoChavePix, GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE, rs("pix_tipo_chave"), blnDescricaoCadastrada)
+				if Trim("" & rs("pix_tipo_chave")) = CStr(COD_ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE__CNPJ_CPF) then
+					if Not blnDescricaoCadastrada then sDescricao = "CNPJ/CPF"
+					sChavePix = cnpj_cpf_formata(Trim("" & rs("pix_chave")))
+				elseif Trim("" & rs("pix_tipo_chave")) = CStr(COD_ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE__CELULAR) then
+					if Not blnDescricaoCadastrada then sDescricao = "Celular"
+					sChavePix = Trim("" & rs("pix_chave"))
+				elseif Trim("" & rs("pix_tipo_chave")) = CStr(COD_ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE__EMAIL) then
+					if Not blnDescricaoCadastrada then sDescricao = "E-mail"
+					sChavePix = Trim("" & rs("pix_chave"))
 					end if
 
 				x = x & _
-									"</span></td>" & chr(13) & _
-									"				</tr>" & chr(13) & _
-									"				<tr>" & chr(13) & _
-									"					<td class='MC' align='right' valign='bottom' nowrap><span class='Cn'>Pagamento da Comissão via NFSe:</span></td>" & chr(13) & _
-									"					<td class='MC' width='90%' align='left' valign='bottom' nowrap><span class='Cn'>" & chr(13)
-
-				if Trim("" & rs("comissao_NFSe_cnpj")) <> "" then
-					x = x & cnpj_cpf_formata(Trim("" & rs("comissao_NFSe_cnpj"))) & " - " & Trim("" & rs("comissao_NFSe_razao_social"))
-				else
-					x = x & "N.I."
-					end if
-
+					"					<td class='MD' width='50%' align='left' valign='bottom'><span class='Cn'>Tipo Chave Pix: " & sDescricao & "</span></td>" & chr(13) & _
+					"					<td width='50%' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Chave Pix: " & sChavePix & "</span></td>" & chr(13) & _
+					"				</tr>" & chr(13) & _
+					"				<tr>" & chr(13) & _
+					"					<td colspan='2' class='MC' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Favorecido: " & Trim("" & rs("pix_favorecido")) & "</span></td>" & chr(13) & _
+					"				</tr>" & chr(13) & _
+					"			</table>" & chr(13) & _
+					"		</td>" & chr(13) & _
+					"		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
+					"	</tr>" & chr(13)
+			else
+				'Dados conta bancária
 				x = x & _
-									"</span></td>" & chr(13) & _
-									"				</tr>" & chr(13) & _
-									"			</table>" & chr(13) & _
-									"		</td>" & chr(13) & _
-									"	</tr>" & chr(13) & _
 									"	<tr>" & chr(13) & _
 									"		<td class='MDTE' colspan='12' align='left' valign='bottom' class='MB' style='background:whitesmoke;'>" & chr(13) & _
 									"			<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
@@ -847,51 +891,53 @@ end if
 									"				</tr>" & chr(13) & _
 									"				<tr>" & chr(13) & _
 									"					<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & rs("agencia")
-			            if Trim("" & rs("agencia_dv")) <> "" then
-                            x = x & "-" & rs("agencia_dv") & chr(13)
-                        end if
+				if Trim("" & rs("agencia_dv")) <> "" then
+					x = x & "-" & rs("agencia_dv") & chr(13)
+				end if
     
-                        x = x & "</span></td>" & chr(13) & _
-									"					<td class='MC MD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>"
+				x = x & "</span></td>" & chr(13) & _
+							"					<td class='MC MD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>"
 
-                        if Trim("" & rs("tipo_conta")) <> "" then
-                            if rs("tipo_conta") = "P" then
-                                x = x & "C/P: "
-                            elseif rs("tipo_conta") = "C" then
-                                x = x & "C/C: "
-                            end if
-                        else
-                            x = x & "Conta: "
-                        end if
+				if Trim("" & rs("tipo_conta")) <> "" then
+					if rs("tipo_conta") = "P" then
+						x = x & "C/P: "
+					elseif rs("tipo_conta") = "C" then
+						x = x & "C/C: "
+					end if
+				else
+					x = x & "Conta: "
+				end if
 
-                        if Trim("" & rs("conta_operacao")) <> "" then
-                            x = x & rs("conta_operacao") & "-"
-                        end if               
+				if Trim("" & rs("conta_operacao")) <> "" then
+					x = x & rs("conta_operacao") & "-"
+				end if               
     
-                        x = x & rs("conta")
+				x = x & rs("conta")
     
-                        if Trim("" & rs("conta_dv")) <> "" then
-                            x = x & "-" & rs("conta_dv") & chr(13)
-                        end if
-						x = x &		"					<td class='MC' width='60%' align='left' valign='bottom'><span class='Cn'>Favorecido: " & s_favorecido & "</span></td>" & chr(13) & _
-									"				</tr>" & chr(13)
+				if Trim("" & rs("conta_dv")) <> "" then
+					x = x & "-" & rs("conta_dv") & chr(13)
+				end if
+				x = x &		"					<td class='MC' width='60%' align='left' valign='bottom'><span class='Cn'>Favorecido: " & s_favorecido & "</span></td>" & chr(13) & _
+							"				</tr>" & chr(13)
 
-						if Len(retorna_so_digitos(s_favorecido_cnpj_cpf)) = 11 then
-							s_aux = "CPF"
-						else
-							s_aux = "CNPJ"
-							end if
+				if Len(retorna_so_digitos(s_favorecido_cnpj_cpf)) = 11 then
+					s_aux = "CPF"
+				else
+					s_aux = "CNPJ"
+					end if
 
-						x = x & _
-									"				<tr>" & chr(13) & _
-									"					<td colspan='3' class='MC' align='left' valign='bottom'><span class='Cn'>" & s_aux & ": " & s_favorecido_cnpj_cpf & "</span></td>" & chr(13) & _
-									"				</tr>" & chr(13)
+				x = x & _
+							"				<tr>" & chr(13) & _
+							"					<td colspan='3' class='MC' align='left' valign='bottom'><span class='Cn'>" & s_aux & ": " & s_favorecido_cnpj_cpf & "</span></td>" & chr(13) & _
+							"				</tr>" & chr(13)
 
-						x = x & _
-									"			</table>" & chr(13) & _
-									"		</td>" & chr(13) & _
-									"		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
-									"	</tr>" & chr(13)
+				x = x & _
+							"			</table>" & chr(13) & _
+							"		</td>" & chr(13) & _
+							"		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
+							"	</tr>" & chr(13)
+				end if 'if Trim("" & rs("opcao_dados_bancarios")) = CStr(COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CHAVE_PIX) then-else
+
 			s_new_cab = Replace(cab, "ckb_comissao_paga_tit_bloco", "ckb_comissao_paga_tit_bloco_" & idx_bloco)
 			s_new_cab = Replace(s_new_cab, "trata_ckb_onclick();", "trata_ckb_onclick(" & chr(34) & idx_bloco & chr(34) & ");")
 			s_new_cab = Replace(s_new_cab, "_NNNNN_", CStr(idx_bloco))

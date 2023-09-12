@@ -35,6 +35,8 @@
 	On Error GoTo 0
 	Err.Clear
 	
+	Const WIDTH_MAIN_TABLE = 689
+
 '	OBTEM O ID
 	dim s, usuario, loja, id_selecionado, tipo_PJ_PF, flag_ok, strSql, rs2, cont, url_back, url_origem, i
 	dim s_label, s_parametro, chave, senha_descripto, s_selected, s_color
@@ -65,6 +67,10 @@
 	dim alerta
 	alerta = ""
 	
+	dim vCodDescrOpDadosBancarios, vCodDescrTipoChavePix, sDescricao, blnDescricaoCadastrada
+	call carrega_em_vetor_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS, vCodDescrOpDadosBancarios)
+	call carrega_em_vetor_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE, vCodDescrTipoChavePix)
+
 	set rs = cn.Execute("SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (apelido='" & id_selecionado & "')")
 	if Err <> 0 then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
 	if rs.EOF then Response.Redirect("aviso.asp?id=" & ERR_ORCAMENTISTA_INDICADOR_NAO_CADASTRADO)
@@ -106,7 +112,7 @@
 
 
 <head>
-	<title>CENTRAL</title>
+	<title>LOJA</title>
 	
 	</head>
 
@@ -250,6 +256,7 @@ var tipo_PJ_PF = ID_PJ;
         strUrl = strUrl + "?apelido=" + encodeURIComponent(strApelido);
         strUrl = strUrl + "&ano=" + ano;
         strUrl = strUrl + "&mes=" + mes;
+		strUrl = strUrl + "&tableWidth=<%=CStr(WIDTH_MAIN_TABLE)%>";
         strUrl = strUrl + "&id=" + Math.random();
         xmlhttp.onreadystatechange = function() {
             if (xmlhttp.readyState == 4) {
@@ -569,9 +576,9 @@ var tipo_PJ_PF = ID_PJ;
 </div>
 
 <!--  CADASTRO DO ORÇAMENTISTA / INDICADOR -->
-<table width="649" cellPadding="4" CellSpacing="0" style="border-bottom:1px solid black">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" cellPadding="4" CellSpacing="0" style="border-bottom:1px solid black">
 <tr>
-	<td align="center" valign="bottom"><p class="PEDIDO">Consulta de Orçamentista/Indicador Cadastrado<br><span class="C">&nbsp;</span></p></td>
+	<td align="center" valign="bottom"><span class="PEDIDO">Consulta de Orçamentista/Indicador Cadastrado</span></td>
 </tr>
 </table>
 <br>
@@ -585,18 +592,18 @@ var tipo_PJ_PF = ID_PJ;
 <input type="hidden" name="desc_valor" id="desc_valor" value="0" />
 
 <!-- ************   NOME/RAZÃO SOCIAL   ************ -->
-<table width="649" class="Q" cellspacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="Q" cellspacing="0">
 	<tr>
 		<td align="left" class="MD" width="15%"><p class="R">APELIDO</p><p class="C">
 		<span class="C"><%=id_selecionado%></span></p></td>
 <%if tipo_PJ_PF=ID_PJ then s_label = "RAZÃO SOCIAL" else s_label="NOME" %>
 		<td align="left" width="85%"><p class="R"><%=s_label%></p><p class="C">
-		<span class="C"><%=Trim("" & rs("razao_social_nome"))%></span></p></td>
+		<span class="C"><%=iif(Trim("" & rs("razao_social_nome"))<>"", Trim("" & rs("razao_social_nome")), "&nbsp;")%></span></p></td>
 	</tr>
 </table>
 
 <!-- ************   RESPONSÁVEL PRINCIPAL   ************ -->
-<table width="649" class="QS" cellSpacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellSpacing="0">
 	<tr>
 		<td align="left" width="100%"><p class="R">PRINCIPAL</p><p class="C">
 		<input id="c_responsavel_principal" name="c_responsavel_principal" class="TA" 
@@ -607,125 +614,195 @@ var tipo_PJ_PF = ID_PJ;
 </table>
 
 <!-- ************   NOME FANTASIA   ************ -->
-<table width="649" class="QS" cellspacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0">
 	<tr>
 		<td align="left" width="100%"><p class="R">NOME FANTASIA</p><p class="C">
-		<span class="C"><%=Trim("" & rs("nome_fantasia"))%></span></p></td>
+		<span class="C"><%=iif(Trim("" & rs("nome_fantasia"))<>"", Trim("" & rs("nome_fantasia")), "&nbsp;")%></span></p></td>
 	</tr>
 </table>
 
 <!-- ************   CNPJ/CPF + IE/RG   ************ -->
-<table width="649" class="QS" cellspacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0">
 	<tr>
 <%if tipo_PJ_PF=ID_PJ then s_label = "CNPJ" else s_label="CPF" %>
 	<td align="left" class="MD" width="50%"><p class="R"><%=s_label%></p><p class="C">
 		<span class="C"><%=cnpj_cpf_formata(Trim("" & rs("cnpj_cpf")))%></span></p></td>
 <%if tipo_PJ_PF=ID_PJ then s_label = "IE" else s_label="RG" %>
 		<td align="left" width="50%"><p class="R"><%=s_label%></p><p class="C">
-		<span class="C"><%=Trim("" & rs("ie_rg"))%></span></p></td>
+		<span class="C"><%=iif(Trim("" & rs("ie_rg"))<>"", Trim("" & rs("ie_rg")), "&nbsp;")%></span></p></td>
 	</tr>
 </table>
 
 <!-- ************   ENDEREÇO   ************ -->
-<table width="649" class="QS" cellspacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0">
 	<tr>
 		<td align="left" width="100%"><p class="R">ENDEREÇO</p><p class="C">
-		<span class="C"><%=Trim("" & rs("endereco"))%></span></p></td>
+		<span class="C"><%=iif(Trim("" & rs("endereco"))<>"", Trim("" & rs("endereco")), "&nbsp;")%></span></p></td>
 	</tr>
 </table>
 
 <!-- ************   Nº/COMPLEMENTO   ************ -->
-<table width="649" class="QS" cellspacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0">
 	<tr>
 		<td align="left" width="50%" class="MD"><p class="R">Nº</p><p class="C">
-		<span class="C"><%=Trim("" & rs("endereco_numero"))%></span></p></td>
+		<span class="C"><%=iif(Trim("" & rs("endereco_numero"))<>"", Trim("" & rs("endereco_numero")), "&nbsp;")%></span></p></td>
 		<td align="left" valign="top" width="50%"><p class="R">COMPLEMENTO</p><p class="C">
-		<span class="C"><%=Trim("" & rs("endereco_complemento"))%></span></p></td>
+		<span class="C"><%=iif(Trim("" & rs("endereco_complemento"))<>"", Trim("" & rs("endereco_complemento")), "&nbsp;")%></span></p></td>
 	</tr>
 </table>
 
 <!-- ************   BAIRRO/CIDADE   ************ -->
-<table width="649" class="QS" cellspacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0">
 	<tr>
 		<td align="left" valign="top" width="50%" class="MD"><p class="R">BAIRRO</p><p class="C">
-		<span class="C"><%=Trim("" & rs("bairro"))%></span></p></td>
+		<span class="C"><%=iif(Trim("" & rs("bairro"))<>"", Trim("" & rs("bairro")), "&nbsp;")%></span></p></td>
 		<td align="left" valign="top" width="50%"><p class="R">CIDADE</p><p class="C">
-		<span class="C"><%=Trim("" & rs("cidade"))%></span></p></td>
+		<span class="C"><%=iif(Trim("" & rs("cidade"))<>"", Trim("" & rs("cidade")), "&nbsp;")%></span></p></td>
 	</tr>
 </table>
 
 <!-- ************   UF/CEP   ************ -->
-<table width="649" class="QS" cellspacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0">
 	<tr>
 		<td align="left" class="MD" width="50%"><p class="R">UF</p><p class="C">
-		<span class="C"><%=Trim("" & rs("uf"))%></span></p></td>
+		<span class="C"><%=iif(Trim("" & rs("uf"))<>"", Trim("" & rs("uf")), "&nbsp;")%></span></p></td>
 		<td align="left"><p class="R">CEP</p><p class="C">
-		<span class="C"><%=cep_formata(Trim("" & rs("cep")))%></span></p></td>
+		<span class="C"><%=iif(Trim("" & rs("cep"))<>"", cep_formata(Trim("" & rs("cep"))), "&nbsp;")%></span></p></td>
 	</tr>
 </table>
 
 <!-- ************   DDD/TELEFONE/FAX/NEXTEL   ************ -->
-<table width="649" class="QS" cellspacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0">
 	<tr>
 		<td align="left" valign="top" class="MD" width="15%"><p class="R">DDD</p><p class="C">
-		<span class="C"><%=Trim("" & rs("ddd"))%></span></p></td>
+		<span class="C"><%=iif(Trim("" & rs("ddd"))<>"", Trim("" & rs("ddd")), "&nbsp;")%></span></p></td>
 		<td align="left" valign="top" width="25%" class="MD"><p class="R">TELEFONE</p><p class="C">
-		<span class="C"><%=telefone_formata(Trim("" & rs("telefone")))%></span></p></td>
+		<span class="C"><%=iif(Trim("" & rs("telefone"))<>"", telefone_formata(Trim("" & rs("telefone"))), "&nbsp;")%></span></p></td>
 		<td align="left" valign="top" width="25%" class="MD"><p class="R">FAX</p><p class="C">
-		<span class="C"><%=telefone_formata(Trim("" & rs("fax")))%></span></p></td>
+		<span class="C"><%=iif(Trim("" & rs("fax"))<>"", telefone_formata(Trim("" & rs("fax"))), "&nbsp;")%></span></p></td>
 		<td align="left" valign="top"><p class="R">NEXTEL</p><p class="C">
-		<span class="C"><%=Trim("" & rs("nextel"))%></span></p></td>
+		<span class="C"><%=iif(Trim("" & rs("nextel"))<>"", Trim("" & rs("nextel")), "&nbsp;")%></span></p></td>
 	</tr>
 </table>
 
 <!-- ************   TEL CEL / CONTATO   ************ -->
-<table width="649" class="QS" cellspacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0">
 	<tr>
 		<td align="left" valign="top" width="15%" class="MD" nowrap><p class="R">DDD (CEL)</p><p class="C">
-		<%=Trim("" & rs("ddd_cel"))%></p></td>
+		<%=iif(Trim("" & rs("ddd_cel"))<>"", Trim("" & rs("ddd_cel")), "&nbsp;")%></p></td>
 		<td align="left" valign="top" width="25%" class="MD"><p class="R">TELEFONE (CEL)</p><p class="C">
-		<span class="C"><%=telefone_formata(Trim("" & rs("tel_cel")))%></span></p></td>
+		<span class="C"><%=iif(Trim("" & rs("tel_cel"))<>"", telefone_formata(Trim("" & rs("tel_cel"))), "&nbsp;")%></span></p></td>
 		<td align="left" valign="top"><p class="R">CONTATO</p><p class="C">
-		<span class="C"><%=Trim("" & rs("contato"))%></span></p></td>
+		<span class="C"><%=iif(Trim("" & rs("contato"))<>"", Trim("" & rs("contato")), "&nbsp;")%></span></p></td>
 	</tr>
 </table>
 
-<!-- ************   BANCO/AGÊNCIA/CONTA   ************ -->
-<table width="649" class="QS" cellSpacing="0">
+<!-- ************   DADOS BANCÁRIOS   *******************  -->
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0">
 	<tr>
-
-		<td width="15%" class="MD" valign="top" nowrap align="left"><p class="R">BANCO</p><p class="C"><span class="C"><%=rs("banco")%></span></p></td>
-
-		<td width="17%" class="MD" valign="top" align="left"><p class="R">AGÊNCIA</p><p class="C"><span class="C"><%=rs("agencia")%></span></p></td>
-
-		<td width="5%" class="MD" valign="top" align="left"><p class="R">DÍG.</p><p class="C"><span class="C"><%=rs("agencia_dv")%></span></p></td>
-
-        <td width="15%" class="MD" valign="top" align="left"><p class="R">TIPO OPERAÇÃO</p><p class="C"><span class="C"><%=rs("conta_operacao")%></span></p></td>
-
-		<td width="17%" class="MD" valign="top" align="left"><p class="R">CONTA</p><p class="C"><span class="C"><%=rs("conta")%></span></p></td>
-
-		<td width="5%" class="MD" valign="top" align="left"><p class="R">DÍG.</p><p class="C"><span class="C"><%=rs("conta_dv")%></span></p></td>
-
-		<td width="15%" align="left" valign="top"><p class="R">TIPO CONTA</p><p class="C">
-                <%if Trim("" & rs("tipo_conta")) ="" then  Response.Write ""
-                  if Trim("" & rs("tipo_conta"))="C" then Response.Write "Corrente"
-                  if Trim("" & rs("tipo_conta"))="P" then Response.Write "Poupança"
-                %>
-            </td>
-
+		<td width="100%" style="padding-bottom:10px;" align="left">
+			<p class="R" style="padding-bottom:8px;">DADOS BANCÁRIOS</p>
+			<table width="607" class="Q" cellspacing="0" style="margin-left:20px;">
+			<tr>
+				<td width="100%">
+					<table width="100%" border="0">
+					<tr>
+						<%	sDescricao = consulta_descricao_vetor_t_codigo_descricao(vCodDescrOpDadosBancarios, GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS, COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CONTA_BANCARIA, blnDescricaoCadastrada)
+							sDescricao = UCase(sDescricao)
+							if Not blnDescricaoCadastrada then sDescricao = "DADOS CONTA BANCÁRIA" %>
+						<td colspan="2" align="left">
+							<input type="radio" id="rb_opcao_dados_bancarios" name="rb_opcao_dados_bancarios" value="<%=CStr(COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CONTA_BANCARIA)%>" class="TA" disabled
+								<% if Trim("" & rs("opcao_dados_bancarios")) = CStr(COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CONTA_BANCARIA) then Response.Write " checked"%>
+								/><span id="spn_op_conta_bancaria_status" class="C" style="cursor:default;"><%=sDescricao%></span>
+						</td>
+					</tr>
+					<tr>
+						<td style="width:10px;">&nbsp;</td>
+						<td width="99%" align="left" style="padding-bottom:8px;padding-right:12px;">
+							<!-- ************   BANCO/AGÊNCIA/CONTA   ************ -->
+							<table class="Q" style="border-bottom:0pt;" width="100%" cellspacing="0">
+								<tr>
+									<td width="15%" class="MD" valign="top" nowrap align="left"><p class="R">BANCO</p><p class="C"><span class="C"><%=iif(Trim("" & rs("banco"))<>"", Trim("" & rs("banco")), "&nbsp;")%></span></p></td>
+									<td width="17%" class="MD" valign="top" align="left"><p class="R">AGÊNCIA</p><p class="C"><span class="C"><%=iif(Trim("" & rs("agencia"))<>"", Trim("" & rs("agencia")), "&nbsp;")%></span></p></td>
+									<td width="5%" class="MD" valign="top" align="left"><p class="R">DÍG.</p><p class="C"><span class="C"><%=iif(Trim("" & rs("agencia_dv"))<>"", Trim("" & rs("agencia_dv")), "&nbsp;")%></span></p></td>
+									<td width="15%" class="MD" valign="top" align="left"><p class="R">TIPO OPERAÇÃO</p><p class="C"><span class="C"><%=iif(Trim("" & rs("conta_operacao"))<>"", Trim("" & rs("conta_operacao")), "&nbsp;")%></span></p></td>
+									<td width="17%" class="MD" valign="top" align="left"><p class="R">CONTA</p><p class="C"><span class="C"><%=iif(Trim("" & rs("conta"))<>"", Trim("" & rs("conta")), "&nbsp;")%></span></p></td>
+									<td width="5%" class="MD" valign="top" align="left"><p class="R">DÍG.</p><p class="C"><span class="C"><%=iif(Trim("" & rs("conta_dv"))<>"", Trim("" & rs("conta_dv")), "&nbsp;")%></span></p></td>
+									<td width="15%" align="left" valign="top"><p class="R">TIPO CONTA</p><p class="C">
+											<%if Trim("" & rs("tipo_conta")) ="" then  Response.Write "&nbsp;"
+											  if Trim("" & rs("tipo_conta"))="C" then Response.Write "Corrente"
+											  if Trim("" & rs("tipo_conta"))="P" then Response.Write "Poupança"
+											%>
+										</td>
+								</tr>
+							</table>
+							<!-- ************   FAVORECIDO / CNPJ/CPF FAVORECIDO   *******************  -->
+							<table class="Q" width="100%" cellspacing="0">
+								<tr>
+									<td class="MD" width="70%" align="left" valign="top"><p class="R">FAVORECIDO</p><p class="C"><%=iif(Trim("" & rs("favorecido"))<>"", Trim("" & rs("favorecido")), "&nbsp;")%></p></td>
+									<td width="30%" align="left" valign="top"><p class="R">CPF/CNPJ DO FAVORECIDO</p><p class="C"><%=iif(Trim("" & rs("favorecido_cnpj_cpf"))<>"", cnpj_cpf_formata(Trim("" & rs("favorecido_cnpj_cpf"))), "&nbsp;")%></p></td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					</table>
+				</td>
+			</tr>
+			<tr>
+				<td width="100%" class="MC">
+					<table width="100%" border="0">
+					<tr>
+						<%	sDescricao = consulta_descricao_vetor_t_codigo_descricao(vCodDescrOpDadosBancarios, GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS, COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CHAVE_PIX, blnDescricaoCadastrada)
+							sDescricao = UCase(sDescricao)
+							if Not blnDescricaoCadastrada then sDescricao = "CHAVE PIX" %>
+						<td colspan="2" align="left">
+							<input type="radio" id="rb_opcao_dados_bancarios" name="rb_opcao_dados_bancarios" value="<%=CStr(COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CHAVE_PIX)%>" class="TA" disabled
+								<% if Trim("" & rs("opcao_dados_bancarios")) = CStr(COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CHAVE_PIX) then Response.Write " checked"%>
+								/><span id="spn_op_chave_pix_status" class="C" style="cursor:default;"><%=sDescricao%></span>
+						</td>
+					</tr>
+					<tr>
+						<td style="width:10px;">&nbsp;</td>
+						<td width="99%" align="left" style="padding-bottom:8px;padding-right:12px;">
+							<!-- ************   TIPO CHAVE/CHAVE/FAVORECIDO   ************ -->
+							<table class="Q" width="100%" cellspacing="0">
+								<tr>
+									<td align="left" class="MD"><p class="R">TIPO DE CHAVE</p><p class="C">
+										<select id="c_pix_tipo_chave" name="c_pix_tipo_chave" style="width:130px;" disabled>
+										<% =tipo_chave_pix_monta_itens_select(Trim("" & rs("pix_tipo_chave")), True) %>
+										</select>
+									</td>
+									<td align="left">
+										<p class="R">CHAVE PIX</p>
+										<input id="c_pix_chave" name="c_pix_chave" class="TA" value="<%=Trim("" & rs("pix_chave"))%>"
+											maxlength="80" size="60"
+											style="text-align:left;"
+											readonly tabindex=-1
+											/>
+									</td>
+								</tr>
+								<tr>
+									<td class="MC" colspan="2" align="left">
+										<p class="R">NOME DO FAVORECIDO</p>
+										<input type="text" id="c_pix_favorecido" name="c_pix_favorecido" class="TA" value="<%=Trim("" & rs("pix_favorecido"))%>"
+											maxlength="80" size="70"
+											readonly tabindex=-1
+											/>
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					</table>
+				</td>
+			</tr>
+			</table>
+		</td>
 	</tr>
-</table>
-
-<!-- ************   FAVORECIDO / CNPJ/CPF FAVORECIDO   *******************  -->
-<table width="649" class="QS" cellspacing="0">
-    <tr>
-		<td class="MD" width="70%" align="left" valign="top"><p class="R">FAVORECIDO</p><p class="C"><%=rs("favorecido")%></p></td>
-		<td width="30%" align="left" valign="top"><p class="R">CPF/CNPJ DO FAVORECIDO</p><p class="C"><%=cnpj_cpf_formata(Trim("" & rs("favorecido_cnpj_cpf")))%></p></td>
-    </tr>
 </table>
 
 <!-- ************   DADOS P/ PAGTO COMISSÃO: CARTÃO / NFSe   *******************  -->
-<table width="649" class="QS" cellspacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0">
 	<tr>
 		<td width="100%" style="padding-bottom:10px;" align="left">
 			<p class="R" style="padding-bottom:8px;">PAGAMENTO DA COMISSÃO</p>
@@ -799,21 +876,21 @@ var tipo_PJ_PF = ID_PJ;
 </table>
 
 <!-- ************   LOJA (DO ORÇAMENTISTA)   ************ -->
-<table width="649" class="QS" cellspacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0">
 	<tr>
-		<td align="left"><p class="R">LOJA&nbsp;&nbsp;(ORÇAMENTISTAS)</p><p class="C"><% =Trim("" & rs("loja")) %></p></td>
+		<td align="left"><p class="R">LOJA&nbsp;&nbsp;(ORÇAMENTISTAS)</p><p class="C"><%=iif(Trim("" & rs("loja"))<>"", Trim("" & rs("loja")), "&nbsp;")%></p></td>
 	</tr>
 </table>
 
 <!-- ************   ATENDIDO PELO VENDEDOR (P/ INDICADORES)   ************ -->
-<table width="649" class="QS" cellSpacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellSpacing="0">
 	<tr>
-		<td align="left"><p class="R">ATENDIDO POR&nbsp;&nbsp;(INDICADORES)</p><p class="C"><% =Trim("" & rs("vendedor")) %></p></td>
+		<td align="left"><p class="R">ATENDIDO POR&nbsp;&nbsp;(INDICADORES)</p><p class="C"><%=iif(Trim("" & rs("vendedor"))<>"", Trim("" & rs("vendedor")), "&nbsp;")%></p></td>
 	</tr>
 </table>
 
 <!-- ************   ACESSO AO SISTEMA/STATUS   ************ -->
-<table width="649" class="QS" cellSpacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellSpacing="0">
 	<tr>
 <%s_parametro=Cstr(rs("hab_acesso_sistema"))%>
 		<td align="left" width="35%" class="MD" valign="tops"><p class="R">ACESSO AO SISTEMA</p><p class="C">
@@ -828,13 +905,13 @@ var tipo_PJ_PF = ID_PJ;
 				if (s_parametro<>"A") And (s_parametro<>"") then Response.Write "Inativo"
             %>
 			</p></td>
-<%s_parametro=Trim("" & rs("desempenho_nota"))%>
+<%s_parametro=iif(Trim("" & rs("desempenho_nota"))<>"", Trim("" & rs("desempenho_nota")), "&nbsp;")%>
 		<td align="left" width="30%" valign="Top"><p class="R">AVALIAÇÃO DESEMPENHO</p><p class="C"><% =s_parametro %></p></td>
 	</tr>
 </table>
 
 <!-- ************   SENHA / CONFIRMAÇÃO DA SENHA   ************ -->
-<table width="649" class="QS" cellspacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0">
 	<tr>
 <%
 	senha_descripto= ""
@@ -847,7 +924,7 @@ var tipo_PJ_PF = ID_PJ;
 </table>
 
 <!-- ************   LOGIN BLOQUEADO AUTOMATICAMENTE?   ************ -->
-<table width="649" class="QS" cellspacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0">
 	<tr>
 <%
 	s = "&nbsp;"
@@ -865,7 +942,7 @@ var tipo_PJ_PF = ID_PJ;
 </table>
 
 <!-- ************   PERCENTUAL DE DESÁGIO DO RA / VALOR DA META   ************ -->
-<table width="649" class="QS" cellspacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0">
 	<tr>
 <%s=formata_perc(rs("perc_desagio_RA"))%>
 		<td align="left" width="50%" class="MD" valign="top"><p class="R">PERCENTUAL DESÁGIO DO RA&nbsp;&nbsp;(INDICADORES)</p><p class="C"><%=s & "%"%></p></td>
@@ -879,20 +956,20 @@ var tipo_PJ_PF = ID_PJ;
 </table>
 
 <!-- ************   E-MAILS   ************ -->
-<table width="649" class="QS" cellspacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0">
 	<tr>
-		<td align="left"><p class="R">E-MAIL (1)</p><p class="C"><%=Trim("" & rs("email")) & " "%></p></td>
+		<td align="left"><p class="R">E-MAIL (1)</p><p class="C"><%=iif(Trim("" & rs("email"))<>"", Trim("" & rs("email")) & " ", "&nbsp;")%></p></td>
 	</tr>
 	<tr>
-		<td align="left" class="MC"><p class="R">E-MAIL (2)</p><p class="C"><%=Trim("" & rs("email2")) & " "%></p></td>
+		<td align="left" class="MC"><p class="R">E-MAIL (2)</p><p class="C"><%=iif(Trim("" & rs("email2"))<>"", Trim("" & rs("email2")) & " ", "&nbsp;")%></p></td>
 	</tr>
 	<tr>
-		<td align="left" class="MC"><p class="R">E-MAIL (3)</p><p class="C"><%=Trim("" & rs("email3")) & " "%></p></td>
+		<td align="left" class="MC"><p class="R">E-MAIL (3)</p><p class="C"><%=iif(Trim("" & rs("email3"))<>"", Trim("" & rs("email3")) & " ", "&nbsp;")%></p></td>
 	</tr>
 </table>
 
 <!-- ************   TIPO DE ESTABELECIMENTO   ************ -->
-<table width="649" class="QS" cellSpacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellSpacing="0">
 	<tr>
 <%s_parametro=Trim("" & rs("tipo_estabelecimento"))%>
 		<td align="left"><p class="R">ESTABELECIMENTO</p><p class="C">
@@ -901,23 +978,24 @@ var tipo_PJ_PF = ID_PJ;
 			if s_parametro = COD_PARCEIRO_TIPO_ESTABELECIMENTO__ESCRITORIO then Response.Write("Escritório")
 			if s_parametro = COD_PARCEIRO_TIPO_ESTABELECIMENTO__LOJA then Response.Write("Loja")
 			if s_parametro = COD_PARCEIRO_TIPO_ESTABELECIMENTO__OFICINA then Response.Write("Oficina")
+			if s_parametro = "" then Response.Write("&nbsp;")
         %>
 			</p></td>
 	</tr>
 </table>
 
 <!-- ************   CAPTADOR   ************ -->
-<table width="649" class="QS" cellspacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0">
 	<tr>
-<%s=Trim("" & rs("captador"))%>
+<%s=iif(Trim("" & rs("captador"))<>"", Trim("" & rs("captador")), "&nbsp;")%>
 		<td align="left"><p class="R">CAPTADOR</p><p class="C"><%=s%></p></td>
 	</tr>
 </table>
 
 <!-- ************   OBS   ************ -->
-<table width="649" class="QS" cellspacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0">
 	<tr>
-<%s=Trim("" & rs("obs"))%>
+<%s=iif(Trim("" & rs("obs"))<>"", Trim("" & rs("obs")), "&nbsp;")%>
 		<td align="left"><p class="R">OBSERVAÇÕES</p><p class="C"><%=s%></p></td>
 	</tr>
 </table>
@@ -925,7 +1003,7 @@ var tipo_PJ_PF = ID_PJ;
 <!-- ************   VENDEDORES   **************** -->
 
 <% set rs2 = cn.Execute("SELECT * FROM t_ORCAMENTISTA_E_INDICADOR_CONTATOS WHERE (indicador='" & id_selecionado & "') ORDER BY dt_cadastro DESC") %>
-<table width="649" class="QS" cellspacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0">
 	<tr>
 		<td align="left" class="MB" colspan="2"><p class="R">VENDEDORES</p></td>
 	</tr>
@@ -956,7 +1034,7 @@ loop %>
 </table>
 
 <!-- ************   CHECADO / PARCEIRO DESDE   ************ -->
-<table width="649" class="QS" cellspacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0">
 	<tr>
 <%s_parametro=Cstr(rs("checado_status"))%>
 		<td align="left" width="50%" class="MD" valign="Top"><p class="R">CHECADO</p>
@@ -974,21 +1052,21 @@ loop %>
 
 <!-- ************   DADOS PARA ETIQUETA   **************** -->
 <br />
-<table width="649" class="notPrint" style="border: 1pt solid #C0C0C0;border-top: 0pt;margin: 0pt;" cellSpacing="0" id="tableDadosEtiqueta">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="notPrint" style="border: 1pt solid #C0C0C0;border-top: 0pt;margin: 0pt;" cellSpacing="0" id="tableDadosEtiqueta">
 	<tr>
 		<td align="left" class="MC" valign="middle"><p class="R">DADOS PARA ETIQUETA</p></td>
 		</tr>
 </table>
 
 
-<table id="Etq1" width="649" class="notPrint" style="border: 1pt solid #C0C0C0;border-top: 0pt;margin: 0pt;" cellSpacing="0">
+<table id="Etq1" width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="notPrint" style="border: 1pt solid #C0C0C0;border-top: 0pt;margin: 0pt;" cellSpacing="0">
 	<tr>
 		<td width="100%" align="left"><p class="R">ENDEREÇO</p><span class="C"><%=rs("etq_endereco")%></span></td>
 	</tr>
 </table>
 
 
-<table id="Etq2" width="649" class="notPrint" style="border: 1pt solid #C0C0C0;border-top: 0pt;margin: 0pt;" cellSpacing="0">
+<table id="Etq2" width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="notPrint" style="border: 1pt solid #C0C0C0;border-top: 0pt;margin: 0pt;" cellSpacing="0">
 	<tr>
 	<td class="MD" width="50%" align="left" valign="top"><p class="R">Nº</p><span class="C">
 		<%=rs("etq_endereco_numero")%></span></td>
@@ -998,7 +1076,7 @@ loop %>
 </table>
 
 
-<table id="Etq3" width="649" class="notPrint" style="border: 1pt solid #C0C0C0;border-top: 0pt;margin: 0pt;" cellSpacing="0">
+<table id="Etq3" width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="notPrint" style="border: 1pt solid #C0C0C0;border-top: 0pt;margin: 0pt;" cellSpacing="0">
 	<tr>
 		<td width="50%" class="MD" align="left" valign="top"><p class="R">BAIRRO</p><span class="C"><%=rs("etq_bairro")%></span></td>
 		<td width="50%" align="left"><p class="R">CIDADE</p><span class="C"><%=rs("etq_cidade")%></span></td>
@@ -1006,7 +1084,7 @@ loop %>
 </table>
 
 
-<table id="Etq4" width="649" class="notPrint" style="border: 1pt solid #C0C0C0;border-top: 0pt;margin: 0pt;" cellSpacing="0">
+<table id="Etq4" width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="notPrint" style="border: 1pt solid #C0C0C0;border-top: 0pt;margin: 0pt;" cellSpacing="0">
 	<tr>
 		<td class="MD"  width="50%" align="left"><p class="R">UF</p><span class="C"><%=rs("etq_uf")%></span></td>
 		<td width="50%" align="left"><p class="R">CEP</p><span class="C"><%=cep_formata(rs("etq_cep"))%></span></td>
@@ -1015,7 +1093,7 @@ loop %>
 </table>
 
 
-<table id="Etq5" width="649" class="notPrint" style="border: 1pt solid #C0C0C0;border-top: 0pt;margin: 0pt;" cellSpacing="0">
+<table id="Etq5" width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="notPrint" style="border: 1pt solid #C0C0C0;border-top: 0pt;margin: 0pt;" cellSpacing="0">
 	<tr>
 		<td width="15%" class="MD" align="left"><p class="R">DDD</p><span class="C"><%=rs("etq_ddd_1")%></span></td>
 		<td width="35%" class="MD" align="left"><p class="R">TELEFONE</p><span class="C"><%=telefone_formata(rs("etq_tel_1"))%></span></td>
@@ -1026,14 +1104,14 @@ loop %>
 </table>
 
 
-<table id="Etq6" width="649" class="notPrint" style="border: 1pt solid #C0C0C0;border-top: 0pt;margin: 0pt;" cellSpacing="0">
+<table id="Etq6" width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="notPrint" style="border: 1pt solid #C0C0C0;border-top: 0pt;margin: 0pt;" cellSpacing="0">
 	<tr>
         <td width="90%" align="left"><p class="R">E-MAIL</p><span class="C"><%=rs("etq_email")%></span></td>
         
         <td width="10%" align="center"><a href="javascript:AbreJanelaEtiqueta()"><img src="../imagem/lupa_20x20.png" style="width:20px;height:20px" title="Gerar etiqueta" border="0"></a></td>
 	</tr>
 </table>
-<table class="notPrint" width="649" cellspacing="0" cellpadding="1">
+<table class="notPrint" width="<%=CStr(WIDTH_MAIN_TABLE)%>" cellspacing="0" cellpadding="1">
    
     <tr>
 		<td colspan="4" style="padding:0px;" align="left">
@@ -1057,13 +1135,13 @@ loop %>
    sid="-1"
     %>
 <br />
-<table id="tableDescontos" width="649" class="notPrint" style="border: 1pt solid #C0C0C0;border-top: 0pt;margin: 0pt;" cellSpacing="0">
+<table id="tableDescontos" width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="notPrint" style="border: 1pt solid #C0C0C0;border-top: 0pt;margin: 0pt;" cellSpacing="0">
 	<tr>
 		<td class="MC" align="left" valign="middle"><p class="R">TABELA DE DESCONTOS</p></td>
 		</tr>
 </table>
 
-<table id="tblDesc" width="649" class="notPrint" style="border: 1pt solid #C0C0C0;border-top: 0pt;margin: 0pt;" cellSpacing="0">
+<table id="tblDesc" width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="notPrint" style="border: 1pt solid #C0C0C0;border-top: 0pt;margin: 0pt;" cellSpacing="0">
 	<tr>
 
 		<td width="490px" align="left"><p class="R" style="margin-bottom:3px;margin-top:3px">DESCRIÇÃO</p></td>
@@ -1090,7 +1168,7 @@ loop %>
     </tr>
  
 </table>
-<table class="notPrint" width="649" cellspacing="0" cellpadding="1">
+<table class="notPrint" width="<%=CStr(WIDTH_MAIN_TABLE)%>" cellspacing="0" cellpadding="1">
    
     <tr>
 		<td colspan="4" style="padding:0px;" align="left">
@@ -1125,7 +1203,7 @@ loop %>
 %>
 
 <br />
-<table id="tableBlocoNotas" class="notPrint" width="649" cellspacing="0" cellpadding="1">
+<table id="tableBlocoNotas" class="notPrint" width="<%=CStr(WIDTH_MAIN_TABLE)%>" cellspacing="0" cellpadding="1">
 <tr>
 	<td align="left" class="ME MD MC MB" align="left"><span class="Rf">BLOCO DE RELACIONAMENTO</span></td>    
 </tr><tr>
@@ -1135,7 +1213,7 @@ loop %>
 	do while Not rs.Eof
     
 %>
-        <table id='tableBlocoAno<%=rs("ano") %>' width="649" cellspacing="0" cellpadding="1">
+        <table id='tableBlocoAno<%=rs("ano") %>' width="<%=CStr(WIDTH_MAIN_TABLE)%>" cellspacing="0" cellpadding="1">
 		<tr><td class="ME MB" valign="middle" width="10" style="background-color:#eee"><a href='javascript:mostraOcultaMeses(<%=rs("ano")%>)'><img id='img<%=rs("ano")%>' src="../imagem/plus.gif" style="border:0" title="expandir"></a></td>
 		<td colspan="2" class="MD MB" align="left" style="background-color:#eee"><a href='javascript:mostraOcultaMeses(<%=rs("ano")%>)'><span class="Rf"><%=rs("ano") & "&nbsp;(" & rs("qtde_ano") & ")" %></span></a></td></tr>
 		</table>
@@ -1169,13 +1247,13 @@ loop %>
 		          if rs("ano") = 2015 And cont < 7 then cont=7
 		                		       
 		     %>
-		 <table class='tableBlocoMes<%=rs("ano")%>' width="649" cellspacing="0" cellpadding="1" style="display:none">
+		 <table class='tableBlocoMes<%=rs("ano")%>' width="<%=CStr(WIDTH_MAIN_TABLE)%>" cellspacing="0" cellpadding="1" style="display:none">
 		<tr>
 		    <td class="ME MB" valign="middle" width="5">&nbsp;</td><td class="MB" valign="middle" width="10"><a href='javascript:mostraOcultaNotas(<%=rs("ano")%>,<%=cont%>)'><img id='img<%=rs("ano") & cont%>' src="../imagem/plus.gif" title="mostrar anotações" style="border:0" class='imgClasse<%=rs("ano")%>' /></a></td>
 		    <td class="MD MB" align="left"><a href='javascript:mostraOcultaNotas(<%=rs("ano")%>,<%=cont%>)'><span class="Rf"><%=mes_por_extenso(cont,true) & "&nbsp;(" & v_meses(cont) & ")" %></span></a></td>
 		</tr>
 		</table>
-		<table id="<%=rs("ano") & cont%>" class="classeFecha<%=rs("ano")%>" cellspacing="0" cellpadding="1" style="display:none;width:649px">
+		<table id="<%=rs("ano") & cont%>" class="classeFecha<%=rs("ano")%>" cellspacing="0" cellpadding="1" style="display:none;width:<%=CStr(WIDTH_MAIN_TABLE)%>px">
 		</table>
 		<%	if rs("ano") = Year(Date) And cont = Month(Date) then Exit For					
 		next %>
@@ -1186,7 +1264,7 @@ loop %>
 %>
     
     </table>
-    <table class="notPrint" width="649" cellspacing="0" cellpadding="1">
+    <table class="notPrint" width="<%=CStr(WIDTH_MAIN_TABLE)%>" cellspacing="0" cellpadding="1">
    
     <tr>
 		<td colspan="4" style="padding:0px;" align="left">
@@ -1202,7 +1280,7 @@ loop %>
 
 <!-- **************    HISTÓRICO DE ALTERAÇÕES NO CADASTRO   ******************** -->
 <br />
-<table id="tableHistorico" class="notPrint" width="649" cellspacing="0" cellpadding="1">
+<table id="tableHistorico" class="notPrint" width="<%=CStr(WIDTH_MAIN_TABLE)%>" cellspacing="0" cellpadding="1">
     <tr>
         <td colspan="3" class="ME MD MC MB" align="left"><span class="Rf">HISTÓRICO DE ALTERAÇÕES NO CADASTRO</span></td>
     </tr>
@@ -1235,7 +1313,7 @@ loop %>
     </tr>
 
 </table>
-<table class="notPrint" width="649" cellspacing="0" cellpadding="1">
+<table class="notPrint" width="<%=CStr(WIDTH_MAIN_TABLE)%>" cellspacing="0" cellpadding="1">
    
     <tr>
 		<td colspan="4" style="padding:0px;" align="left">

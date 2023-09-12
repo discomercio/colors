@@ -35,6 +35,8 @@
 	On Error GoTo 0
 	Err.Clear
 	
+	Const WIDTH_MAIN_TABLE = 689
+
 '	EXIBIÇÃO DE BOTÕES DE PESQUISA DE CEP
 	dim blnPesquisaCEPAntiga, blnPesquisaCEPNova
 	
@@ -67,8 +69,14 @@
 	if (operacao_selecionada<>OP_INCLUI) And (operacao_selecionada<>OP_CONSULTA) then Response.Redirect("aviso.asp?id=" & ERR_OPERACAO_NAO_ESPECIFICADA)
 	
 '	CONECTA COM O BANCO DE DADOS
-	dim cn,rs,r
+	dim cn,rs,r,msg_erro
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
+
+	dim vCodDescrOpDadosBancarios, sDescricao, blnDescricaoCadastrada
+	call carrega_em_vetor_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS, vCodDescrOpDadosBancarios)
+
+	dim blnUsuarioDeptoFinanceiro
+	blnUsuarioDeptoFinanceiro = False
 
 	dim r_loja_user_session
 	set r_loja_user_session = New cl_LOJA
@@ -86,6 +94,31 @@
 		tipo_PJ_PF = Trim("" & rs("tipo"))
 		end if
 
+	dim strJS
+	strJS = "<script language='JavaScript'>" & chr(13) & _
+			"var vOpDadosBancarios = new Array();" & chr(13) & _
+			"vOpDadosBancarios[0] = new oOpDadosBancarios('','',0,'');" & chr(13)
+
+	for i=LBound(vCodDescrOpDadosBancarios) to UBound(vCodDescrOpDadosBancarios)
+		with vCodDescrOpDadosBancarios(i)
+			if Trim("" & .codigo) <> "" then
+				strJS = strJS & _
+						"vOpDadosBancarios[vOpDadosBancarios.length] = new oOpDadosBancarios(" & _
+							"'" & .grupo & "'" & _
+							",'" & .codigo & "'" & _
+							"," & CStr(.st_inativo) & _
+							",'" & .descricao & "'" & _
+						");" & chr(13)
+				end if
+			end with
+		next
+
+	if blnUsuarioDeptoFinanceiro then s = "true" else s = "false"
+	strJS = strJS & _
+			"var blnUsuarioDeptoFinanceiro = " & s & ";" & chr(13)
+
+	strJS = strJS & _
+			"</script>" & chr(13)
 %>
 
 
@@ -120,6 +153,19 @@
 <script src="<%=URL_FILE__GLOBAL_JS%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__AJAX_JS%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__JANELACEP_JS%>" language="JavaScript" type="text/javascript"></script>
+
+<script type="text/javascript">
+	function oOpDadosBancarios(grupo, codigo, st_inativo, descricao) {
+		this.grupo = grupo;
+		this.codigo = codigo;
+		this.st_inativo = st_inativo;
+		this.descricao = descricao;
+	}
+</script>
+
+<%
+	Response.Write strJS
+%>
 
 <%  dim strScript
 	strScript = _
@@ -187,8 +233,50 @@ var f;
 	window.status="Concluído";
 }
 
+function opcaoDadosBancariosEditado() {
+	return (converte_numero($('input[name="rb_opcao_dados_bancarios"]:checked').val()) != converte_numero($("#rb_opcao_dados_bancarios_original").val()));
+}
+
+function dadosContaBancariaEditado() {
+	if ($("#banco").val() != $("#banco_original").val()) return true;
+	if ($("#agencia").val() != $("#agencia_original").val()) return true;
+	if ($("#agencia_dv").val() != $("#agencia_dv_original").val()) return true;
+	if ($("#tipo_operacao").val() != $("#tipo_operacao_original").val()) return true;
+	if ($("#conta").val() != $("#conta_original").val()) return true;
+	if ($("#conta_dv").val() != $("#conta_dv_original").val()) return true;
+	if ($("#tipo_conta option:selected").val() != $("#tipo_conta_original").val()) return true;
+	if ($("#favorecido").val() != $("#favorecido_original").val()) return true;
+	if (retorna_so_digitos($("#favorecido_cnpjcpf").val()) != retorna_so_digitos($("#favorecido_cnpjcpf_original").val())) return true;
+	return false;
+}
+
+function dadosChavePixEditado() {
+	if (converte_numero($("#c_pix_tipo_chave option:selected").val()) != converte_numero($("#c_pix_tipo_chave_original").val())) return true;
+	if ($("#c_pix_chave").val() != $("#c_pix_chave_original").val()) return true;
+	if ($("#c_pix_favorecido").val() != $("#c_pix_favorecido_original").val()) return true;
+	return false;
+}
+
+function dadosComissaoCartaoEditado() {
+	if ($("#ckb_comissao_cartao_status").is(':checked')) {
+		if (converte_numero($("#ckb_comissao_cartao_status_original").val()) != 1) return true;
+	}
+	else {
+		if (converte_numero($("#ckb_comissao_cartao_status_original").val()) != 0) return true;
+	}
+	if (retorna_so_digitos($("#c_comissao_cartao_cpf").val()) != retorna_so_digitos($("#c_comissao_cartao_cpf_original").val())) return true;
+	if ($("#c_comissao_cartao_titular").val() != $("#c_comissao_cartao_titular_original").val()) return true;
+	return false;
+}
+
+function dadosComissaoNFSeEditado() {
+	if (retorna_so_digitos($("#c_comissao_NFSe_cnpj").val()) != retorna_so_digitos($("#c_comissao_NFSe_cnpj_original").val())) return true;
+	if ($("#c_comissao_NFSe_razao_social").val() != $("#c_comissao_NFSe_razao_social_original").val()) return true;
+	return false;
+}
+
 function AtualizaItem( f ) {
-var s, s_senha;
+var s, s_senha, s_msg, sDescricaoOpDadosBancarios;
 
 //  CNPJ/CPF + RAZÃO SOCIAL/NOME
 	if (tipo_PJ_PF == ID_PF) {
@@ -387,59 +475,57 @@ var s, s_senha;
 		}
 		
     //  DADOS BANCÁRIOS
-	if ((trim(f.banco.value) != "") || (trim(f.agencia.value) != "") || (trim(f.conta.value) != "") || (trim(f.favorecido.value) != "")) {
-	    if (trim(f.banco.value) == "") {
-	        alert('Preencha o número do banco!!');
-	        f.banco.focus();
-	        return;
-	    }
-	    if (trim(f.agencia.value) == "") {
-	        alert('Preencha o número da agência!!');
-	        f.agencia.focus();
-	        return;
-	    }
+	if ((trim(f.banco.value) != "") || (trim(f.agencia.value) != "") || (trim(f.conta.value) != "") || (trim(f.favorecido.value) != "") || (trim(f.favorecido_cnpjcpf.value) != "")) {
+		if (trim(f.banco.value) == "") {
+			alert('Preencha o número do banco!!');
+			f.banco.focus();
+			return;
+		}
+		if (trim(f.agencia.value) == "") {
+			alert('Preencha o número da agência!!');
+			f.agencia.focus();
+			return;
+		}
 
-	    if (trim(f.conta.value) == "") {
-	        alert('Preencha o número da conta!!');
-	        f.conta.focus();
-	        return;
-	    }
-	    if (trim(f.banco.value) != "745") {
-	        if (trim(f.conta_dv.value) == "") {
-	            alert('Preencha o dígito verificador da conta!!');
-	            f.conta_dv.focus();
-	            return;
-	        }
-	    }
-	    if (trim(f.banco.value) == "104") {
-	        if (trim(f.tipo_operacao.value) == "") {
-	            alert('Contas da Caixa Econômica Federal exigem preenchimento do tipo de operação!!')
-	            f.tipo_operacao.focus();
-	            return;
-	        }
-	    }
-	    if (trim(f.tipo_conta.value) == "") {
-	        alert('Preencha o tipo de conta!!');
-	        f.tipo_conta.focus();
-	        return;
-	    }
-	    if (trim(f.favorecido.value) == "") {
-	        alert('Preencha o favorecido!!');
-	        f.favorecido.focus();
-	        return;
-	    }
-	}
-
-    //CNPF/CPF DO FAVORECIDO  
-	if ((trim(f.favorecido_cnpjcpf.value) == '')) {
-	    alert('Preencha o CPF/CNPJ do favorecido!');
-	    f.favorecido_cnpjcpf.focus();
-	    return;
-	}
-	if (cnpj_cpf_ok(f.favorecido_cnpjcpf.value) == false) {
-	    alert('CPF/CNPJ inválido!');
-	    f.favorecido_cnpjcpf.focus();
-	    return;
+		if (trim(f.conta.value) == "") {
+			alert('Preencha o número da conta!!');
+			f.conta.focus();
+			return;
+		}
+		if (trim(f.banco.value) != "745") {
+			if (trim(f.conta_dv.value) == "") {
+				alert('Preencha o dígito verificador da conta!!');
+				f.conta_dv.focus();
+				return;
+			}
+		}
+		if (trim(f.banco.value) == "104") {
+			if (trim(f.tipo_operacao.value) == "") {
+				alert('Contas da Caixa Econômica Federal exigem preenchimento do tipo de operação!!')
+				f.tipo_operacao.focus();
+				return;
+			}
+		}
+		if (trim(f.tipo_conta.value) == "") {
+			alert('Preencha o tipo de conta!!');
+			f.tipo_conta.focus();
+			return;
+		}
+		if (trim(f.favorecido.value) == "") {
+			alert('Preencha o favorecido!!');
+			f.favorecido.focus();
+			return;
+		}
+		if ((trim(f.favorecido_cnpjcpf.value) == '')) {
+			alert('Preencha o CPF/CNPJ do favorecido!');
+			f.favorecido_cnpjcpf.focus();
+			return;
+		}
+		if (cnpj_cpf_ok(f.favorecido_cnpjcpf.value) == false) {
+			alert('CPF/CNPJ inválido!');
+			f.favorecido_cnpjcpf.focus();
+			return;
+		}
 	}
 
     //  SENHA
@@ -529,6 +615,92 @@ var s, s_senha;
 		}
 	}
 
+	// Valida dados do Pix
+	if (($('input[name="rb_opcao_dados_bancarios"]:checked').val() == "<%=COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CHAVE_PIX%>") || (converte_numero($('#c_pix_tipo_chave option:selected').val()) != 0) || (trim($('#c_pix_chave').val()) != "") || (trim($('#c_pix_favorecido').val()) != "")) {
+		if (converte_numero($('#c_pix_tipo_chave option:selected').val()) == 0) {
+			alert("Selecione o tipo de chave Pix!");
+			$('#c_pix_tipo_chave').focus();
+			return;
+		}
+		if (trim($('#c_pix_chave').val()) == "") {
+			alert("Informe a chave Pix!");
+			$('#c_pix_chave').focus();
+			return;
+		}
+		if (trim($('#c_pix_favorecido').val()) == "") {
+			alert("Informe o nome do favorecido nos dados do Pix!");
+			$('#c_pix_favorecido').focus();
+			return;
+		}
+		// Valida a chave Pix de acordo com o tipo de chave
+		if ($('#c_pix_tipo_chave option:selected').val() == "<%=COD_ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE__CNPJ_CPF%>") {
+			if (!cnpj_cpf_ok($('#c_pix_chave').val())) {
+				alert("Chave Pix informada é um CNPJ/CPF inválido!");
+				$('#c_pix_chave').focus();
+				return;
+			}
+		}
+		else if ($('#c_pix_tipo_chave option:selected').val() == "<%=COD_ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE__CELULAR%>") {
+			if (retorna_so_digitos($('#c_pix_chave').val()).length < 10) {
+				alert("Chave Pix informada é um número de telefone inválido!\nVerifique se o DDD foi informado!");
+				$('#c_pix_chave').focus();
+				return;
+			}
+		}
+		else if ($('#c_pix_tipo_chave option:selected').val() == "<%=COD_ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE__EMAIL%>") {
+			if (!email_ok($('#c_pix_chave').val())) {
+				alert("Chave Pix informada é um e-mail inválido!");
+				$('#c_pix_chave').focus();
+				return;
+			}
+		}
+	}
+
+	// Verifica se foi feita a opção pelo tipo de dados bancários (somente se o pagamento da comissão não for via cartão)
+	var blnStatusAtivoComissaoCartao = false;
+	if (blnUsuarioDeptoFinanceiro) {
+		blnStatusAtivoComissaoCartao = $("#ckb_comissao_cartao_status").is(':checked');
+	}
+	else {
+		if ($("#ckb_comissao_cartao_status").val() == "1") blnStatusAtivoComissaoCartao = true;
+	}
+
+	if (!blnStatusAtivoComissaoCartao) {
+		sDescricaoOpDadosBancarios = "";
+		if (converte_numero($('input[name="rb_opcao_dados_bancarios"]:checked').val()) == 0) {
+			s_msg = "";
+			for (var i = 0; i < vOpDadosBancarios.length; i++) {
+				if ((vOpDadosBancarios[i].codigo != "") && (vOpDadosBancarios[i].st_inativo == 0)) {
+					if (s_msg != "") s_msg += "\n        ou";
+					s_msg += "\n        " + vOpDadosBancarios[i].descricao;
+				}
+			}
+			alert("Selecione uma opção de dados bancários:" + s_msg);
+			return;
+		}
+		else {
+			for (var i = 0; i < vOpDadosBancarios.length; i++) {
+				if (vOpDadosBancarios[i].codigo == converte_numero($('input[name="rb_opcao_dados_bancarios"]:checked').val())) {
+					sDescricaoOpDadosBancarios = vOpDadosBancarios[i].descricao;
+					break;
+				}
+			}
+		}
+
+		// Confirmação sobre os dados bancários
+		// Obs: a confirmação é solicitada somente quando o pagamento da comissão não for via cartão e (a) se houve edição ou (b) se o parceiro está sendo cadastrado agora
+		if (f.operacao_selecionada.value == OP_INCLUI) {
+			s_msg = "Confirma que o pagamento da comissão será realizado usando '" + sDescricaoOpDadosBancarios + "'?\nCertifique-se de que os dados estão corretos!";
+			if (!confirm(s_msg)) return;
+		}
+		else {
+			if (opcaoDadosBancariosEditado() || dadosContaBancariaEditado() || dadosChavePixEditado() || dadosComissaoCartaoEditado() || dadosComissaoNFSeEditado()) {
+				s_msg = "Confirma que o pagamento da comissão será realizado usando '" + sDescricaoOpDadosBancarios + "'?\nCertifique-se de que os dados estão corretos!";
+				if (!confirm(s_msg)) return;
+			}
+		}
+	} // if (!blnStatusAtivoComissaoCartao)
+
 	fCAD.c_FormFieldValues.value = formToString($("#fCAD"));
 
 	dATUALIZA.style.visibility="hidden";
@@ -593,7 +765,7 @@ var s, s_senha;
 
 <!--  CADASTRO DO INDICADOR -->
 <br />
-<table width="649" cellpadding="4" cellspacing="0" style="border-bottom:1px solid black">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" cellpadding="4" cellspacing="0" style="border-bottom:1px solid black">
 <tr>
 <%	if operacao_selecionada=OP_INCLUI then
 		s = "Cadastro de Novo Indicador"
@@ -619,9 +791,71 @@ var s, s_senha;
 <input type="hidden" name="c_id_magento_b2b" id="c_id_magento_b2b" value="" />
 <% end if %>
 
+<%	dim s_comissao_cartao_status, s_comissao_cartao_cpf, s_comissao_cartao_titular, s_comissao_NFSe_cnpj, s_comissao_NFSe_razao_social
+	dim s_opcao_dados_bancarios, s_banco, s_agencia, s_agencia_dv, s_conta_operacao, s_conta, s_conta_dv, s_tipo_conta, s_favorecido, s_favorecido_cnpj_cpf
+	dim s_pix_tipo_chave, s_pix_chave, s_pix_favorecido
+	s_comissao_cartao_status = ""
+	s_comissao_cartao_cpf = ""
+	s_comissao_cartao_titular = ""
+	s_comissao_NFSe_cnpj = ""
+	s_comissao_NFSe_razao_social = ""
+	s_opcao_dados_bancarios = ""
+	s_banco = ""
+	s_agencia = ""
+	s_agencia_dv = ""
+	s_conta_operacao = ""
+	s_conta = ""
+	s_conta_dv = ""
+	s_tipo_conta = ""
+	s_favorecido = ""
+	s_favorecido_cnpj_cpf = ""
+	s_pix_tipo_chave = ""
+	s_pix_chave = ""
+	s_pix_favorecido = ""
+	if operacao_selecionada = OP_CONSULTA then
+		s_comissao_cartao_status = Trim("" & rs("comissao_cartao_status"))
+		s_comissao_cartao_cpf = cnpj_cpf_formata(Trim("" & rs("comissao_cartao_cpf")))
+		s_comissao_cartao_titular = Trim("" & rs("comissao_cartao_titular"))
+		s_comissao_NFSe_cnpj = cnpj_cpf_formata(Trim("" & rs("comissao_NFSe_cnpj")))
+		s_comissao_NFSe_razao_social = Trim("" & rs("comissao_NFSe_razao_social"))
+		s_opcao_dados_bancarios = Trim("" & rs("opcao_dados_bancarios"))
+		s_banco = Trim("" & rs("banco"))
+		s_agencia = Trim("" & rs("agencia"))
+		s_agencia_dv = Trim("" & rs("agencia_dv"))
+		s_conta_operacao = Trim("" & rs("conta_operacao"))
+		s_conta = Trim("" & rs("conta"))
+		s_conta_dv = Trim("" & rs("conta_dv"))
+		s_tipo_conta = Trim("" & rs("tipo_conta"))
+		s_favorecido = Trim("" & rs("favorecido"))
+		s_favorecido_cnpj_cpf = cnpj_cpf_formata(Trim("" & rs("favorecido_cnpj_cpf")))
+		s_pix_tipo_chave = Trim("" & rs("pix_tipo_chave"))
+		s_pix_chave = Trim("" & rs("pix_chave"))
+		s_pix_favorecido = Trim("" & rs("pix_favorecido"))
+		end if
+%>
+
+<input type="hidden" name="ckb_comissao_cartao_status_original" id="ckb_comissao_cartao_status_original" value="<%=s_comissao_cartao_status%>" />
+<input type="hidden" name="c_comissao_cartao_cpf_original" id="c_comissao_cartao_cpf_original" value="<%=s_comissao_cartao_cpf%>" />
+<input type="hidden" name="c_comissao_cartao_titular_original" id="c_comissao_cartao_titular_original" value="<%=s_comissao_cartao_titular%>" />
+<input type="hidden" name="c_comissao_NFSe_cnpj_original" id="c_comissao_NFSe_cnpj_original" value="<%=s_comissao_NFSe_cnpj%>" />
+<input type="hidden" name="c_comissao_NFSe_razao_social_original" id="c_comissao_NFSe_razao_social_original" value="<%=s_comissao_NFSe_razao_social%>" />
+<input type="hidden" name="rb_opcao_dados_bancarios_original" id="rb_opcao_dados_bancarios_original" value="<%=s_opcao_dados_bancarios%>" />
+<input type="hidden" name="banco_original" id="banco_original" value="<%=s_banco%>" />
+<input type="hidden" name="agencia_original" id="agencia_original" value="<%=s_agencia%>" />
+<input type="hidden" name="agencia_dv_original" id="agencia_dv_original" value="<%=s_agencia_dv%>" />
+<input type="hidden" name="tipo_operacao_original" id="tipo_operacao_original" value="<%=s_conta_operacao%>" />
+<input type="hidden" name="conta_original" id="conta_original" value="<%=s_conta%>" />
+<input type="hidden" name="conta_dv_original" id="conta_dv_original" value="<%=s_conta_dv%>" />
+<input type="hidden" name="tipo_conta_original" id="tipo_conta_original" value="<%=s_tipo_conta%>" />
+<input type="hidden" name="favorecido_original" id="favorecido_original" value="<%=s_favorecido%>" />
+<input type="hidden" name="favorecido_cnpjcpf_original" id="favorecido_cnpjcpf_original" value="<%=s_favorecido_cnpj_cpf%>" />
+<input type="hidden" name="c_pix_tipo_chave_original" id="c_pix_tipo_chave_original" value="<%=s_pix_tipo_chave%>" />
+<input type="hidden" name="c_pix_chave_original" id="c_pix_chave_original" value="<%=s_pix_chave%>" />
+<input type="hidden" name="c_pix_favorecido_original" id="c_pix_favorecido_original" value="<%=s_pix_favorecido%>" />
+
 
 <!-- ************   NOME/RAZÃO SOCIAL   ************ -->
-<table width="649" class="Q" cellSpacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="Q" cellSpacing="0">
 	<tr>
 		<td class="MD" width="30%" align="left"><p class="R">APELIDO</p><p class="C"><input id="c_apelido" name="c_apelido" class="TA" value="<%=id_selecionado%>" readonly size="25" style="text-align:center; color:#0000ff"></p></td>
 <%if tipo_PJ_PF=ID_PJ then s_label = "RAZÃO SOCIAL" else s_label="NOME" %>
@@ -632,7 +866,7 @@ var s, s_senha;
 
 <% if r_loja_user_session.unidade_negocio = COD_UNIDADE_NEGOCIO_LOJA__AC then %>
 <!-- ************  ID DO PARCEIRO NO MAGENTO B2B   ************ -->
-<table width="649" class="QS" cellSpacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellSpacing="0">
 	<tr>
 <%	if operacao_selecionada=OP_CONSULTA then
 		s = Trim("" & rs("id_magento_b2b"))
@@ -647,7 +881,7 @@ var s, s_senha;
 <% end if %>
 
 <!-- ************  RESPONSÁVEL PRINCIPAL   ************ -->
-<table width="649" class="QS" cellSpacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellSpacing="0">
 	<tr>
 <%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("responsavel_principal")) else s=""%>
 		<td align="left"><p class="R">PRINCIPAL</p><p class="C"><input id="c_responsavel_principal" name="c_responsavel_principal" class="TA" type="text" maxlength="60" size="60" value="<%=s%>" onkeypress="if (digitou_enter(true)) fCAD.c_nome_fantasia.focus();"></p></td>
@@ -655,7 +889,7 @@ var s, s_senha;
 </table>
 
 <!-- ************   NOME FANTASIA   ************ -->
-<table width="649" class="QS" cellSpacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellSpacing="0">
 	<tr>
 <%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("nome_fantasia")) else s=""%>
 		<td align="left"><p class="R">NOME FANTASIA</p><p class="C"><input id="c_nome_fantasia" name="c_nome_fantasia" class="TA" type="text" maxlength="60" size="60" value="<%=s%>" onkeypress="if (digitou_enter(true)) fCAD.cnpj_cpf.focus(); filtra_nome_identificador();"></p></td>
@@ -663,7 +897,7 @@ var s, s_senha;
 </table>
 
 <!-- ************   CNPJ/CPF + IE/RG   ************ -->
-<table width="649" class="QS" cellSpacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellSpacing="0">
 	<tr>
 <%if tipo_PJ_PF=ID_PJ then s_label = "CNPJ" else s_label="CPF" %>
 <%if operacao_selecionada=OP_CONSULTA then s=cnpj_cpf_formata(Trim("" & rs("cnpj_cpf"))) else s=""%>
@@ -682,7 +916,7 @@ var s, s_senha;
 </table>
 
 <!-- ************   ENDEREÇO   ************ -->
-<table width="649" class="QS" cellSpacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellSpacing="0">
 	<tr>
 <%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("endereco")) else s=""%>
 		<td width="100%" align="left"><p class="R">ENDEREÇO</p><p class="C"><input id="endereco" name="endereco" class="TA" value="<%=s%>" maxlength="60" style="width:635px;" onkeypress="if (digitou_enter(true)) fCAD.endereco_numero.focus(); filtra_nome_identificador();"></p></td>
@@ -690,7 +924,7 @@ var s, s_senha;
 </table>
 
 <!-- ************   Nº/COMPLEMENTO   ************ -->
-<table width="649" class="QS" cellSpacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellSpacing="0">
 	<tr>
 	<td class="MD" width="50%" align="left"><p class="R">Nº</p><p class="C">
 		<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("endereco_numero")) else s=""%>
@@ -702,7 +936,7 @@ var s, s_senha;
 </table>
 
 <!-- ************   BAIRRO/CIDADE   ************ -->
-<table width="649" class="QS" cellSpacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellSpacing="0">
 	<tr>
 <%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("bairro")) else s=""%>
 		<td width="50%" class="MD" align="left"><p class="R">BAIRRO</p><p class="C"><input id="bairro" name="bairro" class="TA" value="<%=s%>" maxlength="72" style="width:310px;" onkeypress="if (digitou_enter(true)) fCAD.cidade.focus(); filtra_nome_identificador();"></p></td>
@@ -712,7 +946,7 @@ var s, s_senha;
 </table>
 
 <!-- ************   UF/CEP   ************ -->
-<table width="649" class="QS" cellSpacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellSpacing="0">
 	<tr>
 <%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("uf")) else s=""%>
 		<td class="MD"  width="50%" align="left"><p class="R">UF</p><p class="C"><input id="uf" name="uf" class="TA" value="<%=s%>" maxlength="2" size="3" onkeypress="if (digitou_enter(true) && uf_ok(this.value)) fCAD.ddd.focus();" onblur="this.value=trim(this.value); if (!uf_ok(this.value)) {alert('UF inválida!!');this.focus();} else this.value=ucase(this.value);"></p></td>
@@ -731,7 +965,7 @@ var s, s_senha;
 </table>
 
 <!-- ************   DDD/TELEFONE/FAX/NEXTEL   ************ -->
-<table width="649" class="QS" cellSpacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellSpacing="0">
 	<tr>
 <%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("ddd")) else s=""%>
 		<td width="15%" class="MD" align="left"><p class="R">DDD</p><p class="C"><input id="ddd" name="ddd" class="TA" value="<%=s%>" maxlength="4" size="5" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fCAD.telefone.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p></td>
@@ -745,7 +979,7 @@ var s, s_senha;
 </table>
 
 <!-- ************   TEL CEL / CONTATO   ************ -->
-<table width="649" class="QS" cellSpacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellSpacing="0">
 	<tr>
 <%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("ddd_cel")) else s=""%>
 		<td width="15%" class="MD" align="left" nowrap><p class="R">DDD (CEL)</p><p class="C"><input id="ddd_cel" name="ddd_cel" class="TA" value="<%=s%>" maxlength="2" size="3" onkeypress="if (digitou_enter(true) && ddd_ok(this.value)) fCAD.tel_cel.focus(); filtra_numerico();" onblur="if (!ddd_ok(this.value)) {alert('DDD inválido!!');this.focus();}"></p></td>
@@ -756,50 +990,136 @@ var s, s_senha;
 	</tr>
 </table>
 
-<!-- ************   BANCO/AGÊNCIA/CONTA   ************ -->
-<table width="649" class="QS" cellSpacing="0">
+<!-- ************   DADOS BANCÁRIOS   *******************  -->
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0">
 	<tr>
-<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("banco")) else s=""%>
-		<td width="15%" class="MD" nowrap align="left"><p class="R">BANCO</p><p class="C"><input id="banco" name="banco" class="TA" value="<%=s%>" maxlength="4" size="3" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.agencia.focus(); filtra_numerico();" onblur="this.value=trim(this.value);tipoOperacao();"></p></td>
-<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("agencia")) else s=""%>
-		<td width="17%" class="MD" align="left"><p class="R">AGÊNCIA</p><p class="C"><input id="agencia" name="agencia" class="TA" value="<%=s%>" maxlength="8" size="5" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.agencia_dv.focus(); filtra_agencia_bancaria();" onblur="this.value=trim(this.value);"></p></td>
-<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("agencia_dv")) else s=""%>
-		<td width="5%" class="MD" align="left"><p class="R">DÍG.</p><p class="C"><input id="agencia_dv" name="agencia_dv" class="TA" value="<%=s%>" maxlength="1" size="1" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.conta.focus();" onblur="this.value=trim(this.value);"></p></td>
-<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("conta_operacao")) else s=""%>
-		<td width="15%" class="MD" align="left"><p class="R">TIPO OPERAÇÃO</p><p class="C"><input id="tipo_operacao" name="tipo_operacao" class="TA" value="<%=s%>" maxlength="3" size="12" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.tipo_conta.focus();" onblur="this.value=trim(this.value);"></p></td>
-<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("conta")) else s=""%>
-		<td width="17%" class="MD" align="left"><p class="R">CONTA</p><p class="C"><input id="conta" name="conta" class="TA" value="<%=s%>" maxlength="12" size="12" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.conta_dv.focus(); filtra_conta_bancaria();" onblur="this.value=trim(this.value);"></p></td>
-<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("conta_dv")) else s=""%>
-		<td width="5%" class="MD" align="left"><p class="R">DÍG.</p><p class="C"><input id="conta_dv" name="conta_dv" class="TA" value="<%=s%>" maxlength="2" size="1" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.tipo_operacao.focus();" onblur="this.value=trim(this.value);"></p></td>
-<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("tipo_conta")) else s=""%>
-		<td width="15%" align="left"><p class="R">TIPO CONTA</p><p class="C">
-            <%s_selected="" %>
-            <select name="tipo_conta" id="tipo_conta">
-                <%if s="" then  s_selected=" selected"%>
-                <option value=""<%=s_selected%>>&nbsp;</option>
-                <%s_selected=""
-                    if s="C" then s_selected=" selected" %>
-                <option value="C"<%=s_selected%>>Corrente</option>
-                <%s_selected=""
-                    if s="P" then s_selected=" selected" %>
-                <option value="P"<%=s_selected%>>Poupança</option>
-            </select> </p></td>
+		<td width="100%" style="padding-bottom:10px;" align="left">
+			<p class="R" style="padding-bottom:8px;">DADOS BANCÁRIOS</p>
+			<table width="607" class="Q" cellspacing="0" style="margin-left:20px;">
+			<tr>
+				<td width="100%">
+					<table width="100%" border="0">
+					<tr>
+						<%	sDescricao = consulta_descricao_vetor_t_codigo_descricao(vCodDescrOpDadosBancarios, GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS, COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CONTA_BANCARIA, blnDescricaoCadastrada)
+							sDescricao = UCase(sDescricao)
+							if Not blnDescricaoCadastrada then sDescricao = "DADOS CONTA BANCÁRIA" %>
+						<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("opcao_dados_bancarios")) else s=""%>
+						<td colspan="2" align="left">
+							<input type="radio" id="rb_opcao_dados_bancarios" name="rb_opcao_dados_bancarios" value="<%=CStr(COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CONTA_BANCARIA)%>" class="TA"
+								<% if s = CStr(COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CONTA_BANCARIA) then Response.Write " checked"%>
+								/><span id="spn_op_conta_bancaria_status" class="C" style="cursor:default;" onclick="fCAD.rb_opcao_dados_bancarios[0].click();"><%=sDescricao%></span>
+						</td>
+					</tr>
+					<tr>
+						<td style="width:10px;">&nbsp;</td>
+						<td width="99%" align="left" style="padding-bottom:8px;padding-right:12px;">
+							<!-- ************   BANCO/AGÊNCIA/CONTA   ************ -->
+							<table class="Q" style="border-bottom:0pt;" width="100%" cellspacing="0">
+								<tr>
+							<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("banco")) else s=""%>
+									<td width="15%" class="MD" nowrap align="left"><p class="R">BANCO</p><p class="C"><input id="banco" name="banco" class="TA" value="<%=s%>" maxlength="4" size="3" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.agencia.focus(); filtra_numerico();" onblur="this.value=trim(this.value);tipoOperacao();"></p></td>
+							<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("agencia")) else s=""%>
+									<td width="17%" class="MD" align="left"><p class="R">AGÊNCIA</p><p class="C"><input id="agencia" name="agencia" class="TA" value="<%=s%>" maxlength="8" size="5" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.agencia_dv.focus(); filtra_agencia_bancaria();" onblur="this.value=trim(this.value);"></p></td>
+							<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("agencia_dv")) else s=""%>
+									<td width="5%" class="MD" align="left"><p class="R">DÍG.</p><p class="C"><input id="agencia_dv" name="agencia_dv" class="TA" value="<%=s%>" maxlength="1" size="1" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.conta.focus();" onblur="this.value=trim(this.value);"></p></td>
+							<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("conta_operacao")) else s=""%>
+									<td width="15%" class="MD" align="left"><p class="R">TIPO OPERAÇÃO</p><p class="C"><input id="tipo_operacao" name="tipo_operacao" class="TA" value="<%=s%>" maxlength="3" size="4" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.tipo_conta.focus();" onblur="this.value=trim(this.value);"></p></td>
+							<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("conta")) else s=""%>
+									<td width="17%" class="MD" align="left"><p class="R">CONTA</p><p class="C"><input id="conta" name="conta" class="TA" value="<%=s%>" maxlength="12" size="12" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.conta_dv.focus(); filtra_conta_bancaria();" onblur="this.value=trim(this.value);"></p></td>
+							<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("conta_dv")) else s=""%>
+									<td width="5%" class="MD" align="left"><p class="R">DÍG.</p><p class="C"><input id="conta_dv" name="conta_dv" class="TA" value="<%=s%>" maxlength="2" size="1" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.favorecido.focus();" onblur="this.value=trim(this.value);"></p></td>
+							<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("tipo_conta")) else s=""%>
+									<td width="15%" align="left"><p class="R">TIPO CONTA</p><p class="C">
+										<%s_selected="" %>
+										<select name="tipo_conta" id="tipo_conta">
+											<%if s="" then  s_selected=" selected"%>
+											<option value=""<%=s_selected%>>&nbsp;</option>
+											<%s_selected=""
+												if s="C" then s_selected=" selected" %>
+											<option value="C"<%=s_selected%>>Corrente</option>
+											<%s_selected=""
+												if s="P" then s_selected=" selected" %>
+											<option value="P"<%=s_selected%>>Poupança</option>
+										</select> </p></td>
+								</tr>
+							</table>
+
+							<!-- ************   FAVORECIDO / CPF CNPJ FAVORECIDO   *******************  -->
+							<table class="Q" width="100%" cellspacing="0">
+								<tr>
+							<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("favorecido")) else s=""%>
+									<td class="MD" width="70%" align="left"><p class="R">FAVORECIDO</p><p class="C"><input id="favorecido" name="favorecido" class="TA" value="<%=s%>" maxlength="40" size="60" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.favorecido_cnpjcpf.focus(); filtra_nome_identificador();" onblur="this.value=trim(this.value);"></p></td>
+							<%if operacao_selecionada=OP_CONSULTA then s=cnpj_cpf_formata(Trim("" & rs("favorecido_cnpj_cpf"))) else s="" %>
+									<td width="30%" align="left"><p class="R">CPF/CNPJ DO FAVORECIDO</p><p class="C"><input id="favorecido_cnpjcpf" name="favorecido_cnpjcpf" class="TA" type="text" maxlength="18" size="25" value="<%=s%>"
+												onblur="if (retorna_so_digitos(this.value).length==14) { this.value=cnpj_formata(this.value);} else if (retorna_so_digitos(this.value).length==11){ this.value=cpf_formata(this.value);} else alert('Formato de CPF/CNPJ inválido!');"></p></td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					</table>
+				</td>
+			</tr>
+			<tr>
+				<td width="100%" class="MC">
+					<table width="100%" border="0">
+					<tr>
+						<%	sDescricao = consulta_descricao_vetor_t_codigo_descricao(vCodDescrOpDadosBancarios, GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS, COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CHAVE_PIX, blnDescricaoCadastrada)
+							sDescricao = UCase(sDescricao)
+							if Not blnDescricaoCadastrada then sDescricao = "CHAVE PIX" %>
+						<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("opcao_dados_bancarios")) else s=""%>
+						<td colspan="2" align="left">
+							<input type="radio" id="rb_opcao_dados_bancarios" name="rb_opcao_dados_bancarios" value="<%=CStr(COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CHAVE_PIX)%>" class="TA"
+								<% if s = CStr(COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CHAVE_PIX) then Response.Write " checked"%>
+								/><span id="spn_op_chave_pix_status" class="C" style="cursor:default;" onclick="fCAD.rb_opcao_dados_bancarios[1].click();"><%=sDescricao%></span>
+						</td>
+					</tr>
+					<tr>
+						<td style="width:10px;">&nbsp;</td>
+						<td width="99%" align="left" style="padding-bottom:8px;padding-right:12px;">
+							<!-- ************   TIPO CHAVE/CHAVE/FAVORECIDO   ************ -->
+							<table class="Q" width="100%" cellspacing="0">
+								<tr>
+									<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("pix_tipo_chave")) else s=""%>
+									<td align="left" class="MD"><p class="R">TIPO DE CHAVE</p><p class="C">
+										<select id="c_pix_tipo_chave" name="c_pix_tipo_chave" style="width:130px;">
+										<% =tipo_chave_pix_monta_itens_select(s, True) %>
+										</select>
+									</td>
+									<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("pix_chave")) else s=""%>
+									<td align="left">
+										<p class="R">CHAVE PIX</p>
+										<input id="c_pix_chave" name="c_pix_chave" class="TA" value="<%=s%>"
+											maxlength="80" size="60"
+											style="text-align:left;"
+											onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.c_pix_favorecido.focus();"
+											onblur="this.value=trim(this.value);"
+											/>
+									</td>
+								</tr>
+								<tr>
+									<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("pix_favorecido")) else s=""%>
+									<td class="MC" colspan="2" align="left">
+										<p class="R">NOME DO FAVORECIDO</p>
+										<input type="text" id="c_pix_favorecido" name="c_pix_favorecido" class="TA" value="<%=s%>"
+											maxlength="80" size="70"
+											onblur="this.value=trim(this.value);"
+											onkeypress="filtra_nome_identificador();"
+											/>
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					</table>
+				</td>
+			</tr>
+			</table>
+		</td>
 	</tr>
 </table>
 
-<!-- ************   FAVORECIDO / CPF CNPJ FAVORECIDO   *******************  -->
-<table width="649" class="QS" cellspacing="0">
-    <tr>
-<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("favorecido")) else s=""%>
-		<td class="MD" width="70%" align="left"><p class="R">FAVORECIDO</p><p class="C"><input id="favorecido" name="favorecido" class="TA" value="<%=s%>" maxlength="40" size="60" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.favorecido_cnpjcpf.focus(); filtra_nome_identificador();" onblur="this.value=trim(this.value);"></p></td>
-<%if operacao_selecionada=OP_CONSULTA then s=cnpj_cpf_formata(Trim("" & rs("favorecido_cnpj_cpf"))) else s="" %>
-		<td width="30%" align="left"><p class="R">CPF/CNPJ DO FAVORECIDO</p><p class="C"><input id="favorecido_cnpjcpf" name="favorecido_cnpjcpf" class="TA" type="text" maxlength="18" size="25" value="<%=s%>" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.senha.focus();"
-        			onblur="if (retorna_so_digitos(this.value).length==14) { this.value=cnpj_formata(this.value);} else if (retorna_so_digitos(this.value).length==11){ this.value=cpf_formata(this.value);} else alert('Formato de CPF/CNPJ inválido!');"></p></td>
-    </tr>
-</table>
-
 <!-- ************   ACESSO AO SISTEMA/STATUS   ************ -->
-<table width="649" class="QS" cellSpacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellSpacing="0">
 	<tr>
 		<td width="35%" align="left"><p class="R">ACESSO AO SISTEMA</p><p class="C">
 			<input type="radio" id="rb_acesso_liberado" name="rb_acesso" value="1" 
@@ -815,7 +1135,7 @@ var s, s_senha;
     </table>
 
 <!-- ************   SENHA / CONFIRMAÇÃO DA SENHA   ************ -->
-<table width="649" class="QS" cellspacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0">
 	<tr>
 		<td class="MD" width="50%" align="left"><p class="R">SENHA</p><p class="C"><input id="senha" name="senha" class="TA" type="password" maxlength="15" size="18" value="" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.senha2.focus();"></p></td>
 		<td width="50%" align="left"><p class="R">SENHA (CONFIRMAÇÃO)</p><p class="C"><input id="senha2" name="senha2" class="TA" type="password" maxlength="15" size="18" value="" onkeypress="if (digitou_enter(true) && tem_info(this.value)) fCAD.c_email.focus();"></p></td>
@@ -824,7 +1144,7 @@ var s, s_senha;
 </table>
 
 <!-- ************   E-MAILS   ************ -->
-<table width="649" class="QS" cellSpacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellSpacing="0">
 	<tr>
 <%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("email")) else s=""%>
 		<td align="left"><p class="R">E-MAIL (1)</p><p class="C">
@@ -855,7 +1175,7 @@ var s, s_senha;
 </table>
 
 <!-- ************   TIPO DE ESTABELECIMENTO   ************ -->
-<table width="649" class="QS" cellSpacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellSpacing="0">
 	<tr>
 <%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("tipo_estabelecimento")) else s=""%>
 		<td width="100%" style="padding-bottom:4px;" align="left">
@@ -870,7 +1190,7 @@ var s, s_senha;
 </table>
 
 <!-- ************   FORMA COMO CONHECEU A DIS   ************ -->
-<table width="649" class="QS" cellSpacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellSpacing="0">
 	<tr>
 <%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("forma_como_conheceu_codigo")) else s=""%>
 		<td align="left"><p class="R">FORMA COMO CONHECEU A DIS</p><p class="C">
@@ -882,7 +1202,7 @@ var s, s_senha;
 </table>
 
 <!-- ************   VENDEDORES   **************** -->
-<table width="649" class="QS" cellspacing="0" style="padding-bottom:6px;">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellspacing="0" style="padding-bottom:6px;">
 	<tr>
 		<td align="left" class="MB" colspan="2"><p class="R">VENDEDORES</p></td>
 	</tr>
@@ -901,7 +1221,7 @@ var s, s_senha;
 </table>
 
 <!-- ************   OBS   ************ -->
-<table width="649" class="QS" cellSpacing="0">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" class="QS" cellSpacing="0">
 	<tr>
 <%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("obs")) else s=""%>
 		<td align="left"><p class="R">OBSERVAÇÕES</p><p class="C">
@@ -913,13 +1233,13 @@ var s, s_senha;
 </table>
 
 <!-- ************   SEPARADOR   ************ -->
-<table width="649" cellPadding="4" CellSpacing="0" style="border-bottom:1px solid black">
+<table width="<%=CStr(WIDTH_MAIN_TABLE)%>" cellPadding="4" CellSpacing="0" style="border-bottom:1px solid black">
 <tr><td class="Rc" align="left">&nbsp;</td></tr>
 </table>
 <br>
 
 
-<table class="notPrint" width="649" cellSpacing="0">
+<table class="notPrint" width="<%=CStr(WIDTH_MAIN_TABLE)%>" cellSpacing="0">
 <tr>
 	<td align="left"><a href="javascript:history.back()" title="cancela o cadastramento">
 		<img src="../botao/cancelar.gif" width="176" height="55" border="0"></a></td>

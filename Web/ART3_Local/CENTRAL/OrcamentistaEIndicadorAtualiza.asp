@@ -3,6 +3,7 @@
 <!-- #include file = "../global/constantes.asp" -->
 <!-- #include file = "../global/funcoes.asp"    -->
 <!-- #include file = "../global/bdd.asp"        -->
+<!-- #include file = "../global/Global.asp" -->
 
 <!-- #include file = "../global/TrataSessaoExpirada.asp"        -->
 
@@ -40,6 +41,11 @@
 	
 	dim i
 	dim s, s_aux, usuario, senha_cripto, alerta, chave
+	dim erro_consistencia, erro_fatal
+	
+	erro_consistencia=false
+	erro_fatal=false
+	alerta = ""
 	
 	usuario = trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
@@ -48,26 +54,38 @@
 	dim s_lista_operacoes_permitidas
 	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
 	
-	dim blnPossuiPermissaoFinanceiro
-	blnPossuiPermissaoFinanceiro = False
-	if operacao_permitida(OP_CEN_EDITA_ANALISE_CREDITO, s_lista_operacoes_permitidas) _
-		OR _
-		operacao_permitida(OP_CEN_PAGTO_PARCIAL, s_lista_operacoes_permitidas) _
-		OR _
-		operacao_permitida(OP_CEN_PAGTO_QUITACAO, s_lista_operacoes_permitidas) then
-		blnPossuiPermissaoFinanceiro = True
-		end if
-
-	if (Not operacao_permitida(OP_CEN_CADASTRO_ORCAMENTISTAS_E_INDICADORES, s_lista_operacoes_permitidas)) And _
-	   (Not operacao_permitida(OP_CEN_REL_CHECAGEM_NOVOS_PARCEIROS, s_lista_operacoes_permitidas)) And _
-	   (Not blnPossuiPermissaoFinanceiro) then 
-		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
-		end if
-
 '	CONECTA AO BANCO DE DADOS
 '	=========================
 	dim cn, r, rs, t, rs2, s2
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
+
+	dim vCodDescrOpDadosBancarios, vCodDescrTipoChavePix, sDescricao, blnDescricaoCadastrada
+	call carrega_em_vetor_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS, vCodDescrOpDadosBancarios)
+	call carrega_em_vetor_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE, vCodDescrTipoChavePix)
+
+	dim blnUsuarioDeptoFinanceiro, vDeptoSetorUsuario
+	blnUsuarioDeptoFinanceiro = False
+	if alerta = "" then
+		if Not obtem_Usuario_x_DeptoSetor(usuario, vDeptoSetorUsuario, msg_erro) then
+			alerta=texto_add_br(alerta)
+			alerta = alerta & msg_erro
+		else
+			for i=LBound(vDeptoSetorUsuario) to UBound(vDeptoSetorUsuario)
+				if (vDeptoSetorUsuario(i).StInativo = 0) then
+					if (vDeptoSetorUsuario(i).Id = ID_DEPTO_SETOR__FIN_FINANCEIRO) Or (vDeptoSetorUsuario(i).Id = ID_DEPTO_SETOR__FIN_CREDITO) then
+						blnUsuarioDeptoFinanceiro = True
+						exit for
+						end if
+					end if
+				next
+			end if
+		end if
+
+	if (Not operacao_permitida(OP_CEN_CADASTRO_ORCAMENTISTAS_E_INDICADORES, s_lista_operacoes_permitidas)) And _
+	   (Not operacao_permitida(OP_CEN_REL_CHECAGEM_NOVOS_PARCEIROS, s_lista_operacoes_permitidas)) And _
+	   (Not blnUsuarioDeptoFinanceiro) then 
+		Response.Redirect("aviso.asp?id=" & ERR_ACESSO_INSUFICIENTE)
+		end if
 
 	Dim criou_novo_reg
 	Dim s_log, s_log_restricao_FP, s_log_desconto_edicao, s_log_desconto_incl, s_log_desconto_excl
@@ -108,6 +126,7 @@
 	dim lngNsuRestricaoFormaPagto, blnRestricaoFPNovo, blnRestricaoFPAlteracao
     dim s_etq_endereco, s_etq_endereco_numero, s_etq_endereco_complemento, s_etq_bairro, s_etq_cidade, s_etq_uf, s_etq_cep, s_etq_ddd_1, s_etq_ddd_2, s_etq_tel_1, s_etq_tel_2, s_etq_email
     dim msg,s_favorecido_cnpjcpf, conta_dv, agencia_dv, tipo_conta, tipo_operacao
+	dim rb_opcao_dados_bancarios, c_pix_tipo_chave, c_pix_chave, c_pix_favorecido
     dim n, cont, s_id_desc, s_desc_desc, s_val_desc
     dim s_contato_nome, s_contato_id, s_contato_data, s_contato_log_inclusao, s_contato_log_exclusao, s_contato_log_edicao
 	dim ckb_comissao_cartao_status, c_comissao_cartao_cpf, c_comissao_cartao_titular, c_comissao_NFSe_cnpj, c_comissao_NFSe_razao_social
@@ -178,6 +197,10 @@
     agencia_dv = trim(Request.Form("agencia_dv"))
     tipo_conta = trim(Request.Form("tipo_conta"))
     tipo_operacao = trim(Request.Form("tipo_operacao"))
+	rb_opcao_dados_bancarios = trim(Request.Form("rb_opcao_dados_bancarios"))
+	c_pix_tipo_chave = trim(Request.Form("c_pix_tipo_chave"))
+	c_pix_chave = trim(Request.Form("c_pix_chave"))
+	c_pix_favorecido = trim(Request.Form("c_pix_favorecido"))
 	ckb_comissao_cartao_status = Trim(Request.Form("ckb_comissao_cartao_status"))
 	c_comissao_cartao_cpf = retorna_so_digitos(Trim(Request.Form("c_comissao_cartao_cpf")))
 	c_comissao_cartao_titular = Trim(Request.Form("c_comissao_cartao_titular"))
@@ -241,12 +264,6 @@
 	if s_id_selecionado = "" then Response.Redirect("aviso.asp?id=" & ERR_ID_INVALIDO)
 
 	s_loja=normaliza_codigo(s_loja, TAM_MIN_LOJA)
-
-	dim erro_consistencia, erro_fatal
-	
-	erro_consistencia=false
-	erro_fatal=false
-	alerta = ""
 
 	dim blnSenhaAlterada
 	blnSenhaAlterada = False
@@ -336,7 +353,7 @@
 			end if
 		end if
 	
-	if (alerta = "") And blnPossuiPermissaoFinanceiro then
+	if (alerta = "") And blnUsuarioDeptoFinanceiro then
 		'Dados de pagamento da comissão: Cartão
 		if ckb_comissao_cartao_status <> "" then
 			'Se o checkbox "Pagamento Via Cartão" estiver assinalado, o preenchimento dos campos é obrigatório
@@ -374,7 +391,47 @@
 				alerta=alerta & "Informe a razão social do emitente da NFSe nos dados para pagamento da comissão"
 				end if
 			end if
-		end if 'if (alerta = "") And blnPossuiPermissaoFinanceiro
+		end if 'if (alerta = "") And blnUsuarioDeptoFinanceiro
+
+	if alerta = "" then
+		if (rb_opcao_dados_bancarios = CStr(COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CHAVE_PIX)) Or (converte_numero(c_pix_tipo_chave) <> 0) Or (c_pix_chave <> "") Or (c_pix_favorecido <> "") then
+			if converte_numero(c_pix_tipo_chave) <= 0 then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Tipo de chave Pix é inválida (" & c_pix_tipo_chave & ")"
+			else
+				sDescricao = consulta_descricao_vetor_t_codigo_descricao(vCodDescrTipoChavePix, GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE, c_pix_tipo_chave, blnDescricaoCadastrada)
+				if c_pix_tipo_chave = CStr(COD_ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE__CNPJ_CPF) then
+					if Not blnDescricaoCadastrada then sDescricao = "CNPJ/CPF"
+					s = retorna_so_digitos(c_pix_chave)
+					if (Not cnpj_cpf_ok(s)) Or (s = "") then
+						alerta=texto_add_br(alerta)
+						alerta=alerta & "Chave Pix informada é inválida para tipo de chave '" & sDescricao & "' (" & c_pix_chave & ")!"
+					else
+						'Normaliza chave Pix
+						c_pix_chave = cnpj_cpf_formata(s)
+						end if
+				elseif c_pix_tipo_chave = CStr(COD_ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE__CELULAR) then
+					if Not blnDescricaoCadastrada then sDescricao = "Celular"
+					s = retorna_so_digitos(c_pix_chave)
+					if Len(s) < 10 then
+						alerta=texto_add_br(alerta)
+						alerta=alerta & "Chave Pix informada é inválida para tipo de chave '" & sDescricao & "' (" & c_pix_chave & ")!<br />Verifique se o DDD foi informado!"
+						end if
+				elseif c_pix_tipo_chave = CStr(COD_ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE__EMAIL) then
+					if Not blnDescricaoCadastrada then sDescricao = "E-mail"
+					if (Not isEmailOk(c_pix_chave)) Or (c_pix_chave = "") then
+						alerta=texto_add_br(alerta)
+						alerta=alerta & "Chave Pix informada é inválida para tipo de chave '" & sDescricao & "' (" & c_pix_chave & ")!"
+						end if
+					end if
+				end if
+			
+			if c_pix_favorecido = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Informe o nome do favorecido nos dados do Pix"
+				end if
+			end if
+		end if 'if alerta = ""
 
 	if alerta <> "" then erro_consistencia=True
 	
@@ -904,6 +961,25 @@
                         msg = msg & "Senha alterada<br>|de: ******<br>|para: ******<br>"
                     end if
 
+					'Dados bancários (dados conta bancária ou chave pix)
+					if converte_numero(rb_opcao_dados_bancarios) <> converte_numero(r("opcao_dados_bancarios")) then
+						if converte_numero(rb_opcao_dados_bancarios) = 0 then
+							x2 = "NENHUMA"
+						else
+							sDescricao = consulta_descricao_vetor_t_codigo_descricao(vCodDescrOpDadosBancarios, GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS, rb_opcao_dados_bancarios, blnDescricaoCadastrada)
+							if blnDescricaoCadastrada then x2 = sDescricao else x2 = "Código não cadastrado (" & rb_opcao_dados_bancarios & ")"
+							end if
+						
+						if r("opcao_dados_bancarios") = 0 then
+							x1 = "NENHUMA"
+						else
+							sDescricao = consulta_descricao_vetor_t_codigo_descricao(vCodDescrOpDadosBancarios, GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS, r("opcao_dados_bancarios"), blnDescricaoCadastrada)
+							if blnDescricaoCadastrada then x1 = sDescricao else x1 = "Código não cadastrado (" & r("opcao_dados_bancarios") & ")"
+							end if
+						
+						msg = msg & "Opção de dados bancários alterada <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
+						end if
+
                     ' log banco
                     if isNull(r("banco")) then r("banco") = ""
                     if (s_banco <> r("banco")) then
@@ -976,9 +1052,42 @@
                         if Trim("" & r("favorecido_cnpj_cpf")) = "" then x1 = "VAZIO" else x1 = cnpj_cpf_formata(r("favorecido_cnpj_cpf"))
                         msg = msg & "CPF/CNPJ do favorecido alterado <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
                     end if    
-                    
+
+					'Tipo de chave Pix
+					if converte_numero(c_pix_tipo_chave) <> converte_numero(r("pix_tipo_chave")) then
+						if converte_numero(c_pix_tipo_chave) = 0 then
+							x2 = "NENHUM"
+						else
+							sDescricao = consulta_descricao_vetor_t_codigo_descricao(vCodDescrTipoChavePix, GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE, c_pix_tipo_chave, blnDescricaoCadastrada)
+							if blnDescricaoCadastrada then x2 = sDescricao else x2 = "Código não cadastrado (" & c_pix_tipo_chave & ")"
+							end if
+						
+						if r("pix_tipo_chave") = 0 then
+							x1 = "NENHUM"
+						else
+							sDescricao = consulta_descricao_vetor_t_codigo_descricao(vCodDescrTipoChavePix, GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE, r("pix_tipo_chave"), blnDescricaoCadastrada)
+							if blnDescricaoCadastrada then x1 = sDescricao else x1 = "Código não cadastrado (" & r("pix_tipo_chave") & ")"
+							end if
+
+						msg = msg & "Tipo de chave Pix alterado <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
+						end if
+
+					'Chave Pix
+					if c_pix_chave <> Trim("" & r("pix_chave")) then
+						if c_pix_chave = "" then x2 = "VAZIO" else x2 = c_pix_chave
+						if Trim("" & r("pix_chave")) = "" then x1 = "VAZIO" else x1 = Trim("" & r("pix_chave"))
+						msg = msg & "Chave Pix alterada <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
+						end if
+
+					'Favorecido Pix
+					if c_pix_favorecido <> Trim("" & r("pix_favorecido")) then
+						if c_pix_favorecido = "" then x2 = "VAZIO" else x2 = c_pix_favorecido
+						if Trim("" & r("pix_favorecido")) = "" then x1 = "VAZIO" else x1 = Trim("" & r("pix_favorecido"))
+						msg = msg & "Favorecido Pix alterado <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
+						end if
+
 					'Dados para pagamento da comissão
-					if blnPossuiPermissaoFinanceiro then
+					if blnUsuarioDeptoFinanceiro then
 						'Checkbox Pagamento Via Cartão
 						if ckb_comissao_cartao_status = "" then valorAux = 0 else valorAux = 1
 						if r("comissao_cartao_status") <> valorAux then
@@ -1360,6 +1469,10 @@
                 r("agencia_dv") = agencia_dv
                 r("tipo_conta") = tipo_conta
                 r("conta_operacao") = tipo_operacao
+				r("opcao_dados_bancarios") = converte_numero(rb_opcao_dados_bancarios)
+				r("pix_tipo_chave") = converte_numero(c_pix_tipo_chave)
+				r("pix_chave") = c_pix_chave
+				r("pix_favorecido") = c_pix_favorecido
 
 				if CLng(r("permite_RA_status")) <> CLng(s_permite_RA_status) then
 					r("permite_RA_status") = CLng(s_permite_RA_status)
@@ -1419,7 +1532,7 @@
 				
 				if rb_estabelecimento <> "" then r("tipo_estabelecimento") = CLng(rb_estabelecimento)
 
-				if blnPossuiPermissaoFinanceiro then
+				if blnUsuarioDeptoFinanceiro then
 					if ckb_comissao_cartao_status = "" then valorAux = 0 else valorAux = 1
 					r("comissao_cartao_status") = valorAux
 					r("comissao_cartao_cpf") = c_comissao_cartao_cpf

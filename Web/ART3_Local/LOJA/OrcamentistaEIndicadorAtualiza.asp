@@ -3,6 +3,7 @@
 <!-- #include file = "../global/constantes.asp" -->
 <!-- #include file = "../global/funcoes.asp"    -->
 <!-- #include file = "../global/bdd.asp"        -->
+<!-- #include file = "../global/Global.asp" -->
 
 <!-- #include file = "../global/TrataSessaoExpirada.asp"        -->
 
@@ -34,7 +35,12 @@
 	Err.Clear
 	
 	dim s, s_aux, usuario, loja, senha_cripto, alerta, chave, s2
+	dim erro_consistencia, erro_fatal
 	
+	erro_consistencia=false
+	erro_fatal=false
+	alerta = ""
+
 	usuario = trim(Session("usuario_atual"))
 	loja = Trim(Session("loja_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
@@ -138,12 +144,6 @@
 	
 	
 	if s_id_selecionado = "" then Response.Redirect("aviso.asp?id=" & ERR_ID_INVALIDO)
-
-	dim erro_consistencia, erro_fatal
-	
-	erro_consistencia=false
-	erro_fatal=false
-	alerta = ""
 
 	dim blnSenhaAlterada
 	blnSenhaAlterada = False

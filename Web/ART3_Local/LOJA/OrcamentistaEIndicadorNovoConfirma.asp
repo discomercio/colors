@@ -3,6 +3,7 @@
 <!-- #include file = "../global/constantes.asp" -->
 <!-- #include file = "../global/funcoes.asp"    -->
 <!-- #include file = "../global/bdd.asp"        -->
+<!-- #include file = "../global/Global.asp" -->
 
 <!-- #include file = "../global/TrataSessaoExpirada.asp"        -->
 
@@ -34,7 +35,12 @@
 	Err.Clear
 	
 	dim s, s_aux, usuario, loja, alerta
+	dim erro_consistencia, erro_fatal
 	
+	erro_consistencia=false
+	erro_fatal=false
+	alerta = ""
+
 	usuario = trim(Session("usuario_atual"))
 	loja = Trim(Session("loja_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
@@ -54,6 +60,10 @@
 	dim cn, r, rs
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim vCodDescrOpDadosBancarios, vCodDescrTipoChavePix, sDescricao, blnDescricaoCadastrada, iv
+	call carrega_em_vetor_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS, vCodDescrOpDadosBancarios)
+	call carrega_em_vetor_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE, vCodDescrTipoChavePix)
+
 	dim r_loja_user_session
 	set r_loja_user_session = New cl_LOJA
 	if Not x_loja_bd(loja, r_loja_user_session) then Response.Redirect("aviso.asp?id=" & ERR_LOJA_NAO_CADASTRADA)
@@ -71,6 +81,7 @@
 	dim s_endereco, s_endereco_numero, s_endereco_complemento, s_bairro, s_cidade, s_uf, s_cep, s_ddd, s_telefone, s_fax
 	dim s_ddd_cel, s_tel_cel, s_contato, senha_cripto
 	dim s_banco, s_agencia, s_conta, s_favorecido, s_favorecido_cnpjcpf, conta_dv, agencia_dv, tipo_conta, tipo_operacao
+	dim rb_opcao_dados_bancarios, c_pix_tipo_chave, c_pix_chave, c_pix_favorecido
 	dim s_loja, s_vendedor, s_acesso, s_status, s_permite_RA_status
 	dim s_perc_desagio_RA, strValorLimiteMensal, strEmail, strEmail2, strEmail3, s_forma_como_conheceu_codigo
 	dim strObs
@@ -120,6 +131,10 @@
     tipo_conta = trim(Request.Form("tipo_conta"))
     tipo_operacao = trim(Request.Form("tipo_operacao"))
     s_favorecido_cnpjcpf = retorna_so_digitos(trim(Request.Form("favorecido_cnpjcpf")))
+	rb_opcao_dados_bancarios = trim(Request.Form("rb_opcao_dados_bancarios"))
+	c_pix_tipo_chave = trim(Request.Form("c_pix_tipo_chave"))
+	c_pix_chave = trim(Request.Form("c_pix_chave"))
+	c_pix_favorecido = trim(Request.Form("c_pix_favorecido"))
 
     if Not cria_recordset_otimista(rs2, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	
@@ -138,13 +153,6 @@
 
 
 	if s_id_selecionado = "" then Response.Redirect("aviso.asp?id=" & ERR_ID_INVALIDO)
-
-
-	dim erro_consistencia, erro_fatal
-	
-	erro_consistencia=false
-	erro_fatal=false
-	alerta = ""
 
 	if s_id_selecionado = "" then
 		alerta="FORNEÇA UM IDENTIFICADOR (APELIDO) PARA O INDICADOR."
@@ -202,14 +210,6 @@
 		alerta="O TELEFONE CELULAR EXCEDE O TAMANHO MÁXIMO."
 	elseif s_contato = "" then
 		alerta="PREENCHA O NOME DO CONTATO."
-	elseif s_banco = "" then
-		alerta="PREENCHA O Nº DO BANCO."
-	elseif s_agencia = "" then
-		alerta="PREENCHA O Nº DA AGÊNCIA."
-	elseif s_conta = "" then
-		alerta="PREENCHA O Nº DA CONTA"
-	elseif s_favorecido = "" then
-		alerta="PREENCHA O NOME DO FAVORECIDO."
 	elseif s_acesso = "" then
 		alerta="INFORME O ACESSO AO SISTEMA ESTÁ LIBERADO OU BLOQUEADO."
 	elseif s_status = "" then
@@ -262,6 +262,91 @@
 			end if
 		end if
 	
+	if alerta = "" then
+		if converte_numero(rb_opcao_dados_bancarios) = 0 then
+			s = ""
+			for iv=LBound(vCodDescrOpDadosBancarios) to UBound(vCodDescrOpDadosBancarios)
+				with vCodDescrOpDadosBancarios(iv)
+					if (.codigo <> "") And (.st_inativo = 0) then
+						if s <> "" then s = s & " ou "
+						s = s & "'" & .descricao & "'"
+						end if
+					end with
+				next
+
+			alerta="Selecione uma opção de dados bancários: " & s
+			end if
+		end if
+
+	if alerta = "" then
+		if (rb_opcao_dados_bancarios = CStr(COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CONTA_BANCARIA)) Or _
+			(s_banco <> "") Or (s_agencia <> "") Or (s_conta <> "") Or (tipo_conta <> "") Or (s_favorecido <> "") Or (s_favorecido_cnpjcpf <> "") then
+			if s_banco = "" then
+				alerta="PREENCHA O Nº DO BANCO."
+			elseif s_agencia = "" then
+				alerta="PREENCHA O Nº DA AGÊNCIA."
+			elseif s_conta = "" then
+				alerta="PREENCHA O Nº DA CONTA"
+			elseif tipo_conta = "" then
+				alerta="PREENCHA O TIPO DE CONTA"
+			elseif s_favorecido = "" then
+				alerta="PREENCHA O NOME DO FAVORECIDO."
+			elseif s_favorecido_cnpjcpf = "" then
+				alerta="PREENCHA O CPF/CNPJ DO FAVORECIDO"
+			elseif Not cnpj_cpf_ok(s_favorecido_cnpjcpf) then
+				alerta="CPF/CNPJ DO FAVORECIDO É INVÁLIDO"
+				end if
+			
+			if alerta = "" then
+				if (s_banco = "104") And (tipo_operacao = "") then
+					alerta="INFORME O TIPO DE OPERAÇÃO PARA CONTA DA CAIXA ECONÔMICA FEDERAL"
+				elseif (s_banco <> "745") And (conta_dv = "") then
+					alerta="PREENCHA O DÍGITO VERIFICADOR DA CONTA"
+					end if
+				end if
+			end if
+		end if
+
+	if alerta = "" then
+		if (rb_opcao_dados_bancarios = CStr(COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CHAVE_PIX)) Or (converte_numero(c_pix_tipo_chave) <> 0) Or (c_pix_chave <> "") Or (c_pix_favorecido <> "") then
+			if converte_numero(c_pix_tipo_chave) <= 0 then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Tipo de chave Pix é inválida (" & c_pix_tipo_chave & ")"
+			else
+				sDescricao = consulta_descricao_vetor_t_codigo_descricao(vCodDescrTipoChavePix, GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE, c_pix_tipo_chave, blnDescricaoCadastrada)
+				if c_pix_tipo_chave = CStr(COD_ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE__CNPJ_CPF) then
+					if Not blnDescricaoCadastrada then sDescricao = "CNPJ/CPF"
+					s = retorna_so_digitos(c_pix_chave)
+					if (Not cnpj_cpf_ok(s)) Or (s = "") then
+						alerta=texto_add_br(alerta)
+						alerta=alerta & "Chave Pix informada é inválida para tipo de chave '" & sDescricao & "' (" & c_pix_chave & ")!"
+					else
+						'Normaliza chave Pix
+						c_pix_chave = cnpj_cpf_formata(s)
+						end if
+				elseif c_pix_tipo_chave = CStr(COD_ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE__CELULAR) then
+					if Not blnDescricaoCadastrada then sDescricao = "Celular"
+					s = retorna_so_digitos(c_pix_chave)
+					if Len(s) < 10 then
+						alerta=texto_add_br(alerta)
+						alerta=alerta & "Chave Pix informada é inválida para tipo de chave '" & sDescricao & "' (" & c_pix_chave & ")!<br />Verifique se o DDD foi informado!"
+						end if
+				elseif c_pix_tipo_chave = CStr(COD_ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE__EMAIL) then
+					if Not blnDescricaoCadastrada then sDescricao = "E-mail"
+					if (Not isEmailOk(c_pix_chave)) Or (c_pix_chave = "") then
+						alerta=texto_add_br(alerta)
+						alerta=alerta & "Chave Pix informada é inválida para tipo de chave '" & sDescricao & "' (" & c_pix_chave & ")!"
+						end if
+					end if
+				end if
+			
+			if c_pix_favorecido = "" then
+				alerta=texto_add_br(alerta)
+				alerta=alerta & "Informe o nome do favorecido nos dados do Pix"
+				end if
+			end if
+		end if 'if alerta = ""
+
 	if alerta <> "" then erro_consistencia=True
 
 	if s_senha <> "" then
@@ -408,6 +493,10 @@
                 r("tipo_conta") = tipo_conta
                 r("conta_operacao") = tipo_operacao
 				r("favorecido") = s_favorecido
+				r("opcao_dados_bancarios") = converte_numero(rb_opcao_dados_bancarios)
+				r("pix_tipo_chave") = converte_numero(c_pix_tipo_chave)
+				r("pix_chave") = c_pix_chave
+				r("pix_favorecido") = c_pix_favorecido
 				r("loja") = s_loja
 				r("vendedor") = s_vendedor
 				r("hab_acesso_sistema")=CLng(s_acesso)

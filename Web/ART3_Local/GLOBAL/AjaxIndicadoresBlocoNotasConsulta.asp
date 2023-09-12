@@ -40,12 +40,21 @@
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
-	dim s, apelido, mes, ano
+	dim s, apelido, mes, ano, tableWidth
 
     apelido = DecodeUTF8(Trim(Request("apelido")))
 	ano = Trim(Request("ano"))
 	mes = Trim(Request("mes"))
-	
+
+	s = Trim(Request("tableWidth"))
+	tableWidth = converte_numero(s)
+	if tableWidth <= 0 then tableWidth = 649
+
+	dim wData, wUsuario, wMensagem
+	wData = 60
+	wUsuario = 80
+	wMensagem = tableWidth - wData - wUsuario
+
 '	PESQUISA BLOCOS DE NOTAS DO APELIDO, MÊS E ANO INFORMADOS
 	strSql = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR_BLOCO_NOTAS " & _
 	            "WHERE apelido='" & apelido & "' AND " & _
@@ -63,21 +72,21 @@
 	do while Not rs.Eof
 		strResp = strResp & _
 				  "<tr>" & _
-				  "<td class='C ME MD MB' style='width:60px;' align='center' valign='top'>" & formata_data_hora(rs("dt_hr_cadastro")) & "</td>" & _
-				  "<td class='C MD MB' style='width:80px;' align='center' valign='top'>" & rs("usuario") 
+				  "<td class='C ME MD MB' style='width:" & CStr(wData) & "px;' align='center' valign='top'>" & formata_data_hora(rs("dt_hr_cadastro")) & "</td>" & _
+				  "<td class='C MD MB' style='width:" & CStr(wUsuario) & "px;' align='center' valign='top'>" & rs("usuario") 
 				  if (rs("loja")) <> "" then
 				    strResp = strResp & "(Loja&nbsp;" & rs("loja") & ")</td>"
 				  else
 				    strResp = strResp & "</td>"
 				  end if
-				  strResp = strResp & "<td class='C MD MB' align='left' style='width:509px' valign='top'>" & substitui_caracteres(rs("mensagem"), chr(13), "<br>") & "</td>" & _
+				  strResp = strResp & "<td class='C MD MB' align='left' style='width:" & CStr(wMensagem) & "px' valign='top'>" & substitui_caracteres(rs("mensagem"), chr(13), "<br>") & "</td>" & _
 				  "</tr>"
 		rs.MoveNext
 		loop
 		
 	if (strResp = "") then
 	    strResp = "<tr>" & _
-	              "<td class='C ME MB MD' style='width:649px;color:#bbb' align='center' valign='top'>" & _
+	              "<td class='C ME MB MD' style='width:" & CStr(tableWidth) & "px;color:#bbb' align='center' valign='top'>" & _
 	              "(NENHUMA ANOTAÇÃO ENCONTRADA)" & _
 	              "</td>" & _
 	              "</tr>"

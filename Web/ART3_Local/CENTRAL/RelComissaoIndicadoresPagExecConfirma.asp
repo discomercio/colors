@@ -152,7 +152,11 @@
                                     "t_ORCAMENTISTA_E_INDICADOR.agencia_dv agencia_dv, " & _
                                     "t_ORCAMENTISTA_E_INDICADOR.conta_operacao conta_operacao, " & _
                                     "t_ORCAMENTISTA_E_INDICADOR.conta_dv conta_dv, " & _
-                                    "t_ORCAMENTISTA_E_INDICADOR.tipo_conta tipo_conta " & _
+                                    "t_ORCAMENTISTA_E_INDICADOR.tipo_conta tipo_conta, " & _
+                                    "t_ORCAMENTISTA_E_INDICADOR.opcao_dados_bancarios, " & _
+                                    "t_ORCAMENTISTA_E_INDICADOR.pix_tipo_chave, " & _
+                                    "t_ORCAMENTISTA_E_INDICADOR.pix_chave, " & _
+                                    "t_ORCAMENTISTA_E_INDICADOR.pix_favorecido " & _
                                     "FROM t_PEDIDO INNER JOIN t_PEDIDO AS t_PEDIDO__BASE ON (t_PEDIDO.pedido_base=t_PEDIDO__BASE.pedido)" & _
 									" INNER JOIN t_ORCAMENTISTA_E_INDICADOR ON (t_PEDIDO__BASE.indicador=t_ORCAMENTISTA_E_INDICADOR.apelido) " & _
                                     "WHERE (t_PEDIDO.pedido = '" & v_lista_completa_pedidos(i) & "')"
@@ -246,7 +250,11 @@
                     rs("conta_operacao") = Trim("" & rs2("conta_operacao"))
                     rs("conta_dv") = Trim("" & rs2("conta_dv"))
                     rs("tipo_conta") = Trim("" & rs2("tipo_conta"))
-                    rs("vl_total_pagto") = v_vl_total_pagto(n)
+                    rs("opcao_dados_bancarios") = rs2("opcao_dados_bancarios")
+                    rs("pix_tipo_chave") = rs2("pix_tipo_chave")
+                    rs("pix_chave") = Trim("" & rs2("pix_chave"))
+                    rs("pix_favorecido") = Trim("" & rs2("pix_favorecido"))
+					rs("vl_total_pagto") = v_vl_total_pagto(n)
                     if v_lista_meio_pagto(n) = "DIN" And tem_desconto=false then
                         rs("cedulas_codificado") = v_cedulas(t)
                         rs("cedulas_descricao") = v_cedulas_descricao(t)

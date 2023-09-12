@@ -52,6 +52,10 @@
 		dim conta_dv
 		dim favorecido
 		dim favorecido_cnpj_cpf
+		dim opcao_dados_bancarios
+		dim pix_tipo_chave
+		dim pix_chave
+		dim pix_favorecido
 		dim vl_total_preco_venda
 		dim vl_total_preco_NF
 		dim vl_total_RT
@@ -140,6 +144,9 @@
 	
 	dim blnErroFatal
 	blnErroFatal = False
+
+	dim vCodDescrTipoChavePix, sDescricao, sChavePix, blnDescricaoCadastrada
+	call carrega_em_vetor_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE, vCodDescrTipoChavePix)
 
 	dim s, s_aux, s_filtro, s_filtro_indicador
 	s_filtro_indicador = ""
@@ -740,6 +747,10 @@ dim s_indicador_nome
 				.conta_dv = Trim("" & rs("conta_dv"))
 				.favorecido = Trim("" & rs("favorecido"))
 				.favorecido_cnpj_cpf = Trim("" & rs("favorecido_cnpj_cpf"))
+				.opcao_dados_bancarios = rs("opcao_dados_bancarios")
+				.pix_tipo_chave = rs("pix_tipo_chave")
+				.pix_chave = Trim("" & rs("pix_chave"))
+				.pix_favorecido = Trim("" & rs("pix_favorecido"))
 				end with
 
 			if n_reg_total > 0 then x = x & "<br />" & chr(13)
@@ -802,62 +813,99 @@ dim s_indicador_nome
 				"				</tr>" & chr(13) & _
 				"			</table>" & chr(13) & _
 				"		</td>" & chr(13) & _
-				"	</tr>" & chr(13) & _
-				"	<tr>" & chr(13) & _
-				"		<td class='MDTE' colspan='12' align='left' valign='bottom' class='MB' style='background:whitesmoke;'>" & chr(13) & _
-				"			<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
-				"				<tr>" & chr(13) & _
-				"					<td colspan='3' align='left' valign='bottom'><span class='Cn'>Banco: " & s_banco & "</span></td>" & chr(13) & _
-				"				</tr>" & chr(13) & _
-				"				<tr>" & chr(13) & _
-				"					<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & rs("agencia")
-			if Trim("" & rs("agencia_dv")) <> "" then
-				x = x & "-" & rs("agencia_dv")
-				end if
-	
-			x = x & "</span></td>" & chr(13)
+				"	</tr>" & chr(13)
 			
-			x = x & "					<td class='MC MD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>"
-			if Trim("" & rs("tipo_conta")) <> "" then
-				if rs("tipo_conta") = "P" then
-					x = x & "C/P: "
-				elseif rs("tipo_conta") = "C" then
-					x = x & "C/C: "
+			if Trim("" & rs("opcao_dados_bancarios")) = CStr(COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CHAVE_PIX) then
+				'Dados chave Pix
+				x = x & _
+					"	<tr>" & chr(13) & _
+					"		<td class='MDTE' colspan='12' align='left' valign='bottom' class='MB' style='background:whitesmoke;'>" & chr(13) & _
+					"			<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
+					"				<tr>" & chr(13)
+
+				sChavePix = ""
+				sDescricao = consulta_descricao_vetor_t_codigo_descricao(vCodDescrTipoChavePix, GRUPO_T_CODIGO_DESCRICAO__ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE, rs("pix_tipo_chave"), blnDescricaoCadastrada)
+				if Trim("" & rs("pix_tipo_chave")) = CStr(COD_ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE__CNPJ_CPF) then
+					if Not blnDescricaoCadastrada then sDescricao = "CNPJ/CPF"
+					sChavePix = cnpj_cpf_formata(Trim("" & rs("pix_chave")))
+				elseif Trim("" & rs("pix_tipo_chave")) = CStr(COD_ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE__CELULAR) then
+					if Not blnDescricaoCadastrada then sDescricao = "Celular"
+					sChavePix = Trim("" & rs("pix_chave"))
+				elseif Trim("" & rs("pix_tipo_chave")) = CStr(COD_ORCAMENTISTA_INDICADOR__PIX_TIPO_CHAVE__EMAIL) then
+					if Not blnDescricaoCadastrada then sDescricao = "E-mail"
+					sChavePix = Trim("" & rs("pix_chave"))
 					end if
+
+				x = x & _
+					"					<td class='MD' width='50%' align='left' valign='bottom'><span class='Cn'>Tipo Chave Pix: " & sDescricao & "</span></td>" & chr(13) & _
+					"					<td width='50%' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Chave Pix: " & sChavePix & "</span></td>" & chr(13) & _
+					"				</tr>" & chr(13) & _
+					"				<tr>" & chr(13) & _
+					"					<td colspan='2' class='MC' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Favorecido: " & Trim("" & rs("pix_favorecido")) & "</span></td>" & chr(13) & _
+					"				</tr>" & chr(13) & _
+					"			</table>" & chr(13) & _
+					"		</td>" & chr(13) & _
+					"		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
+					"	</tr>" & chr(13)
 			else
-				x = x & "Conta: "
-				end if
-
-			if Trim("" & rs("conta_operacao")) <> "" then
-				x = x & rs("conta_operacao") & "-"
-				end if
+				'Dados conta bancária
+				x = x & _
+					"	<tr>" & chr(13) & _
+					"		<td class='MDTE' colspan='12' align='left' valign='bottom' class='MB' style='background:whitesmoke;'>" & chr(13) & _
+					"			<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
+					"				<tr>" & chr(13) & _
+					"					<td colspan='3' align='left' valign='bottom'><span class='Cn'>Banco: " & s_banco & "</span></td>" & chr(13) & _
+					"				</tr>" & chr(13) & _
+					"				<tr>" & chr(13) & _
+					"					<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & rs("agencia")
+				if Trim("" & rs("agencia_dv")) <> "" then
+					x = x & "-" & rs("agencia_dv")
+					end if
 	
-			x = x & rs("conta")
-	
-			if Trim("" & rs("conta_dv")) <> "" then
-				x = x & "-" & rs("conta_dv")
-				end if
-			x = x & "</span></td>" & chr(13)
+				x = x & "</span></td>" & chr(13)
+			
+				x = x & "					<td class='MC MD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>"
+				if Trim("" & rs("tipo_conta")) <> "" then
+					if rs("tipo_conta") = "P" then
+						x = x & "C/P: "
+					elseif rs("tipo_conta") = "C" then
+						x = x & "C/C: "
+						end if
+				else
+					x = x & "Conta: "
+					end if
 
-			x = x & "					<td class='MC' width='60%' align='left' valign='bottom'><span class='Cn'>Favorecido: " & s_favorecido & "</span></td>" & chr(13) & _
+				if Trim("" & rs("conta_operacao")) <> "" then
+					x = x & rs("conta_operacao") & "-"
+					end if
+	
+				x = x & rs("conta")
+	
+				if Trim("" & rs("conta_dv")) <> "" then
+					x = x & "-" & rs("conta_dv")
+					end if
+				x = x & "</span></td>" & chr(13)
+
+				x = x & "					<td class='MC' width='60%' align='left' valign='bottom'><span class='Cn'>Favorecido: " & s_favorecido & "</span></td>" & chr(13) & _
+						"				</tr>" & chr(13)
+
+				if Len(retorna_so_digitos(s_favorecido_cnpj_cpf)) = 11 then
+					s_aux = "CPF"
+				else
+					s_aux = "CNPJ"
+					end if
+
+				x = x & _
+					"				<tr>" & chr(13) & _
+					"					<td colspan='3' class='MC' align='left' valign='bottom'><span class='Cn'>" & s_aux & ": " & s_favorecido_cnpj_cpf & "</span></td>" & chr(13) & _
 					"				</tr>" & chr(13)
 
-			if Len(retorna_so_digitos(s_favorecido_cnpj_cpf)) = 11 then
-				s_aux = "CPF"
-			else
-				s_aux = "CNPJ"
-				end if
-
-			x = x & _
-				"				<tr>" & chr(13) & _
-				"					<td colspan='3' class='MC' align='left' valign='bottom'><span class='Cn'>" & s_aux & ": " & s_favorecido_cnpj_cpf & "</span></td>" & chr(13) & _
-				"				</tr>" & chr(13)
-
-			x = x & _
-				"			</table>" & chr(13) & _
-				"		</td>" & chr(13) & _
-				"		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
-				"	</tr>" & chr(13)
+				x = x & _
+					"			</table>" & chr(13) & _
+					"		</td>" & chr(13) & _
+					"		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
+					"	</tr>" & chr(13)
+				end if 'if Trim("" & rs("opcao_dados_bancarios")) = CStr(COD_ORCAMENTISTA_INDICADOR__OP_DADOS_BANCARIOS__CHAVE_PIX) then-else
 
 			s_new_cab = Replace(cab, "ckb_comissao_paga_tit_bloco", "ckb_comissao_paga_tit_bloco_" & idx_bloco)
 			s_new_cab = Replace(s_new_cab, "trata_ckb_onclick();", "trata_ckb_onclick(" & chr(34) & idx_bloco & chr(34) & ");")
@@ -1301,6 +1349,10 @@ dim s_indicador_nome
 					tN2("conta_dv") = .conta_dv
 					tN2("favorecido") = .favorecido
 					tN2("favorecido_cnpj_cpf") = .favorecido_cnpj_cpf
+					tN2("opcao_dados_bancarios") = .opcao_dados_bancarios
+					tN2("pix_tipo_chave") = .pix_tipo_chave
+					tN2("pix_chave") = .pix_chave
+					tN2("pix_favorecido") = .pix_favorecido
 					tN2("vl_total_preco_venda") = .vl_total_preco_venda
 					tN2("vl_total_preco_NF") = .vl_total_preco_NF
 					tN2("vl_total_RT") = .vl_total_RT
