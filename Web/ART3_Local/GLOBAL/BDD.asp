@@ -2445,7 +2445,7 @@ dim rs
 		exit function
 		end if
 		
-	s="SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (apelido='" & apelido & "')"
+	s="SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (apelido='" & QuotedStr(apelido) & "')"
 	set rs=cn.Execute(s)
 	if Err <> 0 then
 		msg_erro=Cstr(Err) & ": " & Err.Description
@@ -6759,6 +6759,17 @@ dim rFPUECM
 	set rFPUECM = Nothing
 end function
 
+
+' ________________________________________________________
+' isActivatedFlagCadParceiroDadosBancariosEdicaoBloqueada
+'
+function isActivatedFlagCadParceiroDadosBancariosEdicaoBloqueada
+dim rFCPDBEB
+	isActivatedFlagCadParceiroDadosBancariosEdicaoBloqueada = False
+	set rFCPDBEB = get_registro_t_parametro(ID_PARAMETRO_Flag_CadastroParceiro_DadosBancarios_EdicaoBloqueada)
+	if Trim("" & rFCPDBEB.campo_inteiro) = "1" then isActivatedFlagCadParceiroDadosBancariosEdicaoBloqueada = True
+	set rFCPDBEB = Nothing
+end function
 
 ' ________________________________________________________
 ' isActivatedFlagCadSemiAutoPedMagentoCadAutoClienteNovo

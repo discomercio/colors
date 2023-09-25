@@ -779,12 +779,47 @@ End Function
 '   FILTRA CARACTERES PROIBIDOS PARA CAMPOS USADOS COMO IDENTIFICADORES
 ' 
 Function filtra_nome_identificador(byval nome)
-Dim s
-	s = nome
-	s = substitui_caracteres(s, chr(34), "")
-	s = substitui_caracteres(s, chr(39), "")
-	s = substitui_caracteres(s, "|", "")
-	filtra_nome_identificador = s
+Dim sResp, c, iChar
+	sResp = ""
+	for iChar = 1 to Len(nome)
+		c = Mid(nome, iChar, 1)
+		if c = chr(34) then
+			'Filtra aspas duplas devido a problemas causados no HTML
+			c = ""
+		elseif (c = chr(39)) Or (c = "_") Or (c = "[") Or (c = "]") Or (c = "^") Or (c = "%") then
+			'Filtra aspas simples e outros caracteres especiais do SQL Server
+			c = ""
+		elseif (c = "|") Or (c = "?") Or (c = "!") Or (c = "*") Or (c = "\") then
+			'Filtra caracteres com uso especial no sistema
+			c = ""
+		elseif (Asc(c) < 32) Or (Asc(c) = 127) then
+			'Filtra caracteres de controle
+			c = ""
+		elseif (Asc(c) >= 32) And (Asc(c) <= 126) then
+			'Aceita caracteres letras, dígitos e símbolos (considerando que os símbolos não permitidos já tenham sido filtrados anteriormente nesta rotina)
+			'NOP
+		elseif (c="Á")Or(c="À")Or(c="Ã")Or(c="Â")Or(c="Ä") _
+			Or (c="á")Or(c="à")Or(c="ã")Or(c="â")Or(c="ä") _
+			Or (c="É")Or(c="È")Or(c="Ê")Or(c="Ë") _
+			Or (c="é")Or(c="è")Or(c="ê")Or(c="ë") _
+			Or (c="Í")Or(c="Ì")Or(c="Î")Or(c="Ï") _
+			Or (c="í")Or(c="ì")Or(c="î")Or(c="ï") _
+			Or (c="Ó")Or(c="Ò")Or(c="Õ")Or(c="Ô")Or(c="Ö") _
+			Or (c="ó")Or(c="ò")Or(c="õ")Or(c="ô")Or(c="ö") _
+			Or (c="Ú")Or(c="Ù")Or(c="Û")Or(c="Ü") _
+			Or (c="ú")Or(c="ù")Or(c="û")Or(c="ü") _
+			Or (c="Ç")Or(c="ç")Or(c="Ñ")Or(c="ñ")Or(c="Ÿ")Or(c="ÿ") then
+			'Aceita caracteres acentuados
+			'Observação: devido a diferenças na codificação ASCII usada entre o Internet Explorer e os navegadores modernos, a filtragem não é feita através do código ASCII
+			'NOP
+		else
+			c = ""
+			end if
+		
+		sResp = sResp & c
+		next
+
+	filtra_nome_identificador = sResp
 End Function
 
 
@@ -4696,6 +4731,8 @@ dim c
 				c="N"
 			elseif c="ñ" then
 				c="n"
+			elseif c="Ÿ" then
+				c="Y"
 			elseif c="ÿ" then
 				c="y"
 				end if

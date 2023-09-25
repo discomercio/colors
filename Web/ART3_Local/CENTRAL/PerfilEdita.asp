@@ -38,27 +38,30 @@
 	dim s, usuario, perfil_selecionado, operacao_selecionada
 	usuario = trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
-		
+	
+	dim alerta
+	alerta = ""
+	
 '	PERFIL A EDITAR
 	perfil_selecionado = Ucase(trim(request("perfil_selecionado")))
 	operacao_selecionada = trim(request("operacao_selecionada"))
 	
 	if operacao_selecionada=OP_INCLUI then
-		perfil_selecionado=filtra_nome_identificador(perfil_selecionado)
+		if perfil_selecionado <> filtra_nome_identificador(perfil_selecionado) then
+			alerta=texto_add_br(alerta)
+			alerta=alerta & "Identificador contém caractere(s) inválido(s)!"
+			end if
 		end if
 		
 	if perfil_selecionado="" then Response.Redirect("aviso.asp?id=" & ERR_PERFIL_NAO_ESPECIFICADO) 
 	if (operacao_selecionada<>OP_INCLUI) And (operacao_selecionada<>OP_CONSULTA) then Response.Redirect("aviso.asp?id=" & ERR_OPERACAO_NAO_ESPECIFICADA)
 	
-	dim alerta
-	alerta = ""
-
 '	CONECTA COM O BANCO DE DADOS
 	dim cn, rs, msg_erro
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
-	s = "SELECT * FROM t_PERFIL WHERE (apelido='" & perfil_selecionado & "')"
+	s = "SELECT * FROM t_PERFIL WHERE (apelido='" & QuotedStr(perfil_selecionado) & "')"
 	if rs.State <> 0 then rs.Close
 	rs.open s, cn
 	if Err <> 0 then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
@@ -85,7 +88,7 @@
 			s_cod_nivel_acesso_chamado_pedido = Trim("" & rs("nivel_acesso_chamado"))
 			st_inativo = Trim("" & rs("st_inativo"))
 		'	OBTÉM A LISTA DE OPERAÇÕES JÁ CADASTRADAS P/ ESTE PERFIL
-			s = "SELECT id_operacao FROM t_PERFIL_ITEM INNER JOIN t_PERFIL ON t_PERFIL_ITEM.id_perfil=t_PERFIL.id WHERE apelido='" & perfil_selecionado & "'"
+			s = "SELECT id_operacao FROM t_PERFIL_ITEM INNER JOIN t_PERFIL ON t_PERFIL_ITEM.id_perfil=t_PERFIL.id WHERE apelido='" & QuotedStr(perfil_selecionado) & "'"
 			if rs.State <> 0 then rs.Close
 			rs.open s, cn
 			do while Not rs.Eof

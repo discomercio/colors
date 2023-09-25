@@ -143,7 +143,7 @@
 
 	if operacao_selecionada <> OP_INCLUI then
 		s_senha_original = ""
-		s = "SELECT * FROM t_USUARIO WHERE (usuario = '" & s_usuario & "')"
+		s = "SELECT * FROM t_USUARIO WHERE (usuario = '" & QuotedStr(s_usuario) & "')"
 		if rs.State <> 0 then rs.Close
 		rs.Open s, cn
 		if rs.Eof then
@@ -160,7 +160,9 @@
 
 	if alerta = "" then
 		if s_usuario = "" then
-			alerta="IDENTIFICADOR DE USUÁRIO INVÁLIDO."	
+			alerta="IDENTIFICADOR DE USUÁRIO INVÁLIDO."
+		elseif (operacao_selecionada = OP_INCLUI) And (s_usuario <> filtra_nome_identificador(s_usuario)) then
+			alerta="IDENTIFICADOR CONTÉM CARACTERE(S) INVÁLIDO(S)!"
 		elseif s_nome = "" then
 			alerta="PREENCHA O NOME DO USUÁRIO."
 		elseif s_bloqueado = "" then
@@ -185,7 +187,7 @@
 	'VALIDAÇÃO SE O IDENTIFICADOR JÁ ESTÁ EM USO NO CADASTRO DE INDICADORES (ASSEGURA QUE NÃO EXISTA USUÁRIO E INDICADOR COM MESMO IDENTIFICADOR)
 	if alerta = "" then
 		if operacao_selecionada = OP_INCLUI then
-			s = "SELECT apelido, cnpj_cpf, razao_social_nome FROM t_ORCAMENTISTA_E_INDICADOR WHERE apelido = '" & s_usuario & "'"
+			s = "SELECT apelido, cnpj_cpf, razao_social_nome FROM t_ORCAMENTISTA_E_INDICADOR WHERE apelido = '" & QuotedStr(s_usuario) & "'"
 			if rs.State <> 0 then rs.Close
 			rs.Open s, cn
 			if Not rs.Eof then
@@ -208,7 +210,7 @@
 	select case operacao_selecionada
 		case OP_EXCLUI
 		'	 =========
-			s="SELECT COUNT(*) AS qtde FROM t_PEDIDO WHERE (vendedor = '" & s_usuario & "')"
+			s="SELECT COUNT(*) AS qtde FROM t_PEDIDO WHERE (vendedor = '" & QuotedStr(s_usuario) & "')"
 			r.Open s, cn
 		'	ASSEGURA QUE A COMPARAÇÃO SERÁ FEITA ENTRE MESMO TIPO DE DADOS
 			if Cstr(r("qtde")) > Cstr(0) then
@@ -218,7 +220,7 @@
 			r.Close 
 			
 			if Not erro_fatal then
-				s="SELECT COUNT(*) AS qtde FROM t_ORCAMENTO WHERE (vendedor = '" & s_usuario & "')"
+				s="SELECT COUNT(*) AS qtde FROM t_ORCAMENTO WHERE (vendedor = '" & QuotedStr(s_usuario) & "')"
 				r.Open s, cn
 			'	ASSEGURA QUE A COMPARAÇÃO SERÁ FEITA ENTRE MESMO TIPO DE DADOS
 				if Cstr(r("qtde")) > Cstr(0) then
@@ -229,7 +231,7 @@
 				end if
 
 			if Not erro_fatal then
-				s="SELECT COUNT(*) AS qtde FROM t_DESCONTO WHERE (autorizador = '" & s_usuario & "')"
+				s="SELECT COUNT(*) AS qtde FROM t_DESCONTO WHERE (autorizador = '" & QuotedStr(s_usuario) & "')"
 				r.Open s, cn
 			'	ASSEGURA QUE A COMPARAÇÃO SERÁ FEITA ENTRE MESMO TIPO DE DADOS
 				if Cstr(r("qtde")) > Cstr(0) then
@@ -240,7 +242,7 @@
 				end if
 				
 			if Not erro_fatal then
-				s="SELECT COUNT(*) AS qtde FROM t_ESTOQUE WHERE (usuario = '" & s_usuario & "')"
+				s="SELECT COUNT(*) AS qtde FROM t_ESTOQUE WHERE (usuario = '" & QuotedStr(s_usuario) & "')"
 				r.Open s, cn
 			'	ASSEGURA QUE A COMPARAÇÃO SERÁ FEITA ENTRE MESMO TIPO DE DADOS
 				if Cstr(r("qtde")) > Cstr(0) then
@@ -251,7 +253,7 @@
 				end if
 
 			if Not erro_fatal then
-				s="SELECT COUNT(*) AS qtde FROM t_ESTOQUE_MOVIMENTO WHERE (usuario = '" & s_usuario & "') OR (anulado_usuario = '" & s_usuario & "')"
+				s="SELECT COUNT(*) AS qtde FROM t_ESTOQUE_MOVIMENTO WHERE (usuario = '" & QuotedStr(s_usuario) & "') OR (anulado_usuario = '" & QuotedStr(s_usuario) & "')"
 				r.Open s, cn
 			'	ASSEGURA QUE A COMPARAÇÃO SERÁ FEITA ENTRE MESMO TIPO DE DADOS
 				if Cstr(r("qtde")) > Cstr(0) then
@@ -263,7 +265,7 @@
 			
 			if Not erro_fatal then
 			'	INFO P/ LOG
-				s="SELECT apelido FROM t_PERFIL INNER JOIN t_PERFIL_X_USUARIO ON t_PERFIL.id = t_PERFIL_X_USUARIO.id_perfil WHERE t_PERFIL_X_USUARIO.usuario='" & s_usuario & "' ORDER BY apelido"
+				s="SELECT apelido FROM t_PERFIL INNER JOIN t_PERFIL_X_USUARIO ON t_PERFIL.id = t_PERFIL_X_USUARIO.id_perfil WHERE t_PERFIL_X_USUARIO.usuario='" & QuotedStr(s_usuario) & "' ORDER BY apelido"
 				if r.State <> 0 then r.Close
 				r.Open s, cn
 				do while Not r.Eof
@@ -276,7 +278,7 @@
 				if s_log_perfil <> "" then s_log_perfil = "perfil=" & s_log_perfil
 				
 			'	INFO P/ LOG
-				s="SELECT loja FROM t_USUARIO_X_LOJA WHERE usuario='" & s_usuario & "' ORDER BY CONVERT(smallint,loja)"
+				s="SELECT loja FROM t_USUARIO_X_LOJA WHERE usuario='" & QuotedStr(s_usuario) & "' ORDER BY CONVERT(smallint,loja)"
 				if r.State <> 0 then r.Close
 				r.Open s, cn
 				do while Not r.Eof
@@ -289,7 +291,7 @@
 				if s_log_loja_vendedor <> "" then s_log_loja_vendedor = "loja(s)=" & s_log_loja_vendedor
 				
 			'	INFO P/ LOG
-				s="SELECT apelido FROM t_NFe_EMITENTE INNER JOIN t_USUARIO_X_NFe_EMITENTE ON t_NFe_EMITENTE.id = t_USUARIO_X_NFe_EMITENTE.id_nfe_emitente WHERE t_USUARIO_X_NFe_EMITENTE.usuario = '" & s_usuario & "' ORDER BY t_USUARIO_X_NFe_EMITENTE.id_nfe_emitente"
+				s="SELECT apelido FROM t_NFe_EMITENTE INNER JOIN t_USUARIO_X_NFe_EMITENTE ON t_NFe_EMITENTE.id = t_USUARIO_X_NFe_EMITENTE.id_nfe_emitente WHERE t_USUARIO_X_NFe_EMITENTE.usuario = '" & QuotedStr(s_usuario) & "' ORDER BY t_USUARIO_X_NFe_EMITENTE.id_nfe_emitente"
 				if r.State <> 0 then r.Close
 				r.Open s, cn
 				do while Not r.Eof
@@ -302,7 +304,7 @@
 				if s_log_usuario_x_cd <> "" then s_log_usuario_x_cd = "CD=" & s_log_usuario_x_cd
 				
 			'	INFO P/ LOG
-				s="SELECT * FROM t_USUARIO WHERE usuario = '" & s_usuario & "'"
+				s="SELECT * FROM t_USUARIO WHERE usuario = '" & QuotedStr(s_usuario) & "'"
 				if r.State <> 0 then r.Close
 				r.Open s, cn
 				if Not r.EOF then
@@ -315,7 +317,7 @@
 			'	~~~~~~~~~~~~~
 				cn.BeginTrans
 			'	~~~~~~~~~~~~~
-				s="DELETE FROM t_PERFIL_X_USUARIO WHERE usuario = '" & s_usuario & "'"
+				s="DELETE FROM t_PERFIL_X_USUARIO WHERE usuario = '" & QuotedStr(s_usuario) & "'"
 				cn.Execute(s)
 				If Err <> 0 then 
 					erro_fatal=True
@@ -323,7 +325,7 @@
 					end if
 				
 				if Not erro_fatal then
-					s="DELETE FROM t_USUARIO_X_LOJA WHERE usuario = '" & s_usuario & "'"
+					s="DELETE FROM t_USUARIO_X_LOJA WHERE usuario = '" & QuotedStr(s_usuario) & "'"
 					cn.Execute(s)
 					If Err <> 0 then 
 						erro_fatal=True
@@ -332,7 +334,7 @@
 					end if
 				
 				if Not erro_fatal then
-					s="DELETE FROM t_USUARIO_X_NFe_EMITENTE WHERE usuario = '" & s_usuario & "'"
+					s="DELETE FROM t_USUARIO_X_NFe_EMITENTE WHERE usuario = '" & QuotedStr(s_usuario) & "'"
 					cn.Execute(s)
 					If Err <> 0 then
 						erro_fatal=True
@@ -341,7 +343,7 @@
 					end if
 				
 				if Not erro_fatal then
-					s="DELETE FROM t_USUARIO WHERE usuario = '" & s_usuario & "'"
+					s="DELETE FROM t_USUARIO WHERE usuario = '" & QuotedStr(s_usuario) & "'"
 					cn.Execute(s)
 					If Err = 0 then 
 						if (s_log <> "") And (s_log_perfil <> "") then s_log = s_log & "; "
@@ -380,7 +382,7 @@
 			'	~~~~~~~~~~~~~
 				cn.BeginTrans
 			'	~~~~~~~~~~~~~
-				s = "SELECT * FROM t_USUARIO WHERE usuario = '" & s_usuario & "'"
+				s = "SELECT * FROM t_USUARIO WHERE usuario = '" & QuotedStr(s_usuario) & "'"
 				r.Open s, cn
 				if r.EOF then 
 					r.AddNew 
@@ -392,7 +394,7 @@
 					criou_novo_reg = False
 					log_via_vetor_carrega_do_recordset r, vLog1, campos_a_omitir
 
-					s="SELECT apelido FROM t_PERFIL INNER JOIN t_PERFIL_X_USUARIO ON t_PERFIL.id = t_PERFIL_X_USUARIO.id_perfil WHERE t_PERFIL_X_USUARIO.usuario='" & s_usuario & "' ORDER BY apelido"
+					s="SELECT apelido FROM t_PERFIL INNER JOIN t_PERFIL_X_USUARIO ON t_PERFIL.id = t_PERFIL_X_USUARIO.id_perfil WHERE t_PERFIL_X_USUARIO.usuario='" & QuotedStr(s_usuario) & "' ORDER BY apelido"
 					if rsi.State <> 0 then rsi.Close
 					rsi.Open s, cn
 					do while Not rsi.Eof
@@ -404,7 +406,7 @@
 					if s_log_perfil_anterior = "" then s_log_perfil_anterior = "(nenhum)"
 					if s_log_perfil_anterior <> "" then s_log_perfil_anterior = "perfil (anterior): " & s_log_perfil_anterior
 					
-					s="SELECT loja FROM t_USUARIO_X_LOJA WHERE usuario='" & s_usuario & "' ORDER BY CONVERT(smallint,loja)"
+					s="SELECT loja FROM t_USUARIO_X_LOJA WHERE usuario='" & QuotedStr(s_usuario) & "' ORDER BY CONVERT(smallint,loja)"
 					if rsi.State <> 0 then rsi.Close
 					rsi.Open s, cn
 					do while Not rsi.Eof
@@ -416,7 +418,7 @@
 					if s_log_loja_vendedor_anterior = "" then s_log_loja_vendedor_anterior = "(nenhuma)"
 					if s_log_loja_vendedor_anterior <> "" then s_log_loja_vendedor_anterior = "lojas (anterior): " & s_log_loja_vendedor_anterior
 
-					s="SELECT apelido FROM t_NFe_EMITENTE INNER JOIN t_USUARIO_X_NFe_EMITENTE ON t_NFe_EMITENTE.id = t_USUARIO_X_NFe_EMITENTE.id_nfe_emitente WHERE t_USUARIO_X_NFe_EMITENTE.usuario = '" & s_usuario & "' ORDER BY t_USUARIO_X_NFe_EMITENTE.id_nfe_emitente"
+					s="SELECT apelido FROM t_NFe_EMITENTE INNER JOIN t_USUARIO_X_NFe_EMITENTE ON t_NFe_EMITENTE.id = t_USUARIO_X_NFe_EMITENTE.id_nfe_emitente WHERE t_USUARIO_X_NFe_EMITENTE.usuario = '" & QuotedStr(s_usuario) & "' ORDER BY t_USUARIO_X_NFe_EMITENTE.id_nfe_emitente"
 					if rsi.State <> 0 then rsi.Close
 					rsi.Open s, cn
 					do while Not rsi.Eof
@@ -470,7 +472,7 @@
 
 			'	PERFIL
 				If Err = 0 then 
-					s = "UPDATE t_PERFIL_X_USUARIO SET excluido_status = 1 WHERE usuario = '" & s_usuario & "'"
+					s = "UPDATE t_PERFIL_X_USUARIO SET excluido_status = 1 WHERE usuario = '" & QuotedStr(s_usuario) & "'"
 					cn.Execute(s)
 					end if
 
@@ -478,7 +480,7 @@
 				'	PERFIL
 					for i = Lbound(v_perfil) to Ubound(v_perfil)
 						if Trim(v_perfil(i)) <> "" then
-							s = "SELECT * FROM t_PERFIL_X_USUARIO WHERE (usuario = '" & s_usuario & "') AND (id_perfil = '" & Trim(v_perfil(i)) & "')"
+							s = "SELECT * FROM t_PERFIL_X_USUARIO WHERE (usuario = '" & QuotedStr(s_usuario) & "') AND (id_perfil = '" & Trim(v_perfil(i)) & "')"
 							if rs.State <> 0 then rs.Close
 							rs.Open s, cn
 							if Not rs.Eof then
@@ -497,13 +499,13 @@
 					end if
 
 				if Err = 0 then
-					s = "DELETE FROM t_PERFIL_X_USUARIO WHERE (usuario = '" & s_usuario & "') AND (excluido_status <> 0)"
+					s = "DELETE FROM t_PERFIL_X_USUARIO WHERE (usuario = '" & QuotedStr(s_usuario) & "') AND (excluido_status <> 0)"
 					cn.Execute(s)
 					end if
 			
 			'	LOJAS
 				If Err = 0 then 
-					s = "UPDATE t_USUARIO_X_LOJA SET excluido_status = 1 WHERE usuario = '" & s_usuario & "'"
+					s = "UPDATE t_USUARIO_X_LOJA SET excluido_status = 1 WHERE usuario = '" & QuotedStr(s_usuario) & "'"
 					cn.Execute(s)
 					end if
 
@@ -511,7 +513,7 @@
 				'	SE FOR VENDEDOR DA LOJA, INDICA AS LOJAS LIBERADAS P/ ACESSO
 					for i = Lbound(v_loja_vendedor) to Ubound(v_loja_vendedor)
 						if Trim(v_loja_vendedor(i)) <> "" then
-							s = "SELECT * FROM t_USUARIO_X_LOJA WHERE (usuario = '" & s_usuario & "') AND (loja = '" & Trim(v_loja_vendedor(i)) & "')"
+							s = "SELECT * FROM t_USUARIO_X_LOJA WHERE (usuario = '" & QuotedStr(s_usuario) & "') AND (loja = '" & Trim(v_loja_vendedor(i)) & "')"
 							if rs.State <> 0 then rs.Close
 							rs.Open s, cn
 							if Not rs.Eof then
@@ -530,13 +532,13 @@
 					end if
 
 				if Err = 0 then
-					s = "DELETE FROM t_USUARIO_X_LOJA WHERE (usuario = '" & s_usuario & "') AND (excluido_status <> 0)"
+					s = "DELETE FROM t_USUARIO_X_LOJA WHERE (usuario = '" & QuotedStr(s_usuario) & "') AND (excluido_status <> 0)"
 					cn.Execute(s)
 					end if
 				
 			'	CD'S
 				If Err = 0 then 
-					s = "UPDATE t_USUARIO_X_NFe_EMITENTE SET excluido_status = 1 WHERE usuario = '" & s_usuario & "'"
+					s = "UPDATE t_USUARIO_X_NFe_EMITENTE SET excluido_status = 1 WHERE usuario = '" & QuotedStr(s_usuario) & "'"
 					cn.Execute(s)
 					end if
 
@@ -544,7 +546,7 @@
 				'	CD'S
 					for i = Lbound(v_usuario_x_cd) to Ubound(v_usuario_x_cd)
 						if Trim(v_usuario_x_cd(i)) <> "" then
-							s = "SELECT * FROM t_USUARIO_X_NFe_EMITENTE WHERE (usuario = '" & s_usuario & "') AND (id_nfe_emitente = " & Trim(v_usuario_x_cd(i)) & ")"
+							s = "SELECT * FROM t_USUARIO_X_NFe_EMITENTE WHERE (usuario = '" & QuotedStr(s_usuario) & "') AND (id_nfe_emitente = " & Trim(v_usuario_x_cd(i)) & ")"
 							if rs.State <> 0 then rs.Close
 							rs.Open s, cn
 							if Not rs.Eof then
@@ -565,7 +567,7 @@
 					end if
 
 				if Err = 0 then
-					s = "DELETE FROM t_USUARIO_X_NFe_EMITENTE WHERE (usuario = '" & s_usuario & "') AND (excluido_status <> 0)"
+					s = "DELETE FROM t_USUARIO_X_NFe_EMITENTE WHERE (usuario = '" & QuotedStr(s_usuario) & "') AND (excluido_status <> 0)"
 					cn.Execute(s)
 					end if
 				

@@ -78,7 +78,7 @@
 	if cnpj_cpf_selecionado <> "" then 
         s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (cnpj_cpf='" & cnpj_cpf_selecionado & "')"
     else
-        s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (apelido='" & id_selecionado & "')"
+        s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (apelido='" & QuotedStr(id_selecionado) & "')"
     end if
 
 	set rs = cn.Execute(s)
@@ -90,7 +90,7 @@
 	
 	if operacao_selecionada=OP_INCLUI then
 		if Not rs.EOF then Response.Redirect("aviso.asp?id=" & ERR_ORCAMENTISTA_INDICADOR_JA_CADASTRADO)
-		set r = cn.Execute("SELECT * FROM t_USUARIO WHERE (usuario = '" & id_selecionado & "')")
+		set r = cn.Execute("SELECT * FROM t_USUARIO WHERE (usuario = '" & QuotedStr(id_selecionado) & "')")
 		if Not r.Eof then Response.Redirect("aviso.asp?id=" & ERR_ID_JA_EM_USO_POR_USUARIO)
 		blnChecadoStatusBloqueado=False
 	elseif operacao_selecionada=OP_CONSULTA then
@@ -777,7 +777,11 @@ var s, s_senha;
 <form id="fCAD" name="fCAD" method="post" action="OrcamentistaEIndicadorAtualiza.asp">
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
 <input type="hidden" name="operacao_selecionada" id="operacao_selecionada" value='<%=operacao_selecionada%>'>
+<% if Instr(id_selecionado, "'") <> 0 then %>
+<input type="hidden" name="id_selecionado" id="id_selecionado" value="<%=id_selecionado%>">
+<% else %>
 <input type="hidden" name="id_selecionado" id="id_selecionado" value='<%=id_selecionado%>'>
+<% end if %>
 <input type="hidden" name="tipo_PJ_PF" id="tipo_PJ_PF" value='<%=tipo_PJ_PF%>'>
 <input type="hidden" name="rb_acesso_hidden" id="rb_acesso_hidden" value='<%=Cstr(rs("hab_acesso_sistema"))%>'>
 <input type="hidden" name="pagina_relatorio_originou_edicao" id="pagina_relatorio_originou_edicao" value='<%=pagina_relatorio_originou_edicao%>'>
@@ -1237,7 +1241,7 @@ var s, s_senha;
 
 <!-- ************   VENDEDORES   **************** -->
 
-<% set r = cn.Execute("SELECT * FROM t_ORCAMENTISTA_E_INDICADOR_CONTATOS WHERE (indicador='" & id_selecionado & "') ORDER BY dt_cadastro DESC") %>
+<% set r = cn.Execute("SELECT * FROM t_ORCAMENTISTA_E_INDICADOR_CONTATOS WHERE (indicador='" & QuotedStr(id_selecionado) & "') ORDER BY dt_cadastro DESC") %>
 <table width="649" class="QS" cellspacing="0" style="padding-bottom:6px;">
 	<tr>
 		<td align="left" class="MB" colspan="2"><p class="R">VENDEDORES</p></td>

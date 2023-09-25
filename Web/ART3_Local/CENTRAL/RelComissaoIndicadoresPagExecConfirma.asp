@@ -217,7 +217,7 @@
                     if marcado=true then 
                         rs("st_tratamento_manual") = 0 
                     else
-                        ind_completo = rs2("indicador") & ","
+                        ind_completo = Trim("" & rs2("indicador")) & ","
                         rs("st_tratamento_manual") = 1
                         if instr(cod_motivo_desconto, ind_completo)>0 then 
                             rs("cod_motivo_tratamento_manual") = 1
