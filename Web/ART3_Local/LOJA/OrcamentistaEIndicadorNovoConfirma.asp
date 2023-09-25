@@ -58,6 +58,29 @@
 	set r_loja_user_session = New cl_LOJA
 	if Not x_loja_bd(loja, r_loja_user_session) then Response.Redirect("aviso.asp?id=" & ERR_LOJA_NAO_CADASTRADA)
 
+	dim blnFlagCadParceiroDadosBancariosEdicaoBloqueada
+	blnFlagCadParceiroDadosBancariosEdicaoBloqueada = isActivatedFlagCadParceiroDadosBancariosEdicaoBloqueada
+
+	dim blnUsuarioDeptoFinanceiro, vDeptoSetorUsuario, iDeptoSetor
+	blnUsuarioDeptoFinanceiro = False
+	
+	if Not obtem_Usuario_x_DeptoSetor(usuario, vDeptoSetorUsuario, msg_erro) then
+		Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
+	else
+		for iDeptoSetor=LBound(vDeptoSetorUsuario) to UBound(vDeptoSetorUsuario)
+			if (vDeptoSetorUsuario(iDeptoSetor).StInativo = 0) then
+				if (vDeptoSetorUsuario(iDeptoSetor).Id = ID_DEPTO_SETOR__FIN_FINANCEIRO) Or (vDeptoSetorUsuario(iDeptoSetor).Id = ID_DEPTO_SETOR__FIN_CREDITO) then
+					blnUsuarioDeptoFinanceiro = True
+					exit for
+					end if
+				end if
+			next
+		end if
+
+	dim blnDadosBancariosEdicaoBloqueada
+	blnDadosBancariosEdicaoBloqueada = False
+	if blnFlagCadParceiroDadosBancariosEdicaoBloqueada And (Not blnUsuarioDeptoFinanceiro) then blnDadosBancariosEdicaoBloqueada = True
+
 	Dim criou_novo_reg, s_senha, s_senha2, chave
 	Dim s_log
 	Dim campos_a_omitir
@@ -148,6 +171,8 @@
 
 	if s_id_selecionado = "" then
 		alerta="FORNEÇA UM IDENTIFICADOR (APELIDO) PARA O INDICADOR."
+	elseif s_id_selecionado <> filtra_nome_identificador(s_id_selecionado) then
+		alerta="IDENTIFICADOR CONTÉM CARACTERE(S) INVÁLIDO(S)!"
 	elseif s_razao_social_nome = "" then
 		if s_tipo_PJ_PF = ID_PJ then
 			alerta="PREENCHA A RAZÃO SOCIAL DO INDICADOR."
@@ -202,14 +227,6 @@
 		alerta="O TELEFONE CELULAR EXCEDE O TAMANHO MÁXIMO."
 	elseif s_contato = "" then
 		alerta="PREENCHA O NOME DO CONTATO."
-	elseif s_banco = "" then
-		alerta="PREENCHA O Nº DO BANCO."
-	elseif s_agencia = "" then
-		alerta="PREENCHA O Nº DA AGÊNCIA."
-	elseif s_conta = "" then
-		alerta="PREENCHA O Nº DA CONTA"
-	elseif s_favorecido = "" then
-		alerta="PREENCHA O NOME DO FAVORECIDO."
 	elseif s_acesso = "" then
 		alerta="INFORME O ACESSO AO SISTEMA ESTÁ LIBERADO OU BLOQUEADO."
 	elseif s_status = "" then
@@ -230,6 +247,26 @@
 		alerta="INDIQUE A FORMA PELA QUAL CONHECEU A DIS."
 		end if
 	
+	if alerta = "" then
+		if Not blnDadosBancariosEdicaoBloqueada then
+			if (s_banco <> "") Or (s_agencia <> "") Or (s_conta <> "") Or (s_favorecido <> "") Or (s_favorecido_cnpjcpf <> "") then
+				if s_banco = "" then
+					alerta="PREENCHA O Nº DO BANCO."
+				elseif s_agencia = "" then
+					alerta="PREENCHA O Nº DA AGÊNCIA."
+				elseif s_conta = "" then
+					alerta="PREENCHA O Nº DA CONTA"
+				elseif s_favorecido = "" then
+					alerta="PREENCHA O NOME DO FAVORECIDO."
+				elseif s_favorecido_cnpjcpf = "" then
+					alerta="PREENCHA O CPF/CNPJ DO FAVORECIDO."
+				elseif Not cnpj_cpf_ok(s_favorecido_cnpjcpf) then
+					alerta="CPF/CNPJ DO FAVORECIDO É INVÁLIDO."
+					end if
+				end if
+			end if
+		end if
+
 	if alerta = "" then
 		if CLng(s_acesso) <> 0 then
 			if len(s_senha) < TAM_MIN_SENHA then
@@ -399,15 +436,23 @@
 				r("ddd_cel") = s_ddd_cel
 				r("tel_cel") = s_tel_cel
 				r("contato") = s_contato
-				r("banco") = s_banco
-				r("agencia") = s_agencia
-				r("conta") = s_conta
-                r("favorecido_cnpj_cpf") = s_favorecido_cnpjcpf
-                r("conta_dv") = conta_dv
-                r("agencia_dv") = agencia_dv
-                r("tipo_conta") = tipo_conta
-                r("conta_operacao") = tipo_operacao
-				r("favorecido") = s_favorecido
+				
+				if Not blnDadosBancariosEdicaoBloqueada then
+					if (s_banco <> "") Or (s_agencia <> "") Or (s_conta <> "") Or (s_favorecido <> "") Or (s_favorecido_cnpjcpf <> "") then
+						r("dados_conta_bancaria_dt_hr_ult_atualiz") = Now
+						r("dados_conta_bancaria_usuario_ult_atualiz") = usuario
+						end if
+					r("banco") = s_banco
+					r("agencia") = s_agencia
+					r("agencia_dv") = agencia_dv
+					r("conta_operacao") = tipo_operacao
+					r("conta") = s_conta
+					r("conta_dv") = conta_dv
+					r("tipo_conta") = tipo_conta
+					r("favorecido") = s_favorecido
+					r("favorecido_cnpj_cpf") = s_favorecido_cnpjcpf
+					end if
+				
 				r("loja") = s_loja
 				r("vendedor") = s_vendedor
 				r("hab_acesso_sistema")=CLng(s_acesso)

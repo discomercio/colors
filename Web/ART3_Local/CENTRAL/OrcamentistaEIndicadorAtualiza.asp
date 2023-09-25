@@ -69,6 +69,29 @@
 	dim cn, r, rs, t, rs2, s2
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim blnFlagCadParceiroDadosBancariosEdicaoBloqueada
+	blnFlagCadParceiroDadosBancariosEdicaoBloqueada = isActivatedFlagCadParceiroDadosBancariosEdicaoBloqueada
+
+	dim blnUsuarioDeptoFinanceiro, vDeptoSetorUsuario, iDeptoSetor
+	blnUsuarioDeptoFinanceiro = False
+	
+	if Not obtem_Usuario_x_DeptoSetor(usuario, vDeptoSetorUsuario, msg_erro) then
+		Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
+	else
+		for iDeptoSetor=LBound(vDeptoSetorUsuario) to UBound(vDeptoSetorUsuario)
+			if (vDeptoSetorUsuario(iDeptoSetor).StInativo = 0) then
+				if (vDeptoSetorUsuario(iDeptoSetor).Id = ID_DEPTO_SETOR__FIN_FINANCEIRO) Or (vDeptoSetorUsuario(iDeptoSetor).Id = ID_DEPTO_SETOR__FIN_CREDITO) then
+					blnUsuarioDeptoFinanceiro = True
+					exit for
+					end if
+				end if
+			next
+		end if
+
+	dim blnDadosBancariosEdicaoBloqueada
+	blnDadosBancariosEdicaoBloqueada = False
+	if blnFlagCadParceiroDadosBancariosEdicaoBloqueada And (Not blnUsuarioDeptoFinanceiro) then blnDadosBancariosEdicaoBloqueada = True
+
 	Dim criou_novo_reg
 	Dim s_log, s_log_restricao_FP, s_log_desconto_edicao, s_log_desconto_incl, s_log_desconto_excl
 	Dim campos_a_omitir
@@ -253,7 +276,7 @@
 
 	if operacao_selecionada <> OP_INCLUI then
 		s_senha_original = ""
-		s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (apelido = '" & s_id_selecionado & "')"
+		s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (apelido = '" & QuotedStr(s_id_selecionado) & "')"
 		set rs = cn.Execute(s)
 		if rs.Eof then
 			alerta = "CADASTRO DO INDICADOR NÃO ENCONTRADO (" & s_id_selecionado & ")"
@@ -271,6 +294,8 @@
 	if alerta = "" then
 		if s_id_selecionado = "" then
 			alerta="FORNEÇA UM IDENTIFICADOR (APELIDO) PARA O ORÇAMENTISTA / INDICADOR."
+		elseif (operacao_selecionada = OP_INCLUI) And (s_id_selecionado <> filtra_nome_identificador(s_id_selecionado)) then
+			alerta="IDENTIFICADOR CONTÉM CARACTERE(S) INVÁLIDO(S)!"
 		elseif s_razao_social_nome = "" then
 			if s_tipo_PJ_PF = ID_PJ then
 				alerta="PREENCHA A RAZÃO SOCIAL DO ORÇAMENTISTA / INDICADOR."
@@ -332,6 +357,26 @@
 				alerta="PREENCHA A UF DO ENDEREÇO."
 			elseif s_cep="" then
 				alerta="PREENCHA O CEP DO ENDEREÇO."
+				end if
+			end if
+		end if
+	
+	if alerta = "" then
+		if Not blnDadosBancariosEdicaoBloqueada then
+			if (s_banco <> "") Or (s_agencia <> "") Or (s_conta <> "") Or (s_favorecido <> "") Or (s_favorecido_cnpjcpf <> "") then
+				if s_banco = "" then
+					alerta="PREENCHA O Nº DO BANCO."
+				elseif s_agencia = "" then
+					alerta="PREENCHA O Nº DA AGÊNCIA."
+				elseif s_conta = "" then
+					alerta="PREENCHA O Nº DA CONTA"
+				elseif s_favorecido = "" then
+					alerta="PREENCHA O NOME DO FAVORECIDO."
+				elseif s_favorecido_cnpjcpf = "" then
+					alerta="PREENCHA O CPF/CNPJ DO FAVORECIDO."
+				elseif Not cnpj_cpf_ok(s_favorecido_cnpjcpf) then
+					alerta="CPF/CNPJ DO FAVORECIDO É INVÁLIDO."
+					end if
 				end if
 			end if
 		end if
@@ -438,7 +483,7 @@
 					" WHERE" & _
 						" (cnpj_cpf = '" & s_cnpj_cpf & "')" & _
 						" AND (Convert(smallint, loja) = " & s_loja & ")" & _
-						" AND (apelido <> '" & s_id_selecionado & "')" & _
+						" AND (apelido <> '" & QuotedStr(s_id_selecionado) & "')" & _
 					" ORDER BY" & _
 						" apelido"
 				set rs = cn.Execute(s)
@@ -532,7 +577,7 @@
 					" FROM t_ORCAMENTISTA_E_INDICADOR" & _
 					" WHERE" & _
 						" (id_magento_b2b = " & Cstr(id_magento_b2b) & ")" & _
-						" AND (apelido <> '" & s_id_selecionado & "')"
+						" AND (apelido <> '" & QuotedStr(s_id_selecionado) & "')"
 				set rs = cn.Execute(s)
 				if Not rs.Eof then
 					blnErroDuplicidadeCadastro=True
@@ -550,7 +595,7 @@
 	'VALIDAÇÃO SE O IDENTIFICADOR JÁ ESTÁ EM USO NO CADASTRO DE USUÁRIOS (ASSEGURA QUE NÃO EXISTA USUÁRIO E INDICADOR COM MESMO IDENTIFICADOR)
 	if alerta = "" then
 		if operacao_selecionada = OP_INCLUI then
-			s = "SELECT usuario, nome FROM t_USUARIO WHERE usuario = '" & s_id_selecionado & "'"
+			s = "SELECT usuario, nome FROM t_USUARIO WHERE usuario = '" & QuotedStr(s_id_selecionado) & "'"
 			set rs = cn.Execute(s)
 			if Not rs.Eof then
 				alerta=texto_add_br(alerta)
@@ -570,7 +615,7 @@
 	select case operacao_selecionada
 		case OP_EXCLUI
 		'	 =========
-			s="SELECT COUNT(*) AS qtde FROM t_ORCAMENTO WHERE (orcamentista = '" & s_id_selecionado & "')"
+			s="SELECT COUNT(*) AS qtde FROM t_ORCAMENTO WHERE (orcamentista = '" & QuotedStr(s_id_selecionado) & "')"
 			r.Open s, cn
 		'	ASSEGURA QUE A COMPARAÇÃO SERÁ FEITA ENTRE MESMO TIPO DE DADOS
 			if Cstr(r("qtde")) > Cstr(0) then
@@ -580,7 +625,7 @@
 			r.Close 
 			
 			if Not erro_fatal then
-				s="SELECT COUNT(*) AS qtde FROM t_PEDIDO WHERE (indicador = '" & s_id_selecionado & "') OR (orcamentista = '" & s_id_selecionado & "')"
+				s="SELECT COUNT(*) AS qtde FROM t_PEDIDO WHERE (indicador = '" & QuotedStr(s_id_selecionado) & "') OR (orcamentista = '" & QuotedStr(s_id_selecionado) & "')"
 				r.Open s, cn
 			'	ASSEGURA QUE A COMPARAÇÃO SERÁ FEITA ENTRE MESMO TIPO DE DADOS
 				if Cstr(r("qtde")) > Cstr(0) then
@@ -592,7 +637,7 @@
 
 			if Not erro_fatal then
 			'	INFO P/ LOG
-				s="SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE apelido = '" & s_id_selecionado & "'"
+				s="SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE apelido = '" & QuotedStr(s_id_selecionado) & "'"
 				if r.State <> 0 then r.Close
 				r.Open s, cn
 				if Not r.EOF then
@@ -615,28 +660,28 @@
 					cn.Execute(s)
 					end if
 
-				s ="DELETE FROM t_ORCAMENTISTA_E_INDICADOR_LOG WHERE (apelido = '" & s_id_selecionado & "')"
+				s ="DELETE FROM t_ORCAMENTISTA_E_INDICADOR_LOG WHERE (apelido = '" & QuotedStr(s_id_selecionado) & "')"
 				cn.Execute(s)
 				If Err <> 0 then
 					erro_fatal=True
 					alerta = "FALHA AO EXCLUIR OS DADOS DE LOG DE EDIÇÃO DO ORÇAMENTISTA / INDICADOR (" & Cstr(Err) & ": " & Err.Description & ")."
 					end if
 
-				s ="DELETE FROM t_ORCAMENTISTA_E_INDICADOR_BLOCO_NOTAS WHERE (apelido = '" & s_id_selecionado & "')"
+				s ="DELETE FROM t_ORCAMENTISTA_E_INDICADOR_BLOCO_NOTAS WHERE (apelido = '" & QuotedStr(s_id_selecionado) & "')"
 				cn.Execute(s)
 				If Err <> 0 then
 					erro_fatal=True
 					alerta = "FALHA AO EXCLUIR OS DADOS DE BLOCO DE NOTAS DO ORÇAMENTISTA / INDICADOR (" & Cstr(Err) & ": " & Err.Description & ")."
 					end if
 
-				s ="DELETE FROM t_ORCAMENTISTA_E_INDICADOR_DESCONTO WHERE (apelido = '" & s_id_selecionado & "')"
+				s ="DELETE FROM t_ORCAMENTISTA_E_INDICADOR_DESCONTO WHERE (apelido = '" & QuotedStr(s_id_selecionado) & "')"
 				cn.Execute(s)
 				If Err <> 0 then
 					erro_fatal=True
 					alerta = "FALHA AO EXCLUIR OS DADOS DA PLANILHA DE DESCONTOS DO ORÇAMENTISTA / INDICADOR (" & Cstr(Err) & ": " & Err.Description & ")."
 					end if
 
-				s ="DELETE FROM t_ORCAMENTISTA_E_INDICADOR_RESTRICAO_FORMA_PAGTO WHERE (id_orcamentista_e_indicador = '" & s_id_selecionado & "')"
+				s ="DELETE FROM t_ORCAMENTISTA_E_INDICADOR_RESTRICAO_FORMA_PAGTO WHERE (id_orcamentista_e_indicador = '" & QuotedStr(s_id_selecionado) & "')"
 				cn.Execute(s)
 				If Err <> 0 then
 					erro_fatal=True
@@ -644,7 +689,7 @@
 					end if
 				
 				if alerta = "" then
-					s="DELETE FROM t_ORCAMENTISTA_E_INDICADOR WHERE apelido = '" & s_id_selecionado & "'"
+					s="DELETE FROM t_ORCAMENTISTA_E_INDICADOR WHERE apelido = '" & QuotedStr(s_id_selecionado) & "'"
 					cn.Execute(s)
 					If Err = 0 then 
 						if s_log <> "" then grava_log usuario, "", "", "", OP_LOG_ORCAMENTISTA_E_INDICADOR_EXCLUSAO, s_log
@@ -687,7 +732,7 @@
 					cn.Execute(s)
 					end if
 
-                s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE apelido = '" & s_id_selecionado & "'"
+                s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE apelido = '" & QuotedStr(s_id_selecionado) & "'"
                 r.Open s, cn
                 if operacao_selecionada = OP_CONSULTA then
 	            msg = ""
@@ -904,78 +949,80 @@
                         msg = msg & "Senha alterada<br>|de: ******<br>|para: ******<br>"
                     end if
 
-                    ' log banco
-                    if isNull(r("banco")) then r("banco") = ""
-                    if (s_banco <> r("banco")) then
-                        if s_banco = "" then x2 = "VAZIO" else x2 = s_banco
-                        if r("banco") = "" then x1 = "VAZIO" else x1 = r("banco")
-                        msg = msg & "Banco alterado <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
-                    end if
+					if Not blnDadosBancariosEdicaoBloqueada then
+						' log banco
+						if isNull(r("banco")) then r("banco") = ""
+						if (s_banco <> r("banco")) then
+							if s_banco = "" then x2 = "VAZIO" else x2 = s_banco
+							if r("banco") = "" then x1 = "VAZIO" else x1 = r("banco")
+							msg = msg & "Banco alterado <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
+						end if
 
-                    ' log agencia
-                    if isNull(r("agencia")) then r("agencia") = ""
-                    if isNull(r("agencia_dv")) then r("agencia_dv") = ""
-                    if (s_agencia <> r("agencia") Or agencia_dv <> r("agencia_dv")) then
-                        if s_agencia = "" then x2 = "VAZIO" else x2 = s_agencia
-                        if agencia_dv <> "" then x2 = x2 & "-" & agencia_dv
-                        if r("agencia") = "" then x1 = "VAZIO" else x1 = r("agencia")
-                        if r("agencia_dv") <> "" then x1 = x1 & "-" & r("agencia_dv")
-                        msg = msg & "Agência alterada <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
-                    end if
+						' log agencia
+						if isNull(r("agencia")) then r("agencia") = ""
+						if isNull(r("agencia_dv")) then r("agencia_dv") = ""
+						if (s_agencia <> r("agencia") Or agencia_dv <> r("agencia_dv")) then
+							if s_agencia = "" then x2 = "VAZIO" else x2 = s_agencia
+							if agencia_dv <> "" then x2 = x2 & "-" & agencia_dv
+							if r("agencia") = "" then x1 = "VAZIO" else x1 = r("agencia")
+							if r("agencia_dv") <> "" then x1 = x1 & "-" & r("agencia_dv")
+							msg = msg & "Agência alterada <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
+						end if
 
-                    ' log conta
-                    if isNull(r("conta")) then r("conta") = ""
-                    if isNull(r("conta_dv")) then r("conta_dv") = ""
-                    if (s_conta <> r("conta") Or conta_dv <> r("conta_dv")) then
-                        if s_conta = "" then x2 = "VAZIO" else x2 = s_conta
-                        if conta_dv <> "" then x2 = x2 & "-" & conta_dv
-                        if r("conta") = "" then x1 = "VAZIO" else x1 = r("conta") 
-                        if r("conta_dv") <> "" then x1 = x1 & "-" & r("conta_dv")
-                        msg = msg & "Conta alterada <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
-                    end if
+						' log conta
+						if isNull(r("conta")) then r("conta") = ""
+						if isNull(r("conta_dv")) then r("conta_dv") = ""
+						if (s_conta <> r("conta") Or conta_dv <> r("conta_dv")) then
+							if s_conta = "" then x2 = "VAZIO" else x2 = s_conta
+							if conta_dv <> "" then x2 = x2 & "-" & conta_dv
+							if r("conta") = "" then x1 = "VAZIO" else x1 = r("conta") 
+							if r("conta_dv") <> "" then x1 = x1 & "-" & r("conta_dv")
+							msg = msg & "Conta alterada <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
+						end if
 
-                    ' log tipo conta
-                    if Trim("" & r("tipo_conta") <> tipo_conta) then
-                        function tipoConta(x) 
-                            dim s
-                            select case x
-                                case ""
-                                    s = "VAZIO"
-                                case "P"  
-                                    s = "Poupança"
-                                case "C"
-                                    s = "Corrente"
-                                case else
-                                    s = "VAZIO"
-                                end select
-                            tipoConta = s
-                        end function
-                        if tipo_conta = "" then x2 = "VAZIO" else x2 = tipoConta(tipo_conta)
-                        if Trim("" & r("tipo_conta")) = "" then x1 = "VAZIO" else x1 = tipoConta(r("tipo_conta"))
-                        msg = msg & "Tipo de conta alterada <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
-                    end if
+						' log tipo conta
+						if Trim("" & r("tipo_conta") <> tipo_conta) then
+							function tipoConta(x) 
+								dim s
+								select case x
+									case ""
+										s = "VAZIO"
+									case "P"  
+										s = "Poupança"
+									case "C"
+										s = "Corrente"
+									case else
+										s = "VAZIO"
+									end select
+								tipoConta = s
+							end function
+							if tipo_conta = "" then x2 = "VAZIO" else x2 = tipoConta(tipo_conta)
+							if Trim("" & r("tipo_conta")) = "" then x1 = "VAZIO" else x1 = tipoConta(r("tipo_conta"))
+							msg = msg & "Tipo de conta alterada <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
+						end if
 
-                    ' log tipo operação
-                    if Trim("" & r("conta_operacao") <> tipo_operacao) then
-                        if tipo_operacao = "" then x2 = "VAZIO" else x2 = tipo_operacao
-                        if Trim("" & r("conta_operacao")) = "" then x1 = "VAZIO" else x1 = r("conta_operacao")
-                        msg = msg & "Tipo de operação alterada <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
-                    end if
+						' log tipo operação
+						if Trim("" & r("conta_operacao") <> tipo_operacao) then
+							if tipo_operacao = "" then x2 = "VAZIO" else x2 = tipo_operacao
+							if Trim("" & r("conta_operacao")) = "" then x1 = "VAZIO" else x1 = r("conta_operacao")
+							msg = msg & "Tipo de operação alterada <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
+						end if
 
-                    ' log favorecido
-                    if isNull(r("favorecido")) then r("favorecido") = ""
-                    if (s_favorecido <> r("favorecido")) then
-                        if s_favorecido = "" then x2 = "VAZIO" else x2 = s_favorecido
-                        if r("favorecido") = "" then x1 = "VAZIO" else x1 = r("favorecido")
-                        msg = msg & "Favorecido alterado <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
-                    end if
+						' log favorecido
+						if isNull(r("favorecido")) then r("favorecido") = ""
+						if (s_favorecido <> r("favorecido")) then
+							if s_favorecido = "" then x2 = "VAZIO" else x2 = s_favorecido
+							if r("favorecido") = "" then x1 = "VAZIO" else x1 = r("favorecido")
+							msg = msg & "Favorecido alterado <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
+						end if
 
-                    ' log cnpj cpf favorecido
-                    if (s_favorecido_cnpjcpf <> Trim("" & r("favorecido_cnpj_cpf"))) then
-                        if s_favorecido_cnpjcpf = "" then x2 = "VAZIO" else x2 = cnpj_cpf_formata(s_favorecido_cnpjcpf)
-                        if Trim("" & r("favorecido_cnpj_cpf")) = "" then x1 = "VAZIO" else x1 = cnpj_cpf_formata(r("favorecido_cnpj_cpf"))
-                        msg = msg & "CPF/CNPJ do favorecido alterado <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
-                    end if    
+						' log cnpj cpf favorecido
+						if (s_favorecido_cnpjcpf <> Trim("" & r("favorecido_cnpj_cpf"))) then
+							if s_favorecido_cnpjcpf = "" then x2 = "VAZIO" else x2 = cnpj_cpf_formata(s_favorecido_cnpjcpf)
+							if Trim("" & r("favorecido_cnpj_cpf")) = "" then x1 = "VAZIO" else x1 = cnpj_cpf_formata(r("favorecido_cnpj_cpf"))
+							msg = msg & "CPF/CNPJ do favorecido alterado <br>|de: " & x1 & "<br>|para: " & x2 & "<br>"
+						end if    
+					end if 'if Not blnDadosBancariosEdicaoBloqueada
                     
 					'Dados para pagamento da comissão
 					if blnPossuiPermissaoFinanceiro then
@@ -1223,7 +1270,7 @@
                         s_contato_nome = Trim(Request.Form("c_indicador_contato")(cont))
                         s_contato_id = Trim(Request.Form("contato_id")(cont))
                         s_contato_data = Trim(Request.Form("c_indicador_contato_data")(cont))
-                        s2 = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR_CONTATOS WHERE (indicador = '" & s_id_selecionado & "' AND id='" & s_contato_id & "')"
+                        s2 = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR_CONTATOS WHERE (indicador = '" & QuotedStr(s_id_selecionado) & "' AND id='" & s_contato_id & "')"
                         t.Open s2, cn
                         if Not t.Eof then
                             if Trim("" & t("nome")) <> "" And s_contato_nome = "" then
@@ -1335,10 +1382,23 @@
 				r("ddd_cel") = s_ddd_cel
 				r("tel_cel") = s_tel_cel
 				r("contato") = s_contato
-				r("banco") = s_banco
-				r("agencia") = s_agencia
-				r("conta") = s_conta
-				r("favorecido") = s_favorecido
+				
+				if Not blnDadosBancariosEdicaoBloqueada then
+					if (Trim("" & r("banco")) <> s_banco) Or (Trim("" & r("agencia")) <> s_agencia) Or (Trim("" & r("conta")) <> s_conta) Or (Ucase(Trim("" & r("favorecido"))) <> Ucase(s_favorecido)) Or (retorna_so_digitos(Trim("" & r("favorecido_cnpj_cpf"))) <> retorna_so_digitos(s_favorecido_cnpjcpf)) then
+						r("dados_conta_bancaria_dt_hr_ult_atualiz") = Now
+						r("dados_conta_bancaria_usuario_ult_atualiz") = usuario
+						end if
+					r("banco") = s_banco
+					r("agencia") = s_agencia
+					r("agencia_dv") = agencia_dv
+					r("conta_operacao") = tipo_operacao
+					r("conta") = s_conta
+					r("conta_dv") = conta_dv
+					r("tipo_conta") = tipo_conta
+					r("favorecido") = s_favorecido
+					r("favorecido_cnpj_cpf") = s_favorecido_cnpjcpf
+					end if
+				
 				r("loja") = s_loja                
 				r("vendedor") = s_vendedor
 				r("hab_acesso_sistema")=CLng(s_acesso)
@@ -1355,11 +1415,6 @@
                 r("etq_tel_1") = s_etq_tel_1
                 r("etq_tel_2") = s_etq_tel_2
                 r("etq_email") = s_etq_email
-				r("favorecido_cnpj_cpf") = s_favorecido_cnpjcpf
-                r("conta_dv") = conta_dv
-                r("agencia_dv") = agencia_dv
-                r("tipo_conta") = tipo_conta
-                r("conta_operacao") = tipo_operacao
 
 				if CLng(r("permite_RA_status")) <> CLng(s_permite_RA_status) then
 					r("permite_RA_status") = CLng(s_permite_RA_status)
@@ -1472,7 +1527,7 @@
                     s_contato_nome = Trim(Request.Form("c_indicador_contato")(cont))
                     s_contato_id = Trim(Request.Form("contato_id")(cont))
                     s_contato_data = Trim(Request.Form("c_indicador_contato_data")(cont))
-                    s2 = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR_CONTATOS WHERE (indicador = '" & s_id_selecionado & "' AND id='" & s_contato_id & "')"
+                    s2 = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR_CONTATOS WHERE (indicador = '" & QuotedStr(s_id_selecionado) & "' AND id='" & s_contato_id & "')"
                     t.Open s2, cn
                     if Not t.Eof then
                         if Trim("" & t("nome")) <> "" And s_contato_nome = "" then
@@ -1515,7 +1570,7 @@
                 s_desc_desc = Trim(Request.Form("desc_descricao")(cont))
                 s_val_desc = Trim(Request.Form("desc_valor")(cont))
 
-            s2 = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR_DESCONTO WHERE (apelido = '" & s_id_selecionado & "' AND id='" & s_id_desc & "')"
+            s2 = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR_DESCONTO WHERE (apelido = '" & QuotedStr(s_id_selecionado) & "' AND id='" & s_id_desc & "')"
             rs2.Open s2, cn
            
             if Not rs2.EOF then
@@ -1587,7 +1642,7 @@
 								"*" & _
 							" FROM t_ORCAMENTISTA_E_INDICADOR_RESTRICAO_FORMA_PAGTO" & _
 							" WHERE" & _
-								" (id_orcamentista_e_indicador = '" & s_id_selecionado & "')" & _
+								" (id_orcamentista_e_indicador = '" & QuotedStr(s_id_selecionado) & "')" & _
 								" AND (tipo_cliente = '" & ID_PF & "')" & _
 								" AND (id_forma_pagto = " & v_FP_PF(i).strIdFormaPagto & ")"
 						if t.State <> 0 then t.Close
@@ -1657,7 +1712,7 @@
 								"*" & _
 							" FROM t_ORCAMENTISTA_E_INDICADOR_RESTRICAO_FORMA_PAGTO" & _
 							" WHERE" & _
-								" (id_orcamentista_e_indicador = '" & s_id_selecionado & "')" & _
+								" (id_orcamentista_e_indicador = '" & QuotedStr(s_id_selecionado) & "')" & _
 								" AND (tipo_cliente = '" & ID_PJ & "')" & _
 								" AND (id_forma_pagto = " & v_FP_PJ(i).strIdFormaPagto & ")"
 						if t.State <> 0 then t.Close
@@ -1860,6 +1915,8 @@
 	if erro_consistencia And (Not erro_fatal) then s="javascript:history.back()"
 %>
 	<% if blnErroDuplicidadeCadastro then %>
+    <td align="center"><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back();"><img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
+	<% elseif erro_consistencia And (operacao_selecionada = OP_INCLUI) then %>
     <td align="center"><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back();"><img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
     <% elseif url_origem <> "" then %>
 	<td align="center"><a name="bVOLTAR" id="bVOLTAR" href="<%=url_origem%>"><img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>

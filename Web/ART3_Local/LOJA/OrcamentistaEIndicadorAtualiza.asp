@@ -70,7 +70,6 @@
 	dim operacao_selecionada, s_id_selecionado, s_tipo_PJ_PF, s_razao_social_nome, s_nome_fantasia, s_cnpj_cpf, s_ie_rg, s_responsavel_principal
 	dim s_endereco, s_endereco_numero, s_endereco_complemento, s_bairro, s_cidade, s_uf, s_cep, s_ddd, s_telefone, s_fax, url_origem
 	dim s_ddd_cel, s_tel_cel, s_contato
-	dim s_banco, s_agencia, s_conta, s_favorecido
 	dim s_senha, s_senha2, s_senha_original
 	dim s_vendedor, s_acesso, s_status, ckb_desbloquear_bloqueio_automatico
 	dim strEmail, strEmail2, strEmail3, strCaptador
@@ -78,7 +77,7 @@
 	dim s_forma_como_conheceu_codigo
 	dim s_nextel, rb_estabelecimento
     dim s_etq_endereco, s_etq_endereco_numero, s_etq_endereco_complemento, s_etq_bairro, s_etq_cidade, s_etq_uf, s_etq_cep, s_etq_ddd_1, s_etq_ddd_2, s_etq_tel_1, s_etq_tel_2, s_etq_email
-    dim msg,s_favorecido_cnpjcpf
+    dim msg
     dim n, cont, s_contato_nome, s_contato_id, s_contato_data, s_contato_log_inclusao, s_contato_log_exclusao, s_contato_log_edicao
 	dim s_id_magento_b2b, s_id_magento_b2b_original, id_magento_b2b
 
@@ -150,7 +149,7 @@
 
 	if operacao_selecionada <> OP_INCLUI then
 		s_senha_original = ""
-		s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (apelido = '" & s_id_selecionado & "')"
+		s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (apelido = '" & QuotedStr(s_id_selecionado) & "')"
 		set rs = cn.Execute(s)
 		if rs.Eof then
 			alerta = "CADASTRO DO INDICADOR NÃO ENCONTRADO (" & s_id_selecionado & ")"
@@ -289,7 +288,7 @@
 					" WHERE" & _
 						" (cnpj_cpf = '" & s_cnpj_cpf & "')" & _
 						" AND (Convert(smallint, loja) = " & loja & ")" & _
-						" AND (apelido <> '" & s_id_selecionado & "')" & _
+						" AND (apelido <> '" & QuotedStr(s_id_selecionado) & "')" & _
 					" ORDER BY" & _
 						" apelido"
 				set rs = cn.Execute(s)
@@ -381,7 +380,7 @@
 					" FROM t_ORCAMENTISTA_E_INDICADOR" & _
 					" WHERE" & _
 						" (id_magento_b2b = " & Cstr(id_magento_b2b) & ")" & _
-						" AND (apelido <> '" & s_id_selecionado & "')"
+						" AND (apelido <> '" & QuotedStr(s_id_selecionado) & "')"
 				set rs = cn.Execute(s)
 				if Not rs.Eof then
 					blnErroDuplicidadeCadastro=True
@@ -408,7 +407,7 @@
 	select case operacao_selecionada
 		case OP_EXCLUI
 		'	 =========
-			s="SELECT COUNT(*) AS qtde FROM t_ORCAMENTO WHERE (orcamentista = '" & s_id_selecionado & "')"
+			s="SELECT COUNT(*) AS qtde FROM t_ORCAMENTO WHERE (orcamentista = '" & QuotedStr(s_id_selecionado) & "')"
 			r.Open s, cn
 		'	ASSEGURA QUE A COMPARAÇÃO SERÁ FEITA ENTRE MESMO TIPO DE DADOS
 			if Cstr(r("qtde")) > Cstr(0) then
@@ -418,7 +417,7 @@
 			r.Close 
 			
 			if Not erro_fatal then
-				s="SELECT COUNT(*) AS qtde FROM t_PEDIDO WHERE (indicador = '" & s_id_selecionado & "') OR (orcamentista = '" & s_id_selecionado & "')"
+				s="SELECT COUNT(*) AS qtde FROM t_PEDIDO WHERE (indicador = '" & QuotedStr(s_id_selecionado) & "') OR (orcamentista = '" & QuotedStr(s_id_selecionado) & "')"
 				r.Open s, cn
 			'	ASSEGURA QUE A COMPARAÇÃO SERÁ FEITA ENTRE MESMO TIPO DE DADOS
 				if Cstr(r("qtde")) > Cstr(0) then
@@ -430,7 +429,7 @@
 
 			if Not erro_fatal then
 			'	INFO P/ LOG
-				s="SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE apelido = '" & s_id_selecionado & "'"
+				s="SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE apelido = '" & QuotedStr(s_id_selecionado) & "'"
                 
 				if r.State <> 0 then r.Close
 				r.Open s, cn
@@ -455,14 +454,14 @@
 					cn.Execute(s)
 					end if
 
-				s ="DELETE FROM t_ORCAMENTISTA_E_INDICADOR_LOG WHERE (apelido = '" & s_id_selecionado & "')"
+				s ="DELETE FROM t_ORCAMENTISTA_E_INDICADOR_LOG WHERE (apelido = '" & QuotedStr(s_id_selecionado) & "')"
 				cn.Execute(s)
 				If Err <> 0 then
 					erro_fatal=True
 					alerta = "FALHA AO EXCLUIR OS DADOS DE LOG DE EDIÇÃO DO ORÇAMENTISTA / INDICADOR (" & Cstr(Err) & ": " & Err.Description & ")."
 					end if
 
-				s="DELETE FROM t_ORCAMENTISTA_E_INDICADOR WHERE apelido = '" & s_id_selecionado & "'"
+				s="DELETE FROM t_ORCAMENTISTA_E_INDICADOR WHERE apelido = '" & QuotedStr(s_id_selecionado) & "'"
 				cn.Execute(s)
 				If Err = 0 then 
 					if s_log <> "" then grava_log usuario, loja, "", "", OP_LOG_ORCAMENTISTA_E_INDICADOR_EXCLUSAO, s_log
@@ -506,7 +505,7 @@
 
                 ' log cadastrou novo
                     if operacao_selecionada = OP_INCLUI then
-                    s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE apelido = '" & s_id_selecionado & "'"
+                    s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE apelido = '" & QuotedStr(s_id_selecionado) & "'"
                     s2 = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR_LOG WHERE (id = -1)"
 				    r.Open s, cn
                     rs2.Open s2, cn
@@ -534,7 +533,7 @@
                 msg = ""
                 dim x1, x2
                 dim intNsuNovoLog
-				s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE apelido = '" & s_id_selecionado & "'"
+				s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE apelido = '" & QuotedStr(s_id_selecionado) & "'"
                 s2 = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR_LOG WHERE (id = -1)"
 				r.Open s, cn
                 rs2.Open s2, cn
@@ -857,7 +856,7 @@
                         s_contato_nome = Trim(Request.Form("c_indicador_contato")(cont))
                         s_contato_id = Trim(Request.Form("contato_id")(cont))
                         s_contato_data = Trim(Request.Form("c_indicador_contato_data")(cont))
-                        s2 = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR_CONTATOS WHERE (indicador = '" & s_id_selecionado & "' AND id='" & s_contato_id & "')"
+                        s2 = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR_CONTATOS WHERE (indicador = '" & QuotedStr(s_id_selecionado) & "' AND id='" & s_contato_id & "')"
                         t.Open s2, cn
                         if Not t.Eof then
                             if Trim("" & t("nome")) <> "" And s_contato_nome = "" then

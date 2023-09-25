@@ -795,7 +795,7 @@ dim j, z,totalcomissao
 		x = x & "	</tr>" & chr(13)
 		
 		
-			banco = rs("banco")
+			banco = Trim("" & rs("banco"))
 		r.MoveNext
 		loop
 		

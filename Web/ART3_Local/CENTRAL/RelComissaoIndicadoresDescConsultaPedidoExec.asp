@@ -480,10 +480,10 @@ cedulas_codificado= 0
 									    "		<td class='MDTE' colspan='11' align='left' valign='bottom' class='MB' style='background:whitesmoke;'>" & chr(13) & _
 									    "			<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
 									    "				<tr>" & chr(13) & _
-									    "					<td colspan='3' align='left' valign='bottom' style='vertical-align:middle'><div valign='bottom' style='height:14px;max-height:14px;overflow:hidden;vertical-align:middle'><span class='Cn'>Banco: " & rs("banco") & " - " & x_banco(rs("banco")) &  "</span></div></td>" & chr(13) & _
+									    "					<td colspan='3' align='left' valign='bottom' style='vertical-align:middle'><div valign='bottom' style='height:14px;max-height:14px;overflow:hidden;vertical-align:middle'><span class='Cn'>Banco: " & Trim("" & rs("banco")) & " - " & x_banco(Trim("" & rs("banco"))) &  "</span></div></td>" & chr(13) & _
 									    "				</tr>" & chr(13) & _
 									    "				<tr>" & chr(13) & _
-									    "					<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & rs("agencia")
+									    "					<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & Trim("" & rs("agencia"))
                             if Trim("" & rs("agencia_dv")) <> "" then
                                 x = x & "-" & rs("agencia_dv") & chr(13)
                             end if
@@ -505,7 +505,7 @@ cedulas_codificado= 0
                                 x = x & rs("conta_operacao") & "-"
                             end if               
     
-                            x = x & rs("conta")
+                            x = x & Trim("" & rs("conta"))
     
                             if Trim("" & rs("conta_dv")) <> "" then
                                 x = x & "-" & rs("conta_dv") & chr(13)
@@ -680,8 +680,8 @@ cedulas_codificado= 0
 		
 		        x = x & "	</tr>" & chr(13)
 
-			    ind_anterior = r("ind3")
-			    banco = r("banco")
+			    ind_anterior = Trim("" & r("ind3"))
+			    banco = Trim("" & r("banco"))
         	    meio_pagto = r("meio_pagto")
 
            

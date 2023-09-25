@@ -48,7 +48,7 @@
 	
 '	PESQUISA BLOCOS DE NOTAS DO APELIDO, MÊS E ANO INFORMADOS
 	strSql = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR_BLOCO_NOTAS " & _
-	            "WHERE apelido='" & apelido & "' AND " & _
+	            "WHERE apelido='" & QuotedStr(apelido) & "' AND " & _
 	            "YEAR(dt_cadastro)='" & ano & "' AND " & _
 	            "MONTH(dt_cadastro)='" & mes & "' AND " & _
 	            "anulado_status=0 " & _
