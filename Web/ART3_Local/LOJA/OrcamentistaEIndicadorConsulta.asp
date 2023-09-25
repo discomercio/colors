@@ -69,7 +69,7 @@
     if cnpj_cpf_selecionado <> "" then 
         s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (cnpj_cpf='" & cnpj_cpf_selecionado & "')"
     else
-        s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (apelido='" & id_selecionado & "')"
+        s = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (apelido='" & QuotedStr(id_selecionado) & "')"
     end if
 
 	set rs = cn.Execute(s)
@@ -1094,7 +1094,7 @@ var tipo_PJ_PF = ID_PJ;
 
 <!-- ************   VENDEDORES   **************** -->
 
-<% set rs2 = cn.Execute("SELECT * FROM t_ORCAMENTISTA_E_INDICADOR_CONTATOS WHERE (indicador='" & id_selecionado & "') ORDER BY dt_cadastro DESC") %>
+<% set rs2 = cn.Execute("SELECT * FROM t_ORCAMENTISTA_E_INDICADOR_CONTATOS WHERE (indicador='" & QuotedStr(id_selecionado) & "') ORDER BY dt_cadastro DESC") %>
 <table width="649" class="QS" cellspacing="0">
 	<tr>
 		<td align="left" class="MB" colspan="2"><p class="R">VENDEDORES</p></td>
@@ -1246,7 +1246,7 @@ loop %>
 			"YEAR(dt_cadastro) AS ano, COUNT(YEAR(dt_cadastro)) AS qtde_ano " & _
 	   " FROM t_ORCAMENTISTA_E_INDICADOR_BLOCO_NOTAS" & _
 	   " WHERE" & _
-			" (apelido = '" & id_selecionado & "')" & _
+			" (apelido = '" & QuotedStr(id_selecionado) & "')" & _
 			" AND dt_cadastro <= GETDATE() " & _
 			" AND (anulado_status = 0)" & _
 			" GROUP BY YEAR(dt_cadastro) " & _
@@ -1274,7 +1274,7 @@ loop %>
 		</table>
 		<% s = "SELECT " & _
 	    "MONTH(dt_cadastro) AS mes, COUNT(MONTH(dt_cadastro)) AS qtde_mes FROM t_ORCAMENTISTA_E_INDICADOR_BLOCO_NOTAS " & _
-	    "WHERE apelido='" & id_selecionado & "' AND YEAR(dt_cadastro)='" & rs("ano") & "' " & _
+	    "WHERE apelido='" & QuotedStr(id_selecionado) & "' AND YEAR(dt_cadastro)='" & rs("ano") & "' " & _
 	    "GROUP BY MONTH(dt_cadastro)"
 	
 	set rs2 = cn.Execute(s)%>
@@ -1346,7 +1346,7 @@ loop %>
         s = "SELECT " & _
                 "*" & _
                 " FROM t_ORCAMENTISTA_E_INDICADOR_LOG" & _
-                " WHERE (apelido = '" & id_selecionado & "')" & _
+                " WHERE (apelido = '" & QuotedStr(id_selecionado) & "')" & _
                 " ORDER BY dt_hr_cadastro"
 
         set rs = cn.Execute(s)

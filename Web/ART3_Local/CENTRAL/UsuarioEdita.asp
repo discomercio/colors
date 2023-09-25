@@ -38,13 +38,19 @@
 	usuario = trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
 	
+	dim alerta
+	alerta = ""
+	
 '	USUÁRIO A EDITAR
 	dim senha_descripto, chave
 	usuario_selecionado = Ucase(trim(request("usuario_selecionado")))
 	operacao_selecionada = trim(request("operacao_selecionada"))
 	
 	if operacao_selecionada=OP_INCLUI then
-		usuario_selecionado=filtra_nome_identificador(usuario_selecionado)
+		if usuario_selecionado <> filtra_nome_identificador(usuario_selecionado) then
+			alerta=texto_add_br(alerta)
+			alerta=alerta & "Identificador contém caractere(s) inválido(s)!"
+			end if
 		end if
 		
 	if usuario_selecionado="" then Response.Redirect("aviso.asp?id=" & ERR_USUARIO_NAO_ESPECIFICADO) 
@@ -54,7 +60,7 @@
 	dim cn, rs, r
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
-	set rs = cn.Execute("select * from t_USUARIO where (usuario='" & usuario_selecionado & "')")
+	set rs = cn.Execute("select * from t_USUARIO where (usuario='" & QuotedStr(usuario_selecionado) & "')")
 	if Err <> 0 then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
 	
 	dim intIndex, s_perfil_cadastrado, s_checked
@@ -67,13 +73,13 @@
 	
 	if operacao_selecionada=OP_INCLUI then
 		if Not rs.EOF then Response.Redirect("aviso.asp?id=" & ERR_USUARIO_JA_CADASTRADO)
-		set r = cn.Execute("SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (apelido = '" & usuario_selecionado & "')")
+		set r = cn.Execute("SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (apelido = '" & QuotedStr(usuario_selecionado) & "')")
 		if Not r.Eof then Response.Redirect("aviso.asp?id=" & ERR_ID_JA_EM_USO_POR_ORCAMENTISTA)
 	elseif operacao_selecionada=OP_CONSULTA then
 		if rs.EOF then Response.Redirect("aviso.asp?id=" & ERR_USUARIO_NAO_CADASTRADO)
 		
 	'	OBTÉM A LISTA DE OPERAÇÕES JÁ CADASTRADAS P/ ESTE PERFIL
-		s = "SELECT id_perfil FROM t_PERFIL_X_USUARIO WHERE usuario='" & usuario_selecionado & "'"
+		s = "SELECT id_perfil FROM t_PERFIL_X_USUARIO WHERE usuario='" & QuotedStr(usuario_selecionado) & "'"
 		set r = cn.Execute(s)
 		if Err <> 0 then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
 
@@ -89,7 +95,7 @@
 		set r = nothing
 		
 	'	SE É VENDEDOR DA LOJA, OBTÉM A LISTA DE LOJAS LIBERADAS
-		s = "SELECT loja FROM t_USUARIO_X_LOJA WHERE usuario='" & usuario_selecionado & "' ORDER BY CONVERT(smallint, loja)"
+		s = "SELECT loja FROM t_USUARIO_X_LOJA WHERE usuario='" & QuotedStr(usuario_selecionado) & "' ORDER BY CONVERT(smallint, loja)"
 		set r = cn.Execute(s)
 		if Err <> 0 then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
 
@@ -108,7 +114,7 @@
 		dim s_sql_lista_cd_cadastrado
 		s_sql_lista_cd_cadastrado = ""
 
-		s = "SELECT id_nfe_emitente FROM t_USUARIO_X_NFe_EMITENTE WHERE usuario='" & usuario_selecionado & "'"
+		s = "SELECT id_nfe_emitente FROM t_USUARIO_X_NFe_EMITENTE WHERE usuario='" & QuotedStr(usuario_selecionado) & "'"
 		set r = cn.Execute(s)
 		if Err <> 0 then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_BD)
 
@@ -302,6 +308,31 @@ var i, s_senha, blnTemLoja;
 	}
 </style>
 
+
+
+<% if alerta <> "" then %>
+<!-- ************************************************************ -->
+<!-- **********  PÁGINA PARA EXIBIR MENSAGENS DE ERRO  ********** -->
+<!-- ************************************************************ -->
+<body onload="bVOLTAR.focus();">
+<center>
+<br>
+<!--  T E L A  -->
+<p class="T">A V I S O</p>
+<div class="MtAlerta" style="width:600px;font-weight:bold;" align="center"><p style='margin:5px 2px 5px 2px;'><%=alerta%></p></div>
+<br><br>
+<p class="TracoBottom"></p>
+<table cellSpacing="0">
+<tr>
+	<td align="center"><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()"><img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
+</tr>
+</table>
+</center>
+</body>
+
+
+
+<% else %>
 
 <%	if operacao_selecionada=OP_INCLUI then
 		s = "fCAD.senha.focus();"
@@ -608,6 +639,9 @@ if operacao_selecionada=OP_CONSULTA then
 
 </center>
 </body>
+
+<% end if %>
+
 </html>
 
 

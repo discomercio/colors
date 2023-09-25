@@ -131,7 +131,11 @@ var s;
 
 <form id="fCAD" name="fCAD" method="post" action="OrcamentistaEIndicadorBlocoNotasNovoConfirma.asp">
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
+<% if Instr(apelido_selecionado, "'") <> 0 then %>
+<input type="hidden" name="apelido_selecionado" id="apelido_selecionado" value="<%=apelido_selecionado%>">
+<% else %>
 <input type="hidden" name="apelido_selecionado" id="apelido_selecionado" value='<%=apelido_selecionado%>'>
+<% end if %>
 <input type="hidden" name="url_origem" id="url_origem" value"<%=url_origem%>" />
 
 <!--  I D E N T I F I C A Ç Ã O   D O   O R C A M E N T I S T A  -->  

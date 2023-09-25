@@ -846,7 +846,7 @@ end if
 									"					<td colspan='3' align='left' valign='bottom'><span class='Cn'>Banco: " & s_banco & "</span></td>" & chr(13) & _
 									"				</tr>" & chr(13) & _
 									"				<tr>" & chr(13) & _
-									"					<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & rs("agencia")
+									"					<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & Trim("" & rs("agencia"))
 			            if Trim("" & rs("agencia_dv")) <> "" then
                             x = x & "-" & rs("agencia_dv") & chr(13)
                         end if
@@ -868,7 +868,7 @@ end if
                             x = x & rs("conta_operacao") & "-"
                         end if               
     
-                        x = x & rs("conta")
+                        x = x & Trim("" & rs("conta"))
     
                         if Trim("" & rs("conta_dv")) <> "" then
                             x = x & "-" & rs("conta_dv") & chr(13)
@@ -1057,8 +1057,8 @@ end if
 			Response.Write x
 			x = ""
 			end if
-			banco = rs("banco")
-        ind_anterior = r("indicador")
+			banco = Trim("" & rs("banco"))
+        ind_anterior = Trim("" & r("indicador"))
 		r.MoveNext
 		loop
 		

@@ -555,10 +555,10 @@ dim s_lista_ja_marcado_venda_normal, s_lista_ja_marcado_devolucao, s_lista_ja_ma
 									 		"			<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
                                        
 									        "				<tr>" & chr(13) & _
-									        "					<td colspan='3' align='left' valign='bottom' style='vertical-align:middle'><div valign='bottom' style='height:14px;max-height:14px;overflow:hidden;vertical-align:middle'><span class='Cn'>Banco: " & rs("banco") & " - " & x_banco(rs("banco")) &  "</span></div></td>" & chr(13) & _
+									        "					<td colspan='3' align='left' valign='bottom' style='vertical-align:middle'><div valign='bottom' style='height:14px;max-height:14px;overflow:hidden;vertical-align:middle'><span class='Cn'>Banco: " & Trim("" & rs("banco")) & " - " & x_banco(Trim("" & rs("banco"))) &  "</span></div></td>" & chr(13) & _
 									        "				</tr>" & chr(13) & _
 									        "				<tr>" & chr(13) & _
-									        "					<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & rs("agencia")
+									        "					<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & Trim("" & rs("agencia"))
                                 if Trim("" & rs("agencia_dv")) <> "" then
                                     x = x & "-" & rs("agencia_dv") & chr(13)
                                 end if
@@ -580,7 +580,7 @@ dim s_lista_ja_marcado_venda_normal, s_lista_ja_marcado_devolucao, s_lista_ja_ma
                                     x = x & rs("conta_operacao") & "-"
                                 end if               
     
-                                x = x & rs("conta")
+                                x = x & Trim("" & rs("conta"))
     
                                 if Trim("" & rs("conta_dv")) <> "" then
                                     x = x & "-" & rs("conta_dv") & chr(13)
@@ -625,7 +625,7 @@ dim s_lista_ja_marcado_venda_normal, s_lista_ja_marcado_devolucao, s_lista_ja_ma
 	            ' CONTAGEM
 		        n_reg = n_reg + 1
 		        n_reg_total = n_reg_total + 1
-                banco = rs("banco")
+                banco = Trim("" & rs("banco"))
             ' CÁLCULOS
 
             '	EVITA DIFERENÇAS DE ARREDONDAMENTO
@@ -774,7 +774,7 @@ dim s_lista_ja_marcado_venda_normal, s_lista_ja_marcado_devolucao, s_lista_ja_ma
 		
 		        x = x & "	</tr>" & chr(13)
 		            
-		        ind_anterior = r("indicador")
+		        ind_anterior = Trim("" & r("indicador"))
 			    
 		        r.MoveNext
 		        loop

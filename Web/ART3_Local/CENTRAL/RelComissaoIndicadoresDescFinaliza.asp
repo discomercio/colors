@@ -330,13 +330,13 @@ dim regex
 					"					<td colspan='10' width='50%' align='left' valign='bottom' style='background:white;'>" & chr(13) & _
 					"						<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
 					"							<tr class='notPrint'>" & chr(13) & _
-					"								<td colspan='3' align='left' valign='bottom' style='height:15px;vertical-align:middle;border-bottom:1px solid #c0c0c0'><span class='Cn'>Indicador: " & r("indicador") & "</span></td>" & chr(13) & _
+					"								<td colspan='3' align='left' valign='bottom' style='height:15px;vertical-align:middle;border-bottom:1px solid #c0c0c0'><span class='Cn'>Indicador: " & Trim("" & r("indicador")) & "</span></td>" & chr(13) & _
 					"							</tr>" & chr(13) & _
 					"							<tr>" & chr(13) & _
-					"								<td colspan='3' align='left' valign='bottom' style='vertical-align:middle'><div valign='bottom' style='height:14px;max-height:14px;overflow:hidden;vertical-align:middle'><span class='Cn'>Banco: " & r("banco") & " - " & x_banco(r("banco")) &  "</span></div></td>" & chr(13) & _
+					"								<td colspan='3' align='left' valign='bottom' style='vertical-align:middle'><div valign='bottom' style='height:14px;max-height:14px;overflow:hidden;vertical-align:middle'><span class='Cn'>Banco: " & Trim("" & r("banco")) & " - " & x_banco(Trim("" & r("banco"))) &  "</span></div></td>" & chr(13) & _
 					"							</tr>" & chr(13) & _
 					"							<tr>" & chr(13) & _
-					"								<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & r("agencia")
+					"								<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & Trim("" & r("agencia"))
 
 				if Trim("" & r("agencia_dv")) <> "" then
 					x = x & "-" & r("agencia_dv")
@@ -359,7 +359,7 @@ dim regex
 					x = x & r("conta_operacao") & "-"
 					end if
 
-				x = x & r("conta")
+				x = x & Trim("" & r("conta"))
 	
 				if Trim("" & r("conta_dv")) <> "" then
 					x = x & "-" & r("conta_dv")
@@ -368,7 +368,7 @@ dim regex
 				x = x & "</span></td>" & chr(13) & _
 					"							</tr>" & chr(13) & _
 					"							<tr>" & chr(13) & _
-					"								<td class='MC' width='60%' colspan='2' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Favorecido: " & r("favorecido") & "</span></td>" & chr(13) & _
+					"								<td class='MC' width='60%' colspan='2' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Favorecido: " & Trim("" & r("favorecido")) & "</span></td>" & chr(13) & _
 					"							</tr>" & chr(13)
 
 				if Len(retorna_so_digitos(Trim("" & r("favorecido_cnpj_cpf")))) = 11 then

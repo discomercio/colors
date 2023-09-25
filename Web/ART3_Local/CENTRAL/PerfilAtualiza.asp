@@ -129,6 +129,8 @@
 	alerta = ""
 	if s_apelido_perfil = "" then
 		alerta="IDENTIFICADOR DO PERFIL É INVÁLIDO."	
+	elseif (operacao_selecionada = OP_INCLUI) And (s_apelido_perfil <> filtra_nome_identificador(s_apelido_perfil)) then
+		alerta="IDENTIFICADOR CONTÉM CARACTERE(S) INVÁLIDO(S)!"
 	elseif s_descricao = "" then
 		alerta="PREENCHA A DESCRIÇÃO DO PERFIL."
 	elseif rb_st_inativo = "" then
@@ -162,7 +164,7 @@
 		if operacao_selecionada = OP_INCLUI then
 			if Not gera_nsu(NSU_CADASTRO_PERFIL, id_perfil, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_GERAR_NSU)
 		else
-			s = "SELECT * FROM t_PERFIL WHERE apelido = '" & s_apelido_perfil & "'"
+			s = "SELECT * FROM t_PERFIL WHERE apelido = '" & QuotedStr(s_apelido_perfil) & "'"
 			if r.State <> 0 then r.Close
 			r.Open s, cn
 			if Not r.Eof then 
@@ -179,7 +181,7 @@
 		case OP_EXCLUI
 		'	 =========
 			if alerta = "" then
-				s="SELECT COUNT(*) AS qtde FROM t_PERFIL_X_USUARIO INNER JOIN t_PERFIL ON t_PERFIL_X_USUARIO.id_perfil=t_PERFIL.id WHERE (t_PERFIL.apelido = '" & s_apelido_perfil & "')"
+				s="SELECT COUNT(*) AS qtde FROM t_PERFIL_X_USUARIO INNER JOIN t_PERFIL ON t_PERFIL_X_USUARIO.id_perfil=t_PERFIL.id WHERE (t_PERFIL.apelido = '" & QuotedStr(s_apelido_perfil) & "')"
 				if r.State <> 0 then r.Close
 				r.Open s, cn
 			'	ASSEGURA QUE A COMPARAÇÃO SERÁ FEITA ENTRE MESMO TIPO DE DADOS
@@ -203,7 +205,7 @@
 					
 				if Not erro_fatal then
 				'	INFO P/ LOG
-					s="SELECT * FROM t_PERFIL WHERE apelido = '" & s_apelido_perfil & "'"
+					s="SELECT * FROM t_PERFIL WHERE apelido = '" & QuotedStr(s_apelido_perfil) & "'"
 					if r.State <> 0 then r.Close
 					r.Open s, cn
 					if Not r.EOF then
@@ -248,7 +250,7 @@
 						end if
 						
 					if Not erro_fatal then
-						s="DELETE FROM t_PERFIL WHERE apelido = '" & s_apelido_perfil & "'"
+						s="DELETE FROM t_PERFIL WHERE apelido = '" & QuotedStr(s_apelido_perfil) & "'"
 						cn.Execute(s)
 						If Err = 0 then 
 							if s_log <> "" then grava_log usuario, "", "", "", OP_LOG_PERFIL_EXCLUSAO, s_log
@@ -282,7 +284,7 @@
 			'	~~~~~~~~~~~~~
 				cn.BeginTrans
 			'	~~~~~~~~~~~~~
-				s = "SELECT * FROM t_PERFIL WHERE apelido = '" & s_apelido_perfil & "'"
+				s = "SELECT * FROM t_PERFIL WHERE apelido = '" & QuotedStr(s_apelido_perfil) & "'"
 				if r.State <> 0 then r.Close
 				r.Open s, cn
 				if r.EOF then 

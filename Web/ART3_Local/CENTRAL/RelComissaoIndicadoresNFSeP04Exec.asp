@@ -810,7 +810,7 @@ dim s_indicador_nome
 				"					<td colspan='3' align='left' valign='bottom'><span class='Cn'>Banco: " & s_banco & "</span></td>" & chr(13) & _
 				"				</tr>" & chr(13) & _
 				"				<tr>" & chr(13) & _
-				"					<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & rs("agencia")
+				"					<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & Trim("" & rs("agencia"))
 			if Trim("" & rs("agencia_dv")) <> "" then
 				x = x & "-" & rs("agencia_dv")
 				end if
@@ -832,7 +832,7 @@ dim s_indicador_nome
 				x = x & rs("conta_operacao") & "-"
 				end if
 	
-			x = x & rs("conta")
+			x = x & Trim("" & rs("conta"))
 	
 			if Trim("" & rs("conta_dv")) <> "" then
 				x = x & "-" & rs("conta_dv")
