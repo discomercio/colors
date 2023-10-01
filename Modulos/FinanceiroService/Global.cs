@@ -29,8 +29,8 @@ namespace FinanceiroService
 				public const string NOME_OWNER = "Artven";
 				public const string NOME_SISTEMA = "Financeiro Service";
 				public static readonly string ID_SISTEMA_EVENTLOG = GetConfigurationValue("ServiceName");
-				public const string VERSAO_NUMERO = "1.43";
-				public const string VERSAO_DATA = " 07.AGO.2022";
+				public const string VERSAO_NUMERO = "1.44";
+				public const string VERSAO_DATA = " 01.OUT.2023";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Serviço do Windows para execução automática de rotinas financeiras";
@@ -337,8 +337,8 @@ namespace FinanceiroService
 			 *      Limpeza automática dos dados de relatórios não processados na tabela
 			 *        t_COMISSAO_INDICADOR_NFSe_N1
 			 * -----------------------------------------------------------------------------------------------
-			 * v 1.44 - XX.XX.20XX - por XXX
-			 *      
+			 * v 1.44 - 01.10.2023 - por HHO
+			 *      Alteração do prazo de cancelamento automático de pedidos de 7 para 5 dias.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.45 - XX.XX.20XX - por XXX
 			 *      
@@ -1737,10 +1737,10 @@ namespace FinanceiroService
 				private readonly String name;
 				private readonly int value;
 
-				public static readonly PrazoCancelAutoPedidoEmDias PENDENTE_CARTAO_CREDITO = new PrazoCancelAutoPedidoEmDias("PENDENTE_CARTAO_CREDITO", 7);
-				public static readonly PrazoCancelAutoPedidoEmDias CREDITO_OK_AGUARDANDO_DEPOSITO = new PrazoCancelAutoPedidoEmDias("CREDITO_OK_AGUARDANDO_DEPOSITO", 7);
-				public static readonly PrazoCancelAutoPedidoEmDias CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV = new PrazoCancelAutoPedidoEmDias("CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV", 7);
-				public static readonly PrazoCancelAutoPedidoEmDias PENDENTE_VENDAS = new PrazoCancelAutoPedidoEmDias("PENDENTE_VENDAS", 7);
+				public static readonly PrazoCancelAutoPedidoEmDias PENDENTE_CARTAO_CREDITO = new PrazoCancelAutoPedidoEmDias("PENDENTE_CARTAO_CREDITO", 5);
+				public static readonly PrazoCancelAutoPedidoEmDias CREDITO_OK_AGUARDANDO_DEPOSITO = new PrazoCancelAutoPedidoEmDias("CREDITO_OK_AGUARDANDO_DEPOSITO", 5);
+				public static readonly PrazoCancelAutoPedidoEmDias CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV = new PrazoCancelAutoPedidoEmDias("CREDITO_OK_AGUARDANDO_PAGTO_BOLETO_AV", 5);
+				public static readonly PrazoCancelAutoPedidoEmDias PENDENTE_VENDAS = new PrazoCancelAutoPedidoEmDias("PENDENTE_VENDAS", 5);
 
 				private PrazoCancelAutoPedidoEmDias(string name, int value)
 				{
