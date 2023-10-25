@@ -30,6 +30,13 @@
 	On Error GoTo 0
 	Err.Clear
 	
+	class cl_REL_PROD_PENDENTE_SINTETICO
+		dim fabricante
+		dim produto
+		dim descricao
+		dim qtde
+		end class
+
 	dim usuario
 	usuario = Trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
@@ -102,6 +109,11 @@
 			end if
 		end if
 
+	dim vRelProdPendSint, iRel, qtdeTotalGeralProdutosPendentes, sRelSint
+	qtdeTotalGeralProdutosPendentes = 0
+	redim vRelProdPendSint(0)
+	set vRelProdPendSint(UBound(vRelProdPendSint)) = new cl_REL_PROD_PENDENTE_SINTETICO
+	vRelProdPendSint(UBound(vRelProdPendSint)).produto = ""
 
 
 
@@ -116,7 +128,8 @@
 sub consulta_executa
 dim r
 dim s, s_aux, s_sql, fabricante_a, produto_a, x, cab_table, cab
-dim n_reg, n_reg_total, n_qtde, vl, msg_erro
+dim n_reg, n_reg_total, n_qtde_total, vl, msg_erro
+dim blnAchou, idxRelProdSint
 
 '	LEMBRE-SE DE INCLUIR A RESTRIÇÃO "anulado_status=0" P/ SELECIONAR APENAS 
 '	OS MOVIMENTOS VÁLIDOS, POIS "anulado_status<>0" INDICAM MOVIMENTOS QUE 
@@ -187,7 +200,7 @@ dim n_reg, n_reg_total, n_qtde, vl, msg_erro
 	x = ""
 	n_reg = 0
 	n_reg_total = 0
-	n_qtde = 0
+	n_qtde_total = 0
 	fabricante_a = "XXXXXX"
 	produto_a = String(20, "X")
 	
@@ -200,7 +213,7 @@ dim n_reg, n_reg_total, n_qtde, vl, msg_erro
 				x = x & _
 					"	<TR NOWRAP style='background: #FFFFDD'>" & chr(13) & _
 					"		<TD COLSPAN='2' NOWRAP><p class='Cd'>" & _
-								"TOTAL:&nbsp;&nbsp;&nbsp;" & formata_inteiro(n_qtde) & "</p></TD>" & chr(13) & _
+								"TOTAL:&nbsp;&nbsp;&nbsp;" & formata_inteiro(n_qtde_total) & "</p></TD>" & chr(13) & _
 					"		<TD COLSPAN='4'>&nbsp;</td>" & chr(13) & _
 					"	</TR>" & chr(13) & _
 					"</TABLE>" & chr(13)
@@ -229,7 +242,7 @@ dim n_reg, n_reg_total, n_qtde, vl, msg_erro
 			
 			x = x & cab
 			n_reg = 0
-			n_qtde = 0
+			n_qtde_total = 0
 			fabricante_a = Trim("" & r("fabricante"))
 			produto_a = Trim("" & r("produto"))
 			end if
@@ -268,10 +281,40 @@ dim n_reg, n_reg_total, n_qtde, vl, msg_erro
 		if Not calcula_valor_total_pedido(r("pedido"), vl, msg_erro) then vl=0
 		x = x & "		<TD class='MB' NOWRAP><P class='Cd'>&nbsp;" & formata_moeda(vl) & "</P></TD>" & chr(13)
 
-		n_qtde = n_qtde + r("qtde")
+		n_qtde_total = n_qtde_total + r("qtde")
 		
 		x = x & "	</TR>" & chr(13)
-			
+		
+	'	TOTALIZA NO VETOR QUE ARMAZENA OS DADOS SINTÉTICOS
+	'	Produto já existe no vetor?
+		blnAchou = False
+		idxRelProdSint = LBound(vRelProdPendSint) - 1
+		'Como os dados do recordset estão ordenados em ordem crescente, verifica o vetor no sentido contrário p/ ser mais eficiente
+		for iRel = UBound(vRelProdPendSint) to LBound(vRelProdPendSint) Step -1
+			if Trim("" & vRelProdPendSint(iRel).produto) <> "" then
+				if (Trim("" & vRelProdPendSint(iRel).fabricante) = Trim("" & r("fabricante"))) _
+					And (Trim("" & vRelProdPendSint(iRel).produto) = Trim("" & r("produto"))) then
+					idxRelProdSint = iRel
+					blnAchou = True
+					exit for
+					end if
+				end if
+			next
+		
+		if Not blnAchou then
+			if Trim("" & vRelProdPendSint(UBound(vRelProdPendSint)).produto) <> "" then
+				redim preserve vRelProdPendSint(UBound(vRelProdPendSint)+1)
+				set vRelProdPendSint(UBound(vRelProdPendSint)) = new cl_REL_PROD_PENDENTE_SINTETICO
+				end if
+			vRelProdPendSint(UBound(vRelProdPendSint)).fabricante = Trim("" & r("fabricante"))
+			vRelProdPendSint(UBound(vRelProdPendSint)).produto = Trim("" & r("produto"))
+			vRelProdPendSint(UBound(vRelProdPendSint)).descricao = Trim("" & r("descricao"))
+			idxRelProdSint = UBound(vRelProdPendSint)
+			end if
+		
+		vRelProdPendSint(idxRelProdSint).qtde = vRelProdPendSint(idxRelProdSint).qtde + r("qtde")
+		qtdeTotalGeralProdutosPendentes = qtdeTotalGeralProdutosPendentes + r("qtde")
+		
 		if (n_reg_total mod 100) = 0 then
 			Response.Write x
 			x = ""
@@ -284,7 +327,7 @@ dim n_reg, n_reg_total, n_qtde, vl, msg_erro
 	if n_reg <> 0 then 
 		x = x & _
 			"	<TR NOWRAP style='background: #FFFFDD'>" & chr(13) & _
-			"		<TD COLSPAN='2' NOWRAP><P class='Cd'>" & "TOTAL:&nbsp;&nbsp;&nbsp;" & formata_inteiro(n_qtde) & "</P></TD>" & chr(13) & _
+			"		<TD COLSPAN='2' NOWRAP><P class='Cd'>" & "TOTAL:&nbsp;&nbsp;&nbsp;" & formata_inteiro(n_qtde_total) & "</P></TD>" & chr(13) & _
 			"		<TD COLSPAN='4'>&nbsp;</td>" & chr(13) & _
 			"	</TR>" & chr(13)
 		end if
@@ -293,11 +336,11 @@ dim n_reg, n_reg_total, n_qtde, vl, msg_erro
 	if n_reg_total = 0 then
 		x = ""		
 		x = x & _
+            "	<br>" & chr(13) & _
 			cab_table & _
 			cab & _
-            "	<br>" & chr(13) & _
 			"	<TR NOWRAP>" & chr(13) & _
-			"		<TD colspan='6'><P class='ALERTA'>&nbsp;NÃO HÁ PRODUTOS VENDIDOS SEM PRESENÇA NO ESTOQUE&nbsp;</P></TD>" & chr(13) & _
+			"		<TD colspan='6'><p class='ALERTA'>&nbsp;NÃO HÁ PRODUTOS VENDIDOS SEM PRESENÇA NO ESTOQUE&nbsp;</p></TD>" & chr(13) & _
 			"	</TR>" & chr(13)
 		end if
 
@@ -329,6 +372,8 @@ end sub
 %>
 
 
+<%=DOCTYPE_LEGADO%>
+
 
 <html>
 
@@ -339,10 +384,34 @@ end sub
 
 
 
+<% if False then 'APENAS P/ HABILITAR O INTELLISENSE DURANTE O DESENVOLVIMENTO!! %>
+<script src="../Global/jquery.js" language="JavaScript" type="text/javascript"></script>
+<% end if %>
+
+<script src="<%=URL_FILE__JQUERY%>" language="JavaScript" type="text/javascript"></script>
+<script src="<%=URL_FILE__JQUERY_MY_PLUGIN%>" language="JavaScript" type="text/javascript"></script>
 <script src="<%=URL_FILE__GLOBAL_JS%>" Language="JavaScript" Type="text/javascript"></script>
+<script src="<%=URL_FILE__AJAX_JS%>" language="JavaScript" type="text/javascript"></script>
 
 <script language="JavaScript" type="text/javascript">
 window.status='Aguarde, executando a consulta ...';
+
+$(document).ready(function () {
+	$("#c_rel_prod_pendente_sintetico").on("focus", function () {
+		$(this).select();
+	});
+
+	$("#c_rel_prod_pendente_sintetico").on("click", function () {
+		$(this).select();
+	});
+});
+
+function copiaDadosSinteticosRelProdPendente() {
+	var c;
+	c = document.getElementById("c_rel_prod_pendente_sintetico");
+	c.select();
+	c.createTextRange().execCommand("Copy");
+}
 
 function fRELConcluir( id_pedido ) {
 	fREL.action = "pedido.asp";
@@ -471,6 +540,36 @@ function fRELConcluir( id_pedido ) {
 
 <!--  RELATÓRIO  -->
 <% consulta_executa %>
+
+<% if qtdeTotalGeralProdutosPendentes > 0 then
+	sRelSint = ""
+	for iRel = LBound(vRelProdPendSint) to UBound(vRelProdPendSint)
+		if Trim("" & vRelProdPendSint(iRel).produto) <> "" then
+			if sRelSint <> "" then sRelSint = sRelSint & vbCrLf
+			sRelSint = sRelSint & vRelProdPendSint(iRel).produto & vbTab & Replace(vRelProdPendSint(iRel).descricao, vbTab, " ") & vbTab & CStr(vRelProdPendSint(iRel).qtde)
+			end if
+		next
+	sRelSint = "Código" & vbTab & "Descrição" & vbTab & "Qtde" & vbCrLf & sRelSint
+%>
+	<br class="notPrint" />
+	<br class="notPrint" />
+	<div id="divRelProdPendSint" name="divRelProdPendSint" class="notPrint">
+		<table class="Q" style="width:649px;">
+		<tr>
+			<td align="left" valign="bottom"><span class="F" style="margin-left:10px;">Dados Sintéticos para Exportação</span></td>
+			<td>&nbsp;</td>
+			<td align="right" valign="bottom"><img src="../IMAGEM/edit_copy.png" style="margin-right:10px;" onclick="copiaDadosSinteticosRelProdPendente();" /></td>
+		</tr>
+		<tr>
+			<td align="center" colspan="3">
+				<textarea name="c_rel_prod_pendente_sintetico" id="c_rel_prod_pendente_sintetico" rows="12" readonly style="width:629px;margin:0px 10px 10px 10px;"><%=sRelSint%></textarea>
+			</td>
+		</tr>
+		</table>
+	</div>
+<% end if %>
+
+
 
 <!-- ************   SEPARADOR   ************ -->
 <table width="649" cellPadding="4" CellSpacing="0" style="border-bottom:1px solid black">
