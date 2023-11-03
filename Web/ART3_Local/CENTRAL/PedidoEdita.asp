@@ -549,9 +549,12 @@
 		loop
 	if rs.State <> 0 then rs.Close
 
-	dim bln_RT_e_RA_EdicaoLiberada
+	dim bln_RT_e_RA_EdicaoLiberada, rMaxPrazoEdicaoRT
 	bln_RT_e_RA_EdicaoLiberada = False
-	if operacao_permitida(OP_CEN_EDITA_RT_E_RA, s_lista_operacoes_permitidas) then
+	set rMaxPrazoEdicaoRT = get_registro_t_parametro(ID_PARAMETRO_Pedido_RT_Edicao_MaxPrazo)
+
+	if operacao_permitida(OP_CEN_EDITA_RT_E_RA, s_lista_operacoes_permitidas) _
+		And ( (rMaxPrazoEdicaoRT.campo_inteiro = 0) Or (Abs(DateDiff("d", r_pedido.data, Date)) <= rMaxPrazoEdicaoRT.campo_inteiro) ) then
 		if (Not blnFamiliaPedidosPossuiPedidoComissaoPaga) _
 			And (Not blnFamiliaPedidosPossuiPedidoComissaoDescontada) _
 			And (Not blnFamiliaPedidosPossuiPedidoEntregueMesAnterior) then

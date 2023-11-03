@@ -1866,10 +1866,13 @@
 
 	dim bln_RT_e_RA_EdicaoLiberada_Conferencia
 	dim blnFamiliaPedidosPossuiPedidoEntregueMesAnterior, blnFamiliaPedidosPossuiPedidoComissaoPaga, blnFamiliaPedidosPossuiPedidoComissaoDescontada
+	dim rMaxPrazoEdicaoRT
+	set rMaxPrazoEdicaoRT = get_registro_t_parametro(ID_PARAMETRO_Pedido_RT_Edicao_MaxPrazo)
 	bln_RT_e_RA_EdicaoLiberada_Conferencia = False
 	blnFamiliaPedidosPossuiPedidoEntregueMesAnterior = False
 	blnFamiliaPedidosPossuiPedidoComissaoPaga = False
 	blnFamiliaPedidosPossuiPedidoComissaoDescontada = False
+
 	if alerta = "" then
 		'Confere se edição da RT está liberada
 		'A regra de edição do percentual de RT leva em consideração que o percentual é único p/ toda a família de pedidos
@@ -1911,7 +1914,8 @@
 			loop
 		if rs.State <> 0 then rs.Close
 
-		if operacao_permitida(OP_CEN_EDITA_RT_E_RA, s_lista_operacoes_permitidas) then
+		if operacao_permitida(OP_CEN_EDITA_RT_E_RA, s_lista_operacoes_permitidas) _
+			And ( (rMaxPrazoEdicaoRT.campo_inteiro = 0) Or (Abs(DateDiff("d", r_pedido.data, Date)) <= rMaxPrazoEdicaoRT.campo_inteiro) ) then
 			if (Not blnFamiliaPedidosPossuiPedidoComissaoPaga) _
 				And (Not blnFamiliaPedidosPossuiPedidoComissaoDescontada) _
 				And (Not blnFamiliaPedidosPossuiPedidoEntregueMesAnterior) then
