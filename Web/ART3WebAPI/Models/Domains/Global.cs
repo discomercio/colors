@@ -60,8 +60,8 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.38";
-				public const string Data = "26.AGO.2023";
+				public const string Numero = "2.39";
+				public const string Data = "22.NOV.2023";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
 			#endregion
@@ -306,8 +306,9 @@ namespace ART3WebAPI.Models.Domains
 			 * v 2.38 - 26.08.2023 - por HHO
 			 *      Ajustes no relatório GetCompras2CSV para incluir o filtro de empresa (CD).
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.39 - XX.XX.20XX - por XXX
-			 *      
+			 * v 2.39 - 22.11.2023 - por HHO
+			 *      Ajustes no relatório Estatísticas de Ocorrências (RelatoriosController.GetXLSReport) p/
+			 *      incluir as colunas: Loja, Indicador e Vendedor.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.40 - XX.XX.20XX - por XXX
 			 *      

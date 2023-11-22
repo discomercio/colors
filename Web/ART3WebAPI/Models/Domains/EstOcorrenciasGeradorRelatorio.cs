@@ -22,9 +22,16 @@ namespace ART3WebAPI.Models.Domains
         private const int COL_Transportadora = 4;
         private const int COL_Ocorrencia = 5;
         private const int COL_TipoOcorrencia = 6;
-        #endregion
+		private const int COL_Loja = 7;
+		private const int COL_Indicador = 8;
+		private const int COL_Vendedor = 9;
+		#endregion
 
-        public static Task GenerateXLS(List<Ocorrencias> datasource, string filePath, string dt_inicio, string dt_termino, string motivo_ocorrencia, string tp_ocorrencia, string transportadora, string vendedor, string indicador, string UF, string loja)
+		#region [ Declarações ]
+		private static int COL_UltimaColDados = 0;
+		#endregion
+
+		public static Task GenerateXLS(List<Ocorrencias> datasource, string filePath, string dt_inicio, string dt_termino, string motivo_ocorrencia, string tp_ocorrencia, string transportadora, string vendedor, string indicador, string UF, string loja)
         {
             return Task.Run(() =>
             {
@@ -78,8 +85,12 @@ namespace ART3WebAPI.Models.Domains
                     ws.Column(COL_Transportadora).Width = 20;
                     ws.Column(COL_Ocorrencia).Width = 40;
                     ws.Column(COL_TipoOcorrencia).Width = 40;
- 
-                    ws.Row(1).Height = 1;                
+					ws.Column(COL_Loja).Width = 7;
+					ws.Column(COL_Indicador).Width = 30;
+					ws.Column(COL_Vendedor).Width = 18;
+					COL_UltimaColDados = COL_Vendedor;
+
+					ws.Row(1).Height = 1;
                     #endregion
 
 
@@ -99,7 +110,7 @@ namespace ART3WebAPI.Models.Domains
                     #endregion
 
                     #region [ Cabeçalho ]
-                    using (ExcelRange rng1 = ws.Cells["B" + (LIN_INICIO_REGISTROS - 1) + ":" + ws.Cells[LIN_INICIO_REGISTROS - 1, COL_TipoOcorrencia]])
+                    using (ExcelRange rng1 = ws.Cells["B" + (LIN_INICIO_REGISTROS - 1) + ":" + ws.Cells[LIN_INICIO_REGISTROS - 1, COL_UltimaColDados]])
                     {
                         rng1.Style.WrapText = true;
                         rng1.Style.Font.Bold = true;
@@ -109,23 +120,28 @@ namespace ART3WebAPI.Models.Domains
                         rng1.Style.Border.Left.Style = ExcelBorderStyle.Thin;
                     }
 
-                    ws.Cells[LIN_CABECALHO, COL_TipoOcorrencia].Style.Border.Right.Style = ExcelBorderStyle.Medium;
+                    ws.Cells[LIN_CABECALHO, COL_UltimaColDados].Style.Border.Right.Style = ExcelBorderStyle.Medium;
                     ws.Cells[LIN_CABECALHO, COL_Pedido].Value = "Pedido";
                     ws.Cells[LIN_CABECALHO, COL_NF].Value = "NF";
                     ws.Cells[LIN_CABECALHO, COL_Transportadora].Value = "Transportadora";
                     ws.Cells[LIN_CABECALHO, COL_Ocorrencia].Value = "Ocorrência";
                     ws.Cells[LIN_CABECALHO, COL_TipoOcorrencia].Value = "Tipo de Ocorrência";
+					ws.Cells[LIN_CABECALHO, COL_Loja].Value = "Loja";
+					ws.Cells[LIN_CABECALHO, COL_Indicador].Value = "Indicador";
+					ws.Cells[LIN_CABECALHO, COL_Vendedor].Value = "Vendedor";
 
-
-                    ws.Cells[LIN_CABECALHO, COL_Pedido].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+					ws.Cells[LIN_CABECALHO, COL_Pedido].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
                     ws.Cells[LIN_CABECALHO, COL_NF].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
                     ws.Cells[LIN_CABECALHO, COL_Transportadora].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
                     ws.Cells[LIN_CABECALHO, COL_Ocorrencia].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
                     ws.Cells[LIN_CABECALHO, COL_TipoOcorrencia].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+                    ws.Cells[LIN_CABECALHO, COL_Loja].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    ws.Cells[LIN_CABECALHO, COL_Indicador].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+                    ws.Cells[LIN_CABECALHO, COL_Vendedor].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
                     #endregion
 
                     #region [ Registros ]
-                    using (ExcelRange rng2 = ws.Cells["B" + LIN_INICIO_REGISTROS + ":" + ws.Cells[NumRegistros + LIN_INICIO_REGISTROS - 1, COL_TipoOcorrencia]])
+                    using (ExcelRange rng2 = ws.Cells["B" + LIN_INICIO_REGISTROS + ":" + ws.Cells[NumRegistros + LIN_INICIO_REGISTROS - 1, COL_UltimaColDados]])
                     {
                         rng2.Style.Border.Bottom.Style = ExcelBorderStyle.Hair;
                         rng2.Style.Border.Left.Style = ExcelBorderStyle.Thin;
@@ -145,14 +161,19 @@ namespace ART3WebAPI.Models.Domains
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_TipoOcorrencia].Value = datasource.ElementAt(i).TipoOcorrencia;
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_TipoOcorrencia].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
                         ws.Cells[i + LIN_INICIO_REGISTROS, COL_TipoOcorrencia].Style.WrapText = true;
+						ws.Cells[i + LIN_INICIO_REGISTROS, COL_Loja].Value = datasource.ElementAt(i).Loja;
+						ws.Cells[i + LIN_INICIO_REGISTROS, COL_Loja].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+						ws.Cells[i + LIN_INICIO_REGISTROS, COL_Indicador].Value = datasource.ElementAt(i).Indicador;
+						ws.Cells[i + LIN_INICIO_REGISTROS, COL_Indicador].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+						ws.Cells[i + LIN_INICIO_REGISTROS, COL_Indicador].Style.WrapText = true;
+						ws.Cells[i + LIN_INICIO_REGISTROS, COL_Vendedor].Value = datasource.ElementAt(i).Vendedor;
+						ws.Cells[i + LIN_INICIO_REGISTROS, COL_Vendedor].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+						ws.Cells[i + LIN_INICIO_REGISTROS, COL_Vendedor].Style.WrapText = true;
+					}
+					#endregion
 
-                    }
-                    #endregion
-
-
-                    #region [ Total ]
-
-                    ws.Cells[(NumRegistros + LIN_INICIO_REGISTROS + 1), COL_Pedido, (NumRegistros + LIN_INICIO_REGISTROS + 1), COL_TipoOcorrencia].Style.Font.Bold = true;
+					#region [ Total ]
+					ws.Cells[(NumRegistros + LIN_INICIO_REGISTROS + 1), COL_Pedido, (NumRegistros + LIN_INICIO_REGISTROS + 1), COL_UltimaColDados].Style.Font.Bold = true;
                     ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, COL_Pedido].Value = "TOTAL:";
                     ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, COL_Pedido].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
                     ws.Cells[NumRegistros + LIN_INICIO_REGISTROS + 1, COL_NF].Value = NumRegistros + " Ocorrência(s)";

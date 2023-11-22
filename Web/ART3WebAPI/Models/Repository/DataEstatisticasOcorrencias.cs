@@ -139,7 +139,10 @@ namespace ART3WebAPI.Models.Repository
                             " tPO.tipo_ocorrencia," +
                             " tPO.cod_motivo_abertura," +
                             " tPO.texto_finalizacao," +
-                            " tP.transportadora_id,";
+							" tPedBase.loja,"+
+							" tPedBase.indicador," +
+							" tPedBase.vendedor," +
+							" tP.transportadora_id,";
 
             if (intParametroFlagPedidoMemorizacaoCompletaEnderecos == 1)
             {
@@ -150,32 +153,33 @@ namespace ART3WebAPI.Models.Repository
                 sqlString += " tC.nome_iniciais_em_maiusculas AS nome_cliente, ";
             }
 
-            sqlString += " (" +
-                                "SELECT" +
-                                    " TOP 1 NFe_numero_NF" +
-                                " FROM t_NFe_EMISSAO tNE" +
-                                " WHERE" +
-                                    " (tNE.pedido=tPO.pedido)" +
-                                    " AND (tipo_NF = '1')" +
-                                    " AND (st_anulado = 0)" +
-                                    " AND (codigo_retorno_NFe_T1 = 1)" +
-                                " ORDER BY" +
-                                    " id DESC" +
-                            ") AS numeroNFe," +
-                            " (" +
-                                "SELECT" +
-                                    " Count(*)" +
-                                " FROM t_PEDIDO_OCORRENCIA_MENSAGEM" +
-                                " WHERE" +
-                                    " (id_ocorrencia=tPO.id)" +
-                                    " AND (fluxo_mensagem='" + Global.Cte.COD_FLUXO_MENSAGEM_OCORRENCIAS_EM_PEDIDOS__CENTRAL_PARA_LOJA + "')" +
-                            ") AS qtde_msg_central" +
-                        " FROM t_PEDIDO_OCORRENCIA tPO" +
-                            " INNER JOIN t_PEDIDO tP ON (tPO.pedido=tP.pedido)" +
-                            " INNER JOIN t_CLIENTE tC ON (tP.id_cliente=tC.id)" +
-                        " WHERE" +
-                            " (tPO.finalizado_status <> 0)" +
-                             s_where_temp;
+			sqlString += " (" +
+								"SELECT" +
+									" TOP 1 NFe_numero_NF" +
+								" FROM t_NFe_EMISSAO tNE" +
+								" WHERE" +
+									" (tNE.pedido=tPO.pedido)" +
+									" AND (tipo_NF = '1')" +
+									" AND (st_anulado = 0)" +
+									" AND (codigo_retorno_NFe_T1 = 1)" +
+								" ORDER BY" +
+									" id DESC" +
+							") AS numeroNFe," +
+							" (" +
+								"SELECT" +
+									" Count(*)" +
+								" FROM t_PEDIDO_OCORRENCIA_MENSAGEM" +
+								" WHERE" +
+									" (id_ocorrencia=tPO.id)" +
+									" AND (fluxo_mensagem='" + Global.Cte.COD_FLUXO_MENSAGEM_OCORRENCIAS_EM_PEDIDOS__CENTRAL_PARA_LOJA + "')" +
+							") AS qtde_msg_central" +
+						" FROM t_PEDIDO_OCORRENCIA tPO" +
+							" INNER JOIN t_PEDIDO tP ON (tPO.pedido=tP.pedido)" +
+							" INNER JOIN t_PEDIDO tPedBase ON (tP.pedido_base=tPedBase.pedido)" +
+							" INNER JOIN t_CLIENTE tC ON (tP.id_cliente=tC.id)" +
+						" WHERE" +
+							" (tPO.finalizado_status <> 0)" +
+							 s_where_temp;
 
             sqlString = "SELECT * FROM (" + sqlString + ") t ORDER BY dt_hr_cadastro, id";
             #endregion
@@ -196,6 +200,9 @@ namespace ART3WebAPI.Models.Repository
                     int idxOcorrencia = reader.GetOrdinal("texto_ocorrencia");
                     int idxTipoOcorrencia = reader.GetOrdinal("tipo_ocorrencia");
                     int idxCod_motivo_abertura = reader.GetOrdinal("cod_motivo_abertura");
+					int idxLoja = reader.GetOrdinal("loja");
+					int idxIndicador = reader.GetOrdinal("indicador");
+					int idxVendedor = reader.GetOrdinal("vendedor");
 
                     while (reader.Read())
                     {
@@ -204,6 +211,9 @@ namespace ART3WebAPI.Models.Repository
                         _novo.Pedido = reader.IsDBNull(idxPedido) ? "" : reader.GetString(idxPedido);
                         _novo.NF = reader.IsDBNull(idxNF) ? 0 : reader.GetInt32(idxNF);
                         _novo.Transportadora = reader.IsDBNull(idxTransportadora) ? "" : reader.GetString(idxTransportadora);
+						_novo.Loja = reader.IsDBNull(idxLoja) ? "" : reader.GetString(idxLoja);
+						_novo.Indicador = reader.IsDBNull(idxIndicador) ? "" : reader.GetString(idxIndicador);
+						_novo.Vendedor = reader.IsDBNull(idxVendedor) ? "" : reader.GetString(idxVendedor);
 
                         consulta = BD.obtem_descricao_tabela_t_codigo_descricao(Global.Cte.GRUPO_T_CODIGO_DESCRICAO__OCORRENCIAS_EM_PEDIDOS__MOTIVO_ABERTURA, reader.IsDBNull(idxCod_motivo_abertura) ? "" : reader.GetString(idxCod_motivo_abertura));
                         if (!string.IsNullOrEmpty(consulta))
