@@ -1420,7 +1420,7 @@
 			end if
 		end if
 
-	dim erro_produto_indisponivel
+	dim erro_produto_sem_estoque
 	if alerta="" then
 		'OBTÉM DISPONIBILIDADE DO PRODUTO NO ESTOQUE
 		for iRegra=LBound(vProdRegra) to UBound(vProdRegra)
@@ -1465,7 +1465,7 @@
 		end if 'if alerta=""
 
 '	HÁ PRODUTO C/ ESTOQUE INSUFICIENTE (SOMANDO-SE O ESTOQUE DE TODAS AS EMPRESAS CANDIDATAS)
-	erro_produto_indisponivel = False
+	erro_produto_sem_estoque = False
 	if alerta="" then
 		for iItem=Lbound(v_item) to Ubound(v_item)
 			if Trim(v_item(iItem).produto) <> "" then
@@ -1490,7 +1490,7 @@
 				v_item(iItem).qtde_estoque_total_disponivel = qtde_estoque_total_disponivel
 
 				if v_item(iItem).qtde > qtde_estoque_total_disponivel then
-					erro_produto_indisponivel = True
+					erro_produto_sem_estoque = True
 					end if
 				end if
 			next
@@ -1688,9 +1688,9 @@
 	strScriptMsgAlerta = strScriptMsgAlerta & _
 		"</script>" & chr(13)
 
-	dim bloquear_cadastramento_quando_produto_indiponivel
-	bloquear_cadastramento_quando_produto_indiponivel = False
-	if ID_PARAM_SITE = COD_SITE_ASSISTENCIA_TECNICA then bloquear_cadastramento_quando_produto_indiponivel = False
+	dim bloquear_cadastramento_quando_produto_sem_estoque
+	bloquear_cadastramento_quando_produto_sem_estoque = obtem_flag_BloqueiaCadastramentoQuandoProdutoSemEstoque_Pedido(loja)
+	if ID_PARAM_SITE = COD_SITE_ASSISTENCIA_TECNICA then bloquear_cadastramento_quando_produto_sem_estoque = False
 	
 	dim strScriptJS
 	if (Cstr(loja) = Cstr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE)) Or blnMagentoPedidoComIndicador then
@@ -1701,15 +1701,15 @@
 					  "var PERC_DESAGIO_RA_LIQUIDA_PEDIDO = " & js_formata_numero(getParametroPercDesagioRALiquida) & ";" & chr(13)
 		end if
 
-	if erro_produto_indisponivel then
-		strScriptJS = strScriptJS & "var erro_produto_indisponivel = true;" & chr(13)
+	if erro_produto_sem_estoque then
+		strScriptJS = strScriptJS & "var erro_produto_sem_estoque = true;" & chr(13)
 	else
-		strScriptJS = strScriptJS & "var erro_produto_indisponivel = false;" & chr(13)
+		strScriptJS = strScriptJS & "var erro_produto_sem_estoque = false;" & chr(13)
 		end if
-	if bloquear_cadastramento_quando_produto_indiponivel then
-		strScriptJS = strScriptJS & "var bloquear_cadastramento_quando_produto_indiponivel = true;" & chr(13)
+	if bloquear_cadastramento_quando_produto_sem_estoque then
+		strScriptJS = strScriptJS & "var bloquear_cadastramento_quando_produto_sem_estoque = true;" & chr(13)
 	else
-		strScriptJS = strScriptJS & "var bloquear_cadastramento_quando_produto_indiponivel = false;" & chr(13)
+		strScriptJS = strScriptJS & "var bloquear_cadastramento_quando_produto_sem_estoque = false;" & chr(13)
 		end if
 
 	if blnLojaHabilitadaProdCompostoECommerce then
@@ -3376,7 +3376,11 @@ var perc_max_comissao_alcada1, perc_max_comissao_alcada2, perc_max_comissao_alca
 </tr>
 <% else %>
 <tr>
-	<td align="center"><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()"><img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
+	<td align="left"><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()"><img src="../botao/voltar.gif" width="176" height="55" border="0"></a></td>
+	<td align="right"><div name="dCANCELA" id="dCANCELA">
+		<a name="bCANCELA" id="bCANCELA" href="javascript:fOpCancela(fCANCEL)" title="cancela a operação">
+		<img src="../botao/cancelar.gif" width="176" height="55" border="0"></a></div>
+	</td>
 </tr>
 <% end if %>
 </table>
@@ -3390,7 +3394,7 @@ var perc_max_comissao_alcada1, perc_max_comissao_alcada2, perc_max_comissao_alca
 <!-- ********************************************************** -->
 <!-- **********  PÁGINA PARA EDITAR ITENS DO PEDIDO  ********** -->
 <!-- ********************************************************** -->
-<body onload="if (!(erro_produto_indisponivel&&bloquear_cadastramento_quando_produto_indiponivel)) {processaFormaPagtoDefault();restaura_cor_desconto();fPED.c_obs1.focus();}">
+<body onload="if (!(erro_produto_sem_estoque&&bloquear_cadastramento_quando_produto_sem_estoque)) {processaFormaPagtoDefault();restaura_cor_desconto();fPED.c_obs1.focus();}">
 <center>
 
 <form id="fPED" name="fPED" method="post" action="PedidoNovoConfirma.asp">
@@ -3398,7 +3402,7 @@ var perc_max_comissao_alcada1, perc_max_comissao_alcada2, perc_max_comissao_alca
 <input type="hidden" name="cliente_selecionado" id="cliente_selecionado" value='<%=cliente_selecionado%>'>
 <input type="hidden" name="c_cnpj_cpf" id="c_cnpj_cpf" value='<%=EndCob_cnpj_cpf%>'>
 <input type="hidden" name="c_tipo_cliente" id="c_tipo_cliente" value='<%=EndCob_tipo_pessoa%>'>
-<% if erro_produto_indisponivel then s="S" else s="" %>
+<% if erro_produto_sem_estoque then s="S" else s="" %>
 <input type="hidden" name="opcao_venda_sem_estoque" id="opcao_venda_sem_estoque" value='<%=s%>'>
 <input type="hidden" name="insert_request_guid" id="insert_request_guid" value="<%=insert_request_guid%>" />
 
@@ -3662,7 +3666,7 @@ var perc_max_comissao_alcada1, perc_max_comissao_alcada2, perc_max_comissao_alca
 <br />
 <% end if %>
 
-<% if erro_produto_indisponivel then %>
+<% if erro_produto_sem_estoque then %>
 <!--  RELAÇÃO DE PRODUTOS SEM PRESENÇA NO ESTOQUE -->
 <table class="Qx" cellspacing="0" style="width:649px;">
 	<tr><td class="MB ALERTA" colspan="6" align="center"><span class="ALERTA" style="font-size:9pt;">PRODUTOS SEM PRESENÇA NO ESTOQUE</span></td></tr>
@@ -3706,7 +3710,7 @@ var perc_max_comissao_alcada1, perc_max_comissao_alcada2, perc_max_comissao_alca
 </table>
 <% end if %>
 
-<% if Not (erro_produto_indisponivel And bloquear_cadastramento_quando_produto_indiponivel) then %>
+<% if Not (erro_produto_sem_estoque And bloquear_cadastramento_quando_produto_sem_estoque) then %>
 <br>
 <br>
 <!--  R E L A Ç Ã O   D E   P R O D U T O S  -->
@@ -4439,7 +4443,7 @@ var perc_max_comissao_alcada1, perc_max_comissao_alcada2, perc_max_comissao_alca
 	</table>
 <% END IF %>
 
-<% end if 'if (Not (erro_produto_indisponivel And bloquear_cadastramento_quando_produto_indiponivel)) %>
+<% end if 'if (Not (erro_produto_sem_estoque And bloquear_cadastramento_quando_produto_sem_estoque)) %>
 
 
 <!-- ************   SEPARADOR   ************ -->
@@ -4450,10 +4454,10 @@ var perc_max_comissao_alcada1, perc_max_comissao_alcada2, perc_max_comissao_alca
 
 
 <table class="notPrint" width="649" cellspacing="0">
-<% if erro_produto_indisponivel And bloquear_cadastramento_quando_produto_indiponivel then %>
+<% if erro_produto_sem_estoque And bloquear_cadastramento_quando_produto_sem_estoque then %>
 	<% if operacao_origem = OP_ORIGEM__PEDIDO_NOVO_EC_SEMI_AUTO then %>
 	<tr>
-		<td align="left"><a name="bVOLTAR" id="A1" href="javascript:history.back()" title="volta para página anterior">
+		<td align="left"><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()" title="volta para página anterior">
 			<img src="../botao/anterior.gif" width="176" height="55" border="0"></a></td>
 		<td align="right"><div name="dCANCELA" id="dCANCELA">
 			<a name="bCANCELA" id="bCANCELA" href="javascript:fOpCancela(fCANCEL)" title="cancela a operação">
@@ -4462,8 +4466,12 @@ var perc_max_comissao_alcada1, perc_max_comissao_alcada2, perc_max_comissao_alca
 	</tr>
 	<% else %>
 	<tr>
-		<td align="center"><a name="bVOLTAR" id="A1" href="javascript:history.back()" title="volta para página anterior">
+		<td align="left"><a name="bVOLTAR" id="bVOLTAR" href="javascript:history.back()" title="volta para página anterior">
 			<img src="../botao/anterior.gif" width="176" height="55" border="0"></a></td>
+		<td align="right"><div name="dCANCELA" id="dCANCELA">
+			<a name="bCANCELA" id="bCANCELA" href="javascript:fOpCancela(fCANCEL)" title="cancela a operação">
+			<img src="../botao/cancelar.gif" width="176" height="55" border="0"></a></div>
+		</td>
 	</tr>
 	<% end if %>
 <% else %>

@@ -4669,6 +4669,52 @@ end function
 
 
 
+' _________________________________________________________________
+' OBTEM FLAG BloqueiaCadastramentoQuandoProdutoSemEstoque Pedido
+'
+function obtem_flag_BloqueiaCadastramentoQuandoProdutoSemEstoque_Pedido(byval numeroLojaPedido)
+dim rParam, sLoja
+	obtem_flag_BloqueiaCadastramentoQuandoProdutoSemEstoque_Pedido = 0
+	set rParam = get_registro_t_parametro(ID_PARAMETRO_BloqueiaCadastramentoQuandoProdutoSemEstoque_Pedido_FlagHabilitacao)
+	if Trim("" & rParam.id) <> "" then
+		'Se não informou a loja, apenas retorna o flag, não há como verificar se a loja está na lista que deve ignorar a regra
+		if (Trim("" & numeroLojaPedido) = "") Or (converte_numero(Trim("" & numeroLojaPedido)) = 0) then
+			obtem_flag_BloqueiaCadastramentoQuandoProdutoSemEstoque_Pedido = rParam.campo_inteiro
+		else
+			'Se a loja não está na lista de lojas que deve ignorar a regra, retorna o flag conforme está configurado no BD
+			'Se a loja estiver na lista, a função irá retornar o valor default do flag (zero), ou seja, irá ignorar a regra
+			sLoja = "|" & Trim("" & numeroLojaPedido) & "|"
+			if Instr(Trim(rParam.campo_texto), sLoja) = 0 then obtem_flag_BloqueiaCadastramentoQuandoProdutoSemEstoque_Pedido = rParam.campo_inteiro
+			end if
+		end if
+	set rParam = Nothing
+end function
+
+
+
+' _________________________________________________________________
+' OBTEM FLAG BloqueiaCadastramentoQuandoProdutoSemEstoque PrePedido
+'
+function obtem_flag_BloqueiaCadastramentoQuandoProdutoSemEstoque_PrePedido(byval numeroLojaPrePedido)
+dim rParam, sLoja
+	obtem_flag_BloqueiaCadastramentoQuandoProdutoSemEstoque_PrePedido = 0
+	set rParam = get_registro_t_parametro(ID_PARAMETRO_BloqueiaCadastramentoQuandoProdutoSemEstoque_PrePedido_FlagHabilitacao)
+	if Trim("" & rParam.id) <> "" then
+		'Se não informou a loja, apenas retorna o flag, não há como verificar se a loja está na lista que deve ignorar a regra
+		if (Trim("" & numeroLojaPrePedido) = "") Or (converte_numero(Trim("" & numeroLojaPrePedido)) = 0) then
+			obtem_flag_BloqueiaCadastramentoQuandoProdutoSemEstoque_PrePedido = rParam.campo_inteiro
+		else
+			'Se a loja não está na lista de lojas que deve ignorar a regra, retorna o flag conforme está configurado no BD
+			'Se a loja estiver na lista, a função irá retornar o valor default do flag (zero), ou seja, irá ignorar a regra
+			sLoja = "|" & Trim("" & numeroLojaPrePedido) & "|"
+			if Instr(Trim(rParam.campo_texto), sLoja) = 0 then obtem_flag_BloqueiaCadastramentoQuandoProdutoSemEstoque_PrePedido = rParam.campo_inteiro
+			end if
+		end if
+	set rParam = Nothing
+end function
+
+
+
 ' ___________________________________________________________
 ' OBTEM PARAMETRO MAX TENTATIVAS LOGIN
 '

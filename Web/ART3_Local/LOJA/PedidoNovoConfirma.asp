@@ -1296,7 +1296,7 @@
 			end if
 		end if
 	
-	dim erro_produto_indisponivel
+	dim erro_produto_sem_estoque
 	if alerta="" then
 		'OBTÉM DISPONIBILIDADE DO PRODUTO NO ESTOQUE
 		for iRegra=LBound(vProdRegra) to UBound(vProdRegra)
@@ -1341,7 +1341,7 @@
 		end if 'if alerta=""
 	
 '	HÁ PRODUTO C/ ESTOQUE INSUFICIENTE (SOMANDO-SE O ESTOQUE DE TODAS AS EMPRESAS CANDIDATAS)
-	erro_produto_indisponivel = False
+	erro_produto_sem_estoque = False
 	if alerta="" then
 		for iItem=Lbound(v_item) to Ubound(v_item)
 			if Trim(v_item(iItem).produto) <> "" then
@@ -1366,14 +1366,14 @@
 				v_item(iItem).qtde_estoque_total_disponivel = qtde_estoque_total_disponivel
 
 				if v_item(iItem).qtde > qtde_estoque_total_disponivel then
-					erro_produto_indisponivel = True
+					erro_produto_sem_estoque = True
 					end if
 				end if
 			next
 		end if 'if alerta=""
 	
 	if alerta = "" then
-		if erro_produto_indisponivel then
+		if erro_produto_sem_estoque then
 			for i=Lbound(v_item) to Ubound(v_item)
 				if v_item(i).qtde > v_item(i).qtde_estoque_total_disponivel then
 					if (opcao_venda_sem_estoque="") then
@@ -3614,7 +3614,7 @@
 </table>
 <table cellSpacing="0">
 <tr>
-	<% 	if erro_produto_indisponivel then 
+	<% 	if erro_produto_sem_estoque then 
 		'	VOLTA PARA A TELA QUE CADASTRA A QUANTIDADE DE PRODUTOS
 			s="javascript:history.go(-2)"
 		else
