@@ -111,6 +111,7 @@
 				" INNER JOIN t_COMISSAO_INDICADOR_NFSe_N3_PEDIDO n3Ped ON (n2.id = n3Ped.id_comissao_indicador_nfse_n2)" & _
 			" WHERE" & _
 				" (n1.status <> 0)" & _
+				" AND (n3Ped.st_selecionado <> 0)" & _
 				" AND (n3Ped.pedido = '" & r_pedido.pedido & "')"
 		set rs = cn.Execute(s)
 		if Not rs.Eof then
