@@ -841,6 +841,23 @@ Option Explicit
 '|          |      |                                                           |
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
+'|04.12.2023| LHGX |V 2.35                                                     |
+'|          |      | - Ajuste ma consulta de pedidos da assistência ténica     |
+'|          |      |   no painel de emissão manual                             |
+'|          |      | - Retirada a detecção do horário de verão                 |
+'|          |      | - Aumento da quantidade de itens da nota fiscal para 36   |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
 '|          |      |                                                           |
@@ -859,8 +876,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.34"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  17/05/2023"
+Global Const m_id_versao = "2.35"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  04/12/2023"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"

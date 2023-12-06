@@ -1,4 +1,5 @@
 VERSION 5.00
+Object = "{BDC217C8-ED16-11CD-956C-0000C04E4C0A}#1.1#0"; "TABCTL32.OCX"
 Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
 Begin VB.Form f_EMISSAO_NFE_TRIANGULAR 
    Caption         =   "Nota Fiscal"
@@ -11,6 +12,8320 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
    ScaleHeight     =   13920
    ScaleWidth      =   20625
    StartUpPosition =   2  'CenterScreen
+   Begin VB.Frame pnItens 
+      BackColor       =   &H00FFC0C0&
+      Height          =   4750
+      Left            =   200
+      TabIndex        =   139
+      Top             =   5880
+      Width           =   20250
+      Begin VB.TextBox c_vl_total_geral 
+         Alignment       =   1  'Right Justify
+         ForeColor       =   &H00000000&
+         Height          =   285
+         Left            =   10535
+         Locked          =   -1  'True
+         TabIndex        =   145
+         TabStop         =   0   'False
+         Top             =   4365
+         Width           =   1305
+      End
+      Begin VB.TextBox c_total_volumes 
+         Alignment       =   1  'Right Justify
+         ForeColor       =   &H00000000&
+         Height          =   285
+         Left            =   1590
+         MaxLength       =   15
+         TabIndex        =   144
+         Top             =   4365
+         Width           =   735
+      End
+      Begin VB.TextBox c_vl_total_outras_despesas_acessorias 
+         Alignment       =   1  'Right Justify
+         ForeColor       =   &H00000000&
+         Height          =   285
+         Left            =   11840
+         Locked          =   -1  'True
+         TabIndex        =   143
+         TabStop         =   0   'False
+         Top             =   4365
+         Width           =   1305
+      End
+      Begin VB.TextBox c_total_peso_bruto 
+         Alignment       =   1  'Right Justify
+         ForeColor       =   &H00000000&
+         Height          =   285
+         Left            =   5260
+         MaxLength       =   15
+         TabIndex        =   142
+         Top             =   4365
+         Width           =   1095
+      End
+      Begin VB.TextBox c_total_peso_liquido 
+         Alignment       =   1  'Right Justify
+         ForeColor       =   &H00000000&
+         Height          =   285
+         Left            =   8185
+         MaxLength       =   15
+         TabIndex        =   141
+         Top             =   4365
+         Width           =   1095
+      End
+      Begin VB.TextBox c_vl_total_icms 
+         Alignment       =   1  'Right Justify
+         ForeColor       =   &H00000000&
+         Height          =   285
+         Left            =   15660
+         Locked          =   -1  'True
+         TabIndex        =   140
+         TabStop         =   0   'False
+         Top             =   4365
+         Width           =   1425
+      End
+      Begin TabDlg.SSTab sstItens 
+         Height          =   3855
+         Left            =   50
+         TabIndex        =   146
+         Top             =   360
+         Width           =   20100
+         _ExtentX        =   35454
+         _ExtentY        =   6800
+         _Version        =   393216
+         TabHeight       =   520
+         BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   400
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         TabCaption(0)   =   "Itens 1 a 12"
+         TabPicture(0)   =   "f_EMISSAO_NFE_TRIANGULAR.frx":0000
+         Tab(0).ControlEnabled=   -1  'True
+         Tab(0).Control(0)=   "c_fabricante(0)"
+         Tab(0).Control(0).Enabled=   0   'False
+         Tab(0).Control(1)=   "c_produto(0)"
+         Tab(0).Control(1).Enabled=   0   'False
+         Tab(0).Control(2)=   "c_descricao(0)"
+         Tab(0).Control(2).Enabled=   0   'False
+         Tab(0).Control(3)=   "c_qtde(0)"
+         Tab(0).Control(3).Enabled=   0   'False
+         Tab(0).Control(4)=   "c_vl_unitario(0)"
+         Tab(0).Control(4).Enabled=   0   'False
+         Tab(0).Control(5)=   "c_vl_total(0)"
+         Tab(0).Control(5).Enabled=   0   'False
+         Tab(0).Control(6)=   "c_fabricante(1)"
+         Tab(0).Control(6).Enabled=   0   'False
+         Tab(0).Control(7)=   "c_produto(1)"
+         Tab(0).Control(7).Enabled=   0   'False
+         Tab(0).Control(8)=   "c_descricao(1)"
+         Tab(0).Control(8).Enabled=   0   'False
+         Tab(0).Control(9)=   "c_qtde(1)"
+         Tab(0).Control(9).Enabled=   0   'False
+         Tab(0).Control(10)=   "c_vl_unitario(1)"
+         Tab(0).Control(10).Enabled=   0   'False
+         Tab(0).Control(11)=   "c_vl_total(1)"
+         Tab(0).Control(11).Enabled=   0   'False
+         Tab(0).Control(12)=   "c_fabricante(2)"
+         Tab(0).Control(12).Enabled=   0   'False
+         Tab(0).Control(13)=   "c_produto(2)"
+         Tab(0).Control(13).Enabled=   0   'False
+         Tab(0).Control(14)=   "c_descricao(2)"
+         Tab(0).Control(14).Enabled=   0   'False
+         Tab(0).Control(15)=   "c_qtde(2)"
+         Tab(0).Control(15).Enabled=   0   'False
+         Tab(0).Control(16)=   "c_vl_unitario(2)"
+         Tab(0).Control(16).Enabled=   0   'False
+         Tab(0).Control(17)=   "c_vl_total(2)"
+         Tab(0).Control(17).Enabled=   0   'False
+         Tab(0).Control(18)=   "c_fabricante(3)"
+         Tab(0).Control(18).Enabled=   0   'False
+         Tab(0).Control(19)=   "c_produto(3)"
+         Tab(0).Control(19).Enabled=   0   'False
+         Tab(0).Control(20)=   "c_descricao(3)"
+         Tab(0).Control(20).Enabled=   0   'False
+         Tab(0).Control(21)=   "c_qtde(3)"
+         Tab(0).Control(21).Enabled=   0   'False
+         Tab(0).Control(22)=   "c_vl_unitario(3)"
+         Tab(0).Control(22).Enabled=   0   'False
+         Tab(0).Control(23)=   "c_vl_total(3)"
+         Tab(0).Control(23).Enabled=   0   'False
+         Tab(0).Control(24)=   "c_fabricante(4)"
+         Tab(0).Control(24).Enabled=   0   'False
+         Tab(0).Control(25)=   "c_produto(4)"
+         Tab(0).Control(25).Enabled=   0   'False
+         Tab(0).Control(26)=   "c_descricao(4)"
+         Tab(0).Control(26).Enabled=   0   'False
+         Tab(0).Control(27)=   "c_qtde(4)"
+         Tab(0).Control(27).Enabled=   0   'False
+         Tab(0).Control(28)=   "c_vl_unitario(4)"
+         Tab(0).Control(28).Enabled=   0   'False
+         Tab(0).Control(29)=   "c_vl_total(4)"
+         Tab(0).Control(29).Enabled=   0   'False
+         Tab(0).Control(30)=   "c_fabricante(5)"
+         Tab(0).Control(30).Enabled=   0   'False
+         Tab(0).Control(31)=   "c_produto(5)"
+         Tab(0).Control(31).Enabled=   0   'False
+         Tab(0).Control(32)=   "c_descricao(5)"
+         Tab(0).Control(32).Enabled=   0   'False
+         Tab(0).Control(33)=   "c_qtde(5)"
+         Tab(0).Control(33).Enabled=   0   'False
+         Tab(0).Control(34)=   "c_vl_unitario(5)"
+         Tab(0).Control(34).Enabled=   0   'False
+         Tab(0).Control(35)=   "c_vl_total(5)"
+         Tab(0).Control(35).Enabled=   0   'False
+         Tab(0).Control(36)=   "c_fabricante(6)"
+         Tab(0).Control(36).Enabled=   0   'False
+         Tab(0).Control(37)=   "c_produto(6)"
+         Tab(0).Control(37).Enabled=   0   'False
+         Tab(0).Control(38)=   "c_descricao(6)"
+         Tab(0).Control(38).Enabled=   0   'False
+         Tab(0).Control(39)=   "c_qtde(6)"
+         Tab(0).Control(39).Enabled=   0   'False
+         Tab(0).Control(40)=   "c_vl_unitario(6)"
+         Tab(0).Control(40).Enabled=   0   'False
+         Tab(0).Control(41)=   "c_vl_total(6)"
+         Tab(0).Control(41).Enabled=   0   'False
+         Tab(0).Control(42)=   "c_fabricante(7)"
+         Tab(0).Control(42).Enabled=   0   'False
+         Tab(0).Control(43)=   "c_produto(7)"
+         Tab(0).Control(43).Enabled=   0   'False
+         Tab(0).Control(44)=   "c_descricao(7)"
+         Tab(0).Control(44).Enabled=   0   'False
+         Tab(0).Control(45)=   "c_qtde(7)"
+         Tab(0).Control(45).Enabled=   0   'False
+         Tab(0).Control(46)=   "c_vl_unitario(7)"
+         Tab(0).Control(46).Enabled=   0   'False
+         Tab(0).Control(47)=   "c_vl_total(7)"
+         Tab(0).Control(47).Enabled=   0   'False
+         Tab(0).Control(48)=   "c_fabricante(8)"
+         Tab(0).Control(48).Enabled=   0   'False
+         Tab(0).Control(49)=   "c_produto(8)"
+         Tab(0).Control(49).Enabled=   0   'False
+         Tab(0).Control(50)=   "c_descricao(8)"
+         Tab(0).Control(50).Enabled=   0   'False
+         Tab(0).Control(51)=   "c_qtde(8)"
+         Tab(0).Control(51).Enabled=   0   'False
+         Tab(0).Control(52)=   "c_vl_unitario(8)"
+         Tab(0).Control(52).Enabled=   0   'False
+         Tab(0).Control(53)=   "c_vl_total(8)"
+         Tab(0).Control(53).Enabled=   0   'False
+         Tab(0).Control(54)=   "c_fabricante(9)"
+         Tab(0).Control(54).Enabled=   0   'False
+         Tab(0).Control(55)=   "c_produto(9)"
+         Tab(0).Control(55).Enabled=   0   'False
+         Tab(0).Control(56)=   "c_descricao(9)"
+         Tab(0).Control(56).Enabled=   0   'False
+         Tab(0).Control(57)=   "c_qtde(9)"
+         Tab(0).Control(57).Enabled=   0   'False
+         Tab(0).Control(58)=   "c_vl_unitario(9)"
+         Tab(0).Control(58).Enabled=   0   'False
+         Tab(0).Control(59)=   "c_vl_total(9)"
+         Tab(0).Control(59).Enabled=   0   'False
+         Tab(0).Control(60)=   "c_produto_obs(0)"
+         Tab(0).Control(60).Enabled=   0   'False
+         Tab(0).Control(61)=   "c_produto_obs(1)"
+         Tab(0).Control(61).Enabled=   0   'False
+         Tab(0).Control(62)=   "c_produto_obs(2)"
+         Tab(0).Control(62).Enabled=   0   'False
+         Tab(0).Control(63)=   "c_produto_obs(3)"
+         Tab(0).Control(63).Enabled=   0   'False
+         Tab(0).Control(64)=   "c_produto_obs(4)"
+         Tab(0).Control(64).Enabled=   0   'False
+         Tab(0).Control(65)=   "c_produto_obs(5)"
+         Tab(0).Control(65).Enabled=   0   'False
+         Tab(0).Control(66)=   "c_produto_obs(6)"
+         Tab(0).Control(66).Enabled=   0   'False
+         Tab(0).Control(67)=   "c_produto_obs(7)"
+         Tab(0).Control(67).Enabled=   0   'False
+         Tab(0).Control(68)=   "c_produto_obs(8)"
+         Tab(0).Control(68).Enabled=   0   'False
+         Tab(0).Control(69)=   "c_produto_obs(9)"
+         Tab(0).Control(69).Enabled=   0   'False
+         Tab(0).Control(70)=   "c_produto_obs(10)"
+         Tab(0).Control(70).Enabled=   0   'False
+         Tab(0).Control(71)=   "c_vl_total(10)"
+         Tab(0).Control(71).Enabled=   0   'False
+         Tab(0).Control(72)=   "c_vl_unitario(10)"
+         Tab(0).Control(72).Enabled=   0   'False
+         Tab(0).Control(73)=   "c_qtde(10)"
+         Tab(0).Control(73).Enabled=   0   'False
+         Tab(0).Control(74)=   "c_descricao(10)"
+         Tab(0).Control(74).Enabled=   0   'False
+         Tab(0).Control(75)=   "c_produto(10)"
+         Tab(0).Control(75).Enabled=   0   'False
+         Tab(0).Control(76)=   "c_fabricante(10)"
+         Tab(0).Control(76).Enabled=   0   'False
+         Tab(0).Control(77)=   "c_fabricante(11)"
+         Tab(0).Control(77).Enabled=   0   'False
+         Tab(0).Control(78)=   "c_produto(11)"
+         Tab(0).Control(78).Enabled=   0   'False
+         Tab(0).Control(79)=   "c_descricao(11)"
+         Tab(0).Control(79).Enabled=   0   'False
+         Tab(0).Control(80)=   "c_qtde(11)"
+         Tab(0).Control(80).Enabled=   0   'False
+         Tab(0).Control(81)=   "c_vl_unitario(11)"
+         Tab(0).Control(81).Enabled=   0   'False
+         Tab(0).Control(82)=   "c_vl_total(11)"
+         Tab(0).Control(82).Enabled=   0   'False
+         Tab(0).Control(83)=   "c_produto_obs(11)"
+         Tab(0).Control(83).Enabled=   0   'False
+         Tab(0).Control(84)=   "c_vl_outras_despesas_acessorias(11)"
+         Tab(0).Control(84).Enabled=   0   'False
+         Tab(0).Control(85)=   "c_vl_outras_despesas_acessorias(10)"
+         Tab(0).Control(85).Enabled=   0   'False
+         Tab(0).Control(86)=   "c_vl_outras_despesas_acessorias(9)"
+         Tab(0).Control(86).Enabled=   0   'False
+         Tab(0).Control(87)=   "c_vl_outras_despesas_acessorias(8)"
+         Tab(0).Control(87).Enabled=   0   'False
+         Tab(0).Control(88)=   "c_vl_outras_despesas_acessorias(7)"
+         Tab(0).Control(88).Enabled=   0   'False
+         Tab(0).Control(89)=   "c_vl_outras_despesas_acessorias(6)"
+         Tab(0).Control(89).Enabled=   0   'False
+         Tab(0).Control(90)=   "c_vl_outras_despesas_acessorias(5)"
+         Tab(0).Control(90).Enabled=   0   'False
+         Tab(0).Control(91)=   "c_vl_outras_despesas_acessorias(4)"
+         Tab(0).Control(91).Enabled=   0   'False
+         Tab(0).Control(92)=   "c_vl_outras_despesas_acessorias(3)"
+         Tab(0).Control(92).Enabled=   0   'False
+         Tab(0).Control(93)=   "c_vl_outras_despesas_acessorias(2)"
+         Tab(0).Control(93).Enabled=   0   'False
+         Tab(0).Control(94)=   "c_vl_outras_despesas_acessorias(1)"
+         Tab(0).Control(94).Enabled=   0   'False
+         Tab(0).Control(95)=   "c_vl_outras_despesas_acessorias(0)"
+         Tab(0).Control(95).Enabled=   0   'False
+         Tab(0).Control(96)=   "c_CST(11)"
+         Tab(0).Control(96).Enabled=   0   'False
+         Tab(0).Control(97)=   "c_CST(10)"
+         Tab(0).Control(97).Enabled=   0   'False
+         Tab(0).Control(98)=   "c_CST(9)"
+         Tab(0).Control(98).Enabled=   0   'False
+         Tab(0).Control(99)=   "c_CST(8)"
+         Tab(0).Control(99).Enabled=   0   'False
+         Tab(0).Control(100)=   "c_CST(7)"
+         Tab(0).Control(100).Enabled=   0   'False
+         Tab(0).Control(101)=   "c_CST(6)"
+         Tab(0).Control(101).Enabled=   0   'False
+         Tab(0).Control(102)=   "c_CST(5)"
+         Tab(0).Control(102).Enabled=   0   'False
+         Tab(0).Control(103)=   "c_CST(4)"
+         Tab(0).Control(103).Enabled=   0   'False
+         Tab(0).Control(104)=   "c_CST(3)"
+         Tab(0).Control(104).Enabled=   0   'False
+         Tab(0).Control(105)=   "c_CST(2)"
+         Tab(0).Control(105).Enabled=   0   'False
+         Tab(0).Control(106)=   "c_CST(1)"
+         Tab(0).Control(106).Enabled=   0   'False
+         Tab(0).Control(107)=   "c_CST(0)"
+         Tab(0).Control(107).Enabled=   0   'False
+         Tab(0).Control(108)=   "cb_CFOP(0)"
+         Tab(0).Control(108).Enabled=   0   'False
+         Tab(0).Control(109)=   "cb_CFOP(1)"
+         Tab(0).Control(109).Enabled=   0   'False
+         Tab(0).Control(110)=   "cb_CFOP(2)"
+         Tab(0).Control(110).Enabled=   0   'False
+         Tab(0).Control(111)=   "cb_CFOP(3)"
+         Tab(0).Control(111).Enabled=   0   'False
+         Tab(0).Control(112)=   "cb_CFOP(4)"
+         Tab(0).Control(112).Enabled=   0   'False
+         Tab(0).Control(113)=   "cb_CFOP(5)"
+         Tab(0).Control(113).Enabled=   0   'False
+         Tab(0).Control(114)=   "cb_CFOP(6)"
+         Tab(0).Control(114).Enabled=   0   'False
+         Tab(0).Control(115)=   "cb_CFOP(7)"
+         Tab(0).Control(115).Enabled=   0   'False
+         Tab(0).Control(116)=   "cb_CFOP(8)"
+         Tab(0).Control(116).Enabled=   0   'False
+         Tab(0).Control(117)=   "cb_CFOP(9)"
+         Tab(0).Control(117).Enabled=   0   'False
+         Tab(0).Control(118)=   "cb_CFOP(10)"
+         Tab(0).Control(118).Enabled=   0   'False
+         Tab(0).Control(119)=   "cb_CFOP(11)"
+         Tab(0).Control(119).Enabled=   0   'False
+         Tab(0).Control(120)=   "c_NCM(0)"
+         Tab(0).Control(120).Enabled=   0   'False
+         Tab(0).Control(121)=   "cb_ICMS_item(0)"
+         Tab(0).Control(121).Enabled=   0   'False
+         Tab(0).Control(122)=   "c_xPed(0)"
+         Tab(0).Control(122).Enabled=   0   'False
+         Tab(0).Control(123)=   "c_unidade(0)"
+         Tab(0).Control(123).Enabled=   0   'False
+         Tab(0).Control(124)=   "c_nItemPed(0)"
+         Tab(0).Control(124).Enabled=   0   'False
+         Tab(0).Control(125)=   "c_fcp(0)"
+         Tab(0).Control(125).Enabled=   0   'False
+         Tab(0).Control(126)=   "c_NCM(1)"
+         Tab(0).Control(126).Enabled=   0   'False
+         Tab(0).Control(127)=   "cb_ICMS_item(1)"
+         Tab(0).Control(127).Enabled=   0   'False
+         Tab(0).Control(128)=   "c_xPed(1)"
+         Tab(0).Control(128).Enabled=   0   'False
+         Tab(0).Control(129)=   "c_unidade(1)"
+         Tab(0).Control(129).Enabled=   0   'False
+         Tab(0).Control(130)=   "c_nItemPed(1)"
+         Tab(0).Control(130).Enabled=   0   'False
+         Tab(0).Control(131)=   "c_fcp(1)"
+         Tab(0).Control(131).Enabled=   0   'False
+         Tab(0).Control(132)=   "c_NCM(2)"
+         Tab(0).Control(132).Enabled=   0   'False
+         Tab(0).Control(133)=   "cb_ICMS_item(2)"
+         Tab(0).Control(133).Enabled=   0   'False
+         Tab(0).Control(134)=   "c_xPed(2)"
+         Tab(0).Control(134).Enabled=   0   'False
+         Tab(0).Control(135)=   "c_unidade(2)"
+         Tab(0).Control(135).Enabled=   0   'False
+         Tab(0).Control(136)=   "c_nItemPed(2)"
+         Tab(0).Control(136).Enabled=   0   'False
+         Tab(0).Control(137)=   "c_fcp(2)"
+         Tab(0).Control(137).Enabled=   0   'False
+         Tab(0).Control(138)=   "c_NCM(3)"
+         Tab(0).Control(138).Enabled=   0   'False
+         Tab(0).Control(139)=   "cb_ICMS_item(3)"
+         Tab(0).Control(139).Enabled=   0   'False
+         Tab(0).Control(140)=   "c_xPed(3)"
+         Tab(0).Control(140).Enabled=   0   'False
+         Tab(0).Control(141)=   "c_unidade(3)"
+         Tab(0).Control(141).Enabled=   0   'False
+         Tab(0).Control(142)=   "c_nItemPed(3)"
+         Tab(0).Control(142).Enabled=   0   'False
+         Tab(0).Control(143)=   "c_fcp(3)"
+         Tab(0).Control(143).Enabled=   0   'False
+         Tab(0).Control(144)=   "c_NCM(4)"
+         Tab(0).Control(144).Enabled=   0   'False
+         Tab(0).Control(145)=   "cb_ICMS_item(4)"
+         Tab(0).Control(145).Enabled=   0   'False
+         Tab(0).Control(146)=   "c_xPed(4)"
+         Tab(0).Control(146).Enabled=   0   'False
+         Tab(0).Control(147)=   "c_unidade(4)"
+         Tab(0).Control(147).Enabled=   0   'False
+         Tab(0).Control(148)=   "c_nItemPed(4)"
+         Tab(0).Control(148).Enabled=   0   'False
+         Tab(0).Control(149)=   "c_fcp(4)"
+         Tab(0).Control(149).Enabled=   0   'False
+         Tab(0).Control(150)=   "c_NCM(5)"
+         Tab(0).Control(150).Enabled=   0   'False
+         Tab(0).Control(151)=   "cb_ICMS_item(5)"
+         Tab(0).Control(151).Enabled=   0   'False
+         Tab(0).Control(152)=   "c_xPed(5)"
+         Tab(0).Control(152).Enabled=   0   'False
+         Tab(0).Control(153)=   "c_unidade(5)"
+         Tab(0).Control(153).Enabled=   0   'False
+         Tab(0).Control(154)=   "c_nItemPed(5)"
+         Tab(0).Control(154).Enabled=   0   'False
+         Tab(0).Control(155)=   "c_fcp(5)"
+         Tab(0).Control(155).Enabled=   0   'False
+         Tab(0).Control(156)=   "c_NCM(6)"
+         Tab(0).Control(156).Enabled=   0   'False
+         Tab(0).Control(157)=   "cb_ICMS_item(6)"
+         Tab(0).Control(157).Enabled=   0   'False
+         Tab(0).Control(158)=   "c_xPed(6)"
+         Tab(0).Control(158).Enabled=   0   'False
+         Tab(0).Control(159)=   "c_unidade(6)"
+         Tab(0).Control(159).Enabled=   0   'False
+         Tab(0).Control(160)=   "c_nItemPed(6)"
+         Tab(0).Control(160).Enabled=   0   'False
+         Tab(0).Control(161)=   "c_fcp(6)"
+         Tab(0).Control(161).Enabled=   0   'False
+         Tab(0).Control(162)=   "c_NCM(7)"
+         Tab(0).Control(162).Enabled=   0   'False
+         Tab(0).Control(163)=   "cb_ICMS_item(7)"
+         Tab(0).Control(163).Enabled=   0   'False
+         Tab(0).Control(164)=   "c_xPed(7)"
+         Tab(0).Control(164).Enabled=   0   'False
+         Tab(0).Control(165)=   "c_unidade(7)"
+         Tab(0).Control(165).Enabled=   0   'False
+         Tab(0).Control(166)=   "c_nItemPed(7)"
+         Tab(0).Control(166).Enabled=   0   'False
+         Tab(0).Control(167)=   "c_fcp(7)"
+         Tab(0).Control(167).Enabled=   0   'False
+         Tab(0).Control(168)=   "c_NCM(8)"
+         Tab(0).Control(168).Enabled=   0   'False
+         Tab(0).Control(169)=   "cb_ICMS_item(8)"
+         Tab(0).Control(169).Enabled=   0   'False
+         Tab(0).Control(170)=   "c_xPed(8)"
+         Tab(0).Control(170).Enabled=   0   'False
+         Tab(0).Control(171)=   "c_unidade(8)"
+         Tab(0).Control(171).Enabled=   0   'False
+         Tab(0).Control(172)=   "c_nItemPed(8)"
+         Tab(0).Control(172).Enabled=   0   'False
+         Tab(0).Control(173)=   "c_fcp(8)"
+         Tab(0).Control(173).Enabled=   0   'False
+         Tab(0).Control(174)=   "c_NCM(9)"
+         Tab(0).Control(174).Enabled=   0   'False
+         Tab(0).Control(175)=   "cb_ICMS_item(9)"
+         Tab(0).Control(175).Enabled=   0   'False
+         Tab(0).Control(176)=   "c_xPed(9)"
+         Tab(0).Control(176).Enabled=   0   'False
+         Tab(0).Control(177)=   "c_unidade(9)"
+         Tab(0).Control(177).Enabled=   0   'False
+         Tab(0).Control(178)=   "c_nItemPed(9)"
+         Tab(0).Control(178).Enabled=   0   'False
+         Tab(0).Control(179)=   "c_fcp(9)"
+         Tab(0).Control(179).Enabled=   0   'False
+         Tab(0).Control(180)=   "c_fcp(10)"
+         Tab(0).Control(180).Enabled=   0   'False
+         Tab(0).Control(181)=   "c_nItemPed(10)"
+         Tab(0).Control(181).Enabled=   0   'False
+         Tab(0).Control(182)=   "c_unidade(10)"
+         Tab(0).Control(182).Enabled=   0   'False
+         Tab(0).Control(183)=   "c_xPed(10)"
+         Tab(0).Control(183).Enabled=   0   'False
+         Tab(0).Control(184)=   "cb_ICMS_item(10)"
+         Tab(0).Control(184).Enabled=   0   'False
+         Tab(0).Control(185)=   "c_NCM(10)"
+         Tab(0).Control(185).Enabled=   0   'False
+         Tab(0).Control(186)=   "c_fcp(11)"
+         Tab(0).Control(186).Enabled=   0   'False
+         Tab(0).Control(187)=   "c_nItemPed(11)"
+         Tab(0).Control(187).Enabled=   0   'False
+         Tab(0).Control(188)=   "c_unidade(11)"
+         Tab(0).Control(188).Enabled=   0   'False
+         Tab(0).Control(189)=   "c_xPed(11)"
+         Tab(0).Control(189).Enabled=   0   'False
+         Tab(0).Control(190)=   "cb_ICMS_item(11)"
+         Tab(0).Control(190).Enabled=   0   'False
+         Tab(0).Control(191)=   "c_NCM(11)"
+         Tab(0).Control(191).Enabled=   0   'False
+         Tab(0).ControlCount=   192
+         TabCaption(1)   =   "Itens 13 a 24"
+         TabPicture(1)   =   "f_EMISSAO_NFE_TRIANGULAR.frx":001C
+         Tab(1).ControlEnabled=   0   'False
+         Tab(1).Control(0)=   "c_fabricante(23)"
+         Tab(1).Control(0).Enabled=   0   'False
+         Tab(1).Control(1)=   "c_produto(23)"
+         Tab(1).Control(1).Enabled=   0   'False
+         Tab(1).Control(2)=   "c_descricao(23)"
+         Tab(1).Control(2).Enabled=   0   'False
+         Tab(1).Control(3)=   "c_qtde(23)"
+         Tab(1).Control(3).Enabled=   0   'False
+         Tab(1).Control(4)=   "c_vl_unitario(23)"
+         Tab(1).Control(4).Enabled=   0   'False
+         Tab(1).Control(5)=   "c_vl_total(23)"
+         Tab(1).Control(5).Enabled=   0   'False
+         Tab(1).Control(6)=   "c_produto_obs(23)"
+         Tab(1).Control(6).Enabled=   0   'False
+         Tab(1).Control(7)=   "c_vl_outras_despesas_acessorias(23)"
+         Tab(1).Control(7).Enabled=   0   'False
+         Tab(1).Control(8)=   "c_CST(23)"
+         Tab(1).Control(8).Enabled=   0   'False
+         Tab(1).Control(9)=   "cb_CFOP(23)"
+         Tab(1).Control(9).Enabled=   0   'False
+         Tab(1).Control(10)=   "c_NCM(23)"
+         Tab(1).Control(10).Enabled=   0   'False
+         Tab(1).Control(11)=   "cb_ICMS_item(23)"
+         Tab(1).Control(11).Enabled=   0   'False
+         Tab(1).Control(12)=   "c_xPed(23)"
+         Tab(1).Control(12).Enabled=   0   'False
+         Tab(1).Control(13)=   "c_unidade(23)"
+         Tab(1).Control(13).Enabled=   0   'False
+         Tab(1).Control(14)=   "c_nItemPed(23)"
+         Tab(1).Control(14).Enabled=   0   'False
+         Tab(1).Control(15)=   "c_fcp(23)"
+         Tab(1).Control(15).Enabled=   0   'False
+         Tab(1).Control(16)=   "c_fabricante(22)"
+         Tab(1).Control(16).Enabled=   0   'False
+         Tab(1).Control(17)=   "c_produto(22)"
+         Tab(1).Control(17).Enabled=   0   'False
+         Tab(1).Control(18)=   "c_descricao(22)"
+         Tab(1).Control(18).Enabled=   0   'False
+         Tab(1).Control(19)=   "c_qtde(22)"
+         Tab(1).Control(19).Enabled=   0   'False
+         Tab(1).Control(20)=   "c_vl_unitario(22)"
+         Tab(1).Control(20).Enabled=   0   'False
+         Tab(1).Control(21)=   "c_vl_total(22)"
+         Tab(1).Control(21).Enabled=   0   'False
+         Tab(1).Control(22)=   "c_produto_obs(22)"
+         Tab(1).Control(22).Enabled=   0   'False
+         Tab(1).Control(23)=   "c_vl_outras_despesas_acessorias(22)"
+         Tab(1).Control(23).Enabled=   0   'False
+         Tab(1).Control(24)=   "c_CST(22)"
+         Tab(1).Control(24).Enabled=   0   'False
+         Tab(1).Control(25)=   "cb_CFOP(22)"
+         Tab(1).Control(25).Enabled=   0   'False
+         Tab(1).Control(26)=   "c_NCM(22)"
+         Tab(1).Control(26).Enabled=   0   'False
+         Tab(1).Control(27)=   "cb_ICMS_item(22)"
+         Tab(1).Control(27).Enabled=   0   'False
+         Tab(1).Control(28)=   "c_xPed(22)"
+         Tab(1).Control(28).Enabled=   0   'False
+         Tab(1).Control(29)=   "c_unidade(22)"
+         Tab(1).Control(29).Enabled=   0   'False
+         Tab(1).Control(30)=   "c_nItemPed(22)"
+         Tab(1).Control(30).Enabled=   0   'False
+         Tab(1).Control(31)=   "c_fcp(22)"
+         Tab(1).Control(31).Enabled=   0   'False
+         Tab(1).Control(32)=   "c_fabricante(21)"
+         Tab(1).Control(32).Enabled=   0   'False
+         Tab(1).Control(33)=   "c_produto(21)"
+         Tab(1).Control(33).Enabled=   0   'False
+         Tab(1).Control(34)=   "c_descricao(21)"
+         Tab(1).Control(34).Enabled=   0   'False
+         Tab(1).Control(35)=   "c_qtde(21)"
+         Tab(1).Control(35).Enabled=   0   'False
+         Tab(1).Control(36)=   "c_vl_unitario(21)"
+         Tab(1).Control(36).Enabled=   0   'False
+         Tab(1).Control(37)=   "c_vl_total(21)"
+         Tab(1).Control(37).Enabled=   0   'False
+         Tab(1).Control(38)=   "c_produto_obs(21)"
+         Tab(1).Control(38).Enabled=   0   'False
+         Tab(1).Control(39)=   "c_vl_outras_despesas_acessorias(21)"
+         Tab(1).Control(39).Enabled=   0   'False
+         Tab(1).Control(40)=   "c_CST(21)"
+         Tab(1).Control(40).Enabled=   0   'False
+         Tab(1).Control(41)=   "cb_CFOP(21)"
+         Tab(1).Control(41).Enabled=   0   'False
+         Tab(1).Control(42)=   "c_NCM(21)"
+         Tab(1).Control(42).Enabled=   0   'False
+         Tab(1).Control(43)=   "cb_ICMS_item(21)"
+         Tab(1).Control(43).Enabled=   0   'False
+         Tab(1).Control(44)=   "c_xPed(21)"
+         Tab(1).Control(44).Enabled=   0   'False
+         Tab(1).Control(45)=   "c_unidade(21)"
+         Tab(1).Control(45).Enabled=   0   'False
+         Tab(1).Control(46)=   "c_nItemPed(21)"
+         Tab(1).Control(46).Enabled=   0   'False
+         Tab(1).Control(47)=   "c_fcp(21)"
+         Tab(1).Control(47).Enabled=   0   'False
+         Tab(1).Control(48)=   "c_fabricante(20)"
+         Tab(1).Control(48).Enabled=   0   'False
+         Tab(1).Control(49)=   "c_produto(20)"
+         Tab(1).Control(49).Enabled=   0   'False
+         Tab(1).Control(50)=   "c_descricao(20)"
+         Tab(1).Control(50).Enabled=   0   'False
+         Tab(1).Control(51)=   "c_qtde(20)"
+         Tab(1).Control(51).Enabled=   0   'False
+         Tab(1).Control(52)=   "c_vl_unitario(20)"
+         Tab(1).Control(52).Enabled=   0   'False
+         Tab(1).Control(53)=   "c_vl_total(20)"
+         Tab(1).Control(53).Enabled=   0   'False
+         Tab(1).Control(54)=   "c_produto_obs(20)"
+         Tab(1).Control(54).Enabled=   0   'False
+         Tab(1).Control(55)=   "c_vl_outras_despesas_acessorias(20)"
+         Tab(1).Control(55).Enabled=   0   'False
+         Tab(1).Control(56)=   "c_CST(20)"
+         Tab(1).Control(56).Enabled=   0   'False
+         Tab(1).Control(57)=   "cb_CFOP(20)"
+         Tab(1).Control(57).Enabled=   0   'False
+         Tab(1).Control(58)=   "c_NCM(20)"
+         Tab(1).Control(58).Enabled=   0   'False
+         Tab(1).Control(59)=   "cb_ICMS_item(20)"
+         Tab(1).Control(59).Enabled=   0   'False
+         Tab(1).Control(60)=   "c_xPed(20)"
+         Tab(1).Control(60).Enabled=   0   'False
+         Tab(1).Control(61)=   "c_unidade(20)"
+         Tab(1).Control(61).Enabled=   0   'False
+         Tab(1).Control(62)=   "c_nItemPed(20)"
+         Tab(1).Control(62).Enabled=   0   'False
+         Tab(1).Control(63)=   "c_fcp(20)"
+         Tab(1).Control(63).Enabled=   0   'False
+         Tab(1).Control(64)=   "c_fabricante(19)"
+         Tab(1).Control(64).Enabled=   0   'False
+         Tab(1).Control(65)=   "c_produto(19)"
+         Tab(1).Control(65).Enabled=   0   'False
+         Tab(1).Control(66)=   "c_descricao(19)"
+         Tab(1).Control(66).Enabled=   0   'False
+         Tab(1).Control(67)=   "c_qtde(19)"
+         Tab(1).Control(67).Enabled=   0   'False
+         Tab(1).Control(68)=   "c_vl_unitario(19)"
+         Tab(1).Control(68).Enabled=   0   'False
+         Tab(1).Control(69)=   "c_vl_total(19)"
+         Tab(1).Control(69).Enabled=   0   'False
+         Tab(1).Control(70)=   "c_produto_obs(19)"
+         Tab(1).Control(70).Enabled=   0   'False
+         Tab(1).Control(71)=   "c_vl_outras_despesas_acessorias(19)"
+         Tab(1).Control(71).Enabled=   0   'False
+         Tab(1).Control(72)=   "c_CST(19)"
+         Tab(1).Control(72).Enabled=   0   'False
+         Tab(1).Control(73)=   "cb_CFOP(19)"
+         Tab(1).Control(73).Enabled=   0   'False
+         Tab(1).Control(74)=   "c_NCM(19)"
+         Tab(1).Control(74).Enabled=   0   'False
+         Tab(1).Control(75)=   "cb_ICMS_item(19)"
+         Tab(1).Control(75).Enabled=   0   'False
+         Tab(1).Control(76)=   "c_xPed(19)"
+         Tab(1).Control(76).Enabled=   0   'False
+         Tab(1).Control(77)=   "c_unidade(19)"
+         Tab(1).Control(77).Enabled=   0   'False
+         Tab(1).Control(78)=   "c_nItemPed(19)"
+         Tab(1).Control(78).Enabled=   0   'False
+         Tab(1).Control(79)=   "c_fcp(19)"
+         Tab(1).Control(79).Enabled=   0   'False
+         Tab(1).Control(80)=   "c_fabricante(18)"
+         Tab(1).Control(80).Enabled=   0   'False
+         Tab(1).Control(81)=   "c_produto(18)"
+         Tab(1).Control(81).Enabled=   0   'False
+         Tab(1).Control(82)=   "c_descricao(18)"
+         Tab(1).Control(82).Enabled=   0   'False
+         Tab(1).Control(83)=   "c_qtde(18)"
+         Tab(1).Control(83).Enabled=   0   'False
+         Tab(1).Control(84)=   "c_vl_unitario(18)"
+         Tab(1).Control(84).Enabled=   0   'False
+         Tab(1).Control(85)=   "c_vl_total(18)"
+         Tab(1).Control(85).Enabled=   0   'False
+         Tab(1).Control(86)=   "c_produto_obs(18)"
+         Tab(1).Control(86).Enabled=   0   'False
+         Tab(1).Control(87)=   "c_vl_outras_despesas_acessorias(18)"
+         Tab(1).Control(87).Enabled=   0   'False
+         Tab(1).Control(88)=   "c_CST(18)"
+         Tab(1).Control(88).Enabled=   0   'False
+         Tab(1).Control(89)=   "cb_CFOP(18)"
+         Tab(1).Control(89).Enabled=   0   'False
+         Tab(1).Control(90)=   "c_NCM(18)"
+         Tab(1).Control(90).Enabled=   0   'False
+         Tab(1).Control(91)=   "cb_ICMS_item(18)"
+         Tab(1).Control(91).Enabled=   0   'False
+         Tab(1).Control(92)=   "c_xPed(18)"
+         Tab(1).Control(92).Enabled=   0   'False
+         Tab(1).Control(93)=   "c_unidade(18)"
+         Tab(1).Control(93).Enabled=   0   'False
+         Tab(1).Control(94)=   "c_nItemPed(18)"
+         Tab(1).Control(94).Enabled=   0   'False
+         Tab(1).Control(95)=   "c_fcp(18)"
+         Tab(1).Control(95).Enabled=   0   'False
+         Tab(1).Control(96)=   "c_fabricante(17)"
+         Tab(1).Control(96).Enabled=   0   'False
+         Tab(1).Control(97)=   "c_produto(17)"
+         Tab(1).Control(97).Enabled=   0   'False
+         Tab(1).Control(98)=   "c_descricao(17)"
+         Tab(1).Control(98).Enabled=   0   'False
+         Tab(1).Control(99)=   "c_qtde(17)"
+         Tab(1).Control(99).Enabled=   0   'False
+         Tab(1).Control(100)=   "c_vl_unitario(17)"
+         Tab(1).Control(100).Enabled=   0   'False
+         Tab(1).Control(101)=   "c_vl_total(17)"
+         Tab(1).Control(101).Enabled=   0   'False
+         Tab(1).Control(102)=   "c_produto_obs(17)"
+         Tab(1).Control(102).Enabled=   0   'False
+         Tab(1).Control(103)=   "c_vl_outras_despesas_acessorias(17)"
+         Tab(1).Control(103).Enabled=   0   'False
+         Tab(1).Control(104)=   "c_CST(17)"
+         Tab(1).Control(104).Enabled=   0   'False
+         Tab(1).Control(105)=   "cb_CFOP(17)"
+         Tab(1).Control(105).Enabled=   0   'False
+         Tab(1).Control(106)=   "c_NCM(17)"
+         Tab(1).Control(106).Enabled=   0   'False
+         Tab(1).Control(107)=   "cb_ICMS_item(17)"
+         Tab(1).Control(107).Enabled=   0   'False
+         Tab(1).Control(108)=   "c_xPed(17)"
+         Tab(1).Control(108).Enabled=   0   'False
+         Tab(1).Control(109)=   "c_unidade(17)"
+         Tab(1).Control(109).Enabled=   0   'False
+         Tab(1).Control(110)=   "c_nItemPed(17)"
+         Tab(1).Control(110).Enabled=   0   'False
+         Tab(1).Control(111)=   "c_fcp(17)"
+         Tab(1).Control(111).Enabled=   0   'False
+         Tab(1).Control(112)=   "c_fabricante(16)"
+         Tab(1).Control(112).Enabled=   0   'False
+         Tab(1).Control(113)=   "c_produto(16)"
+         Tab(1).Control(113).Enabled=   0   'False
+         Tab(1).Control(114)=   "c_descricao(16)"
+         Tab(1).Control(114).Enabled=   0   'False
+         Tab(1).Control(115)=   "c_qtde(16)"
+         Tab(1).Control(115).Enabled=   0   'False
+         Tab(1).Control(116)=   "c_vl_unitario(16)"
+         Tab(1).Control(116).Enabled=   0   'False
+         Tab(1).Control(117)=   "c_vl_total(16)"
+         Tab(1).Control(117).Enabled=   0   'False
+         Tab(1).Control(118)=   "c_produto_obs(16)"
+         Tab(1).Control(118).Enabled=   0   'False
+         Tab(1).Control(119)=   "c_vl_outras_despesas_acessorias(16)"
+         Tab(1).Control(119).Enabled=   0   'False
+         Tab(1).Control(120)=   "c_CST(16)"
+         Tab(1).Control(120).Enabled=   0   'False
+         Tab(1).Control(121)=   "cb_CFOP(16)"
+         Tab(1).Control(121).Enabled=   0   'False
+         Tab(1).Control(122)=   "c_NCM(16)"
+         Tab(1).Control(122).Enabled=   0   'False
+         Tab(1).Control(123)=   "cb_ICMS_item(16)"
+         Tab(1).Control(123).Enabled=   0   'False
+         Tab(1).Control(124)=   "c_xPed(16)"
+         Tab(1).Control(124).Enabled=   0   'False
+         Tab(1).Control(125)=   "c_unidade(16)"
+         Tab(1).Control(125).Enabled=   0   'False
+         Tab(1).Control(126)=   "c_nItemPed(16)"
+         Tab(1).Control(126).Enabled=   0   'False
+         Tab(1).Control(127)=   "c_fcp(16)"
+         Tab(1).Control(127).Enabled=   0   'False
+         Tab(1).Control(128)=   "c_fabricante(15)"
+         Tab(1).Control(128).Enabled=   0   'False
+         Tab(1).Control(129)=   "c_produto(15)"
+         Tab(1).Control(129).Enabled=   0   'False
+         Tab(1).Control(130)=   "c_descricao(15)"
+         Tab(1).Control(130).Enabled=   0   'False
+         Tab(1).Control(131)=   "c_qtde(15)"
+         Tab(1).Control(131).Enabled=   0   'False
+         Tab(1).Control(132)=   "c_vl_unitario(15)"
+         Tab(1).Control(132).Enabled=   0   'False
+         Tab(1).Control(133)=   "c_vl_total(15)"
+         Tab(1).Control(133).Enabled=   0   'False
+         Tab(1).Control(134)=   "c_produto_obs(15)"
+         Tab(1).Control(134).Enabled=   0   'False
+         Tab(1).Control(135)=   "c_vl_outras_despesas_acessorias(15)"
+         Tab(1).Control(135).Enabled=   0   'False
+         Tab(1).Control(136)=   "c_CST(15)"
+         Tab(1).Control(136).Enabled=   0   'False
+         Tab(1).Control(137)=   "cb_CFOP(15)"
+         Tab(1).Control(137).Enabled=   0   'False
+         Tab(1).Control(138)=   "c_NCM(15)"
+         Tab(1).Control(138).Enabled=   0   'False
+         Tab(1).Control(139)=   "cb_ICMS_item(15)"
+         Tab(1).Control(139).Enabled=   0   'False
+         Tab(1).Control(140)=   "c_xPed(15)"
+         Tab(1).Control(140).Enabled=   0   'False
+         Tab(1).Control(141)=   "c_unidade(15)"
+         Tab(1).Control(141).Enabled=   0   'False
+         Tab(1).Control(142)=   "c_nItemPed(15)"
+         Tab(1).Control(142).Enabled=   0   'False
+         Tab(1).Control(143)=   "c_fcp(15)"
+         Tab(1).Control(143).Enabled=   0   'False
+         Tab(1).Control(144)=   "c_fabricante(14)"
+         Tab(1).Control(144).Enabled=   0   'False
+         Tab(1).Control(145)=   "c_produto(14)"
+         Tab(1).Control(145).Enabled=   0   'False
+         Tab(1).Control(146)=   "c_descricao(14)"
+         Tab(1).Control(146).Enabled=   0   'False
+         Tab(1).Control(147)=   "c_qtde(14)"
+         Tab(1).Control(147).Enabled=   0   'False
+         Tab(1).Control(148)=   "c_vl_unitario(14)"
+         Tab(1).Control(148).Enabled=   0   'False
+         Tab(1).Control(149)=   "c_vl_total(14)"
+         Tab(1).Control(149).Enabled=   0   'False
+         Tab(1).Control(150)=   "c_produto_obs(14)"
+         Tab(1).Control(150).Enabled=   0   'False
+         Tab(1).Control(151)=   "c_vl_outras_despesas_acessorias(14)"
+         Tab(1).Control(151).Enabled=   0   'False
+         Tab(1).Control(152)=   "c_CST(14)"
+         Tab(1).Control(152).Enabled=   0   'False
+         Tab(1).Control(153)=   "cb_CFOP(14)"
+         Tab(1).Control(153).Enabled=   0   'False
+         Tab(1).Control(154)=   "c_NCM(14)"
+         Tab(1).Control(154).Enabled=   0   'False
+         Tab(1).Control(155)=   "cb_ICMS_item(14)"
+         Tab(1).Control(155).Enabled=   0   'False
+         Tab(1).Control(156)=   "c_xPed(14)"
+         Tab(1).Control(156).Enabled=   0   'False
+         Tab(1).Control(157)=   "c_unidade(14)"
+         Tab(1).Control(157).Enabled=   0   'False
+         Tab(1).Control(158)=   "c_nItemPed(14)"
+         Tab(1).Control(158).Enabled=   0   'False
+         Tab(1).Control(159)=   "c_fcp(14)"
+         Tab(1).Control(159).Enabled=   0   'False
+         Tab(1).Control(160)=   "c_fabricante(13)"
+         Tab(1).Control(160).Enabled=   0   'False
+         Tab(1).Control(161)=   "c_produto(13)"
+         Tab(1).Control(161).Enabled=   0   'False
+         Tab(1).Control(162)=   "c_descricao(13)"
+         Tab(1).Control(162).Enabled=   0   'False
+         Tab(1).Control(163)=   "c_qtde(13)"
+         Tab(1).Control(163).Enabled=   0   'False
+         Tab(1).Control(164)=   "c_vl_unitario(13)"
+         Tab(1).Control(164).Enabled=   0   'False
+         Tab(1).Control(165)=   "c_vl_total(13)"
+         Tab(1).Control(165).Enabled=   0   'False
+         Tab(1).Control(166)=   "c_produto_obs(13)"
+         Tab(1).Control(166).Enabled=   0   'False
+         Tab(1).Control(167)=   "c_vl_outras_despesas_acessorias(13)"
+         Tab(1).Control(167).Enabled=   0   'False
+         Tab(1).Control(168)=   "c_CST(13)"
+         Tab(1).Control(168).Enabled=   0   'False
+         Tab(1).Control(169)=   "cb_CFOP(13)"
+         Tab(1).Control(169).Enabled=   0   'False
+         Tab(1).Control(170)=   "c_NCM(13)"
+         Tab(1).Control(170).Enabled=   0   'False
+         Tab(1).Control(171)=   "cb_ICMS_item(13)"
+         Tab(1).Control(171).Enabled=   0   'False
+         Tab(1).Control(172)=   "c_xPed(13)"
+         Tab(1).Control(172).Enabled=   0   'False
+         Tab(1).Control(173)=   "c_unidade(13)"
+         Tab(1).Control(173).Enabled=   0   'False
+         Tab(1).Control(174)=   "c_nItemPed(13)"
+         Tab(1).Control(174).Enabled=   0   'False
+         Tab(1).Control(175)=   "c_fcp(13)"
+         Tab(1).Control(175).Enabled=   0   'False
+         Tab(1).Control(176)=   "c_fabricante(12)"
+         Tab(1).Control(176).Enabled=   0   'False
+         Tab(1).Control(177)=   "c_produto(12)"
+         Tab(1).Control(177).Enabled=   0   'False
+         Tab(1).Control(178)=   "c_descricao(12)"
+         Tab(1).Control(178).Enabled=   0   'False
+         Tab(1).Control(179)=   "c_qtde(12)"
+         Tab(1).Control(179).Enabled=   0   'False
+         Tab(1).Control(180)=   "c_vl_unitario(12)"
+         Tab(1).Control(180).Enabled=   0   'False
+         Tab(1).Control(181)=   "c_vl_total(12)"
+         Tab(1).Control(181).Enabled=   0   'False
+         Tab(1).Control(182)=   "c_produto_obs(12)"
+         Tab(1).Control(182).Enabled=   0   'False
+         Tab(1).Control(183)=   "c_vl_outras_despesas_acessorias(12)"
+         Tab(1).Control(183).Enabled=   0   'False
+         Tab(1).Control(184)=   "c_CST(12)"
+         Tab(1).Control(184).Enabled=   0   'False
+         Tab(1).Control(185)=   "cb_CFOP(12)"
+         Tab(1).Control(185).Enabled=   0   'False
+         Tab(1).Control(186)=   "c_NCM(12)"
+         Tab(1).Control(186).Enabled=   0   'False
+         Tab(1).Control(187)=   "cb_ICMS_item(12)"
+         Tab(1).Control(187).Enabled=   0   'False
+         Tab(1).Control(188)=   "c_xPed(12)"
+         Tab(1).Control(188).Enabled=   0   'False
+         Tab(1).Control(189)=   "c_unidade(12)"
+         Tab(1).Control(189).Enabled=   0   'False
+         Tab(1).Control(190)=   "c_nItemPed(12)"
+         Tab(1).Control(190).Enabled=   0   'False
+         Tab(1).Control(191)=   "c_fcp(12)"
+         Tab(1).Control(191).Enabled=   0   'False
+         Tab(1).ControlCount=   192
+         TabCaption(2)   =   "Itens 25 a 36"
+         TabPicture(2)   =   "f_EMISSAO_NFE_TRIANGULAR.frx":0038
+         Tab(2).ControlEnabled=   0   'False
+         Tab(2).Control(0)=   "c_fcp(35)"
+         Tab(2).Control(0).Enabled=   0   'False
+         Tab(2).Control(1)=   "c_nItemPed(35)"
+         Tab(2).Control(1).Enabled=   0   'False
+         Tab(2).Control(2)=   "c_unidade(35)"
+         Tab(2).Control(2).Enabled=   0   'False
+         Tab(2).Control(3)=   "c_xPed(35)"
+         Tab(2).Control(3).Enabled=   0   'False
+         Tab(2).Control(4)=   "cb_ICMS_item(35)"
+         Tab(2).Control(4).Enabled=   0   'False
+         Tab(2).Control(5)=   "c_NCM(35)"
+         Tab(2).Control(5).Enabled=   0   'False
+         Tab(2).Control(6)=   "cb_CFOP(35)"
+         Tab(2).Control(6).Enabled=   0   'False
+         Tab(2).Control(7)=   "c_CST(35)"
+         Tab(2).Control(7).Enabled=   0   'False
+         Tab(2).Control(8)=   "c_vl_outras_despesas_acessorias(35)"
+         Tab(2).Control(8).Enabled=   0   'False
+         Tab(2).Control(9)=   "c_produto_obs(35)"
+         Tab(2).Control(9).Enabled=   0   'False
+         Tab(2).Control(10)=   "c_vl_total(35)"
+         Tab(2).Control(10).Enabled=   0   'False
+         Tab(2).Control(11)=   "c_vl_unitario(35)"
+         Tab(2).Control(11).Enabled=   0   'False
+         Tab(2).Control(12)=   "c_qtde(35)"
+         Tab(2).Control(12).Enabled=   0   'False
+         Tab(2).Control(13)=   "c_descricao(35)"
+         Tab(2).Control(13).Enabled=   0   'False
+         Tab(2).Control(14)=   "c_produto(35)"
+         Tab(2).Control(14).Enabled=   0   'False
+         Tab(2).Control(15)=   "c_fabricante(35)"
+         Tab(2).Control(15).Enabled=   0   'False
+         Tab(2).Control(16)=   "c_fcp(34)"
+         Tab(2).Control(16).Enabled=   0   'False
+         Tab(2).Control(17)=   "c_nItemPed(34)"
+         Tab(2).Control(17).Enabled=   0   'False
+         Tab(2).Control(18)=   "c_unidade(34)"
+         Tab(2).Control(18).Enabled=   0   'False
+         Tab(2).Control(19)=   "c_xPed(34)"
+         Tab(2).Control(19).Enabled=   0   'False
+         Tab(2).Control(20)=   "cb_ICMS_item(34)"
+         Tab(2).Control(20).Enabled=   0   'False
+         Tab(2).Control(21)=   "c_NCM(34)"
+         Tab(2).Control(21).Enabled=   0   'False
+         Tab(2).Control(22)=   "cb_CFOP(34)"
+         Tab(2).Control(22).Enabled=   0   'False
+         Tab(2).Control(23)=   "c_CST(34)"
+         Tab(2).Control(23).Enabled=   0   'False
+         Tab(2).Control(24)=   "c_vl_outras_despesas_acessorias(34)"
+         Tab(2).Control(24).Enabled=   0   'False
+         Tab(2).Control(25)=   "c_produto_obs(34)"
+         Tab(2).Control(25).Enabled=   0   'False
+         Tab(2).Control(26)=   "c_vl_total(34)"
+         Tab(2).Control(26).Enabled=   0   'False
+         Tab(2).Control(27)=   "c_vl_unitario(34)"
+         Tab(2).Control(27).Enabled=   0   'False
+         Tab(2).Control(28)=   "c_qtde(34)"
+         Tab(2).Control(28).Enabled=   0   'False
+         Tab(2).Control(29)=   "c_descricao(34)"
+         Tab(2).Control(29).Enabled=   0   'False
+         Tab(2).Control(30)=   "c_produto(34)"
+         Tab(2).Control(30).Enabled=   0   'False
+         Tab(2).Control(31)=   "c_fabricante(34)"
+         Tab(2).Control(31).Enabled=   0   'False
+         Tab(2).Control(32)=   "c_fcp(33)"
+         Tab(2).Control(32).Enabled=   0   'False
+         Tab(2).Control(33)=   "c_nItemPed(33)"
+         Tab(2).Control(33).Enabled=   0   'False
+         Tab(2).Control(34)=   "c_unidade(33)"
+         Tab(2).Control(34).Enabled=   0   'False
+         Tab(2).Control(35)=   "c_xPed(33)"
+         Tab(2).Control(35).Enabled=   0   'False
+         Tab(2).Control(36)=   "cb_ICMS_item(33)"
+         Tab(2).Control(36).Enabled=   0   'False
+         Tab(2).Control(37)=   "c_NCM(33)"
+         Tab(2).Control(37).Enabled=   0   'False
+         Tab(2).Control(38)=   "cb_CFOP(33)"
+         Tab(2).Control(38).Enabled=   0   'False
+         Tab(2).Control(39)=   "c_CST(33)"
+         Tab(2).Control(39).Enabled=   0   'False
+         Tab(2).Control(40)=   "c_vl_outras_despesas_acessorias(33)"
+         Tab(2).Control(40).Enabled=   0   'False
+         Tab(2).Control(41)=   "c_produto_obs(33)"
+         Tab(2).Control(41).Enabled=   0   'False
+         Tab(2).Control(42)=   "c_vl_total(33)"
+         Tab(2).Control(42).Enabled=   0   'False
+         Tab(2).Control(43)=   "c_vl_unitario(33)"
+         Tab(2).Control(43).Enabled=   0   'False
+         Tab(2).Control(44)=   "c_qtde(33)"
+         Tab(2).Control(44).Enabled=   0   'False
+         Tab(2).Control(45)=   "c_descricao(33)"
+         Tab(2).Control(45).Enabled=   0   'False
+         Tab(2).Control(46)=   "c_produto(33)"
+         Tab(2).Control(46).Enabled=   0   'False
+         Tab(2).Control(47)=   "c_fabricante(33)"
+         Tab(2).Control(47).Enabled=   0   'False
+         Tab(2).Control(48)=   "c_fcp(32)"
+         Tab(2).Control(48).Enabled=   0   'False
+         Tab(2).Control(49)=   "c_nItemPed(32)"
+         Tab(2).Control(49).Enabled=   0   'False
+         Tab(2).Control(50)=   "c_unidade(32)"
+         Tab(2).Control(50).Enabled=   0   'False
+         Tab(2).Control(51)=   "c_xPed(32)"
+         Tab(2).Control(51).Enabled=   0   'False
+         Tab(2).Control(52)=   "cb_ICMS_item(32)"
+         Tab(2).Control(52).Enabled=   0   'False
+         Tab(2).Control(53)=   "c_NCM(32)"
+         Tab(2).Control(53).Enabled=   0   'False
+         Tab(2).Control(54)=   "cb_CFOP(32)"
+         Tab(2).Control(54).Enabled=   0   'False
+         Tab(2).Control(55)=   "c_CST(32)"
+         Tab(2).Control(55).Enabled=   0   'False
+         Tab(2).Control(56)=   "c_vl_outras_despesas_acessorias(32)"
+         Tab(2).Control(56).Enabled=   0   'False
+         Tab(2).Control(57)=   "c_produto_obs(32)"
+         Tab(2).Control(57).Enabled=   0   'False
+         Tab(2).Control(58)=   "c_vl_total(32)"
+         Tab(2).Control(58).Enabled=   0   'False
+         Tab(2).Control(59)=   "c_vl_unitario(32)"
+         Tab(2).Control(59).Enabled=   0   'False
+         Tab(2).Control(60)=   "c_qtde(32)"
+         Tab(2).Control(60).Enabled=   0   'False
+         Tab(2).Control(61)=   "c_descricao(32)"
+         Tab(2).Control(61).Enabled=   0   'False
+         Tab(2).Control(62)=   "c_produto(32)"
+         Tab(2).Control(62).Enabled=   0   'False
+         Tab(2).Control(63)=   "c_fabricante(32)"
+         Tab(2).Control(63).Enabled=   0   'False
+         Tab(2).Control(64)=   "c_fcp(31)"
+         Tab(2).Control(64).Enabled=   0   'False
+         Tab(2).Control(65)=   "c_nItemPed(31)"
+         Tab(2).Control(65).Enabled=   0   'False
+         Tab(2).Control(66)=   "c_unidade(31)"
+         Tab(2).Control(66).Enabled=   0   'False
+         Tab(2).Control(67)=   "c_xPed(31)"
+         Tab(2).Control(67).Enabled=   0   'False
+         Tab(2).Control(68)=   "cb_ICMS_item(31)"
+         Tab(2).Control(68).Enabled=   0   'False
+         Tab(2).Control(69)=   "c_NCM(31)"
+         Tab(2).Control(69).Enabled=   0   'False
+         Tab(2).Control(70)=   "cb_CFOP(31)"
+         Tab(2).Control(70).Enabled=   0   'False
+         Tab(2).Control(71)=   "c_CST(31)"
+         Tab(2).Control(71).Enabled=   0   'False
+         Tab(2).Control(72)=   "c_vl_outras_despesas_acessorias(31)"
+         Tab(2).Control(72).Enabled=   0   'False
+         Tab(2).Control(73)=   "c_produto_obs(31)"
+         Tab(2).Control(73).Enabled=   0   'False
+         Tab(2).Control(74)=   "c_vl_total(31)"
+         Tab(2).Control(74).Enabled=   0   'False
+         Tab(2).Control(75)=   "c_vl_unitario(31)"
+         Tab(2).Control(75).Enabled=   0   'False
+         Tab(2).Control(76)=   "c_qtde(31)"
+         Tab(2).Control(76).Enabled=   0   'False
+         Tab(2).Control(77)=   "c_descricao(31)"
+         Tab(2).Control(77).Enabled=   0   'False
+         Tab(2).Control(78)=   "c_produto(31)"
+         Tab(2).Control(78).Enabled=   0   'False
+         Tab(2).Control(79)=   "c_fabricante(31)"
+         Tab(2).Control(79).Enabled=   0   'False
+         Tab(2).Control(80)=   "c_fcp(30)"
+         Tab(2).Control(80).Enabled=   0   'False
+         Tab(2).Control(81)=   "c_nItemPed(30)"
+         Tab(2).Control(81).Enabled=   0   'False
+         Tab(2).Control(82)=   "c_unidade(30)"
+         Tab(2).Control(82).Enabled=   0   'False
+         Tab(2).Control(83)=   "c_xPed(30)"
+         Tab(2).Control(83).Enabled=   0   'False
+         Tab(2).Control(84)=   "cb_ICMS_item(30)"
+         Tab(2).Control(84).Enabled=   0   'False
+         Tab(2).Control(85)=   "c_NCM(30)"
+         Tab(2).Control(85).Enabled=   0   'False
+         Tab(2).Control(86)=   "cb_CFOP(30)"
+         Tab(2).Control(86).Enabled=   0   'False
+         Tab(2).Control(87)=   "c_CST(30)"
+         Tab(2).Control(87).Enabled=   0   'False
+         Tab(2).Control(88)=   "c_vl_outras_despesas_acessorias(30)"
+         Tab(2).Control(88).Enabled=   0   'False
+         Tab(2).Control(89)=   "c_produto_obs(30)"
+         Tab(2).Control(89).Enabled=   0   'False
+         Tab(2).Control(90)=   "c_vl_total(30)"
+         Tab(2).Control(90).Enabled=   0   'False
+         Tab(2).Control(91)=   "c_vl_unitario(30)"
+         Tab(2).Control(91).Enabled=   0   'False
+         Tab(2).Control(92)=   "c_qtde(30)"
+         Tab(2).Control(92).Enabled=   0   'False
+         Tab(2).Control(93)=   "c_descricao(30)"
+         Tab(2).Control(93).Enabled=   0   'False
+         Tab(2).Control(94)=   "c_produto(30)"
+         Tab(2).Control(94).Enabled=   0   'False
+         Tab(2).Control(95)=   "c_fabricante(30)"
+         Tab(2).Control(95).Enabled=   0   'False
+         Tab(2).Control(96)=   "c_fcp(29)"
+         Tab(2).Control(96).Enabled=   0   'False
+         Tab(2).Control(97)=   "c_nItemPed(29)"
+         Tab(2).Control(97).Enabled=   0   'False
+         Tab(2).Control(98)=   "c_unidade(29)"
+         Tab(2).Control(98).Enabled=   0   'False
+         Tab(2).Control(99)=   "c_xPed(29)"
+         Tab(2).Control(99).Enabled=   0   'False
+         Tab(2).Control(100)=   "cb_ICMS_item(29)"
+         Tab(2).Control(100).Enabled=   0   'False
+         Tab(2).Control(101)=   "c_NCM(29)"
+         Tab(2).Control(101).Enabled=   0   'False
+         Tab(2).Control(102)=   "cb_CFOP(29)"
+         Tab(2).Control(102).Enabled=   0   'False
+         Tab(2).Control(103)=   "c_CST(29)"
+         Tab(2).Control(103).Enabled=   0   'False
+         Tab(2).Control(104)=   "c_vl_outras_despesas_acessorias(29)"
+         Tab(2).Control(104).Enabled=   0   'False
+         Tab(2).Control(105)=   "c_produto_obs(29)"
+         Tab(2).Control(105).Enabled=   0   'False
+         Tab(2).Control(106)=   "c_vl_total(29)"
+         Tab(2).Control(106).Enabled=   0   'False
+         Tab(2).Control(107)=   "c_vl_unitario(29)"
+         Tab(2).Control(107).Enabled=   0   'False
+         Tab(2).Control(108)=   "c_qtde(29)"
+         Tab(2).Control(108).Enabled=   0   'False
+         Tab(2).Control(109)=   "c_descricao(29)"
+         Tab(2).Control(109).Enabled=   0   'False
+         Tab(2).Control(110)=   "c_produto(29)"
+         Tab(2).Control(110).Enabled=   0   'False
+         Tab(2).Control(111)=   "c_fabricante(29)"
+         Tab(2).Control(111).Enabled=   0   'False
+         Tab(2).Control(112)=   "c_fcp(28)"
+         Tab(2).Control(112).Enabled=   0   'False
+         Tab(2).Control(113)=   "c_nItemPed(28)"
+         Tab(2).Control(113).Enabled=   0   'False
+         Tab(2).Control(114)=   "c_unidade(28)"
+         Tab(2).Control(114).Enabled=   0   'False
+         Tab(2).Control(115)=   "c_xPed(28)"
+         Tab(2).Control(115).Enabled=   0   'False
+         Tab(2).Control(116)=   "cb_ICMS_item(28)"
+         Tab(2).Control(116).Enabled=   0   'False
+         Tab(2).Control(117)=   "c_NCM(28)"
+         Tab(2).Control(117).Enabled=   0   'False
+         Tab(2).Control(118)=   "cb_CFOP(28)"
+         Tab(2).Control(118).Enabled=   0   'False
+         Tab(2).Control(119)=   "c_CST(28)"
+         Tab(2).Control(119).Enabled=   0   'False
+         Tab(2).Control(120)=   "c_vl_outras_despesas_acessorias(28)"
+         Tab(2).Control(120).Enabled=   0   'False
+         Tab(2).Control(121)=   "c_produto_obs(28)"
+         Tab(2).Control(121).Enabled=   0   'False
+         Tab(2).Control(122)=   "c_vl_total(28)"
+         Tab(2).Control(122).Enabled=   0   'False
+         Tab(2).Control(123)=   "c_vl_unitario(28)"
+         Tab(2).Control(123).Enabled=   0   'False
+         Tab(2).Control(124)=   "c_qtde(28)"
+         Tab(2).Control(124).Enabled=   0   'False
+         Tab(2).Control(125)=   "c_descricao(28)"
+         Tab(2).Control(125).Enabled=   0   'False
+         Tab(2).Control(126)=   "c_produto(28)"
+         Tab(2).Control(126).Enabled=   0   'False
+         Tab(2).Control(127)=   "c_fabricante(28)"
+         Tab(2).Control(127).Enabled=   0   'False
+         Tab(2).Control(128)=   "c_fcp(27)"
+         Tab(2).Control(128).Enabled=   0   'False
+         Tab(2).Control(129)=   "c_nItemPed(27)"
+         Tab(2).Control(129).Enabled=   0   'False
+         Tab(2).Control(130)=   "c_unidade(27)"
+         Tab(2).Control(130).Enabled=   0   'False
+         Tab(2).Control(131)=   "c_xPed(27)"
+         Tab(2).Control(131).Enabled=   0   'False
+         Tab(2).Control(132)=   "cb_ICMS_item(27)"
+         Tab(2).Control(132).Enabled=   0   'False
+         Tab(2).Control(133)=   "c_NCM(27)"
+         Tab(2).Control(133).Enabled=   0   'False
+         Tab(2).Control(134)=   "cb_CFOP(27)"
+         Tab(2).Control(134).Enabled=   0   'False
+         Tab(2).Control(135)=   "c_CST(27)"
+         Tab(2).Control(135).Enabled=   0   'False
+         Tab(2).Control(136)=   "c_vl_outras_despesas_acessorias(27)"
+         Tab(2).Control(136).Enabled=   0   'False
+         Tab(2).Control(137)=   "c_produto_obs(27)"
+         Tab(2).Control(137).Enabled=   0   'False
+         Tab(2).Control(138)=   "c_vl_total(27)"
+         Tab(2).Control(138).Enabled=   0   'False
+         Tab(2).Control(139)=   "c_vl_unitario(27)"
+         Tab(2).Control(139).Enabled=   0   'False
+         Tab(2).Control(140)=   "c_qtde(27)"
+         Tab(2).Control(140).Enabled=   0   'False
+         Tab(2).Control(141)=   "c_descricao(27)"
+         Tab(2).Control(141).Enabled=   0   'False
+         Tab(2).Control(142)=   "c_produto(27)"
+         Tab(2).Control(142).Enabled=   0   'False
+         Tab(2).Control(143)=   "c_fabricante(27)"
+         Tab(2).Control(143).Enabled=   0   'False
+         Tab(2).Control(144)=   "c_fcp(26)"
+         Tab(2).Control(144).Enabled=   0   'False
+         Tab(2).Control(145)=   "c_nItemPed(26)"
+         Tab(2).Control(145).Enabled=   0   'False
+         Tab(2).Control(146)=   "c_unidade(26)"
+         Tab(2).Control(146).Enabled=   0   'False
+         Tab(2).Control(147)=   "c_xPed(26)"
+         Tab(2).Control(147).Enabled=   0   'False
+         Tab(2).Control(148)=   "cb_ICMS_item(26)"
+         Tab(2).Control(148).Enabled=   0   'False
+         Tab(2).Control(149)=   "c_NCM(26)"
+         Tab(2).Control(149).Enabled=   0   'False
+         Tab(2).Control(150)=   "cb_CFOP(26)"
+         Tab(2).Control(150).Enabled=   0   'False
+         Tab(2).Control(151)=   "c_CST(26)"
+         Tab(2).Control(151).Enabled=   0   'False
+         Tab(2).Control(152)=   "c_vl_outras_despesas_acessorias(26)"
+         Tab(2).Control(152).Enabled=   0   'False
+         Tab(2).Control(153)=   "c_produto_obs(26)"
+         Tab(2).Control(153).Enabled=   0   'False
+         Tab(2).Control(154)=   "c_vl_total(26)"
+         Tab(2).Control(154).Enabled=   0   'False
+         Tab(2).Control(155)=   "c_vl_unitario(26)"
+         Tab(2).Control(155).Enabled=   0   'False
+         Tab(2).Control(156)=   "c_qtde(26)"
+         Tab(2).Control(156).Enabled=   0   'False
+         Tab(2).Control(157)=   "c_descricao(26)"
+         Tab(2).Control(157).Enabled=   0   'False
+         Tab(2).Control(158)=   "c_produto(26)"
+         Tab(2).Control(158).Enabled=   0   'False
+         Tab(2).Control(159)=   "c_fabricante(26)"
+         Tab(2).Control(159).Enabled=   0   'False
+         Tab(2).Control(160)=   "c_fcp(25)"
+         Tab(2).Control(160).Enabled=   0   'False
+         Tab(2).Control(161)=   "c_nItemPed(25)"
+         Tab(2).Control(161).Enabled=   0   'False
+         Tab(2).Control(162)=   "c_unidade(25)"
+         Tab(2).Control(162).Enabled=   0   'False
+         Tab(2).Control(163)=   "c_xPed(25)"
+         Tab(2).Control(163).Enabled=   0   'False
+         Tab(2).Control(164)=   "cb_ICMS_item(25)"
+         Tab(2).Control(164).Enabled=   0   'False
+         Tab(2).Control(165)=   "c_NCM(25)"
+         Tab(2).Control(165).Enabled=   0   'False
+         Tab(2).Control(166)=   "cb_CFOP(25)"
+         Tab(2).Control(166).Enabled=   0   'False
+         Tab(2).Control(167)=   "c_CST(25)"
+         Tab(2).Control(167).Enabled=   0   'False
+         Tab(2).Control(168)=   "c_vl_outras_despesas_acessorias(25)"
+         Tab(2).Control(168).Enabled=   0   'False
+         Tab(2).Control(169)=   "c_produto_obs(25)"
+         Tab(2).Control(169).Enabled=   0   'False
+         Tab(2).Control(170)=   "c_vl_total(25)"
+         Tab(2).Control(170).Enabled=   0   'False
+         Tab(2).Control(171)=   "c_vl_unitario(25)"
+         Tab(2).Control(171).Enabled=   0   'False
+         Tab(2).Control(172)=   "c_qtde(25)"
+         Tab(2).Control(172).Enabled=   0   'False
+         Tab(2).Control(173)=   "c_descricao(25)"
+         Tab(2).Control(173).Enabled=   0   'False
+         Tab(2).Control(174)=   "c_produto(25)"
+         Tab(2).Control(174).Enabled=   0   'False
+         Tab(2).Control(175)=   "c_fabricante(25)"
+         Tab(2).Control(175).Enabled=   0   'False
+         Tab(2).Control(176)=   "c_fcp(24)"
+         Tab(2).Control(176).Enabled=   0   'False
+         Tab(2).Control(177)=   "c_nItemPed(24)"
+         Tab(2).Control(177).Enabled=   0   'False
+         Tab(2).Control(178)=   "c_unidade(24)"
+         Tab(2).Control(178).Enabled=   0   'False
+         Tab(2).Control(179)=   "c_xPed(24)"
+         Tab(2).Control(179).Enabled=   0   'False
+         Tab(2).Control(180)=   "cb_ICMS_item(24)"
+         Tab(2).Control(180).Enabled=   0   'False
+         Tab(2).Control(181)=   "c_NCM(24)"
+         Tab(2).Control(181).Enabled=   0   'False
+         Tab(2).Control(182)=   "cb_CFOP(24)"
+         Tab(2).Control(182).Enabled=   0   'False
+         Tab(2).Control(183)=   "c_CST(24)"
+         Tab(2).Control(183).Enabled=   0   'False
+         Tab(2).Control(184)=   "c_vl_outras_despesas_acessorias(24)"
+         Tab(2).Control(184).Enabled=   0   'False
+         Tab(2).Control(185)=   "c_produto_obs(24)"
+         Tab(2).Control(185).Enabled=   0   'False
+         Tab(2).Control(186)=   "c_vl_total(24)"
+         Tab(2).Control(186).Enabled=   0   'False
+         Tab(2).Control(187)=   "c_vl_unitario(24)"
+         Tab(2).Control(187).Enabled=   0   'False
+         Tab(2).Control(188)=   "c_qtde(24)"
+         Tab(2).Control(188).Enabled=   0   'False
+         Tab(2).Control(189)=   "c_descricao(24)"
+         Tab(2).Control(189).Enabled=   0   'False
+         Tab(2).Control(190)=   "c_produto(24)"
+         Tab(2).Control(190).Enabled=   0   'False
+         Tab(2).Control(191)=   "c_fabricante(24)"
+         Tab(2).Control(191).Enabled=   0   'False
+         Tab(2).ControlCount=   192
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   35
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   722
+            Top             =   3495
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   35
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   721
+            Top             =   3495
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   35
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   720
+            Top             =   3495
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   35
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   719
+            Top             =   3495
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   35
+            Left            =   -58515
+            TabIndex        =   718
+            Top             =   3495
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   35
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   717
+            Top             =   3495
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   35
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":0054
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":0056
+            Style           =   2  'Dropdown List
+            TabIndex        =   716
+            Top             =   3495
+            Width           =   1985
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   35
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   715
+            Top             =   3495
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   35
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   714
+            Top             =   3495
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   35
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   713
+            Top             =   3495
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   35
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   712
+            TabStop         =   0   'False
+            Top             =   3495
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   35
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   711
+            Top             =   3495
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   35
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   710
+            Top             =   3495
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   35
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   709
+            Top             =   3495
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   35
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   708
+            Top             =   3495
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   35
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   707
+            Top             =   3495
+            Width           =   525
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   34
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   706
+            Top             =   3210
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   34
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   705
+            Top             =   3210
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   34
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   704
+            Top             =   3210
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   34
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   703
+            Top             =   3210
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   34
+            Left            =   -58515
+            TabIndex        =   702
+            Top             =   3210
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   34
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   701
+            Top             =   3210
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   34
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":0058
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":005A
+            Style           =   2  'Dropdown List
+            TabIndex        =   700
+            Top             =   3210
+            Width           =   1985
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   34
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   699
+            Top             =   3210
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   34
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   698
+            Top             =   3210
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   34
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   697
+            Top             =   3210
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   34
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   696
+            TabStop         =   0   'False
+            Top             =   3210
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   34
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   695
+            Top             =   3210
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   34
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   694
+            Top             =   3210
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   34
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   693
+            Top             =   3210
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   34
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   692
+            Top             =   3210
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   34
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   691
+            Top             =   3210
+            Width           =   525
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   33
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   690
+            Top             =   2925
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   33
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   689
+            Top             =   2925
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   33
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   688
+            Top             =   2925
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   33
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   687
+            Top             =   2925
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   33
+            Left            =   -58515
+            TabIndex        =   686
+            Top             =   2925
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   33
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   685
+            Top             =   2925
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   33
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":005C
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":005E
+            Style           =   2  'Dropdown List
+            TabIndex        =   684
+            Top             =   2925
+            Width           =   1985
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   33
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   683
+            Top             =   2925
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   33
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   682
+            Top             =   2925
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   33
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   681
+            Top             =   2925
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   33
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   680
+            TabStop         =   0   'False
+            Top             =   2925
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   33
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   679
+            Top             =   2925
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   33
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   678
+            Top             =   2925
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   33
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   677
+            Top             =   2925
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   33
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   676
+            Top             =   2925
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   33
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   675
+            Top             =   2925
+            Width           =   525
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   32
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   674
+            Top             =   2640
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   32
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   673
+            Top             =   2640
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   32
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   672
+            Top             =   2640
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   32
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   671
+            Top             =   2640
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   32
+            Left            =   -58515
+            TabIndex        =   670
+            Top             =   2640
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   32
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   669
+            Top             =   2640
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   32
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":0060
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":0062
+            Style           =   2  'Dropdown List
+            TabIndex        =   668
+            Top             =   2640
+            Width           =   1985
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   32
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   667
+            Top             =   2640
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   32
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   666
+            Top             =   2640
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   32
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   665
+            Top             =   2640
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   32
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   664
+            TabStop         =   0   'False
+            Top             =   2640
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   32
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   663
+            Top             =   2640
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   32
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   662
+            Top             =   2640
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   32
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   661
+            Top             =   2640
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   32
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   660
+            Top             =   2640
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   32
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   659
+            Top             =   2640
+            Width           =   525
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   31
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   658
+            Top             =   2355
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   31
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   657
+            Top             =   2355
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   31
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   656
+            Top             =   2355
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   31
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   655
+            Top             =   2355
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   31
+            Left            =   -58515
+            TabIndex        =   654
+            Top             =   2355
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   31
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   653
+            Top             =   2355
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   31
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":0064
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":0066
+            Style           =   2  'Dropdown List
+            TabIndex        =   652
+            Top             =   2355
+            Width           =   1985
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   31
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   651
+            Top             =   2355
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   31
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   650
+            Top             =   2355
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   31
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   649
+            Top             =   2355
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   31
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   648
+            TabStop         =   0   'False
+            Top             =   2355
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   31
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   647
+            Top             =   2355
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   31
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   646
+            Top             =   2355
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   31
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   645
+            Top             =   2355
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   31
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   644
+            Top             =   2355
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   31
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   643
+            Top             =   2355
+            Width           =   525
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   30
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   642
+            Top             =   2070
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   30
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   641
+            Top             =   2070
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   30
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   640
+            Top             =   2070
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   30
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   639
+            Top             =   2070
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   30
+            Left            =   -58515
+            TabIndex        =   638
+            Top             =   2070
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   30
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   637
+            Top             =   2070
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   30
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":0068
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":006A
+            Style           =   2  'Dropdown List
+            TabIndex        =   636
+            Top             =   2070
+            Width           =   1985
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   30
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   635
+            Top             =   2070
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   30
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   634
+            Top             =   2070
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   30
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   633
+            Top             =   2070
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   30
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   632
+            TabStop         =   0   'False
+            Top             =   2070
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   30
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   631
+            Top             =   2070
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   30
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   630
+            Top             =   2070
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   30
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   629
+            Top             =   2070
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   30
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   628
+            Top             =   2070
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   30
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   627
+            Top             =   2070
+            Width           =   525
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   29
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   626
+            Top             =   1785
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   29
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   625
+            Top             =   1785
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   29
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   624
+            Top             =   1785
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   29
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   623
+            Top             =   1785
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   29
+            Left            =   -58515
+            TabIndex        =   622
+            Top             =   1785
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   29
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   621
+            Top             =   1785
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   29
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":006C
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":006E
+            Style           =   2  'Dropdown List
+            TabIndex        =   620
+            Top             =   1785
+            Width           =   1985
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   29
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   619
+            Top             =   1785
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   29
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   618
+            Top             =   1785
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   29
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   617
+            Top             =   1785
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   29
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   616
+            TabStop         =   0   'False
+            Top             =   1785
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   29
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   615
+            Top             =   1785
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   29
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   614
+            Top             =   1785
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   29
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   613
+            Top             =   1785
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   29
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   612
+            Top             =   1785
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   29
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   611
+            Top             =   1785
+            Width           =   525
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   28
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   610
+            Top             =   1500
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   28
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   609
+            Top             =   1500
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   28
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   608
+            Top             =   1500
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   28
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   607
+            Top             =   1500
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   28
+            Left            =   -58515
+            TabIndex        =   606
+            Top             =   1500
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   28
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   605
+            Top             =   1500
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   28
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":0070
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":0072
+            Style           =   2  'Dropdown List
+            TabIndex        =   604
+            Top             =   1500
+            Width           =   1985
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   28
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   603
+            Top             =   1500
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   28
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   602
+            Top             =   1500
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   28
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   601
+            Top             =   1500
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   28
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   600
+            TabStop         =   0   'False
+            Top             =   1500
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   28
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   599
+            Top             =   1500
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   28
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   598
+            Top             =   1500
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   28
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   597
+            Top             =   1500
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   28
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   596
+            Top             =   1500
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   28
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   595
+            Top             =   1500
+            Width           =   525
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   27
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   594
+            Top             =   1215
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   27
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   593
+            Top             =   1215
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   27
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   592
+            Top             =   1215
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   27
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   591
+            Top             =   1215
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   27
+            Left            =   -58515
+            TabIndex        =   590
+            Top             =   1215
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   27
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   589
+            Top             =   1215
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   27
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":0074
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":0076
+            Style           =   2  'Dropdown List
+            TabIndex        =   588
+            Top             =   1215
+            Width           =   1985
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   27
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   587
+            Top             =   1215
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   27
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   586
+            Top             =   1215
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   27
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   585
+            Top             =   1215
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   27
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   584
+            TabStop         =   0   'False
+            Top             =   1215
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   27
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   583
+            Top             =   1215
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   27
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   582
+            Top             =   1215
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   27
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   581
+            Top             =   1215
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   27
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   580
+            Top             =   1215
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   27
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   579
+            Top             =   1215
+            Width           =   525
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   26
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   578
+            Top             =   930
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   26
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   577
+            Top             =   930
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   26
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   576
+            Top             =   930
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   26
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   575
+            Top             =   930
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   26
+            Left            =   -58515
+            TabIndex        =   574
+            Top             =   930
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   26
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   573
+            Top             =   930
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   26
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":0078
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":007A
+            Style           =   2  'Dropdown List
+            TabIndex        =   572
+            Top             =   930
+            Width           =   1985
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   26
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   571
+            Top             =   930
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   26
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   570
+            Top             =   930
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   26
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   569
+            Top             =   930
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   26
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   568
+            TabStop         =   0   'False
+            Top             =   930
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   26
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   567
+            Top             =   930
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   26
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   566
+            Top             =   930
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   26
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   565
+            Top             =   930
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   26
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   564
+            Top             =   930
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   26
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   563
+            Top             =   930
+            Width           =   525
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   25
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   562
+            Top             =   645
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   25
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   561
+            Top             =   645
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   25
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   560
+            Top             =   645
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   25
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   559
+            Top             =   645
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   25
+            Left            =   -58515
+            TabIndex        =   558
+            Top             =   645
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   25
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   557
+            Top             =   645
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   25
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":007C
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":007E
+            Style           =   2  'Dropdown List
+            TabIndex        =   556
+            Top             =   645
+            Width           =   1985
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   25
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   555
+            Top             =   645
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   25
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   554
+            Top             =   645
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   25
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   553
+            Top             =   645
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   25
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   552
+            TabStop         =   0   'False
+            Top             =   645
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   25
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   551
+            Top             =   645
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   25
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   550
+            Top             =   645
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   25
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   549
+            Top             =   645
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   25
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   548
+            Top             =   645
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   25
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   547
+            Top             =   645
+            Width           =   525
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   24
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   546
+            Top             =   360
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   24
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   545
+            Top             =   360
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   24
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   544
+            Top             =   360
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   24
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   543
+            Top             =   360
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   24
+            Left            =   -58515
+            TabIndex        =   542
+            Top             =   360
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   24
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   541
+            Top             =   360
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   24
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":0080
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":0082
+            Style           =   2  'Dropdown List
+            TabIndex        =   540
+            Top             =   360
+            Width           =   1985
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   24
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   539
+            Top             =   360
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   24
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   538
+            Top             =   360
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   24
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   537
+            Top             =   360
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   24
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   536
+            TabStop         =   0   'False
+            Top             =   360
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   24
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   535
+            Top             =   360
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   24
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   534
+            Top             =   360
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   24
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   533
+            Top             =   360
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   24
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   532
+            Top             =   360
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   24
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   531
+            Top             =   360
+            Width           =   525
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   23
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   530
+            Top             =   3495
+            Width           =   525
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   23
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   529
+            Top             =   3495
+            Width           =   885
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   23
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   528
+            Top             =   3495
+            Width           =   5320
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   23
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   527
+            Top             =   3495
+            Width           =   615
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   23
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   526
+            Top             =   3495
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   23
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   525
+            TabStop         =   0   'False
+            Top             =   3495
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   23
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   524
+            Top             =   3495
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   23
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   523
+            Top             =   3495
+            Width           =   1305
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   23
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   522
+            Top             =   3495
+            Width           =   525
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   23
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":0084
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":0086
+            Style           =   2  'Dropdown List
+            TabIndex        =   521
+            Top             =   3495
+            Width           =   1985
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   23
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   520
+            Top             =   3495
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   23
+            Left            =   -58515
+            TabIndex        =   519
+            Top             =   3495
+            Width           =   585
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   23
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   518
+            Top             =   3495
+            Width           =   885
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   23
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   517
+            Top             =   3495
+            Width           =   615
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   23
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   516
+            Top             =   3495
+            Width           =   735
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   23
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   515
+            Top             =   3495
+            Width           =   525
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   22
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   514
+            Top             =   3210
+            Width           =   525
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   22
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   513
+            Top             =   3210
+            Width           =   885
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   22
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   512
+            Top             =   3210
+            Width           =   5320
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   22
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   511
+            Top             =   3210
+            Width           =   615
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   22
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   510
+            Top             =   3210
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   22
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   509
+            TabStop         =   0   'False
+            Top             =   3210
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   22
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   508
+            Top             =   3210
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   22
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   507
+            Top             =   3210
+            Width           =   1305
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   22
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   506
+            Top             =   3210
+            Width           =   525
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   22
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":0088
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":008A
+            Style           =   2  'Dropdown List
+            TabIndex        =   505
+            Top             =   3210
+            Width           =   1985
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   22
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   504
+            Top             =   3210
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   22
+            Left            =   -58515
+            TabIndex        =   503
+            Top             =   3210
+            Width           =   585
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   22
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   502
+            Top             =   3210
+            Width           =   885
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   22
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   501
+            Top             =   3210
+            Width           =   615
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   22
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   500
+            Top             =   3210
+            Width           =   735
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   22
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   499
+            Top             =   3210
+            Width           =   525
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   21
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   498
+            Top             =   2925
+            Width           =   525
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   21
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   497
+            Top             =   2925
+            Width           =   885
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   21
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   496
+            Top             =   2925
+            Width           =   5320
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   21
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   495
+            Top             =   2925
+            Width           =   615
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   21
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   494
+            Top             =   2925
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   21
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   493
+            TabStop         =   0   'False
+            Top             =   2925
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   21
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   492
+            Top             =   2925
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   21
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   491
+            Top             =   2925
+            Width           =   1305
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   21
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   490
+            Top             =   2925
+            Width           =   525
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   21
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":008C
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":008E
+            Style           =   2  'Dropdown List
+            TabIndex        =   489
+            Top             =   2925
+            Width           =   1985
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   21
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   488
+            Top             =   2925
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   21
+            Left            =   -58515
+            TabIndex        =   487
+            Top             =   2925
+            Width           =   585
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   21
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   486
+            Top             =   2925
+            Width           =   885
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   21
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   485
+            Top             =   2925
+            Width           =   615
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   21
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   484
+            Top             =   2925
+            Width           =   735
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   21
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   483
+            Top             =   2925
+            Width           =   525
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   20
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   482
+            Top             =   2640
+            Width           =   525
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   20
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   481
+            Top             =   2640
+            Width           =   885
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   20
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   480
+            Top             =   2640
+            Width           =   5320
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   20
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   479
+            Top             =   2640
+            Width           =   615
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   20
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   478
+            Top             =   2640
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   20
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   477
+            TabStop         =   0   'False
+            Top             =   2640
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   20
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   476
+            Top             =   2640
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   20
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   475
+            Top             =   2640
+            Width           =   1305
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   20
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   474
+            Top             =   2640
+            Width           =   525
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   20
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":0090
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":0092
+            Style           =   2  'Dropdown List
+            TabIndex        =   473
+            Top             =   2640
+            Width           =   1985
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   20
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   472
+            Top             =   2640
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   20
+            Left            =   -58515
+            TabIndex        =   471
+            Top             =   2640
+            Width           =   585
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   20
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   470
+            Top             =   2640
+            Width           =   885
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   20
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   469
+            Top             =   2640
+            Width           =   615
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   20
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   468
+            Top             =   2640
+            Width           =   735
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   20
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   467
+            Top             =   2640
+            Width           =   525
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   19
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   466
+            Top             =   2355
+            Width           =   525
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   19
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   465
+            Top             =   2355
+            Width           =   885
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   19
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   464
+            Top             =   2355
+            Width           =   5320
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   19
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   463
+            Top             =   2355
+            Width           =   615
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   19
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   462
+            Top             =   2355
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   19
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   461
+            TabStop         =   0   'False
+            Top             =   2355
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   19
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   460
+            Top             =   2355
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   19
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   459
+            Top             =   2355
+            Width           =   1305
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   19
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   458
+            Top             =   2355
+            Width           =   525
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   19
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":0094
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":0096
+            Style           =   2  'Dropdown List
+            TabIndex        =   457
+            Top             =   2355
+            Width           =   1985
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   19
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   456
+            Top             =   2355
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   19
+            Left            =   -58515
+            TabIndex        =   455
+            Top             =   2355
+            Width           =   585
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   19
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   454
+            Top             =   2355
+            Width           =   885
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   19
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   453
+            Top             =   2355
+            Width           =   615
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   19
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   452
+            Top             =   2355
+            Width           =   735
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   19
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   451
+            Top             =   2355
+            Width           =   525
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   18
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   450
+            Top             =   2070
+            Width           =   525
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   18
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   449
+            Top             =   2070
+            Width           =   885
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   18
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   448
+            Top             =   2070
+            Width           =   5320
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   18
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   447
+            Top             =   2070
+            Width           =   615
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   18
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   446
+            Top             =   2070
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   18
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   445
+            TabStop         =   0   'False
+            Top             =   2070
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   18
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   444
+            Top             =   2070
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   18
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   443
+            Top             =   2070
+            Width           =   1305
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   18
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   442
+            Top             =   2070
+            Width           =   525
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   18
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":0098
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":009A
+            Style           =   2  'Dropdown List
+            TabIndex        =   441
+            Top             =   2070
+            Width           =   1985
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   18
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   440
+            Top             =   2070
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   18
+            Left            =   -58515
+            TabIndex        =   439
+            Top             =   2070
+            Width           =   585
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   18
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   438
+            Top             =   2070
+            Width           =   885
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   18
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   437
+            Top             =   2070
+            Width           =   615
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   18
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   436
+            Top             =   2070
+            Width           =   735
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   18
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   435
+            Top             =   2070
+            Width           =   525
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   17
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   434
+            Top             =   1785
+            Width           =   525
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   17
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   433
+            Top             =   1785
+            Width           =   885
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   17
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   432
+            Top             =   1785
+            Width           =   5320
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   17
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   431
+            Top             =   1785
+            Width           =   615
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   17
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   430
+            Top             =   1785
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   17
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   429
+            TabStop         =   0   'False
+            Top             =   1785
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   17
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   428
+            Top             =   1785
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   17
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   427
+            Top             =   1785
+            Width           =   1305
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   17
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   426
+            Top             =   1785
+            Width           =   525
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   17
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":009C
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":009E
+            Style           =   2  'Dropdown List
+            TabIndex        =   425
+            Top             =   1785
+            Width           =   1985
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   17
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   424
+            Top             =   1785
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   17
+            Left            =   -58515
+            TabIndex        =   423
+            Top             =   1785
+            Width           =   585
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   17
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   422
+            Top             =   1785
+            Width           =   885
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   17
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   421
+            Top             =   1785
+            Width           =   615
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   17
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   420
+            Top             =   1785
+            Width           =   735
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   17
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   419
+            Top             =   1785
+            Width           =   525
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   16
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   418
+            Top             =   1500
+            Width           =   525
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   16
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   417
+            Top             =   1500
+            Width           =   885
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   16
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   416
+            Top             =   1500
+            Width           =   5320
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   16
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   415
+            Top             =   1500
+            Width           =   615
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   16
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   414
+            Top             =   1500
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   16
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   413
+            TabStop         =   0   'False
+            Top             =   1500
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   16
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   412
+            Top             =   1500
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   16
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   411
+            Top             =   1500
+            Width           =   1305
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   16
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   410
+            Top             =   1500
+            Width           =   525
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   16
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":00A0
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":00A2
+            Style           =   2  'Dropdown List
+            TabIndex        =   409
+            Top             =   1500
+            Width           =   1985
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   16
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   408
+            Top             =   1500
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   16
+            Left            =   -58515
+            TabIndex        =   407
+            Top             =   1500
+            Width           =   585
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   16
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   406
+            Top             =   1500
+            Width           =   885
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   16
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   405
+            Top             =   1500
+            Width           =   615
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   16
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   404
+            Top             =   1500
+            Width           =   735
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   16
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   403
+            Top             =   1500
+            Width           =   525
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   15
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   402
+            Top             =   1215
+            Width           =   525
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   15
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   401
+            Top             =   1215
+            Width           =   885
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   15
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   400
+            Top             =   1215
+            Width           =   5320
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   15
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   399
+            Top             =   1215
+            Width           =   615
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   15
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   398
+            Top             =   1215
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   15
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   397
+            TabStop         =   0   'False
+            Top             =   1215
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   15
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   396
+            Top             =   1215
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   15
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   395
+            Top             =   1215
+            Width           =   1305
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   15
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   394
+            Top             =   1215
+            Width           =   525
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   15
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":00A4
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":00A6
+            Style           =   2  'Dropdown List
+            TabIndex        =   393
+            Top             =   1215
+            Width           =   1985
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   15
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   392
+            Top             =   1215
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   15
+            Left            =   -58515
+            TabIndex        =   391
+            Top             =   1215
+            Width           =   585
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   15
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   390
+            Top             =   1215
+            Width           =   885
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   15
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   389
+            Top             =   1215
+            Width           =   615
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   15
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   388
+            Top             =   1215
+            Width           =   735
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   15
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   387
+            Top             =   1215
+            Width           =   525
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   14
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   386
+            Top             =   930
+            Width           =   525
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   14
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   385
+            Top             =   930
+            Width           =   885
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   14
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   384
+            Top             =   930
+            Width           =   5320
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   14
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   383
+            Top             =   930
+            Width           =   615
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   14
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   382
+            Top             =   930
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   14
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   381
+            TabStop         =   0   'False
+            Top             =   930
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   14
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   380
+            Top             =   930
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   14
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   379
+            Top             =   930
+            Width           =   1305
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   14
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   378
+            Top             =   930
+            Width           =   525
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   14
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":00A8
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":00AA
+            Style           =   2  'Dropdown List
+            TabIndex        =   377
+            Top             =   930
+            Width           =   1985
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   14
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   376
+            Top             =   930
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   14
+            Left            =   -58515
+            TabIndex        =   375
+            Top             =   930
+            Width           =   585
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   14
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   374
+            Top             =   930
+            Width           =   885
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   14
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   373
+            Top             =   930
+            Width           =   615
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   14
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   372
+            Top             =   930
+            Width           =   735
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   14
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   371
+            Top             =   930
+            Width           =   525
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   13
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   370
+            Top             =   645
+            Width           =   525
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   13
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   369
+            Top             =   645
+            Width           =   885
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   13
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   368
+            Top             =   645
+            Width           =   5320
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   13
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   367
+            Top             =   645
+            Width           =   615
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   13
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   366
+            Top             =   645
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   13
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   365
+            TabStop         =   0   'False
+            Top             =   645
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   13
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   364
+            Top             =   645
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   13
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   363
+            Top             =   645
+            Width           =   1305
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   13
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   362
+            Top             =   645
+            Width           =   525
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   13
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":00AC
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":00AE
+            Style           =   2  'Dropdown List
+            TabIndex        =   361
+            Top             =   645
+            Width           =   1985
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   13
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   360
+            Top             =   645
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   13
+            Left            =   -58515
+            TabIndex        =   359
+            Top             =   645
+            Width           =   585
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   13
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   358
+            Top             =   645
+            Width           =   885
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   13
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   357
+            Top             =   645
+            Width           =   615
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   13
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   356
+            Top             =   645
+            Width           =   735
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   13
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   355
+            Top             =   645
+            Width           =   525
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   12
+            Left            =   -74880
+            MaxLength       =   4
+            TabIndex        =   354
+            Top             =   360
+            Width           =   525
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   12
+            Left            =   -74355
+            MaxLength       =   8
+            TabIndex        =   353
+            Top             =   360
+            Width           =   885
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   12
+            Left            =   -73470
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   352
+            Top             =   360
+            Width           =   5320
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   12
+            Left            =   -66450
+            MaxLength       =   5
+            TabIndex        =   351
+            Top             =   360
+            Width           =   615
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   12
+            Left            =   -65835
+            MaxLength       =   18
+            TabIndex        =   350
+            Top             =   360
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   12
+            Left            =   -64530
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   349
+            TabStop         =   0   'False
+            Top             =   360
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   12
+            Left            =   -68145
+            MaxLength       =   500
+            TabIndex        =   348
+            Top             =   360
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   12
+            Left            =   -63225
+            MaxLength       =   18
+            TabIndex        =   347
+            Top             =   360
+            Width           =   1305
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   12
+            Left            =   -61920
+            MaxLength       =   4
+            TabIndex        =   346
+            Top             =   360
+            Width           =   525
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   12
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":00B0
+            Left            =   -61395
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":00B2
+            Style           =   2  'Dropdown List
+            TabIndex        =   345
+            Top             =   360
+            Width           =   1985
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   12
+            Left            =   -59400
+            MaxLength       =   8
+            TabIndex        =   344
+            Top             =   360
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   12
+            Left            =   -58515
+            TabIndex        =   343
+            Top             =   360
+            Width           =   585
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   12
+            Left            =   -57930
+            MaxLength       =   15
+            TabIndex        =   342
+            Top             =   360
+            Width           =   885
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   12
+            Left            =   -56205
+            MaxLength       =   6
+            TabIndex        =   341
+            Top             =   360
+            Width           =   615
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   12
+            Left            =   -57000
+            MaxLength       =   6
+            TabIndex        =   340
+            Top             =   360
+            Width           =   735
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   12
+            Left            =   -55530
+            MaxLength       =   6
+            TabIndex        =   339
+            Top             =   360
+            Width           =   525
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   11
+            Left            =   15600
+            MaxLength       =   8
+            TabIndex        =   338
+            Top             =   3495
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   11
+            Left            =   16485
+            TabIndex        =   337
+            Top             =   3495
+            Width           =   585
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   11
+            Left            =   17070
+            MaxLength       =   15
+            TabIndex        =   336
+            Top             =   3495
+            Width           =   885
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   11
+            Left            =   18795
+            MaxLength       =   6
+            TabIndex        =   335
+            Top             =   3495
+            Width           =   615
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   11
+            Left            =   18000
+            MaxLength       =   6
+            TabIndex        =   334
+            Top             =   3495
+            Width           =   735
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   11
+            Left            =   19470
+            MaxLength       =   6
+            TabIndex        =   333
+            Top             =   3495
+            Width           =   525
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   10
+            Left            =   15600
+            MaxLength       =   8
+            TabIndex        =   332
+            Top             =   3210
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   10
+            Left            =   16485
+            TabIndex        =   331
+            Top             =   3210
+            Width           =   585
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   10
+            Left            =   17070
+            MaxLength       =   15
+            TabIndex        =   330
+            Top             =   3210
+            Width           =   885
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   10
+            Left            =   18795
+            MaxLength       =   6
+            TabIndex        =   329
+            Top             =   3210
+            Width           =   615
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   10
+            Left            =   18000
+            MaxLength       =   6
+            TabIndex        =   328
+            Top             =   3210
+            Width           =   735
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   10
+            Left            =   19470
+            MaxLength       =   6
+            TabIndex        =   327
+            Top             =   3210
+            Width           =   525
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   9
+            Left            =   19470
+            MaxLength       =   6
+            TabIndex        =   326
+            Top             =   2925
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   9
+            Left            =   18000
+            MaxLength       =   6
+            TabIndex        =   325
+            Top             =   2925
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   9
+            Left            =   18795
+            MaxLength       =   6
+            TabIndex        =   324
+            Top             =   2925
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   9
+            Left            =   17070
+            MaxLength       =   15
+            TabIndex        =   323
+            Top             =   2925
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   9
+            Left            =   16485
+            TabIndex        =   322
+            Top             =   2925
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   9
+            Left            =   15600
+            MaxLength       =   8
+            TabIndex        =   321
+            Top             =   2925
+            Width           =   885
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   8
+            Left            =   19470
+            MaxLength       =   6
+            TabIndex        =   320
+            Top             =   2640
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   8
+            Left            =   18000
+            MaxLength       =   6
+            TabIndex        =   319
+            Top             =   2640
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   8
+            Left            =   18795
+            MaxLength       =   6
+            TabIndex        =   318
+            Top             =   2640
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   8
+            Left            =   17070
+            MaxLength       =   15
+            TabIndex        =   317
+            Top             =   2640
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   8
+            Left            =   16485
+            TabIndex        =   316
+            Top             =   2640
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   8
+            Left            =   15600
+            MaxLength       =   8
+            TabIndex        =   315
+            Top             =   2640
+            Width           =   885
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   7
+            Left            =   19470
+            MaxLength       =   6
+            TabIndex        =   314
+            Top             =   2355
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   7
+            Left            =   18000
+            MaxLength       =   6
+            TabIndex        =   313
+            Top             =   2355
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   7
+            Left            =   18795
+            MaxLength       =   6
+            TabIndex        =   312
+            Top             =   2355
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   7
+            Left            =   17070
+            MaxLength       =   15
+            TabIndex        =   311
+            Top             =   2355
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   7
+            Left            =   16485
+            TabIndex        =   310
+            Top             =   2355
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   7
+            Left            =   15600
+            MaxLength       =   8
+            TabIndex        =   309
+            Top             =   2355
+            Width           =   885
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   6
+            Left            =   19470
+            MaxLength       =   6
+            TabIndex        =   308
+            Top             =   2070
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   6
+            Left            =   18000
+            MaxLength       =   6
+            TabIndex        =   307
+            Top             =   2070
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   6
+            Left            =   18795
+            MaxLength       =   6
+            TabIndex        =   306
+            Top             =   2070
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   6
+            Left            =   17070
+            MaxLength       =   15
+            TabIndex        =   305
+            Top             =   2070
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   6
+            Left            =   16485
+            TabIndex        =   304
+            Top             =   2070
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   6
+            Left            =   15600
+            MaxLength       =   8
+            TabIndex        =   303
+            Top             =   2070
+            Width           =   885
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   5
+            Left            =   19470
+            MaxLength       =   6
+            TabIndex        =   302
+            Top             =   1785
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   5
+            Left            =   18000
+            MaxLength       =   6
+            TabIndex        =   301
+            Top             =   1785
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   5
+            Left            =   18795
+            MaxLength       =   6
+            TabIndex        =   300
+            Top             =   1785
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   5
+            Left            =   17070
+            MaxLength       =   15
+            TabIndex        =   299
+            Top             =   1785
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   5
+            Left            =   16485
+            TabIndex        =   298
+            Top             =   1785
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   5
+            Left            =   15600
+            MaxLength       =   8
+            TabIndex        =   297
+            Top             =   1785
+            Width           =   885
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   4
+            Left            =   19470
+            MaxLength       =   6
+            TabIndex        =   296
+            Top             =   1500
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   4
+            Left            =   18000
+            MaxLength       =   6
+            TabIndex        =   295
+            Top             =   1500
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   4
+            Left            =   18795
+            MaxLength       =   6
+            TabIndex        =   294
+            Top             =   1500
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   4
+            Left            =   17070
+            MaxLength       =   15
+            TabIndex        =   293
+            Top             =   1500
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   4
+            Left            =   16485
+            TabIndex        =   292
+            Top             =   1500
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   4
+            Left            =   15600
+            MaxLength       =   8
+            TabIndex        =   291
+            Top             =   1500
+            Width           =   885
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   3
+            Left            =   19470
+            MaxLength       =   6
+            TabIndex        =   290
+            Top             =   1215
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   3
+            Left            =   18000
+            MaxLength       =   6
+            TabIndex        =   289
+            Top             =   1215
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   3
+            Left            =   18795
+            MaxLength       =   6
+            TabIndex        =   288
+            Top             =   1215
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   3
+            Left            =   17070
+            MaxLength       =   15
+            TabIndex        =   287
+            Top             =   1215
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   3
+            Left            =   16485
+            TabIndex        =   286
+            Top             =   1215
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   3
+            Left            =   15600
+            MaxLength       =   8
+            TabIndex        =   285
+            Top             =   1215
+            Width           =   885
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   2
+            Left            =   19470
+            MaxLength       =   6
+            TabIndex        =   284
+            Top             =   930
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   2
+            Left            =   18000
+            MaxLength       =   6
+            TabIndex        =   283
+            Top             =   930
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   2
+            Left            =   18795
+            MaxLength       =   6
+            TabIndex        =   282
+            Top             =   930
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   2
+            Left            =   17070
+            MaxLength       =   15
+            TabIndex        =   281
+            Top             =   930
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   2
+            Left            =   16485
+            TabIndex        =   280
+            Top             =   930
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   2
+            Left            =   15600
+            MaxLength       =   8
+            TabIndex        =   279
+            Top             =   930
+            Width           =   885
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   1
+            Left            =   19470
+            MaxLength       =   6
+            TabIndex        =   278
+            Top             =   645
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   1
+            Left            =   18000
+            MaxLength       =   6
+            TabIndex        =   277
+            Top             =   645
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   1
+            Left            =   18795
+            MaxLength       =   6
+            TabIndex        =   276
+            Top             =   645
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   1
+            Left            =   17070
+            MaxLength       =   15
+            TabIndex        =   275
+            Top             =   645
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   1
+            Left            =   16485
+            TabIndex        =   274
+            Top             =   645
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   1
+            Left            =   15600
+            MaxLength       =   8
+            TabIndex        =   273
+            Top             =   645
+            Width           =   885
+         End
+         Begin VB.TextBox c_fcp 
+            Alignment       =   2  'Center
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   315
+            Index           =   0
+            Left            =   19470
+            MaxLength       =   6
+            TabIndex        =   272
+            Top             =   360
+            Width           =   525
+         End
+         Begin VB.TextBox c_nItemPed 
+            Height          =   285
+            Index           =   0
+            Left            =   18000
+            MaxLength       =   6
+            TabIndex        =   271
+            Top             =   375
+            Width           =   735
+         End
+         Begin VB.TextBox c_unidade 
+            Height          =   285
+            Index           =   0
+            Left            =   18795
+            MaxLength       =   6
+            TabIndex        =   270
+            Top             =   375
+            Width           =   615
+         End
+         Begin VB.TextBox c_xPed 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   0
+            Left            =   17070
+            MaxLength       =   15
+            TabIndex        =   269
+            Top             =   375
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_ICMS_item 
+            BeginProperty Font 
+               Name            =   "Courier New"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   400
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   330
+            Index           =   0
+            Left            =   16485
+            TabIndex        =   268
+            Top             =   360
+            Width           =   585
+         End
+         Begin VB.TextBox c_NCM 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   0
+            Left            =   15600
+            MaxLength       =   8
+            TabIndex        =   267
+            Top             =   360
+            Width           =   885
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   11
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":00B4
+            Left            =   13605
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":00B6
+            Style           =   2  'Dropdown List
+            TabIndex        =   266
+            Top             =   3495
+            Width           =   1985
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   10
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":00B8
+            Left            =   13605
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":00BA
+            Style           =   2  'Dropdown List
+            TabIndex        =   265
+            Top             =   3210
+            Width           =   1985
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   9
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":00BC
+            Left            =   13605
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":00BE
+            Style           =   2  'Dropdown List
+            TabIndex        =   264
+            Top             =   2925
+            Width           =   1985
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   8
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":00C0
+            Left            =   13605
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":00C2
+            Style           =   2  'Dropdown List
+            TabIndex        =   263
+            Top             =   2640
+            Width           =   1985
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   7
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":00C4
+            Left            =   13605
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":00C6
+            Style           =   2  'Dropdown List
+            TabIndex        =   262
+            Top             =   2355
+            Width           =   1985
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   6
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":00C8
+            Left            =   13605
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":00CA
+            Style           =   2  'Dropdown List
+            TabIndex        =   261
+            Top             =   2070
+            Width           =   1985
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   5
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":00CC
+            Left            =   13605
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":00CE
+            Style           =   2  'Dropdown List
+            TabIndex        =   260
+            Top             =   1785
+            Width           =   1985
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   4
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":00D0
+            Left            =   13605
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":00D2
+            Style           =   2  'Dropdown List
+            TabIndex        =   259
+            Top             =   1500
+            Width           =   1985
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   3
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":00D4
+            Left            =   13605
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":00D6
+            Style           =   2  'Dropdown List
+            TabIndex        =   258
+            Top             =   1215
+            Width           =   1985
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   2
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":00D8
+            Left            =   13605
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":00DA
+            Style           =   2  'Dropdown List
+            TabIndex        =   257
+            Top             =   930
+            Width           =   1985
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   1
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":00DC
+            Left            =   13605
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":00DE
+            Style           =   2  'Dropdown List
+            TabIndex        =   256
+            Top             =   645
+            Width           =   1985
+         End
+         Begin VB.ComboBox cb_CFOP 
+            Height          =   315
+            Index           =   0
+            ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":00E0
+            Left            =   13605
+            List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":00E2
+            Style           =   2  'Dropdown List
+            TabIndex        =   255
+            Top             =   360
+            Width           =   1985
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   0
+            Left            =   13080
+            MaxLength       =   4
+            TabIndex        =   254
+            Top             =   360
+            Width           =   525
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   1
+            Left            =   13080
+            MaxLength       =   4
+            TabIndex        =   253
+            Top             =   645
+            Width           =   525
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   2
+            Left            =   13080
+            MaxLength       =   4
+            TabIndex        =   252
+            Top             =   930
+            Width           =   525
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   3
+            Left            =   13080
+            MaxLength       =   4
+            TabIndex        =   251
+            Top             =   1215
+            Width           =   525
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   4
+            Left            =   13080
+            MaxLength       =   4
+            TabIndex        =   250
+            Top             =   1500
+            Width           =   525
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   5
+            Left            =   13080
+            MaxLength       =   4
+            TabIndex        =   249
+            Top             =   1785
+            Width           =   525
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   6
+            Left            =   13080
+            MaxLength       =   4
+            TabIndex        =   248
+            Top             =   2070
+            Width           =   525
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   7
+            Left            =   13080
+            MaxLength       =   4
+            TabIndex        =   247
+            Top             =   2355
+            Width           =   525
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   8
+            Left            =   13080
+            MaxLength       =   4
+            TabIndex        =   246
+            Top             =   2640
+            Width           =   525
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   9
+            Left            =   13080
+            MaxLength       =   4
+            TabIndex        =   245
+            Top             =   2925
+            Width           =   525
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   10
+            Left            =   13080
+            MaxLength       =   4
+            TabIndex        =   244
+            Top             =   3210
+            Width           =   525
+         End
+         Begin VB.TextBox c_CST 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   11
+            Left            =   13080
+            MaxLength       =   4
+            TabIndex        =   243
+            Top             =   3495
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   0
+            Left            =   11775
+            MaxLength       =   18
+            TabIndex        =   242
+            Top             =   360
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   1
+            Left            =   11775
+            MaxLength       =   18
+            TabIndex        =   241
+            Top             =   645
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   2
+            Left            =   11775
+            MaxLength       =   18
+            TabIndex        =   240
+            Top             =   930
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   3
+            Left            =   11775
+            MaxLength       =   18
+            TabIndex        =   239
+            Top             =   1215
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   4
+            Left            =   11775
+            MaxLength       =   18
+            TabIndex        =   238
+            Top             =   1500
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   5
+            Left            =   11775
+            MaxLength       =   18
+            TabIndex        =   237
+            Top             =   1785
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   6
+            Left            =   11775
+            MaxLength       =   18
+            TabIndex        =   236
+            Top             =   2070
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   7
+            Left            =   11775
+            MaxLength       =   18
+            TabIndex        =   235
+            Top             =   2355
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   8
+            Left            =   11775
+            MaxLength       =   18
+            TabIndex        =   234
+            Top             =   2640
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   9
+            Left            =   11775
+            MaxLength       =   18
+            TabIndex        =   233
+            Top             =   2925
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   10
+            Left            =   11775
+            MaxLength       =   18
+            TabIndex        =   232
+            Top             =   3210
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_outras_despesas_acessorias 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   11
+            Left            =   11775
+            MaxLength       =   18
+            TabIndex        =   231
+            Top             =   3495
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   11
+            Left            =   6855
+            MaxLength       =   500
+            TabIndex        =   230
+            Top             =   3495
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   11
+            Left            =   10470
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   229
+            TabStop         =   0   'False
+            Top             =   3495
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   11
+            Left            =   9165
+            MaxLength       =   18
+            TabIndex        =   228
+            Top             =   3495
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   11
+            Left            =   8550
+            MaxLength       =   5
+            TabIndex        =   227
+            Top             =   3495
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   11
+            Left            =   1530
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   226
+            Top             =   3495
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   11
+            Left            =   645
+            MaxLength       =   8
+            TabIndex        =   225
+            Top             =   3495
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   11
+            Left            =   120
+            MaxLength       =   4
+            TabIndex        =   224
+            Top             =   3495
+            Width           =   525
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   10
+            Left            =   120
+            MaxLength       =   4
+            TabIndex        =   223
+            Top             =   3210
+            Width           =   525
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   10
+            Left            =   645
+            MaxLength       =   8
+            TabIndex        =   222
+            Top             =   3210
+            Width           =   885
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   10
+            Left            =   1530
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   221
+            Top             =   3210
+            Width           =   5320
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   10
+            Left            =   8550
+            MaxLength       =   5
+            TabIndex        =   220
+            Top             =   3210
+            Width           =   615
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   10
+            Left            =   9165
+            MaxLength       =   18
+            TabIndex        =   219
+            Top             =   3210
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   10
+            Left            =   10470
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   218
+            TabStop         =   0   'False
+            Top             =   3210
+            Width           =   1305
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   10
+            Left            =   6855
+            MaxLength       =   500
+            TabIndex        =   217
+            Top             =   3210
+            Width           =   1705
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   9
+            Left            =   6855
+            MaxLength       =   500
+            TabIndex        =   216
+            Top             =   2925
+            Width           =   1705
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   8
+            Left            =   6855
+            MaxLength       =   500
+            TabIndex        =   215
+            Top             =   2640
+            Width           =   1705
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   7
+            Left            =   6855
+            MaxLength       =   500
+            TabIndex        =   214
+            Top             =   2355
+            Width           =   1705
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   6
+            Left            =   6855
+            MaxLength       =   500
+            TabIndex        =   213
+            Top             =   2070
+            Width           =   1705
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   5
+            Left            =   6855
+            MaxLength       =   500
+            TabIndex        =   212
+            Top             =   1785
+            Width           =   1705
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   4
+            Left            =   6855
+            MaxLength       =   500
+            TabIndex        =   211
+            Top             =   1500
+            Width           =   1705
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   3
+            Left            =   6855
+            MaxLength       =   500
+            TabIndex        =   210
+            Top             =   1215
+            Width           =   1705
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   2
+            Left            =   6855
+            MaxLength       =   500
+            TabIndex        =   209
+            Top             =   930
+            Width           =   1705
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   1
+            Left            =   6855
+            MaxLength       =   500
+            TabIndex        =   208
+            Top             =   645
+            Width           =   1705
+         End
+         Begin VB.TextBox c_produto_obs 
+            Height          =   285
+            Index           =   0
+            Left            =   6855
+            MaxLength       =   500
+            TabIndex        =   207
+            Top             =   360
+            Width           =   1705
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   9
+            Left            =   10470
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   206
+            TabStop         =   0   'False
+            Top             =   2925
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   9
+            Left            =   9165
+            MaxLength       =   18
+            TabIndex        =   205
+            Top             =   2925
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   9
+            Left            =   8550
+            MaxLength       =   5
+            TabIndex        =   204
+            Top             =   2925
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   9
+            Left            =   1530
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   203
+            Top             =   2925
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   9
+            Left            =   645
+            MaxLength       =   8
+            TabIndex        =   202
+            Top             =   2925
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   9
+            Left            =   120
+            MaxLength       =   4
+            TabIndex        =   201
+            Top             =   2925
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   8
+            Left            =   10470
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   200
+            TabStop         =   0   'False
+            Top             =   2640
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   8
+            Left            =   9165
+            MaxLength       =   18
+            TabIndex        =   199
+            Top             =   2640
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   8
+            Left            =   8550
+            MaxLength       =   5
+            TabIndex        =   198
+            Top             =   2640
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   8
+            Left            =   1530
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   197
+            Top             =   2640
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   8
+            Left            =   645
+            MaxLength       =   8
+            TabIndex        =   196
+            Top             =   2640
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   8
+            Left            =   120
+            MaxLength       =   4
+            TabIndex        =   195
+            Top             =   2640
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   7
+            Left            =   10470
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   194
+            TabStop         =   0   'False
+            Top             =   2355
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   7
+            Left            =   9165
+            MaxLength       =   18
+            TabIndex        =   193
+            Top             =   2355
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   7
+            Left            =   8550
+            MaxLength       =   5
+            TabIndex        =   192
+            Top             =   2355
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   7
+            Left            =   1530
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   191
+            Top             =   2355
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   7
+            Left            =   645
+            MaxLength       =   8
+            TabIndex        =   190
+            Top             =   2355
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   7
+            Left            =   120
+            MaxLength       =   4
+            TabIndex        =   189
+            Top             =   2355
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   6
+            Left            =   10470
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   188
+            TabStop         =   0   'False
+            Top             =   2070
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   6
+            Left            =   9165
+            MaxLength       =   18
+            TabIndex        =   187
+            Top             =   2070
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   6
+            Left            =   8550
+            MaxLength       =   5
+            TabIndex        =   186
+            Top             =   2070
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   6
+            Left            =   1530
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   185
+            Top             =   2070
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   6
+            Left            =   645
+            MaxLength       =   8
+            TabIndex        =   184
+            Top             =   2070
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   6
+            Left            =   120
+            MaxLength       =   4
+            TabIndex        =   183
+            Top             =   2070
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   5
+            Left            =   10470
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   182
+            TabStop         =   0   'False
+            Top             =   1785
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   5
+            Left            =   9165
+            MaxLength       =   18
+            TabIndex        =   181
+            Top             =   1785
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   5
+            Left            =   8550
+            MaxLength       =   5
+            TabIndex        =   180
+            Top             =   1785
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   5
+            Left            =   1530
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   179
+            Top             =   1785
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   5
+            Left            =   645
+            MaxLength       =   8
+            TabIndex        =   178
+            Top             =   1785
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   5
+            Left            =   120
+            MaxLength       =   4
+            TabIndex        =   177
+            Top             =   1785
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   4
+            Left            =   10470
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   176
+            TabStop         =   0   'False
+            Top             =   1500
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   4
+            Left            =   9165
+            MaxLength       =   18
+            TabIndex        =   175
+            Top             =   1500
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   4
+            Left            =   8550
+            MaxLength       =   5
+            TabIndex        =   174
+            Top             =   1500
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   4
+            Left            =   1530
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   173
+            Top             =   1500
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   4
+            Left            =   645
+            MaxLength       =   8
+            TabIndex        =   172
+            Top             =   1500
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   4
+            Left            =   120
+            MaxLength       =   4
+            TabIndex        =   171
+            Top             =   1500
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   3
+            Left            =   10470
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   170
+            TabStop         =   0   'False
+            Top             =   1215
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   3
+            Left            =   9165
+            MaxLength       =   18
+            TabIndex        =   169
+            Top             =   1215
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   3
+            Left            =   8550
+            MaxLength       =   5
+            TabIndex        =   168
+            Top             =   1215
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   3
+            Left            =   1530
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   167
+            Top             =   1215
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   3
+            Left            =   645
+            MaxLength       =   8
+            TabIndex        =   166
+            Top             =   1215
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   3
+            Left            =   120
+            MaxLength       =   4
+            TabIndex        =   165
+            Top             =   1215
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   2
+            Left            =   10470
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   164
+            TabStop         =   0   'False
+            Top             =   930
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   2
+            Left            =   9165
+            MaxLength       =   18
+            TabIndex        =   163
+            Top             =   930
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   2
+            Left            =   8550
+            MaxLength       =   5
+            TabIndex        =   162
+            Top             =   930
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   2
+            Left            =   1530
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   161
+            Top             =   930
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   2
+            Left            =   645
+            MaxLength       =   8
+            TabIndex        =   160
+            Top             =   930
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   2
+            Left            =   120
+            MaxLength       =   4
+            TabIndex        =   159
+            Top             =   930
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   1
+            Left            =   10470
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   158
+            TabStop         =   0   'False
+            Top             =   645
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   1
+            Left            =   9165
+            MaxLength       =   18
+            TabIndex        =   157
+            Top             =   645
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   1
+            Left            =   8550
+            MaxLength       =   5
+            TabIndex        =   156
+            Top             =   645
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   1
+            Left            =   1530
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   155
+            Top             =   645
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   1
+            Left            =   645
+            MaxLength       =   8
+            TabIndex        =   154
+            Top             =   645
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   1
+            Left            =   120
+            MaxLength       =   4
+            TabIndex        =   153
+            Top             =   645
+            Width           =   525
+         End
+         Begin VB.TextBox c_vl_total 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   0
+            Left            =   10470
+            Locked          =   -1  'True
+            MaxLength       =   18
+            TabIndex        =   152
+            TabStop         =   0   'False
+            Top             =   375
+            Width           =   1305
+         End
+         Begin VB.TextBox c_vl_unitario 
+            Alignment       =   1  'Right Justify
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   0
+            Left            =   9165
+            MaxLength       =   18
+            TabIndex        =   151
+            Top             =   360
+            Width           =   1305
+         End
+         Begin VB.TextBox c_qtde 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   0
+            Left            =   8550
+            MaxLength       =   5
+            TabIndex        =   150
+            Top             =   360
+            Width           =   615
+         End
+         Begin VB.TextBox c_descricao 
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   0
+            Left            =   1530
+            Locked          =   -1  'True
+            MaxLength       =   80
+            TabIndex        =   149
+            Top             =   360
+            Width           =   5320
+         End
+         Begin VB.TextBox c_produto 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   0
+            Left            =   645
+            MaxLength       =   8
+            TabIndex        =   148
+            Top             =   360
+            Width           =   885
+         End
+         Begin VB.TextBox c_fabricante 
+            Alignment       =   2  'Center
+            ForeColor       =   &H00000000&
+            Height          =   285
+            Index           =   0
+            Left            =   120
+            MaxLength       =   4
+            TabIndex        =   147
+            Top             =   360
+            Width           =   525
+         End
+      End
+      Begin VB.Label l_tit_fabricante 
+         AutoSize        =   -1  'True
+         BackColor       =   &H00FFC0C0&
+         Caption         =   "Fabric"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   195
+         Left            =   150
+         TabIndex        =   743
+         Top             =   135
+         Width           =   540
+      End
+      Begin VB.Label l_tit_produto 
+         AutoSize        =   -1  'True
+         BackColor       =   &H00FFC0C0&
+         Caption         =   "Produto"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   195
+         Left            =   800
+         TabIndex        =   742
+         Top             =   135
+         Width           =   675
+      End
+      Begin VB.Label l_tit_descricao 
+         AutoSize        =   -1  'True
+         BackColor       =   &H00FFC0C0&
+         Caption         =   "Descrição"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   195
+         Left            =   3000
+         TabIndex        =   741
+         Top             =   135
+         Width           =   870
+      End
+      Begin VB.Label l_tit_qtde 
+         AutoSize        =   -1  'True
+         BackColor       =   &H00FFC0C0&
+         Caption         =   "Qtde"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   195
+         Left            =   8745
+         TabIndex        =   740
+         Top             =   135
+         Width           =   420
+      End
+      Begin VB.Label l_tit_vl_unitario 
+         AutoSize        =   -1  'True
+         BackColor       =   &H00FFC0C0&
+         Caption         =   "Valor Unitário"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   195
+         Left            =   9370
+         TabIndex        =   739
+         Top             =   135
+         Width           =   1170
+      End
+      Begin VB.Label l_tit_vl_total 
+         AutoSize        =   -1  'True
+         BackColor       =   &H00FFC0C0&
+         Caption         =   "Valor Total"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   195
+         Left            =   10705
+         TabIndex        =   738
+         Top             =   135
+         Width           =   945
+      End
+      Begin VB.Label l_tit_vl_total_geral 
+         AutoSize        =   -1  'True
+         BackColor       =   &H00FFC0C0&
+         Caption         =   "Total"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   195
+         Left            =   9975
+         TabIndex        =   737
+         Top             =   4410
+         Width           =   450
+      End
+      Begin VB.Label l_tit_produto_obs 
+         AutoSize        =   -1  'True
+         BackColor       =   &H00FFC0C0&
+         Caption         =   "Inf Adicionais"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   195
+         Left            =   7200
+         TabIndex        =   736
+         Top             =   135
+         Width           =   1170
+      End
+      Begin VB.Label l_tit_total_volumes 
+         AutoSize        =   -1  'True
+         BackColor       =   &H00FFC0C0&
+         Caption         =   "Volumes"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   195
+         Left            =   765
+         TabIndex        =   735
+         Top             =   4410
+         Width           =   720
+      End
+      Begin VB.Label l_tit_vl_outras_despesas_acessorias 
+         AutoSize        =   -1  'True
+         BackColor       =   &H00FFC0C0&
+         Caption         =   "Dsp Acessórias"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   195
+         Left            =   11805
+         TabIndex        =   734
+         Top             =   135
+         Width           =   1320
+      End
+      Begin VB.Label l_tit_CST 
+         AutoSize        =   -1  'True
+         BackColor       =   &H00FFC0C0&
+         Caption         =   "CST"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   195
+         Left            =   13245
+         TabIndex        =   733
+         Top             =   135
+         Width           =   375
+      End
+      Begin VB.Label l_tit_CFOP 
+         AutoSize        =   -1  'True
+         BackColor       =   &H00FFC0C0&
+         Caption         =   "CFOP"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   195
+         Left            =   14080
+         TabIndex        =   732
+         Top             =   135
+         Width           =   495
+      End
+      Begin VB.Label l_tit_NCM 
+         AutoSize        =   -1  'True
+         BackColor       =   &H00FFC0C0&
+         Caption         =   "NCM"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   195
+         Left            =   15675
+         TabIndex        =   731
+         Top             =   135
+         Width           =   420
+      End
+      Begin VB.Label l_tit_total_peso_bruto 
+         AutoSize        =   -1  'True
+         BackColor       =   &H00FFC0C0&
+         Caption         =   "Peso Bruto (kg)"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   195
+         Left            =   3825
+         TabIndex        =   730
+         Top             =   4410
+         Width           =   1335
+      End
+      Begin VB.Label l_tit_total_peso_liquido 
+         AutoSize        =   -1  'True
+         BackColor       =   &H00FFC0C0&
+         Caption         =   "Peso Líq (kg)"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   195
+         Left            =   6915
+         TabIndex        =   729
+         Top             =   4410
+         Width           =   1170
+      End
+      Begin VB.Label l_tit_ICMS_item 
+         AutoSize        =   -1  'True
+         BackColor       =   &H00FFC0C0&
+         Caption         =   "ICMS"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   195
+         Left            =   16560
+         TabIndex        =   728
+         Top             =   135
+         Width           =   465
+      End
+      Begin VB.Label l_tit_xPed 
+         AutoSize        =   -1  'True
+         BackColor       =   &H00FFC0C0&
+         Caption         =   "xPed"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   195
+         Left            =   17245
+         TabIndex        =   727
+         Top             =   135
+         Width           =   435
+      End
+      Begin VB.Label l_tit_unidade 
+         AutoSize        =   -1  'True
+         BackColor       =   &H00FFC0C0&
+         Caption         =   "Unid"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   195
+         Left            =   18955
+         TabIndex        =   726
+         Top             =   135
+         Width           =   405
+      End
+      Begin VB.Label l_tit_nItemPed 
+         AutoSize        =   -1  'True
+         BackColor       =   &H00FFC0C0&
+         Caption         =   "nItemPed"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   195
+         Left            =   17945
+         TabIndex        =   725
+         Top             =   135
+         Width           =   810
+      End
+      Begin VB.Label l_tit_FCP 
+         AutoSize        =   -1  'True
+         BackColor       =   &H00FFC0C0&
+         Caption         =   "%FCP"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   195
+         Left            =   19530
+         TabIndex        =   724
+         Top             =   135
+         Width           =   495
+      End
+      Begin VB.Label l_tit_vl_total_icms 
+         AutoSize        =   -1  'True
+         BackColor       =   &H00FFC0C0&
+         Caption         =   "Total ICMS"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   195
+         Left            =   14640
+         TabIndex        =   723
+         Top             =   4410
+         Width           =   960
+      End
+   End
    Begin VB.CommandButton b_operacoes_pendentes 
       Caption         =   "Operações Pendentes"
       BeginProperty Font 
@@ -24,32 +8339,32 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
       EndProperty
       Height          =   570
       Left            =   18960
-      TabIndex        =   340
+      TabIndex        =   137
       Top             =   10800
       Width           =   1395
    End
    Begin VB.Frame pnInfoFilaPedido 
       Height          =   570
       Left            =   16320
-      TabIndex        =   335
+      TabIndex        =   132
       Top             =   10800
       Visible         =   0   'False
       Width           =   2475
       Begin VB.CommandButton b_fila_remove 
          Height          =   390
          Left            =   1920
-         Picture         =   "f_EMISSAO_NFE_TRIANGULAR.frx":0000
+         Picture         =   "f_EMISSAO_NFE_TRIANGULAR.frx":00E4
          Style           =   1  'Graphical
-         TabIndex        =   341
+         TabIndex        =   138
          Top             =   120
          Width           =   465
       End
       Begin VB.CommandButton b_fila_play 
          Height          =   390
          Left            =   120
-         Picture         =   "f_EMISSAO_NFE_TRIANGULAR.frx":04BD
+         Picture         =   "f_EMISSAO_NFE_TRIANGULAR.frx":05A1
          Style           =   1  'Graphical
-         TabIndex        =   336
+         TabIndex        =   133
          Top             =   120
          Width           =   465
       End
@@ -58,7 +8373,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Caption         =   "Retornar à Fila"
          Height          =   195
          Left            =   720
-         TabIndex        =   337
+         TabIndex        =   134
          Top             =   240
          Width           =   1035
       End
@@ -66,8 +8381,8 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
    Begin VB.Frame pn_aviso_operacao_concluida 
       Height          =   1695
       Left            =   18000
-      TabIndex        =   331
-      Top             =   2280
+      TabIndex        =   128
+      Top             =   2160
       Width           =   2295
       Begin VB.Label lbl_aviso_operacao_concluida 
          Alignment       =   2  'Center
@@ -85,7 +8400,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          ForeColor       =   &H000000C0&
          Height          =   1335
          Left            =   120
-         TabIndex        =   332
+         TabIndex        =   129
          Top             =   240
          Width           =   2055
       End
@@ -103,7 +8418,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
       EndProperty
       Height          =   690
       Left            =   240
-      TabIndex        =   303
+      TabIndex        =   100
       Top             =   11520
       Width           =   2355
    End
@@ -111,2470 +8426,9 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
       Caption         =   "&Fechar"
       Height          =   450
       Left            =   16320
-      TabIndex        =   302
+      TabIndex        =   99
       Top             =   13320
       Width           =   2475
-   End
-   Begin VB.Frame pnItens 
-      Caption         =   "Itens"
-      Height          =   4335
-      Left            =   120
-      TabIndex        =   99
-      ToolTipText     =   "1605"
-      Top             =   6240
-      Width           =   20340
-      Begin VB.TextBox c_fabricante 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   11
-         Left            =   180
-         Locked          =   -1  'True
-         MaxLength       =   4
-         TabIndex        =   283
-         TabStop         =   0   'False
-         Top             =   3600
-         Width           =   525
-      End
-      Begin VB.TextBox c_produto 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   11
-         Left            =   705
-         Locked          =   -1  'True
-         MaxLength       =   8
-         TabIndex        =   282
-         TabStop         =   0   'False
-         Top             =   3600
-         Width           =   885
-      End
-      Begin VB.TextBox c_descricao 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   11
-         Left            =   1590
-         Locked          =   -1  'True
-         MaxLength       =   40
-         TabIndex        =   281
-         TabStop         =   0   'False
-         Top             =   3600
-         Width           =   4260
-      End
-      Begin VB.TextBox c_qtde 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   11
-         Left            =   8085
-         Locked          =   -1  'True
-         MaxLength       =   5
-         TabIndex        =   280
-         TabStop         =   0   'False
-         Top             =   3600
-         Width           =   615
-      End
-      Begin VB.TextBox c_vl_unitario 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   11
-         Left            =   8700
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   279
-         TabStop         =   0   'False
-         Top             =   3600
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_total 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   11
-         Left            =   10005
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   278
-         TabStop         =   0   'False
-         Top             =   3600
-         Width           =   1305
-      End
-      Begin VB.TextBox c_produto_obs 
-         Height          =   285
-         Index           =   11
-         Left            =   5850
-         MaxLength       =   500
-         TabIndex        =   277
-         Top             =   3600
-         Width           =   2235
-      End
-      Begin VB.TextBox c_fabricante 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   10
-         Left            =   180
-         Locked          =   -1  'True
-         MaxLength       =   4
-         TabIndex        =   276
-         TabStop         =   0   'False
-         Top             =   3315
-         Width           =   525
-      End
-      Begin VB.TextBox c_produto 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   10
-         Left            =   705
-         Locked          =   -1  'True
-         MaxLength       =   8
-         TabIndex        =   275
-         TabStop         =   0   'False
-         Top             =   3315
-         Width           =   885
-      End
-      Begin VB.TextBox c_descricao 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   10
-         Left            =   1590
-         Locked          =   -1  'True
-         MaxLength       =   40
-         TabIndex        =   274
-         TabStop         =   0   'False
-         Top             =   3315
-         Width           =   4260
-      End
-      Begin VB.TextBox c_qtde 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   10
-         Left            =   8085
-         Locked          =   -1  'True
-         MaxLength       =   5
-         TabIndex        =   273
-         TabStop         =   0   'False
-         Top             =   3315
-         Width           =   615
-      End
-      Begin VB.TextBox c_vl_unitario 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   10
-         Left            =   8700
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   272
-         TabStop         =   0   'False
-         Top             =   3315
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_total 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   10
-         Left            =   10005
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   271
-         TabStop         =   0   'False
-         Top             =   3315
-         Width           =   1305
-      End
-      Begin VB.TextBox c_produto_obs 
-         Height          =   285
-         Index           =   10
-         Left            =   5850
-         MaxLength       =   500
-         TabIndex        =   270
-         Top             =   3315
-         Width           =   2235
-      End
-      Begin VB.TextBox c_produto_obs 
-         Height          =   285
-         Index           =   9
-         Left            =   5850
-         MaxLength       =   500
-         TabIndex        =   269
-         Top             =   3030
-         Width           =   2235
-      End
-      Begin VB.TextBox c_produto_obs 
-         Height          =   285
-         Index           =   8
-         Left            =   5850
-         MaxLength       =   500
-         TabIndex        =   268
-         Top             =   2745
-         Width           =   2235
-      End
-      Begin VB.TextBox c_produto_obs 
-         Height          =   285
-         Index           =   7
-         Left            =   5850
-         MaxLength       =   500
-         TabIndex        =   267
-         Top             =   2460
-         Width           =   2235
-      End
-      Begin VB.TextBox c_produto_obs 
-         Height          =   285
-         Index           =   6
-         Left            =   5850
-         MaxLength       =   500
-         TabIndex        =   266
-         Top             =   2175
-         Width           =   2235
-      End
-      Begin VB.TextBox c_produto_obs 
-         Height          =   285
-         Index           =   5
-         Left            =   5850
-         MaxLength       =   500
-         TabIndex        =   265
-         Top             =   1890
-         Width           =   2235
-      End
-      Begin VB.TextBox c_produto_obs 
-         Height          =   285
-         Index           =   4
-         Left            =   5850
-         MaxLength       =   500
-         TabIndex        =   264
-         Top             =   1605
-         Width           =   2235
-      End
-      Begin VB.TextBox c_produto_obs 
-         Height          =   285
-         Index           =   3
-         Left            =   5850
-         MaxLength       =   500
-         TabIndex        =   263
-         Top             =   1320
-         Width           =   2235
-      End
-      Begin VB.TextBox c_produto_obs 
-         Height          =   285
-         Index           =   2
-         Left            =   5850
-         MaxLength       =   500
-         TabIndex        =   262
-         Top             =   1035
-         Width           =   2235
-      End
-      Begin VB.TextBox c_produto_obs 
-         Height          =   285
-         Index           =   1
-         Left            =   5850
-         MaxLength       =   500
-         TabIndex        =   261
-         Top             =   750
-         Width           =   2235
-      End
-      Begin VB.TextBox c_produto_obs 
-         Height          =   285
-         Index           =   0
-         Left            =   5850
-         MaxLength       =   500
-         TabIndex        =   260
-         Top             =   480
-         Width           =   2235
-      End
-      Begin VB.TextBox c_vl_total_geral 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Left            =   10005
-         Locked          =   -1  'True
-         TabIndex        =   259
-         TabStop         =   0   'False
-         Top             =   3885
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_total 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   9
-         Left            =   10005
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   258
-         TabStop         =   0   'False
-         Top             =   3030
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_unitario 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   9
-         Left            =   8700
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   257
-         TabStop         =   0   'False
-         Top             =   3030
-         Width           =   1305
-      End
-      Begin VB.TextBox c_qtde 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   9
-         Left            =   8085
-         Locked          =   -1  'True
-         MaxLength       =   5
-         TabIndex        =   256
-         TabStop         =   0   'False
-         Top             =   3030
-         Width           =   615
-      End
-      Begin VB.TextBox c_descricao 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   9
-         Left            =   1590
-         Locked          =   -1  'True
-         MaxLength       =   40
-         TabIndex        =   255
-         TabStop         =   0   'False
-         Top             =   3030
-         Width           =   4260
-      End
-      Begin VB.TextBox c_produto 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   9
-         Left            =   705
-         Locked          =   -1  'True
-         MaxLength       =   8
-         TabIndex        =   254
-         TabStop         =   0   'False
-         Top             =   3030
-         Width           =   885
-      End
-      Begin VB.TextBox c_fabricante 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   9
-         Left            =   180
-         Locked          =   -1  'True
-         MaxLength       =   4
-         TabIndex        =   253
-         TabStop         =   0   'False
-         Top             =   3030
-         Width           =   525
-      End
-      Begin VB.TextBox c_vl_total 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   8
-         Left            =   10005
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   252
-         TabStop         =   0   'False
-         Top             =   2745
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_unitario 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   8
-         Left            =   8700
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   251
-         TabStop         =   0   'False
-         Top             =   2745
-         Width           =   1305
-      End
-      Begin VB.TextBox c_qtde 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   8
-         Left            =   8085
-         Locked          =   -1  'True
-         MaxLength       =   5
-         TabIndex        =   250
-         TabStop         =   0   'False
-         Top             =   2745
-         Width           =   615
-      End
-      Begin VB.TextBox c_descricao 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   8
-         Left            =   1590
-         Locked          =   -1  'True
-         MaxLength       =   40
-         TabIndex        =   249
-         TabStop         =   0   'False
-         Top             =   2745
-         Width           =   4260
-      End
-      Begin VB.TextBox c_produto 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   8
-         Left            =   705
-         Locked          =   -1  'True
-         MaxLength       =   8
-         TabIndex        =   248
-         TabStop         =   0   'False
-         Top             =   2745
-         Width           =   885
-      End
-      Begin VB.TextBox c_fabricante 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   8
-         Left            =   180
-         Locked          =   -1  'True
-         MaxLength       =   4
-         TabIndex        =   247
-         TabStop         =   0   'False
-         Top             =   2745
-         Width           =   525
-      End
-      Begin VB.TextBox c_vl_total 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   7
-         Left            =   10005
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   246
-         TabStop         =   0   'False
-         Top             =   2460
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_unitario 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   7
-         Left            =   8700
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   245
-         TabStop         =   0   'False
-         Top             =   2460
-         Width           =   1305
-      End
-      Begin VB.TextBox c_qtde 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   7
-         Left            =   8085
-         Locked          =   -1  'True
-         MaxLength       =   5
-         TabIndex        =   244
-         TabStop         =   0   'False
-         Top             =   2460
-         Width           =   615
-      End
-      Begin VB.TextBox c_descricao 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   7
-         Left            =   1590
-         Locked          =   -1  'True
-         MaxLength       =   40
-         TabIndex        =   243
-         TabStop         =   0   'False
-         Top             =   2460
-         Width           =   4260
-      End
-      Begin VB.TextBox c_produto 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   7
-         Left            =   705
-         Locked          =   -1  'True
-         MaxLength       =   8
-         TabIndex        =   242
-         TabStop         =   0   'False
-         Top             =   2460
-         Width           =   885
-      End
-      Begin VB.TextBox c_fabricante 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   7
-         Left            =   180
-         Locked          =   -1  'True
-         MaxLength       =   4
-         TabIndex        =   241
-         TabStop         =   0   'False
-         Top             =   2460
-         Width           =   525
-      End
-      Begin VB.TextBox c_vl_total 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   6
-         Left            =   10005
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   240
-         TabStop         =   0   'False
-         Top             =   2175
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_unitario 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   6
-         Left            =   8700
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   239
-         TabStop         =   0   'False
-         Top             =   2175
-         Width           =   1305
-      End
-      Begin VB.TextBox c_qtde 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   6
-         Left            =   8085
-         Locked          =   -1  'True
-         MaxLength       =   5
-         TabIndex        =   238
-         TabStop         =   0   'False
-         Top             =   2175
-         Width           =   615
-      End
-      Begin VB.TextBox c_descricao 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   6
-         Left            =   1590
-         Locked          =   -1  'True
-         MaxLength       =   40
-         TabIndex        =   237
-         TabStop         =   0   'False
-         Top             =   2175
-         Width           =   4260
-      End
-      Begin VB.TextBox c_produto 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   6
-         Left            =   705
-         Locked          =   -1  'True
-         MaxLength       =   8
-         TabIndex        =   236
-         TabStop         =   0   'False
-         Top             =   2175
-         Width           =   885
-      End
-      Begin VB.TextBox c_fabricante 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   6
-         Left            =   180
-         Locked          =   -1  'True
-         MaxLength       =   4
-         TabIndex        =   235
-         TabStop         =   0   'False
-         Top             =   2175
-         Width           =   525
-      End
-      Begin VB.TextBox c_vl_total 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   5
-         Left            =   10005
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   234
-         TabStop         =   0   'False
-         Top             =   1890
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_unitario 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   5
-         Left            =   8700
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   233
-         TabStop         =   0   'False
-         Top             =   1890
-         Width           =   1305
-      End
-      Begin VB.TextBox c_qtde 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   5
-         Left            =   8085
-         Locked          =   -1  'True
-         MaxLength       =   5
-         TabIndex        =   232
-         TabStop         =   0   'False
-         Top             =   1890
-         Width           =   615
-      End
-      Begin VB.TextBox c_descricao 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   5
-         Left            =   1590
-         Locked          =   -1  'True
-         MaxLength       =   40
-         TabIndex        =   231
-         TabStop         =   0   'False
-         Top             =   1890
-         Width           =   4260
-      End
-      Begin VB.TextBox c_produto 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   5
-         Left            =   705
-         Locked          =   -1  'True
-         MaxLength       =   8
-         TabIndex        =   230
-         TabStop         =   0   'False
-         Top             =   1890
-         Width           =   885
-      End
-      Begin VB.TextBox c_fabricante 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   5
-         Left            =   180
-         Locked          =   -1  'True
-         MaxLength       =   4
-         TabIndex        =   229
-         TabStop         =   0   'False
-         Top             =   1890
-         Width           =   525
-      End
-      Begin VB.TextBox c_vl_total 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   4
-         Left            =   10005
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   228
-         TabStop         =   0   'False
-         Top             =   1605
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_unitario 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   4
-         Left            =   8700
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   227
-         TabStop         =   0   'False
-         Top             =   1605
-         Width           =   1305
-      End
-      Begin VB.TextBox c_qtde 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   4
-         Left            =   8085
-         Locked          =   -1  'True
-         MaxLength       =   5
-         TabIndex        =   226
-         TabStop         =   0   'False
-         Top             =   1605
-         Width           =   615
-      End
-      Begin VB.TextBox c_descricao 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   4
-         Left            =   1590
-         Locked          =   -1  'True
-         MaxLength       =   40
-         TabIndex        =   225
-         TabStop         =   0   'False
-         Top             =   1605
-         Width           =   4260
-      End
-      Begin VB.TextBox c_produto 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   4
-         Left            =   705
-         Locked          =   -1  'True
-         MaxLength       =   8
-         TabIndex        =   224
-         TabStop         =   0   'False
-         Top             =   1605
-         Width           =   885
-      End
-      Begin VB.TextBox c_fabricante 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   4
-         Left            =   180
-         Locked          =   -1  'True
-         MaxLength       =   4
-         TabIndex        =   223
-         TabStop         =   0   'False
-         Top             =   1605
-         Width           =   525
-      End
-      Begin VB.TextBox c_vl_total 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   3
-         Left            =   10005
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   222
-         TabStop         =   0   'False
-         Top             =   1320
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_unitario 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   3
-         Left            =   8700
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   221
-         TabStop         =   0   'False
-         Top             =   1320
-         Width           =   1305
-      End
-      Begin VB.TextBox c_qtde 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   3
-         Left            =   8085
-         Locked          =   -1  'True
-         MaxLength       =   5
-         TabIndex        =   220
-         TabStop         =   0   'False
-         Top             =   1320
-         Width           =   615
-      End
-      Begin VB.TextBox c_descricao 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   3
-         Left            =   1590
-         Locked          =   -1  'True
-         MaxLength       =   40
-         TabIndex        =   219
-         TabStop         =   0   'False
-         Top             =   1320
-         Width           =   4260
-      End
-      Begin VB.TextBox c_produto 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   3
-         Left            =   705
-         Locked          =   -1  'True
-         MaxLength       =   8
-         TabIndex        =   218
-         TabStop         =   0   'False
-         Top             =   1320
-         Width           =   885
-      End
-      Begin VB.TextBox c_fabricante 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   3
-         Left            =   180
-         Locked          =   -1  'True
-         MaxLength       =   4
-         TabIndex        =   217
-         TabStop         =   0   'False
-         Top             =   1320
-         Width           =   525
-      End
-      Begin VB.TextBox c_vl_total 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   2
-         Left            =   10005
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   216
-         TabStop         =   0   'False
-         Top             =   1035
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_unitario 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   2
-         Left            =   8700
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   215
-         TabStop         =   0   'False
-         Top             =   1035
-         Width           =   1305
-      End
-      Begin VB.TextBox c_qtde 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   2
-         Left            =   8085
-         Locked          =   -1  'True
-         MaxLength       =   5
-         TabIndex        =   214
-         TabStop         =   0   'False
-         Top             =   1035
-         Width           =   615
-      End
-      Begin VB.TextBox c_descricao 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   2
-         Left            =   1590
-         Locked          =   -1  'True
-         MaxLength       =   40
-         TabIndex        =   213
-         TabStop         =   0   'False
-         Top             =   1035
-         Width           =   4260
-      End
-      Begin VB.TextBox c_produto 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   2
-         Left            =   705
-         Locked          =   -1  'True
-         MaxLength       =   8
-         TabIndex        =   212
-         TabStop         =   0   'False
-         Top             =   1035
-         Width           =   885
-      End
-      Begin VB.TextBox c_fabricante 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   2
-         Left            =   180
-         Locked          =   -1  'True
-         MaxLength       =   4
-         TabIndex        =   211
-         TabStop         =   0   'False
-         Top             =   1035
-         Width           =   525
-      End
-      Begin VB.TextBox c_vl_total 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   1
-         Left            =   10005
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   210
-         TabStop         =   0   'False
-         Top             =   750
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_unitario 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   1
-         Left            =   8700
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   209
-         TabStop         =   0   'False
-         Top             =   750
-         Width           =   1305
-      End
-      Begin VB.TextBox c_qtde 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   1
-         Left            =   8085
-         Locked          =   -1  'True
-         MaxLength       =   5
-         TabIndex        =   208
-         TabStop         =   0   'False
-         Top             =   750
-         Width           =   615
-      End
-      Begin VB.TextBox c_descricao 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   1
-         Left            =   1590
-         Locked          =   -1  'True
-         MaxLength       =   40
-         TabIndex        =   207
-         TabStop         =   0   'False
-         Top             =   750
-         Width           =   4260
-      End
-      Begin VB.TextBox c_produto 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   1
-         Left            =   705
-         Locked          =   -1  'True
-         MaxLength       =   8
-         TabIndex        =   206
-         TabStop         =   0   'False
-         Top             =   750
-         Width           =   885
-      End
-      Begin VB.TextBox c_fabricante 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   1
-         Left            =   180
-         Locked          =   -1  'True
-         MaxLength       =   4
-         TabIndex        =   205
-         TabStop         =   0   'False
-         Top             =   750
-         Width           =   525
-      End
-      Begin VB.TextBox c_vl_total 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   0
-         Left            =   10005
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   204
-         TabStop         =   0   'False
-         Top             =   465
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_unitario 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   0
-         Left            =   8700
-         Locked          =   -1  'True
-         MaxLength       =   18
-         TabIndex        =   203
-         TabStop         =   0   'False
-         Top             =   465
-         Width           =   1305
-      End
-      Begin VB.TextBox c_qtde 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   0
-         Left            =   8085
-         Locked          =   -1  'True
-         MaxLength       =   5
-         TabIndex        =   202
-         TabStop         =   0   'False
-         Top             =   465
-         Width           =   615
-      End
-      Begin VB.TextBox c_descricao 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   0
-         Left            =   1590
-         Locked          =   -1  'True
-         MaxLength       =   40
-         TabIndex        =   201
-         TabStop         =   0   'False
-         Top             =   465
-         Width           =   4260
-      End
-      Begin VB.TextBox c_produto 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   0
-         Left            =   705
-         Locked          =   -1  'True
-         MaxLength       =   8
-         TabIndex        =   200
-         TabStop         =   0   'False
-         Top             =   465
-         Width           =   885
-      End
-      Begin VB.TextBox c_fabricante 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   0
-         Left            =   180
-         Locked          =   -1  'True
-         MaxLength       =   4
-         TabIndex        =   199
-         TabStop         =   0   'False
-         Top             =   480
-         Width           =   525
-      End
-      Begin VB.TextBox c_total_volumes 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Left            =   5850
-         MaxLength       =   15
-         TabIndex        =   198
-         Top             =   3885
-         Width           =   735
-      End
-      Begin VB.ComboBox cb_CFOP 
-         Height          =   315
-         Index           =   0
-         ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":0794
-         Left            =   13140
-         List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":0796
-         Style           =   2  'Dropdown List
-         TabIndex        =   197
-         Top             =   465
-         Width           =   3195
-      End
-      Begin VB.TextBox c_CST 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   0
-         Left            =   12615
-         MaxLength       =   4
-         TabIndex        =   196
-         Top             =   465
-         Width           =   525
-      End
-      Begin VB.TextBox c_CST 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   1
-         Left            =   12615
-         MaxLength       =   4
-         TabIndex        =   195
-         Top             =   750
-         Width           =   525
-      End
-      Begin VB.TextBox c_CST 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   2
-         Left            =   12615
-         MaxLength       =   4
-         TabIndex        =   194
-         Top             =   1035
-         Width           =   525
-      End
-      Begin VB.TextBox c_CST 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   3
-         Left            =   12615
-         MaxLength       =   4
-         TabIndex        =   193
-         Top             =   1320
-         Width           =   525
-      End
-      Begin VB.TextBox c_CST 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   4
-         Left            =   12615
-         MaxLength       =   4
-         TabIndex        =   192
-         Top             =   1605
-         Width           =   525
-      End
-      Begin VB.TextBox c_CST 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   5
-         Left            =   12615
-         MaxLength       =   4
-         TabIndex        =   191
-         Top             =   1890
-         Width           =   525
-      End
-      Begin VB.TextBox c_CST 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   6
-         Left            =   12615
-         MaxLength       =   4
-         TabIndex        =   190
-         Top             =   2175
-         Width           =   525
-      End
-      Begin VB.TextBox c_CST 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   7
-         Left            =   12615
-         MaxLength       =   4
-         TabIndex        =   189
-         Top             =   2460
-         Width           =   525
-      End
-      Begin VB.TextBox c_CST 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   8
-         Left            =   12615
-         MaxLength       =   4
-         TabIndex        =   188
-         Top             =   2745
-         Width           =   525
-      End
-      Begin VB.TextBox c_CST 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   9
-         Left            =   12615
-         MaxLength       =   4
-         TabIndex        =   187
-         Top             =   3030
-         Width           =   525
-      End
-      Begin VB.TextBox c_CST 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   10
-         Left            =   12615
-         MaxLength       =   4
-         TabIndex        =   186
-         Top             =   3315
-         Width           =   525
-      End
-      Begin VB.TextBox c_CST 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   11
-         Left            =   12615
-         MaxLength       =   4
-         TabIndex        =   185
-         Top             =   3600
-         Width           =   525
-      End
-      Begin VB.TextBox c_vl_total_outras_despesas_acessorias 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Left            =   11310
-         Locked          =   -1  'True
-         TabIndex        =   184
-         TabStop         =   0   'False
-         Top             =   3885
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_outras_despesas_acessorias 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   0
-         Left            =   11310
-         MaxLength       =   18
-         TabIndex        =   183
-         Top             =   480
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_outras_despesas_acessorias 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   1
-         Left            =   11310
-         MaxLength       =   18
-         TabIndex        =   182
-         Top             =   750
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_outras_despesas_acessorias 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   2
-         Left            =   11310
-         MaxLength       =   18
-         TabIndex        =   181
-         Top             =   1035
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_outras_despesas_acessorias 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   3
-         Left            =   11310
-         MaxLength       =   18
-         TabIndex        =   180
-         Top             =   1320
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_outras_despesas_acessorias 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   4
-         Left            =   11310
-         MaxLength       =   18
-         TabIndex        =   179
-         Top             =   1605
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_outras_despesas_acessorias 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   5
-         Left            =   11310
-         MaxLength       =   18
-         TabIndex        =   178
-         Top             =   1890
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_outras_despesas_acessorias 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   6
-         Left            =   11310
-         MaxLength       =   18
-         TabIndex        =   177
-         Top             =   2175
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_outras_despesas_acessorias 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   7
-         Left            =   11310
-         MaxLength       =   18
-         TabIndex        =   176
-         Top             =   2460
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_outras_despesas_acessorias 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   8
-         Left            =   11310
-         MaxLength       =   18
-         TabIndex        =   175
-         Top             =   2745
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_outras_despesas_acessorias 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   9
-         Left            =   11310
-         MaxLength       =   18
-         TabIndex        =   174
-         Top             =   3030
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_outras_despesas_acessorias 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   10
-         Left            =   11310
-         MaxLength       =   18
-         TabIndex        =   173
-         Top             =   3315
-         Width           =   1305
-      End
-      Begin VB.TextBox c_vl_outras_despesas_acessorias 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   11
-         Left            =   11310
-         MaxLength       =   18
-         TabIndex        =   172
-         Top             =   3600
-         Width           =   1305
-      End
-      Begin VB.ComboBox cb_CFOP 
-         Height          =   315
-         Index           =   1
-         ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":0798
-         Left            =   13140
-         List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":079A
-         Style           =   2  'Dropdown List
-         TabIndex        =   171
-         Top             =   750
-         Width           =   3195
-      End
-      Begin VB.ComboBox cb_CFOP 
-         Height          =   315
-         Index           =   2
-         ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":079C
-         Left            =   13140
-         List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":079E
-         Style           =   2  'Dropdown List
-         TabIndex        =   170
-         Top             =   1035
-         Width           =   3195
-      End
-      Begin VB.ComboBox cb_CFOP 
-         Height          =   315
-         Index           =   3
-         ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":07A0
-         Left            =   13140
-         List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":07A2
-         Style           =   2  'Dropdown List
-         TabIndex        =   169
-         Top             =   1320
-         Width           =   3195
-      End
-      Begin VB.ComboBox cb_CFOP 
-         Height          =   315
-         Index           =   4
-         ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":07A4
-         Left            =   13140
-         List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":07A6
-         Style           =   2  'Dropdown List
-         TabIndex        =   168
-         Top             =   1605
-         Width           =   3195
-      End
-      Begin VB.ComboBox cb_CFOP 
-         Height          =   315
-         Index           =   5
-         ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":07A8
-         Left            =   13140
-         List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":07AA
-         Style           =   2  'Dropdown List
-         TabIndex        =   167
-         Top             =   1890
-         Width           =   3195
-      End
-      Begin VB.ComboBox cb_CFOP 
-         Height          =   315
-         Index           =   6
-         ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":07AC
-         Left            =   13140
-         List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":07AE
-         Style           =   2  'Dropdown List
-         TabIndex        =   166
-         Top             =   2175
-         Width           =   3195
-      End
-      Begin VB.ComboBox cb_CFOP 
-         Height          =   315
-         Index           =   7
-         ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":07B0
-         Left            =   13140
-         List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":07B2
-         Style           =   2  'Dropdown List
-         TabIndex        =   165
-         Top             =   2460
-         Width           =   3195
-      End
-      Begin VB.ComboBox cb_CFOP 
-         Height          =   315
-         Index           =   8
-         ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":07B4
-         Left            =   13140
-         List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":07B6
-         Style           =   2  'Dropdown List
-         TabIndex        =   164
-         Top             =   2745
-         Width           =   3195
-      End
-      Begin VB.ComboBox cb_CFOP 
-         Height          =   315
-         Index           =   9
-         ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":07B8
-         Left            =   13140
-         List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":07BA
-         Style           =   2  'Dropdown List
-         TabIndex        =   163
-         Top             =   3030
-         Width           =   3195
-      End
-      Begin VB.ComboBox cb_CFOP 
-         Height          =   315
-         Index           =   10
-         ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":07BC
-         Left            =   13140
-         List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":07BE
-         Style           =   2  'Dropdown List
-         TabIndex        =   162
-         Top             =   3315
-         Width           =   3195
-      End
-      Begin VB.ComboBox cb_CFOP 
-         Height          =   315
-         Index           =   11
-         ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":07C0
-         Left            =   13140
-         List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":07C2
-         Style           =   2  'Dropdown List
-         TabIndex        =   161
-         Top             =   3600
-         Width           =   3195
-      End
-      Begin VB.TextBox c_NCM 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   11
-         Left            =   16335
-         MaxLength       =   8
-         TabIndex        =   160
-         Top             =   3600
-         Width           =   885
-      End
-      Begin VB.TextBox c_NCM 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   10
-         Left            =   16335
-         MaxLength       =   8
-         TabIndex        =   159
-         Top             =   3315
-         Width           =   885
-      End
-      Begin VB.TextBox c_NCM 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   9
-         Left            =   16335
-         MaxLength       =   8
-         TabIndex        =   158
-         Top             =   3030
-         Width           =   885
-      End
-      Begin VB.TextBox c_NCM 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   8
-         Left            =   16335
-         MaxLength       =   8
-         TabIndex        =   157
-         Top             =   2745
-         Width           =   885
-      End
-      Begin VB.TextBox c_NCM 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   7
-         Left            =   16335
-         MaxLength       =   8
-         TabIndex        =   156
-         Top             =   2460
-         Width           =   885
-      End
-      Begin VB.TextBox c_NCM 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   6
-         Left            =   16335
-         MaxLength       =   8
-         TabIndex        =   155
-         Top             =   2175
-         Width           =   885
-      End
-      Begin VB.TextBox c_NCM 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   5
-         Left            =   16335
-         MaxLength       =   8
-         TabIndex        =   154
-         Top             =   1890
-         Width           =   885
-      End
-      Begin VB.TextBox c_NCM 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   4
-         Left            =   16335
-         MaxLength       =   8
-         TabIndex        =   153
-         Top             =   1605
-         Width           =   885
-      End
-      Begin VB.TextBox c_NCM 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   3
-         Left            =   16335
-         MaxLength       =   8
-         TabIndex        =   152
-         Top             =   1320
-         Width           =   885
-      End
-      Begin VB.TextBox c_NCM 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   2
-         Left            =   16335
-         MaxLength       =   8
-         TabIndex        =   151
-         Top             =   1035
-         Width           =   885
-      End
-      Begin VB.TextBox c_NCM 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   1
-         Left            =   16335
-         MaxLength       =   8
-         TabIndex        =   150
-         Top             =   750
-         Width           =   885
-      End
-      Begin VB.TextBox c_NCM 
-         Alignment       =   2  'Center
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   0
-         Left            =   16335
-         MaxLength       =   8
-         TabIndex        =   149
-         Top             =   465
-         Width           =   885
-      End
-      Begin VB.ComboBox cb_ICMS_item 
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   330
-         Index           =   0
-         Left            =   17220
-         TabIndex        =   148
-         Top             =   465
-         Width           =   585
-      End
-      Begin VB.ComboBox cb_ICMS_item 
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   330
-         Index           =   1
-         Left            =   17220
-         TabIndex        =   147
-         Top             =   750
-         Width           =   585
-      End
-      Begin VB.ComboBox cb_ICMS_item 
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   330
-         Index           =   2
-         Left            =   17220
-         TabIndex        =   146
-         Top             =   1035
-         Width           =   585
-      End
-      Begin VB.ComboBox cb_ICMS_item 
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   330
-         Index           =   3
-         Left            =   17220
-         TabIndex        =   145
-         Top             =   1320
-         Width           =   585
-      End
-      Begin VB.ComboBox cb_ICMS_item 
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   330
-         Index           =   4
-         Left            =   17220
-         TabIndex        =   144
-         Top             =   1605
-         Width           =   585
-      End
-      Begin VB.ComboBox cb_ICMS_item 
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   330
-         Index           =   5
-         Left            =   17220
-         TabIndex        =   143
-         Top             =   1890
-         Width           =   585
-      End
-      Begin VB.ComboBox cb_ICMS_item 
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   330
-         Index           =   6
-         Left            =   17220
-         TabIndex        =   142
-         Top             =   2175
-         Width           =   585
-      End
-      Begin VB.ComboBox cb_ICMS_item 
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   330
-         Index           =   7
-         Left            =   17220
-         TabIndex        =   141
-         Top             =   2460
-         Width           =   585
-      End
-      Begin VB.ComboBox cb_ICMS_item 
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   330
-         Index           =   8
-         Left            =   17220
-         TabIndex        =   140
-         Top             =   2745
-         Width           =   585
-      End
-      Begin VB.ComboBox cb_ICMS_item 
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   330
-         Index           =   9
-         Left            =   17220
-         TabIndex        =   139
-         Top             =   3030
-         Width           =   585
-      End
-      Begin VB.ComboBox cb_ICMS_item 
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   330
-         Index           =   10
-         Left            =   17220
-         TabIndex        =   138
-         Top             =   3315
-         Width           =   585
-      End
-      Begin VB.ComboBox cb_ICMS_item 
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   330
-         Index           =   11
-         Left            =   17220
-         TabIndex        =   137
-         Top             =   3600
-         Width           =   585
-      End
-      Begin VB.TextBox c_xPed 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   0
-         Left            =   17805
-         MaxLength       =   15
-         TabIndex        =   136
-         Top             =   465
-         Width           =   885
-      End
-      Begin VB.TextBox c_xPed 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   1
-         Left            =   17805
-         MaxLength       =   15
-         TabIndex        =   135
-         Top             =   750
-         Width           =   885
-      End
-      Begin VB.TextBox c_xPed 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   2
-         Left            =   17805
-         MaxLength       =   15
-         TabIndex        =   134
-         Top             =   1035
-         Width           =   885
-      End
-      Begin VB.TextBox c_xPed 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   3
-         Left            =   17805
-         MaxLength       =   15
-         TabIndex        =   133
-         Top             =   1320
-         Width           =   885
-      End
-      Begin VB.TextBox c_xPed 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   4
-         Left            =   17805
-         MaxLength       =   15
-         TabIndex        =   132
-         Top             =   1605
-         Width           =   885
-      End
-      Begin VB.TextBox c_xPed 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   5
-         Left            =   17805
-         MaxLength       =   15
-         TabIndex        =   131
-         Top             =   1890
-         Width           =   885
-      End
-      Begin VB.TextBox c_xPed 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   6
-         Left            =   17805
-         MaxLength       =   15
-         TabIndex        =   130
-         Top             =   2175
-         Width           =   885
-      End
-      Begin VB.TextBox c_xPed 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   7
-         Left            =   17805
-         MaxLength       =   15
-         TabIndex        =   129
-         Top             =   2460
-         Width           =   885
-      End
-      Begin VB.TextBox c_xPed 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   8
-         Left            =   17805
-         MaxLength       =   15
-         TabIndex        =   128
-         Top             =   2745
-         Width           =   885
-      End
-      Begin VB.TextBox c_xPed 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   9
-         Left            =   17805
-         MaxLength       =   15
-         TabIndex        =   127
-         Top             =   3030
-         Width           =   885
-      End
-      Begin VB.TextBox c_xPed 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   10
-         Left            =   17805
-         MaxLength       =   15
-         TabIndex        =   126
-         Top             =   3315
-         Width           =   885
-      End
-      Begin VB.TextBox c_xPed 
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Index           =   11
-         Left            =   17805
-         MaxLength       =   15
-         TabIndex        =   125
-         Top             =   3600
-         Width           =   885
-      End
-      Begin VB.TextBox c_nItemPed 
-         Height          =   285
-         Index           =   0
-         Left            =   18750
-         MaxLength       =   6
-         TabIndex        =   124
-         Top             =   465
-         Width           =   735
-      End
-      Begin VB.TextBox c_nItemPed 
-         Height          =   285
-         Index           =   1
-         Left            =   18750
-         MaxLength       =   6
-         TabIndex        =   123
-         Top             =   750
-         Width           =   735
-      End
-      Begin VB.TextBox c_nItemPed 
-         Height          =   285
-         Index           =   2
-         Left            =   18750
-         MaxLength       =   6
-         TabIndex        =   122
-         Top             =   1035
-         Width           =   735
-      End
-      Begin VB.TextBox c_nItemPed 
-         Height          =   285
-         Index           =   3
-         Left            =   18750
-         MaxLength       =   6
-         TabIndex        =   121
-         Top             =   1320
-         Width           =   735
-      End
-      Begin VB.TextBox c_nItemPed 
-         Height          =   285
-         Index           =   4
-         Left            =   18750
-         MaxLength       =   6
-         TabIndex        =   120
-         Top             =   1605
-         Width           =   735
-      End
-      Begin VB.TextBox c_nItemPed 
-         Height          =   285
-         Index           =   5
-         Left            =   18750
-         MaxLength       =   6
-         TabIndex        =   119
-         Top             =   1890
-         Width           =   735
-      End
-      Begin VB.TextBox c_nItemPed 
-         Height          =   285
-         Index           =   6
-         Left            =   18750
-         MaxLength       =   6
-         TabIndex        =   118
-         Top             =   2175
-         Width           =   735
-      End
-      Begin VB.TextBox c_nItemPed 
-         Height          =   285
-         Index           =   7
-         Left            =   18750
-         MaxLength       =   6
-         TabIndex        =   117
-         Top             =   2460
-         Width           =   735
-      End
-      Begin VB.TextBox c_nItemPed 
-         Height          =   285
-         Index           =   8
-         Left            =   18750
-         MaxLength       =   6
-         TabIndex        =   116
-         Top             =   2745
-         Width           =   735
-      End
-      Begin VB.TextBox c_nItemPed 
-         Height          =   285
-         Index           =   9
-         Left            =   18750
-         MaxLength       =   6
-         TabIndex        =   115
-         Top             =   3030
-         Width           =   735
-      End
-      Begin VB.TextBox c_nItemPed 
-         Height          =   285
-         Index           =   10
-         Left            =   18750
-         MaxLength       =   6
-         TabIndex        =   114
-         Top             =   3315
-         Width           =   735
-      End
-      Begin VB.TextBox c_nItemPed 
-         Height          =   285
-         Index           =   11
-         Left            =   18750
-         MaxLength       =   6
-         TabIndex        =   113
-         Top             =   3600
-         Width           =   735
-      End
-      Begin VB.TextBox c_fcp 
-         Alignment       =   2  'Center
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   315
-         Index           =   0
-         Left            =   19530
-         MaxLength       =   6
-         TabIndex        =   112
-         Top             =   465
-         Width           =   525
-      End
-      Begin VB.TextBox c_fcp 
-         Alignment       =   2  'Center
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   315
-         Index           =   1
-         Left            =   19530
-         MaxLength       =   6
-         TabIndex        =   111
-         Top             =   750
-         Width           =   525
-      End
-      Begin VB.TextBox c_fcp 
-         Alignment       =   2  'Center
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   315
-         Index           =   2
-         Left            =   19530
-         MaxLength       =   6
-         TabIndex        =   110
-         Top             =   1035
-         Width           =   525
-      End
-      Begin VB.TextBox c_fcp 
-         Alignment       =   2  'Center
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   315
-         Index           =   3
-         Left            =   19530
-         MaxLength       =   6
-         TabIndex        =   109
-         Top             =   1320
-         Width           =   525
-      End
-      Begin VB.TextBox c_fcp 
-         Alignment       =   2  'Center
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   315
-         Index           =   4
-         Left            =   19530
-         MaxLength       =   6
-         TabIndex        =   108
-         Top             =   1605
-         Width           =   525
-      End
-      Begin VB.TextBox c_fcp 
-         Alignment       =   2  'Center
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   315
-         Index           =   5
-         Left            =   19530
-         MaxLength       =   6
-         TabIndex        =   107
-         Top             =   1890
-         Width           =   525
-      End
-      Begin VB.TextBox c_fcp 
-         Alignment       =   2  'Center
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   315
-         Index           =   6
-         Left            =   19530
-         MaxLength       =   6
-         TabIndex        =   106
-         Top             =   2175
-         Width           =   525
-      End
-      Begin VB.TextBox c_fcp 
-         Alignment       =   2  'Center
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   315
-         Index           =   7
-         Left            =   19530
-         MaxLength       =   6
-         TabIndex        =   105
-         Top             =   2460
-         Width           =   525
-      End
-      Begin VB.TextBox c_fcp 
-         Alignment       =   2  'Center
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   315
-         Index           =   8
-         Left            =   19530
-         MaxLength       =   6
-         TabIndex        =   104
-         Top             =   2745
-         Width           =   525
-      End
-      Begin VB.TextBox c_fcp 
-         Alignment       =   2  'Center
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   315
-         Index           =   9
-         Left            =   19530
-         MaxLength       =   6
-         TabIndex        =   103
-         Top             =   3030
-         Width           =   525
-      End
-      Begin VB.TextBox c_fcp 
-         Alignment       =   2  'Center
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   315
-         Index           =   10
-         Left            =   19530
-         MaxLength       =   6
-         TabIndex        =   102
-         Top             =   3315
-         Width           =   525
-      End
-      Begin VB.TextBox c_fcp 
-         Alignment       =   2  'Center
-         BeginProperty Font 
-            Name            =   "Courier New"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   315
-         Index           =   11
-         Left            =   19530
-         MaxLength       =   6
-         TabIndex        =   101
-         Top             =   3600
-         Width           =   525
-      End
-      Begin VB.TextBox c_vl_total_icms 
-         Alignment       =   1  'Right Justify
-         ForeColor       =   &H00000000&
-         Height          =   285
-         Left            =   16335
-         Locked          =   -1  'True
-         TabIndex        =   100
-         TabStop         =   0   'False
-         Top             =   3885
-         Width           =   1425
-      End
-      Begin VB.Label l_tit_produto_obs 
-         AutoSize        =   -1  'True
-         Caption         =   "Informações Adicionais"
-         Height          =   195
-         Left            =   5865
-         TabIndex        =   301
-         Top             =   255
-         Width           =   1635
-      End
-      Begin VB.Label l_tit_vl_total_geral 
-         AutoSize        =   -1  'True
-         Caption         =   "Total"
-         BeginProperty Font 
-            Name            =   "MS Sans Serif"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   700
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   195
-         Left            =   9450
-         TabIndex        =   300
-         Top             =   3930
-         Width           =   450
-      End
-      Begin VB.Label l_tit_vl_total 
-         AutoSize        =   -1  'True
-         Caption         =   "Valor Total"
-         Height          =   195
-         Left            =   10530
-         TabIndex        =   299
-         Top             =   255
-         Width           =   765
-      End
-      Begin VB.Label l_tit_vl_unitario 
-         AutoSize        =   -1  'True
-         Caption         =   "Valor Unitário"
-         Height          =   195
-         Left            =   9045
-         TabIndex        =   298
-         Top             =   255
-         Width           =   945
-      End
-      Begin VB.Label l_tit_qtde 
-         AutoSize        =   -1  'True
-         Caption         =   "Qtde"
-         Height          =   195
-         Left            =   8220
-         TabIndex        =   297
-         Top             =   255
-         Width           =   345
-      End
-      Begin VB.Label l_tit_descricao 
-         AutoSize        =   -1  'True
-         Caption         =   "Descrição"
-         Height          =   195
-         Left            =   1605
-         TabIndex        =   296
-         Top             =   255
-         Width           =   720
-      End
-      Begin VB.Label l_tit_produto 
-         AutoSize        =   -1  'True
-         Caption         =   "Produto"
-         Height          =   195
-         Left            =   720
-         TabIndex        =   295
-         Top             =   255
-         Width           =   555
-      End
-      Begin VB.Label l_tit_fabricante 
-         AutoSize        =   -1  'True
-         Caption         =   "Fabric"
-         Height          =   195
-         Left            =   195
-         TabIndex        =   294
-         Top             =   255
-         Width           =   435
-      End
-      Begin VB.Label l_tit_total_volumes 
-         AutoSize        =   -1  'True
-         Caption         =   "Volumes"
-         BeginProperty Font 
-            Name            =   "MS Sans Serif"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   700
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   195
-         Left            =   5025
-         TabIndex        =   293
-         Top             =   3930
-         Width           =   720
-      End
-      Begin VB.Label l_tit_CFOP 
-         AutoSize        =   -1  'True
-         Caption         =   "CFOP"
-         Height          =   195
-         Left            =   13155
-         TabIndex        =   292
-         Top             =   255
-         Width           =   420
-      End
-      Begin VB.Label l_tit_CST 
-         AutoSize        =   -1  'True
-         Caption         =   "CST"
-         Height          =   195
-         Left            =   12720
-         TabIndex        =   291
-         Top             =   255
-         Width           =   315
-      End
-      Begin VB.Label l_tit_vl_outras_despesas_acessorias 
-         AutoSize        =   -1  'True
-         Caption         =   "Desp Acessórias"
-         Height          =   195
-         Left            =   11415
-         TabIndex        =   290
-         Top             =   255
-         Width           =   1185
-      End
-      Begin VB.Label l_tit_NCM 
-         AutoSize        =   -1  'True
-         Caption         =   "NCM"
-         Height          =   195
-         Left            =   16350
-         TabIndex        =   289
-         Top             =   255
-         Width           =   360
-      End
-      Begin VB.Label l_tit_ICMS_item 
-         AutoSize        =   -1  'True
-         Caption         =   "ICMS"
-         Height          =   195
-         Left            =   17235
-         TabIndex        =   288
-         Top             =   255
-         Width           =   390
-      End
-      Begin VB.Label l_tit_xPed 
-         AutoSize        =   -1  'True
-         Caption         =   "xPed"
-         Height          =   195
-         Left            =   17820
-         TabIndex        =   287
-         Top             =   255
-         Width           =   360
-      End
-      Begin VB.Label l_tit_nItemPed 
-         AutoSize        =   -1  'True
-         Caption         =   "nItemPed"
-         Height          =   195
-         Left            =   18750
-         TabIndex        =   286
-         Top             =   240
-         Width           =   675
-      End
-      Begin VB.Label l_tit_FCP 
-         AutoSize        =   -1  'True
-         Caption         =   "%FCP"
-         Height          =   195
-         Left            =   19560
-         TabIndex        =   285
-         Top             =   240
-         Width           =   420
-      End
-      Begin VB.Label l_tit_vl_total_icms 
-         AutoSize        =   -1  'True
-         Caption         =   "Total ICMS"
-         BeginProperty Font 
-            Name            =   "MS Sans Serif"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   700
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   195
-         Left            =   15240
-         TabIndex        =   284
-         Top             =   3930
-         Width           =   960
-      End
    End
    Begin VB.Frame pnParcelasEmBoletos 
       Caption         =   "Parcelas em Boletos"
@@ -2606,7 +8460,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
       Begin VB.CommandButton b_parc_edicao_ok 
          Height          =   390
          Left            =   240
-         Picture         =   "f_EMISSAO_NFE_TRIANGULAR.frx":07C4
+         Picture         =   "f_EMISSAO_NFE_TRIANGULAR.frx":0878
          Style           =   1  'Graphical
          TabIndex        =   93
          Top             =   2565
@@ -2615,7 +8469,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
       Begin VB.CommandButton b_parc_edicao_cancela 
          Height          =   390
          Left            =   1560
-         Picture         =   "f_EMISSAO_NFE_TRIANGULAR.frx":0A16
+         Picture         =   "f_EMISSAO_NFE_TRIANGULAR.frx":0ACA
          Style           =   1  'Graphical
          TabIndex        =   92
          Top             =   2565
@@ -2909,7 +8763,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
       Height          =   2655
       Left            =   120
       TabIndex        =   31
-      Top             =   3480
+      Top             =   3240
       Width           =   20340
       Begin VB.ComboBox cb_icms_remessa 
          BeginProperty Font 
@@ -2923,7 +8777,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          EndProperty
          Height          =   360
          Left            =   10680
-         TabIndex        =   338
+         TabIndex        =   135
          Top             =   600
          Width           =   975
       End
@@ -2941,7 +8795,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Left            =   11760
          Sorted          =   -1  'True
          Style           =   2  'Dropdown List
-         TabIndex        =   333
+         TabIndex        =   130
          Top             =   600
          Width           =   2460
       End
@@ -2949,7 +8803,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Caption         =   "Utilizar Identificação do Comprador"
          Height          =   600
          Left            =   120
-         TabIndex        =   328
+         TabIndex        =   125
          Top             =   360
          Width           =   1335
       End
@@ -2957,33 +8811,33 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Caption         =   "Edição do Endereço"
          Height          =   1335
          Left            =   120
-         TabIndex        =   309
+         TabIndex        =   106
          Top             =   1200
          Width           =   20100
          Begin VB.CommandButton b_end_edicao_limpa 
             Height          =   390
             Left            =   15600
-            Picture         =   "f_EMISSAO_NFE_TRIANGULAR.frx":0E89
+            Picture         =   "f_EMISSAO_NFE_TRIANGULAR.frx":0F3D
             Style           =   1  'Graphical
-            TabIndex        =   320
+            TabIndex        =   117
             Top             =   855
             Width           =   810
          End
          Begin VB.CommandButton b_end_edicao_ok 
             Height          =   390
             Left            =   16470
-            Picture         =   "f_EMISSAO_NFE_TRIANGULAR.frx":12DC
+            Picture         =   "f_EMISSAO_NFE_TRIANGULAR.frx":1390
             Style           =   1  'Graphical
-            TabIndex        =   319
+            TabIndex        =   116
             Top             =   855
             Width           =   810
          End
          Begin VB.CommandButton b_end_edicao_cancela 
             Height          =   390
             Left            =   17340
-            Picture         =   "f_EMISSAO_NFE_TRIANGULAR.frx":152E
+            Picture         =   "f_EMISSAO_NFE_TRIANGULAR.frx":15E2
             Style           =   1  'Graphical
-            TabIndex        =   318
+            TabIndex        =   115
             Top             =   855
             Width           =   810
          End
@@ -2992,7 +8846,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
             Height          =   285
             Left            =   14760
             MaxLength       =   2
-            TabIndex        =   317
+            TabIndex        =   114
             Text            =   "SP"
             Top             =   900
             Width           =   585
@@ -3001,7 +8855,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
             Height          =   285
             Left            =   8115
             MaxLength       =   60
-            TabIndex        =   316
+            TabIndex        =   113
             Text            =   "São Paulo"
             Top             =   900
             Width           =   5730
@@ -3010,7 +8864,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
             Height          =   285
             Left            =   1140
             MaxLength       =   60
-            TabIndex        =   315
+            TabIndex        =   112
             Text            =   "Rua do João da Silva"
             Top             =   900
             Width           =   5730
@@ -3019,7 +8873,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
             Height          =   285
             Left            =   14760
             MaxLength       =   60
-            TabIndex        =   314
+            TabIndex        =   111
             Text            =   "Apartamento 99"
             Top             =   300
             Width           =   3390
@@ -3028,7 +8882,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
             Height          =   285
             Left            =   11520
             MaxLength       =   60
-            TabIndex        =   313
+            TabIndex        =   110
             Text            =   "999"
             Top             =   300
             Width           =   1335
@@ -3037,7 +8891,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
             Height          =   285
             Left            =   4800
             MaxLength       =   60
-            TabIndex        =   312
+            TabIndex        =   109
             Text            =   "Rua do João da Silva"
             Top             =   300
             Width           =   5730
@@ -3045,9 +8899,9 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Begin VB.CommandButton b_cep_pesquisar 
             Height          =   390
             Left            =   2520
-            Picture         =   "f_EMISSAO_NFE_TRIANGULAR.frx":19A1
+            Picture         =   "f_EMISSAO_NFE_TRIANGULAR.frx":1A55
             Style           =   1  'Graphical
-            TabIndex        =   311
+            TabIndex        =   108
             Top             =   255
             Width           =   810
          End
@@ -3064,7 +8918,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
             EndProperty
             Height          =   285
             Left            =   1140
-            TabIndex        =   310
+            TabIndex        =   107
             Text            =   "00000-000"
             Top             =   300
             Width           =   1320
@@ -3083,7 +8937,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
             EndProperty
             Height          =   195
             Left            =   14415
-            TabIndex        =   327
+            TabIndex        =   124
             Top             =   945
             Width           =   255
          End
@@ -3101,7 +8955,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
             EndProperty
             Height          =   195
             Left            =   7425
-            TabIndex        =   326
+            TabIndex        =   123
             Top             =   945
             Width           =   600
          End
@@ -3119,7 +8973,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
             EndProperty
             Height          =   195
             Left            =   540
-            TabIndex        =   325
+            TabIndex        =   122
             Top             =   945
             Width           =   510
          End
@@ -3137,7 +8991,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
             EndProperty
             Height          =   195
             Left            =   13530
-            TabIndex        =   324
+            TabIndex        =   121
             Top             =   345
             Width           =   1140
          End
@@ -3155,7 +9009,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
             EndProperty
             Height          =   195
             Left            =   11205
-            TabIndex        =   323
+            TabIndex        =   120
             Top             =   345
             Width           =   225
          End
@@ -3173,7 +9027,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
             EndProperty
             Height          =   195
             Left            =   3885
-            TabIndex        =   322
+            TabIndex        =   119
             Top             =   345
             Width           =   825
          End
@@ -3191,7 +9045,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
             EndProperty
             Height          =   195
             Left            =   675
-            TabIndex        =   321
+            TabIndex        =   118
             Top             =   345
             Width           =   375
          End
@@ -3449,9 +9303,9 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
             Strikethrough   =   0   'False
          EndProperty
          Height          =   360
-         ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":1BF3
+         ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":1CA7
          Left            =   14280
-         List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":1BF5
+         List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":1CA9
          Style           =   2  'Dropdown List
          TabIndex        =   35
          Top             =   600
@@ -3480,7 +9334,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Caption         =   "ICMS Remessa"
          Height          =   195
          Left            =   10575
-         TabIndex        =   339
+         TabIndex        =   136
          Top             =   390
          Width           =   1095
       End
@@ -3489,7 +9343,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Caption         =   "Local de Destino (Remessa)"
          Height          =   195
          Left            =   11880
-         TabIndex        =   334
+         TabIndex        =   131
          Top             =   390
          Width           =   1995
       End
@@ -3498,7 +9352,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Caption         =   "RG /IE"
          Height          =   195
          Left            =   9360
-         TabIndex        =   306
+         TabIndex        =   103
          Top             =   390
          Width           =   510
       End
@@ -3532,7 +9386,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
    End
    Begin VB.Frame pn_comprador 
       Caption         =   "Comprador"
-      Height          =   3375
+      Height          =   3135
       Left            =   120
       TabIndex        =   7
       Top             =   0
@@ -3542,7 +9396,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Height          =   900
          Left            =   120
          TabIndex        =   63
-         Top             =   2280
+         Top             =   2040
          Width           =   19740
          Begin VB.Label l_tit_comprador_nome 
             AutoSize        =   -1  'True
@@ -3558,7 +9412,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
             EndProperty
             Height          =   195
             Left            =   240
-            TabIndex        =   305
+            TabIndex        =   102
             Top             =   285
             Width           =   555
          End
@@ -3567,7 +9421,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
             Caption         =   "João da Silva"
             Height          =   195
             Left            =   840
-            TabIndex        =   304
+            TabIndex        =   101
             Top             =   285
             Width           =   960
          End
@@ -3775,8 +9629,8 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Left            =   10095
          MultiLine       =   -1  'True
          TabIndex        =   21
-         Text            =   "f_EMISSAO_NFE_TRIANGULAR.frx":1BF7
-         Top             =   1890
+         Text            =   "f_EMISSAO_NFE_TRIANGULAR.frx":1CAB
+         Top             =   1650
          Width           =   9720
       End
       Begin VB.ComboBox cb_finalidade 
@@ -3790,19 +9644,19 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
             Strikethrough   =   0   'False
          EndProperty
          Height          =   360
-         ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":1C24
+         ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":1CD8
          Left            =   120
-         List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":1C26
+         List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":1CDA
          Style           =   2  'Dropdown List
          TabIndex        =   20
-         Top             =   1890
+         Top             =   1650
          Width           =   8301
       End
       Begin VB.Frame pnZerarAliquotas 
          Height          =   1365
          Left            =   13560
          TabIndex        =   15
-         Top             =   360
+         Top             =   120
          Width           =   6375
          Begin VB.ComboBox cb_zerar_COFINS 
             BeginProperty Font 
@@ -3875,7 +9729,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Sorted          =   -1  'True
          Style           =   2  'Dropdown List
          TabIndex        =   14
-         Top             =   630
+         Top             =   390
          Width           =   2340
       End
       Begin VB.ComboBox cb_frete 
@@ -3893,7 +9747,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Sorted          =   -1  'True
          Style           =   2  'Dropdown List
          TabIndex        =   13
-         Top             =   630
+         Top             =   390
          Width           =   2460
       End
       Begin VB.TextBox c_ipi 
@@ -3911,7 +9765,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Left            =   5880
          MaxLength       =   6
          TabIndex        =   12
-         Top             =   630
+         Top             =   390
          Width           =   1020
       End
       Begin VB.ComboBox cb_icms 
@@ -3927,7 +9781,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Height          =   360
          Left            =   4560
          TabIndex        =   11
-         Top             =   630
+         Top             =   390
          Width           =   975
       End
       Begin VB.ComboBox cb_natureza 
@@ -3941,12 +9795,12 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
             Strikethrough   =   0   'False
          EndProperty
          Height          =   360
-         ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":1C28
+         ItemData        =   "f_EMISSAO_NFE_TRIANGULAR.frx":1CDC
          Left            =   120
-         List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":1C2A
+         List            =   "f_EMISSAO_NFE_TRIANGULAR.frx":1CDE
          Style           =   2  'Dropdown List
          TabIndex        =   10
-         Top             =   1260
+         Top             =   1020
          Width           =   8301
       End
       Begin VB.TextBox c_pedido 
@@ -3965,7 +9819,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          MaxLength       =   9
          ScrollBars      =   2  'Vertical
          TabIndex        =   9
-         Top             =   630
+         Top             =   390
          Width           =   1650
       End
       Begin VB.ComboBox cb_loc_dest 
@@ -3983,7 +9837,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Sorted          =   -1  'True
          Style           =   2  'Dropdown List
          TabIndex        =   8
-         Top             =   630
+         Top             =   390
          Width           =   2460
       End
       Begin VB.Label l_tit_IE 
@@ -3991,8 +9845,8 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Caption         =   "IE"
          Height          =   195
          Left            =   12960
-         TabIndex        =   330
-         Top             =   420
+         TabIndex        =   127
+         Top             =   180
          Width           =   150
       End
       Begin VB.Label l_IE 
@@ -4012,8 +9866,8 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          ForeColor       =   &H00FF0000&
          Height          =   360
          Left            =   12720
-         TabIndex        =   329
-         Top             =   630
+         TabIndex        =   126
+         Top             =   390
          Width           =   585
       End
       Begin VB.Label l_tit_emitente_uf 
@@ -4021,8 +9875,8 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Caption         =   "UF do Emitente"
          Height          =   195
          Left            =   8760
-         TabIndex        =   308
-         Top             =   1320
+         TabIndex        =   105
+         Top             =   1080
          Width           =   1095
       End
       Begin VB.Label l_emitente_uf 
@@ -4041,8 +9895,8 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          ForeColor       =   &H000000FF&
          Height          =   675
          Left            =   8865
-         TabIndex        =   307
-         Top             =   1635
+         TabIndex        =   104
+         Top             =   1395
          Width           =   825
       End
       Begin VB.Label l_tit_chave_nfe_ref 
@@ -4051,7 +9905,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Height          =   195
          Left            =   10110
          TabIndex        =   30
-         Top             =   1680
+         Top             =   1440
          Width           =   2610
       End
       Begin VB.Label l_tit_finalidade 
@@ -4060,7 +9914,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Height          =   195
          Left            =   135
          TabIndex        =   29
-         Top             =   1680
+         Top             =   1440
          Width           =   720
       End
       Begin VB.Label l_tit_loc_dest 
@@ -4069,7 +9923,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Height          =   195
          Left            =   7230
          TabIndex        =   28
-         Top             =   420
+         Top             =   180
          Width           =   1800
       End
       Begin VB.Label l_tit_tipo_NF 
@@ -4078,7 +9932,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Height          =   195
          Left            =   2070
          TabIndex        =   27
-         Top             =   420
+         Top             =   180
          Width           =   1860
       End
       Begin VB.Label l_tit_frete 
@@ -4087,7 +9941,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Height          =   195
          Left            =   10110
          TabIndex        =   26
-         Top             =   420
+         Top             =   180
          Width           =   1095
       End
       Begin VB.Label l_tit_aliquota_IPI 
@@ -4096,7 +9950,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Height          =   195
          Left            =   5910
          TabIndex        =   25
-         Top             =   420
+         Top             =   180
          Width           =   840
       End
       Begin VB.Label l_tit_aliquota_icms 
@@ -4105,7 +9959,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Height          =   195
          Left            =   4575
          TabIndex        =   24
-         Top             =   420
+         Top             =   180
          Width           =   900
       End
       Begin VB.Label l_tit_natureza 
@@ -4114,7 +9968,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Height          =   195
          Left            =   135
          TabIndex        =   23
-         Top             =   1050
+         Top             =   810
          Width           =   2220
       End
       Begin VB.Label l_tit_pedido 
@@ -4123,7 +9977,7 @@ Begin VB.Form f_EMISSAO_NFE_TRIANGULAR
          Height          =   195
          Left            =   135
          TabIndex        =   22
-         Top             =   420
+         Top             =   180
          Width           =   720
       End
    End
@@ -4943,6 +10797,35 @@ Private Sub c_dataparc_LostFocus()
 End Sub
 
 
+Private Sub c_fcp_KeyPress(Index As Integer, KeyAscii As Integer)
+
+    If KeyAscii = 13 Then
+        KeyAscii = 0
+        If (Index = 11) Then
+            sstItens.Tab = 1
+            c_fabricante(Index + 1).SetFocus
+        ElseIf (Index = 23) Then
+            sstItens.Tab = 2
+            c_fabricante(Index + 1).SetFocus
+        ElseIf (Index < 35) Then
+            c_fabricante(Index + 1).SetFocus
+            End If
+        Exit Sub
+        End If
+        
+    
+    If KeyAscii = 8 Then Exit Sub ' BACKSPACE
+    If KeyAscii = 1 Then Exit Sub ' CTRL+A
+    If KeyAscii = 3 Then Exit Sub ' CTRL+C
+    If KeyAscii = 22 Then Exit Sub ' CTRL+V
+    
+'   Filtra caracter separador definido pela Target One
+    If Chr(KeyAscii) = "|" Then KeyAscii = 0
+
+    KeyAscii = filtra_perc(c_fcp(Index), KeyAscii)
+
+End Sub
+
 Private Sub c_ipi_KeyPress(KeyAscii As Integer)
 
     If KeyAscii = 13 Then
@@ -5043,6 +10926,30 @@ Private Sub c_rg_dest_KeyPress(KeyAscii As Integer)
         cb_icms_remessa.SetFocus
         Exit Sub
         End If
+
+End Sub
+
+Private Sub c_unidade_KeyPress(Index As Integer, KeyAscii As Integer)
+
+    If KeyAscii = 13 Then
+        KeyAscii = 0
+'        If Index = c_fabricante.UBound Then
+'            c_pedido_nota.SetFocus
+'        Else
+'            c_fabricante(Index + 1).SetFocus
+'            End If
+        c_fcp(Index).SetFocus
+        Exit Sub
+        End If
+        
+    If KeyAscii = 8 Then Exit Sub ' BACKSPACE
+    If KeyAscii = 1 Then Exit Sub ' CTRL+A
+    If KeyAscii = 3 Then Exit Sub ' CTRL+C
+    If KeyAscii = 22 Then Exit Sub ' CTRL+V
+    
+'   Filtra caracter separador definido pela Target One
+    If Chr(KeyAscii) = "|" Then KeyAscii = 0
+
 
 End Sub
 
@@ -5671,7 +11578,12 @@ Dim aliquota_icms As Single
 '   NATUREZA DA OPERAÇÃO - COMPRADOR
 '   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 '   DEFAULT
-    s = "6.108"
+    'No caso de PBJ, fixar 5.102, senão 6.108
+    If (usuario.emit_id = "4006") Then
+        s = "5.102"
+    Else
+        s = "6.108"
+        End If
     For i = 0 To cb_natureza.ListCount - 1
         If left$(cb_natureza.List(i), Len(s)) = s Then
             cb_natureza.ListIndex = i
@@ -5827,6 +11739,8 @@ Dim i As Integer
         c_produto_obs(i) = ""
         c_vl_outras_despesas_acessorias(i) = ""
         Next
+        
+    sstItens.Tab = 0
         
 End Sub
 
@@ -7531,6 +13445,16 @@ Dim n As Long
     c_vl_total_geral = formata_moeda(vl_total_geral)
     c_total_volumes = CStr(lngTotalVolumes)
     
+    'posicionar na tab onde está o último item
+    If intIndice > 24 Then
+        sstItens.Tab = 2
+    ElseIf intIndice > 12 Then
+        sstItens.Tab = 1
+    Else
+        sstItens.Tab = 0
+        End If
+
+    
     GoSub FEIPT_FECHA_TABELAS
     
     aguarde INFO_NORMAL, m_id
@@ -8989,7 +14913,7 @@ Sub NFe_emite_venda()
 
 ' CONSTANTES
 Const NomeDestaRotina = "NFe_emite_venda()"
-Const MAX_LINHAS_NOTA_FISCAL_DEFAULT = 19
+Const MAX_LINHAS_NOTA_FISCAL_DEFAULT = 34
 Const NFE_AMBIENTE_PRODUCAO = "1" '1-Produção  2-Homologação
 Const NFE_AMBIENTE_HOMOLOGACAO = "2" '1-Produção  2-Homologação
 'Const NFE_FINALIDADE_NFE = "1" '1-Normal  2-Complementar  3-Ajuste
@@ -13165,7 +19089,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     cmdNFeEmite.CommandText = "Proc_NFe_Integracao_Emite"
     cmdNFeEmite.Parameters.Append cmdNFeEmite.CreateParameter("NFe", adChar, adParamInput, 9, strNumeroNfNormalizado)
     cmdNFeEmite.Parameters.Append cmdNFeEmite.CreateParameter("Serie", adChar, adParamInput, 3, strSerieNfNormalizado)
-    cmdNFeEmite.Parameters.Append cmdNFeEmite.CreateParameter("Arquivo", adVarChar, adParamInput, 16000, strNFeArquivo)
+    cmdNFeEmite.Parameters.Append cmdNFeEmite.CreateParameter("Arquivo", adVarChar, adParamInput, Len(strNFeArquivo), strNFeArquivo)
     Set rsNFeRetornoSPEmite = cmdNFeEmite.Execute
     intNfeRetornoSPEmite = rsNFeRetornoSPEmite("Retorno")
     strNFeMsgRetornoSPEmite = Trim$("" & rsNFeRetornoSPEmite("Mensagem"))
@@ -13449,7 +19373,7 @@ Sub NFe_emite_remessa()
 
 ' CONSTANTES
 Const NomeDestaRotina = "NFe_emite_remessa()"
-Const MAX_LINHAS_NOTA_FISCAL_DEFAULT = 19
+Const MAX_LINHAS_NOTA_FISCAL_DEFAULT = 34
 Const NFE_AMBIENTE_PRODUCAO = "1" '1-Produção  2-Homologação
 Const NFE_AMBIENTE_HOMOLOGACAO = "2" '1-Produção  2-Homologação
 'Const NFE_FINALIDADE_NFE = "1" '1-Normal  2-Complementar  3-Ajuste
@@ -17296,7 +23220,7 @@ Dim vNFeImgPag() As TIPO_NFe_IMG_PAG
     cmdNFeEmite.CommandText = "Proc_NFe_Integracao_Emite"
     cmdNFeEmite.Parameters.Append cmdNFeEmite.CreateParameter("NFe", adChar, adParamInput, 9, strNumeroNfNormalizado)
     cmdNFeEmite.Parameters.Append cmdNFeEmite.CreateParameter("Serie", adChar, adParamInput, 3, strSerieNfNormalizado)
-    cmdNFeEmite.Parameters.Append cmdNFeEmite.CreateParameter("Arquivo", adVarChar, adParamInput, 16000, strNFeArquivo)
+    cmdNFeEmite.Parameters.Append cmdNFeEmite.CreateParameter("Arquivo", adVarChar, adParamInput, Len(strNFeArquivo), strNFeArquivo)
     Set rsNFeRetornoSPEmite = cmdNFeEmite.Execute
     intNfeRetornoSPEmite = rsNFeRetornoSPEmite("Retorno")
     strNFeMsgRetornoSPEmite = Trim$("" & rsNFeRetornoSPEmite("Mensagem"))
