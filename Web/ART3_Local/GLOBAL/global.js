@@ -105,13 +105,14 @@ var TAM_MIN_MIDIA			= 3;
 var TAM_MIN_PRODUTO			= 6;
 var TAM_MIN_NUM_PEDIDO		= 6;	// SOMENTE PARTE NUMÉRICA DO NÚMERO DO PEDIDO
 var TAM_MIN_ID_PEDIDO		= 7;	// PARTE NUMÉRICA DO NÚMERO DO PEDIDO + LETRA REFERENTE AO ANO
-var TAM_MIN_NUM_ORCAMENTO	= 6;	// SOMENTE PARTE NUMÉRICA DO NÚMERO DO ORÇAMENTO
+var TAM_MIN_NUM_ORCAMENTO = 6;	// SOMENTE PARTE NUMÉRICA DO NÚMERO DO ORÇAMENTO
+var TAM_MAX_NUM_ORCAMENTO = 7;	// SOMENTE PARTE NUMÉRICA DO NÚMERO DO ORÇAMENTO
 var TAM_MIN_ID_ORCAMENTO	= 7;	// PARTE NUMÉRICA DO NÚMERO DO ORÇAMENTO + LETRA (SUFIXO) QUE IDENTIFICA COMO ORÇAMENTO
 var TAM_PLANO_CONTAS__EMPRESA = 2;
 var TAM_PLANO_CONTAS__GRUPO = 2;
 var TAM_PLANO_CONTAS__CONTA = 4;
 
-var SUFIXO_ID_ORCAMENTO = "Z";
+var SUFIXO_ID_ORCAMENTO_INICIO_FAIXA = "W";
 
 var ID_ESTOQUE_VENDA			= "VDA";
 var ID_ESTOQUE_VENDIDO			= "VDO";
@@ -457,7 +458,7 @@ function filtra_orcamento() {
 var letra;
 	letra=String.fromCharCode(window.event.keyCode);
 	letra=letra.toUpperCase();
-	if ((!isDigit(letra))&&(letra!=SUFIXO_ID_ORCAMENTO)) window.event.keyCode=0;
+	if ((!isDigit(letra)) && (letra < SUFIXO_ID_ORCAMENTO_INICIO_FAIXA)) window.event.keyCode=0;
 }
 
 function filtra_produto() {
@@ -1106,17 +1107,19 @@ var i, c, s, s_num, s_ano, id_orcamento;
 				return "";
 			}
 		}
-	if (s_ano=="") s_ano=SUFIXO_ID_ORCAMENTO;
+	if (s_ano=="") return "";
 	s_num = normaliza_codigo(s_num, TAM_MIN_NUM_ORCAMENTO);
 	s = s_num + s_ano;
 	return s;
 }
 
 function isNumeroOrcamento(orcamento) {
-	var s_orcamento;
+	var s_orcamento, s_sufixo;
 	s_orcamento = ucase(trim("" + orcamento));
 	if (s_orcamento == "") return false;
-	if (s_orcamento.charAt(s_orcamento.length - 1) == SUFIXO_ID_ORCAMENTO) return true;
+	s_sufixo = s_orcamento.charAt(s_orcamento.length - 1);
+	// AS ÚLTIMAS LETRAS DO ALFABETO RESERVADAS P/ SUFIXO DO PRÉ-PEDIDO
+	if (s_sufixo >= SUFIXO_ID_ORCAMENTO_INICIO_FAIXA) return true;
 	return false;
 }
 

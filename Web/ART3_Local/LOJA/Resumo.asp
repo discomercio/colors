@@ -611,7 +611,7 @@ dim i,r,s,sql, s_aux
 		end if
 		
 	s = s & _
-		" ORDER BY data DESC, hora DESC, pedido DESC"
+		" ORDER BY data DESC, nsu_pedido_base DESC, nsu DESC, pedido DESC"
 
 	set r = cn.Execute(s)
 
@@ -704,6 +704,8 @@ strSqlVlPagoCartao = " Coalesce(" & _
 							"SELECT" & _
 								" t1.pedido," & _
                                 " t1.pedido_base," & _
+								" t1.nsu," & _
+								" t1.nsu_pedido_base," & _
 								" Coalesce(t1.obs_2, '') AS obs_2," & _
 								" Coalesce(t1.obs_3, '') AS obs_3," & _
 								" Coalesce(t1.obs_4, '') AS obs_4," & _
@@ -744,6 +746,8 @@ strSqlVlPagoCartao = " Coalesce(" & _
 							"SELECT" & _
 								" t1.pedido," & _
                                 " t1.pedido_base," & _
+								" t1.nsu," & _
+								" t1.nsu_pedido_base," & _
 								" Coalesce(t1.obs_2, '') AS obs_2," & _
 								" Coalesce(t1.obs_3, '') AS obs_3," & _
 								" Coalesce(t1.obs_4, '') AS obs_4," & _
@@ -785,6 +789,8 @@ strSqlVlPagoCartao = " Coalesce(" & _
 							"SELECT" & _
 								" t1.pedido," & _
                                 " t1.pedido_base," & _
+								" t1.nsu," & _
+								" t1.nsu_pedido_base," & _
 								" Coalesce(t1.obs_2, '') AS obs_2," & _
 								" Coalesce(t1.obs_3, '') AS obs_3," & _
 								" Coalesce(t1.obs_4, '') AS obs_4," & _
@@ -826,6 +832,8 @@ strSqlVlPagoCartao = " Coalesce(" & _
 							"SELECT" & _
 								" t1.pedido," & _
 								" t1.pedido_base," & _
+								" t1.nsu," & _
+								" t1.nsu_pedido_base," & _
 								" Coalesce(t1.obs_2, '') AS obs_2," & _
 								" Coalesce(t1.obs_3, '') AS obs_3," & _
 								" Coalesce(t1.obs_4, '') AS obs_4," & _
@@ -872,7 +880,9 @@ strSqlVlPagoCartao = " Coalesce(" & _
 							" AND ((transportadora_selecao_auto_status = 1) OR (LEN(Coalesce(transportadora_id,'')) = 0))" & _
 						" ORDER BY" & _
                             " analise_credito_data_sem_hora," & _
-							" analise_credito," & _							
+							" analise_credito," & _
+							" nsu_pedido_base," & _
+							" nsu," & _
 							" pedido"
 
     set r = cn.Execute(strSql)
@@ -1022,6 +1032,8 @@ dim strSql, strWhereBase, s, r, i, n_reg, n_linha, vRelat
 				strWhereBase & _
 			" ORDER BY" & _
 				" tPed.cancelado_data DESC," & _
+				" tPed.nsu_pedido_base," & _
+				" tPed.nsu," & _
 				" tPed.pedido"
 
 	set r = cn.Execute(strSql)
