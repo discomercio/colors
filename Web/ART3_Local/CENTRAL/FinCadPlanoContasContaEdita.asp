@@ -252,7 +252,7 @@ var i,b;
 
 <!--  FORMULÁRIO DE CADASTRO  -->  
 
-<table width="649" cellpadding="4" cellspacing="0" style="border-bottom:1px solid black">
+<table width="689" cellpadding="4" cellspacing="0" style="border-bottom:1px solid black">
 <tr>
 <%	if operacao_selecionada=OP_INCLUI then
 		s = "Plano de Contas: Cadastro de Nova Conta"
@@ -277,7 +277,7 @@ var i,b;
 
 
 <!-- ************   ID / DESCRIÇÃO   ************ -->
-<table width="649" class="Q" cellspacing="0">
+<table width="689" class="Q" cellspacing="0">
 	<tr>
 		<td class="MD" align="center" width="15%">
 			<p class="R">ID</p>
@@ -289,7 +289,7 @@ var i,b;
 		<td width="85%">
 			<p class="R">DESCRIÇÃO</p>
 			<p class="C">
-				<input id="c_descricao" name="c_descricao" class="TA" type="text" maxlength="40" size="60" value="<%=s%>" 
+				<input id="c_descricao" name="c_descricao" class="TA" type="text" maxlength="60" size="85" value="<%=s%>" 
 					onkeypress="if (digitou_enter(true) && tem_info(this.value)) bATUALIZA.focus(); filtra_nome_identificador();">
 			</p>
 		</td>
@@ -297,7 +297,7 @@ var i,b;
 </table>
 
 <!-- ************   STATUS ATIVO   ************ -->
-<table width="649" class="QS" cellspacing="0">
+<table width="689" class="QS" cellspacing="0">
 	<tr>
 <%
 	dim st_ativo
@@ -366,13 +366,13 @@ var i,b;
 <% end if %>
 
 <!-- ************   SEPARADOR   ************ -->
-<table width="649" cellpadding="4" cellspacing="0" style="border-bottom:1px solid black">
+<table width="689" cellpadding="4" cellspacing="0" style="border-bottom:1px solid black">
 <tr><td class="Rc">&nbsp;</td></tr>
 </table>
 <br>
 
 
-<table class="notPrint" width="649" cellspacing="0">
+<table class="notPrint" width="689" cellspacing="0">
 <tr>
 	<td><a href="javascript:history.back()" title="cancela as alterações no cadastro">
 		<img src="../botao/cancelar.gif" width="176" height="55" border="0"></a></td>
