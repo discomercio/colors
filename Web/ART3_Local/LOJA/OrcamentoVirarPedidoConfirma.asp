@@ -1982,6 +1982,22 @@
 					s = "UPDATE t_PEDIDO SET st_entrega='" & s & "' WHERE pedido='" & id_pedido & "'"
 					cn.Execute(s)
 					
+					'Atualiza o campo 'nsu_pedido_base' e se refere ao valor salvo em t_PEDIDO.nsu do registro do pedido-base.
+					'O valor t_PEDIDO.nsu é gerado por uma CONSTRAINT DEFAULT em conjunto c/ a SEQUENCE 'seq_T_PEDIDO' e só
+					'é gerada de fato após o UPDATE.
+					'Os campos 'nsu_pedido_base' e 'nsu' são usados principalmente p/ ordenação dos pedidos, principalmente
+					'nos ambientes em que a letra do sufixo seguem a ordem decrescente.
+					'O campo 'nsu_pedido_base' tem por finalidade facilitar o agrupamento da família de pedidos na ordenação,
+					'já que no SPLIT MANUAL, o campo 'nsu' não será consecutivo em relação aos demais pedidos da família.
+					s = "UPDATE tPed SET" & _
+							" tPed.nsu_pedido_base = tPedBase.nsu" & _
+						" FROM t_PEDIDO tPed" & _
+							" INNER JOIN t_PEDIDO tPedBase ON (tPed.pedido_base = tPedBase.pedido)" & _
+						" WHERE" & _
+							" (tPed.pedido_base = '" & id_pedido_base & "')" & _
+							" AND (tPed.nsu_pedido_base = 0)"
+					cn.Execute(s)
+					
 					if indice_pedido = 1 then
 				'		SENHAS DE AUTORIZAÇÃO PARA DESCONTO SUPERIOR
 						for k = Lbound(v_desconto) to Ubound(v_desconto)

@@ -1859,7 +1859,7 @@ dim vTransportadora
 '		 ISNULL ( check_expression , replacement_value )
 '		 SE "check_expression" FOR NULL, RETORNA "replacement_value"
 	s_sql = "SELECT DISTINCT t_PEDIDO.loja, t_PEDIDO.numero_loja," & _
-			" t_PEDIDO.data, t_PEDIDO.pedido, t_PEDIDO.pedido_bs_x_ac, t_PEDIDO.obs_2, t_PEDIDO.obs_3," & _
+			" t_PEDIDO.data, t_PEDIDO.nsu_pedido_base, t_PEDIDO.nsu, t_PEDIDO.pedido, t_PEDIDO.pedido_bs_x_ac, t_PEDIDO.obs_2, t_PEDIDO.obs_3," & _
 			" t_PEDIDO.st_entrega, t_PEDIDO.PrevisaoEntregaData, t_PEDIDO.transportadora_id,"
 
 	if ckb_periodo_emissao_NF_venda <> "" then
@@ -1946,12 +1946,12 @@ dim vTransportadora
 
     if ckb_st_entrega_cancelado <> "" then
         if c_cancelados_ordena = "VENDEDOR" then
-            s_sql = s_sql & " ORDER BY numero_loja, vendedor, indicador, data, pedido"
+            s_sql = s_sql & " ORDER BY numero_loja, vendedor, indicador, data, nsu_pedido_base, nsu, pedido"
         else
-	        s_sql = s_sql & " ORDER BY numero_loja, data, pedido"
+	        s_sql = s_sql & " ORDER BY numero_loja, data, nsu_pedido_base, nsu, pedido"
         end if
     else
-	    s_sql = s_sql & " ORDER BY numero_loja, data, pedido"
+	    s_sql = s_sql & " ORDER BY numero_loja, data, nsu_pedido_base, nsu, pedido"
     end if
 
   ' CABEÇALHO
@@ -2592,12 +2592,14 @@ dim vTransportadora
 
     '> MOTIVO CANCELAMENTO
         if blnMostraMotivoCancelado then
+			s = ""
             if Trim("" & r("cancelado_codigo_motivo")) <> "" then
                 s = obtem_descricao_tabela_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__CANCELAMENTOPEDIDO_MOTIVO, Trim("" & r("cancelado_codigo_motivo")))
             end if
             if Trim("" & r("cancelado_codigo_sub_motivo")) <> "" then
                 s = s & " (" & obtem_descricao_tabela_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__CANCELAMENTOPEDIDO_MOTIVO_SUB, Trim("" & r("cancelado_codigo_sub_motivo"))) & ")"
             end if
+			if s = "" then s = "&nbsp;"
 		    x = x & "		<TD valign='middle' style='width:" & Cstr(w_motivo_cancelamento) & "px' class='MDB'><span class='Cn' style='mso-number-format:" & chr(34) & MSO_NUMBER_FORMAT_TEXTO & chr(34) & ";'>" & s & "</span></TD>" & chr(13)            
         end if
 
