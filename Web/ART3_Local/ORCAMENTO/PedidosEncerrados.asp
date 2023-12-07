@@ -120,7 +120,8 @@ dim w_cliente, w_valor
 
 	s_sql = s_sql & " ORDER BY" & _
 						" numero_loja," & _
-						" t_PEDIDO.data," & _
+						" t_PEDIDO.nsu_pedido_base," & _
+						" t_PEDIDO.nsu," & _
 						" t_PEDIDO.pedido"
 
 '	CABEÇALHO

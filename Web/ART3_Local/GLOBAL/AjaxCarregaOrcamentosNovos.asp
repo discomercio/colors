@@ -87,7 +87,7 @@
 			s_from & _
 			s_where
 
-	strSql = strSql & " ORDER BY orcamentista, data, orcamento"
+	strSql = strSql & " ORDER BY orcamentista, data, nsu, orcamento"
   
 
 '	EXECUTA A CONSULTA
