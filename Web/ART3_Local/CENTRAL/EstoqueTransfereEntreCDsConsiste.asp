@@ -622,7 +622,7 @@
 <!-- ************************************************************* -->
 <!-- **********  PÁGINA PARA EXIBIR DADOS DOS PRODUTOS  ********** -->
 <!-- ************************************************************* -->
-<body>
+<body onload="$('#c_obs').focus();">
     <center>
 
 <form id="fESTOQ" name="fESTOQ" method="post" action="EstoqueTransfereEntreCDsConfirma.asp" autocomplete="off">
@@ -681,7 +681,7 @@
 <!--  DOCUMENTO  -->
 	<tr bgcolor="#FFFFFF">
     <td class="MDBE" align="left" nowrap><span class="PLTe">Documento da Transferência</span>
-		<br><input name="c_documento_transf" id="c_documento_transf" class="PLLe" style="width:270px;margin-left:2pt;color:blue;">
+		<br><input name="c_documento_transf" id="c_documento_transf" class="PLLe" style="width:270px;margin-left:2pt;color:blue;" maxlength="30" value="Transferencia">
     </td>
 	</tr>
 <!--  OBSERVAÇÃO  -->
