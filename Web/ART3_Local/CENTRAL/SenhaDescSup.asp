@@ -43,6 +43,9 @@
 	dim cn
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	
+	dim max_qtde_itens
+	max_qtde_itens = obtem_parametro_SenhaDescontoSuperior_MaxQtdeItens
+
 	dim s_lista_operacoes_permitidas
 	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
 
@@ -296,7 +299,7 @@ var desc, i, b, ha_item;
 	<td class="MB" valign="bottom"><p class="PLTd">Desc Máx<br>Autorizado (%)</p></td>
 	</tr>
 <%
-	for intCounter=1 to MAX_ITENS_SENHA_DESCONTO
+	for intCounter=1 to max_qtde_itens
 %>
 
 	<tr>

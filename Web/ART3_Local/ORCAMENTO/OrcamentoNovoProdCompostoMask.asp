@@ -46,6 +46,9 @@
 	dim cn
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim max_qtde_itens
+	max_qtde_itens = obtem_parametro_PedidoItem_MaxQtdeItens
+
 	dim blnLojaHabilitadaProdCompostoECommerce
 	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
 
@@ -755,7 +758,7 @@ var i, b, ha_item;
 	<td class="MB" align="right"><span class="PLTd">VL Unit</span></td>
 	<td align="left">&nbsp;</td>
 	</tr>
-<% for i=1 to MAX_ITENS %>
+<% for i=1 to max_qtde_itens %>
 	<tr>
 	<td class="MDBE tdDadosFabr" align="left"><input name="c_fabricante" id="c_fabricante" class="PLLe" maxlength="4" style="width:30px;" onkeypress="if (digitou_enter(true)) fPED.c_produto[<%=Cstr(i-1)%>].focus(); filtra_fabricante();" onblur="this.value=normaliza_codigo(this.value,TAM_MIN_FABRICANTE);trataLimpaLinha(<%=Cstr(i-1)%>);"></td>
 	<td class="MDB tdDadosProd" align="left"><input name="c_produto" id="c_produto" class="PLLe" maxlength="8" style="width:60px;" onkeypress="if (digitou_enter(true)) fPED.c_qtde[<%=Cstr(i-1)%>].focus(); filtra_produto();" onblur="this.value=normaliza_produto(this.value);consultaDadosProduto(<%=Cstr(i-1)%>);trataLimpaLinha(<%=Cstr(i-1)%>);"></td>

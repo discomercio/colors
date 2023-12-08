@@ -4,6 +4,7 @@
 <!-- #include file = "../global/constantes.asp" -->
 <!-- #include file = "../global/funcoes.asp"    -->
 <!-- #include file = "../global/bdd.asp" -->
+<!-- #include file = "../global/Global.asp" -->
 
 <!-- #include file = "../global/TrataSessaoExpirada.asp"        -->
 
@@ -43,6 +44,13 @@
 		end if
 
 	dim intCounter
+
+	dim cn
+	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
+
+	dim max_qtde_itens
+	max_qtde_itens = obtem_parametro_TransfProdutosEntrePedidos_MaxQtdeItens
+
 %>
 
 
@@ -199,7 +207,7 @@ var i, b, ha_item;
 
 <!--  QTDE/FABRICANTE/PRODUTO  -->
 <%
-   for intCounter=1 to MAX_ITENS_TRANSF_PRODUTOS_ENTRE_PEDIDOS
+   for intCounter=1 to max_qtde_itens
 %>
 	<tr bgcolor="#FFFFFF">
 	<td class="PLTd" align="right" style="vertical-align:bottom;"><%=CStr(intCounter) & ".&nbsp;"%></td>
@@ -259,3 +267,9 @@ var i, b, ha_item;
 </center>
 </body>
 </html>
+
+<%
+'	FECHA CONEXAO COM O BANCO DE DADOS
+	cn.Close
+	set cn = nothing
+%>

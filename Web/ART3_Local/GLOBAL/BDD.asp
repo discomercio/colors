@@ -4670,6 +4670,58 @@ end function
 
 
 ' ___________________________________________________________
+' OBTEM PARAMETRO PEDIDO ITEM MAX QTDE ITENS
+'
+function obtem_parametro_PedidoItem_MaxQtdeItens
+dim rParam
+	obtem_parametro_PedidoItem_MaxQtdeItens = 0
+	set rParam = get_registro_t_parametro(ID_PARAMETRO_PedidoItem_MaxQtdeItens)
+	if Trim("" & rParam.id) <> "" then obtem_parametro_PedidoItem_MaxQtdeItens = rParam.campo_inteiro
+	set rParam = Nothing
+end function
+
+
+
+' ___________________________________________________________
+' OBTEM PARAMETRO TRANSF PRODUTOS ENTRE CDs MAX QTDE ITENS
+'
+function obtem_parametro_TransfProdutosEntreCDs_MaxQtdeItens
+dim rParam
+	obtem_parametro_TransfProdutosEntreCDs_MaxQtdeItens = 0
+	set rParam = get_registro_t_parametro(ID_PARAMETRO_TransfProdutosEntreCDs_MaxQtdeItens)
+	if Trim("" & rParam.id) <> "" then obtem_parametro_TransfProdutosEntreCDs_MaxQtdeItens = rParam.campo_inteiro
+	set rParam = Nothing
+end function
+
+
+
+' ___________________________________________________________
+' OBTEM PARAMETRO TRANSF PRODUTOS ENTRE PEDIDOS MAX QTDE ITENS
+'
+function obtem_parametro_TransfProdutosEntrePedidos_MaxQtdeItens
+dim rParam
+	obtem_parametro_TransfProdutosEntrePedidos_MaxQtdeItens = 0
+	set rParam = get_registro_t_parametro(ID_PARAMETRO_TransfProdutosEntrePedidos_MaxQtdeItens)
+	if Trim("" & rParam.id) <> "" then obtem_parametro_TransfProdutosEntrePedidos_MaxQtdeItens = rParam.campo_inteiro
+	set rParam = Nothing
+end function
+
+
+
+' ___________________________________________________________
+' OBTEM PARAMETRO SENHA DESCONTO SUPERIOR MAX QTDE ITENS
+'
+function obtem_parametro_SenhaDescontoSuperior_MaxQtdeItens
+dim rParam
+	obtem_parametro_SenhaDescontoSuperior_MaxQtdeItens = 0
+	set rParam = get_registro_t_parametro(ID_PARAMETRO_SenhaDescontoSuperior_MaxQtdeItens)
+	if Trim("" & rParam.id) <> "" then obtem_parametro_SenhaDescontoSuperior_MaxQtdeItens = rParam.campo_inteiro
+	set rParam = Nothing
+end function
+
+
+
+' ___________________________________________________________
 ' OBTEM PARAMETRO MAX TENTATIVAS LOGIN
 '
 function obtem_parametro_max_tentativas_login

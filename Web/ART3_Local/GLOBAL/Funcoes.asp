@@ -786,7 +786,7 @@ Dim sResp, c, iChar
 		if c = chr(34) then
 			'Filtra aspas duplas devido a problemas causados no HTML
 			c = ""
-		elseif (c = chr(39)) Or (c = "_") Or (c = "[") Or (c = "]") Or (c = "^") Or (c = "%") then
+		elseif (c = chr(39)) Or (c = "[") Or (c = "]") Or (c = "^") Or (c = "%") then
 			'Filtra aspas simples e outros caracteres especiais do SQL Server
 			c = ""
 		elseif (c = "|") Or (c = "?") Or (c = "!") Or (c = "*") Or (c = "\") then

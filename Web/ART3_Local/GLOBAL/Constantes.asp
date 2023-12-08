@@ -823,12 +823,6 @@
   ' QUANTIDADE MÁXIMA DE PEDIDOS P/ OS QUAIS SE PODE CADASTRAR O VALOR DO FRETE POR TELA	
 	Const MAX_ITENS_ANOTA_FRETE_PEDIDO = 10
 	
-  ' QUANTIDADE MÁXIMA DE ITENS P/ OS QUAIS SE PODE CADASTRAR SENHA DE DESCONTO SUPERIOR POR TELA
-	Const MAX_ITENS_SENHA_DESCONTO = 12
-
-  ' QUANTIDADE MÁXIMA DE ITENS QUE PODEM SER TRANSFERIDOS DE UM PEDIDO P/ OUTRO	
-	Const MAX_ITENS_TRANSF_PRODUTOS_ENTRE_PEDIDOS = 12
-		
   ' QUANTIDADE MÁXIMA DE VOLUMAS EM UMA ORDEM DE SERVIÇO
 	Const MAX_VOLUMES_OS = 6
 	
@@ -982,6 +976,16 @@
 
 	Const ID_PARAMETRO_VendaCondicionada_RegraProporcao_ListaProdutos = "VendaCondicionada_RegraProporcao_ListaProdutos"
 	Const ID_PARAMETRO_VendaCondicionada_RegraProporcao_PercentualMaximoPedido = "VendaCondicionada_RegraProporcao_PercentualMaximoPedido"
+
+	'Define a quantidade máxima de itens do pedido!
+	'Substitui a constante 'MAX_ITENS' em ajuste realizado através do card AC-328 (05/11/2023)
+	Const ID_PARAMETRO_PedidoItem_MaxQtdeItens = "PedidoItem_MaxQtdeItens"
+	'QUANTIDADE MÁXIMA DE ITENS NA OPERAÇÃO "Transferência de Produtos Entre CD's"
+	Const ID_PARAMETRO_TransfProdutosEntreCDs_MaxQtdeItens = "TransfProdutosEntreCDs_MaxQtdeItens"
+	'QUANTIDADE MÁXIMA DE ITENS NA OPERAÇÃO "Transferência Entre Pedidos de Produtos do Estoque Vendido"
+	Const ID_PARAMETRO_TransfProdutosEntrePedidos_MaxQtdeItens = "TransfProdutosEntrePedidos_MaxQtdeItens"
+	'QUANTIDADE MÁXIMA DE ITENS NA OPERAÇÃO "Senha para Autorização de Desconto Superior"
+	Const ID_PARAMETRO_SenhaDescontoSuperior_MaxQtdeItens = "SenhaDescontoSuperior_MaxQtdeItens"
 
 
 '   CONSTANTES QUE IDENTIFICAM REGISTROS ARMAZENADOS NA TABELA "t_CTRL_RELATORIO"
