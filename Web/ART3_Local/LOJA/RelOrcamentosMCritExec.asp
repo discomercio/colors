@@ -301,7 +301,7 @@ dim intNumLinha
 		end if
 
 	s_sql = "SELECT DISTINCT t_ORCAMENTO.loja, CONVERT(smallint,t_ORCAMENTO.loja) AS numero_loja," & _
-			" t_ORCAMENTO.data, t_ORCAMENTO.orcamento,"
+			" t_ORCAMENTO.data, t_ORCAMENTO.nsu, t_ORCAMENTO.orcamento,"
 
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
@@ -319,7 +319,7 @@ dim intNumLinha
 			s_from & _
 			s_where
 
-	s_sql = s_sql & " GROUP BY t_ORCAMENTO.loja, t_ORCAMENTO.data, t_ORCAMENTO.orcamento,"
+	s_sql = s_sql & " GROUP BY t_ORCAMENTO.loja, t_ORCAMENTO.data, t_ORCAMENTO.nsu, t_ORCAMENTO.orcamento,"
 
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
 		s_sql = s_sql & _
@@ -333,7 +333,7 @@ dim intNumLinha
 			" t_ORCAMENTO.st_orcamento," & _
 			" t_ORCAMENTO.st_orc_virou_pedido, t_ORCAMENTO.pedido"
 
-	s_sql = s_sql & " ORDER BY numero_loja, t_ORCAMENTO.data, t_ORCAMENTO.orcamento"
+	s_sql = s_sql & " ORDER BY numero_loja, t_ORCAMENTO.data, t_ORCAMENTO.nsu, t_ORCAMENTO.orcamento"
 
   ' CABEÇALHO
 	w_cliente = 250

@@ -1562,12 +1562,15 @@ dim n_descarte
 	gera_num_orcamento=False
 	num_orcamento=""
 	msg_erro=""
-	s_letra_ano = SUFIXO_ID_ORCAMENTO
 	if Not gera_nsu(NSU_ORCAMENTO, s_num, msg_erro) then exit function
-	n_descarte = len(s_num)-TAM_MIN_NUM_ORCAMENTO
+	n_descarte = len(s_num)-TAM_MAX_NUM_ORCAMENTO
 	s_descarte = Left(s_num, n_descarte)
 	if s_descarte <> String(n_descarte, "0") then exit function
-	s_num = Right(s_num, TAM_MIN_NUM_ORCAMENTO)
+	s_num = Right(s_num, TAM_MAX_NUM_ORCAMENTO)
+	'MANTÉM OS ZEROS À ESQUERDA SOMENTE ATÉ O TAMANHO 'TAM_MIN_NUM_ORCAMENTO', SE A QUANTIDADE DE DÍGITOS EXCEDER 'TAM_MIN_NUM_ORCAMENTO', OS DÍGITOS À ESQUERDA DEVEM SER SIGNIFICATIVOS
+	do while ((Left(s_num, 1) = "0") And (Len(s_num) > TAM_MIN_NUM_ORCAMENTO)): s_num = Right(s_num, (Len(s_num)-1)): loop
+'	OBTÉM A LETRA PARA O SUFIXO DO PRÉ-PEDIDO DE ACORDO C/ O ANO DA GERAÇÃO DO NSU (IMPORTANTE: FAZER A LEITURA SOMENTE APÓS GERAR O NSU, POIS A LETRA PODE TER SIDO ALTERADA DEVIDO À MUDANÇA DE ANO!!)
+	if Not le_ano_letra_seq_tabela_controle(NSU_ORCAMENTO, s_letra_ano, msg_erro) then exit function
 	num_orcamento = s_num & s_letra_ano
 	gera_num_orcamento=True
 end function
@@ -1585,12 +1588,15 @@ dim n_descarte
 	gera_num_orcamento_temp=False
 	num_orcamento=""
 	msg_erro=""
-	s_letra_ano = SUFIXO_ID_ORCAMENTO
 	if Not gera_nsu(NSU_ORCAMENTO_TEMPORARIO, s_num, msg_erro) then exit function
-	n_descarte = len(s_num)-TAM_MIN_NUM_ORCAMENTO
+	n_descarte = len(s_num)-TAM_MAX_NUM_ORCAMENTO
 	s_descarte = Left(s_num, n_descarte)
 	if s_descarte <> String(n_descarte, "0") then exit function
-	s_num = Right(s_num, TAM_MIN_NUM_ORCAMENTO)
+	s_num = Right(s_num, TAM_MAX_NUM_ORCAMENTO)
+	'MANTÉM OS ZEROS À ESQUERDA SOMENTE ATÉ O TAMANHO 'TAM_MIN_NUM_ORCAMENTO', SE A QUANTIDADE DE DÍGITOS EXCEDER 'TAM_MIN_NUM_ORCAMENTO', OS DÍGITOS À ESQUERDA DEVEM SER SIGNIFICATIVOS
+	do while ((Left(s_num, 1) = "0") And (Len(s_num) > TAM_MIN_NUM_ORCAMENTO)): s_num = Right(s_num, (Len(s_num)-1)): loop
+'	OBTÉM A LETRA PARA O SUFIXO DO PRÉ-PEDIDO DE ACORDO C/ O ANO DA GERAÇÃO DO NSU (IMPORTANTE: FAZER A LEITURA SOMENTE APÓS GERAR O NSU, POIS A LETRA PODE TER SIDO ALTERADA DEVIDO À MUDANÇA DE ANO!!)
+	if Not le_ano_letra_seq_tabela_controle(NSU_ORCAMENTO_TEMPORARIO, s_letra_ano, msg_erro) then exit function
 	num_orcamento = "T" & s_num & s_letra_ano
 	gera_num_orcamento_temp=True
 end function
@@ -4665,6 +4671,52 @@ dim rs
 	rs.Update
 	
 	if rs.State <> 0 then rs.Close
+end function
+
+
+
+' _________________________________________________________________
+' OBTEM FLAG BloqueiaCadastramentoQuandoProdutoSemEstoque Pedido
+'
+function obtem_flag_BloqueiaCadastramentoQuandoProdutoSemEstoque_Pedido(byval numeroLojaPedido)
+dim rParam, sLoja
+	obtem_flag_BloqueiaCadastramentoQuandoProdutoSemEstoque_Pedido = 0
+	set rParam = get_registro_t_parametro(ID_PARAMETRO_BloqueiaCadastramentoQuandoProdutoSemEstoque_Pedido_FlagHabilitacao)
+	if Trim("" & rParam.id) <> "" then
+		'Se não informou a loja, apenas retorna o flag, não há como verificar se a loja está na lista que deve ignorar a regra
+		if (Trim("" & numeroLojaPedido) = "") Or (converte_numero(Trim("" & numeroLojaPedido)) = 0) then
+			obtem_flag_BloqueiaCadastramentoQuandoProdutoSemEstoque_Pedido = rParam.campo_inteiro
+		else
+			'Se a loja não está na lista de lojas que deve ignorar a regra, retorna o flag conforme está configurado no BD
+			'Se a loja estiver na lista, a função irá retornar o valor default do flag (zero), ou seja, irá ignorar a regra
+			sLoja = "|" & Trim("" & numeroLojaPedido) & "|"
+			if Instr(Trim(rParam.campo_texto), sLoja) = 0 then obtem_flag_BloqueiaCadastramentoQuandoProdutoSemEstoque_Pedido = rParam.campo_inteiro
+			end if
+		end if
+	set rParam = Nothing
+end function
+
+
+
+' _________________________________________________________________
+' OBTEM FLAG BloqueiaCadastramentoQuandoProdutoSemEstoque PrePedido
+'
+function obtem_flag_BloqueiaCadastramentoQuandoProdutoSemEstoque_PrePedido(byval numeroLojaPrePedido)
+dim rParam, sLoja
+	obtem_flag_BloqueiaCadastramentoQuandoProdutoSemEstoque_PrePedido = 0
+	set rParam = get_registro_t_parametro(ID_PARAMETRO_BloqueiaCadastramentoQuandoProdutoSemEstoque_PrePedido_FlagHabilitacao)
+	if Trim("" & rParam.id) <> "" then
+		'Se não informou a loja, apenas retorna o flag, não há como verificar se a loja está na lista que deve ignorar a regra
+		if (Trim("" & numeroLojaPrePedido) = "") Or (converte_numero(Trim("" & numeroLojaPrePedido)) = 0) then
+			obtem_flag_BloqueiaCadastramentoQuandoProdutoSemEstoque_PrePedido = rParam.campo_inteiro
+		else
+			'Se a loja não está na lista de lojas que deve ignorar a regra, retorna o flag conforme está configurado no BD
+			'Se a loja estiver na lista, a função irá retornar o valor default do flag (zero), ou seja, irá ignorar a regra
+			sLoja = "|" & Trim("" & numeroLojaPrePedido) & "|"
+			if Instr(Trim(rParam.campo_texto), sLoja) = 0 then obtem_flag_BloqueiaCadastramentoQuandoProdutoSemEstoque_PrePedido = rParam.campo_inteiro
+			end if
+		end if
+	set rParam = Nothing
 end function
 
 

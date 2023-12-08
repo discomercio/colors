@@ -40,7 +40,7 @@
 	Const URL_FILE__JQUERY_MY_PLUGIN = "../Global/jquery-my-plugin.js?v=002"
 	Const URL_FILE__JQUERY_UI_MY_PLUGIN = "../Global/jquery-ui-my-plugin.js?v=003"
 	Const URL_FILE__JQUERY_MASKMONEY = "../Global/jquery.maskMoney.min.js?v=001"
-	Const URL_FILE__GLOBAL_JS = "../Global/global.js?v=072"
+	Const URL_FILE__GLOBAL_JS = "../Global/global.js?v=073"
 	Const URL_FILE__SSL_JS = "../Global/SSL.js?v=004"
 	Const URL_FILE__CONST_JS = "../Global/const.js?v=001"
 	Const URL_FILE__CONSTXL_JS = "../Global/constXL.js?v=001"
@@ -487,8 +487,8 @@
 	Const ST_OS_ENCERRADA 				= "ENC"
 	Const ST_OS_CANCELADA				= "CAN"
 	
-' 	SUFIXO QUE IDENTIFICA O ORÇAMENTO
-	Const SUFIXO_ID_ORCAMENTO = "Z"
+' 	ÚLTIMAS LETRAS DO ALFABETO RESERVADAS COMO SUFIXO QUE IDENTIFICA O ORÇAMENTO (PRÉ-PEDIDO)
+	Const SUFIXO_ID_ORCAMENTO_INICIO_FAIXA = "W"
 	
   ' CÓDIGOS PARA OPERAÇÕES
 	Const OP_CONSULTA	= "C"
@@ -968,6 +968,8 @@
 	Const ID_PARAMETRO_PedidoCanceladoRecenteExibirInformativoModuloLojaPrazo = "PedidoCanceladoRecente_ExibirInformativoModuloLoja_Prazo"
 	Const ID_PARAMETRO_CXLSEC_IntegracaoMktp_Ecommerce_Pedido_Origem_Integracao_Anymarket = "CXLSEC_IntegracaoMktp_Ecommerce_Pedido_Origem_Integracao_Anymarket"
 	Const ID_PARAMETRO_Pedido_RT_Edicao_MaxPrazo = "Pedido_RT_Edicao_MaxPrazo"
+	Const ID_PARAMETRO_BloqueiaCadastramentoQuandoProdutoSemEstoque_Pedido_FlagHabilitacao = "BloqueiaCadastramentoQuandoProdutoSemEstoque_Pedido_FlagHabilitacao"
+	Const ID_PARAMETRO_BloqueiaCadastramentoQuandoProdutoSemEstoque_PrePedido_FlagHabilitacao = "BloqueiaCadastramentoQuandoProdutoSemEstoque_PrePedido_FlagHabilitacao"
 
 	Const ID_PARAMETRO_RelComissaoIndicadoresNFSe_PlanoContas_ContaCorrente = "RelComissaoIndicadoresNFSe_PlanoContas_ContaCorrente"
 	Const ID_PARAMETRO_RelComissaoIndicadoresNFSe_PlanoContas_Empresa = "RelComissaoIndicadoresNFSe_PlanoContas_Empresa"
@@ -1017,8 +1019,9 @@
 	Const TAM_MIN_PRODUTO = 6
 	Const TAM_MAX_NSU = 12
 	Const TAM_MIN_NUM_ORCAMENTO = 6	' SOMENTE PARTE NUMÉRICA DO NÚMERO DO ORÇAMENTO
+	Const TAM_MAX_NUM_ORCAMENTO = 7	' SOMENTE PARTE NUMÉRICA DO NÚMERO DO ORÇAMENTO
 	Const TAM_MIN_ID_ORCAMENTO = 7	' PARTE NUMÉRICA DO NÚMERO DO ORÇAMENTO + LETRA (SUFIXO) QUE IDENTIFICA COMO ORÇAMENTO
-	Const TAM_MAX_ID_ORCAMENTO = 7	' PARTE NUMÉRICA DO NÚMERO DO ORÇAMENTO + LETRA (SUFIXO) QUE IDENTIFICA COMO ORÇAMENTO
+	Const TAM_MAX_ID_ORCAMENTO = 8	' PARTE NUMÉRICA DO NÚMERO DO ORÇAMENTO + LETRA (SUFIXO) QUE IDENTIFICA COMO ORÇAMENTO
 	Const TIMEOUT_DESCONTO_EM_MIN = 30
 	Const TAM_MIN_SENHA = 8
 

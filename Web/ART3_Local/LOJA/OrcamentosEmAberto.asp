@@ -131,7 +131,7 @@ dim w_cliente, w_valor
 			s_from & _
 			s_where
 
-	s_sql = s_sql & " ORDER BY t_ORCAMENTO.orcamentista, t_ORCAMENTO.data, t_ORCAMENTO.orcamento"
+	s_sql = s_sql & " ORDER BY t_ORCAMENTO.orcamentista, t_ORCAMENTO.data, t_ORCAMENTO.nsu, t_ORCAMENTO.orcamento"
 
   ' CABEÇALHO
 	w_cliente = 250

@@ -1296,7 +1296,7 @@
 			end if
 		end if
 	
-	dim erro_produto_indisponivel
+	dim erro_produto_sem_estoque
 	if alerta="" then
 		'OBTÉM DISPONIBILIDADE DO PRODUTO NO ESTOQUE
 		for iRegra=LBound(vProdRegra) to UBound(vProdRegra)
@@ -1341,7 +1341,7 @@
 		end if 'if alerta=""
 	
 '	HÁ PRODUTO C/ ESTOQUE INSUFICIENTE (SOMANDO-SE O ESTOQUE DE TODAS AS EMPRESAS CANDIDATAS)
-	erro_produto_indisponivel = False
+	erro_produto_sem_estoque = False
 	if alerta="" then
 		for iItem=Lbound(v_item) to Ubound(v_item)
 			if Trim(v_item(iItem).produto) <> "" then
@@ -1366,14 +1366,14 @@
 				v_item(iItem).qtde_estoque_total_disponivel = qtde_estoque_total_disponivel
 
 				if v_item(iItem).qtde > qtde_estoque_total_disponivel then
-					erro_produto_indisponivel = True
+					erro_produto_sem_estoque = True
 					end if
 				end if
 			next
 		end if 'if alerta=""
 	
 	if alerta = "" then
-		if erro_produto_indisponivel then
+		if erro_produto_sem_estoque then
 			for i=Lbound(v_item) to Ubound(v_item)
 				if v_item(i).qtde > v_item(i).qtde_estoque_total_disponivel then
 					if (opcao_venda_sem_estoque="") then
@@ -2809,6 +2809,22 @@
 					s = "UPDATE t_PEDIDO SET st_entrega='" & s & "' WHERE pedido='" & id_pedido & "'"
 					cn.Execute(s)
 					
+					'Atualiza o campo 'nsu_pedido_base' e se refere ao valor salvo em t_PEDIDO.nsu do registro do pedido-base.
+					'O valor t_PEDIDO.nsu é gerado por uma CONSTRAINT DEFAULT em conjunto c/ a SEQUENCE 'seq_T_PEDIDO' e só
+					'é gerada de fato após o UPDATE.
+					'Os campos 'nsu_pedido_base' e 'nsu' são usados principalmente p/ ordenação dos pedidos, principalmente
+					'nos ambientes em que a letra do sufixo seguem a ordem decrescente.
+					'O campo 'nsu_pedido_base' tem por finalidade facilitar o agrupamento da família de pedidos na ordenação,
+					'já que no SPLIT MANUAL, o campo 'nsu' não será consecutivo em relação aos demais pedidos da família.
+					s = "UPDATE tPed SET" & _
+							" tPed.nsu_pedido_base = tPedBase.nsu" & _
+						" FROM t_PEDIDO tPed" & _
+							" INNER JOIN t_PEDIDO tPedBase ON (tPed.pedido_base = tPedBase.pedido)" & _
+						" WHERE" & _
+							" (tPed.pedido_base = '" & id_pedido_base & "')" & _
+							" AND (tPed.nsu_pedido_base = 0)"
+					cn.Execute(s)
+					
 					if indice_pedido = 1 then
 				'		SENHAS DE AUTORIZAÇÃO PARA DESCONTO SUPERIOR
 						for k = Lbound(v_desconto) to Ubound(v_desconto)
@@ -3614,7 +3630,7 @@
 </table>
 <table cellSpacing="0">
 <tr>
-	<% 	if erro_produto_indisponivel then 
+	<% 	if erro_produto_sem_estoque then 
 		'	VOLTA PARA A TELA QUE CADASTRA A QUANTIDADE DE PRODUTOS
 			s="javascript:history.go(-2)"
 		else

@@ -1052,7 +1052,7 @@ dim sLinkView
 '		 ISNULL ( check_expression , replacement_value )
 '		 SE "check_expression" FOR NULL, RETORNA "replacement_value"
 	s_sql = "SELECT DISTINCT t_PEDIDO.loja, t_PEDIDO.numero_loja," & _
-			" t_PEDIDO.data, t_PEDIDO.pedido, t_PEDIDO.pedido_bs_x_ac," & _
+			" t_PEDIDO.data, t_PEDIDO.nsu_pedido_base, t_PEDIDO.nsu, t_PEDIDO.pedido, t_PEDIDO.pedido_bs_x_ac," & _
 			" t_PEDIDO.st_entrega,"
 
 	if blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos then
@@ -1093,12 +1093,12 @@ dim sLinkView
 
 	if ckb_st_entrega_cancelado <> "" then
         if c_cancelados_ordena = "VENDEDOR" then
-            s_sql = s_sql & " ORDER BY numero_loja, vendedor, indicador, t_PEDIDO.data, t_PEDIDO.pedido"
+            s_sql = s_sql & " ORDER BY numero_loja, vendedor, indicador, t_PEDIDO.data, t_PEDIDO.nsu_pedido_base, t_PEDIDO.nsu, t_PEDIDO.pedido"
         else
-	        s_sql = s_sql & " ORDER BY numero_loja, t_PEDIDO.data, t_PEDIDO.pedido"
+	        s_sql = s_sql & " ORDER BY numero_loja, t_PEDIDO.data, t_PEDIDO.nsu_pedido_base, t_PEDIDO.nsu, t_PEDIDO.pedido"
         end if
     else
-	    s_sql = s_sql & " ORDER BY numero_loja, t_PEDIDO.data, t_PEDIDO.pedido"
+	    s_sql = s_sql & " ORDER BY numero_loja, t_PEDIDO.data, t_PEDIDO.nsu_pedido_base, t_PEDIDO.nsu, t_PEDIDO.pedido"
     end if
 
   ' CABEÇALHO
@@ -1431,12 +1431,14 @@ dim sLinkView
 
     '> MOTIVO CANCELAMENTO
         if blnMostraMotivoCancelado then
-            if Trim("" & r("cancelado_codigo_motivo")) <> "" then
+            s = ""
+			if Trim("" & r("cancelado_codigo_motivo")) <> "" then
                 s = obtem_descricao_tabela_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__CANCELAMENTOPEDIDO_MOTIVO, Trim("" & r("cancelado_codigo_motivo")))
             end if
             if Trim("" & r("cancelado_codigo_sub_motivo")) <> "" then
                 s = s & " (" & obtem_descricao_tabela_t_codigo_descricao(GRUPO_T_CODIGO_DESCRICAO__CANCELAMENTOPEDIDO_MOTIVO_SUB, Trim("" & r("cancelado_codigo_sub_motivo"))) & ")"
             end if
+			if s = "" then s = "&nbsp;"
 		    x = x & "		<TD valign='top' style='width:200px' class='MDB'><span class='Cn'>" & s & "</span></TD>" & chr(13)            
         end if
 	
