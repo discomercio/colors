@@ -1608,8 +1608,8 @@
 	
 	dim bln_RT_EdicaoLiberada_Conferencia
 	dim blnFamiliaPedidosPossuiPedidoEntregueMesAnterior, blnFamiliaPedidosPossuiPedidoComissaoPaga, blnFamiliaPedidosPossuiPedidoComissaoDescontada
-	dim rMaxPrazoEdicaoRT
-	set rMaxPrazoEdicaoRT = get_registro_t_parametro(ID_PARAMETRO_Pedido_RT_Edicao_MaxPrazo)
+	dim rEdicaoRTMaxPrazo
+	set rEdicaoRTMaxPrazo = get_registro_t_parametro(ID_PARAMETRO_Pedido_RT_Edicao_MaxPrazo)
 	bln_RT_EdicaoLiberada_Conferencia = False
 	blnFamiliaPedidosPossuiPedidoEntregueMesAnterior = False
 	blnFamiliaPedidosPossuiPedidoComissaoPaga = False
@@ -1656,7 +1656,7 @@
 		if rs.State <> 0 then rs.Close
 
 		if operacao_permitida(OP_LJA_EDITA_RT, s_lista_operacoes_permitidas) _
-			And ( (rMaxPrazoEdicaoRT.campo_inteiro = 0) Or (Abs(DateDiff("d", r_pedido.data, Date)) <= rMaxPrazoEdicaoRT.campo_inteiro) ) then
+			And ( (rEdicaoRTMaxPrazo.campo_inteiro = 0) Or (Abs(DateDiff("d", r_pedido.data, Date)) <= rEdicaoRTMaxPrazo.campo_inteiro) ) then
 			if (Not blnFamiliaPedidosPossuiPedidoComissaoPaga) _
 				And (Not blnFamiliaPedidosPossuiPedidoComissaoDescontada) _
 				And (Not blnFamiliaPedidosPossuiPedidoEntregueMesAnterior) then
