@@ -554,16 +554,29 @@
 		loop
 	if rs.State <> 0 then rs.Close
 
-	dim bln_RT_e_RA_EdicaoLiberada, rMaxPrazoEdicaoRT
+	dim bln_RT_e_RA_EdicaoLiberada, rEdicaoRTMaxPrazo, rEdicaoRTAlcada
 	bln_RT_e_RA_EdicaoLiberada = False
-	set rMaxPrazoEdicaoRT = get_registro_t_parametro(ID_PARAMETRO_Pedido_RT_Edicao_MaxPrazo)
+	set rEdicaoRTMaxPrazo = get_registro_t_parametro(ID_PARAMETRO_Pedido_RT_Edicao_MaxPrazo)
+	set rEdicaoRTAlcada = get_registro_t_parametro(ID_PARAMETRO_Pedido_RT_Edicao_Alcada_Usuarios)
 
-	if operacao_permitida(OP_CEN_EDITA_RT_E_RA, s_lista_operacoes_permitidas) _
-		And ( (rMaxPrazoEdicaoRT.campo_inteiro = 0) Or (Abs(DateDiff("d", r_pedido.data, Date)) <= rMaxPrazoEdicaoRT.campo_inteiro) ) then
-		if (Not blnFamiliaPedidosPossuiPedidoComissaoPaga) _
-			And (Not blnFamiliaPedidosPossuiPedidoComissaoDescontada) _
-			And (Not blnFamiliaPedidosPossuiPedidoEntregueMesAnterior) then
-			bln_RT_e_RA_EdicaoLiberada = True
+	'Verifica se o usuário possui alçada p/ editar a RT com menos regras de validação
+	'Lembrando que o conteúdo do parâmetro está gravado em [campo_texto] no formato: UsuariosComAlcada=|FULANO|BELTRANO|CICLANO|
+	s = "|" & UCase(usuario) & "|"
+	if Instr(UCase(rEdicaoRTAlcada.campo_texto), s) > 0 then
+		if operacao_permitida(OP_CEN_EDITA_RT_E_RA, s_lista_operacoes_permitidas) then
+			if (Not blnFamiliaPedidosPossuiPedidoComissaoPaga) _
+				And (Not blnFamiliaPedidosPossuiPedidoComissaoDescontada) then
+				bln_RT_e_RA_EdicaoLiberada = True
+				end if
+			end if
+	else
+		if operacao_permitida(OP_CEN_EDITA_RT_E_RA, s_lista_operacoes_permitidas) _
+			And ( (rEdicaoRTMaxPrazo.campo_inteiro = 0) Or (Abs(DateDiff("d", r_pedido.data, Date)) <= rEdicaoRTMaxPrazo.campo_inteiro) ) then
+			if (Not blnFamiliaPedidosPossuiPedidoComissaoPaga) _
+				And (Not blnFamiliaPedidosPossuiPedidoComissaoDescontada) _
+				And (Not blnFamiliaPedidosPossuiPedidoEntregueMesAnterior) then
+				bln_RT_e_RA_EdicaoLiberada = True
+				end if
 			end if
 		end if
 	
