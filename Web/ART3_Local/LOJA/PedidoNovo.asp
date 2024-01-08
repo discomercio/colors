@@ -50,6 +50,9 @@
 	dim cn, tMAP_XML, tOI
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim max_qtde_itens
+	max_qtde_itens = obtem_parametro_PedidoItem_MaxQtdeItens
+
 	dim blnFlagCadSemiAutoPedMagentoCadAutoClienteNovo
 	blnFlagCadSemiAutoPedMagentoCadAutoClienteNovo = isActivatedFlagCadSemiAutoPedMagentoCadAutoClienteNovo
 
@@ -761,9 +764,9 @@
 				for i=LBound(vProduto) to UBound(vProduto)
 					if Trim(vProduto(i).produto) <> "" then n = n + 1
 					next
-				if n > MAX_ITENS then
+				if n > max_qtde_itens then
 					alerta=texto_add_br(alerta)
-					alerta=alerta & "O número de itens que está sendo cadastrado (" & CStr(n) & ") excede o máximo permitido por pedido (" & CStr(MAX_ITENS) & ")!!"
+					alerta=alerta & "O número de itens que está sendo cadastrado (" & CStr(n) & ") excede o máximo permitido por pedido (" & CStr(max_qtde_itens) & ")!!"
 					end if
 				end if
 			end if 'if blnLojaHabilitadaProdCompostoECommerce
@@ -982,13 +985,24 @@ end function
 
 <script type="text/javascript">
 	$(function() {
+		<% if alerta <> "" then %>
+		return;
+		<% end if %>
+
+		// Trata o problema em que os campos do formulário são limpos após retornar à esta página c/ o history.back() pela 2ª vez quando ocorre erro de consistência
+		if (trim(fPED.c_FormFieldValues.value) != "") {
+			stringToForm(fPED.c_FormFieldValues.value, $('#fPED'));
+		}
+
 		$("#divAjaxRunning").css('filter', 'alpha(opacity=60)'); // TRANSPARÊNCIA NO IE8
 		if (loja == "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>") {
 			$(".trRT").hide();
 		}
 
 		<% if (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "1") Or (c_FlagCadSemiAutoPedMagento_FluxoOtimizado = "9") then %>
-        setTimeout('fPED.submit()', 0);
+		if ($("#fPED").length) {
+			setTimeout('fPED.submit()', 0);
+		}
 		<% end if %>
 	});
 
@@ -1552,6 +1566,8 @@ var s, i, b, ha_item, idx, blnIndicacaoOk, strMsgErro;
 		}
 	}
 
+	fPED.c_FormFieldValues.value = formToString($("#fPED"));
+
 	dCONFIRMA.style.visibility="hidden";
 	window.status = "Aguarde ...";
 	f.submit();
@@ -1665,6 +1681,7 @@ onload="trata_indicador_onchange(); if (trim(fPED.c_fabricante[0].value)=='') fP
 <input type="hidden" name="EndEtg_cep" id="EndEtg_cep" value="<%=EndEtg_cep%>">
 <input type="hidden" name="c_indicador_original" id="c_indicador_original" value='<%=r_cliente.indicador%>'>
 <input type="hidden" name="EndEtg_obs" id="EndEtg_obs" value='<%=EndEtg_obs%>'>
+<input type="hidden" name="c_FormFieldValues" id="c_FormFieldValues" value="" />
 <%	if operacao_permitida(OP_LJA_EXIBIR_CAMPOS_COM_SEM_INDICACAO_AO_CADASTRAR_NOVO_PEDIDO, s_lista_operacoes_permitidas) then
 		strAux="S"
 	else
@@ -1801,7 +1818,7 @@ onload="trata_indicador_onchange(); if (trim(fPED.c_fabricante[0].value)=='') fP
 	<td align="left">&nbsp;</td>
 	</tr>
 <% intIdxProduto = LBound(vProduto)-1 %>
-<% for i=1 to MAX_ITENS 
+<% for i=1 to max_qtde_itens
 		intIdxProduto = intIdxProduto + 1
 		s_fabricante = ""
 		s_produto = ""
@@ -1824,7 +1841,7 @@ onload="trata_indicador_onchange(); if (trim(fPED.c_fabricante[0].value)=='') fP
 %>
 	<tr>
 	<td class="MDBE" align="left">
-		<input name="c_fabricante" id="c_fabricante" class="PLLe" maxlength="4" style="width:30px;" onkeypress="if (digitou_enter(true)&&(tem_info(this.value)||(<%=Cstr(i)%>!=1))) if (trim(this.value)=='') bCONFIRMA.focus(); else fPED.c_produto[<%=Cstr(i-1)%>].focus(); filtra_fabricante();" onblur="this.value=normaliza_codigo(this.value,TAM_MIN_FABRICANTE);trataLimpaLinha(<%=Cstr(i-1)%>);"
+		<input name="c_fabricante" id="c_fabricante_<%=Cstr(i)%>" class="PLLe" maxlength="4" style="width:30px;" onkeypress="if (digitou_enter(true)&&(tem_info(this.value)||(<%=Cstr(i)%>!=1))) if (trim(this.value)=='') bCONFIRMA.focus(); else fPED.c_produto[<%=Cstr(i-1)%>].focus(); filtra_fabricante();" onblur="this.value=normaliza_codigo(this.value,TAM_MIN_FABRICANTE);trataLimpaLinha(<%=Cstr(i-1)%>);"
 			<% 'A DECLARAÇÃO DA PROPRIEDADE VALUE APENAS SE HOUVER VALOR EVITA QUE O CAMPO SEJA LIMPO APÓS A SEGUNDA CHAMADA DO HISTORY.BACK() NA TELA SEGUINTE QUANDO OCORRE ERRO DE CONSISTÊNCIA E DESEJA-SE RETORNAR À ESTA TELA %>
 			<% if s_fabricante <> "" then %>
 			value="<%=s_fabricante%>"
@@ -1832,28 +1849,28 @@ onload="trata_indicador_onchange(); if (trim(fPED.c_fabricante[0].value)=='') fP
 			/>
 	</td>
 	<td class="MDB" align="left">
-		<input name="c_produto" id="c_produto" class="PLLe" maxlength="8" style="width:60px;" onkeypress="if (digitou_enter(true)) fPED.c_qtde[<%=Cstr(i-1)%>].focus(); filtra_produto();" onblur="this.value=normaliza_produto(this.value);consultaPreco(<%=Cstr(i-1)%>);trataLimpaLinha(<%=Cstr(i-1)%>);"
+		<input name="c_produto" id="c_produto_<%=Cstr(i)%>" class="PLLe" maxlength="8" style="width:60px;" onkeypress="if (digitou_enter(true)) fPED.c_qtde[<%=Cstr(i-1)%>].focus(); filtra_produto();" onblur="this.value=normaliza_produto(this.value);consultaPreco(<%=Cstr(i-1)%>);trataLimpaLinha(<%=Cstr(i-1)%>);"
 			<% if s_produto <> "" then %>
 			value="<%=s_produto%>"
 			<% end if %>
 			/>
 	</td>
 	<td class="MDB" align="right">
-		<input name="c_qtde" id="c_qtde" class="PLLd" maxlength="4" style="width:30px;" onkeypress="if (digitou_enter(true)) {if (<%=Cstr(i)%>==fPED.c_qtde.length) bCONFIRMA.focus(); else fPED.c_fabricante[<%=Cstr(i)%>].focus();} filtra_numerico();"
+		<input name="c_qtde" id="c_qtde_<%=Cstr(i)%>" class="PLLd" maxlength="4" style="width:30px;" onkeypress="if (digitou_enter(true)) {if (<%=Cstr(i)%>==fPED.c_qtde.length) bCONFIRMA.focus(); else fPED.c_fabricante[<%=Cstr(i)%>].focus();} filtra_numerico();"
 			<% if s_qtde <> "" then %>
 			value="<%=s_qtde%>"
 			<% end if %>
 			/>
 	</td>
 	<td class="MDB" align="left">
-		<input name="c_descricao" id="c_descricao" class="PLLe" style="width:377px;" readonly tabindex=-1
+		<input name="c_descricao" id="c_descricao_<%=Cstr(i)%>" class="PLLe" style="width:377px;" readonly tabindex=-1
 			<% if s_descricao <> "" then %>
 			value="<%=s_descricao%>"
 			<% end if %>
 			/>
 	</td>
 	<td class="MDB" align="right">
-		<input name="c_preco_lista" id="c_preco_lista" class="PLLd" style="width:62px;" readonly tabindex=-1 
+		<input name="c_preco_lista" id="c_preco_lista_<%=Cstr(i)%>" class="PLLd" style="width:62px;" readonly tabindex=-1 
 			<% if s_preco_lista <> "" then %>
 			value="<%=s_preco_lista%>"
 			<% end if %>

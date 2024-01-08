@@ -65,6 +65,8 @@
 		alerta = msg_erro
 	else
 		if Not le_orcamento_item(orcamento_selecionado, v_item, msg_erro) then alerta = msg_erro
+		'Assegura que dados cadastrados anteriormente sejam exibidos corretamente, mesmo se o parâmetro da quantidade máxima de itens tiver sido reduzido
+		if VectorLength(v_item) > max_qtde_itens then max_qtde_itens = VectorLength(v_item)
 		end if
 
 	dim r_pedido

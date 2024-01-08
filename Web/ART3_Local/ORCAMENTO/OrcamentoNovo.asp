@@ -43,6 +43,9 @@
 	dim cn, r, strSql
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim max_qtde_itens
+	max_qtde_itens = obtem_parametro_PedidoItem_MaxQtdeItens
+
 	dim blnLojaHabilitadaProdCompostoECommerce
 	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
 
@@ -499,9 +502,9 @@
 				for i=LBound(vProduto) to UBound(vProduto)
 					if Trim(vProduto(i).produto) <> "" then n = n + 1
 					next
-				if n > MAX_ITENS then
+				if n > max_qtde_itens then
 					alerta=texto_add_br(alerta)
-					alerta=alerta & "O número de itens que está sendo cadastrado (" & CStr(n) & ") excede o máximo permitido por pedido (" & CStr(MAX_ITENS) & ")!!"
+					alerta=alerta & "O número de itens que está sendo cadastrado (" & CStr(n) & ") excede o máximo permitido por pedido (" & CStr(max_qtde_itens) & ")!!"
 					end if
 				end if
 			end if 'if blnLojaHabilitadaProdCompostoECommerce
@@ -595,9 +598,21 @@
 
 <script type="text/javascript">
 	$(function() {
+		<% if alerta <> "" then %>
+		return;
+		<% end if %>
+
+		// Trata o problema em que os campos do formulário são limpos após retornar à esta página c/ o history.back() pela 2ª vez quando ocorre erro de consistência
+		if (trim(fORC.c_FormFieldValues.value) != "") {
+			stringToForm(fORC.c_FormFieldValues.value, $('#fORC'));
+		}
+
 	    $("#divAjaxRunning").css('filter', 'alpha(opacity=60)'); // TRANSPARÊNCIA NO IE8
 	    <%if blnLojaHabilitadaProdCompostoECommerce then%>
-	    fORC.submit();
+		// Testa se o form existe (pode não existir se foi exibida uma mensagem de aviso/erro)
+		if ($("#fORC").length) {
+			fORC.submit();
+		}
         <%end if%>
 
 	});
@@ -1032,7 +1047,9 @@ var i, b, ha_item, strMsgErro;
 		alert(strMsgErro);
 		return;
 		}
-		
+
+	fORC.c_FormFieldValues.value = formToString($("#fORC"));
+
 	dCONFIRMA.style.visibility="hidden";
 	window.status = "Aguarde ...";
 	f.submit();
@@ -1126,6 +1143,7 @@ var i, b, ha_item, strMsgErro;
 <input type="hidden" name="EndEtg_uf" id="EndEtg_uf" value="<%=EndEtg_uf%>">
 <input type="hidden" name="EndEtg_cep" id="EndEtg_cep" value="<%=EndEtg_cep%>">
 <input type="hidden" name="EndEtg_obs" id="EndEtg_obs" value='<%=EndEtg_obs%>'>
+<input type="hidden" name="c_FormFieldValues" id="c_FormFieldValues" value="" />
 <input type="hidden" name="c_custoFinancFornecTipoParcelamento" id="c_custoFinancFornecTipoParcelamento" value='<%=COD_CUSTO_FINANC_FORNEC_TIPO_PARCELAMENTO__A_VISTA%>'>
 <input type="hidden" name="c_custoFinancFornecQtdeParcelas" id="c_custoFinancFornecQtdeParcelas" value='0'>
 
@@ -1204,7 +1222,7 @@ var i, b, ha_item, strMsgErro;
 	<td class="MB" align="right"><span class="PLTd">VL Unit</span></td>
 	</tr>
 <% intIdxProduto = LBound(vProduto)-1 %>
-<% for i=1 to MAX_ITENS
+<% for i=1 to max_qtde_itens
 		intIdxProduto = intIdxProduto + 1
 		s_fabricante = ""
 		s_produto = ""
@@ -1227,7 +1245,7 @@ var i, b, ha_item, strMsgErro;
 %>
 	<tr>
 	<td class="MDBE" align="left">
-		<input name="c_fabricante" id="c_fabricante" class="PLLe" maxlength="4" style="width:30px;" onkeypress="if (digitou_enter(true)&&(tem_info(this.value)||(<%=Cstr(i)%>!=1))) if (trim(this.value)=='') fORC.midia.focus(); else fORC.c_produto[<%=Cstr(i-1)%>].focus(); filtra_fabricante();" onblur="this.value=normaliza_codigo(this.value,TAM_MIN_FABRICANTE);trataLimpaLinha(<%=Cstr(i-1)%>);"
+		<input name="c_fabricante" id="c_fabricante_<%=Cstr(i)%>" class="PLLe" maxlength="4" style="width:30px;" onkeypress="if (digitou_enter(true)&&(tem_info(this.value)||(<%=Cstr(i)%>!=1))) if (trim(this.value)=='') fORC.midia.focus(); else fORC.c_produto[<%=Cstr(i-1)%>].focus(); filtra_fabricante();" onblur="this.value=normaliza_codigo(this.value,TAM_MIN_FABRICANTE);trataLimpaLinha(<%=Cstr(i-1)%>);"
 			<% 'A DECLARAÇÃO DA PROPRIEDADE VALUE APENAS SE HOUVER VALOR EVITA QUE O CAMPO SEJA LIMPO APÓS A SEGUNDA CHAMADA DO HISTORY.BACK() NA TELA SEGUINTE QUANDO OCORRE ERRO DE CONSISTÊNCIA E DESEJA-SE RETORNAR À ESTA TELA %>
 			<% if s_fabricante <> "" then %>
 			value="<%=s_fabricante%>"
@@ -1235,28 +1253,28 @@ var i, b, ha_item, strMsgErro;
 			/>
 	</td>
 	<td class="MDB" align="left">
-		<input name="c_produto" id="c_produto" class="PLLe" maxlength="8" style="width:60px;" onkeypress="if (digitou_enter(true)) fORC.c_qtde[<%=Cstr(i-1)%>].focus(); filtra_produto();" onblur="this.value=normaliza_produto(this.value);consultaPreco(<%=Cstr(i-1)%>);trataLimpaLinha(<%=Cstr(i-1)%>);"
+		<input name="c_produto" id="c_produto_<%=Cstr(i)%>" class="PLLe" maxlength="8" style="width:60px;" onkeypress="if (digitou_enter(true)) fORC.c_qtde[<%=Cstr(i-1)%>].focus(); filtra_produto();" onblur="this.value=normaliza_produto(this.value);consultaPreco(<%=Cstr(i-1)%>);trataLimpaLinha(<%=Cstr(i-1)%>);"
 			<% if s_produto <> "" then %>
 			value="<%=s_produto%>"
 			<% end if %>
 			/>
 	</td>
 	<td class="MDB" align="right">
-		<input name="c_qtde" id="c_qtde" class="PLLd" maxlength="4" style="width:30px;" onkeypress="if (digitou_enter(true)) {if (<%=Cstr(i)%>==fORC.c_qtde.length) fORC.midia.focus(); else fORC.c_fabricante[<%=Cstr(i)%>].focus();} filtra_numerico();"
+		<input name="c_qtde" id="c_qtde_<%=Cstr(i)%>" class="PLLd" maxlength="4" style="width:30px;" onkeypress="if (digitou_enter(true)) {if (<%=Cstr(i)%>==fORC.c_qtde.length) fORC.midia.focus(); else fORC.c_fabricante[<%=Cstr(i)%>].focus();} filtra_numerico();"
 			<% if s_qtde <> "" then %>
 			value="<%=s_qtde%>"
 			<% end if %>
 			/>
 	</td>
 	<td class="MDB" align="left">
-		<input name="c_descricao" id="c_descricao" class="PLLe" style="width:377px;" readonly tabindex=-1
+		<input name="c_descricao" id="c_descricao_<%=Cstr(i)%>" class="PLLe" style="width:377px;" readonly tabindex=-1
 			<% if s_descricao <> "" then %>
 			value="<%=s_descricao%>"
 			<% end if %>
 			/>
 	</td>
 	<td class="MDB" align="right">
-		<input name="c_preco_lista" id="c_preco_lista" class="PLLd" style="width:62px;" readonly tabindex=-1
+		<input name="c_preco_lista" id="c_preco_lista_<%=Cstr(i)%>" class="PLLd" style="width:62px;" readonly tabindex=-1
 			<% if s_preco_lista <> "" then %>
 			value="<%=s_preco_lista%>"
 			<% end if %>

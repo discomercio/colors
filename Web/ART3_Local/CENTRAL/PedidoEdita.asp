@@ -67,12 +67,17 @@
 	dim cn
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim max_qtde_itens
+	max_qtde_itens = obtem_parametro_PedidoItem_MaxQtdeItens
+
 	dim r_pedido, v_item, alerta, msg_erro
 	alerta=""
 	if Not le_pedido(pedido_selecionado, r_pedido, msg_erro) then 
 		alerta = msg_erro
 	else
 		if Not le_pedido_item(pedido_selecionado, v_item, msg_erro) then alerta = msg_erro
+		'Assegura que dados cadastrados anteriormente sejam exibidos corretamente, mesmo se o parâmetro da quantidade máxima de itens tiver sido reduzido
+		if VectorLength(v_item) > max_qtde_itens then max_qtde_itens = VectorLength(v_item)
 		end if
 	
 	dim blnTemRA
@@ -4258,7 +4263,7 @@ function setarValorRadio(array, valor)
    s_readonly_RT = "readonly tabindex=-1"
    if bln_RT_e_RA_EdicaoLiberada then s_readonly_RT = ""
 	
-   for i=1 to MAX_ITENS 
+   for i=1 to max_qtde_itens
 	 s_readonly = "readonly tabindex=-1"
 	 s_readonly_RA = "readonly tabindex=-1"
 	 n = n+1

@@ -46,6 +46,9 @@
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	
+	dim max_qtde_itens
+	max_qtde_itens = obtem_parametro_OrdemServico_Volumes_MaxQtdeItens
+	
 	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 
@@ -744,7 +747,7 @@ var i,blnTemItem,blnTemInfo;
 	<td class="MDB"><p class="PLTe">Nº Série</p></td>
 	<td class="MDB" colspan="2"><p class="PLTe">Problema</p></td>
 	</tr>
-<% for i=1 to MAX_VOLUMES_OS %>
+<% for i=1 to max_qtde_itens %>
 	<tr>
 	<td class="MDBE" valign="top"><input name="c_descricao_volume" id="c_descricao_volume" class="PLLe" maxlength="12" 
 		style="width:100px;" onkeypress="if (digitou_enter(true)&&(tem_info(this.value)||(<%=Cstr(i)%>!=1))) if (trim(this.value)=='') bCONFIRMA.focus(); else fOP.c_tipo[<%=Cstr(i-1)%>].focus(); filtra_nome_identificador();" onblur="this.value=trim(this.value);"></td>

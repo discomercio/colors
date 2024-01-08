@@ -49,6 +49,9 @@
 	dim cn
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim max_qtde_itens
+	max_qtde_itens = obtem_parametro_PedidoItem_MaxQtdeItens
+
 	dim s_lista_operacoes_permitidas
 	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
 
@@ -58,6 +61,8 @@
 		alerta = msg_erro
 	else
 		if Not le_pedido_item(pedido_selecionado, v_item, msg_erro) then alerta = msg_erro
+		'Assegura que dados cadastrados anteriormente sejam exibidos corretamente, mesmo se o parâmetro da quantidade máxima de itens tiver sido reduzido
+		if VectorLength(v_item) > max_qtde_itens then max_qtde_itens = VectorLength(v_item)
 		end if
 
 	dim blnTemRA
@@ -530,7 +535,7 @@ s_script = "<script language='JavaScript' type='text/javascript'>" & chr(13) & _
 	m_TotalDestePedido=0
 	m_TotalDestePedidoComRA=0
 	n = Lbound(v_item)-1
-	for i=1 to MAX_ITENS 
+	for i=1 to max_qtde_itens
 		n = n+1
 		if n <= Ubound(v_item) then
 			with v_item(n)
@@ -830,7 +835,7 @@ s_script = s_script & _
 <% m_TotalDestePedido=0
    m_TotalDestePedidoComRA=0
    n = Lbound(v_item)-1
-   for i=1 to MAX_ITENS 
+   for i=1 to max_qtde_itens
 	 n = n+1
 	 s_cor = "black"
 	 if n <= Ubound(v_item) then

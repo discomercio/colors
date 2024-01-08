@@ -48,6 +48,9 @@
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	
+	dim max_qtde_itens
+	max_qtde_itens = obtem_parametro_OrdemServico_Volumes_MaxQtdeItens
+	
 '	OBTÉM DADOS DO FORMULÁRIO
 	url_back = Trim(Request("url_back"))
 	s_id_nfe_emitente = Trim(Request.Form("c_id_nfe_emitente"))
@@ -157,6 +160,8 @@
 			alerta = msg_erro
 		else
 			if Not le_ordem_servico_item(s_chave_OS, r_OS_item, msg_erro) then alerta = msg_erro
+			'Assegura que dados cadastrados anteriormente sejam exibidos corretamente, mesmo se o parâmetro da quantidade máxima de itens tiver sido reduzido
+			if VectorLength(r_OS_item) > max_qtde_itens then max_qtde_itens = VectorLength(r_OS_item)
 			end if
 		
 		if converte_numero(s_id_nfe_emitente) <> converte_numero(r_OS.id_nfe_emitente) then
@@ -639,7 +644,7 @@ function fOPConfirma( f ) {
 	<td class="MDB" colspan="2"><p class="PLTe">Problema</p></td>
 	</tr>
 <%  n = Lbound(r_OS_item)-1
-	for i=1 to MAX_VOLUMES_OS 
+	for i=1 to max_qtde_itens
 		n = n+1
 		if n <= Ubound(r_OS_item) then
 			with r_OS_item(n)

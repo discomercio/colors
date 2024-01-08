@@ -61,6 +61,9 @@
 	dim cn, rs, rs2, msg_erro
 	If Not bdd_conecta(cn) then Response.Redirect("Aviso.asp?id=" & ERR_CONEXAO)
 
+	dim max_qtde_itens
+	max_qtde_itens = obtem_parametro_PedidoItem_MaxQtdeItens
+
 	dim r_pedido, v_item, alerta
 	dim blnOrcamentistaOuIndicadorOK
 	alerta=""
@@ -72,6 +75,8 @@
 		if (Trim(r_pedido.indicador) = usuario) and (Trim(r_pedido.orcamentista) = usuario or Trim(r_pedido.orcamentista) = "") then blnOrcamentistaOuIndicadorOK = True 
 		if Not blnOrcamentistaOuIndicadorOK then Response.Redirect("Aviso.asp?id=" & ERR_PEDIDO_INVALIDO)
 		if Not le_pedido_item(pedido_selecionado, v_item, msg_erro) then alerta = msg_erro
+		'Assegura que dados cadastrados anteriormente sejam exibidos corretamente, mesmo se o parâmetro da quantidade máxima de itens tiver sido reduzido
+		if VectorLength(v_item) > max_qtde_itens then max_qtde_itens = VectorLength(v_item)
 		end if
 
 	dim blnTemRA
@@ -780,7 +785,7 @@ function fCLIConsulta() {
 <% m_TotalDestePedido=0
    m_TotalDestePedidoComRA=0
    n = Lbound(v_item)-1
-   for i=1 to MAX_ITENS 
+   for i=1 to max_qtde_itens
 	 n = n+1
 	 s_cor = "black"
 	 if n <= Ubound(v_item) then

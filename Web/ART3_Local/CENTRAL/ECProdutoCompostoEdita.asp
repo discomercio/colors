@@ -56,6 +56,9 @@
 	dim cn,rs,r,strSql
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim max_qtde_itens
+	max_qtde_itens = obtem_parametro_ProdutoComposto_MaxQtdeItens
+
 	strSql = "SELECT " & _
 				"*" & _
 			" FROM t_EC_PRODUTO_COMPOSTO" & _
@@ -82,7 +85,12 @@
 				end if
 			end if
 		end if
-		
+	
+	if alerta = "" then
+		'Assegura que dados cadastrados anteriormente sejam exibidos corretamente, mesmo se o parâmetro da quantidade máxima de itens tiver sido reduzido
+		if VectorLength(v_item) > max_qtde_itens then max_qtde_itens = VectorLength(v_item)
+		end if
+	
 	if alerta = "" then
 		for i=Lbound(v_item) to Ubound(v_item)
 			with v_item(i)
@@ -275,7 +283,7 @@ var i,blnTemDado,intQtdeUnidades;
 	</tr>
 <% 
 	n = Lbound(v_item)-1
-	for i=1 to MAX_EC_PRODUTO_COMPOSTO_ITENS
+	for i=1 to max_qtde_itens
 		n = n+1
 		if n <= Ubound(v_item) then
 			with v_item(n) 
