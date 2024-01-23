@@ -841,6 +841,23 @@ Option Explicit
 '|          |      |                                                           |
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
+'|04.12.2023| LHGX |V 2.35                                                     |
+'|          |      | - Ajuste ma consulta de pedidos da assistência ténica     |
+'|          |      |   no painel de emissão manual                             |
+'|          |      | - Retirada a detecção do horário de verão                 |
+'|          |      | - Aumento da quantidade de itens da nota fiscal para 36   |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|22.01.2024| LHGX |V 2.36                                                     |
+'|          |      | - Ajuste CEST sem as atualizações da v 2.35               |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
+'|XX.XX.XXXX| XXXX |V X.XX                                                     |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|          |      |                                                           |
+'|__________|______|___________________________________________________________|
 '|XX.XX.XXXX| XXXX |V X.XX                                                     |
 '|          |      |                                                           |
 '|          |      |                                                           |
@@ -859,8 +876,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.34"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  17/05/2023"
+Global Const m_id_versao = "2.36"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  22/01/2024"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"
@@ -3635,13 +3652,13 @@ Function retorna_CEST(ByVal ncm As String) As String
     ElseIf (ncm = "84159090") Then
         s = "2110600"
     ElseIf (ncm = "84159020") Then
-        s = "2109500"
+        s = "2109700"
     ElseIf (ncm = "84159010") Then
-        s = "2109400"
+        s = "2109600"
     ElseIf (ncm = "84151090") Then
-        s = "2109300"
+        s = "2109500"
     ElseIf (ncm = "84151019") Then
-        s = "2109200"
+        s = "2109400"
     ElseIf (ncm = "84151011") Then
         s = "2109100"
     ElseIf (left(ncm, 6) = "841510") Or (left(ncm, 5) = "84158") Then
