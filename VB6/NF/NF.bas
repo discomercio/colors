@@ -848,13 +848,13 @@ Option Explicit
 '|          |      | - Aumento da quantidade de itens da nota fiscal para 36   |
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
-'|XX.XX.XXXX| XXXX |V X.XX                                                     |
-'|          |      |                                                           |
+'|22.01.2024| LHGX |V 2.36                                                     |
+'|          |      | - Ajuste CEST sem as atualizações da v 2.35               |
 '|          |      |                                                           |
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
-'|XX.XX.XXXX| XXXX |V X.XX                                                     |
-'|          |      |                                                           |
+'|24.01.2024| LHGX |V 2.37                                                     |
+'|          |      | - Junção das alterações da v 2.35 e da v 2.36             |
 '|          |      |                                                           |
 '|          |      |                                                           |
 '|__________|______|___________________________________________________________|
@@ -876,8 +876,8 @@ Option Explicit
 '
 
 
-Global Const m_id_versao = "2.35"
-Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  04/12/2023"
+Global Const m_id_versao = "2.37"
+Global Const m_id = "Nota Fiscal  v" & m_id_versao & "  24/01/2024"
 
 ' Nº VERSÃO ATUAL DO LAYOUT DOS DADOS DA NFe
 Global Const ID_VERSAO_LAYOUT_NFe = "4.00"
@@ -3640,33 +3640,33 @@ Function retorna_CEST(ByVal ncm As String) As String
     s = ""
       
     If (ncm = "84145910") Then
-        s = "0109500"
+        s = "0109400"
     ElseIf (ncm = "84131900") Then
-        s = "0109300"
+        s = "0109200"
     ElseIf (ncm = "84135090") Then
-        s = "0109300"
+        s = "0109200"
     ElseIf (ncm = "84138100") Then
-        s = "0109300"
+        s = "0109200"
     ElseIf (ncm = "84212100") Then
-        s = "2109600"
+        s = "2109800"
     ElseIf (ncm = "84159090") Then
         s = "2110600"
     ElseIf (ncm = "84159020") Then
-        s = "2109500"
+        s = "2109700"
     ElseIf (ncm = "84159010") Then
-        s = "2109400"
+        s = "2109600"
     ElseIf (ncm = "84151090") Then
-        s = "2109300"
+        s = "2109500"
     ElseIf (ncm = "84151019") Then
-        s = "2109200"
+        s = "2109400"
     ElseIf (ncm = "84151011") Then
-        s = "2109100"
+        s = "2109300"
     ElseIf (left(ncm, 6) = "841510") Or (left(ncm, 5) = "84158") Then
-        s = "2109000"
+        s = "2109200"
     ElseIf (left(ncm, 4) = "7608") Then
         s = "1006900"
     ElseIf (ncm = "84213990") Then
-        s = "0109600"
+        s = "0109500"
     Else
         s = "0103600"
         End If
@@ -3674,7 +3674,6 @@ Function retorna_CEST(ByVal ncm As String) As String
     retorna_CEST = s
     
 End Function
-
 Function retorna_num_pedido_base(ByVal numeroPedido As String) As String
 Dim i As Integer
 Dim numeroPedidoBase As String
