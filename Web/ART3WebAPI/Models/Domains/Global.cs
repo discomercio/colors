@@ -60,8 +60,8 @@ namespace ART3WebAPI.Models.Domains
 			public static class Versao
 			{
 				public const string NomeSistema = "WebAPI";
-				public const string Numero = "2.39";
-				public const string Data = "22.NOV.2023";
+				public const string Numero = "2.40";
+				public const string Data = "23.JAN.2024";
 				public const string M_ID = NomeSistema + " - " + Numero + " - " + Data;
 			}
 			#endregion
@@ -310,8 +310,10 @@ namespace ART3WebAPI.Models.Domains
 			 *      Ajustes no relatório Estatísticas de Ocorrências (RelatoriosController.GetXLSReport) p/
 			 *      incluir as colunas: Loja, Indicador e Vendedor.
 			 * -----------------------------------------------------------------------------------------------
-			 * v 2.40 - XX.XX.20XX - por XXX
-			 *      
+			 * v 2.40 - 23.01.2024 - por HHO
+			 *      Desenvolvimento do controller DownloadCompressedFileController para ser usado pelo
+			 *      relatório Controle de Impostos para realizar o download de todos os arquivos XML de NFe
+			 *      em um único arquivo compactado.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 2.41 - XX.XX.20XX - por XXX
 			 *      

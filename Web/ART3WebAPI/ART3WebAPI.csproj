@@ -54,6 +54,8 @@
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Web.DynamicData" />
@@ -145,6 +147,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\CiagroupController.cs" />
+    <Compile Include="Controllers\DownloadCompressedFileController.cs" />
     <Compile Include="Controllers\FarolController.cs" />
     <Compile Include="Controllers\FarolV3Controller.cs" />
     <Compile Include="Controllers\GetDataController.cs" />
@@ -177,6 +180,7 @@
     <Compile Include="Models\Entities\Cliente.cs" />
     <Compile Include="Models\Entities\CodigoDescricao.cs" />
     <Compile Include="Models\Entities\DevolucaoProduto2Entity.cs" />
+    <Compile Include="Models\Entities\DownloadCompressedFileResponse.cs" />
     <Compile Include="Models\Entities\Empresa.cs" />
     <Compile Include="Models\Entities\Farol.cs" />
     <Compile Include="Models\Entities\Indicador.cs" />
