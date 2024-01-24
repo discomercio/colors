@@ -639,7 +639,7 @@ function fESTOQConfirma(f) {
 </table>
 </form>
 
-<form id="fESTOQ" name="fESTOQ" method="post"">
+<form id="fESTOQ" name="fESTOQ" method="post">
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
 <input type="hidden" name="uploaded_file_guid" id="uploaded_file_guid" />
 <input type="hidden" name="c_status_get_nfe_ok" id="c_status_get_nfe_ok" />
