@@ -31,15 +31,16 @@
 	On Error GoTo 0
 	Err.Clear
 
-	Server.ScriptTimeout = MAX_SERVER_SCRIPT_TIMEOUT_EM_SEG
+	Server.ScriptTimeout = MAX_SERVER_SCRIPT_EXTENDED_TIMEOUT_EM_SEG
 	
 	dim usuario
 	usuario = Trim(Session("usuario_atual"))
 	If (usuario = "") then Response.Redirect("aviso.asp?id=" & ERR_SESSAO) 
 
 '	CONECTA COM O BANCO DE DADOS
-	dim cn, tLock, msg_erro
+	dim cn, rs, tLock, msg_erro
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
+	If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	If Not cria_recordset_otimista(tLock, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
 	dim s_lista_operacoes_permitidas
@@ -106,9 +107,22 @@
 	dim max_dias_link_danfe_disponivel
 	max_dias_link_danfe_disponivel = obtem_max_periodo_link_danfe_disponivel_no_pedido_em_dias()
 
+	dim sJsJsonListaXml, sJsListaXmlBlock
+	sJsJsonListaXml = ""
+
     dim blnErroAcessoConcorrente, s_msg_erro_acesso_concorrente
     blnErroAcessoConcorrente = False
     s_msg_erro_acesso_concorrente = ""
+
+	dim s_sessionToken, s_user_id
+	s_sessionToken = ""
+	s = "SELECT Convert(varchar(36), SessionTokenModuloCentral) AS SessionTokenModuloCentral, Id FROM t_USUARIO WHERE (usuario = '" & usuario & "')"
+	if rs.State <> 0 then rs.Close
+	rs.Open s,cn
+	if Not rs.Eof then
+		s_sessionToken = Trim("" & rs("SessionTokenModuloCentral"))
+		s_user_id = Trim("" & rs("Id"))
+		end if
 
 
 
@@ -444,10 +458,19 @@ dim linkXmlNFe
 			
 			s_html_color = " style='color:" & s_html_color & ";'"
 			
+		'	ARMAZENA DADOS DA NFe PARA TRATAMENTO DA REQUISIÇÃO DE DOWNLOAD DE TODOS OS XMLs
+			if sJsJsonListaXml <> "" then sJsJsonListaXml = sJsJsonListaXml & ","
+			sJsJsonListaXml = sJsJsonListaXml & _
+						"{" & _
+						"""id_nfe_emitente"": " & CStr(rNfeEmitente.id) & _
+						",""NFe_serie_NF"": " & chr(34) & s_serie_nfe & chr(34) & _
+						",""NFe_numero_NF"": " & chr(34) & s_num_nfe & chr(34) & _
+						"}"
+			
 		'	MONTA O HTML DA LINHA DA TABELA
 		'	===============================
 			s_row = "	<tr onmouseover='realca_cor_mouse_over(this);' onmouseout='realca_cor_mouse_out(this);'>" & chr(13)
-
+			
 		'> Nº PEDIDO
 			s_pedido = Trim("" & r("pedido"))
 			s = s_pedido
@@ -775,6 +798,41 @@ end sub
 <script language="JavaScript" type="text/javascript">
 window.status='Aguarde, executando a consulta ...';
 
+var serverVariableUrl;
+
+	$(function () {
+		$("#divAjaxRunning").hide();
+		$("#divAjaxRunning").css('filter', 'alpha(opacity=60)'); // TRANSPARÊNCIA NO IE8
+
+		$(document).ajaxStart(function () {
+			$("#divAjaxRunning").show();
+		})
+		.ajaxStop(function () {
+			$("#divAjaxRunning").hide();
+		});
+
+		//Every resize of window
+		$(window).resize(function () {
+			sizeDivAjaxRunning();
+		});
+
+		//Every scroll of window
+		$(window).scroll(function () {
+			sizeDivAjaxRunning();
+		});
+
+		serverVariableUrl = '<%=Request.ServerVariables("URL")%>';
+		serverVariableUrl = serverVariableUrl.toUpperCase();
+		serverVariableUrl = serverVariableUrl.substring(0, serverVariableUrl.indexOf("CENTRAL"));
+	});
+
+
+//Dynamically assign height
+function sizeDivAjaxRunning() {
+	var newTop = $(window).scrollTop() + "px";
+	$("#divAjaxRunning").css("top", newTop);
+}
+
 function realca_cor_mouse_over(c) {
 	c.style.backgroundColor = 'palegreen';
 }
@@ -782,6 +840,44 @@ function realca_cor_mouse_over(c) {
 function realca_cor_mouse_out(c) {
 	c.style.backgroundColor = '';
 }
+
+	function fExecutaDownloadAllXml(f) {
+		var allData = {
+			"formData": getFormData(f),
+			"NFeXmlDownloadList": jsonNFeXmlArrayOnly
+		};
+
+		var jsonReq = JSON.stringify(allData);
+
+		var jqxhr = $.ajax({
+			cache: false,
+			async: true,
+			type: 'POST',
+			url: '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/DownloadCompressedFile/MultipleNFeXml',
+			dataType: 'json',
+			contentType: 'application/json;charset=UTF-8',
+			data: jsonReq,
+			traditional: true,
+			success: function (resp) {
+				if (resp.Status == "OK") {
+					if (resp.Message != "") alert(resp.Message);
+					fDownloadCompressedFile.download_compressed_file_parameter__compressedFileName.value = resp.CompressedFileName;
+					fDownloadCompressedFile.action = '<%=getProtocoloEmUsoHttpOrHttps%>://<%=Request.ServerVariables("SERVER_NAME")%>:<%=Request.ServerVariables("SERVER_PORT")%>' + serverVariableUrl + 'WebAPI/api/DownloadCompressedFile/DownloadCompressedMultipleNFeXml/?fileName=' + resp.CompressedFileName;
+					fDownloadCompressedFile.submit();
+					window.status = "Concluído";
+					$("#divAjaxRunning").hide();
+				}
+				else {
+					$("#divAjaxRunning").hide();
+					alert("Falha no download dos XMLs!\n\n" + resp.Message);
+				}
+			},
+			error: function (resp, cod, msgErro) {
+				$("#divAjaxRunning").hide();
+				alert("Erro no download dos XMLs!\n\n" + msgErro);
+			}
+		});
+	}
 
 function fRELConcluir( id_pedido ){
 	window.status = "Aguarde ...";
@@ -846,6 +942,26 @@ function fRELMarcarTodos(f) {
 <link href="<%=URL_FILE__EPRINTER_CSS%>" rel="stylesheet" type="text/css" media="print">
 
 <style type="text/css">
+#divAjaxRunning
+{
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	z-index:1001;
+	background-color:grey;
+	opacity: .6;
+}
+.AjaxImgLoader
+{
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	margin-left: -128px; /* -1 * image width / 2 */
+	margin-top: -128px;  /* -1 * image height / 2 */
+	display: block;
+}
 .TxtClip
 {
 	background:transparent;
@@ -882,6 +998,9 @@ function fRELMarcarTodos(f) {
 <body onload="window.status='Concluído';" link=#000000 alink=#000000 vlink=#000000>
 
 <center>
+
+<!-- AJAX EM ANDAMENTO -->
+<div id="divAjaxRunning" style="display:none;"><img src="../Imagem/ajax_loader_gray_256.gif" class="AjaxImgLoader"/></div>
 
 <form id="fREL" name="fREL" method="post">
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
@@ -1022,8 +1141,12 @@ function fRELMarcarTodos(f) {
 <br />
 <table>
 	<tr>
+		<td align="left">
+		<input name="bDownloadAllXml" id="bDownloadAllXml" type="button" class="Button" onclick="fExecutaDownloadAllXml($('#fDownloadAllXml'));" value="Download de todos os XMLs" title="download de todos os XMLs" style="margin-left:6px;margin-bottom:10px" />
+		</td>
+		<td>&nbsp;</td>
 		<td align="right">
-		<input name="bMarcarOK" id="bMarcarOK" type="button" class="Button" onclick="fRELMarcarTodos(fREL)" value="Marcar todas as Notas Fiscais como OK" title="assinala todas as notas" style="margin-left:6px;margin-bottom:10px">
+		<input name="bMarcarOK" id="bMarcarOK" type="button" class="Button" onclick="fRELMarcarTodos(fREL)" value="Marcar todas as Notas Fiscais como OK" title="assinala todas as notas" style="margin-left:6px;margin-bottom:10px" />
 		</td>
 	</tr>
 </table>
@@ -1055,6 +1178,34 @@ function fRELMarcarTodos(f) {
 </table>
 </form>
 
+<%
+if sJsJsonListaXml <> "" then
+	sJsListaXmlBlock = "<script type='text/javascript'>" & chr(13) & _
+						"var jsonNFeXmlArrayOnly = [" + sJsJsonListaXml & "];" & chr(13) & _
+						"</script>" & chr(13)
+	Response.Write sJsListaXmlBlock
+end if
+%>
+
+<form id="fDownloadAllXml" name="fDownloadAllXml" method="post">
+<%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
+<input type="hidden" name="download_parameter__username" value="<%=usuario%>" />
+<input type="hidden" name="download_parameter__user_id" value="<%=s_user_id%>" />
+<input type="hidden" name="download_parameter__sessionToken" value="<%=s_sessionToken%>" />
+<input type="hidden" name="download_parameter__CompressedFile_Filename_Prefix" value="ControleImpostos_NFe_XML" />
+<input type="hidden" name="download_parameter__CompressedFile_Filename_IncludeDateTime" value="1" />
+<input type="hidden" name="download_parameter__CompressedFile_FileName_IncludeGuid" value="0" />
+<input type="hidden" name="download_parameter__CompressedFile_Filename_IncludeUserId" value="0" />
+</form>
+
+<form id="fDownloadCompressedFile" name="fDownloadCompressedFile" method="post">
+<%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
+<input type="hidden" name="download_compressed_file_parameter__username" value="<%=usuario%>" />
+<input type="hidden" name="download_compressed_file_parameter__user_id" value="<%=s_user_id%>" />
+<input type="hidden" name="download_compressed_file_parameter__sessionToken" value="<%=s_sessionToken%>" />
+<input type="hidden" name="download_compressed_file_parameter__compressedFileName" value="" />
+</form>
+
 </center>
 </body>
 
@@ -1079,6 +1230,9 @@ function fRELMarcarTodos(f) {
 %>
 
 <%
+	if rs.State <> 0 then rs.Close
+	set rs = nothing
+
 	if tLock.State <> 0 then tLock.Close
 	set tLock = nothing
 
