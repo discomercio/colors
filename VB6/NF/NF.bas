@@ -3640,15 +3640,15 @@ Function retorna_CEST(ByVal ncm As String) As String
     s = ""
       
     If (ncm = "84145910") Then
-        s = "0109500"
+        s = "0109400"
     ElseIf (ncm = "84131900") Then
-        s = "0109300"
+        s = "0109200"
     ElseIf (ncm = "84135090") Then
-        s = "0109300"
+        s = "0109200"
     ElseIf (ncm = "84138100") Then
-        s = "0109300"
+        s = "0109200"
     ElseIf (ncm = "84212100") Then
-        s = "2109600"
+        s = "2109800"
     ElseIf (ncm = "84159090") Then
         s = "2110600"
     ElseIf (ncm = "84159020") Then
@@ -3660,13 +3660,13 @@ Function retorna_CEST(ByVal ncm As String) As String
     ElseIf (ncm = "84151019") Then
         s = "2109400"
     ElseIf (ncm = "84151011") Then
-        s = "2109100"
+        s = "2109300"
     ElseIf (left(ncm, 6) = "841510") Or (left(ncm, 5) = "84158") Then
-        s = "2109000"
+        s = "2109200"
     ElseIf (left(ncm, 4) = "7608") Then
         s = "1006900"
     ElseIf (ncm = "84213990") Then
-        s = "0109600"
+        s = "0109500"
     Else
         s = "0103600"
         End If
