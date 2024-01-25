@@ -84,6 +84,9 @@
 	If Not cria_recordset_otimista(tPCI, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	If Not cria_recordset_otimista(tPL, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 
+	dim max_qtde_itens
+	max_qtde_itens = obtem_parametro_PedidoItem_MaxQtdeItens
+
 	dim insert_request_guid
 	insert_request_guid = Trim(Request.Form("insert_request_guid"))
 	if insert_request_guid = "" then insert_request_guid = gera_uid
@@ -1805,6 +1808,15 @@ end function
 
 <script type="text/javascript">
 	$(function() {
+		<% if alerta <> "" then %>
+		return;
+		<% end if %>
+
+		// Trata o problema em que os campos do formulário são limpos após retornar à esta página c/ o history.back() pela 2ª vez quando ocorre erro de consistência
+		if (trim(fPED.c_FormFieldValues.value) != "") {
+			stringToForm(fPED.c_FormFieldValues.value, $('#fPED'));
+		}
+
 		$("#divAjaxRunning").css('filter', 'alpha(opacity=60)'); // TRANSPARÊNCIA NO IE8
 		<% if EndCob_tipo_pessoa = ID_PF then %>
 		if (($("#c_loja").val() != NUMERO_LOJA_ECOMMERCE_AR_CLUBE) && (!FLAG_MAGENTO_PEDIDO_COM_INDICADOR)) $(".TR_FP_PU").hide();
@@ -3261,6 +3273,8 @@ var perc_max_comissao_alcada1, perc_max_comissao_alcada2, perc_max_comissao_alca
         return;
     }
 
+	fPED.c_FormFieldValues.value = formToString($("#fPED"));
+
 	dCONFIRMA.style.visibility="hidden";
 	window.status = "Aguarde ...";
 	f.submit();
@@ -3441,6 +3455,8 @@ var perc_max_comissao_alcada1, perc_max_comissao_alcada2, perc_max_comissao_alca
 <input type="hidden" name="EndEtg_uf" id="EndEtg_uf" value="<%=EndEtg_uf%>">
 <input type="hidden" name="EndEtg_cep" id="EndEtg_cep" value="<%=EndEtg_cep%>">
 <input type="hidden" name="EndEtg_obs" id="EndEtg_obs" value='<%=EndEtg_obs%>'>
+<input type="hidden" name="c_FormFieldValues" id="c_FormFieldValues" value="" />
+
 <% if operacao_permitida(OP_LJA_EXIBIR_CAMPO_INSTALADOR_INSTALA_AO_CADASTRAR_NOVO_PEDIDO, s_lista_operacoes_permitidas) then s="S" else s="" %>
 <input type="hidden" name="c_exibir_campo_instalador_instala" id="c_exibir_campo_instalador_instala" value='<%=s%>'>
 <input type="hidden" name="c_loja" id="c_loja" value='<%=loja%>'>
@@ -3686,19 +3702,19 @@ var perc_max_comissao_alcada1, perc_max_comissao_alcada2, perc_max_comissao_alca
 				if .qtde > .qtde_estoque_total_disponivel then
 %>
 			<tr>
-			<td class="MDBE" align="left"><input name="c_spe_fabricante" id="c_spe_fabricante" class="PLLe" style="width:26px;"
+			<td class="MDBE" align="left"><input name="c_spe_fabricante" id="c_spe_fabricante_<%=Cstr(i)%>" class="PLLe" style="width:26px;"
 				value='<%=.fabricante%>' readonly tabindex=-1></td>
-			<td class="MDB" align="left"><input name="c_spe_produto" id="c_spe_produto" class="PLLe" style="width:55px;"
+			<td class="MDB" align="left"><input name="c_spe_produto" id="c_spe_produto_<%=Cstr(i)%>" class="PLLe" style="width:55px;"
 				value='<%=.produto%>' readonly tabindex=-1></td>
 			<td class="MDB" align="left">
 				<span class="PLLe" style="width:333px;"><%=produto_formata_descricao_em_html(.descricao_html)%></span>
-				<input type="hidden" name="c_spe_descricao" id="c_spe_descricao" value='<%=.descricao%>'>
+				<input type="hidden" name="c_spe_descricao" id="c_spe_descricao_<%=Cstr(i)%>" value='<%=.descricao%>'>
 			</td>
-			<td class="MDB" align="right"><input name="c_spe_qtde_solicitada" id="c_spe_qtde_solicitada" class="PLLd" style="width:70px;"
+			<td class="MDB" align="right"><input name="c_spe_qtde_solicitada" id="c_spe_qtde_solicitada_<%=Cstr(i)%>" class="PLLd" style="width:70px;"
 				value='<%=Cstr(.qtde)%>' readonly tabindex=-1></td>
-			<td class="MDB" align="right"><input name="c_spe_qtde_estoque" id="c_spe_qtde_estoque" class="PLLd" style="width:70px;"
+			<td class="MDB" align="right"><input name="c_spe_qtde_estoque" id="c_spe_qtde_estoque_<%=Cstr(i)%>" class="PLLd" style="width:70px;"
 				value='<%=Cstr(.qtde_estoque_total_disponivel)%>' readonly tabindex=-1></td>
-			<td class="MDB" align="right"><input name="c_spe_saldo" id="c_spe_saldo" class="PLLd" style="width:70px;color:red;"
+			<td class="MDB" align="right"><input name="c_spe_saldo" id="c_spe_saldo_<%=Cstr(i)%>" class="PLLd" style="width:70px;color:red;"
 				value='<%=Cstr(Abs(.qtde_estoque_total_disponivel - .qtde))%>' readonly tabindex=-1></td>
 			</tr>
 <%
@@ -3747,7 +3763,7 @@ var perc_max_comissao_alcada1, perc_max_comissao_alcada2, perc_max_comissao_alca
 	m_TotalDestePedido=0
 	m_TotalDestePedidoComRA=0
 	n = Lbound(v_item)-1
-	for i=1 to MAX_ITENS 
+	for i=1 to max_qtde_itens
 		s_readonly = "readonly tabindex=-1"
 		s_vl_NF_readonly = "readonly tabindex=-1"
 		n = n+1
@@ -3808,38 +3824,38 @@ var perc_max_comissao_alcada1, perc_max_comissao_alcada2, perc_max_comissao_alca
 %>
 	<tr>
 	<td class="MDBE" align="left">
-		<input name="c_fabricante" id="c_fabricante" class="PLLe" style="width:26px;"
+		<input name="c_fabricante" id="c_fabricante_<%=Cstr(i)%>" class="PLLe" style="width:26px;"
 			value='<%=s_fabricante%>' readonly tabindex=-1 />
 	</td>
 	<td class="MDB" align="left">
-		<input name="c_produto" id="c_produto" class="PLLe" style="width:55px;"
+		<input name="c_produto" id="c_produto_<%=Cstr(i)%>" class="PLLe" style="width:55px;"
 			value='<%=s_produto%>' readonly tabindex=-1 />
 	</td>
 	<td class="MDB" align="left" style="width:277px;">
 		<span class="PLLe"><%=s_descricao_html%></span>
-		<input type="hidden" name="c_descricao" id="c_descricao" value='<%=s_descricao%>' />
+		<input type="hidden" name="c_descricao" id="c_descricao_<%=Cstr(i)%>" value='<%=s_descricao%>' />
 	</td>
 	<td class="MDB" align="right">
-		<input name="c_qtde" id="c_qtde" class="PLLd" style="width:27px;"
+		<input name="c_qtde" id="c_qtde_<%=Cstr(i)%>" class="PLLd" style="width:27px;"
 			value='<%=s_qtde%>' readonly tabindex=-1 />
 	</td>
 	<% if (permite_RA_status = 1) And (rb_RA = "S") then %>
 	<td class="MDB" align="right">
-		<input name="c_vl_NF" id="c_vl_NF" class="PLLd" style="width:62px;"
+		<input name="c_vl_NF" id="c_vl_NF_<%=Cstr(i)%>" class="PLLd" style="width:62px;"
 			onkeypress="if (digitou_enter(true)) fPED.c_vl_unitario[<%=Cstr(i-1)%>].focus(); filtra_moeda_positivo();" onblur="this.value=formata_moeda(this.value); trata_edicao_RA(<%=Cstr(i-1)%>); recalcula_RA(); recalcula_RA_Liquido(); recalcula_parcelas();"
 			value='<%=s_vl_NF%>'
 			<%=s_vl_NF_readonly%>
 			/>
 	</td>
 	<% else %>
-	<input type="hidden" name="c_vl_NF" id="c_vl_NF" value='<%=s_vl_NF%>'>
+	<input type="hidden" name="c_vl_NF" id="c_vl_NF_<%=Cstr(i)%>" value='<%=s_vl_NF%>'>
 	<% end if %>
 	<td class="MDB" align="right">
-		<input name="c_preco_lista" id="c_preco_lista" class="PLLd" style="width:62px;"
+		<input name="c_preco_lista" id="c_preco_lista_<%=Cstr(i)%>" class="PLLd" style="width:62px;"
 			value='<%=s_preco_lista%>' readonly tabindex=-1 />
 	</td>
 	<td class="MDB" align="right">
-		<input name="c_desc" id="c_desc" class="PLLd" style="width:36px;" value=""
+		<input name="c_desc" id="c_desc_<%=Cstr(i)%>" class="PLLd" style="width:36px;" value=""
 		<% if blnLojaHabilitadaProdCompostoECommerce then %>
 			<%=s_readonly%>
 			onkeypress="if (digitou_enter(true)){fPED.c_vl_unitario[<%=Cstr(i-1)%>].focus();} filtra_percentual();"
@@ -3851,7 +3867,7 @@ var perc_max_comissao_alcada1, perc_max_comissao_alcada2, perc_max_comissao_alca
 	</td>
 	<td class="MDB" align="right">
 		<% if blnLojaHabilitadaProdCompostoECommerce then s_campo_focus="c_desc" else s_campo_focus="c_vl_unitario"%>
-		<input name="c_vl_unitario" id="c_vl_unitario" class="PLLd" style="width:62px;"
+		<input name="c_vl_unitario" id="c_vl_unitario_<%=Cstr(i)%>" class="PLLd" style="width:62px;"
 			onkeypress="if (digitou_enter(true)) {if ((<%=Cstr(i)%>==fPED.c_vl_unitario.length)||(trim(fPED.c_produto[<%=Cstr(i)%>].value)=='')) fPED.c_obs1.focus(); else <% if (permite_RA_status = 1) And (rb_RA = "S") then Response.Write "fPED.c_vl_NF" else Response.Write "fPED." & s_campo_focus%>[<%=Cstr(i)%>].focus();} filtra_moeda_positivo();"
 			onblur="this.value=formata_moeda(this.value); trata_edicao_RA(<%=Cstr(i-1)%>); recalcula_total_linha(<%=Cstr(i)%>); recalcula_RA(); recalcula_RA_Liquido(); recalcula_parcelas();"
 			value='<%=s_preco_venda%>'
@@ -3859,7 +3875,7 @@ var perc_max_comissao_alcada1, perc_max_comissao_alcada2, perc_max_comissao_alca
 			/>
 	</td>
 	<td class="MDB" align="right">
-		<input name="c_vl_total" id="c_vl_total" class="PLLd" style="width:70px;" 
+		<input name="c_vl_total" id="c_vl_total_<%=Cstr(i)%>" class="PLLd" style="width:70px;" 
 		value='<%=s_vl_TotalItem%>' readonly tabindex=-1 />
 	</td>
 	</tr>

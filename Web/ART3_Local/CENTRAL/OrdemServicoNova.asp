@@ -46,6 +46,9 @@
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	If Not cria_recordset_otimista(rs, msg_erro) then Response.Redirect("aviso.asp?id=" & ERR_FALHA_OPERACAO_CRIAR_ADO)
 	
+	dim max_qtde_itens
+	max_qtde_itens = obtem_parametro_OrdemServico_Volumes_MaxQtdeItens
+	
 	dim blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 	blnActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos = isActivatedFlagPedidoUsarMemorizacaoCompletaEnderecos
 
@@ -443,38 +446,49 @@
 function fOPConfirma( f ) {
 var i,blnTemItem,blnTemInfo;
 	blnTemItem=false;
-	for (i=0; i < f.c_descricao_volume.length; i++) {
-		blnTemInfo=false;
-		if (trim(f.c_descricao_volume[i].value)!="") blnTemInfo=true;
-		if (trim(f.c_tipo[i].value)!="") blnTemInfo=true;
-		if (trim(f.c_num_serie[i].value)!="") blnTemInfo=true;
-		if (trim(f.c_obs_problema[i].value)!="") blnTemInfo=true;
-		
+	for (i = 0; i < f.c_descricao_volume.length; i++) {
+		blnTemInfo = false;
+		if (trim(f.c_descricao_volume[i].value) != "") blnTemInfo = true;
+		if (trim(f.c_tipo[i].value) != "") blnTemInfo = true;
+		if (trim(f.c_num_serie[i].value) != "") blnTemInfo = true;
+		if (trim(f.c_obs_problema[i].value) != "") blnTemInfo = true;
+
 		if (blnTemInfo) {
-			blnTemItem=true;
-			if (trim(f.c_descricao_volume[i].value)=="") {
+			blnTemItem = true;
+			if (trim(f.c_descricao_volume[i].value) == "") {
 				alert("Informe a descrição do volume!!");
 				f.c_descricao_volume[i].focus();
 				return;
-				}
-			if (trim(f.c_num_serie[i].value)=="") {
+			}
+			if (trim(f.c_num_serie[i].value) == "") {
 				alert("Informe o número de série do volume!!");
 				f.c_num_serie[i].focus();
 				return;
-				}
-			if (trim(f.c_obs_problema[i].value)=="") {
+			}
+			if (trim(f.c_obs_problema[i].value) == "") {
 				alert("Informe o problema!!");
 				f.c_obs_problema[i].focus();
 				return;
-				}
+			}
+			if (f.c_obs_problema[i].value.length > MAX_TAM_OS_OBS_PROBLEMA) {
+				alert("A descrição do problema excede o tamanho máximo de " + MAX_TAM_OS_OBS_PROBLEMA + " caracteres!\nConteúdo possui " + f.c_obs_problema[i].value.length + " caracteres!");
+				f.c_obs_problema[i].focus();
+				return;
 			}
 		}
+	}
 	
 	if (!blnTemItem) {
 		alert("Não foi informado nenhum volume na lista!!");
 		f.c_descricao_volume[0].focus();
 		return;
 		}
+
+	if (f.c_obs_pecas_necessarias.value.length > MAX_TAM_OS_OBS_PECAS_NECESSARIAS) {
+		alert("A descrição de peças necessárias excede o tamanho máximo de " + MAX_TAM_OS_OBS_PECAS_NECESSARIAS + " caracteres!\nConteúdo possui " + f.c_obs_pecas_necessarias.value.length + " caracteres!");
+		f.c_obs_pecas_necessarias.focus();
+		return;
+	}
 
 	dCONFIRMA.style.visibility="hidden";
 	window.status = "Aguarde ...";
@@ -744,7 +758,7 @@ var i,blnTemItem,blnTemInfo;
 	<td class="MDB"><p class="PLTe">Nº Série</p></td>
 	<td class="MDB" colspan="2"><p class="PLTe">Problema</p></td>
 	</tr>
-<% for i=1 to MAX_VOLUMES_OS %>
+<% for i=1 to max_qtde_itens %>
 	<tr>
 	<td class="MDBE" valign="top"><input name="c_descricao_volume" id="c_descricao_volume" class="PLLe" maxlength="12" 
 		style="width:100px;" onkeypress="if (digitou_enter(true)&&(tem_info(this.value)||(<%=Cstr(i)%>!=1))) if (trim(this.value)=='') bCONFIRMA.focus(); else fOP.c_tipo[<%=Cstr(i-1)%>].focus(); filtra_nome_identificador();" onblur="this.value=trim(this.value);"></td>
@@ -752,7 +766,7 @@ var i,blnTemItem,blnTemInfo;
 		style="width:100px;" onkeypress="if (digitou_enter(true)) fOP.c_num_serie[<%=Cstr(i-1)%>].focus(); filtra_nome_identificador();" onblur="this.value=trim(this.value);"></td>
 	<td class="MDB" valign="top"><input name="c_num_serie" id="c_num_serie" class="PLLe" maxlength="20" 
 		style="width:130px;" onkeypress="if (digitou_enter(true)) fOP.c_obs_problema[<%=Cstr(i-1)%>].focus(); filtra_nome_identificador();" onblur="this.value=trim(this.value);"></td>
-	<td class="MDB" colspan="2" align="right" style="width:344px;"><textarea name="c_obs_problema" id="c_obs_problema" rows="<%=Cstr(MAX_LINHAS_OS_OBS_PROBLEMA)%>" class="PLLe" onkeypress="return maxLength(this,MAX_TAM_OS_OBS_PROBLEMA);" onpaste="return maxLengthPaste(this,MAX_TAM_OS_OBS_PROBLEMA);" 
+	<td class="MDB" colspan="2" align="right" style="width:344px;"><textarea name="c_obs_problema" id="c_obs_problema" rows="<%=Cstr(MAX_LINHAS_OS_OBS_PROBLEMA)%>" class="PLLe"
 		style="width:340px;" onkeypress="if (digitou_enter(true)) {if (<%=Cstr(i)%>==fOP.c_obs_problema.length) bCONFIRMA.focus(); else fOP.c_descricao_volume[<%=Cstr(i)%>].focus();} filtra_nome_identificador();"></textarea></td>
 	</tr>
 <% next %>
@@ -767,7 +781,7 @@ var i,blnTemItem,blnTemInfo;
 		>PEÇAS NECESSÁRIAS</span></td>
 	</tr>
 	<tr>
-	<td colspan="5" class="MDBE" align="right" style="width:685px;"><textarea name="c_obs_pecas_necessarias" id="c_obs_pecas_necessarias" rows="<%=Cstr(MAX_LINHAS_OS_OBS_PECAS_NECESSARIAS)%>" class="PLLe" onkeypress="return maxLength(this,MAX_TAM_OS_OBS_PECAS_NECESSARIAS);" onpaste="return maxLengthPaste(this,MAX_TAM_OS_OBS_PECAS_NECESSARIAS);" 
+	<td colspan="5" class="MDBE" align="right" style="width:685px;"><textarea name="c_obs_pecas_necessarias" id="c_obs_pecas_necessarias" rows="<%=Cstr(MAX_LINHAS_OS_OBS_PECAS_NECESSARIAS)%>" class="PLLe"
 		style="width:685px;" onkeypress="filtra_nome_identificador();"></textarea></td>
 	</tr>
 </table>

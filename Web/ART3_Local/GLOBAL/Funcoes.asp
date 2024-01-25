@@ -7178,4 +7178,10 @@ dim blnResultado, iVetor, blnAchou, idMeioPagtoAtual, idMeioPagtoOriginal, separ
 	
 	houveEdicaoParcelaAPrazoEntreMeiosPagtoMonitorados = blnResultado
 end function
+
+
+'Calcula e retorna a quantidade de posições do vetor
+function VectorLength(ByRef vetor)
+	VectorLength = UBound(vetor) - LBound(vetor) + 1
+end function
 %>

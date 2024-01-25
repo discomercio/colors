@@ -59,6 +59,9 @@
 	dim cn, rs
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim max_qtde_itens
+	max_qtde_itens = obtem_parametro_PedidoItem_MaxQtdeItens
+
 	dim blnLojaHabilitadaProdCompostoECommerce
 	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
 
@@ -88,6 +91,9 @@
 		if alerta = "" then
 			if Not copia_cl_ITEM_ORCAMENTO_para_cl_ITEM_ORCAMENTO_NOVO(v_item_bd, v_item, msg_erro) then alerta = msg_erro
 			end if
+
+		'Assegura que dados cadastrados anteriormente sejam exibidos corretamente, mesmo se o parâmetro da quantidade máxima de itens tiver sido reduzido
+		if VectorLength(v_item) > max_qtde_itens then max_qtde_itens = VectorLength(v_item)
 
 	'	ARMAZENA EVENTUAIS MENSAGENS DE ERRO ASSOCIADAS AO ITEM DURANTE O PROCESSAMENTO DESTA PÁGINA
 		redim vMsgErroItem(Ubound(v_item))
@@ -2850,7 +2856,7 @@ if converte_numero(r_orcamento.IdOrcamentoCotacao) = 0 then %>
 <% m_TotalDestePedido=0
    m_TotalDestePedidoComRA=0
    n = Lbound(v_item)-1
-   for i=1 to MAX_ITENS 
+   for i=1 to max_qtde_itens
 	 s_readonly = "readonly tabindex=-1"
 	 s_vl_NF_readonly = "readonly tabindex=-1"
 	 n = n+1

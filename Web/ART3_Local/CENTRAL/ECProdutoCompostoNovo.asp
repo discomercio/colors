@@ -52,6 +52,9 @@
 	dim cn, rs, strSql
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim max_qtde_itens
+	max_qtde_itens = obtem_parametro_ProdutoComposto_MaxQtdeItens
+
 	strSql = "SELECT " & _
 				"*" & _
 			" FROM t_EC_PRODUTO_COMPOSTO_ITEM" & _
@@ -243,7 +246,7 @@ var i,blnTemDado,intQtdeUnidades;
 	<td class="MB" align="left"><span class="PLTe">Produto</span></td>
 	<td class="MB" align="right"><span class="PLTd">Qtde</span></td>
 	</tr>
-<% for i=1 to MAX_EC_PRODUTO_COMPOSTO_ITENS %>
+<% for i=1 to max_qtde_itens %>
 	<tr>
 	<td class="MDBE" align="left"><input name="c_fabricante_item" id=<%=cstr(i)%> class="PLLe" maxlength="3" style="width:30px;" onkeypress="if (digitou_enter(true)&&(tem_info(this.value)||(this.id!=1))) if (trim(this.value)=='') bATUALIZA.focus(); else fCAD.c_produto_item[parseInt(this.id)-1].focus(); filtra_fabricante();" onblur="this.value=normaliza_codigo(this.value,TAM_MIN_FABRICANTE);"></td>
 	<td class="MDB" align="left"><input name="c_produto_item" id=<%=cstr(i)%> class="PLLe" maxlength="6" style="width:60px;" onkeypress="if (digitou_enter(true)) fCAD.c_qtde_item[parseInt(this.id)-1].focus(); filtra_produto();" onblur="this.value=normaliza_produto(this.value);"></td>
