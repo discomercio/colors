@@ -29,7 +29,7 @@ namespace Financeiro
 				public const string NOME_OWNER = "DIS";
 				public const string NOME_SISTEMA = "Financeiro";
 				public const string VERSAO_NUMERO = "1.39";
-				public const string VERSAO_DATA = "07.AGO.2022";
+				public const string VERSAO_DATA = "19.JAN.2024";
 				public const string VERSAO = VERSAO_NUMERO + " - " + VERSAO_DATA;
 				public const string M_ID = NOME_SISTEMA + "  -  " + VERSAO;
 				public const string M_DESCRICAO = "Módulo para execução de rotinas financeiras";
@@ -505,6 +505,11 @@ namespace Financeiro
 			 *		    seu uso como forma de garantir que um usuário nunca consiga utilizá-lo indefinidamente
 			 *		    caso mantenha o aplicativo aberto e o computador sempre ligado mesmo após uma nova
 			 *		    versão ter sido configurada em t_VERSAO.
+			 * -----------------------------------------------------------------------------------------------
+			 * v 1.39(B) - 19.01.2024 - por HHO
+			 *		  Ajustes nos painéis de lançamentos de fluxo de caixa em lote (débito e crédito) para
+			 *		  tratar o pressionamento da tecla ALT de forma que as datas sejam preenchidas adicionando
+			 *		  1 mês em relação à data da linha anterior do grid.
 			 * -----------------------------------------------------------------------------------------------
 			 * v 1.40 - XX.XX.20XX - por XXX
 			 *		  

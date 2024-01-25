@@ -139,38 +139,49 @@
 function fOSConfirma( f ) {
 var i,blnTemItem,blnTemInfo;
 	blnTemItem=false;
-	for (i=0; i < f.c_descricao_volume.length; i++) {
-		blnTemInfo=false;
-		if (trim(f.c_descricao_volume[i].value)!="") blnTemInfo=true;
-		if (trim(f.c_num_serie[i].value)!="") blnTemInfo=true;
-		if (trim(f.c_tipo[i].value)!="") blnTemInfo=true;
-		if (trim(f.c_obs_problema[i].value)!="") blnTemInfo=true;
-		
+	for (i = 0; i < f.c_descricao_volume.length; i++) {
+		blnTemInfo = false;
+		if (trim(f.c_descricao_volume[i].value) != "") blnTemInfo = true;
+		if (trim(f.c_num_serie[i].value) != "") blnTemInfo = true;
+		if (trim(f.c_tipo[i].value) != "") blnTemInfo = true;
+		if (trim(f.c_obs_problema[i].value) != "") blnTemInfo = true;
+
 		if (blnTemInfo) {
-			blnTemItem=true;
-			if (trim(f.c_descricao_volume[i].value)=="") {
+			blnTemItem = true;
+			if (trim(f.c_descricao_volume[i].value) == "") {
 				alert("Informe a descrição do volume!!");
 				f.c_descricao_volume[i].focus();
 				return;
-				}
-			if (trim(f.c_num_serie[i].value)=="") {
+			}
+			if (trim(f.c_num_serie[i].value) == "") {
 				alert("Informe o número de série do volume!!");
 				f.c_num_serie[i].focus();
 				return;
-				}
-			if (trim(f.c_obs_problema[i].value)=="") {
+			}
+			if (trim(f.c_obs_problema[i].value) == "") {
 				alert("Informe o problema!!");
 				f.c_obs_problema[i].focus();
 				return;
-				}
+			}
+			if (f.c_obs_problema[i].value.length > MAX_TAM_OS_OBS_PROBLEMA) {
+				alert("A descrição do problema excede o tamanho máximo de " + MAX_TAM_OS_OBS_PROBLEMA + " caracteres!\nConteúdo possui " + f.c_obs_problema[i].value.length + " caracteres!");
+				f.c_obs_problema[i].focus();
+				return;
 			}
 		}
+	}
 	
 	if (!blnTemItem) {
 		alert("Não foi informado nenhum volume na lista!!");
 		f.c_descricao_volume[0].focus();
 		return;
 		}
+
+	if (f.c_obs_pecas_necessarias.value.length > MAX_TAM_OS_OBS_PECAS_NECESSARIAS) {
+		alert("A descrição de peças necessárias excede o tamanho máximo de " + MAX_TAM_OS_OBS_PECAS_NECESSARIAS + " caracteres!\nConteúdo possui " + f.c_obs_pecas_necessarias.value.length + " caracteres!");
+		f.c_obs_pecas_necessarias.focus();
+		return;
+	}
 
 	dCONFIRMA.style.visibility="hidden";
 	window.status = "Aguarde ...";
@@ -442,8 +453,7 @@ var i,blnTemItem,blnTemInfo;
 		style="width:130px;" onkeypress="if (digitou_enter(true)) fOP.c_obs_problema[<%=Cstr(i-1)%>].focus(); filtra_nome_identificador();" onblur="this.value=trim(this.value);"
 		value='<%=s_num_serie%>'></td>
 	<td class="MDB" colspan="2" align="right" style="width:344px;"><textarea name="c_obs_problema" id="c_obs_problema" rows="<%=Cstr(MAX_LINHAS_OS_OBS_PROBLEMA)%>" 
-		class="PLLe" onkeypress="return maxLength(this,MAX_TAM_OS_OBS_PROBLEMA);" onpaste="return maxLengthPaste(this,MAX_TAM_OS_OBS_PROBLEMA);" 
-		style="width:340px;" onkeypress="if (digitou_enter(true)) {if (<%=Cstr(i)%>==fOP.c_obs_problema.length) bCONFIRMA.focus(); else fOP.c_descricao_volume[<%=Cstr(i)%>].focus();} filtra_nome_identificador();"
+		class="PLLe" style="width:340px;" onkeypress="if (digitou_enter(true)) {if (<%=Cstr(i)%>==fOP.c_obs_problema.length) bCONFIRMA.focus(); else fOP.c_descricao_volume[<%=Cstr(i)%>].focus();} filtra_nome_identificador();"
 		><%=s_obs_problema%></textarea></td>
 
 	<input type="hidden" name="c_descricao_volume_original" id="c_descricao_volume_original" value='<%=s_descricao_volume%>'>
@@ -464,8 +474,7 @@ var i,blnTemItem,blnTemInfo;
 	</tr>
 	<tr>
 	<td colspan="5" class="MDBE" align="right" style="width:685px;"><textarea name="c_obs_pecas_necessarias" id="c_obs_pecas_necessarias" rows="<%=Cstr(MAX_LINHAS_OS_OBS_PECAS_NECESSARIAS)%>" 
-		class="PLLe" onkeypress="return maxLength(this,MAX_TAM_OS_OBS_PECAS_NECESSARIAS);" onpaste="return maxLengthPaste(this,MAX_TAM_OS_OBS_PECAS_NECESSARIAS);" 
-		style="width:685px;" onkeypress="filtra_nome_identificador();"
+		class="PLLe" style="width:685px;" onkeypress="filtra_nome_identificador();"
 		><%=r_OS.obs_pecas_necessarias%></textarea></td>
 	</tr>
 </table>

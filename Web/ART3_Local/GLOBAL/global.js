@@ -1540,21 +1540,29 @@ var vl_total_RA_liquido;
 	this.vl_total_RA_liquido = converte_numero(formata_moeda(vl_total_RA_liquido));
 }
 
-function maxLength(campo,maxChars)
-{
-	if(campo.value.length >= maxChars) {
-		event.returnValue=false;
-		return false;
+function maxLength(campo, maxChars) {
+	try {
+		if (campo.value.length >= maxChars) {
+			event.returnValue = false;
+			return false;
 		}
+	}
+	catch (e) {
+		// NOP
+	}
 }
 
-function maxLengthPaste(campo,maxChars)
-{
-	if((campo.value.length + window.clipboardData.getData("Text").length) > maxChars) {
-		event.returnValue=false;
-		return false;
+function maxLengthPaste(campo, maxChars) {
+	try {
+		if ((campo.value.length + window.clipboardData.getData("Text").length) > maxChars) {
+			event.returnValue = false;
+			return false;
 		}
-	event.returnValue=true;
+		event.returnValue = true;
+	}
+	catch (e) {
+		// NOP
+	}
 }
 
 function autoTab() {
