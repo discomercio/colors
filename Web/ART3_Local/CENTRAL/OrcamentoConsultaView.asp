@@ -58,13 +58,16 @@
 	dim cn
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim max_qtde_itens
+	max_qtde_itens = obtem_parametro_PedidoItem_MaxQtdeItens
+
 	dim s_lista_operacoes_permitidas
 	s_lista_operacoes_permitidas = Trim(Session("lista_operacoes_permitidas"))
 	if s_lista_operacoes_permitidas = "" then
 		s_lista_operacoes_permitidas = obtem_operacoes_permitidas_usuario(cn, usuario)
 		Session("lista_operacoes_permitidas") = s_lista_operacoes_permitidas
 		end if
-
+	
 	dim s_aux, s2, s3, s4, r_loja, r_cliente
 	dim r_orcamento, v_item, alerta, msg_erro
 	alerta=""
@@ -72,6 +75,8 @@
 		alerta = msg_erro
 	else
 		if Not le_orcamento_item(orcamento_selecionado, v_item, msg_erro) then alerta = msg_erro
+		'Assegura que dados cadastrados anteriormente sejam exibidos corretamente, mesmo se o parâmetro da quantidade máxima de itens tiver sido reduzido
+		if VectorLength(v_item) > max_qtde_itens then max_qtde_itens = VectorLength(v_item)
 		end if
 
 	dim r_pedido
@@ -512,7 +517,7 @@ function fCLIConsulta() {
 <% m_TotalDestePedido=0
    m_TotalDestePedidoComRA=0
    n = Lbound(v_item)-1
-   for i=1 to MAX_ITENS 
+   for i=1 to max_qtde_itens
 	 n = n+1
 	 if n <= Ubound(v_item) then
 		with v_item(n)

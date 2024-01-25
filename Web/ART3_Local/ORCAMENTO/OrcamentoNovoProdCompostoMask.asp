@@ -46,6 +46,9 @@
 	dim cn
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 
+	dim max_qtde_itens
+	max_qtde_itens = obtem_parametro_PedidoItem_MaxQtdeItens
+
 	dim blnLojaHabilitadaProdCompostoECommerce
 	blnLojaHabilitadaProdCompostoECommerce = isLojaHabilitadaProdCompostoECommerce(loja)
 
@@ -382,6 +385,15 @@
 
 <script type="text/javascript">
 	$(function () {
+		<% if alerta <> "" then %>
+		return;
+		<% end if %>
+
+		// Trata o problema em que os campos do formulário são limpos após retornar à esta página c/ o history.back() pela 2ª vez quando ocorre erro de consistência
+		if (trim(fPED.c_FormFieldValues.value) != "") {
+			stringToForm(fPED.c_FormFieldValues.value, $('#fPED'));
+		}
+
 		$(".tdTitFabr").hide();
 		$(".tdDadosFabr").hide();
 		$(".tdDadosProd").addClass("ME");
@@ -590,7 +602,9 @@ var i, b, ha_item;
 		f.c_fabricante[0].focus();
 		return;
 		}
-		
+
+	fPED.c_FormFieldValues.value = formToString($("#fPED"));
+
 	dCONFIRMA.style.visibility="hidden";
 	window.status = "Aguarde ...";
 	f.submit();
@@ -667,7 +681,7 @@ var i, b, ha_item;
 <body onload="if (trim(fPED.<%=s_campo_inicial%>[0].value)=='') fPED.<%=s_campo_inicial%>[0].focus();">
 
 <center>
-    
+
 <form id="fPED" name="fPED" method="post" action="OrcamentoNovo.asp">
 <%=MontaCampoFormSessionCtrlInfo(Session("SessionCtrlInfo"))%>
 <input type="hidden" name="c_loja" id="c_loja" value='<%=loja%>'>
@@ -681,6 +695,7 @@ var i, b, ha_item;
 <input type="hidden" name="EndEtg_uf" id="EndEtg_uf" value="<%=EndEtg_uf%>">
 <input type="hidden" name="EndEtg_cep" id="EndEtg_cep" value="<%=EndEtg_cep%>">
 <input type="hidden" name="EndEtg_obs" id="EndEtg_obs" value='<%=EndEtg_obs%>'>
+<input type="hidden" name="c_FormFieldValues" id="c_FormFieldValues" value="" />
 
 <!--  CAMPOS ADICIONAIS DO ENDERECO DE ENTREGA  -->
 <input type="hidden" name="EndEtg_email" id="EndEtg_email" value="<%=EndEtg_email%>" />
@@ -755,13 +770,13 @@ var i, b, ha_item;
 	<td class="MB" align="right"><span class="PLTd">VL Unit</span></td>
 	<td align="left">&nbsp;</td>
 	</tr>
-<% for i=1 to MAX_ITENS %>
+<% for i=1 to max_qtde_itens %>
 	<tr>
-	<td class="MDBE tdDadosFabr" align="left"><input name="c_fabricante" id="c_fabricante" class="PLLe" maxlength="4" style="width:30px;" onkeypress="if (digitou_enter(true)) fPED.c_produto[<%=Cstr(i-1)%>].focus(); filtra_fabricante();" onblur="this.value=normaliza_codigo(this.value,TAM_MIN_FABRICANTE);trataLimpaLinha(<%=Cstr(i-1)%>);"></td>
-	<td class="MDB tdDadosProd" align="left"><input name="c_produto" id="c_produto" class="PLLe" maxlength="8" style="width:60px;" onkeypress="if (digitou_enter(true)) fPED.c_qtde[<%=Cstr(i-1)%>].focus(); filtra_produto();" onblur="this.value=normaliza_produto(this.value);consultaDadosProduto(<%=Cstr(i-1)%>);trataLimpaLinha(<%=Cstr(i-1)%>);"></td>
-	<td class="MDB" align="right"><input name="c_qtde" id="c_qtde" class="PLLd" maxlength="4" style="width:30px;" onkeypress="if (digitou_enter(true)) {if (<%=Cstr(i)%>==fPED.c_qtde.length) bCONFIRMA.focus(); else fPED.<%=s_campo_inicial%>[<%=Cstr(i)%>].focus();} filtra_numerico();"></td>
-	<td class="MDB" align="left"><input name="c_descricao" id="c_descricao" class="PLLe" style="width:427px;" readonly tabindex=-1></td>
-	<td class="MDB" align="right"><input name="c_preco_lista" id="c_preco_lista" class="PLLd" style="width:62px;" readonly tabindex=-1></td>
+	<td class="MDBE tdDadosFabr" align="left"><input name="c_fabricante" id="c_fabricante_<%=Cstr(i)%>" class="PLLe" maxlength="4" style="width:30px;" onkeypress="if (digitou_enter(true)) fPED.c_produto[<%=Cstr(i-1)%>].focus(); filtra_fabricante();" onblur="this.value=normaliza_codigo(this.value,TAM_MIN_FABRICANTE);trataLimpaLinha(<%=Cstr(i-1)%>);"></td>
+	<td class="MDB tdDadosProd" align="left"><input name="c_produto" id="c_produto_<%=Cstr(i)%>" class="PLLe" maxlength="8" style="width:60px;" onkeypress="if (digitou_enter(true)) fPED.c_qtde[<%=Cstr(i-1)%>].focus(); filtra_produto();" onblur="this.value=normaliza_produto(this.value);consultaDadosProduto(<%=Cstr(i-1)%>);trataLimpaLinha(<%=Cstr(i-1)%>);"></td>
+	<td class="MDB" align="right"><input name="c_qtde" id="c_qtde_<%=Cstr(i)%>" class="PLLd" maxlength="4" style="width:30px;" onkeypress="if (digitou_enter(true)) {if (<%=Cstr(i)%>==fPED.c_qtde.length) bCONFIRMA.focus(); else fPED.<%=s_campo_inicial%>[<%=Cstr(i)%>].focus();} filtra_numerico();"></td>
+	<td class="MDB" align="left"><input name="c_descricao" id="c_descricao_<%=Cstr(i)%>" class="PLLe" style="width:427px;" readonly tabindex=-1></td>
+	<td class="MDB" align="right"><input name="c_preco_lista" id="c_preco_lista_<%=Cstr(i)%>" class="PLLd" style="width:62px;" readonly tabindex=-1></td>
 	<td align="left">
 		<a name="bLimparLinha" href="javascript:LimparLinha(fPED,<%=Cstr(i-1)%>)" title="limpa o conteúdo desta linha"><img src="../botao/botao_x_red.gif" style="vertical-align:bottom;margin-bottom:1px;" width="20" height="20" border="0"></a>
 	</td>

@@ -45,6 +45,9 @@
 	dim cn, rs, msg_erro
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	
+	dim max_qtde_itens
+	max_qtde_itens = obtem_parametro_PedidoItem_MaxQtdeItens
+
 	dim insert_request_guid
 	insert_request_guid = Trim(Request.Form("insert_request_guid"))
 	if insert_request_guid = "" then insert_request_guid = gera_uid
@@ -1143,7 +1146,16 @@
 <%=strScriptJS%>
 
 <script type="text/javascript">
-	$(function() {
+	$(function () {
+		<% if alerta <> "" then %>
+		return;
+		<% end if %>
+
+		// Trata o problema em que os campos do formulário são limpos após retornar à esta página c/ o history.back() pela 2ª vez quando ocorre erro de consistência
+		if (trim(fORC.c_FormFieldValues.value) != "") {
+			stringToForm(fORC.c_FormFieldValues.value, $('#fORC'));
+		}
+
 		$("#divAjaxRunning").css('filter', 'alpha(opacity=60)'); // TRANSPARÊNCIA NO IE8
 		<% if r_cliente.tipo = ID_PF then %>
 		$(".TR_FP_PU").hide();
@@ -2226,6 +2238,8 @@ var blnConfirmaDifRAeValores=false;
 		return;
 		}
 
+	fORC.c_FormFieldValues.value = formToString($("#fORC"));
+
 	dCONFIRMA.style.visibility="hidden";
 	window.status = "Aguarde ...";
 	f.submit();
@@ -2343,6 +2357,7 @@ var blnConfirmaDifRAeValores=false;
 <input type="hidden" name="c_custoFinancFornecQtdeParcelasUltConsulta" id="c_custoFinancFornecQtdeParcelasUltConsulta" value='<%=c_custoFinancFornecQtdeParcelas%>'>
 <input type="hidden" name="c_custoFinancFornecParcelamentoDescricao" id="c_custoFinancFornecParcelamentoDescricao" value=''>
 <input type="hidden" name="EndEtg_obs" id="EndEtg_obs" value='<%=EndEtg_obs%>'>
+<input type="hidden" name="c_FormFieldValues" id="c_FormFieldValues" value="" />
 
 
 <!--  CAMPOS ADICIONAIS DO ENDERECO DE ENTREGA  -->
@@ -2428,19 +2443,19 @@ var blnConfirmaDifRAeValores=false;
 				if .qtde > .qtde_estoque_total_disponivel then
 %>
 			<tr>
-			<td class="MDBE" align="left"><input name="c_spe_fabricante" id="c_spe_fabricante" class="PLLe" style="width:26px;"
+			<td class="MDBE" align="left"><input name="c_spe_fabricante" id="c_spe_fabricante_<%=Cstr(i)%>" class="PLLe" style="width:26px;"
 				value='<%=.fabricante%>' readonly tabindex=-1></td>
-			<td class="MDB" align="left"><input name="c_spe_produto" id="c_spe_produto" class="PLLe" style="width:55px;"
+			<td class="MDB" align="left"><input name="c_spe_produto" id="c_spe_produto_<%=Cstr(i)%>" class="PLLe" style="width:55px;"
 				value='<%=.produto%>' readonly tabindex=-1></td>
 			<td class="MDB" align="left">
 				<span class="PLLe" style="width:333px;"><%=produto_formata_descricao_em_html(.descricao_html)%></span>
-				<input type="hidden" name="c_spe_descricao" id="c_spe_descricao" value='<%=.descricao%>'>
+				<input type="hidden" name="c_spe_descricao" id="c_spe_descricao_<%=Cstr(i)%>" value='<%=.descricao%>'>
 			</td>
-			<td class="MDB" align="right"><input name="c_spe_qtde_solicitada" id="c_spe_qtde_solicitada" class="PLLd" style="width:70px;"
+			<td class="MDB" align="right"><input name="c_spe_qtde_solicitada" id="c_spe_qtde_solicitada_<%=Cstr(i)%>" class="PLLd" style="width:70px;"
 				value='<%=Cstr(.qtde)%>' readonly tabindex=-1></td>
-			<td class="MDB" align="right"><input name="c_spe_qtde_estoque" id="c_spe_qtde_estoque" class="PLLd" style="width:70px;"
+			<td class="MDB" align="right"><input name="c_spe_qtde_estoque" id="c_spe_qtde_estoque_<%=Cstr(i)%>" class="PLLd" style="width:70px;"
 				value='<%=Cstr(.qtde_estoque_total_disponivel)%>' readonly tabindex=-1></td>
-			<td class="MDB" align="right"><input name="c_spe_saldo" id="c_spe_saldo" class="PLLd" style="width:70px;color:red;"
+			<td class="MDB" align="right"><input name="c_spe_saldo" id="c_spe_saldo_<%=Cstr(i)%>" class="PLLd" style="width:70px;color:red;"
 				value='<%=Cstr(Abs(.qtde_estoque_total_disponivel - .qtde))%>' readonly tabindex=-1></td>
 			</tr>
 		<%			end if
@@ -2486,7 +2501,7 @@ var blnConfirmaDifRAeValores=false;
 <% m_TotalDestePedido=0
    m_TotalDestePedidoComRA=0
    n = Lbound(v_item)-1
-   for i=1 to MAX_ITENS 
+   for i=1 to max_qtde_itens
 	 s_readonly = "readonly tabindex=-1"
 	 n = n+1
 	 if n <= Ubound(v_item) then
@@ -2517,47 +2532,47 @@ var blnConfirmaDifRAeValores=false;
 %>
 	<tr>
 	<td class="MDBE" align="left">
-		<input name="c_fabricante" id="c_fabricante" class="PLLe" style="width:26px;"
+		<input name="c_fabricante" id="c_fabricante_<%=Cstr(i)%>" class="PLLe" style="width:26px;"
 			value='<%=s_fabricante%>' readonly tabindex=-1 />
 	</td>
 	<td class="MDB" align="left">
-		<input name="c_produto" id="c_produto" class="PLLe" style="width:55px;"
+		<input name="c_produto" id="c_produto_<%=Cstr(i)%>" class="PLLe" style="width:55px;"
 			value='<%=s_produto%>' readonly tabindex=-1 />
 	</td>
 	<td class="MDB" align="left" style="width:277px;">
 		<span class="PLLe"><%=s_descricao_html%></span>
-		<input type="hidden" name="c_descricao" id="c_descricao" value='<%=s_descricao%>' />
+		<input type="hidden" name="c_descricao" id="c_descricao_<%=Cstr(i)%>" value='<%=s_descricao%>' />
 	</td>
 	<td class="MDB tdProdObs" align="left">
 		<% if blnLojaHabilitadaProdCompostoECommerce then s_campo_focus="c_desc" else s_campo_focus="c_vl_unitario"%>
-		<input name="c_obs" id="c_obs" maxlength="10" class="PLLe" style="width:80px;"
+		<input name="c_obs" id="c_obs_<%=Cstr(i)%>" maxlength="10" class="PLLe" style="width:80px;"
 			onkeypress="if (digitou_enter(true)) <%if r_orcamentista_e_indicador.permite_RA_status = 1 then Response.Write "fORC.c_vl_NF" else Response.Write "fORC." & s_campo_focus%>[<%=Cstr(i-1)%>].focus(); filtra_nome_identificador();" onblur="this.value=trim(this.value);"
 			value='' <%=s_readonly%>
 			/>
 	</td>
 	<td class="MDB" align="right">
-		<input name="c_qtde" id="c_qtde" class="PLLd" style="width:27px;"
+		<input name="c_qtde" id="c_qtde_<%=Cstr(i)%>" class="PLLd" style="width:27px;"
 			value='<%=s_qtde%>' readonly tabindex=-1
 			/>
 	</td>
 	<% if r_orcamentista_e_indicador.permite_RA_status = 1 then %>
 	<td class="MDB" align="right">
 		<% if blnLojaHabilitadaProdCompostoECommerce then s_campo_focus="c_desc" else s_campo_focus="c_vl_unitario"%>
-		<input name="c_vl_NF" id="c_vl_NF" class="PLLd" style="width:62px;"
+		<input name="c_vl_NF" id="c_vl_NF_<%=Cstr(i)%>" class="PLLd" style="width:62px;"
 			onkeypress="if (digitou_enter(true)) fORC.<%=s_campo_focus%>[<%=Cstr(i-1)%>].focus(); filtra_moeda_positivo();" onblur="this.value=formata_moeda(this.value); recalcula_RA(); recalcula_parcelas();"
 			value='<%=s_preco_lista%>' <%=s_readonly%>
 			/>
 	</td>
 	<% else %>
-	<input type="hidden" name="c_vl_NF" id="c_vl_NF" value='<%=s_preco_lista%>'>
+	<input type="hidden" name="c_vl_NF" id="c_vl_NF_<%=Cstr(i)%>" value='<%=s_preco_lista%>'>
 	<% end if %>
 	<td class="MDB" align="right">
-		<input name="c_preco_lista" id="c_preco_lista" class="PLLd" style="width:62px;"
+		<input name="c_preco_lista" id="c_preco_lista_<%=Cstr(i)%>" class="PLLd" style="width:62px;"
 			value='<%=s_preco_lista%>' readonly tabindex=-1
 			/>
 	</td>
 	<td class="MDB" align="right">
-		<input name="c_desc" id="c_desc" class="PLLd" style="width:36px;" value=""
+		<input name="c_desc" id="c_desc_<%=Cstr(i)%>" class="PLLd" style="width:36px;" value=""
 		<% if blnLojaHabilitadaProdCompostoECommerce then %>
 			<%=s_readonly%>
 			onkeypress="if (digitou_enter(true)){fORC.c_vl_unitario[<%=Cstr(i-1)%>].focus();} filtra_percentual();"
@@ -2568,13 +2583,13 @@ var blnConfirmaDifRAeValores=false;
 			/>
 	</td>
 	<td class="MDB" align="right">
-		<input name="c_vl_unitario" id="c_vl_unitario" class="PLLd" style="width:62px;"
+		<input name="c_vl_unitario" id="c_vl_unitario_<%=Cstr(i)%>" class="PLLd" style="width:62px;"
 			onkeypress="if (digitou_enter(true)) {if ((<%=Cstr(i)%>==fORC.c_vl_unitario.length)||(trim(fORC.c_produto[<%=Cstr(i)%>].value)=='')) fORC.c_obs1.focus(); else fORC.c_obs[<%=Cstr(i)%>].focus();} filtra_moeda_positivo();" onblur="this.value=formata_moeda(this.value); recalcula_total(<%=Cstr(i)%>); recalcula_RA(); recalcula_parcelas();"
 			value='<%=s_preco_lista%>' <%=s_readonly%>
 			/>
 	</td>
 	<td class="MDB" align="right">
-		<input name="c_vl_total" id="c_vl_total" class="PLLd" style="width:70px;" 
+		<input name="c_vl_total" id="c_vl_total_<%=Cstr(i)%>" class="PLLd" style="width:70px;" 
 			value='<%=s_vl_TotalItem%>' readonly tabindex=-1
 			/>
 	</td>

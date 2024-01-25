@@ -833,6 +833,9 @@ namespace Financeiro
 		{
 			#region [ Declarações ]
 			DataGridViewCell celula = null;
+			string sCellNewValue;
+			string sCellPreviousLineValue;
+			DateTime dtDate;
 			#endregion
 
 			if (this.ActiveControl == grdLote)
@@ -874,9 +877,21 @@ namespace Financeiro
 					}
 					else if (grdLote.Columns[celula.ColumnIndex].Name.Equals(COL_DATA_COMPETENCIA))
 					{
+						// Se a tecla ALT estiver pressionada e houver data preenchida na linha anterior do grid, preenche esta linha somando 1 mês à data da linha anterior
 						e.SuppressKeyPress = true;
 						e.Handled = true;
-						celula.Value = txtDataCompetencia.Text;
+						sCellNewValue = txtDataCompetencia.Text;
+						if ((e.Alt) && (celula.RowIndex >= 1))
+						{
+							sCellPreviousLineValue = (grdLote[celula.ColumnIndex, celula.RowIndex - 1].Value ?? "").ToString();
+							if (sCellPreviousLineValue.Length > 0)
+							{
+								dtDate = Global.converteDdMmYyyyParaDateTime(sCellPreviousLineValue);
+								dtDate = dtDate.AddMonths(1);
+								sCellNewValue = Global.formataDataDdMmYyyyComSeparador(dtDate);
+							}
+						}
+						celula.Value = sCellNewValue;
 						grdLote.focusNextEditableCell();
 					}
 					else if (grdLote.Columns[celula.ColumnIndex].Name.Equals(COL_VALOR_LANCTO))

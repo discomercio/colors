@@ -47,6 +47,9 @@
 	dim cn
 	If Not bdd_conecta(cn) then Response.Redirect("aviso.asp?id=" & ERR_CONEXAO)
 	
+	dim max_qtde_itens
+	max_qtde_itens = obtem_parametro_OrdemServico_Volumes_MaxQtdeItens
+	
 '	OBTÉM O NÚMERO DA ORDEM DE SERVIÇO
 	dim s_num_OS
 	s_num_OS = Ucase(Trim(Request("num_OS")))
@@ -67,6 +70,8 @@
 			alerta = msg_erro
 		else
 			if Not le_ordem_servico_item(s_num_OS, r_OS_item, msg_erro) then alerta = msg_erro
+			'Assegura que dados cadastrados anteriormente sejam exibidos corretamente, mesmo se o parâmetro da quantidade máxima de itens tiver sido reduzido
+			if VectorLength(r_OS_item) > max_qtde_itens then max_qtde_itens = VectorLength(r_OS_item)
 			end if
 		end if
 
@@ -410,7 +415,7 @@ function fOSModifica( f ) {
 	<td class="MDB" colspan="2"><p class="PLTe">Problema</p></td>
 	</tr>
 <%  n = Lbound(r_OS_item)-1
-	for i=1 to MAX_VOLUMES_OS 
+	for i=1 to max_qtde_itens
 		n = n+1
 		if n <= Ubound(r_OS_item) then
 			with r_OS_item(n)
@@ -440,8 +445,7 @@ function fOSModifica( f ) {
 		style="width:130px;" onkeypress="if (digitou_enter(true)) fOP.c_obs_problema[<%=Cstr(i-1)%>].focus(); filtra_nome_identificador();" onblur="this.value=trim(this.value);"
 		value='<%=s_num_serie%>'></td>
 	<td class="MDB" colspan="2" align="right" style="width:344px;"><textarea name="c_obs_problema" id="c_obs_problema" rows="<%=Cstr(MAX_LINHAS_OS_OBS_PROBLEMA)%>" 
-		readonly tabindex=-1 class="PLLe" onkeypress="return maxLength(this,MAX_TAM_OS_OBS_PROBLEMA);" onpaste="return maxLengthPaste(this,MAX_TAM_OS_OBS_PROBLEMA);" 
-		 style="width:340px;" onkeypress="if (digitou_enter(true)) {if (<%=Cstr(i)%>==fOP.c_obs_problema.length) bCONFIRMA.focus(); else fOP.c_descricao_volume[<%=Cstr(i)%>].focus();} filtra_nome_identificador();"
+		readonly tabindex=-1 class="PLLe" style="width:340px;" onkeypress="if (digitou_enter(true)) {if (<%=Cstr(i)%>==fOP.c_obs_problema.length) bCONFIRMA.focus(); else fOP.c_descricao_volume[<%=Cstr(i)%>].focus();} filtra_nome_identificador();"
 		><%=s_obs_problema%></textarea></td>
 	</tr>
 <% next %>
@@ -457,8 +461,7 @@ function fOSModifica( f ) {
 	</tr>
 	<tr>
 	<td colspan="5" class="MDBE" align="right" style="width:685px;"><textarea name="c_obs_pecas_necessarias" id="c_obs_pecas_necessarias" rows="<%=Cstr(MAX_LINHAS_OS_OBS_PECAS_NECESSARIAS)%>" 
-		readonly tabindex=-1 class="PLLe" onkeypress="return maxLength(this,MAX_TAM_OS_OBS_PECAS_NECESSARIAS);" onpaste="return maxLengthPaste(this,MAX_TAM_OS_OBS_PECAS_NECESSARIAS);" 
-		style="width:685px;" onkeypress="filtra_nome_identificador();"
+		readonly tabindex=-1 class="PLLe" style="width:685px;" onkeypress="filtra_nome_identificador();"
 		><%=r_OS.obs_pecas_necessarias%></textarea></td>
 	</tr>
 </table>
