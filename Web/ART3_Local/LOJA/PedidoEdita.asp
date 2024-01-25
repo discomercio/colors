@@ -165,7 +165,7 @@ end function
     dim cliente__tipo, cliente__cnpj_cpf, cliente__rg, cliente__ie, cliente__nome
     dim cliente__endereco, cliente__endereco_numero, cliente__endereco_complemento, cliente__bairro, cliente__cidade, cliente__uf, cliente__cep
     dim cliente__tel_res, cliente__ddd_res, cliente__tel_com, cliente__ddd_com, cliente__ramal_com, cliente__tel_cel, cliente__ddd_cel
-    dim cliente__tel_com_2, cliente__ddd_com_2, cliente__ramal_com_2, cliente__email, cliente__email_xml, cliente__icms, cliente__produtor_rural_status
+    dim cliente__tel_com_2, cliente__ddd_com_2, cliente__ramal_com_2, cliente__email, cliente__email_xml, cliente__email_boleto, cliente__icms, cliente__produtor_rural_status
 
     cliente__tipo = r_cliente.tipo
     cliente__cnpj_cpf = r_cliente.cnpj_cpf
@@ -191,6 +191,7 @@ end function
     cliente__ramal_com_2 = r_cliente.ramal_com_2
     cliente__email = r_cliente.email
 	cliente__email_xml = r_cliente.email_xml
+	cliente__email_boleto = r_cliente.email_boleto
 	cliente__icms = r_cliente.contribuinte_icms_status
 	cliente__produtor_rural_status = r_cliente.produtor_rural_status
    
@@ -219,6 +220,7 @@ end function
         cliente__ramal_com_2 = r_pedido.endereco_ramal_com_2
         cliente__email = r_pedido.endereco_email
 		cliente__email_xml = r_pedido.endereco_email_xml
+		cliente__email_boleto = r_pedido.endereco_email_boleto
 		cliente__icms = r_pedido.endereco_contribuinte_icms_status
 		cliente__produtor_rural_status = r_pedido.endereco_produtor_rural_status
     end if
@@ -2106,6 +2108,11 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
             return;
         }
 
+		if ((trim(f.cliente__email_boleto.value) != "") && (!email_ok(f.cliente__email_boleto.value))) {
+			alert('E-mail (boleto) inválido!');
+			f.cliente__email_boleto.focus();
+			return;
+		}
 
        <% if cliente__tipo = ID_PF then %>
 
@@ -2213,6 +2220,12 @@ var NUMERO_LOJA_ECOMMERCE_AR_CLUBE = "<%=NUMERO_LOJA_ECOMMERCE_AR_CLUBE%>";
             f.cliente__email_xml.focus();
             return;
         }
+
+		if ((trim(f.cliente__email_boleto.value) != "") && (!email_ok(f.cliente__email_boleto.value))) {
+			alert('E-mail (boleto) inválido!');
+			f.cliente__email_boleto.focus();
+			return;
+		}
 
            <% if CStr(r_pedido.loja) <> CStr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) then %>
             // PARA CLIENTE PJ, É OBRIGATÓRIO O PREENCHIMENTO DO E-MAIL
@@ -3490,7 +3503,15 @@ if cliente__tipo = ID_PF then
     <table width="649" class="QS" cellspacing="0">
 	    <tr>
 	    <td width="100%" align="left"><p class="R">E-MAIL (XML)</p><p class="C">
-		    <input id="cliente__email_xml" name="cliente__email_xml" value="<%=cliente__email_xml%>" class="TA" maxlength="60" size="74" <%=strAtributosDadosCadastrais%> onkeypress="filtra_email();"></p></td>
+		    <input id="cliente__email_xml" name="cliente__email_xml" value="<%=cliente__email_xml%>" class="TA" maxlength="60" size="74" <%=strAtributosDadosCadastrais%> onkeypress="if (digitou_enter(true)) fPED.cliente__email_boleto.focus(); filtra_email();"></p></td>
+	    </tr>
+    </table>
+
+	 <!-- ************   E-MAIL (BOLETO)  ************ -->
+    <table width="649" class="QS" cellspacing="0">
+	    <tr>
+	    <td width="100%" align="left"><p class="R">E-MAIL (BOLETO)</p><p class="C">
+		    <input id="cliente__email_boleto" name="cliente__email_boleto" value="<%=cliente__email_boleto%>" class="TA" maxlength="60" size="74" <%=strAtributosDadosCadastrais%> onkeypress="filtra_email();"></p></td>
 	    </tr>
     </table>
 

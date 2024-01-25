@@ -217,7 +217,7 @@ sub consulta_executa
 dim r
 dim s, s_aux, s_sql, cab_table, cab, n_reg, n_reg_total
 dim s_where, s_from, s_where_loja, s_where_fornecedor
-dim s_nome, s_cnpj_cpf, s_endereco, s_tel_res, s_tel_com, s_rg, s_email, s_email_xml
+dim s_nome, s_cnpj_cpf, s_endereco, s_tel_res, s_tel_com, s_rg, s_email, s_email_xml, s_email_boleto
 dim s_indicador, s_desempenho_nota
 dim x, loja_a, qtde_lojas, pedido_a
 dim w_fabricante, w_produto, w_descricao, w_qtde
@@ -388,14 +388,14 @@ dim s_desc, perc_desc, vl_unitario, vl_lista
 			" t_ORCAMENTISTA_E_INDICADOR.apelido AS indicador, t_ORCAMENTISTA_E_INDICADOR.desempenho_nota," & _
 			" t_PEDIDO_ITEM.fabricante, t_PEDIDO_ITEM.produto, t_PEDIDO_ITEM.descricao, t_PEDIDO_ITEM.descricao_html," & _
 			" t_PEDIDO_ITEM.qtde, t_PEDIDO_ITEM.preco_lista, t_PEDIDO_ITEM.desc_dado, t_PEDIDO_ITEM.preco_NF, " & _
-			" t_PEDIDO.st_memorizacao_completa_enderecos, t_CLIENTE.email_xml, t_CLIENTE.produtor_rural_status, t_CLIENTE.contribuinte_icms_status, " & _
+			" t_PEDIDO.st_memorizacao_completa_enderecos, t_CLIENTE.email_xml, t_CLIENTE.email_boleto, t_CLIENTE.produtor_rural_status, t_CLIENTE.contribuinte_icms_status, " & _
 			" t_PEDIDO.endereco_rg, t_PEDIDO.endereco_ie, t_PEDIDO.endereco_nome, t_PEDIDO.endereco_logradouro as pedido_endereco_logradouro, " & _
 			" t_PEDIDO.endereco_numero as pedido_endereco_numero, t_PEDIDO.endereco_complemento as pedido_endereco_complemento, " & _
 			" t_PEDIDO.endereco_bairro as pedido_endereco_bairro, t_PEDIDO.endereco_cidade as pedido_endereco_cidade, " & _
 			" t_PEDIDO.endereco_uf as pedido_endereco_uf, t_PEDIDO.endereco_cep as pedido_endereco_cep, " & _
 			" t_PEDIDO.endereco_tel_res, t_PEDIDO.endereco_ddd_res, t_PEDIDO.endereco_tel_com, t_PEDIDO.endereco_ddd_com, t_PEDIDO.endereco_ramal_com, " & _
 			" t_PEDIDO.endereco_tel_cel, t_PEDIDO.endereco_ddd_cel, t_PEDIDO.endereco_tel_com_2, t_PEDIDO.endereco_ddd_com_2, t_PEDIDO.endereco_ramal_com_2, " & _
-			" t_PEDIDO.endereco_email, t_PEDIDO.endereco_email_xml, t_PEDIDO.endereco_produtor_rural_status, t_PEDIDO.endereco_contribuinte_icms_status " & _
+			" t_PEDIDO.endereco_email, t_PEDIDO.endereco_email_xml, t_PEDIDO.endereco_email_boleto, t_PEDIDO.endereco_produtor_rural_status, t_PEDIDO.endereco_contribuinte_icms_status " & _
 			s_from & _
 			s_where
 			
@@ -574,7 +574,7 @@ dim s_desc, perc_desc, vl_unitario, vl_lista
 			dim cliente__nome_iniciais_em_maiusculas, cliente__endereco, cliente__endereco_numero, cliente__endereco_complemento
 			dim cliente__bairro, cliente__cidade, cliente__uf, cliente__cep, cliente__cnpj_cpf
 			dim cliente__tel_res, cliente__ddd_res, cliente__tel_com, cliente__ddd_com, cliente__ramal_com
-			dim cliente__ie, cliente__rg, cliente__email, cliente__email_xml
+			dim cliente__ie, cliente__rg, cliente__email, cliente__email_xml, cliente__email_boleto
 			cliente__nome_iniciais_em_maiusculas = Trim("" & r("nome_iniciais_em_maiusculas"))
 			cliente__endereco = Trim("" & r("endereco"))
 			cliente__endereco_numero = Trim("" & r("endereco_numero"))
@@ -593,6 +593,7 @@ dim s_desc, perc_desc, vl_unitario, vl_lista
 			cliente__rg = Trim("" & r("rg"))
 			cliente__email = Trim("" & r("email"))
 			cliente__email_xml = Trim("" & r("email_xml"))
+			cliente__email_boleto = Trim("" & r("email_boleto"))
 			if Trim("" & r("st_memorizacao_completa_enderecos")) <> 0 then
 				cliente__nome_iniciais_em_maiusculas = iniciais_em_maiusculas(Trim("" & r("endereco_nome")))
 				cliente__endereco = Trim("" & r("pedido_endereco_logradouro"))
@@ -612,6 +613,7 @@ dim s_desc, perc_desc, vl_unitario, vl_lista
 				cliente__rg = Trim("" & r("endereco_rg"))
 				cliente__email = Trim("" & r("endereco_email"))
 				cliente__email_xml = Trim("" & r("endereco_email_xml"))
+				cliente__email_boleto = Trim("" & r("endereco_email_boleto"))
 				end if
 
 		'	nome
@@ -681,14 +683,22 @@ dim s_desc, perc_desc, vl_unitario, vl_lista
 			if cliente__email_xml <> "" then
 				s_email_xml = "E-mail (XML): " & cliente__email_xml
 				end if
-		'	concatena e-mail e e-mail-xml
-			if s_email = "" then
-				s_email = s_email_xml
-			else
-				if s_email_xml <> "" then
-					s_email = s_email  & " - " & s_email_xml
-					end if
+		'	e-mail-boleto
+			s_email_boleto = ""
+			if cliente__email_boleto <> "" then
+				s_email_boleto = "E-mail (boleto): " & cliente__email_boleto
 				end if
+		'	concatena e-mail, e-mail-xml e e-mail boleto
+			if s_email_xml <> "" then
+				if s_email <> "" then s_email = s_email & " - "
+				s_email = s_email & s_email_xml
+				end if
+
+			if s_email_boleto <> "" then
+				if s_email <> "" then s_email = s_email & " - "
+				s_email = s_email & s_email_boleto
+				end if
+
 			if s_email = "" then
 				s_email = "E-mail: "
 				end if

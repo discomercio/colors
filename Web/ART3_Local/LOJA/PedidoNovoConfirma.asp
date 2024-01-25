@@ -320,7 +320,7 @@
 	c_FlagCadSemiAutoPedMagento_FluxoOtimizado = Trim(Request.Form("c_FlagCadSemiAutoPedMagento_FluxoOtimizado"))
 
 	dim EndCob_endereco, EndCob_endereco_numero, EndCob_endereco_complemento, EndCob_endereco_ponto_referencia, EndCob_bairro, EndCob_cidade, EndCob_uf, EndCob_cep
-	dim EndCob_email, EndCob_email_xml, EndCob_nome, EndCob_tipo_pessoa
+	dim EndCob_email, EndCob_email_xml, EndCob_email_boleto, EndCob_nome, EndCob_tipo_pessoa
 	dim EndCob_ddd_res, EndCob_tel_res, EndCob_ddd_com, EndCob_tel_com, EndCob_ramal_com, EndCob_ddd_com_2, EndCob_tel_com_2, EndCob_ramal_com_2, EndCob_ddd_cel, EndCob_tel_cel
 	dim EndCob_cnpj_cpf, EndCob_contribuinte_icms_status, EndCob_produtor_rural_status, EndCob_ie, EndCob_rg, EndCob_contato
 	dim rb_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_endereco_ponto_referencia
@@ -341,6 +341,7 @@
 		EndCob_cep = Trim(Request.Form("EndCob_cep"))
 		EndCob_email = Trim(Request.Form("EndCob_email"))
 		EndCob_email_xml = Trim(Request.Form("EndCob_email_xml"))
+		EndCob_email_boleto = Trim(Request.Form("EndCob_email_boleto"))
 		EndCob_nome = Trim(Request.Form("EndCob_nome"))
 		EndCob_tipo_pessoa = Trim(Request.Form("EndCob_tipo_pessoa"))
 		EndCob_ddd_res = Trim(Request.Form("EndCob_ddd_res"))
@@ -370,6 +371,7 @@
 		EndCob_cep = Trim("" & t_CLIENTE("cep"))
 		EndCob_email = Trim("" & t_CLIENTE("email"))
 		EndCob_email_xml = Trim("" & t_CLIENTE("email_xml"))
+		EndCob_email_boleto = Trim("" & t_CLIENTE("email_boleto"))
 		EndCob_nome = Trim("" & t_CLIENTE("nome"))
 		EndCob_tipo_pessoa = Trim("" & t_CLIENTE("tipo"))
 		EndCob_ddd_res = Trim("" & t_CLIENTE("ddd_res"))
@@ -2468,6 +2470,7 @@
 						rs("st_memorizacao_completa_enderecos") = 1
 						rs("endereco_email") = EndCob_email
 						rs("endereco_email_xml") = EndCob_email_xml
+						rs("endereco_email_boleto") = EndCob_email_boleto
 						rs("endereco_nome") = EndCob_nome
 						rs("endereco_ddd_res") = EndCob_ddd_res
 						rs("endereco_tel_res") = EndCob_tel_res
@@ -3388,6 +3391,7 @@
 							" (" & _
 							"email=" & EndCob_email & _
 							", email_xml=" & EndCob_email_xml & _
+							", email_boleto=" & EndCob_email_boleto & _
 							", nome=" & EndCob_nome & _
 							", ddd_res=" & EndCob_ddd_res & _
 							", tel_res=" & EndCob_tel_res & _

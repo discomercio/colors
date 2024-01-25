@@ -79,7 +79,7 @@
 	dim operacao_selecionada, cliente_selecionado, cnpj_cpf_selecionado, s_nome, s_ie, s_rg, s_sexo
 	dim s_contribuinte_icms, s_produtor_rural, s_contribuinte_icms_cadastrado, s_produtor_rural_cadastrado
 	dim s_endereco, s_endereco_numero, s_endereco_complemento, s_bairro, s_cidade, s_uf, s_cep
-	dim s_ddd_res, s_tel_res, s_ddd_com, s_tel_com, s_ramal_com, s_contato, s_dt_nasc, s_filiacao, s_obs_crediticias, s_midia, s_email, s_email_xml
+	dim s_ddd_res, s_tel_res, s_ddd_com, s_tel_com, s_ramal_com, s_contato, s_dt_nasc, s_filiacao, s_obs_crediticias, s_midia, s_email, s_email_xml, s_email_boleto
 	dim eh_cpf
 	dim pagina_retorno
 	dim s_tel_com_2, s_ddd_com_2, s_tel_cel, s_ddd_cel, s_ramal_com_2
@@ -119,6 +119,7 @@
 	s_midia=retorna_so_digitos(Trim(request("midia")))
 	s_email=LCase(Trim(request("email")))
 	s_email_xml=LCase(Trim(request("email_xml")))
+	s_email_boleto=LCase(Trim(request("email_boleto")))
 	pagina_retorno = Trim(request("pagina_retorno"))
 	s_tel_com_2=retorna_so_digitos(Trim(request("tel_com_2")))
 	s_ddd_com_2=retorna_so_digitos(Trim(request("ddd_com_2")))
@@ -716,6 +717,7 @@
 				r("midia")=s_midia
 				r("email")=s_email
 				r("email_xml")=s_email_xml
+				r("email_boleto")=s_email_boleto
 				r("dt_ult_atualizacao")=Now
 				r("usuario_ult_atualizacao")=usuario
 
@@ -1799,6 +1801,7 @@ function setarValorRadio(array, valor)
     <input type="hidden" name="orcamento_endereco_complemento" id="orcamento_endereco_complemento" value="<%=Trim("" & r_cliente.endereco_complemento) %>" />
     <input type="hidden" name="orcamento_endereco_email" id="orcamento_endereco_email" value="<%=Trim("" & r_cliente.email) %>" />
     <input type="hidden" name="orcamento_endereco_email_xml" id="orcamento_endereco_email_xml" value="<%=Trim("" & r_cliente.email_xml) %>" />
+    <input type="hidden" name="orcamento_endereco_email_boleto" id="orcamento_endereco_email_boleto" value="<%=Trim("" & r_cliente.email_boleto) %>" />
     <input type="hidden" name="orcamento_endereco_nome" id="orcamento_endereco_nome" value="<%=Trim("" & r_cliente.nome) %>" />
     <input type="hidden" name="orcamento_endereco_ddd_res" id="orcamento_endereco_ddd_res" value="<%=Trim("" & r_cliente.ddd_res) %>" />
     <input type="hidden" name="orcamento_endereco_tel_res" id="orcamento_endereco_tel_res" value="<%=Trim("" & r_cliente.tel_res) %>" />

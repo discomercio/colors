@@ -75,7 +75,7 @@
 	dim cliente_selecionado, cnpj_cpf_selecionado, s_nome, s_ie, s_rg, s_sexo
 	dim s_contribuinte_icms, s_produtor_rural, s_contribuinte_icms_cadastrado, s_produtor_rural_cadastrado
 	dim s_endereco, s_endereco_numero, s_endereco_complemento, s_bairro, s_cidade, s_uf, s_cep
-	dim s_ddd_res, s_tel_res, s_ddd_com, s_tel_com, s_ramal_com, s_contato, s_dt_nasc, s_filiacao, s_obs_crediticias, s_midia, s_email, s_email_xml
+	dim s_ddd_res, s_tel_res, s_ddd_com, s_tel_com, s_ramal_com, s_contato, s_dt_nasc, s_filiacao, s_obs_crediticias, s_midia, s_email, s_email_xml, s_email_boleto
 	dim s_indicador, strCampoIndicadorEditavel
 	dim eh_cpf
 	dim pagina_retorno
@@ -116,6 +116,7 @@
 	s_midia=retorna_so_digitos(Trim(request("midia")))
 	s_email=LCase(Trim(request("email")))
 	s_email_xml=LCase(Trim(request("email_xml")))
+	s_email_boleto=LCase(Trim(request("email_boleto")))
 	s_indicador=Trim(request("indicador"))
 	strCampoIndicadorEditavel=Trim(request("CampoIndicadorEditavel"))
 	s_tel_com_2=retorna_so_digitos(Trim(request("tel_com_2")))
@@ -732,6 +733,7 @@
 			r("midia")=s_midia
 			r("email")=s_email
 			r("email_xml")=s_email_xml
+			r("email_boleto")=s_email_boleto
 			r("dt_ult_atualizacao")=Now
 			r("usuario_ult_atualizacao")=usuario
 

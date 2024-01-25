@@ -210,7 +210,7 @@
 
 	dim endereco__bairro, endereco__endereco, endereco__numero, endereco__complemento, endereco__cidade, endereco__uf, endereco__cep
 	dim cliente__ddd_res, cliente__tel_res, cliente__ddd_cel, cliente__tel_cel, cliente__ddd_com, cliente__tel_com, cliente__ramal_com,cliente__ddd_com_2, cliente__tel_com_2, cliente__ramal_com_2
-	dim cliente__email, cliente__email_xml , cliente__nome, cliente__ie, cliente__rg, cliente__contribuinte_icms_status, cliente__produtor_rural
+	dim cliente__email, cliente__email_xml, cliente__email_boleto, cliente__nome, cliente__ie, cliente__rg, cliente__contribuinte_icms_status, cliente__produtor_rural
 	
 	if r_orcamento.st_memorizacao_completa_enderecos = 1 or r_orcamento.st_memorizacao_completa_enderecos = 9 then
 	
@@ -233,6 +233,7 @@
 		cliente__ramal_com_2 = retorna_so_digitos(Trim(Request.Form("cliente__ramal_com_2")))		
 		cliente__email = Trim(Request.Form("cliente__email"))
 		cliente__email_xml = Trim(Request.Form("cliente__email_xml"))
+		cliente__email_boleto = Trim(Request.Form("cliente__email_boleto"))
 		cliente__nome = Trim(Request.Form("cliente__nome"))
 		cliente__rg = Trim(Request.Form("cliente__rg"))
 		cliente__produtor_rural = Trim(request("rb_produtor_rural"))
@@ -1077,6 +1078,7 @@
 					rs("endereco_ramal_com_2") = cliente__ramal_com_2
 					rs("endereco_email") = cliente__email
 					rs("endereco_email_xml") = cliente__email_xml
+					rs("endereco_email_boleto") = cliente__email_boleto
 					rs("endereco_nome") = cliente__nome 
 					rs("endereco_ie") = cliente__ie
 					rs("endereco_contribuinte_icms_status") = cliente__contribuinte_icms_status

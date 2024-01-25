@@ -1463,6 +1463,12 @@ end function
             return;
         }
 
+		if ((trim(f.email_boleto.value) != "") && (!email_ok(f.email_boleto.value))) {
+			alert('E-mail (boleto) inválido!');
+			f.email_boleto.focus();
+			return;
+		}
+
     <% if CStr(loja) <> CStr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) then %>
     // PARA CLIENTE PJ, É OBRIGATÓRIO O PREENCHIMENTO DO E-MAIL
     if (!eh_cpf) {
@@ -2354,8 +2360,18 @@ end function
 	<tr>
 	<td width="100%" align="left"><p class="R">E-MAIL (XML)</p><p class="C">
 		<%if operacao_selecionada=OP_CONSULTA Or blnHaRegistroBsp then s=Trim("" & rs("email_xml")) else s=""%>
-		<input id="email_xml" name="email_xml" class="TA" value="<%=s%>" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fCAD.obs_crediticias.focus(); filtra_email();"></p></td>
+		<input id="email_xml" name="email_xml" class="TA" value="<%=s%>" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fCAD.email_boleto.focus(); filtra_email();"></p></td>
         <input type="hidden" name="email_xml_original" id="email_xml_original" value="<%=s%>" />
+	</tr>
+</table>
+
+<!-- ************   E-MAIL (BOLETO)  ************ -->
+<table width="649" class="QS" cellspacing="0">
+	<tr>
+	<td width="100%" align="left"><p class="R">E-MAIL (BOLETO)</p><p class="C">
+		<%if operacao_selecionada=OP_CONSULTA Or blnHaRegistroBsp then s=Trim("" & rs("email_boleto")) else s=""%>
+		<input id="email_boleto" name="email_boleto" class="TA" value="<%=s%>" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fCAD.obs_crediticias.focus(); filtra_email();"></p></td>
+        <input type="hidden" name="email_boleto_original" id="email_boleto_original" value="<%=s%>" />
 	</tr>
 </table>
 

@@ -493,6 +493,12 @@ if (!eh_cpf) {
 		return;
 	}
 
+	if ((trim(f.email_boleto.value) != "") && (!email_ok(f.email_boleto.value)) ) {
+		alert('E-mail (boleto) inválido!');
+		f.email_boleto.focus();
+		return;
+	}
+
 /*	if (trim(f.midia.options[f.midia.selectedIndex].value)=="") {
 		alert('Indique a forma pela qual conheceu a DIS!!');
 		return;
@@ -939,7 +945,15 @@ if (!eh_cpf) {
 <table width="649" class="QS" cellspacing="0">
 	<tr>
 	<td width="100%" align="left"><p class="R">E-MAIL (XML)</p><p class="C">
-		<input id="email_xml" name="email_xml" class="TA" value="<%=Trim("" & rs("email_xml"))%>" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fCAD.obs_crediticias.focus(); filtra_email();"></p></td>
+		<input id="email_xml" name="email_xml" class="TA" value="<%=Trim("" & rs("email_xml"))%>" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fCAD.email_boleto.focus(); filtra_email();"></p></td>
+	</tr>
+</table>
+
+<!-- ************   E-MAIL (BOLETO)  ************ -->
+<table width="649" class="QS" cellspacing="0">
+	<tr>
+	<td width="100%" align="left"><p class="R">E-MAIL (BOLETO)</p><p class="C">
+		<input id="email_boleto" name="email_boleto" class="TA" value="<%=Trim("" & rs("email_boleto"))%>" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fCAD.obs_crediticias.focus(); filtra_email();"></p></td>
 	</tr>
 </table>
 

@@ -47,7 +47,7 @@
 	Const URL_FILE__AJAX_JS = "../Global/ajax.js?v=001"
 	Const URL_FILE__JANELACEP_JS = "../Global/jquery-my-janelacep.js?v=001"
 	Const URL_FILE__JANELAINDICADOR_JS = "../Global/jquery-my-janelaindicador.js?v=001"
-	Const URL_FILE__E_CSS = "../Global/e.css?v=005"
+	Const URL_FILE__E_CSS = "../Global/e.css?v=006"
 	Const URL_FILE__EPRINTER_CSS = "../Global/eprinter.css?v=001"
 	Const URL_FILE__ESCREEN_CSS = "../Global/eScreen.css?v=001"
 	Const URL_FILE__EGWBP_CSS = "../Global/eGWBP.css?v=001"
@@ -1965,6 +1965,7 @@
 		dim email
 		dim email_opcoes
 		dim email_xml
+		dim email_boleto
 		dim dt_cadastro
 		dim dt_ult_atualizacao
 		dim SocMaj_Nome
@@ -2200,6 +2201,7 @@
 		dim st_memorizacao_completa_enderecos
 		dim endereco_email
 		dim endereco_email_xml
+		dim endereco_email_boleto
 		dim endereco_nome
 		dim endereco_nome_iniciais_em_maiusculas
 		dim endereco_ddd_res
@@ -2785,6 +2787,7 @@
 		dim endereco_cep
 		dim endereco_email
 		dim endereco_email_xml
+		dim endereco_email_boleto
 		dim endereco_nome
 		dim endereco_nome_iniciais_em_maiusculas
 		dim endereco_ddd_res

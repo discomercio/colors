@@ -1754,6 +1754,7 @@
 						rs("endereco_complemento") = r_orcamento.endereco_complemento
 						rs("endereco_email") = r_orcamento.endereco_email
 						rs("endereco_email_xml") = r_orcamento.endereco_email_xml
+						rs("endereco_email_boleto") = r_orcamento.endereco_email_boleto
 						rs("endereco_nome") = r_orcamento.endereco_nome
 						rs("endereco_ddd_res") = r_orcamento.endereco_ddd_res
 						rs("endereco_tel_res") = r_orcamento.endereco_tel_res
@@ -2519,6 +2520,7 @@
 							" (" & _
 							"email=" & r_orcamento.endereco_email & _
 							", email_xml=" & r_orcamento.endereco_email_xml & _
+							", email_boleto=" & r_orcamento.endereco_email_boleto & _
 							", nome=" & r_orcamento.endereco_nome & _
 							", ddd_res=" & r_orcamento.endereco_ddd_res & _
 							", tel_res=" & r_orcamento.endereco_tel_res & _

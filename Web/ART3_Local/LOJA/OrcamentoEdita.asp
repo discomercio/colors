@@ -147,7 +147,7 @@
     dim cliente__tipo, cliente__cnpj_cpf, cliente__rg, cliente__ie, cliente__nome
     dim cliente__endereco, cliente__endereco_numero, cliente__endereco_complemento, cliente__bairro, cliente__cidade, cliente__uf, cliente__cep
     dim cliente__tel_res, cliente__ddd_res, cliente__tel_com, cliente__ddd_com, cliente__ramal_com, cliente__tel_cel, cliente__ddd_cel
-    dim cliente__tel_com_2, cliente__ddd_com_2, cliente__ramal_com_2, cliente__email, cliente__email_xml, cliente__icms, cliente__produtor_rural_status
+    dim cliente__tel_com_2, cliente__ddd_com_2, cliente__ramal_com_2, cliente__email, cliente__email_xml, cliente__email_boleto, cliente__icms, cliente__produtor_rural_status
 
     cliente__tipo = r_cliente.tipo
     cliente__cnpj_cpf = r_cliente.cnpj_cpf
@@ -173,6 +173,7 @@
     cliente__ramal_com_2 = r_cliente.ramal_com_2
     cliente__email = r_cliente.email
 	cliente__email_xml = r_cliente.email_xml
+	cliente__email_boleto = r_cliente.email_boleto
 	cliente__icms = r_cliente.contribuinte_icms_status
 	cliente__produtor_rural_status = r_cliente.produtor_rural_status
 
@@ -201,6 +202,7 @@
         cliente__ramal_com_2 = r_orcamento.endereco_ramal_com_2
         cliente__email = r_orcamento.endereco_email
 		cliente__email_xml = r_orcamento.endereco_email_xml
+		cliente__email_boleto = r_orcamento.endereco_email_boleto
 		cliente__icms = r_orcamento.endereco_contribuinte_icms_status
 		cliente__produtor_rural_status = r_orcamento.endereco_produtor_rural_status
     end if
@@ -1256,6 +1258,11 @@ var blnConfirmaDifRAeValores=false;
             return;
         }
 
+		if ((trim(f.cliente__email_boleto.value) != "") && (!email_ok(f.cliente__email_boleto.value))) {
+			alert('E-mail (boleto) inválido!');
+			f.cliente__email_boleto.focus();
+			return;
+		}
 
        <% if cliente__tipo = ID_PF then %>
 
@@ -1363,6 +1370,12 @@ var blnConfirmaDifRAeValores=false;
             f.cliente__email_xml.focus();
             return;
         }
+
+		if ((trim(f.cliente__email_boleto.value) != "") && (!email_ok(f.cliente__email_boleto.value))) {
+			alert('E-mail (boleto) inválido!');
+			f.cliente__email_boleto.focus();
+			return;
+		}
 
            <% if CStr(r_orcamento.loja) <> CStr(NUMERO_LOJA_ECOMMERCE_AR_CLUBE) then %>
             // PARA CLIENTE PJ, É OBRIGATÓRIO O PREENCHIMENTO DO E-MAIL
@@ -2390,7 +2403,15 @@ var blnConfirmaDifRAeValores=false;
     <table width="649" class="QS" cellspacing="0">
 	    <tr>
 	    <td width="100%" align="left"><p class="R">E-MAIL (XML)</p><p class="C">
-		    <input id="cliente__email_xml" name="cliente__email_xml" value="<%=cliente__email_xml%>" class="TA" maxlength="60" size="74" onkeypress="filtra_email();"></p></td>
+		    <input id="cliente__email_xml" name="cliente__email_xml" value="<%=cliente__email_xml%>" class="TA" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fORC.cliente__email_boleto.focus(); filtra_email();"></p></td>
+	    </tr>
+    </table>
+
+	 <!-- ************   E-MAIL (BOLETO)  ************ -->
+    <table width="649" class="QS" cellspacing="0">
+	    <tr>
+	    <td width="100%" align="left"><p class="R">E-MAIL (BOLETO)</p><p class="C">
+		    <input id="cliente__email_boleto" name="cliente__email_boleto" value="<%=cliente__email_boleto%>" class="TA" maxlength="60" size="74" onkeypress="filtra_email();"></p></td>
 	    </tr>
     </table>
 
@@ -2698,7 +2719,6 @@ var blnConfirmaDifRAeValores=false;
 				<input id="EndEtg_email_xml" name="EndEtg_email_xml" class="TA" value="<%=r_orcamento.EndEtg_email_xml%>" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fORC.EndEtg_obs.focus(); filtra_email();"></p></td>
 			</tr>
 		</table>
-
 
     <%end if%> <% 'blnUsarMemorizacaoCompletaEnderecos %>
 

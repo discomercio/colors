@@ -1076,6 +1076,12 @@ if (!eh_cpf) {
 		return;
 	}
 
+	if ((trim(f.email_boleto.value) != "") && (!email_ok(f.email_boleto.value)) ) {
+		alert('E-mail (boleto) inválido!');
+		f.email_boleto.focus();
+		return;
+	}
+
     // PARA CLIENTE PJ, É OBRIGATÓRIO O PREENCHIMENTO DO E-MAIL
     if (!eh_cpf) {
         if ((trim(fCAD.email.value) == "") && (trim(fCAD.email_xml.value) == "")) {
@@ -1487,6 +1493,12 @@ if (!eh_cpf) {
 		return;
 	}
 
+	if ((trim(f.orcamento_endereco_email_boleto.value) != "") && (!email_ok(f.orcamento_endereco_email_boleto.value))) {
+		alert('Dados cadastrais: e-mail (boleto) inválido!');
+		f.orcamento_endereco_email_boleto.focus();
+		return;
+	}
+
     // PARA CLIENTE PJ, É OBRIGATÓRIO O PREENCHIMENTO DO E-MAIL
     if (!eh_cpf) {
         if ((trim(f.orcamento_endereco_email.value) == "") && (trim(f.orcamento_endereco_email.value) == "")) {
@@ -1766,6 +1778,7 @@ function setarValorRadio(array, valor)
 
         fORC.orcamento_endereco_email.value = fCAD.email.value;
         fORC.orcamento_endereco_email_xml.value = fCAD.email_xml.value;
+		fORC.orcamento_endereco_email_boleto.value = fCAD.email_boleto.value;
     }
 <%end if%>
 
@@ -2097,8 +2110,18 @@ function setarValorRadio(array, valor)
 	<tr>
 	<td width="100%" align="left"><p class="R">E-MAIL (XML)</p><p class="C">
 		<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("email_xml")) else s=""%>
-		<input id="email_xml" name="email_xml" <%=s_readonly%> class="TA" value="<%=s%>" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fCAD.obs_crediticias.focus(); filtra_email();"></p></td>
+		<input id="email_xml" name="email_xml" <%=s_readonly%> class="TA" value="<%=s%>" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fCAD.email_boleto.focus(); filtra_email();"></p></td>
         <input type="hidden" name="email_xml_original" id="email_xml_original" value="<%=s%>" />
+	</tr>
+</table>
+
+<!-- ************   E-MAIL (BOLETO)  ************ -->
+<table width="649" class="QS" cellspacing="0">
+	<tr>
+	<td width="100%" align="left"><p class="R">E-MAIL (BOLETO)</p><p class="C">
+		<%if operacao_selecionada=OP_CONSULTA then s=Trim("" & rs("email_boleto")) else s=""%>
+		<input id="email_boleto" name="email_boleto" <%=s_readonly%> class="TA" value="<%=s%>" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fCAD.obs_crediticias.focus(); filtra_email();"></p></td>
+        <input type="hidden" name="email_boleto_original" id="email_boleto_original" value="<%=s%>" />
 	</tr>
 </table>
 
@@ -2792,7 +2815,15 @@ function setarValorRadio(array, valor)
     <table width="649" class="QS" cellspacing="0">
 	    <tr>
 	    <td width="100%" align="left"><p class="R">E-MAIL (XML)</p><p class="C">
-		    <input id="orcamento_endereco_email_xml" name="orcamento_endereco_email_xml" class="TA" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fORC.rb_end_entrega_nao.focus(); filtra_email();"></p></td>
+		    <input id="orcamento_endereco_email_xml" name="orcamento_endereco_email_xml" class="TA" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fORC.orcamento_endereco_email_boleto.focus(); filtra_email();"></p></td>
+	    </tr>
+    </table>
+
+    <!-- ************   E-MAIL (BOLETO)  ************ -->
+    <table width="649" class="QS" cellspacing="0">
+	    <tr>
+	    <td width="100%" align="left"><p class="R">E-MAIL (BOLETO)</p><p class="C">
+		    <input id="orcamento_endereco_email_boleto" name="orcamento_endereco_email_boleto" class="TA" maxlength="60" size="74" onkeypress="if (digitou_enter(true)) fORC.rb_end_entrega_nao.focus(); filtra_email();"></p></td>
 	    </tr>
     </table>
 

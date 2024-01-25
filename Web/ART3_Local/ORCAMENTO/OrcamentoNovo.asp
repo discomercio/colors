@@ -105,7 +105,7 @@
 		end if
 
     dim orcamento_endereco_logradouro, orcamento_endereco_bairro, orcamento_endereco_cidade, orcamento_endereco_uf, orcamento_endereco_cep, orcamento_endereco_numero
-    dim orcamento_endereco_complemento, orcamento_endereco_email, orcamento_endereco_email_xml, orcamento_endereco_nome, orcamento_endereco_ddd_res
+    dim orcamento_endereco_complemento, orcamento_endereco_email, orcamento_endereco_email_xml, orcamento_endereco_email_boleto, orcamento_endereco_nome, orcamento_endereco_ddd_res
     dim orcamento_endereco_tel_res, orcamento_endereco_ddd_com, orcamento_endereco_tel_com, orcamento_endereco_ramal_com, orcamento_endereco_ddd_cel
     dim orcamento_endereco_tel_cel, orcamento_endereco_ddd_com_2, orcamento_endereco_tel_com_2, orcamento_endereco_ramal_com_2, orcamento_endereco_tipo_pessoa
     dim orcamento_endereco_cnpj_cpf, orcamento_endereco_contribuinte_icms_status, orcamento_endereco_produtor_rural_status, orcamento_endereco_ie
@@ -119,6 +119,7 @@
     orcamento_endereco_complemento = Trim(Request.Form("orcamento_endereco_complemento"))
     orcamento_endereco_email = Trim(Request.Form("orcamento_endereco_email"))
     orcamento_endereco_email_xml = Trim(Request.Form("orcamento_endereco_email_xml"))
+    orcamento_endereco_email_boleto = Trim(Request.Form("orcamento_endereco_email_boleto"))
     orcamento_endereco_nome = Trim(Request.Form("orcamento_endereco_nome"))
     orcamento_endereco_ddd_res = Trim(Request.Form("orcamento_endereco_ddd_res"))
     orcamento_endereco_tel_res = Trim(Request.Form("orcamento_endereco_tel_res"))
@@ -1159,6 +1160,7 @@ var i, b, ha_item, strMsgErro;
 <input type="hidden" name="orcamento_endereco_complemento" id="orcamento_endereco_complemento" value="<%=orcamento_endereco_complemento%>" />
 <input type="hidden" name="orcamento_endereco_email" id="orcamento_endereco_email" value="<%=orcamento_endereco_email%>" />
 <input type="hidden" name="orcamento_endereco_email_xml" id="orcamento_endereco_email_xml" value="<%=orcamento_endereco_email_xml%>" />
+<input type="hidden" name="orcamento_endereco_email_boleto" id="orcamento_endereco_email_boleto" value="<%=orcamento_endereco_email_boleto%>" />
 <input type="hidden" name="orcamento_endereco_nome" id="orcamento_endereco_nome" value="<%=orcamento_endereco_nome%>" />
 <input type="hidden" name="orcamento_endereco_ddd_res" id="orcamento_endereco_ddd_res" value="<%=orcamento_endereco_ddd_res%>" />
 <input type="hidden" name="orcamento_endereco_tel_res" id="orcamento_endereco_tel_res" value="<%=orcamento_endereco_tel_res%>" />

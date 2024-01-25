@@ -237,7 +237,7 @@
 	dim s_lista_sugerida_municipios_end_cob, s_lista_sugerida_municipios_end_etg
 	dim blnErroIbgeEndCob, blnErroIbgeEndEtg, blnEnderecosIguais, blnFlagCadSemiAutoPedMagento_FluxoOtimizado, tipoCliente
 	dim EndCob_endereco, EndCob_endereco_numero, EndCob_endereco_complemento, EndCob_endereco_ponto_referencia, EndCob_bairro, EndCob_cidade, EndCob_uf, EndCob_cep
-	dim EndCob_email, EndCob_email_xml, EndCob_nome, EndCob_tipo_pessoa
+	dim EndCob_email, EndCob_email_xml, EndCob_email_boleto, EndCob_nome, EndCob_tipo_pessoa
 	dim EndCob_ddd_res, EndCob_tel_res, EndCob_ddd_com, EndCob_tel_com, EndCob_ramal_com, EndCob_ddd_com_2, EndCob_tel_com_2, EndCob_ramal_com_2, EndCob_ddd_cel, EndCob_tel_cel
 	dim EndCob_cnpj_cpf, EndCob_contribuinte_icms_status, EndCob_produtor_rural_status, EndCob_ie, EndCob_rg
 	dim rb_end_entrega, EndEtg_endereco, EndEtg_endereco_numero, EndEtg_endereco_complemento, EndEtg_endereco_ponto_referencia, EndEtg_bairro, EndEtg_cidade, EndEtg_uf, EndEtg_cep
@@ -261,6 +261,7 @@
 	EndCob_cep = ""
 	EndCob_email = ""
 	EndCob_email_xml = ""
+	EndCob_email_boleto = ""
 	EndCob_nome = ""
 	EndCob_ddd_res = ""
 	EndCob_tel_res = ""
@@ -350,6 +351,7 @@
 			EndCob_cep = retorna_so_digitos(Trim("" & tMAP_END_ETG("cep")))
 			EndCob_email = Trim("" & tMAP_XML("customer_email"))
 			EndCob_email_xml = ""
+			EndCob_email_boleto = ""
 
 			call ec_dados_decodifica_telefone_formatado(tMAP_END_ETG("telephone"), s_ddd, s_tel)
 			EndCob_ddd_res = s_ddd
@@ -379,6 +381,7 @@
 			EndCob_cep = retorna_so_digitos(Trim("" & tMAP_END_COB("cep")))
 			EndCob_email = Trim("" & tMAP_XML("customer_email"))
 			EndCob_email_xml = ""
+			EndCob_email_boleto = ""
 
 			call ec_dados_decodifica_telefone_formatado(tMAP_END_COB("telephone"), s_ddd, s_tel)
 			EndCob_ddd_com = s_ddd
@@ -791,6 +794,7 @@ function fPNEC2Confirma(f) {
 <input type="hidden" name="EndCob_cep" id="EndCob_cep" value="<%=EndCob_cep%>" />
 <input type="hidden" name="EndCob_email" id="EndCob_email" value="<%=EndCob_email%>" />
 <input type="hidden" name="EndCob_email_xml" id="EndCob_email_xml" value="<%=EndCob_email_xml%>" />
+<input type="hidden" name="EndCob_email_boleto" id="EndCob_email_boleto" value="<%=EndCob_email_boleto%>" />
 <input type="hidden" name="EndCob_nome" id="EndCob_nome" value="<%=EndCob_nome%>" />
 <input type="hidden" name="EndCob_tipo_pessoa" id="EndCob_tipo_pessoa" value="<%=EndCob_tipo_pessoa%>" />
 <input type="hidden" name="EndCob_ddd_res" id="EndCob_ddd_res" value="<%=EndCob_ddd_res%>" />

@@ -774,6 +774,7 @@ dim r
 			.email = Trim("" & r("email"))
 			.email_opcoes = Trim("" & r("email_opcoes"))
 			.email_xml = Trim("" & r("email_xml"))
+			.email_boleto = Trim("" & r("email_boleto"))
 			.dt_cadastro = r("dt_cadastro")
 			.dt_ult_atualizacao = r("dt_ult_atualizacao")
 			.SocMaj_Nome = Trim("" & r("SocMaj_Nome"))
@@ -1771,6 +1772,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.endereco_cep = ""
 			.endereco_email = ""
 			.endereco_email_xml = ""
+			.endereco_email_boleto = ""
 			.endereco_nome = ""
 			.endereco_nome_iniciais_em_maiusculas = ""
 			.endereco_ddd_res = ""
@@ -1804,6 +1806,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.st_memorizacao_completa_enderecos = rs("st_memorizacao_completa_enderecos")
 					.endereco_email = Trim("" & rs("endereco_email"))
 					.endereco_email_xml = Trim("" & rs("endereco_email_xml"))
+					.endereco_email_boleto = Trim("" & rs("endereco_email_boleto"))
 					.endereco_nome = Trim("" & rs("endereco_nome"))
 					.endereco_nome_iniciais_em_maiusculas = Trim("" & rs("endereco_nome_iniciais_em_maiusculas"))
 					.endereco_ddd_res = Trim("" & rs("endereco_ddd_res"))
@@ -3918,6 +3921,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 			.endereco_cep = ""
 			.endereco_email = ""
 			.endereco_email_xml = ""
+			.endereco_email_boleto = ""
 			.endereco_nome = ""
 			.endereco_nome_iniciais_em_maiusculas = ""
 			.endereco_ddd_res = ""
@@ -3951,6 +3955,7 @@ dim blnUsarMemorizacaoCompletaEnderecos
 					.endereco_cep					= Trim("" & rs("endereco_cep"))
 					.endereco_email = Trim("" & rs("endereco_email"))
 					.endereco_email_xml = Trim("" & rs("endereco_email_xml"))
+					.endereco_email_boleto = Trim("" & rs("endereco_email_boleto"))
 					.endereco_nome = Trim("" & rs("endereco_nome"))
 					.endereco_nome_iniciais_em_maiusculas = Trim("" & rs("endereco_nome_iniciais_em_maiusculas"))
 					.endereco_ddd_res = Trim("" & rs("endereco_ddd_res"))
@@ -5858,6 +5863,8 @@ dim tAux
 					"(email = '" & email & "')" & _
 					" OR " & _
 					"(email_xml = '" & email & "')" & _
+					" OR " & _
+					"(email_boleto = '" & email & "')" & _
 				")"
 	if tAux.State <> 0 then tAux.Close
 	tAux.Open s_sql, cn

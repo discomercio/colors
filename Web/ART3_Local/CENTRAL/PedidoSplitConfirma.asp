@@ -304,6 +304,7 @@
 					rs("st_memorizacao_completa_enderecos") = sx("st_memorizacao_completa_enderecos")
 					rs("endereco_email") = sx("endereco_email")
 					rs("endereco_email_xml") = sx("endereco_email_xml")
+					rs("endereco_email_boleto") = sx("endereco_email_boleto")
 					rs("endereco_nome") = sx("endereco_nome")
 					rs("endereco_ddd_res") = sx("endereco_ddd_res")
 					rs("endereco_tel_res") = sx("endereco_tel_res")

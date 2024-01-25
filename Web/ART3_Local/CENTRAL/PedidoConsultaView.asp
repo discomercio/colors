@@ -790,7 +790,7 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
     dim cliente__tipo, cliente__cnpj_cpf, cliente__rg, cliente__ie, cliente__nome
     dim cliente__endereco, cliente__endereco_numero, cliente__endereco_complemento, cliente__bairro, cliente__cidade, cliente__uf, cliente__cep
     dim cliente__tel_res, cliente__ddd_res, cliente__tel_com, cliente__ddd_com, cliente__ramal_com, cliente__tel_cel, cliente__ddd_cel
-    dim cliente__tel_com_2, cliente__ddd_com_2, cliente__ramal_com_2, cliente__email, cliente__email_xml, cliente__produtor_rural_status, cliente__contribuinte_icms_status
+    dim cliente__tel_com_2, cliente__ddd_com_2, cliente__ramal_com_2, cliente__email, cliente__email_xml, cliente__email_boleto, cliente__produtor_rural_status, cliente__contribuinte_icms_status
 
     cliente__tipo = r_cliente.tipo
     cliente__cnpj_cpf = r_cliente.cnpj_cpf
@@ -816,6 +816,7 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
     cliente__ramal_com_2 = r_cliente.ramal_com_2
     cliente__email = r_cliente.email
     cliente__email_xml = r_cliente.email_xml
+    cliente__email_boleto = r_cliente.email_boleto
 	cliente__produtor_rural_status = r_cliente.produtor_rural_status
 	cliente__contribuinte_icms_status = r_cliente.contribuinte_icms_status
 
@@ -844,6 +845,7 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
         cliente__ramal_com_2 = r_pedido.endereco_ramal_com_2
         cliente__email = r_pedido.endereco_email
         cliente__email_xml = r_pedido.endereco_email_xml
+        cliente__email_boleto = r_pedido.endereco_email_boleto
 		cliente__produtor_rural_status = r_pedido.endereco_produtor_rural_status
 		cliente__contribuinte_icms_status = r_pedido.endereco_contribuinte_icms_status
         end if
@@ -976,8 +978,9 @@ function fPEDBlocoNotasItemDevolvidoAlteraImpressao(f) {
 <!--  E-MAIL DO CLIENTE  -->
 <table width="649" class="QS" cellspacing="0">
 	<tr>
-		<td align="left" class="MD" width="50%"><p class="Rf">E-MAIL</p><p class="C"><%=Trim(cliente__email)%>&nbsp;</p></td>
-		<td align="left" width="50%"><p class="Rf">E-MAIL (XML)</p><p class="C"><%=Trim(cliente__email_xml)%>&nbsp;</p></td>
+		<td align="left" class="MD" width="33%"><p class="Rf">E-MAIL</p><p class="C"><%=Trim(cliente__email)%>&nbsp;</p></td>
+		<td align="left" class="MD" width="33%"><p class="Rf">E-MAIL (XML)</p><p class="C"><%=Trim(cliente__email_xml)%>&nbsp;</p></td>
+		<td align="left"><p class="Rf">E-MAIL (BOLETO)</p><p class="C"><%=Trim(cliente__email_boleto)%>&nbsp;</p></td>
 	</tr>
 </table>
 
