@@ -1789,7 +1789,34 @@
 		dim c19
 		dim c20
 		end class
-		
+
+	class cl_REL_PEDIDOS_INDICADORES_INFO_INDICADOR
+		dim IdIndicador
+		dim IdVendedor
+		dim meio_pagto
+		dim indicador_com_desconto
+		dim indicador_negativo
+		dim vl_total_comissao
+		dim vl_total_comissao_arredondado
+		dim vl_total_RA
+		dim vl_total_RA_arredondado
+		dim vl_total_pagto
+		dim vl_total_desc_planilha
+		dim qtde_reg_descontos
+		end class
+
+	class cl_REL_PEDIDOS_INDICADORES_INFO_PEDIDO
+		dim pedido
+		dim IdIndicador
+		dim IdVendedor
+		dim operacao
+		dim id_registro_operacao
+		dim vl_pedido
+		dim vl_comissao
+		dim vl_RA_bruto
+		dim vl_RA_liquido
+		end class
+
 	class cl_LOG_VIA_VETOR
 		dim nome
 		dim valor

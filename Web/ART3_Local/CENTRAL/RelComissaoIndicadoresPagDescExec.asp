@@ -197,7 +197,9 @@ dim vl_RT_desc_aux, vl_RA_desc_aux
     if aviso = "" then
 
         '	CRITÉRIOS COMUNS
-	        s_where = " (LEN(Coalesce(t_PEDIDO__BASE.indicador, '')) > 0)"
+		'	PROCESSA SOMENTE OS PARCEIROS NÃO HABILITADOS PARA RECEBEREM A COMISSÃO VIA CARTÃO
+	        s_where = " (LEN(Coalesce(t_PEDIDO__BASE.indicador, '')) > 0)" & _
+					" AND (t_ORCAMENTISTA_E_INDICADOR.comissao_cartao_status = 0)"
 
 	        if c_vendedor <> "" then
 		        if s_where <> "" then s_where = s_where & " AND"
@@ -475,7 +477,7 @@ dim vl_RT_desc_aux, vl_RA_desc_aux
 		            "		<td valign='bottom' class='notPrint BkgWhite' align='left'>&nbsp;<a name='bExibeOcultaCampos' id='bExibeOcultaCampos' href='javascript:fExibeOcultaCampos(" & chr(34) & "_NNNNN_" & chr(34) & ");' title='exibe ou oculta os dados'><img src='../botao/view_bottom.png' border='0'></a></td>" & chr(13) & _
 		            "	</tr>" & chr(13)
 	
-	        x = ""
+	        x="<BR>" & chr(13)
 	        n_reg = 0
 	        n_reg_total = 0
 	        idx_bloco = 0
@@ -575,6 +577,7 @@ dim vl_RT_desc_aux, vl_RA_desc_aux
 			        if n_reg_total > 0 then 
                         s_lista_total_comissao = s_lista_total_comissao & vl_sub_total_RT & ";"
                         s_lista_total_RA = s_lista_total_RA & vl_sub_total_RA_liquido & ";"
+                        if rs2.State <> 0 then rs2.Close
                         rs2.Open "SELECT COUNT(*) qtde_Desconto, descricao,valor,ordenacao  FROM t_ORCAMENTISTA_E_INDICADOR_DESCONTO WHERE (apelido = '" & ind_anterior & "') GROUP BY  descricao,valor,ordenacao ORDER BY ordenacao", cn
                         
                         msg_desconto = ""
@@ -902,9 +905,6 @@ dim vl_RT_desc_aux, vl_RA_desc_aux
     
                     s_sql = "SELECT * FROM t_ORCAMENTISTA_E_INDICADOR WHERE (apelido = '" & Trim("" & r("indicador")) & "')"
 			        if rs.State <> 0 then rs.Close
-                    if rs2.State <> 0 then rs2.Close 
-
-           
 			        rs.Open s_sql, cn
 			        if Not rs.Eof then
 				        s_banco = Trim("" & rs("banco"))
@@ -929,50 +929,76 @@ dim vl_RT_desc_aux, vl_RA_desc_aux
 			        if (s<>"") And (s_aux<>"") then s = s & " - "
 			        s = s & s_aux
 			
-			        if s <> "" then x = x & "		<td class='MDTE' colspan='11' align='left' valign='bottom' class='MB' style='background:azure;'><span class='N'>&nbsp;" & s_desempenho_nota & s & "</span></td>" & chr(13) & _
-									        "		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
-									        "	</tr>" & chr(13) & _
-									        "	<tr>" & chr(13) & _
-									        "		<td class='MDTE' colspan='11' align='left' valign='bottom' class='MB' style='background:whitesmoke;'>" & chr(13) & _
-									 		"			<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
+			        if s <> "" then
+						x = x & "		<td class='MDTE' colspan='11' align='left' valign='bottom' class='MB' style='background:azure;'><span class='N'>&nbsp;" & s_desempenho_nota & s & "</span></td>" & chr(13) & _
+								"		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
+								"	</tr>" & chr(13)
+						end if
+
+					x = x & _
+							"	<tr>" & chr(13) & _
+							"		<td class='MDTE' colspan='11' align='left' valign='bottom' class='MB' style='background:white;'>" & chr(13) & _
+							"			<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
+							"				<tr>" & chr(13) & _
+							"					<td align='right' valign='bottom' nowrap><span class='Cn'>Pagamento da Comissão via NFSe:</span></td>" & chr(13) & _
+							"					<td width='90%' align='left' valign='bottom' nowrap><span class='Cn'>" & chr(13)
+
+					if Trim("" & rs("comissao_NFSe_cnpj")) <> "" then
+						x = x & cnpj_cpf_formata(Trim("" & rs("comissao_NFSe_cnpj"))) & " - " & Trim("" & rs("comissao_NFSe_razao_social"))
+					else
+						x = x & "N.I."
+						end if
+
+					x = x & _
+										"</span></td>" & chr(13) & _
+										"				</tr>" & chr(13) & _
+										"			</table>" & chr(13) & _
+										"		</td>" & chr(13) & _
+										"	</tr>" & chr(13)
+
+					x = x & _
+								"	<tr>" & chr(13) & _
+								"		<td class='MDTE' colspan='11' align='left' valign='bottom' class='MB' style='background:whitesmoke;'>" & chr(13) & _
+								"			<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
                                        
-									        "				<tr>" & chr(13) & _
-									        "					<td colspan='3' align='left' valign='bottom' style='vertical-align:middle'><div valign='bottom' style='height:14px;max-height:14px;overflow:hidden;vertical-align:middle'><span class='Cn'>Banco: " & rs("banco") & " - " & x_banco(rs("banco")) &  "</span></div></td>" & chr(13) & _
-									        "				</tr>" & chr(13) & _
-									        "				<tr>" & chr(13) & _
-									        "					<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & rs("agencia")
-                                if Trim("" & rs("agencia_dv")) <> "" then
-                                    x = x & "-" & rs("agencia_dv") & chr(13)
-                                end if
+								"				<tr>" & chr(13) & _
+								"					<td colspan='3' align='left' valign='bottom' style='vertical-align:middle'><div valign='bottom' style='height:14px;max-height:14px;overflow:hidden;vertical-align:middle'><span class='Cn'>Banco: " & rs("banco") & " - " & x_banco(rs("banco")) &  "</span></div></td>" & chr(13) & _
+								"				</tr>" & chr(13) & _
+								"				<tr>" & chr(13) & _
+								"					<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & rs("agencia")
+                    if Trim("" & rs("agencia_dv")) <> "" then
+                        x = x & "-" & rs("agencia_dv") & chr(13)
+                    end if
     
-                                x = x & "</span></td>" & chr(13) & _
-									        "					<td class='MC MD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>"
+                    x = x & "</span></td>" & chr(13) & _
+								"					<td class='MC MD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>"
 
-                                if Trim("" & rs("tipo_conta")) <> "" then
-                                    if rs("tipo_conta") = "P" then
-                                        x = x & "C/P: "
-                                    elseif rs("tipo_conta") = "C" then
-                                        x = x & "C/C: "
-                                    end if
-                                else
-                                    x = x & "Conta: "
-                                end if
+                    if Trim("" & rs("tipo_conta")) <> "" then
+                        if rs("tipo_conta") = "P" then
+                            x = x & "C/P: "
+                        elseif rs("tipo_conta") = "C" then
+                            x = x & "C/C: "
+                        end if
+                    else
+                        x = x & "Conta: "
+                    end if
 
-                                if Trim("" & rs("conta_operacao")) <> "" then
-                                    x = x & rs("conta_operacao") & "-"
-                                end if               
+                    if Trim("" & rs("conta_operacao")) <> "" then
+                        x = x & rs("conta_operacao") & "-"
+                    end if               
     
-                                x = x & rs("conta")
+                    x = x & rs("conta")
     
-                                if Trim("" & rs("conta_dv")) <> "" then
-                                    x = x & "-" & rs("conta_dv") & chr(13)
-                                end if
-									     x = x & "					<td class='MC' width='60%' align='left' valign='bottom'><span class='Cn'>Favorecido: " & s_favorecido & "</span></td>" & chr(13) & _
-									        "				</tr>" & chr(13) & _
-									        "			</table>" & chr(13) & _
-									        "		</td>" & chr(13) & _
-									        "		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
-									        "	</tr>" & chr(13)
+                    if Trim("" & rs("conta_dv")) <> "" then
+                        x = x & "-" & rs("conta_dv") & chr(13)
+                    end if
+
+					x = x & "					<td class='MC' width='60%' align='left' valign='bottom'><span class='Cn'>Favorecido: " & s_favorecido & "</span></td>" & chr(13) & _
+								"				</tr>" & chr(13) & _
+								"			</table>" & chr(13) & _
+								"		</td>" & chr(13) & _
+								"		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
+								"	</tr>" & chr(13)
 			        s_new_cab = Replace(cab, "ckb_comissao_paga_tit_bloco", "ckb_comissao_paga_tit_bloco_" & idx_bloco)
 			        s_new_cab = Replace(s_new_cab, "trata_ckb_onclick();", "trata_ckb_onclick(" & chr(34) & idx_bloco & chr(34) & ");")
 			        s_new_cab = Replace(s_new_cab, "_NNNNN_", CStr(idx_bloco))
@@ -1199,6 +1225,7 @@ dim vl_RT_desc_aux, vl_RA_desc_aux
                 qtde_registro_desc = 0  
                 contador = 0
                 msg_desconto = ""
+                if rs2.State <> 0 then rs2.Close
                 rs2.Open "SELECT COUNT(*) qtde_Desconto, descricao,valor,ordenacao  FROM t_ORCAMENTISTA_E_INDICADOR_DESCONTO WHERE (apelido = '" & ind_anterior & "') GROUP BY  descricao,valor,ordenacao ORDER BY ordenacao", cn
                 if Not rs2.Eof then
 
@@ -1574,9 +1601,9 @@ dim vl_RT_desc_aux, vl_RA_desc_aux
 
 	        Response.write x
 	
-	        if r.State <> 0 then r.Close
-                if rs2.State <> 0 then rs2.Close
-	        set r=nothing
+            if r.State <> 0 then r.Close
+            if rs2.State <> 0 then rs2.Close
+            set r=nothing
 
     end if
 	

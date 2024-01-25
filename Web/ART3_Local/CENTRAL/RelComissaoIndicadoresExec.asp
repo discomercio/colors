@@ -795,94 +795,98 @@ end if
 			if (s<>"") And (s_aux<>"") then s = s & " - "
 			s = s & s_aux
 			x = x & Replace(cab_table, "tableDados", "tableDados_" & idx_bloco)
-			if s <> "" then x = x & "	<tr>" & chr(13) & _
+			if s <> "" then
+				x = x & "	<tr>" & chr(13) & _
 									"		<td class='MDTE' colspan='12' align='left' valign='bottom' class='MB' style='background:azure;'><span class='N'>&nbsp;" & s_desempenho_nota & s & "</span></td>" & chr(13) & _
 									"		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
-									"	</tr>" & chr(13) & _
-									"	<tr>" & chr(13) & _
-									"		<td class='MDTE' colspan='12' align='left' valign='bottom' class='MB' style='background:white;'>" & chr(13) & _
-									"			<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
-									"				<tr>" & chr(13) & _
-									"					<td align='right' valign='bottom' nowrap><span class='Cn'>Pagamento da Comissão via Cartão:</span></td>" & chr(13) & _
-									"					<td width='90%' align='left' valign='bottom' nowrap><span class='Cn'>"
-				if rs("comissao_cartao_status") = 1 then
-					x = x & "Sim" & " &nbsp; " & cnpj_cpf_formata(Trim("" & rs("comissao_cartao_cpf"))) & " - " & Trim("" & rs("comissao_cartao_titular"))
-				else
-					x = x & "Não"
-					end if
-
-				x = x & _
-									"</span></td>" & chr(13) & _
-									"				</tr>" & chr(13) & _
-									"				<tr>" & chr(13) & _
-									"					<td class='MC' align='right' valign='bottom' nowrap><span class='Cn'>Pagamento da Comissão via NFSe:</span></td>" & chr(13) & _
-									"					<td class='MC' width='90%' align='left' valign='bottom' nowrap><span class='Cn'>" & chr(13)
-
-				if Trim("" & rs("comissao_NFSe_cnpj")) <> "" then
-					x = x & cnpj_cpf_formata(Trim("" & rs("comissao_NFSe_cnpj"))) & " - " & Trim("" & rs("comissao_NFSe_razao_social"))
-				else
-					x = x & "N.I."
-					end if
-
-				x = x & _
-									"</span></td>" & chr(13) & _
-									"				</tr>" & chr(13) & _
-									"			</table>" & chr(13) & _
-									"		</td>" & chr(13) & _
-									"	</tr>" & chr(13) & _
-									"	<tr>" & chr(13) & _
-									"		<td class='MDTE' colspan='12' align='left' valign='bottom' class='MB' style='background:whitesmoke;'>" & chr(13) & _
-									"			<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
-									"				<tr>" & chr(13) & _
-									"					<td colspan='3' align='left' valign='bottom'><span class='Cn'>Banco: " & s_banco & "</span></td>" & chr(13) & _
-									"				</tr>" & chr(13) & _
-									"				<tr>" & chr(13) & _
-									"					<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & rs("agencia")
-			            if Trim("" & rs("agencia_dv")) <> "" then
-                            x = x & "-" & rs("agencia_dv") & chr(13)
-                        end if
-    
-                        x = x & "</span></td>" & chr(13) & _
-									"					<td class='MC MD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>"
-
-                        if Trim("" & rs("tipo_conta")) <> "" then
-                            if rs("tipo_conta") = "P" then
-                                x = x & "C/P: "
-                            elseif rs("tipo_conta") = "C" then
-                                x = x & "C/C: "
-                            end if
-                        else
-                            x = x & "Conta: "
-                        end if
-
-                        if Trim("" & rs("conta_operacao")) <> "" then
-                            x = x & rs("conta_operacao") & "-"
-                        end if               
-    
-                        x = x & rs("conta")
-    
-                        if Trim("" & rs("conta_dv")) <> "" then
-                            x = x & "-" & rs("conta_dv") & chr(13)
-                        end if
-						x = x &		"					<td class='MC' width='60%' align='left' valign='bottom'><span class='Cn'>Favorecido: " & s_favorecido & "</span></td>" & chr(13) & _
-									"				</tr>" & chr(13)
-
-						if Len(retorna_so_digitos(s_favorecido_cnpj_cpf)) = 11 then
-							s_aux = "CPF"
-						else
-							s_aux = "CNPJ"
-							end if
-
-						x = x & _
-									"				<tr>" & chr(13) & _
-									"					<td colspan='3' class='MC' align='left' valign='bottom'><span class='Cn'>" & s_aux & ": " & s_favorecido_cnpj_cpf & "</span></td>" & chr(13) & _
-									"				</tr>" & chr(13)
-
-						x = x & _
-									"			</table>" & chr(13) & _
-									"		</td>" & chr(13) & _
-									"		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
 									"	</tr>" & chr(13)
+				end if
+
+			x = x & _
+								"	<tr>" & chr(13) & _
+								"		<td class='MDTE' colspan='12' align='left' valign='bottom' class='MB' style='background:white;'>" & chr(13) & _
+								"			<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
+								"				<tr>" & chr(13) & _
+								"					<td align='right' valign='bottom' nowrap><span class='Cn'>Pagamento da Comissão via Cartão:</span></td>" & chr(13) & _
+								"					<td width='90%' align='left' valign='bottom' nowrap><span class='Cn'>"
+			if rs("comissao_cartao_status") = 1 then
+				x = x & "Sim" & " &nbsp; " & cnpj_cpf_formata(Trim("" & rs("comissao_cartao_cpf"))) & " - " & Trim("" & rs("comissao_cartao_titular"))
+			else
+				x = x & "Não"
+				end if
+
+			x = x & _
+								"</span></td>" & chr(13) & _
+								"				</tr>" & chr(13) & _
+								"				<tr>" & chr(13) & _
+								"					<td class='MC' align='right' valign='bottom' nowrap><span class='Cn'>Pagamento da Comissão via NFSe:</span></td>" & chr(13) & _
+								"					<td class='MC' width='90%' align='left' valign='bottom' nowrap><span class='Cn'>" & chr(13)
+
+			if Trim("" & rs("comissao_NFSe_cnpj")) <> "" then
+				x = x & cnpj_cpf_formata(Trim("" & rs("comissao_NFSe_cnpj"))) & " - " & Trim("" & rs("comissao_NFSe_razao_social"))
+			else
+				x = x & "N.I."
+				end if
+
+			x = x & _
+								"</span></td>" & chr(13) & _
+								"				</tr>" & chr(13) & _
+								"			</table>" & chr(13) & _
+								"		</td>" & chr(13) & _
+								"	</tr>" & chr(13) & _
+								"	<tr>" & chr(13) & _
+								"		<td class='MDTE' colspan='12' align='left' valign='bottom' class='MB' style='background:whitesmoke;'>" & chr(13) & _
+								"			<table width='100%' cellspacing='0' cellpadding='0'>" & chr(13) & _
+								"				<tr>" & chr(13) & _
+								"					<td colspan='3' align='left' valign='bottom'><span class='Cn'>Banco: " & s_banco & "</span></td>" & chr(13) & _
+								"				</tr>" & chr(13) & _
+								"				<tr>" & chr(13) & _
+								"					<td class='MTD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>Agência: " & rs("agencia")
+			if Trim("" & rs("agencia_dv")) <> "" then
+                x = x & "-" & rs("agencia_dv") & chr(13)
+            end if
+    
+            x = x & "</span></td>" & chr(13) & _
+						"					<td class='MC MD' align='left' valign='bottom' style='height:15px;vertical-align:middle'><span class='Cn'>"
+
+            if Trim("" & rs("tipo_conta")) <> "" then
+                if rs("tipo_conta") = "P" then
+                    x = x & "C/P: "
+                elseif rs("tipo_conta") = "C" then
+                    x = x & "C/C: "
+                end if
+            else
+                x = x & "Conta: "
+            end if
+
+            if Trim("" & rs("conta_operacao")) <> "" then
+                x = x & rs("conta_operacao") & "-"
+            end if               
+    
+            x = x & rs("conta")
+    
+            if Trim("" & rs("conta_dv")) <> "" then
+                x = x & "-" & rs("conta_dv") & chr(13)
+            end if
+			x = x &		"					<td class='MC' width='60%' align='left' valign='bottom'><span class='Cn'>Favorecido: " & s_favorecido & "</span></td>" & chr(13) & _
+						"				</tr>" & chr(13)
+
+			if Len(retorna_so_digitos(s_favorecido_cnpj_cpf)) = 11 then
+				s_aux = "CPF"
+			else
+				s_aux = "CNPJ"
+				end if
+
+			x = x & _
+						"				<tr>" & chr(13) & _
+						"					<td colspan='3' class='MC' align='left' valign='bottom'><span class='Cn'>" & s_aux & ": " & s_favorecido_cnpj_cpf & "</span></td>" & chr(13) & _
+						"				</tr>" & chr(13)
+
+			x = x & _
+						"			</table>" & chr(13) & _
+						"		</td>" & chr(13) & _
+						"		<td class='notPrint BkgWhite'>&nbsp;</td>" & chr(13) & _
+						"	</tr>" & chr(13)
 			s_new_cab = Replace(cab, "ckb_comissao_paga_tit_bloco", "ckb_comissao_paga_tit_bloco_" & idx_bloco)
 			s_new_cab = Replace(s_new_cab, "trata_ckb_onclick();", "trata_ckb_onclick(" & chr(34) & idx_bloco & chr(34) & ");")
 			s_new_cab = Replace(s_new_cab, "_NNNNN_", CStr(idx_bloco))

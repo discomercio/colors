@@ -50,17 +50,13 @@
     end if
 
 '	FILTROS
-	dim ckb_st_entrega_entregue, c_dt_entregue_mes, c_dt_entregue_ano
+	dim c_dt_entregue_mes, c_dt_entregue_ano
 	dim ckb_comissao_paga_sim, ckb_comissao_paga_nao
 	dim ckb_st_pagto_pago, ckb_st_pagto_nao_pago, ckb_st_pagto_pago_parcial
-	dim c_vendedor, c_indicador
-	dim c_loja, rb_visao
+	dim c_vendedor
+	dim rb_visao
 	
-	ckb_st_entrega_entregue = Trim(Request.Form("ckb_st_entrega_entregue"))
-
 	c_vendedor = Trim(Request.Form("c_vendedor"))
-	c_indicador = Trim(Request.Form("c_indicador"))
-
 	ckb_comissao_paga_sim = Trim(Request.Form("ckb_comissao_paga_sim"))
 	ckb_comissao_paga_nao = Trim(Request.Form("ckb_comissao_paga_nao"))
 
@@ -68,7 +64,6 @@
 	ckb_st_pagto_nao_pago = Trim(Request.Form("ckb_st_pagto_nao_pago"))
 	ckb_st_pagto_pago_parcial = Trim(Request.Form("ckb_st_pagto_pago_parcial"))
 
-	c_loja = Trim(Request.Form("c_loja"))
 	rb_visao = Trim(Request.Form("rb_visao"))
 	
 	dim dtMinDtInicialFiltroPeriodo, intMaxDiasDtInicialFiltroPeriodo

@@ -6113,6 +6113,226 @@ End Function
 
 
 ' ------------------------------------------------------------------------
+'   inicializa_cl_REL_PEDIDOS_INDICADORES_INFO_INDICADOR
+'
+sub inicializa_cl_REL_PEDIDOS_INDICADORES_INFO_INDICADOR(byref o)
+	o.IdIndicador = 0
+	o.IdVendedor = 0
+	o.meio_pagto = ""
+	o.indicador_com_desconto = False
+	o.indicador_negativo = False
+	o.vl_total_comissao = 0
+	o.vl_total_comissao_arredondado = 0
+	o.vl_total_RA = 0
+	o.vl_total_RA_arredondado = 0
+	o.vl_total_pagto = 0
+	o.vl_total_desc_planilha = 0
+	o.qtde_reg_descontos = 0
+end sub
+
+
+' ------------------------------------------------------------------------
+'   serializa_cl_REL_PEDIDOS_INDICADORES_INFO_INDICADOR
+'
+function serializa_cl_REL_PEDIDOS_INDICADORES_INFO_INDICADOR(byref v, byref resposta, byref msg_erro)
+dim i, sResp
+	serializa_cl_REL_PEDIDOS_INDICADORES_INFO_INDICADOR = False
+	resposta = ""
+	msg_erro = ""
+
+	sResp = ""
+	for i=LBound(v) to UBound(v)
+		with v(i)
+			if .IdIndicador <> 0 then
+				if sResp <> "" then sResp = sResp & "@"
+				sResp = sResp & _
+						.IdIndicador & _
+						"|" & .IdVendedor & _
+						"|" & .meio_pagto & _
+						"|" & CStr(.indicador_com_desconto) & _
+						"|" & CStr(.indicador_negativo) & _
+						"|" & formata_moeda(.vl_total_comissao) & _
+						"|" & formata_moeda(.vl_total_comissao_arredondado) & _
+						"|" & formata_moeda(.vl_total_RA) & _
+						"|" & formata_moeda(.vl_total_RA_arredondado) & _
+						"|" & formata_moeda(.vl_total_pagto) & _
+						"|" & formata_moeda(.vl_total_desc_planilha) & _
+						"|" & CStr(.qtde_reg_descontos)
+				end if
+			end with
+		next
+
+	if sResp <> "" then sResp = "INICIO@" & sResp & "@TERMINO"
+	resposta = sResp
+	serializa_cl_REL_PEDIDOS_INDICADORES_INFO_INDICADOR = True
+end function
+
+
+' ------------------------------------------------------------------------
+'   deserializa_cl_REL_PEDIDOS_INDICADORES_INFO_INDICADOR
+'
+function deserializa_cl_REL_PEDIDOS_INDICADORES_INFO_INDICADOR(byval dados, byref vResp, byref msg_erro)
+dim i, idx, v, s_reg, vAux
+	deserializa_cl_REL_PEDIDOS_INDICADORES_INFO_INDICADOR = False
+	msg_erro = ""
+
+	redim vResp(0)
+	set vResp(UBound(vResp)) = new cl_REL_PEDIDOS_INDICADORES_INFO_INDICADOR
+	inicializa_cl_REL_PEDIDOS_INDICADORES_INFO_INDICADOR vResp(UBound(vResp))
+
+	v = Split(dados, "@", -1)
+	if (Trim("" & v(LBound(v))) <> "INICIO") Or (Trim("" & v(UBound(v))) <> "TERMINO") then
+		msg_erro = "Dados de indicadores em formato inválido!"
+		exit function
+		end if
+
+	for i=LBound(v) to UBound(v)
+		s_reg = v(i)
+		if (s_reg <> "") And (s_reg <> "INICIO") And (s_reg <> "TERMINO") then
+			vAux = Split(s_reg, "|", -1)
+			if vResp(UBound(vResp)).IdIndicador <> 0 then
+				redim preserve vResp(UBound(vResp)+1)
+				set vResp(UBound(vResp)) = new cl_REL_PEDIDOS_INDICADORES_INFO_INDICADOR
+				inicializa_cl_REL_PEDIDOS_INDICADORES_INFO_INDICADOR vResp(UBound(vResp))
+				end if
+			with vResp(UBound(vResp))
+				idx = LBound(vAux)
+				if IsNumeric(vAux(idx)) then .IdIndicador = CLng(vAux(idx))
+				idx = idx+1
+				if IsNumeric(vAux(idx)) then .IdVendedor = CLng(vAux(idx))
+				idx = idx+1
+				.meio_pagto = vAux(idx)
+				idx = idx+1
+				if vAux(idx) <> "" then .indicador_com_desconto = CBool(vAux(idx))
+				idx = idx+1
+				if vAux(idx) <> "" then .indicador_negativo = CBool(vAux(idx))
+				idx = idx+1
+				.vl_total_comissao = converte_numero(vAux(idx))
+				idx = idx+1
+				.vl_total_comissao_arredondado = converte_numero(vAux(idx))
+				idx = idx+1
+				.vl_total_RA = converte_numero(vAux(idx))
+				idx = idx+1
+				.vl_total_RA_arredondado = converte_numero(vAux(idx))
+				idx = idx+1
+				.vl_total_pagto = converte_numero(vAux(idx))
+				idx = idx+1
+				.vl_total_desc_planilha = converte_numero(vAux(idx))
+				idx = idx+1
+				if IsNumeric(vAux(idx)) then .qtde_reg_descontos = CLng(vAux(idx))
+				end with
+			end if
+		next
+
+	deserializa_cl_REL_PEDIDOS_INDICADORES_INFO_INDICADOR = True
+end function
+
+
+' ------------------------------------------------------------------------
+'   inicializa_cl_REL_PEDIDOS_INDICADORES_INFO_PEDIDO
+'
+sub inicializa_cl_REL_PEDIDOS_INDICADORES_INFO_PEDIDO(byref o)
+	o.pedido = ""
+	o.IdIndicador = 0
+	o.IdVendedor = 0
+	o.operacao = ""
+	o.id_registro_operacao = ""
+	o.vl_pedido = 0
+	o.vl_comissao = 0
+	o.vl_RA_bruto = 0
+	o.vl_RA_liquido = 0
+end sub
+
+
+' ------------------------------------------------------------------------
+'   serializa_cl_REL_PEDIDOS_INDICADORES_INFO_PEDIDO
+'
+function serializa_cl_REL_PEDIDOS_INDICADORES_INFO_PEDIDO(byref v, byref resposta, byref msg_erro)
+dim i, sResp
+	serializa_cl_REL_PEDIDOS_INDICADORES_INFO_PEDIDO = False
+	resposta = ""
+	msg_erro = ""
+
+	sResp = ""
+	for i=LBound(v) to UBound(v)
+		with v(i)
+			if Trim("" & .pedido) <> "" then
+				if sResp <> "" then sResp = sResp & "@"
+				sResp = sResp & _
+						.pedido & _
+						"|" & .IdIndicador & _
+						"|" & .IdVendedor & _
+						"|" & .operacao & _
+						"|" & .id_registro_operacao & _
+						"|" & formata_moeda(.vl_pedido) & _
+						"|" & formata_moeda(.vl_comissao) & _
+						"|" & formata_moeda(.vl_RA_bruto) & _
+						"|" & formata_moeda(.vl_RA_liquido)
+				end if
+			end with
+		next
+
+	if sResp <> "" then sResp = "INICIO@" & sResp & "@TERMINO"
+	resposta = sResp
+	serializa_cl_REL_PEDIDOS_INDICADORES_INFO_PEDIDO = True
+end function
+
+
+' ------------------------------------------------------------------------
+'   deserializa_cl_REL_PEDIDOS_INDICADORES_INFO_PEDIDO
+'
+function deserializa_cl_REL_PEDIDOS_INDICADORES_INFO_PEDIDO(byval dados, byref vResp, byref msg_erro)
+dim i, idx, v, s_reg, vAux
+	deserializa_cl_REL_PEDIDOS_INDICADORES_INFO_PEDIDO = False
+	msg_erro = ""
+	
+	redim vResp(0)
+	set vResp(UBound(vResp)) = new cl_REL_PEDIDOS_INDICADORES_INFO_PEDIDO
+	inicializa_cl_REL_PEDIDOS_INDICADORES_INFO_PEDIDO vResp(UBound(vResp))
+
+	v = Split(dados, "@", -1)
+	if (Trim("" & v(LBound(v))) <> "INICIO") Or (Trim("" & v(UBound(v))) <> "TERMINO") then
+		msg_erro = "Dados de pedidos em formato inválido!"
+		exit function
+		end if
+
+	for i=LBound(v) to UBound(v)
+		s_reg = v(i)
+		if (s_reg <> "") And (s_reg <> "INICIO") And (s_reg <> "TERMINO") then
+			vAux = Split(s_reg, "|", -1)
+			if vResp(UBound(vResp)).pedido <> "" then
+				redim preserve vResp(UBound(vResp)+1)
+				set vResp(UBound(vResp)) = new cl_REL_PEDIDOS_INDICADORES_INFO_PEDIDO
+				inicializa_cl_REL_PEDIDOS_INDICADORES_INFO_PEDIDO vResp(UBound(vResp))
+				end if
+			with vResp(UBound(vResp))
+				idx = LBound(vAux)
+				.pedido = vAux(idx)
+				idx = idx+1
+				if IsNumeric(vAux(idx)) then .IdIndicador = CLng(vAux(idx))
+				idx = idx+1
+				if IsNumeric(vAux(idx)) then .IdVendedor = CLng(vAux(idx))
+				idx = idx+1
+				.operacao = vAux(idx)
+				idx = idx+1
+				.id_registro_operacao = vAux(idx)
+				idx = idx+1
+				.vl_pedido = converte_numero(vAux(idx))
+				idx = idx+1
+				.vl_comissao = converte_numero(vAux(idx))
+				idx = idx+1
+				.vl_RA_bruto = converte_numero(vAux(idx))
+				idx = idx+1
+				.vl_RA_liquido = converte_numero(vAux(idx))
+				end with
+			end if
+		next
+
+	deserializa_cl_REL_PEDIDOS_INDICADORES_INFO_PEDIDO = True
+end function
+
+
+' ------------------------------------------------------------------------
 '   inicializa_cl_CTRL_ESTOQUE_PEDIDO_ITEM_NOVO
 '
 sub inicializa_cl_CTRL_ESTOQUE_PEDIDO_ITEM_NOVO(byref o)
