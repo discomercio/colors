@@ -353,6 +353,7 @@ namespace ART3WebAPI.Models.Repository
 			#endregion
 
 			usuario.usuario = BD.readToString(rowDados["usuario"]);
+			usuario.Id = BD.readToInt(rowDados["Id"]);
 			usuario.nome = BD.readToString(rowDados["nome"]);
 			usuario.datastamp = BD.readToString(rowDados["datastamp"]);
 
@@ -407,6 +408,7 @@ namespace ART3WebAPI.Models.Repository
 					#region [ Monta Select ]
 					strSql = "SELECT" +
 								" usuario," +
+								" Id," +
 								" nome," +
 								" datastamp," +
 								" bloqueado," +
@@ -416,6 +418,80 @@ namespace ART3WebAPI.Models.Repository
 							" FROM t_USUARIO" +
 							" WHERE" +
 								" (usuario = '" + id_usuario + "')";
+					#endregion
+
+					#region [ Executa a consulta ]
+					cmCommand.CommandText = strSql;
+					daDataAdapter.SelectCommand = cmCommand;
+					daDataAdapter.MissingSchemaAction = MissingSchemaAction.Add;
+					daDataAdapter.Fill(dtbResultado);
+					#endregion
+
+					if (dtbResultado.Rows.Count == 0)
+					{
+						msg_erro = "Usuário inválido!";
+						return null;
+					}
+
+					usuario = usuarioLoadFromDataRow(dtbResultado.Rows[0]);
+				}
+				finally
+				{
+					BD.fechaConexao(ref cn);
+				}
+
+				return usuario;
+			}
+			catch (Exception ex)
+			{
+				msg_erro = ex.Message;
+				return null;
+			}
+		}
+
+		public static Usuario getUsuario(int id_usuario, out string msg_erro)
+		{
+			#region [ Declarações ]
+			string strSql;
+			SqlConnection cn;
+			SqlCommand cmCommand;
+			SqlDataAdapter daDataAdapter;
+			DataTable dtbResultado = new DataTable();
+			Usuario usuario;
+			#endregion
+
+			msg_erro = "";
+			try
+			{
+				if (id_usuario == 0)
+				{
+					msg_erro = "Identificação do usuário não foi fornecida!";
+					return null;
+				}
+
+				#region [ Prepara acesso ao BD ]
+				cn = new SqlConnection(BD.getConnectionString());
+				cn.Open();
+				cmCommand = new SqlCommand();
+				cmCommand.Connection = cn;
+				daDataAdapter = new SqlDataAdapter();
+				#endregion
+
+				try // finally: BD.fechaConexao(ref cn);
+				{
+					#region [ Monta Select ]
+					strSql = "SELECT" +
+								" usuario," +
+								" Id," +
+								" nome," +
+								" datastamp," +
+								" bloqueado," +
+								" dt_ult_alteracao_senha," +
+								" Convert(varchar(36), SessionTokenModuloCentral) AS SessionTokenModuloCentral," +
+								" Convert(varchar(36), SessionTokenModuloLoja) AS SessionTokenModuloLoja" +
+							" FROM t_USUARIO" +
+							" WHERE" +
+								" (Id = " + id_usuario.ToString() + ")";
 					#endregion
 
 					#region [ Executa a consulta ]

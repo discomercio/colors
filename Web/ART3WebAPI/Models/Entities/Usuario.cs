@@ -8,6 +8,7 @@ namespace ART3WebAPI.Models.Entities
 	public class Usuario
 	{
 		public string usuario { get; set; }
+		public int Id { get; set; }
 		public string nome { get; set; }
 		public string senhaDescriptografada { get; set; }
 		public string datastamp { get; set; }

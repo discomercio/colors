@@ -33,5 +33,24 @@ namespace ART3WebAPI.Models.Entities
 		public DateTime dt_ult_atualizacao { get; set; }
 		public DateTime dt_hr_ult_atualizacao { get; set; }
 		public string usuario_ult_atualizacao { get; set; }
+		public byte st_habilitado_ctrl_estoque { get; set; }
+		public int ordem { get; set; }
+		public string texto_fixo_especifico { get; set; }
+		public List<NFeEmitenteCfgDanfe> listaCfgDanfe { get; set; } = new List<NFeEmitenteCfgDanfe>();
+	}
+
+	public class NFeEmitenteCfgDanfe
+	{
+		public int id { get; set; }
+		public int id_nfe_emitente { get; set; }
+		public byte min_tamanho_serie_NFe { get; set; }
+		public byte min_tamanho_numero_NFe { get; set; }
+		public string convencao_nome_arq_pdf_danfe { get; set; }
+		public string diretorio_pdf_danfe { get; set; }
+		public string convencao_nome_arq_xml_nfe { get; set; }
+		public string diretorio_xml_nfe { get; set; }
+		public DateTime dt_hr_cadastro { get; set; }
+		public int ordenacao { get; set; }
+		public string observacao { get; set; }
 	}
 }
